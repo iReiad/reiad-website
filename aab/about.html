@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — Rony Reiad</title>
+  <meta name="description" content="Rony Reiad: economics graduate from Chittagong, MSc Finance & Risk Management from Brighton, researching Islamic funds and credit risk — and building Bangla-language investment education.">
+
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      var dark = saved ? saved === "dark"
+                       : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="index.html">
+    <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+      <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+      <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+      <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+      <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+    </svg>
+    Rony Reiad
+  </a>
+      <nav aria-label="Main">
+        <a href="learn/index.html" data-keep>Learn</a>
+        <a href="insights.html">Insights</a>
+        <a href="portfolio.html">Portfolio</a>
+        <a href="about.html" aria-current="page">About</a>
+        <a href="contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">
+        ⌕ <span class="kbd-hint">Ctrl K</span>
+      </button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+
+      <div class="hero">
+        <span class="eyebrow mono">About</span>
+        <h1>Economics first, risk second, plain language always.</h1>
+        <p class="lede">
+          I'm Rony — an economics graduate from Chittagong who went to Brighton to
+          study finance and risk, and came back convinced that most financial
+          knowledge fails people at the language step, not the math step.
+        </p>
+      </div>
+
+      <section class="prose">
+        <span class="section-label mono">The story so far</span>
+        <p>
+          I studied economics at the University of Chittagong, then moved to the UK
+          for an MSc in Finance and Risk Management at the University of Brighton's
+          School of Business and Law, finishing with an Upper Merit. Along the way
+          the interests sharpened: corporate finance, equity research, credit risk —
+          and the question of how markets actually behave when you test them with
+          data rather than describe them with adjectives.
+        </p>
+        <p>
+          My research followed that instinct. For my dissertation I spent 15,000
+          words examining whether Islamic funds genuinely exhibit lower risk than
+          conventional UK funds — looking at systematic risk, idiosyncratic risk and
+          drawdowns rather than taking the marketing at face value. In a related
+          project I constructed an Islamic fund portfolio in Python and compared its
+          pre- and post-COVID performance against conventional benchmarks, automating
+          the analysis and the charts. I also worked through a credit-risk case
+          study the way a bank would: liquidity, leverage, profitability,
+          repayment capacity, recommendation.
+        </p>
+        <p>
+          Outside the numbers: I interned as a quantitative analysis intern with the
+          Summit Equity Society (University of Essex), got a close look at financial
+          fraud investigation during industry experience at a corporate legal firm in
+          Eastbourne, and served as President of the Bangladeshi Society at Brighton.
+          I also worked UK service jobs through my degree — the kind of work that
+          teaches you calm under pressure better than any module does. Before all of
+          this: Sylhet Cadet College, and a successful pass through the Bangladesh
+          Navy officers' ISSB selection — discipline has a long backstory here.
+        </p>
+        <p>
+          This site exists because financial education in Bangladesh mostly arrives
+          in English or in textbook Bangla, and neither is how people actually talk
+          about money. The Learn hub is my attempt to fix that: every concept in
+          everyday spoken Bangla, every term linked, no jargon left unexplained.
+        </p>
+      </section>
+
+      <section>
+        <span class="section-label mono">Where this is going</span>
+        <!-- Roadmap, not résumé: "Now" is in progress, "Next" and
+             "The aim" are stated goals. Keep the framing honest. -->
+        <div class="path">
+          <div class="cell">
+            <span class="tag mono">Now · 2026</span>
+            <h3>Building the foundation</h3>
+            <ul>
+              <li>CFA Level 1 candidate — November 2026 window</li>
+              <li>Publishing the Bangla Learn hub, article by article</li>
+              <li>Building a public model library: three-statement, DCF, credit</li>
+            </ul>
+          </div>
+          <div class="cell">
+            <span class="tag mono">Next · 2027–28</span>
+            <h3>Into the industry</h3>
+            <ul>
+              <li>Analyst or management trainee role — Bangladesh banking or Gulf finance</li>
+              <li>CFA Level 2, continuing the charter path</li>
+              <li>Freelance modeling practice with repeat clients</li>
+            </ul>
+          </div>
+          <div class="cell cell-aim">
+            <span class="tag mono">The aim</span>
+            <h3>Research-grade finance, spoken plainly</h3>
+            <ul>
+              <li>CFA charterholder working across Bangladesh and Gulf markets</li>
+              <li>The Learn hub: a go-to Bangla resource for first-time investors</li>
+              <li>Credit and equity research that bridges local markets and global standards</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <span class="section-label mono">Education</span>
+        <div class="rows">
+          <div class="row">
+            <span class="k mono">2024–2026</span>
+            <span class="v">MSc Finance &amp; Risk Management — Upper Merit
+              <small>University of Brighton, UK · Financial risk management, applied
+              econometrics &amp; time-series, investment management, financial theory</small></span>
+          </div>
+          <div class="row">
+            <span class="k mono">2018–2023</span>
+            <span class="v">BSS Economics (Honours)
+              <small>University of Chittagong, Bangladesh</small></span>
+          </div>
+          <div class="row">
+            <span class="k mono">Earlier</span>
+            <span class="v">Ex-cadet, Sylhet Cadet College · GPA 5.00/5.00 in SSC and HSC
+              <small>Passed the Bangladesh Navy officers' ISSB selection</small></span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <span class="section-label mono">Experience</span>
+        <div class="rows">
+          <div class="row">
+            <span class="k mono">2025</span>
+            <span class="v">Quantitative Analysis Intern — Summit Equity Society, University of Essex
+              <small>Market and company research, Excel-based analysis, mutual fund
+              research summaries · remote</small></span>
+          </div>
+          <div class="row">
+            <span class="k mono">2025</span>
+            <span class="v">Paralegal (industry experience) — Corporate &amp; Legal Corporation, Eastbourne
+              <small>Exposure to financial fraud investigation, repayment plans and
+              corporate case handling</small></span>
+          </div>
+          <div class="row">
+            <span class="k mono">2024–2026</span>
+            <span class="v">Customer-facing roles alongside the MSc — Brighton &amp; Burgess Hill
+              <small>Front-of-house operations and team coordination — pressure-tested
+              communication</small></span>
+          </div>
+          <div class="row">
+            <span class="k mono">2024–2025</span>
+            <span class="v">President — Bangladeshi Society, University of Brighton
+              <small>Events, charity coordination, stakeholder management</small></span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <span class="section-label mono">Certificates &amp; tools</span>
+        <div class="rows">
+          <div class="row">
+            <span class="k mono">Certificates</span>
+            <span class="v">Bloomberg Market Concepts · Algorithmic Trading &amp; Finance
+              Models with Python, R and Stata · Reading Corporate Financial Statements
+              <small>More on LinkedIn</small></span>
+          </div>
+          <div class="row">
+            <span class="k mono">Toolkit</span>
+            <span class="v">Excel · Python for finance · R · SPSS · EViews ·
+              Bloomberg Terminal exposure</span>
+          </div>
+        </div>
+        <p style="margin-top:24px">
+          Want the formal version? <a href="mailto:i@reiad.co.uk">Email me</a> for the
+          full CV, or find me on <a href="https://www.linkedin.com/in/reiad">LinkedIn</a>.
+        </p>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>Everything on this site is general education, not investment advice.
+         Do your own research before putting money anywhere.</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <div id="palette" hidden role="dialog" aria-modal="true" aria-label="Site search">
+    <div class="palette-panel">
+      <input id="palette-input" type="text" placeholder="Search pages and articles…"
+             autocomplete="off" aria-label="Search">
+      <ul id="palette-list"></ul>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

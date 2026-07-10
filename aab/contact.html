@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact — Rony Reiad</title>
+  <meta name="description" content="Contact Rony Reiad — hiring, freelance financial modeling and analysis projects, or questions about the Learn hub.">
+
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      var dark = saved ? saved === "dark"
+                       : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="index.html">
+    <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+      <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+      <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+      <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+      <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+    </svg>
+    Rony Reiad
+  </a>
+      <nav aria-label="Main">
+        <a href="learn/index.html" data-keep>Learn</a>
+        <a href="insights.html">Insights</a>
+        <a href="portfolio.html">Portfolio</a>
+        <a href="about.html">About</a>
+        <a href="contact.html" data-keep aria-current="page">Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+
+      <div class="hero">
+        <span class="eyebrow mono">Contact · Register interest</span>
+        <h1>Hiring, or need a model built?</h1>
+        <p class="lede">
+          Recruiters, freelance clients, and Learn-hub readers all welcome. The form
+          below lands straight in my inbox — or email
+          <a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a> directly.
+        </p>
+      </div>
+
+      <section>
+        <span class="section-label mono">Send a message</span>
+
+        <!-- Web3Forms: the form POSTs to their endpoint, which emails the
+             submission to the address tied to the access key. The key is
+             designed to be public — it can only send TO you, never read
+             anything. "botcheck" is a hidden honeypot: humans never see
+             it, spam bots fill it, Web3Forms drops those submissions. -->
+        <form class="contact-form" id="contact-form"
+              action="https://api.web3forms.com/submit" method="POST">
+          <input type="hidden" name="access_key" value="015ff92f-3694-4e74-bd19-e1c7e62e422b">
+          <input type="hidden" name="subject" value="New message from reiad.co.uk">
+          <input type="hidden" name="from_name" value="reiad.co.uk contact form">
+          <input type="checkbox" name="botcheck" tabindex="-1"
+                 style="position:absolute;left:-9999px" aria-hidden="true">
+
+          <label>Name
+            <input type="text" name="name" required autocomplete="name"
+                   placeholder="Your name">
+          </label>
+          <label>Email
+            <input type="email" name="email" required autocomplete="email"
+                   placeholder="you@example.com">
+          </label>
+          <label>Message
+            <textarea name="message" required
+                      placeholder="A few lines about what you need — a role, a project brief, or a question."></textarea>
+          </label>
+
+          <button type="submit" id="form-submit">Send message</button>
+          <p id="form-status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section>
+        <span class="section-label mono">Elsewhere</span>
+        <p>
+          <a href="https://www.linkedin.com/in/reiad">LinkedIn</a> ·
+          <a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a>
+        </p>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>Everything on this site is general education, not investment advice.
+         Do your own research before putting money anywhere.</p>
+    </div>
+  </footer>
+
+  <div id="palette" hidden role="dialog" aria-modal="true" aria-label="Site search">
+    <div class="palette-panel">
+      <input id="palette-input" type="text" placeholder="Search pages and articles…" autocomplete="off" aria-label="Search">
+      <ul id="palette-list"></ul>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    /* Progressive enhancement: with JS, submit in the background and
+       show the result inline. Without JS, the form still works — it
+       POSTs normally and Web3Forms shows its own success page. */
+    (function () {
+      var form = document.getElementById("contact-form");
+      var status = document.getElementById("form-status");
+      var button = document.getElementById("form-submit");
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        status.className = "";
+        status.textContent = "Sending…";
+        button.disabled = true;
+        try {
+          var res = await fetch(form.action, {
+            method: "POST",
+            body: new FormData(form),
+            headers: { "Accept": "application/json" }
+          });
+          var json = await res.json();
+          if (json.success) {
+            form.reset();
+            status.className = "ok";
+            status.textContent = "Sent — thanks! I usually reply within one business day.";
+          } else {
+            throw new Error(json.message || "failed");
+          }
+        } catch (err) {
+          status.className = "err";
+          status.textContent = "Couldn't send just now — please email i@reiad.co.uk instead.";
+        } finally {
+          button.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

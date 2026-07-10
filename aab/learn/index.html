@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>শেখার লাইব্রেরি — বাংলায় বিনিয়োগ শিক্ষা — Rony Reiad</title>
+  <meta name="description" content="শেয়ারবাজার, সঞ্চয়পত্র, মিউচুয়াল ফান্ড — সহজ কথ্য বাংলায় প্রতিটা টার্মের ব্যাখ্যা।">
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      var dark = saved ? saved === "dark"
+                       : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="/index.html">
+    <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+      <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+      <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+      <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+      <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+    </svg>
+    Rony Reiad
+  </a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep aria-current="page">Learn</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+
+      <div class="hero">
+        <span class="eyebrow mono">শেখার লাইব্রেরি · Learn hub</span>
+        <h1 class="bn-h">টাকার ভাষা, আমাদের ভাষায়।</h1>
+        <p class="lede">শেয়ারবাজার, সঞ্চয়পত্র, মিউচুয়াল ফান্ড — প্রতিটা টার্মের আলাদা ছোট লেখা,
+        বন্ধুকে বোঝানোর ভঙ্গিতে। লেখার ভেতরে কোনো টার্ম এলে সেটা লিংক — ক্লিক করলেই
+        ছোট উইন্ডোতে খুলবে, পড়া শেষে যেখানে ছিলেন সেখানেই ফিরবেন।</p>
+        <input type="search" id="term-filter" placeholder="খুঁজুন… (যেমন: শেয়ার, ফান্ড, ঝুঁকি)" aria-label="টার্ম খুঁজুন">
+      </div>
+      
+<section>
+<span class="section-label mono">বাজারের মূল কথা</span>
+<div class="cards term-grid">
+  <a class="cell term-card term" href="terms/share.html">
+    <h3 class="bn-h">শেয়ার <span class="en-sub">Share / Stock</span></h3>
+    <p>কোম্পানির মালিকানার ছোট্ট একটা টুকরা — শেয়ার কিনলে আপনি ওই ব্যবসার আংশিক মালিক।</p>
+  </a>
+  <a class="cell term-card term" href="terms/dse.html">
+    <h3 class="bn-h">ঢাকা স্টক এক্সচেঞ্জ <span class="en-sub">DSE</span></h3>
+    <p>বাংলাদেশের সবচেয়ে বড় শেয়ারবাজার — যেখানে ক্রেতা আর বিক্রেতার অর্ডার মিলিয়ে দেওয়া হয়।</p>
+  </a>
+  <a class="cell term-card term" href="terms/dsex.html">
+    <h3 class="bn-h">সূচক <span class="en-sub">Index / DSEX</span></h3>
+    <p>পুরো বাজারের হালচাল এক নম্বরে — DSEX বাড়লে বোঝায় বড় কোম্পানিগুলোর দাম মোটের ওপর বেড়েছে।</p>
+  </a>
+  <a class="cell term-card term" href="terms/bo-account.html">
+    <h3 class="bn-h">বিও অ্যাকাউন্ট <span class="en-sub">BO Account</span></h3>
+    <p>শেয়ারবাজারে ঢোকার টিকিট — আপনার শেয়ার ইলেকট্রনিকভাবে জমা থাকে এই অ্যাকাউন্টে।</p>
+  </a>
+  <a class="cell term-card term" href="terms/broker.html">
+    <h3 class="bn-h">ব্রোকার <span class="en-sub">Broker</span></h3>
+    <p>আপনার আর শেয়ারবাজারের মাঝখানের লাইসেন্সধারী মধ্যস্থতাকারী — অর্ডার যায় এদের মাধ্যমে।</p>
+  </a>
+  <a class="cell term-card term" href="terms/ipo.html">
+    <h3 class="bn-h">আইপিও <span class="en-sub">IPO</span></h3>
+    <p>কোনো কোম্পানি প্রথমবারের মতো সাধারণ মানুষের কাছে শেয়ার বেচে বাজারে তালিকাভুক্ত হওয়া।</p>
+  </a>
+</div>
+</section>
+
+<section>
+<span class="section-label mono">বিনিয়োগের মাধ্যম</span>
+<div class="cards term-grid">
+  <a class="cell term-card term" href="terms/mutual-fund.html">
+    <h3 class="bn-h">মিউচুয়াল ফান্ড <span class="en-sub">Mutual Fund</span></h3>
+    <p>অনেকের টাকা এক করে পেশাদার ম্যানেজারের হাতে বিনিয়োগ — ছোট টাকায় বড় পোর্টফোলিওর স্বাদ।</p>
+  </a>
+  <a class="cell term-card term" href="terms/sanchayapatra.html">
+    <h3 class="bn-h">সঞ্চয়পত্র <span class="en-sub">Savings Certificate</span></h3>
+    <p>সরকারের কাছে টাকা ধার দেওয়া — বাংলাদেশের সবচেয়ে জনপ্রিয় নিরাপদ সঞ্চয়ের মাধ্যম।</p>
+  </a>
+  <a class="cell term-card term" href="terms/bond.html">
+    <h3 class="bn-h">বন্ড <span class="en-sub">Bond</span></h3>
+    <p>কোম্পানি বা সরকারকে ধার দেওয়ার দলিল — মালিকানা না, পাওনাদারি।</p>
+  </a>
+  <a class="cell term-card term" href="terms/fdr.html">
+    <h3 class="bn-h">এফডিআর <span class="en-sub">Fixed Deposit (FDR)</span></h3>
+    <p>ব্যাংকে নির্দিষ্ট মেয়াদে টাকা রেখে নির্দিষ্ট হারে মুনাফা — সহজ, পরিচিত, কিন্তু সীমিত।</p>
+  </a>
+</div>
+</section>
+
+<section>
+<span class="section-label mono">কোম্পানি বিশ্লেষণ</span>
+<div class="cards term-grid">
+  <a class="cell term-card term" href="terms/dividend.html">
+    <h3 class="bn-h">ডিভিডেন্ড <span class="en-sub">Dividend</span></h3>
+    <p>কোম্পানির লাভ থেকে শেয়ারহোল্ডারদের দেওয়া ভাগ — নগদ টাকায় বা বোনাস শেয়ারে।</p>
+  </a>
+  <a class="cell term-card term" href="terms/eps.html">
+    <h3 class="bn-h">ইপিএস <span class="en-sub">EPS</span></h3>
+    <p>প্রতি শেয়ারে কোম্পানির আয় — কোম্পানির লাভকে শেয়ার সংখ্যা দিয়ে ভাগ করলে যা পাওয়া যায়।</p>
+  </a>
+  <a class="cell term-card term" href="terms/pe-ratio.html">
+    <h3 class="bn-h">পিই রেশিও <span class="en-sub">P/E Ratio</span></h3>
+    <p>শেয়ারের দাম তার আয়ের কত গুণ — দামটা সস্তা না চড়া, তার প্রথম আন্দাজ।</p>
+  </a>
+  <a class="cell term-card term" href="terms/nav.html">
+    <h3 class="bn-h">এনএভি <span class="en-sub">NAV</span></h3>
+    <p>ফান্ড বা কোম্পানির সম্পদ থেকে দায় বাদ দিলে প্রতি ইউনিটে যা থাকে — 'আসল' মূল্যের হিসাব।</p>
+  </a>
+</div>
+</section>
+
+<section>
+<span class="section-label mono">ঝুঁকি ও কৌশল</span>
+<div class="cards term-grid">
+  <a class="cell term-card term" href="terms/risk-return.html">
+    <h3 class="bn-h">ঝুঁকি ও রিটার্ন <span class="en-sub">Risk & Return</span></h3>
+    <p>বেশি লাভের আশা মানেই বেশি লসের সম্ভাবনা — বিনিয়োগের সবচেয়ে সৎ নিয়ম।</p>
+  </a>
+  <a class="cell term-card term" href="terms/diversification.html">
+    <h3 class="bn-h">ডাইভারসিফিকেশন <span class="en-sub">Diversification</span></h3>
+    <p>সব ডিম এক ঝুড়িতে না রাখা — এক জায়গার লস যেন অন্য জায়গার লাভে সামাল দেওয়া যায়।</p>
+  </a>
+  <a class="cell term-card term" href="terms/inflation.html">
+    <h3 class="bn-h">মূল্যস্ফীতি <span class="en-sub">Inflation</span></h3>
+    <p>টাকার নীরব ক্ষয় — অঙ্ক একই থাকলেও কেনার ক্ষমতা প্রতি বছর একটু করে কমে।</p>
+  </a>
+  <a class="cell term-card term" href="terms/compounding.html">
+    <h3 class="bn-h">চক্রবৃদ্ধি <span class="en-sub">Compounding</span></h3>
+    <p>মুনাফার ওপর মুনাফা — সময় যত লম্বা, টাকার বাড়া তত দ্রুত। ধৈর্যের পুরস্কার।</p>
+  </a>
+</div>
+</section>
+
+      <div class="note">এই লাইব্রেরির সবকিছু সাধারণ শিক্ষামূলক তথ্য — বিনিয়োগ পরামর্শ না।
+      নিয়ম, হার আর ফি সময়ে সময়ে বদলায়; সিদ্ধান্তের আগে সংশ্লিষ্ট প্রতিষ্ঠানের সর্বশেষ তথ্য দেখে নিন।</div>
+
+    </div>
+  </main>
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>এই সাইটের সবকিছু সাধারণ শিক্ষামূলক তথ্য — বিনিয়োগ পরামর্শ না। টাকা কোথাও রাখার আগে নিজে যাচাই করুন।</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <!-- Modal reader -->
+  <div id="reader" hidden role="dialog" aria-modal="true" aria-label="Term reader">
+    <div class="reader-panel">
+      <div class="reader-bar">
+        <button class="icon-btn" id="reader-back" hidden aria-label="আগের লেখায় ফিরুন">← ফিরুন</button>
+        <a id="reader-full" class="mono" href="#">পুরো পেজে পড়ুন ↗</a>
+        <button class="icon-btn" id="reader-close" aria-label="বন্ধ করুন">✕</button>
+      </div>
+      <div class="reader-body" id="reader-body"></div>
+    </div>
+  </div>
+
+  <div id="palette" hidden role="dialog" aria-modal="true" aria-label="Site search">
+    <div class="palette-panel">
+      <input id="palette-input" type="text" placeholder="Search pages and articles…" autocomplete="off" aria-label="Search">
+      <ul id="palette-list"></ul>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+  <script src="/learn/learn.js"></script>
+</body>
+</html>

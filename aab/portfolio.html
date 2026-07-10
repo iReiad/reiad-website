@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio &amp; Services — Rony Reiad</title>
+  <meta name="description" content="Freelance financial modeling, data analysis and finance writing by Rony Reiad — Excel models, Python/R analysis, English and Bangla content.">
+
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      var dark = saved ? saved === "dark"
+                       : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="index.html">
+    <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+      <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+      <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+      <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+      <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+    </svg>
+    Rony Reiad
+  </a>
+      <nav aria-label="Main">
+        <a href="learn/index.html" data-keep>Learn</a>
+        <a href="insights.html">Insights</a>
+        <a href="portfolio.html" aria-current="page">Portfolio</a>
+        <a href="about.html">About</a>
+        <a href="contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+
+      <div class="hero">
+        <span class="eyebrow mono">Portfolio &amp; services</span>
+        <h1>Models, analysis and writing — shown, not told.</h1>
+        <p class="lede">
+          I take on freelance projects in three areas. Every engagement starts with
+          a short brief and ends with working files you own — not screenshots.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="contact.html">Start a project</a>
+        </div>
+      </div>
+
+      <section>
+        <span class="section-label mono">What I do</span>
+        <div class="rows">
+          <div class="row">
+            <span class="k mono">Financial modeling</span>
+            <span class="v">Three-statement models, DCF and comparable-company
+              valuations, budgets and scenario models — built in Excel with a clean
+              assumptions tab so you can change the inputs yourself.</span>
+          </div>
+          <div class="row">
+            <span class="k mono">Data analysis</span>
+            <span class="v">Cleaning, analyzing and visualizing financial or business
+              data in Python, R or Excel — dashboards and summary decks that answer
+              a specific question.</span>
+          </div>
+          <div class="row">
+            <span class="k mono">Finance writing</span>
+            <span class="v">Explainers, market write-ups, research summaries and
+              educational content — accurate, sourced, in English or everyday Bangla.</span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <span class="section-label mono">Selected work</span>
+        <!-- These four cards are placeholders (dashed borders). Replace
+             each with a real sample as it's finished: swap the <em> text
+             for a description and link the file, e.g.
+             <a class="more" href="files/model.xlsx">Download the model →</a>
+             (put downloadable files in a /files folder in the repo). -->
+        <div class="grid-2">
+          <div class="cell sample-card placeholder">
+            <span class="tag mono">Financial model · Excel</span>
+            <h3>Three-statement model — DSE-listed company</h3>
+            <p><em>In progress: linked income statement, balance sheet and cash
+              flow for a listed Bangladeshi company, with a scenario switch.</em></p>
+          </div>
+          <div class="cell sample-card placeholder">
+            <span class="tag mono">Valuation · Excel</span>
+            <h3>DCF with sensitivity tables</h3>
+            <p><em>In progress: discounted cash flow valuation with a clear
+              assumptions tab and two-way sensitivity on WACC and terminal growth.</em></p>
+          </div>
+          <div class="cell sample-card placeholder">
+            <span class="tag mono">Data analysis · Python</span>
+            <h3>DSEX returns: volatility &amp; drawdowns</h3>
+            <p><em>In progress: historical index analysis — rolling volatility,
+              largest drawdowns, and what they teach about holding periods.</em></p>
+          </div>
+          <div class="cell sample-card">
+            <span class="tag mono">Research · Python</span>
+            <h3>Islamic funds vs. conventional UK funds</h3>
+            <p>Master's research: constructed an Islamic fund portfolio and compared
+              returns, risk and drawdowns against conventional benchmarks across
+              pre- and post-COVID periods — plus a 15,000-word dissertation on
+              whether Islamic funds truly carry lower risk.</p>
+            <a class="more" href="contact.html">Ask about this work →</a>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <span class="section-label mono">How it works</span>
+        <div class="rows">
+          <div class="row">
+            <span class="k mono">1 · Brief</span>
+            <span class="v">Send what you need with any files or examples — through
+              the <a href="contact.html">contact form</a> or
+              <a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a>.</span>
+          </div>
+          <div class="row">
+            <span class="k mono">2 · Quote</span>
+            <span class="v">I reply within one business day with scope, delivery date
+              and a fixed price. No surprises mid-project.</span>
+          </div>
+          <div class="row">
+            <span class="k mono">3 · Delivery</span>
+            <span class="v">You get the working files — model, code, or draft — plus
+              one round of revisions included.</span>
+          </div>
+        </div>
+        <p style="margin-top:26px">
+          Prefer platform protection? I also take projects through Fiverr and
+          Upwork — <a href="contact.html">get in touch</a> and I'll share the
+          current profile links.
+        </p>
+      </section>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>Everything on this site is general education, not investment advice.
+         Do your own research before putting money anywhere.</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <div id="palette" hidden role="dialog" aria-modal="true" aria-label="Site search">
+    <div class="palette-panel">
+      <input id="palette-input" type="text" placeholder="Search pages and articles…" autocomplete="off" aria-label="Search">
+      <ul id="palette-list"></ul>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,570 @@
+/* ============================================================
+   styles.css — sitewide styles for reiad.co.uk
+   Identity: "research desk" — banknote green, Spectral serif
+   headlines, IBM Plex Mono data labels — in a modern bento layout.
+   Dark mode works by swapping the variables under [data-theme="dark"].
+   ============================================================ */
+
+/* ---------- Design tokens (light theme) ---------- */
+:root {
+  --paper: #FBFBF7;         /* page background */
+  --panel: #FFFFFF;         /* card background */
+  --ink: #1C2522;           /* main text */
+  --ink-soft: #4A544E;      /* secondary text */
+  --green: #145A3F;         /* primary accent */
+  --green-strong: #0B3B29;  /* dark green (footer, gradient) */
+  --green-soft: #E7F0EA;    /* pale green tint */
+  --gold: #9A741E;          /* small labels */
+  --hairline: #D9DED6;      /* borders / rules */
+  --glass-bg: rgba(255, 255, 255, 0.16);
+  --glass-edge: rgba(255, 255, 255, 0.38);
+  --shadow: 0 10px 30px rgba(12, 40, 28, 0.08);
+}
+
+/* ---------- Dark theme: same names, darker values ---------- */
+[data-theme="dark"] {
+  --paper: #0E1512;
+  --panel: #151F19;
+  --ink: #E8EEE8;
+  --ink-soft: #9FB0A6;
+  --green: #4CB98A;
+  --green-strong: #0B3B29;
+  --green-soft: #16241D;
+  --gold: #C9A24B;
+  --hairline: #24302A;
+  --glass-bg: rgba(20, 32, 26, 0.35);
+  --glass-edge: rgba(255, 255, 255, 0.16);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- Base ---------- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.65;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+h1, h2, h3 { font-family: "Spectral", Georgia, serif; font-weight: 500; line-height: 1.18; }
+
+.mono {
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+a { color: var(--green); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { opacity: 0.85; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 22px; }
+
+/* ============================================================
+   STICKY NAV
+   ============================================================ */
+header {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--paper);
+  border-bottom: 1px solid var(--hairline);
+  transition: background 0.25s ease;
+}
+.header-inner {
+  display: flex; align-items: center; gap: 18px;
+  padding: 14px 0;
+}
+.site-name {
+  font-family: "Spectral", Georgia, serif;
+  font-size: 1.2rem; color: var(--ink);
+  text-decoration: none; margin-right: auto;
+}
+nav { display: flex; gap: 18px; align-items: center; }
+nav a {
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink); text-decoration: none;
+}
+nav a:hover, nav a[aria-current="page"] { color: var(--green); opacity: 1; }
+
+/* Icon buttons: search + theme toggle */
+.icon-btn {
+  border: 1px solid var(--hairline);
+  background: var(--panel); color: var(--ink);
+  border-radius: 8px; padding: 6px 10px;
+  font-family: "IBM Plex Mono", Consolas, monospace; font-size: 0.78rem;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+}
+.icon-btn:hover { border-color: var(--green); color: var(--green); }
+.kbd-hint { opacity: 0.6; font-size: 0.7rem; }
+
+/* ============================================================
+   HERO with kinetic headline
+   ============================================================ */
+.hero { padding: 84px 0 48px; }
+.eyebrow { color: var(--gold); display: block; margin-bottom: 18px; }
+.hero h1 { font-size: clamp(2.2rem, 5.8vw, 3.8rem); max-width: 18ch; }
+
+/* JS wraps each headline word in <span class="w" style="--i:n">.
+   Words rise and fade in, one after another. */
+.hero h1 .w {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.55em);
+  animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  animation-delay: calc(var(--i) * 90ms);
+}
+@keyframes rise { to { opacity: 1; transform: translateY(0); } }
+
+.hero p.lede { margin-top: 20px; max-width: 56ch; font-size: 1.12rem; color: var(--ink-soft); }
+
+.hero-actions { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 12px; }
+.btn {
+  display: inline-block; text-decoration: none;
+  padding: 11px 20px; border-radius: 10px;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 0.82rem; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.btn-solid { background: var(--green); color: #fff; }
+.btn-solid:hover { background: var(--green-strong); opacity: 1; }
+.btn-ghost { border: 1px solid var(--hairline); color: var(--ink); }
+.btn-ghost:hover { border-color: var(--green); color: var(--green); opacity: 1; }
+
+/* ============================================================
+   BENTO GRID
+   Named areas make the layout readable:
+   feature = big card, note = market note, stats = glass card,
+   about = bio snippet, services = services teaser.
+   ============================================================ */
+.bento {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-areas:
+    "feature feature stats"
+    "feature feature about"
+    "note    services about";
+  padding-bottom: 24px;
+}
+.cell {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  padding: 26px;
+  box-shadow: var(--shadow);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.cell .tag { color: var(--gold); }
+.cell h2 { font-size: 1.5rem; }
+.cell h3 { font-size: 1.15rem; }
+.cell p { color: var(--ink-soft); font-size: 0.97rem; }
+.cell .more { margin-top: auto; font-size: 0.92rem; }
+
+.cell-feature { grid-area: feature; }
+.cell-feature h2 { font-size: clamp(1.5rem, 2.6vw, 2.1rem); max-width: 22ch; }
+.cell-note { grid-area: note; }
+.cell-about { grid-area: about; }
+.cell-services { grid-area: services; }
+
+/* Services list inside its cell */
+.svc { display: flex; flex-direction: column; gap: 6px; font-size: 0.95rem; }
+.svc span { border-bottom: 1px solid var(--hairline); padding: 6px 0; color: var(--ink-soft); }
+.svc span:last-child { border-bottom: 0; }
+
+/* ---------- The glassmorphism moment: stats card ----------
+   A green gradient tile with a frosted-glass card floating on it.
+   This is deliberately the ONLY glass element on the site. */
+.cell-stats {
+  grid-area: stats;
+  position: relative;
+  border: 0;
+  padding: 14px;
+  background: linear-gradient(150deg, #14603F 0%, #0B3B29 55%, #123528 100%);
+  overflow: hidden;
+}
+/* faint taka watermark in the gradient's corner */
+.cell-stats::before {
+  content: "\09F3";  /* ৳ Bengali taka sign */
+  position: absolute; right: -14px; bottom: -34px;
+  font-size: 9rem; color: rgba(255, 255, 255, 0.07);
+  font-family: "Spectral", Georgia, serif;
+}
+.glass {
+  position: relative;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-edge);
+  border-radius: 12px;
+  padding: 18px;
+  color: #F2F6F2;
+  display: flex; flex-direction: column; gap: 10px;
+  height: 100%;
+}
+.glass .mono { color: #CFE3D6; }
+.glass strong { font-family: "Spectral", Georgia, serif; font-weight: 500; font-size: 1.02rem; display: block; }
+.glass small { color: #BCD2C4; }
+
+/* ============================================================
+   COMMAND PALETTE (Cmd/Ctrl+K)
+   ============================================================ */
+#palette {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(10, 18, 14, 0.45);
+  display: flex; justify-content: center; align-items: flex-start;
+  padding: 12vh 20px 0;
+}
+#palette[hidden] { display: none; }
+.palette-panel {
+  width: 100%; max-width: 560px;
+  background: var(--panel); color: var(--ink);
+  border: 1px solid var(--hairline); border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+}
+#palette-input {
+  width: 100%; border: 0; outline: 0;
+  background: transparent; color: var(--ink);
+  font-family: "IBM Plex Sans", Arial, sans-serif; font-size: 1.05rem;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--hairline);
+}
+#palette-list { list-style: none; max-height: 46vh; overflow-y: auto; }
+#palette-list li { padding: 0; }
+#palette-list a {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 12px 18px; text-decoration: none; color: var(--ink);
+}
+#palette-list .hint { color: var(--ink-soft); font-size: 0.8rem; }
+#palette-list li.active a, #palette-list a:hover { background: var(--green-soft); color: var(--green); }
+.palette-empty { padding: 14px 18px; color: var(--ink-soft); font-size: 0.92rem; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  margin-top: 56px;
+  background: var(--green-strong); color: #E8EEE8;
+  padding: 44px 0;
+}
+footer a { color: #fff; }
+footer .mono { color: #9FB8A8; display: block; margin-bottom: 12px; }
+footer p { max-width: 60ch; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 860px) {
+  .bento {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "feature feature"
+      "stats   about"
+      "note    services";
+  }
+}
+@media (max-width: 600px) {
+  .bento { grid-template-columns: 1fr; grid-template-areas: "feature" "stats" "note" "services" "about"; }
+  .hero { padding-top: 56px; }
+  nav a { display: none; }              /* keep nav minimal on phones… */
+  nav a[data-keep] { display: inline; } /* …except the links marked to stay */
+}
+
+/* ============================================================
+   REDUCED MOTION — turn every animation off gracefully
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hero h1 .w { animation: none; opacity: 1; transform: none; }
+  body, header { transition: none; }
+}
+
+/* ============================================================
+   ABOUT PAGE additions
+   ============================================================ */
+
+/* Section label + hairline, reused from the research-desk identity */
+section { padding: 44px 0 6px; }
+.section-label {
+  color: var(--gold);
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 10px; margin-bottom: 26px;
+  display: block;
+}
+section > .wrap > h2, .prose h2 { font-size: 1.6rem; margin-bottom: 14px; }
+.prose p { max-width: 64ch; margin-bottom: 15px; }
+.prose p:last-child { margin-bottom: 0; }
+
+/* Key–value rows for education, experience, certificates */
+.rows { border-top: 1px solid var(--hairline); }
+.row {
+  display: grid; grid-template-columns: 210px 1fr; gap: 16px;
+  padding: 15px 0; border-bottom: 1px solid var(--hairline);
+}
+.row .k { color: var(--gold); padding-top: 3px; }
+.row .v { color: var(--ink); }
+.row .v small { color: var(--ink-soft); display: block; }
+
+/* "Where this is going" — the roadmap cells.
+   Three cards: Now / Next / The aim. The last one is the
+   dark-green cell so the destination visually stands out. */
+.path { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.path .cell h3 { font-size: 1.12rem; }
+.path .cell ul { list-style: none; }
+.path .cell li {
+  padding: 7px 0; border-bottom: 1px solid var(--hairline);
+  color: var(--ink-soft); font-size: 0.95rem;
+}
+.path .cell li:last-child { border-bottom: 0; }
+.cell-aim { background: var(--green-strong); border-color: transparent; }
+.cell-aim .tag { color: #C9A24B; }
+.cell-aim h3, .cell-aim li { color: #E8EEE8; }
+.cell-aim li { border-color: rgba(255,255,255,0.14); }
+
+@media (max-width: 780px) {
+  .path { grid-template-columns: 1fr; }
+  .row { grid-template-columns: 1fr; gap: 4px; }
+}
+
+/* ============================================================
+   LEARN HUB additions — Bangla type, term cards, modal reader
+   ============================================================ */
+
+/* Bangla typography: pages with lang="bn" use Noto Bengali;
+   .bn-h forces the Bengali serif for mixed headings */
+html[lang="bn"] body { font-family: "Noto Sans Bengali", "IBM Plex Sans", sans-serif; line-height: 1.9; }
+.bn-h, html[lang="bn"] h1, html[lang="bn"] h2, html[lang="bn"] h3 {
+  font-family: "Noto Serif Bengali", "Spectral", serif;
+}
+.en-sub {
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 0.5em; color: var(--ink-soft);
+  letter-spacing: 0.04em; white-space: nowrap;
+}
+
+/* Term links inside articles: dotted underline says "this opens here" */
+a.term {
+  color: var(--green);
+  text-decoration: underline dotted 1.5px;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+a.term:hover { text-decoration-style: solid; }
+
+/* Hub index: search box + card grid */
+#term-filter {
+  margin-top: 28px; width: 100%; max-width: 420px;
+  padding: 11px 14px; font-size: 1rem;
+  font-family: "Noto Sans Bengali", "IBM Plex Sans", sans-serif;
+  color: var(--ink); background: var(--panel);
+  border: 1px solid var(--hairline); border-radius: 10px;
+}
+#term-filter:focus { outline: 2px solid var(--green); outline-offset: 2px; }
+
+.term-grid { grid-template-columns: repeat(3, 1fr); }
+a.term-card { text-decoration: none; color: var(--ink); transition: border-color 0.15s ease, transform 0.15s ease; }
+a.term-card:hover { border-color: var(--green); transform: translateY(-2px); opacity: 1; }
+a.term-card h3 { font-size: 1.15rem; }
+a.term-card .en-sub { display: block; margin-top: 2px; }
+@media (max-width: 860px) { .term-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .term-grid { grid-template-columns: 1fr; } }
+
+/* Term article page */
+.term-article { padding: 56px 0 10px; }
+.term-article h1 { font-size: clamp(1.9rem, 5vw, 2.8rem); }
+.term-article .one-liner {
+  margin: 16px 0 26px; font-size: 1.12rem; color: var(--ink-soft);
+  border-left: 3px solid var(--gold); padding-left: 14px; max-width: 60ch;
+}
+.term-article p { max-width: 66ch; margin-bottom: 16px; }
+.term-article .backlink { margin-top: 30px; }
+
+/* Example box */
+.ex {
+  background: var(--green-soft);
+  border: 1px solid var(--hairline);
+  border-radius: 12px;
+  padding: 16px 18px; margin: 22px 0;
+  font-size: 0.98rem; max-width: 66ch;
+}
+.ex b { color: var(--green); }
+
+/* ---------- Modal reader ---------- */
+#reader {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(10, 18, 14, 0.5);
+  display: flex; justify-content: center; align-items: flex-end;
+}
+#reader[hidden] { display: none; }
+body.reader-open { overflow: hidden; } /* stop the page behind from scrolling */
+
+.reader-panel {
+  width: 100%; max-width: 760px;
+  height: min(82vh, 900px);
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 18px 18px 0 0;
+  display: flex; flex-direction: column;
+  box-shadow: 0 -18px 60px rgba(0, 0, 0, 0.3);
+}
+/* entrance: slide up + fade (skipped under reduced motion) */
+#reader.entering .reader-panel { animation: slideup 0.25s cubic-bezier(0.2, 0.7, 0.2, 1); }
+@keyframes slideup { from { transform: translateY(28px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.reader-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--hairline);
+}
+.reader-bar #reader-full { margin-left: auto; color: var(--green); text-decoration: none; }
+.reader-bar #reader-full:hover { text-decoration: underline; }
+
+.reader-body { overflow-y: auto; padding: 6px 26px 30px; }
+.reader-body .term-article { padding: 18px 0 6px; }
+.reader-body .term-article h1 { font-size: 1.7rem; }
+.reader-loading { padding: 30px 0; color: var(--ink-soft); }
+
+@media (min-width: 700px) {
+  #reader { align-items: center; padding: 4vh 20px; }
+  .reader-panel { border-radius: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #reader.entering .reader-panel { animation: none; }
+  a.term-card { transition: none; }
+}
+
+/* ============================================================
+   HOME "VIBE" LAYER — graph-paper hero, self-drawing market
+   line, and the Bangla ticker tape. Pure CSS/SVG, no images.
+   ============================================================ */
+
+/* FIX: give term/card grids their grid display (was relying on a
+   class from the old stylesheet) */
+.cards, .term-grid, .grid-2 { display: grid; gap: 16px; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+@media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* Hero becomes a positioned canvas for the art layers */
+.hero { position: relative; }
+.hero > * { position: relative; z-index: 1; }
+
+/* Graph-paper grid, fading out radially so it doesn't shout */
+.hero::before {
+  content: ""; position: absolute; inset: -20px 0 0 0; z-index: 0;
+  background:
+    linear-gradient(var(--hairline) 1px, transparent 1px),
+    linear-gradient(90deg, var(--hairline) 1px, transparent 1px);
+  background-size: 44px 44px;
+  opacity: 0.45;
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 30% 20%, black 0%, transparent 70%);
+  mask-image: radial-gradient(ellipse 90% 80% at 30% 20%, black 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* The market line: sits behind the headline, draws itself on load */
+.hero-chart {
+  position: absolute; z-index: 0;
+  right: -30px; top: 0;
+  width: min(560px, 62%);
+  height: auto;
+  pointer-events: none;
+  opacity: 0.85;
+}
+.hero-chart .chart-line {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 2.2s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+}
+.hero-chart .chart-fill {
+  fill: var(--green);
+  opacity: 0;
+  animation: fadefill 1s ease 1.8s forwards;
+}
+.hero-chart .chart-dot {
+  fill: var(--gold);
+  opacity: 0;
+  animation: fadefill 0.5s ease 2.3s forwards;
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fadefill { to { opacity: 0.07; } }
+.hero-chart .chart-dot { animation-name: dotin; }
+@keyframes dotin { to { opacity: 1; } }
+
+@media (max-width: 700px) {
+  .hero-chart { width: 88%; right: -50px; opacity: 0.35; }
+}
+
+/* ---------- Ticker tape ---------- */
+.ticker {
+  margin-top: 48px;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  overflow: hidden;
+  padding: 11px 0;
+}
+.ticker-track {
+  display: flex; gap: 40px; width: max-content;
+  animation: tick 42s linear infinite;
+}
+.ticker:hover .ticker-track { animation-play-state: paused; }
+.ticker span {
+  font-family: "IBM Plex Mono", "Noto Sans Bengali", monospace;
+  font-size: 0.78rem; letter-spacing: 0.06em;
+  color: var(--ink-soft); white-space: nowrap;
+}
+.ticker b { color: var(--green); font-weight: 600; }
+@keyframes tick { to { transform: translateX(-50%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-chart .chart-line { animation: none; stroke-dashoffset: 0; }
+  .hero-chart .chart-fill { animation: none; opacity: 0.07; }
+  .hero-chart .chart-dot { animation: none; opacity: 1; }
+  .ticker-track { animation: none; }
+}
+
+/* ============================================================
+   PORTFOLIO PAGE
+   ============================================================ */
+.sample-card .tag { color: var(--gold); }
+.sample-card h3 { font-size: 1.18rem; }
+.placeholder { border-style: dashed; }
+.placeholder p em { color: var(--ink-soft); font-style: normal; }
+
+/* ============================================================
+   CONTACT FORM
+   ============================================================ */
+.contact-form { max-width: 560px; display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
+.contact-form label { display: flex; flex-direction: column; gap: 6px; font-size: 0.95rem; color: var(--ink); }
+.contact-form input, .contact-form textarea {
+  padding: 12px 14px; font-size: 1rem;
+  font-family: "IBM Plex Sans", Arial, sans-serif;
+  color: var(--ink); background: var(--panel);
+  border: 1px solid var(--hairline); border-radius: 10px;
+}
+.contact-form input:focus, .contact-form textarea:focus {
+  outline: 2px solid var(--green); outline-offset: 1px; border-color: var(--green);
+}
+.contact-form textarea { min-height: 150px; resize: vertical; }
+.contact-form button {
+  align-self: flex-start; cursor: pointer; border: 0;
+  background: var(--green); color: #fff;
+  padding: 12px 24px; border-radius: 10px;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.contact-form button:hover { background: var(--green-strong); }
+.contact-form button:disabled { opacity: 0.6; cursor: wait; }
+#form-status { font-size: 0.95rem; min-height: 1.4em; }
+#form-status.ok { color: var(--green); }
+#form-status.err { color: #B4452F; }
+.site-name { display: flex; align-items: center; gap: 8px; }
+.site-mark { width: 20px; height: 20px; flex-shrink: 0; }

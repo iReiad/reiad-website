@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rony Reiad — Finance &amp; Bangladesh Markets</title>
+  <meta name="description" content="Rony Reiad: finance and risk management graduate. Bangla-language investment education for Bangladeshi readers, plus financial modeling, data analysis and finance writing.">
+
+  <!-- Set the theme BEFORE the page paints, so there's no white flash
+       for dark-mode users. Reads the saved choice, else system setting. -->
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      var dark = saved ? saved === "dark"
+                       : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="index.html">
+    <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+      <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+      <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+      <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+      <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+    </svg>
+    Rony Reiad
+  </a>
+      <nav aria-label="Main">
+        <a href="learn/index.html" data-keep>Learn</a>
+        <a href="insights.html">Insights</a>
+        <a href="portfolio.html">Portfolio</a>
+        <a href="about.html">About</a>
+        <a href="contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">
+        ⌕ <span class="kbd-hint">Ctrl K</span>
+      </button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+
+      <div class="hero">
+        <!-- Decorative market line: draws itself on load (CSS animation).
+             aria-hidden so screen readers skip the decoration. -->
+        <svg class="hero-chart" viewBox="0 0 560 240" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          <path class="chart-fill" d="M0,205 C55,196 85,150 130,158 C175,166 205,118 250,124 C295,130 320,88 365,94 C410,100 435,58 480,52 C510,48 535,40 560,34 L560,240 L0,240 Z"/>
+          <path class="chart-line" pathLength="1" d="M0,205 C55,196 85,150 130,158 C175,166 205,118 250,124 C295,130 320,88 365,94 C410,100 435,58 480,52 C510,48 535,40 560,34"/>
+          <circle class="chart-dot" cx="560" cy="34" r="4.5"/>
+        </svg>
+        <span class="eyebrow mono">Rony Reiad · Dhaka / Brighton · CFA L1 candidate</span>
+        <h1 id="kinetic">Bangladesh's markets, explained in the language we speak.</h1>
+        <p class="lede">
+          Plain-Bangla investment education — DSE, mutual funds, sanchayapatra and
+          more — from a finance and risk management graduate. Plus financial
+          modeling and analysis for clients who need the numbers done right.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="learn/index.html">Start learning — বাংলায়</a>
+          <a class="btn btn-ghost" href="portfolio.html">Work with me</a>
+        </div>
+
+        <!-- Ticker tape: decorative, pauses on hover, static under
+             reduced motion. The list is duplicated once — the CSS loop
+             scrolls exactly half the track for a seamless repeat, so
+             KEEP BOTH COPIES IDENTICAL when editing. -->
+        <div class="ticker" aria-hidden="true">
+          <div class="ticker-track">
+            <span><b>DSE</b> · ঢাকা স্টক এক্সচেঞ্জ</span>
+            <span><b>সঞ্চয়পত্র</b> savings certificates</span>
+            <span><b>মিউচুয়াল ফান্ড</b> · NAV</span>
+            <span><b>ডিভিডেন্ড</b> · EPS · P/E</span>
+            <span><b>চক্রবৃদ্ধি</b> compounding</span>
+            <span><b>ঝুঁকি ও রিটার্ন</b> risk &amp; return</span>
+            <span><b>Excel</b> models · Python · R</span>
+            <span><b>CFA L1</b> Nov 2026</span>
+            <span>৳</span>
+            <span><b>DSE</b> · ঢাকা স্টক এক্সচেঞ্জ</span>
+            <span><b>সঞ্চয়পত্র</b> savings certificates</span>
+            <span><b>মিউচুয়াল ফান্ড</b> · NAV</span>
+            <span><b>ডিভিডেন্ড</b> · EPS · P/E</span>
+            <span><b>চক্রবৃদ্ধি</b> compounding</span>
+            <span><b>ঝুঁকি ও রিটার্ন</b> risk &amp; return</span>
+            <span><b>Excel</b> models · Python · R</span>
+            <span><b>CFA L1</b> Nov 2026</span>
+            <span>৳</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bento">
+
+        <!-- Featured article (big cell) -->
+        <article class="cell cell-feature">
+          <span class="tag mono">Featured · Explainer</span>
+          <h2>How the Dhaka Stock Exchange actually works</h2>
+          <p>What the DSEX index measures, how a BO account works, and the
+             questions worth asking before buying your first share — the first
+             piece in the Learn hub's interconnected library.</p>
+          <a class="more" href="insights/dse-basics.html">Read the explainer →</a>
+        </article>
+
+        <!-- Glass stats card: the site's one glassmorphism moment -->
+        <div class="cell cell-stats">
+          <div class="glass">
+            <span class="mono">Credentials</span>
+            <div><strong>MSc Finance &amp; Risk Management</strong>
+              <small>University of Brighton · Upper Merit</small></div>
+            <div><strong>CFA Level 1 candidate</strong>
+              <small>November 2026 window</small></div>
+            <div><strong>Bloomberg Market Concepts</strong>
+              <small>Certified</small></div>
+          </div>
+        </div>
+
+        <!-- About snippet -->
+        <div class="cell cell-about">
+          <span class="tag mono">About</span>
+          <h3>Economics first, risk second, plain language always</h3>
+          <p>BSS Economics (Chittagong), MSc in Brighton, research on Islamic
+             fund performance, and a habit of turning jargon into sentences
+             people actually use.</p>
+          <a class="more" href="about.html">More about me →</a>
+        </div>
+
+        <!-- Latest market note -->
+        <div class="cell cell-note">
+          <span class="tag mono">Latest note</span>
+          <h3>Sanchayapatra vs. bank FDR</h3>
+          <p>Where does a saver's taka work harder? Coming soon to the Learn hub.</p>
+          <a class="more" href="insights.html">All insights →</a>
+        </div>
+
+        <!-- Services teaser -->
+        <div class="cell cell-services">
+          <span class="tag mono">Services</span>
+          <div class="svc">
+            <span>Financial modeling — Excel, three-statement, DCF</span>
+            <span>Data analysis — Python / R for finance</span>
+            <span>Finance writing — English &amp; Bangla</span>
+          </div>
+          <a class="more" href="portfolio.html">See portfolio →</a>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>Everything on this site is general education, not investment advice.
+         Do your own research before putting money anywhere.</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <!-- Command palette (hidden until Ctrl/Cmd+K or the ⌕ button) -->
+  <div id="palette" hidden role="dialog" aria-modal="true" aria-label="Site search">
+    <div class="palette-panel">
+      <input id="palette-input" type="text" placeholder="Search pages and articles…"
+             autocomplete="off" aria-label="Search">
+      <ul id="palette-list"></ul>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
