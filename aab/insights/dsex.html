@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>সূচক (Index / DSEX) — শেখার লাইব্রেরি — Rony Reiad</title>
+  <meta name="description" content="পুরো বাজারের হালচাল এক নম্বরে — DSEX বাড়লে বোঝায় বড় কোম্পানিগুলোর দাম মোটের ওপর বেড়েছে।">
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      var dark = saved ? saved === "dark"
+                       : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="/index.html">Rony Reiad</a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep aria-current="page">Learn</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+
+      <article class="term-article" data-slug="dsex">
+        <span class="eyebrow mono">বাজারের মূল কথা · শেখার লাইব্রেরি</span>
+        <h1 class="bn-h">সূচক <span class="en-sub">Index / DSEX</span></h1>
+        <p class="one-liner">পুরো বাজারের হালচাল এক নম্বরে — DSEX বাড়লে বোঝায় বড় কোম্পানিগুলোর দাম মোটের ওপর বেড়েছে।</p>
+        
+<p>বাজারে শত শত কোম্পানির <a class="term" href="share.html">শেয়ার</a> — কোনটার দাম বাড়ছে, কোনটার কমছে। সব মিলিয়ে বাজারের অবস্থা কেমন, সেটা এক নজরে বোঝার জন্যই সূচক বা ইনডেক্স। এটা অনেকটা ক্লাসের গড় নম্বরের মতো: প্রত্যেক ছাত্রের আলাদা রেজাল্ট আছে, কিন্তু গড় দেখলে পুরো ক্লাসের ধারণা পাওয়া যায়।</p>
+<p><a class="term" href="dse.html">ঢাকা স্টক এক্সচেঞ্জের</a> প্রধান সূচক DSEX — বেশিরভাগ তালিকাভুক্ত কোম্পানির দাম এতে ধরা হয়, আর বড় কোম্পানির প্রভাব বেশি (ওজন বেশি)। এছাড়া আছে DS30 (সবচেয়ে বড় ৩০টা কোম্পানি) আর DSES (শরিয়াহভিত্তিক কোম্পানিগুলোর সূচক)।</p>
+<p>মনে রাখার কথা: সূচক বাড়া মানেই আপনার শেয়ারের দাম বাড়া না। গড় বাড়লেও আলাদা কোনো ছাত্র ফেল করতেই পারে।</p>
+<div class="ex"><b>উদাহরণ:</b> খবরে বলল "DSEX ১% বেড়েছে।" এর মানে বাজারের বড় কোম্পানিগুলোর দাম মোটের ওপর ১% বেড়েছে — কিন্তু আপনার কেনা ছোট কোম্পানিটার দাম হয়তো সেদিনই ৩% কমেছে।</div>
+
+        <p class="backlink"><a href="/learn/index.html">← লাইব্রেরির সব লেখা</a></p>
+      </article>
+    
+    </div>
+  </main>
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>এই সাইটের সবকিছু সাধারণ শিক্ষামূলক তথ্য — বিনিয়োগ পরামর্শ না। টাকা কোথাও রাখার আগে নিজে যাচাই করুন।</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <!-- Modal reader -->
+  <div id="reader" hidden role="dialog" aria-modal="true" aria-label="Term reader">
+    <div class="reader-panel">
+      <div class="reader-bar">
+        <button class="icon-btn" id="reader-back" hidden aria-label="আগের লেখায় ফিরুন">← ফিরুন</button>
+        <a id="reader-full" class="mono" href="#">পুরো পেজে পড়ুন ↗</a>
+        <button class="icon-btn" id="reader-close" aria-label="বন্ধ করুন">✕</button>
+      </div>
+      <div class="reader-body" id="reader-body"></div>
+    </div>
+  </div>
+
+  <div id="palette" hidden role="dialog" aria-modal="true" aria-label="Site search">
+    <div class="palette-panel">
+      <input id="palette-input" type="text" placeholder="Search pages and articles…" autocomplete="off" aria-label="Search">
+      <ul id="palette-list"></ul>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+  <script src="/learn/learn.js"></script>
+</body>
+</html>
