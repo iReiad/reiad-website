@@ -16,7 +16,7 @@
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -24,6 +24,12 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#0B3D2E">
+  <style>
+    /* Market pulse: Bangla headline first, English original beneath */
+    .nt-bn { font-family: "Noto Serif Bengali", "Spectral", serif; }
+    .nt-en { margin-top: 3px; font-size: 0.85rem; color: var(--ink-soft);
+             font-family: "IBM Plex Sans", Arial, sans-serif; }
+  </style>
 </head>
 <body>
 
@@ -74,7 +80,7 @@
           link opens the original story at its source — full credit to the
           journalists who reported it. Automated selection isn't editorial
           judgment: an important story can slip through, and a minor one can
-          sneak in.
+          sneak in. শিরোনামের বাংলা রূপ স্বয়ংক্রিয় অনুবাদ — গুরুত্বপূর্ণ কিছুর আগে মূল লেখাটা পড়ে নিন।
         </p>
       </section>
 
@@ -162,8 +168,16 @@
             var a = document.createElement("a");
             a.className = "news-item";
             a.href = it.url; a.target = "_blank"; a.rel = "noopener";
-            var t = document.createElement("div");
-            t.className = "nt"; t.textContent = it.title;
+            var t, en = null;
+            if (it.title_bn) {
+              t = document.createElement("div");
+              t.className = "nt nt-bn"; t.textContent = it.title_bn;
+              en = document.createElement("div");
+              en.className = "nt-en"; en.textContent = it.title;
+            } else {
+              t = document.createElement("div");
+              t.className = "nt"; t.textContent = it.title;
+            }
             var m = document.createElement("div");
             m.className = "news-meta";
             var pill = document.createElement("span");
@@ -173,8 +187,14 @@
             src.textContent = it.source;
             var tm = document.createElement("span");
             tm.textContent = relTime(it.published);
-            m.append(pill, src, tm);
-            a.append(t, m);
+            if (it.title_bn) {
+              var tr = document.createElement("span");
+              tr.textContent = "স্বয়ংক্রিয় অনুবাদ";
+              m.append(pill, src, tm, tr);
+            } else {
+              m.append(pill, src, tm);
+            }
+            if (en) { a.append(t, en, m); } else { a.append(t, m); }
             list.appendChild(a);
           });
           box.innerHTML = "";
