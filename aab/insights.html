@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<!-- insights.html — the list of all your articles.
-     Each article is a card. To add a new article:
-     1. Copy insights/dse-basics.html, rename it, write your piece.
-     2. Copy one of the <div class="card"> blocks below and point its
-        link at the new file. -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Insights — [Your Name]</title>
-  <meta name="description" content="Plain-language explainers on Bangladesh's investment landscape: DSE and CSE stock market basics, mutual funds, bonds and savings certificates.">
+  <title>Insights — Rony Reiad</title>
+  <meta name="description" content="Market notes and explainers on Bangladesh and global finance, plus an auto-updating pulse of important market news.">
+
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      var dark = saved ? saved === "dark"
+                       : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+    })();
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -24,7 +29,7 @@
 
   <header>
     <div class="wrap header-inner">
-      <a class="site-name" href="index.html">
+      <a class="site-name" href="/index.html">
     <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
       <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
       <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
@@ -33,13 +38,15 @@
     </svg>
     Rony Reiad
   </a>
-      <nav>
-        <a href="index.html">Home</a>
-        <a href="insights.html" aria-current="page">Insights</a>
-        <a href="work.html">Work</a>
-        <a href="services.html">Services</a>
-        <a href="index.html#contact">Contact</a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/insights.html" aria-current="page">Insights</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
       </nav>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
     </div>
   </header>
 
@@ -48,55 +55,64 @@
 
       <div class="hero">
         <span class="eyebrow mono">Insights</span>
-        <h1>Explainers on investing in Bangladesh.</h1>
+        <h1>Notes on markets, written to be understood.</h1>
         <p class="lede">
-          Short, plain-language pieces on how Bangladesh's markets and savings
-          instruments work — written for people starting out, not for insiders.
+          Longer-form pieces on Bangladesh and global finance — plus a live pulse
+          of the market news that actually matters, updated automatically through
+          the day.
         </p>
       </div>
 
       <section>
-        <span class="section-label mono">All articles</span>
-        <div class="cards">
+        <div class="pulse-head">
+          <span class="section-label mono" style="flex:1">Market pulse · auto-updating</span>
+        </div>
+        <div id="pulse"><p class="pulse-fallback">Loading market pulse…</p></div>
+        <p class="pulse-note">
+          Headlines are selected automatically from The Business Standard and BBC
+          Business by a relevance filter, refreshed roughly every 30 minutes. Each
+          link opens the original story at its source — full credit to the
+          journalists who reported it. Automated selection isn't editorial
+          judgment: an important story can slip through, and a minor one can
+          sneak in.
+        </p>
+      </section>
 
-          <div class="card">
+      <section>
+        <span class="section-label mono">Articles</span>
+        <div class="cards grid-2">
+
+          <div class="cell sample-card">
             <span class="tag mono">Explainer · Equities</span>
             <h3>How the Dhaka Stock Exchange actually works</h3>
             <p>What the DSEX index measures, how a BO account works, and the
                questions to ask before buying your first share.</p>
-            <a class="more" href="insights/dse-basics.html">Read →</a>
+            <a class="more" href="/insights/dse-basics.html">Read →</a>
           </div>
 
-          <!-- Duplicate the block below for each new article you publish. -->
-          <div class="card">
+          <!-- To publish a new article: copy insights/dse-basics.html,
+               rename it, write your piece, then copy this card and point
+               it at the new file. -->
+          <div class="cell sample-card placeholder">
             <span class="tag mono">Coming soon</span>
-            <h3>Sanchayapatra vs. bank FDR</h3>
-            <p>Where does a saver's taka work harder? Rates, tax at source,
-               purchase limits and early-encashment rules compared.</p>
-            <p></p>
+            <h3>Sanchayapatra vs. bank FDR: where does a saver's taka work harder?</h3>
+            <p><em>Rates, tax at source, purchase limits and early-encashment
+               rules — compared properly.</em></p>
           </div>
 
-          <div class="card">
+          <div class="cell sample-card placeholder">
             <span class="tag mono">Coming soon</span>
-            <h3>Mutual funds in Bangladesh: a skeptic's guide</h3>
-            <p>Open-end vs. closed-end funds, why many closed-end funds trade
-               below NAV, and what fees really cost you over ten years.</p>
-            <p></p>
+            <h3>Why do Bangladesh's closed-end funds trade below NAV?</h3>
+            <p><em>The discount puzzle, and what it says about fees and trust.</em></p>
           </div>
 
-          <div class="card">
+          <div class="cell sample-card placeholder">
             <span class="tag mono">Coming soon</span>
-            <h3>Government bonds and T-bills for ordinary investors</h3>
-            <p>How treasury instruments work in Bangladesh, and how retail
-               investors can access them.</p>
-            <p></p>
+            <h3>Islamic funds and risk: what my dissertation found</h3>
+            <p><em>A readable summary of the research — systematic risk,
+               drawdowns, and the pre/post-COVID comparison.</em></p>
           </div>
 
-        </div>
-
-        <div class="note">
-          Everything here is general education, not investment advice or a
-          recommendation to buy or sell anything.
         </div>
       </section>
 
@@ -105,11 +121,77 @@
 
   <footer>
     <div class="wrap">
-      <span class="mono">[Your Name] · Finance &amp; Bangladesh markets</span>
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
       <p>Everything on this site is general education, not investment advice.
          Do your own research before putting money anywhere.</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
   </footer>
 
+  <div id="palette" hidden role="dialog" aria-modal="true" aria-label="Site search">
+    <div class="palette-panel">
+      <input id="palette-input" type="text" placeholder="Search pages and articles…" autocomplete="off" aria-label="Search">
+      <ul id="palette-list"></ul>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+  <script>
+    /* Market pulse: fetch /api/news (the Pages Function) and render.
+       Built with DOM methods (textContent), never innerHTML with feed
+       data — headlines are external text and must stay text. */
+    (function () {
+      var box = document.getElementById("pulse");
+
+      function relTime(iso) {
+        if (!iso) return "";
+        var mins = Math.round((Date.now() - Date.parse(iso)) / 60000);
+        if (mins < 60) return mins + " min ago";
+        var hrs = Math.round(mins / 60);
+        if (hrs < 24) return hrs + " hr ago";
+        return Math.round(hrs / 24) + " d ago";
+      }
+
+      fetch("/api/news")
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (data) {
+          if (!data.items || !data.items.length) throw new Error("empty");
+          var list = document.createElement("div");
+          list.className = "news-list";
+          data.items.forEach(function (it) {
+            var a = document.createElement("a");
+            a.className = "news-item";
+            a.href = it.url; a.target = "_blank"; a.rel = "noopener";
+            var t = document.createElement("div");
+            t.className = "nt"; t.textContent = it.title;
+            var m = document.createElement("div");
+            m.className = "news-meta";
+            var pill = document.createElement("span");
+            pill.className = "pill " + (it.region === "BD" ? "pill-bd" : "pill-global");
+            pill.textContent = it.region === "BD" ? "Bangladesh" : "Global";
+            var src = document.createElement("span");
+            src.textContent = it.source;
+            var tm = document.createElement("span");
+            tm.textContent = relTime(it.published);
+            m.append(pill, src, tm);
+            a.append(t, m);
+            list.appendChild(a);
+          });
+          box.innerHTML = "";
+          box.appendChild(list);
+          var upd = document.createElement("p");
+          upd.className = "pulse-updated mono";
+          upd.textContent = "Updated " + relTime(data.updated);
+          box.appendChild(upd);
+        })
+        .catch(function () {
+          box.innerHTML = "";
+          var p = document.createElement("p");
+          p.className = "pulse-fallback";
+          p.textContent = "Market pulse is taking a break — try refreshing in a minute.";
+          box.appendChild(p);
+        });
+    })();
+  </script>
 </body>
 </html>

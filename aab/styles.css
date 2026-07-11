@@ -566,5 +566,55 @@ body.reader-open { overflow: hidden; } /* stop the page behind from scrolling */
 #form-status { font-size: 0.95rem; min-height: 1.4em; }
 #form-status.ok { color: var(--green); }
 #form-status.err { color: #B4452F; }
+
+/* ============================================================
+   INSIGHTS PAGE — English articles + Market pulse news
+   ============================================================ */
+
+/* FIX: .note was styled only in the round-1 stylesheet; the Learn
+   hub disclaimer uses it, so define it properly here. */
+.note {
+  background: var(--green-soft);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 10px 10px 0;
+  padding: 14px 18px; margin: 30px 0;
+  font-size: 0.92rem; color: var(--ink-soft);
+  max-width: 66ch;
+}
+
+/* English long-form article pages */
+.article { padding: 56px 0 10px; }
+.article h1 { font-size: clamp(1.9rem, 4.8vw, 2.7rem); max-width: 24ch; }
+.article .meta { margin: 14px 0 30px; color: var(--ink-soft); }
+.article h2 { font-size: 1.35rem; margin: 34px 0 12px; }
+.article p, .article li { max-width: 66ch; margin-bottom: 15px; }
+.article ul, .article ol { padding-left: 22px; margin-bottom: 15px; }
+
+/* ---------- Market pulse (auto-updating news) ---------- */
+.pulse-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.pulse-updated { color: var(--ink-soft); font-size: 0.78rem; }
+.news-list { border-top: 1px solid var(--hairline); margin-top: 14px; }
+a.news-item {
+  display: block; padding: 14px 2px;
+  border-bottom: 1px solid var(--hairline);
+  text-decoration: none; color: var(--ink);
+}
+a.news-item:hover { background: var(--green-soft); opacity: 1; }
+a.news-item .nt { font-family: "Spectral", Georgia, serif; font-size: 1.06rem; line-height: 1.4; }
+a.news-item:hover .nt { color: var(--green); }
+.news-meta {
+  display: flex; gap: 10px; align-items: center; margin-top: 5px;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.pill {
+  border: 1px solid var(--hairline); border-radius: 20px;
+  padding: 1px 9px; font-size: 0.68rem;
+}
+.pill-bd { color: var(--green); border-color: var(--green); }
+.pill-global { color: var(--gold); border-color: var(--gold); }
+.pulse-note { font-size: 0.85rem; color: var(--ink-soft); margin-top: 14px; max-width: 66ch; }
+.pulse-fallback { padding: 20px 0; color: var(--ink-soft); }
 .site-name { display: flex; align-items: center; gap: 8px; }
 .site-mark { width: 20px; height: 20px; flex-shrink: 0; }

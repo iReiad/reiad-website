@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<!-- insights/dse-basics.html — a full sample article.
-     To write a new article: copy this file, rename it (e.g. sanchayapatra.html),
-     change the title/meta/heading, and replace the body text.
-     NOTE: because this file lives inside the insights/ folder, links to files
-     in the main folder start with ../ (which means "go up one folder"). -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>How the Dhaka Stock Exchange actually works — [Your Name]</title>
+  <title>How the Dhaka Stock Exchange actually works — Rony Reiad</title>
   <meta name="description" content="A plain-language starter guide to the DSE: what the DSEX index is, how BO accounts work, and what to know before buying your first share in Bangladesh.">
+
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      var dark = saved ? saved === "dark"
+                       : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+    })();
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -24,7 +29,7 @@
 
   <header>
     <div class="wrap header-inner">
-      <a class="site-name" href="../index.html">
+      <a class="site-name" href="/index.html">
     <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
       <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
       <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
@@ -33,13 +38,15 @@
     </svg>
     Rony Reiad
   </a>
-      <nav>
-        <a href="../index.html">Home</a>
-        <a href="../insights.html" aria-current="page">Insights</a>
-        <a href="../work.html">Work</a>
-        <a href="../services.html">Services</a>
-        <a href="../index.html#contact">Contact</a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/insights.html" aria-current="page">Insights</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
       </nav>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
     </div>
   </header>
 
@@ -48,24 +55,26 @@
 
       <span class="eyebrow mono">Explainer · Equities</span>
       <h1>How the Dhaka Stock Exchange actually works</h1>
-      <p class="meta mono">[Month Year] · ~5 minute read</p>
+      <p class="meta mono">Updated July 2026 · ~5 minute read ·
+         dotted words open a quick Bangla explainer</p>
 
       <p>
-        Bangladesh has two stock exchanges: the Dhaka Stock Exchange (DSE), the
-        larger of the two, and the Chittagong Stock Exchange (CSE). Most listed
-        companies trade on both, and prices track each other closely, so for a
-        first-time investor the DSE is the sensible place to start understanding
-        the market.
+        Bangladesh has two stock exchanges: the <a class="term" href="/learn/terms/dse.html">Dhaka
+        Stock Exchange (DSE)</a>, the larger of the two, and the Chittagong Stock
+        Exchange (CSE). Most listed companies trade on both, and prices track each
+        other closely, so for a first-time investor the DSE is the sensible place
+        to start understanding the market.
       </p>
 
       <h2>What the DSEX index measures</h2>
       <p>
-        When the news says "the market rose today," it usually means the DSEX —
-        the DSE's broad benchmark index. Think of it as a weighted average of the
-        prices of most listed companies: bigger companies move the index more than
-        smaller ones. The DSE also publishes the DS30, which tracks thirty of the
-        largest, most liquid companies, and a Shariah-compliant index (DSES) for
-        investors who screen by Islamic principles.
+        When the news says "the market rose today," it usually means the
+        <a class="term" href="/learn/terms/dsex.html">DSEX</a> — the DSE's broad
+        benchmark index. Think of it as a weighted average of the prices of most
+        listed companies: bigger companies move the index more than smaller ones.
+        The DSE also publishes the DS30, which tracks thirty of the largest, most
+        liquid companies, and a Shariah-compliant index (DSES) for investors who
+        screen by Islamic principles.
       </p>
       <p>
         An index going up does not mean every share went up. It means the weighted
@@ -75,20 +84,22 @@
 
       <h2>The BO account: your entry ticket</h2>
       <p>
-        You cannot walk up to the exchange and buy shares. In Bangladesh, shares
-        are held electronically through a Beneficiary Owner (BO) account, opened
-        with a licensed stockbroker or merchant bank and maintained by the Central
-        Depository Bangladesh Limited (CDBL). Opening one typically requires your
-        national ID, a bank account in your name, photographs, and a modest fee.
-        Non-resident Bangladeshis can also invest through NITA accounts
-        (Non-resident Investor's Taka Account) — relevant if you're working
-        abroad and want exposure back home.
+        You cannot walk up to the exchange and buy
+        <a class="term" href="/learn/terms/share.html">shares</a>. In Bangladesh,
+        shares are held electronically through a
+        <a class="term" href="/learn/terms/bo-account.html">Beneficiary Owner (BO)
+        account</a>, opened with a licensed stockbroker or merchant bank and
+        maintained by the Central Depository Bangladesh Limited (CDBL). Opening one
+        typically requires your national ID, a bank account in your name,
+        photographs, and a modest fee. Non-resident Bangladeshis can also invest
+        through NITA accounts (Non-resident Investor's Taka Account) — relevant if
+        you're working abroad and want exposure back home.
       </p>
       <p>
-        The broker matters more than beginners assume. Brokerage commission,
-        the quality of the trading app, and how quickly you can move money in and
-        out differ meaningfully between houses. Compare at least two or three
-        before opening an account.
+        The <a class="term" href="/learn/terms/broker.html">broker</a> matters more
+        than beginners assume. Brokerage commission, the quality of the trading
+        app, and how quickly you can move money in and out differ meaningfully
+        between houses. Compare at least two or three before opening an account.
       </p>
 
       <h2>How trading works day to day</h2>
@@ -120,7 +131,8 @@
         <li>Am I buying a business, or chasing a rumor? Bangladesh's market has a
             long history of rumor-driven rallies that end badly for late buyers.</li>
         <li>Is this money I can leave invested for years? Equity is a poor place
-            for next semester's tuition.</li>
+            for next semester's tuition — think in terms of
+            <a class="term" href="/learn/terms/risk-return.html">risk and return</a>.</li>
       </ol>
 
       <h2>The honest summary</h2>
@@ -128,7 +140,8 @@
         The mechanics — BO account, broker, orders, settlement — are learnable in
         a weekend. The discipline is the hard part: position sizing, reading
         financial statements, and ignoring tips. Start small, treat your first
-        year as tuition, and let the index funds of your learning compound.
+        year as tuition, and let the lessons
+        <a class="term" href="/learn/terms/compounding.html">compound</a>.
       </p>
 
       <div class="note">
@@ -138,18 +151,41 @@
         (BSEC) before acting.
       </div>
 
-      <p><a href="../insights.html">← Back to all insights</a></p>
+      <p><a href="/insights.html">← Back to all insights</a></p>
 
     </div>
   </main>
 
   <footer>
     <div class="wrap">
-      <span class="mono">[Your Name] · Finance &amp; Bangladesh markets</span>
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
       <p>Everything on this site is general education, not investment advice.
          Do your own research before putting money anywhere.</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
   </footer>
 
+  <!-- Modal reader: lets the dotted term links open the Bangla
+       Learn-hub explainers in a pop-up, same as on Learn pages -->
+  <div id="reader" hidden role="dialog" aria-modal="true" aria-label="Term reader">
+    <div class="reader-panel">
+      <div class="reader-bar">
+        <button class="icon-btn" id="reader-back" hidden aria-label="আগের লেখায় ফিরুন">← ফিরুন</button>
+        <a id="reader-full" class="mono" href="#">পুরো পেজে পড়ুন ↗</a>
+        <button class="icon-btn" id="reader-close" aria-label="বন্ধ করুন">✕</button>
+      </div>
+      <div class="reader-body" id="reader-body"></div>
+    </div>
+  </div>
+
+  <div id="palette" hidden role="dialog" aria-modal="true" aria-label="Site search">
+    <div class="palette-panel">
+      <input id="palette-input" type="text" placeholder="Search pages and articles…" autocomplete="off" aria-label="Search">
+      <ul id="palette-list"></ul>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+  <script src="/learn/learn.js"></script>
 </body>
 </html>
