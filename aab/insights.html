@@ -3,19 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>Insights — Rony Reiad</title>
   <meta name="description" content="Market notes and explainers on Bangladesh and global finance, plus an auto-updating pulse of important market news.">
+  <link rel="canonical" href="https://reiad.co.uk/insights.html">
 
+  <!-- Theme before first paint: no white flash for dark-mode readers.
+       No stored choice means "follow the OS", which the CSS handles
+       on its own through color-scheme + light-dark(). -->
   <script>
     (function () {
       var saved = localStorage.getItem("theme");
-      var dark = saved ? saved === "dark"
-                       : window.matchMedia("(prefers-color-scheme: dark)").matches;
-      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
     })();
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -26,24 +32,25 @@
   <meta name="theme-color" content="#0B3D2E">
   <style>
     /* Market pulse: Bangla headline first, English original beneath */
-    .nt-bn { font-family: "Noto Serif Bengali", "Spectral", serif; }
+    .nt-bn { font-family: "Noto Serif Bengali", var(--font-serif); }
     .nt-en { margin-top: 3px; font-size: 0.85rem; color: var(--ink-soft);
-             font-family: "IBM Plex Sans", Arial, sans-serif; }
+             font-family: var(--font-sans); }
   </style>
 </head>
 <body>
+  <a class="skip" href="#main">Skip to the main content</a>
 
   <header>
     <div class="wrap header-inner">
       <a class="site-name" href="/index.html">
-    <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-      <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
-      <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
-      <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
-      <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
-    </svg>
-    Rony Reiad
-  </a>
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Rony Reiad
+      </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
         <a href="/insights.html" aria-current="page">Insights</a>
@@ -56,7 +63,7 @@
     </div>
   </header>
 
-  <main>
+  <main id="main">
     <div class="wrap">
 
       <div class="hero">
@@ -73,52 +80,32 @@
         <div class="pulse-head">
           <span class="section-label mono" style="flex:1">Market pulse · auto-updating</span>
         </div>
-        <div id="pulse"><p class="pulse-fallback">Loading market pulse…</p></div>
+        <div id="pulse" aria-live="polite"></div>
         <p class="pulse-note">
           Headlines are selected automatically from The Business Standard and BBC
           Business by a relevance filter, refreshed roughly every 30 minutes. Each
           link opens the original story at its source — full credit to the
           journalists who reported it. Automated selection isn't editorial
           judgment: an important story can slip through, and a minor one can
-          sneak in. শিরোনামের বাংলা রূপ স্বয়ংক্রিয় অনুবাদ — গুরুত্বপূর্ণ কিছুর আগে মূল লেখাটা পড়ে নিন।
+          sneak in. শিরোনামের বাংলা রূপ স্বয়ংক্রিয় অনুবাদ — গুরুত্বপূর্ণ কিছুর আগে মূল লেখাটা পড়ে নিন।
         </p>
       </section>
 
       <section>
         <span class="section-label mono">Articles</span>
-        <div class="cards grid-2">
-
-          <div class="cell sample-card">
-            <span class="tag mono">Explainer · Equities</span>
-            <h3>How the Dhaka Stock Exchange actually works</h3>
-            <p>What the DSEX index measures, how a BO account works, and the
-               questions to ask before buying your first share.</p>
-            <a class="more" href="/insights/dse-basics.html">Read →</a>
-          </div>
-
-          <!-- To publish a new article: copy insights/dse-basics.html,
-               rename it, write your piece, then copy this card and point
-               it at the new file. -->
-          <div class="cell sample-card placeholder">
-            <span class="tag mono">Coming soon</span>
-            <h3>Sanchayapatra vs. bank FDR: where does a saver's taka work harder?</h3>
-            <p><em>Rates, tax at source, purchase limits and early-encashment
-               rules — compared properly.</em></p>
-          </div>
-
-          <div class="cell sample-card placeholder">
-            <span class="tag mono">Coming soon</span>
-            <h3>Why do Bangladesh's closed-end funds trade below NAV?</h3>
-            <p><em>The discount puzzle, and what it says about fees and trust.</em></p>
-          </div>
-
-          <div class="cell sample-card placeholder">
-            <span class="tag mono">Coming soon</span>
-            <h3>Islamic funds and risk: what my dissertation found</h3>
-            <p><em>A readable summary of the research — systematic risk,
-               drawdowns, and the pre/post-COVID comparison.</em></p>
-          </div>
-
+        <!-- Cards render from the ARTICLES list in /content.js.
+             Publishing a piece = drop its file in /insights/ and add
+             one entry to that list — /studio.html writes both for you. -->
+        <div class="cards grid-2" id="article-cards">
+          <noscript>
+            <div class="cell sample-card">
+              <span class="tag mono">Explainer · Equities</span>
+              <h3>How the Dhaka Stock Exchange actually works</h3>
+              <p>What the DSEX index measures, how a BO account works, and the
+                 questions to ask before buying your first share.</p>
+              <a class="more" href="/insights/dse-basics.html">Read →</a>
+            </div>
+          </noscript>
         </div>
       </section>
 
@@ -134,84 +121,7 @@
     </div>
   </footer>
 
-  <div id="palette" hidden role="dialog" aria-modal="true" aria-label="Site search">
-    <div class="palette-panel">
-      <input id="palette-input" type="text" placeholder="Search pages and articles…" autocomplete="off" aria-label="Search">
-      <ul id="palette-list"></ul>
-    </div>
-  </div>
-
-  <script src="/app.js"></script>
-  <script>
-    /* Market pulse: fetch /api/news (the Pages Function) and render.
-       Built with DOM methods (textContent), never innerHTML with feed
-       data — headlines are external text and must stay text. */
-    (function () {
-      var box = document.getElementById("pulse");
-
-      function relTime(iso) {
-        if (!iso) return "";
-        var mins = Math.round((Date.now() - Date.parse(iso)) / 60000);
-        if (mins < 60) return mins + " min ago";
-        var hrs = Math.round(mins / 60);
-        if (hrs < 24) return hrs + " hr ago";
-        return Math.round(hrs / 24) + " d ago";
-      }
-
-      fetch("market-pulse.i-reiad.workers.dev")
-        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-        .then(function (data) {
-          if (!data.items || !data.items.length) throw new Error("empty");
-          var list = document.createElement("div");
-          list.className = "news-list";
-          data.items.forEach(function (it) {
-            var a = document.createElement("a");
-            a.className = "news-item";
-            a.href = it.url; a.target = "_blank"; a.rel = "noopener";
-            var t, en = null;
-            if (it.title_bn) {
-              t = document.createElement("div");
-              t.className = "nt nt-bn"; t.textContent = it.title_bn;
-              en = document.createElement("div");
-              en.className = "nt-en"; en.textContent = it.title;
-            } else {
-              t = document.createElement("div");
-              t.className = "nt"; t.textContent = it.title;
-            }
-            var m = document.createElement("div");
-            m.className = "news-meta";
-            var pill = document.createElement("span");
-            pill.className = "pill " + (it.region === "BD" ? "pill-bd" : "pill-global");
-            pill.textContent = it.region === "BD" ? "Bangladesh" : "Global";
-            var src = document.createElement("span");
-            src.textContent = it.source;
-            var tm = document.createElement("span");
-            tm.textContent = relTime(it.published);
-            if (it.title_bn) {
-              var tr = document.createElement("span");
-              tr.textContent = "স্বয়ংক্রিয় অনুবাদ";
-              m.append(pill, src, tm, tr);
-            } else {
-              m.append(pill, src, tm);
-            }
-            if (en) { a.append(t, en, m); } else { a.append(t, m); }
-            list.appendChild(a);
-          });
-          box.innerHTML = "";
-          box.appendChild(list);
-          var upd = document.createElement("p");
-          upd.className = "pulse-updated mono";
-          upd.textContent = "Updated " + relTime(data.updated);
-          box.appendChild(upd);
-        })
-        .catch(function () {
-          box.innerHTML = "";
-          var p = document.createElement("p");
-          p.className = "pulse-fallback";
-          p.textContent = "Market pulse is taking a break — try refreshing in a minute.";
-          box.appendChild(p);
-        });
-    })();
-  </script>
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/pulse.js"></script>
 </body>
 </html>

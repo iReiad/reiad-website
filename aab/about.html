@@ -3,21 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>About — Rony Reiad</title>
   <meta name="description" content="Rony Reiad: economics graduate from Chittagong, MSc Finance & Risk Management from Brighton, researching Islamic funds and credit risk — and building Bangla-language investment education.">
 
+  <!-- Theme before first paint: no white flash for dark-mode readers.
+       No stored choice means "follow the OS", which the CSS handles
+       on its own through color-scheme + light-dark(). -->
   <script>
     (function () {
       var saved = localStorage.getItem("theme");
-      var dark = saved ? saved === "dark"
-                       : window.matchMedia("(prefers-color-scheme: dark)").matches;
-      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
     })();
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -26,6 +31,7 @@
   <meta name="theme-color" content="#0B3D2E">
 </head>
 <body>
+  <a class="skip" href="#main">Skip to the main content</a>
 
   <header>
     <div class="wrap header-inner">
@@ -52,7 +58,7 @@
     </div>
   </header>
 
-  <main>
+  <main id="main">
     <div class="wrap">
 
       <div class="hero">
@@ -223,14 +229,7 @@
     </div>
   </footer>
 
-  <div id="palette" hidden role="dialog" aria-modal="true" aria-label="Site search">
-    <div class="palette-panel">
-      <input id="palette-input" type="text" placeholder="Search pages and articles…"
-             autocomplete="off" aria-label="Search">
-      <ul id="palette-list"></ul>
-    </div>
-  </div>
 
-  <script src="app.js"></script>
+  <script type="module" src="/app.js"></script>
 </body>
 </html>

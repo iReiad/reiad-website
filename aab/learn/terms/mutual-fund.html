@@ -3,17 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>মিউচুয়াল ফান্ড (Mutual Fund) — শেখার লাইব্রেরি — Rony Reiad</title>
   <meta name="description" content="অনেকের টাকা এক করে পেশাদার ম্যানেজারের হাতে বিনিয়োগ — ছোট টাকায় বড় পোর্টফোলিওর স্বাদ।">
+  <!-- Theme before first paint: no white flash for dark-mode readers.
+       No stored choice means "follow the OS", which the CSS handles
+       on its own through color-scheme + light-dark(). -->
   <script>
     (function () {
       var saved = localStorage.getItem("theme");
-      var dark = saved ? saved === "dark"
-                       : window.matchMedia("(prefers-color-scheme: dark)").matches;
-      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
     })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -24,6 +29,7 @@
   <meta name="theme-color" content="#0B3D2E">
 </head>
 <body>
+  <a class="skip" href="#main">মূল লেখায় যান</a>
   <header>
     <div class="wrap header-inner">
       <a class="site-name" href="/index.html">
@@ -46,7 +52,7 @@
       <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
     </div>
   </header>
-  <main>
+  <main id="main">
     <div class="wrap">
 
       <article class="term-article" data-slug="mutual-fund">
@@ -84,14 +90,8 @@
     </div>
   </div>
 
-  <div id="palette" hidden role="dialog" aria-modal="true" aria-label="Site search">
-    <div class="palette-panel">
-      <input id="palette-input" type="text" placeholder="Search pages and articles…" autocomplete="off" aria-label="Search">
-      <ul id="palette-list"></ul>
-    </div>
-  </div>
 
-  <script src="/app.js"></script>
-  <script src="/learn/learn.js"></script>
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/learn/learn.js"></script>
 </body>
 </html>
