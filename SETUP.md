@@ -73,6 +73,22 @@ it whenever you like.
 
 ---
 
+## Worth knowing: every branch deploys to production
+
+The build that put this live came from a *pull request branch*, not `main` —
+Workers Builds is deploying every push straight to production. So pushing any
+branch changes the live site.
+
+If you'd rather branches went to preview URLs instead, that's
+**non-production branch builds** in the Worker's build settings:
+Workers & Pages → reiad-website → Settings → Builds → Branch control.
+
+Also confirmed against Cloudflare's docs: `_headers` and `_redirects` in
+`aab/` are supported natively on Workers with static assets, exactly as they
+were on Pages — so the CSP, HSTS and cache rules still apply.
+
+---
+
 ## Revoke that API token
 
 The token pasted into chat is account-scoped, and a transcript is no place for
