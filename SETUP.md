@@ -1,21 +1,69 @@
-# Switching the dynamic half on
+# Deploying, and switching the dynamic half on
 
-You've already done the hard part — the database exists. What's left is
-telling the site where it is.
-
-**Route A is already done** — the binding is committed. What's left for you is
-in *"What's actually left"* at the bottom. Route B is the fallback if the
-binding doesn't take.
+The database exists and is wired up. This file is about the other half of the
+story: **what this project actually is on Cloudflare**, because that was wrong
+for a while and it broke every automatic build.
 
 ---
 
-## Route A — the binding lives in `wrangler.toml` (done)
+## What this is
 
-Cloudflare Pages reads `wrangler.toml` on every deploy and attaches the
-bindings it declares. The dashboard's *Settings → Bindings* screen does exactly
-the same job by hand — so if this file is right, you never need that screen.
+A **Worker with static assets**. Not a Pages project — there is no Pages
+project in the account, and `wrangler pages deploy` will tell you so.
 
-`wrangler.toml` now contains:
+- everything in `aab/` is uploaded as static assets and served directly
+- `worker.js` is the entry point, and routes `/api/*` and `/insights/:slug`
+  to the handlers in `functions/`
+- `wrangler.toml` declares the assets directory, the `ASSETS` binding and the
+  D1 database
+
+The deploy command is therefore:
+
+```sh
+npx wrangler deploy
+```
+
+### The gap that broke CI
+
+For a while the live Worker was built from a `worker.js` that existed only on
+a laptop. It was never committed, so:
+
+- `npx wrangler deploy` in CI failed with *"Missing entry-point to Worker
+  script or to assets directory"* — the repo had no `main` and no `[assets]`
+- `npx wrangler pages deploy` failed with *"The Pages project does not
+  exist"* — because it genuinely doesn't
+
+Both files are in the repository now, so a clone of this repo deploys the site
+that is actually running. If you ever see either error again, that is the thing
+that has drifted.
+
+---
+
+## Build settings
+
+**Workers & Pages → `reiad-website` → Settings → Build**
+
+| Field | Value |
+| --- | --- |
+| Deploy command | `npx wrangler deploy` |
+| Build command | *(empty — there is no build step)* |
+
+If there is a separate **non-production branch deploy command**, the same
+command works there, or `npx wrangler versions upload` if you want branch
+builds to upload without going live.
+
+### The API token
+
+The build's token needs **Account → Workers Scripts → Edit**. It does *not*
+need Cloudflare Pages permissions, and if you added those while chasing the
+`pages deploy` errors, they can come back off.
+
+---
+
+## The D1 binding
+
+`wrangler.toml` declares it, and `wrangler deploy` attaches it — there is
+nothing to click:
 
 ```toml
 [[d1_databases]]
@@ -24,83 +72,62 @@ database_name = "reiad"
 database_id = "ad23dea3-74fc-4346-8119-ab5936f1a708"
 ```
 
-Verified against Cloudflare's own runtime: the config parses and the binding
-resolves (`env.DB (reiad) — D1 Database`), and the 46-check API suite passes
-against it.
+The ID is not a secret; it names a database, it does not open one.
 
-**There is no schema step.**
+**There is no schema step.** The tables create themselves on the first request
+that needs them (`functions/_lib/db.js` runs the migrations and caches the
+fact), so there is no SQL to paste and no way to end up half-migrated.
 
-The tables create themselves on the first request that needs them
-(`functions/_lib/db.js` runs the migrations and caches the fact). So there's no
-SQL to paste and no way to end up half-migrated.
-
-**5. Open `https://reiad.co.uk/studio.html` and set your passphrase.**
-
-It'll show a "Set up Studio access" screen. Whatever you type is stretched in
-your browser and never sent — the server only ever sees the result, and stores
-a hash of that. Nothing readable is stored anywhere. The screen tells you which
-mode it's in, which is how you know the binding worked.
-
----
-
-## Route B — the dashboard, click by click
-
-Use this if Route A doesn't take effect for any reason.
-
-1. Cloudflare dashboard → **Workers & Pages** → your Pages project
-   (`reiad-website` or whatever it's named).
-2. **Settings** tab → scroll to **Bindings** → **Add** → **D1 database**.
-3. Fill in exactly:
-   - **Variable name**: `DB`  ← must be these two letters
-   - **D1 database**: pick your database from the list
-4. Save.
-5. **Deployments** tab → the most recent one → **⋯** → **Retry deployment**.
-   A binding only reaches a deployment that was built after it was added, which
-   is the step people usually miss.
-6. Then step 5 of Route A: open `/studio.html` and set your passphrase.
+If you ever need to attach it by hand instead: **Settings → Bindings → Add →
+D1 database**, variable name `DB`. A binding only reaches a deployment created
+after it was added, which is the step people miss.
 
 ---
 
 ## How to tell whether it worked
 
-Open `https://reiad.co.uk/api/auth/me` in a browser tab.
+Open `https://reiad.co.uk/api/auth/me`.
 
-- `{"ok":true,"configured":false,"signedIn":false}` — **the database is
-  connected.** Go and set your passphrase.
-- `{"ok":false,"reason":"not-configured"}` — not attached yet. The binding
-  isn't reaching the deployment; check the variable name is `DB`, and that
-  you've deployed since adding it.
-- A 404 page — Functions aren't deploying at all. Check the Pages project's
-  build output directory is `aab`, and that `functions/` is at the repo root
-  (it is, in this branch).
+| What you see | What it means |
+| --- | --- |
+| `{"ok":true,"configured":false,"signedIn":false}` | Connected, no passphrase set yet. Go and set one. |
+| `{"ok":true,"configured":true,...}` | Connected and claimed. Sign in. |
+| `{"ok":false,"reason":"not-configured"}` | The `DB` binding isn't reaching the deployment. |
+| A 404 page | The Worker isn't routing at all — check `main = "worker.js"` in `wrangler.toml`. |
 
 ---
 
-## While you're in there: revoke that API token
+## Setting the Studio passphrase
 
-The token you pasted into the chat is account-scoped, and a chat transcript
-isn't somewhere a live credential should live. It also turned out to be
-unusable from my side — the environment I run in blocks all outbound network
-except GitHub and package registries, which is why I couldn't use it.
+Open `https://reiad.co.uk/studio.html`. You'll get a "Set up Studio access"
+screen.
 
-Cloudflare dashboard → **My Profile** → **API Tokens** → find
-`square-waterfall-a740` → **Delete**.
+What you type is stretched **in your browser** — PBKDF2-SHA256, 210,000
+iterations — and never sent. The server stores a hash of the result. It has to
+work this way: a Worker on the free plan gets 10ms of CPU per request and those
+iterations cost about 30ms, so doing it server-side got every attempt killed
+mid-request. `functions/_lib/auth.js` explains the trade-off in full.
 
-Same for the R2 keys (**R2** → **Manage API tokens**). Nothing on this site
-uses R2, so those can go and nothing will notice.
-
-Neither is needed for anything above — the setup is one non-secret ID in one
-file.
-
+Your first page load after a deploy may still come from the service worker's
+cache. A second load picks up the new version.
 
 ---
 
-## What's actually left
+## Testing before you push
 
-1. **Merge the pull request.** Cloudflare deploys `main` automatically.
-2. **Open `https://reiad.co.uk/api/auth/me`** — see *How to tell whether it
-   worked* above.
-3. **Open `https://reiad.co.uk/studio.html`** and set your passphrase.
-4. **Revoke that API token** (last section).
+```sh
+npx wrangler dev            # the real runtime, local D1
+./test-api.sh               # 52 checks over every endpoint
+node aab/check-routes.mjs   # catches redirect loops
+```
 
-That's the lot.
+---
+
+## Housekeeping: that API token
+
+The account-scoped token pasted into a chat earlier (`square-waterfall-a740`)
+should be deleted if it hasn't been already — **My Profile → API Tokens**. A
+chat transcript is not somewhere a live credential should live. The build needs
+only its own token with Workers Scripts: Edit.
+
+Same for the R2 keys (**R2 → Manage API tokens**). Nothing here uses R2.
