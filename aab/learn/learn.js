@@ -62,6 +62,17 @@
       body.appendChild(article);
       body.scrollTop = 0;
 
+      // Reading it in the pop-up counts as reading it, same as the
+      // full page does — the hub ticks it off either way.
+      const slug = article.dataset.slug;
+      if (slug) {
+        try {
+          const read = new Set(JSON.parse(localStorage.getItem("learn-read") || "[]"));
+          read.add(slug);
+          localStorage.setItem("learn-read", JSON.stringify([...read]));
+        } catch { /* private mode — the tick is a nicety, not a feature */ }
+      }
+
       if (pushToStack && stack[stack.length - 1] !== url) stack.push(url);
     } catch (err) {
       // Keep the escape hatches alive: the full-page link still points

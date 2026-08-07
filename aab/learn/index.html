@@ -26,6 +26,16 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="শেখার লাইব্রেরি">
+  <meta property="og:description" content="শেয়ারবাজার, সঞ্চয়পত্র, মিউচুয়াল ফান্ড — সহজ কথ্য বাংলায় প্রতিটা টার্মের ব্যাখ্যা।">
+  <meta property="og:image" content="https://reiad.co.uk/og/learn.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Rony Reiad">
+  <meta property="og:locale" content="en_GB">
   <meta name="theme-color" content="#0B3D2E">
 </head>
 <body>
@@ -43,11 +53,13 @@
   </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep aria-current="page">Learn</a>
+        <a href="/tools/index.html">Tools</a>
         <a href="/insights.html">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
         <a href="/about.html">About</a>
         <a href="/contact.html" data-keep>Contact</a>
       </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
       <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
       <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
     </div>
@@ -67,9 +79,16 @@
         <search>
           <input type="search" id="term-filter" placeholder="খুঁজুন… (যেমন: শেয়ার, ফান্ড, ঝুঁকি)" aria-label="টার্ম খুঁজুন">
         </search>
+
+        <div class="progress-line" id="learn-progress">
+          <span class="track"><i></i></span>
+          <span class="count"></span>
+          <button class="chip" id="learn-random" type="button">যেকোনো একটা পড়ুন</button>
+          <button class="chip" id="learn-reset" type="button" hidden>রিসেট</button>
+        </div>
       </div>
       
-<section>
+<section id="basics">
 <span class="section-label mono">বাজারের মূল কথা</span>
 <div class="cards term-grid">
   <a class="cell term-card term" href="terms/share.html">
@@ -99,7 +118,7 @@
 </div>
 </section>
 
-<section>
+<section id="instruments">
 <span class="section-label mono">বিনিয়োগের মাধ্যম</span>
 <div class="cards term-grid">
   <a class="cell term-card term" href="terms/mutual-fund.html">
@@ -121,7 +140,7 @@
 </div>
 </section>
 
-<section>
+<section id="analysis">
 <span class="section-label mono">কোম্পানি বিশ্লেষণ</span>
 <div class="cards term-grid">
   <a class="cell term-card term" href="terms/dividend.html">
@@ -143,7 +162,7 @@
 </div>
 </section>
 
-<section>
+<section id="risk">
 <span class="section-label mono">ঝুঁকি ও কৌশল</span>
 <div class="cards term-grid">
   <a class="cell term-card term" href="terms/risk-return.html">
@@ -164,6 +183,58 @@
   </a>
 </div>
 </section>
+
+      <section id="glossary-section">
+        <span class="section-label mono">A–Z · সব টার্ম একসাথে</span>
+        <p class="measure" style="color:var(--ink-soft);font-size:0.95rem">
+          পুরো লাইব্রেরি ইংরেজি বর্ণানুক্রমে — ইংরেজি নামটা জানা থাকলে এখান থেকেই দ্রুত খুঁজে নিন।
+        </p>
+        <div class="az" id="az"></div>
+        <div class="glossary" id="glossary"></div>
+      </section>
+
+      <section>
+        <span class="section-label mono">কীভাবে পড়বেন</span>
+        <div class="stack measure">
+          <details class="faq">
+            <summary>কোনটা দিয়ে শুরু করব?</summary>
+            <p><a class="term" href="terms/share.html">শেয়ার</a> দিয়ে শুরু করুন, তারপর
+               <a class="term" href="terms/risk-return.html">ঝুঁকি ও রিটার্ন</a> আর
+               <a class="term" href="terms/compounding.html">চক্রবৃদ্ধি</a>। এই তিনটা বুঝলে বাকিগুলো
+               অনেক সহজ লাগবে। লেখার ভেতরে যে টার্মগুলো লিংক করা, সেগুলোতে ক্লিক করলে ছোট
+               উইন্ডোতে খুলবে — পড়া শেষে যেখানে ছিলেন সেখানেই ফিরে আসবেন।</p>
+          </details>
+          <details class="faq">
+            <summary>এখানে কি কোনো শেয়ার কেনার পরামর্শ আছে?</summary>
+            <p>না। এই লাইব্রেরিতে শুধু ব্যাখ্যা — কোন শেয়ার, কোন ফান্ড বা কোন স্কিম কেনা উচিত,
+               সেটা এখানে বলা হয় না, কখনো হবেও না। কী জিনিস কীভাবে কাজ করে সেটা জানার পর
+               সিদ্ধান্তটা আপনার।</p>
+          </details>
+          <details class="faq">
+            <summary>হারগুলো কি আপডেট থাকে?</summary>
+            <p>সঞ্চয়পত্রের হার, ট্যাক্স, ব্যাংকের সুদ — এগুলো সরকার আর ব্যাংক সময়ে সময়ে বদলায়।
+               এখানে যে সংখ্যাগুলো উদাহরণ হিসেবে আছে সেগুলো ধারণা দেওয়ার জন্য।
+               <a href="/tools/index.html">ক্যালকুলেটরে</a> আপনি নিজের পাওয়া হারটা বসিয়ে হিসাব
+               করতে পারবেন — সেটাই বেশি কাজের।</p>
+          </details>
+          <details class="faq">
+            <summary>টিক চিহ্নগুলো কোথায় জমা থাকে?</summary>
+            <p>আপনার নিজের ব্রাউজারে, আপনার ডিভাইসেই — কোথাও পাঠানো হয় না, কোনো অ্যাকাউন্ট
+               লাগে না। ব্রাউজারের ডেটা মুছলে টিকগুলোও চলে যাবে।</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="band">
+        <span class="mono">পরের ধাপ</span>
+        <h2>শব্দ বোঝা হলো — এবার হিসাবটা করুন</h2>
+        <p>চক্রবৃদ্ধি, সঞ্চয়পত্র বনাম এফডিআর, মূল্যস্ফীতি — যে ধারণাগুলো এখানে পড়লেন, সেগুলো
+           নিজের টাকার অঙ্কে বসিয়ে দেখুন।</p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/tools/index.html">ক্যালকুলেটর দেখুন →</a>
+          <a class="btn btn-ghost" href="/insights.html">Longer pieces in English</a>
+        </div>
+      </div>
 
       <div class="note">এই লাইব্রেরির সবকিছু সাধারণ শিক্ষামূলক তথ্য — বিনিয়োগ পরামর্শ না।
       নিয়ম, হার আর ফি সময়ে সময়ে বদলায়; সিদ্ধান্তের আগে সংশ্লিষ্ট প্রতিষ্ঠানের সর্বশেষ তথ্য দেখে নিন।</div>
@@ -193,5 +264,6 @@
 
   <script type="module" src="/app.js"></script>
   <script type="module" src="/learn/learn.js"></script>
+  <script type="module" src="/learn/hub.js"></script>
 </body>
 </html>

@@ -34,6 +34,13 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta property="og:image" content="https://reiad.co.uk/og/default.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Rony Reiad">
+  <meta property="og:locale" content="en_GB">
   <meta name="theme-color" content="#0B3D2E">
 
   <script type="application/ld+json">
@@ -66,11 +73,13 @@
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/tools/index.html">Tools</a>
         <a href="/insights.html">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
         <a href="/about.html">About</a>
         <a href="/contact.html" data-keep>Contact</a>
       </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
       <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
       <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
     </div>
@@ -97,6 +106,7 @@
         </p>
         <div class="hero-actions">
           <a class="btn btn-solid" href="/learn/index.html">Start learning — বাংলায়</a>
+          <a class="btn btn-ghost" href="/tools/index.html">Run the numbers</a>
           <a class="btn btn-ghost" href="/portfolio.html">Work with me</a>
         </div>
 
@@ -182,6 +192,89 @@
           <a class="more" href="/portfolio.html">See portfolio →</a>
         </div>
 
+      </div>
+
+      <!-- ============ WHAT'S HERE ============ -->
+      <section>
+        <span class="section-label mono">Start here</span>
+        <div class="big-links">
+          <a class="big-link" href="/learn/index.html">
+            <span class="num">01</span>
+            <span class="t">শেখার লাইব্রেরি — the words, in Bangla</span>
+            <span class="go">→</span>
+            <span class="d">Eighteen terms every Bangladeshi saver runs into — শেয়ার, সঞ্চয়পত্র,
+              এনএভি, চক্রবৃদ্ধি — each a two-minute read that links to the next.</span>
+          </a>
+          <a class="big-link" href="/tools/index.html">
+            <span class="num">02</span>
+            <span class="t">Calculators — the five sums worth doing</span>
+            <span class="go">→</span>
+            <span class="d">Compounding, sanchayapatra against FDR after tax, what inflation
+              really does, loan EMI, and how big a position your own risk rule allows.
+              Copy a link and the whole calculation goes with it.</span>
+          </a>
+          <a class="big-link" href="/insights.html">
+            <span class="num">03</span>
+            <span class="t">Insights — the longer arguments</span>
+            <span class="go">→</span>
+            <span class="d">Explainers and analysis in English, plus an auto-updating pulse of
+              the market news that actually matters.</span>
+          </a>
+          <a class="big-link" href="/portfolio.html">
+            <span class="num">04</span>
+            <span class="t">Work with me — models, analysis, writing</span>
+            <span class="go">→</span>
+            <span class="d">Three-statement models and DCFs in Excel, Python/R analysis, and
+              finance writing in English or Bangla.</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- ============ LATEST ============ -->
+      <section>
+        <span class="section-label mono">Latest writing</span>
+        <!-- rendered from the ARTICLES list in /content.js -->
+        <div class="cards grid-2" id="article-cards" data-mode="live" data-limit="2"></div>
+        <p style="margin-top:16px"><a href="/insights.html">Everything I've written →</a></p>
+      </section>
+
+      <!-- ============ WHY THIS EXISTS ============ -->
+      <section>
+        <span class="section-label mono">Why this site exists</span>
+        <div class="principles">
+          <div class="principle">
+            <h3>The jargon is the barrier</h3>
+            <p>Most Bangladeshi savings decisions are made without the vocabulary to
+               examine them — not from a lack of intelligence, but because the
+               explanations only exist in English, written for people who already
+               understand. That's a solvable problem.</p>
+          </div>
+          <div class="principle">
+            <h3>Arithmetic before opinion</h3>
+            <p>Whether sanchayapatra beats an FDR is not a matter of opinion; it's a
+               calculation, and it changes with the tax at source and how long you can
+               leave the money. So the calculators come with the writing.</p>
+          </div>
+          <div class="principle">
+            <h3>Say what isn't known</h3>
+            <p>Rates change, rules change, and automated news filters miss things.
+               Every page here says what it assumes and where it could be wrong.
+               Nothing on this site tells you what to buy.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CTA ============ -->
+      <div class="band">
+        <span class="mono">Working together</span>
+        <h2>Numbers that need doing properly</h2>
+        <p>Freelance financial modeling, data analysis and finance writing — for
+           founders raising money, teams that need a model they can actually edit,
+           and publications that need finance explained without the fog.</p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/contact.html">Start a conversation</a>
+          <a class="btn btn-ghost" href="/portfolio.html">See what that looks like</a>
+        </div>
       </div>
 
     </div>

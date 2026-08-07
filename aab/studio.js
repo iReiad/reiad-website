@@ -16,6 +16,7 @@
    ============================================================ */
 
 import { toast, copyText, download } from "/app.js";
+import { lock } from "/auth.js";
 
 /* ============================================================
    Elements
@@ -604,6 +605,10 @@ $("#btn-entry").addEventListener("click", () => {
 });
 
 $("#sheet-close").addEventListener("click", () => $("#sheet").close());
+
+$("#btn-lock").addEventListener("click", () => {
+  if (confirm("Lock the Studio? Your draft stays saved on this device.")) lock();
+});
 
 $("#btn-clear").addEventListener("click", async () => {
   if (!confirm("Clear the editor and start a new article? The saved draft goes too.")) return;

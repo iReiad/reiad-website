@@ -28,6 +28,16 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="About">
+  <meta property="og:description" content="Rony Reiad: economics graduate from Chittagong, MSc Finance & Risk Management from Brighton, researching Islamic funds and credit risk — and building Bangla-language investment education.">
+  <meta property="og:image" content="https://reiad.co.uk/og/default.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Rony Reiad">
+  <meta property="og:locale" content="en_GB">
   <meta name="theme-color" content="#0B3D2E">
 </head>
 <body>
@@ -45,12 +55,14 @@
     Rony Reiad
   </a>
       <nav aria-label="Main">
-        <a href="learn/index.html" data-keep>Learn</a>
-        <a href="insights.html">Insights</a>
-        <a href="portfolio.html">Portfolio</a>
-        <a href="about.html" aria-current="page">About</a>
-        <a href="contact.html" data-keep>Contact</a>
+        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/tools/index.html">Tools</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/about.html" aria-current="page">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
       </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
       <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">
         ⌕ <span class="kbd-hint">Ctrl K</span>
       </button>
@@ -217,6 +229,129 @@
         </p>
       </section>
 
+
+      <!-- ============ HOW I WORK ============ -->
+      <section>
+        <span class="section-label mono">How I work</span>
+        <div class="principles">
+          <div class="principle">
+            <h3>Assumptions live in one place</h3>
+            <p>Every model I build has a single assumptions tab, colour-coded, with
+               nothing hard-coded into a formula. You should be able to change a
+               growth rate and watch the whole thing move — without calling me.</p>
+          </div>
+          <div class="principle">
+            <h3>A number you can't trace is a number you can't defend</h3>
+            <p>If a figure appears in a summary, it links back to the calculation
+               and the calculation links back to the source. That's the difference
+               between analysis and decoration.</p>
+          </div>
+          <div class="principle">
+            <h3>Plain language is a technical skill</h3>
+            <p>Anyone can restate jargon in more jargon. Explaining a concept so an
+               intelligent non-specialist gets it — without making it wrong — takes
+               understanding the thing properly first.</p>
+          </div>
+          <div class="principle">
+            <h3>Say the uncertainty out loud</h3>
+            <p>Risk management taught me the useful habit: state the range, name
+               what would have to be true, and flag which input the answer is most
+               sensitive to. Certainty that isn't there helps nobody.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ WHAT I'M WORKING ON ============ -->
+      <section>
+        <span class="section-label mono">What I'm working on now</span>
+        <ul class="timeline">
+          <li>
+            <span class="when">Now</span>
+            <span class="what">CFA Level 1 — November 2026 window</span>
+            <p>Ethics, quantitative methods, financial reporting and portfolio
+               management. The syllabus keeps feeding the Learn hub: anything I have
+               to explain to myself in Bangla ends up as a page here.</p>
+          </li>
+          <li>
+            <span class="when">Ongoing</span>
+            <span class="what">The Bangla investment library</span>
+            <p>Eighteen terms so far, each linked to the others so a reader can
+               follow a thread instead of hitting a wall of vocabulary. The aim is
+               to cover everything a first-time Bangladeshi investor meets in their
+               first year.</p>
+          </li>
+          <li>
+            <span class="when">Ongoing</span>
+            <span class="what">Calculators for decisions people actually face</span>
+            <p>Sanchayapatra against an FDR after tax; what inflation does to a
+               "safe" return; how big a position a risk rule permits. Each one
+               replaces an argument with an arithmetic answer.</p>
+          </li>
+          <li>
+            <span class="when">Next</span>
+            <span class="what">Freelance modeling and analysis</span>
+            <p>Building a public portfolio of work samples — models with the
+               assumptions visible, analyses with the code attached.</p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ============ FAQ ============ -->
+      <section>
+        <span class="section-label mono">Questions people actually ask</span>
+        <div class="stack measure">
+          <details class="faq">
+            <summary>Why write investment education in Bangla?</summary>
+            <p>Because the decisions get made in Bangla. A saver deciding between
+               sanchayapatra and an FDR is not going to read a 40-page English
+               circular, and shouldn't have to. Almost everything published on
+               Bangladeshi markets is either English-language and technical, or
+               Bangla and promotional. There's very little in between — that gap is
+               what this site is for.</p>
+          </details>
+          <details class="faq">
+            <summary>Do you give investment advice?</summary>
+            <p>No, and not as a legal formality — as a design decision. I'm not a
+               licensed adviser, I don't know your situation, and the moment a site
+               like this starts recommending instruments it acquires an interest in
+               you believing it. Explaining how something works and telling you what
+               to buy are different jobs; I only do the first.</p>
+          </details>
+          <details class="faq">
+            <summary>What does the dissertation actually say?</summary>
+            <p>It compared Islamic and conventional fund performance, looking at
+               systematic risk and drawdowns across the pre- and post-COVID periods.
+               A readable summary is on the way to the Insights page — the short
+               version is that the interesting differences show up in how the two
+               behave under stress, not in headline average returns.</p>
+          </details>
+          <details class="faq">
+            <summary>Are you available for work?</summary>
+            <p>Yes — financial modeling, data analysis and finance writing, on a
+               freelance basis. <a href="/portfolio.html">The portfolio page</a> sets
+               out what that covers and how a project runs, and
+               <a href="/contact.html">the contact form</a> reaches me directly.</p>
+          </details>
+          <details class="faq">
+            <summary>How was this site built?</summary>
+            <p>By hand, with no framework and no build step — and the whole thing is
+               written up on <a href="/colophon.html">the colophon page</a>, including
+               why the choices were made and what they cost.</p>
+          </details>
+        </div>
+      </section>
+
+      <div class="band">
+        <span class="mono">Elsewhere</span>
+        <h2>Recruiters, clients, or a reader with a question</h2>
+        <p>All three are welcome. The contact form lands straight in my inbox, and
+           I answer within a business day.</p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/contact.html">Get in touch</a>
+          <a class="btn btn-ghost" href="https://www.linkedin.com/in/reiad" rel="noopener">LinkedIn</a>
+          <a class="btn btn-ghost" href="mailto:i@reiad.co.uk">i@reiad.co.uk</a>
+        </div>
+      </div>
     </div>
   </main>
 

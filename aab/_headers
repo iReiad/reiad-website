@@ -1,0 +1,49 @@
+# ============================================================
+# _headers — Cloudflare Pages reads this file and sends these
+# headers with the matching responses. Local preview ignores it,
+# so anything here has to be verified on a deploy.
+# ============================================================
+
+/*
+  # Don't let the site be framed by anyone else.
+  X-Frame-Options: DENY
+  # Don't let a browser guess a file is something it isn't.
+  X-Content-Type-Options: nosniff
+  # Send the origin to other sites, the full URL to our own.
+  Referrer-Policy: strict-origin-when-cross-origin
+  # Turn off the powerful APIs this site has no use for.
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), interest-cohort=()
+  # HTTPS only, including subdomains, for a year.
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  # Content Security Policy. Everything comes from here except the
+  # fonts; 'unsafe-inline' covers the pre-paint theme script and the
+  # handful of inline styles. publickey-credentials-* is what lets
+  # the Studio ask for a passkey.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.web3forms.com https://market-pulse.i-reiad.workers.dev; form-action https://api.web3forms.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+
+# Fingerprint-free assets change in place, so they must revalidate.
+/styles.css
+  Cache-Control: public, max-age=0, must-revalidate
+/*.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+# The service worker must never be cached, or updates never land.
+/sw.js
+  Cache-Control: no-cache
+
+# Images and icons are effectively immutable.
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+/*.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+# Feeds should be fresh-ish.
+/feed.xml
+  Cache-Control: public, max-age=1800
+  Content-Type: application/rss+xml; charset=utf-8
+
+# The publishing tool is not for search engines.
+/studio.html
+  X-Robots-Tag: noindex, nofollow

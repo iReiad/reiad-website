@@ -5,7 +5,7 @@ A static site — no framework, no build step, no dependencies. Every file in
 
 ## Publishing an article
 
-1. Open **`/studio.html`** in your browser.
+1. Open **`/studio.html`** and unlock it (see *Studio access* below).
 2. Paste the article (from Word, Google Docs, Notion, anywhere). Paste or drag
    in the photos — they get resized to 1600px and re-encoded as WebP, which
    also strips the location data phones hide in JPEGs.
@@ -14,27 +14,49 @@ A static site — no framework, no build step, no dependencies. Every file in
    use **Download .zip** instead and unzip page + `photos/` into `insights/`.)
 4. **Get the index entry** → paste that block at the top of the `ARTICLES`
    list in `aab/content.js`. That single entry is what puts the card on the
-   Insights page and the article into Ctrl+K search.
-5. Commit and push.
-
-Nothing in the Studio is uploaded anywhere; it all runs in your browser, and
-drafts autosave to IndexedDB so a closed tab costs you nothing.
+   Insights page, the piece in Ctrl+K search, and the item in the RSS feed.
+5. Run `node aab/build-meta.mjs` to refresh the feed and sitemap.
+6. Commit and push.
 
 Prefer writing HTML by hand? Copy `aab/insights/_template.html` — it produces
-the identical layout and documents every piece you might need (photos, wide
-photos, side-by-side photos, tables, callouts).
+the identical layout and documents every piece you might need.
+
+## Studio access
+
+`/studio.html` is gated. On first visit it shows a setup screen: choose a
+passphrase and it hands you a block to paste over `AUTH` in
+`aab/auth-config.js`, then commit that. After that the Studio asks for the
+passphrase, and offers to add a **passkey** so future unlocks are Face ID /
+Touch ID / Windows Hello instead.
+
+The passphrase is never stored — only a PBKDF2-SHA256 hash at 600,000
+iterations. But be clear about what this is: a static site has no server, so
+the check runs in the visitor's browser. It keeps the tool private from anyone
+who wanders in and out of search results; it is not cryptographic protection.
+Don't put anything confidential behind it.
 
 ## Files
 
 | Path | What it is |
 | --- | --- |
-| `aab/styles.css` | The whole design system, in `@layer`s: tokens → base → layout → components → article → studio → utilities |
-| `aab/app.js` | Theme, Ctrl+K palette, kinetic headline, prerender rules, Insights cards |
-| `aab/content.js` | **The one file you edit to publish.** Articles, Bangla terms, pages |
-| `aab/pulse.js` | The auto-updating market-news list on the Insights page |
-| `aab/studio.html` / `studio.js` | The Article Studio |
-| `aab/learn/` | The Bangla Learn hub and its pop-up term reader |
+| `aab/styles.css` | The whole design system in nine `@layer`s: tokens → base → layout → components → menu → tools → article → studio → utilities |
+| `aab/app.js` | Theme, overlay menu, Ctrl+K palette, keyboard shortcuts, prerender rules, article cards, service-worker registration |
+| `aab/content.js` | **The one file you edit to publish.** Articles, Bangla terms, tools, pages |
+| `aab/auth.js`, `auth-config.js` | The Studio's passkey / passphrase gate |
+| `aab/studio.html`, `studio.js` | The Article Studio |
+| `aab/tools/` | The five calculators |
+| `aab/learn/` | The Bangla Learn hub, its pop-up term reader and reading progress |
+| `aab/pulse.js` | The auto-updating market-news list |
+| `aab/sw.js` | Service worker — offline reading, never stale articles |
 | `aab/functions/api/news.js` | Cloudflare Pages Function serving `/api/news` |
+| `aab/_headers`, `_redirects` | Cloudflare security headers, CSP and redirects |
+| `aab/build-meta.mjs` | Regenerates `feed.xml`, `sitemap.xml`, `robots.txt` |
+| `aab/build-og.mjs` | Re-renders the social share images in `og/` (needs Playwright) |
+
+## Keyboard
+
+`Ctrl/Cmd K` or `/` search · `M` menu · `T` theme · `?` shortcuts ·
+`G` then `H`/`L`/`I`/`T` to jump to Home, Learn, Insights or Tools.
 
 ## Local preview
 
@@ -44,7 +66,8 @@ The site uses root-absolute URLs and ES modules, so `file://` won't work:
 cd aab && python3 -m http.server 8000
 ```
 
-Then open <http://localhost:8000>.
+Then open <http://localhost:8000>. `_headers` and `_redirects` are Cloudflare
+features — they do nothing locally and need a deploy to verify.
 
 ## Theme
 

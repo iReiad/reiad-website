@@ -1,0 +1,21 @@
+# ============================================================
+# _redirects — Cloudflare Pages. First match wins.
+# 301 = permanent (search engines move the ranking across).
+# ============================================================
+
+# Retired pages that still have links pointing at them.
+/work.html            /portfolio.html          301
+/services.html        /portfolio.html          301
+/insights/dsex.html   /learn/terms/dsex.html   301
+
+# Friendlier URLs for the things people are most likely to type.
+/learn                /learn/index.html        301
+/tools                /tools/index.html        301
+/calculators          /tools/index.html        301
+/insights             /insights.html           301
+/about                /about.html              301
+/contact              /contact.html            301
+/portfolio            /portfolio.html          301
+/colophon             /colophon.html           301
+/rss                  /feed.xml                301
+/feed                 /feed.xml                301

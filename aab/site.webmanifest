@@ -1,11 +1,39 @@
 {
-  "name": "Rony Reiad",
-  "short_name": "reiad",
-  "icons": [
-    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
-  ],
+  "name": "Rony Reiad — Finance & Bangladesh markets",
+  "short_name": "Rony Reiad",
+  "description": "Plain-Bangla investment education, finance calculators, and writing on Bangladesh and global markets.",
+  "id": "/",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
   "theme_color": "#0B3D2E",
-  "background_color": "#F6F1E7",
-  "display": "standalone"
+  "background_color": "#FBFBF7",
+  "lang": "en",
+  "categories": ["finance", "education", "productivity"],
+  "icons": [
+    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Calculators",
+      "short_name": "Tools",
+      "description": "Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing",
+      "url": "/tools/index.html"
+    },
+    {
+      "name": "শেখার লাইব্রেরি",
+      "short_name": "Learn",
+      "description": "Money terms explained in plain Bangla",
+      "url": "/learn/index.html"
+    },
+    {
+      "name": "Insights",
+      "short_name": "Insights",
+      "description": "Articles and the market pulse",
+      "url": "/insights.html"
+    }
+  ]
 }

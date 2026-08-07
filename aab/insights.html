@@ -29,6 +29,16 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Insights">
+  <meta property="og:description" content="Market notes and explainers on Bangladesh and global finance, plus an auto-updating pulse of important market news.">
+  <meta property="og:image" content="https://reiad.co.uk/og/insights.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Rony Reiad">
+  <meta property="og:locale" content="en_GB">
   <meta name="theme-color" content="#0B3D2E">
   <style>
     /* Market pulse: Bangla headline first, English original beneath */
@@ -53,11 +63,13 @@
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/tools/index.html">Tools</a>
         <a href="/insights.html" aria-current="page">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
         <a href="/about.html">About</a>
         <a href="/contact.html" data-keep>Contact</a>
       </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
       <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
       <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
     </div>
@@ -92,7 +104,14 @@
       </section>
 
       <section>
-        <span class="section-label mono">Articles</span>
+        <div class="pulse-head">
+          <span class="section-label mono" style="flex:1">Articles</span>
+        </div>
+
+        <!-- Chips are built from whatever topics the articles actually use,
+             so this list can never drift out of date. -->
+        <div class="filter-row" id="topic-filter" role="group" aria-label="Filter by topic"></div>
+
         <!-- Cards render from the ARTICLES list in /content.js.
              Publishing a piece = drop its file in /insights/ and add
              one entry to that list — /studio.html writes both for you. -->
@@ -106,6 +125,58 @@
               <a class="more" href="/insights/dse-basics.html">Read →</a>
             </div>
           </noscript>
+        </div>
+      </section>
+
+      <section>
+        <span class="section-label mono">How to read anything here</span>
+        <div class="prose">
+          <p>A few habits make finance writing — mine or anyone's — much less
+             dangerous to act on:</p>
+        </div>
+        <div class="stack" style="margin-top:18px;max-width:70ch">
+          <details class="faq">
+            <summary>Ask what the number is being compared to</summary>
+            <p>"11% return" means nothing on its own. Against what inflation? Over
+               how long? After what tax at source? A rate quoted without those
+               three is marketing, not information — the
+               <a href="/tools/index.html#inflation">inflation calculator</a> exists
+               to make that comparison automatic.</p>
+          </details>
+          <details class="faq">
+            <summary>Separate the mechanism from the recommendation</summary>
+            <p>How a BO account works, how settlement lag affects your cash, what a
+               circuit breaker does to liquidity — these are facts you can verify.
+               "This share will go up" is not. Most of what's worth learning lives
+               in the first category, and none of it goes stale.</p>
+          </details>
+          <details class="faq">
+            <summary>Notice who benefits from you believing it</summary>
+            <p>Brokerage houses earn on trading volume. Fund managers earn on assets
+               under management. Newspapers earn on attention. None of that makes
+               them wrong — but it tells you which mistakes they're more likely to
+               make, and in which direction.</p>
+          </details>
+          <details class="faq">
+            <summary>Why is the market pulse automated?</summary>
+            <p>Because I can't read every wire all day, and pretending otherwise
+               would be worse. A keyword filter scores headlines from The Business
+               Standard and BBC Business and keeps the top few. It is a rough
+               first pass, not an editor — it will miss things, and occasionally
+               keep something trivial. Every link goes to the original story.</p>
+          </details>
+        </div>
+      </section>
+
+      <section>
+        <span class="section-label mono">Subscribe</span>
+        <div class="prose">
+          <p>No newsletter, no tracking, no "sign up to continue reading". If you
+             want to know when something new appears, the feed is the honest way:
+             it works in any reader, and it doesn't tell me who you are.</p>
+          <p><a href="/feed.xml">RSS feed →</a> &nbsp;·&nbsp;
+             <a href="/learn/index.html">শেখার লাইব্রেরি</a> &nbsp;·&nbsp;
+             <a href="/tools/index.html">Calculators</a></p>
         </div>
       </section>
 

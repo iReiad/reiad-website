@@ -18,7 +18,10 @@
    `python3 -m http.server`, not file://
    ============================================================ */
 
-import { searchIndex, liveArticles, ARTICLES, formatDate } from "/content.js";
+import {
+  searchIndex, liveArticles, ARTICLES, formatDate, topics,
+  PAGES, TOOLS, TERM_GROUPS, SITE,
+} from "/content.js";
 
 /* ============================================================
    1. THEME
@@ -203,6 +206,189 @@ function initPalette() {
 }
 
 /* ============================================================
+   2b. THE MENU
+   A full-screen <dialog> built at runtime, so every page gets
+   the same menu without carrying its markup — including the
+   pages nobody has touched in a year. showModal() handles the
+   focus trap, the backdrop and Escape for free.
+   ============================================================ */
+
+const el = (tag, props = {}, ...kids) => {
+  const node = Object.assign(document.createElement(tag), props);
+  node.append(...kids.filter(Boolean));
+  return node;
+};
+
+function menuColumn(title, items, render) {
+  return el("div", { className: "menu-col" },
+    el("span", { className: "mono menu-col-title", textContent: title }),
+    el("ul", { className: "menu-list" }, ...items.map(render))
+  );
+}
+
+function buildMenu() {
+  const here = location.pathname.replace(/\/$/, "/index.html");
+
+  const pageLink = (p) => {
+    const a = el("a", { href: p.url },
+      el("strong", { textContent: p.title }),
+      p.blurb ? el("small", { textContent: p.blurb }) : null
+    );
+    if (p.url === here) a.setAttribute("aria-current", "page");
+    return el("li", {}, a);
+  };
+
+  const articles = liveArticles().slice(0, 4);
+
+  const dialog = el("dialog", { id: "site-menu", className: "menu" });
+  dialog.setAttribute("aria-label", "Site menu");
+
+  dialog.append(
+    el("div", { className: "menu-bar" },
+      el("span", { className: "mono", textContent: `${SITE.name} · ${SITE.tagline}` }),
+      el("button", {
+        className: "icon-btn push", id: "menu-close",
+        ariaLabel: "Close the menu", textContent: "✕ Esc",
+      })
+    ),
+    el("div", { className: "menu-grid" },
+      menuColumn("Pages", PAGES.filter((p) => !p.private), pageLink),
+
+      menuColumn("Tools & calculators", TOOLS, (t) =>
+        el("li", {},
+          el("a", { href: `/tools/index.html#${t.id}` },
+            el("strong", { textContent: t.en }),
+            el("small", { className: "bn-h", textContent: t.bn })
+          )
+        )
+      ),
+
+      menuColumn("শেখার লাইব্রেরি · Learn", TERM_GROUPS, (g) =>
+        el("li", {},
+          el("a", { href: `/learn/index.html#${g.id}` },
+            el("strong", { className: "bn-h", textContent: g.bn }),
+            el("small", { textContent: `${g.en} · ${g.terms.length} terms` })
+          )
+        )
+      ),
+
+      menuColumn(articles.length ? "Latest writing" : "Writing",
+        articles.length ? articles : [{ slug: "", title: "Nothing published yet", dek: "" }],
+        (a) =>
+          el("li", {},
+            el("a", { href: a.slug ? `/insights/${a.slug}.html` : "/insights.html" },
+              el("strong", { textContent: a.title }),
+              el("small", {
+                textContent: a.date
+                  ? `${formatDate(a.date, a.lang)} · ${a.minutes} min read`
+                  : a.dek,
+              })
+            )
+          )
+      )
+    ),
+    el("div", { className: "menu-foot" },
+      el("a", { className: "btn btn-solid", href: "/contact.html", textContent: "Get in touch" }),
+      el("a", { className: "btn btn-ghost", href: `mailto:${SITE.email}`, textContent: SITE.email }),
+      el("a", { className: "btn btn-ghost", href: SITE.linkedin, rel: "noopener", textContent: "LinkedIn" }),
+      el("span", { className: "mono push menu-hint" },
+        el("kbd", { textContent: "Ctrl K" }), " search  ",
+        el("kbd", { textContent: "?" }), " shortcuts"
+      )
+    )
+  );
+
+  document.body.append(dialog);
+  return dialog;
+}
+
+function initMenu() {
+  const dialog = buildMenu();
+  const open = () => !dialog.open && dialog.showModal();
+
+  // The button lives in the header of every page; if a page predates
+  // it, put one next to the search button rather than losing the menu.
+  let button = document.getElementById("open-menu");
+  if (!button) {
+    button = el("button", {
+      className: "icon-btn", id: "open-menu",
+      ariaLabel: "Open the menu", innerHTML: '<span class="burger" aria-hidden="true"></span>Menu',
+    });
+    document.getElementById("open-palette")?.before(button);
+  }
+  button.addEventListener("click", open);
+  dialog.querySelector("#menu-close").addEventListener("click", () => dialog.close());
+  dialog.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
+
+  addEventListener("keydown", (e) => {
+    if (e.key.toLowerCase() === "m" && !e.ctrlKey && !e.metaKey && !e.altKey
+        && !isTyping(e.target)) {
+      e.preventDefault();
+      dialog.open ? dialog.close() : open();
+    }
+  });
+}
+
+const isTyping = (node) =>
+  /^(input|textarea|select)$/i.test(node?.tagName) || node?.isContentEditable;
+
+/* ============================================================
+   2c. KEYBOARD SHORTCUTS  ("?")
+   ============================================================ */
+const SHORTCUTS = [
+  ["Ctrl K  /  /", "Search everything"],
+  ["M", "Open the menu"],
+  ["T", "Light ↔ dark"],
+  ["G then H", "Go home"],
+  ["G then L", "Go to the Learn hub"],
+  ["G then I", "Go to Insights"],
+  ["G then T", "Go to Tools"],
+  ["?", "This list"],
+  ["Esc", "Close anything"],
+];
+
+function initShortcuts() {
+  const dialog = el("dialog", { id: "shortcuts", className: "sheet" });
+  dialog.setAttribute("aria-label", "Keyboard shortcuts");
+  dialog.append(
+    el("div", { className: "pane-bar" },
+      el("span", { className: "mono", textContent: "Keyboard shortcuts" }),
+      el("button", { className: "icon-btn push", textContent: "✕", ariaLabel: "Close",
+        onclick: () => dialog.close() })
+    ),
+    el("div", { className: "sheet-body" },
+      el("dl", { className: "shortcut-list" },
+        ...SHORTCUTS.flatMap(([keys, what]) => [
+          el("dt", {}, ...keys.split("  ").map((k) => el("kbd", { textContent: k }))),
+          el("dd", { textContent: what }),
+        ])
+      )
+    )
+  );
+  document.body.append(dialog);
+
+  let goMode = false;
+  const GO = { h: "/index.html", l: "/learn/index.html", i: "/insights.html", t: "/tools/index.html" };
+
+  addEventListener("keydown", (e) => {
+    if (isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;
+
+    if (goMode) {
+      goMode = false;
+      const url = GO[e.key.toLowerCase()];
+      if (url) { e.preventDefault(); location.href = url; }
+      return;
+    }
+    if (e.key === "?") { e.preventDefault(); dialog.open ? dialog.close() : dialog.showModal(); }
+    if (e.key.toLowerCase() === "g") { goMode = true; setTimeout(() => (goMode = false), 1200); }
+    if (e.key.toLowerCase() === "t" && !document.querySelector("dialog[open]")) {
+      e.preventDefault();
+      document.getElementById("theme-toggle")?.click();
+    }
+  });
+}
+
+/* ============================================================
    3. KINETIC HEADLINE
    ============================================================ */
 function initKinetic() {
@@ -255,12 +441,15 @@ function initArticleCards() {
   const host = document.getElementById("article-cards");
   if (!host) return;
 
-  const live = liveArticles();
-  const soon = ARTICLES.filter((a) => a.status === "soon");
+  const limit = Number(host.dataset.limit) || Infinity;
+  const live = liveArticles().slice(0, limit);
+  // the home page shows what exists; the Insights index also teases what's coming
+  const soon = host.dataset.mode === "live" ? [] : ARTICLES.filter((a) => a.status === "soon");
 
   const card = (a) => {
     const el = document.createElement(a.status === "soon" ? "div" : "a");
     el.className = "cell sample-card" + (a.status === "soon" ? " placeholder" : "");
+    el.dataset.topics = (a.topics ?? []).join("|");
     if (a.status !== "soon") {
       el.href = `/insights/${a.slug}.html`;
       el.style.textDecoration = "none";
@@ -298,6 +487,41 @@ function initArticleCards() {
   };
 
   host.replaceChildren(...live.map(card), ...soon.map(card));
+  initTopicFilter(host);
+}
+
+/** Chips that show/hide the cards by topic, built from what exists. */
+function initTopicFilter(host) {
+  const row = document.getElementById("topic-filter");
+  if (!row) return;
+
+  const all = topics();
+  const chip = (label, count, value) => {
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.type = "button";
+    b.textContent = count === undefined ? label : `${label} · ${count}`;
+    b.dataset.topic = value;
+    b.setAttribute("aria-pressed", value === "" ? "true" : "false");
+    return b;
+  };
+
+  row.replaceChildren(
+    chip("Everything", liveArticles().length, ""),
+    ...all.map((t) => chip(t.name, t.count, t.name))
+  );
+
+  row.addEventListener("click", (e) => {
+    const button = e.target.closest("[data-topic]");
+    if (!button) return;
+    const topic = button.dataset.topic;
+    row.querySelectorAll("[data-topic]").forEach((b) =>
+      b.setAttribute("aria-pressed", String(b === button))
+    );
+    host.querySelectorAll("[data-topics]").forEach((c) => {
+      c.hidden = topic !== "" && !c.dataset.topics.split("|").includes(topic);
+    });
+  });
 }
 
 /* ============================================================
@@ -348,9 +572,41 @@ export function download(filename, data, type = "text/html;charset=utf-8") {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+/* ============================================================
+   5b. READING PROGRESS on the Learn hub
+   Opening a term page ticks it off. Stored on the device only —
+   it's a bookmark, not analytics, and nothing leaves the browser.
+   ============================================================ */
+function markTermRead() {
+  const slug = document.querySelector("article.term-article[data-slug]")?.dataset.slug;
+  if (!slug) return;
+  try {
+    const read = new Set(JSON.parse(localStorage.getItem("learn-read") || "[]"));
+    read.add(slug);
+    localStorage.setItem("learn-read", JSON.stringify([...read]));
+  } catch { /* private mode; the tick is a nicety */ }
+}
+
+/* ============================================================
+   6. SERVICE WORKER — offline reading, instant repeat visits
+   ============================================================ */
+function initServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  if (location.protocol !== "https:" && location.hostname !== "localhost") return;
+  addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+      /* offline support is a bonus, never a requirement */
+    });
+  });
+}
+
 /* ---------- go ---------- */
 initTheme();
 initPalette();
+initMenu();
+initShortcuts();
 initKinetic();
 initSpeculation();
 initArticleCards();
+markTermRead();
+initServiceWorker();

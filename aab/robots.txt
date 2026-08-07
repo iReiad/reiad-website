@@ -1,0 +1,9 @@
+# Rony Reiad — Finance & Bangladesh markets
+User-agent: *
+Allow: /
+
+# The publishing tool is mine, not content.
+Disallow: /studio.html
+Disallow: /insights/_template.html
+
+Sitemap: https://reiad.co.uk/sitemap.xml

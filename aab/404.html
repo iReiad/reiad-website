@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex, follow">
+  <title>Not found — Rony Reiad</title>
+  <meta name="description" content="That page doesn't exist. Here's everything that does.">
+    <!-- Theme before first paint: no white flash for dark-mode readers. -->
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the main content</a>
+
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="/index.html">
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Rony Reiad
+      </a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/tools/index.html">Tools</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+
+    <main id="main">
+    <div class="wrap">
+      <div class="hero" style="padding-block:80px 30px">
+        <span class="eyebrow mono">404 · এই পাতাটি নেই</span>
+        <h1>That page isn't here.</h1>
+        <p class="lede">
+          Either it moved, or the link was wrong, or I broke something. If you
+          followed a link from somewhere on this site,
+          <a href="/contact.html">tell me</a> — that's a bug and I'll fix it.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/index.html">Back to the start</a>
+          <a class="btn btn-ghost" href="#" id="open-palette-2">Search the site</a>
+        </div>
+      </div>
+
+      <section style="content-visibility:visible">
+        <span class="section-label mono">Everything that does exist</span>
+        <div class="big-links">
+          <a class="big-link" href="/learn/index.html">
+            <span class="num">01</span><span class="t">শেখার লাইব্রেরি — the Bangla learn hub</span>
+            <span class="go">→</span>
+            <span class="d">Eighteen money terms, each a two-minute read.</span>
+          </a>
+          <a class="big-link" href="/tools/index.html">
+            <span class="num">02</span><span class="t">Calculators</span>
+            <span class="go">→</span>
+            <span class="d">Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing.</span>
+          </a>
+          <a class="big-link" href="/insights.html">
+            <span class="num">03</span><span class="t">Insights</span>
+            <span class="go">→</span>
+            <span class="d">Longer pieces, plus the auto-updating market pulse.</span>
+          </a>
+          <a class="big-link" href="/about.html">
+            <span class="num">04</span><span class="t">About &amp; contact</span>
+            <span class="go">→</span>
+            <span class="d">Who's writing this, and how to reach me.</span>
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>Everything on this site is general education, not investment advice.
+         Do your own research before putting money anywhere.</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+  <script type="module">
+    document.getElementById("open-palette-2")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById("open-palette").click();
+    });
+  </script>
+</body>
+</html>
