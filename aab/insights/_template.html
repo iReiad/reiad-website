@@ -126,11 +126,14 @@
 
       <blockquote>A pulled quote, for the line worth slowing down on.</blockquote>
 
-      <!-- A photo. Put the image file in /insights/photos/ and keep the
+      <!-- A photo. The src below is an inline placeholder so this template
+           renders without 404s — replace it with your real file, e.g.
+           src="/insights/photos/your-photo.webp". Put the image file in
+           /insights/photos/ and keep the
            width and height attributes — they stop the page from jumping
            around while the image loads. -->
       <figure>
-        <img src="/insights/photos/example.webp" alt="Describe the photo for
+        <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'%3E%3Crect width='1600' height='900' fill='%23E7F0EA'/%3E%3Ctext x='50%' y='50%' fill='%23145A3F' font-family='monospace' font-size='57' text-anchor='middle' dominant-baseline='middle'%3Eyour photo here%3C/text%3E%3C/svg%3E" alt="Describe the photo for
              someone who can't see it" width="1600" height="900"
              loading="lazy" decoding="async">
         <figcaption>The caption. Credit the photographer here if it isn't yours.</figcaption>
@@ -138,14 +141,14 @@
 
       <!-- Two photos side by side -->
       <figure class="duo">
-        <img src="/insights/photos/left.webp" alt="" width="800" height="600" loading="lazy">
-        <img src="/insights/photos/right.webp" alt="" width="800" height="600" loading="lazy">
+        <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'%3E%3Crect width='800' height='600' fill='%23E7F0EA'/%3E%3Ctext x='50%' y='50%' fill='%23145A3F' font-family='monospace' font-size='28' text-anchor='middle' dominant-baseline='middle'%3Eleft%3C/text%3E%3C/svg%3E" alt="" width="800" height="600" loading="lazy">
+        <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'%3E%3Crect width='800' height='600' fill='%23E7F0EA'/%3E%3Ctext x='50%' y='50%' fill='%23145A3F' font-family='monospace' font-size='28' text-anchor='middle' dominant-baseline='middle'%3Eright%3C/text%3E%3C/svg%3E" alt="" width="800" height="600" loading="lazy">
         <figcaption>One caption covers both.</figcaption>
       </figure>
 
       <!-- A photo that breaks out wider than the text column -->
       <figure class="wide">
-        <img src="/insights/photos/wide.webp" alt="" width="2000" height="900" loading="lazy">
+        <img src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2000 900'%3E%3Crect width='2000' height='900' fill='%23E7F0EA'/%3E%3Ctext x='50%' y='50%' fill='%23145A3F' font-family='monospace' font-size='71' text-anchor='middle' dominant-baseline='middle'%3Ewide photo%3C/text%3E%3C/svg%3E" alt="" width="2000" height="900" loading="lazy">
         <figcaption>Use this sparingly — it works best for charts.</figcaption>
       </figure>
 

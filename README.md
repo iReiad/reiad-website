@@ -50,6 +50,7 @@ Don't put anything confidential behind it.
 | `aab/sw.js` | Service worker — offline reading, never stale articles |
 | `aab/functions/api/news.js` | Cloudflare Pages Function serving `/api/news` |
 | `aab/_headers`, `_redirects` | Cloudflare security headers, CSP and redirects |
+| `aab/check-routes.mjs` | **Run before deploying.** Walks every URL through Cloudflare Pages' routing rules and fails on loops, dead ends and broken links |
 | `aab/build-meta.mjs` | Regenerates `feed.xml`, `sitemap.xml`, `robots.txt` |
 | `aab/build-og.mjs` | Re-renders the social share images in `og/` (needs Playwright) |
 
@@ -67,7 +68,18 @@ cd aab && python3 -m http.server 8000
 ```
 
 Then open <http://localhost:8000>. `_headers` and `_redirects` are Cloudflare
-features — they do nothing locally and need a deploy to verify.
+features that do nothing locally, so before pushing anything that touches them:
+
+```sh
+node aab/check-routes.mjs
+```
+
+That emulates Pages' routing and catches redirect loops, which are otherwise
+invisible until the site is live and a page simply refuses to load.
+
+**Never add "pretty URL" rules to `_redirects`.** Pages already serves
+`/about.html` at `/about` and redirects the `.html` form to it; a rule pointing
+the other way is an infinite loop.
 
 ## Theme
 

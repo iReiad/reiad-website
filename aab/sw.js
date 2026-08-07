@@ -18,7 +18,10 @@
    Bump VERSION to retire every old cache in one go.
    ============================================================ */
 
-const VERSION = "v1";
+/* Bump this to retire every old cache. v2: a broken _redirects file
+   briefly made several pages unreachable, so any client that cached
+   an offline fallback during that window gets a clean slate. */
+const VERSION = "v2";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
