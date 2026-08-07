@@ -49,15 +49,10 @@ pages_build_output_dir = "aab"
 # (see functions/_lib/db.js), so there is no schema step and no way to
 # end up half-migrated.
 #
-# Left commented out because Cloudflare validates this file when it
-# deploys: a binding pointing at a database that doesn't exist would
-# fail the build and take the live site down, for the sake of a feature
-# that isn't switched on yet.
-#
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "reiad"
-# database_id = "PASTE_YOUR_DATABASE_ID_HERE"
+[[d1_databases]]
+binding = "DB"
+database_name = "reiad"
+database_id = "ad23dea3-74fc-4346-8119-ab5936f1a708"
 
 # ---------- Workers AI (optional) ----------
 # functions/api/news.js uses an `AI` binding to translate headlines

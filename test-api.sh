@@ -1,6 +1,7 @@
 #!/bin/bash
 # End-to-end exercise of every endpoint against the real Cloudflare runtime.
-B=http://127.0.0.1:8790
+# Override with: PORT=8792 ./test-api.sh
+B=http://127.0.0.1:${PORT:-8788}
 J='Content-Type: application/json'
 C=/tmp/claude-0/-home-user-reiad-website/1961c87d-d619-531a-a6b0-6ffce0aed95e/scratchpad/jar.txt
 rm -f $C

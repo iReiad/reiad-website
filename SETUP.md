@@ -3,46 +3,32 @@
 You've already done the hard part — the database exists. What's left is
 telling the site where it is.
 
-There are two routes. **Route A is one line in one file and no dashboard at
-all**, and it's the one worth taking.
+**Route A is already done** — the binding is committed. What's left for you is
+in *"What's actually left"* at the bottom. Route B is the fallback if the
+binding doesn't take.
 
 ---
 
-## Route A — the binding lives in `wrangler.toml` (recommended)
+## Route A — the binding lives in `wrangler.toml` (done)
 
 Cloudflare Pages reads `wrangler.toml` on every deploy and attaches the
 bindings it declares. The dashboard's *Settings → Bindings* screen does exactly
 the same job by hand — so if this file is right, you never need that screen.
 
-**1. Get the database ID**
-
-Cloudflare dashboard → **Storage & Databases** → **D1 SQL Database** → click
-your database. The **Database ID** is on that page: a UUID like
-`1a2b3c4d-5e6f-7890-abcd-ef1234567890`.
-
-It is not a secret. It names a database; it doesn't open one. Only an
-authenticated request from your own account can touch it.
-
-**2. Put it in `wrangler.toml`**
-
-Find this block near the bottom and remove the `# ` from the last four lines,
-then paste your ID in:
+`wrangler.toml` now contains:
 
 ```toml
 [[d1_databases]]
 binding = "DB"
 database_name = "reiad"
-database_id = "1a2b3c4d-5e6f-7890-abcd-ef1234567890"
+database_id = "ad23dea3-74fc-4346-8119-ab5936f1a708"
 ```
 
-The `binding = "DB"` line must stay exactly as it is — that's the name the code
-looks for.
+Verified against Cloudflare's own runtime: the config parses and the binding
+resolves (`env.DB (reiad) — D1 Database`), and the 46-check API suite passes
+against it.
 
-**3. Commit and push.**
-
-That's the whole thing. The next deploy has a database attached.
-
-**4. There is no schema step.**
+**There is no schema step.**
 
 The tables create themselves on the first request that needs them
 (`functions/_lib/db.js` runs the migrations and caches the fact). So there's no
@@ -104,3 +90,16 @@ uses R2, so those can go and nothing will notice.
 
 Neither is needed for anything above — the setup is one non-secret ID in one
 file.
+
+
+---
+
+## What's actually left
+
+1. **Merge the pull request.** Cloudflare deploys `main` automatically.
+2. **Open `https://reiad.co.uk/api/auth/me`** — see *How to tell whether it
+   worked* above.
+3. **Open `https://reiad.co.uk/studio.html`** and set your passphrase.
+4. **Revoke that API token** (last section).
+
+That's the lot.
