@@ -1,5 +1,28 @@
 # ============================================================
-# wrangler.toml — Cloudflare Pages configuration.
+# wrangler.example.toml — config for LOCAL DEVELOPMENT ONLY.
+#
+# WHY THIS ISN'T CALLED wrangler.toml
+#
+# A wrangler.toml in the repo root changes how Cloudflare builds a
+# Pages project: it switches to running a "deploy command", and the
+# one it picks by default is `npx wrangler deploy` — the Workers
+# command, not the Pages one. That fails with:
+#
+#   ✘ Missing entry-point to Worker script or to assets directory
+#
+# and the deployment never happens, so the site silently stays on the
+# previous version. That is exactly what happened here.
+#
+# So the file lives under a name Cloudflare doesn't look for, the
+# production D1 binding is set in the dashboard instead (see SETUP.md),
+# and Pages keeps using the plain Git build that has always worked.
+#
+# TO USE IT LOCALLY:
+#
+#   cp wrangler.example.toml wrangler.toml     # git ignores it
+#   npx wrangler pages dev
+#
+# ============================================================
 #
 # The site works without any of this. Every dynamic feature
 # checks whether its binding exists and falls back to the static
@@ -9,16 +32,7 @@
 # ONE-TIME SETUP (about three minutes, needs your Cloudflare
 # account, which is why it can't be done for you):
 #
-#   npx wrangler login
-#   npx wrangler d1 create reiad
-#     → copy the database_id it prints into this file
-#   npx wrangler d1 execute reiad --remote --file=aab/schema.sql
-#   npx wrangler pages deploy aab
-#
-# Then set the admin password by visiting /studio.html once —
-# it walks you through it and stores only a hash, server-side.
-#
-# Or run ./setup.sh, which does all of the above in order.
+#   see SETUP.md — the production binding is a dashboard setting
 # ============================================================
 
 name = "reiad-website"

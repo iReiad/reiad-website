@@ -12,13 +12,14 @@ run `./setup.sh` — there is no second version to maintain in between.
 
 ## Turning the dynamic half on
 
-**See [SETUP.md](SETUP.md).** Short version: paste your D1 database ID into
-`wrangler.toml`, commit, then open `/studio.html` and set a passphrase. The
-tables create themselves — there's no schema step, and no dashboard binding to
-click, because Pages reads the binding out of `wrangler.toml`.
+**See [SETUP.md](SETUP.md).** Short version: add a D1 binding named `DB` in the
+Cloudflare dashboard, redeploy, then open `/studio.html` and set a passphrase.
+The tables create themselves, so there's no schema step.
 
-`./setup.sh` does the same thing from a terminal if you'd rather (it also
-creates the database, if you haven't).
+The binding cannot live in `wrangler.toml`: a `wrangler.toml` in the repo root
+makes Cloudflare Pages switch to a `wrangler deploy` build command, which fails
+on a Pages project and silently leaves the site on its previous version. The
+file is kept as `wrangler.example.toml` for local development only.
 
 Then **writing a piece and pressing "Publish to the site" puts it live
 immediately** — no file to move, no commit, no push.
@@ -38,9 +39,10 @@ immediately** — no file to move, no commit, no push.
 ## Testing
 
 ```sh
-npx wrangler pages dev          # the real Cloudflare runtime, local D1
-./test-api.sh                   # 46 checks over every endpoint
-node aab/check-routes.mjs       # catches redirect loops before deploying
+cp wrangler.example.toml wrangler.toml   # git-ignored
+npx wrangler pages dev                   # real Cloudflare runtime, local D1
+PORT=8788 ./test-api.sh                  # 46 checks over every endpoint
+node aab/check-routes.mjs                # catches redirect loops before deploy
 ```
 
 ## Publishing an article — the manual way
@@ -95,7 +97,7 @@ which mode it's in.
 | `functions/` | Pages Functions. **Must live at the repo root** — Pages does not look inside the build output directory |
 | `functions/_lib/` | Database, HTTP helpers, server-side auth, server-side HTML sanitiser |
 | `aab/schema.sql` | The database. Also applied automatically on first request |
-| `setup.sh` | One-time Cloudflare setup |
+| `wrangler.example.toml` | Local dev config. Copy to `wrangler.toml` (git-ignored) — **must not be committed under that name** |
 | `test-api.sh` | 46 end-to-end API checks |
 | `aab/studio.html`, `studio.js` | The Article Studio |
 | `aab/tools/` | The five calculators |

@@ -1,62 +1,72 @@
-# Switching the dynamic half on
+# Setup
 
-You've already done the hard part — the database exists. What's left is
-telling the site where it is.
-
-**Route A is already done** — the binding is committed. What's left for you is
-in *"What's actually left"* at the bottom. Route B is the fallback if the
-binding doesn't take.
+Two separate things, in order. **Step 1 is required** — until it's done, the
+site is still serving the old version. Step 2 is optional and can wait.
 
 ---
 
-## Route A — the binding lives in `wrangler.toml` (done)
+## 1. Get the deploy working again  ✅ fixed in this branch
 
-Cloudflare Pages reads `wrangler.toml` on every deploy and attaches the
-bindings it declares. The dashboard's *Settings → Bindings* screen does exactly
-the same job by hand — so if this file is right, you never need that screen.
+**What went wrong:** I added a `wrangler.toml` to the repo root. That file
+changes how Cloudflare builds a Pages project — it switches to running a
+*deploy command*, and the one it defaults to is `npx wrangler deploy`, which is
+the **Workers** command, not the Pages one. It fails with:
 
-`wrangler.toml` now contains:
-
-```toml
-[[d1_databases]]
-binding = "DB"
-database_name = "reiad"
-database_id = "ad23dea3-74fc-4346-8119-ab5936f1a708"
+```
+✘ [ERROR] Missing entry-point to Worker script or to assets directory
 ```
 
-Verified against Cloudflare's own runtime: the config parses and the binding
-resolves (`env.DB (reiad) — D1 Database`), and the 46-check API suite passes
-against it.
+The build fails, the deployment never happens, and the site quietly stays on
+the previous version. That's why merging appeared to do nothing.
 
-**There is no schema step.**
+**The fix, already in this branch:** the file is now `wrangler.example.toml`, a
+name Cloudflare doesn't look for. Pages goes back to the plain Git build that
+has always worked. Local development copies it to `wrangler.toml`, which is
+git-ignored.
 
-The tables create themselves on the first request that needs them
-(`functions/_lib/db.js` runs the migrations and caches the fact). So there's no
-SQL to paste and no way to end up half-migrated.
+**What you do:** merge this branch. The deploy should go green.
 
-**5. Open `https://reiad.co.uk/studio.html` and set your passphrase.**
+### If it still fails
 
-It'll show a "Set up Studio access" screen. Whatever you type is hashed on the
-server — nothing readable is stored anywhere, and the screen will tell you it's
-checking server-side, which is how you know the binding worked.
+Then your project also has a deploy command saved in its settings, and it needs
+clearing:
+
+1. Cloudflare dashboard → **Workers & Pages** → your project
+2. **Settings** → **Build** (or *Builds & deployments*)
+3. **Deploy command** — clear it, or set it to exactly:
+   `npx wrangler pages deploy aab`
+4. **Build command** — should be empty
+5. **Build output directory** — should be `aab`
+6. Save, then **Deployments** → latest → **⋯** → **Retry deployment**
+
+Send me the build log if it's still unhappy.
 
 ---
 
-## Route B — the dashboard, click by click
+## 2. Connect the database  (optional — the site is complete without it)
 
-Use this if Route A doesn't take effect for any reason.
+This switches on one-click publishing, reader questions, the subscriber list,
+the enquiry pipeline and the stats. Skip it and everything else works exactly
+as it does now.
 
-1. Cloudflare dashboard → **Workers & Pages** → your Pages project
-   (`reiad-website` or whatever it's named).
-2. **Settings** tab → scroll to **Bindings** → **Add** → **D1 database**.
-3. Fill in exactly:
-   - **Variable name**: `DB`  ← must be these two letters
-   - **D1 database**: pick your database from the list
-4. Save.
-5. **Deployments** tab → the most recent one → **⋯** → **Retry deployment**.
-   A binding only reaches a deployment that was built after it was added, which
-   is the step people usually miss.
-6. Then step 5 of Route A: open `/studio.html` and set your passphrase.
+Because `wrangler.toml` can't live in the repo (see above), the binding is a
+dashboard setting. It's one screen:
+
+1. Cloudflare dashboard → **Workers & Pages** → your project
+2. **Settings** tab → scroll to **Bindings** → **Add**
+3. Choose **D1 database**
+4. Fill in exactly:
+   - **Variable name**: `DB`  ← these two letters, nothing else
+   - **D1 database**: `reiad` (id `ad23dea3-74fc-4346-8119-ab5936f1a708`)
+5. **Save**
+6. **Deployments** tab → most recent → **⋯** → **Retry deployment**
+
+Step 6 is the one people miss: a binding only reaches deployments built *after*
+it was added.
+
+**There is no schema step.** The tables create themselves on the first request
+that needs them (`functions/_lib/db.js`), so there's no SQL to paste and no way
+to end up half-migrated.
 
 ---
 
@@ -64,42 +74,38 @@ Use this if Route A doesn't take effect for any reason.
 
 Open `https://reiad.co.uk/api/auth/me` in a browser tab.
 
-- `{"ok":true,"configured":false,"signedIn":false}` — **the database is
-  connected.** Go and set your passphrase.
-- `{"ok":false,"reason":"not-configured"}` — not attached yet. The binding
-  isn't reaching the deployment; check the variable name is `DB`, and that
-  you've deployed since adding it.
-- A 404 page — Functions aren't deploying at all. Check the Pages project's
-  build output directory is `aab`, and that `functions/` is at the repo root
-  (it is, in this branch).
+| What you see | What it means |
+| --- | --- |
+| `{"ok":true,"configured":false,"signedIn":false}` | **Database connected.** Go to `/studio.html` and set your passphrase. |
+| `{"ok":false,"reason":"not-configured"}` | Functions are running, database isn't attached. Check the variable name is `DB`, and that you redeployed after adding it. |
+| The 404 page | Functions aren't deploying. Check build output directory is `aab`, and that `functions/` is at the repo root (it is, in this branch). |
+
+Then open `https://reiad.co.uk/studio.html`. The fine print on the lock screen
+says which mode it's in — "checked on the server" means the whole chain works.
 
 ---
 
-## While you're in there: revoke that API token
+## 3. Revoke that API token
 
-The token you pasted into the chat is account-scoped, and a chat transcript
-isn't somewhere a live credential should live. It also turned out to be
-unusable from my side — the environment I run in blocks all outbound network
-except GitHub and package registries, which is why I couldn't use it.
+The token pasted into chat is account-scoped and a transcript is no place for a
+live credential. It also turned out to be unusable from my side: the
+environment I run in blocks all outbound network except GitHub and package
+registries, so `api.cloudflare.com` was refused before the request left.
 
-Cloudflare dashboard → **My Profile** → **API Tokens** → find
-`square-waterfall-a740` → **Delete**.
+- **My Profile** → **API Tokens** → `square-waterfall-a740` → **Delete**
+- **R2** → **Manage API tokens** → delete those too; nothing here uses R2
 
-Same for the R2 keys (**R2** → **Manage API tokens**). Nothing on this site
-uses R2, so those can go and nothing will notice.
-
-Neither is needed for anything above — the setup is one non-secret ID in one
-file.
-
+Nothing above needs either of them.
 
 ---
 
-## What's actually left
+## Local development
 
-1. **Merge the pull request.** Cloudflare deploys `main` automatically.
-2. **Open `https://reiad.co.uk/api/auth/me`** — see *How to tell whether it
-   worked* above.
-3. **Open `https://reiad.co.uk/studio.html`** and set your passphrase.
-4. **Revoke that API token** (last section).
+```sh
+cp wrangler.example.toml wrangler.toml   # git-ignored; do not commit it
+npx wrangler pages dev                   # real Cloudflare runtime, local D1
+PORT=8788 ./test-api.sh                  # 46 checks over every endpoint
+node aab/check-routes.mjs                # catches redirect loops before deploy
+```
 
-That's the lot.
+The local database is a copy — nothing you do in `pages dev` touches live data.
