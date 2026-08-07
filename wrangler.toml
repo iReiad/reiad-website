@@ -1,0 +1,69 @@
+# ============================================================
+# wrangler.toml — the deployment config for reiad.co.uk.
+#
+# This site is a Cloudflare **Worker with static assets**, not a
+# Pages project. The Worker (`reiad-website`) predates all of this
+# work, and Cloudflare's Git integration builds it by running
+# `npx wrangler deploy` — which is why this file needs `main` and
+# `[assets]` rather than the Pages-style `pages_build_output_dir`.
+# Getting that wrong is what failed the build earlier:
+#
+#   ✘ Missing entry-point to Worker script or to assets directory
+#
+# Local development:
+#
+#   npx wrangler dev            # the real runtime, local D1
+#   PORT=8787 ./test-api.sh     # 46 checks over every endpoint
+# ============================================================
+
+name = "reiad-website"
+main = "worker.js"
+compatibility_date = "2026-08-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ---------- the site itself ----------
+# Everything in aab/ is served straight from Cloudflare's edge. The
+# Worker only runs when no file matches, plus wherever
+# run_worker_first says so.
+#
+# _headers and _redirects inside aab/ are honoured here exactly as
+# they were under Pages.
+[assets]
+directory = "./aab"
+binding = "ASSETS"
+not_found_handling = "404-page"
+# Two paths must reach the Worker before the asset router does:
+#
+#   /api/*       has no files behind it at all
+#   /insights/*  because an article published through the Studio has
+#                no file either — and with not_found_handling set to
+#                "404-page", an asset miss is answered with the 404
+#                page instead of falling through to the Worker. So a
+#                database-backed article would 404 despite existing.
+#                (It did. This line is why it doesn't.)
+#
+# For an article that IS a committed file, the Worker finds no row and
+# calls next(), which serves the file exactly as before.
+run_worker_first = ["/api/*", "/insights/*"]
+
+# ---------- the database ----------
+# Articles, reader questions, subscribers, enquiries, view counts
+# and admin sessions. The tables create themselves on the first
+# request that needs them (functions/_lib/db.js), so there is no
+# schema step and no way to end up half-migrated.
+[[d1_databases]]
+binding = "DB"
+database_name = "reiad"
+database_id = "ad23dea3-74fc-4346-8119-ab5936f1a708"
+
+[vars]
+SITE_ORIGIN = "https://reiad.co.uk"
+
+# ---------- Workers AI (optional) ----------
+# functions/api/news.js translates headlines into Bangla when an `AI`
+# binding exists, and skips it silently when it doesn't. It is left
+# out here on purpose: an [ai] binding forces `wrangler dev` into
+# remote mode, which needs an API token and breaks local development.
+# Add it in the dashboard if you want the translations:
+#   Workers & Pages → reiad-website → Settings → Bindings →
+#   Add → Workers AI → variable name: AI

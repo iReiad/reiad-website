@@ -1,111 +1,98 @@
 # Setup
 
-Two separate things, in order. **Step 1 is required** — until it's done, the
-site is still serving the old version. Step 2 is optional and can wait.
+Everything is configured in the repo now. **Merge, and it's done** — there is
+no dashboard step left.
 
 ---
 
-## 1. Get the deploy working again  ✅ fixed in this branch
+## What was actually wrong
 
-**What went wrong:** I added a `wrangler.toml` to the repo root. That file
-changes how Cloudflare builds a Pages project — it switches to running a
-*deploy command*, and the one it defaults to is `npx wrangler deploy`, which is
-the **Workers** command, not the Pages one. It fails with:
+`reiad.co.uk` is a Cloudflare **Worker with static assets**, not a Pages
+project. I checked the account directly: the Worker `reiad-website` was created
+on 10 July 2026, well before any of this work.
 
-```
-✘ [ERROR] Missing entry-point to Worker script or to assets directory
-```
+That single fact explains a run of confusing symptoms:
 
-The build fails, the deployment never happens, and the site quietly stays on
-the previous version. That's why merging appeared to do nothing.
+- **Pages Functions never ran.** Files under `functions/` are routed by path on
+  Pages. Workers have no such convention — so `/api/news` has never worked,
+  which is presumably why the market pulse was moved to a separate
+  `market-pulse` Worker.
+- **The build failed** when I added a Pages-style `wrangler.toml`: Cloudflare's
+  Git integration runs `npx wrangler deploy`, which is the Workers command, and
+  it needs `main` and `[assets]` — not `pages_build_output_dir`.
+- **A failed build is invisible from outside**, because the previous deployment
+  keeps serving. That's why merging looked like it did nothing.
 
-**The fix, already in this branch:** the file is now `wrangler.example.toml`, a
-name Cloudflare doesn't look for. Pages goes back to the plain Git build that
-has always worked. Local development copies it to `wrangler.toml`, which is
-git-ignored.
+## What changed
 
-**What you do:** merge this branch. The deploy should go green.
+- `worker.js` — the router. Static assets are matched first; `/api/*` and
+  `/insights/*` reach the Worker; everything else falls through to the assets
+  binding. The endpoint handlers under `functions/` are unchanged and still
+  take a Pages-shaped context, so there is one implementation of each endpoint.
+- `wrangler.toml` — Workers config: `main`, `[assets]`, and the D1 binding
+  **in the file**, so no dashboard binding is needed after all.
 
-### If it still fails
+## What you do
 
-Then your project also has a deploy command saved in its settings, and it needs
-clearing:
+**Merge the pull request.** That's the whole thing.
 
-1. Cloudflare dashboard → **Workers & Pages** → your project
-2. **Settings** → **Build** (or *Builds & deployments*)
-3. **Deploy command** — clear it, or set it to exactly:
-   `npx wrangler pages deploy aab`
-4. **Build command** — should be empty
-5. **Build output directory** — should be `aab`
-6. Save, then **Deployments** → latest → **⋯** → **Retry deployment**
+- The build should go green (`wrangler deploy` now has what it needs).
+- The database is bound by the config file.
+- The tables create themselves on the first request that needs them.
 
-Send me the build log if it's still unhappy.
-
----
-
-## 2. Connect the database  (optional — the site is complete without it)
-
-This switches on one-click publishing, reader questions, the subscriber list,
-the enquiry pipeline and the stats. Skip it and everything else works exactly
-as it does now.
-
-Because `wrangler.toml` can't live in the repo (see above), the binding is a
-dashboard setting. It's one screen:
-
-1. Cloudflare dashboard → **Workers & Pages** → your project
-2. **Settings** tab → scroll to **Bindings** → **Add**
-3. Choose **D1 database**
-4. Fill in exactly:
-   - **Variable name**: `DB`  ← these two letters, nothing else
-   - **D1 database**: `reiad` (id `ad23dea3-74fc-4346-8119-ab5936f1a708`)
-5. **Save**
-6. **Deployments** tab → most recent → **⋯** → **Retry deployment**
-
-Step 6 is the one people miss: a binding only reaches deployments built *after*
-it was added.
-
-**There is no schema step.** The tables create themselves on the first request
-that needs them (`functions/_lib/db.js`), so there's no SQL to paste and no way
-to end up half-migrated.
+Then open **`https://reiad.co.uk/studio.html`** and set your passphrase.
 
 ---
 
-## How to tell whether it worked
+## How to tell it worked
 
-Open `https://reiad.co.uk/api/auth/me` in a browser tab.
+Open `https://reiad.co.uk/api/auth/me`:
 
 | What you see | What it means |
 | --- | --- |
-| `{"ok":true,"configured":false,"signedIn":false}` | **Database connected.** Go to `/studio.html` and set your passphrase. |
-| `{"ok":false,"reason":"not-configured"}` | Functions are running, database isn't attached. Check the variable name is `DB`, and that you redeployed after adding it. |
-| The 404 page | Functions aren't deploying. Check build output directory is `aab`, and that `functions/` is at the repo root (it is, in this branch). |
-
-Then open `https://reiad.co.uk/studio.html`. The fine print on the lock screen
-says which mode it's in — "checked on the server" means the whole chain works.
+| `{"ok":true,"configured":false,"signedIn":false}` | **Everything is up.** Go set your passphrase. |
+| `{"ok":false,"reason":"not-configured"}` | Worker is running, database isn't bound — check the build log. |
+| The 404 page | The deploy didn't take. Send me the build log. |
 
 ---
 
-## 3. Revoke that API token
+## Optional: Bangla headline translation
 
-The token pasted into chat is account-scoped and a transcript is no place for a
-live credential. It also turned out to be unusable from my side: the
-environment I run in blocks all outbound network except GitHub and package
-registries, so `api.cloudflare.com` was refused before the request left.
+`functions/api/news.js` translates market headlines into Bangla when an `AI`
+binding exists, and skips it when it doesn't. It's deliberately left out of
+`wrangler.toml` because an `[ai]` binding forces `wrangler dev` into remote mode
+and breaks local development.
 
-- **My Profile** → **API Tokens** → `square-waterfall-a740` → **Delete**
-- **R2** → **Manage API tokens** → delete those too; nothing here uses R2
+To switch it on: **Workers & Pages → reiad-website → Settings → Bindings →
+Add → Workers AI → variable name `AI`**.
 
-Nothing above needs either of them.
+Also worth knowing: now that Functions actually run, `/api/news` works, so the
+separate `market-pulse` Worker may be redundant. The market pulse tries
+`/api/news` first and falls back to that Worker, so both work — you can retire
+it whenever you like.
+
+---
+
+## Revoke that API token
+
+The token pasted into chat is account-scoped, and a transcript is no place for
+a live credential. It was never usable from my side anyway — the environment I
+run in blocks all outbound network except GitHub and package registries.
+
+- **My Profile → API Tokens →** `square-waterfall-a740` **→ Delete**
+- **R2 → Manage API tokens →** delete those too; nothing here uses R2
+
+The Cloudflare connector you added is what let me diagnose this, and it doesn't
+need either of them.
 
 ---
 
 ## Local development
 
 ```sh
-cp wrangler.example.toml wrangler.toml   # git-ignored; do not commit it
-npx wrangler pages dev                   # real Cloudflare runtime, local D1
-PORT=8788 ./test-api.sh                  # 46 checks over every endpoint
-node aab/check-routes.mjs                # catches redirect loops before deploy
+npx wrangler dev              # the real runtime, local D1, local assets
+PORT=8787 ./test-api.sh       # 46 checks over every endpoint
+node aab/check-routes.mjs     # catches redirect loops before deploying
 ```
 
-The local database is a copy — nothing you do in `pages dev` touches live data.
+The local database is a copy — nothing in `wrangler dev` touches live data.

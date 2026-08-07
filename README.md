@@ -1,9 +1,13 @@
 # reiad.co.uk
 
-A static site with a dynamic half. Every file in `aab/` is served as-is — no
-framework, no build step, no dependencies — and Cloudflare Pages Functions over
-a D1 database add publishing, reader questions, subscribers, enquiries and
-analytics on top.
+A Cloudflare **Worker with static assets**. Every file in `aab/` is served
+straight from the edge — no framework, no build step, no dependencies — and
+`worker.js` routes `/api/*` to handlers backed by a D1 database, adding
+publishing, reader questions, subscribers, enquiries and analytics on top.
+
+Not a Pages project, which matters: Pages routes files under `functions/` by
+path and Workers do not, so `worker.js` is the router. See
+[SETUP.md](SETUP.md).
 
 **The two halves are one site.** Every dynamic feature checks whether the
 database is connected and falls back to the static behaviour if it isn't. So
@@ -12,14 +16,8 @@ run `./setup.sh` — there is no second version to maintain in between.
 
 ## Turning the dynamic half on
 
-**See [SETUP.md](SETUP.md).** Short version: add a D1 binding named `DB` in the
-Cloudflare dashboard, redeploy, then open `/studio.html` and set a passphrase.
-The tables create themselves, so there's no schema step.
-
-The binding cannot live in `wrangler.toml`: a `wrangler.toml` in the repo root
-makes Cloudflare Pages switch to a `wrangler deploy` build command, which fails
-on a Pages project and silently leaves the site on its previous version. The
-file is kept as `wrangler.example.toml` for local development only.
+Nothing to do — the D1 binding is in `wrangler.toml` and the tables create
+themselves on first use. Merge, then open `/studio.html` and set a passphrase.
 
 Then **writing a piece and pressing "Publish to the site" puts it live
 immediately** — no file to move, no commit, no push.
@@ -39,10 +37,9 @@ immediately** — no file to move, no commit, no push.
 ## Testing
 
 ```sh
-cp wrangler.example.toml wrangler.toml   # git-ignored
-npx wrangler pages dev                   # real Cloudflare runtime, local D1
-PORT=8788 ./test-api.sh                  # 46 checks over every endpoint
-node aab/check-routes.mjs                # catches redirect loops before deploy
+npx wrangler dev              # the real runtime, local D1, local assets
+PORT=8787 ./test-api.sh       # 46 checks over every endpoint
+node aab/check-routes.mjs     # catches redirect loops before deploying
 ```
 
 ## Publishing an article — the manual way
@@ -94,10 +91,11 @@ which mode it's in.
 | `aab/auth.js`, `auth-config.js` | The Studio's gate: server session when available, browser-side fallback |
 | `aab/admin.js` | The dashboard — questions, subscribers, enquiries, stats |
 | `aab/engage.js` | Reactions and reader Q&A; attaches itself to any article page |
-| `functions/` | Pages Functions. **Must live at the repo root** — Pages does not look inside the build output directory |
+| `functions/` | The endpoint handlers. Named for their Pages heritage and still take a Pages-shaped context, but dispatched by `worker.js` |
 | `functions/_lib/` | Database, HTTP helpers, server-side auth, server-side HTML sanitiser |
 | `aab/schema.sql` | The database. Also applied automatically on first request |
-| `wrangler.example.toml` | Local dev config. Copy to `wrangler.toml` (git-ignored) — **must not be committed under that name** |
+| `worker.js` | **The router.** Static assets first, then `/api/*` and `/insights/*`, then the assets binding |
+| `wrangler.toml` | Workers config: entry point, assets directory, D1 binding |
 | `test-api.sh` | 46 end-to-end API checks |
 | `aab/studio.html`, `studio.js` | The Article Studio |
 | `aab/tools/` | The five calculators |

@@ -5,7 +5,3 @@
 node_modules/
 .dev.vars
 
-# Local-only. A wrangler.toml in the repo root makes Cloudflare Pages
-# switch to a `wrangler deploy` build command, which fails on a Pages
-# project. Copy wrangler.example.toml to wrangler.toml for local dev.
-wrangler.toml
