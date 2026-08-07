@@ -31,16 +31,33 @@ pages_build_output_dir = "aab"
 # admin sessions all live here. One database, comfortably inside the
 # free tier for a long time.
 #
-# COMMENTED OUT ON PURPOSE. Cloudflare validates this file when it
-# deploys, and a binding pointing at a database that doesn't exist yet
-# would fail the build — taking the live site down for the sake of a
-# feature that isn't switched on. Uncomment these four lines once
-# `wrangler d1 create reiad` has given you a real id, and paste it in.
+# ---- THIS IS THE BINDING. There is nothing to click. ----
+#
+# Declaring the database here is all Cloudflare Pages needs: it reads
+# this file on every deploy and attaches the binding itself. The
+# dashboard's Settings → Bindings screen does the same job by hand, so
+# if this file is right, you never have to go near it.
+#
+# To switch the dynamic half on:
+#   1. Cloudflare dashboard → Storage & Databases → D1 → your database
+#   2. Copy the "Database ID" (a UUID like 1a2b3c4d-...). It is not a
+#      secret — it identifies a database, it does not open one.
+#   3. Uncomment the four lines below and paste it in.
+#   4. Commit. The next deploy has a database.
+#
+# The tables create themselves on the first request that needs them
+# (see functions/_lib/db.js), so there is no schema step and no way to
+# end up half-migrated.
+#
+# Left commented out because Cloudflare validates this file when it
+# deploys: a binding pointing at a database that doesn't exist would
+# fail the build and take the live site down, for the sake of a feature
+# that isn't switched on yet.
 #
 # [[d1_databases]]
 # binding = "DB"
 # database_name = "reiad"
-# database_id = "PASTE_THE_ID_FROM_wrangler_d1_create_HERE"
+# database_id = "PASTE_YOUR_DATABASE_ID_HERE"
 
 # ---------- Workers AI (optional) ----------
 # functions/api/news.js uses an `AI` binding to translate headlines

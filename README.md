@@ -12,14 +12,13 @@ run `./setup.sh` — there is no second version to maintain in between.
 
 ## Turning the dynamic half on
 
-```sh
-./setup.sh
-```
+**See [SETUP.md](SETUP.md).** Short version: paste your D1 database ID into
+`wrangler.toml`, commit, then open `/studio.html` and set a passphrase. The
+tables create themselves — there's no schema step, and no dashboard binding to
+click, because Pages reads the binding out of `wrangler.toml`.
 
-Three commands and about three minutes. It needs your Cloudflare account, which
-is the one part that can't be done for you. Afterwards, open `/studio.html`
-once to set your passphrase — it's hashed server-side, and nothing readable is
-stored anywhere.
+`./setup.sh` does the same thing from a terminal if you'd rather (it also
+creates the database, if you haven't).
 
 Then **writing a piece and pressing "Publish to the site" puts it live
 immediately** — no file to move, no commit, no push.
