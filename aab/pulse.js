@@ -4,13 +4,22 @@
    Headlines are external text, so every value goes in through
    textContent. Nothing from the feed ever touches innerHTML.
 
-   ENDPOINTS: the first one that answers wins. /api/news is the
-   Cloudflare Pages Function in /functions/api/news.js; the
-   workers.dev address is the same job running as a standalone
-   Worker. Keeping both means the page survives either being the
-   live one. (The old code fetched the workers.dev host without
-   a scheme, which the browser read as a *relative* path — so
-   the pulse could never load. That's the bug this fixes.)
+   ENDPOINTS: both are raced, and the first one to answer with
+   usable data wins. /api/news is the Cloudflare Pages Function
+   in /functions/api/news.js; the workers.dev address is the same
+   job running as a standalone Worker. Racing them means the page
+   doesn't care which one is currently deployed, and doesn't wait
+   out a timeout on the one that isn't.
+
+   Degrading, in order:
+     1. live data
+     2. the last successful fetch, kept on the device, labelled
+        with when it was
+     3. a compact note with links straight to the sources, and a
+        retry button
+
+   The section is never allowed to become a dead apology at the
+   top of the page — if it can't be useful it gets out of the way.
    ============================================================ */
 
 const ENDPOINTS = [
@@ -18,11 +27,13 @@ const ENDPOINTS = [
   "https://market-pulse.i-reiad.workers.dev/",
 ];
 
-const TIMEOUT_MS = 6000;
+const TIMEOUT_MS = 5000;
+const CACHE_KEY = "pulse-cache";
+const CACHE_MAX_AGE = 24 * 3600 * 1000;   // a day-old headline is still context
 
 const box = document.getElementById("pulse");
 
-/* "3 hr ago", in the reader's own locale */
+/* "3 hours ago", in the reader's own locale */
 const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
 function relTime(iso) {
   if (!iso) return "";
@@ -34,102 +45,128 @@ function relTime(iso) {
   return rtf.format(-Math.round(hrs / 24), "day");
 }
 
+const el = (tag, props = {}, ...kids) => {
+  const node = Object.assign(document.createElement(tag), props);
+  node.append(...kids.filter(Boolean));
+  return node;
+};
+
 function skeletons(n = 5) {
-  const wrap = document.createElement("div");
-  wrap.className = "news-list";
+  const wrap = el("div", { className: "news-list" });
   wrap.setAttribute("aria-hidden", "true");
-  for (let i = 0; i < n; i++) {
-    const row = document.createElement("div");
-    row.className = "skeleton";
-    wrap.append(row);
-  }
+  for (let i = 0; i < n; i++) wrap.append(el("div", { className: "skeleton" }));
   return wrap;
 }
 
 function newsItem(it) {
-  const a = document.createElement("a");
-  a.className = "news-item";
-  a.href = it.url;
-  a.target = "_blank";
-  a.rel = "noopener";
-  // an external link shouldn't be prerendered by the speculation rules
-  a.dataset.noPrerender = "";
+  const a = el("a", { className: "news-item", href: it.url, target: "_blank", rel: "noopener" });
+  a.dataset.noPrerender = "";   // don't prerender someone else's site
 
-  const title = document.createElement("div");
-  title.className = it.title_bn ? "nt nt-bn" : "nt";
-  title.textContent = it.title_bn || it.title;
-  a.append(title);
+  a.append(el("div", {
+    className: it.title_bn ? "nt nt-bn" : "nt",
+    textContent: it.title_bn || it.title,
+  }));
+  if (it.title_bn) a.append(el("div", { className: "nt-en", textContent: it.title }));
 
-  if (it.title_bn) {
-    const en = document.createElement("div");
-    en.className = "nt-en";
-    en.textContent = it.title;
-    a.append(en);
-  }
-
-  const meta = document.createElement("div");
-  meta.className = "news-meta";
-
-  const pill = document.createElement("span");
-  pill.className = `pill ${it.region === "BD" ? "pill-bd" : "pill-global"}`;
-  pill.textContent = it.region === "BD" ? "Bangladesh" : "Global";
-
-  const source = document.createElement("span");
-  source.textContent = it.source ?? "";
-
-  const time = document.createElement("time");
+  const time = el("time", { textContent: relTime(it.published) });
   if (it.published) time.dateTime = it.published;
-  time.textContent = relTime(it.published);
 
-  meta.append(pill, source, time);
-
-  if (it.title_bn) {
-    const auto = document.createElement("span");
-    auto.textContent = "স্বয়ংক্রিয় অনুবাদ";
-    meta.append(auto);
-  }
-
-  a.append(meta);
+  a.append(el("div", { className: "news-meta" },
+    el("span", {
+      className: `pill ${it.region === "BD" ? "pill-bd" : "pill-global"}`,
+      textContent: it.region === "BD" ? "Bangladesh" : "Global",
+    }),
+    el("span", { textContent: it.source ?? "" }),
+    time,
+    it.title_bn ? el("span", { textContent: "স্বয়ংক্রিয় অনুবাদ" }) : null
+  ));
   return a;
 }
 
-async function fetchFirst(urls) {
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (data?.items?.length) return data;
-    } catch {
-      /* try the next endpoint */
-    }
-  }
-  throw new Error("no endpoint answered");
+/* ---------- fetching ---------- */
+
+async function fetchOne(url) {
+  const res = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+  if (!res.ok) throw new Error(String(res.status));
+  const data = await res.json();
+  if (!data?.items?.length) throw new Error("empty");
+  return data;
 }
 
-function fail() {
-  const p = document.createElement("p");
-  p.className = "pulse-fallback";
-  p.textContent = "Market pulse is taking a break — try refreshing in a minute.";
-  box.replaceChildren(p);
+/** Whichever endpoint answers first with usable data. */
+const fetchAny = () => Promise.any(ENDPOINTS.map(fetchOne));
+
+function cache(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), data }));
+  } catch { /* storage full or blocked; the cache is a bonus */ }
 }
 
-if (box) {
+function cached() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+    if (!raw || Date.now() - raw.at > CACHE_MAX_AGE) return null;
+    return raw;
+  } catch { return null; }
+}
+
+/* ---------- rendering ---------- */
+
+function render(data, staleFrom) {
+  const list = el("div", { className: "news-list" });
+  data.items.forEach((it) => list.append(newsItem(it)));
+
+  const note = el("p", { className: "pulse-updated mono" });
+  note.textContent = staleFrom
+    ? `Offline — showing the last update, from ${relTime(new Date(staleFrom).toISOString())}`
+    : `Updated ${relTime(data.updated)}`;
+
+  box.replaceChildren(list, note);
+}
+
+/** Can't reach it and nothing cached: stay small, stay useful. */
+function fallback() {
+  const retry = el("button", { className: "chip", type: "button", textContent: "Try again" });
+  retry.addEventListener("click", () => load(true));
+
+  box.replaceChildren(
+    el("p", { className: "pulse-fallback" },
+      "The live feed isn't reachable right now. The sources it pulls from are ",
+      el("a", { href: "https://www.tbsnews.net/economy", rel: "noopener", target: "_blank",
+                textContent: "The Business Standard" }),
+      " and ",
+      el("a", { href: "https://www.bbc.co.uk/news/business", rel: "noopener", target: "_blank",
+                textContent: "BBC Business" }),
+      " — both worth reading directly."
+    ),
+    el("div", { className: "row-flex" }, retry)
+  );
+}
+
+/* ---------- go ---------- */
+
+async function load(isRetry = false) {
+  if (!box) return;
   box.replaceChildren(skeletons());
 
   try {
-    const data = await fetchFirst(ENDPOINTS);
-
-    const list = document.createElement("div");
-    list.className = "news-list";
-    data.items.forEach((it) => list.append(newsItem(it)));
-
-    const updated = document.createElement("p");
-    updated.className = "pulse-updated mono";
-    updated.textContent = `Updated ${relTime(data.updated)}`;
-
-    box.replaceChildren(list, updated);
+    const data = await fetchAny();
+    cache(data);
+    render(data);
   } catch {
-    fail();
+    const stale = cached();
+    if (stale) {
+      render(stale.data, stale.at);
+      return;
+    }
+    // One quiet second chance — a first load during a flaky moment
+    // shouldn't condemn the section for the whole visit.
+    if (!isRetry) {
+      setTimeout(() => load(true), 2500);
+      return;
+    }
+    fallback();
   }
 }
+
+load();

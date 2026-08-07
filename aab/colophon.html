@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<!DOCTYPE html>
-<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -66,7 +64,7 @@
     </div>
   </header>
 
-    <main id="main">
+  <main id="main">
     <div class="wrap">
 
       <div class="hero" style="padding-block:72px 30px">
@@ -84,7 +82,7 @@
         <div><span class="n">0</span><span class="l">build steps — the files you edit are the files that ship</span></div>
         <div><span class="n">0</span><span class="l">runtime dependencies, npm packages or frameworks</span></div>
         <div><span class="n">0</span><span class="l">tracking scripts, analytics or cookie banners</span></div>
-        <div><span class="n">1</span><span class="l">stylesheet, in seven cascade layers</span></div>
+        <div><span class="n">1</span><span class="l">stylesheet, in nine cascade layers</span></div>
       </div>
 
       <section>
@@ -231,7 +229,7 @@
           <li>Skip links on every page, real focus outlines, and dialogs that return focus where they found it</li>
           <li>The Bangla pages set <code>lang="bn"</code> so screen readers pronounce them correctly</li>
           <li>No layout shift: images carry width and height, and the fonts swap rather than block</li>
-          <li><code>content-visibility</code> keeps far-offscreen sections out of layout and paint</li>
+          <li>No <code>content-visibility</code> on sections: it skips layout for offscreen content, which makes the page height a guess and the scrollbar lurch. Tried it, measured it, removed it</li>
           <li>The whole site is a handful of text files — a page weighs less than a single stock photo would</li>
         </ul>
       </section>
