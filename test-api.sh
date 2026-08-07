@@ -3,7 +3,7 @@
 # Override with: PORT=8792 ./test-api.sh
 B=http://127.0.0.1:${PORT:-8788}
 J='Content-Type: application/json'
-C=/tmp/claude-0/-home-user-reiad-website/1961c87d-d619-531a-a6b0-6ffce0aed95e/scratchpad/jar.txt
+C=$(mktemp -t jar.XXXXXX)
 rm -f $C
 pass=0; fail=0
 check() { # name expected_substring actual
@@ -11,27 +11,49 @@ check() { # name expected_substring actual
   else echo "  FAIL $1"; echo "       want ~ $2"; echo "       got    ${3:0:200}"; fail=$((fail+1)); fi
 }
 
+# The browser derives the key, so the suite has to as well — this is
+# the same PBKDF2-SHA256 the Studio runs, standing in for it.
+derive() { # salt_b64 iterations passphrase
+  node -e 'const c=require("crypto");process.stdout.write(
+    c.pbkdf2Sync(process.argv[3],Buffer.from(process.argv[1],"base64"),
+                 +process.argv[2],32,"sha256").toString("base64"))' "$1" "$2" "$3"
+}
+
+PASSPHRASE="a properly long passphrase"
+
 echo "── auth ───────────────────────────────"
+PARAMS=$(curl -s $B/api/auth/params)
+SALT=$(sed -n 's/.*"salt":"\([^"]*\)".*/\1/p' <<<"$PARAMS")
+ITER=$(sed -n 's/.*"iterations":\([0-9]*\).*/\1/p' <<<"$PARAMS")
+DK=$(derive "$SALT" "$ITER" "$PASSPHRASE")
+
+check "params advertise the scheme" '"scheme":"pbkdf2c"' "$PARAMS"
+check "params are strong"           "$ITER" "$([[ $ITER -ge 100000 ]] && echo $ITER)"
+
 # The suite is idempotent: on a fresh database it exercises setup, and
 # on one that already has a password it signs in instead.
 CONFIGURED=$(curl -s $B/api/auth/me | grep -o '"configured":[a-z]*' | cut -d: -f2)
 if [[ "$CONFIGURED" == "false" ]]; then
-  check "setup rejects short pw" 'password-too-short' \
-    "$(curl -s -X POST -H "$J" -d '{"password":"short"}' $B/api/auth/setup)"
+  check "setup rejects a weak stretch" 'weak-iterations' \
+    "$(curl -s -X POST -H "$J" -d "{\"salt\":\"$SALT\",\"iterations\":1000,\"dk\":\"$DK\"}" $B/api/auth/setup)"
+  check "setup rejects a junk key" 'bad-key' \
+    "$(curl -s -X POST -H "$J" -d "{\"salt\":\"$SALT\",\"iterations\":$ITER,\"dk\":\"nope\"}" $B/api/auth/setup)"
   check "setup"         '"signedIn":true' \
-    "$(curl -s -c $C -X POST -H "$J" -d '{"password":"a properly long passphrase"}' $B/api/auth/setup)"
+    "$(curl -s -c $C -X POST -H "$J" -d "{\"salt\":\"$SALT\",\"iterations\":$ITER,\"dk\":\"$DK\"}" $B/api/auth/setup)"
 else
   echo "  --   fresh-database checks skipped (already configured)"
-  curl -s -c $C -X POST -H "$J" -d '{"password":"a properly long passphrase"}' $B/api/auth/login > /dev/null
+  curl -s -c $C -X POST -H "$J" -d "{\"dk\":\"$DK\"}" $B/api/auth/login > /dev/null
 fi
 check "setup is one-shot" 'already-configured' \
-  "$(curl -s -X POST -H "$J" -d '{"password":"another long passphrase"}' $B/api/auth/setup)"
+  "$(curl -s -X POST -H "$J" -d "{\"salt\":\"$SALT\",\"iterations\":$ITER,\"dk\":\"$DK\"}" $B/api/auth/setup)"
 check "session works"   '"signedIn":true' "$(curl -s -b $C $B/api/auth/me)"
 check "no cookie = out"  '"signedIn":false' "$(curl -s $B/api/auth/me)"
 check "bad password"    'bad-password' \
-  "$(curl -s -X POST -H "$J" -d '{"password":"wrong wrong wrong"}' $B/api/auth/login)"
+  "$(curl -s -X POST -H "$J" -d "{\"dk\":\"$(derive "$SALT" "$ITER" 'wrong wrong wrong')\"}" $B/api/auth/login)"
 check "good password"   '"signedIn":true' \
-  "$(curl -s -c $C -X POST -H "$J" -d '{"password":"a properly long passphrase"}' $B/api/auth/login)"
+  "$(curl -s -c $C -X POST -H "$J" -d "{\"dk\":\"$DK\"}" $B/api/auth/login)"
+check "the passphrase never reaches the server" 'bad-password' \
+  "$(curl -s -X POST -H "$J" -d "{\"password\":\"$PASSPHRASE\"}" $B/api/auth/login)"
 
 echo "── articles ───────────────────────────"
 check "write needs auth" 'unauthorised' \

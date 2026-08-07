@@ -19,6 +19,35 @@
 
    Protected endpoints call requireAdmin(context) and get either a
    session or a 401. Nothing sensitive is decided in the browser.
+
+   ---- Where the 210,000 iterations actually run ----
+
+   They used to run here, and that was a bug you could not see
+   from the code: Workers on the free plan get 10ms of CPU per
+   request, and PBKDF2-SHA256 at 210,000 iterations costs about
+   30ms. Every login and every first-run setup was killed by the
+   runtime mid-request (Cloudflare error 1102), which reaches the
+   browser as an HTML error page rather than JSON — so the Studio
+   could only report "couldn't reach the server".
+
+   So the work moved to the browser, where there is no CPU limit,
+   and the server keeps a fast hash of the result:
+
+     browser   dk = PBKDF2-SHA256(passphrase, salt, 210_000)
+     server    stored = SHA-256(dk)
+
+   The security that matters is unchanged. Anyone who steals the
+   database gets SHA-256(dk), and to turn that back into the
+   passphrase they still have to run 210,000 iterations of PBKDF2
+   per guess — exactly as before. A single SHA-256 is the right
+   hash for the server's half because its input is 256 bits of
+   derived key, not a guessable human password.
+
+   What the server gives up is checking the passphrase's length
+   itself; the browser enforces the twelve-character minimum, and
+   a caller who skips the browser is only ever weakening their own
+   single-admin login. The setup endpoint still closes forever
+   after first use, and login is still throttled.
    ============================================================ */
 
 import { db, one, run, setting, setSetting } from "./db.js";
@@ -57,7 +86,12 @@ async function derive(password, salt, iterations = ITERATIONS) {
 }
 
 /** "pbkdf2$iterations$salt$hash" — everything needed to verify, and
-    nothing that helps an attacker who reads the database. */
+    nothing that helps an attacker who reads the database.
+
+    Legacy: this derives server-side and cannot complete inside the
+    free plan's CPU budget. Kept only so a database written by an
+    older deploy can still be signed into (and then re-set), never
+    used for anything created from here on. */
 export async function hashPassword(password) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const hash = await derive(password, salt);
@@ -70,6 +104,41 @@ export async function verifyPassword(password, stored) {
   const actual = await derive(password, fromB64(salt), Number(iterations) || ITERATIONS);
   return timingSafeEqual(actual, expected);
 }
+
+/* ---------- the browser-derived scheme (the one in use) ----------
+
+   Stored as "pbkdf2c$iterations$salt$verifier", where the browser
+   produced dk = PBKDF2(passphrase, salt, iterations) and the
+   verifier is SHA-256(dk). The "c" is for client-side, and it is
+   what tells the two formats apart on read. */
+
+export const CLIENT_ITERATIONS = ITERATIONS;
+
+/** The salt is public by design — it stops one rainbow table from
+    working against every site, and it is useless on its own. */
+export const newSalt = () => toB64(crypto.getRandomValues(new Uint8Array(16)));
+
+/** What the browser needs before it can derive: which scheme is
+    stored, over which salt, at how many iterations. */
+export function keyParams(stored) {
+  const [scheme, iterations, salt] = String(stored ?? "").split("$");
+  return { scheme, iterations: Number(iterations) || ITERATIONS, salt: salt ?? "" };
+}
+
+export async function setAdminKey(d1, { salt, iterations, dk }) {
+  await setSetting(d1, ADMIN_KEY, `pbkdf2c$${iterations}$${salt}$${await sha256(dk)}`);
+}
+
+export async function verifyKey(dk, stored) {
+  const [scheme, , , expected] = String(stored ?? "").split("$");
+  if (scheme !== "pbkdf2c" || !expected) return false;
+  return timingSafeEqual(await sha256(dk), expected);
+}
+
+/* base64 of 16 random bytes is 24 chars; of 256 derived bits, 44.
+   Both are checked before they reach the database. */
+export const isSalt = (s) => /^[A-Za-z0-9+/]{20,48}={0,2}$/.test(String(s ?? ""));
+export const isKey = (s) => /^[A-Za-z0-9+/]{40,86}={0,2}$/.test(String(s ?? ""));
 
 function timingSafeEqual(a, b) {
   if (a.length !== b.length) return false;

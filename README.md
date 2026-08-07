@@ -39,7 +39,7 @@ immediately** — no file to move, no commit, no push.
 
 ```sh
 npx wrangler pages dev          # the real Cloudflare runtime, local D1
-./test-api.sh                   # 46 checks over every endpoint
+./test-api.sh                   # 52 checks over every endpoint
 node aab/check-routes.mjs       # catches redirect loops before deploying
 ```
 
@@ -68,13 +68,20 @@ the identical layout and documents every piece you might need.
 `/studio.html` is gated, and how strong that gate is depends on whether the
 database is connected.
 
-**With D1 connected — a real login.** The passphrase is checked on the server
-against a PBKDF2-SHA256 hash (210,000 iterations, constant-time comparison).
-The session is a token stored server-side as a hash, handed to the browser as
-an HttpOnly, SameSite=Strict cookie that page JavaScript cannot read. Every
-admin endpoint re-checks it, wrong guesses are rate-limited, and you can revoke
-every session at once. Set the passphrase by visiting `/studio.html` after
-setup.
+**With D1 connected — a real login.** The passphrase is stretched in the
+browser (PBKDF2-SHA256, 210,000 iterations) and never sent; the server stores
+and compares a fast hash of the derived key, in constant time. The session is a
+token stored server-side as a hash, handed to the browser as an HttpOnly,
+SameSite=Strict cookie that page JavaScript cannot read. Every admin endpoint
+re-checks it, wrong guesses are rate-limited, and you can revoke every session
+at once. Set the passphrase by visiting `/studio.html` after setup.
+
+The stretching runs in the browser for a blunt reason: a Worker on the free
+plan gets 10ms of CPU per request and 210,000 iterations costs about 30ms, so
+doing it server-side got every login killed mid-request. Moving it costs
+nothing in strength — stealing the database still leaves an attacker running
+210,000 iterations per guess — and `functions/_lib/auth.js` explains the
+trade-off in full.
 
 **Without D1 — the old browser-side gate.** It keeps the tool away from
 passers-by and out of search results, and it is not cryptographic protection of
@@ -96,7 +103,7 @@ which mode it's in.
 | `functions/_lib/` | Database, HTTP helpers, server-side auth, server-side HTML sanitiser |
 | `aab/schema.sql` | The database. Also applied automatically on first request |
 | `setup.sh` | One-time Cloudflare setup |
-| `test-api.sh` | 46 end-to-end API checks |
+| `test-api.sh` | 52 end-to-end API checks |
 | `aab/studio.html`, `studio.js` | The Article Studio |
 | `aab/tools/` | The five calculators |
 | `aab/learn/` | The Bangla Learn hub, its pop-up term reader and reading progress |

@@ -36,9 +36,10 @@ SQL to paste and no way to end up half-migrated.
 
 **5. Open `https://reiad.co.uk/studio.html` and set your passphrase.**
 
-It'll show a "Set up Studio access" screen. Whatever you type is hashed on the
-server — nothing readable is stored anywhere, and the screen will tell you it's
-checking server-side, which is how you know the binding worked.
+It'll show a "Set up Studio access" screen. Whatever you type is stretched in
+your browser and never sent — the server only ever sees the result, and stores
+a hash of that. Nothing readable is stored anywhere. The screen tells you which
+mode it's in, which is how you know the binding worked.
 
 ---
 

@@ -27,7 +27,14 @@ export async function api(path, { method = "GET", body, timeout = 8000 } = {}) {
     if (res.status === 503) return null;
 
     const data = await res.json().catch(() => null);
-    if (!data) return null;
+
+    // A reply that isn't JSON is Cloudflare's own error page, not
+    // ours — a Worker that ran out of CPU or memory, most often.
+    // Returning null here would report it as "no backend", which is
+    // how a 30ms password hash spent a while looking like a network
+    // fault. Say what it actually was instead.
+    if (!data) return { ok: false, reason: "server-error", status: res.status };
+
     return { ...data, status: res.status };
   } catch {
     return null;
@@ -58,11 +65,15 @@ export const react = (slug, kind) =>
 export const reactions = async (slug) =>
   (await api(`signals/react?slug=${encodeURIComponent(slug)}`))?.counts ?? null;
 
-/* ---------- admin ---------- */
+/* ---------- admin ----------
+   setup and login take a derived key, not a passphrase: the
+   PBKDF2 runs in the browser because the free plan's 10ms of CPU
+   per request cannot cover it. auth.js does the deriving. */
 export const auth = {
   me: () => api("auth/me"),
-  setup: (password) => api("auth/setup", { method: "POST", body: { password } }),
-  login: (password) => api("auth/login", { method: "POST", body: { password } }),
+  params: () => api("auth/params"),
+  setup: (payload) => api("auth/setup", { method: "POST", body: payload }),
+  login: (payload) => api("auth/login", { method: "POST", body: payload }),
   logout: () => api("auth/logout", { method: "POST" }),
 };
 

@@ -37,7 +37,7 @@ function screen({ mode, server }) {
       <span class="lock" aria-hidden="true">${setup ? "✦" : "⌘"}</span>
       <h1>${setup ? "Set up Studio access" : "Is this you?"}</h1>
       <p>${setup
-        ? "Nobody has claimed this Studio yet. Choose a passphrase — it's hashed and stored on the server, never in the page."
+        ? "Nobody has claimed this Studio yet. Choose a passphrase — it's hashed in this browser, and only the result ever leaves it."
         : "The Article Studio is private. Sign in to write, publish and read what the site has collected."}</p>
 
       <form id="gate-form" autocomplete="on">
@@ -58,9 +58,9 @@ function screen({ mode, server }) {
       <p class="gate-msg mono" id="gate-msg" role="status" aria-live="polite"></p>
 
       <p class="gate-fine">${server
-        ? "Checked on the server: your passphrase is compared against a PBKDF2-SHA256 "
-          + "hash, and the session is an HttpOnly cookie this page cannot read. Wrong "
-          + "guesses are rate-limited."
+        ? "Your passphrase is stretched here — PBKDF2-SHA256, 210,000 iterations — and "
+          + "never sent. The server checks the result, and the session is an HttpOnly "
+          + "cookie this page cannot read. Wrong guesses are rate-limited."
         : "The database isn't connected yet, so this check is running in your browser — "
           + "it keeps the Studio away from passers-by, but it is not a vault. Connect D1 "
           + "(see wrangler.toml) and this becomes a real server-side login."}</p>
@@ -138,14 +138,45 @@ export function requireOwner(protectedRoot) {
 
         /* ---------- the real path ---------- */
         if (server) {
-          const result = mode === "setup" ? await auth.setup(pass) : await auth.login(pass);
+          if (mode === "setup" && pass.length < 12) {
+            say("Twelve characters minimum.", "err");
+            return;
+          }
+
+          // The 210,000 PBKDF2 iterations happen here, in the browser.
+          // The server only ever sees the derived key, because deriving
+          // it there costs about 30ms of CPU and a Worker on the free
+          // plan is killed at 10ms — which is what "couldn't reach the
+          // server" used to mean.
+          const p = await auth.params();
+          if (!p?.ok) {
+            say("Couldn't reach the server.", "err");
+            return;
+          }
+
+          let result;
+          if (p.scheme === "pbkdf2c") {
+            say("Securing your passphrase…");
+            const dk = await deriveLocal(pass, fromB64(p.salt), p.iterations);
+            result = mode === "setup"
+              ? await auth.setup({ salt: p.salt, iterations: p.iterations, dk })
+              : await auth.login({ dk });
+          } else {
+            // A Studio set up by an older deploy still verifies
+            // server-side. Sign in, then set a new passphrase.
+            say("Checking…");
+            result = await auth.login({ password: pass });
+          }
+
           if (result?.ok) return letIn();
           const reason = result?.reason ?? "unreachable";
           say({
             "password-too-short": "Twelve characters minimum.",
+            "weak-iterations": "Twelve characters minimum.",
             "bad-password": "Not quite. Try again.",
             "too-many-attempts": "Too many tries — wait a few minutes.",
             "already-configured": "Already set up — sign in instead.",
+            "server-error": "The server errored on that. Try again in a moment.",
           }[reason] ?? "Couldn't reach the server.", "err");
           if (reason === "already-configured") setTimeout(() => location.reload(), 1200);
           return;

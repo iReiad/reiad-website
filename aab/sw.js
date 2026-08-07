@@ -20,8 +20,17 @@
 
 /* Bump this to retire every old cache. v2: a broken _redirects file
    briefly made several pages unreachable, so any client that cached
-   an offline fallback during that window gets a clean slate. */
-const VERSION = "v2";
+   an offline fallback during that window gets a clean slate.
+
+   v3: this file is the only thing that retires a cache, and it did
+   not change when the dynamic layer landed — so every returning
+   visitor kept being served the shell-v2 copy of app.js, from before
+   countView() existed, and kept being served it forever (a script is
+   answered from the cache that has it, and only a new VERSION empties
+   that cache). Page views went uncounted, and the fix to the Studio
+   login could not have reached anyone either. Bump this whenever a
+   precached file changes. */
+const VERSION = "v3";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
