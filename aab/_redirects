@@ -1,0 +1,31 @@
+# ============================================================
+# _redirects — Cloudflare Pages. First match wins.
+# 301 = permanent (search engines move the ranking across).
+#
+# DO NOT add "pretty URL" rules like `/about  /about.html`.
+# Cloudflare Pages already serves /about.html at /about, and it
+# redirects /about.html → /about on its own. A rule pointing the
+# other way makes an infinite loop:
+#
+#     /about → (this file) → /about.html → (Pages) → /about → …
+#
+# which browsers show as ERR_TOO_MANY_REDIRECTS — the page simply
+# never loads. That is exactly what a previous version of this
+# file did to about, insights, portfolio, colophon, contact,
+# tools and learn. Every destination below is therefore
+# extensionless, so Pages has nothing left to rewrite.
+# ============================================================
+
+# Retired pages that still have links pointing at them.
+# Both spellings of the source, because a visitor may arrive at either.
+/work.html            /portfolio            301
+/work                 /portfolio            301
+/services.html        /portfolio            301
+/services             /portfolio            301
+/insights/dsex.html   /learn/terms/dsex     301
+/insights/dsex        /learn/terms/dsex     301
+
+# Feed aliases — .xml isn't touched by the HTML handling, so these are safe.
+/rss                  /feed.xml             301
+/feed                 /feed.xml             301
+/sitemap              /sitemap.xml          301

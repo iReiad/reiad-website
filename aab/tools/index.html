@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>Tools &amp; calculators — Rony Reiad</title>
+  <meta name="description" content="Free calculators for Bangladeshi savers and investors: compounding, sanchayapatra vs FDR after tax, inflation and real return, loan EMI, and position sizing.">
+  <link rel="canonical" href="https://reiad.co.uk/tools/index.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Tools &amp; calculators — Rony Reiad">
+  <meta property="og:description" content="Compounding, sanchayapatra vs FDR, inflation, EMI and position sizing — every result is a link you can share.">
+  <meta property="og:url" content="https://reiad.co.uk/tools/index.html">
+  <meta property="og:image" content="https://reiad.co.uk/og/tools.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Theme before first paint: no white flash for dark-mode readers. -->
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the main content</a>
+
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="/index.html">
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Rony Reiad
+      </a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/tools/index.html" aria-current="page">Tools</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+
+      <div class="hero" style="padding-block:72px 34px">
+        <span class="eyebrow mono">Tools · ক্যালকুলেটর</span>
+        <h1>The five sums worth doing before you decide anything.</h1>
+        <p class="lede">
+          No sign-up, no data leaving your browser, no "book a call". Change a
+          number and everything moves. When you get a result worth keeping,
+          copy the link — the whole calculation travels with it.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-ghost" href="#compounding">Compounding</a>
+          <a class="btn btn-ghost" href="#sanchayapatra">সঞ্চয়পত্র vs FDR</a>
+          <a class="btn btn-ghost" href="#inflation">Inflation</a>
+          <a class="btn btn-ghost" href="#emi">EMI</a>
+          <a class="btn btn-ghost" href="#position">Position size</a>
+        </div>
+      </div>
+
+      <!-- ============ 1 · COMPOUNDING ============ -->
+      <section id="compounding" class="tool">
+        <header>
+          <h2>What a monthly habit becomes <span class="bn-h">চক্রবৃদ্ধি — মাসিক সঞ্চয়ের হিসাব</span></h2>
+          <p>The single most useful calculation in personal finance, and the one
+             most people never run. Watch how much of the final number is growth
+             rather than your own money.</p>
+        </header>
+        <div class="tool-body">
+          <div class="tool-inputs">
+            <label>
+              <span class="label-row">Starting amount <span class="val" data-for="start" data-format="money"></span></span>
+              <input type="range" name="start" min="0" max="1000000" step="5000" value="50000">
+            </label>
+            <label>
+              <span class="label-row">Added every month <span class="val" data-for="monthly" data-format="money"></span></span>
+              <input type="range" name="monthly" min="0" max="100000" step="500" value="5000">
+            </label>
+            <label>
+              <span class="label-row">Annual return <span class="val" data-for="rate" data-suffix="%"></span></span>
+              <input type="range" name="rate" min="0" max="25" step="0.5" value="10">
+            </label>
+            <label>
+              <span class="label-row">For how long <span class="val" data-for="years" data-suffix=" yrs"></span></span>
+              <input type="range" name="years" min="1" max="40" step="1" value="20">
+            </label>
+            <div class="tool-actions">
+              <button class="chip copy-link" type="button">Copy link to this</button>
+            </div>
+          </div>
+
+          <div class="tool-out">
+            <div class="stat-row">
+              <div class="stat stat-lead" data-stat="final"><span class="k">You end with</span><span class="v">—</span><span class="n"></span></div>
+              <div class="stat" data-stat="paid"><span class="k">You put in</span><span class="v">—</span><span class="n"></span></div>
+              <div class="stat" data-stat="growth"><span class="k">Growth</span><span class="v">—</span><span class="n"></span></div>
+            </div>
+            <div class="chart-box"></div>
+            <div class="chart-legend">
+              <span><i style="background:var(--green)"></i>Total value</span>
+              <span><i style="background:var(--gold)"></i>Your own money</span>
+            </div>
+            <p class="verdict"></p>
+            <p class="tool-note">
+              Assumes the return arrives evenly and gets reinvested, and that you
+              never miss a month. Real returns arrive lumpy — the shape holds, the
+              exact number won't. <a class="term" href="/learn/terms/compounding.html">চক্রবৃদ্ধি কী?</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 2 · SANCHAYAPATRA vs FDR ============ -->
+      <section id="sanchayapatra" class="tool">
+        <header>
+          <h2>Sanchayapatra vs. bank FDR <span class="bn-h">সঞ্চয়পত্র বনাম এফডিআর — করের পর</span></h2>
+          <p>The comparison every Bangladeshi saver makes, usually on gross rates
+             that nobody actually receives. Put in the rates you've been quoted
+             and the tax deducted at source, and compare what lands in your hand.</p>
+        </header>
+        <div class="tool-body">
+          <div class="tool-inputs">
+            <label>
+              <span class="label-row">Amount <span class="val" data-for="amount" data-format="money"></span></span>
+              <input type="range" name="amount" min="50000" max="5000000" step="50000" value="1000000">
+            </label>
+            <label>
+              <span class="label-row">Years <span class="val" data-for="years" data-suffix=" yrs"></span></span>
+              <input type="range" name="years" min="1" max="10" step="1" value="5">
+            </label>
+            <label>
+              <span class="label-row">Sanchayapatra rate <span class="val" data-for="srate" data-suffix="%"></span></span>
+              <input type="range" name="srate" min="5" max="15" step="0.01" value="11.04">
+            </label>
+            <label>
+              <span class="label-row">Tax at source <span class="val" data-for="stax" data-suffix="%"></span></span>
+              <input type="range" name="stax" min="0" max="20" step="1" value="10">
+            </label>
+            <label>
+              <span class="label-row">FDR rate <span class="val" data-for="frate" data-suffix="%"></span></span>
+              <input type="range" name="frate" min="3" max="15" step="0.01" value="9">
+            </label>
+            <label>
+              <span class="label-row">FDR tax at source <span class="val" data-for="ftax" data-suffix="%"></span></span>
+              <input type="range" name="ftax" min="0" max="20" step="1" value="10">
+            </label>
+            <div class="tool-actions">
+              <button class="chip copy-link" type="button">Copy link to this</button>
+            </div>
+          </div>
+
+          <div class="tool-out">
+            <div class="versus">
+              <div class="side" data-side="s">
+                <h3>সঞ্চয়পত্র</h3>
+                <span class="bn-h">Savings certificate · profit paid out</span>
+                <dl>
+                  <dt>Profit</dt><dd data-k="gross">—</dd>
+                  <dt>Tax at source</dt><dd data-k="tax">—</dd>
+                  <dt>Kept</dt><dd data-k="net">—</dd>
+                  <dt>Total back</dt><dd data-k="total">—</dd>
+                </dl>
+              </div>
+              <div class="side" data-side="f">
+                <h3>FDR</h3>
+                <span class="bn-h">Fixed deposit · interest compounds</span>
+                <dl>
+                  <dt>Interest</dt><dd data-k="gross">—</dd>
+                  <dt>Tax at source</dt><dd data-k="tax">—</dd>
+                  <dt>Kept</dt><dd data-k="net">—</dd>
+                  <dt>Total back</dt><dd data-k="total">—</dd>
+                </dl>
+              </div>
+            </div>
+            <div class="chart-box"></div>
+            <p class="verdict"></p>
+            <p class="tool-note">
+              Modelled simply: sanchayapatra profit is treated as paid out and
+              taxed as it's paid, FDR interest as compounding annually and taxed
+              on the interest. Real products differ — purchase ceilings, quarterly
+              versus maturity payment, and early-encashment penalties can outweigh
+              the rate gap entirely. Confirm current rates with Bangladesh Bank
+              and your branch.
+              <a class="term" href="/learn/terms/sanchayapatra.html">সঞ্চয়পত্র</a> ·
+              <a class="term" href="/learn/terms/fdr.html">এফডিআর</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 3 · INFLATION ============ -->
+      <section id="inflation" class="tool">
+        <header>
+          <h2>What your money will really be worth <span class="bn-h">মূল্যস্ফীতি ও প্রকৃত রিটার্ন</span></h2>
+          <p>A number that doesn't change still shrinks. This is the calculation
+             that explains why money under the mattress — or in an account paying
+             less than inflation — quietly loses.</p>
+        </header>
+        <div class="tool-body">
+          <div class="tool-inputs">
+            <label>
+              <span class="label-row">Amount today <span class="val" data-for="amount" data-format="money"></span></span>
+              <input type="range" name="amount" min="10000" max="10000000" step="10000" value="500000">
+            </label>
+            <label>
+              <span class="label-row">Inflation <span class="val" data-for="inflation" data-suffix="%"></span></span>
+              <input type="range" name="inflation" min="0" max="20" step="0.25" value="9">
+            </label>
+            <label>
+              <span class="label-row">Your return <span class="val" data-for="nominal" data-suffix="%"></span></span>
+              <input type="range" name="nominal" min="0" max="25" step="0.25" value="9">
+            </label>
+            <label>
+              <span class="label-row">Years <span class="val" data-for="years" data-suffix=" yrs"></span></span>
+              <input type="range" name="years" min="1" max="30" step="1" value="10">
+            </label>
+            <div class="tool-actions">
+              <button class="chip copy-link" type="button">Copy link to this</button>
+            </div>
+          </div>
+
+          <div class="tool-out">
+            <div class="stat-row">
+              <div class="stat stat-lead" data-stat="worth"><span class="k">Same money buys</span><span class="v">—</span><span class="n"></span></div>
+              <div class="stat" data-stat="lost"><span class="k">Purchasing power lost</span><span class="v">—</span><span class="n"></span></div>
+              <div class="stat" data-stat="real"><span class="k">Real return</span><span class="v">—</span><span class="n"></span></div>
+            </div>
+            <div class="chart-box"></div>
+            <div class="chart-legend">
+              <span><i style="background:var(--gold)"></i>On paper</span>
+              <span><i style="background:var(--green)"></i>In real buying power</span>
+            </div>
+            <p class="verdict"></p>
+            <p class="tool-note">
+              Real return uses the Fisher relation — (1 + return) ÷ (1 + inflation)
+              − 1 — not the subtraction people usually do, which flatters the
+              answer at high rates.
+              <a class="term" href="/learn/terms/inflation.html">মূল্যস্ফীতি কী?</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 4 · EMI ============ -->
+      <section id="emi" class="tool">
+        <header>
+          <h2>What a loan actually costs <span class="bn-h">কিস্তি ও মোট সুদের হিসাব</span></h2>
+          <p>The instalment is the number you're shown. The total interest is the
+             number that matters, and the term length moves it more than the rate.</p>
+        </header>
+        <div class="tool-body">
+          <div class="tool-inputs">
+            <label>
+              <span class="label-row">Loan amount <span class="val" data-for="principal" data-format="money"></span></span>
+              <input type="range" name="principal" min="50000" max="10000000" step="50000" value="1500000">
+            </label>
+            <label>
+              <span class="label-row">Interest rate <span class="val" data-for="rate" data-suffix="%"></span></span>
+              <input type="range" name="rate" min="4" max="20" step="0.25" value="12">
+            </label>
+            <label>
+              <span class="label-row">Term <span class="val" data-for="years" data-suffix=" yrs"></span></span>
+              <input type="range" name="years" min="1" max="25" step="1" value="10">
+            </label>
+            <div class="tool-actions">
+              <button class="chip copy-link" type="button">Copy link to this</button>
+            </div>
+          </div>
+
+          <div class="tool-out">
+            <div class="stat-row">
+              <div class="stat stat-lead" data-stat="emi"><span class="k">Instalment</span><span class="v">—</span><span class="n"></span></div>
+              <div class="stat" data-stat="interest"><span class="k">Total interest</span><span class="v">—</span><span class="n"></span></div>
+              <div class="stat" data-stat="total"><span class="k">Total repaid</span><span class="v">—</span><span class="n"></span></div>
+            </div>
+            <div class="chart-box"></div>
+            <div class="chart-legend">
+              <span><i style="background:var(--green)"></i>Balance left</span>
+              <span><i style="background:var(--danger)"></i>Interest paid so far</span>
+            </div>
+            <p class="verdict"></p>
+            <p class="tool-note">
+              Standard reducing-balance EMI at a fixed rate. Processing fees,
+              insurance and rate resets aren't in here — ask for the total cost of
+              credit in writing before signing anything.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 5 · POSITION SIZING ============ -->
+      <section id="position" class="tool">
+        <header>
+          <h2>How much of this share you can actually buy <span class="bn-h">ঝুঁকি অনুযায়ী পজিশন সাইজ</span></h2>
+          <p>Most first-year losses aren't bad picks — they're good picks bought
+             too big. Decide the most you'll lose before you decide how much to
+             buy, and the size follows from arithmetic instead of nerve.</p>
+        </header>
+        <div class="tool-body">
+          <div class="tool-inputs">
+            <label>
+              <span class="label-row">Portfolio <span class="val" data-for="capital" data-format="money"></span></span>
+              <input type="range" name="capital" min="10000" max="5000000" step="10000" value="200000">
+            </label>
+            <label>
+              <span class="label-row">Risk per trade <span class="val" data-for="risk" data-suffix="%"></span></span>
+              <input type="range" name="risk" min="0.25" max="5" step="0.25" value="1">
+            </label>
+            <label>
+              <span class="label-row">Entry price <span class="val" data-for="entry" data-format="money"></span></span>
+              <input type="number" name="entry" min="1" step="0.1" value="45">
+            </label>
+            <label>
+              <span class="label-row">Stop-loss price <span class="val" data-for="stop" data-format="money"></span></span>
+              <input type="number" name="stop" min="0" step="0.1" value="40">
+            </label>
+            <div class="tool-actions">
+              <button class="chip copy-link" type="button">Copy link to this</button>
+            </div>
+          </div>
+
+          <div class="tool-out">
+            <div class="stat-row">
+              <div class="stat stat-lead" data-stat="shares"><span class="k">Buy at most</span><span class="v">—</span><span class="n"></span></div>
+              <div class="stat" data-stat="cost"><span class="k">That costs</span><span class="v">—</span><span class="n"></span></div>
+              <div class="stat" data-stat="risk"><span class="k">Planned loss</span><span class="v">—</span><span class="n"></span></div>
+            </div>
+            <p class="verdict"></p>
+            <p class="tool-note">
+              A stop-loss is a decision, not a guarantee: DSE circuit breakers and
+              thin liquidity mean the price you get out at can be worse than the
+              one you planned. Size as though the stop might slip.
+              <a class="term" href="/learn/terms/risk-return.html">ঝুঁকি ও রিটার্ন</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="note measure">
+        These calculators are educational. They don't know your tax position, your
+        debts, or what you need the money for, and nothing here is a
+        recommendation to buy or hold anything. Check current rates and rules with
+        Bangladesh Bank, the BSEC, or your own bank before acting.
+      </div>
+
+      <div class="band">
+        <span class="mono">Next</span>
+        <h2>The words behind the numbers</h2>
+        <p>Every calculator here leans on a handful of ideas — compounding, real
+           return, risk and return. The Learn hub explains each one in plain
+           Bangla, in about two minutes each.</p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/learn/index.html">শেখার লাইব্রেরি →</a>
+          <a class="btn btn-ghost" href="/insights.html">Read the longer pieces</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>Everything on this site is general education, not investment advice.
+         Do your own research before putting money anywhere.</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <!-- Modal reader for the dotted Bangla term links -->
+  <div id="reader" hidden role="dialog" aria-modal="true" aria-label="Term reader">
+    <div class="reader-panel">
+      <div class="reader-bar">
+        <button class="icon-btn" id="reader-back" hidden aria-label="আগের লেখায় ফিরুন">← ফিরুন</button>
+        <a id="reader-full" class="mono" href="#">পুরো পেজে পড়ুন ↗</a>
+        <button class="icon-btn" id="reader-close" aria-label="বন্ধ করুন">✕</button>
+      </div>
+      <div class="reader-body" id="reader-body"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/learn/learn.js"></script>
+  <script type="module" src="/tools/tools.js"></script>
+</body>
+</html>

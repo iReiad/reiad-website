@@ -3,58 +3,89 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>Rony Reiad — Finance &amp; Bangladesh Markets</title>
   <meta name="description" content="Rony Reiad: finance and risk management graduate. Bangla-language investment education for Bangladeshi readers, plus financial modeling, data analysis and finance writing.">
+  <link rel="canonical" href="https://reiad.co.uk/">
 
-  <!-- Set the theme BEFORE the page paints, so there's no white flash
-       for dark-mode users. Reads the saved choice, else system setting. -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Rony Reiad — Finance &amp; Bangladesh Markets">
+  <meta property="og:description" content="Plain-Bangla investment education, plus financial modeling and analysis.">
+  <meta property="og:url" content="https://reiad.co.uk/">
+
+  <!-- Theme before first paint: no white flash for dark-mode readers.
+       No stored choice means "follow the OS", which the CSS handles
+       on its own through color-scheme + light-dark(). -->
   <script>
     (function () {
       var saved = localStorage.getItem("theme");
-      var dark = saved ? saved === "dark"
-                       : window.matchMedia("(prefers-color-scheme: dark)").matches;
-      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
     })();
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta property="og:image" content="https://reiad.co.uk/og/default.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Rony Reiad">
+  <meta property="og:locale" content="en_GB">
   <meta name="theme-color" content="#0B3D2E">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Rony Reiad",
+    "url": "https://reiad.co.uk/",
+    "email": "i@reiad.co.uk",
+    "jobTitle": "Finance and risk management analyst",
+    "alumniOf": "University of Brighton",
+    "knowsLanguage": ["en", "bn"],
+    "knowsAbout": ["Dhaka Stock Exchange", "Financial modeling", "Risk management", "Investment education"]
+  }
+  </script>
 </head>
 <body>
+  <a class="skip" href="#main">Skip to the main content</a>
 
   <header>
     <div class="wrap header-inner">
-      <a class="site-name" href="index.html">
-    <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-      <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
-      <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
-      <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
-      <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
-    </svg>
-    Rony Reiad
-  </a>
+      <a class="site-name" href="/index.html">
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Rony Reiad
+      </a>
       <nav aria-label="Main">
-        <a href="learn/index.html" data-keep>Learn</a>
-        <a href="insights.html">Insights</a>
-        <a href="portfolio.html">Portfolio</a>
-        <a href="about.html">About</a>
-        <a href="contact.html" data-keep>Contact</a>
+        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/tools/index.html">Tools</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
       </nav>
-      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">
-        ⌕ <span class="kbd-hint">Ctrl K</span>
-      </button>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
       <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
     </div>
   </header>
 
-  <main>
+  <main id="main">
     <div class="wrap">
 
       <div class="hero">
@@ -65,6 +96,7 @@
           <path class="chart-line" pathLength="1" d="M0,205 C55,196 85,150 130,158 C175,166 205,118 250,124 C295,130 320,88 365,94 C410,100 435,58 480,52 C510,48 535,40 560,34"/>
           <circle class="chart-dot" cx="560" cy="34" r="4.5"/>
         </svg>
+
         <span class="eyebrow mono">Rony Reiad · Dhaka / Brighton · CFA L1 candidate</span>
         <h1 id="kinetic">Bangladesh's markets, explained in the language we speak.</h1>
         <p class="lede">
@@ -73,8 +105,9 @@
           modeling and analysis for clients who need the numbers done right.
         </p>
         <div class="hero-actions">
-          <a class="btn btn-solid" href="learn/index.html">Start learning — বাংলায়</a>
-          <a class="btn btn-ghost" href="portfolio.html">Work with me</a>
+          <a class="btn btn-solid" href="/learn/index.html">Start learning — বাংলায়</a>
+          <a class="btn btn-ghost" href="/tools/index.html">Run the numbers</a>
+          <a class="btn btn-ghost" href="/portfolio.html">Work with me</a>
         </div>
 
         <!-- Ticker tape: decorative, pauses on hover, static under
@@ -114,7 +147,7 @@
           <p>What the DSEX index measures, how a BO account works, and the
              questions worth asking before buying your first share — the first
              piece in the Learn hub's interconnected library.</p>
-          <a class="more" href="insights/dse-basics.html">Read the explainer →</a>
+          <a class="more" href="/insights/dse-basics.html">Read the explainer →</a>
         </article>
 
         <!-- Glass stats card: the site's one glassmorphism moment -->
@@ -124,7 +157,7 @@
             <div><strong>MSc Finance &amp; Risk Management</strong>
               <small>University of Brighton · Upper Merit</small></div>
             <div><strong>CFA Level 1 candidate</strong>
-              <small>November 2026 window</small></div>
+              <small><time datetime="2026-11">November 2026</time> window</small></div>
             <div><strong>Bloomberg Market Concepts</strong>
               <small>Certified</small></div>
           </div>
@@ -137,7 +170,7 @@
           <p>BSS Economics (Chittagong), MSc in Brighton, research on Islamic
              fund performance, and a habit of turning jargon into sentences
              people actually use.</p>
-          <a class="more" href="about.html">More about me →</a>
+          <a class="more" href="/about.html">More about me →</a>
         </div>
 
         <!-- Latest market note -->
@@ -145,7 +178,7 @@
           <span class="tag mono">Latest note</span>
           <h3>Sanchayapatra vs. bank FDR</h3>
           <p>Where does a saver's taka work harder? Coming soon to the Learn hub.</p>
-          <a class="more" href="insights.html">All insights →</a>
+          <a class="more" href="/insights.html">All insights →</a>
         </div>
 
         <!-- Services teaser -->
@@ -156,9 +189,92 @@
             <span>Data analysis — Python / R for finance</span>
             <span>Finance writing — English &amp; Bangla</span>
           </div>
-          <a class="more" href="portfolio.html">See portfolio →</a>
+          <a class="more" href="/portfolio.html">See portfolio →</a>
         </div>
 
+      </div>
+
+      <!-- ============ WHAT'S HERE ============ -->
+      <section>
+        <span class="section-label mono">Start here</span>
+        <div class="big-links">
+          <a class="big-link" href="/learn/index.html">
+            <span class="num">01</span>
+            <span class="t">শেখার লাইব্রেরি — the words, in Bangla</span>
+            <span class="go">→</span>
+            <span class="d">Eighteen terms every Bangladeshi saver runs into — শেয়ার, সঞ্চয়পত্র,
+              এনএভি, চক্রবৃদ্ধি — each a two-minute read that links to the next.</span>
+          </a>
+          <a class="big-link" href="/tools/index.html">
+            <span class="num">02</span>
+            <span class="t">Calculators — the five sums worth doing</span>
+            <span class="go">→</span>
+            <span class="d">Compounding, sanchayapatra against FDR after tax, what inflation
+              really does, loan EMI, and how big a position your own risk rule allows.
+              Copy a link and the whole calculation goes with it.</span>
+          </a>
+          <a class="big-link" href="/insights.html">
+            <span class="num">03</span>
+            <span class="t">Insights — the longer arguments</span>
+            <span class="go">→</span>
+            <span class="d">Explainers and analysis in English, plus an auto-updating pulse of
+              the market news that actually matters.</span>
+          </a>
+          <a class="big-link" href="/portfolio.html">
+            <span class="num">04</span>
+            <span class="t">Work with me — models, analysis, writing</span>
+            <span class="go">→</span>
+            <span class="d">Three-statement models and DCFs in Excel, Python/R analysis, and
+              finance writing in English or Bangla.</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- ============ LATEST ============ -->
+      <section>
+        <span class="section-label mono">Latest writing</span>
+        <!-- rendered from the ARTICLES list in /content.js -->
+        <div class="cards grid-2" id="article-cards" data-mode="live" data-limit="2"></div>
+        <p style="margin-top:16px"><a href="/insights.html">Everything I've written →</a></p>
+      </section>
+
+      <!-- ============ WHY THIS EXISTS ============ -->
+      <section>
+        <span class="section-label mono">Why this site exists</span>
+        <div class="principles">
+          <div class="principle">
+            <h3>The jargon is the barrier</h3>
+            <p>Most Bangladeshi savings decisions are made without the vocabulary to
+               examine them — not from a lack of intelligence, but because the
+               explanations only exist in English, written for people who already
+               understand. That's a solvable problem.</p>
+          </div>
+          <div class="principle">
+            <h3>Arithmetic before opinion</h3>
+            <p>Whether sanchayapatra beats an FDR is not a matter of opinion; it's a
+               calculation, and it changes with the tax at source and how long you can
+               leave the money. So the calculators come with the writing.</p>
+          </div>
+          <div class="principle">
+            <h3>Say what isn't known</h3>
+            <p>Rates change, rules change, and automated news filters miss things.
+               Every page here says what it assumes and where it could be wrong.
+               Nothing on this site tells you what to buy.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ CTA ============ -->
+      <div class="band">
+        <span class="mono">Working together</span>
+        <h2>Numbers that need doing properly</h2>
+        <p>Freelance financial modeling, data analysis and finance writing — for
+           founders raising money, teams that need a model they can actually edit,
+           and publications that need finance explained without the fog.</p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/contact.html">Start a conversation</a>
+          <a class="btn btn-ghost" href="/portfolio.html">See what that looks like</a>
+        </div>
       </div>
 
     </div>
@@ -173,15 +289,6 @@
     </div>
   </footer>
 
-  <!-- Command palette (hidden until Ctrl/Cmd+K or the ⌕ button) -->
-  <div id="palette" hidden role="dialog" aria-modal="true" aria-label="Site search">
-    <div class="palette-panel">
-      <input id="palette-input" type="text" placeholder="Search pages and articles…"
-             autocomplete="off" aria-label="Search">
-      <ul id="palette-list"></ul>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
+  <script type="module" src="/app.js"></script>
 </body>
 </html>

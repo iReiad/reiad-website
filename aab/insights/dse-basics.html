@@ -3,19 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>How the Dhaka Stock Exchange actually works — Rony Reiad</title>
   <meta name="description" content="A plain-language starter guide to the DSE: what the DSEX index is, how BO accounts work, and what to know before buying your first share in Bangladesh.">
 
+  <!-- Theme before first paint: no white flash for dark-mode readers.
+       No stored choice means "follow the OS", which the CSS handles
+       on its own through color-scheme + light-dark(). -->
   <script>
     (function () {
       var saved = localStorage.getItem("theme");
-      var dark = saved ? saved === "dark"
-                       : window.matchMedia("(prefers-color-scheme: dark)").matches;
-      if (dark) document.documentElement.setAttribute("data-theme", "dark");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
     })();
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
@@ -23,9 +28,35 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta property="og:image" content="https://reiad.co.uk/og/insights.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Rony Reiad">
+  <meta property="og:locale" content="en_GB">
   <meta name="theme-color" content="#0B3D2E">
+  <link rel="canonical" href="https://reiad.co.uk/insights/dse-basics.html">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="How the Dhaka Stock Exchange actually works">
+  <meta property="og:description" content="What the DSEX index measures, how a BO account works, and the questions to ask before buying your first share.">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "How the Dhaka Stock Exchange actually works",
+    "description": "A plain-language starter guide to the DSE: what the DSEX index is, how BO accounts work, and what to know before buying your first share in Bangladesh.",
+    "datePublished": "2026-07-01",
+    "inLanguage": "en",
+    "author": { "@type": "Person", "name": "Rony Reiad", "url": "https://reiad.co.uk/about.html" },
+    "mainEntityOfPage": "https://reiad.co.uk/insights/dse-basics.html"
+  }
+  </script>
 </head>
 <body>
+  <a class="skip" href="#main">Skip to the main content</a>
+  <!-- Reading progress: a scroll-driven CSS animation, no JS involved -->
+  <div class="read-progress" aria-hidden="true"></div>
 
   <header>
     <div class="wrap header-inner">
@@ -40,23 +71,31 @@
   </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/tools/index.html">Tools</a>
         <a href="/insights.html" aria-current="page">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
         <a href="/about.html">About</a>
         <a href="/contact.html" data-keep>Contact</a>
       </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
       <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
       <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
     </div>
   </header>
 
-  <main>
-    <div class="wrap article">
+  <main id="main">
+    <article class="wrap article">
 
       <span class="eyebrow mono">Explainer · Equities</span>
       <h1>How the Dhaka Stock Exchange actually works</h1>
-      <p class="meta mono">Updated July 2026 · ~5 minute read ·
-         dotted words open a quick Bangla explainer</p>
+      <p class="lede">What the DSEX index measures, how a BO account works, and the
+         questions worth asking before you buy your first share.</p>
+      <p class="byline mono">
+        <span>Rony Reiad</span><span class="dot"></span>
+        <time datetime="2026-07-01">1 July 2026</time><span class="dot"></span>
+        <span>5 min read</span><span class="dot"></span>
+        <span>dotted words open a Bangla explainer</span>
+      </p>
 
       <p>
         Bangladesh has two stock exchanges: the <a class="term" href="/learn/terms/dse.html">Dhaka
@@ -151,9 +190,18 @@
         (BSEC) before acting.
       </div>
 
-      <p><a href="/insights.html">← Back to all insights</a></p>
+      <div class="prev-next">
+        <a href="/insights.html">
+          <span class="mono">All insights</span>
+          <strong>Back to the index →</strong>
+        </a>
+        <a href="/learn/index.html">
+          <span class="mono">শেখার লাইব্রেরি</span>
+          <strong>Learn hub — বাংলায় →</strong>
+        </a>
+      </div>
 
-    </div>
+    </article>
   </main>
 
   <footer>
@@ -178,14 +226,8 @@
     </div>
   </div>
 
-  <div id="palette" hidden role="dialog" aria-modal="true" aria-label="Site search">
-    <div class="palette-panel">
-      <input id="palette-input" type="text" placeholder="Search pages and articles…" autocomplete="off" aria-label="Search">
-      <ul id="palette-list"></ul>
-    </div>
-  </div>
 
-  <script src="/app.js"></script>
-  <script src="/learn/learn.js"></script>
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/learn/learn.js"></script>
 </body>
 </html>

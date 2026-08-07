@@ -1,0 +1,6 @@
+# Local wrangler state: the dev D1 database, caches and build temp files.
+# Never commit this — it's per-machine and can hold real content you
+# published while testing.
+.wrangler/
+node_modules/
+.dev.vars
