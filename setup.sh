@@ -20,9 +20,24 @@ echo "→ 2/4  Creating the database"
 npx wrangler d1 create reiad || echo "   (already exists — carrying on)"
 
 echo
-echo "   Copy the database_id printed above into wrangler.toml, replacing"
-echo "   PASTE_THE_ID_FROM_wrangler_d1_create_HERE, then press Enter."
+echo "   Now edit wrangler.toml:"
+echo "     1. uncomment the four [[d1_databases]] lines (remove the leading '# ')"
+echo "     2. replace PASTE_THE_ID_FROM_wrangler_d1_create_HERE with the"
+echo "        database_id printed just above"
+echo
+echo "   Press Enter when that is saved."
 read -r _
+
+if grep -q "^# \[\[d1_databases\]\]" wrangler.toml; then
+  echo "   ! The [[d1_databases]] block still looks commented out."
+  echo "     Uncomment it and run ./setup.sh again."
+  exit 1
+fi
+if grep -q "PASTE_THE_ID" wrangler.toml; then
+  echo "   ! wrangler.toml still has the placeholder id in it."
+  echo "     Paste the real database_id and run ./setup.sh again."
+  exit 1
+fi
 
 echo
 echo "→ 3/4  Creating the tables"

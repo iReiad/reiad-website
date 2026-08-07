@@ -27,13 +27,20 @@ compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "aab"
 
 # ---------- D1: the database everything dynamic runs on ----------
-# Articles, reader questions, subscribers, enquiries, view counts
-# and admin sessions all live here. One database, ~50 KB of rows
-# for a long time — comfortably inside the free tier.
-[[d1_databases]]
-binding = "DB"
-database_name = "reiad"
-database_id = "PASTE_THE_ID_FROM_wrangler_d1_create_HERE"
+# Articles, reader questions, subscribers, enquiries, view counts and
+# admin sessions all live here. One database, comfortably inside the
+# free tier for a long time.
+#
+# COMMENTED OUT ON PURPOSE. Cloudflare validates this file when it
+# deploys, and a binding pointing at a database that doesn't exist yet
+# would fail the build — taking the live site down for the sake of a
+# feature that isn't switched on. Uncomment these four lines once
+# `wrangler d1 create reiad` has given you a real id, and paste it in.
+#
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "reiad"
+# database_id = "PASTE_THE_ID_FROM_wrangler_d1_create_HERE"
 
 # ---------- Workers AI (optional) ----------
 # functions/api/news.js uses an `AI` binding to translate headlines
