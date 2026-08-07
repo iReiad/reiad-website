@@ -45,16 +45,17 @@ npx wrangler d1 execute reiad --remote --file=aab/schema.sql
 
 echo
 echo "→ 4/4  Deploying"
-npx wrangler pages deploy aab
+npx wrangler deploy
 
 cat <<'DONE'
 
 Done. Two things left, both in a browser:
 
   1. Open https://reiad.co.uk/studio.html and set your passphrase.
-     It's hashed server-side — nothing readable is stored anywhere.
+     It's stretched in your browser and never sent — the server only
+     stores a hash of the result.
 
-  2. Optional: Cloudflare dashboard → your Pages project → Settings →
+  2. Optional: Cloudflare dashboard → your Worker → Settings →
      Bindings → Add → Workers AI → variable name: AI
      That switches Bangla headline translation back on.
 

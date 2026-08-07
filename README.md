@@ -1,9 +1,9 @@
 # reiad.co.uk
 
 A static site with a dynamic half. Every file in `aab/` is served as-is — no
-framework, no build step, no dependencies — and Cloudflare Pages Functions over
-a D1 database add publishing, reader questions, subscribers, enquiries and
-analytics on top.
+framework, no build step, no dependencies — and a Worker over a D1 database
+adds publishing, reader questions, subscribers, enquiries and analytics on
+top.
 
 **The two halves are one site.** Every dynamic feature checks whether the
 database is connected and falls back to the static behaviour if it isn't. So
@@ -15,7 +15,7 @@ run `./setup.sh` — there is no second version to maintain in between.
 **See [SETUP.md](SETUP.md).** Short version: paste your D1 database ID into
 `wrangler.toml`, commit, then open `/studio.html` and set a passphrase. The
 tables create themselves — there's no schema step, and no dashboard binding to
-click, because Pages reads the binding out of `wrangler.toml`.
+click, because `wrangler.toml` declares it.
 
 `./setup.sh` does the same thing from a terminal if you'd rather (it also
 creates the database, if you haven't).
@@ -38,7 +38,7 @@ immediately** — no file to move, no commit, no push.
 ## Testing
 
 ```sh
-npx wrangler pages dev          # the real Cloudflare runtime, local D1
+npx wrangler dev                # the real Cloudflare runtime, local D1
 ./test-api.sh                   # 52 checks over every endpoint
 node aab/check-routes.mjs       # catches redirect loops before deploying
 ```
@@ -99,7 +99,8 @@ which mode it's in.
 | `aab/auth.js`, `auth-config.js` | The Studio's gate: server session when available, browser-side fallback |
 | `aab/admin.js` | The dashboard — questions, subscribers, enquiries, stats |
 | `aab/engage.js` | Reactions and reader Q&A; attaches itself to any article page |
-| `functions/` | Pages Functions. **Must live at the repo root** — Pages does not look inside the build output directory |
+| `worker.js` | **The entry point.** Routes `/api/*` and `/insights/:slug` to `functions/`, and hands everything else to the static assets |
+| `functions/` | The request handlers, written in the Pages Functions shape (`onRequest`, `context.params`, `context.next()`). `worker.js` maps them to paths |
 | `functions/_lib/` | Database, HTTP helpers, server-side auth, server-side HTML sanitiser |
 | `aab/schema.sql` | The database. Also applied automatically on first request |
 | `setup.sh` | One-time Cloudflare setup |
@@ -111,7 +112,7 @@ which mode it's in.
 | `aab/sw.js` | Service worker — offline reading, never stale articles |
 | `functions/api/news.js` | Serves `/api/news` — the market-pulse feed |
 | `aab/_headers`, `_redirects` | Cloudflare security headers, CSP and redirects |
-| `aab/check-routes.mjs` | **Run before deploying.** Walks every URL through Cloudflare Pages' routing rules and fails on loops, dead ends and broken links |
+| `aab/check-routes.mjs` | **Run before deploying.** Walks every URL through the routing rules and fails on loops, dead ends and broken links |
 | `aab/build-meta.mjs` | Regenerates `feed.xml`, `sitemap.xml`, `robots.txt` |
 | `aab/build-og.mjs` | Re-renders the social share images in `og/` (needs Playwright) |
 
@@ -135,11 +136,11 @@ features that do nothing locally, so before pushing anything that touches them:
 node aab/check-routes.mjs
 ```
 
-That emulates Pages' routing and catches redirect loops, which are otherwise
+That emulates the routing and catches redirect loops, which are otherwise
 invisible until the site is live and a page simply refuses to load.
 
-**Never add "pretty URL" rules to `_redirects`.** Pages already serves
-`/about.html` at `/about` and redirects the `.html` form to it; a rule pointing
+**Never add "pretty URL" rules to `_redirects`.** Static assets already serve
+`/about.html` at `/about` and redirect the `.html` form to it; a rule pointing
 the other way is an infinite loop.
 
 ## Theme
