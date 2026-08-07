@@ -1,9 +1,52 @@
 # reiad.co.uk
 
-A static site — no framework, no build step, no dependencies. Every file in
-`aab/` is served as-is. Edit, commit, push, done.
+A static site with a dynamic half. Every file in `aab/` is served as-is — no
+framework, no build step, no dependencies — and Cloudflare Pages Functions over
+a D1 database add publishing, reader questions, subscribers, enquiries and
+analytics on top.
 
-## Publishing an article
+**The two halves are one site.** Every dynamic feature checks whether the
+database is connected and falls back to the static behaviour if it isn't. So
+the site works today, unchanged, and each feature switches on the moment you
+run `./setup.sh` — there is no second version to maintain in between.
+
+## Turning the dynamic half on
+
+```sh
+./setup.sh
+```
+
+Three commands and about three minutes. It needs your Cloudflare account, which
+is the one part that can't be done for you. Afterwards, open `/studio.html`
+once to set your passphrase — it's hashed server-side, and nothing readable is
+stored anywhere.
+
+Then **writing a piece and pressing "Publish to the site" puts it live
+immediately** — no file to move, no commit, no push.
+
+## What the dynamic half gives you
+
+| Feature | Where |
+| --- | --- |
+| One-click publishing | `/studio.html` → Publish |
+| Reader questions, moderated | bottom of every article; queue in the Studio |
+| Reactions (helpful / confusing / go deeper) | bottom of every article |
+| Subscriber list, confirmed opt-in, CSV export | Insights page; list in the Studio |
+| Client enquiry pipeline (new → replied → closed) | contact form; pipeline in the Studio |
+| Page analytics that can't identify anyone | Studio → What's read |
+| Full-text search across article bodies | `/api/search` |
+
+## Testing
+
+```sh
+npx wrangler pages dev          # the real Cloudflare runtime, local D1
+./test-api.sh                   # 46 checks over every endpoint
+node aab/check-routes.mjs       # catches redirect loops before deploying
+```
+
+## Publishing an article — the manual way
+
+This still works, and is the fallback when the database isn't connected.
 
 1. Open **`/studio.html`** and unlock it (see *Studio access* below).
 2. Paste the article (from Word, Google Docs, Notion, anywhere). Paste or drag
@@ -23,17 +66,21 @@ the identical layout and documents every piece you might need.
 
 ## Studio access
 
-`/studio.html` is gated. On first visit it shows a setup screen: choose a
-passphrase and it hands you a block to paste over `AUTH` in
-`aab/auth-config.js`, then commit that. After that the Studio asks for the
-passphrase, and offers to add a **passkey** so future unlocks are Face ID /
-Touch ID / Windows Hello instead.
+`/studio.html` is gated, and how strong that gate is depends on whether the
+database is connected.
 
-The passphrase is never stored — only a PBKDF2-SHA256 hash at 600,000
-iterations. But be clear about what this is: a static site has no server, so
-the check runs in the visitor's browser. It keeps the tool private from anyone
-who wanders in and out of search results; it is not cryptographic protection.
-Don't put anything confidential behind it.
+**With D1 connected — a real login.** The passphrase is checked on the server
+against a PBKDF2-SHA256 hash (210,000 iterations, constant-time comparison).
+The session is a token stored server-side as a hash, handed to the browser as
+an HttpOnly, SameSite=Strict cookie that page JavaScript cannot read. Every
+admin endpoint re-checks it, wrong guesses are rate-limited, and you can revoke
+every session at once. Set the passphrase by visiting `/studio.html` after
+setup.
+
+**Without D1 — the old browser-side gate.** It keeps the tool away from
+passers-by and out of search results, and it is not cryptographic protection of
+anything, because a static site has no server to ask. The lock screen says
+which mode it's in.
 
 ## Files
 
@@ -42,13 +89,21 @@ Don't put anything confidential behind it.
 | `aab/styles.css` | The whole design system in nine `@layer`s: tokens → base → layout → components → menu → tools → article → studio → utilities |
 | `aab/app.js` | Theme, overlay menu, Ctrl+K palette, keyboard shortcuts, prerender rules, article cards, service-worker registration |
 | `aab/content.js` | **The one file you edit to publish.** Articles, Bangla terms, tools, pages |
-| `aab/auth.js`, `auth-config.js` | The Studio's passkey / passphrase gate |
+| `aab/api.js` | Browser side of the dynamic layer — returns null instead of throwing when there's no backend |
+| `aab/auth.js`, `auth-config.js` | The Studio's gate: server session when available, browser-side fallback |
+| `aab/admin.js` | The dashboard — questions, subscribers, enquiries, stats |
+| `aab/engage.js` | Reactions and reader Q&A; attaches itself to any article page |
+| `functions/` | Pages Functions. **Must live at the repo root** — Pages does not look inside the build output directory |
+| `functions/_lib/` | Database, HTTP helpers, server-side auth, server-side HTML sanitiser |
+| `aab/schema.sql` | The database. Also applied automatically on first request |
+| `setup.sh` | One-time Cloudflare setup |
+| `test-api.sh` | 46 end-to-end API checks |
 | `aab/studio.html`, `studio.js` | The Article Studio |
 | `aab/tools/` | The five calculators |
 | `aab/learn/` | The Bangla Learn hub, its pop-up term reader and reading progress |
 | `aab/pulse.js` | The auto-updating market-news list |
 | `aab/sw.js` | Service worker — offline reading, never stale articles |
-| `aab/functions/api/news.js` | Cloudflare Pages Function serving `/api/news` |
+| `functions/api/news.js` | Serves `/api/news` — the market-pulse feed |
 | `aab/_headers`, `_redirects` | Cloudflare security headers, CSP and redirects |
 | `aab/check-routes.mjs` | **Run before deploying.** Walks every URL through Cloudflare Pages' routing rules and fails on loops, dead ends and broken links |
 | `aab/build-meta.mjs` | Regenerates `feed.xml`, `sitemap.xml`, `robots.txt` |

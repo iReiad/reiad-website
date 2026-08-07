@@ -17,6 +17,8 @@
 
 import { toast, copyText, download } from "/app.js";
 import { lock } from "/auth.js";
+import { api } from "/api.js";
+import { mountDashboard } from "/admin.js";
 
 /* ============================================================
    Elements
@@ -811,3 +813,55 @@ async function restoreDraft() {
   renderPreview();
 })();
 
+
+
+/* ============================================================
+   9. THE DYNAMIC LAYER
+   Switched on only when the gate reports a real server session,
+   so a static deployment behaves exactly as it always has.
+   ============================================================ */
+
+export function enableDynamic() {
+  document.getElementById("steps-static").hidden = true;
+  document.getElementById("steps-dynamic").hidden = false;
+
+  const publish = $("#btn-publish");
+  publish.hidden = false;
+
+  publish.addEventListener("click", async () => {
+    const m = meta();
+    if (!guard(m)) return;
+
+    publish.disabled = true;
+    publish.textContent = "Publishing…";
+    try {
+      const result = await api("articles", {
+        method: "POST",
+        timeout: 30000,          // a piece with embedded photos is a big body
+        body: {
+          slug: m.slug, title: m.title, dek: m.dek, tag: m.tag,
+          topics: m.tag.split("·").map((t) => t.trim()).filter(Boolean),
+          lang: m.lang, body: m.body, status: "live", published_at: m.date,
+        },
+      });
+
+      if (result?.ok) {
+        toast(`Published — /insights/${m.slug}.html`);
+        await clearDraft();
+        document.getElementById("dashboard-section").hidden = false;
+        mountDashboard(document.getElementById("dashboard"));
+      } else {
+        toast(result?.reason === "unauthorised"
+          ? "Session expired — reload and sign in again."
+          : "Couldn't publish. Download the file as a fallback.");
+      }
+    } finally {
+      publish.disabled = false;
+      publish.textContent = "Publish to the site";
+    }
+  });
+
+  const section = document.getElementById("dashboard-section");
+  section.hidden = false;
+  mountDashboard(document.getElementById("dashboard"));
+}

@@ -22,6 +22,7 @@ import {
   searchIndex, liveArticles, ARTICLES, formatDate, topics,
   PAGES, TOOLS, TERM_GROUPS, SITE,
 } from "/content.js";
+import { countView, getArticles } from "/api.js";
 
 /* ============================================================
    1. THEME
@@ -437,14 +438,22 @@ function initSpeculation() {
 /* ============================================================
    5. INSIGHTS CARDS — rendered from content.js
    ============================================================ */
-function initArticleCards() {
+async function initArticleCards() {
   const host = document.getElementById("article-cards");
   if (!host) return;
 
   const limit = Number(host.dataset.limit) || Infinity;
-  const live = liveArticles().slice(0, limit);
+
+  // The database is the source of truth when it exists; content.js is
+  // the fallback, so the page is identical either way.
+  const fromApi = await getArticles();
+  const source = fromApi?.length
+    ? fromApi.map((a) => ({ ...a, status: "live" }))
+    : liveArticles();
+  const live = source.slice(0, limit);
   // the home page shows what exists; the Insights index also teases what's coming
   const soon = host.dataset.mode === "live" ? [] : ARTICLES.filter((a) => a.status === "soon");
+  const liveSlugs = new Set(live.map((a) => a.slug));
 
   const card = (a) => {
     const el = document.createElement(a.status === "soon" ? "div" : "a");
@@ -486,16 +495,26 @@ function initArticleCards() {
     return el;
   };
 
-  host.replaceChildren(...live.map(card), ...soon.map(card));
-  initTopicFilter(host);
+  host.replaceChildren(
+    ...live.map(card),
+    ...soon.filter((a) => !liveSlugs.has(a.slug)).map(card)
+  );
+  initTopicFilter(host, live);
 }
 
 /** Chips that show/hide the cards by topic, built from what exists. */
-function initTopicFilter(host) {
+function initTopicFilter(host, live = []) {
   const row = document.getElementById("topic-filter");
   if (!row) return;
 
-  const all = topics();
+  // Chips come from whatever is actually on the page right now.
+  const counts = new Map();
+  live.forEach((a) => (a.topics ?? []).forEach((t) =>
+    counts.set(t, (counts.get(t) ?? 0) + 1)));
+  const all = counts.size
+    ? [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([name, count]) => ({ name, count }))
+    : topics();
   const chip = (label, count, value) => {
     const b = document.createElement("button");
     b.className = "chip";
@@ -507,7 +526,7 @@ function initTopicFilter(host) {
   };
 
   row.replaceChildren(
-    chip("Everything", liveArticles().length, ""),
+    chip("Everything", live.length || liveArticles().length, ""),
     ...all.map((t) => chip(t.name, t.count, t.name))
   );
 
@@ -600,6 +619,19 @@ function initServiceWorker() {
   });
 }
 
+/* ============================================================
+   7. THE DYNAMIC LAYER
+   Both of these no-op on a site whose database isn't set up.
+   ============================================================ */
+function initDynamic() {
+  countView();
+  // Reactions and reader questions attach themselves to article pages,
+  // so no article file has to know they exist.
+  if (/^\/insights\/[a-z0-9-]+/i.test(location.pathname)) {
+    import("/engage.js").catch(() => {});
+  }
+}
+
 /* ---------- go ---------- */
 initTheme();
 initPalette();
@@ -609,4 +641,5 @@ initKinetic();
 initSpeculation();
 initArticleCards();
 markTermRead();
+initDynamic();
 initServiceWorker();

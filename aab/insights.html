@@ -179,6 +179,18 @@
           <p>No newsletter, no tracking, no "sign up to continue reading". If you
              want to know when something new appears, the feed is the honest way:
              it works in any reader, and it doesn't tell me who you are.</p>
+          <!-- The email box only appears if the site has a database to
+               put an address in; otherwise the RSS line stands alone. -->
+          <form class="subscribe-form" id="subscribe-form" hidden>
+            <label class="visually-hidden" for="sub-email">Email address</label>
+            <input type="email" id="sub-email" name="email" required
+                   placeholder="you@example.com" autocomplete="email">
+            <input type="text" name="website" tabindex="-1" autocomplete="off"
+                   aria-hidden="true" style="position:absolute;left:-9999px">
+            <button class="btn btn-solid" type="submit">Email me new pieces</button>
+          </form>
+          <p class="gate-msg mono" id="sub-msg" role="status" style="margin-top:8px"></p>
+
           <p><a href="/feed.xml">RSS feed →</a> &nbsp;·&nbsp;
              <a href="/learn/index.html">শেখার লাইব্রেরি</a> &nbsp;·&nbsp;
              <a href="/tools/index.html">Calculators</a></p>
@@ -199,5 +211,35 @@
 
   <script type="module" src="/app.js"></script>
   <script type="module" src="/pulse.js"></script>
+  <script type="module">
+    /* Confirmed opt-in: the address is stored as pending until the
+       link is clicked, and every mail carries a one-click unsubscribe. */
+    import { backendReady, subscribe } from "/api.js";
+    const form = document.getElementById("subscribe-form");
+    const msg = document.getElementById("sub-msg");
+    if (await backendReady()) {
+      form.hidden = false;
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(form));
+        msg.textContent = "Signing you up…";
+        msg.className = "gate-msg mono";
+        const result = await subscribe({ ...data, source: "insights" });
+        if (result?.already) {
+          msg.textContent = "You're already on the list.";
+          msg.className = "gate-msg mono ok";
+        } else if (result?.ok) {
+          form.hidden = true;
+          msg.innerHTML = result.confirmUrl
+            ? `Almost — <a href="${result.confirmUrl}">confirm your address</a> to finish.`
+            : "Check your email to confirm.";
+          msg.className = "gate-msg mono ok";
+        } else {
+          msg.textContent = "That didn't work — the RSS feed always does.";
+          msg.className = "gate-msg mono err";
+        }
+      });
+    }
+  </script>
 </body>
 </html>

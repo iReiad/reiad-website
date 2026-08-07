@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <title>Colophon — how this site is built — Rony Reiad</title>
-  <meta name="description" content="Every technical decision behind reiad.co.uk: no framework, no build step, no analytics — and what each of those choices costs.">
+  <meta name="description" content="Every technical decision behind reiad.co.uk: no framework, no build step, no tracking — and what each of those choices costs.">
   <link rel="canonical" href="https://reiad.co.uk/colophon.html">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Colophon — how this site is built">
-  <meta property="og:description" content="No framework, no build step, no analytics — and what each of those choices costs.">
+  <meta property="og:description" content="No framework, no build step, no tracking — and what each of those choices costs.">
   <meta property="og:url" content="https://reiad.co.uk/colophon.html">
   <meta property="og:image" content="https://reiad.co.uk/og/default.png">
   <meta name="twitter:card" content="summary_large_image">
@@ -81,8 +81,8 @@
       <div class="strip">
         <div><span class="n">0</span><span class="l">build steps — the files you edit are the files that ship</span></div>
         <div><span class="n">0</span><span class="l">runtime dependencies, npm packages or frameworks</span></div>
-        <div><span class="n">0</span><span class="l">tracking scripts, analytics or cookie banners</span></div>
-        <div><span class="n">1</span><span class="l">stylesheet, in nine cascade layers</span></div>
+        <div><span class="n">0</span><span class="l">tracking scripts, cookie banners or third-party analytics</span></div>
+        <div><span class="n">1</span><span class="l">stylesheet, in nine cascade layers</span></div><div><span class="n">1</span><span class="l">database — SQLite at the edge, no ORM</span></div>
       </div>
 
       <section>
@@ -122,6 +122,22 @@
               data labels, Noto Sans/Serif Bengali for Bangla. Loaded from Google Fonts with
               <code>display=swap</code> — the one third-party dependency on the site, and the
               obvious thing to self-host next.</span>
+          </div>
+          <div class="row">
+            <span class="k mono">The dynamic half</span>
+            <span class="v">Cloudflare Pages Functions over a D1 (SQLite) database, holding
+              articles, reader questions, subscribers, enquiries and view counts. Every
+              endpoint checks whether the database is bound and falls back to the static
+              behaviour if it isn't — so there is one site, not two, and it degrades instead
+              of breaking. Migrations run themselves on first request.</span>
+          </div>
+          <div class="row">
+            <span class="k mono">Auth, properly</span>
+            <span class="v">The Studio's login is now checked on the server: PBKDF2-SHA256 at
+              210,000 iterations, constant-time comparison, a session token stored only as a
+              hash, and an HttpOnly cookie the page's own JavaScript cannot read. The earlier
+              browser-side version was honest about being a lock on a glass house; this one
+              isn't a compromise.</span>
           </div>
           <div class="row">
             <span class="k mono">Hosting</span>
@@ -183,18 +199,23 @@
         <span class="section-label mono">Things I decided not to do</span>
         <div class="stack measure">
           <details class="faq">
-            <summary>No analytics</summary>
-            <p>Not even the privacy-preserving kind. I'd rather not know how many people
-               visit than ask everyone for a cookie decision they don't care about. The two
-               things stored in your browser are your theme choice and which Learn terms
-               you've read — both on your device, neither sent anywhere.</p>
+            <summary>Analytics that can't identify anyone</summary>
+            <p>The site counts page views, and that is the entire record: a path, a date and
+               a number. No cookie, no visitor ID, no fingerprint, no third party, nothing
+               that could be tied back to a person even if someone wanted to. I need to know
+               which explainers land; I don't need to know who you are, and the difference
+               is worth building for. The only things kept in your browser are your theme
+               choice, which Learn terms you've read, and which articles you've reacted to —
+               all on your device, none of it sent anywhere.</p>
           </details>
           <details class="faq">
-            <summary>No newsletter capture</summary>
-            <p>There's an RSS feed. It works in any reader, requires no email address, and
-               doesn't let me track whether you opened anything. That seems like the correct
-               trade for a site whose whole argument is "be sceptical of people who benefit
-               from your attention".</p>
+            <summary>An email list, on strict terms</summary>
+            <p>There is one now, and it earns its keep only if it stays honest: confirmed
+               opt-in, so an address does nothing until you click a link; no open tracking
+               and no click tracking, so I can't tell whether you read anything; one-click
+               unsubscribe that works immediately and doesn't ask why. <a href="/feed.xml">The
+               RSS feed</a> is still there and still better if you use a reader — it doesn't
+               require giving me anything at all.</p>
           </details>
           <details class="faq">
             <summary>No build step</summary>

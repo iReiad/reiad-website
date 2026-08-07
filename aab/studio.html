@@ -151,6 +151,16 @@ everything else Word smuggles in gets thrown away."></div>
         </div>
       </div>
 
+      <!-- ============ DASHBOARD ============ -->
+      <section id="dashboard-section" hidden>
+        <span class="section-label mono">The site, answering back</span>
+        <p class="measure" style="color:var(--ink-soft);font-size:0.95rem;margin-bottom:6px">
+          Everything readers have sent, and what they're actually reading.
+          Only visible to you, and only while you're signed in.
+        </p>
+        <div id="dashboard"></div>
+      </section>
+
       <!-- ============ EXPORT ============ -->
       <section>
         <span class="section-label mono">3 · Publish it</span>
@@ -160,11 +170,20 @@ everything else Word smuggles in gets thrown away."></div>
           <button class="btn btn-ghost" id="btn-zip">Download .zip (page + photo files)</button>
           <button class="btn btn-ghost" id="btn-entry">Get the index entry</button>
           <button class="btn btn-ghost" id="btn-copy-html">Copy the HTML</button>
+          <button class="btn btn-solid" id="btn-publish" hidden>Publish to the site</button>
           <button class="btn btn-ghost" id="btn-clear">Clear</button>
           <button class="btn btn-ghost push" id="btn-lock" title="Lock the Studio on this device">Lock</button>
         </div>
 
-        <ol class="studio-steps measure">
+        <ol class="studio-steps measure" id="steps-dynamic" hidden>
+          <li>Press <strong>Publish to the site</strong>. That's it — the piece is
+              live, the Insights page picks it up, and readers can react and ask
+              questions on it straight away.</li>
+          <li>Changed your mind? <strong>Published</strong> in the dashboard below
+              unpublishes anything with one click.</li>
+        </ol>
+
+        <ol class="studio-steps measure" id="steps-static">
           <li>Download the page — you get <code>your-slug.html</code>.</li>
           <li>Put that file in the <code>insights/</code> folder of the site.</li>
           <li>Click <strong>Get the index entry</strong>, copy it, and paste it at
@@ -211,8 +230,10 @@ everything else Word smuggles in gets thrown away."></div>
     /* The gate resolves only for the owner; the Studio's code is
        fetched after that, not before. */
     import { requireOwner } from "/auth.js";
-    await requireOwner(document.getElementById("studio-root"));
-    await import("/studio.js");
+    const session = await requireOwner(document.getElementById("studio-root"));
+    const studio = await import("/studio.js");
+    // A server session unlocks one-click publishing and the dashboard.
+    if (session?.server) studio.enableDynamic();
   </script>
 </body>
 </html>

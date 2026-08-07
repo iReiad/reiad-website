@@ -1,0 +1,50 @@
+# ============================================================
+# wrangler.toml — Cloudflare Pages configuration.
+#
+# The site works without any of this. Every dynamic feature
+# checks whether its binding exists and falls back to the static
+# behaviour if it doesn't, so deploying this file changes nothing
+# until the database below is actually created.
+#
+# ONE-TIME SETUP (about three minutes, needs your Cloudflare
+# account, which is why it can't be done for you):
+#
+#   npx wrangler login
+#   npx wrangler d1 create reiad
+#     → copy the database_id it prints into this file
+#   npx wrangler d1 execute reiad --remote --file=aab/schema.sql
+#   npx wrangler pages deploy aab
+#
+# Then set the admin password by visiting /studio.html once —
+# it walks you through it and stores only a hash, server-side.
+#
+# Or run ./setup.sh, which does all of the above in order.
+# ============================================================
+
+name = "reiad-website"
+compatibility_date = "2026-08-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "aab"
+
+# ---------- D1: the database everything dynamic runs on ----------
+# Articles, reader questions, subscribers, enquiries, view counts
+# and admin sessions all live here. One database, ~50 KB of rows
+# for a long time — comfortably inside the free tier.
+[[d1_databases]]
+binding = "DB"
+database_name = "reiad"
+database_id = "PASTE_THE_ID_FROM_wrangler_d1_create_HERE"
+
+# ---------- Workers AI (optional) ----------
+# functions/api/news.js uses an `AI` binding to translate headlines
+# into Bangla, and skips the translation when it isn't there.
+#
+# It is deliberately NOT declared here: an [ai] binding forces
+# `wrangler pages dev` into remote mode, which needs an API token,
+# and that would break local development for the sake of one
+# optional feature. Turn it on instead in the Cloudflare dashboard:
+#   Workers & Pages → your project → Settings → Bindings →
+#   Add → Workers AI → variable name: AI
+
+[vars]
+SITE_ORIGIN = "https://reiad.co.uk"
