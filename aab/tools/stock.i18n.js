@@ -98,6 +98,13 @@ export const STRINGS = {
   "pillar.income": { en: "Income", bn: "আয় বা লভ্যাংশ" },
   "pillar.momentum": { en: "Market & momentum", bn: "বাজার ও গতি" },
 
+  "pillar.gives": { en: "gives {v} pts", bn: "দেয় {v} পয়েন্ট" },
+  "pillar.notCounted": { en: "not counted", bn: "গোনা হচ্ছে না" },
+  "pillar.total": {
+    en: "The six contributions add up to {v} — the score on the dial.",
+    bn: "ছয়টা অবদান যোগ করলে {v} — ডায়ালের স্কোরটাই।",
+  },
+
   "pillar.value.why": {
     en: "Is the price sensible against what the company earns, owns and pays out — and against what similar companies cost?",
     bn: "কোম্পানি যা আয় করে, যা তার আছে আর যা সে দেয় — তার তুলনায় দামটা যুক্তিসঙ্গত কি না, আর একই ধরনের কোম্পানির দামের তুলনায় কেমন।",
@@ -130,10 +137,12 @@ export const STRINGS = {
   "m.earningsYieldSpread": { en: "Earnings yield over sanchayapatra", bn: "আর্নিংস ইল্ড — সঞ্চয়পত্রের চেয়ে বেশি" },
   "m.fcfYield": { en: "Free cash flow yield", bn: "ফ্রি ক্যাশ ফ্লো ইল্ড" },
   "m.peg": { en: "PEG (P/E against growth)", bn: "PEG (বৃদ্ধির তুলনায় P/E)" },
+  "m.peVsMarket": { en: "P/E vs the index", bn: "P/E — সূচকের তুলনায়" },
   "m.ps": { en: "Price / sales", bn: "দাম / বিক্রি" },
   "m.roe": { en: "Return on equity", bn: "ইক্যুইটির ওপর রিটার্ন (ROE)" },
   "m.roce": { en: "Return on capital employed", bn: "নিয়োজিত পুঁজির ওপর রিটার্ন (ROCE)" },
   "m.marginRel": { en: "Net margin vs sector", bn: "নিট মার্জিন — সেক্টরের তুলনায়" },
+  "m.roeRel": { en: "ROE vs sector", bn: "ROE — সেক্টরের তুলনায়" },
   "m.grossMargin": { en: "Gross margin", bn: "গ্রস মার্জিন" },
   "m.cashConversion": { en: "Profit turned into cash", bn: "মুনাফা কতটা নগদে বদলাল" },
   "m.accruals": { en: "Accruals gap", bn: "অ্যাক্রুয়াল ব্যবধান" },
@@ -141,6 +150,7 @@ export const STRINGS = {
   "m.revGrowth": { en: "Revenue growth", bn: "বিক্রি বেড়েছে" },
   "m.niGrowth": { en: "Profit growth", bn: "মুনাফা বেড়েছে" },
   "m.epsCagr3y": { en: "Profit growth, 3-year CAGR", bn: "মুনাফার ৩ বছরের বার্ষিক বৃদ্ধি" },
+  "m.cfoGrowth": { en: "Operating cash growth", bn: "পরিচালন নগদ বেড়েছে" },
   "m.marginTrend": { en: "Margin direction", bn: "মার্জিন কোন দিকে যাচ্ছে" },
   "m.debtEquity": { en: "Debt / equity", bn: "ঋণ / ইক্যুইটি" },
   "m.netDebtEbitda": { en: "Net debt / EBITDA", bn: "নিট ঋণ / EBITDA" },
@@ -191,6 +201,10 @@ export const STRINGS = {
     en: "A high P/E is fine if profits are growing fast. This divides one by the other. Under 1.0× the growth is arguably free.",
     bn: "মুনাফা দ্রুত বাড়লে বেশি P/E-ও ঠিক আছে। এটা একটাকে আরেকটা দিয়ে ভাগ করে। ১.০× এর নিচে হলে বৃদ্ধিটা প্রায় বিনামূল্যে পাচ্ছেন বলা যায়।",
   },
+  "m.peVsMarket.why": {
+    en: "The same price, measured against the whole market rather than one sector. On the DSE these come apart often — a sector can be bid up as a block, so a share looks fair beside its peers and expensive beside everything else you could buy instead.",
+    bn: "একই দাম, তবে একটা সেক্টরের বদলে পুরো বাজারের তুলনায় মাপা। ডিএসই-তে এই দুটো প্রায়ই আলাদা হয়ে যায় — গোটা সেক্টর একসঙ্গে চড়ে বসতে পারে, তখন শেয়ারটা সহকর্মীদের পাশে যুক্তিসঙ্গত আর বাকি যা কিছু কেনা যেত তার পাশে দামি দেখায়।",
+  },
   "m.ps.why": {
     en: "Price against sales. Useful when profits are temporarily depressed and the P/E has stopped meaning anything.",
     bn: "বিক্রির তুলনায় দাম। মুনাফা সাময়িকভাবে কমে গেলে আর P/E অর্থহীন হয়ে পড়লে কাজে লাগে।",
@@ -206,6 +220,10 @@ export const STRINGS = {
   "m.marginRel.why": {
     en: "What is left of every 100 taka of sales, next to what the sector keeps. A company keeping more than its rivals is usually doing something they cannot copy.",
     bn: "প্রতি ১০০ টাকা বিক্রি থেকে কত থাকে, সেক্টর যা রাখে তার তুলনায়। প্রতিদ্বন্দ্বীদের চেয়ে বেশি রাখলে সাধারণত এমন কিছু করছে যা অন্যরা নকল করতে পারে না।",
+  },
+  "m.roeRel.why": {
+    en: "The same return on equity, but against what the sector manages. A 12% return is ordinary in pharma and excellent in textiles, and only the comparison tells you which one you are looking at.",
+    bn: "একই ROE, তবে সেক্টর যা পারে তার তুলনায়। ১২% রিটার্ন ওষুধ খাতে সাধারণ আর টেক্সটাইলে চমৎকার — কোনটা দেখছেন তা কেবল তুলনাই বলে দেয়।",
   },
   "m.grossMargin.why": {
     en: "Sales minus the direct cost of making the thing. A falling gross margin is the earliest warning that pricing power is going.",
@@ -234,6 +252,10 @@ export const STRINGS = {
   "m.epsCagr3y.why": {
     en: "Three years smooths out one freak result in either direction. A company can have one wonderful year; three is a pattern.",
     bn: "তিন বছর ধরলে যেকোনো দিকের একটা অস্বাভাবিক বছর গড়ে মিলিয়ে যায়। এক বছর দারুণ হতেই পারে; তিন বছর হলে সেটা একটা ধারা।",
+  },
+  "m.cfoGrowth.why": {
+    en: "Cash from operations against last year. Harder to manage than reported profit, so when the two disagree about the direction of travel, this is the one to believe.",
+    bn: "গত বছরের তুলনায় পরিচালন থেকে আসা নগদ। খাতার মুনাফার চেয়ে একে সাজানো কঠিন, তাই দুটো যখন গতিপথ নিয়ে দ্বিমত করে, তখন এটাকেই বিশ্বাস করবেন।",
   },
   "m.marginTrend.why": {
     en: "Whether the net margin is wider or narrower than last year, in percentage points. Direction matters more than level.",
@@ -490,8 +512,8 @@ export const STRINGS = {
   /* ---------------- section headings ---------------- */
   "sec.pillars": { en: "The six pillars", bn: "ছয়টা স্তম্ভ" },
   "sec.pillarsNote": {
-    en: "Each pillar is a weighted set of ratios. Open one to see every number inside it and what it means.",
-    bn: "প্রতিটা স্তম্ভ কতগুলো রেশিওর ওজনভিত্তিক সমষ্টি। যেকোনো একটা খুললে ভেতরের প্রতিটা সংখ্যা আর তার মানে দেখা যাবে।",
+    en: "Each pillar is a weighted set of ratios. Open one to see every number inside it and what it means. A pillar's own score measures the company, so it does NOT move when you change the weights — what the weights move is how many points of the final score each pillar gives, shown beside it.",
+    bn: "প্রতিটা স্তম্ভ কতগুলো রেশিওর ওজনভিত্তিক সমষ্টি। যেকোনো একটা খুললে ভেতরের প্রতিটা সংখ্যা আর তার মানে দেখা যাবে। স্তম্ভের নিজের স্কোর কোম্পানিটাকে মাপে, তাই ওজন বদলালে সেটা নড়ে না — ওজন যেটা বদলায় তা হলো প্রতিটা স্তম্ভ চূড়ান্ত স্কোরে কত পয়েন্ট দিচ্ছে, যা তার পাশেই লেখা।",
   },
   "sec.fair": { en: "What is it worth?", bn: "এর দাম আসলে কত হওয়া উচিত?" },
   "sec.fairNote": {

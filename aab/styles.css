@@ -2960,7 +2960,16 @@
     .pillar > summary .score-bar { grid-column: 1 / -1; }
   }
   .pillar-name { font-family: var(--font-serif); font-size: 1.02rem; }
-  .pillar-weight { color: var(--ink-soft); font-size: 0.72rem; }
+  .pillar-weight { color: var(--gold); font-size: 0.72rem; white-space: nowrap; }
+  .pillar[data-muted] {
+    & .pillar-weight { color: var(--ink-soft); }
+    & .pillar-name, & .pillar-score { opacity: 0.45; }
+    & .score-bar { opacity: 0.3; }
+  }
+  .pillar-total {
+    color: var(--ink-soft); font-size: 0.72rem;
+    margin: 14px 0 0; text-align: end;
+  }
   .pillar-score {
     font-family: var(--font-mono); font-size: 1.05rem;
     font-variant-numeric: tabular-nums; color: var(--grade, var(--ink));
