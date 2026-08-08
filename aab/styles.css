@@ -2083,6 +2083,89 @@
     }
   }
 
+  /* ---------- the CSV import panel ---------- */
+  .csv-panel {
+    border: 1px dashed var(--hairline); border-radius: var(--radius);
+    padding: 20px 22px; margin-bottom: 18px;
+    background: var(--paper-sunk);
+    transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
+
+    &[data-over] { border-color: var(--green); background: var(--green-soft); }
+    & h2 { font-size: 1.1rem; margin-bottom: 6px; }
+    & p { color: var(--ink-soft); font-size: 0.9rem; max-width: 70ch; }
+  }
+  .csv-controls {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin-block: 14px 12px;
+
+    & .mono { color: var(--ink-soft); }
+  }
+  .csv-file-label { cursor: pointer; }
+  .csv-paste-label {
+    display: grid; gap: 6px;
+
+    & .mono { color: var(--ink-soft); }
+    & textarea {
+      width: 100%; resize: vertical;
+      font-family: var(--font-mono); font-size: 0.8rem;
+      padding: 10px 12px; border-radius: var(--radius-sm);
+      border: 1px solid var(--hairline); background: var(--paper); color: var(--ink);
+    }
+    & textarea:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+  }
+  .csv-status {
+    margin-top: 10px; font-size: 0.86rem; color: var(--ink-soft);
+
+    &[data-state="ok"] { color: var(--green); }
+    &[data-state="bad"] { color: var(--danger); }
+    &:empty { display: none; }
+  }
+
+  /* a warn state for the simulated-data banner, alongside ok/bad */
+  .balance-check[data-state="warn"] {
+    border-color: var(--gold);
+    background: color-mix(in oklab, var(--gold) 10%, transparent);
+
+    & .check-mark { color: var(--gold); }
+  }
+
+  /* ---------- charts that want the full width ---------- */
+  .wide-chart { margin-block: 16px; }
+  .vol-controls { max-width: 420px; margin-bottom: 6px; }
+
+  .chart-grid { stroke: var(--hairline); stroke-width: 1; }
+  .chart-mean { stroke: var(--gold); stroke-width: 1; stroke-dasharray: 4 3; }
+  .chart-label-sm {
+    font-family: var(--font-mono); font-size: 8px; fill: var(--ink-soft);
+  }
+  .dd-band { fill: var(--danger); opacity: 0.08; }
+  .line-index { stroke: var(--green); stroke-width: 1.6; }
+  .line-vol { stroke: var(--green); stroke-width: 1.6; }
+  .area-underwater { fill: var(--danger); opacity: 0.18; }
+  .line-underwater { stroke: var(--danger); stroke-width: 1.3; }
+  .bar-hist { fill: var(--green); opacity: 0.45; }
+  .line-normal { stroke: var(--gold); stroke-width: 1.8; }
+  .bar-horizon { fill: var(--green); opacity: 0.75; }
+
+  .horizon-picker {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-block: 16px;
+
+    & .mono { color: var(--ink-soft); }
+    & button {
+      border: 1px solid var(--hairline); background: var(--panel);
+      border-radius: 999px; padding: 6px 14px; cursor: pointer; color: var(--ink);
+      font-family: var(--font-mono); font-size: 0.68rem;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    & button:hover { border-color: var(--green); }
+    & button[aria-pressed="true"] {
+      border-color: var(--green); background: var(--green-soft); color: var(--green);
+    }
+  }
+
+  .fin-table td.is-positive { color: var(--green); }
+
   /* ---------- the statements ---------- */
   .statements { display: grid; gap: var(--step); }
   .statement h2 {
@@ -2725,6 +2808,21 @@
      on those dialogs holds the old display value until the transition
      finishes. */
   dialog:not([open]) { display: none; }
+
+  /* The same guard for the `hidden` attribute, and for the same
+     reason. `[hidden]` is only a UA rule of `display: none`, so ANY
+     author rule that sets display beats it — and every card on this
+     site sets one.
+
+     It bit for real: the simulated-data banner on the index analysis
+     is `.balance-check { display: flex }`, so setting hidden on it
+     did nothing, and a reader who loaded their own real prices was
+     still told the series was simulated. Wrong in the one direction
+     that matters, since it misdescribes THEIR data.
+
+     Scoped away from [hidden="until-found"], which must stay
+     findable by in-page search and expandable on match. */
+  [hidden]:not([hidden="until-found"]) { display: none !important; }
 
   .visually-hidden {
     position: absolute !important; width: 1px; height: 1px;

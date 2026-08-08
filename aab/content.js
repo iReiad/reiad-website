@@ -220,6 +220,8 @@ export const PAGES = [
     hint: "Case study", blurb: "A live financial model: edit the assumptions, watch all three statements move." },
   { title: "DCF with sensitivity tables — interactive case study", url: "/portfolio/dcf.html",
     hint: "Case study", blurb: "A live discounted cash flow: build the WACC, switch terminal value method, read the grid." },
+  { title: "Index volatility & drawdowns — interactive case study", url: "/portfolio/dsex.html",
+    hint: "Case study", blurb: "Rolling volatility, drawdowns, tail risk and holding periods — with CSV import." },
   { title: "Portfolio & services", url: "/portfolio.html",
     hint: "Page", blurb: "Financial modeling, data analysis and finance writing." },
   { title: "About Rony", url: "/about.html",
