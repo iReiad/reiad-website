@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, utilities;
+@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, check, utilities;
 
 /* ============================================================
    TOKENS
@@ -1872,7 +1872,13 @@
     grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
     margin-bottom: var(--step);
   }
-  @media (width <= 900px) { .model-body { grid-template-columns: 1fr; } }
+  /* minmax(0, 1fr), not 1fr: a bare `1fr` is minmax(auto, 1fr), so a
+     grid item whose min-content is wider than the track overflows it
+     rather than shrinking, and the whole page then scrolls sideways.
+     A wide table inside one of these panels was doing exactly that on
+     a phone. The zero floor lets the item shrink and its own
+     overflow-x take over. */
+  @media (width <= 900px) { .model-body { grid-template-columns: minmax(0, 1fr); } }
 
   .model-drivers {
     border: 1px solid var(--hairline); border-radius: var(--radius);
@@ -1930,7 +1936,7 @@
     background: var(--green);
   }
 
-  .model-charts { display: grid; gap: var(--gap); }
+  .model-charts { display: grid; gap: var(--gap); grid-template-columns: minmax(0, 1fr); }
   .chart-card {
     border: 1px solid var(--hairline); border-radius: var(--radius);
     background: var(--panel); padding: 18px; margin: 0;
@@ -2800,6 +2806,509 @@
 /* ============================================================
    UTILITIES
    ============================================================ */
+/* ============================================================
+   THE STOCK CHECK
+
+   Its own layer, and it has to come after `work` rather than
+   folding into `tools`. The stock check reuses the case-study
+   furniture — .model-drivers, .driver, .scenarios, .tile,
+   .fin-table — and adjusts it. Those live in `work`, which is
+   declared AFTER `tools`, so a rule sitting in `tools` loses to
+   them on layer order no matter how specific it is. That is not
+   theoretical: `#weights .scenarios { flex-wrap: wrap }` was
+   silently beaten by `.scenarios { display: flex }`, the seven
+   preset buttons refused to wrap, and their unwrapped width
+   pushed the whole sidebar to 784px inside a 390px phone.
+
+   Everything below is for /tools/stock.html: the score dial, the
+   pillar accordions and the five charts drawn without a library.
+   ============================================================ */
+@layer check {
+
+  /* ---------- hero controls ---------- */
+  .tool-topbar {
+    display: flex; flex-wrap: wrap; gap: 26px 40px; align-items: flex-start;
+    margin-top: 22px;
+  }
+  .lang-picker, .preset-picker {
+    display: grid; gap: 8px;
+
+    & > .mono { color: var(--ink-soft); font-size: 0.68rem; letter-spacing: 0.06em;
+                text-transform: uppercase; }
+  }
+  .preset-picker .scenarios { flex-wrap: wrap; }
+  #lang-switch button { padding: 7px 18px; font-size: 0.72rem; }
+  #lang-switch button[lang="bn"] { font-family: var(--font-bn); text-transform: none; }
+
+  /* ---------- the verdict ---------- */
+  .verdict-big {
+    display: grid; gap: 10px 28px; align-items: center;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 22px 26px;
+  }
+  @media (width <= 780px) {
+    .verdict-big { grid-template-columns: 1fr; justify-items: start; }
+  }
+  .verdict-text { display: grid; gap: 6px; }
+  /* deliberately NOT .mono: that class uppercases, which suits a
+     three-word label and shouts when applied to a sentence. */
+  /* .verdict-card in the `work` layer knows "down" and "bad"; this
+     page speaks in good/warn/bad, so without this a verdict capped
+     down to Hold kept the green ground it had not earned. */
+  .verdict-card[data-state="warn"] {
+    border-color: var(--gold);
+    background: color-mix(in oklab, var(--gold) 8%, transparent);
+
+    & .verdict-value { color: var(--gold); }
+  }
+  .verdict-card[data-state="bad"] .verdict-value { color: var(--danger); }
+
+  .verdict-cap {
+    justify-self: start; padding: 3px 10px; border-radius: 999px;
+    background: color-mix(in oklab, var(--gold) 18%, transparent);
+    color: var(--gold); font-size: 0.62rem;
+  }
+  .verdict-headroom {
+    color: var(--ink-soft); font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .verdict-aside {
+    display: grid; gap: 3px; justify-items: end; text-align: end;
+
+    & .mono { color: var(--ink-soft); font-size: 0.66rem; letter-spacing: 0.05em;
+              text-transform: uppercase; }
+    & strong {
+      font-family: var(--font-mono); font-size: 1.4rem;
+      font-variant-numeric: tabular-nums; color: var(--gold);
+    }
+  }
+  @media (width <= 780px) { .verdict-aside { justify-items: start; text-align: start; } }
+
+  /* ---------- the dial ---------- */
+  .dial { width: 148px; height: auto; display: block; }
+  .dial-track { fill: none; stroke: var(--hairline); stroke-width: 9; stroke-linecap: round; }
+  .dial-fill {
+    fill: none; stroke-width: 9; stroke-linecap: round; stroke: var(--green);
+    transition: stroke-dasharray var(--slow) var(--ease);
+
+    &[data-tone="warn"] { stroke: var(--gold); }
+    &[data-tone="bad"] { stroke: var(--danger); }
+  }
+  .dial-tick { stroke: var(--paper); stroke-width: 2; }
+  .dial-value {
+    text-anchor: middle; font-family: var(--font-mono); font-size: 30px;
+    fill: var(--green); font-variant-numeric: tabular-nums;
+
+    &[data-tone="warn"] { fill: var(--gold); }
+    &[data-tone="bad"] { fill: var(--danger); }
+  }
+  .dial-cap {
+    text-anchor: middle; font-family: var(--font-mono); font-size: 9px;
+    fill: var(--ink-soft);
+  }
+
+  /* ---------- grade colours, used by every bar and chip ---------- */
+  [data-grade="strong"] { --grade: var(--green); }
+  [data-grade="good"]   { --grade: var(--green); }
+  [data-grade="fair"]   { --grade: var(--gold); }
+  [data-grade="weak"]   { --grade: var(--gold); }
+  [data-grade="poor"]   { --grade: var(--danger); }
+  [data-grade="na"]     { --grade: var(--hairline); }
+
+  .score-bar {
+    display: block; height: 5px; border-radius: 999px;
+    background: var(--paper-sunk); overflow: clip; min-width: 60px;
+
+    & i {
+      display: block; height: 100%; border-radius: 999px;
+      background: var(--grade, var(--green));
+      opacity: 0.85;
+      transition: width var(--slow) var(--ease);
+    }
+  }
+  [data-grade="good"] > .score-bar i, .score-bar[data-grade="good"] i { opacity: 0.6; }
+  [data-grade="weak"] > .score-bar i, .score-bar[data-grade="weak"] i { opacity: 0.6; }
+
+  /* ---------- section heads with an action ---------- */
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-bottom: 6px;
+
+    & h2 { margin: 0; }
+  }
+  .chart-card > h2 { font-size: 1.2rem; margin-bottom: 6px; }
+  .statement-note.is-warn { color: var(--gold); }
+  .table-scroll { overflow-x: auto; margin-top: 14px; }
+
+  /* ---------- pillar accordions ---------- */
+  .pillar {
+    border-top: 1px solid var(--hairline);
+
+    &:last-of-type { border-bottom: 1px solid var(--hairline); }
+
+    & > summary {
+      display: grid; align-items: center; gap: 4px 14px; cursor: pointer;
+      grid-template-columns: minmax(0, 1fr) auto auto minmax(70px, 110px);
+      padding: 13px 2px; list-style: none;
+    }
+    & > summary::-webkit-details-marker { display: none; }
+    & > summary:hover .pillar-name { color: var(--green); }
+    &[open] > summary .pillar-name { color: var(--green); }
+  }
+  @media (width <= 620px) {
+    .pillar > summary { grid-template-columns: minmax(0, 1fr) auto auto; }
+    .pillar > summary .score-bar { grid-column: 1 / -1; }
+  }
+  .pillar-name { font-family: var(--font-serif); font-size: 1.02rem; }
+  .pillar-weight { color: var(--ink-soft); font-size: 0.72rem; }
+  .pillar-score {
+    font-family: var(--font-mono); font-size: 1.05rem;
+    font-variant-numeric: tabular-nums; color: var(--grade, var(--ink));
+    min-width: 2.2ch; text-align: end;
+  }
+  .pillar-why {
+    color: var(--ink-soft); font-size: 0.88rem; max-width: 68ch;
+    margin: 0 0 14px; padding-inline-start: 2px;
+  }
+
+  /* ---------- one ratio ---------- */
+  .metrics { display: grid; gap: 16px; padding-bottom: 18px; }
+  .metric {
+    display: grid; gap: 6px;
+    padding-inline-start: 14px; border-inline-start: 2px solid var(--hairline);
+
+    &.is-na { opacity: 0.5; }
+  }
+  .metric-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 12px; flex-wrap: wrap;
+  }
+  .metric-name { font-size: 0.92rem; }
+  .metric-value {
+    font-family: var(--font-mono); font-size: 0.82rem;
+    font-variant-numeric: tabular-nums; color: var(--ink-soft); white-space: nowrap;
+
+    & b { color: var(--grade, var(--ink)); font-weight: 500; margin-inline-start: 6px; }
+  }
+  .metric-why {
+    color: var(--ink-soft); font-size: 0.82rem; line-height: 1.6;
+    max-width: 70ch; margin: 2px 0 0;
+  }
+
+  /* ---------- flags ---------- */
+  .flag {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px;
+    align-items: start; padding: 12px 0;
+
+    & + .flag { border-top: 1px solid var(--hairline); }
+    & p { margin: 0; font-size: 0.9rem; max-width: 74ch; }
+  }
+  .flag-mark {
+    width: 9px; height: 9px; border-radius: 50%; margin-top: 6px;
+    background: var(--ink-soft);
+  }
+  .flag[data-level="veto"] {
+    & .flag-mark { background: var(--danger); box-shadow: 0 0 0 4px
+      color-mix(in oklab, var(--danger) 22%, transparent); }
+    & p { color: var(--ink); font-weight: 500; }
+  }
+  .flag[data-level="bad"] .flag-mark { background: var(--danger); }
+  .flag[data-level="warn"] .flag-mark { background: var(--gold); }
+  .flag[data-level="info"] .flag-mark { background: var(--ink-soft); }
+
+  /* ---------- named patterns ---------- */
+  .signals { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+  .signal {
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    padding: 14px 16px; border-inline-start-width: 3px;
+
+    & h3 { font-size: 0.98rem; margin: 0 0 6px; }
+    & p { margin: 0; font-size: 0.85rem; color: var(--ink-soft); line-height: 1.6; }
+
+    &[data-tone="good"] { border-inline-start-color: var(--green); background: var(--green-soft); }
+    &[data-tone="warn"] { border-inline-start-color: var(--gold); }
+    &[data-tone="bad"] {
+      border-inline-start-color: var(--danger);
+      background: color-mix(in oklab, var(--danger) 6%, transparent);
+    }
+  }
+
+  /* ---------- the fair-value range ----------
+     Exactly two labels, on opposite sides of the bar, so no
+     arrangement of anchors can make them overlap. The anchors
+     themselves are bare ticks; the table below names them. */
+  .fv-chart { padding: 56px 8px 8px; }
+  .fv-track {
+    position: relative; height: 6px; border-radius: 999px; background: var(--paper-sunk);
+  }
+  .fv-band {
+    position: absolute; inset-block: 0; border-radius: 999px;
+    background: var(--green); opacity: 0.3;
+  }
+  .fv-tick {
+    position: absolute; top: 50%; translate: -50% -50%;
+    width: 2px; height: 14px; background: var(--green);
+  }
+  .fv-median, .fv-price {
+    position: absolute; top: 50%; translate: -50% 0;
+
+    & i { display: block; width: 3px; height: 22px; margin-inline: auto;
+          background: var(--green); translate: 0 -50%; }
+    & span {
+      position: absolute; left: 50%; translate: -50% 0;
+      display: grid; gap: 1px; text-align: center; white-space: nowrap;
+      font-size: 0.64rem; color: var(--ink-soft); line-height: 1.3;
+    }
+    & b { font-family: var(--font-mono); font-size: 0.74rem; color: var(--ink); }
+  }
+  .fv-median span { top: 14px; }
+  .fv-price {
+    & i { height: 30px; background: var(--gold); }
+    & span { bottom: 28px; color: var(--gold); }
+    & b { color: var(--gold); }
+  }
+  .fv-ends {
+    display: flex; justify-content: space-between; gap: 12px;
+    margin-top: 40px; font-size: 0.68rem; color: var(--ink-soft);
+    font-family: var(--font-mono);
+  }
+
+  /* ---------- headline tiles ----------
+     .tile in the `work` layer only knows good/warn/bad, and this
+     page emits the five grade names. Without these the P/E and
+     margin-of-safety tiles rendered in plain ink whatever they
+     said, which is precisely the information a glance is for. */
+  .tile[data-tone="strong"] .tile-value { color: var(--green); }
+  .tile[data-tone="good"] .tile-value { color: var(--green); }
+  .tile[data-tone="fair"] .tile-value { color: var(--ink); }
+  .tile[data-tone="weak"] .tile-value { color: var(--gold); }
+  .tile[data-tone="poor"] .tile-value { color: var(--danger); }
+  .tile[data-tone="na"] .tile-value { color: var(--ink-soft); }
+
+  /* ---------- the 52-week range ---------- */
+  .rng-chart { padding: 46px 8px 10px; }
+  .rng-track {
+    position: relative; height: 8px; border-radius: 999px; background: var(--paper-sunk);
+  }
+  .rng-fill {
+    position: absolute; inset-block: 0; inset-inline-start: 0; border-radius: 999px;
+    background: var(--green); opacity: 0.25;
+  }
+  .rng-mark {
+    position: absolute; top: 50%; translate: -50% 0;
+
+    & i { display: block; width: 2px; height: 16px; background: var(--ink-soft); translate: 0 -50%; }
+    & span {
+      position: absolute; bottom: 14px; left: 50%; translate: -50% 0;
+      display: grid; gap: 1px; text-align: center; white-space: nowrap;
+      font-size: 0.62rem; color: var(--ink-soft);
+    }
+    & b { font-family: var(--font-mono); font-size: 0.7rem; color: var(--ink); }
+    &.is-price i { width: 3px; height: 26px; background: var(--gold); }
+    &.is-price span, &.is-price b { color: var(--gold); }
+    &.is-ma200 span { bottom: 30px; }
+  }
+  .rng-ends {
+    display: flex; justify-content: space-between; gap: 12px;
+    margin-top: 12px; font-size: 0.7rem; color: var(--ink-soft);
+    font-family: var(--font-mono);
+  }
+
+  /* ---------- the yield ladder ---------- */
+  .ladder { display: grid; gap: 8px; margin-top: 26px; }
+  .ladder-row {
+    display: grid; gap: 12px; align-items: center;
+    grid-template-columns: minmax(0, 190px) minmax(0, 1fr) auto;
+  }
+  .ladder-label { font-size: 0.84rem; }
+  .ladder-track {
+    height: 16px; border-radius: 4px; background: var(--paper-sunk); overflow: clip;
+
+    & i {
+      display: block; height: 100%; background: var(--green); opacity: 0.55;
+      transition: width var(--slow) var(--ease);
+    }
+    & i[data-tone="gold"] { background: var(--gold); }
+    & i[data-tone="danger"] { background: var(--danger); }
+  }
+  .ladder-value {
+    font-family: var(--font-mono); font-size: 0.78rem;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  @media (width <= 620px) {
+    .ladder-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .ladder-track { grid-column: 1 / -1; }
+  }
+
+  /* ---------- DuPont ---------- */
+  .dupont {
+    display: grid; gap: 8px; margin-top: 16px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dupont-part {
+    display: grid; gap: 12px; align-items: center;
+    grid-template-columns: minmax(0, 170px) minmax(0, 1fr) auto;
+
+    &.is-total { font-weight: 600; }
+    &.is-total .dupont-track i { opacity: 1; }
+  }
+  .dupont-k { font-size: 0.86rem; }
+  .dupont-track {
+    height: 18px; border-radius: 4px; background: var(--paper-sunk); overflow: clip;
+
+    & i { display: block; height: 100%; background: var(--green); opacity: 0.45;
+          transition: width var(--slow) var(--ease); }
+  }
+  .dupont-v {
+    font-family: var(--font-mono); font-size: 0.8rem;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .dupont-op {
+    font-family: var(--font-mono); color: var(--ink-soft); font-size: 0.8rem;
+    padding-inline-start: 178px;
+  }
+  @media (width <= 620px) {
+    .dupont-part { grid-template-columns: minmax(0, 1fr) auto; }
+    .dupont-track { grid-column: 1 / -1; }
+    .dupont-op { padding-inline-start: 0; }
+  }
+
+  /* ---------- tick lists: Piotroski and the Shariah screen ---------- */
+  .fscore-head {
+    display: flex; align-items: baseline; gap: 10px; margin: 12px 0 14px;
+
+    & b {
+      font-family: var(--font-mono); font-size: 1.7rem; color: var(--green);
+      font-variant-numeric: tabular-nums;
+    }
+    & span { color: var(--ink-soft); font-size: 0.8rem; }
+  }
+  .checks {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: 9px;
+
+    & li {
+      display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px;
+      align-items: start; font-size: 0.88rem;
+    }
+    & em { color: var(--ink-soft); font-style: normal; font-size: 0.78rem; }
+  }
+  .check-box {
+    width: 16px; height: 16px; border-radius: 4px; margin-top: 2px;
+    border: 1px solid var(--hairline); display: grid; place-items: center;
+    font-size: 11px; line-height: 1;
+  }
+  .checks li[data-state="pass"] .check-box {
+    background: var(--green); border-color: var(--green);
+  }
+  .checks li[data-state="pass"] .check-box::before { content: "✓"; color: var(--paper); }
+  .checks li[data-state="fail"] .check-box { border-color: var(--danger); }
+  .checks li[data-state="fail"] .check-box::before { content: "✕"; color: var(--danger); }
+  .checks li[data-state="skip"] { opacity: 0.55; }
+  .checks li[data-state="skip"] .check-box::before { content: "–"; color: var(--ink-soft); }
+
+  .shariah-verdict {
+    display: inline-block; padding: 7px 16px; border-radius: 999px;
+    margin-bottom: 14px; font-family: var(--font-mono); font-size: 0.72rem;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    border: 1px solid var(--danger); color: var(--danger);
+
+    &[data-pass="true"] { border-color: var(--green); color: var(--green);
+                          background: var(--green-soft); }
+  }
+
+  /* ---------- what's holding the score down ---------- */
+  .drag-row {
+    display: grid; gap: 12px; align-items: center;
+    grid-template-columns: minmax(0, 230px) minmax(0, 1fr) auto;
+    padding: 7px 0;
+  }
+  .drag-name {
+    font-size: 0.86rem;
+
+    & small { display: block; color: var(--ink-soft); font-size: 0.7rem; }
+  }
+  .drag-track {
+    height: 12px; border-radius: 3px; background: var(--paper-sunk); overflow: clip;
+
+    & i { display: block; height: 100%; background: var(--danger); opacity: 0.45;
+          transition: width var(--slow) var(--ease); }
+  }
+  .drag-cost {
+    font-family: var(--font-mono); font-size: 0.78rem; color: var(--danger);
+    font-variant-numeric: tabular-nums;
+  }
+  @media (width <= 620px) {
+    .drag-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .drag-track { grid-column: 1 / -1; }
+  }
+
+  /* ---------- the full scorecard ---------- */
+  .scorecard {
+    & tbody th { min-width: 190px; font-size: 0.86rem; }
+    & td { font-size: 0.8rem; }
+    & tr.is-na { color: var(--ink-soft); opacity: 0.65; }
+  }
+
+  /* ---------- inputs ---------- */
+  .field-num, .field-select {
+    width: 100%; margin-top: 7px;
+    padding: 7px 10px; border-radius: var(--radius-sm);
+    border: 1px solid var(--hairline); background: var(--paper); color: var(--ink);
+    font-family: var(--font-mono); font-size: 0.82rem;
+  }
+  .field-num:focus, .field-select:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+  .field-select { font-family: inherit; }
+  html[lang="bn"] .field-select { font-family: var(--font-bn); }
+
+  details.driver-group {
+    margin-top: 0; padding-top: 0; border-top: 1px solid var(--hairline);
+
+    & > summary {
+      cursor: pointer; list-style: none; padding: 13px 0;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    }
+    & > summary::-webkit-details-marker { display: none; }
+    & > summary::after {
+      content: "+"; font-family: var(--font-mono); color: var(--ink-soft);
+    }
+    &[open] > summary::after { content: "–"; }
+    & > summary h3 { margin: 0; color: var(--gold); font-weight: 500; font-size: 0.92rem; }
+    & > summary:hover h3 { color: var(--green); }
+  }
+  details.driver-group + details.driver-group { margin-top: 0; }
+  #weights { margin-bottom: 20px; }
+  #weights .scenarios { flex-wrap: wrap; margin-bottom: 16px; }
+
+
+  /* ---------- the advanced tool's card on the tools hub ----------
+     It carries its own box. The first version leaned on a `panel`
+     class that does not exist anywhere in this stylesheet, so the
+     card rendered as loose text with no border at all — invisible
+     as a card, which is the one thing it had to be. */
+  .advanced-card {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px 26px; margin-block: 30px 24px;
+    gap: 10px;
+
+    & h2 { font-size: 1.4rem; margin: 0; }
+    & > .mono { color: var(--gold); font-size: 0.68rem;
+                letter-spacing: 0.08em; text-transform: uppercase; }
+    & p { color: var(--ink-soft); max-width: 74ch; margin: 0; font-size: 0.97rem; }
+    & .more { margin-top: 4px; }
+  }
+  .advanced-langs { color: var(--green) !important; font-family: var(--font-bn); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .score-bar i, .ladder-track i, .dupont-track i, .drag-track i, .dial-fill {
+      transition: none;
+    }
+  }
+}
+
 @layer utilities {
 
   /* Guard rail, in the last layer so it always wins: a closed <dialog>

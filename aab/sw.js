@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v9: the stock check landed — a new page under /tools/ with its
+   own engine, string table and stylesheet block, plus a changed
+   crumbs.js. styles.css changed too, and a cached v8 copy would
+   render the new page unstyled.
+
    v8: the index volatility & drawdown case study landed.
 
    v7: the DCF case study landed alongside the operating model.
@@ -47,7 +52,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v8";
+const VERSION = "v9";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -78,6 +83,10 @@ const PRECACHE = [
   "/learn/contents.html",
   "/learn/contents.js",
   "/tools/index.html",
+  "/tools/stock.html",
+  "/tools/stock.js",
+  "/tools/stock.model.js",
+  "/tools/stock.i18n.js",
   "/insights.html",
   "/favicon.ico",
 ];

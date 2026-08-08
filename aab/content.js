@@ -214,6 +214,8 @@ export const PAGES = [
     hint: "Page", blurb: "Every lesson in the Learn area on one page, plus the A–Z of terms." },
   { title: "Tools & calculators", url: "/tools/index.html",
     hint: "Page", blurb: "Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing." },
+  { title: "Stock check — buy, hold or sell", url: "/tools/stock.html",
+    hint: "Tool", blurb: "Thirty-odd ratios across six pillars, a verdict that shows its own arithmetic, in English or Bangla." },
   { title: "Insights", url: "/insights.html",
     hint: "Page", blurb: "Longer pieces, plus an auto-updating pulse of market news." },
   { title: "Three-statement model — interactive case study", url: "/portfolio/three-statement.html",
