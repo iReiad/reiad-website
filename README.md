@@ -89,6 +89,8 @@ flips it back on any page.
 npx wrangler dev                    # the real Cloudflare runtime, local D1
 ./test-api.sh                       # 52 checks over every endpoint
 node aab/check-routes.mjs           # catches redirect loops before deploying
+node aab/check-sw.mjs               # did a precached file change without a VERSION bump?
+node aab/portfolio/dissertation.test.mjs   # 141 checks on the statistics engine
 node aab/learn/build-lessons.mjs    # regenerate the Learn pages
 ```
 
@@ -174,6 +176,8 @@ which mode it's in.
 | `aab/check-routes.mjs` | **Run before deploying.** Walks every URL through the routing rules and fails on loops, dead ends and broken links |
 | `aab/build-meta.mjs` | Regenerates `feed.xml`, `sitemap.xml`, `robots.txt` |
 | `aab/build-og.mjs` | Re-renders the social share images in `og/` (needs Playwright) |
+| `aab/portfolio/` | The four case studies. Each is a page, a DOM-free engine (`*.model.js`) and its charts (`*.js`) |
+| `aab/portfolio/dissertation.*` | The MSc dissertation case study: transcribed tables and extracted series in `.data.js`, Welch/noncentral-t statistics in `.model.js`, and `.test.mjs` to check them |
 
 ## Keyboard
 

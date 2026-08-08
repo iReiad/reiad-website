@@ -3729,3 +3729,227 @@
     .article a::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #555; }
   }
 }
+
+/* ============================================================
+   THE DISSERTATION CASE STUDY
+   Nine exhibits over one piece of empirical research. Everything
+   here rides on the `work` layer's furniture — .tile, .chart-card,
+   .fin-table, .statement — and adds only what a research page
+   needs that a model page doesn't: forest plots, box plots,
+   dumbbells, a two-group colour convention and a long-page rail.
+
+   The colour convention, used everywhere on that page:
+       green = conventional funds (the 217)
+       gold  = Islamic funds (the 3)
+   Islamic lines also carry a dash pattern, so the two are still
+   distinguishable in greyscale and on a printed page.
+   ============================================================ */
+@layer work {
+
+  /* ---------- long-page navigation ---------- */
+  .page-toc {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--paper-sunk); padding: 18px 22px; margin-block: 24px 6px;
+
+    & ol {
+      list-style: none; margin: 0; padding: 0;
+      display: grid; gap: 6px 22px; counter-reset: toc;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+    }
+    & li { counter-increment: toc; }
+    & a {
+      display: block; padding: 3px 0; font-size: 0.9rem;
+      color: var(--ink-soft); text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+    & a::before {
+      content: counter(toc, decimal-leading-zero) " ";
+      font-family: var(--font-mono); font-size: 0.72rem; color: var(--gold);
+      margin-inline-end: 7px;
+    }
+    & a:hover { color: var(--ink); }
+    & a[aria-current="true"] { color: var(--green); border-bottom-color: var(--green); }
+  }
+
+  /* ---------- prose inside the model section ---------- */
+  p.prose { max-width: var(--measure); margin-block: 0 15px; }
+  .statement p.prose + .grid-2 { margin-block: 6px 18px; }
+
+  .callout {
+    border: 1px solid var(--gold); border-radius: var(--radius);
+    background: color-mix(in oklab, var(--gold) 8%, transparent);
+    padding: 18px 22px; margin-block: 22px;
+    display: grid; gap: 6px;
+
+    & .mono { color: var(--gold); font-size: 0.68rem;
+      letter-spacing: 0.06em; text-transform: uppercase; }
+    & p { max-width: var(--measure); margin: 0; }
+    & .statement-note { margin-top: 2px; }
+  }
+
+  /* ---------- the method cards ---------- */
+  .method-steps {
+    display: grid; gap: var(--gap); margin-block: 18px 26px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr));
+  }
+  .method-step {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); padding: 22px 24px;
+    display: grid; gap: 10px; align-content: start;
+
+    & > .mono { color: var(--gold); font-size: 0.68rem;
+      letter-spacing: 0.06em; text-transform: uppercase; }
+    & h3 { font-size: 1.1rem; margin: 0; }
+    & p { color: var(--ink-soft); font-size: 0.94rem; margin: 0; }
+  }
+  /* Formulas wrap at their operators rather than scrolling sideways.
+     A nowrap box with overflow looked tidy until the six-factor
+     model turned out to be ninety characters long and simply
+     disappeared off the edge of its own card. */
+  .formula {
+    background: var(--paper-sunk); border-radius: var(--radius-sm);
+    border-inline-start: 2px solid var(--green);
+    padding: 10px 14px; line-height: 1.75;
+    font-size: 0.82rem !important; color: var(--ink) !important;
+  }
+
+  /* ---------- tables that hold sentences ---------- */
+  .fin-table td.cell-prose {
+    white-space: normal; text-align: left; min-width: 220px;
+    font-family: var(--font-sans); font-size: 0.86rem; color: var(--ink-soft);
+  }
+  .evidence-table {
+    & td { white-space: normal; text-align: left;
+      font-family: var(--font-sans); font-size: 0.86rem; }
+    & tbody th { min-width: 190px; }
+    & tr.is-self th, & tr.is-self td { background: var(--green-soft); font-weight: 500; }
+    & td.evidence-note {
+      min-width: 280px; color: var(--ink-soft);
+      border-inline-start: 3px solid var(--hairline);
+    }
+    & td.evidence-note[data-finding="better"] { border-inline-start-color: var(--green); }
+    & td.evidence-note[data-finding="same"]   { border-inline-start-color: var(--ink-soft); }
+    & td.evidence-note[data-finding="mixed"]  { border-inline-start-color: var(--gold); }
+    & td.evidence-note[data-finding="worse"]  { border-inline-start-color: var(--danger); }
+  }
+
+  /* ---------- references ---------- */
+  .ref-details {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); padding: 14px 20px;
+
+    & summary {
+      cursor: pointer; font-family: var(--font-mono);
+      font-size: 0.7rem; letter-spacing: 0.06em;
+      text-transform: uppercase; color: var(--gold);
+    }
+  }
+  .ref-list {
+    margin: 16px 0 6px; padding-inline-start: 22px;
+    display: grid; gap: 9px;
+
+    & li { color: var(--ink-soft); font-size: 0.86rem; line-height: 1.55;
+      max-width: 78ch; }
+  }
+
+  /* ---------- the two-group colour convention ---------- */
+  .key-conv { background: var(--green); }
+  .key-isl  { background: var(--gold); }
+
+  .line-conventional { stroke: var(--green); stroke-width: 1.8; }
+  .line-islamic { stroke: var(--gold); stroke-width: 1.8; stroke-dasharray: 5 3; }
+  .area-conventional { fill: var(--green); opacity: 0.1; }
+  .line-diff { stroke: var(--gold); stroke-width: 1.8; }
+  .area-diff { fill: var(--gold); opacity: 0.14; }
+  .dot-conventional { fill: var(--green); opacity: 0.8; }
+  .dot-islamic { fill: var(--gold); }
+  .chart-tag-conv { font-family: var(--font-mono); font-size: 9px; fill: var(--green); }
+  .chart-tag-isl  { font-family: var(--font-mono); font-size: 9px; fill: var(--gold); }
+  .chart-label-conv { font-family: var(--font-mono); font-size: 9px; fill: var(--green); }
+  .chart-label-isl  { font-family: var(--font-mono); font-size: 9px; fill: var(--gold); }
+  .mark-conv { stroke: var(--green); stroke-width: 1.2; stroke-dasharray: 3 2; }
+  .mark-isl  { stroke: var(--gold);  stroke-width: 1.2; stroke-dasharray: 3 2; }
+
+  /* ---------- shared chart furniture ---------- */
+  .chart-event { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0.55; }
+  .chart-zero-strong { stroke: var(--ink); stroke-width: 1.2; opacity: 0.5; }
+  .chart-crit { stroke: var(--hairline); stroke-width: 1; stroke-dasharray: 3 3; }
+  .chart-row-label { font-family: var(--font-sans); font-size: 11px; fill: var(--ink); }
+  .chart-coef { font-family: var(--font-mono); font-size: 10px; fill: var(--ink); }
+  .chart-p { font-family: var(--font-mono); font-size: 9px; fill: var(--ink-soft); }
+  .chart-p-sig { font-family: var(--font-mono); font-size: 9px; fill: var(--green); }
+  .chart-count { font-family: var(--font-mono); font-size: 12px; fill: var(--ink); }
+
+  /* ---------- forest plot ---------- */
+  .ci-sig { stroke: var(--green); stroke-width: 2; }
+  .ci-null { stroke: var(--ink-soft); stroke-width: 2; opacity: 0.45; }
+  .dot-sig { fill: var(--green); }
+  .dot-null { fill: var(--ink-soft); opacity: 0.7; }
+  .forest-focus { fill: var(--gold); opacity: 0.09; }
+
+  /* ---------- dumbbells ---------- */
+  .dumbbell-link { stroke: var(--hairline); stroke-width: 3; }
+
+  /* ---------- box plot and strip ---------- */
+  .box-body { fill: var(--green); fill-opacity: 0.2; stroke: var(--green); stroke-width: 1.2; }
+  .box-median { stroke: var(--green); stroke-width: 2.4; }
+  .box-whisker { stroke: var(--green); stroke-width: 1.2; opacity: 0.7; }
+  .strip-dot { fill: var(--ink-soft); opacity: 0.45; }
+  .strip-outlier { fill: var(--danger); opacity: 0.8; }
+
+  /* ---------- the evidence split ---------- */
+  .finding-better { fill: var(--green); }
+  .finding-same   { fill: var(--ink-soft); opacity: 0.55; }
+  .finding-mixed  { fill: var(--gold); }
+  .finding-worse  { fill: var(--danger); }
+  .finding-na     { fill: var(--hairline); }
+
+  /* ---------- the power curve ---------- */
+  .line-power { stroke: var(--danger); stroke-width: 2; }
+  .dot-power { fill: var(--danger); }
+
+  @media (width <= 620px) {
+    .page-toc { padding: 14px 16px; }
+    .formula { font-size: 0.74rem !important; }
+  }
+}
+
+@layer work {
+  /* ---------- fixes found in the browser, kept next to what they fix ---------- */
+
+  /* Two hundred and twenty dots stretched to a 1,100px column made
+     each dot the size of a bullet point. The grid is 320 units wide
+     and should stay near it. */
+  .chart-narrow { max-width: 560px; }
+
+  /* .vol-controls is sized for a lone slider on the dsex page; the
+     power slider carries a sentence-long label and needs the room. */
+  .vol-controls.is-wide { max-width: min(100%, 640px); }
+
+  /* Prose set between exhibits: consistent space above, none below,
+     so a paragraph followed by a chart doesn't double up. */
+  p.prose { margin-block: 16px 0; }
+  p.prose + p.prose { margin-top: 15px; }
+
+  /* An HTML key under a chart, for labels SVG text cannot fit. */
+  .chart-key {
+    list-style: none; margin: 12px 0 0; padding: 0;
+    display: flex; flex-wrap: wrap; gap: 6px 20px;
+
+    & li {
+      font-family: var(--font-mono); font-size: 0.68rem;
+      color: var(--ink-soft); display: flex; align-items: center;
+    }
+  }
+  .finding-key-better { background: var(--green); }
+  .finding-key-same   { background: var(--ink-soft); opacity: 0.55; }
+  .finding-key-mixed  { background: var(--gold); }
+  .finding-key-worse  { background: var(--danger); }
+  .finding-key-na     { background: var(--hairline); }
+
+  /* The five-factor formula is 90 characters of subscripted maths.
+     Two columns give it a fighting chance; below that it scrolls
+     inside its own box rather than pushing the page sideways. */
+  .method-steps { grid-template-columns: repeat(auto-fit, minmax(min(100%, 430px), 1fr)); }
+  .formula.is-long { font-size: 0.74rem !important; }
+}

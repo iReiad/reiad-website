@@ -224,6 +224,8 @@ export const PAGES = [
     hint: "Case study", group: "case", blurb: "A live discounted cash flow: build the WACC, switch terminal value method, read the grid." },
   { title: "Index volatility & drawdowns — interactive case study", url: "/portfolio/dsex.html",
     hint: "Case study", group: "case", blurb: "Rolling volatility, drawdowns, tail risk and holding periods — with CSV import." },
+  { title: "Islamic vs conventional funds — MSc dissertation", url: "/portfolio/dissertation.html",
+    hint: "Case study", group: "case", blurb: "220 UK funds, 19,577 fund-months, five-factor models — and what a sample of three could actually detect." },
   { title: "Portfolio & services", url: "/portfolio.html",
     hint: "Page", blurb: "Financial modeling, data analysis and finance writing." },
   { title: "About Rony", url: "/about.html",
