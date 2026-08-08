@@ -2852,6 +2852,22 @@
   .verdict-text { display: grid; gap: 6px; }
   /* deliberately NOT .mono: that class uppercases, which suits a
      three-word label and shouts when applied to a sentence. */
+  /* .verdict-card in the `work` layer knows "down" and "bad"; this
+     page speaks in good/warn/bad, so without this a verdict capped
+     down to Hold kept the green ground it had not earned. */
+  .verdict-card[data-state="warn"] {
+    border-color: var(--gold);
+    background: color-mix(in oklab, var(--gold) 8%, transparent);
+
+    & .verdict-value { color: var(--gold); }
+  }
+  .verdict-card[data-state="bad"] .verdict-value { color: var(--danger); }
+
+  .verdict-cap {
+    justify-self: start; padding: 3px 10px; border-radius: 999px;
+    background: color-mix(in oklab, var(--gold) 18%, transparent);
+    color: var(--gold); font-size: 0.62rem;
+  }
   .verdict-headroom {
     color: var(--ink-soft); font-size: 0.78rem;
     font-variant-numeric: tabular-nums;

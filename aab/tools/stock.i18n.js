@@ -75,6 +75,14 @@ export const STRINGS = {
     en: "One fact below overrides the score outright. However cheap this looks, that fact does not go away.",
     bn: "নিচের একটা বিষয় স্কোরকে সম্পূর্ণ বাতিল করে দিচ্ছে। যতই সস্তা মনে হোক, ওই সমস্যাটা থেকেই যাচ্ছে।",
   },
+  "verdict.capped": {
+    en: "Held back by the price",
+    bn: "দামের কারণে আটকে দেওয়া হয়েছে",
+  },
+  "verdict.cappedWhy": {
+    en: "The score alone would have said \u201c{earned}\u201d. The valuation pillar is too weak for that: a good business bought at a bad price is a bad investment, and no quality score is allowed to argue otherwise here. Lower the price, or accept that you are paying for quality you already know about.",
+    bn: "শুধু স্কোর দেখলে এটা \u201c{earned}\u201d হতো। কিন্তু দামের স্তম্ভটা তার জন্য বড্ড দুর্বল: ভালো ব্যবসা খারাপ দামে কিনলে সেটা খারাপ বিনিয়োগই, আর এখানে কোনো মানের স্কোরকে এর বিপরীতে যুক্তি দিতে দেওয়া হয় না। হয় দাম কমুক, নয়তো মেনে নিন যে আপনি এমন মানের জন্য দাম দিচ্ছেন যা সবাই আগে থেকেই জানে।",
+  },
   "verdict.headroom": {
     en: "{down} would drop it to {downBand}; {up} would lift it to {upBand}.",
     bn: "{down} হলে নেমে {downBand} হবে; {up} হলে উঠে {upBand} হবে।",

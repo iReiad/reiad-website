@@ -585,16 +585,18 @@ function render() {
   writeUrl();
 }
 
-function toneFor(score, vetoed) {
-  if (vetoed) return "bad";
-  if (score === null) return "warn";
-  if (score >= 62) return "good";
-  if (score >= 48) return "warn";
-  return "bad";
+/* The tone follows the VERDICT, not the raw score — a run capped
+   down to "hold" must not still be painted green just because the
+   composite reads 65. */
+function toneFor(a) {
+  if (a.vetoed) return "bad";
+  if (a.score === null) return "warn";
+  const rank = ["buy", "accumulate", "hold", "trim", "avoid"].indexOf(a.verdict.id);
+  return rank <= 1 ? "good" : rank === 2 ? "warn" : "bad";
 }
 
 function renderVerdict(a) {
-  const tone = toneFor(a.score, a.vetoed);
+  const tone = toneFor(a);
   $("#verdict-dial").innerHTML = dial(a.score, tone);
   $("#verdict").dataset.state = tone;
 
@@ -602,15 +604,30 @@ function renderVerdict(a) {
     ? t("verdict.vetoed", lang)
     : t(`verdict.${a.verdict.id}`, lang);
 
+  /* When the price ceiling has pulled the verdict down, say so and
+     say what the score alone would have concluded. A correction the
+     reader cannot see is just a number they have no reason to
+     trust. */
   $("#verdict-why").textContent = a.vetoed
     ? t("verdict.vetoedWhy", lang)
-    : t(`verdict.${a.verdict.id}.why`, lang);
+    : a.capped
+      ? t("verdict.cappedWhy", lang, { earned: t(`verdict.${a.earned.id}`, lang) })
+      : t(`verdict.${a.verdict.id}.why`, lang);
+
+  const capNote = $("#verdict-cap");
+  capNote.hidden = !a.capped;
+  capNote.textContent = a.capped ? t("verdict.capped", lang) : "";
 
   /* How close is it to changing its mind? A verdict presented
      without its own margin invites more confidence than it has
      earned. */
+  /* The headroom line describes the SCORE's own band. Once the
+     cap has overridden that band the line contradicts the verdict
+     printed above it — "2.6 points lower → Hold" under a heading
+     that already reads Hold — so it comes off. */
   const hr = $("#verdict-headroom");
-  if (a.vetoed || a.score === null || (a.edges.up === null && a.edges.down === null)) {
+  if (a.vetoed || a.capped || a.score === null
+      || (a.edges.up === null && a.edges.down === null)) {
     hr.textContent = "";
     hr.hidden = true;
   } else {

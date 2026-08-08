@@ -979,21 +979,64 @@ export function drags(scored, pillars, weights, limit = 6) {
    THE WHOLE THING
    ============================================================ */
 
+/* ============================================================
+   THE PRICE CEILING
+
+   A plain weighted mean cannot answer the question this page
+   asks. Valuation is one pillar of six, so on balanced weights
+   it controls about a fifth of the score — and tripling the
+   share price of the default company moved the total from 69 to
+   62 and left the verdict reading "worth accumulating". The
+   valuation pillar had collapsed from 46 to 15, exactly as it
+   should; it simply could not drag a mean far enough.
+
+   That is fatal for a tool whose entire question is whether to
+   buy AT THIS PRICE. Price is the one variable the reader
+   controls, and a tool insensitive to it is worse than no tool.
+
+   So the verdict is capped by the valuation pillar. Not a veto —
+   the score is still shown and still honest — but a good
+   business bought badly is a bad investment, and no quality
+   score should be able to argue otherwise. The cap is stated on
+   the page whenever it bites, so it is never a silent
+   correction.
+   ============================================================ */
+
+const CAP_HOLD = 30;
+const CAP_ACCUMULATE = 42;
+
+export function priceCap(pillars) {
+  const v = pillars.value?.score;
+  if (v === null || !Number.isFinite(v)) return null;
+  if (v < CAP_HOLD) return "hold";
+  if (v < CAP_ACCUMULATE) return "accumulate";
+  return null;
+}
+
+const bandRank = (id) => BANDS.findIndex((b) => b.id === id);
+
 export function analyse(input, weights = WEIGHT_PRESETS.balanced) {
   const d = { ...DEFAULTS, ...input };
   const r = ratios(d);
   const scored = scoreMetrics(d, r);
   const pillars = scorePillars(scored);
-  const raw = composite(pillars, weights);
+  const score = composite(pillars, weights);
   const flags = checkFlags(d, r);
   const veto = flags.find((f) => f.level === "veto") ?? null;
-  const score = raw;
-  const verdict = veto ? BANDS[BANDS.length - 1] : bandFor(score);
+
+  const earned = bandFor(score);
+  const cap = veto ? null : priceCap(pillars);
+  const capped = cap !== null && bandRank(cap) > bandRank(earned.id);
+  const verdict = veto
+    ? BANDS[BANDS.length - 1]
+    : capped ? BANDS[bandRank(cap)] : earned;
 
   return {
     d, r, scored, pillars,
     score,
     verdict,
+    earned,
+    capped,
     vetoed: Boolean(veto),
     veto,
     edges: score === null ? { up: null, down: null } : bandEdges(score),
