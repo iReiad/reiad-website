@@ -24,6 +24,7 @@
    ============================================================ */
 
 import { STAGES, stageLessons, allLessons, findStage } from "/learn/curriculum.js";
+import { whenActivated } from "/activation.js";
 
 const READ_KEY = "learn-read";
 const LAST_KEY = "learn-last";
@@ -196,8 +197,15 @@ export function onProgress(fn) {
   addEventListener("storage", (e) => {
     if (e.key === READ_KEY || e.key === LAST_KEY) fn();
   });
-  // coming back via the bfcache, or from a lesson page
-  addEventListener("pageshow", fn);
+  /* Coming back via the bfcache — and ONLY then.
+
+     `pageshow` also fires on an ordinary first load, where it made
+     the hub rebuild itself milliseconds after it had just been
+     built. That second build was pure waste, and worse: it detached
+     the element the auto-scroll had just aimed at, so whether the
+     scroll landed came down to which finished first. On a normal
+     load the caller has already painted; there is nothing to redo. */
+  addEventListener("pageshow", (e) => { if (e.persisted) fn(); });
 }
 
 /* ------------------------------------------------------------
@@ -216,6 +224,11 @@ export function onProgress(fn) {
 
    An unwritten lesson marked data-soon is not ticked off — you
    have not read what has not been written.
+
+   And it waits for activation. Hovering a link prerenders the
+   page it points at, scripts and all, so without whenActivated
+   this ticked lessons off as the pointer swept across a list —
+   see /activation.js for the full story.
    ------------------------------------------------------------ */
 export function recordVisit(root = document) {
   const article = root.querySelector(
@@ -227,12 +240,14 @@ export function recordVisit(root = document) {
   const id = full || slug;
   if (!id || soon) return null;
 
-  markRead(id);
-  setLast({
-    id,
-    stage: stage || "basics-1",
-    url: location.pathname,
-    bn: lessonTitle || document.title.split("—")[0].trim(),
+  whenActivated(() => {
+    markRead(id);
+    setLast({
+      id,
+      stage: stage || "basics-1",
+      url: location.pathname,
+      bn: lessonTitle || document.title.split("—")[0].trim(),
+    });
   });
   return id;
 }

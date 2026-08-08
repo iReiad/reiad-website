@@ -210,6 +210,8 @@ export const PAGES = [
     hint: "Page", blurb: "The short version of everything here." },
   { title: "Learn hub — শেখার লাইব্রেরি", url: "/learn/index.html",
     hint: "Page", blurb: "Start-to-research investing course in plain Bangla, eight stages deep." },
+  { title: "Learn — সব বিষয় এক নজরে", url: "/learn/contents.html",
+    hint: "Page", blurb: "Every lesson in the Learn area on one page, plus the A–Z of terms." },
   { title: "Tools & calculators", url: "/tools/index.html",
     hint: "Page", blurb: "Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing." },
   { title: "Insights", url: "/insights.html",

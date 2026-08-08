@@ -40,7 +40,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const AAB = join(HERE, "..");
 
 const {
-  STAGES, stageLessons, stageUrl, stageMinutes, lessonId, lessonUrl,
+  STAGES, stageLessons, stageUrl, stageMinutes, stageCount, lessonId, lessonUrl,
 } = await import(join(HERE, "curriculum.js"));
 const { icon } = await import(join(HERE, "icons.js"));
 
@@ -230,7 +230,10 @@ function lessonPage(stage, lessons, index, bodies) {
         <p class="one-liner">${esc(lesson.blurb)}</p>
         <p class="lesson-meta mono">${soon ? "আসছে" : `${bn(lesson.minutes)} মিনিটের পড়া`}</p>
 ${body || SOON_BODY}
-        <p class="backlink"><a href="${stageUrl(stage)}">← ${esc(stage.bn)}-এর সব লেখা</a></p>
+        <p class="backlink">
+          <a href="${stageUrl(stage)}">← ${esc(stage.bn)}-এর সব লেখা</a>
+          <a class="backlink-alt" href="/learn/contents.html">সব বিষয় এক নজরে →</a>
+        </p>
       </article>
 ${prevNext(lessons, index)}
 `,
@@ -314,11 +317,166 @@ ${sections}
 ${[ladderCell(prev, "← আগের ধাপ"), ladderCell(next, "পরের ধাপ →")].filter(Boolean).join("\n")}
       </nav>
 
+      <p class="contents-footlink">
+        <a href="/learn/contents.html">সব বিষয় এক নজরে — পুরো সূচিপত্র →</a>
+      </p>
+
       <div class="note">এই লাইব্রেরির সবকিছু সাধারণ শিক্ষামূলক তথ্য — বিনিয়োগ পরামর্শ না।
       নিয়ম, হার আর ফি সময়ে সময়ে বদলায়; সিদ্ধান্তের আগে সংশ্লিষ্ট প্রতিষ্ঠানের সর্বশেষ তথ্য দেখে নিন।</div>
 `,
     extraScripts: `\n  <script type="module" src="/learn/stage.js"></script>`,
   });
+}
+
+/* ============================================================
+   the full contents page
+
+   This used to be a section on the hub, where it was 39% of the
+   page on a laptop and 43% on a phone — the reader had to scroll
+   past ninety lesson rows to reach the FAQ. A complete index is
+   genuinely useful, but it is a reference, not something you read
+   on the way somewhere. So it gets its own page, linked from the
+   bottom of the hub and of every stage.
+
+   Written out in full rather than built by JavaScript: it is the
+   one page whose entire job is being a complete list, so it
+   should still be a complete list with scripts off, and search
+   engines should see every title.
+   ============================================================ */
+
+function contentsPage() {
+  const stages = STAGES.map((stage) => {
+    const lessons = stageLessons(stage);
+    const sections = stage.sections
+      .map((section) => {
+        const rows = section.lessons
+          .map((raw) => {
+            const l = lessons.find(
+              (x) => x.slug === raw.slug && x.section.id === section.id
+            );
+            const soon = l.status !== "live";
+            return `            <li class="contents-row"${soon ? ' data-soon="1"' : ""} data-lesson-id="${esc(l.id)}">
+              <a class="bn-h" href="${l.url}">${esc(l.bn)}</a>
+              <span class="contents-en">${esc(l.en)}</span>
+              <span class="contents-min mono">${soon ? "আসছে" : `${bn(l.minutes)} মি`}</span>
+            </li>`;
+          })
+          .join("\n");
+        return `        <div class="contents-section">
+          <h3 class="mono">${esc(section.bn)} · ${esc(section.en)}</h3>
+          <ul class="contents-list">
+${rows}
+          </ul>
+        </div>`;
+      })
+      .join("\n");
+
+    const { total, live } = stageCount(stage);
+    const href = stage.inline ? "/learn/index.html#starter" : stageUrl(stage);
+
+    return `      <section class="contents-stage" id="c-${stage.slug}">
+        <div class="contents-stage-head">
+          <span class="contents-art" aria-hidden="true">${icon(stage.icon)}</span>
+          <div>
+            <span class="mono contents-kicker">${esc(stage.kicker)}</span>
+            <h2 class="bn-h"><a href="${href}">${esc(stage.bn)}</a>
+              <span class="en-sub">${esc(stage.en)}</span></h2>
+            <p class="contents-who">${esc(stage.who)}</p>
+          </div>
+          <span class="contents-tally mono">${bn(live)}/${bn(total)}</span>
+        </div>
+${sections}
+      </section>`;
+  }).join("\n\n");
+
+  /* the A–Z of stage 1, which was also on the hub and belongs with
+     the rest of the index rather than in the middle of a course */
+  const terms = stageLessons(findStageBySlug("basics-1"));
+  const byLetter = new Map();
+  [...terms].sort((a, b) => a.en.localeCompare(b.en)).forEach((t) => {
+    const letter = t.en[0].toUpperCase();
+    if (!byLetter.has(letter)) byLetter.set(letter, []);
+    byLetter.get(letter).push(t);
+  });
+
+  const azNav = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+    .map((L) => (byLetter.has(L) ? `<a href="#az-${L}">${L}</a>` : `<span>${L}</span>`))
+    .join("");
+
+  const azRows = [...byLetter.entries()]
+    .map(([letter, group]) =>
+      `        <div class="section-label mono" id="az-${letter}" style="margin:22px 0 6px;border:0;padding:0">${letter}</div>\n` +
+      group
+        .map((t) => `        <div class="g-row" data-lesson-id="${esc(t.id)}">
+          <a class="term bn-h" href="${t.url}">${esc(t.bn)}</a>
+          <span class="en">${esc(t.en)} — ${esc(t.section.en)}</span>
+        </div>`)
+        .join("\n")
+    )
+    .join("\n");
+
+  const totals = STAGES.reduce(
+    (acc, s) => {
+      const c = stageCount(s);
+      acc.total += c.total;
+      acc.live += c.live;
+      return acc;
+    },
+    { total: 0, live: 0 }
+  );
+
+  return page({
+    title: "সব বিষয় এক নজরে — শেখার লাইব্রেরি — Rony Reiad",
+    description:
+      "শেখার লাইব্রেরির প্রতিটা লেখা এক পাতায় — আট ধাপের পুরো তালিকা, আর ইংরেজি বর্ণানুক্রমে শব্দকোষ।",
+    canonical: "/learn/contents.html",
+    body: `
+      <div class="hero">
+        <span class="eyebrow mono">শেখার লাইব্রেরি · সূচিপত্র</span>
+        <h1 class="bn-h">সব বিষয় এক নজরে</h1>
+        <p class="lede">লাইব্রেরির প্রতিটা লেখা, ধাপ অনুযায়ী সাজানো — মোট ${bn(totals.total)}টি,
+        যার ${bn(totals.live)}টি এখন পড়া যায়। যেটা পড়া হয়ে গেছে সেটায় টিক চিহ্ন;
+        টিকগুলো আপনার নিজের ব্রাউজারে জমা থাকে, কোথাও পাঠানো হয় না।</p>
+        <search>
+          <input type="search" id="contents-filter" placeholder="খুঁজুন… (যেমন: ব্রোকার, ঝুঁকি, নগদ)" aria-label="লেখা খুঁজুন">
+        </search>
+        <div id="contents-count" class="filter-count mono" hidden></div>
+        <nav class="contents-jump" aria-label="ধাপে যান">
+${STAGES.map((s) => `          <a href="#c-${s.slug}">${esc(s.kicker)}</a>`).join("\n")}
+        </nav>
+      </div>
+
+${stages}
+
+      <section id="glossary-section">
+        <span class="section-label mono">A–Z · শব্দকোষ</span>
+        <p class="measure" style="color:var(--ink-soft);font-size:0.95rem">
+          ভিত্তি ধাপ ১-এর আঠারোটা শব্দ ইংরেজি বর্ণানুক্রমে — ইংরেজি নামটা জানা থাকলে এখান থেকেই দ্রুত খুঁজে নিন।
+        </p>
+        <div class="az">${azNav}</div>
+        <div class="glossary">
+${azRows}
+        </div>
+      </section>
+
+      <div class="band">
+        <span class="mono">ফিরে যান</span>
+        <h2>ধাপে ধাপে পড়তে চান?</h2>
+        <p>সূচিপত্র রেফারেন্সের জন্য। শেখার সাজানো পথটা আছে শেখার লাইব্রেরির মূল পাতায় —
+           হাতেখড়ি দিয়ে শুরু, তারপর এক ধাপ করে।</p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/learn/index.html">শেখার লাইব্রেরিতে যান →</a>
+        </div>
+      </div>
+`,
+    extraScripts: `\n  <script type="module" src="/learn/contents.js"></script>`,
+  });
+}
+
+/* build-lessons imports findStage under a clearer local name, since
+   `stage` is the loop variable everywhere below */
+function findStageBySlug(slug) {
+  return STAGES.find((s) => s.slug === slug);
 }
 
 /* ============================================================
@@ -354,5 +512,9 @@ for (const stage of STAGES) {
   const written = lessons.filter((l) => l.status === "live").length;
   console.log(`${stage.slug.padEnd(10)} ${lessons.length} lesson page(s), ${written} written`);
 }
+
+writeFileSync(join(AAB, "learn", "contents.html"), contentsPage());
+pages++;
+console.log(`contents   1 page, every lesson listed`);
 
 console.log(`\n${pages} page(s) written. Now run: node aab/build-meta.mjs && node aab/check-routes.mjs`);

@@ -1763,6 +1763,74 @@
   :root[data-audience="work"] nav a[href*="learn"]     { order: 1; }
   :root[data-audience="work"] nav a[href*="tools"]     { order: 2; }
 
+  /* ---------- the home page, led by the half they came for ----------
+
+     Order only. A recruiter still gets the Learn cards and a learner
+     still gets the credentials — further down. Nothing is display:none,
+     so nobody has to wonder what is being withheld from them.
+
+     Two different mechanisms, because the page uses two layouts:
+
+     1. The top-level blocks are a block flow, so they need a flex
+        container before `order` means anything. `.home-flow` becomes
+        one ONLY when a choice has been made — an undecided visitor
+        gets the original block layout untouched, margins and all.
+
+     2. The bento is a named-area grid at every breakpoint, so `order`
+        would be ignored there entirely. Its running order is changed
+        by swapping grid-template-areas instead. `feature` stays the
+        big 2×2 cell in both, because .cell-feature's typography is
+        sized for being big. */
+
+  :root[data-audience] .home-flow { display: flex; flex-direction: column; }
+  .home-flow > * { order: 0; }
+
+  /* the hero and the closing band hold either end regardless */
+  :root[data-audience] .home-flow > .hero { order: -3; }
+  :root[data-audience] .home-flow > .band { order: 8; }
+  :root[data-audience] .home-flow > .note { order: 9; }
+
+  /* An explicit running order per audience, rather than a learn/work
+     binary. The binary didn't work: every recruiter-facing block lives
+     INSIDE the bento, so there was nothing at the top level to promote
+     and a recruiter's page came out unchanged. Naming the sequence
+     also makes it obvious what each visitor actually sees. */
+
+  /* here to learn: the four big "start here" links, then the writing */
+  :root[data-audience="learn"] .home-flow > [data-for="learn"]   { order: 1; }
+  :root[data-audience="learn"] .home-flow > [data-for="work"]    { order: 2; }
+  :root[data-audience="learn"] .home-flow > [data-for="both"]    { order: 3; }
+  :root[data-audience="learn"] .home-flow > [data-for="context"] { order: 4; }
+
+  /* here to hire: credentials, services and the bio first */
+  :root[data-audience="work"]  .home-flow > [data-for="work"]    { order: 1; }
+  :root[data-audience="work"]  .home-flow > [data-for="both"]    { order: 2; }
+  :root[data-audience="work"]  .home-flow > [data-for="learn"]   { order: 3; }
+  :root[data-audience="work"]  .home-flow > [data-for="context"] { order: 4; }
+
+  /* the bento, for someone here to hire: credentials, services and
+     the bio across the top, the writing sample below them */
+  :root[data-audience="work"] .bento {
+    grid-template-areas:
+      "stats   services about"
+      "feature feature  about"
+      "feature feature  note";
+  }
+  @media (width <= 860px) {
+    :root[data-audience="work"] .bento {
+      grid-template-areas:
+        "stats   services"
+        "about   about"
+        "feature feature"
+        "note    note";
+    }
+  }
+  @media (width <= 600px) {
+    :root[data-audience="work"] .bento {
+      grid-template-areas: "stats" "services" "about" "feature" "note";
+    }
+  }
+
   .audience-row { margin-top: 16px; }
   .audience-switch {
     background: none; border: 1px solid var(--hairline);
@@ -1775,9 +1843,16 @@
   }
 
   /* the two doors on the home page */
+  /* Kept deliberately compact. These are a signpost, not the
+     content: at 26px padding and a 3-line blurb each door was
+     ~234px tall, which pushed the pair below the fold on a 768px
+     laptop and made the first thing a new visitor saw two slabs
+     they had to scroll to finish reading. A choice you want made
+     quickly has to be visible all at once. */
   .doorway {
-    display: grid; gap: var(--gap); margin-block: 30px 10px;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    display: grid; gap: 12px; margin-block: 24px 8px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    max-width: 880px;
   }
   /* Once they've chosen, the doorway has done its job and the
      ordinary button row takes its place. Before they choose, the
@@ -1786,20 +1861,27 @@
   :root[data-audience] .doorway { display: none; }
   :root:not([data-audience]) .hero-actions.after-doors { display: none; }
 
+  /* Two columns inside each door: the mark, then the words. Puts
+     the icon beside the heading instead of on a line of its own,
+     which is most of the height saving. */
   .door {
-    display: grid; gap: 10px; align-content: start;
-    padding: 26px; text-decoration: none; color: inherit;
+    display: grid; gap: 4px 12px; align-content: start;
+    grid-template-columns: auto 1fr;
+    padding: 16px 18px; text-decoration: none; color: inherit;
     border: 1px solid var(--hairline); border-radius: var(--radius);
     background: var(--panel);
     transition: border-color var(--fast) var(--ease), transform var(--fast) var(--ease);
 
     &:hover { border-color: var(--green); transform: translateY(-2px); opacity: 1; }
-    & h3 { font-size: 1.16rem; }
-    & p { color: var(--ink-soft); font-size: 0.94rem; }
-    & .more { color: var(--green); font-size: 0.9rem; }
+    & h3 { font-size: 1.04rem; align-self: center; }
+    & p {
+      grid-column: 2; color: var(--ink-soft); font-size: 0.88rem;
+      line-height: 1.5; margin: 0;
+    }
+    & .more { grid-column: 2; color: var(--green); font-size: 0.84rem; margin-top: 2px; }
   }
-  .door-art, .door .art { width: 30px; height: 30px; }
-  .door-art { display: block; color: var(--gold); }
+  .door-art, .door .art { width: 22px; height: 22px; }
+  .door-art { display: flex; align-items: center; color: var(--gold); grid-row: 1; }
 
   /* ---------- the resume card ---------- */
   .resume {
@@ -2010,26 +2092,97 @@
   }
   .rung-lesson-min { color: var(--ink-soft); flex-shrink: 0; font-size: 0.62rem; }
 
+  /* What's inside a stage, as section names and counts. The full
+     lesson list lives on the stage's own page — repeating it here
+     made the hub 13,400px tall and gave the reader two places to
+     read the same thing. */
+  .rung-sections {
+    display: grid; gap: 0; padding: 0; margin-block: 14px; list-style: none;
+
+    & li {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 14px; padding: 8px 0; border-bottom: 1px solid var(--hairline);
+    }
+    & li:last-child { border-bottom: 0; }
+  }
+  .rung-section-name { font-size: 0.97rem; }
+  .rung-section-count { color: var(--ink-soft); flex-shrink: 0; font-size: 0.66rem; }
+
+  /* the auto-scroll aims at a rung's top edge — give it clearance
+     under the sticky header instead of tucking it behind */
+  .rung, .step, #starter { scroll-margin-top: 5.5rem; }
+
   .rung-foot {
     display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
     margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--hairline);
   }
   .rung-time { color: var(--ink-soft); }
 
-  /* ---------- the full contents index ---------- */
-  .contents-index { display: grid; gap: 34px; margin-top: 30px; }
-  .contents-stage h3 {
-    display: flex; align-items: center; gap: 10px;
-    font-size: 1.1rem; margin-bottom: 10px;
-    padding-bottom: 8px; border-bottom: 1px solid var(--hairline);
+  /* ---------- the door to the contents page, on the hub ---------- */
+  .contents-cta {
+    display: grid; gap: 6px 16px; align-items: center;
+    grid-template-columns: auto 1fr auto;
+    padding: 20px 22px; text-decoration: none; color: inherit;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+    transition: border-color var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); opacity: 1; }
+    & .more { color: var(--green); white-space: nowrap; }
+  }
+  .contents-cta-art .art { width: 26px; height: 26px; color: var(--gold); }
+  .contents-cta-text { display: grid; gap: 3px; }
+  .contents-cta-text strong { font-size: 1.08rem; }
+  .contents-cta-text span { color: var(--ink-soft); font-size: 0.9rem; }
+  @media (width <= 620px) {
+    .contents-cta { grid-template-columns: auto 1fr; }
+    .contents-cta .more { grid-column: 2; }
+  }
+
+  /* ---------- /learn/contents.html ---------- */
+  .contents-jump {
+    display: flex; flex-wrap: wrap; gap: 7px; margin-top: 22px;
+
+    & a {
+      font-family: var(--font-bn); font-size: 0.78rem;
+      padding: 5px 12px; border-radius: 999px;
+      border: 1px solid var(--hairline); text-decoration: none; color: var(--ink);
+    }
+    & a:hover { border-color: var(--green); color: var(--green); opacity: 1; }
+  }
+
+  .contents-stage { padding-block: 34px 6px; }
+  .contents-stage-head {
+    display: grid; gap: 4px 14px; align-items: start;
+    grid-template-columns: auto 1fr auto;
+    padding-bottom: 12px; margin-bottom: 16px;
+    border-bottom: 1px solid var(--hairline);
+
+    & h2 { font-size: 1.3rem; margin-block: 2px; }
+    & h2 a { color: var(--ink); text-decoration: none; }
+    & h2 a:hover { color: var(--green); opacity: 1; }
   }
   .contents-art { display: flex; }
-  .contents-art .art { width: 22px; height: 22px; color: var(--gold); }
+  .contents-art .art { width: 26px; height: 26px; color: var(--gold); }
+  .contents-kicker { color: var(--gold); }
+  .contents-who { color: var(--ink-soft); font-size: 0.9rem; margin: 0; }
+  .contents-tally {
+    color: var(--ink-soft); white-space: nowrap;
+    border: 1px solid var(--hairline); border-radius: 999px; padding: 3px 10px;
+
+    &[data-state="done"] { color: var(--green); border-color: var(--green); }
+  }
+
+  .contents-section { margin-bottom: 22px; }
+  .contents-section h3 {
+    color: var(--gold); margin: 0 0 6px;
+    font-family: var(--font-mono); font-weight: 500; font-size: 0.68rem;
+  }
 
   .contents-list { display: grid; gap: 0; padding: 0; margin: 0; list-style: none; }
   .contents-row {
     display: grid; align-items: baseline; gap: 4px 18px;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto;
     padding: 9px 2px; border-bottom: 1px solid var(--hairline);
 
     & a { text-decoration: none; font-size: 1rem; }
@@ -2038,17 +2191,12 @@
     &[data-soon] { opacity: 0.55; }
   }
   .contents-en { color: var(--ink-soft); font-size: 0.86rem; }
-  /* The section name is Bangla, so it drops out of the mono/uppercase
-     treatment: letter-spacing pulls Bangla conjuncts apart, and at
-     0.6rem the result was unreadable rather than merely small. */
-  .contents-sec {
-    color: var(--gold); font-size: 0.76rem;
-    font-family: var(--font-bn); letter-spacing: 0; text-transform: none;
-    white-space: nowrap;
-  }
+  .contents-min { color: var(--ink-soft); font-size: 0.62rem; white-space: nowrap; }
   @media (width <= 620px) {
-    .contents-row { grid-template-columns: 1fr; gap: 1px; }
-    .contents-sec { display: none; }
+    .contents-row { grid-template-columns: 1fr auto; gap: 1px 10px; }
+    .contents-en { grid-column: 1; }
+    .contents-stage-head { grid-template-columns: auto 1fr; }
+    .contents-tally { grid-column: 2; justify-self: start; }
   }
 
   .glossary .g-row[data-read] a::before { content: "✓ "; color: var(--green); }

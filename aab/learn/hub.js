@@ -2,18 +2,19 @@
    hub.js — everything live on /learn/.
 
    The page is already complete before this file runs: the eight
-   starter steps are written into the HTML, the glossary sections
-   exist, and every link works. What this adds is the reader's own
-   position in it —
+   starter steps are written into the HTML and every link works.
+   What this adds is the reader's own position in it —
 
      1. icons dropped into their slots
      2. the starter steps: ticks, "step done", auto-advance
      3. the ladder, built from curriculum.js
-     4. the full contents index, same source
-     5. the resume card, and the scroll to where they were
-     6. the overall progress line
-     7. the filter box, across all of the above
-     8. the A–Z glossary of stage-1 terms
+     4. the resume card, and the scroll to where they were
+     5. the overall progress line
+     6. the filter box, across the steps and the ladder
+
+   The full contents index and the A–Z glossary used to be built
+   here too. They are now static HTML on /learn/contents.html —
+   together they were more than half the height of this page.
 
    Everything reads from /learn/curriculum.js and writes through
    /learn/progress.js, so there is exactly one place to change a
@@ -208,34 +209,42 @@ function stageRow(stage) {
       textContent: "এই ধাপের লেখাগুলো এখনো তৈরি হচ্ছে — কাঠামোটা দেখে নিতে পারেন।" }));
   }
 
-  // the sections inside, with their lessons
+  /* What's inside, as section names and counts — not ninety lesson
+     titles. Each stage has a page of its own that lists its lessons
+     properly; repeating that here made the hub enormous and gave the
+     reader two places to read the same thing. The exception is the
+     starter guide, whose "lessons" are the accordion steps further up
+     this very page, so those stay clickable. */
   const read = readSet();
-  stage.sections.forEach((section) => {
+  if (isStarter) {
     const list = el("ul", { className: "rung-lessons" });
-    section.lessons.forEach((raw) => {
-      const lesson = lessons.find(
-        (l) => l.slug === raw.slug && l.section.id === section.id
-      );
+    lessons.forEach((lesson) => {
       const li = el("li");
       if (read.has(lesson.id)) li.dataset.read = "1";
-      if (lesson.status !== "live") li.dataset.soon = "1";
       li.append(
-        el("a", {
-          href: lesson.url,
-          className: isStarter ? "step-jump" : "",
-          textContent: lesson.bn,
-        }),
-        el("span", { className: "rung-lesson-min mono",
-          textContent: lesson.status === "live" ? `${bn(lesson.minutes)} মি` : "আসছে" })
+        el("a", { href: lesson.url, className: "step-jump", textContent: lesson.bn }),
+        el("span", { className: "rung-lesson-min mono", textContent: `${bn(lesson.minutes)} মি` })
       );
       list.append(li);
     });
-    body.append(
-      el("div", { className: "rung-section" },
-        el("h4", { className: "mono", textContent: `${section.bn} · ${section.en}` }),
-        list)
-    );
-  });
+    body.append(el("div", { className: "rung-section" }, list));
+  } else {
+    const summaryList = el("ul", { className: "rung-sections" });
+    stage.sections.forEach((section) => {
+      const inSection = lessons.filter((l) => l.section.id === section.id);
+      const doneHere = inSection.filter(
+        (l) => l.status === "live" && read.has(l.id)
+      ).length;
+      summaryList.append(
+        el("li", {},
+          el("span", { className: "rung-section-name", textContent: section.bn }),
+          el("span", { className: "rung-section-count mono",
+            textContent: `${bn(doneHere)}/${bn(inSection.length)}` })
+        )
+      );
+    });
+    body.append(summaryList);
+  }
 
   body.append(
     el("div", { className: "rung-foot" },
@@ -254,38 +263,6 @@ function buildLadder() {
   const host = document.getElementById("ladder-list");
   if (!host) return;
   host.replaceChildren(...STAGES.map(stageRow));
-}
-
-/* ============================================================
-   4. FULL CONTENTS INDEX
-   ============================================================ */
-function buildContents() {
-  const host = document.getElementById("contents-index");
-  if (!host) return;
-  const read = readSet();
-
-  host.replaceChildren(
-    ...STAGES.map((stage) => {
-      const rows = stageLessons(stage).map((lesson) => {
-        const row = el("li", { className: "contents-row" });
-        if (read.has(lesson.id)) row.dataset.read = "1";
-        if (lesson.status !== "live") row.dataset.soon = "1";
-        row.append(
-          el("a", { href: lesson.url, className: "bn-h", textContent: lesson.bn }),
-          el("span", { className: "contents-en", textContent: lesson.en }),
-          el("span", { className: "contents-sec mono", textContent: lesson.section.bn })
-        );
-        return row;
-      });
-
-      return el("div", { className: "contents-stage" },
-        el("h3", { className: "bn-h" },
-          el("span", { className: "contents-art", innerHTML: icon(stage.icon) }),
-          document.createTextNode(`${stage.kicker} · ${stage.bn}`)),
-        el("ul", { className: "contents-list" }, ...rows)
-      );
-    })
-  );
 }
 
 /* ============================================================
@@ -352,24 +329,64 @@ function buildResume() {
     Deliberately a scroll and not a redirect: the map is the point
     of this page, and someone who tapped "Learn" may well have
     wanted to browse rather than resume. They get both — the whole
-    ladder above them, their own place under the cursor. */
+    ladder above them, their own place under the cursor.
+
+    Getting this to feel right took more care than it looks. Four
+    things had to be handled or it lands in the wrong place:
+
+      · a back/forward navigation already has a scroll position the
+        reader expects to be returned to. Overriding it is the
+        rudest thing this function could do, so it doesn't.
+      · fonts. Bangla webfonts land after first paint and reflow
+        everything below them, so a scroll measured before
+        document.fonts.ready ends up hundreds of pixels off.
+      · block:"center" on a rung taller than the viewport centres
+        on the middle of a big box and looks arbitrary. "start"
+        with scroll-margin puts the heading where a heading goes.
+      · if the target is already on screen there is nothing to fix,
+        and moving the page anyway just feels like a twitch. */
 function scrollToPlace(stage) {
   if (location.hash) return;              // an explicit anchor wins
   if (!stage) return;
   if (!getLast()) return;                 // first-timers stay at the top
 
-  const target =
+  // the browser is restoring a position from history — leave it alone
+  const nav = performance.getEntriesByType("navigation")[0];
+  if (nav?.type === "back_forward") return;
+
+  /* Look the target up INSIDE go(), never before it.
+
+     buildLadder() rebuilds the whole ladder with replaceChildren, so
+     any rung captured earlier is detached by the time this runs — and
+     a detached element reports getBoundingClientRect().top === 0 and
+     ignores scrollIntoView entirely. That is what made the scroll
+     "sometimes work": it was racing a repaint, and whether it landed
+     depended on which of the two won. Re-querying can't lose that
+     race, however many times the ladder is rebuilt. */
+  const find = () =>
     stage.inline
       ? document.querySelector(".step:not([data-read])") ?? document.getElementById("starter")
       : document.querySelector(`.rung[data-stage="${stage.slug}"]`);
-  if (!target) return;
 
-  requestAnimationFrame(() => {
+  if (!find()) return;
+
+  const go = () => {
+    const target = find();
+    if (!target || !target.isConnected) return;
+    const box = target.getBoundingClientRect();
+    const onScreen = box.top >= 0 && box.top < innerHeight * 0.6;
+    if (onScreen) return;
     target.scrollIntoView({
       behavior: prefersReduce() ? "auto" : "smooth",
-      block: "center",
+      block: "start",
     });
-  });
+  };
+
+  // wait for the webfonts, but never hang on them
+  Promise.race([
+    document.fonts?.ready ?? Promise.resolve(),
+    new Promise((r) => setTimeout(r, 1200)),
+  ]).then(() => requestAnimationFrame(go));
 }
 
 /* ============================================================
@@ -409,10 +426,8 @@ function initFilter() {
   if (!input) return;
 
   const groups = [
-    { items: () => document.querySelectorAll(".step"), container: "#steps" },
-    { items: () => document.querySelectorAll(".rung"), container: "#ladder-list" },
-    { items: () => document.querySelectorAll(".contents-row"), container: null },
-    { items: () => document.querySelectorAll(".g-row"), container: null },
+    { items: () => document.querySelectorAll(".step") },
+    { items: () => document.querySelectorAll(".rung") },
   ];
 
   const run = () => {
@@ -427,19 +442,9 @@ function initFilter() {
       });
     });
 
-    // an empty stage block in the contents index shouldn't leave
-    // its heading floating on its own
-    document.querySelectorAll(".contents-stage").forEach((block) => {
-      block.hidden = q
-        ? ![...block.querySelectorAll(".contents-row")].some((r) => !r.hidden)
-        : false;
-    });
-
     document.querySelectorAll("section:not(.no-filter)").forEach((section) => {
       if (!q) { section.hidden = false; return; }
-      const holders = section.querySelectorAll(
-        ".step, .rung, .contents-row, .g-row"
-      );
+      const holders = section.querySelectorAll(".step, .rung");
       section.hidden = holders.length > 0 && ![...holders].some((h) => !h.hidden);
     });
 
@@ -457,57 +462,6 @@ function initFilter() {
 }
 
 /* ============================================================
-   8. A–Z GLOSSARY (stage 1's eighteen terms)
-   ============================================================ */
-function buildGlossary() {
-  const host = document.getElementById("glossary");
-  const az = document.getElementById("az");
-  if (!host) return;
-
-  const stage = findStage("basics-1");
-  if (!stage) return;
-  const terms = stageLessons(stage);
-  const read = readSet();
-
-  const sorted = [...terms].sort((a, b) => a.en.localeCompare(b.en));
-  const letters = new Map();
-  sorted.forEach((t) => {
-    const letter = t.en[0].toUpperCase();
-    if (!letters.has(letter)) letters.set(letter, []);
-    letters.get(letter).push(t);
-  });
-
-  if (az) {
-    az.replaceChildren(
-      ...[..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"].map((letter) =>
-        letters.has(letter)
-          ? el("a", { href: `#az-${letter}`, textContent: letter })
-          : el("span", { textContent: letter })
-      )
-    );
-  }
-
-  const rows = [];
-  for (const [letter, group] of letters) {
-    rows.push(el("div", {
-      className: "section-label mono", id: `az-${letter}`,
-      textContent: letter,
-      style: "margin:22px 0 6px;border:0;padding:0",
-    }));
-    group.forEach((t) => {
-      const row = el("div", { className: "g-row" });
-      if (read.has(t.id)) row.dataset.read = "1";
-      row.append(
-        el("a", { className: "term bn-h", href: t.url, textContent: t.bn }),
-        el("span", { className: "en", textContent: `${t.en} — ${t.section.en}` })
-      );
-      rows.push(row);
-    });
-  }
-  host.replaceChildren(...rows);
-}
-
-/* ============================================================
    go
    ============================================================ */
 let placeOnFirstPaint = null;
@@ -515,8 +469,6 @@ let placeOnFirstPaint = null;
 function repaint() {
   paintSteps();
   buildLadder();
-  buildContents();
-  buildGlossary();
   paintProgress();
   placeOnFirstPaint = buildResume() ?? currentStage();
   paintIcons();
