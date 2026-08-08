@@ -78,12 +78,33 @@
           number and everything moves. When you get a result worth keeping,
           copy the link — the whole calculation travels with it.
         </p>
-        <div class="hero-actions">
-          <a class="btn btn-ghost" href="#compounding">Compounding</a>
-          <a class="btn btn-ghost" href="#sanchayapatra">সঞ্চয়পত্র vs FDR</a>
-          <a class="btn btn-ghost" href="#inflation">Inflation</a>
-          <a class="btn btn-ghost" href="#emi">EMI</a>
-          <a class="btn btn-ghost" href="#position">Position size</a>
+        <!-- The tool picker. These are real links to real anchors, so
+             with JavaScript off they still jump to a calculator and all
+             five remain on the page. tools.js upgrades them into a tab
+             set — one calculator at a time — which is the difference
+             between "a page of five things" and "the thing you came
+             for, with the others one tap away". -->
+        <div class="tool-tabs" id="tool-tabs" role="tablist" aria-label="Choose a calculator">
+          <a class="tool-tab" href="#compounding" role="tab" id="tab-compounding" aria-controls="compounding">
+            <span class="tool-tab-en">Compounding</span>
+            <span class="tool-tab-bn bn-h">চক্রবৃদ্ধি</span>
+          </a>
+          <a class="tool-tab" href="#sanchayapatra" role="tab" id="tab-sanchayapatra" aria-controls="sanchayapatra">
+            <span class="tool-tab-en">Sanchayapatra vs FDR</span>
+            <span class="tool-tab-bn bn-h">সঞ্চয়পত্র বনাম এফডিআর</span>
+          </a>
+          <a class="tool-tab" href="#inflation" role="tab" id="tab-inflation" aria-controls="inflation">
+            <span class="tool-tab-en">Inflation</span>
+            <span class="tool-tab-bn bn-h">মূল্যস্ফীতি</span>
+          </a>
+          <a class="tool-tab" href="#emi" role="tab" id="tab-emi" aria-controls="emi">
+            <span class="tool-tab-en">Loan EMI</span>
+            <span class="tool-tab-bn bn-h">কিস্তির হিসাব</span>
+          </a>
+          <a class="tool-tab" href="#position" role="tab" id="tab-position" aria-controls="position">
+            <span class="tool-tab-en">Position size</span>
+            <span class="tool-tab-bn bn-h">ঝুঁকি ও পজিশন</span>
+          </a>
         </div>
       </div>
 

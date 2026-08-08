@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>Three-statement model — DSE-listed manufacturer — Rony Reiad</title>
+  <meta name="description" content="A working three-statement financial model for a DSE-listed Bangladeshi manufacturer: linked income statement, balance sheet and cash flow, editable assumptions, a scenario switch and a live balance check.">
+  <link rel="canonical" href="https://reiad.co.uk/portfolio/three-statement.html">
+
+  <script>
+    (function () {
+      var d = document.documentElement;
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
+        var a = localStorage.getItem("audience");
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Three-statement model — DSE-listed manufacturer">
+  <meta property="og:description" content="Linked income statement, balance sheet and cash flow. Move an assumption and watch all three move — with a live balance check.">
+  <meta property="og:image" content="https://reiad.co.uk/og/default.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Rony Reiad">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+  <a class="skip" href="#model">Skip to the model</a>
+
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="/index.html">
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Rony Reiad
+      </a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/tools/index.html">Tools</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html" aria-current="page">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+
+      <div class="hero" style="padding-block:56px 26px">
+        <span class="eyebrow mono">Case study · Financial model · Excel-equivalent</span>
+        <h1>A three-statement model you can actually push around.</h1>
+        <p class="lede">
+          Income statement, balance sheet and cash flow for a DSE-listed
+          manufacturer — properly linked, so a change to one assumption moves all
+          three. Drag any driver and watch the statements, the charts and the
+          credit metrics move with it. The balance check at the top is computed,
+          not asserted: if the model were wrong, it would say so.
+        </p>
+        <p class="model-co">
+          <strong id="co-name">—</strong>
+          <span class="mono" id="co-unit">—</span>
+        </p>
+        <p class="note note-inline" id="co-note">—</p>
+      </div>
+
+      <section id="model" class="model">
+
+        <!-- ============ SCENARIO ============ -->
+        <div class="model-bar">
+          <div class="scenarios" role="group" aria-label="Scenario">
+            <button class="scenario" type="button" data-scenario="base" aria-pressed="true">Base</button>
+            <button class="scenario" type="button" data-scenario="upside" aria-pressed="false">Upside</button>
+            <button class="scenario" type="button" data-scenario="downside" aria-pressed="false">Downside</button>
+          </div>
+          <p class="scenario-blurb" id="scenario-blurb">—</p>
+          <div class="model-actions">
+            <button class="btn btn-ghost" type="button" id="download-csv">Download CSV</button>
+            <button class="btn btn-ghost" type="button" id="copy-link">Copy this model's link</button>
+          </div>
+        </div>
+
+        <!-- ============ THE BALANCE CHECK ============ -->
+        <div class="balance-check" id="balance-check" data-state="ok" role="status">
+          <span class="check-mark" aria-hidden="true">✓</span>
+          <div>
+            <strong class="check-verdict">—</strong>
+            <span class="check-detail">—</span>
+          </div>
+        </div>
+
+        <!-- ============ HEADLINES ============ -->
+        <div class="tiles">
+          <div class="tile" data-tile="cagr">
+            <span class="mono">Revenue CAGR</span>
+            <strong class="tile-value">—</strong>
+            <small>FY24A → FY29E</small>
+          </div>
+          <div class="tile" data-tile="ebitda">
+            <span class="mono">Exit EBITDA margin</span>
+            <strong class="tile-value">—</strong>
+            <small>FY29E</small>
+          </div>
+          <div class="tile" data-tile="leverage">
+            <span class="mono">Net debt / EBITDA</span>
+            <strong class="tile-value">—</strong>
+            <small>FY29E — the covenant everyone watches</small>
+          </div>
+          <div class="tile" data-tile="fcf">
+            <span class="mono">Cumulative free cash flow</span>
+            <strong class="tile-value">—</strong>
+            <small>Five years, BDT lakh</small>
+          </div>
+          <div class="tile" data-tile="roe">
+            <span class="mono">Return on equity</span>
+            <strong class="tile-value">—</strong>
+            <small>FY29E</small>
+          </div>
+          <div class="tile" data-tile="cover">
+            <span class="mono">Interest cover</span>
+            <strong class="tile-value">—</strong>
+            <small>EBIT ÷ interest, FY29E</small>
+          </div>
+        </div>
+
+        <p class="note note-inline" id="revolver-note" hidden></p>
+
+        <!-- ============ DRIVERS + CHARTS ============ -->
+        <div class="model-body">
+          <aside class="model-drivers">
+            <div class="drivers-head">
+              <h2>Assumptions</h2>
+              <button class="chip" type="button" id="reset-drivers" hidden>Reset</button>
+            </div>
+            <p class="drivers-note">Every one of these is live. Edited drivers are
+              marked, and the link at the top carries your version of the model.</p>
+            <div id="drivers"></div>
+          </aside>
+
+          <div class="model-charts">
+            <figure class="chart-card">
+              <figcaption>
+                <strong>Revenue and EBITDA</strong>
+                <span class="mono"><i class="key key-revenue"></i> Revenue
+                  <i class="key key-ebitda"></i> EBITDA</span>
+              </figcaption>
+              <div id="chart-revenue"></div>
+            </figure>
+            <figure class="chart-card">
+              <figcaption>
+                <strong>Cash and net debt</strong>
+                <span class="mono"><i class="key key-cash"></i> Closing cash
+                  <i class="key key-netdebt"></i> Net debt</span>
+              </figcaption>
+              <div id="chart-cash"></div>
+            </figure>
+          </div>
+        </div>
+
+        <!-- ============ THE STATEMENTS ============ -->
+        <div class="statements">
+          <section class="statement">
+            <h2>Income statement</h2>
+            <div class="table-scroll" id="is-table"></div>
+          </section>
+
+          <section class="statement">
+            <h2>Balance sheet</h2>
+            <div class="table-scroll" id="bs-table"></div>
+            <p class="statement-note" id="opening-check">—</p>
+          </section>
+
+          <section class="statement">
+            <h2>Cash flow statement</h2>
+            <div class="table-scroll" id="cf-table"></div>
+            <p class="statement-note">The last reported year has no cash flow
+              column: the model starts from that year's balance sheet, and a flow
+              needs two balance sheets to exist between.</p>
+          </section>
+        </div>
+      </section>
+
+      <!-- ============ HOW IT'S BUILT ============ -->
+      <section>
+        <span class="section-label mono">How this model is built</span>
+        <div class="principles">
+          <div class="principle">
+            <h3>The links are the model</h3>
+            <p>Net income lands in retained earnings and at the top of the cash
+               flow. Capex builds PP&amp;E and comes back as next year's
+               depreciation. Working capital days set receivables, inventory and
+               payables, and the <em>change</em> in them is a cash item. Cash is
+               the balance sheet's plug, straight off the bottom of the cash flow.</p>
+          </div>
+          <div class="principle">
+            <h3>A balance check that can fail</h3>
+            <p>Assets minus liabilities and equity is computed for every year and
+               shown. Because each roll-forward carries the prior year's
+               difference rather than creating one, a balanced opening balance
+               sheet guarantees balanced forecast years — so a non-zero check
+               means a real error, not a rounding artefact. Nudge an opening
+               balance and watch it go red.</p>
+          </div>
+          <div class="principle">
+            <h3>No circular references</h3>
+            <p>Interest is charged on opening debt rather than on a closing or
+               average balance. Charging it on the closing balance would make
+               interest depend on cash and cash depend on interest — the circular
+               reference that makes a spreadsheet need iterative calculation and
+               makes an error impossible to trace. The convention is stated rather
+               than hidden.</p>
+          </div>
+          <div class="principle">
+            <h3>A revolver, so the plan is fundable</h3>
+            <p>A forecast that runs cash negative isn't a forecast. When the
+               closing balance would fall below the minimum, a revolving facility
+               draws the difference; when there's surplus, it sweeps back. Its
+               interest is charged through the income statement, so stress shows
+               up in profit as well as in the balance sheet.</p>
+          </div>
+          <div class="principle">
+            <h3>Assumptions in one place</h3>
+            <p>Every driver is a named input with a range, a unit and a plain
+               sentence about what it does. Nothing is hardcoded inside a formula,
+               which is what makes a model auditable by someone who didn't write
+               it — and editable by the client afterwards.</p>
+          </div>
+          <div class="principle">
+            <h3>Tested, not just eyeballed</h3>
+            <p>The engine is separate from the page and checked on its own:
+               three thousand randomised assumption sets, plus deliberate stress —
+               a loss-making plan, debt repaid faster than it exists, working
+               capital stretched to breaking point. All of them still balance.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="note">
+        Illustrative model built for this portfolio. The company is a composite
+        of a DSE-listed mid-cap manufacturer, not the filed accounts of any real
+        business, and nothing here is a forecast of, or advice about, any actual
+        security. The same structure is what I build in Excel for clients —
+        with their numbers, their chart of accounts and their covenant tests.
+      </div>
+
+      <div class="band">
+        <span class="mono">Working together</span>
+        <h2>Need this for a real company?</h2>
+        <p>Three-statement models, DCFs and operating models in Excel — built so
+           you can edit them after I hand them over, with the assumptions in one
+           place and the checks visible.</p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/contact.html">Start a conversation</a>
+          <a class="btn btn-ghost" href="/portfolio.html">Back to the portfolio</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>Everything on this site is general education, not investment advice.</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/portfolio/three-statement.js"></script>
+</body>
+</html>

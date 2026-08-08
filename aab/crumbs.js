@@ -81,6 +81,12 @@ function trailFor(path) {
     return { crumbs, here: document.title.split("—")[0].trim() };
   }
 
+  /* ---------- portfolio case studies ---------- */
+  if (p.startsWith("/portfolio/")) {
+    crumbs.push({ name: "Portfolio", url: "/portfolio.html" });
+    return { crumbs, here: document.title.split("—")[0].trim() };
+  }
+
   /* ---------- insights ---------- */
   if (p.startsWith("/insights/")) {
     crumbs.push({ name: "Insights", url: "/insights.html" });

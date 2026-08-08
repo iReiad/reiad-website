@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, article, studio, learn, utilities;
+@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, utilities;
 
 /* ============================================================
    TOKENS
@@ -972,6 +972,41 @@
    ============================================================ */
 @layer tools {
 
+  /* ---------- the tool picker ----------
+     Styled as tabs, but they are anchor links to real sections. If
+     tools.js never runs, body[data-tool-tabs] is never set, nothing
+     is hidden, and these behave as the jump links they always were. */
+  .tool-tabs {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 26px;
+  }
+  .tool-tab {
+    display: grid; gap: 1px;
+    padding: 9px 16px; border-radius: 999px;
+    border: 1px solid var(--hairline);
+    background: var(--panel);
+    text-decoration: none; color: var(--ink);
+    transition: border-color var(--fast) var(--ease),
+                background var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); opacity: 1; }
+    &[aria-selected="true"] {
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+  }
+  .tool-tab-en {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .tool-tab[aria-selected="true"] .tool-tab-en { color: var(--green); }
+  .tool-tab-bn { font-size: 0.78rem; color: var(--ink-soft); }
+
+  /* With one calculator on screen the card no longer needs to be
+     scrolled to — and scroll-margin would drag it under the header
+     when a tab is chosen. */
+  body[data-tool-tabs="on"] .tool { scroll-margin-top: 0; margin-bottom: 0; }
+
   .tool {
     background: var(--panel);
     border: 1px solid var(--hairline);
@@ -1706,6 +1741,275 @@
   .gate-fine {
     font-size: 0.76rem; color: var(--ink-soft);
     border-top: 1px solid var(--hairline); padding-top: 14px; text-align: start;
+  }
+}
+
+/* ============================================================
+   PORTFOLIO CASE STUDIES
+   The interactive pieces under /portfolio/ — currently the
+   three-statement model. Everything here is built to survive
+   being looked at by someone who builds models for a living, so
+   the tables use accounting conventions (tabular figures,
+   negatives in brackets, ruled subtotals) rather than web-table
+   defaults.
+   ============================================================ */
+@layer work {
+
+  /* ---------- the card that opens a case study ---------- */
+  a.work-card {
+    display: flex; flex-direction: column; gap: 12px;
+    text-decoration: none; color: inherit;
+    position: relative; overflow: clip;
+    transition: border-color var(--fast) var(--ease),
+                transform var(--fast) var(--ease),
+                box-shadow var(--fast) var(--ease);
+
+    &:hover, &:focus-visible {
+      border-color: var(--green);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lift);
+      opacity: 1;
+    }
+    & .more { margin-top: auto; color: var(--green); }
+    /* a quiet sheen that sweeps once on hover — signals "this opens"
+       without the card jumping about */
+    &::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(115deg, transparent 40%,
+        color-mix(in oklab, var(--green) 12%, transparent) 50%, transparent 60%);
+      translate: -100% 0; transition: translate var(--slow) var(--ease);
+      pointer-events: none;
+    }
+    &:hover::after { translate: 100% 0; }
+  }
+
+  /* ---------- the model page ---------- */
+  .model-co {
+    display: flex; gap: 14px; flex-wrap: wrap; align-items: baseline;
+    margin-top: 22px;
+
+    & strong { font-family: var(--font-serif); font-size: 1.2rem; }
+    & .mono { color: var(--ink-soft); }
+  }
+  .note-inline { margin-top: 12px; }
+
+  .model { padding-block: 10px; }
+
+  .model-bar {
+    display: grid; gap: 12px 20px; align-items: center;
+    grid-template-columns: auto 1fr auto;
+    padding: 16px 18px; margin-bottom: 16px;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+  }
+  @media (width <= 900px) {
+    .model-bar { grid-template-columns: 1fr; }
+  }
+  .scenarios { display: flex; gap: 6px; }
+  .scenario {
+    padding: 8px 16px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--hairline); background: var(--paper);
+    font-family: var(--font-mono); font-size: 0.72rem;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink);
+    transition: border-color var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); }
+    &[aria-pressed="true"] {
+      border-color: var(--green); background: var(--green-soft); color: var(--green);
+    }
+  }
+  .scenario-blurb { color: var(--ink-soft); font-size: 0.9rem; margin: 0; }
+  .model-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .model-actions .btn { padding: 8px 14px; font-size: 0.78rem; }
+
+  /* ---------- the balance check ---------- */
+  .balance-check {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 16px 20px; margin-bottom: 18px;
+    border-radius: var(--radius); border: 1px solid var(--green);
+    background: var(--green-soft);
+
+    & strong { display: block; font-family: var(--font-serif); font-size: 1.05rem; }
+    & .check-detail { color: var(--ink-soft); font-size: 0.9rem; }
+    & .check-mark {
+      font-size: 1.1rem; line-height: 1.4; color: var(--green);
+      font-family: var(--font-mono);
+    }
+    &[data-state="bad"] {
+      border-color: var(--danger);
+      background: color-mix(in oklab, var(--danger) 9%, transparent);
+    }
+    &[data-state="bad"] .check-mark { color: var(--danger); }
+    &[data-state="bad"] .check-mark::before { content: "✕"; }
+    &[data-state="bad"] .check-mark { font-size: 0; }
+    &[data-state="bad"] .check-mark::before { font-size: 1.1rem; }
+  }
+
+  /* ---------- headline tiles ---------- */
+  .tiles {
+    display: grid; gap: var(--gap); margin-bottom: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  }
+  .tile {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); padding: 16px 18px;
+    display: grid; gap: 3px; align-content: start;
+
+    & .mono { color: var(--gold); }
+    & small { color: var(--ink-soft); font-size: 0.76rem; }
+    &[data-tone="good"] .tile-value { color: var(--green); }
+    &[data-tone="warn"] .tile-value { color: var(--gold); }
+    &[data-tone="bad"]  .tile-value { color: var(--danger); }
+  }
+  .tile-value {
+    font-family: var(--font-mono); font-size: 1.5rem;
+    font-variant-numeric: tabular-nums; line-height: 1.2;
+  }
+
+  /* ---------- drivers + charts ---------- */
+  .model-body {
+    display: grid; gap: var(--gap); align-items: start;
+    grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+    margin-bottom: var(--step);
+  }
+  @media (width <= 900px) { .model-body { grid-template-columns: 1fr; } }
+
+  .model-drivers {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); padding: 20px;
+    position: sticky; top: 5rem;
+    max-height: calc(100dvh - 7rem); overflow-y: auto;
+  }
+  @media (width <= 900px) {
+    .model-drivers { position: static; max-height: none; }
+  }
+  .drivers-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+
+    & h2 { font-size: 1.15rem; }
+  }
+  .drivers-note { color: var(--ink-soft); font-size: 0.82rem; margin-block: 8px 16px; }
+
+  .driver-group + .driver-group {
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--hairline);
+  }
+  .driver-group h3 { color: var(--gold); margin: 0 0 10px; font-weight: 500; }
+
+  .driver {
+    display: block; margin-bottom: 16px;
+
+    & .label-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      gap: 10px; font-size: 0.86rem;
+    }
+    & .val {
+      font-family: var(--font-mono); font-size: 0.82rem; color: var(--green);
+      font-variant-numeric: tabular-nums; white-space: nowrap;
+    }
+    & small {
+      display: block; color: var(--ink-soft); font-size: 0.74rem;
+      margin-top: 5px; line-height: 1.45;
+    }
+    &[data-edited] .val::after { content: " ·edited"; color: var(--gold); }
+  }
+  .driver input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 4px; border-radius: 999px; margin-top: 9px;
+    background: linear-gradient(var(--green), var(--green)) 0 / var(--pct, 50%) 100% no-repeat,
+                var(--hairline);
+    cursor: pointer;
+  }
+  .driver input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--green); border: 2px solid var(--paper);
+    box-shadow: 0 1px 4px oklch(0% 0 0 / 0.3);
+  }
+  .driver input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--paper);
+    background: var(--green);
+  }
+
+  .model-charts { display: grid; gap: var(--gap); }
+  .chart-card {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); padding: 18px; margin: 0;
+
+    & figcaption {
+      display: flex; justify-content: space-between; align-items: baseline;
+      gap: 12px; flex-wrap: wrap; margin-bottom: 10px;
+    }
+    & figcaption strong { font-family: var(--font-serif); font-size: 1.02rem; }
+    & figcaption .mono { color: var(--ink-soft); display: flex; gap: 12px; align-items: center; }
+  }
+  .key {
+    display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+    margin-inline-end: 4px; vertical-align: -1px;
+  }
+  .key-revenue { background: var(--green); opacity: 0.28; }
+  .key-ebitda { background: var(--green); }
+  .key-cash { background: var(--green); }
+  .key-netdebt { background: var(--gold); }
+
+  .fin-chart { width: 100%; height: auto; display: block; }
+  .bar-revenue { fill: var(--green); opacity: 0.28; }
+  .bar-ebitda { fill: var(--green); }
+  .chart-label {
+    font-family: var(--font-mono); font-size: 10px; fill: var(--ink-soft);
+  }
+  .chart-value {
+    font-family: var(--font-mono); font-size: 9px; fill: var(--green);
+  }
+  .chart-zero { stroke: var(--hairline); stroke-width: 1; }
+  .line-cash { stroke: var(--green); stroke-width: 2; }
+  .line-cash-dot { fill: var(--green); }
+  .line-netdebt { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 4 3; }
+  .line-netdebt-dot { fill: var(--gold); }
+
+  /* ---------- the statements ---------- */
+  .statements { display: grid; gap: var(--step); }
+  .statement h2 {
+    font-size: 1.25rem; margin-bottom: 12px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--hairline);
+  }
+  .statement-note {
+    color: var(--ink-soft); font-size: 0.85rem; margin-top: 10px; max-width: 62ch;
+  }
+
+  .fin-table {
+    width: 100%; border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.92rem;
+
+    & th, & td { padding: 7px 12px; text-align: right; white-space: nowrap; }
+    & thead th {
+      font-family: var(--font-mono); font-size: 0.66rem;
+      letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500;
+      color: var(--ink-soft); border-bottom: 1px solid var(--hairline);
+    }
+    & thead th.col-actual { color: var(--gold); }
+    /* the row label column stays put while the years scroll */
+    & tbody th, & thead th:first-child {
+      text-align: left; font-weight: 400; color: var(--ink);
+      position: sticky; inset-inline-start: 0;
+      background: var(--paper); min-width: 210px;
+    }
+    & td { font-family: var(--font-mono); font-size: 0.86rem; }
+    & tr.is-total th, & tr.is-total td { font-weight: 600; }
+    & tr.has-rule th, & tr.has-rule td { border-top: 1px solid var(--hairline); }
+    & tr:hover td, & tr:hover th { background: var(--panel-hover); }
+    & td.is-negative { color: var(--danger); }
+  }
+
+  @media (width <= 620px) {
+    .fin-table { font-size: 0.84rem; }
+    .fin-table tbody th, .fin-table thead th:first-child { min-width: 150px; }
+    .fin-table th, .fin-table td { padding: 6px 8px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a.work-card:hover { transform: none; }
+    a.work-card::after { display: none; }
   }
 }
 

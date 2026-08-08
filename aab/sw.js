@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v6: the tools page became a tab set and the first interactive
+   portfolio case study landed, so tools.js, styles.css and the new
+   /portfolio/ modules all changed together.
+
    v5: added /activation.js (imported by app.js via api.js and
    progress.js) and the new /learn/contents.html. A cached v4
    app.js would fail to resolve the new import.
@@ -39,7 +43,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v5";
+const VERSION = "v6";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
