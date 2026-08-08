@@ -1966,6 +1966,123 @@
   .line-netdebt { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 4 3; }
   .line-netdebt-dot { fill: var(--gold); }
 
+  /* ---------- the DCF's verdict ---------- */
+  .verdict-card {
+    display: grid; gap: 4px;
+    padding: 20px 24px; margin-bottom: 18px;
+    border-radius: var(--radius); border: 1px solid var(--green);
+    background: var(--green-soft);
+
+    & .mono { color: var(--gold); }
+    & .verdict-detail { color: var(--ink-soft); font-size: 0.94rem; margin: 0; }
+    &[data-state="down"] { border-color: var(--gold); }
+    &[data-state="bad"] {
+      border-color: var(--danger);
+      background: color-mix(in oklab, var(--danger) 8%, transparent);
+    }
+  }
+  .verdict-main { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .verdict-value {
+    font-family: var(--font-mono); font-size: 2rem; line-height: 1.1;
+    font-variant-numeric: tabular-nums; color: var(--green);
+  }
+  .verdict-card[data-state="down"] .verdict-value { color: var(--gold); }
+  .verdict-card[data-state="bad"] .verdict-value { color: var(--danger); }
+
+  /* ---------- method switches ---------- */
+  .method-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+
+    & .mono { color: var(--ink-soft); }
+  }
+  .segmented {
+    display: inline-flex; border: 1px solid var(--hairline);
+    border-radius: 999px; overflow: clip;
+
+    & button {
+      border: 0; background: none; cursor: pointer; color: var(--ink-soft);
+      padding: 6px 12px; font-family: var(--font-mono); font-size: 0.66rem;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    & button[aria-pressed="true"] { background: var(--green-soft); color: var(--green); }
+    & button + button { border-inline-start: 1px solid var(--hairline); }
+  }
+  .toggle {
+    border: 1px solid var(--hairline); background: var(--paper);
+    border-radius: 999px; padding: 6px 14px; cursor: pointer;
+    font-family: var(--font-mono); font-size: 0.66rem;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft);
+
+    &[aria-pressed="true"] {
+      border-color: var(--green); background: var(--green-soft); color: var(--green);
+    }
+  }
+  .driver[data-inactive] { opacity: 0.4; }
+
+  /* ---------- the EV → equity bridge ---------- */
+  .bridge { display: grid; gap: 8px; }
+  .bridge-row {
+    display: grid; gap: 12px; align-items: center;
+    grid-template-columns: minmax(0, 150px) minmax(0, 1fr) auto;
+
+    &[data-kind="total"] { font-weight: 600; }
+    &[data-kind="total"] .bridge-track i { background: var(--green); }
+    &[data-kind="sub"] .bridge-track i { background: var(--danger); opacity: 0.65; }
+  }
+  .bridge-label { font-size: 0.88rem; }
+  .bridge-track {
+    height: 20px; border-radius: 4px; background: var(--paper-sunk);
+    display: block; overflow: clip;
+
+    & i {
+      display: block; height: 100%; background: var(--green); opacity: 0.4;
+      transition: width var(--slow) var(--ease);
+    }
+  }
+  .bridge-value {
+    font-variant-numeric: tabular-nums; font-size: 0.82rem; white-space: nowrap;
+  }
+  @media (width <= 620px) {
+    .bridge-row { grid-template-columns: 1fr auto; }
+    .bridge-track { grid-column: 1 / -1; }
+  }
+
+  /* ---------- the sensitivity grid ----------
+     A heatmap, but one that stays readable: the --heat custom
+     property mixes the cell background between two theme colours
+     rather than using a fixed palette, so it works in both themes
+     and never puts pale text on a pale ground. */
+  .grid-table {
+    & th, & td { text-align: center; }
+    & tbody th { text-align: right; min-width: 0; }
+    & thead th:first-child {
+      min-width: 0; font-size: 0.6rem; text-align: left; line-height: 1.4;
+    }
+  }
+  .grid-cell {
+    cursor: pointer;
+    background: color-mix(in oklab,
+      var(--green) calc(var(--heat, 0) * 26%), var(--panel));
+    transition: outline-color var(--fast) var(--ease);
+    outline: 2px solid transparent; outline-offset: -2px;
+
+    &:hover, &:focus-visible { outline-color: var(--green); }
+    &[data-side="down"] {
+      background: color-mix(in oklab,
+        var(--gold) calc((1 - var(--heat, 0)) * 20%), var(--panel));
+    }
+    &[data-base] {
+      outline-color: var(--ink);
+      font-weight: 700;
+    }
+    &[data-invalid] {
+      cursor: not-allowed; color: var(--ink-soft); opacity: 0.5;
+      background: repeating-linear-gradient(45deg,
+        transparent 0 4px, var(--hairline) 4px 5px);
+    }
+  }
+
   /* ---------- the statements ---------- */
   .statements { display: grid; gap: var(--step); }
   .statement h2 {

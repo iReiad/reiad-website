@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>DCF with sensitivity tables — DSE-listed manufacturer — Rony Reiad</title>
+  <meta name="description" content="A working discounted cash flow valuation: WACC built up from its parts, two terminal value methods that cross-check each other, and a live two-way sensitivity table on WACC and terminal growth.">
+  <link rel="canonical" href="https://reiad.co.uk/portfolio/dcf.html">
+
+  <script>
+    (function () {
+      var d = document.documentElement;
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
+        var a = localStorage.getItem("audience");
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="DCF with sensitivity tables — DSE-listed manufacturer">
+  <meta property="og:description" content="WACC built up from its parts, two terminal value methods that cross-check each other, and a live two-way sensitivity table.">
+  <meta property="og:image" content="https://reiad.co.uk/og/default.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Rony Reiad">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+  <a class="skip" href="#dcf">Skip to the valuation</a>
+
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="/index.html">
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Rony Reiad
+      </a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/tools/index.html">Tools</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html" aria-current="page">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+
+      <div class="hero" style="padding-block:56px 26px">
+        <span class="eyebrow mono">Case study · Valuation · Excel-equivalent</span>
+        <h1>A DCF that shows its working, and a sensitivity table that earns its place.</h1>
+        <p class="lede">
+          The discount rate is built up from its parts rather than typed in. The
+          terminal value can be taken two ways, and each one is quoted back as
+          the other — a growth assumption stated as the exit multiple it amounts
+          to, and vice versa. Every cell in the sensitivity grid is a full
+          revaluation, and clicking one adopts it.
+        </p>
+        <p class="model-co">
+          <strong id="co-name">—</strong>
+          <span class="mono" id="co-unit">—</span>
+        </p>
+        <p class="note note-inline" id="co-note">—</p>
+        <p class="lede" style="font-size:0.95rem">
+          The cash flows come from the
+          <a href="/portfolio/three-statement.html">three-statement model</a> in
+          this same portfolio — not a second set of invented numbers. Change the
+          operating scenario below and the valuation moves, because the forecast
+          does.
+        </p>
+      </div>
+
+      <section id="dcf" class="model">
+
+        <div class="model-bar">
+          <div class="scenarios" role="group" aria-label="Operating scenario">
+            <button class="scenario" type="button" data-scenario="base" aria-pressed="true">Base</button>
+            <button class="scenario" type="button" data-scenario="upside" aria-pressed="false">Upside</button>
+            <button class="scenario" type="button" data-scenario="downside" aria-pressed="false">Downside</button>
+          </div>
+          <p class="scenario-blurb" id="scenario-blurb">—</p>
+          <div class="model-actions">
+            <button class="btn btn-ghost" type="button" id="download-csv">Download CSV</button>
+            <button class="btn btn-ghost" type="button" id="copy-link">Copy this valuation's link</button>
+          </div>
+        </div>
+
+        <!-- ============ THE ANSWER ============ -->
+        <div class="verdict-card" id="verdict" data-state="up" role="status">
+          <div class="verdict-main">
+            <span class="mono">Value per share</span>
+            <strong class="verdict-value">—</strong>
+          </div>
+          <p class="verdict-detail">—</p>
+        </div>
+
+        <div class="tiles">
+          <div class="tile" data-tile="wacc">
+            <span class="mono">WACC</span><strong class="tile-value">—</strong>
+            <small>The discount rate, built up below</small>
+          </div>
+          <div class="tile" data-tile="ke">
+            <span class="mono">Cost of equity</span><strong class="tile-value">—</strong>
+            <small>Risk-free + beta × ERP + country</small>
+          </div>
+          <div class="tile" data-tile="ev">
+            <span class="mono">Enterprise value</span><strong class="tile-value">—</strong>
+            <small>BDT lakh</small>
+          </div>
+          <div class="tile" data-tile="equity">
+            <span class="mono">Equity value</span><strong class="tile-value">—</strong>
+            <small>After bridging out net debt</small>
+          </div>
+          <div class="tile" data-tile="terminal">
+            <span class="mono">Terminal value share</span><strong class="tile-value">—</strong>
+            <small>Of enterprise value — above 80% is a warning</small>
+          </div>
+          <div class="tile" data-tile="entry">
+            <span class="mono">Implied EV/EBITDA</span><strong class="tile-value">—</strong>
+            <small>At the DCF value, on FY25E</small>
+          </div>
+        </div>
+
+        <div class="model-body">
+          <aside class="model-drivers">
+            <div class="drivers-head">
+              <h2>Inputs</h2>
+              <button class="chip" type="button" id="reset-drivers" hidden>Reset</button>
+            </div>
+            <p class="drivers-note">The greyed input is the one the current
+              terminal value method doesn't use — dimmed rather than hidden, so
+              nothing disappears from under your cursor.</p>
+
+            <div class="method-row">
+              <span class="mono">Terminal value</span>
+              <div class="segmented" role="group" aria-label="Terminal value method">
+                <button type="button" data-tv="gordon" aria-pressed="true">Gordon growth</button>
+                <button type="button" data-tv="multiple" aria-pressed="false">Exit multiple</button>
+              </div>
+            </div>
+            <div class="method-row">
+              <span class="mono">Discounting</span>
+              <button class="toggle" type="button" id="mid-year" aria-pressed="false">Mid-year convention</button>
+            </div>
+
+            <div id="drivers"></div>
+          </aside>
+
+          <div class="model-charts">
+            <figure class="chart-card">
+              <figcaption><strong>From enterprise value to equity value</strong></figcaption>
+              <div class="bridge" id="bridge"></div>
+            </figure>
+
+            <figure class="chart-card">
+              <figcaption>
+                <strong>Two-way sensitivity</strong>
+                <span class="segmented" role="group" aria-label="Sensitivity axis">
+                  <button type="button" data-axis="terminalGrowth" aria-pressed="true">vs growth</button>
+                  <button type="button" data-axis="exitMultiple" aria-pressed="false">vs multiple</button>
+                </span>
+              </figcaption>
+              <div class="table-scroll" id="sensitivity"></div>
+              <p class="statement-note" id="grid-note">—</p>
+            </figure>
+          </div>
+        </div>
+
+        <section class="statement">
+          <h2>Unlevered free cash flow</h2>
+          <div class="table-scroll" id="fcf-table"></div>
+          <p class="statement-note" id="cross-check">—</p>
+          <p class="statement-note">Interest is deliberately absent. The cost of
+            debt already sits inside the discount rate, so deducting it here as
+            well would charge for the same financing twice — which is why this
+            builds to an enterprise value, from which net debt is bridged out.</p>
+        </section>
+      </section>
+
+      <!-- ============ HOW IT'S BUILT ============ -->
+      <section>
+        <span class="section-label mono">How this valuation is built</span>
+        <div class="principles">
+          <div class="principle">
+            <h3>The cash flows aren't typed in</h3>
+            <p>They come from the three-statement model — EBIT, depreciation,
+               capex and the working-capital movement, all from a forecast whose
+               balance sheet balances. The commonest fault in a spreadsheet DCF
+               is a valuation tab whose EBITDA stopped agreeing with the model
+               two tabs to the left.</p>
+          </div>
+          <div class="principle">
+            <h3>The discount rate is built, not chosen</h3>
+            <p>Risk-free, equity risk premium, beta, country premium, cost of
+               debt, tax shield and target weights — each one visible and each
+               one movable. A WACC that arrives as a single number is a WACC
+               nobody can argue with, which is not a virtue.</p>
+          </div>
+          <div class="principle">
+            <h3>Each terminal value checks the other</h3>
+            <p>A Gordon growth assumption is quoted back as the exit multiple it
+               amounts to; an exit multiple is quoted back as the perpetuity
+               growth it assumes. Most disagreements about a DCF are really
+               disagreements about the terminal value, and this puts the
+               argument where it belongs.</p>
+          </div>
+          <div class="principle">
+            <h3>Impossible cells say so</h3>
+            <p>Gordon growth needs the discount rate above the growth rate.
+               Where the grid crosses that line the cell reads n/a instead of a
+               number, because a negative denominator produces a confident,
+               enormous and completely wrong valuation.</p>
+          </div>
+          <div class="principle">
+            <h3>Conventions on the surface</h3>
+            <p>Mid-year discounting is a toggle, not a hidden choice, and when
+               it's on the terminal value still discounts at the full final year
+               — it's a lump sum at the end of the forecast, not a flow through
+               it. The share of value sitting in the terminal value is shown,
+               and flagged when it passes 80%.</p>
+          </div>
+          <div class="principle">
+            <h3>Tested against first principles</h3>
+            <p>Fifty checks on the engine alone: discount factors derived
+               independently, both terminal value methods round-tripped through
+               their own implied assumptions, every sensitivity cell verified as
+               a genuine revaluation, and the grid checked so that a cell is
+               refused if and only if growth meets or beats the discount rate.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="note">
+        Illustrative valuation of the same composite company as the operating
+        model — not the filed accounts of any real business, and not a forecast
+        of, or advice about, any actual security. Share count and market price
+        are illustrative. What's on display is the method: the same structure I
+        build in Excel, with a client's own numbers and their own comparables.
+      </div>
+
+      <div class="band">
+        <span class="mono">Working together</span>
+        <h2>Need a valuation that survives a second reader?</h2>
+        <p>DCFs, comparable-company analysis and operating models in Excel —
+           assumptions in one place, conventions stated, and the sensitivity
+           tables built before anyone asks for them.</p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/contact.html">Start a conversation</a>
+          <a class="btn btn-ghost" href="/portfolio.html">Back to the portfolio</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>Everything on this site is general education, not investment advice.</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/portfolio/dcf.js"></script>
+</body>
+</html>

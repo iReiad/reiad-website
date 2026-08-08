@@ -218,6 +218,8 @@ export const PAGES = [
     hint: "Page", blurb: "Longer pieces, plus an auto-updating pulse of market news." },
   { title: "Three-statement model — interactive case study", url: "/portfolio/three-statement.html",
     hint: "Case study", blurb: "A live financial model: edit the assumptions, watch all three statements move." },
+  { title: "DCF with sensitivity tables — interactive case study", url: "/portfolio/dcf.html",
+    hint: "Case study", blurb: "A live discounted cash flow: build the WACC, switch terminal value method, read the grid." },
   { title: "Portfolio & services", url: "/portfolio.html",
     hint: "Page", blurb: "Financial modeling, data analysis and finance writing." },
   { title: "About Rony", url: "/about.html",

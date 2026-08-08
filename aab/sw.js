@@ -31,6 +31,8 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v7: the DCF case study landed alongside the operating model.
+
    v6: the tools page became a tab set and the first interactive
    portfolio case study landed, so tools.js, styles.css and the new
    /portfolio/ modules all changed together.
@@ -43,7 +45,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v6";
+const VERSION = "v7";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
