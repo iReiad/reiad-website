@@ -242,6 +242,11 @@ export function ratios(d) {
   r.epsGrowth = pctChange(r.eps, r.epsPrev);
   r.niGrowth = pctChange(d.netIncome, d.netIncomePrev);
   r.epsCagr3y = cagr(d.netIncome, d.netIncome3y, 3);
+  /* Operating cash growth, which is a harder number to manage than
+     profit growth and so a better read on whether the business is
+     actually getting bigger. Undefined from a negative base — you
+     cannot express a recovery from cash burn as a growth rate. */
+  r.cfoGrowth = d.cfoPrev > 0 ? pctChange(d.cfo, d.cfoPrev) : NaN;
   r.peg = r.pe > 0 && r.epsCagr3y > 0 ? div(r.pe, r.epsCagr3y) : NaN;
 
   /* --- profitability --- */
@@ -259,6 +264,7 @@ export function ratios(d) {
   r.netMarginPrev = div(d.netIncomePrev, d.revenuePrev) * 100;
   r.marginTrend = r.netMargin - r.netMarginPrev;
   r.marginRel = div(r.netMargin, d.sectorMargin);
+  r.roeRel = r.roe > 0 && d.sectorROE > 0 ? div(r.roe, d.sectorROE) : NaN;
   r.assetTurnover = fin ? NaN : div(d.revenue, avgAssets);
 
   /* DuPont: the same ROE, told as three separate stories. A 20%
@@ -434,6 +440,16 @@ export const METRICS = [
     na: (r) => !Number.isFinite(r.peg),
     anchors: [[0.4, 100], [0.8, 85], [1.2, 65], [2.0, 35], [3.0, 12], [5.0, 0]] },
 
+  /* Cheap against its own sector and cheap against the market are
+     different questions, and on the DSE they come apart often —
+     whole sectors get bid up together, so a company can look fair
+     next to its peers and expensive next to everything else. This
+     is what the index picker at the top of the panel feeds. */
+  { id: "peVsMarket", pillar: "value", w: 1, fmt: "x", hi: false,
+    get: (r) => r.peVsMarket, raw: (r) => r.pe,
+    na: (r) => !Number.isFinite(r.peVsMarket),
+    anchors: [[0.5, 100], [0.8, 82], [1.0, 62], [1.5, 35], [2.2, 12], [3.5, 0]] },
+
   { id: "ps", pillar: "value", w: 1, fmt: "x", hi: false,
     get: (r) => r.ps,
     na: (r) => r.isFinancial || !Number.isFinite(r.ps),
@@ -454,6 +470,11 @@ export const METRICS = [
     get: (r) => r.marginRel, raw: (r) => r.netMargin,
     na: (r) => !Number.isFinite(r.marginRel) || r.netMargin < 0,
     anchors: [[0.3, 10], [0.6, 30], [1.0, 60], [1.4, 80], [2.0, 100]] },
+
+  { id: "roeRel", pillar: "quality", w: 2, fmt: "x", hi: true,
+    get: (r) => r.roeRel, raw: (r) => r.roe,
+    na: (r) => !Number.isFinite(r.roeRel),
+    anchors: [[0.4, 10], [0.7, 32], [1.0, 60], [1.4, 82], [2.0, 100]] },
 
   { id: "grossMargin", pillar: "quality", w: 1, fmt: "%", hi: true,
     get: (r) => r.grossMargin,
@@ -490,6 +511,11 @@ export const METRICS = [
     get: (r) => r.epsCagr3y,
     na: (r) => !Number.isFinite(r.epsCagr3y),
     anchors: [[-15, 0], [-5, 15], [0, 30], [10, 60], [18, 82], [30, 100]] },
+
+  { id: "cfoGrowth", pillar: "growth", w: 2, fmt: "%", hi: true,
+    get: (r) => r.cfoGrowth,
+    na: (r) => !Number.isFinite(r.cfoGrowth),
+    anchors: [[-40, 0], [-15, 20], [0, 38], [10, 62], [25, 85], [50, 100]] },
 
   { id: "marginTrend", pillar: "growth", w: 2, fmt: "pp", hi: true,
     get: (r) => r.marginTrend,

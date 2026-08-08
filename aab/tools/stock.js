@@ -158,17 +158,24 @@ const OPEN_BY_DEFAULT = new Set(["company", "income"]);
 function readUrl() {
   const p = new URLSearchParams(location.search);
   const out = {};
+  let handSet = false;
   for (const [k, v] of p) {
     if (k === "lang" || k === "style") continue;
     if (k in DEFAULTS) {
       out[k] = typeof DEFAULTS[k] === "number" ? Number(v) : v;
     } else if (k.startsWith("w.") && PILLARS.includes(k.slice(2))) {
       weights[k.slice(2)] = Number(v);
+      handSet = true;
     }
   }
   if (p.get("style") && WEIGHT_PRESETS[p.get("style")]) {
     style = p.get("style");
     weights = { ...WEIGHT_PRESETS[style] };
+  } else if (handSet) {
+    /* A link carrying its own weights is not any of the four
+       presets, so none of them should show as chosen — the chip
+       would be claiming weights the page is not using. */
+    style = "custom";
   }
   if (p.get("lang") === "bn" || p.get("lang") === "en") { lang = p.get("lang"); langExplicit = true; }
   return out;
@@ -290,6 +297,7 @@ function fieldNode(f) {
     sel.addEventListener("change", () => {
       state[f.id] = sel.value;
       if (f.id === "sector") onSectorChange();
+      if (f.id === "benchmark") onBenchmarkChange();
       commit();
     });
     wrap.append(sel);
@@ -329,6 +337,20 @@ function fieldNode(f) {
   paintRange(range);
 
   return wrap;
+}
+
+/* Choosing an index has to move the index P/E, or the picker is a
+   control that looks live and is not — which is exactly what it
+   was: selecting DS30 changed nothing anywhere on the page. */
+function onBenchmarkChange() {
+  const idx = INDICES[state.benchmark];
+  if (!idx) return;
+  state.marketPE = idx.pe;
+  const n = $("#in-marketPE");
+  const r = $("#rng-marketPE");
+  if (n) n.value = String(state.marketPE);
+  if (r) r.value = String(state.marketPE);
+  paintRange(r);
 }
 
 /* Picking a bank swaps in the ratios a bank is actually
@@ -520,10 +542,22 @@ function rangeChart(d, r) {
   </div>`;
 }
 
-/** The yield ladder: what this pays against what safe things pay. */
+/** The yield ladder: what this pays against what safe things pay.
+
+    The after-tax row is here because the withholding input had
+    nowhere to land: divTax fed a divYieldNet that this file
+    referenced exactly zero times, so the slider moved and nothing
+    on the page moved with it. It also happens to be the number
+    that matters — the comparison against a sanchayapatra is only
+    honest once the dividend has been taxed. */
 function yieldChart(d, r) {
   const rows = [
     { k: lang === "bn" ? "এই শেয়ারের লভ্যাংশ" : "This share's dividend", v: r.divYield, tone: "green" },
+    ...(d.divTax > 0 ? [{
+      k: lang === "bn" ? `লভ্যাংশ — ${fmtNum(d.divTax, lang, 0)}% কর বাদে`
+                       : `That dividend after ${fmtNum(d.divTax, lang, 0)}% withholding`,
+      v: r.divYieldNet, tone: "green",
+    }] : []),
     { k: lang === "bn" ? "এই শেয়ারের আর্নিংস ইল্ড" : "This share's earnings yield", v: r.earningsYield, tone: "green" },
     { k: lang === "bn" ? "সঞ্চয়পত্র" : "Sanchayapatra", v: d.riskFree, tone: "gold" },
     { k: lang === "bn" ? "ব্যাংক এফডিআর" : "Bank FDR", v: d.fdr, tone: "gold" },
@@ -745,10 +779,25 @@ function renderPillars(a) {
     .map((x) => x.dataset.pillar));
   const out = [];
 
+  /* How many points of the final score each pillar actually
+     supplies. This is the number the weight sliders move, and
+     without it they looked broken: a pillar's own score measures
+     the COMPANY and cannot change when you change your mind about
+     what matters, so six sliders labelled with the six pillar
+     names appeared to do nothing to the six pillar numbers. The
+     contributions sum to the score on the dial. */
+  const wsum = PILLARS.reduce((sum, k) =>
+    sum + (a.pillars[k].score !== null && weights[k] > 0 ? weights[k] : 0), 0);
+  const contribution = (k) =>
+    a.pillars[k].score === null || !(weights[k] > 0) || wsum === 0
+      ? null
+      : (a.pillars[k].score * weights[k]) / wsum;
+
   for (const p of PILLARS) {
     const ps = a.pillars[p];
     const g = grade(ps.score);
     const metrics = a.scored.filter((s) => s.pillar === p);
+    const gives = contribution(p);
 
     const rows = metrics.map((s) => {
       const m = METRICS.find((x) => x.id === s.id);
@@ -771,10 +820,14 @@ function renderPillars(a) {
       </div>`;
     }).join("");
 
-    out.push(`<details class="pillar" data-pillar="${p}"${openNow.has(p) ? " open" : ""}>
+    out.push(`<details class="pillar" data-pillar="${p}"${openNow.has(p) ? " open" : ""}${
+      gives === null ? ' data-muted=""' : ""}>
       <summary>
         <span class="pillar-name">${esc(t(`pillar.${p}`, lang))}</span>
-        <span class="pillar-weight mono">${fmtInt(weights[p], lang)}%</span>
+        <span class="pillar-weight mono">${gives === null
+          ? esc(t("pillar.notCounted", lang))
+          : `${fmtInt(weights[p], lang)}% · ${esc(t("pillar.gives", lang,
+              { v: fmtNum(gives, lang, 1) }))}`}</span>
         <span class="pillar-score" data-grade="${g}">${ps.score === null ? "—" : fmtInt(ps.score, lang)}</span>
         ${bar(ps.score, g)}
       </summary>
@@ -782,6 +835,11 @@ function renderPillars(a) {
       <div class="metrics">${rows}</div>
     </details>`);
   }
+  const total = PILLARS.reduce((sum, k) => sum + (contribution(k) ?? 0), 0);
+  out.push(`<p class="pillar-total mono">${esc(t("pillar.total", lang, {
+    v: fmtNum(total, lang, 1),
+  }))}</p>`);
+
   host.innerHTML = out.join("");
 }
 
