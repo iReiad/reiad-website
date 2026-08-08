@@ -78,6 +78,27 @@
           number and everything moves. When you get a result worth keeping,
           copy the link — the whole calculation travels with it.
         </p>
+        <!-- ============ the advanced one, which needs its own page ============
+             It sits ABOVE the calculator picker rather than after it: it is
+             the biggest thing here and was easy to scroll past underneath.
+
+             Deliberately NOT a sixth tab. The picker below is an ARIA tab
+             set whose tabs each control a panel on this page, and a link
+             that navigates away is not a tab. It is also a different kind
+             of thing — the five below answer one question each, this one
+             runs a whole analysis. -->
+        <a class="work-card advanced-card" href="/tools/stock.html">
+          <span class="mono">Advanced · উন্নত টুল</span>
+          <h2>Stock check — buy, hold or sell?</h2>
+          <p>Type a company's figures off its annual report and the price off
+             your broker's app. Thirty-eight ratios across six pillars,
+             weighted by the kind of investor you are, with every step of the
+             arithmetic shown — and a separate set for banks, where
+             debt-to-equity and EBITDA mean nothing.</p>
+          <p class="mono advanced-langs" lang="bn">সম্পূর্ণ বাংলায় পড়া যায় — এক ক্লিকে ভাষা বদলান।</p>
+          <span class="more mono">Open the stock check &rarr;</span>
+        </a>
+
         <!-- The tool picker. These are real links to real anchors, so
              with JavaScript off they still jump to a calculator and all
              five remain on the page. tools.js upgrades them into a tab
@@ -107,26 +128,6 @@
           </a>
         </div>
       </div>
-
-      <!-- ============ the advanced one, which needs its own page ============
-           Deliberately NOT a sixth tab: the tablist above is an ARIA tab set
-           whose tabs each control a panel on this page, and a link that
-           navigates away is not a tab. It is also a different kind of thing —
-           the five above answer one question each, this one runs a whole
-           analysis — so it gets its own card and its own page. -->
-      <a class="work-card panel advanced-card" href="/tools/stock.html">
-        <span class="mono">Advanced · উন্নত টুল</span>
-        <h2>Stock check — buy, hold or sell?</h2>
-        <p>Type a company's figures off its annual report and the price off your
-           broker's app. Thirty-odd ratios across six pillars — valuation,
-           quality, growth, financial health, income and momentum — weighted by
-           the kind of investor you say you are, with every step of the
-           arithmetic shown. Altman Z, Piotroski F-score, a Shariah screen, and
-           a separate set of ratios for banks, where debt-to-equity and EBITDA
-           mean nothing.</p>
-        <p class="mono advanced-langs" lang="bn">সম্পূর্ণ বাংলায় পড়া যায় — এক ক্লিকে ভাষা বদলান।</p>
-        <span class="more mono">Open the stock check &rarr;</span>
-      </a>
 
       <!-- ============ 1 · COMPOUNDING ============ -->
       <section id="compounding" class="tool">

@@ -39,6 +39,22 @@ const el = (tag, cls, html) => {
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
   ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+/* The green portion of a range input is a background gradient sized
+   by --pct on the wrapping .driver. It has to be set for EVERY
+   slider and refreshed on every change: the weight sliders were
+   built without it and sat at the stylesheet's 50% default
+   regardless of their value, so "Growth 15%" showed a thumb at 37%
+   above a bar filled to half. Anything that owns a range input
+   calls this. */
+function paintRange(rng) {
+  if (!rng) return;
+  const min = Number(rng.min);
+  const max = Number(rng.max);
+  const pct = max > min ? ((Number(rng.value) - min) / (max - min)) * 100 : 0;
+  const host = rng.closest(".driver") ?? rng.parentElement;
+  host?.style.setProperty("--pct", `${Math.max(0, Math.min(100, pct)).toFixed(2)}%`);
+}
+
 /* ============================================================
    STATE
    ============================================================ */
@@ -305,10 +321,12 @@ function fieldNode(f) {
     state[f.id] = n;
     if (from !== "num") num.value = String(n);
     if (range && from !== "rng") range.value = String(n);
+    paintRange(range);
     commit();
   };
   num.addEventListener("input", () => set(num.value, "num"));
   if (range) range.addEventListener("input", () => set(range.value, "rng"));
+  paintRange(range);
 
   return wrap;
 }
@@ -379,12 +397,14 @@ function buildWeights() {
     r.addEventListener("input", () => {
       weights[p] = Number(r.value);
       v.textContent = `${fmtInt(weights[p], lang)}%`;
+      paintRange(r);
       style = "custom";
       for (const b of $$("#weights .scenario")) b.setAttribute("aria-pressed", "false");
       commit();
     });
     wrap.append(r);
     host.append(wrap);
+    paintRange(r);
   }
 }
 
@@ -566,17 +586,14 @@ function render() {
   renderScorecard(a);
   renderShariah(a);
 
-  // keep the slider fills in step with their values
+  // keep every slider's fill and read-out in step with its value
   for (const f of FIELDS) {
     if (!f.slider) continue;
-    const rng = $(`#rng-${f.id}`);
-    if (!rng) continue;
-    const [mn, mx] = f.slider;
-    const pct = ((state[f.id] - mn) / (mx - mn)) * 100;
-    rng.parentElement.style.setProperty("--pct", `${Math.max(0, Math.min(100, pct))}%`);
+    paintRange($(`#rng-${f.id}`));
     const box = $(`#val-${f.id}`);
     if (box) box.textContent = fmtNum(state[f.id], lang, f.step < 1 ? 2 : 0);
   }
+  for (const r of $$("#weights input[type=range]")) paintRange(r);
   for (const f of FIELDS) {
     if (f.slider || f.select) continue;
     const box = $(`#val-${f.id}`);

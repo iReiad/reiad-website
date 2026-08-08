@@ -3281,14 +3281,24 @@
   #weights .scenarios { flex-wrap: wrap; margin-bottom: 16px; }
 
 
-  /* ---------- the advanced tool's card on the tools hub ---------- */
+  /* ---------- the advanced tool's card on the tools hub ----------
+     It carries its own box. The first version leaned on a `panel`
+     class that does not exist anywhere in this stylesheet, so the
+     card rendered as loose text with no border at all — invisible
+     as a card, which is the one thing it had to be. */
   .advanced-card {
-    padding: 26px 28px; margin-bottom: 26px;
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px 26px; margin-block: 30px 24px;
+    gap: 10px;
 
-    & h2 { font-size: 1.35rem; margin: 0; }
+    & h2 { font-size: 1.4rem; margin: 0; }
     & > .mono { color: var(--gold); font-size: 0.68rem;
                 letter-spacing: 0.08em; text-transform: uppercase; }
-    & p { color: var(--ink-soft); max-width: 74ch; margin: 0; }
+    & p { color: var(--ink-soft); max-width: 74ch; margin: 0; font-size: 0.97rem; }
+    & .more { margin-top: 4px; }
   }
   .advanced-langs { color: var(--green) !important; font-family: var(--font-bn); }
 
