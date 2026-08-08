@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <title>Colophon — how this site is built — Rony Reiad</title>
-  <meta name="description" content="Every technical decision behind reiad.co.uk: no framework, no build step, no tracking — and what each of those choices costs.">
+  <title>Colophon · how this site is built · Rony Reiad</title>
+  <meta name="description" content="Every technical decision behind reiad.co.uk: no framework, no build step, no tracking, and what each of those choices costs.">
   <link rel="canonical" href="https://reiad.co.uk/colophon.html">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Colophon — how this site is built">
-  <meta property="og:description" content="No framework, no build step, no tracking — and what each of those choices costs.">
+  <meta property="og:title" content="Colophon · how this site is built">
+  <meta property="og:description" content="No framework, no build step, no tracking, and what each of those choices costs.">
   <meta property="og:url" content="https://reiad.co.uk/colophon.html">
   <meta property="og:image" content="https://reiad.co.uk/og/colophon.png">
   <meta name="twitter:card" content="summary_large_image">
@@ -36,7 +36,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad · Insights" href="/feed.xml">
   <meta name="theme-color" content="#0B3D2E">
 </head>
 <body>
@@ -74,7 +74,7 @@
         <span class="eyebrow mono">Colophon</span>
         <h1>How this site is built, and why.</h1>
         <p class="lede">
-          Every technical decision here, written down — including the ones that
+          Every technical decision here, written down, including the ones that
           cost something. If you're building a personal site, take whatever's
           useful; if you're hiring me, this is roughly how I think about a
           problem when nobody's watching.
@@ -82,10 +82,10 @@
       </div>
 
       <div class="strip">
-        <div><span class="n">0</span><span class="l">build steps — the files you edit are the files that ship</span></div>
+        <div><span class="n">0</span><span class="l">build steps: the files you edit are the files that ship</span></div>
         <div><span class="n">0</span><span class="l">runtime dependencies, npm packages or frameworks</span></div>
         <div><span class="n">0</span><span class="l">tracking scripts, cookie banners or third-party analytics</span></div>
-        <div><span class="n">1</span><span class="l">stylesheet, in nine cascade layers</span></div><div><span class="n">1</span><span class="l">database — SQLite at the edge, no ORM</span></div>
+        <div><span class="n">1</span><span class="l">stylesheet, in nine cascade layers</span></div><div><span class="n">1</span><span class="l">database: SQLite at the edge, no ORM</span></div>
       </div>
 
       <section>
@@ -102,7 +102,7 @@
           <div class="row">
             <span class="k mono">CSS, in layers</span>
             <span class="v"><code>@layer tokens, base, layout, components, menu, tools, article,
-              studio, utilities</code> — so a utility always beats a component and specificity
+              studio, utilities</code>, so a utility always beats a component and specificity
               never has to be argued about. Native nesting, no preprocessor.</span>
           </div>
           <div class="row">
@@ -123,7 +123,7 @@
             <span class="k mono">Fonts</span>
             <span class="v">Spectral for headlines, IBM Plex Sans for text, IBM Plex Mono for
               data labels, Noto Sans/Serif Bengali for Bangla. Loaded from Google Fonts with
-              <code>display=swap</code> — the one third-party dependency on the site, and the
+              <code>display=swap</code>, the one third-party dependency on the site, and the
               obvious thing to self-host next.</span>
           </div>
           <div class="row">
@@ -131,7 +131,7 @@
             <span class="v">Cloudflare Pages Functions over a D1 (SQLite) database, holding
               articles, reader questions, subscribers, enquiries and view counts. Every
               endpoint checks whether the database is bound and falls back to the static
-              behaviour if it isn't — so there is one site, not two, and it degrades instead
+              behaviour if it isn't, so there is one site, not two, and it degrades instead
               of breaking. Migrations run themselves on first request.</span>
           </div>
           <div class="row">
@@ -165,14 +165,14 @@
             <span class="tag mono">Motion</span>
             <h3>Scroll-driven animations</h3>
             <p>Cards fade up as they enter the viewport and the article progress bar fills
-               as you read — both pure CSS, driven by <code>animation-timeline</code>. No
+               as you read, both pure CSS, driven by <code>animation-timeline</code>. No
                observers, no scroll listeners, nothing running on the main thread.</p>
           </div>
           <div class="cell">
             <span class="tag mono">Dialogs</span>
             <h3>&lt;dialog&gt; and @starting-style</h3>
-            <p>The menu, the palette and the shortcuts sheet are real modal dialogs — focus
-               trapping and Escape come free — animated in <em>and out</em> using
+            <p>The menu, the palette and the shortcuts sheet are real modal dialogs, focus
+               trapping and Escape come free, animated in <em>and out</em> using
                <code>transition-behavior: allow-discrete</code>.</p>
           </div>
           <div class="cell">
@@ -208,7 +208,7 @@
                that could be tied back to a person even if someone wanted to. I need to know
                which explainers land; I don't need to know who you are, and the difference
                is worth building for. The only things kept in your browser are your theme
-               choice, which Learn terms you've read, and which articles you've reacted to —
+               choice, which Learn terms you've read, and which articles you've reacted to:
                all on your device, none of it sent anywhere.</p>
           </details>
           <details class="faq">
@@ -217,7 +217,7 @@
                opt-in, so an address does nothing until you click a link; no open tracking
                and no click tracking, so I can't tell whether you read anything; one-click
                unsubscribe that works immediately and doesn't ask why. <a href="/feed.xml">The
-               RSS feed</a> is still there and still better if you use a reader — it doesn't
+               RSS feed</a> is still there and still better if you use a reader; it doesn't
                require giving me anything at all.</p>
           </details>
           <details class="faq">
@@ -238,7 +238,7 @@
             <p>The publishing tool at <code>/studio.html</code> asks for a passkey or a
                passphrase, and the passphrase is checked against a PBKDF2 hash with 600,000
                iterations. But a static site has no server, so that check happens in the
-               visitor's browser — it keeps the tool private from anyone who wanders in, and
+               visitor's browser: it keeps the tool private from anyone who wanders in, and
                it isn't cryptographic protection of anything secret. Saying so plainly seems
                better than implying otherwise.</p>
           </details>
@@ -254,7 +254,7 @@
           <li>The Bangla pages set <code>lang="bn"</code> so screen readers pronounce them correctly</li>
           <li>No layout shift: images carry width and height, and the fonts swap rather than block</li>
           <li>No <code>content-visibility</code> on sections: it skips layout for offscreen content, which makes the page height a guess and the scrollbar lurch. Tried it, measured it, removed it</li>
-          <li>The whole site is a handful of text files — a page weighs less than a single stock photo would</li>
+          <li>The whole site is a handful of text files: a page weighs less than a single stock photo would</li>
         </ul>
       </section>
 

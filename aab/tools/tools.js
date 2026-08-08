@@ -219,7 +219,7 @@ bindTool("compounding", (v, root) => {
   $(".verdict", root).innerHTML = Number.isFinite(doubles)
     ? `At <b>${pct.format(rate * 100)}%</b>, money roughly doubles every
        <b>${pct.format(doubles)} years</b> (the rule of 72). Of your
-       ${money(final)}, <b>${money(growth)}</b> is growth you didn't have to earn —
+       ${money(final)}, <b>${money(growth)}</b> is growth you didn't have to earn,
        and the longer half of that arrives in the final third of the time.`
     : "Set a rate above zero to see compounding do anything.";
 });
@@ -272,11 +272,11 @@ bindTool("sanchayapatra", (v, root) => {
   ]);
 
   $(".verdict", root).innerHTML = gap < amount * 0.005
-    ? `Over ${years} years these land within ${money(gap)} of each other — close
+    ? `Over ${years} years these land within ${money(gap)} of each other, close
        enough that the <b>rules</b> matter more than the rate: the purchase
        ceiling on sanchayapatra, and how quickly you can get the money out.`
     : `<b>${sWins ? "সঞ্চয়পত্র" : "FDR"}</b> comes out ahead by
-       <b>${money(gap)}</b> over ${years} years — about
+       <b>${money(gap)}</b> over ${years} years, about
        ${pct.format((gap / amount) * 100)}% of what you put in. Worth checking
        the early-encashment penalty before you decide, since that's where the
        difference usually goes.`;
@@ -319,11 +319,11 @@ bindTool("inflation", (v, root) => {
   $(".verdict", root).innerHTML = real >= 0
     ? `A ${pct.format(nominal * 100)}% return against ${pct.format(inflation * 100)}%
        inflation is really <b>${pct.format(real * 100)}%</b>. Your ${money(amount)}
-       becomes ${money(grown)} on paper — but only <b>${money(grownReal)}</b> in
+       becomes ${money(grown)} on paper, but only <b>${money(grownReal)}</b> in
        what it can actually buy.`
     : `A ${pct.format(nominal * 100)}% return does not keep up with
        ${pct.format(inflation * 100)}% inflation. On paper you'd have
-       ${money(grown)}; in real buying power that is <b>${money(grownReal)}</b> —
+       ${money(grown)}; in real buying power that is <b>${money(grownReal)}</b>:
        less than the ${money(amount)} you started with. This is the quiet way
        "safe" savings lose money.`;
 });
@@ -403,17 +403,17 @@ bindTool("position", (v, root) => {
 
   const overweight = cost > capital;
   $(".verdict", root).innerHTML = perShare <= 0
-    ? `Your stop needs to sit <b>below</b> your entry price — otherwise there's
+    ? `Your stop needs to sit <b>below</b> your entry price; otherwise there's
        no defined loss to size against.`
     : overweight
       ? `A ${pct.format(riskPct * 100)}% risk rule with a stop that close would
-         need <b>${money(cost)}</b> of stock — more than your whole
+         need <b>${money(cost)}</b> of stock, more than your whole
          ${money(capital)}. That's the signal: either the stop is too tight, or
          this trade doesn't fit the account.`
       : `Risking ${pct.format(riskPct * 100)}% of ${money(capital)} means
          <b>${num.format(shares)} shares</b> at ${money(entry)}, costing
          ${money(cost)}. If the stop at ${money(stop)} is hit you lose
-         <b>${money(riskTaka)}</b> — a planned number, not a surprise. Twenty
+         <b>${money(riskTaka)}</b>: a planned number, not a surprise. Twenty
          losses in a row at this size would still leave you
          ${money(capital * (1 - riskPct) ** 20)}.`;
 });

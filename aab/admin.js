@@ -80,7 +80,7 @@ async function renderQueue(host) {
 
   host.replaceChildren(
     el("p", { className: "admin-count mono", textContent:
-      pending.length ? `${pending.length} waiting on you` : "Nothing waiting — inbox zero." }),
+      pending.length ? `${pending.length} waiting on you` : "Nothing waiting: inbox zero." }),
     ...pending.map((q) => card(q, true)),
     published.length
       ? el("details", { className: "faq" },
@@ -232,7 +232,7 @@ async function renderStats(host) {
                 el("span", { className: "mono", textContent: String(r.count) })))))
       : null,
     el("p", { className: "tool-note", style: "margin-top:20px", textContent:
-      "A path, a date and a number — that is the entire record. No cookies, no "
+      "A path, a date and a number, that is the entire record. No cookies, no "
       + "visitor identity, nothing shared with anyone." })
   );
 }

@@ -41,7 +41,7 @@ close("lgamma(5) = ln 24", lgamma(5), Math.log(24), 1e-10);
 close("lgamma(0.5) = ln √π", lgamma(0.5), Math.log(Math.sqrt(Math.PI)), 1e-10);
 close("incBeta(0.5, 1, 1) = 0.5", incBeta(0.5, 1, 1), 0.5, 1e-12);
 close("incBeta(0.5, 2, 2) = 0.5", incBeta(0.5, 2, 2), 0.5, 1e-12);
-close("incBeta(0.25, 2, 3) — closed form", incBeta(0.25, 2, 3),
+close("incBeta(0.25, 2, 3), closed form", incBeta(0.25, 2, 3),
   1 - (1 - 0.25) ** 3 * (1 + 3 * 0.25), 1e-12);
 
 /* ---------- 2 · the normal ---------- */

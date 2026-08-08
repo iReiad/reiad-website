@@ -118,7 +118,7 @@ function render(data, staleFrom) {
 
   const note = el("p", { className: "pulse-updated mono" });
   note.textContent = staleFrom
-    ? `Offline — showing the last update, from ${relTime(new Date(staleFrom).toISOString())}`
+    ? `Offline: showing the last update, from ${relTime(new Date(staleFrom).toISOString())}`
     : `Updated ${relTime(data.updated)}`;
 
   box.replaceChildren(list, note);
@@ -137,7 +137,7 @@ function fallback() {
       " and ",
       el("a", { href: "https://www.bbc.co.uk/news/business", rel: "noopener", target: "_blank",
                 textContent: "BBC Business" }),
-      " — both worth reading directly."
+      ", both worth reading directly."
     ),
     el("div", { className: "row-flex" }, retry)
   );

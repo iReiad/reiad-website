@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <title>Contact — Rony Reiad</title>
-  <meta name="description" content="Contact Rony Reiad — hiring, freelance financial modeling and analysis projects, or questions about the Learn hub.">
+  <title>Contact · Rony Reiad</title>
+  <meta name="description" content="Contact Rony Reiad: hiring, freelance financial modeling and analysis projects, or questions about the Learn hub.">
 
   <!-- Theme before first paint: no white flash for dark-mode readers.
        No stored choice means "follow the OS", which the CSS handles
@@ -31,10 +31,10 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad · Insights" href="/feed.xml">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Contact">
-  <meta property="og:description" content="Contact Rony Reiad — hiring, freelance financial modeling and analysis projects, or questions about the Learn hub.">
+  <meta property="og:description" content="Contact Rony Reiad: hiring, freelance financial modeling and analysis projects, or questions about the Learn hub.">
   <meta property="og:image" content="https://reiad.co.uk/og/contact.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -79,7 +79,7 @@
         <h1>Hiring, or need a model built?</h1>
         <p class="lede">
           Recruiters, freelance clients, and Learn-hub readers all welcome. The form
-          below lands straight in my inbox — or email
+          below lands straight in my inbox, or email
           <a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a> directly.
         </p>
       </div>
@@ -110,7 +110,7 @@
           </label>
           <label>Message
             <textarea name="message" required
-                      placeholder="A few lines about what you need — a role, a project brief, or a question."></textarea>
+                      placeholder="A few lines about what you need: a role, a project brief, or a question."></textarea>
           </label>
 
           <button type="submit" id="form-submit">Send message</button>
@@ -138,13 +138,13 @@
           <div class="row">
             <span class="k mono">No sequence, no list</span>
             <span class="v">Writing to me does not sign you up to anything. There's no
-              newsletter, no CRM, no drip campaign — if you want to know when something
+              newsletter, no CRM, no drip campaign, if you want to know when something
               new is published, use <a href="/feed.xml">the RSS feed</a>.</span>
           </div>
           <div class="row">
             <span class="k mono">Where it goes</span>
             <span class="v">The form posts to Web3Forms, which emails it to me and stores
-              nothing else. This site sets no analytics cookies and runs no trackers —
+              nothing else. This site sets no analytics cookies and runs no trackers,
               the only thing kept in your browser is your theme choice and which Learn
               terms you've read.</span>
           </div>
@@ -166,7 +166,7 @@
           <div class="cell">
             <span class="tag mono">Clients</span>
             <h3>A model, an analysis, or something written</h3>
-            <p>Send the brief in whatever state it's in — a paragraph and a spreadsheet
+            <p>Send the brief in whatever state it's in: a paragraph and a spreadsheet
                is enough. You'll get a fixed price and a date back, and the files are
                yours at the end.</p>
             <a class="more" href="/portfolio.html">How projects run →</a>
@@ -187,7 +187,7 @@
         <div class="stack measure">
           <details class="faq">
             <summary>Can you look at my portfolio and tell me what to buy?</summary>
-            <p>No — I'm not a licensed adviser and it would be a bad idea from someone
+            <p>No: I'm not a licensed adviser and it would be a bad idea from someone
                who doesn't know your income, debts, or what the money is for. What I can
                point you at is the reasoning: the <a href="/learn/index.html">Learn hub</a>
                for the vocabulary and the <a href="/tools/index.html">calculators</a> for
@@ -196,19 +196,19 @@
           <details class="faq">
             <summary>Do you take on students or junior analysts?</summary>
             <p>If you're learning this material and get stuck on something specific,
-               write to me — a good question is genuinely welcome and often becomes a
+               write to me; a good question is genuinely welcome and often becomes a
                page on this site. I can't offer ongoing mentoring, but I've never
                ignored a serious question.</p>
           </details>
           <details class="faq">
             <summary>Can I republish something from this site?</summary>
-            <p>Ask, and usually yes — with attribution and a link back, and without
+            <p>Ask, and usually yes, with attribution and a link back, and without
                changing the meaning. Bangla explainers especially: the point is that
                they reach people, not that they sit here.</p>
           </details>
           <details class="faq">
             <summary>The form isn't working.</summary>
-            <p>Email <a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a> directly — that
+            <p>Email <a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a> directly, that
                always works, and do mention the form failed so I can fix it.</p>
           </details>
         </div>
@@ -228,7 +228,7 @@
   <script type="module" src="/app.js"></script>
   <script type="module">
     /* Three ways this can go, best first:
-         1. the site's own /api/enquiries — the message becomes a row you
+         1. the site's own /api/enquiries: the message becomes a row you
             can track, not just an email that gets buried
          2. Web3Forms, exactly as before, if the database isn't connected
          3. no JavaScript at all: the form still POSTs to Web3Forms and
@@ -251,7 +251,7 @@
       const done = () => {
         form.reset();
         status.className = "ok";
-        status.textContent = "Sent — thanks! I usually reply within one business day.";
+        status.textContent = "Sent: thanks! I usually reply within one business day.";
       };
 
       try {
@@ -271,7 +271,7 @@
         done();
       } catch {
         status.className = "err";
-        status.textContent = "Couldn't send just now — please email i@reiad.co.uk instead.";
+        status.textContent = "Couldn't send just now: please email i@reiad.co.uk instead.";
       } finally {
         button.disabled = false;
       }

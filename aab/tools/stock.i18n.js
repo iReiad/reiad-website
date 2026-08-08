@@ -33,8 +33,8 @@ export const STRINGS = {
     bn: "এই শেয়ারটা কিনবেন, ধরে রাখবেন, নাকি বেচবেন?",
   },
   "page.lede": {
-    en: "Type the numbers off the annual report and the price off your broker's app. Thirty-odd ratios, six pillars, and a verdict that shows every step of its own arithmetic — including the parts it cannot see.",
-    bn: "বার্ষিক প্রতিবেদন থেকে সংখ্যাগুলো আর ব্রোকারের অ্যাপ থেকে দামটা বসান। ত্রিশের বেশি রেশিও, ছয়টা স্তম্ভ, আর এমন একটা সিদ্ধান্ত যেটা নিজের প্রতিটা হিসাব দেখিয়ে দেয় — যা সে দেখতে পায় না, সেটাও বলে দেয়।",
+    en: "Type the numbers off the annual report and the price off your broker's app. Thirty-odd ratios, six pillars, and a verdict that shows every step of its own arithmetic, including the parts it cannot see.",
+    bn: "বার্ষিক প্রতিবেদন থেকে সংখ্যাগুলো আর ব্রোকারের অ্যাপ থেকে দামটা বসান। ত্রিশের বেশি রেশিও, ছয়টা স্তম্ভ, আর এমন একটা সিদ্ধান্ত যেটা নিজের প্রতিটা হিসাব দেখিয়ে দেয়, যা সে দেখতে পায় না, সেটাও বলে দেয়।",
   },
   "page.langLabel": { en: "Language", bn: "ভাষা" },
 
@@ -44,12 +44,12 @@ export const STRINGS = {
   "verdict.outOf": { en: "out of 100", bn: "১০০-এর মধ্যে" },
   "verdict.buy": { en: "Strong case to buy", bn: "কেনার জোরালো যুক্তি আছে" },
   "verdict.accumulate": { en: "Worth accumulating", bn: "ধীরে ধীরে কেনা যায়" },
-  "verdict.hold": { en: "Hold — no edge either way", bn: "ধরে রাখুন — কোনো দিকেই সুবিধা নেই" },
+  "verdict.hold": { en: "Hold: no edge either way", bn: "ধরে রাখুন: কোনো দিকেই সুবিধা নেই" },
   "verdict.trim": { en: "Trim the position", bn: "পজিশন কমান" },
   "verdict.avoid": { en: "Avoid", bn: "এড়িয়ে চলুন" },
   "verdict.buy.why": {
-    en: "On your weights, most of the evidence lines up in the same direction. That is not a promise — it is the arithmetic agreeing with itself.",
-    bn: "আপনার দেওয়া ওজনে বেশিরভাগ প্রমাণ একই দিকে যাচ্ছে। এটা কোনো নিশ্চয়তা নয় — শুধু হিসাবগুলো একে অপরের সঙ্গে মিলছে।",
+    en: "On your weights, most of the evidence lines up in the same direction. That is not a promise; it is the arithmetic agreeing with itself.",
+    bn: "আপনার দেওয়া ওজনে বেশিরভাগ প্রমাণ একই দিকে যাচ্ছে। এটা কোনো নিশ্চয়তা নয়: শুধু হিসাবগুলো একে অপরের সঙ্গে মিলছে।",
   },
   "verdict.accumulate.why": {
     en: "More right than wrong, with real weaknesses listed below. The sensible version of this is buying in instalments rather than all at once.",
@@ -61,7 +61,7 @@ export const STRINGS = {
   },
   "verdict.trim.why": {
     en: "Enough is going wrong that the size of the holding is the question, not whether to add to it.",
-    bn: "যথেষ্ট কিছু ভুল দিকে যাচ্ছে — এখন প্রশ্ন হলো কতটা ধরে রাখবেন, আরও কিনবেন কি না তা নয়।",
+    bn: "যথেষ্ট কিছু ভুল দিকে যাচ্ছে: এখন প্রশ্ন হলো কতটা ধরে রাখবেন, আরও কিনবেন কি না তা নয়।",
   },
   "verdict.avoid.why": {
     en: "The numbers do not support owning this at this price.",
@@ -101,13 +101,13 @@ export const STRINGS = {
   "pillar.gives": { en: "gives {v} pts", bn: "দেয় {v} পয়েন্ট" },
   "pillar.notCounted": { en: "not counted", bn: "গোনা হচ্ছে না" },
   "pillar.total": {
-    en: "The six contributions add up to {v} — the score on the dial.",
-    bn: "ছয়টা অবদান যোগ করলে {v} — ডায়ালের স্কোরটাই।",
+    en: "The six contributions add up to {v}: the score on the dial.",
+    bn: "ছয়টা অবদান যোগ করলে {v}: ডায়ালের স্কোরটাই।",
   },
 
   "pillar.value.why": {
-    en: "Is the price sensible against what the company earns, owns and pays out — and against what similar companies cost?",
-    bn: "কোম্পানি যা আয় করে, যা তার আছে আর যা সে দেয় — তার তুলনায় দামটা যুক্তিসঙ্গত কি না, আর একই ধরনের কোম্পানির দামের তুলনায় কেমন।",
+    en: "Is the price sensible against what the company earns, owns and pays out, and against what similar companies cost?",
+    bn: "কোম্পানি যা আয় করে, যা তার আছে আর যা সে দেয়, তার তুলনায় দামটা যুক্তিসঙ্গত কি না, আর একই ধরনের কোম্পানির দামের তুলনায় কেমন।",
   },
   "pillar.quality.why": {
     en: "Is this a good business at all? Returns on the money invested, margins, and whether the reported profit turns into actual cash.",
@@ -126,23 +126,23 @@ export const STRINGS = {
     bn: "লভ্যাংশের জন্য যদি ধরে রাখেন: সঞ্চয়পত্রের পাশে এই ইল্ডটা রাখার মতো কি না, আর কোম্পানি এটা দিতে থাকতে পারবে কি না।",
   },
   "pillar.momentum.why": {
-    en: "What the market is already doing with it — and whether you could actually get out. Thin trading is a risk nobody puts in a ratio.",
-    bn: "বাজার এটা নিয়ে ইতিমধ্যে কী করছে — আর আপনি আদৌ বেরোতে পারবেন কি না। কম লেনদেন এমন একটা ঝুঁকি যেটা কেউ রেশিওতে লেখে না।",
+    en: "What the market is already doing with it, and whether you could actually get out. Thin trading is a risk nobody puts in a ratio.",
+    bn: "বাজার এটা নিয়ে ইতিমধ্যে কী করছে, আর আপনি আদৌ বেরোতে পারবেন কি না। কম লেনদেন এমন একটা ঝুঁকি যেটা কেউ রেশিওতে লেখে না।",
   },
 
   /* ---------------- metric names ---------------- */
-  "m.peRel": { en: "P/E vs sector", bn: "P/E — সেক্টরের তুলনায়" },
-  "m.pbRel": { en: "P/B vs sector", bn: "P/B — সেক্টরের তুলনায়" },
+  "m.peRel": { en: "P/E vs sector", bn: "P/E: সেক্টরের তুলনায়" },
+  "m.pbRel": { en: "P/B vs sector", bn: "P/B: সেক্টরের তুলনায়" },
   "m.evEbitda": { en: "EV / EBITDA", bn: "EV / EBITDA" },
-  "m.earningsYieldSpread": { en: "Earnings yield over sanchayapatra", bn: "আর্নিংস ইল্ড — সঞ্চয়পত্রের চেয়ে বেশি" },
+  "m.earningsYieldSpread": { en: "Earnings yield over sanchayapatra", bn: "আর্নিংস ইল্ড: সঞ্চয়পত্রের চেয়ে বেশি" },
   "m.fcfYield": { en: "Free cash flow yield", bn: "ফ্রি ক্যাশ ফ্লো ইল্ড" },
   "m.peg": { en: "PEG (P/E against growth)", bn: "PEG (বৃদ্ধির তুলনায় P/E)" },
-  "m.peVsMarket": { en: "P/E vs the index", bn: "P/E — সূচকের তুলনায়" },
+  "m.peVsMarket": { en: "P/E vs the index", bn: "P/E: সূচকের তুলনায়" },
   "m.ps": { en: "Price / sales", bn: "দাম / বিক্রি" },
   "m.roe": { en: "Return on equity", bn: "ইক্যুইটির ওপর রিটার্ন (ROE)" },
   "m.roce": { en: "Return on capital employed", bn: "নিয়োজিত পুঁজির ওপর রিটার্ন (ROCE)" },
-  "m.marginRel": { en: "Net margin vs sector", bn: "নিট মার্জিন — সেক্টরের তুলনায়" },
-  "m.roeRel": { en: "ROE vs sector", bn: "ROE — সেক্টরের তুলনায়" },
+  "m.marginRel": { en: "Net margin vs sector", bn: "নিট মার্জিন: সেক্টরের তুলনায়" },
+  "m.roeRel": { en: "ROE vs sector", bn: "ROE: সেক্টরের তুলনায়" },
   "m.grossMargin": { en: "Gross margin", bn: "গ্রস মার্জিন" },
   "m.cashConversion": { en: "Profit turned into cash", bn: "মুনাফা কতটা নগদে বদলাল" },
   "m.accruals": { en: "Accruals gap", bn: "অ্যাক্রুয়াল ব্যবধান" },
@@ -164,7 +164,7 @@ export const STRINGS = {
   "m.provisionCover": { en: "Provision coverage", bn: "প্রভিশন কভারেজ" },
   "m.costIncome": { en: "Cost-to-income", bn: "খরচ-আয় অনুপাত" },
   "m.adr": { en: "Advance–deposit ratio", bn: "ঋণ-আমানত অনুপাত (ADR)" },
-  "m.yieldSpread": { en: "Dividend yield over sanchayapatra", bn: "লভ্যাংশ ইল্ড — সঞ্চয়পত্রের চেয়ে বেশি" },
+  "m.yieldSpread": { en: "Dividend yield over sanchayapatra", bn: "লভ্যাংশ ইল্ড: সঞ্চয়পত্রের চেয়ে বেশি" },
   "m.payout": { en: "Payout ratio", bn: "মুনাফার কত ভাগ বিলি হয়" },
   "m.divCover": { en: "Dividend cover", bn: "লভ্যাংশ কতবার কভার হয়" },
   "m.fcfCoverDiv": { en: "Free cash flow over the dividend", bn: "লভ্যাংশের তুলনায় ফ্রি ক্যাশ ফ্লো" },
@@ -178,8 +178,8 @@ export const STRINGS = {
 
   /* ---------------- metric explanations ---------------- */
   "m.peRel.why": {
-    en: "How many taka you pay for one taka of annual profit, next to what the rest of the sector charges. Below 1.0× is cheaper than its peers — which is a question, not an answer.",
-    bn: "বছরে এক টাকা মুনাফার জন্য কত টাকা দিচ্ছেন, সেক্টরের বাকিদের তুলনায়। ১.০× এর নিচে মানে সহকর্মীদের চেয়ে সস্তা — তবে এটা উত্তর নয়, প্রশ্ন।",
+    en: "How many taka you pay for one taka of annual profit, next to what the rest of the sector charges. Below 1.0× is cheaper than its peers, which is a question, not an answer.",
+    bn: "বছরে এক টাকা মুনাফার জন্য কত টাকা দিচ্ছেন, সেক্টরের বাকিদের তুলনায়। ১.০× এর নিচে মানে সহকর্মীদের চেয়ে সস্তা: তবে এটা উত্তর নয়, প্রশ্ন।",
   },
   "m.pbRel.why": {
     en: "The price against the book value of what the company owns after its debts. Under 1.0× means the market values it below its own accounts.",
@@ -202,8 +202,8 @@ export const STRINGS = {
     bn: "মুনাফা দ্রুত বাড়লে বেশি P/E-ও ঠিক আছে। এটা একটাকে আরেকটা দিয়ে ভাগ করে। ১.০× এর নিচে হলে বৃদ্ধিটা প্রায় বিনামূল্যে পাচ্ছেন বলা যায়।",
   },
   "m.peVsMarket.why": {
-    en: "The same price, measured against the whole market rather than one sector. On the DSE these come apart often — a sector can be bid up as a block, so a share looks fair beside its peers and expensive beside everything else you could buy instead.",
-    bn: "একই দাম, তবে একটা সেক্টরের বদলে পুরো বাজারের তুলনায় মাপা। ডিএসই-তে এই দুটো প্রায়ই আলাদা হয়ে যায় — গোটা সেক্টর একসঙ্গে চড়ে বসতে পারে, তখন শেয়ারটা সহকর্মীদের পাশে যুক্তিসঙ্গত আর বাকি যা কিছু কেনা যেত তার পাশে দামি দেখায়।",
+    en: "The same price, measured against the whole market rather than one sector. On the DSE these come apart often; a sector can be bid up as a block, so a share looks fair beside its peers and expensive beside everything else you could buy instead.",
+    bn: "একই দাম, তবে একটা সেক্টরের বদলে পুরো বাজারের তুলনায় মাপা। ডিএসই-তে এই দুটো প্রায়ই আলাদা হয়ে যায়: গোটা সেক্টর একসঙ্গে চড়ে বসতে পারে, তখন শেয়ারটা সহকর্মীদের পাশে যুক্তিসঙ্গত আর বাকি যা কিছু কেনা যেত তার পাশে দামি দেখায়।",
   },
   "m.ps.why": {
     en: "Price against sales. Useful when profits are temporarily depressed and the P/E has stopped meaning anything.",
@@ -211,11 +211,11 @@ export const STRINGS = {
   },
   "m.roe.why": {
     en: "Profit as a percentage of the shareholders' own money. The single best one-number answer to 'is this a good business'. Anything under the sanchayapatra rate is a business that would be better off closing and buying bonds.",
-    bn: "শেয়ারহোল্ডারদের নিজের টাকার তুলনায় মুনাফা শতাংশে। 'ব্যবসাটা ভালো কি না' — এক সংখ্যায় সবচেয়ে ভালো উত্তর। সঞ্চয়পত্রের হারের নিচে হলে ব্যবসা বন্ধ করে বন্ড কেনাই ভালো হতো।",
+    bn: "শেয়ারহোল্ডারদের নিজের টাকার তুলনায় মুনাফা শতাংশে। 'ব্যবসাটা ভালো কি না', এক সংখ্যায় সবচেয়ে ভালো উত্তর। সঞ্চয়পত্রের হারের নিচে হলে ব্যবসা বন্ধ করে বন্ড কেনাই ভালো হতো।",
   },
   "m.roce.why": {
     en: "The same question but including borrowed money, so leverage cannot flatter it. Compare it with what the company pays on its loans.",
-    bn: "একই প্রশ্ন, তবে ধার করা টাকাসহ — তাই ঋণ দিয়ে সাজানো যায় না। কোম্পানি ঋণের ওপর যে সুদ দেয়, তার সঙ্গে মিলিয়ে দেখুন।",
+    bn: "একই প্রশ্ন, তবে ধার করা টাকাসহ, তাই ঋণ দিয়ে সাজানো যায় না। কোম্পানি ঋণের ওপর যে সুদ দেয়, তার সঙ্গে মিলিয়ে দেখুন।",
   },
   "m.marginRel.why": {
     en: "What is left of every 100 taka of sales, next to what the sector keeps. A company keeping more than its rivals is usually doing something they cannot copy.",
@@ -223,7 +223,7 @@ export const STRINGS = {
   },
   "m.roeRel.why": {
     en: "The same return on equity, but against what the sector manages. A 12% return is ordinary in pharma and excellent in textiles, and only the comparison tells you which one you are looking at.",
-    bn: "একই ROE, তবে সেক্টর যা পারে তার তুলনায়। ১২% রিটার্ন ওষুধ খাতে সাধারণ আর টেক্সটাইলে চমৎকার — কোনটা দেখছেন তা কেবল তুলনাই বলে দেয়।",
+    bn: "একই ROE, তবে সেক্টর যা পারে তার তুলনায়। ১২% রিটার্ন ওষুধ খাতে সাধারণ আর টেক্সটাইলে চমৎকার, কোনটা দেখছেন তা কেবল তুলনাই বলে দেয়।",
   },
   "m.grossMargin.why": {
     en: "Sales minus the direct cost of making the thing. A falling gross margin is the earliest warning that pricing power is going.",
@@ -231,19 +231,19 @@ export const STRINGS = {
   },
   "m.cashConversion.why": {
     en: "Cash from operations divided by reported profit. Profit is an opinion; cash is a fact. Below 1.0× repeatedly is the most common early sign of accounting that will not hold.",
-    bn: "পরিচালন থেকে আসা নগদ ভাগ খাতায় দেখানো মুনাফা। মুনাফা একটা মতামত, নগদ একটা সত্য। বারবার ১.০× এর নিচে থাকা মানে হিসাব শেষ পর্যন্ত টিকবে না — এটাই সবচেয়ে সাধারণ আগাম লক্ষণ।",
+    bn: "পরিচালন থেকে আসা নগদ ভাগ খাতায় দেখানো মুনাফা। মুনাফা একটা মতামত, নগদ একটা সত্য। বারবার ১.০× এর নিচে থাকা মানে হিসাব শেষ পর্যন্ত টিকবে না, এটাই সবচেয়ে সাধারণ আগাম লক্ষণ।",
   },
   "m.accruals.why": {
     en: "The gap between profit and cash, scaled by the size of the company. A wide gap means the profit exists on paper and not yet in the bank.",
     bn: "মুনাফা আর নগদের ব্যবধান, কোম্পানির আকার দিয়ে মেপে। বড় ব্যবধান মানে মুনাফাটা কাগজে আছে, ব্যাংকে এখনো আসেনি।",
   },
   "m.assetTurnover.why": {
-    en: "How much sales the company squeezes out of every taka of assets. Low is not automatically bad — a power plant is meant to be slow — but it should be improving.",
-    bn: "প্রতি টাকার সম্পদ থেকে কত বিক্রি বের করে আনে। কম মানেই খারাপ নয় — বিদ্যুৎকেন্দ্র ধীর হওয়াই স্বাভাবিক — তবে উন্নতি হওয়া উচিত।",
+    en: "How much sales the company squeezes out of every taka of assets. Low is not automatically bad, a power plant is meant to be slow, but it should be improving.",
+    bn: "প্রতি টাকার সম্পদ থেকে কত বিক্রি বের করে আনে। কম মানেই খারাপ নয়, বিদ্যুৎকেন্দ্র ধীর হওয়াই স্বাভাবিক, তবে উন্নতি হওয়া উচিত।",
   },
   "m.revGrowth.why": {
-    en: "Sales this year against last year. Growth in taka terms during high inflation is not real growth — compare it with the inflation number in the benchmarks.",
-    bn: "গত বছরের তুলনায় এ বছরের বিক্রি। উচ্চ মূল্যস্ফীতির সময় টাকার অঙ্কে বৃদ্ধি আসল বৃদ্ধি নয় — বেঞ্চমার্কে দেওয়া মূল্যস্ফীতির সঙ্গে মিলিয়ে দেখুন।",
+    en: "Sales this year against last year. Growth in taka terms during high inflation is not real growth, compare it with the inflation number in the benchmarks.",
+    bn: "গত বছরের তুলনায় এ বছরের বিক্রি। উচ্চ মূল্যস্ফীতির সময় টাকার অঙ্কে বৃদ্ধি আসল বৃদ্ধি নয়, বেঞ্চমার্কে দেওয়া মূল্যস্ফীতির সঙ্গে মিলিয়ে দেখুন।",
   },
   "m.niGrowth.why": {
     en: "Profit this year against last year. Compare it with revenue growth: profit growing faster means margins are widening.",
@@ -263,7 +263,7 @@ export const STRINGS = {
   },
   "m.debtEquity.why": {
     en: "Borrowings against the owners' money. Debt makes good years better and bad years fatal, which is the whole of the argument about it.",
-    bn: "মালিকদের টাকার তুলনায় ধার। ঋণ ভালো বছরকে আরও ভালো আর খারাপ বছরকে প্রাণঘাতী করে তোলে — এটুকুই এই বিতর্কের পুরোটা।",
+    bn: "মালিকদের টাকার তুলনায় ধার। ঋণ ভালো বছরকে আরও ভালো আর খারাপ বছরকে প্রাণঘাতী করে তোলে, এটুকুই এই বিতর্কের পুরোটা।",
   },
   "m.netDebtEbitda.why": {
     en: "How many years of operating cash profit it would take to clear the debt, if every taka went to the lenders. Above 4× the lenders start setting the strategy, not the board.",
@@ -271,23 +271,23 @@ export const STRINGS = {
   },
   "m.interestCover.why": {
     en: "Operating profit divided by the interest bill. Under 1× the company is not earning its own interest, and something has to give.",
-    bn: "পরিচালন মুনাফা ভাগ সুদের বিল। ১× এর নিচে মানে কোম্পানি নিজের সুদটাই আয় করতে পারছে না — কিছু একটা ভাঙবে।",
+    bn: "পরিচালন মুনাফা ভাগ সুদের বিল। ১× এর নিচে মানে কোম্পানি নিজের সুদটাই আয় করতে পারছে না, কিছু একটা ভাঙবে।",
   },
   "m.currentRatio.why": {
     en: "Short-term assets against short-term bills. Around 1.5–2× is comfortable. Much higher is not safer, it is cash and stock sitting idle.",
     bn: "স্বল্পমেয়াদি বিলের তুলনায় স্বল্পমেয়াদি সম্পদ। ১.৫–২× হলে স্বস্তিদায়ক। এর অনেক বেশি হলে নিরাপদ নয়, বরং নগদ আর মালামাল অলস পড়ে আছে।",
   },
   "m.quickRatio.why": {
-    en: "The same, but without counting stock — because stock only turns into cash if someone wants to buy it.",
-    bn: "একই হিসাব, তবে মালামাল বাদ দিয়ে — কারণ কেউ কিনতে চাইলে তবেই মালামাল নগদে বদলায়।",
+    en: "The same, but without counting stock, because stock only turns into cash if someone wants to buy it.",
+    bn: "একই হিসাব, তবে মালামাল বাদ দিয়ে, কারণ কেউ কিনতে চাইলে তবেই মালামাল নগদে বদলায়।",
   },
   "m.altmanZ.why": {
     en: "Five balance-sheet ratios combined into one bankruptcy score, fitted on decades of real failures. This is the emerging-market version: above 5.85 is the safe zone, below 4.35 is distress.",
     bn: "ব্যালান্স শিটের পাঁচটা রেশিও মিলিয়ে একটা দেউলিয়া স্কোর, দশকের পর দশক সত্যিকারের ব্যর্থতার ওপর দাঁড়ানো। এটা উদীয়মান বাজারের সংস্করণ: ৫.৮৫ এর ওপরে নিরাপদ, ৪.৩৫ এর নিচে বিপদ।",
   },
   "m.fScore.why": {
-    en: "Nine yes/no questions about whether the business got better or worse this year. None of them is about the price — which is exactly why it is worth asking next to a cheap one.",
-    bn: "এ বছর ব্যবসাটা ভালো হলো না খারাপ — এই নিয়ে নয়টা হ্যাঁ/না প্রশ্ন। একটাও দাম নিয়ে নয় — আর সস্তা শেয়ারের পাশে এটাই এর মূল্য।",
+    en: "Nine yes/no questions about whether the business got better or worse this year. None of them is about the price, which is exactly why it is worth asking next to a cheap one.",
+    bn: "এ বছর ব্যবসাটা ভালো হলো না খারাপ: এই নিয়ে নয়টা হ্যাঁ/না প্রশ্ন। একটাও দাম নিয়ে নয়, আর সস্তা শেয়ারের পাশে এটাই এর মূল্য।",
   },
   "m.car.why": {
     en: "The buffer a bank holds against its risk-weighted lending. Bangladesh Bank's floor is 10% plus a conservation buffer; comfortably above it is what you want.",
@@ -319,7 +319,7 @@ export const STRINGS = {
   },
   "m.divCover.why": {
     en: "How many times over the profit covers the dividend. Under 1× the company is paying you out of savings or borrowings, which cannot last.",
-    bn: "মুনাফা লভ্যাংশকে কতবার কভার করে। ১× এর নিচে মানে কোম্পানি জমানো টাকা বা ধার থেকে আপনাকে দিচ্ছে — এটা টিকবে না।",
+    bn: "মুনাফা লভ্যাংশকে কতবার কভার করে। ১× এর নিচে মানে কোম্পানি জমানো টাকা বা ধার থেকে আপনাকে দিচ্ছে, এটা টিকবে না।",
   },
   "m.fcfCoverDiv.why": {
     en: "The stricter version of the same test, using cash rather than profit. A dividend that free cash flow does not cover is being funded by the balance sheet.",
@@ -335,11 +335,11 @@ export const STRINGS = {
   },
   "m.vsMa200.why": {
     en: "The price against its own average over roughly a trading year. Well below it, the market has been selling this for months and may know something.",
-    bn: "মোটামুটি এক বছরের লেনদেনের নিজস্ব গড়ের তুলনায় দাম। অনেক নিচে থাকলে বাজার মাসের পর মাস এটা বেচছে — হয়তো তারা কিছু জানে।",
+    bn: "মোটামুটি এক বছরের লেনদেনের নিজস্ব গড়ের তুলনায় দাম। অনেক নিচে থাকলে বাজার মাসের পর মাস এটা বেচছে, হয়তো তারা কিছু জানে।",
   },
   "m.maCross.why": {
     en: "The short average above the long one is the oldest trend signal there is. It is not a reason to buy on its own; it is context for everything above.",
-    bn: "লম্বা গড়ের ওপরে ছোট গড় থাকা — এটাই সবচেয়ে পুরনো ট্রেন্ড সংকেত। একা এটা কেনার কারণ নয়; ওপরের সবকিছুর প্রেক্ষাপট মাত্র।",
+    bn: "লম্বা গড়ের ওপরে ছোট গড় থাকা: এটাই সবচেয়ে পুরনো ট্রেন্ড সংকেত। একা এটা কেনার কারণ নয়; ওপরের সবকিছুর প্রেক্ষাপট মাত্র।",
   },
   "m.relStrength.why": {
     en: "The share's twelve-month return minus the index's. A stock falling while the market rises is being sold specifically, not swept along.",
@@ -360,8 +360,8 @@ export const STRINGS = {
     bn: "Z ক্যাটাগরি। লভ্যাংশ দেওয়া বন্ধ, এজিএম না হওয়া, বা জমা লোকসান মূলধন ছাড়িয়ে গেলে এক্সচেঞ্জ কোম্পানিকে এখানে ফেলে। এটা এই পাতার বাকি সবকিছুকে বাতিল করে দেয়।",
   },
   "f.vetoEquity": {
-    en: "Shareholders' equity is negative — the company owes more than it owns. Whatever the shares cost, the owners' stake in the accounts is already gone.",
-    bn: "শেয়ারহোল্ডারদের ইক্যুইটি ঋণাত্মক — কোম্পানির যা আছে তার চেয়ে দেনা বেশি। শেয়ারের দাম যা-ই হোক, খাতায় মালিকদের অংশটা ইতিমধ্যে শেষ।",
+    en: "Shareholders' equity is negative, the company owes more than it owns. Whatever the shares cost, the owners' stake in the accounts is already gone.",
+    bn: "শেয়ারহোল্ডারদের ইক্যুইটি ঋণাত্মক: কোম্পানির যা আছে তার চেয়ে দেনা বেশি। শেয়ারের দাম যা-ই হোক, খাতায় মালিকদের অংশটা ইতিমধ্যে শেষ।",
   },
   "f.vetoBurn": {
     en: "Losing money and burning cash at the same time. One of the two is survivable; both together means the clock is running.",
@@ -369,7 +369,7 @@ export const STRINGS = {
   },
   "f.loss": {
     en: "No profit this year, so every earnings-based ratio on this page is blank rather than bad. Cash flow is still positive, which is the difference between a hard year and a failing company.",
-    bn: "এ বছর মুনাফা নেই, তাই এই পাতার মুনাফাভিত্তিক প্রতিটা রেশিও খারাপ নয় — ফাঁকা। ক্যাশ ফ্লো এখনো ধনাত্মক, আর কঠিন বছর আর ডুবতে থাকা কোম্পানির পার্থক্য এটাই।",
+    bn: "এ বছর মুনাফা নেই, তাই এই পাতার মুনাফাভিত্তিক প্রতিটা রেশিও খারাপ নয়, ফাঁকা। ক্যাশ ফ্লো এখনো ধনাত্মক, আর কঠিন বছর আর ডুবতে থাকা কোম্পানির পার্থক্য এটাই।",
   },
   "f.cannotCoverInterest": {
     en: "Operating profit does not cover the interest bill. The lenders are being paid from somewhere other than the business.",
@@ -384,8 +384,8 @@ export const STRINGS = {
     bn: "নিট ঋণ পাঁচ বছরের পরিচালন নগদ মুনাফার চেয়ে বেশি। এই পর্যায়ে কার্যত ঋণদাতারাই কৌশল ঠিক করে।",
   },
   "f.altmanDistress": {
-    en: "The Altman score is in the grey-to-distress zone. It is a statistical warning, not a prediction — plenty of companies sit here for years — but it belongs in the decision.",
-    bn: "অল্টম্যান স্কোর ধূসর থেকে বিপদ অঞ্চলে। এটা পরিসংখ্যানভিত্তিক সতর্কতা, ভবিষ্যদ্বাণী নয় — বহু কোম্পানি বছরের পর বছর এখানে থাকে — তবু সিদ্ধান্তে এর জায়গা আছে।",
+    en: "The Altman score is in the grey-to-distress zone. It is a statistical warning, not a prediction, plenty of companies sit here for years, but it belongs in the decision.",
+    bn: "অল্টম্যান স্কোর ধূসর থেকে বিপদ অঞ্চলে। এটা পরিসংখ্যানভিত্তিক সতর্কতা, ভবিষ্যদ্বাণী নয়, বহু কোম্পানি বছরের পর বছর এখানে থাকে, তবু সিদ্ধান্তে এর জায়গা আছে।",
   },
   "f.nplHigh": {
     en: "Non-performing loans are high enough that future provisions, not this year's profit, are the thing to watch.",
@@ -420,23 +420,23 @@ export const STRINGS = {
     bn: "আপনার দেওয়া তথ্যে কোনো লভ্যাংশ নেই। সব পুনর্বিনিয়োগ করা কোম্পানির জন্য ঠিক আছে; যে বলে সে পরিণত, তার জন্য প্রশ্ন।",
   },
   "f.categoryB": {
-    en: "B category — the company has held its AGM but paid less than 10% dividend. Margin loan rules differ from A category.",
-    bn: "B ক্যাটাগরি — এজিএম হয়েছে কিন্তু ১০% এর কম লভ্যাংশ দিয়েছে। মার্জিন ঋণের নিয়ম A ক্যাটাগরির থেকে আলাদা।",
+    en: "B category: the company has held its AGM but paid less than 10% dividend. Margin loan rules differ from A category.",
+    bn: "B ক্যাটাগরি: এজিএম হয়েছে কিন্তু ১০% এর কম লভ্যাংশ দিয়েছে। মার্জিন ঋণের নিয়ম A ক্যাটাগরির থেকে আলাদা।",
   },
   "f.categoryN": {
-    en: "N category — newly listed, with no dividend record yet. Nothing is wrong; there is simply less history to judge.",
-    bn: "N ক্যাটাগরি — নতুন তালিকাভুক্ত, এখনো লভ্যাংশের রেকর্ড নেই। কোনো সমস্যা নয়; শুধু বিচার করার মতো ইতিহাস কম।",
+    en: "N category: newly listed, with no dividend record yet. Nothing is wrong; there is simply less history to judge.",
+    bn: "N ক্যাটাগরি: নতুন তালিকাভুক্ত, এখনো লভ্যাংশের রেকর্ড নেই। কোনো সমস্যা নয়; শুধু বিচার করার মতো ইতিহাস কম।",
   },
   "f.dividendFromDebt": {
     en: "The dividend is larger than free cash flow, so part of it is coming from the balance sheet rather than from this year's trading.",
-    bn: "লভ্যাংশ ফ্রি ক্যাশ ফ্লোর চেয়ে বড়, তাই এর একটা অংশ এ বছরের ব্যবসা থেকে নয় — ব্যালান্স শিট থেকে আসছে।",
+    bn: "লভ্যাংশ ফ্রি ক্যাশ ফ্লোর চেয়ে বড়, তাই এর একটা অংশ এ বছরের ব্যবসা থেকে নয়, ব্যালান্স শিট থেকে আসছে।",
   },
 
   /* ---------------- combined signals ---------------- */
   "s.cheapForReason": { en: "Cheap for a reason", bn: "সস্তা, তবে কারণ আছে" },
   "s.cheapForReason.why": {
-    en: "Below its sector on P/E, with profits shrinking and real debt on the balance sheet. Low multiples on falling earnings are not a discount — the earnings move, and the multiple stays.",
-    bn: "P/E সেক্টরের নিচে, অথচ মুনাফা কমছে আর ব্যালান্স শিটে সত্যিকারের ঋণ আছে। কমতে থাকা মুনাফার ওপর কম মাল্টিপল আসলে ছাড় নয় — মুনাফা নড়ে, মাল্টিপল থেকে যায়।",
+    en: "Below its sector on P/E, with profits shrinking and real debt on the balance sheet. Low multiples on falling earnings are not a discount, the earnings move, and the multiple stays.",
+    bn: "P/E সেক্টরের নিচে, অথচ মুনাফা কমছে আর ব্যালান্স শিটে সত্যিকারের ঋণ আছে। কমতে থাকা মুনাফার ওপর কম মাল্টিপল আসলে ছাড় নয়, মুনাফা নড়ে, মাল্টিপল থেকে যায়।",
   },
   "s.qualityFairPrice": { en: "Quality at a fair price", bn: "ভালো ব্যবসা, যুক্তিসঙ্গত দামে" },
   "s.qualityFairPrice.why": {
@@ -451,12 +451,12 @@ export const STRINGS = {
   "s.dividendAtRisk": { en: "The dividend is at risk", bn: "লভ্যাংশ ঝুঁকিতে" },
   "s.dividendAtRisk.why": {
     en: "Almost all of the profit is going out as dividend and cover is thin. If you are holding this for the income, that income is the first thing a bad year removes.",
-    bn: "প্রায় পুরো মুনাফাই লভ্যাংশ হয়ে বেরিয়ে যাচ্ছে আর কভার পাতলা। আয়ের জন্য ধরে রাখলে জেনে রাখুন — খারাপ বছর সবার আগে এই আয়টাই কেড়ে নেয়।",
+    bn: "প্রায় পুরো মুনাফাই লভ্যাংশ হয়ে বেরিয়ে যাচ্ছে আর কভার পাতলা। আয়ের জন্য ধরে রাখলে জেনে রাখুন: খারাপ বছর সবার আগে এই আয়টাই কেড়ে নেয়।",
   },
   "s.growthPricedIn": { en: "The growth is already in the price", bn: "বৃদ্ধিটা দামেই ধরা আছে" },
   "s.growthPricedIn.why": {
     en: "Priced well above its sector on a P/E that growth does not justify. It can still work, but only if growth beats what is already assumed.",
-    bn: "সেক্টরের অনেক ওপরে দাম, আর বৃদ্ধি দিয়ে সেই P/E ব্যাখ্যা করা যায় না। কাজ করতে পারে, তবে তখনই — যখন বৃদ্ধি ইতিমধ্যে ধরে নেওয়া মাত্রাকেও ছাড়িয়ে যাবে।",
+    bn: "সেক্টরের অনেক ওপরে দাম, আর বৃদ্ধি দিয়ে সেই P/E ব্যাখ্যা করা যায় না। কাজ করতে পারে, তবে তখনই, যখন বৃদ্ধি ইতিমধ্যে ধরে নেওয়া মাত্রাকেও ছাড়িয়ে যাবে।",
   },
   "s.balanceSheetStress": { en: "Balance sheet under stress", bn: "ব্যালান্স শিট চাপে" },
   "s.balanceSheetStress.why": {
@@ -471,17 +471,17 @@ export const STRINGS = {
   "s.thinlyTraded": { en: "Thinly held and thinly traded", bn: "কম হাতে, কম লেনদেনে" },
   "s.thinlyTraded.why": {
     en: "A small free float and low daily turnover together. The price you see quoted and the price you would actually get for a real sell order are not the same number.",
-    bn: "ছোট ফ্রি ফ্লোট আর কম দৈনিক লেনদেন একসঙ্গে। যে দাম দেখছেন আর সত্যিকারের বিক্রির অর্ডারে যে দাম পাবেন — এই দুটো এক সংখ্যা নয়।",
+    bn: "ছোট ফ্রি ফ্লোট আর কম দৈনিক লেনদেন একসঙ্গে। যে দাম দেখছেন আর সত্যিকারের বিক্রির অর্ডারে যে দাম পাবেন, এই দুটো এক সংখ্যা নয়।",
   },
   "s.turnaround": { en: "Possible turnaround", bn: "ঘুরে দাঁড়ানোর সম্ভাবনা" },
   "s.turnaround.why": {
     en: "Priced near or below book while passing most of the nine tests of whether the business improved this year. This is the specific combination Piotroski's research was about.",
-    bn: "দাম বুক ভ্যালুর কাছাকাছি বা নিচে, অথচ এ বছর ব্যবসার উন্নতি হয়েছে কি না — সেই নয়টা পরীক্ষার বেশিরভাগে পাশ। পিওট্রোস্কির গবেষণা ঠিক এই সমন্বয়টা নিয়েই ছিল।",
+    bn: "দাম বুক ভ্যালুর কাছাকাছি বা নিচে, অথচ এ বছর ব্যবসার উন্নতি হয়েছে কি না, সেই নয়টা পরীক্ষার বেশিরভাগে পাশ। পিওট্রোস্কির গবেষণা ঠিক এই সমন্বয়টা নিয়েই ছিল।",
   },
   "s.beatsSafe": { en: "It beats the safe alternative", bn: "নিরাপদ বিকল্পকে হারাচ্ছে" },
   "s.beatsSafe.why": {
     en: "Both the earnings yield and the dividend yield are above the sanchayapatra rate. That is the minimum bar a share has to clear before its risk is worth taking at all.",
-    bn: "আর্নিংস ইল্ড আর লভ্যাংশ ইল্ড — দুটোই সঞ্চয়পত্রের হারের ওপরে। ঝুঁকি নেওয়ার যোগ্য হতে হলে একটা শেয়ারকে অন্তত এই বাধাটা পেরোতেই হয়।",
+    bn: "আর্নিংস ইল্ড আর লভ্যাংশ ইল্ড: দুটোই সঞ্চয়পত্রের হারের ওপরে। ঝুঁকি নেওয়ার যোগ্য হতে হলে একটা শেয়ারকে অন্তত এই বাধাটা পেরোতেই হয়।",
   },
   "s.losesToSafe": { en: "It loses to the safe alternative", bn: "নিরাপদ বিকল্পের কাছে হারছে" },
   "s.losesToSafe.why": {
@@ -490,8 +490,8 @@ export const STRINGS = {
   },
   "s.momentumVsFundamentals": { en: "Price rising, numbers not", bn: "দাম উঠছে, সংখ্যা নয়" },
   "s.momentumVsFundamentals.why": {
-    en: "Near the top of its yearly range while the valuation pillar is weak. Momentum can carry a share a long way past what its accounts justify — and the return trip is quick.",
-    bn: "বছরের রেঞ্জের ওপরের দিকে, অথচ দামের স্তম্ভটা দুর্বল। গতি একটা শেয়ারকে তার খাতার যুক্তির অনেক দূর পর্যন্ত টেনে নিতে পারে — আর ফেরার পথটা দ্রুত।",
+    en: "Near the top of its yearly range while the valuation pillar is weak. Momentum can carry a share a long way past what its accounts justify, and the return trip is quick.",
+    bn: "বছরের রেঞ্জের ওপরের দিকে, অথচ দামের স্তম্ভটা দুর্বল। গতি একটা শেয়ারকে তার খাতার যুক্তির অনেক দূর পর্যন্ত টেনে নিতে পারে, আর ফেরার পথটা দ্রুত।",
   },
   "s.fallingWithReason": { en: "Falling, and the numbers agree", bn: "পড়ছে, আর সংখ্যাও তাই বলছে" },
   "s.fallingWithReason.why": {
@@ -505,25 +505,25 @@ export const STRINGS = {
   },
   "s.borrowedReturn": { en: "The return is borrowed", bn: "রিটার্নটা ধার করা" },
   "s.borrowedReturn.why": {
-    en: "A strong return on equity built on more than three times leverage. Strip the borrowing out and the underlying business is far more ordinary — and far more fragile in a downturn.",
-    bn: "ইক্যুইটির ওপর ভালো রিটার্ন, কিন্তু তিন গুণেরও বেশি লিভারেজের ওপর দাঁড়ানো। ধারটা সরিয়ে নিলে ভেতরের ব্যবসা অনেক সাধারণ — আর মন্দার সময় অনেক ভঙ্গুর।",
+    en: "A strong return on equity built on more than three times leverage. Strip the borrowing out and the underlying business is far more ordinary, and far more fragile in a downturn.",
+    bn: "ইক্যুইটির ওপর ভালো রিটার্ন, কিন্তু তিন গুণেরও বেশি লিভারেজের ওপর দাঁড়ানো। ধারটা সরিয়ে নিলে ভেতরের ব্যবসা অনেক সাধারণ, আর মন্দার সময় অনেক ভঙ্গুর।",
   },
 
   /* ---------------- section headings ---------------- */
   "sec.pillars": { en: "The six pillars", bn: "ছয়টা স্তম্ভ" },
   "sec.pillarsNote": {
-    en: "Each pillar is a weighted set of ratios. Open one to see every number inside it and what it means. A pillar's own score measures the company, so it does NOT move when you change the weights — what the weights move is how many points of the final score each pillar gives, shown beside it.",
-    bn: "প্রতিটা স্তম্ভ কতগুলো রেশিওর ওজনভিত্তিক সমষ্টি। যেকোনো একটা খুললে ভেতরের প্রতিটা সংখ্যা আর তার মানে দেখা যাবে। স্তম্ভের নিজের স্কোর কোম্পানিটাকে মাপে, তাই ওজন বদলালে সেটা নড়ে না — ওজন যেটা বদলায় তা হলো প্রতিটা স্তম্ভ চূড়ান্ত স্কোরে কত পয়েন্ট দিচ্ছে, যা তার পাশেই লেখা।",
+    en: "Each pillar is a weighted set of ratios. Open one to see every number inside it and what it means. A pillar's own score measures the company, so it does NOT move when you change the weights, what the weights move is how many points of the final score each pillar gives, shown beside it.",
+    bn: "প্রতিটা স্তম্ভ কতগুলো রেশিওর ওজনভিত্তিক সমষ্টি। যেকোনো একটা খুললে ভেতরের প্রতিটা সংখ্যা আর তার মানে দেখা যাবে। স্তম্ভের নিজের স্কোর কোম্পানিটাকে মাপে, তাই ওজন বদলালে সেটা নড়ে না, ওজন যেটা বদলায় তা হলো প্রতিটা স্তম্ভ চূড়ান্ত স্কোরে কত পয়েন্ট দিচ্ছে, যা তার পাশেই লেখা।",
   },
   "sec.fair": { en: "What is it worth?", bn: "এর দাম আসলে কত হওয়া উচিত?" },
   "sec.fairNote": {
     en: "Four ways of answering, deliberately shown as a range. When they scatter widely, the honest conclusion is that this cannot be valued from these inputs.",
-    bn: "উত্তর দেওয়ার চারটা উপায়, ইচ্ছা করেই একটা রেঞ্জ হিসেবে দেখানো। এগুলো যখন অনেক ছড়িয়ে যায়, সৎ সিদ্ধান্ত হলো — এই তথ্য দিয়ে এর মূল্যায়ন সম্ভব নয়।",
+    bn: "উত্তর দেওয়ার চারটা উপায়, ইচ্ছা করেই একটা রেঞ্জ হিসেবে দেখানো। এগুলো যখন অনেক ছড়িয়ে যায়, সৎ সিদ্ধান্ত হলো, এই তথ্য দিয়ে এর মূল্যায়ন সম্ভব নয়।",
   },
   "sec.signals": { en: "Patterns worth naming", bn: "যে ধরনগুলোর নাম দেওয়া দরকার" },
   "sec.signalsNote": {
-    en: "No single ratio says any of these. Each one fires only when several conditions hold together — which is how most real problems actually announce themselves.",
-    bn: "একটা রেশিও এগুলোর কোনোটাই বলে না। প্রতিটা তখনই জ্বলে ওঠে যখন কয়েকটা শর্ত একসঙ্গে মেলে — বাস্তবের বেশিরভাগ সমস্যা এভাবেই নিজেকে জানান দেয়।",
+    en: "No single ratio says any of these. Each one fires only when several conditions hold together, which is how most real problems actually announce themselves.",
+    bn: "একটা রেশিও এগুলোর কোনোটাই বলে না। প্রতিটা তখনই জ্বলে ওঠে যখন কয়েকটা শর্ত একসঙ্গে মেলে, বাস্তবের বেশিরভাগ সমস্যা এভাবেই নিজেকে জানান দেয়।",
   },
   "sec.flags": { en: "Flags", bn: "সতর্কতা" },
   "sec.flagsNote": {
@@ -533,27 +533,27 @@ export const STRINGS = {
   "sec.dupont": { en: "Where the return comes from", bn: "রিটার্নটা আসছে কোথা থেকে" },
   "sec.dupontNote": {
     en: "The same return on equity, told three ways. A 20% return built on thin margins and heavy borrowing is a different company from one built on fat margins and no debt.",
-    bn: "একই ROE, তিনভাবে বলা। পাতলা মার্জিন আর ভারী ধারের ওপর দাঁড়ানো ২০% রিটার্ন আর মোটা মার্জিন ও শূন্য ঋণের ওপর দাঁড়ানো ২০% — দুটো আলাদা কোম্পানি।",
+    bn: "একই ROE, তিনভাবে বলা। পাতলা মার্জিন আর ভারী ধারের ওপর দাঁড়ানো ২০% রিটার্ন আর মোটা মার্জিন ও শূন্য ঋণের ওপর দাঁড়ানো ২০%, দুটো আলাদা কোম্পানি।",
   },
   "sec.piotroski": { en: "The nine tests", bn: "নয়টা পরীক্ষা" },
   "sec.piotroskiNote": {
     en: "Nine questions about whether the business got better this year. Tests needing last year's figures are skipped, not failed, when you leave those blank.",
-    bn: "এ বছর ব্যবসাটা ভালো হলো কি না — এই নিয়ে নয়টা প্রশ্ন। গত বছরের সংখ্যা ফাঁকা রাখলে সেই পরীক্ষাগুলো বাদ যায়, ফেল হিসেবে ধরা হয় না।",
+    bn: "এ বছর ব্যবসাটা ভালো হলো কি না: এই নিয়ে নয়টা প্রশ্ন। গত বছরের সংখ্যা ফাঁকা রাখলে সেই পরীক্ষাগুলো বাদ যায়, ফেল হিসেবে ধরা হয় না।",
   },
   "sec.drags": { en: "What is holding the score down", bn: "স্কোর কী আটকে রাখছে" },
   "sec.dragsNote": {
-    en: "Points of the final score being lost to each ratio — its weight multiplied by how far it is from perfect. This is the shortest honest answer to 'what would have to change'.",
-    bn: "প্রতিটা রেশিওর কারণে চূড়ান্ত স্কোরের কত পয়েন্ট হারাচ্ছে — তার ওজন গুণ পূর্ণতা থেকে কত দূরে। 'কী বদলালে অবস্থা বদলাবে' — এর সবচেয়ে সংক্ষিপ্ত সৎ উত্তর।",
+    en: "Points of the final score being lost to each ratio, its weight multiplied by how far it is from perfect. This is the shortest honest answer to 'what would have to change'.",
+    bn: "প্রতিটা রেশিওর কারণে চূড়ান্ত স্কোরের কত পয়েন্ট হারাচ্ছে, তার ওজন গুণ পূর্ণতা থেকে কত দূরে। 'কী বদলালে অবস্থা বদলাবে', এর সবচেয়ে সংক্ষিপ্ত সৎ উত্তর।",
   },
   "sec.scorecard": { en: "Every number, in one table", bn: "প্রতিটা সংখ্যা, এক টেবিলে" },
   "sec.scorecardNote": {
     en: "The whole calculation, including the metrics that do not apply and why. Nothing on this page happens outside this table.",
-    bn: "পুরো হিসাবটা, যেগুলো প্রযোজ্য নয় সেগুলোসহ — আর কেন নয় তা-ও। এই পাতার কিছুই এই টেবিলের বাইরে ঘটে না।",
+    bn: "পুরো হিসাবটা, যেগুলো প্রযোজ্য নয় সেগুলোসহ, আর কেন নয় তা-ও। এই পাতার কিছুই এই টেবিলের বাইরে ঘটে না।",
   },
   "sec.shariah": { en: "Shariah screen", bn: "শরিয়াহ যাচাই" },
   "sec.shariahNote": {
-    en: "The ratio screens commonly applied to judge compliance. The business-activity question — what the company actually does — is not arithmetic, and no tool should pretend to answer it.",
-    bn: "সম্মতি যাচাইয়ে সাধারণত যে রেশিওগুলো দেখা হয়। ব্যবসাটা আসলে কী করে — সেই প্রশ্নটা হিসাবের নয়, আর কোনো টুলের সেটার উত্তর দেওয়ার ভান করা উচিত নয়।",
+    en: "The ratio screens commonly applied to judge compliance. The business-activity question, what the company actually does, is not arithmetic, and no tool should pretend to answer it.",
+    bn: "সম্মতি যাচাইয়ে সাধারণত যে রেশিওগুলো দেখা হয়। ব্যবসাটা আসলে কী করে: সেই প্রশ্নটা হিসাবের নয়, আর কোনো টুলের সেটার উত্তর দেওয়ার ভান করা উচিত নয়।",
   },
   "sec.market": { en: "Where the price sits", bn: "দাম কোথায় দাঁড়িয়ে" },
 
@@ -575,13 +575,13 @@ export const STRINGS = {
   },
   "g.benchmarks": { en: "Benchmarks", bn: "তুলনার মানদণ্ড" },
   "g.benchmarksNote": {
-    en: "Indicative, and editable. Nobody publishes an audited sector median, so override these with whatever you can source — the scoring uses your number, not mine.",
-    bn: "নির্দেশক মাত্র, আর সম্পাদনাযোগ্য। সেক্টরের নিরীক্ষিত মধ্যক কেউ প্রকাশ করে না, তাই যা জোগাড় করতে পারেন তা দিয়ে বদলে নিন — স্কোরিং আমার সংখ্যা নয়, আপনারটা ব্যবহার করবে।",
+    en: "Indicative, and editable. Nobody publishes an audited sector median, so override these with whatever you can source, the scoring uses your number, not mine.",
+    bn: "নির্দেশক মাত্র, আর সম্পাদনাযোগ্য। সেক্টরের নিরীক্ষিত মধ্যক কেউ প্রকাশ করে না, তাই যা জোগাড় করতে পারেন তা দিয়ে বদলে নিন, স্কোরিং আমার সংখ্যা নয়, আপনারটা ব্যবহার করবে।",
   },
   "g.weights": { en: "What kind of investor are you?", bn: "আপনি কেমন বিনিয়োগকারী?" },
   "g.weightsNote": {
-    en: "The same company is a buy for one person and a pass for another. These weights decide the verdict — move them and watch it change.",
-    bn: "একই কোম্পানি একজনের জন্য কেনার মতো, আরেকজনের জন্য নয়। এই ওজনগুলোই সিদ্ধান্ত ঠিক করে — নাড়ান আর দেখুন কেমন বদলায়।",
+    en: "The same company is a buy for one person and a pass for another. These weights decide the verdict: move them and watch it change.",
+    bn: "একই কোম্পানি একজনের জন্য কেনার মতো, আরেকজনের জন্য নয়। এই ওজনগুলোই সিদ্ধান্ত ঠিক করে: নাড়ান আর দেখুন কেমন বদলায়।",
   },
 
   /* ---------------- input labels ---------------- */
@@ -667,8 +667,8 @@ export const STRINGS = {
   "preset.it": { en: "Small-cap IT", bn: "ছোট আইটি কোম্পানি" },
   "preset.shell": { en: "Z-category shell", bn: "Z ক্যাটাগরির খোলস" },
   "preset.note": {
-    en: "These are ARCHETYPES with figures typical of their sector — not real companies. Publishing invented accounts under a listed company's name would be inventing that company's record. What is real is the method: type your own numbers in and every figure on this page is about your company.",
-    bn: "এগুলো নিজ নিজ খাতের সাধারণ সংখ্যা দিয়ে বানানো আদর্শ নমুনা — কোনো সত্যিকারের কোম্পানি নয়। তালিকাভুক্ত কোম্পানির নামে বানানো হিসাব প্রকাশ করা মানে সেই কোম্পানির রেকর্ড বানিয়ে ফেলা। যেটা সত্যি সেটা হলো পদ্ধতি: নিজের সংখ্যা বসান, তাহলে এই পাতার প্রতিটা হিসাব আপনার কোম্পানির।",
+    en: "These are ARCHETYPES with figures typical of their sector, not real companies. Publishing invented accounts under a listed company's name would be inventing that company's record. What is real is the method: type your own numbers in and every figure on this page is about your company.",
+    bn: "এগুলো নিজ নিজ খাতের সাধারণ সংখ্যা দিয়ে বানানো আদর্শ নমুনা, কোনো সত্যিকারের কোম্পানি নয়। তালিকাভুক্ত কোম্পানির নামে বানানো হিসাব প্রকাশ করা মানে সেই কোম্পানির রেকর্ড বানিয়ে ফেলা। যেটা সত্যি সেটা হলো পদ্ধতি: নিজের সংখ্যা বসান, তাহলে এই পাতার প্রতিটা হিসাব আপনার কোম্পানির।",
   },
 
   /* ---------------- investor styles ---------------- */
@@ -698,8 +698,8 @@ export const STRINGS = {
     bn: "চারটা অনুমান তিন গুণেরও বেশি ফারাকে। এটাই উত্তর: এই তথ্য দিয়ে এর মূল্যায়ন সম্ভব নয়, আর একটা নির্দিষ্ট সংখ্যা দেওয়া হবে মিথ্যা নিখুঁততা।",
   },
   "fv.none": {
-    en: "No anchor could be built — a company with no profit, no book value and no dividend cannot be valued this way.",
-    bn: "কোনো অনুমান দাঁড় করানো গেল না — মুনাফা নেই, বুক ভ্যালু নেই, লভ্যাংশ নেই, এমন কোম্পানির এভাবে মূল্যায়ন হয় না।",
+    en: "No anchor could be built, a company with no profit, no book value and no dividend cannot be valued this way.",
+    bn: "কোনো অনুমান দাঁড় করানো গেল না: মুনাফা নেই, বুক ভ্যালু নেই, লভ্যাংশ নেই, এমন কোম্পানির এভাবে মূল্যায়ন হয় না।",
   },
 
   /* ---------------- Piotroski checks ---------------- */
@@ -712,7 +712,7 @@ export const STRINGS = {
   "p.dilution": { en: "Did not issue new shares", bn: "নতুন শেয়ার ছাড়েনি" },
   "p.margin": { en: "Gross margin widened", bn: "গ্রস মার্জিন বেড়েছে" },
   "p.turnover": { en: "Used its assets harder", bn: "সম্পদ আরও ভালোভাবে খাটিয়েছে" },
-  "p.skipped": { en: "skipped — needs last year", bn: "বাদ — গত বছরের তথ্য দরকার" },
+  "p.skipped": { en: "skipped: needs last year", bn: "বাদ: গত বছরের তথ্য দরকার" },
 
   /* ---------------- Shariah tests ---------------- */
   "sh.debt": { en: "Borrowings under 33% of market value", bn: "ঋণ বাজারমূল্যের ৩৩% এর নিচে" },
@@ -721,8 +721,8 @@ export const STRINGS = {
   "sh.pass": { en: "Passes the ratio screens", bn: "রেশিও যাচাইয়ে উত্তীর্ণ" },
   "sh.fail": { en: "Fails at least one ratio screen", bn: "অন্তত একটা রেশিও যাচাইয়ে ব্যর্থ" },
   "sh.caveat": {
-    en: "Ratio screens only. Whether the business itself is permissible is a judgement for a scholar, not a calculator — and these thresholds vary between standards.",
-    bn: "শুধু রেশিও যাচাই। ব্যবসাটা নিজে জায়েজ কি না — সেই সিদ্ধান্ত আলেমের, ক্যালকুলেটরের নয় — আর এই সীমাগুলো এক মানদণ্ড থেকে আরেকটায় বদলায়।",
+    en: "Ratio screens only. Whether the business itself is permissible is a judgement for a scholar, not a calculator, and these thresholds vary between standards.",
+    bn: "শুধু রেশিও যাচাই। ব্যবসাটা নিজে জায়েজ কি না (সেই সিদ্ধান্ত আলেমের, ক্যালকুলেটরের নয়), আর এই সীমাগুলো এক মানদণ্ড থেকে আরেকটায় বদলায়।",
   },
 
   /* ---------------- grades & table headers ---------------- */
@@ -769,12 +769,12 @@ export const STRINGS = {
   /* ---------------- the disclaimer ---------------- */
   "disc.title": { en: "What this cannot see", bn: "এটা যা দেখতে পায় না" },
   "disc.body": {
-    en: "This is arithmetic on numbers you typed in. It cannot see a fraud, a related-party loan, a director selling quietly, a factory that has stopped running, a regulator's letter, or next week's news. It does not know whether the accounts are true. Every ratio here is backward-looking, and a share price is not. Nothing on this page is investment advice or a recommendation to buy or sell anything — it is a way of laying out the evidence so that you decide with the numbers in front of you instead of a tip from a Facebook group. If a figure here matters to a decision, check it against the audited annual report yourself.",
-    bn: "আপনি যে সংখ্যাগুলো বসিয়েছেন, এটা তার ওপর হিসাব মাত্র। এটা জালিয়াতি দেখতে পায় না, সম্পর্কিত পক্ষের ঋণ দেখে না, পরিচালকের চুপচাপ শেয়ার বেচা দেখে না, বন্ধ হয়ে যাওয়া কারখানা দেখে না, নিয়ন্ত্রকের চিঠি দেখে না, আগামী সপ্তাহের খবরও জানে না। হিসাবগুলো সত্যি কি না তা-ও জানে না। এখানকার প্রতিটা রেশিও অতীতমুখী, আর শেয়ারের দাম তা নয়। এই পাতার কোনো কিছুই বিনিয়োগ পরামর্শ নয়, কিছু কেনা বা বেচার সুপারিশও নয় — এটা শুধু প্রমাণগুলো সাজিয়ে রাখার একটা উপায়, যাতে ফেসবুক গ্রুপের টিপস নয়, সংখ্যা সামনে রেখে আপনি নিজে সিদ্ধান্ত নেন। এখানকার কোনো সংখ্যা যদি আপনার সিদ্ধান্তে গুরুত্বপূর্ণ হয়, নিরীক্ষিত বার্ষিক প্রতিবেদনে নিজে মিলিয়ে নিন।",
+    en: "This is arithmetic on numbers you typed in. It cannot see a fraud, a related-party loan, a director selling quietly, a factory that has stopped running, a regulator's letter, or next week's news. It does not know whether the accounts are true. Every ratio here is backward-looking, and a share price is not. Nothing on this page is investment advice or a recommendation to buy or sell anything; it is a way of laying out the evidence so that you decide with the numbers in front of you instead of a tip from a Facebook group. If a figure here matters to a decision, check it against the audited annual report yourself.",
+    bn: "আপনি যে সংখ্যাগুলো বসিয়েছেন, এটা তার ওপর হিসাব মাত্র। এটা জালিয়াতি দেখতে পায় না, সম্পর্কিত পক্ষের ঋণ দেখে না, পরিচালকের চুপচাপ শেয়ার বেচা দেখে না, বন্ধ হয়ে যাওয়া কারখানা দেখে না, নিয়ন্ত্রকের চিঠি দেখে না, আগামী সপ্তাহের খবরও জানে না। হিসাবগুলো সত্যি কি না তা-ও জানে না। এখানকার প্রতিটা রেশিও অতীতমুখী, আর শেয়ারের দাম তা নয়। এই পাতার কোনো কিছুই বিনিয়োগ পরামর্শ নয়, কিছু কেনা বা বেচার সুপারিশও নয়, এটা শুধু প্রমাণগুলো সাজিয়ে রাখার একটা উপায়, যাতে ফেসবুক গ্রুপের টিপস নয়, সংখ্যা সামনে রেখে আপনি নিজে সিদ্ধান্ত নেন। এখানকার কোনো সংখ্যা যদি আপনার সিদ্ধান্তে গুরুত্বপূর্ণ হয়, নিরীক্ষিত বার্ষিক প্রতিবেদনে নিজে মিলিয়ে নিন।",
   },
   "disc.units": {
     en: "Money figures are in lakh BDT and share counts in lakh shares, which is how DSE reports are written. Prices, EPS and dividends are plain BDT per share.",
-    bn: "টাকার অঙ্ক লাখ টাকায় আর শেয়ার সংখ্যা লাখ শেয়ারে — ডিএসই-র প্রতিবেদন এভাবেই লেখা হয়। দাম, ইপিএস আর লভ্যাংশ শেয়ারপ্রতি সাধারণ টাকায়।",
+    bn: "টাকার অঙ্ক লাখ টাকায় আর শেয়ার সংখ্যা লাখ শেয়ারে, ডিএসই-র প্রতিবেদন এভাবেই লেখা হয়। দাম, ইপিএস আর লভ্যাংশ শেয়ারপ্রতি সাধারণ টাকায়।",
   },
 };
 

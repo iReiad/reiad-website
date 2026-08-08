@@ -66,7 +66,7 @@ const bn = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮�
    ============================================================ */
 
 /* Theme AND audience, before first paint. Identical in every
-   page of the site — see the note in styles.css about why the
+   page of the site: see the note in styles.css about why the
    audience attribute has to land this early. */
 const PREPAINT = `  <script>
     (function () {
@@ -89,7 +89,7 @@ const HEAD_TAIL = `  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad · Insights" href="/feed.xml">
   <meta property="og:image" content="https://reiad.co.uk/og/learn.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -126,7 +126,7 @@ const HEADER = `  <a class="skip" href="#main">মূল লেখায় য�
 const FOOTER = `  <footer>
     <div class="wrap">
       <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
-      <p>এই সাইটের সবকিছু সাধারণ শিক্ষামূলক তথ্য — বিনিয়োগ পরামর্শ না। টাকা কোথাও রাখার আগে নিজে যাচাই করুন।</p>
+      <p>এই সাইটের সবকিছু সাধারণ শিক্ষামূলক তথ্য: বিনিয়োগ পরামর্শ না। টাকা কোথাও রাখার আগে নিজে যাচাই করুন।</p>
       <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
   </footer>
@@ -196,10 +196,10 @@ ${[cell(prev, "← আগের লেখা"), cell(next, "পরের লে�
 }
 
 const SOON_BODY = `
-<p class="soon-note">এই লেখাটা এখনো লেখা হয়নি — কিন্তু জায়গাটা রাখা আছে, যাতে আপনি জানেন কী আসছে
+<p class="soon-note">এই লেখাটা এখনো লেখা হয়নি, কিন্তু জায়গাটা রাখা আছে, যাতে আপনি জানেন কী আসছে
 এবং কোথায় ফিরে আসতে হবে।</p>
 <p>এই ধাপের যে লেখাগুলো তৈরি, সেগুলো ধাপের পাতায় চিহ্নিত করা আছে। আপাতত আগের ধাপগুলো
-পুরো করে নিতে পারেন — ক্রম মেনে এগোলে এই লেখাটা এলে অনেক সহজ লাগবে।</p>
+পুরো করে নিতে পারেন: ক্রম মেনে এগোলে এই লেখাটা এলে অনেক সহজ লাগবে।</p>
 `;
 
 function lessonPage(stage, lessons, index, bodies) {
@@ -214,7 +214,7 @@ function lessonPage(stage, lessons, index, bodies) {
   const art = icon(lesson.icon ?? stage.icon, "art lesson-art");
 
   return page({
-    title: `${lesson.bn} — ${stage.bn} — শেখার লাইব্রেরি — Rony Reiad`,
+    title: `${lesson.bn}: ${stage.bn}, শেখার লাইব্রেরি, Rony Reiad`,
     description: lesson.blurb,
     canonical: lesson.url,
     body: `
@@ -288,7 +288,7 @@ ${cards}
       : "";
 
   return page({
-    title: `${stage.kicker} · ${stage.bn} — শেখার লাইব্রেরি — Rony Reiad`,
+    title: `${stage.kicker} · ${stage.bn}, শেখার লাইব্রেরি, Rony Reiad`,
     description: stage.blurb,
     canonical: stageUrl(stage),
     body: `
@@ -318,10 +318,10 @@ ${[ladderCell(prev, "← আগের ধাপ"), ladderCell(next, "পরে�
       </nav>
 
       <p class="contents-footlink">
-        <a href="/learn/contents.html">সব বিষয় এক নজরে — পুরো সূচিপত্র →</a>
+        <a href="/learn/contents.html">সব বিষয় এক নজরে, পুরো সূচিপত্র →</a>
       </p>
 
-      <div class="note">এই লাইব্রেরির সবকিছু সাধারণ শিক্ষামূলক তথ্য — বিনিয়োগ পরামর্শ না।
+      <div class="note">এই লাইব্রেরির সবকিছু সাধারণ শিক্ষামূলক তথ্য: বিনিয়োগ পরামর্শ না।
       নিয়ম, হার আর ফি সময়ে সময়ে বদলায়; সিদ্ধান্তের আগে সংশ্লিষ্ট প্রতিষ্ঠানের সর্বশেষ তথ্য দেখে নিন।</div>
 `,
     extraScripts: `\n  <script type="module" src="/learn/stage.js"></script>`,
@@ -332,7 +332,7 @@ ${[ladderCell(prev, "← আগের ধাপ"), ladderCell(next, "পরে�
    the full contents page
 
    This used to be a section on the hub, where it was 39% of the
-   page on a laptop and 43% on a phone — the reader had to scroll
+   page on a laptop and 43% on a phone; the reader had to scroll
    past ninety lesson rows to reach the FAQ. A complete index is
    genuinely useful, but it is a reference, not something you read
    on the way somewhere. So it gets its own page, linked from the
@@ -409,7 +409,7 @@ ${sections}
       group
         .map((t) => `        <div class="g-row" data-lesson-id="${esc(t.id)}">
           <a class="term bn-h" href="${t.url}">${esc(t.bn)}</a>
-          <span class="en">${esc(t.en)} — ${esc(t.section.en)}</span>
+          <span class="en">${esc(t.en)}: ${esc(t.section.en)}</span>
         </div>`)
         .join("\n")
     )
@@ -426,15 +426,15 @@ ${sections}
   );
 
   return page({
-    title: "সব বিষয় এক নজরে — শেখার লাইব্রেরি — Rony Reiad",
+    title: "সব বিষয় এক নজরে, শেখার লাইব্রেরি, Rony Reiad",
     description:
-      "শেখার লাইব্রেরির প্রতিটা লেখা এক পাতায় — আট ধাপের পুরো তালিকা, আর ইংরেজি বর্ণানুক্রমে শব্দকোষ।",
+      "শেখার লাইব্রেরির প্রতিটা লেখা এক পাতায়: আট ধাপের পুরো তালিকা, আর ইংরেজি বর্ণানুক্রমে শব্দকোষ।",
     canonical: "/learn/contents.html",
     body: `
       <div class="hero">
         <span class="eyebrow mono">শেখার লাইব্রেরি · সূচিপত্র</span>
         <h1 class="bn-h">সব বিষয় এক নজরে</h1>
-        <p class="lede">লাইব্রেরির প্রতিটা লেখা, ধাপ অনুযায়ী সাজানো — মোট ${bn(totals.total)}টি,
+        <p class="lede">লাইব্রেরির প্রতিটা লেখা, ধাপ অনুযায়ী সাজানো: মোট ${bn(totals.total)}টি,
         যার ${bn(totals.live)}টি এখন পড়া যায়। যেটা পড়া হয়ে গেছে সেটায় টিক চিহ্ন;
         টিকগুলো আপনার নিজের ব্রাউজারে জমা থাকে, কোথাও পাঠানো হয় না।</p>
         <search>
@@ -451,7 +451,7 @@ ${stages}
       <section id="glossary-section">
         <span class="section-label mono">A–Z · শব্দকোষ</span>
         <p class="measure" style="color:var(--ink-soft);font-size:0.95rem">
-          ভিত্তি ধাপ ১-এর আঠারোটা শব্দ ইংরেজি বর্ণানুক্রমে — ইংরেজি নামটা জানা থাকলে এখান থেকেই দ্রুত খুঁজে নিন।
+          ভিত্তি ধাপ ১-এর আঠারোটা শব্দ ইংরেজি বর্ণানুক্রমে: ইংরেজি নামটা জানা থাকলে এখান থেকেই দ্রুত খুঁজে নিন।
         </p>
         <div class="az">${azNav}</div>
         <div class="glossary">
@@ -462,7 +462,7 @@ ${azRows}
       <div class="band">
         <span class="mono">ফিরে যান</span>
         <h2>ধাপে ধাপে পড়তে চান?</h2>
-        <p>সূচিপত্র রেফারেন্সের জন্য। শেখার সাজানো পথটা আছে শেখার লাইব্রেরির মূল পাতায় —
+        <p>সূচিপত্র রেফারেন্সের জন্য। শেখার সাজানো পথটা আছে শেখার লাইব্রেরির মূল পাতায়,
            হাতেখড়ি দিয়ে শুরু, তারপর এক ধাপ করে।</p>
         <div class="hero-actions">
           <a class="btn btn-solid" href="/learn/index.html">শেখার লাইব্রেরিতে যান →</a>
@@ -490,7 +490,7 @@ for (const stage of STAGES) {
   const dir = join(AAB, "learn", stage.slug);
   mkdirSync(dir, { recursive: true });
 
-  // Every stage gets a contents page — including the starter guide,
+  // Every stage gets a contents page, including the starter guide,
   // whose steps live on the hub. Its index simply points back there,
   // so /learn/start/ is never a dead URL.
   writeFileSync(join(dir, "index.html"), stageIndexPage(stage, lessons));

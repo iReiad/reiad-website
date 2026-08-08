@@ -74,7 +74,7 @@ export const UNIVARIATE = [
   {
     key: "sd", label: "Return volatility (monthly σ)", islamic: 0.0356, conventional: 0.0367,
     p: 0.8536, dp: 4, better: "lower",
-    note: "Standard deviation of monthly fund returns — total risk.",
+    note: "Standard deviation of monthly fund returns, total risk.",
   },
   {
     key: "beta", label: "CAPM beta", islamic: 0.9148, conventional: 0.9149,
@@ -89,7 +89,7 @@ export const UNIVARIATE = [
   {
     key: "alpha", label: "Jensen's alpha (monthly)", islamic: -0.0010, conventional: -0.0050,
     p: 0.3955, dp: 4, better: "higher",
-    note: "CAPM intercept — abnormal return after market risk (Jensen, 1968).",
+    note: "CAPM intercept: abnormal return after market risk (Jensen, 1968).",
   },
 ];
 
@@ -113,12 +113,12 @@ export const REGRESSIONS = {
     dfNum: 7, dfDen: 19569,
     coefs: [
       COEF("alpha", "Intercept (α)", -0.003790, 0.000509, -7.449, 9.81e-14, -0.004787, -0.002793),
-      COEF("mktrf", "MktRF — market", 0.918135, 0.005032, 182.445, 1e-300, 0.908271, 0.927999),
-      COEF("smb", "SMB — size", 0.000858, 0.000201, 4.278, 1.89e-5, 0.000465, 0.001252),
-      COEF("hml", "HML — value", -0.004285, 0.000215, -19.895, 3.29e-87, -0.004707, -0.003863),
-      COEF("rmw", "RMW — profitability", -0.002606, 0.000333, -7.823, 5.43e-15, -0.003258, -0.001953),
-      COEF("cma", "CMA — investment", -0.002125, 0.000338, -6.292, 3.19e-10, -0.002787, -0.001463),
-      COEF("mom", "MOM — momentum", 0.000270, 0.000121, 2.236, 0.0254, 0.000033, 0.000507),
+      COEF("mktrf", "MktRF: market", 0.918135, 0.005032, 182.445, 1e-300, 0.908271, 0.927999),
+      COEF("smb", "SMB: size", 0.000858, 0.000201, 4.278, 1.89e-5, 0.000465, 0.001252),
+      COEF("hml", "HML: value", -0.004285, 0.000215, -19.895, 3.29e-87, -0.004707, -0.003863),
+      COEF("rmw", "RMW: profitability", -0.002606, 0.000333, -7.823, 5.43e-15, -0.003258, -0.001953),
+      COEF("cma", "CMA: investment", -0.002125, 0.000338, -6.292, 3.19e-10, -0.002787, -0.001463),
+      COEF("mom", "MOM: momentum", 0.000270, 0.000121, 2.236, 0.0254, 0.000033, 0.000507),
       COEF("islamic", "Islamic dummy", 0.003901, 0.002804, 1.391, 0.164, -0.001596, 0.009397),
     ],
   },
@@ -127,17 +127,17 @@ export const REGRESSIONS = {
     label: "Islamic funds only",
     blurb:
       "The same specification on 264 fund-months from three funds. The fit is " +
-      "tighter — but three funds is three funds, and the standard errors say so.",
+      "tighter, but three funds is three funds, and the standard errors say so.",
     n: 264, r2: 0.8833, adjR2: 0.8806, rmse: 0.02609, f: 324.14, fp: 8.87e-117,
     dfNum: 6, dfDen: 257,
     coefs: [
       COEF("alpha", "Intercept (α)", -0.000222, 0.002517, -0.088, 0.9298, -0.005178, 0.004734),
-      COEF("mktrf", "MktRF — market", 0.917432, 0.024845, 36.926, 9.33e-105, 0.868506, 0.966359),
-      COEF("smb", "SMB — size", -0.001251, 0.000994, -1.258, 0.2095, -0.003209, 0.000707),
-      COEF("hml", "HML — value", -0.005328, 0.001065, -5.000, 1.06e-6, -0.007426, -0.003230),
-      COEF("rmw", "RMW — profitability", -0.002703, 0.001644, -1.644, 0.1014, -0.005941, 0.000535),
-      COEF("cma", "CMA — investment", -0.004324, 0.001670, -2.589, 0.0102, -0.007613, -0.001034),
-      COEF("mom", "MOM — momentum", 0.000076, 0.000597, 0.127, 0.8992, -0.001100, 0.001251),
+      COEF("mktrf", "MktRF: market", 0.917432, 0.024845, 36.926, 9.33e-105, 0.868506, 0.966359),
+      COEF("smb", "SMB: size", -0.001251, 0.000994, -1.258, 0.2095, -0.003209, 0.000707),
+      COEF("hml", "HML: value", -0.005328, 0.001065, -5.000, 1.06e-6, -0.007426, -0.003230),
+      COEF("rmw", "RMW: profitability", -0.002703, 0.001644, -1.644, 0.1014, -0.005941, 0.000535),
+      COEF("cma", "CMA: investment", -0.004324, 0.001670, -2.589, 0.0102, -0.007613, -0.001034),
+      COEF("mom", "MOM: momentum", 0.000076, 0.000597, 0.127, 0.8992, -0.001100, 0.001251),
     ],
   },
   conventional: {
@@ -150,12 +150,12 @@ export const REGRESSIONS = {
     dfNum: 6, dfDen: 19306,
     coefs: [
       COEF("alpha", "Intercept (α)", -0.003786, 0.000513, -7.378, 1.68e-13, -0.004791, -0.002780),
-      COEF("mktrf", "MktRF — market", 0.918144, 0.005089, 180.401, 1e-300, 0.908168, 0.928120),
-      COEF("smb", "SMB — size", 0.000888, 0.000203, 4.374, 1.23e-5, 0.000490, 0.001285),
-      COEF("hml", "HML — value", -0.004270, 0.000218, -19.606, 9.24e-85, -0.004697, -0.003844),
-      COEF("rmw", "RMW — profitability", -0.002604, 0.000337, -7.731, 1.12e-14, -0.003264, -0.001944),
-      COEF("cma", "CMA — investment", -0.002095, 0.000342, -6.133, 8.77e-10, -0.002764, -0.001425),
-      COEF("mom", "MOM — momentum", 0.000273, 0.000122, 2.233, 0.0256, 0.000033, 0.000513),
+      COEF("mktrf", "MktRF: market", 0.918144, 0.005089, 180.401, 1e-300, 0.908168, 0.928120),
+      COEF("smb", "SMB: size", 0.000888, 0.000203, 4.374, 1.23e-5, 0.000490, 0.001285),
+      COEF("hml", "HML: value", -0.004270, 0.000218, -19.606, 9.24e-85, -0.004697, -0.003844),
+      COEF("rmw", "RMW: profitability", -0.002604, 0.000337, -7.731, 1.12e-14, -0.003264, -0.001944),
+      COEF("cma", "CMA: investment", -0.002095, 0.000342, -6.133, 8.77e-10, -0.002764, -0.001425),
+      COEF("mom", "MOM: momentum", 0.000273, 0.000122, 2.233, 0.0256, 0.000033, 0.000513),
     ],
   },
 };
@@ -170,7 +170,7 @@ export const FACTORS = [
   { name: "smb", short: "SMB", full: "Small minus big",
     what: "Small companies' return minus large companies'. Positive loading = a tilt towards smaller firms." },
   { name: "hml", short: "HML", full: "High minus low book-to-market",
-    what: "Value stocks minus growth stocks. Negative loading = a growth tilt — which is what screening out leveraged financials produces." },
+    what: "Value stocks minus growth stocks. Negative loading = a growth tilt, which is what screening out leveraged financials produces." },
   { name: "rmw", short: "RMW", full: "Robust minus weak profitability",
     what: "Highly profitable firms minus weakly profitable ones (Fama & French, 2015)." },
   { name: "cma", short: "CMA", full: "Conservative minus aggressive investment",
@@ -180,7 +180,7 @@ export const FACTORS = [
   { name: "islamic", short: "Islamic", full: "Fund-type dummy",
     what: "1 for a Shariah-compliant fund, 0 otherwise. This coefficient is the answer to the research question." },
   { name: "alpha", short: "α", full: "Intercept",
-    what: "What is left after every factor exposure is paid for — the part a manager could claim as skill." },
+    what: "What is left after every factor exposure is paid for: the part a manager could claim as skill." },
 ];
 
 /* ------------------------------------------------------------
@@ -244,7 +244,7 @@ export const EVIDENCE = [
   { study: "Al Rahahleh & Bhatti", year: 2023, market: "Emerging", level: "Funds", focus: "Risk-adjusted",
     finding: "same", note: "No statistically significant overall performance difference." },
   { study: "Hasan", year: 2024, market: "Bangladesh", level: "Funds", focus: "Risk",
-    finding: "better", note: "Lower risk exposure in both univariate and panel settings — but only 2 Islamic funds against 27." },
+    finding: "better", note: "Lower risk exposure in both univariate and panel settings, but only 2 Islamic funds against 27." },
   { study: "This dissertation", year: 2025, market: "United Kingdom", level: "Funds", focus: "Risk",
     finding: "same", note: "No significant difference in volatility, beta, idiosyncratic risk or factor-adjusted return.", self: true },
 ];

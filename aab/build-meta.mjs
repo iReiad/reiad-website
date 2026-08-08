@@ -35,7 +35,7 @@ const now = new Date().toUTCString();
 const feed = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>${esc(SITE.name)} — Insights</title>
+    <title>${esc(SITE.name)} · Insights</title>
     <link>${SITE.origin}/insights.html</link>
     <atom:link href="${SITE.origin}/feed.xml" rel="self" type="application/rss+xml"/>
     <description>Explainers and analysis on Bangladesh and global finance, in English and Bangla.</description>
@@ -87,7 +87,7 @@ ${urls.map((u) => `  <url>
 `;
 
 /* ---------- robots.txt ---------- */
-const robots = `# ${SITE.name} — ${SITE.tagline}
+const robots = `# ${SITE.name}: ${SITE.tagline}
 User-agent: *
 Allow: /
 

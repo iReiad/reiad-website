@@ -41,7 +41,7 @@ function paintAll() {
   if (bar) {
     bar.querySelector(".track i").style.width = `${stats.pct}%`;
     bar.querySelector(".count").textContent = stats.done === 0
-      ? `${bn(stats.live)}টি লেখা — এখনো শুরু হয়নি`
+      ? `${bn(stats.live)}টি লেখা, এখনো শুরু হয়নি`
       : stats.complete
         ? `এই ধাপ শেষ ✓ ${bn(stats.done)}/${bn(stats.live)}`
         : `${bn(stats.done)}/${bn(stats.live)} পড়া হয়েছে`;
@@ -58,7 +58,7 @@ function paintAll() {
       button.textContent = "পরের ধাপে যান →";
     } else if (stats.started) {
       button.href = next.url;
-      button.textContent = `চালিয়ে যান — ${next.bn} →`;
+      button.textContent = `চালিয়ে যান: ${next.bn} →`;
     } else {
       button.href = next.url;
       button.textContent = "শুরু করুন →";

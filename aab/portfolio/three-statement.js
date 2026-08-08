@@ -198,8 +198,8 @@ const IS_ROWS = [
   ["EBITDA", "ebitda", { bold: true, rule: true }],
   ["Depreciation & amortisation", "da", { negate: true }],
   ["EBIT", "ebit", { rule: true }],
-  ["Interest — term debt", "interest", { negate: true }],
-  ["Interest — revolver", "revolverInterest", { negate: true }],
+  ["Interest: term debt", "interest", { negate: true }],
+  ["Interest: revolver", "revolverInterest", { negate: true }],
   ["Profit before tax", "ebt", { rule: true }],
   ["Tax", "tax", { negate: true }],
   ["Net income", "netIncome", { bold: true, rule: true }],
@@ -423,7 +423,7 @@ function render() {
     const peak = result.meta.peakRevolver;
     revolverNote.hidden = peak <= 0.5;
     revolverNote.textContent = peak > 0.5
-      ? `This plan needs the revolver: it peaks at ${lakh(peak)} lakh. Cash never falls below the ${lakh(a.minCash)} lakh minimum because the facility funds the gap — and the interest on it is charged back through the income statement.`
+      ? `This plan needs the revolver: it peaks at ${lakh(peak)} lakh. Cash never falls below the ${lakh(a.minCash)} lakh minimum because the facility funds the gap, and the interest on it is charged back through the income statement.`
       : "";
   }
 

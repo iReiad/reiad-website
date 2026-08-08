@@ -197,7 +197,7 @@ export const DRIVERS = [
     help: "Cash spent on plant. Adds to PP&E, and to depreciation from the next year." },
   { key: "depRate", label: "Depreciation rate", group: "Capital & depreciation",
     unit: "% of opening PP&E", min: 0.03, max: 0.20, step: 0.001,
-    help: "Charged on the opening net book value — a reducing-balance convention." },
+    help: "Charged on the opening net book value: a reducing-balance convention." },
 
   { key: "dso", label: "Receivable days", group: "Working capital",
     unit: "days", min: 20, max: 120, step: 1,
@@ -207,7 +207,7 @@ export const DRIVERS = [
     help: "How long stock sits before it is sold, on cost of sales." },
   { key: "dpo", label: "Payable days", group: "Working capital",
     unit: "days", min: 15, max: 120, step: 1,
-    help: "How long the company takes to pay suppliers. Stretching it is a cash source — up to a point." },
+    help: "How long the company takes to pay suppliers. Stretching it is a cash source, up to a point." },
 
   { key: "interestRate", label: "Interest rate on term debt", group: "Financing",
     unit: "%", min: 0.04, max: 0.22, step: 0.001,
@@ -426,8 +426,8 @@ const CSV_ROWS = [
   ["EBITDA", "ebitda"],
   ["Depreciation & amortisation", "da", true],
   ["EBIT", "ebit"],
-  ["Interest — term debt", "interest", true],
-  ["Interest — revolver", "revolverInterest", true],
+  ["Interest: term debt", "interest", true],
+  ["Interest: revolver", "revolverInterest", true],
   ["Profit before tax", "ebt"],
   ["Tax", "tax", true],
   ["Net income", "netIncome"],
@@ -466,7 +466,7 @@ export function toCsv(result, assumptions) {
     typeof v === "string" && /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
   const lines = [];
 
-  lines.push([`${COMPANY.name} — three-statement model`].map(esc).join(","));
+  lines.push([`${COMPANY.name}: three-statement model`].map(esc).join(","));
   lines.push([COMPANY.note].map(esc).join(","));
   lines.push([`All figures in ${COMPANY.unit}`].map(esc).join(","));
   lines.push("");
