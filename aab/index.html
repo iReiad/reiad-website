@@ -211,19 +211,26 @@
         </div>
 
         <!-- Latest market note -->
-        <div class="cell cell-note" data-for="learn">
-          <span class="tag mono">Latest note</span>
-          <h3>Sanchayapatra vs. bank FDR</h3>
-          <p>Where does a saver's taka work harder? Coming soon to the Learn hub.</p>
-          <a class="more" href="/insights.html">All insights →</a>
+        <div class="cell cell-note" data-for="learn" lang="bn">
+          <span class="tag mono">নতুন লেখা</span>
+          <h3 class="bn-h">সঞ্চয়পত্র বনাম ব্যাংক এফডিআর</h3>
+          <p>কর বাদ দিলে কোনটায় টাকা বেশি খাটে? হিসাবটা শেখার লাইব্রেরিতে আসছে।</p>
+          <a class="more" href="/insights.html">সব লেখা →</a>
         </div>
 
         <!-- Services teaser -->
         <div class="cell cell-services" data-for="work">
           <span class="tag mono">Services</span>
+          <!-- The model names are links now. They were plain text
+               sitting beside pages that let you open the actual
+               model and take it apart, which is the whole argument
+               for hiring anyone — and it was two clicks away. -->
           <div class="svc">
-            <span>Financial modeling — Excel, three-statement, DCF</span>
-            <span>Data analysis — Python / R for finance</span>
+            <span>Financial modeling — Excel,
+              <a href="/portfolio/three-statement.html">three-statement</a>,
+              <a href="/portfolio/dcf.html">DCF</a></span>
+            <span>Data analysis —
+              <a href="/portfolio/dsex.html">Python for finance</a></span>
             <span>Finance writing — English &amp; Bangla</span>
           </div>
           <a class="more" href="/portfolio.html">See portfolio →</a>
@@ -231,38 +238,94 @@
 
       </div>
 
-      <!-- ============ WHAT'S HERE ============ -->
-      <section data-for="learn">
-        <span class="section-label mono">Start here</span>
+      <!-- ============ THINGS YOU CAN OPEN ============
+           For the hiring half. A portfolio that says "I build
+           three-statement models" is a claim; one you can open,
+           edit and watch recalculate is evidence. These were
+           reachable only from /portfolio.html, which is one click
+           too far for the thing that does the persuading. -->
+      <section data-for="work">
+        <span class="section-label mono">Open one and take it apart</span>
+        <p class="measure section-intro">Every model below runs in the browser. Change an
+           assumption and watch the statements, the valuation or the charts move with it —
+           no download, no sign-up.</p>
         <div class="big-links">
-          <a class="big-link" href="/learn/index.html">
+          <a class="big-link" href="/portfolio/three-statement.html">
             <span class="num">01</span>
-            <span class="t">শেখার লাইব্রেরি — the words, in Bangla</span>
+            <span class="t">Three-statement model — a DSE-listed manufacturer</span>
             <span class="go">→</span>
-            <span class="d">Eighteen terms every Bangladeshi saver runs into — শেয়ার, সঞ্চয়পত্র,
-              এনএভি, চক্রবৃদ্ধি — each a two-minute read that links to the next.</span>
+            <span class="d">Linked income statement, balance sheet and cash flow with a
+              revolver and a scenario switch. The balance check is on the page, and it ties.</span>
+          </a>
+          <a class="big-link" href="/portfolio/dcf.html">
+            <span class="num">02</span>
+            <span class="t">DCF with two-way sensitivity tables</span>
+            <span class="go">→</span>
+            <span class="d">WACC built up from its parts rather than typed in, two terminal
+              value methods that quote each other back, and a grid where every cell is a
+              full revaluation.</span>
+          </a>
+          <a class="big-link" href="/portfolio/dsex.html">
+            <span class="num">03</span>
+            <span class="t">Index volatility &amp; drawdowns — Python</span>
+            <span class="go">→</span>
+            <span class="d">Rolling volatility, drawdown episodes with recovery times, fat
+              tails against a normal curve, and what holding periods actually do. Bring
+              your own CSV.</span>
+          </a>
+          <a class="big-link" href="/tools/stock.html">
+            <span class="num">04</span>
+            <span class="t">Stock check — a full screening framework</span>
+            <span class="go">→</span>
+            <span class="d">Thirty-eight ratios across six pillars, weighted by investor
+              style, with a separate ratio set for banks. Every score shows its own
+              working, in English or Bangla.</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- ============ WHAT'S HERE ============ -->
+      <!-- The learner's half of the home page, in Bangla.
+
+           It was written in English about Bangla content, which is
+           the wrong way round: someone who came here because the
+           explanations exist in their own language should not have
+           to read English to find them. The English half is
+           untouched — it is a page ordering, not a translation. -->
+      <section data-for="learn" lang="bn" class="learn-half">
+        <span class="section-label mono">এখান থেকে শুরু করুন</span>
+        <div class="big-links">
+          <a class="big-link" href="/learn/index.html" data-keep>
+            <span class="num">০১</span>
+            <span class="t bn-h">শেখার লাইব্রেরি — একদম শুরু থেকে</span>
+            <span class="go">→</span>
+            <span class="d">বিনিয়োগ কখনো করেননি? আটটা ধাপের হাতেখড়ি দিয়ে শুরু —
+              বিও অ্যাকাউন্ট খোলা থেকে প্রথম শেয়ার কেনা পর্যন্ত, কোন কাজটা আপনার
+              আর কোনটা অন্যরা করে দেবে, সব লেখা আছে। তারপর সাতটা ধাপ, শব্দ শেখা
+              থেকে গবেষণা পর্যন্ত।</span>
+          </a>
+          <a class="big-link" href="/tools/stock.html">
+            <span class="num">০২</span>
+            <span class="t bn-h">শেয়ার যাচাই — কিনবেন, ধরে রাখবেন, নাকি বেচবেন?</span>
+            <span class="go">→</span>
+            <span class="d">বার্ষিক প্রতিবেদনের সংখ্যা বসান, আর দেখুন ছত্রিশটার বেশি রেশিও
+              কী বলছে — দাম, ব্যবসার মান, ঋণ, লভ্যাংশ। ব্যাংকের জন্য আলাদা হিসাব।
+              পুরোটা বাংলায় পড়া যায়।</span>
           </a>
           <a class="big-link" href="/tools/index.html">
-            <span class="num">02</span>
-            <span class="t">Calculators — the five sums worth doing</span>
+            <span class="num">০৩</span>
+            <span class="t bn-h">ক্যালকুলেটর — যে পাঁচটা হিসাব আগে করা দরকার</span>
             <span class="go">→</span>
-            <span class="d">Compounding, sanchayapatra against FDR after tax, what inflation
-              really does, loan EMI, and how big a position your own risk rule allows.
-              Copy a link and the whole calculation goes with it.</span>
+            <span class="d">চক্রবৃদ্ধি, কর বাদ দিয়ে সঞ্চয়পত্র বনাম এফডিআর, মূল্যস্ফীতি আসলে
+              কী করে, কিস্তির হিসাব, আর নিজের ঝুঁকির নিয়মে কত টাকার শেয়ার কেনা যায়।
+              লিংক কপি করলে পুরো হিসাবটাই সঙ্গে যায়।</span>
           </a>
           <a class="big-link" href="/insights.html">
-            <span class="num">03</span>
-            <span class="t">Insights — the longer arguments</span>
+            <span class="num">০৪</span>
+            <span class="t bn-h">লেখালেখি — একটু লম্বা আলোচনা</span>
             <span class="go">→</span>
-            <span class="d">Explainers and analysis in English, plus an auto-updating pulse of
-              the market news that actually matters.</span>
-          </a>
-          <a class="big-link" href="/portfolio.html">
-            <span class="num">04</span>
-            <span class="t">Work with me — models, analysis, writing</span>
-            <span class="go">→</span>
-            <span class="d">Three-statement models and DCFs in Excel, Python/R analysis, and
-              finance writing in English or Bangla.</span>
+            <span class="d">বাজার নিয়ে ব্যাখ্যা আর বিশ্লেষণ, সঙ্গে যে খবরগুলো আসলে গুরুত্বপূর্ণ
+              তার নিয়মিত হালনাগাদ।</span>
           </a>
         </div>
       </section>

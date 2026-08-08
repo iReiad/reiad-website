@@ -106,26 +106,30 @@
            ============================================================ -->
       <section id="doors" class="no-filter">
         <span class="section-label mono">কোথা থেকে শুরু করবেন</span>
-        <div class="cards door-grid">
-          <a class="cell door" href="#starter">
+        <!-- Three small buttons rather than three big cards. They used
+             to be full-width cells, which pushed the starter guide —
+             the thing most first-time readers actually need — a whole
+             screen down. The choice is remembered, so a returning
+             reader can see which door they came through. -->
+        <div class="door-picker" id="door-picker" role="group"
+             aria-label="কোথা থেকে শুরু করবেন">
+          <button type="button" class="door-btn" data-door="new" data-target="starter"
+                  aria-pressed="false">
             <span class="door-art" data-icon="seed" aria-hidden="true"></span>
-            <h3 class="bn-h">আমি একদম নতুন</h3>
-            <p>বিনিয়োগ কখনো করিনি, শব্দগুলোও জানি না। কী করতে হবে ধাপে ধাপে বলুন।</p>
-            <span class="more">হাতেখড়ি থেকে শুরু →</span>
-          </a>
-          <a class="cell door" href="#ladder">
+            <span class="bn-h">আমি একদম নতুন</span>
+          </button>
+          <button type="button" class="door-btn" data-door="some" data-target="ladder"
+                  aria-pressed="false">
             <span class="door-art" data-icon="book" aria-hidden="true"></span>
-            <h3 class="bn-h">কিছুটা জানি</h3>
-            <p>টুকটাক শুনেছি, হয়তো বিও অ্যাকাউন্টও আছে। এখন গুছিয়ে শিখতে চাই।</p>
-            <span class="more">ধাপগুলো দেখুন →</span>
-          </a>
-          <a class="cell door" href="#contents">
+            <span class="bn-h">কিছুটা জানি</span>
+          </button>
+          <button type="button" class="door-btn" data-door="pro" data-target="contents-link"
+                  aria-pressed="false">
             <span class="door-art" data-icon="cap" aria-hidden="true"></span>
-            <h3 class="bn-h">ছাত্র বা পেশাদার</h3>
-            <p>পড়াশোনা, থিসিস বা চাকরির জন্য দরকার। নির্দিষ্ট বিষয় খুঁজছি।</p>
-            <span class="more">সব বিষয়ের তালিকা →</span>
-          </a>
+            <span class="bn-h">ছাত্র বা পেশাদার</span>
+          </button>
         </div>
+        <p class="door-hint measure" id="door-hint" hidden></p>
       </section>
 
       <!-- ============================================================
@@ -650,8 +654,9 @@
            ============================================================ -->
       <section id="ladder">
         <span class="section-label mono">পুরো পথটা · The whole ladder</span>
-        <p class="measure ladder-intro">আটটা ধাপ, সহজ থেকে কঠিন। যেখান থেকে খুশি শুরু করতে পারেন —
-        কিছুই বন্ধ করা নেই — তবে ক্রম মেনে গেলে প্রতিটা ধাপ আগেরটার ওপর দাঁড়ায়।</p>
+        <p class="measure ladder-intro">উপরের হাতেখড়ির পরের সাতটা ধাপ, সহজ থেকে কঠিন।
+        যেখান থেকে খুশি শুরু করতে পারেন — কিছুই বন্ধ করা নেই — তবে ক্রম মেনে গেলে প্রতিটা
+        ধাপ আগেরটার ওপর দাঁড়ায়।</p>
         <!-- built by hub.js from curriculum.js, so a stage renamed
              there is renamed here, in the menu and in the sitemap
              at the same time -->

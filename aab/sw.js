@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v11: a UI pass — the modal reader prefetches and retries, the
+   menu and palette were restructured, the home page gained a
+   Bangla half and a models section, and the learn hub's doors
+   became buttons. styles.css, app.js, content.js, learn.js,
+   hub.js and three precached pages all changed. check-sw.mjs
+   caught this one before it shipped, which is what it is for.
+
    v10: THE SAME MISTAKE AS v3, MADE AGAIN. The stock check shipped
    at v9 and was then fixed three times — the valuation cap, the
    header and slider repairs, and the pillar contributions — each
@@ -65,7 +72,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v10";
+const VERSION = "v11";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

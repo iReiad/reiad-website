@@ -20,7 +20,7 @@
 
 import {
   searchIndex, liveArticles, ARTICLES, formatDate, topics,
-  PAGES, TOOLS, STAGES, SITE,
+  PAGES, TOOLS, STAGES, SITE, SEARCH_GROUPS,
 } from "/content.js";
 import { countView, getArticles } from "/api.js";
 import { initCrumbs } from "/crumbs.js";
@@ -124,20 +124,27 @@ function initPalette() {
   const render = (query) => {
     // Everyone sees every result; the half they came for sorts first.
     // See audience.js for why that is a ranking and never a filter.
-    const results = INDEX.map((item) => ({
-      item,
-      s: score(item.title, query.trim()),
-    }))
+    const scored = INDEX.map((item) => ({ item, s: score(item.title, query.trim()) }))
       .filter((r) => r.s > 0)
       .map((r) => ({ ...r, s: r.s + audienceBoost(r.item) }))
-      .sort((a, b) => b.s - a.s)
-      .slice(0, 12)
-      .map((r) => r.item);
+      .sort((a, b) => b.s - a.s);
+
+    /* Grouped, not one flat run of twelve. The Learn area is 98 of
+       the 117 things in the index, so an ungrouped list was almost
+       always eight lessons, a stage and whatever else squeezed in —
+       and a reader looking for the Tools page could not see it for
+       the lessons. Each group gets a few slots and a heading, so
+       every kind of thing on the site stays reachable. */
+    const PER_GROUP = 4;
+    const groups = SEARCH_GROUPS
+      .map(([kind, label]) => [label, scored.filter((r) => r.item.kind === kind)
+        .slice(0, PER_GROUP).map((r) => r.item)])
+      .filter(([, items]) => items.length);
 
     active = 0;
     list.replaceChildren();
 
-    if (!results.length) {
+    if (!groups.length) {
       const li = document.createElement("li");
       li.className = "palette-empty";
       li.textContent = "No matches — try a different word.";
@@ -145,25 +152,35 @@ function initPalette() {
       return;
     }
 
-    results.forEach((item, i) => {
-      const li = document.createElement("li");
-      li.role = "option";
-      if (i === 0) li.className = "active";
-      const a = document.createElement("a");
-      a.href = item.url;
-      const t = document.createElement("span");
-      t.textContent = item.title;
-      const h = document.createElement("span");
-      h.className = "hint";
-      h.textContent = item.hint;
-      a.append(t, h);
-      li.append(a);
-      list.append(li);
-    });
+    let n = 0;
+    for (const [label, items] of groups) {
+      const head = document.createElement("li");
+      head.className = "palette-group mono";
+      head.textContent = label;
+      head.setAttribute("aria-hidden", "true");   // headings are not options
+      list.append(head);
+
+      for (const item of items) {
+        const li = document.createElement("li");
+        li.role = "option";
+        if (n === 0) li.className = "active";
+        n++;
+        const a = document.createElement("a");
+        a.href = item.url;
+        const t = document.createElement("span");
+        t.textContent = item.title;
+        const h = document.createElement("span");
+        h.className = "hint";
+        h.textContent = item.hint;
+        a.append(t, h);
+        li.append(a);
+        list.append(li);
+      }
+    }
   };
 
   const move = (delta) => {
-    const items = list.querySelectorAll("li:not(.palette-empty)");
+    const items = list.querySelectorAll("li:not(.palette-empty):not(.palette-group)");
     if (!items.length) return;
     items[active]?.classList.remove("active");
     active = (active + delta + items.length) % items.length;
@@ -239,16 +256,27 @@ function menuColumn(title, items, render) {
 function buildMenu() {
   const here = location.pathname.replace(/\/$/, "/index.html");
 
+  /* Titles only in the menu.
+
+     Every page carried its full blurb here, which turned the first
+     column into thirteen paragraphs — taller than the viewport, so
+     the last few pages were cut off entirely and the menu read as a
+     wall of text rather than a way to get somewhere. The blurbs
+     still do their job on the pages that list these properly; a
+     menu is for aiming, not for reading. */
   const pageLink = (p) => {
-    const a = el("a", { href: p.url },
-      el("strong", { textContent: p.title }),
-      p.blurb ? el("small", { textContent: p.blurb }) : null
-    );
+    const a = el("a", { href: p.url }, el("strong", { textContent: p.title }));
     if (p.url === here) a.setAttribute("aria-current", "page");
     return el("li", {}, a);
   };
 
-  const articles = liveArticles().slice(0, 4);
+  const visible = PAGES.filter((p) => !p.private);
+  const plainPages = visible.filter((p) => !p.group);
+  const caseStudies = visible.filter((p) => p.group === "case");
+  const learnPages = visible.filter((p) => p.group === "learn");
+  const toolPages = visible.filter((p) => p.group === "tool");
+
+  const articles = liveArticles().slice(0, 3);
 
   const dialog = el("dialog", { id: "site-menu", className: "menu" });
   dialog.setAttribute("aria-label", "Site menu");
@@ -262,45 +290,82 @@ function buildMenu() {
       })
     ),
     el("div", { className: "menu-grid" },
-      menuColumn("Pages", PAGES.filter((p) => !p.private), pageLink),
+      menuColumn("Pages", plainPages, pageLink),
 
-      menuColumn("Tools & calculators", TOOLS, (t) =>
-        el("li", {},
-          el("a", { href: `/tools/index.html#${t.id}` },
-            el("strong", { textContent: t.en }),
-            el("small", { className: "bn-h", textContent: t.bn })
+      el("div", { className: "menu-col" },
+        el("span", { className: "mono menu-col-title", textContent: "Tools & calculators" }),
+        el("ul", { className: "menu-list" },
+          ...TOOLS.map((t) =>
+            el("li", {},
+              el("a", { href: `/tools/index.html#${t.id}` },
+                el("strong", { textContent: t.en }),
+                el("small", { className: "bn-h", textContent: t.bn })
+              )
+            )
+          ),
+          // the advanced one has its own page, and is the reason
+          // anyone would open this column twice
+          ...toolPages.map((p) =>
+            el("li", { className: "menu-standout" },
+              el("a", { href: p.url }, el("strong", { textContent: p.title }))
+            )
           )
         )
       ),
 
       // The whole ladder, in order, so the menu shows how deep the
       // Learn area goes without anyone having to open it first.
-      menuColumn("শেখার লাইব্রেরি · Learn", STAGES, (s) =>
-        el("li", {},
-          el("a", {
-            href: s.inline ? "/learn/index.html#starter" : `/learn/${s.slug}/index.html`,
-          },
-            el("strong", { className: "bn-h", textContent: `${s.kicker} · ${s.bn}` }),
-            el("small", {
-              textContent: `${s.en}${s.status === "soon" ? " · আসছে" : ""}`,
-            })
+      el("div", { className: "menu-col" },
+        el("span", { className: "mono menu-col-title", textContent: "শেখার লাইব্রেরি · Learn" }),
+        el("ul", { className: "menu-list" },
+          ...STAGES.map((s) =>
+            el("li", {},
+              el("a", {
+                href: s.inline ? "/learn/index.html#starter" : `/learn/${s.slug}/index.html`,
+              },
+                el("strong", { className: "bn-h", textContent: `${s.kicker} · ${s.bn}` }),
+                el("small", {
+                  textContent: `${s.en}${s.status === "soon" ? " · আসছে" : ""}`,
+                })
+              )
+            )
+          ),
+          ...learnPages.map((p) =>
+            el("li", { className: "menu-standout" },
+              el("a", { href: p.url }, el("strong", { textContent: p.title }))
+            )
           )
         )
       ),
 
-      menuColumn(articles.length ? "Latest writing" : "Writing",
-        articles.length ? articles : [{ slug: "", title: "Nothing published yet", dek: "" }],
-        (a) =>
-          el("li", {},
-            el("a", { href: a.slug ? `/insights/${a.slug}.html` : "/insights.html" },
-              el("strong", { textContent: a.title }),
-              el("small", {
-                textContent: a.date
-                  ? `${formatDate(a.date, a.lang)} · ${a.minutes} min read`
-                  : a.dek,
-              })
+      /* The case studies and the newest writing share a column.
+         Both are "things to look at" rather than places to go, and
+         splitting them into two near-empty columns left the menu
+         looking unbalanced — thirteen items beside two. */
+      el("div", { className: "menu-col" },
+        el("span", { className: "mono menu-col-title", textContent: "Case studies" }),
+        el("ul", { className: "menu-list" }, ...caseStudies.map(pageLink)),
+        el("span", {
+          className: "mono menu-col-title menu-col-title-second",
+          textContent: articles.length ? "Latest writing" : "Writing",
+        }),
+        el("ul", { className: "menu-list" },
+          ...(articles.length
+            ? articles
+            : [{ slug: "", title: "Nothing published yet", dek: "" }]
+          ).map((a) =>
+            el("li", {},
+              el("a", { href: a.slug ? `/insights/${a.slug}.html` : "/insights.html" },
+                el("strong", { textContent: a.title }),
+                el("small", {
+                  textContent: a.date
+                    ? `${formatDate(a.date, a.lang)} · ${a.minutes} min read`
+                    : a.dek,
+                })
+              )
             )
           )
+        )
       )
     ),
     el("div", { className: "menu-foot" },
@@ -424,6 +489,32 @@ function initKinetic() {
 }
 
 /* ============================================================
+   3b. HEADER HEIGHT — one number the whole site scrolls by
+
+   The header is sticky, so every in-page jump has to clear it.
+   That clearance was a hard-coded 5rem, which is right on no
+   viewport in particular: the bar is 67px on a desktop and 61px on
+   a phone, and it changes again when the Bangla webfonts land and
+   reflow it. Measuring it once and publishing it as --header-h
+   lets scroll-padding-top be exact everywhere, and means a change
+   to the header's padding cannot silently break scrolling on a
+   page nobody thought to re-check.
+   ============================================================ */
+function initHeaderHeight() {
+  const header = document.querySelector("header");
+  if (!header) return;
+  const publish = () => {
+    const h = Math.round(header.getBoundingClientRect().height);
+    if (h > 0) root.style.setProperty("--header-h", `${h}px`);
+  };
+  publish();
+  // fonts reflow the bar; a resize changes which layout applies
+  document.fonts?.ready.then(publish).catch(() => {});
+  addEventListener("resize", publish, { passive: true });
+  if (typeof ResizeObserver === "function") new ResizeObserver(publish).observe(header);
+}
+
+/* ============================================================
    4. SPECULATION RULES — prerender on hover, instant on click
    ============================================================ */
 function initSpeculation() {
@@ -440,7 +531,11 @@ function initSpeculation() {
           and: [
             { href_matches: "/*" },
             { not: { href_matches: "/studio.html" } },
-            { not: { selector_matches: "[download], [data-no-prerender]" } },
+            /* a.term opens in the modal reader and never navigates,
+               so prerendering its target is a whole page built for
+               nothing. learn.js prefetches those instead, which is
+               what the modal's own fetch actually needs. */
+            { not: { selector_matches: "[download], [data-no-prerender], a.term" } },
           ],
         },
         eagerness: "moderate", // on hover / pointerdown
@@ -648,6 +743,7 @@ function initDynamic() {
 
 /* ---------- go ---------- */
 initTheme();
+initHeaderHeight();
 initAudience();
 initCrumbs();
 initPalette();

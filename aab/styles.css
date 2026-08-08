@@ -114,7 +114,14 @@
        scroll container — which `hidden` would, breaking the sticky header. */
     overflow-x: clip;
     scroll-behavior: smooth;
-    scroll-padding-top: 5rem;      /* sticky header clearance for #anchors */
+    /* Sticky-header clearance for every #anchor and every
+       scrollIntoView on the site. --header-h is measured at runtime
+       by app.js, because the header's height changes with the
+       viewport and again when the Bangla webfonts land; the 5rem
+       fallback covers the moment before that runs. The extra ~1rem
+       is the "little space" — a heading pinned flush against the
+       header bottom reads as clipped. */
+    scroll-padding-top: calc(var(--header-h, 5rem) + 0.9rem);
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
@@ -701,6 +708,16 @@
     & .hint { color: var(--ink-soft); font-size: 0.8rem; }
     & li.active a, & a:hover { background: var(--green-soft); color: var(--green); }
   }
+  /* Group headings inside the results list. Not options: the arrow
+     keys skip them and aria-hidden keeps them out of the listbox. */
+  .palette-group {
+    padding: 14px 18px 5px;
+    font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-soft);
+    border-top: 1px solid var(--hairline);
+  }
+  #palette-list > .palette-group:first-child { border-top: 0; padding-top: 8px; }
+
   .palette-empty { padding: 14px 18px; color: var(--ink-soft); font-size: 0.92rem; }
   .palette-foot {
     border-top: 1px solid var(--hairline);
@@ -751,6 +768,29 @@
     & .term-article h1 { font-size: 1.7rem; }
   }
   .reader-loading { padding-block: 30px; color: var(--ink-soft); }
+  .reader-loading .btn { padding: 5px 12px; font-size: 0.8rem; }
+
+  /* A shaped placeholder while a term page is on its way, so a slow
+     connection reads as loading rather than as a broken empty box. */
+  .reader-skeleton {
+    display: grid; gap: 14px; padding: 26px 0 10px;
+
+    & .sk {
+      display: block; border-radius: 6px;
+      background: linear-gradient(90deg,
+        var(--paper-sunk) 0%, var(--panel-hover) 50%, var(--paper-sunk) 100%);
+      background-size: 200% 100%;
+      animation: sk-sweep 1.3s linear infinite;
+    }
+    & .sk-kicker { width: 40%; height: 11px; }
+    & .sk-title { width: 68%; height: 30px; margin-bottom: 8px; }
+    & .sk-line { width: 100%; height: 13px; }
+    & .sk-line.short { width: 72%; }
+  }
+  @keyframes sk-sweep { to { background-position: -200% 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .reader-skeleton .sk { animation: none; }
+  }
 
   @media (width >= 700px) {
     #reader { align-items: center; padding: 4vh 20px; }
@@ -913,6 +953,12 @@
     align-content: start;
   }
 
+  .menu-col-title-second { margin-top: 26px; display: block; }
+  .menu-standout > a {
+    border-top: 1px solid var(--hairline); margin-top: 6px; padding-top: 12px;
+
+    & strong { color: var(--green); }
+  }
   .menu-col-title {
     color: var(--gold);
     border-bottom: 1px solid var(--hairline);
@@ -2307,6 +2353,13 @@
      also makes it obvious what each visitor actually sees. */
 
   /* here to learn: the four big "start here" links, then the writing */
+  /* The learner's half is written in Bangla, so it takes the
+     Bangla face — the rest of the page stays English. */
+  .learn-half { font-family: var(--font-bn); }
+  .learn-half .big-link .t { font-family: var(--font-bn-serif); }
+  .learn-half .num, .learn-half .section-label { font-family: var(--font-mono); }
+  .section-intro { color: var(--ink-soft); margin-block: 6px 20px; }
+
   :root[data-audience="learn"] .home-flow > [data-for="learn"]   { order: 1; }
   :root[data-audience="learn"] .home-flow > [data-for="work"]    { order: 2; }
   :root[data-audience="learn"] .home-flow > [data-for="both"]    { order: 3; }
@@ -2374,6 +2427,30 @@
   /* Two columns inside each door: the mark, then the words. Puts
      the icon beside the heading instead of on a line of its own,
      which is most of the height saving. */
+  /* ---------- the three doors, as a mini button row ---------- */
+  .door-picker {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-block: 4px 14px;
+  }
+  .door-btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 9px 16px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--hairline); background: var(--panel);
+    color: var(--ink); font-size: 0.92rem; font-family: var(--font-bn);
+    transition: border-color var(--fast) var(--ease),
+                background var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); }
+    &[aria-pressed="true"] {
+      border-color: var(--green); background: var(--green-soft); color: var(--green);
+    }
+    & .door-art { color: var(--gold); }
+    &[aria-pressed="true"] .door-art { color: var(--green); }
+  }
+  .door-hint {
+    color: var(--ink-soft); font-size: 0.92rem; margin-block: 0 6px;
+    padding-inline-start: 2px;
+  }
+
   .door {
     display: grid; gap: 4px 12px; align-content: start;
     grid-template-columns: auto 1fr;
@@ -2620,7 +2697,12 @@
 
   /* the auto-scroll aims at a rung's top edge — give it clearance
      under the sticky header instead of tucking it behind */
-  .rung, .step, #starter { scroll-margin-top: 5.5rem; }
+  /* No scroll-margin here. scroll-padding-top on :root already
+     reserves the header, and adding 5.5rem on top of it counted the
+     header twice: a rung landed 102px below the header bar instead
+     of the intended ~14px. Anything needing different clearance
+     should set scroll-margin RELATIVE to that, not repeat it. */
+  .rung, .step, #starter { scroll-margin-top: 0; }
 
   .rung-foot {
     display: flex; align-items: center; gap: 14px; flex-wrap: wrap;

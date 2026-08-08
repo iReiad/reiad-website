@@ -16,7 +16,10 @@
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readFileSync, writeFileSync } from "node:fs";
+import { globSync } from "node:fs";
 import { chromium } from "playwright";
+import { STAGES } from "./learn/curriculum.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, "og");
@@ -31,7 +34,73 @@ const CARDS = [
     sub: "Compounding · সঞ্চয়পত্র vs FDR · inflation · EMI · position sizing" },
   { file: "insights.png", eyebrow: "Insights", title: "Notes on markets, written to be understood.",
     sub: "Explainers, analysis, and an auto-updating pulse of what matters" },
+
+  /* Everything below used to share default.png. A link to the DCF
+     and a link to the contact form previewed identically, which
+     wastes the one thing a shared link gets to say for itself. */
+  { file: "stock.png", eyebrow: "Tools · advanced", title: "Should you buy, hold or sell this share?",
+    sub: "38 ratios · six pillars · a verdict that shows its own arithmetic · English or বাংলা" },
+  { file: "portfolio.png", eyebrow: "Portfolio & services", title: "Models you can open and take apart.",
+    sub: "Three-statement modelling · DCF · index analysis — live, in the browser" },
+  { file: "three-statement.png", eyebrow: "Case study · Financial modelling",
+    title: "A model whose balance sheet actually balances.",
+    sub: "Linked income statement, balance sheet and cash flow, with a revolver and a scenario switch" },
+  { file: "dcf.png", eyebrow: "Case study · Valuation",
+    title: "A DCF that shows its working.",
+    sub: "WACC built from its parts · two terminal value methods · a live sensitivity grid" },
+  { file: "dsex.png", eyebrow: "Case study · Data analysis",
+    title: "What volatility and drawdowns teach about holding periods.",
+    sub: "Rolling volatility · drawdown episodes · fat tails · bring your own CSV" },
+  { file: "contents.png", eyebrow: "সব বিষয় · Full contents", title: "প্রতিটা লেখা, এক পাতায়।",
+    sub: "আট ধাপের সবকিছু, সাথে ইংরেজি বর্ণানুক্রমে শব্দকোষ", bn: true },
+  { file: "about.png", eyebrow: "About", title: "Chittagong economics to Brighton risk management.",
+    sub: "Why this site exists, and who is writing it" },
+  { file: "contact.png", eyebrow: "Contact", title: "For recruiters, clients and readers.",
+    sub: "Financial modelling, analysis and writing — or just a question" },
+  { file: "colophon.png", eyebrow: "Colophon", title: "Every technical decision, written down.",
+    sub: "How this site is built, and why each choice was made" },
+
+  /* One per stage, so a shared lesson previews as the stage it
+     belongs to rather than as the whole library. Read from
+     curriculum.js, so a renamed stage renames its card too. */
+  ...STAGES.map((st) => ({
+    file: `stage-${st.slug}.png`,
+    eyebrow: `${st.kicker} · শেখার লাইব্রেরি`,
+    title: st.bn,
+    sub: (st.blurb ?? st.en ?? "").slice(0, 150),
+    bn: true,
+  })),
 ];
+
+/* ------------------------------------------------------------
+   Which page gets which card. First match wins, so the specific
+   routes come before the folder-wide ones. Kept here, next to the
+   cards themselves, so adding an image and pointing pages at it is
+   one edit rather than two that can drift apart.
+   ------------------------------------------------------------ */
+const ASSIGN = [
+  [/^tools\/stock\.html$/, "stock.png"],
+  [/^tools\//, "tools.png"],
+  [/^portfolio\/three-statement\.html$/, "three-statement.png"],
+  [/^portfolio\/dcf\.html$/, "dcf.png"],
+  [/^portfolio\/dsex\.html$/, "dsex.png"],
+  [/^portfolio\.html$/, "portfolio.png"],
+  [/^learn\/contents\.html$/, "contents.png"],
+  [/^learn\/index\.html$/, "learn.png"],
+  ...STAGES.map((st) => [
+    st.slug === "basics-1"
+      ? /^learn\/(basics-1|terms)\//
+      : new RegExp(`^learn\\/${st.slug}\\/`),
+    `stage-${st.slug}.png`,
+  ]),
+  [/^learn\//, "learn.png"],
+  [/^insights/, "insights.png"],
+  [/^about\.html$/, "about.png"],
+  [/^contact\.html$/, "contact.png"],
+  [/^colophon\.html$/, "colophon.png"],
+];
+
+const cardFor = (rel) => (ASSIGN.find(([re]) => re.test(rel)) ?? [])[1] ?? "default.png";
 
 const page = (card) => `<!doctype html><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Bengali:wght@600&family=Noto+Sans+Bengali:wght@400&display=swap" rel="stylesheet">
@@ -98,7 +167,11 @@ const page = (card) => `<!doctype html><meta charset="utf-8">
   <span class="url">reiad.co.uk</span>
 </div>`;
 
-const browser = await chromium.launch();
+/* The sandbox ships a full Chromium at PLAYWRIGHT_BROWSERS_PATH but
+   no headless-shell build, which is what launch() reaches for by
+   default. Point it at the binary that is actually there. */
+const browser = await chromium.launch(
+  process.env.PW_CHROMIUM ? { executablePath: process.env.PW_CHROMIUM } : {});
 const context = await browser.newContext({
   viewport: { width: 1200, height: 630 },
   deviceScaleFactor: 1,
@@ -113,3 +186,55 @@ for (const card of CARDS) {
 }
 
 await browser.close();
+
+/* ------------------------------------------------------------
+   Point every page at its card.
+   ------------------------------------------------------------ */
+const files = globSync("**/*.html", { cwd: HERE })
+  .filter((f) => !f.startsWith("og/") && f !== "offline.html");
+
+/* Pages that are nobody's business to share. */
+const PRIVATE = new Set(["studio.html", "offline.html", "insights/_template.html"]);
+
+const esc = (t) => t.replace(/&/g, "&amp;").replace(/"/g, "&quot;")
+  .replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+let pointed = 0;
+let added = 0;
+for (const rel of files) {
+  if (PRIVATE.has(rel)) continue;
+  const abs = join(HERE, rel);
+  const html = readFileSync(abs, "utf8");
+  const want = `https://reiad.co.uk/og/${cardFor(rel)}`;
+
+  if (html.includes('property="og:image"')) {
+    const next = html.replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${want}$2`);
+    if (next !== html) { writeFileSync(abs, next); pointed++; }
+    continue;
+  }
+
+  /* No card at all. Every term page was in this state — eighteen of
+     the most linkable pages on the site previewing as a bare URL.
+     Build the whole block from what the page already declares, so
+     the preview says the same thing as the page. */
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1]?.trim() ?? "Rony Reiad";
+  const desc = html.match(/<meta name="description" content="([^"]*)"/)?.[1]?.trim() ?? "";
+  const canonical = html.match(/<link rel="canonical" href="([^"]*)"/)?.[1]
+    ?? `https://reiad.co.uk/${rel}`;
+
+  const block = [
+    `  <meta property="og:type" content="article">`,
+    `  <meta property="og:title" content="${esc(title)}">`,
+    desc ? `  <meta property="og:description" content="${esc(desc)}">` : null,
+    `  <meta property="og:url" content="${esc(canonical)}">`,
+    `  <meta property="og:image" content="${want}">`,
+    `  <meta property="og:image:width" content="1200">`,
+    `  <meta property="og:image:height" content="630">`,
+    `  <meta property="og:site_name" content="Rony Reiad">`,
+    `  <meta name="twitter:card" content="summary_large_image">`,
+  ].filter(Boolean).join("\n");
+
+  const next = html.replace("</head>", `${block}\n</head>`);
+  if (next !== html) { writeFileSync(abs, next); added++; }
+}
+console.log(`\n${pointed} page(s) repointed, ${added} given a share card for the first time (${files.length} scanned)`);
