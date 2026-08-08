@@ -31,6 +31,19 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v10: THE SAME MISTAKE AS v3, MADE AGAIN. The stock check shipped
+   at v9 and was then fixed three times — the valuation cap, the
+   header and slider repairs, and the pillar contributions — each
+   touching precached files, and VERSION was not bumped once. Every
+   returning visitor kept being served the v9 copies and could not
+   see any of it. The reader who reported it was quoting text from
+   a string table two commits old.
+
+   The structural fix is below in the fetch handler: the runtime
+   cache is now consulted BEFORE the shell, so a background refresh
+   actually takes effect. A missed bump now costs one stale load
+   instead of freezing a file forever. check-sw.mjs guards the rest.
+
    v9: the stock check landed — a new page under /tools/ with its
    own engine, string table and stylesheet block, plus a changed
    crumbs.js. styles.css changed too, and a cached v8 copy would
@@ -52,7 +65,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v9";
+const VERSION = "v10";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -142,19 +155,34 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // everything else: serve what we have, refresh in the background
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(RUNTIME).then((c) => c.put(request, copy));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached ?? network;
-    })
-  );
+  /* Everything else: serve what we have, refresh in the background.
+
+     RUNTIME IS CHECKED FIRST, AND THAT ORDER IS THE WHOLE POINT.
+     A bare caches.match(request) searches every cache in creation
+     order, so the precached SHELL copy answers ahead of anything
+     the background refresh has written — which means a precached
+     file is frozen at whatever VERSION last installed it, and the
+     revalidate half of stale-while-revalidate never reaches the
+     reader. That is not a theory: styles.css and three stock check
+     modules were pinned at v9 through three separate fixes.
+
+     Looking in RUNTIME first makes the refresh mean something. The
+     shell remains the fallback, which is all it was ever for: the
+     first visit, and offline. */
+  event.respondWith((async () => {
+    const cached = (await caches.match(request, { cacheName: RUNTIME }))
+      ?? (await caches.match(request, { cacheName: SHELL }));
+
+    const network = fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(RUNTIME).then((c) => c.put(request, copy));
+        }
+        return response;
+      })
+      .catch(() => cached);
+
+    return cached ?? network;
+  })());
 });

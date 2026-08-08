@@ -1,0 +1,30 @@
+{
+  "version": "v10",
+  "hashes": {
+    "/": "d7e37a5bfca50277",
+    "/index.html": "d7e37a5bfca50277",
+    "/offline.html": "8b349a5caa59e94a",
+    "/styles.css": "7b7c4fdda8c6438f",
+    "/app.js": "5e9f6b0bc4366365",
+    "/content.js": "f501f29c6d0ac5ea",
+    "/api.js": "0f53f38170635ed4",
+    "/crumbs.js": "c75e1a21a2dce455",
+    "/audience.js": "1fdba1b1c95468cb",
+    "/activation.js": "a8cbc5e6da2ca2a2",
+    "/learn/index.html": "dcb5730166ffd9c5",
+    "/learn/learn.js": "f1b0e91d55f3e3b3",
+    "/learn/hub.js": "f10c19ca92ceb989",
+    "/learn/curriculum.js": "cfeed622bc89ffc1",
+    "/learn/progress.js": "054b2e0da8b3d6d2",
+    "/learn/icons.js": "e55f7837d440257f",
+    "/learn/contents.html": "e22e110d979ca4b2",
+    "/learn/contents.js": "8781f85dc4795cd1",
+    "/tools/index.html": "78f6a3b8740a4081",
+    "/tools/stock.html": "fd476a99a6ce8133",
+    "/tools/stock.js": "7e0cb9ce8faae322",
+    "/tools/stock.model.js": "7f9f4ce3ab96c6c6",
+    "/tools/stock.i18n.js": "f5877fa7bb5161ae",
+    "/insights.html": "855e5c3d6a11081d",
+    "/favicon.ico": "296539578a1f25f8"
+  }
+}
