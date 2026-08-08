@@ -165,10 +165,10 @@ function escapeHtml(s) {
 }
 
 /* ============================================================
-   2. PHOTOS — resize, re-encode, embed
+   2. PHOTOS (resize, re-encode, embed
    ============================================================ */
 
-const MAX_EDGE = 1600;      // px on the long side — plenty for a blog
+const MAX_EDGE = 1600;      // px on the long side) plenty for a blog
 const QUALITY = 0.82;
 
 /** File/Blob → a WebP data URL, downscaled and stripped of EXIF. */
@@ -202,7 +202,7 @@ function blobToDataURL(blob) {
 
 /** Build the <figure> we insert into the editor. */
 function figureHtml({ url, width, height }, alt = "") {
-  return `<figure><img src="${url}" alt="${escapeHtml(alt)}" width="${width}" height="${height}" loading="lazy" decoding="async"><figcaption>Caption — click to edit, or delete this line</figcaption></figure><p><br></p>`;
+  return `<figure><img src="${url}" alt="${escapeHtml(alt)}" width="${width}" height="${height}" loading="lazy" decoding="async"><figcaption>Caption: click to edit, or delete this line</figcaption></figure><p><br></p>`;
 }
 
 async function insertImages(files) {
@@ -214,7 +214,7 @@ async function insertImages(files) {
       const img = await processImage(file);
       insertHtmlAtCaret(figureHtml(img, file.name.replace(/\.[a-z0-9]+$/i, "")));
     } catch {
-      toast("That photo couldn't be read — try a JPG or PNG.");
+      toast("That photo couldn't be read, try a JPG or PNG.");
     }
   }
   onEdit();
@@ -280,7 +280,7 @@ editor.addEventListener("drop", (e) => {
 // caption fields shouldn't inherit the caption text when you type
 editor.addEventListener("focusin", (e) => {
   const cap = e.target.closest?.("figcaption");
-  if (cap && cap.textContent.startsWith("Caption — click to edit")) {
+  if (cap && cap.textContent.startsWith("Caption: click to edit")) {
     getSelection().selectAllChildren(cap);
   }
 });
@@ -338,7 +338,7 @@ function readingStats(html) {
   return { words, photos, minutes: Math.max(1, Math.round(words / 200)) };
 }
 
-const CAPTION_HINT = "Caption — click to edit";
+const CAPTION_HINT = "Caption: click to edit";
 
 /** Captions the writer never touched shouldn't ship. */
 function dropUntouchedCaptions(html) {
@@ -391,7 +391,7 @@ function buildPage(m) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(m.title)} — Rony Reiad</title>
+  <title>${escapeHtml(m.title)} · Rony Reiad</title>
   <meta name="description" content="${escapeHtml(m.dek)}">
   <link rel="canonical" href="https://reiad.co.uk/insights/${m.slug}.html">
 
@@ -467,7 +467,7 @@ ${indent(m.body, 6)}
 
       <div class="note">
         This piece is general education, not investment advice. Rules, rates and
-        fees change — confirm the current details with the relevant institution
+        fees change, confirm the current details with the relevant institution
         before acting on anything here.
       </div>
 
@@ -478,7 +478,7 @@ ${indent(m.body, 6)}
         </a>
         <a href="/learn/index.html">
           <span class="mono">শেখার লাইব্রেরি</span>
-          <strong>Learn hub — বাংলায় →</strong>
+          <strong>Learn hub: বাংলায় →</strong>
         </a>
       </div>
 
@@ -576,7 +576,7 @@ $("#btn-html").addEventListener("click", () => {
   const m = meta();
   if (!guard(m)) return;
   download(`${m.slug}.html`, buildPage(m));
-  toast(`Saved ${m.slug}.html — drop it in /insights/`);
+  toast(`Saved ${m.slug}.html: drop it in /insights/`);
 });
 
 $("#btn-zip").addEventListener("click", async () => {
@@ -588,7 +588,7 @@ $("#btn-zip").addEventListener("click", async () => {
     ...files,
   ]);
   download(`${m.slug}.zip`, new Blob([zip], { type: "application/zip" }));
-  toast(`Saved ${m.slug}.zip — ${files.length} photo file(s) inside`);
+  toast(`Saved ${m.slug}.zip: ${files.length} photo file(s) inside`);
 });
 
 $("#btn-copy-html").addEventListener("click", () => {
@@ -846,13 +846,13 @@ export function enableDynamic() {
       });
 
       if (result?.ok) {
-        toast(`Published — /insights/${m.slug}.html`);
+        toast(`Published: /insights/${m.slug}.html`);
         await clearDraft();
         document.getElementById("dashboard-section").hidden = false;
         mountDashboard(document.getElementById("dashboard"));
       } else {
         toast(result?.reason === "unauthorised"
-          ? "Session expired — reload and sign in again."
+          ? "Session expired: reload and sign in again."
           : "Couldn't publish. Download the file as a fallback.");
       }
     } finally {

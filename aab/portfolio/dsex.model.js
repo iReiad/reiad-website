@@ -455,7 +455,7 @@ function normal(next) {
 export const SIM = {
   name: "Simulated frontier equity index",
   short: "SIM-IDX",
-  note: "A simulated series with DSEX-like statistical behaviour — volatility clustering, fat tails and multi-year drawdowns. It is NOT the Dhaka Stock Exchange's index history and is not presented as such. Load a CSV of real prices to run the same analysis on actual data.",
+  note: "A simulated series with DSEX-like statistical behaviour, volatility clustering, fat tails and multi-year drawdowns. It is NOT the Dhaka Stock Exchange's index history and is not presented as such. Load a CSV of real prices to run the same analysis on actual data.",
   seed: 424242,
   startDate: "2011-01-02",
   startLevel: 4200,

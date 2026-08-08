@@ -37,7 +37,7 @@ function screen({ mode, server }) {
       <span class="lock" aria-hidden="true">${setup ? "✦" : "⌘"}</span>
       <h1>${setup ? "Set up Studio access" : "Is this you?"}</h1>
       <p>${setup
-        ? "Nobody has claimed this Studio yet. Choose a passphrase — it's hashed in this browser, and only the result ever leaves it."
+        ? "Nobody has claimed this Studio yet. Choose a passphrase: it's hashed in this browser, and only the result ever leaves it."
         : "The Article Studio is private. Sign in to write, publish and read what the site has collected."}</p>
 
       <form id="gate-form" autocomplete="on">
@@ -58,10 +58,10 @@ function screen({ mode, server }) {
       <p class="gate-msg mono" id="gate-msg" role="status" aria-live="polite"></p>
 
       <p class="gate-fine">${server
-        ? "Your passphrase is stretched here — PBKDF2-SHA256, 210,000 iterations — and "
+        ? "Your passphrase is stretched here (PBKDF2-SHA256, 210,000 iterations), and "
           + "never sent. The server checks the result, and the session is an HttpOnly "
           + "cookie this page cannot read. Wrong guesses are rate-limited."
-        : "The database isn't connected yet, so this check is running in your browser — "
+        : "The database isn't connected yet, so this check is running in your browser: "
           + "it keeps the Studio away from passers-by, but it is not a vault. Connect D1 "
           + "(see wrangler.toml) and this becomes a real server-side login."}</p>
     </div>`;
@@ -146,7 +146,7 @@ export function requireOwner(protectedRoot) {
           // The 210,000 PBKDF2 iterations happen here, in the browser.
           // The server only ever sees the derived key, because deriving
           // it there costs about 30ms of CPU and a Worker on the free
-          // plan is killed at 10ms — which is what "couldn't reach the
+          // plan is killed at 10ms, which is what "couldn't reach the
           // server" used to mean.
           const p = await auth.params();
           if (!p?.ok) {
@@ -174,8 +174,8 @@ export function requireOwner(protectedRoot) {
             "password-too-short": "Twelve characters minimum.",
             "weak-iterations": "Twelve characters minimum.",
             "bad-password": "Not quite. Try again.",
-            "too-many-attempts": "Too many tries — wait a few minutes.",
-            "already-configured": "Already set up — sign in instead.",
+            "too-many-attempts": "Too many tries: wait a few minutes.",
+            "already-configured": "Already set up: sign in instead.",
             "server-error": "The server errored on that. Try again in a moment.",
           }[reason] ?? "Couldn't reach the server.", "err");
           if (reason === "already-configured") setTimeout(() => location.reload(), 1200);

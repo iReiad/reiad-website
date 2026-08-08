@@ -67,7 +67,7 @@ function reactionBlock(slug, counts) {
     el("span", { className: "mono section-label", textContent: "Was this any use?" }),
     row,
     el("p", { className: "muted", style: "font-size:0.84rem;margin-top:10px" },
-      "Anonymous — it records a number and nothing about you.")
+      "Anonymous: it records a number and nothing about you.")
   );
 }
 
@@ -102,7 +102,7 @@ function askBox(slug) {
       el("span", { textContent: "Your question" }),
       el("textarea", {
         name: "body", rows: 3, required: true,
-        placeholder: "Ask about anything in this piece — if it's a good question it usually means the writing wasn't clear enough.",
+        placeholder: "Ask about anything in this piece, if it's a good question it usually means the writing wasn't clear enough.",
       })
     ),
     el("div", { className: "field-row" },
@@ -112,7 +112,7 @@ function askBox(slug) {
       ),
       el("label", {},
         el("span", { textContent: "Email (optional)" }),
-        el("input", { type: "email", name: "email", placeholder: "Only so I can reply — never shown" })
+        el("input", { type: "email", name: "email", placeholder: "Only so I can reply: never shown" })
       )
     ),
     // Honeypot: invisible to people, irresistible to bots.
@@ -140,7 +140,7 @@ function askBox(slug) {
       form.replaceChildren(
         el("p", { className: "verdict" },
           "Got it. I read every one of these. If it's a question other people will "
-          + "have, the answer appears on this page — otherwise you'll get an email, "
+          + "have, the answer appears on this page: otherwise you'll get an email, "
           + "if you left one.")
       );
     } else {

@@ -65,7 +65,7 @@ function initFilter() {
     if (readout) {
       readout.hidden = !q;
       readout.textContent = q
-        ? hits ? `${bn(hits)}টি মিল পাওয়া গেছে` : "কিছু পাওয়া যায়নি — অন্য শব্দে চেষ্টা করুন"
+        ? hits ? `${bn(hits)}টি মিল পাওয়া গেছে` : "কিছু পাওয়া যায়নি: অন্য শব্দে চেষ্টা করুন"
         : "";
     }
   };

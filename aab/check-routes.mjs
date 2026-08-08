@@ -110,7 +110,7 @@ for (const url of [...targets].sort()) {
 
 console.log(
   failures
-    ? `\n${failures} broken route(s) — fix before deploying.`
+    ? `\n${failures} broken route(s): fix before deploying.`
     : `${targets.size} routes checked, all resolve.`
 );
 process.exit(failures ? 1 : 0);

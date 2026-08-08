@@ -125,13 +125,13 @@ export const DEFAULTS = {
 export const DRIVERS = [
   { key: "riskFree", label: "Risk-free rate", group: "Cost of equity",
     unit: "%", min: 0.02, max: 0.16, step: 0.001,
-    help: "Long-dated Bangladesh government yield — the return for taking no equity risk." },
+    help: "Long-dated Bangladesh government yield: the return for taking no equity risk." },
   { key: "erp", label: "Equity risk premium", group: "Cost of equity",
     unit: "%", min: 0.02, max: 0.12, step: 0.001,
     help: "What equities must pay above the risk-free rate in a mature market." },
   { key: "crp", label: "Country risk premium", group: "Cost of equity",
     unit: "%", min: 0, max: 0.10, step: 0.001,
-    help: "Leave at zero when the risk-free above is a BDT government yield — that yield already prices Bangladesh risk, and adding a premium on top counts it twice. Use it only when building from a US risk-free rate." },
+    help: "Leave at zero when the risk-free above is a BDT government yield, that yield already prices Bangladesh risk, and adding a premium on top counts it twice. Use it only when building from a US risk-free rate." },
   { key: "beta", label: "Beta", group: "Cost of equity",
     unit: "×", min: 0.4, max: 2.0, step: 0.01,
     help: "How much this share moves relative to the market. Above 1 means more." },
@@ -141,7 +141,7 @@ export const DRIVERS = [
     help: "Pre-tax borrowing rate. The tax shield is applied inside the WACC." },
   { key: "debtWeight", label: "Debt weight", group: "Capital structure",
     unit: "% of capital", min: 0, max: 0.75, step: 0.01,
-    help: "Target capital structure — what the company is financed with over the long run, not necessarily today." },
+    help: "Target capital structure: what the company is financed with over the long run, not necessarily today." },
   { key: "taxRate", label: "Tax rate", group: "Capital structure",
     unit: "%", min: 0, max: 0.45, step: 0.005,
     help: "Used both to unlever the cash flows and to tax-shield the cost of debt." },
@@ -368,7 +368,7 @@ export function toCsv(a) {
     typeof s === "string" && /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   const L = [];
 
-  L.push([`${COMPANY.name} — discounted cash flow`].map(esc).join(","));
+  L.push([`${COMPANY.name}: discounted cash flow`].map(esc).join(","));
   L.push([COMPANY.note].map(esc).join(","));
   L.push([EQUITY.note].map(esc).join(","));
   L.push([`All figures in ${COMPANY.unit} unless marked per share`].map(esc).join(","));
@@ -419,7 +419,7 @@ export function toCsv(a) {
   L.push("");
 
   const axisName = grid.axis === "terminalGrowth" ? "Terminal growth" : "Exit EV/EBITDA";
-  L.push([`SENSITIVITY — value per share (BDT): WACC vs ${axisName}`].map(esc).join(","));
+  L.push([`SENSITIVITY: value per share (BDT): WACC vs ${axisName}`].map(esc).join(","));
   L.push(["WACC \\ " + axisName, ...grid.cols.map((c) =>
     grid.axis === "terminalGrowth" ? `${(c * 100).toFixed(1)}%` : `${c.toFixed(1)}x`)]
     .map(esc).join(","));

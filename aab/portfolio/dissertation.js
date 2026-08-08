@@ -150,7 +150,7 @@ function drawIndices(host, { rebased }) {
     note.textContent =
       `Over the same 91 months the FTSE 100 returned ${stat(UKX)}. ` +
       `The Islamic index returned ${stat(MIGB)}. ` +
-      `Both are the benchmark environment the funds were operating in — not the funds themselves.`;
+      `Both are the benchmark environment the funds were operating in, not the funds themselves.`;
   }
 }
 
@@ -390,7 +390,7 @@ function drawForest(host, { spec, alpha, tView }) {
         ? "The Islamic dummy is not one of them, and it is the one the study was built to test."
         : spec === "islamic"
           ? "With 264 observations the intervals are wide enough that most factors cannot be pinned down at all."
-          : "With 19,313 observations almost everything reaches significance — which is a statement about sample size as much as about economics.");
+          : "With 19,313 observations almost everything reaches significance, which is a statement about sample size as much as about economics.");
   }
 }
 
@@ -506,7 +506,7 @@ function drawDrawdown(host, { showDiff }) {
       `The deepest point on the conventional average is ${pc(worstC)}; on the Islamic average, ${pc(worstI)}. ` +
       `Across the ${shownMonths} months where both series exist, the Islamic average sits closer to its peak ` +
       `in ${iBetter} of them (${pc(iBetter / shownMonths, 0)}). ` +
-      `These are group averages, so they smooth away exactly the fund-level dispersion the t-test needs — ` +
+      `These are group averages, so they smooth away exactly the fund-level dispersion the t-test needs, ` +
       `which is why the picture looks more decisive than the statistics are.`;
   }
 }
@@ -572,7 +572,7 @@ function drawVolStrip(host, { logScale }) {
   if (note) {
     note.textContent =
       `Median ${pc(b.med, 2)}, interquartile range ${pc(b.q1, 2)} to ${pc(b.q3, 2)}, ` +
-      `and ${b.outliers.length} funds beyond the 1.5×IQR fence — the furthest at ${pc(b.max, 1)} a month. ` +
+      `and ${b.outliers.length} funds beyond the 1.5×IQR fence: the furthest at ${pc(b.max, 1)} a month. ` +
       `Both group means land in the crowd near ${pc(0.036, 1)}. ` +
       `A single fund at ${pc(b.max, 1)} monthly volatility is not an equity fund behaving badly; ` +
       `it is a NAV series with a discontinuity in it, and it is the same fund that carries ` +
@@ -751,7 +751,7 @@ function renderPower() {
       `spread of ${(sd * 100).toFixed(0)} percentage points in maximum drawdown, the smallest difference this ` +
       `design could have found four times in five is ${(mde * 100).toFixed(1)} percentage points. ` +
       `The difference it actually observed was ${(observed * 100).toFixed(1)}. ` +
-      `The chance of catching a real gap that size was ${(pw * 100).toFixed(0)}% — ` +
+      `The chance of catching a real gap that size was ${(pw * 100).toFixed(0)}%: ` +
       `about the same as a coin that lands heads ${(pw * 100).toFixed(0)} times in a hundred. ` +
       (needed
         ? `Detecting it reliably would have taken roughly ${needed} Islamic funds. The UK market offered three.`
@@ -806,7 +806,7 @@ function renderIvol() {
       `The dissertation reports p = <strong>${IVOL.p.toFixed(6)}</strong>. Feeding the two group means, ` +
       `their spreads and their fund counts into this page's own Welch routine returns ` +
       `t = ${n2.format(w.t)} on ${n2.format(w.df)} degrees of freedom and ` +
-      `p = <strong>${w.p.toFixed(6)}</strong> — the same number to four decimal places, ` +
+      `p = <strong>${w.p.toFixed(6)}</strong>: the same number to four decimal places, ` +
       `computed by different code from the printed summary statistics. ` +
       `Two degrees of freedom is the tell: with three funds, the precision of this comparison is set ` +
       `almost entirely by how much those three differ from each other. The other 217 barely enter it.`;
@@ -820,7 +820,7 @@ function renderIvol() {
   if (note2) {
     note2.textContent =
       `Run the same arithmetic forwards: at 80% power the smallest gap in idiosyncratic volatility ` +
-      `this comparison could have detected is ${num(mdeIvol, 4)} a month — larger than the average level ` +
+      `this comparison could have detected is ${num(mdeIvol, 4)} a month, larger than the average level ` +
       `of idiosyncratic volatility itself (${num(IVOL.conventional.mean, 4)}). ` +
       `The test was not capable of finding any difference an investor would care about. ` +
       `"No significant difference" here means "no measurement", not "no difference".`;

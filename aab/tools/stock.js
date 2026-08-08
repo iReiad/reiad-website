@@ -213,8 +213,8 @@ function applyLang(next, { save = true } = {}) {
     b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
   }
   document.title = lang === "bn"
-    ? "শেয়ার যাচাই — কিনবেন, ধরে রাখবেন, নাকি বেচবেন — Rony Reiad"
-    : "Stock check — buy, hold or sell — Rony Reiad";
+    ? "শেয়ার যাচাই · কিনবেন, ধরে রাখবেন, নাকি বেচবেন · Rony Reiad"
+    : "Stock check · buy, hold or sell · Rony Reiad";
 
   localiseCrumbs();
   buildInputs();
@@ -554,7 +554,7 @@ function yieldChart(d, r) {
   const rows = [
     { k: lang === "bn" ? "এই শেয়ারের লভ্যাংশ" : "This share's dividend", v: r.divYield, tone: "green" },
     ...(d.divTax > 0 ? [{
-      k: lang === "bn" ? `লভ্যাংশ — ${fmtNum(d.divTax, lang, 0)}% কর বাদে`
+      k: lang === "bn" ? `লভ্যাংশ: ${fmtNum(d.divTax, lang, 0)}% কর বাদে`
                        : `That dividend after ${fmtNum(d.divTax, lang, 0)}% withholding`,
       v: r.divYieldNet, tone: "green",
     }] : []),
@@ -889,8 +889,8 @@ function renderSignals(a) {
   const host = $("#signals");
   if (!a.signals.length) {
     host.innerHTML = `<p class="statement-note">${esc(lang === "bn"
-      ? "কোনো নামকরা ধরন মেলেনি — সংখ্যাগুলো আলাদা আলাদা করেই পড়তে হবে।"
-      : "No named pattern fired — read the ratios individually.")}</p>`;
+      ? "কোনো নামকরা ধরন মেলেনি: সংখ্যাগুলো আলাদা আলাদা করেই পড়তে হবে।"
+      : "No named pattern fired: read the ratios individually.")}</p>`;
     return;
   }
   host.innerHTML = a.signals.map((s) => `
@@ -904,8 +904,8 @@ function renderFlags(a) {
   const host = $("#flags");
   if (!a.flags.length) {
     host.innerHTML = `<p class="statement-note">${esc(lang === "bn"
-      ? "কোনো সতর্কতা নেই — তবে এই টুল যা দেখতে পায় না, সেটা মনে রাখবেন।"
-      : "Nothing flagged — which is not the same as nothing wrong. See the note at the foot of the page.")}</p>`;
+      ? "কোনো সতর্কতা নেই: তবে এই টুল যা দেখতে পায় না, সেটা মনে রাখবেন।"
+      : "Nothing flagged, which is not the same as nothing wrong. See the note at the foot of the page.")}</p>`;
     return;
   }
   const order = { veto: 0, bad: 1, warn: 2, info: 3 };
@@ -1018,7 +1018,7 @@ function toCsv() {
   const a = last;
   const q = (s) => `"${String(s).replace(/"/g, '""')}"`;
   const lines = [];
-  lines.push("STOCK CHECK — reiad.co.uk/tools/stock.html");
+  lines.push("STOCK CHECK: reiad.co.uk/tools/stock.html");
   lines.push(q(t("disc.body", "en")));
   lines.push(q(t("disc.units", "en")));
   lines.push("");

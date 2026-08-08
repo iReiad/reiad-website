@@ -91,8 +91,8 @@ function initDoorway() {
    ------------------------------------------------------------ */
 function switcherLabel(current) {
   return current === "work"
-    ? "আমি শিখতে এসেছি — switch to the Bangla library"
-    : "I'm hiring / need work done — switch";
+    ? "আমি শিখতে এসেছি: switch to the Bangla library"
+    : "I'm hiring / need work done: switch";
 }
 
 function buildSwitcher() {

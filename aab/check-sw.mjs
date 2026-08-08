@@ -44,7 +44,7 @@ if (!version) {
 }
 
 /* The PRECACHE array, read out of the source rather than duplicated
-   here — a second copy of the list would drift from the first. */
+   here, a second copy of the list would drift from the first. */
 const block = sw.match(/const PRECACHE = \[([\s\S]*?)\];/)?.[1];
 if (!block) {
   console.error("could not find the PRECACHE list in sw.js");
@@ -81,7 +81,7 @@ let prev = null;
 try {
   prev = JSON.parse(await readFile(MANIFEST, "utf8"));
 } catch {
-  console.error("no sw-manifest.json — run: node check-sw.mjs --update");
+  console.error("no sw-manifest.json: run: node check-sw.mjs --update");
   process.exit(1);
 }
 
@@ -100,7 +100,7 @@ if (version !== prev.version) {
   process.exit(0);
 }
 
-console.error(`STALE CACHE RISK — VERSION is still ${version} but precached files changed:`);
+console.error(`STALE CACHE RISK: VERSION is still ${version} but precached files changed:`);
 for (const p of changed) console.error(`   changed  ${p}`);
 for (const p of added) console.error(`   added    ${p}`);
 for (const p of removed) console.error(`   removed  ${p}`);

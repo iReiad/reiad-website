@@ -227,7 +227,7 @@ function stageRow(stage) {
 
   if (stage.status === "soon") {
     body.append(el("p", { className: "rung-soon mono",
-      textContent: "এই ধাপের লেখাগুলো এখনো তৈরি হচ্ছে — কাঠামোটা দেখে নিতে পারেন।" }));
+      textContent: "এই ধাপের লেখাগুলো এখনো তৈরি হচ্ছে: কাঠামোটা দেখে নিতে পারেন।" }));
   }
 
   /* What's inside, as section names and counts — not ninety lesson
@@ -305,9 +305,9 @@ function buildLadder() {
    ============================================================ */
 const DOOR_KEY = "learn-door";
 const DOOR_HINT = {
-  new: "বিনিয়োগ কখনো করেননি, শব্দগুলোও চেনেন না — একদম শুরু থেকে, ধাপে ধাপে। নিচের হাতেখড়ির আটটা ধাপই আপনার জন্য।",
+  new: "বিনিয়োগ কখনো করেননি, শব্দগুলোও চেনেন না, একদম শুরু থেকে, ধাপে ধাপে। নিচের হাতেখড়ির আটটা ধাপই আপনার জন্য।",
   some: "টুকটাক শুনেছেন, হয়তো বিও অ্যাকাউন্টও আছে। ধাপগুলো ঘুরে দেখুন আর যেটা দরকার সেখান থেকে শুরু করুন।",
-  pro: "পড়াশোনা, থিসিস বা চাকরির জন্য নির্দিষ্ট বিষয় খুঁজছেন — সব বিষয়ের তালিকা থেকে সরাসরি সেখানে যান।",
+  pro: "পড়াশোনা, থিসিস বা চাকরির জন্য নির্দিষ্ট বিষয় খুঁজছেন, সব বিষয়ের তালিকা থেকে সরাসরি সেখানে যান।",
 };
 
 function initDoors() {
@@ -477,9 +477,9 @@ function paintProgress() {
   line.querySelector(".track i").style.width = `${stats.pct}%`;
   line.querySelector(".count").textContent =
     stats.done === 0
-      ? `${bn(stats.live)}টি লেখা — শুরু করুন হাতেখড়ি দিয়ে`
+      ? `${bn(stats.live)}টি লেখা, শুরু করুন হাতেখড়ি দিয়ে`
       : stats.complete
-        ? `সবগুলো পড়া শেষ — ${bn(stats.done)}/${bn(stats.live)} ✓`
+        ? `সবগুলো পড়া শেষ: ${bn(stats.done)}/${bn(stats.live)} ✓`
         : `${bn(stats.done)}/${bn(stats.live)} পড়া হয়েছে`;
 
   const reset = document.getElementById("learn-reset");
@@ -531,7 +531,7 @@ function initFilter() {
       readout.textContent = q
         ? hits
           ? `${bn(hits)}টি মিল পাওয়া গেছে`
-          : "কিছু পাওয়া যায়নি — অন্য শব্দে চেষ্টা করুন"
+          : "কিছু পাওয়া যায়নি: অন্য শব্দে চেষ্টা করুন"
         : "";
     }
   };

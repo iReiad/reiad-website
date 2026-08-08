@@ -147,7 +147,7 @@ function initPalette() {
     if (!groups.length) {
       const li = document.createElement("li");
       li.className = "palette-empty";
-      li.textContent = "No matches — try a different word.";
+      li.textContent = "No matches: try a different word.";
       list.append(li);
       return;
     }

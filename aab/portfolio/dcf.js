@@ -284,7 +284,7 @@ function buildGrid(grid) {
       if (!cell.valid) {
         td.textContent = "n/a";
         td.dataset.invalid = "1";
-        td.title = "Terminal growth is at or above the discount rate — there is no finite value here.";
+        td.title = "Terminal growth is at or above the discount rate; there is no finite value here.";
       } else {
         td.textContent = bdt(cell.perShare);
         // heat: 0 at the cheapest cell, 1 at the dearest
@@ -294,7 +294,7 @@ function buildGrid(grid) {
         td.tabIndex = 0;
         td.dataset.wacc = String(cell.wacc);
         td.dataset.col = String(cell.col);
-        td.title = `${bdt(cell.perShare)} BDT — ${signed(cell.upside)} vs market`;
+        td.title = `${bdt(cell.perShare)} BDT: ${signed(cell.upside)} vs market`;
       }
       tr.append(td);
     });
@@ -357,12 +357,12 @@ function render() {
       $(".verdict-value", verdict).textContent = "—";
       $(".verdict-detail", verdict).textContent =
         `Terminal growth of ${pc(v.growth)} is at or above the ${pc2(v.wacc)} discount rate. ` +
-        "A perpetuity growing faster than it is discounted has no finite value — this is refused rather than approximated.";
+        "A perpetuity growing faster than it is discounted has no finite value; this is refused rather than approximated.";
     } else {
       verdict.dataset.state = v.upside >= 0 ? "up" : "down";
       $(".verdict-value", verdict).textContent = `${bdt(v.perShare)} BDT`;
       $(".verdict-detail", verdict).textContent =
-        `against a ${bdt(v.marketPrice)} market price — ${signed(v.upside)}. ` +
+        `against a ${bdt(v.marketPrice)} market price: ${signed(v.upside)}. ` +
         `${pc(v.terminalShare)} of the enterprise value sits in the terminal value.`;
     }
   }

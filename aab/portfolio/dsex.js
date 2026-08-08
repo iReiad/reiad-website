@@ -404,7 +404,7 @@ function render() {
   const live = a.rollingVol.filter(Number.isFinite);
   $("#vol-readout") && ($("#vol-readout").textContent =
     `Over this series the ${state.volWindow}-day figure ranged from ${pc(Math.min(...live))} to ` +
-    `${pc(Math.max(...live))}. A single annualised number — ${pc(s.vol)} here — hides all of that.`);
+    `${pc(Math.max(...live))}. A single annualised number: ${pc(s.vol)} here: hides all of that.`);
 
   // the holding-period explorer
   const hp = holdingPeriod(a.prices, state.horizonDays);
@@ -431,11 +431,11 @@ function render() {
     `On the worst 5% of days this series fell more than ${pc(Math.abs(s.var95))}; ` +
     `averaged across those days the fall was ${pc(Math.abs(s.es95))}. ` +
     `At the 1% tail those become ${pc(Math.abs(s.var99))} and ${pc(Math.abs(s.es99))}. ` +
-    `Excess kurtosis of ${n2.format(s.kurtosis)} means the extremes are far more common than a bell curve allows — ` +
+    `Excess kurtosis of ${n2.format(s.kurtosis)} means the extremes are far more common than a bell curve allows, ` +
     `which is why value-at-risk alone is not a risk system.`);
 
   $("#cluster-readout") && ($("#cluster-readout").textContent =
-    `Returns themselves are barely autocorrelated (${n2.format(s.acReturns)} at one day's lag) — yesterday's direction ` +
+    `Returns themselves are barely autocorrelated (${n2.format(s.acReturns)} at one day's lag): yesterday's direction ` +
     `says almost nothing about today's. But the SIZE of the move is: |return| autocorrelates at ${n2.format(s.acAbsReturns)}. ` +
     `Violent days cluster with violent days. That is why volatility is forecastable when direction is not.`);
 
@@ -479,7 +479,7 @@ function init() {
     if (series.prices.length < 30) {
       status.dataset.state = "bad";
       status.textContent =
-        `Only ${series.prices.length} usable rows found — this analysis needs at least 30. ` +
+        `Only ${series.prices.length} usable rows found: this analysis needs at least 30. ` +
         `Expected two columns: a date and a closing level.` +
         (errors.length ? ` First problem: ${errors[0]}` : "");
       return;
@@ -490,7 +490,7 @@ function init() {
       `Loaded ${num(series.prices.length)} rows, ${fmtDate(series.dates[0])} to ` +
       `${fmtDate(series.dates[series.dates.length - 1])}.` +
       (errors.length ? ` ${errors.length} row(s) skipped.` : "") +
-      " Nothing was uploaded — this ran in your browser.";
+      " Nothing was uploaded; this ran in your browser.";
     render();
   };
 
