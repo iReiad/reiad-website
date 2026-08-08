@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, article, studio, utilities;
+@layer tokens, base, layout, components, menu, tools, article, studio, learn, utilities;
 
 /* ============================================================
    TOKENS
@@ -1706,6 +1706,442 @@
   .gate-fine {
     font-size: 0.76rem; color: var(--ink-soft);
     border-top: 1px solid var(--hairline); padding-top: 14px; text-align: start;
+  }
+}
+
+/* ============================================================
+   THE LEARN AREA
+   The breadcrumb trail, the audience split, and everything the
+   restructured Learn hub needs: the starter accordion, the stage
+   ladder, the contents index and the resume card.
+   ============================================================ */
+@layer learn {
+
+  /* ---------- icon art ----------
+     One family, one size, one stroke. See /learn/icons.js for why
+     every step and stage has a drawing at all. */
+  .art {
+    width: 1.6em; height: 1.6em; flex-shrink: 0;
+    vertical-align: -0.35em;
+    color: var(--green);
+  }
+  h1 > .art, h1 .art { width: 1.1em; height: 1.1em; margin-inline-end: 0.3em; }
+
+  /* ---------- breadcrumbs ---------- */
+  .crumbs {
+    padding-block: 18px 0;
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.05em;
+
+    & ol {
+      display: flex; flex-wrap: wrap; align-items: center;
+      gap: 4px 2px; padding: 0; margin: 0; list-style: none;
+    }
+    & li { display: flex; align-items: center; color: var(--ink-soft); }
+    /* The separator is generated rather than typed, so a crumb can
+       never be left with a dangling arrow after it. */
+    & li + li::before { content: "›"; margin-inline: 7px; opacity: 0.5; }
+    & a { color: var(--ink-soft); text-decoration: none; }
+    & a:hover { color: var(--green); opacity: 1; }
+    & [aria-current="page"] {
+      color: var(--ink);
+      /* a long Bangla lesson title must not push the row off-screen */
+      max-width: 46ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+  }
+  html[lang="bn"] .crumbs { font-family: var(--font-bn); letter-spacing: 0; font-size: 0.8rem; }
+
+  /* ---------- the audience split ----------
+     Ordering only. Nothing is hidden from anybody — see the note
+     at the top of audience.js. The attribute is set before first
+     paint by the inline script in each <head>, so these rules
+     apply on the first frame and the nav never visibly reorders. */
+  nav a { order: 0; }
+  :root[data-audience="work"] nav a[href*="portfolio"] { order: -3; }
+  :root[data-audience="work"] nav a[href*="about"]     { order: -2; }
+  :root[data-audience="work"] nav a[href*="contact"]   { order: -1; }
+  :root[data-audience="work"] nav a[href*="learn"]     { order: 1; }
+  :root[data-audience="work"] nav a[href*="tools"]     { order: 2; }
+
+  .audience-row { margin-top: 16px; }
+  .audience-switch {
+    background: none; border: 1px solid var(--hairline);
+    border-radius: 999px; padding: 6px 14px;
+    font-family: var(--font-mono); font-size: 0.66rem;
+    letter-spacing: 0.06em; color: var(--ink-soft); cursor: pointer;
+    transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); color: var(--green); }
+  }
+
+  /* the two doors on the home page */
+  .doorway {
+    display: grid; gap: var(--gap); margin-block: 30px 10px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  }
+  /* Once they've chosen, the doorway has done its job and the
+     ordinary button row takes its place. Before they choose, the
+     button row would just be the same three links twice. The
+     switch in the footer brings the other half back at any time. */
+  :root[data-audience] .doorway { display: none; }
+  :root:not([data-audience]) .hero-actions.after-doors { display: none; }
+
+  .door {
+    display: grid; gap: 10px; align-content: start;
+    padding: 26px; text-decoration: none; color: inherit;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+    transition: border-color var(--fast) var(--ease), transform var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); transform: translateY(-2px); opacity: 1; }
+    & h3 { font-size: 1.16rem; }
+    & p { color: var(--ink-soft); font-size: 0.94rem; }
+    & .more { color: var(--green); font-size: 0.9rem; }
+  }
+  .door-art, .door .art { width: 30px; height: 30px; }
+  .door-art { display: block; color: var(--gold); }
+
+  /* ---------- the resume card ---------- */
+  .resume {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    margin-block: 26px 4px; padding: 18px 22px;
+    border: 1px solid var(--green); border-radius: var(--radius);
+    background: var(--green-soft);
+  }
+  .resume-art .art { width: 34px; height: 34px; }
+  .resume-text { flex: 1 1 240px; display: grid; gap: 2px; }
+  .resume-label { color: var(--gold); }
+  .resume-text strong { font-size: 1.16rem; }
+  .resume-where { color: var(--ink-soft); font-size: 0.86rem; }
+  .resume-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .resume-pct { color: var(--ink-soft); }
+
+  .filter-count { margin-top: 10px; color: var(--ink-soft); }
+
+  /* ---------- the starter guide ---------- */
+  .starter-intro { margin-bottom: 26px; }
+  .starter-intro h2 { font-size: 1.5rem; margin-bottom: 12px; }
+  .starter-intro p { color: var(--ink-soft); margin-bottom: 12px; }
+
+  .legend {
+    display: grid; gap: 7px; padding: 0; margin-block: 14px; list-style: none;
+    font-size: 0.93rem; color: var(--ink-soft);
+
+    /* The dot is positioned rather than made a flex item: as a flex
+       item, the <b> and the sentence after it become separate items
+       and wrap as blocks, which on a phone splits the label from its
+       own explanation. Absolute keeps the whole line one text flow. */
+    & li { position: relative; padding-inline-start: 18px; }
+    & b { color: var(--ink); }
+  }
+  /* Note the modifier is .danger, not .risk: `.risk` is the pill on
+     each step's summary, and reusing the name here made the legend's
+     9px dot inherit the pill's padding and border and stretch into a
+     red slab. */
+  .legend-dot {
+    position: absolute; inset-inline-start: 0; top: 0.62em;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--green);
+
+    &.others { background: var(--gold); }
+    &.danger { background: var(--danger); }
+  }
+  .starter-progress-note { color: var(--gold); margin-top: 16px; }
+
+  .steps { display: grid; gap: 12px; }
+
+  .step {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); overflow: clip;
+    transition: border-color var(--fast) var(--ease);
+
+    &[open] { border-color: var(--green); }
+    &:hover { border-color: color-mix(in oklab, var(--green) 50%, var(--hairline)); }
+  }
+
+  .step > summary {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px; cursor: pointer; list-style: none;
+
+    &::-webkit-details-marker { display: none; }
+  }
+  .step-num {
+    color: var(--gold); flex-shrink: 0;
+    min-width: 4.2em;
+  }
+  .step-art { display: flex; flex-shrink: 0; color: var(--green); }
+  .step-art .art { width: 26px; height: 26px; }
+  .step-head { flex: 1 1 200px; display: grid; gap: 2px; min-width: 0; }
+  .step-title { font-size: 1.1rem; }
+  .step-blurb { color: var(--ink-soft); font-size: 0.9rem; }
+  .step-meta {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    flex-shrink: 0; color: var(--ink-soft);
+  }
+
+  /* the risk pill — the thing a nervous first-timer looks for */
+  .risk {
+    font-family: var(--font-mono); font-size: 0.62rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    border-radius: 999px; padding: 3px 10px;
+    border: 1px solid currentColor;
+
+    &[data-risk="low"] { color: var(--green); }
+    &[data-risk="mid"] { color: var(--gold); }
+    &[data-risk="high"] { color: var(--danger); }
+  }
+
+  /* a finished step */
+  .step[data-read] > summary .step-num::after {
+    content: " ✓"; color: var(--green);
+  }
+  .step[data-read] { background: color-mix(in oklab, var(--green-soft) 45%, var(--panel)); }
+
+  .step-body {
+    padding: 4px 20px 22px;
+    border-top: 1px solid var(--hairline);
+
+    & p, & li { max-width: var(--measure); }
+    & p { margin-block: 12px; }
+    & h4 { font-size: 1.04rem; margin-block: 22px 8px; color: var(--ink); }
+    & h5 {
+      font-family: var(--font-mono); font-size: 0.68rem;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      margin: 0 0 8px; color: var(--gold);
+    }
+    & ul { padding-left: 20px; margin-block: 10px; }
+    & li { margin-bottom: 6px; }
+  }
+
+  /* what you do / what is done for you, side by side */
+  .split {
+    display: grid; gap: var(--gap); margin-block: 22px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+
+    & > div {
+      border-radius: var(--radius-sm); padding: 16px 18px;
+      background: var(--paper-sunk);
+      border-inline-start: 3px solid var(--green);
+    }
+    & > .others { border-inline-start-color: var(--gold); }
+    & ul { margin: 0; padding-left: 18px; }
+    & li { font-size: 0.93rem; color: var(--ink-soft); }
+  }
+
+  .step-foot, .step-cta {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 24px; padding-top: 18px;
+    border-top: 1px solid var(--hairline);
+  }
+  .step-cta { border-top: 0; }
+
+  /* the example / warning box, shared with the lesson pages */
+  .ex.warn {
+    border-inline-start-color: var(--danger);
+    background: color-mix(in oklab, var(--danger) 7%, transparent);
+  }
+
+  /* ---------- the stage ladder ---------- */
+  .ladder-intro { color: var(--ink-soft); margin-bottom: 22px; }
+  .ladder { display: grid; gap: 10px; }
+
+  .rung {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); overflow: clip;
+
+    &[data-state="now"] { border-color: var(--green); }
+    &[data-state="done"] { background: color-mix(in oklab, var(--green-soft) 40%, var(--panel)); }
+    &[data-soon] .rung-title { opacity: 0.85; }
+  }
+
+  .rung > summary {
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 20px; cursor: pointer; list-style: none;
+
+    &::-webkit-details-marker { display: none; }
+  }
+  .rung-art { display: flex; flex-shrink: 0; }
+  .rung-art .art { width: 30px; height: 30px; }
+  .rung-head { flex: 1 1 220px; display: grid; gap: 3px; min-width: 0; }
+  .rung-kicker { color: var(--gold); }
+  .rung-title { font-size: 1.16rem; display: flex; gap: 9px; align-items: baseline; flex-wrap: wrap; }
+  .rung-who { color: var(--ink-soft); font-size: 0.88rem; }
+
+  .rung-state { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .rung-count { color: var(--ink-soft); }
+
+  .state-pill {
+    border-radius: 999px; padding: 3px 10px; font-size: 0.6rem;
+    border: 1px solid var(--hairline); color: var(--ink-soft);
+  }
+  .rung[data-state="now"] .state-pill { border-color: var(--green); color: var(--green); }
+  .rung[data-state="done"] .state-pill { border-color: var(--green); color: var(--green); }
+  .rung[data-state="next"] .state-pill { border-color: var(--gold); color: var(--gold); }
+
+  .ring { width: 34px; height: 34px; flex-shrink: 0; }
+  .ring-track { stroke: var(--hairline); }
+  .ring-fill {
+    stroke: var(--green);
+    transition: stroke-dashoffset var(--slow) var(--ease);
+  }
+
+  .rung-body {
+    padding: 6px 20px 22px;
+    border-top: 1px solid var(--hairline);
+  }
+  .rung-blurb { color: var(--ink-soft); max-width: var(--measure); margin-block: 14px; }
+  .rung-soon { color: var(--gold); margin-bottom: 14px; }
+  .rung-section { margin-block: 18px; }
+  .rung-section h4 { color: var(--gold); margin: 0 0 8px; font-family: var(--font-mono); font-weight: 500; }
+
+  .rung-lessons {
+    display: grid; gap: 2px; padding: 0; margin: 0; list-style: none;
+
+    & li {
+      display: flex; align-items: baseline; gap: 10px;
+      padding: 7px 0; border-bottom: 1px solid var(--hairline);
+    }
+    & li:last-child { border-bottom: 0; }
+    & a { flex: 1; text-decoration: none; color: var(--ink); font-size: 0.97rem; }
+    & a:hover { color: var(--green); opacity: 1; }
+    & li[data-read] a::before { content: "✓ "; color: var(--green); }
+    & li[data-soon] { opacity: 0.55; }
+    & li[data-soon] a { pointer-events: auto; }
+  }
+  .rung-lesson-min { color: var(--ink-soft); flex-shrink: 0; font-size: 0.62rem; }
+
+  .rung-foot {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--hairline);
+  }
+  .rung-time { color: var(--ink-soft); }
+
+  /* ---------- the full contents index ---------- */
+  .contents-index { display: grid; gap: 34px; margin-top: 30px; }
+  .contents-stage h3 {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 1.1rem; margin-bottom: 10px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--hairline);
+  }
+  .contents-art { display: flex; }
+  .contents-art .art { width: 22px; height: 22px; color: var(--gold); }
+
+  .contents-list { display: grid; gap: 0; padding: 0; margin: 0; list-style: none; }
+  .contents-row {
+    display: grid; align-items: baseline; gap: 4px 18px;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+    padding: 9px 2px; border-bottom: 1px solid var(--hairline);
+
+    & a { text-decoration: none; font-size: 1rem; }
+    & a:hover { opacity: 1; }
+    &[data-read] a::before { content: "✓ "; color: var(--green); }
+    &[data-soon] { opacity: 0.55; }
+  }
+  .contents-en { color: var(--ink-soft); font-size: 0.86rem; }
+  /* The section name is Bangla, so it drops out of the mono/uppercase
+     treatment: letter-spacing pulls Bangla conjuncts apart, and at
+     0.6rem the result was unreadable rather than merely small. */
+  .contents-sec {
+    color: var(--gold); font-size: 0.76rem;
+    font-family: var(--font-bn); letter-spacing: 0; text-transform: none;
+    white-space: nowrap;
+  }
+  @media (width <= 620px) {
+    .contents-row { grid-template-columns: 1fr; gap: 1px; }
+    .contents-sec { display: none; }
+  }
+
+  .glossary .g-row[data-read] a::before { content: "✓ "; color: var(--green); }
+
+  /* ---------- stage pages ---------- */
+  .stage-hero .lede { max-width: 62ch; }
+  .stage-art { color: var(--green); }
+
+  .stage-facts {
+    display: grid; gap: 14px; margin-block: 26px 20px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+
+    & > div {
+      border-inline-start: 2px solid var(--hairline); padding-inline-start: 14px;
+    }
+    & dt {
+      font-family: var(--font-mono); font-size: 0.62rem;
+      letter-spacing: 0.07em; text-transform: uppercase; color: var(--gold);
+      margin-bottom: 4px;
+    }
+    & dd { margin: 0; color: var(--ink-soft); font-size: 0.94rem; }
+  }
+
+  .stage-progress {
+    display: flex; align-items: center; gap: 12px;
+    margin-block: 8px 22px;
+
+    & .track {
+      flex: 1; max-width: 260px; height: 5px; border-radius: 999px;
+      background: var(--hairline); overflow: clip;
+    }
+    & .track i {
+      display: block; height: 100%; width: 0; background: var(--green);
+      transition: width var(--slow) var(--ease);
+    }
+    & .count { color: var(--ink-soft); }
+    &[data-state="done"] .count { color: var(--green); }
+  }
+
+  .lesson-grid {
+    display: grid; gap: var(--gap);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+  .lesson-card {
+    position: relative;
+    display: grid; gap: 8px; align-content: start;
+    padding: 22px; text-decoration: none; color: inherit;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+    transition: border-color var(--fast) var(--ease), transform var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); transform: translateY(-2px); opacity: 1; }
+    & h3 { font-size: 1.06rem; }
+    & p { color: var(--ink-soft); font-size: 0.92rem; }
+    &.is-soon { opacity: 0.6; }
+  }
+  .lesson-card-art .art { width: 24px; height: 24px; color: var(--gold); }
+  .lesson-card-foot { color: var(--ink-soft); font-size: 0.62rem; }
+  .lesson-card[data-read]::after {
+    content: "✓";
+    position: absolute; top: 14px; right: 16px;
+    color: var(--green); font-family: var(--font-mono); font-size: 0.8rem;
+  }
+
+  /* ---------- lesson pages ---------- */
+  .lesson-art { color: var(--green); }
+  .lesson-meta { color: var(--ink-soft); margin-bottom: 26px; }
+  .soon-note {
+    border-inline-start: 3px solid var(--gold);
+    padding-inline-start: 14px; color: var(--ink-soft);
+  }
+
+  /* ---------- a softer band, for the "coming later" note ---------- */
+  .band.soft {
+    background: var(--paper-sunk); color: var(--ink);
+    border: 1px solid var(--hairline);
+
+    & h2 { color: var(--ink); }
+    & p { color: var(--ink-soft); }
+  }
+
+  /* ---------- narrow screens ---------- */
+  @media (width <= 620px) {
+    .step > summary, .rung > summary { flex-wrap: wrap; gap: 10px 12px; }
+    .step-meta, .rung-state { width: 100%; justify-content: flex-start; }
+    .step-num { min-width: 0; }
+    .crumbs [aria-current="page"] { max-width: 22ch; }
+  }
+
+  /* Someone who asked for less motion gets the state, not the sweep. */
+  @media (prefers-reduced-motion: reduce) {
+    .ring-fill, .stage-progress .track i { transition: none; }
+    .door:hover, .lesson-card:hover { transform: none; }
   }
 }
 

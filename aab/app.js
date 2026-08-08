@@ -20,9 +20,12 @@
 
 import {
   searchIndex, liveArticles, ARTICLES, formatDate, topics,
-  PAGES, TOOLS, TERM_GROUPS, SITE,
+  PAGES, TOOLS, STAGES, SITE,
 } from "/content.js";
 import { countView, getArticles } from "/api.js";
+import { initCrumbs } from "/crumbs.js";
+import { initAudience, audienceBoost } from "/audience.js";
+import { recordVisit } from "/learn/progress.js";
 
 /* ============================================================
    1. THEME
@@ -119,8 +122,14 @@ function initPalette() {
   let active = 0;
 
   const render = (query) => {
-    const results = INDEX.map((item) => ({ item, s: score(item.title, query.trim()) }))
+    // Everyone sees every result; the half they came for sorts first.
+    // See audience.js for why that is a ranking and never a filter.
+    const results = INDEX.map((item) => ({
+      item,
+      s: score(item.title, query.trim()),
+    }))
       .filter((r) => r.s > 0)
+      .map((r) => ({ ...r, s: r.s + audienceBoost(r.item) }))
       .sort((a, b) => b.s - a.s)
       .slice(0, 12)
       .map((r) => r.item);
@@ -264,11 +273,17 @@ function buildMenu() {
         )
       ),
 
-      menuColumn("শেখার লাইব্রেরি · Learn", TERM_GROUPS, (g) =>
+      // The whole ladder, in order, so the menu shows how deep the
+      // Learn area goes without anyone having to open it first.
+      menuColumn("শেখার লাইব্রেরি · Learn", STAGES, (s) =>
         el("li", {},
-          el("a", { href: `/learn/index.html#${g.id}` },
-            el("strong", { className: "bn-h", textContent: g.bn }),
-            el("small", { textContent: `${g.en} · ${g.terms.length} terms` })
+          el("a", {
+            href: s.inline ? "/learn/index.html#starter" : `/learn/${s.slug}/index.html`,
+          },
+            el("strong", { className: "bn-h", textContent: `${s.kicker} · ${s.bn}` }),
+            el("small", {
+              textContent: `${s.en}${s.status === "soon" ? " · আসছে" : ""}`,
+            })
           )
         )
       ),
@@ -592,17 +607,16 @@ export function download(filename, data, type = "text/html;charset=utf-8") {
 }
 
 /* ============================================================
-   5b. READING PROGRESS on the Learn hub
-   Opening a term page ticks it off. Stored on the device only —
-   it's a bookmark, not analytics, and nothing leaves the browser.
+   5b. READING PROGRESS in the Learn area
+   Opening a lesson ticks it off and records it as the place to
+   resume from. Stored on the device only — it's a bookmark, not
+   analytics, and nothing leaves the browser. The logic lives in
+   /learn/progress.js so that the hub, the stage pages and the
+   lesson pages all agree on what "read" means.
    ============================================================ */
-function markTermRead() {
-  const slug = document.querySelector("article.term-article[data-slug]")?.dataset.slug;
-  if (!slug) return;
+function markLessonRead() {
   try {
-    const read = new Set(JSON.parse(localStorage.getItem("learn-read") || "[]"));
-    read.add(slug);
-    localStorage.setItem("learn-read", JSON.stringify([...read]));
+    recordVisit();
   } catch { /* private mode; the tick is a nicety */ }
 }
 
@@ -634,12 +648,14 @@ function initDynamic() {
 
 /* ---------- go ---------- */
 initTheme();
+initAudience();
+initCrumbs();
 initPalette();
 initMenu();
 initShortcuts();
 initKinetic();
 initSpeculation();
 initArticleCards();
-markTermRead();
+markLessonRead();
 initDynamic();
 initServiceWorker();

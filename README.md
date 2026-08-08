@@ -35,12 +35,61 @@ immediately** — no file to move, no commit, no push.
 | Page analytics that can't identify anyone | Studio → What's read |
 | Full-text search across article bodies | `/api/search` |
 
+## The Learn area
+
+`/learn/` is a course, not a glossary: eight stages from "I have never
+invested" to research level, in Bangla.
+
+| Stage | | What it covers |
+| --- | --- | --- |
+| ধাপ ০ | হাতেখড়ি · Starter Guide | Eight steps to actually start investing in Bangladesh. Lives **inline on `/learn/`** — a first-timer shouldn't have to navigate anywhere to be told what to do first. |
+| ধাপ ১ | ভিত্তি · শব্দগুলো শিখুন | The original eighteen terms, still at `/learn/terms/*.html` |
+| ধাপ ২ | ভিত্তি · বাজারটা পড়তে শিখুন | Why prices move, when to buy/sell/hold, sectors, institutions, live apps |
+| ধাপ ৩ | ভিত্তি · নিজে যাচাই করুন | Finding data in Bangladesh, reading the three statements, deciding |
+| ধাপ ৪–৬ | মাঝারি ১–৩ | Coursework, dissertation, working in the market — *structure live, text being written* |
+| ধাপ ৭ | গবেষণা স্তর | Research level — *structure live, text being written* |
+
+**`aab/learn/curriculum.js` is the one file you edit.** It holds the whole
+tree — schools → stages → sections → lessons. The hub, the stage pages, the
+breadcrumbs, the menu, the Ctrl+K palette and the sitemap all read from it,
+so renaming a stage there renames it everywhere at once.
+
+### Adding or editing a lesson
+
+1. Add the lesson to its stage in **`aab/learn/curriculum.js`**.
+2. Write the body in **`aab/learn/lessons/<stage>.js`**, keyed by slug.
+   (Skip this and the lesson ships as a proper "আসছে" page rather than a
+   404 — a listed thing is always somewhere you can go.)
+3. `node aab/learn/build-lessons.mjs` — writes the stage and lesson pages.
+4. `node aab/build-meta.mjs && node aab/check-routes.mjs`.
+
+Generated pages are committed as ordinary static files; the site never
+depends on the generator having been run. The starter guide's eight steps
+are the exception — they are hand-written in `aab/learn/index.html`, since
+they *are* that page.
+
+### Reading progress
+
+Kept in `localStorage` on the reader's own device, never sent anywhere, no
+account. Opening a lesson ticks it off; returning to `/learn/` shows a
+resume card and scrolls to the stage they were in. `aab/learn/progress.js`
+is the only file that touches that storage.
+
+## Two front doors
+
+A recruiter and a Bangladeshi reader learning about savings want opposite
+halves of this site, so the home page asks once and remembers
+(`aab/audience.js`). The choice reorders the header nav, the overlay menu
+and the search ranking — it never hides anything, and the footer switch
+flips it back on any page.
+
 ## Testing
 
 ```sh
-npx wrangler dev                # the real Cloudflare runtime, local D1
-./test-api.sh                   # 52 checks over every endpoint
-node aab/check-routes.mjs       # catches redirect loops before deploying
+npx wrangler dev                    # the real Cloudflare runtime, local D1
+./test-api.sh                       # 52 checks over every endpoint
+node aab/check-routes.mjs           # catches redirect loops before deploying
+node aab/learn/build-lessons.mjs    # regenerate the Learn pages
 ```
 
 ## Publishing an article — the manual way
@@ -107,7 +156,17 @@ which mode it's in.
 | `test-api.sh` | 52 end-to-end API checks |
 | `aab/studio.html`, `studio.js` | The Article Studio |
 | `aab/tools/` | The five calculators |
-| `aab/learn/` | The Bangla Learn hub, its pop-up term reader and reading progress |
+| `aab/crumbs.js` | The path line on every page, built from the curriculum and `PAGES`, plus its `BreadcrumbList` JSON-LD |
+| `aab/audience.js` | The two front doors — learner or recruiter — and what the answer reorders |
+| `aab/learn/curriculum.js` | **The one file you edit for Learn.** Every stage, section and lesson |
+| `aab/learn/index.html` | The hub — hand-written, because the eight starter steps live in it |
+| `aab/learn/hub.js` | The hub's live layer: steps, ladder, contents index, resume card, filter |
+| `aab/learn/progress.js` | The only file that touches reading progress in `localStorage` |
+| `aab/learn/icons.js` | The stroke icons every step and stage is remembered by |
+| `aab/learn/stage.js` | Ticks and the "continue" button on a stage's contents page |
+| `aab/learn/lessons/` | Lesson text, one module per stage |
+| `aab/learn/build-lessons.mjs` | Writes the stage and lesson pages. Not a build step — run it and commit what it writes |
+| `aab/learn/terms/` | The original eighteen term pages, at the URLs they were published on |
 | `aab/pulse.js` | The auto-updating market-news list |
 | `aab/sw.js` | Service worker — offline reading, never stale articles |
 | `functions/api/news.js` | Serves `/api/news` — the market-pulse feed |

@@ -29,12 +29,23 @@
    answered from the cache that has it, and only a new VERSION empties
    that cache). Page views went uncounted, and the fix to the Studio
    login could not have reached anyone either. Bump this whenever a
-   precached file changes. */
-const VERSION = "v3";
+   precached file changes.
+
+   v4: the Learn area was restructured — app.js gained three new
+   imports (crumbs, audience, learn progress) and the hub is a
+   different page. Without a bump, a returning reader would be
+   served the v3 app.js forever and none of it would appear. */
+const VERSION = "v4";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
-/* Worth having before it's needed, so the first offline visit works. */
+/* Worth having before it's needed, so the first offline visit works.
+
+   app.js is an ES module and its imports are separate requests, so
+   each one has to be listed: a cached app.js whose imports 404 is
+   worse than no app.js at all. Lesson pages are deliberately NOT
+   precached — there are seventy of them, and the runtime cache
+   picks up the ones a reader actually opens. */
 const PRECACHE = [
   "/",
   "/index.html",
@@ -42,7 +53,15 @@ const PRECACHE = [
   "/styles.css",
   "/app.js",
   "/content.js",
+  "/api.js",
+  "/crumbs.js",
+  "/audience.js",
   "/learn/index.html",
+  "/learn/learn.js",
+  "/learn/hub.js",
+  "/learn/curriculum.js",
+  "/learn/progress.js",
+  "/learn/icons.js",
   "/tools/index.html",
   "/insights.html",
   "/favicon.ico",

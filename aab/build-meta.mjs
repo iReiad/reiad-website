@@ -21,7 +21,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const { SITE, PAGES, TOOLS, TERMS, liveArticles } =
+const { SITE, PAGES, TOOLS, STAGES, allLessons, liveArticles } =
   await import(join(HERE, "content.js"));
 
 const esc = (s) =>
@@ -54,11 +54,25 @@ ${(a.topics ?? []).map((t) => `      <category>${esc(t)}</category>`).join("\n")
 </rss>
 `;
 
-/* ---------- sitemap.xml ---------- */
+/* ---------- sitemap.xml ----------
+   Stage pages are listed, and so is every WRITTEN lesson. Lessons
+   still marked "soon" are deliberately left out: those pages
+   exist so that a listed thing is never a dead link, but they are
+   a paragraph long and putting them in the sitemap would be
+   asking search engines to index placeholders. They go in the
+   moment they are written, with no other change needed here.
+
+   The starter guide's steps are anchors on /learn/, not pages, so
+   they are covered by the hub's own entry. */
+const lessons = allLessons().filter(
+  (l) => l.status === "live" && !l.stage.inline
+);
+
 const urls = [
   ...PAGES.filter((p) => !p.private).map((p) => ({ loc: p.url, priority: "0.8" })),
   ...articles.map((a) => ({ loc: `/insights/${a.slug}.html`, lastmod: a.date, priority: "0.9" })),
-  ...TERMS.map((t) => ({ loc: `/learn/terms/${t.slug}.html`, priority: "0.7" })),
+  ...STAGES.map((s) => ({ loc: `/learn/${s.slug}/index.html`, priority: "0.8" })),
+  ...lessons.map((l) => ({ loc: l.url, priority: "0.7" })),
 ];
 urls[0].priority = "1.0";
 
@@ -91,4 +105,7 @@ writeFileSync(join(HERE, "robots.txt"), robots);
 console.log(`feed.xml     ${articles.length} article(s)`);
 console.log(`sitemap.xml  ${urls.length} URLs`);
 console.log("robots.txt   written");
-console.log(`(${TOOLS.length} calculators live on /tools/)`);
+console.log(
+  `(${TOOLS.length} calculators, ${STAGES.length} learn stages, ` +
+  `${lessons.length} written lesson(s) of ${allLessons().length})`
+);

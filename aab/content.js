@@ -86,10 +86,33 @@ export const ARTICLES = [
 ];
 
 /* ============================================================
-   The Bangla Learn hub, grouped the way the hub itself is.
-   en    the English term, for search and the A–Z index
-   blurb the one-line explanation on the card
+   The Learn area.
+
+   The curriculum — every stage, section and lesson — lives in
+   /learn/curriculum.js, which is the one file to edit when the
+   Learn area changes. It is re-exported here so that the menu,
+   the palette and build-meta.mjs have a single import as before.
+
+   TERM_GROUPS below is the ORIGINAL eighteen-term grouping, kept
+   because /learn/terms/*.html and the A–Z glossary were built
+   around it and its URLs are published. It is now the same data
+   as stage `basics-1` of the curriculum; curriculum.js is the
+   source of truth for the structure, this for the term cards.
+
+   NOTE the relative specifier below. content.js is imported two
+   ways: by the browser from /content.js, and by build-meta.mjs
+   from the filesystem. "./learn/curriculum.js" resolves correctly
+   in both; "/learn/curriculum.js" would resolve to the filesystem
+   root under Node and break the build scripts.
    ============================================================ */
+import {
+  STAGES, SCHOOLS, allLessons, stageLessons, stageUrl, lessonUrl, findStage,
+} from "./learn/curriculum.js";
+
+// re-exported, because `export … from` alone would not give this
+// file the local bindings that searchIndex() below needs
+export { STAGES, SCHOOLS, allLessons, stageLessons, stageUrl, lessonUrl, findStage };
+
 export const TERM_GROUPS = [
   {
     id: "basics",
@@ -186,7 +209,7 @@ export const PAGES = [
   { title: "Home", url: "/index.html",
     hint: "Page", blurb: "The short version of everything here." },
   { title: "Learn hub — শেখার লাইব্রেরি", url: "/learn/index.html",
-    hint: "Page", blurb: "Eighteen money terms in plain Bangla, each one a short read." },
+    hint: "Page", blurb: "Start-to-research investing course in plain Bangla, eight stages deep." },
   { title: "Tools & calculators", url: "/tools/index.html",
     hint: "Page", blurb: "Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing." },
   { title: "Insights", url: "/insights.html",
@@ -219,7 +242,13 @@ export const topics = () => {
     .map(([name, count]) => ({ name, count }));
 };
 
-/** Everything the command palette can jump to. */
+/** Everything the command palette can jump to.
+
+    Every lesson in every stage is in here, including the ones
+    still marked "soon" — someone searching for "dissertation"
+    should find the place it will be, not nothing. The hint names
+    the stage, so a result reads as "মূল্যায়ন — মাঝারি · ধাপ ১"
+    and the reader knows how deep they are about to go. */
 export const searchIndex = () => [
   ...PAGES.map((p) => ({ title: p.title, url: p.url, hint: p.hint })),
   ...liveArticles().map((a) => ({
@@ -232,10 +261,15 @@ export const searchIndex = () => [
     url: `/tools/index.html#${t.id}`,
     hint: "Tool",
   })),
-  ...TERMS.map((t) => ({
-    title: t.title,
-    url: `/learn/terms/${t.slug}.html`,
-    hint: "Learn",
+  ...STAGES.map((s) => ({
+    title: `${s.kicker} · ${s.bn} — ${s.en}`,
+    url: s.inline ? "/learn/index.html#starter" : `/learn/${s.slug}/index.html`,
+    hint: "Stage",
+  })),
+  ...allLessons().map((l) => ({
+    title: `${l.bn} — ${l.en}`,
+    url: l.url,
+    hint: `${l.stage.kicker}`,
   })),
 ];
 

@@ -6,8 +6,16 @@
     <atom:link href="https://reiad.co.uk/feed.xml" rel="self" type="application/rss+xml"/>
     <description>Explainers and analysis on Bangladesh and global finance, in English and Bangla.</description>
     <language>en-gb</language>
-    <lastBuildDate>Fri, 07 Aug 2026 14:22:14 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 08 Aug 2026 06:24:58 GMT</lastBuildDate>
     <ttl>720</ttl>
+    <item>
+      <title>বাংলায় জার্মান</title>
+      <link>https://reiad.co.uk/insights/German Alphabets.html</link>
+      <guid isPermaLink="true">https://reiad.co.uk/insights/German Alphabets.html</guid>
+      <description>Umm.. this one is absolutely a test one</description>
+      <pubDate>Wed, 05 Aug 2026 09:00:00 GMT</pubDate>
+
+    </item>
     <item>
       <title>How the Dhaka Stock Exchange actually works</title>
       <link>https://reiad.co.uk/insights/dse-basics.html</link>
