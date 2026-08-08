@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>স্থিতিপত্র — নিজে যাচাই করুন — শেখার লাইব্রেরি — Rony Reiad</title>
+  <meta name="description" content="কোম্পানির কী আছে, কার কাছে কত দেনা, আর মালিকদের হাতে আসলে কী থাকে।">
+  <link rel="canonical" href="https://reiad.co.uk/learn/basics-3/balance-sheet.html">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="স্থিতিপত্র — নিজে যাচাই করুন — শেখার লাইব্রেরি — Rony Reiad">
+  <meta property="og:description" content="কোম্পানির কী আছে, কার কাছে কত দেনা, আর মালিকদের হাতে আসলে কী থাকে।">
+  <script>
+    (function () {
+      var d = document.documentElement;
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
+        var a = localStorage.getItem("audience");
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta property="og:image" content="https://reiad.co.uk/og/learn.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Rony Reiad">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+  <a class="skip" href="#main">মূল লেখায় যান</a>
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="/index.html">
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Rony Reiad
+      </a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep aria-current="page">Learn</a>
+        <a href="/tools/index.html">Tools</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+  <main id="main">
+    <div class="wrap">
+
+      <article class="term-article lesson"
+               data-lesson-id="basics-3/balance-sheet"
+               data-stage="basics-3"
+               data-lesson-title="স্থিতিপত্র">
+        <span class="eyebrow mono">
+          <a href="/learn/basics-3/index.html">ভিত্তি · ধাপ ৩ · নিজে যাচাই করুন</a>
+          · হিসাব পড়া
+        </span>
+        <h1 class="bn-h"><svg class="art lesson-art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.3 15.3 21 21"/><path d="M8 10.5h5"/><path d="M10.5 8v5"/></svg>স্থিতিপত্র <span class="en-sub">The balance sheet</span></h1>
+        <p class="one-liner">কোম্পানির কী আছে, কার কাছে কত দেনা, আর মালিকদের হাতে আসলে কী থাকে।</p>
+        <p class="lesson-meta mono">৯ মিনিটের পড়া</p>
+
+<p>স্থিতিপত্র একটা নির্দিষ্ট দিনের ছবি: ওই দিন কোম্পানির কী কী আছে, কার কাছে কত দেনা, আর মালিকদের হাতে কী থাকে।</p>
+
+<p>পুরো জিনিসটা একটা সমীকরণে দাঁড়ায়: <strong>সম্পদ = দায় + মালিকানা স্বত্ব</strong>। যা আছে, সেটা হয় ধার করে এসেছে, নয় মালিকদের টাকায় এসেছে। এই দুইয়ের বাইরে কিছু নেই।</p>
+
+<h2>সম্পদ</h2>
+
+<p><strong>চলতি সম্পদ</strong> — এক বছরের মধ্যে নগদে পরিণত হবে: নগদ টাকা, ব্যাংকে জমা, মজুদ পণ্য, আর গ্রাহকের কাছে পাওনা।</p>
+
+<p><strong>স্থায়ী সম্পদ</strong> — জমি, ভবন, যন্ত্রপাতি, যানবাহন। এগুলোর মূল্য প্রতি বছর অবচয়ের মাধ্যমে কমে।</p>
+
+<h2>দায়</h2>
+
+<p><strong>চলতি দায়</strong> — এক বছরের মধ্যে শোধ করতে হবে: স্বল্পমেয়াদি ঋণ, সরবরাহকারীর পাওনা, বকেয়া বেতন ও কর।</p>
+
+<p><strong>দীর্ঘমেয়াদি দায়</strong> — মেয়াদি ঋণ, বন্ড, ইজারা।</p>
+
+<h2>মালিকানা স্বত্ব</h2>
+
+<p>পরিশোধিত মূলধন, শেয়ার প্রিমিয়াম, আর সংরক্ষিত আয় — অর্থাৎ অতীতের যে লাভগুলো লভ্যাংশ হিসেবে না দিয়ে ব্যবসায় রেখে দেওয়া হয়েছে। এটাকে শেয়ার সংখ্যা দিয়ে ভাগ করলে যা পাওয়া যায় সেটাই মোটামুটি <a class="term" href="/learn/terms/nav.html">এনএভি</a>।</p>
+
+<h2>যে তিনটা জিনিস মিলিয়ে দেখবেন</h2>
+
+<ul>
+  <li><strong>চলতি সম্পদ কি চলতি দায়ের চেয়ে বড়?</strong> না হলে কোম্পানির স্বল্পমেয়াদে টাকার টান পড়তে পারে।</li>
+  <li><strong>মজুদ পণ্য কি বিক্রির চেয়ে দ্রুত বাড়ছে?</strong> মানে জিনিস বানানো হচ্ছে কিন্তু বিক্রি হচ্ছে না।</li>
+  <li><strong>গ্রাহকের কাছে পাওনা কি অস্বাভাবিক বাড়ছে?</strong> মানে বিক্রি দেখানো হচ্ছে কিন্তু টাকা আসছে না। এটা একটা ক্লাসিক সতর্কসংকেত।</li>
+</ul>
+
+<div class="ex"><b>একটা দ্রুত পরীক্ষা:</b> মোট ঋণকে মালিকানা স্বত্ব দিয়ে ভাগ করুন। ফল ১-এর কম মানে মালিকদের টাকা ঋণের চেয়ে বেশি — তুলনামূলক নিরাপদ। ২-এর বেশি মানে কোম্পানি অনেকটাই ধারে চলছে, আর খারাপ সময়ে সেটা বিপজ্জনক। খাতভেদে গ্রহণযোগ্য মাত্রা আলাদা, তাই একই খাতের অন্যদের সাথে তুলনা করুন।</div>
+
+        <p class="backlink">
+          <a href="/learn/basics-3/index.html">← নিজে যাচাই করুন-এর সব লেখা</a>
+          <a class="backlink-alt" href="/learn/contents.html">সব বিষয় এক নজরে →</a>
+        </p>
+      </article>
+      <nav class="prev-next" aria-label="এই ধাপের অন্য লেখা">
+        <a href="/learn/basics-3/income-statement.html">
+          <span class="mono">← আগের লেখা</span>
+          <strong class="bn-h">আয়-ব্যয়ের হিসাব</strong>
+        </a>
+        <a href="/learn/basics-3/cash-flow.html">
+          <span class="mono">পরের লেখা →</span>
+          <strong class="bn-h">নগদ প্রবাহ</strong>
+        </a>
+      </nav>
+
+    </div>
+  </main>
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>এই সাইটের সবকিছু সাধারণ শিক্ষামূলক তথ্য — বিনিয়োগ পরামর্শ না। টাকা কোথাও রাখার আগে নিজে যাচাই করুন।</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <!-- Modal reader -->
+  <div id="reader" hidden role="dialog" aria-modal="true" aria-label="Term reader">
+    <div class="reader-panel">
+      <div class="reader-bar">
+        <button class="icon-btn" id="reader-back" hidden aria-label="আগের লেখায় ফিরুন">← ফিরুন</button>
+        <a id="reader-full" class="mono" href="#">পুরো পেজে পড়ুন ↗</a>
+        <button class="icon-btn" id="reader-close" aria-label="বন্ধ করুন">✕</button>
+      </div>
+      <div class="reader-body" id="reader-body"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/learn/learn.js"></script>
+</body>
+</html>

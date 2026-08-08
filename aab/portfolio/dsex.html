@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>Index returns: volatility &amp; drawdowns — Rony Reiad</title>
+  <meta name="description" content="Rolling volatility, drawdown decomposition, tail risk and holding-period outcomes for an equity index — six linked views, and a CSV import so you can run the same analysis on real data.">
+  <link rel="canonical" href="https://reiad.co.uk/portfolio/dsex.html">
+
+  <script>
+    (function () {
+      var d = document.documentElement;
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
+        var a = localStorage.getItem("audience");
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Index returns: volatility &amp; drawdowns">
+  <meta property="og:description" content="Rolling volatility, drawdowns, tail risk and what holding periods actually teach — with your own data if you have it.">
+  <meta property="og:image" content="https://reiad.co.uk/og/default.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Rony Reiad">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+  <a class="skip" href="#dsex">Skip to the analysis</a>
+
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="/index.html">
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Rony Reiad
+      </a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/tools/index.html">Tools</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html" aria-current="page">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+
+      <div class="hero" style="padding-block:56px 26px">
+        <span class="eyebrow mono">Case study · Data analysis · Python-equivalent</span>
+        <h1>Volatility is a statistic. A drawdown is a year of your life.</h1>
+        <p class="lede">
+          Six views over one price series: the index itself, rolling volatility,
+          the underwater curve, the shape of the return distribution against a
+          normal one, and — the reason for all of it — what actually happened to
+          people who held for a day, a year, or five.
+        </p>
+        <p class="model-co">
+          <strong id="series-name">—</strong>
+          <span class="mono" id="series-range">—</span>
+        </p>
+      </div>
+
+      <!-- ============ THE DATA, STATED UP FRONT ============ -->
+      <div class="balance-check" id="sim-banner" data-state="warn" role="status">
+        <span class="check-mark" aria-hidden="true">!</span>
+        <div>
+          <strong class="check-verdict">This series is simulated, not the real DSEX</strong>
+          <span class="check-detail" id="series-note">—</span>
+        </div>
+      </div>
+
+      <section id="dsex" class="model">
+
+        <div class="model-bar">
+          <div class="scenarios" role="group" aria-label="Data source">
+            <button class="scenario" type="button" id="use-sim" aria-pressed="true">Simulated series</button>
+          </div>
+          <p class="scenario-blurb">Have real data? Drop a CSV below and every
+            number on this page becomes about your series.</p>
+          <div class="model-actions">
+            <button class="btn btn-ghost" type="button" id="download-csv">Download the analysis</button>
+          </div>
+        </div>
+
+        <!-- ============ LOAD YOUR OWN ============ -->
+        <div class="csv-panel" id="csv-drop">
+          <div class="csv-head">
+            <h2>Run this on real data</h2>
+            <p>Two columns — a date and a closing level. DSE publishes daily index
+               history; export it, drop it here, and the whole page recomputes.
+               <strong>Nothing is uploaded</strong> — the parsing and the maths
+               happen in your browser, and the file never leaves your machine.</p>
+          </div>
+          <div class="csv-controls">
+            <label class="btn btn-ghost csv-file-label">
+              Choose a CSV
+              <input type="file" id="csv-file" accept=".csv,.txt,text/csv" hidden>
+            </label>
+            <span class="mono">or drag one here, or paste below</span>
+          </div>
+          <label class="csv-paste-label">
+            <span class="mono">Paste rows</span>
+            <textarea id="csv-paste" rows="3" spellcheck="false"
+              placeholder="2024-01-01,6120.55&#10;2024-01-02,6180.10&#10;2024-01-03,6099.00"></textarea>
+          </label>
+          <p class="csv-status" id="csv-status"></p>
+        </div>
+
+        <!-- ============ HEADLINES ============ -->
+        <div class="tiles">
+          <div class="tile" data-tile="cagr">
+            <span class="mono">Annualised return</span><strong class="tile-value">—</strong>
+            <small>Compound, over the whole series</small>
+          </div>
+          <div class="tile" data-tile="vol">
+            <span class="mono">Annualised volatility</span><strong class="tile-value">—</strong>
+            <small>Daily sd × √252</small>
+          </div>
+          <div class="tile" data-tile="mdd">
+            <span class="mono">Maximum drawdown</span><strong class="tile-value">—</strong>
+            <small>Worst fall from a previous peak</small>
+          </div>
+          <div class="tile" data-tile="best">
+            <span class="mono">Best single day</span><strong class="tile-value">—</strong>
+            <small></small>
+          </div>
+          <div class="tile" data-tile="worst">
+            <span class="mono">Worst single day</span><strong class="tile-value">—</strong>
+            <small></small>
+          </div>
+          <div class="tile" data-tile="kurt">
+            <span class="mono">Excess kurtosis</span><strong class="tile-value">—</strong>
+            <small>0 would be a normal distribution</small>
+          </div>
+        </div>
+
+        <!-- ============ 1 · THE INDEX ============ -->
+        <figure class="chart-card wide-chart">
+          <figcaption>
+            <strong>The index, with its three worst drawdowns shaded</strong>
+            <button class="toggle" type="button" id="log-scale" aria-pressed="false">Log scale</button>
+          </figcaption>
+          <div id="chart-index"></div>
+          <p class="statement-note">A linear axis makes early moves look trivial
+            and recent ones look dramatic; on a log axis equal vertical distances
+            are equal <em>percentage</em> moves, which is what a holder actually
+            experiences. Worth toggling — it changes the story the chart tells.</p>
+        </figure>
+
+        <!-- ============ 2 · ROLLING VOLATILITY ============ -->
+        <section class="statement">
+          <h2>Volatility is not one number</h2>
+          <div class="vol-controls">
+            <label class="driver">
+              <span class="label-row">
+                <span>Rolling window</span>
+                <span class="val" id="vol-window-value">60 days</span>
+              </span>
+              <input type="range" id="vol-window" min="10" max="250" step="5" value="60"
+                     style="--pct:20.8%" aria-label="Rolling volatility window in days">
+              <small>A short window reacts fast and is noisy; a long one is smooth
+                and late. There is no correct answer, which is the point of making
+                it a control rather than a constant.</small>
+            </label>
+          </div>
+          <figure class="chart-card wide-chart">
+            <figcaption><strong>Rolling annualised volatility</strong></figcaption>
+            <div id="chart-vol"></div>
+          </figure>
+          <p class="statement-note" id="vol-readout">—</p>
+        </section>
+
+        <!-- ============ 3 · DRAWDOWNS ============ -->
+        <section class="statement">
+          <h2>Underwater</h2>
+          <figure class="chart-card wide-chart">
+            <figcaption><strong>How far below the previous peak, every day</strong></figcaption>
+            <div id="chart-underwater"></div>
+          </figure>
+          <p class="statement-note">The flat stretches at the top are the only
+            times a holder was making new money. Everything below the line is
+            time spent waiting to get back to where they already were — and that
+            waiting, not the volatility number, is what makes people sell.</p>
+          <div class="table-scroll" id="table-episodes"></div>
+          <p class="statement-note">An episode runs peak → trough → the day the
+            index first regains that peak. One still underwater at the end of the
+            data is reported as such rather than quietly closed off, because
+            pretending it ended would understate exactly the risk being measured.</p>
+        </section>
+
+        <!-- ============ 4 · THE DISTRIBUTION ============ -->
+        <section class="statement">
+          <h2>The tails are fatter than the textbook</h2>
+          <figure class="chart-card wide-chart">
+            <figcaption>
+              <strong>Daily returns, against a normal curve with the same mean and standard deviation</strong>
+            </figcaption>
+            <div id="chart-hist"></div>
+          </figure>
+          <div class="table-scroll" id="table-tails"></div>
+          <p class="statement-note" id="tail-readout">—</p>
+        </section>
+
+        <!-- ============ 5 · CLUSTERING ============ -->
+        <section class="statement">
+          <h2>Bad days arrive together</h2>
+          <p class="statement-note" id="cluster-readout">—</p>
+        </section>
+
+        <!-- ============ 6 · HOLDING PERIODS ============ -->
+        <section class="statement">
+          <h2>What holding periods actually teach</h2>
+          <figure class="chart-card wide-chart">
+            <figcaption>
+              <strong>Share of holding periods that ended positive</strong>
+              <span class="mono">every overlapping window in the series</span>
+            </figcaption>
+            <div id="chart-horizons"></div>
+          </figure>
+
+          <div class="horizon-picker" role="group" aria-label="Holding period">
+            <span class="mono">Look closer at</span>
+            <button type="button" data-horizon="21" aria-pressed="false">1 month</button>
+            <button type="button" data-horizon="63" aria-pressed="false">3 months</button>
+            <button type="button" data-horizon="252" aria-pressed="true">1 year</button>
+            <button type="button" data-horizon="504" aria-pressed="false">2 years</button>
+            <button type="button" data-horizon="1260" aria-pressed="false">5 years</button>
+          </div>
+
+          <div class="tiles">
+            <div class="tile" data-tile="hppos">
+              <span class="mono">Ended positive</span><strong class="tile-value">—</strong>
+              <small>Of all <span id="hp-label">1 year</span> windows</small>
+            </div>
+            <div class="tile" data-tile="hpworst">
+              <span class="mono">Worst outcome</span><strong class="tile-value">—</strong>
+              <small>The unluckiest start date</small>
+            </div>
+            <div class="tile" data-tile="hpmed">
+              <span class="mono">Median outcome</span><strong class="tile-value">—</strong>
+              <small>The typical experience</small>
+            </div>
+            <div class="tile" data-tile="hpbest">
+              <span class="mono">Best outcome</span><strong class="tile-value">—</strong>
+              <small>The luckiest start date</small>
+            </div>
+          </div>
+          <p class="statement-note" id="hp-readout">—</p>
+          <p class="statement-note">These windows overlap, on purpose. The
+            question being asked is "if I had started on any given day" — and
+            every given day was a real starting point for somebody. They are not
+            independent draws and this is not a significance test; it is a record
+            of what happened.</p>
+        </section>
+
+        <!-- ============ CALENDAR ============ -->
+        <section class="statement">
+          <h2>Year by year</h2>
+          <div class="table-scroll" id="table-calendar"></div>
+        </section>
+      </section>
+
+      <!-- ============ METHOD ============ -->
+      <section>
+        <span class="section-label mono">How this analysis is built</span>
+        <div class="principles">
+          <div class="principle">
+            <h3>The data question, answered honestly</h3>
+            <p>The shipped series is simulated and labelled as such on the page,
+               in the banner and in the export. Inventing numbers and calling
+               them the DSEX would be inventing that index's record, and anyone
+               who checked would find it doesn't match. What's on display is the
+               method — so the page takes your CSV and runs the identical
+               analysis on real prices.</p>
+          </div>
+          <div class="principle">
+            <h3>Nothing is uploaded</h3>
+            <p>The CSV is parsed and analysed in the browser. There is no
+               endpoint, no storage, and no request — which is both a privacy
+               property and the reason it works on a file you would not be
+               allowed to send anywhere.</p>
+          </div>
+          <div class="principle">
+            <h3>Windows that admit what they are</h3>
+            <p>Rolling volatility returns nothing until the window is full,
+               rather than quietly computing a three-day "sixty-day volatility"
+               at the start of the series. A chart that begins with a confident
+               wrong number is worse than one that begins late.</p>
+          </div>
+          <div class="principle">
+            <h3>Drawdowns measured properly</h3>
+            <p>Peak to trough to recovery, as distinct episodes, with an
+               unrecovered one flagged instead of closed at the last data point.
+               The recovery time is usually the more painful number and the one
+               most summaries leave out.</p>
+          </div>
+          <div class="principle">
+            <h3>Tail risk past the headline</h3>
+            <p>Value-at-risk says how bad a bad day is at the threshold;
+               expected shortfall says how bad they are once you're past it. Both
+               are here, at 95% and 99%, next to a count of how many days moved
+               beyond three, four and five standard deviations against what a
+               normal distribution would allow.</p>
+          </div>
+          <div class="principle">
+            <h3>Checked against hand-worked cases</h3>
+            <p>Fifty-two tests on the engine: standard deviations against known
+               values, drawdowns on a seven-point series checkable by eye,
+               holding periods on monotonic series that must come out 100% and
+               0%, VaR against its own empirical frequency, and a CSV parser
+               fed headers, reversed files, junk rows and quoted thousands
+               separators.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="note">
+        The bundled series is simulated with deliberately realistic behaviour —
+        volatility clustering, fat tails, multi-year drawdowns — so the analysis
+        has something worth analysing. It is not the Dhaka Stock Exchange's
+        history, not a forecast, and not advice about any security. Load real
+        prices to make every figure on this page real.
+      </div>
+
+      <div class="band">
+        <span class="mono">Working together</span>
+        <h2>Have a series that needs interrogating?</h2>
+        <p>Return and risk analysis in Python or R — cleaning, statistics,
+           charts and a written answer to the question you actually asked, with
+           the notebook handed over so the work can be rerun.</p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/contact.html">Start a conversation</a>
+          <a class="btn btn-ghost" href="/portfolio.html">Back to the portfolio</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>Everything on this site is general education, not investment advice.</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/portfolio/dsex.js"></script>
+</body>
+</html>

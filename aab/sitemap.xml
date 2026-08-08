@@ -9,11 +9,27 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/learn/contents.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/tools/index.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://reiad.co.uk/insights.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/portfolio/three-statement.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/portfolio/dcf.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/portfolio/dsex.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
@@ -33,9 +49,46 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/insights/German Alphabets.html</loc>
+    <lastmod>2026-08-05</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/insights/dse-basics.html</loc>
     <lastmod>2026-07-01</lastmod>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/start/index.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-1/index.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/index.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/index.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/inter-1/index.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/inter-2/index.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/inter-3/index.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/advanced/index.html</loc>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://reiad.co.uk/learn/terms/share.html</loc>
@@ -107,6 +160,142 @@
   </url>
   <url>
     <loc>https://reiad.co.uk/learn/terms/compounding.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/supply-demand.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/news-and-price.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/interest-and-taka.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/war-and-shocks.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/crowd-behaviour.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/when-to-buy.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/when-to-sell.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/why-hold.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/cost-of-churn.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/sectors.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/share-categories.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/commodities.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/complements-substitutes.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/bsec.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/exchanges-cdbl.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/bangladesh-bank.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/amcs-icb.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/choosing-a-broker.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/reading-a-quote.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/apps-and-sites.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-2/watchlist.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/dse-website.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/annual-report.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/official-sources.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/keeping-records.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/income-statement.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/balance-sheet.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/cash-flow.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/ratios.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/red-flags.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/a-thesis.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/news-vs-rumour.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/case-study.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/basics-3/your-own-biases.html</loc>
     <priority>0.7</priority>
   </url>
 </urlset>

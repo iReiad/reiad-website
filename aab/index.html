@@ -18,10 +18,13 @@
        on its own through color-scheme + light-dark(). -->
   <script>
     (function () {
-      var saved = localStorage.getItem("theme");
-      if (saved === "dark" || saved === "light") {
-        document.documentElement.setAttribute("data-theme", saved);
-      }
+      var d = document.documentElement;
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
+        var a = localStorage.getItem("audience");
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+      } catch (e) {}
     })();
   </script>
 
@@ -86,7 +89,9 @@
   </header>
 
   <main id="main">
-    <div class="wrap">
+    <!-- home-flow lets the audience choice reorder these blocks; see
+         the `audience` section of styles.css -->
+    <div class="wrap home-flow">
 
       <div class="hero">
         <!-- Decorative market line: draws itself on load (CSS animation).
@@ -104,7 +109,36 @@
           more — from a finance and risk management graduate. Plus financial
           modeling and analysis for clients who need the numbers done right.
         </p>
-        <div class="hero-actions">
+        <!-- ============ THE FRONT DOOR ============
+             Two very different people arrive here: a Bangladeshi
+             reader who wants to understand money in Bangla, and a
+             recruiter or client who wants the work. Asking once
+             beats making each of them read past the other's half.
+
+             Both doors are ordinary links, so this works with
+             JavaScript off; audience.js only adds the remembering.
+             Nothing is ever hidden as a result of the answer — see
+             the note at the top of audience.js. -->
+        <div class="doorway" id="doorway">
+          <a class="cell door" href="/learn/index.html" data-audience-pick="learn" data-keep>
+            <span class="door-art" data-icon="seed" aria-hidden="true">
+              <svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-7"/><path d="M12 14c0-3.3 2.7-6 6-6 0 3.3-2.7 6-6 6Z"/><path d="M12 16c0-2.5-2-4.5-4.5-4.5C7.5 14 9.5 16 12 16Z"/></svg>
+            </span>
+            <h3 class="bn-h">আমি শিখতে এসেছি</h3>
+            <p>বাংলায় বিনিয়োগ শেখার পুরো পথ, একদম শুরু থেকে।</p>
+            <span class="more">শেখা শুরু করুন →</span>
+          </a>
+          <a class="cell door" href="/portfolio.html" data-audience-pick="work">
+            <span class="door-art" aria-hidden="true">
+              <svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h18v11H3z"/><path d="M9 8V6a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 6v2"/><path d="M3 13h18"/><path d="M11 13v2h2v-2"/></svg>
+            </span>
+            <h3>I'm hiring, or I need work done</h3>
+            <p>Financial modeling, data analysis and finance writing.</p>
+            <span class="more">See the portfolio →</span>
+          </a>
+        </div>
+
+        <div class="hero-actions after-doors">
           <a class="btn btn-solid" href="/learn/index.html">Start learning — বাংলায়</a>
           <a class="btn btn-ghost" href="/tools/index.html">Run the numbers</a>
           <a class="btn btn-ghost" href="/portfolio.html">Work with me</a>
@@ -138,10 +172,13 @@
         </div>
       </div>
 
-      <div class="bento">
+      <!-- data-for marks who a block is mainly for; the `audience`
+           block in styles.css reorders on it. Everything stays on the
+           page for everyone — only the order changes. -->
+      <div class="bento" data-for="work">
 
         <!-- Featured article (big cell) -->
-        <article class="cell cell-feature">
+        <article class="cell cell-feature" data-for="learn">
           <span class="tag mono">Featured · Explainer</span>
           <h2>How the Dhaka Stock Exchange actually works</h2>
           <p>What the DSEX index measures, how a BO account works, and the
@@ -151,7 +188,7 @@
         </article>
 
         <!-- Glass stats card: the site's one glassmorphism moment -->
-        <div class="cell cell-stats">
+        <div class="cell cell-stats" data-for="work">
           <div class="glass">
             <span class="mono">Credentials</span>
             <div><strong>MSc Finance &amp; Risk Management</strong>
@@ -164,7 +201,7 @@
         </div>
 
         <!-- About snippet -->
-        <div class="cell cell-about">
+        <div class="cell cell-about" data-for="work">
           <span class="tag mono">About</span>
           <h3>Economics first, risk second, plain language always</h3>
           <p>BSS Economics (Chittagong), MSc in Brighton, research on Islamic
@@ -174,7 +211,7 @@
         </div>
 
         <!-- Latest market note -->
-        <div class="cell cell-note">
+        <div class="cell cell-note" data-for="learn">
           <span class="tag mono">Latest note</span>
           <h3>Sanchayapatra vs. bank FDR</h3>
           <p>Where does a saver's taka work harder? Coming soon to the Learn hub.</p>
@@ -182,7 +219,7 @@
         </div>
 
         <!-- Services teaser -->
-        <div class="cell cell-services">
+        <div class="cell cell-services" data-for="work">
           <span class="tag mono">Services</span>
           <div class="svc">
             <span>Financial modeling — Excel, three-statement, DCF</span>
@@ -195,7 +232,7 @@
       </div>
 
       <!-- ============ WHAT'S HERE ============ -->
-      <section>
+      <section data-for="learn">
         <span class="section-label mono">Start here</span>
         <div class="big-links">
           <a class="big-link" href="/learn/index.html">
@@ -231,7 +268,7 @@
       </section>
 
       <!-- ============ LATEST ============ -->
-      <section>
+      <section data-for="both">
         <span class="section-label mono">Latest writing</span>
         <!-- rendered from the ARTICLES list in /content.js -->
         <div class="cards grid-2" id="article-cards" data-mode="live" data-limit="2"></div>
@@ -239,7 +276,7 @@
       </section>
 
       <!-- ============ WHY THIS EXISTS ============ -->
-      <section>
+      <section data-for="context">
         <span class="section-label mono">Why this site exists</span>
         <div class="principles">
           <div class="principle">

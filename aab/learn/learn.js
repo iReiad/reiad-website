@@ -135,19 +135,10 @@
     if (e.key === "Escape") closeReader();
   });
 
-  /* ---------- Hub filter box ---------- */
-  const filter = document.getElementById("term-filter");
-  if (filter) {
-    filter.addEventListener("input", () => {
-      const q = filter.value.trim().toLowerCase();
-      document.querySelectorAll(".term-card").forEach((card) => {
-        card.style.display =
-          card.textContent.toLowerCase().includes(q) ? "" : "none";
-      });
-      document.querySelectorAll(".term-grid").forEach((grid) => {
-        const anyVisible = [...grid.children].some((c) => c.style.display !== "none");
-        grid.closest("section").style.display = anyVisible ? "" : "none";
-      });
-    });
-  }
+  /* The hub's filter box used to live here, matching .term-card
+     elements. The hub now has steps, ladder rungs, a contents index
+     and a glossary to search as well, so the filter moved to
+     hub.js where it can see all four. Leaving a second listener on
+     the same input would have been a silent no-op today and a
+     confusing double-filter the next time someone touched it. */
 })();

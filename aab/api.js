@@ -9,6 +9,8 @@
    version of the site to maintain in the meantime.
    ============================================================ */
 
+import { whenActivated } from "/activation.js";
+
 const JSON_HEADERS = { "Content-Type": "application/json" };
 
 /** null means "not available" — never an exception to handle. */
@@ -82,5 +84,10 @@ export const auth = {
 export function countView(path = location.pathname) {
   // Don't count the author reading their own drafts, or a dev server.
   if (location.hostname === "localhost" || location.hostname === "127.0.0.1") return;
-  api("signals/view", { method: "POST", body: { path }, timeout: 3000 });
+  // Don't count a hover. Speculation rules prerender a link on hover,
+  // and a prerendered page runs this file — so every view counted here
+  // was really "the pointer passed over a link". See /activation.js.
+  whenActivated(() =>
+    api("signals/view", { method: "POST", body: { path }, timeout: 3000 })
+  );
 }

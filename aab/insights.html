@@ -13,10 +13,13 @@
        on its own through color-scheme + light-dark(). -->
   <script>
     (function () {
-      var saved = localStorage.getItem("theme");
-      if (saved === "dark" || saved === "light") {
-        document.documentElement.setAttribute("data-theme", saved);
-      }
+      var d = document.documentElement;
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
+        var a = localStorage.getItem("audience");
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+      } catch (e) {}
     })();
   </script>
 

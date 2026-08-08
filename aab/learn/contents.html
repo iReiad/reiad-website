@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>সব বিষয় এক নজরে — শেখার লাইব্রেরি — Rony Reiad</title>
+  <meta name="description" content="শেখার লাইব্রেরির প্রতিটা লেখা এক পাতায় — আট ধাপের পুরো তালিকা, আর ইংরেজি বর্ণানুক্রমে শব্দকোষ।">
+  <link rel="canonical" href="https://reiad.co.uk/learn/contents.html">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="সব বিষয় এক নজরে — শেখার লাইব্রেরি — Rony Reiad">
+  <meta property="og:description" content="শেখার লাইব্রেরির প্রতিটা লেখা এক পাতায় — আট ধাপের পুরো তালিকা, আর ইংরেজি বর্ণানুক্রমে শব্দকোষ।">
+  <script>
+    (function () {
+      var d = document.documentElement;
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
+        var a = localStorage.getItem("audience");
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta property="og:image" content="https://reiad.co.uk/og/learn.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Rony Reiad">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+  <a class="skip" href="#main">মূল লেখায় যান</a>
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="/index.html">
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Rony Reiad
+      </a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep aria-current="page">Learn</a>
+        <a href="/tools/index.html">Tools</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+  <main id="main">
+    <div class="wrap">
+
+      <div class="hero">
+        <span class="eyebrow mono">শেখার লাইব্রেরি · সূচিপত্র</span>
+        <h1 class="bn-h">সব বিষয় এক নজরে</h1>
+        <p class="lede">লাইব্রেরির প্রতিটা লেখা, ধাপ অনুযায়ী সাজানো — মোট ৮৯টি,
+        যার ৬০টি এখন পড়া যায়। যেটা পড়া হয়ে গেছে সেটায় টিক চিহ্ন;
+        টিকগুলো আপনার নিজের ব্রাউজারে জমা থাকে, কোথাও পাঠানো হয় না।</p>
+        <search>
+          <input type="search" id="contents-filter" placeholder="খুঁজুন… (যেমন: ব্রোকার, ঝুঁকি, নগদ)" aria-label="লেখা খুঁজুন">
+        </search>
+        <div id="contents-count" class="filter-count mono" hidden></div>
+        <nav class="contents-jump" aria-label="ধাপে যান">
+          <a href="#c-start">ধাপ ০</a>
+          <a href="#c-basics-1">ভিত্তি · ধাপ ১</a>
+          <a href="#c-basics-2">ভিত্তি · ধাপ ২</a>
+          <a href="#c-basics-3">ভিত্তি · ধাপ ৩</a>
+          <a href="#c-inter-1">মাঝারি · ধাপ ১</a>
+          <a href="#c-inter-2">মাঝারি · ধাপ ২</a>
+          <a href="#c-inter-3">মাঝারি · ধাপ ৩</a>
+          <a href="#c-advanced">সর্বোচ্চ ধাপ</a>
+        </nav>
+      </div>
+
+      <section class="contents-stage" id="c-start">
+        <div class="contents-stage-head">
+          <span class="contents-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-7"/><path d="M12 14c0-3.3 2.7-6 6-6 0 3.3-2.7 6-6 6Z"/><path d="M12 16c0-2.5-2-4.5-4.5-4.5C7.5 14 9.5 16 12 16Z"/></svg></span>
+          <div>
+            <span class="mono contents-kicker">ধাপ ০</span>
+            <h2 class="bn-h"><a href="/learn/index.html#starter">হাতেখড়ি</a>
+              <span class="en-sub">Starter Guide</span></h2>
+            <p class="contents-who">যিনি কখনো বিনিয়োগ করেননি, এবং কোথা থেকে ধরবেন বুঝতে পারছেন না</p>
+          </div>
+          <span class="contents-tally mono">৮/৮</span>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">আটটা ধাপ · The eight steps</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-lesson-id="start/money-first">
+              <a class="bn-h" href="/learn/index.html#step-money-first">টাকাটা আগে ঠিক করুন</a>
+              <span class="contents-en">Get your money ready first</span>
+              <span class="contents-min mono">৬ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="start/papers">
+              <a class="bn-h" href="/learn/index.html#step-papers">কাগজপত্র গুছিয়ে নিন</a>
+              <span class="contents-en">Get your papers in order</span>
+              <span class="contents-min mono">৫ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="start/safest-first">
+              <a class="bn-h" href="/learn/index.html#step-safest-first">সবচেয়ে নিরাপদটা দিয়ে শুরু</a>
+              <span class="contents-en">Start with the safest thing</span>
+              <span class="contents-min mono">৭ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="start/bo-account">
+              <a class="bn-h" href="/learn/index.html#step-bo-account">বিও অ্যাকাউন্ট খুলুন</a>
+              <span class="contents-en">Open a BO account</span>
+              <span class="contents-min mono">৮ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="start/first-buy">
+              <a class="bn-h" href="/learn/index.html#step-first-buy">প্রথম কেনাকাটা</a>
+              <span class="contents-en">Your first purchase</span>
+              <span class="contents-min mono">৯ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="start/make-a-rule">
+              <a class="bn-h" href="/learn/index.html#step-make-a-rule">নিয়ম বানান, তারপর ধৈর্য</a>
+              <span class="contents-en">Make a rule, then wait</span>
+              <span class="contents-min mono">৬ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="start/dont-get-cheated">
+              <a class="bn-h" href="/learn/index.html#step-dont-get-cheated">ঠকবেন না</a>
+              <span class="contents-en">Don't get cheated</span>
+              <span class="contents-min mono">৮ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="start/where-next">
+              <a class="bn-h" href="/learn/index.html#step-where-next">এরপর কোথায়</a>
+              <span class="contents-en">Where to go next</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="contents-stage" id="c-basics-1">
+        <div class="contents-stage-head">
+          <span class="contents-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5Z"/><path d="M4 19.5A1.5 1.5 0 0 1 5.5 21H19v-3"/><path d="M8 7.5h7"/><path d="M8 11h5"/></svg></span>
+          <div>
+            <span class="mono contents-kicker">ভিত্তি · ধাপ ১</span>
+            <h2 class="bn-h"><a href="/learn/basics-1/index.html">শব্দগুলো শিখুন</a>
+              <span class="en-sub">Basics: Stage 1</span></h2>
+            <p class="contents-who">হাতেখড়ি শেষ, এখন কথাগুলোর মানে জানা দরকার</p>
+          </div>
+          <span class="contents-tally mono">১৮/১৮</span>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">বাজারের মূল কথা · Market basics</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-lesson-id="share">
+              <a class="bn-h" href="/learn/terms/share.html">শেয়ার</a>
+              <span class="contents-en">Share / Stock</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="dse">
+              <a class="bn-h" href="/learn/terms/dse.html">ঢাকা স্টক এক্সচেঞ্জ</a>
+              <span class="contents-en">DSE</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="dsex">
+              <a class="bn-h" href="/learn/terms/dsex.html">সূচক</a>
+              <span class="contents-en">Index / DSEX</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="bo-account">
+              <a class="bn-h" href="/learn/terms/bo-account.html">বিও অ্যাকাউন্ট</a>
+              <span class="contents-en">BO Account</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="broker">
+              <a class="bn-h" href="/learn/terms/broker.html">ব্রোকার</a>
+              <span class="contents-en">Broker</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="ipo">
+              <a class="bn-h" href="/learn/terms/ipo.html">আইপিও</a>
+              <span class="contents-en">IPO</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">বিনিয়োগের মাধ্যম · Ways to invest</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-lesson-id="mutual-fund">
+              <a class="bn-h" href="/learn/terms/mutual-fund.html">মিউচুয়াল ফান্ড</a>
+              <span class="contents-en">Mutual Fund</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="sanchayapatra">
+              <a class="bn-h" href="/learn/terms/sanchayapatra.html">সঞ্চয়পত্র</a>
+              <span class="contents-en">Savings Certificate</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="bond">
+              <a class="bn-h" href="/learn/terms/bond.html">বন্ড</a>
+              <span class="contents-en">Bond</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="fdr">
+              <a class="bn-h" href="/learn/terms/fdr.html">এফডিআর</a>
+              <span class="contents-en">Fixed Deposit (FDR)</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">কোম্পানি বিশ্লেষণ · Company analysis</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-lesson-id="dividend">
+              <a class="bn-h" href="/learn/terms/dividend.html">ডিভিডেন্ড</a>
+              <span class="contents-en">Dividend</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="eps">
+              <a class="bn-h" href="/learn/terms/eps.html">ইপিএস</a>
+              <span class="contents-en">EPS</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="pe-ratio">
+              <a class="bn-h" href="/learn/terms/pe-ratio.html">পিই রেশিও</a>
+              <span class="contents-en">P/E Ratio</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="nav">
+              <a class="bn-h" href="/learn/terms/nav.html">এনএভি</a>
+              <span class="contents-en">NAV</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">ঝুঁকি ও কৌশল · Risk &amp; strategy</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-lesson-id="risk-return">
+              <a class="bn-h" href="/learn/terms/risk-return.html">ঝুঁকি ও রিটার্ন</a>
+              <span class="contents-en">Risk &amp; Return</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="diversification">
+              <a class="bn-h" href="/learn/terms/diversification.html">ডাইভারসিফিকেশন</a>
+              <span class="contents-en">Diversification</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="inflation">
+              <a class="bn-h" href="/learn/terms/inflation.html">মূল্যস্ফীতি</a>
+              <span class="contents-en">Inflation</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="compounding">
+              <a class="bn-h" href="/learn/terms/compounding.html">চক্রবৃদ্ধি</a>
+              <span class="contents-en">Compounding</span>
+              <span class="contents-min mono">৩ মি</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="contents-stage" id="c-basics-2">
+        <div class="contents-stage-head">
+          <span class="contents-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2l-1.9 4.6-4.7 1.9 1.9-4.6 4.7-1.9Z"/></svg></span>
+          <div>
+            <span class="mono contents-kicker">ভিত্তি · ধাপ ২</span>
+            <h2 class="bn-h"><a href="/learn/basics-2/index.html">বাজারটা পড়তে শিখুন</a>
+              <span class="en-sub">Basics: Stage 2</span></h2>
+            <p class="contents-who">শব্দগুলো জানা হয়ে গেছে, এখন বাজারটা কীভাবে চলে বুঝতে চান</p>
+          </div>
+          <span class="contents-tally mono">২১/২১</span>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">বাজার কেন ওঠানামা করে · Why markets move</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-lesson-id="basics-2/supply-demand">
+              <a class="bn-h" href="/learn/basics-2/supply-demand.html">চাহিদা আর জোগান</a>
+              <span class="contents-en">Supply &amp; demand</span>
+              <span class="contents-min mono">৬ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/news-and-price">
+              <a class="bn-h" href="/learn/basics-2/news-and-price.html">খবর কীভাবে দামে ঢোকে</a>
+              <span class="contents-en">How news gets into the price</span>
+              <span class="contents-min mono">৭ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/interest-and-taka">
+              <a class="bn-h" href="/learn/basics-2/interest-and-taka.html">সুদের হার আর টাকার মান</a>
+              <span class="contents-en">Interest rates &amp; the taka</span>
+              <span class="contents-min mono">৮ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/war-and-shocks">
+              <a class="bn-h" href="/learn/basics-2/war-and-shocks.html">যুদ্ধ, দুর্যোগ আর বড় ধাক্কা</a>
+              <span class="contents-en">War, disaster &amp; big shocks</span>
+              <span class="contents-min mono">৮ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/crowd-behaviour">
+              <a class="bn-h" href="/learn/basics-2/crowd-behaviour.html">ভিড়ের আচরণ</a>
+              <span class="contents-en">How crowds behave</span>
+              <span class="contents-min mono">৬ মি</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">কখন কিনবেন, কখন বেচবেন · Buy, sell or hold</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-lesson-id="basics-2/when-to-buy">
+              <a class="bn-h" href="/learn/basics-2/when-to-buy.html">কেনার আগে যে পাঁচটা প্রশ্ন</a>
+              <span class="contents-en">Five questions before buying</span>
+              <span class="contents-min mono">৭ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/when-to-sell">
+              <a class="bn-h" href="/learn/basics-2/when-to-sell.html">বেচার তিনটা বৈধ কারণ</a>
+              <span class="contents-en">Three good reasons to sell</span>
+              <span class="contents-min mono">৭ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/why-hold">
+              <a class="bn-h" href="/learn/basics-2/why-hold.html">ধরে রাখাও একটা সিদ্ধান্ত</a>
+              <span class="contents-en">Holding is a decision too</span>
+              <span class="contents-min mono">৫ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/cost-of-churn">
+              <a class="bn-h" href="/learn/basics-2/cost-of-churn.html">বারবার কেনাবেচার দাম</a>
+              <span class="contents-en">What churning costs you</span>
+              <span class="contents-min mono">৬ মি</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">কী কী কেনা যায় · What you can actually buy</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-lesson-id="basics-2/sectors">
+              <a class="bn-h" href="/learn/basics-2/sectors.html">খাত চিনুন</a>
+              <span class="contents-en">Sectors explained</span>
+              <span class="contents-min mono">৯ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/share-categories">
+              <a class="bn-h" href="/learn/basics-2/share-categories.html">A, B, N, Z — ক্যাটাগরি</a>
+              <span class="contents-en">Share categories</span>
+              <span class="contents-min mono">৬ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/commodities">
+              <a class="bn-h" href="/learn/basics-2/commodities.html">কমোডিটি — সোনা, তেল, খাদ্যশস্য</a>
+              <span class="contents-en">Commodities</span>
+              <span class="contents-min mono">৮ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/complements-substitutes">
+              <a class="bn-h" href="/learn/basics-2/complements-substitutes.html">পরিপূরক আর বিকল্প</a>
+              <span class="contents-en">Complements &amp; substitutes</span>
+              <span class="contents-min mono">৭ মি</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">কারা কী করে · Who runs what</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-lesson-id="basics-2/bsec">
+              <a class="bn-h" href="/learn/basics-2/bsec.html">বিএসইসি — নিয়ন্ত্রক</a>
+              <span class="contents-en">BSEC, the regulator</span>
+              <span class="contents-min mono">৬ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/exchanges-cdbl">
+              <a class="bn-h" href="/learn/basics-2/exchanges-cdbl.html">ডিএসই, সিএসই আর সিডিবিএল</a>
+              <span class="contents-en">DSE, CSE &amp; CDBL</span>
+              <span class="contents-min mono">৬ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/bangladesh-bank">
+              <a class="bn-h" href="/learn/basics-2/bangladesh-bank.html">বাংলাদেশ ব্যাংক</a>
+              <span class="contents-en">Bangladesh Bank</span>
+              <span class="contents-min mono">৬ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/amcs-icb">
+              <a class="bn-h" href="/learn/basics-2/amcs-icb.html">অ্যাসেট ম্যানেজার আর আইসিবি</a>
+              <span class="contents-en">Asset managers &amp; ICB</span>
+              <span class="contents-min mono">৭ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/choosing-a-broker">
+              <a class="bn-h" href="/learn/basics-2/choosing-a-broker.html">ব্রোকারেজ হাউস বাছাই</a>
+              <span class="contents-en">Choosing a brokerage</span>
+              <span class="contents-min mono">৮ মি</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">লাইভ বাজার দেখা · Reading the live market</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-lesson-id="basics-2/reading-a-quote">
+              <a class="bn-h" href="/learn/basics-2/reading-a-quote.html">একটা কোট পড়তে শিখুন</a>
+              <span class="contents-en">How to read a quote</span>
+              <span class="contents-min mono">৮ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/apps-and-sites">
+              <a class="bn-h" href="/learn/basics-2/apps-and-sites.html">কোন অ্যাপ, কোন সাইট</a>
+              <span class="contents-en">Which apps &amp; sites</span>
+              <span class="contents-min mono">৭ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-2/watchlist">
+              <a class="bn-h" href="/learn/basics-2/watchlist.html">নিজের ওয়াচলিস্ট বানান</a>
+              <span class="contents-en">Build a watchlist</span>
+              <span class="contents-min mono">৬ মি</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="contents-stage" id="c-basics-3">
+        <div class="contents-stage-head">
+          <span class="contents-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.3 15.3 21 21"/><path d="M8 10.5h5"/><path d="M10.5 8v5"/></svg></span>
+          <div>
+            <span class="mono contents-kicker">ভিত্তি · ধাপ ৩</span>
+            <h2 class="bn-h"><a href="/learn/basics-3/index.html">নিজে যাচাই করুন</a>
+              <span class="en-sub">Basics: Stage 3</span></h2>
+            <p class="contents-who">যিনি অন্যের কথায় না চলে নিজে একটা শেয়ার বিচার করতে চান</p>
+          </div>
+          <span class="contents-tally mono">১৩/১৩</span>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">তথ্য কোথায় · Where the data is</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-lesson-id="basics-3/dse-website">
+              <a class="bn-h" href="/learn/basics-3/dse-website.html">ডিএসইর সাইট থেকে যা পাবেন</a>
+              <span class="contents-en">Mining the DSE website</span>
+              <span class="contents-min mono">৮ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-3/annual-report">
+              <a class="bn-h" href="/learn/basics-3/annual-report.html">বার্ষিক প্রতিবেদন কোথায়, কীভাবে</a>
+              <span class="contents-en">Finding the annual report</span>
+              <span class="contents-min mono">৭ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-3/official-sources">
+              <a class="bn-h" href="/learn/basics-3/official-sources.html">সরকারি সূত্র</a>
+              <span class="contents-en">Official sources</span>
+              <span class="contents-min mono">৭ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-3/keeping-records">
+              <a class="bn-h" href="/learn/basics-3/keeping-records.html">নিজের খাতা রাখুন</a>
+              <span class="contents-en">Keep your own records</span>
+              <span class="contents-min mono">৬ মি</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">হিসাব পড়া · Reading the numbers</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-lesson-id="basics-3/income-statement">
+              <a class="bn-h" href="/learn/basics-3/income-statement.html">আয়-ব্যয়ের হিসাব</a>
+              <span class="contents-en">The income statement</span>
+              <span class="contents-min mono">৯ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-3/balance-sheet">
+              <a class="bn-h" href="/learn/basics-3/balance-sheet.html">স্থিতিপত্র</a>
+              <span class="contents-en">The balance sheet</span>
+              <span class="contents-min mono">৯ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-3/cash-flow">
+              <a class="bn-h" href="/learn/basics-3/cash-flow.html">নগদ প্রবাহ</a>
+              <span class="contents-en">Cash flow</span>
+              <span class="contents-min mono">৯ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-3/ratios">
+              <a class="bn-h" href="/learn/basics-3/ratios.html">অনুপাত দিয়ে যাচাই</a>
+              <span class="contents-en">Checking with ratios</span>
+              <span class="contents-min mono">৯ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-3/red-flags">
+              <a class="bn-h" href="/learn/basics-3/red-flags.html">বিপদের চিহ্ন</a>
+              <span class="contents-en">Red flags</span>
+              <span class="contents-min mono">৮ মি</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">সিদ্ধান্তে আসা · Coming to a decision</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-lesson-id="basics-3/a-thesis">
+              <a class="bn-h" href="/learn/basics-3/a-thesis.html">নিজের যুক্তি লিখে ফেলুন</a>
+              <span class="contents-en">Write your thesis down</span>
+              <span class="contents-min mono">৭ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-3/news-vs-rumour">
+              <a class="bn-h" href="/learn/basics-3/news-vs-rumour.html">খবর নাকি গুজব</a>
+              <span class="contents-en">News or rumour?</span>
+              <span class="contents-min mono">৭ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-3/case-study">
+              <a class="bn-h" href="/learn/basics-3/case-study.html">একটা কোম্পানি, শুরু থেকে শেষ</a>
+              <span class="contents-en">One company, end to end</span>
+              <span class="contents-min mono">১২ মি</span>
+            </li>
+            <li class="contents-row" data-lesson-id="basics-3/your-own-biases">
+              <a class="bn-h" href="/learn/basics-3/your-own-biases.html">নিজের মনের ফাঁদ</a>
+              <span class="contents-en">Your own biases</span>
+              <span class="contents-min mono">৮ মি</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="contents-stage" id="c-inter-1">
+        <div class="contents-stage-head">
+          <span class="contents-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 9 12 4.5 21.5 9 12 13.5 2.5 9Z"/><path d="M6.5 11v5c0 1.5 2.5 2.8 5.5 2.8s5.5-1.3 5.5-2.8v-5"/><path d="M21.5 9v5"/></svg></span>
+          <div>
+            <span class="mono contents-kicker">মাঝারি · ধাপ ১</span>
+            <h2 class="bn-h"><a href="/learn/inter-1/index.html">বিশ্ববিদ্যালয়ের পড়া</a>
+              <span class="en-sub">Intermediate 1 — Coursework</span></h2>
+            <p class="contents-who">ফিন্যান্স, অ্যাকাউন্টিং বা অর্থনীতির স্নাতক শিক্ষার্থী</p>
+          </div>
+          <span class="contents-tally mono">০/৮</span>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">কোর কোর্সগুলো · The core papers</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-1/corporate-finance">
+              <a class="bn-h" href="/learn/inter-1/corporate-finance.html">কর্পোরেট ফিন্যান্স</a>
+              <span class="contents-en">Corporate finance</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-1/valuation">
+              <a class="bn-h" href="/learn/inter-1/valuation.html">মূল্যায়ন — DCF ও তুলনা</a>
+              <span class="contents-en">Valuation: DCF &amp; multiples</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-1/portfolio-theory">
+              <a class="bn-h" href="/learn/inter-1/portfolio-theory.html">পোর্টফোলিও তত্ত্ব</a>
+              <span class="contents-en">Portfolio theory</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-1/econometrics">
+              <a class="bn-h" href="/learn/inter-1/econometrics.html">ইকোনোমেট্রিক্স হাতেকলমে</a>
+              <span class="contents-en">Econometrics in practice</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">সমস্যা সমাধানের পদ্ধতি · How to solve a problem</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-1/problem-method">
+              <a class="bn-h" href="/learn/inter-1/problem-method.html">যেকোনো অঙ্কের সাত ধাপ</a>
+              <span class="contents-en">Seven steps for any problem</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-1/worked-example">
+              <a class="bn-h" href="/learn/inter-1/worked-example.html">একটা অ্যাসাইনমেন্ট, পুরোটা</a>
+              <span class="contents-en">A full worked assignment</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-1/excel-for-coursework">
+              <a class="bn-h" href="/learn/inter-1/excel-for-coursework.html">কোর্সওয়ার্কের জন্য এক্সেল</a>
+              <span class="contents-en">Excel for coursework</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-1/citing">
+              <a class="bn-h" href="/learn/inter-1/citing.html">রেফারেন্স আর নকল এড়ানো</a>
+              <span class="contents-en">Citing &amp; avoiding plagiarism</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="contents-stage" id="c-inter-2">
+        <div class="contents-stage-head">
+          <span class="contents-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h11a1.5 1.5 0 0 1 1.5 1.5V19a2 2 0 0 1-2 2H7"/><path d="M6 3a2 2 0 0 0-2 2v1.5h2.5"/><path d="M7 21a2 2 0 0 0 2-2V6.5H6.5"/><path d="M11 9.5h4.5"/><path d="M11 13h4.5"/></svg></span>
+          <div>
+            <span class="mono contents-kicker">মাঝারি · ধাপ ২</span>
+            <h2 class="bn-h"><a href="/learn/inter-2/index.html">গবেষণা ও অভিসন্দর্ভ</a>
+              <span class="en-sub">Intermediate 2 — Dissertation</span></h2>
+            <p class="contents-who">যিনি থিসিস বা ডিসার্টেশন লিখছেন, বা লিখবেন</p>
+          </div>
+          <span class="contents-tally mono">০/৮</span>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">গবেষণা করা · Doing the research</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-2/choosing-a-topic">
+              <a class="bn-h" href="/learn/inter-2/choosing-a-topic.html">বিষয় বাছাই</a>
+              <span class="contents-en">Choosing a topic</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-2/literature-review">
+              <a class="bn-h" href="/learn/inter-2/literature-review.html">সাহিত্য পর্যালোচনা</a>
+              <span class="contents-en">The literature review</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-2/finding-papers">
+              <a class="bn-h" href="/learn/inter-2/finding-papers.html">পেপার খোঁজা ও পড়া</a>
+              <span class="contents-en">Finding &amp; reading papers</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-2/methodology">
+              <a class="bn-h" href="/learn/inter-2/methodology.html">পদ্ধতি নির্বাচন</a>
+              <span class="contents-en">Methodology</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-2/bd-data-for-research">
+              <a class="bn-h" href="/learn/inter-2/bd-data-for-research.html">বাংলাদেশের ডেটা নিয়ে কাজ</a>
+              <span class="contents-en">Working with Bangladeshi data</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">লেখা ও জমা · Writing it up</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-2/structure">
+              <a class="bn-h" href="/learn/inter-2/structure.html">কাঠামো</a>
+              <span class="contents-en">Structure</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-2/defending">
+              <a class="bn-h" href="/learn/inter-2/defending.html">ভাইভা ও প্রতিরক্ষা</a>
+              <span class="contents-en">The viva</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-2/publishing">
+              <a class="bn-h" href="/learn/inter-2/publishing.html">প্রকাশের পথ</a>
+              <span class="contents-en">Getting published</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="contents-stage" id="c-inter-3">
+        <div class="contents-stage-head">
+          <span class="contents-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h18v11H3z"/><path d="M9 8V6a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 6v2"/><path d="M3 13h18"/><path d="M11 13v2h2v-2"/></svg></span>
+          <div>
+            <span class="mono contents-kicker">মাঝারি · ধাপ ৩</span>
+            <h2 class="bn-h"><a href="/learn/inter-3/index.html">চাকরি ও বাস্তব কাজ</a>
+              <span class="en-sub">Intermediate 3 — On the job</span></h2>
+            <p class="contents-who">যিনি এই খাতে চাকরি খুঁজছেন বা সবে ঢুকেছেন</p>
+          </div>
+          <span class="contents-tally mono">০/৭</span>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">কাজগুলো কী · What the jobs are</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-3/research-analyst">
+              <a class="bn-h" href="/learn/inter-3/research-analyst.html">রিসার্চ অ্যানালিস্ট</a>
+              <span class="contents-en">Research analyst</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-3/credit-risk">
+              <a class="bn-h" href="/learn/inter-3/credit-risk.html">ক্রেডিট ও রিস্ক</a>
+              <span class="contents-en">Credit &amp; risk</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-3/treasury">
+              <a class="bn-h" href="/learn/inter-3/treasury.html">ট্রেজারি</a>
+              <span class="contents-en">Treasury</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-3/asset-management">
+              <a class="bn-h" href="/learn/inter-3/asset-management.html">অ্যাসেট ম্যানেজমেন্ট</a>
+              <span class="contents-en">Asset management</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">ঢোকার পথ · Getting in</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-3/cv-and-interview">
+              <a class="bn-h" href="/learn/inter-3/cv-and-interview.html">সিভি ও ইন্টারভিউ</a>
+              <span class="contents-en">CV &amp; interview</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-3/certifications">
+              <a class="bn-h" href="/learn/inter-3/certifications.html">সার্টিফিকেশন — কোনটা কাজে লাগে</a>
+              <span class="contents-en">Which certifications matter</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="inter-3/first-90-days">
+              <a class="bn-h" href="/learn/inter-3/first-90-days.html">প্রথম তিন মাস</a>
+              <span class="contents-en">The first 90 days</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="contents-stage" id="c-advanced">
+        <div class="contents-stage-head">
+          <span class="contents-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 20h12"/><path d="M9 20a5.5 5.5 0 0 0 5-5.5"/><path d="M11.5 4.5 8 7l3.5 5 3.5-2.5-3.5-5Z"/><path d="M8.8 10.7 7 12"/><path d="M4.5 17.5h5"/></svg></span>
+          <div>
+            <span class="mono contents-kicker">সর্বোচ্চ ধাপ</span>
+            <h2 class="bn-h"><a href="/learn/advanced/index.html">গবেষণা স্তর</a>
+              <span class="en-sub">Advanced — Research level</span></h2>
+            <p class="contents-who">গবেষক, পিএইচডি শিক্ষার্থী, এবং যিনি নিজেই প্রশ্ন তৈরি করেন</p>
+          </div>
+          <span class="contents-tally mono">০/৬</span>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">তত্ত্ব · Theory</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-soon="1" data-lesson-id="advanced/asset-pricing">
+              <a class="bn-h" href="/learn/advanced/asset-pricing.html">সম্পদমূল্যায়ন তত্ত্ব</a>
+              <span class="contents-en">Asset pricing</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="advanced/market-efficiency">
+              <a class="bn-h" href="/learn/advanced/market-efficiency.html">বাজার দক্ষতা — ফ্রন্টিয়ার প্রেক্ষাপট</a>
+              <span class="contents-en">Efficiency in frontier markets</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="advanced/microstructure">
+              <a class="bn-h" href="/learn/advanced/microstructure.html">বাজারের গঠন</a>
+              <span class="contents-en">Market microstructure</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+          </ul>
+        </div>
+        <div class="contents-section">
+          <h3 class="mono">কাজটা করা · Doing the work</h3>
+          <ul class="contents-list">
+            <li class="contents-row" data-soon="1" data-lesson-id="advanced/research-design">
+              <a class="bn-h" href="/learn/advanced/research-design.html">গবেষণা নকশা</a>
+              <span class="contents-en">Research design</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="advanced/replication">
+              <a class="bn-h" href="/learn/advanced/replication.html">পুনরাবৃত্তি ও স্বচ্ছতা</a>
+              <span class="contents-en">Replication &amp; transparency</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+            <li class="contents-row" data-soon="1" data-lesson-id="advanced/islamic-funds">
+              <a class="bn-h" href="/learn/advanced/islamic-funds.html">কেস — ইসলামিক ফান্ডের ঝুঁকি</a>
+              <span class="contents-en">Case: Islamic fund risk</span>
+              <span class="contents-min mono">আসছে</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="glossary-section">
+        <span class="section-label mono">A–Z · শব্দকোষ</span>
+        <p class="measure" style="color:var(--ink-soft);font-size:0.95rem">
+          ভিত্তি ধাপ ১-এর আঠারোটা শব্দ ইংরেজি বর্ণানুক্রমে — ইংরেজি নামটা জানা থাকলে এখান থেকেই দ্রুত খুঁজে নিন।
+        </p>
+        <div class="az"><span>A</span><a href="#az-B">B</a><a href="#az-C">C</a><a href="#az-D">D</a><a href="#az-E">E</a><a href="#az-F">F</a><span>G</span><span>H</span><a href="#az-I">I</a><span>J</span><span>K</span><span>L</span><a href="#az-M">M</a><a href="#az-N">N</a><span>O</span><a href="#az-P">P</a><span>Q</span><a href="#az-R">R</a><a href="#az-S">S</a><span>T</span><span>U</span><span>V</span><span>W</span><span>X</span><span>Y</span><span>Z</span></div>
+        <div class="glossary">
+        <div class="section-label mono" id="az-B" style="margin:22px 0 6px;border:0;padding:0">B</div>
+        <div class="g-row" data-lesson-id="bo-account">
+          <a class="term bn-h" href="/learn/terms/bo-account.html">বিও অ্যাকাউন্ট</a>
+          <span class="en">BO Account — Market basics</span>
+        </div>
+        <div class="g-row" data-lesson-id="bond">
+          <a class="term bn-h" href="/learn/terms/bond.html">বন্ড</a>
+          <span class="en">Bond — Ways to invest</span>
+        </div>
+        <div class="g-row" data-lesson-id="broker">
+          <a class="term bn-h" href="/learn/terms/broker.html">ব্রোকার</a>
+          <span class="en">Broker — Market basics</span>
+        </div>
+        <div class="section-label mono" id="az-C" style="margin:22px 0 6px;border:0;padding:0">C</div>
+        <div class="g-row" data-lesson-id="compounding">
+          <a class="term bn-h" href="/learn/terms/compounding.html">চক্রবৃদ্ধি</a>
+          <span class="en">Compounding — Risk &amp; strategy</span>
+        </div>
+        <div class="section-label mono" id="az-D" style="margin:22px 0 6px;border:0;padding:0">D</div>
+        <div class="g-row" data-lesson-id="diversification">
+          <a class="term bn-h" href="/learn/terms/diversification.html">ডাইভারসিফিকেশন</a>
+          <span class="en">Diversification — Risk &amp; strategy</span>
+        </div>
+        <div class="g-row" data-lesson-id="dividend">
+          <a class="term bn-h" href="/learn/terms/dividend.html">ডিভিডেন্ড</a>
+          <span class="en">Dividend — Company analysis</span>
+        </div>
+        <div class="g-row" data-lesson-id="dse">
+          <a class="term bn-h" href="/learn/terms/dse.html">ঢাকা স্টক এক্সচেঞ্জ</a>
+          <span class="en">DSE — Market basics</span>
+        </div>
+        <div class="section-label mono" id="az-E" style="margin:22px 0 6px;border:0;padding:0">E</div>
+        <div class="g-row" data-lesson-id="eps">
+          <a class="term bn-h" href="/learn/terms/eps.html">ইপিএস</a>
+          <span class="en">EPS — Company analysis</span>
+        </div>
+        <div class="section-label mono" id="az-F" style="margin:22px 0 6px;border:0;padding:0">F</div>
+        <div class="g-row" data-lesson-id="fdr">
+          <a class="term bn-h" href="/learn/terms/fdr.html">এফডিআর</a>
+          <span class="en">Fixed Deposit (FDR) — Ways to invest</span>
+        </div>
+        <div class="section-label mono" id="az-I" style="margin:22px 0 6px;border:0;padding:0">I</div>
+        <div class="g-row" data-lesson-id="dsex">
+          <a class="term bn-h" href="/learn/terms/dsex.html">সূচক</a>
+          <span class="en">Index / DSEX — Market basics</span>
+        </div>
+        <div class="g-row" data-lesson-id="inflation">
+          <a class="term bn-h" href="/learn/terms/inflation.html">মূল্যস্ফীতি</a>
+          <span class="en">Inflation — Risk &amp; strategy</span>
+        </div>
+        <div class="g-row" data-lesson-id="ipo">
+          <a class="term bn-h" href="/learn/terms/ipo.html">আইপিও</a>
+          <span class="en">IPO — Market basics</span>
+        </div>
+        <div class="section-label mono" id="az-M" style="margin:22px 0 6px;border:0;padding:0">M</div>
+        <div class="g-row" data-lesson-id="mutual-fund">
+          <a class="term bn-h" href="/learn/terms/mutual-fund.html">মিউচুয়াল ফান্ড</a>
+          <span class="en">Mutual Fund — Ways to invest</span>
+        </div>
+        <div class="section-label mono" id="az-N" style="margin:22px 0 6px;border:0;padding:0">N</div>
+        <div class="g-row" data-lesson-id="nav">
+          <a class="term bn-h" href="/learn/terms/nav.html">এনএভি</a>
+          <span class="en">NAV — Company analysis</span>
+        </div>
+        <div class="section-label mono" id="az-P" style="margin:22px 0 6px;border:0;padding:0">P</div>
+        <div class="g-row" data-lesson-id="pe-ratio">
+          <a class="term bn-h" href="/learn/terms/pe-ratio.html">পিই রেশিও</a>
+          <span class="en">P/E Ratio — Company analysis</span>
+        </div>
+        <div class="section-label mono" id="az-R" style="margin:22px 0 6px;border:0;padding:0">R</div>
+        <div class="g-row" data-lesson-id="risk-return">
+          <a class="term bn-h" href="/learn/terms/risk-return.html">ঝুঁকি ও রিটার্ন</a>
+          <span class="en">Risk &amp; Return — Risk &amp; strategy</span>
+        </div>
+        <div class="section-label mono" id="az-S" style="margin:22px 0 6px;border:0;padding:0">S</div>
+        <div class="g-row" data-lesson-id="sanchayapatra">
+          <a class="term bn-h" href="/learn/terms/sanchayapatra.html">সঞ্চয়পত্র</a>
+          <span class="en">Savings Certificate — Ways to invest</span>
+        </div>
+        <div class="g-row" data-lesson-id="share">
+          <a class="term bn-h" href="/learn/terms/share.html">শেয়ার</a>
+          <span class="en">Share / Stock — Market basics</span>
+        </div>
+        </div>
+      </section>
+
+      <div class="band">
+        <span class="mono">ফিরে যান</span>
+        <h2>ধাপে ধাপে পড়তে চান?</h2>
+        <p>সূচিপত্র রেফারেন্সের জন্য। শেখার সাজানো পথটা আছে শেখার লাইব্রেরির মূল পাতায় —
+           হাতেখড়ি দিয়ে শুরু, তারপর এক ধাপ করে।</p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/learn/index.html">শেখার লাইব্রেরিতে যান →</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>এই সাইটের সবকিছু সাধারণ শিক্ষামূলক তথ্য — বিনিয়োগ পরামর্শ না। টাকা কোথাও রাখার আগে নিজে যাচাই করুন।</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <!-- Modal reader -->
+  <div id="reader" hidden role="dialog" aria-modal="true" aria-label="Term reader">
+    <div class="reader-panel">
+      <div class="reader-bar">
+        <button class="icon-btn" id="reader-back" hidden aria-label="আগের লেখায় ফিরুন">← ফিরুন</button>
+        <a id="reader-full" class="mono" href="#">পুরো পেজে পড়ুন ↗</a>
+        <button class="icon-btn" id="reader-close" aria-label="বন্ধ করুন">✕</button>
+      </div>
+      <div class="reader-body" id="reader-body"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/learn/learn.js"></script>
+  <script type="module" src="/learn/contents.js"></script>
+</body>
+</html>

@@ -12,10 +12,13 @@
        on its own through color-scheme + light-dark(). -->
   <script>
     (function () {
-      var saved = localStorage.getItem("theme");
-      if (saved === "dark" || saved === "light") {
-        document.documentElement.setAttribute("data-theme", saved);
-      }
+      var d = document.documentElement;
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
+        var a = localStorage.getItem("audience");
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+      } catch (e) {}
     })();
   </script>
 
@@ -114,24 +117,30 @@
              <a class="more" href="files/model.xlsx">Download the model →</a>
              (put downloadable files in a /files folder in the repo). -->
         <div class="grid-2">
-          <div class="cell sample-card placeholder">
-            <span class="tag mono">Financial model · Excel</span>
-            <h3>Three-statement model — DSE-listed company</h3>
-            <p><em>In progress: linked income statement, balance sheet and cash
-              flow for a listed Bangladeshi company, with a scenario switch.</em></p>
-          </div>
-          <div class="cell sample-card placeholder">
-            <span class="tag mono">Valuation · Excel</span>
+          <a class="cell sample-card work-card" href="/portfolio/three-statement.html">
+            <span class="tag mono">Financial model · Interactive</span>
+            <h3>Three-statement model — DSE-listed manufacturer</h3>
+            <p>Linked income statement, balance sheet and cash flow, with a
+              scenario switch and a live balance check. Drag any assumption and
+              all three statements move — in the browser, no download needed.</p>
+            <span class="more">Open the model →</span>
+          </a>
+          <a class="cell sample-card work-card" href="/portfolio/dcf.html">
+            <span class="tag mono">Valuation · Interactive</span>
             <h3>DCF with sensitivity tables</h3>
-            <p><em>In progress: discounted cash flow valuation with a clear
-              assumptions tab and two-way sensitivity on WACC and terminal growth.</em></p>
-          </div>
-          <div class="cell sample-card placeholder">
-            <span class="tag mono">Data analysis · Python</span>
-            <h3>DSEX returns: volatility &amp; drawdowns</h3>
-            <p><em>In progress: historical index analysis — rolling volatility,
-              largest drawdowns, and what they teach about holding periods.</em></p>
-          </div>
+            <p>WACC built up from its parts, two terminal value methods that
+              cross-check each other, and a two-way sensitivity grid on WACC and
+              terminal growth where every cell is a full revaluation.</p>
+            <span class="more">Open the valuation →</span>
+          </a>
+          <a class="cell sample-card work-card" href="/portfolio/dsex.html">
+            <span class="tag mono">Data analysis · Interactive</span>
+            <h3>Index returns: volatility &amp; drawdowns</h3>
+            <p>Rolling volatility, drawdown episodes with recovery times, fat-tail
+              diagnostics and holding-period outcomes — six linked views. Drop in
+              a CSV of real prices and the whole page recomputes.</p>
+            <span class="more">Open the analysis →</span>
+          </a>
           <div class="cell sample-card">
             <span class="tag mono">Research · Python</span>
             <h3>Islamic funds vs. conventional UK funds</h3>

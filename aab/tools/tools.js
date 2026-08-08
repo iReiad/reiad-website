@@ -418,8 +418,80 @@ bindTool("position", (v, root) => {
          ${money(capital * (1 - riskPct) ** 20)}.`;
 });
 
-/* ---------- deep links from the menu ---------- */
-if (location.hash) {
-  document.getElementById(location.hash.slice(1))
-    ?.scrollIntoView({ block: "start", behavior: "instant" });
-}
+/* ============================================================
+   ONE CALCULATOR AT A TIME
+
+   Five stacked calculators meant that whichever one you came for,
+   you scrolled past the others to reach it, and the page never
+   looked like a tool — it looked like a list. So the picker in the
+   hero becomes a real tab set and only the chosen calculator is
+   shown, starting with the first.
+
+   Everything here is an upgrade applied at runtime. The markup
+   ships as five ordinary <section>s and five ordinary anchor
+   links, so with JavaScript off the page behaves exactly as it
+   did before: all five present, links jumping to them. Nothing is
+   hidden by CSS alone — the hiding only happens once this code
+   has run and can undo it.
+   ============================================================ */
+(function tabs() {
+  const bar = document.getElementById("tool-tabs");
+  const panels = $$(".tool");
+  if (!bar || panels.length === 0) return;
+
+  const links = $$(".tool-tab", bar);
+  const idOf = (a) => a.getAttribute("href").slice(1);
+
+  // Only now does hiding become safe.
+  document.body.dataset.toolTabs = "on";
+  panels.forEach((p) => {
+    p.setAttribute("role", "tabpanel");
+    p.setAttribute("aria-labelledby", `tab-${p.id}`);
+  });
+
+  function show(id, { focus = false, push = false } = {}) {
+    const panel = panels.find((p) => p.id === id) ?? panels[0];
+    panels.forEach((p) => { p.hidden = p !== panel; });
+    links.forEach((a) => {
+      const on = idOf(a) === panel.id;
+      a.setAttribute("aria-selected", String(on));
+      // roving tabindex: one stop for the whole set, arrows move within
+      a.tabIndex = on ? 0 : -1;
+      if (on && focus) a.focus();
+    });
+
+    if (push && location.hash.slice(1) !== panel.id) {
+      // replaceState, not a hash assignment: setting location.hash would
+      // scroll the panel under the sticky header on every tab change.
+      history.replaceState(null, "", `${location.pathname}${location.search}#${panel.id}`);
+    }
+    return panel.id;
+  }
+
+  bar.addEventListener("click", (e) => {
+    const a = e.target.closest(".tool-tab");
+    if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    e.preventDefault();
+    show(idOf(a), { push: true });
+  });
+
+  bar.addEventListener("keydown", (e) => {
+    const i = links.findIndex((a) => a.getAttribute("aria-selected") === "true");
+    const last = links.length - 1;
+    const to =
+      e.key === "ArrowRight" || e.key === "ArrowDown" ? (i >= last ? 0 : i + 1)
+      : e.key === "ArrowLeft" || e.key === "ArrowUp" ? (i <= 0 ? last : i - 1)
+      : e.key === "Home" ? 0
+      : e.key === "End" ? last
+      : null;
+    if (to === null) return;
+    e.preventDefault();
+    show(idOf(links[to]), { focus: true, push: true });
+  });
+
+  // A link from the menu or the palette (/tools/index.html#emi) picks
+  // that tab rather than scrolling to it.
+  addEventListener("hashchange", () => show(location.hash.slice(1)));
+
+  show(location.hash.slice(1) || panels[0].id);
+})();

@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, article, studio, utilities;
+@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, utilities;
 
 /* ============================================================
    TOKENS
@@ -972,6 +972,41 @@
    ============================================================ */
 @layer tools {
 
+  /* ---------- the tool picker ----------
+     Styled as tabs, but they are anchor links to real sections. If
+     tools.js never runs, body[data-tool-tabs] is never set, nothing
+     is hidden, and these behave as the jump links they always were. */
+  .tool-tabs {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-top: 26px;
+  }
+  .tool-tab {
+    display: grid; gap: 1px;
+    padding: 9px 16px; border-radius: 999px;
+    border: 1px solid var(--hairline);
+    background: var(--panel);
+    text-decoration: none; color: var(--ink);
+    transition: border-color var(--fast) var(--ease),
+                background var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); opacity: 1; }
+    &[aria-selected="true"] {
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+  }
+  .tool-tab-en {
+    font-family: var(--font-mono); font-size: 0.72rem;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .tool-tab[aria-selected="true"] .tool-tab-en { color: var(--green); }
+  .tool-tab-bn { font-size: 0.78rem; color: var(--ink-soft); }
+
+  /* With one calculator on screen the card no longer needs to be
+     scrolled to — and scroll-margin would drag it under the header
+     when a tab is chosen. */
+  body[data-tool-tabs="on"] .tool { scroll-margin-top: 0; margin-bottom: 0; }
+
   .tool {
     background: var(--panel);
     border: 1px solid var(--hairline);
@@ -1710,6 +1745,1059 @@
 }
 
 /* ============================================================
+   PORTFOLIO CASE STUDIES
+   The interactive pieces under /portfolio/ — currently the
+   three-statement model. Everything here is built to survive
+   being looked at by someone who builds models for a living, so
+   the tables use accounting conventions (tabular figures,
+   negatives in brackets, ruled subtotals) rather than web-table
+   defaults.
+   ============================================================ */
+@layer work {
+
+  /* ---------- the card that opens a case study ---------- */
+  a.work-card {
+    display: flex; flex-direction: column; gap: 12px;
+    text-decoration: none; color: inherit;
+    position: relative; overflow: clip;
+    transition: border-color var(--fast) var(--ease),
+                transform var(--fast) var(--ease),
+                box-shadow var(--fast) var(--ease);
+
+    &:hover, &:focus-visible {
+      border-color: var(--green);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lift);
+      opacity: 1;
+    }
+    & .more { margin-top: auto; color: var(--green); }
+    /* a quiet sheen that sweeps once on hover — signals "this opens"
+       without the card jumping about */
+    &::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(115deg, transparent 40%,
+        color-mix(in oklab, var(--green) 12%, transparent) 50%, transparent 60%);
+      translate: -100% 0; transition: translate var(--slow) var(--ease);
+      pointer-events: none;
+    }
+    &:hover::after { translate: 100% 0; }
+  }
+
+  /* ---------- the model page ---------- */
+  .model-co {
+    display: flex; gap: 14px; flex-wrap: wrap; align-items: baseline;
+    margin-top: 22px;
+
+    & strong { font-family: var(--font-serif); font-size: 1.2rem; }
+    & .mono { color: var(--ink-soft); }
+  }
+  .note-inline { margin-top: 12px; }
+
+  .model { padding-block: 10px; }
+
+  .model-bar {
+    display: grid; gap: 12px 20px; align-items: center;
+    grid-template-columns: auto 1fr auto;
+    padding: 16px 18px; margin-bottom: 16px;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+  }
+  @media (width <= 900px) {
+    .model-bar { grid-template-columns: 1fr; }
+  }
+  .scenarios { display: flex; gap: 6px; }
+  .scenario {
+    padding: 8px 16px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--hairline); background: var(--paper);
+    font-family: var(--font-mono); font-size: 0.72rem;
+    letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink);
+    transition: border-color var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); }
+    &[aria-pressed="true"] {
+      border-color: var(--green); background: var(--green-soft); color: var(--green);
+    }
+  }
+  .scenario-blurb { color: var(--ink-soft); font-size: 0.9rem; margin: 0; }
+  .model-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .model-actions .btn { padding: 8px 14px; font-size: 0.78rem; }
+
+  /* ---------- the balance check ---------- */
+  .balance-check {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 16px 20px; margin-bottom: 18px;
+    border-radius: var(--radius); border: 1px solid var(--green);
+    background: var(--green-soft);
+
+    & strong { display: block; font-family: var(--font-serif); font-size: 1.05rem; }
+    & .check-detail { color: var(--ink-soft); font-size: 0.9rem; }
+    & .check-mark {
+      font-size: 1.1rem; line-height: 1.4; color: var(--green);
+      font-family: var(--font-mono);
+    }
+    &[data-state="bad"] {
+      border-color: var(--danger);
+      background: color-mix(in oklab, var(--danger) 9%, transparent);
+    }
+    &[data-state="bad"] .check-mark { color: var(--danger); }
+    &[data-state="bad"] .check-mark::before { content: "✕"; }
+    &[data-state="bad"] .check-mark { font-size: 0; }
+    &[data-state="bad"] .check-mark::before { font-size: 1.1rem; }
+  }
+
+  /* ---------- headline tiles ---------- */
+  .tiles {
+    display: grid; gap: var(--gap); margin-bottom: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  }
+  .tile {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); padding: 16px 18px;
+    display: grid; gap: 3px; align-content: start;
+
+    & .mono { color: var(--gold); }
+    & small { color: var(--ink-soft); font-size: 0.76rem; }
+    &[data-tone="good"] .tile-value { color: var(--green); }
+    &[data-tone="warn"] .tile-value { color: var(--gold); }
+    &[data-tone="bad"]  .tile-value { color: var(--danger); }
+  }
+  .tile-value {
+    font-family: var(--font-mono); font-size: 1.5rem;
+    font-variant-numeric: tabular-nums; line-height: 1.2;
+  }
+
+  /* ---------- drivers + charts ---------- */
+  .model-body {
+    display: grid; gap: var(--gap); align-items: start;
+    grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+    margin-bottom: var(--step);
+  }
+  @media (width <= 900px) { .model-body { grid-template-columns: 1fr; } }
+
+  .model-drivers {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); padding: 20px;
+    position: sticky; top: 5rem;
+    max-height: calc(100dvh - 7rem); overflow-y: auto;
+  }
+  @media (width <= 900px) {
+    .model-drivers { position: static; max-height: none; }
+  }
+  .drivers-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+
+    & h2 { font-size: 1.15rem; }
+  }
+  .drivers-note { color: var(--ink-soft); font-size: 0.82rem; margin-block: 8px 16px; }
+
+  .driver-group + .driver-group {
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--hairline);
+  }
+  .driver-group h3 { color: var(--gold); margin: 0 0 10px; font-weight: 500; }
+
+  .driver {
+    display: block; margin-bottom: 16px;
+
+    & .label-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      gap: 10px; font-size: 0.86rem;
+    }
+    & .val {
+      font-family: var(--font-mono); font-size: 0.82rem; color: var(--green);
+      font-variant-numeric: tabular-nums; white-space: nowrap;
+    }
+    & small {
+      display: block; color: var(--ink-soft); font-size: 0.74rem;
+      margin-top: 5px; line-height: 1.45;
+    }
+    &[data-edited] .val::after { content: " ·edited"; color: var(--gold); }
+  }
+  .driver input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 4px; border-radius: 999px; margin-top: 9px;
+    background: linear-gradient(var(--green), var(--green)) 0 / var(--pct, 50%) 100% no-repeat,
+                var(--hairline);
+    cursor: pointer;
+  }
+  .driver input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--green); border: 2px solid var(--paper);
+    box-shadow: 0 1px 4px oklch(0% 0 0 / 0.3);
+  }
+  .driver input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--paper);
+    background: var(--green);
+  }
+
+  .model-charts { display: grid; gap: var(--gap); }
+  .chart-card {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); padding: 18px; margin: 0;
+
+    & figcaption {
+      display: flex; justify-content: space-between; align-items: baseline;
+      gap: 12px; flex-wrap: wrap; margin-bottom: 10px;
+    }
+    & figcaption strong { font-family: var(--font-serif); font-size: 1.02rem; }
+    & figcaption .mono { color: var(--ink-soft); display: flex; gap: 12px; align-items: center; }
+  }
+  .key {
+    display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+    margin-inline-end: 4px; vertical-align: -1px;
+  }
+  .key-revenue { background: var(--green); opacity: 0.28; }
+  .key-ebitda { background: var(--green); }
+  .key-cash { background: var(--green); }
+  .key-netdebt { background: var(--gold); }
+
+  .fin-chart { width: 100%; height: auto; display: block; }
+  .bar-revenue { fill: var(--green); opacity: 0.28; }
+  .bar-ebitda { fill: var(--green); }
+  .chart-label {
+    font-family: var(--font-mono); font-size: 10px; fill: var(--ink-soft);
+  }
+  .chart-value {
+    font-family: var(--font-mono); font-size: 9px; fill: var(--green);
+  }
+  .chart-zero { stroke: var(--hairline); stroke-width: 1; }
+  .line-cash { stroke: var(--green); stroke-width: 2; }
+  .line-cash-dot { fill: var(--green); }
+  .line-netdebt { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 4 3; }
+  .line-netdebt-dot { fill: var(--gold); }
+
+  /* ---------- the DCF's verdict ---------- */
+  .verdict-card {
+    display: grid; gap: 4px;
+    padding: 20px 24px; margin-bottom: 18px;
+    border-radius: var(--radius); border: 1px solid var(--green);
+    background: var(--green-soft);
+
+    & .mono { color: var(--gold); }
+    & .verdict-detail { color: var(--ink-soft); font-size: 0.94rem; margin: 0; }
+    &[data-state="down"] { border-color: var(--gold); }
+    &[data-state="bad"] {
+      border-color: var(--danger);
+      background: color-mix(in oklab, var(--danger) 8%, transparent);
+    }
+  }
+  .verdict-main { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .verdict-value {
+    font-family: var(--font-mono); font-size: 2rem; line-height: 1.1;
+    font-variant-numeric: tabular-nums; color: var(--green);
+  }
+  .verdict-card[data-state="down"] .verdict-value { color: var(--gold); }
+  .verdict-card[data-state="bad"] .verdict-value { color: var(--danger); }
+
+  /* ---------- method switches ---------- */
+  .method-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+
+    & .mono { color: var(--ink-soft); }
+  }
+  .segmented {
+    display: inline-flex; border: 1px solid var(--hairline);
+    border-radius: 999px; overflow: clip;
+
+    & button {
+      border: 0; background: none; cursor: pointer; color: var(--ink-soft);
+      padding: 6px 12px; font-family: var(--font-mono); font-size: 0.66rem;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    & button[aria-pressed="true"] { background: var(--green-soft); color: var(--green); }
+    & button + button { border-inline-start: 1px solid var(--hairline); }
+  }
+  .toggle {
+    border: 1px solid var(--hairline); background: var(--paper);
+    border-radius: 999px; padding: 6px 14px; cursor: pointer;
+    font-family: var(--font-mono); font-size: 0.66rem;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft);
+
+    &[aria-pressed="true"] {
+      border-color: var(--green); background: var(--green-soft); color: var(--green);
+    }
+  }
+  .driver[data-inactive] { opacity: 0.4; }
+
+  /* ---------- the EV → equity bridge ---------- */
+  .bridge { display: grid; gap: 8px; }
+  .bridge-row {
+    display: grid; gap: 12px; align-items: center;
+    grid-template-columns: minmax(0, 150px) minmax(0, 1fr) auto;
+
+    &[data-kind="total"] { font-weight: 600; }
+    &[data-kind="total"] .bridge-track i { background: var(--green); }
+    &[data-kind="sub"] .bridge-track i { background: var(--danger); opacity: 0.65; }
+  }
+  .bridge-label { font-size: 0.88rem; }
+  .bridge-track {
+    height: 20px; border-radius: 4px; background: var(--paper-sunk);
+    display: block; overflow: clip;
+
+    & i {
+      display: block; height: 100%; background: var(--green); opacity: 0.4;
+      transition: width var(--slow) var(--ease);
+    }
+  }
+  .bridge-value {
+    font-variant-numeric: tabular-nums; font-size: 0.82rem; white-space: nowrap;
+  }
+  @media (width <= 620px) {
+    .bridge-row { grid-template-columns: 1fr auto; }
+    .bridge-track { grid-column: 1 / -1; }
+  }
+
+  /* ---------- the sensitivity grid ----------
+     A heatmap, but one that stays readable: the --heat custom
+     property mixes the cell background between two theme colours
+     rather than using a fixed palette, so it works in both themes
+     and never puts pale text on a pale ground. */
+  .grid-table {
+    & th, & td { text-align: center; }
+    & tbody th { text-align: right; min-width: 0; }
+    & thead th:first-child {
+      min-width: 0; font-size: 0.6rem; text-align: left; line-height: 1.4;
+    }
+  }
+  .grid-cell {
+    cursor: pointer;
+    background: color-mix(in oklab,
+      var(--green) calc(var(--heat, 0) * 26%), var(--panel));
+    transition: outline-color var(--fast) var(--ease);
+    outline: 2px solid transparent; outline-offset: -2px;
+
+    &:hover, &:focus-visible { outline-color: var(--green); }
+    &[data-side="down"] {
+      background: color-mix(in oklab,
+        var(--gold) calc((1 - var(--heat, 0)) * 20%), var(--panel));
+    }
+    &[data-base] {
+      outline-color: var(--ink);
+      font-weight: 700;
+    }
+    &[data-invalid] {
+      cursor: not-allowed; color: var(--ink-soft); opacity: 0.5;
+      background: repeating-linear-gradient(45deg,
+        transparent 0 4px, var(--hairline) 4px 5px);
+    }
+  }
+
+  /* ---------- the CSV import panel ---------- */
+  .csv-panel {
+    border: 1px dashed var(--hairline); border-radius: var(--radius);
+    padding: 20px 22px; margin-bottom: 18px;
+    background: var(--paper-sunk);
+    transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
+
+    &[data-over] { border-color: var(--green); background: var(--green-soft); }
+    & h2 { font-size: 1.1rem; margin-bottom: 6px; }
+    & p { color: var(--ink-soft); font-size: 0.9rem; max-width: 70ch; }
+  }
+  .csv-controls {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin-block: 14px 12px;
+
+    & .mono { color: var(--ink-soft); }
+  }
+  .csv-file-label { cursor: pointer; }
+  .csv-paste-label {
+    display: grid; gap: 6px;
+
+    & .mono { color: var(--ink-soft); }
+    & textarea {
+      width: 100%; resize: vertical;
+      font-family: var(--font-mono); font-size: 0.8rem;
+      padding: 10px 12px; border-radius: var(--radius-sm);
+      border: 1px solid var(--hairline); background: var(--paper); color: var(--ink);
+    }
+    & textarea:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+  }
+  .csv-status {
+    margin-top: 10px; font-size: 0.86rem; color: var(--ink-soft);
+
+    &[data-state="ok"] { color: var(--green); }
+    &[data-state="bad"] { color: var(--danger); }
+    &:empty { display: none; }
+  }
+
+  /* a warn state for the simulated-data banner, alongside ok/bad */
+  .balance-check[data-state="warn"] {
+    border-color: var(--gold);
+    background: color-mix(in oklab, var(--gold) 10%, transparent);
+
+    & .check-mark { color: var(--gold); }
+  }
+
+  /* ---------- charts that want the full width ---------- */
+  .wide-chart { margin-block: 16px; }
+  .vol-controls { max-width: 420px; margin-bottom: 6px; }
+
+  .chart-grid { stroke: var(--hairline); stroke-width: 1; }
+  .chart-mean { stroke: var(--gold); stroke-width: 1; stroke-dasharray: 4 3; }
+  .chart-label-sm {
+    font-family: var(--font-mono); font-size: 8px; fill: var(--ink-soft);
+  }
+  .dd-band { fill: var(--danger); opacity: 0.08; }
+  .line-index { stroke: var(--green); stroke-width: 1.6; }
+  .line-vol { stroke: var(--green); stroke-width: 1.6; }
+  .area-underwater { fill: var(--danger); opacity: 0.18; }
+  .line-underwater { stroke: var(--danger); stroke-width: 1.3; }
+  .bar-hist { fill: var(--green); opacity: 0.45; }
+  .line-normal { stroke: var(--gold); stroke-width: 1.8; }
+  .bar-horizon { fill: var(--green); opacity: 0.75; }
+
+  .horizon-picker {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-block: 16px;
+
+    & .mono { color: var(--ink-soft); }
+    & button {
+      border: 1px solid var(--hairline); background: var(--panel);
+      border-radius: 999px; padding: 6px 14px; cursor: pointer; color: var(--ink);
+      font-family: var(--font-mono); font-size: 0.68rem;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    & button:hover { border-color: var(--green); }
+    & button[aria-pressed="true"] {
+      border-color: var(--green); background: var(--green-soft); color: var(--green);
+    }
+  }
+
+  .fin-table td.is-positive { color: var(--green); }
+
+  /* ---------- the statements ---------- */
+  .statements { display: grid; gap: var(--step); }
+  .statement h2 {
+    font-size: 1.25rem; margin-bottom: 12px;
+    padding-bottom: 10px; border-bottom: 1px solid var(--hairline);
+  }
+  .statement-note {
+    color: var(--ink-soft); font-size: 0.85rem; margin-top: 10px; max-width: 62ch;
+  }
+
+  .fin-table {
+    width: 100%; border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.92rem;
+
+    & th, & td { padding: 7px 12px; text-align: right; white-space: nowrap; }
+    & thead th {
+      font-family: var(--font-mono); font-size: 0.66rem;
+      letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500;
+      color: var(--ink-soft); border-bottom: 1px solid var(--hairline);
+    }
+    & thead th.col-actual { color: var(--gold); }
+    /* the row label column stays put while the years scroll */
+    & tbody th, & thead th:first-child {
+      text-align: left; font-weight: 400; color: var(--ink);
+      position: sticky; inset-inline-start: 0;
+      background: var(--paper); min-width: 210px;
+    }
+    & td { font-family: var(--font-mono); font-size: 0.86rem; }
+    & tr.is-total th, & tr.is-total td { font-weight: 600; }
+    & tr.has-rule th, & tr.has-rule td { border-top: 1px solid var(--hairline); }
+    & tr:hover td, & tr:hover th { background: var(--panel-hover); }
+    & td.is-negative { color: var(--danger); }
+  }
+
+  @media (width <= 620px) {
+    .fin-table { font-size: 0.84rem; }
+    .fin-table tbody th, .fin-table thead th:first-child { min-width: 150px; }
+    .fin-table th, .fin-table td { padding: 6px 8px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a.work-card:hover { transform: none; }
+    a.work-card::after { display: none; }
+  }
+}
+
+/* ============================================================
+   THE LEARN AREA
+   The breadcrumb trail, the audience split, and everything the
+   restructured Learn hub needs: the starter accordion, the stage
+   ladder, the contents index and the resume card.
+   ============================================================ */
+@layer learn {
+
+  /* ---------- icon art ----------
+     One family, one size, one stroke. See /learn/icons.js for why
+     every step and stage has a drawing at all. */
+  .art {
+    width: 1.6em; height: 1.6em; flex-shrink: 0;
+    vertical-align: -0.35em;
+    color: var(--green);
+  }
+  h1 > .art, h1 .art { width: 1.1em; height: 1.1em; margin-inline-end: 0.3em; }
+
+  /* ---------- breadcrumbs ---------- */
+  .crumbs {
+    padding-block: 18px 0;
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.05em;
+
+    & ol {
+      display: flex; flex-wrap: wrap; align-items: center;
+      gap: 4px 2px; padding: 0; margin: 0; list-style: none;
+    }
+    & li { display: flex; align-items: center; color: var(--ink-soft); }
+    /* The separator is generated rather than typed, so a crumb can
+       never be left with a dangling arrow after it. */
+    & li + li::before { content: "›"; margin-inline: 7px; opacity: 0.5; }
+    & a { color: var(--ink-soft); text-decoration: none; }
+    & a:hover { color: var(--green); opacity: 1; }
+    & [aria-current="page"] {
+      color: var(--ink);
+      /* a long Bangla lesson title must not push the row off-screen */
+      max-width: 46ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+  }
+  html[lang="bn"] .crumbs { font-family: var(--font-bn); letter-spacing: 0; font-size: 0.8rem; }
+
+  /* ---------- the audience split ----------
+     Ordering only. Nothing is hidden from anybody — see the note
+     at the top of audience.js. The attribute is set before first
+     paint by the inline script in each <head>, so these rules
+     apply on the first frame and the nav never visibly reorders. */
+  nav a { order: 0; }
+  :root[data-audience="work"] nav a[href*="portfolio"] { order: -3; }
+  :root[data-audience="work"] nav a[href*="about"]     { order: -2; }
+  :root[data-audience="work"] nav a[href*="contact"]   { order: -1; }
+  :root[data-audience="work"] nav a[href*="learn"]     { order: 1; }
+  :root[data-audience="work"] nav a[href*="tools"]     { order: 2; }
+
+  /* ---------- the home page, led by the half they came for ----------
+
+     Order only. A recruiter still gets the Learn cards and a learner
+     still gets the credentials — further down. Nothing is display:none,
+     so nobody has to wonder what is being withheld from them.
+
+     Two different mechanisms, because the page uses two layouts:
+
+     1. The top-level blocks are a block flow, so they need a flex
+        container before `order` means anything. `.home-flow` becomes
+        one ONLY when a choice has been made — an undecided visitor
+        gets the original block layout untouched, margins and all.
+
+     2. The bento is a named-area grid at every breakpoint, so `order`
+        would be ignored there entirely. Its running order is changed
+        by swapping grid-template-areas instead. `feature` stays the
+        big 2×2 cell in both, because .cell-feature's typography is
+        sized for being big. */
+
+  :root[data-audience] .home-flow { display: flex; flex-direction: column; }
+  .home-flow > * { order: 0; }
+
+  /* the hero and the closing band hold either end regardless */
+  :root[data-audience] .home-flow > .hero { order: -3; }
+  :root[data-audience] .home-flow > .band { order: 8; }
+  :root[data-audience] .home-flow > .note { order: 9; }
+
+  /* An explicit running order per audience, rather than a learn/work
+     binary. The binary didn't work: every recruiter-facing block lives
+     INSIDE the bento, so there was nothing at the top level to promote
+     and a recruiter's page came out unchanged. Naming the sequence
+     also makes it obvious what each visitor actually sees. */
+
+  /* here to learn: the four big "start here" links, then the writing */
+  :root[data-audience="learn"] .home-flow > [data-for="learn"]   { order: 1; }
+  :root[data-audience="learn"] .home-flow > [data-for="work"]    { order: 2; }
+  :root[data-audience="learn"] .home-flow > [data-for="both"]    { order: 3; }
+  :root[data-audience="learn"] .home-flow > [data-for="context"] { order: 4; }
+
+  /* here to hire: credentials, services and the bio first */
+  :root[data-audience="work"]  .home-flow > [data-for="work"]    { order: 1; }
+  :root[data-audience="work"]  .home-flow > [data-for="both"]    { order: 2; }
+  :root[data-audience="work"]  .home-flow > [data-for="learn"]   { order: 3; }
+  :root[data-audience="work"]  .home-flow > [data-for="context"] { order: 4; }
+
+  /* the bento, for someone here to hire: credentials, services and
+     the bio across the top, the writing sample below them */
+  :root[data-audience="work"] .bento {
+    grid-template-areas:
+      "stats   services about"
+      "feature feature  about"
+      "feature feature  note";
+  }
+  @media (width <= 860px) {
+    :root[data-audience="work"] .bento {
+      grid-template-areas:
+        "stats   services"
+        "about   about"
+        "feature feature"
+        "note    note";
+    }
+  }
+  @media (width <= 600px) {
+    :root[data-audience="work"] .bento {
+      grid-template-areas: "stats" "services" "about" "feature" "note";
+    }
+  }
+
+  .audience-row { margin-top: 16px; }
+  .audience-switch {
+    background: none; border: 1px solid var(--hairline);
+    border-radius: 999px; padding: 6px 14px;
+    font-family: var(--font-mono); font-size: 0.66rem;
+    letter-spacing: 0.06em; color: var(--ink-soft); cursor: pointer;
+    transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); color: var(--green); }
+  }
+
+  /* the two doors on the home page */
+  /* Kept deliberately compact. These are a signpost, not the
+     content: at 26px padding and a 3-line blurb each door was
+     ~234px tall, which pushed the pair below the fold on a 768px
+     laptop and made the first thing a new visitor saw two slabs
+     they had to scroll to finish reading. A choice you want made
+     quickly has to be visible all at once. */
+  .doorway {
+    display: grid; gap: 12px; margin-block: 24px 8px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    max-width: 880px;
+  }
+  /* Once they've chosen, the doorway has done its job and the
+     ordinary button row takes its place. Before they choose, the
+     button row would just be the same three links twice. The
+     switch in the footer brings the other half back at any time. */
+  :root[data-audience] .doorway { display: none; }
+  :root:not([data-audience]) .hero-actions.after-doors { display: none; }
+
+  /* Two columns inside each door: the mark, then the words. Puts
+     the icon beside the heading instead of on a line of its own,
+     which is most of the height saving. */
+  .door {
+    display: grid; gap: 4px 12px; align-content: start;
+    grid-template-columns: auto 1fr;
+    padding: 16px 18px; text-decoration: none; color: inherit;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+    transition: border-color var(--fast) var(--ease), transform var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); transform: translateY(-2px); opacity: 1; }
+    & h3 { font-size: 1.04rem; align-self: center; }
+    & p {
+      grid-column: 2; color: var(--ink-soft); font-size: 0.88rem;
+      line-height: 1.5; margin: 0;
+    }
+    & .more { grid-column: 2; color: var(--green); font-size: 0.84rem; margin-top: 2px; }
+  }
+  .door-art, .door .art { width: 22px; height: 22px; }
+  .door-art { display: flex; align-items: center; color: var(--gold); grid-row: 1; }
+
+  /* ---------- the resume card ---------- */
+  .resume {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    margin-block: 26px 4px; padding: 18px 22px;
+    border: 1px solid var(--green); border-radius: var(--radius);
+    background: var(--green-soft);
+  }
+  .resume-art .art { width: 34px; height: 34px; }
+  .resume-text { flex: 1 1 240px; display: grid; gap: 2px; }
+  .resume-label { color: var(--gold); }
+  .resume-text strong { font-size: 1.16rem; }
+  .resume-where { color: var(--ink-soft); font-size: 0.86rem; }
+  .resume-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .resume-pct { color: var(--ink-soft); }
+
+  .filter-count { margin-top: 10px; color: var(--ink-soft); }
+
+  /* ---------- the starter guide ---------- */
+  .starter-intro { margin-bottom: 26px; }
+  .starter-intro h2 { font-size: 1.5rem; margin-bottom: 12px; }
+  .starter-intro p { color: var(--ink-soft); margin-bottom: 12px; }
+
+  .legend {
+    display: grid; gap: 7px; padding: 0; margin-block: 14px; list-style: none;
+    font-size: 0.93rem; color: var(--ink-soft);
+
+    /* The dot is positioned rather than made a flex item: as a flex
+       item, the <b> and the sentence after it become separate items
+       and wrap as blocks, which on a phone splits the label from its
+       own explanation. Absolute keeps the whole line one text flow. */
+    & li { position: relative; padding-inline-start: 18px; }
+    & b { color: var(--ink); }
+  }
+  /* Note the modifier is .danger, not .risk: `.risk` is the pill on
+     each step's summary, and reusing the name here made the legend's
+     9px dot inherit the pill's padding and border and stretch into a
+     red slab. */
+  .legend-dot {
+    position: absolute; inset-inline-start: 0; top: 0.62em;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--green);
+
+    &.others { background: var(--gold); }
+    &.danger { background: var(--danger); }
+  }
+  .starter-progress-note { color: var(--gold); margin-top: 16px; }
+
+  .steps { display: grid; gap: 12px; }
+
+  .step {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); overflow: clip;
+    transition: border-color var(--fast) var(--ease);
+
+    &[open] { border-color: var(--green); }
+    &:hover { border-color: color-mix(in oklab, var(--green) 50%, var(--hairline)); }
+  }
+
+  .step > summary {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 20px; cursor: pointer; list-style: none;
+
+    &::-webkit-details-marker { display: none; }
+  }
+  .step-num {
+    color: var(--gold); flex-shrink: 0;
+    min-width: 4.2em;
+  }
+  .step-art { display: flex; flex-shrink: 0; color: var(--green); }
+  .step-art .art { width: 26px; height: 26px; }
+  .step-head { flex: 1 1 200px; display: grid; gap: 2px; min-width: 0; }
+  .step-title { font-size: 1.1rem; }
+  .step-blurb { color: var(--ink-soft); font-size: 0.9rem; }
+  .step-meta {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    flex-shrink: 0; color: var(--ink-soft);
+  }
+
+  /* the risk pill — the thing a nervous first-timer looks for */
+  .risk {
+    font-family: var(--font-mono); font-size: 0.62rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    border-radius: 999px; padding: 3px 10px;
+    border: 1px solid currentColor;
+
+    &[data-risk="low"] { color: var(--green); }
+    &[data-risk="mid"] { color: var(--gold); }
+    &[data-risk="high"] { color: var(--danger); }
+  }
+
+  /* a finished step */
+  .step[data-read] > summary .step-num::after {
+    content: " ✓"; color: var(--green);
+  }
+  .step[data-read] { background: color-mix(in oklab, var(--green-soft) 45%, var(--panel)); }
+
+  .step-body {
+    padding: 4px 20px 22px;
+    border-top: 1px solid var(--hairline);
+
+    & p, & li { max-width: var(--measure); }
+    & p { margin-block: 12px; }
+    & h4 { font-size: 1.04rem; margin-block: 22px 8px; color: var(--ink); }
+    & h5 {
+      font-family: var(--font-mono); font-size: 0.68rem;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      margin: 0 0 8px; color: var(--gold);
+    }
+    & ul { padding-left: 20px; margin-block: 10px; }
+    & li { margin-bottom: 6px; }
+  }
+
+  /* what you do / what is done for you, side by side */
+  .split {
+    display: grid; gap: var(--gap); margin-block: 22px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+
+    & > div {
+      border-radius: var(--radius-sm); padding: 16px 18px;
+      background: var(--paper-sunk);
+      border-inline-start: 3px solid var(--green);
+    }
+    & > .others { border-inline-start-color: var(--gold); }
+    & ul { margin: 0; padding-left: 18px; }
+    & li { font-size: 0.93rem; color: var(--ink-soft); }
+  }
+
+  .step-foot, .step-cta {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 24px; padding-top: 18px;
+    border-top: 1px solid var(--hairline);
+  }
+  .step-cta { border-top: 0; }
+
+  /* the example / warning box, shared with the lesson pages */
+  .ex.warn {
+    border-inline-start-color: var(--danger);
+    background: color-mix(in oklab, var(--danger) 7%, transparent);
+  }
+
+  /* ---------- the stage ladder ---------- */
+  .ladder-intro { color: var(--ink-soft); margin-bottom: 22px; }
+  .ladder { display: grid; gap: 10px; }
+
+  .rung {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); overflow: clip;
+
+    &[data-state="now"] { border-color: var(--green); }
+    &[data-state="done"] { background: color-mix(in oklab, var(--green-soft) 40%, var(--panel)); }
+    &[data-soon] .rung-title { opacity: 0.85; }
+  }
+
+  .rung > summary {
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 20px; cursor: pointer; list-style: none;
+
+    &::-webkit-details-marker { display: none; }
+  }
+  .rung-art { display: flex; flex-shrink: 0; }
+  .rung-art .art { width: 30px; height: 30px; }
+  .rung-head { flex: 1 1 220px; display: grid; gap: 3px; min-width: 0; }
+  .rung-kicker { color: var(--gold); }
+  .rung-title { font-size: 1.16rem; display: flex; gap: 9px; align-items: baseline; flex-wrap: wrap; }
+  .rung-who { color: var(--ink-soft); font-size: 0.88rem; }
+
+  .rung-state { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .rung-count { color: var(--ink-soft); }
+
+  .state-pill {
+    border-radius: 999px; padding: 3px 10px; font-size: 0.6rem;
+    border: 1px solid var(--hairline); color: var(--ink-soft);
+  }
+  .rung[data-state="now"] .state-pill { border-color: var(--green); color: var(--green); }
+  .rung[data-state="done"] .state-pill { border-color: var(--green); color: var(--green); }
+  .rung[data-state="next"] .state-pill { border-color: var(--gold); color: var(--gold); }
+
+  .ring { width: 34px; height: 34px; flex-shrink: 0; }
+  .ring-track { stroke: var(--hairline); }
+  .ring-fill {
+    stroke: var(--green);
+    transition: stroke-dashoffset var(--slow) var(--ease);
+  }
+
+  .rung-body {
+    padding: 6px 20px 22px;
+    border-top: 1px solid var(--hairline);
+  }
+  .rung-blurb { color: var(--ink-soft); max-width: var(--measure); margin-block: 14px; }
+  .rung-soon { color: var(--gold); margin-bottom: 14px; }
+  .rung-section { margin-block: 18px; }
+  .rung-section h4 { color: var(--gold); margin: 0 0 8px; font-family: var(--font-mono); font-weight: 500; }
+
+  .rung-lessons {
+    display: grid; gap: 2px; padding: 0; margin: 0; list-style: none;
+
+    & li {
+      display: flex; align-items: baseline; gap: 10px;
+      padding: 7px 0; border-bottom: 1px solid var(--hairline);
+    }
+    & li:last-child { border-bottom: 0; }
+    & a { flex: 1; text-decoration: none; color: var(--ink); font-size: 0.97rem; }
+    & a:hover { color: var(--green); opacity: 1; }
+    & li[data-read] a::before { content: "✓ "; color: var(--green); }
+    & li[data-soon] { opacity: 0.55; }
+    & li[data-soon] a { pointer-events: auto; }
+  }
+  .rung-lesson-min { color: var(--ink-soft); flex-shrink: 0; font-size: 0.62rem; }
+
+  /* What's inside a stage, as section names and counts. The full
+     lesson list lives on the stage's own page — repeating it here
+     made the hub 13,400px tall and gave the reader two places to
+     read the same thing. */
+  .rung-sections {
+    display: grid; gap: 0; padding: 0; margin-block: 14px; list-style: none;
+
+    & li {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 14px; padding: 8px 0; border-bottom: 1px solid var(--hairline);
+    }
+    & li:last-child { border-bottom: 0; }
+  }
+  .rung-section-name { font-size: 0.97rem; }
+  .rung-section-count { color: var(--ink-soft); flex-shrink: 0; font-size: 0.66rem; }
+
+  /* the auto-scroll aims at a rung's top edge — give it clearance
+     under the sticky header instead of tucking it behind */
+  .rung, .step, #starter { scroll-margin-top: 5.5rem; }
+
+  .rung-foot {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--hairline);
+  }
+  .rung-time { color: var(--ink-soft); }
+
+  /* ---------- the door to the contents page, on the hub ---------- */
+  .contents-cta {
+    display: grid; gap: 6px 16px; align-items: center;
+    grid-template-columns: auto 1fr auto;
+    padding: 20px 22px; text-decoration: none; color: inherit;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+    transition: border-color var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); opacity: 1; }
+    & .more { color: var(--green); white-space: nowrap; }
+  }
+  .contents-cta-art .art { width: 26px; height: 26px; color: var(--gold); }
+  .contents-cta-text { display: grid; gap: 3px; }
+  .contents-cta-text strong { font-size: 1.08rem; }
+  .contents-cta-text span { color: var(--ink-soft); font-size: 0.9rem; }
+  @media (width <= 620px) {
+    .contents-cta { grid-template-columns: auto 1fr; }
+    .contents-cta .more { grid-column: 2; }
+  }
+
+  /* ---------- /learn/contents.html ---------- */
+  .contents-jump {
+    display: flex; flex-wrap: wrap; gap: 7px; margin-top: 22px;
+
+    & a {
+      font-family: var(--font-bn); font-size: 0.78rem;
+      padding: 5px 12px; border-radius: 999px;
+      border: 1px solid var(--hairline); text-decoration: none; color: var(--ink);
+    }
+    & a:hover { border-color: var(--green); color: var(--green); opacity: 1; }
+  }
+
+  .contents-stage { padding-block: 34px 6px; }
+  .contents-stage-head {
+    display: grid; gap: 4px 14px; align-items: start;
+    grid-template-columns: auto 1fr auto;
+    padding-bottom: 12px; margin-bottom: 16px;
+    border-bottom: 1px solid var(--hairline);
+
+    & h2 { font-size: 1.3rem; margin-block: 2px; }
+    & h2 a { color: var(--ink); text-decoration: none; }
+    & h2 a:hover { color: var(--green); opacity: 1; }
+  }
+  .contents-art { display: flex; }
+  .contents-art .art { width: 26px; height: 26px; color: var(--gold); }
+  .contents-kicker { color: var(--gold); }
+  .contents-who { color: var(--ink-soft); font-size: 0.9rem; margin: 0; }
+  .contents-tally {
+    color: var(--ink-soft); white-space: nowrap;
+    border: 1px solid var(--hairline); border-radius: 999px; padding: 3px 10px;
+
+    &[data-state="done"] { color: var(--green); border-color: var(--green); }
+  }
+
+  .contents-section { margin-bottom: 22px; }
+  .contents-section h3 {
+    color: var(--gold); margin: 0 0 6px;
+    font-family: var(--font-mono); font-weight: 500; font-size: 0.68rem;
+  }
+
+  .contents-list { display: grid; gap: 0; padding: 0; margin: 0; list-style: none; }
+  .contents-row {
+    display: grid; align-items: baseline; gap: 4px 18px;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto;
+    padding: 9px 2px; border-bottom: 1px solid var(--hairline);
+
+    & a { text-decoration: none; font-size: 1rem; }
+    & a:hover { opacity: 1; }
+    &[data-read] a::before { content: "✓ "; color: var(--green); }
+    &[data-soon] { opacity: 0.55; }
+  }
+  .contents-en { color: var(--ink-soft); font-size: 0.86rem; }
+  .contents-min { color: var(--ink-soft); font-size: 0.62rem; white-space: nowrap; }
+  @media (width <= 620px) {
+    .contents-row { grid-template-columns: 1fr auto; gap: 1px 10px; }
+    .contents-en { grid-column: 1; }
+    .contents-stage-head { grid-template-columns: auto 1fr; }
+    .contents-tally { grid-column: 2; justify-self: start; }
+  }
+
+  .glossary .g-row[data-read] a::before { content: "✓ "; color: var(--green); }
+
+  /* ---------- stage pages ---------- */
+  .stage-hero .lede { max-width: 62ch; }
+  .stage-art { color: var(--green); }
+
+  .stage-facts {
+    display: grid; gap: 14px; margin-block: 26px 20px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+
+    & > div {
+      border-inline-start: 2px solid var(--hairline); padding-inline-start: 14px;
+    }
+    & dt {
+      font-family: var(--font-mono); font-size: 0.62rem;
+      letter-spacing: 0.07em; text-transform: uppercase; color: var(--gold);
+      margin-bottom: 4px;
+    }
+    & dd { margin: 0; color: var(--ink-soft); font-size: 0.94rem; }
+  }
+
+  .stage-progress {
+    display: flex; align-items: center; gap: 12px;
+    margin-block: 8px 22px;
+
+    & .track {
+      flex: 1; max-width: 260px; height: 5px; border-radius: 999px;
+      background: var(--hairline); overflow: clip;
+    }
+    & .track i {
+      display: block; height: 100%; width: 0; background: var(--green);
+      transition: width var(--slow) var(--ease);
+    }
+    & .count { color: var(--ink-soft); }
+    &[data-state="done"] .count { color: var(--green); }
+  }
+
+  .lesson-grid {
+    display: grid; gap: var(--gap);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+  .lesson-card {
+    position: relative;
+    display: grid; gap: 8px; align-content: start;
+    padding: 22px; text-decoration: none; color: inherit;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+    transition: border-color var(--fast) var(--ease), transform var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); transform: translateY(-2px); opacity: 1; }
+    & h3 { font-size: 1.06rem; }
+    & p { color: var(--ink-soft); font-size: 0.92rem; }
+    &.is-soon { opacity: 0.6; }
+  }
+  .lesson-card-art .art { width: 24px; height: 24px; color: var(--gold); }
+  .lesson-card-foot { color: var(--ink-soft); font-size: 0.62rem; }
+  .lesson-card[data-read]::after {
+    content: "✓";
+    position: absolute; top: 14px; right: 16px;
+    color: var(--green); font-family: var(--font-mono); font-size: 0.8rem;
+  }
+
+  /* ---------- lesson pages ---------- */
+  .lesson-art { color: var(--green); }
+  .lesson-meta { color: var(--ink-soft); margin-bottom: 26px; }
+  .soon-note {
+    border-inline-start: 3px solid var(--gold);
+    padding-inline-start: 14px; color: var(--ink-soft);
+  }
+
+  /* ---------- a softer band, for the "coming later" note ---------- */
+  .band.soft {
+    background: var(--paper-sunk); color: var(--ink);
+    border: 1px solid var(--hairline);
+
+    & h2 { color: var(--ink); }
+    & p { color: var(--ink-soft); }
+  }
+
+  /* ---------- narrow screens ---------- */
+  @media (width <= 620px) {
+    .step > summary, .rung > summary { flex-wrap: wrap; gap: 10px 12px; }
+    .step-meta, .rung-state { width: 100%; justify-content: flex-start; }
+    .step-num { min-width: 0; }
+    .crumbs [aria-current="page"] { max-width: 22ch; }
+  }
+
+  /* Someone who asked for less motion gets the state, not the sweep. */
+  @media (prefers-reduced-motion: reduce) {
+    .ring-fill, .stage-progress .track i { transition: none; }
+    .door:hover, .lesson-card:hover { transform: none; }
+  }
+}
+
+/* ============================================================
    UTILITIES
    ============================================================ */
 @layer utilities {
@@ -1720,6 +2808,21 @@
      on those dialogs holds the old display value until the transition
      finishes. */
   dialog:not([open]) { display: none; }
+
+  /* The same guard for the `hidden` attribute, and for the same
+     reason. `[hidden]` is only a UA rule of `display: none`, so ANY
+     author rule that sets display beats it — and every card on this
+     site sets one.
+
+     It bit for real: the simulated-data banner on the index analysis
+     is `.balance-check { display: flex }`, so setting hidden on it
+     did nothing, and a reader who loaded their own real prices was
+     still told the series was simulated. Wrong in the one direction
+     that matters, since it misdescribes THEIR data.
+
+     Scoped away from [hidden="until-found"], which must stay
+     findable by in-page search and expandable on match. */
+  [hidden]:not([hidden="until-found"]) { display: none !important; }
 
   .visually-hidden {
     position: absolute !important; width: 1px; height: 1px;

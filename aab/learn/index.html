@@ -5,18 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <title>শেখার লাইব্রেরি — বাংলায় বিনিয়োগ শিক্ষা — Rony Reiad</title>
-  <meta name="description" content="শেয়ারবাজার, সঞ্চয়পত্র, মিউচুয়াল ফান্ড — সহজ কথ্য বাংলায় প্রতিটা টার্মের ব্যাখ্যা।">
-  <!-- Theme before first paint: no white flash for dark-mode readers.
-       No stored choice means "follow the OS", which the CSS handles
-       on its own through color-scheme + light-dark(). -->
+  <meta name="description" content="একদম শুরু থেকে: বাংলাদেশে বিনিয়োগ শুরু করার আট ধাপের হাতেখড়ি, তারপর ভিত্তি থেকে গবেষণা পর্যন্ত সাজানো ধাপ — সবটাই সহজ বাংলায়।">
+  <link rel="canonical" href="https://reiad.co.uk/learn/index.html">
+
+  <!-- Theme AND audience before first paint. Both are attributes on
+       <html> that CSS reads, so setting them here means no flash and
+       no reflow — the nav is already in the right order when it is
+       first painted. See the `audience` block in styles.css. -->
   <script>
     (function () {
-      var saved = localStorage.getItem("theme");
-      if (saved === "dark" || saved === "light") {
-        document.documentElement.setAttribute("data-theme", saved);
-      }
+      var d = document.documentElement;
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
+        var a = localStorage.getItem("audience");
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+      } catch (e) {}
     })();
   </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
@@ -28,14 +35,13 @@
   <link rel="manifest" href="/site.webmanifest">
   <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="শেখার লাইব্রেরি">
-  <meta property="og:description" content="শেয়ারবাজার, সঞ্চয়পত্র, মিউচুয়াল ফান্ড — সহজ কথ্য বাংলায় প্রতিটা টার্মের ব্যাখ্যা।">
+  <meta property="og:title" content="শেখার লাইব্রেরি — বাংলায় বিনিয়োগ শিক্ষা">
+  <meta property="og:description" content="একদম শুরু থেকে গবেষণা পর্যন্ত — বাংলাদেশে বিনিয়োগ শেখার সাজানো পথ, সহজ বাংলায়।">
   <meta property="og:image" content="https://reiad.co.uk/og/learn.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta property="og:site_name" content="Rony Reiad">
-  <meta property="og:locale" content="en_GB">
   <meta name="theme-color" content="#0B3D2E">
 </head>
 <body>
@@ -43,14 +49,14 @@
   <header>
     <div class="wrap header-inner">
       <a class="site-name" href="/index.html">
-    <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-      <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
-      <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
-      <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
-      <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
-    </svg>
-    Rony Reiad
-  </a>
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Rony Reiad
+      </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep aria-current="page">Learn</a>
         <a href="/tools/index.html">Tools</a>
@@ -64,145 +70,640 @@
       <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
     </div>
   </header>
+
   <main id="main">
     <div class="wrap">
 
-      <div class="hero">
-        <span class="eyebrow mono">শেখার লাইব্রেরি · Learn hub</span>
+      <div class="hero learn-hero">
+        <span class="eyebrow mono">শেখার লাইব্রেরি · Learn</span>
         <h1 class="bn-h">টাকার ভাষা, আমাদের ভাষায়।</h1>
-        <p class="lede">শেয়ারবাজার, সঞ্চয়পত্র, মিউচুয়াল ফান্ড — প্রতিটা টার্মের আলাদা ছোট লেখা,
-        বন্ধুকে বোঝানোর ভঙ্গিতে। লেখার ভেতরে কোনো টার্ম এলে সেটা লিংক — ক্লিক করলেই
-        ছোট উইন্ডোতে খুলবে, পড়া শেষে যেখানে ছিলেন সেখানেই ফিরবেন।</p>
-        <!-- <search> is the element for exactly this: a search region
-             that isn't a whole-site nav. It gives assistive tech the
-             right landmark without a role attribute. -->
+        <p class="lede">কখনো বিনিয়োগ করেননি? সমস্যা নেই — নিচের আট ধাপ দিয়ে শুরু করুন।
+        প্রতিটা ধাপে লেখা আছে আপনাকে কী করতে হবে, কোন কাজটা অন্যরা করে দেবে, আর ঝুঁকি কতটা।
+        তারপর ধাপে ধাপে এগোনোর পুরো পথ — শব্দ শেখা থেকে গবেষণা পর্যন্ত।</p>
+
+        <!-- Where they left off. Built by hub.js when there is
+             something to resume; absent for a first-time visitor,
+             who should see a clean start rather than an empty box. -->
+        <div id="resume" hidden></div>
+
         <search>
-          <input type="search" id="term-filter" placeholder="খুঁজুন… (যেমন: শেয়ার, ফান্ড, ঝুঁকি)" aria-label="টার্ম খুঁজুন">
+          <input type="search" id="term-filter" placeholder="খুঁজুন… (যেমন: শেয়ার, ব্রোকার, ঝুঁকি)" aria-label="লেখা খুঁজুন">
         </search>
+        <div id="filter-count" class="filter-count mono" hidden></div>
 
         <div class="progress-line" id="learn-progress">
           <span class="track"><i></i></span>
           <span class="count"></span>
-          <button class="chip" id="learn-random" type="button">যেকোনো একটা পড়ুন</button>
           <button class="chip" id="learn-reset" type="button" hidden>রিসেট</button>
         </div>
       </div>
-      
-<section id="basics">
-<span class="section-label mono">বাজারের মূল কথা</span>
-<div class="cards term-grid">
-  <a class="cell term-card term" href="terms/share.html">
-    <h3 class="bn-h">শেয়ার <span class="en-sub">Share / Stock</span></h3>
-    <p>কোম্পানির মালিকানার ছোট্ট একটা টুকরা — শেয়ার কিনলে আপনি ওই ব্যবসার আংশিক মালিক।</p>
-  </a>
-  <a class="cell term-card term" href="terms/dse.html">
-    <h3 class="bn-h">ঢাকা স্টক এক্সচেঞ্জ <span class="en-sub">DSE</span></h3>
-    <p>বাংলাদেশের সবচেয়ে বড় শেয়ারবাজার — যেখানে ক্রেতা আর বিক্রেতার অর্ডার মিলিয়ে দেওয়া হয়।</p>
-  </a>
-  <a class="cell term-card term" href="terms/dsex.html">
-    <h3 class="bn-h">সূচক <span class="en-sub">Index / DSEX</span></h3>
-    <p>পুরো বাজারের হালচাল এক নম্বরে — DSEX বাড়লে বোঝায় বড় কোম্পানিগুলোর দাম মোটের ওপর বেড়েছে।</p>
-  </a>
-  <a class="cell term-card term" href="terms/bo-account.html">
-    <h3 class="bn-h">বিও অ্যাকাউন্ট <span class="en-sub">BO Account</span></h3>
-    <p>শেয়ারবাজারে ঢোকার টিকিট — আপনার শেয়ার ইলেকট্রনিকভাবে জমা থাকে এই অ্যাকাউন্টে।</p>
-  </a>
-  <a class="cell term-card term" href="terms/broker.html">
-    <h3 class="bn-h">ব্রোকার <span class="en-sub">Broker</span></h3>
-    <p>আপনার আর শেয়ারবাজারের মাঝখানের লাইসেন্সধারী মধ্যস্থতাকারী — অর্ডার যায় এদের মাধ্যমে।</p>
-  </a>
-  <a class="cell term-card term" href="terms/ipo.html">
-    <h3 class="bn-h">আইপিও <span class="en-sub">IPO</span></h3>
-    <p>কোনো কোম্পানি প্রথমবারের মতো সাধারণ মানুষের কাছে শেয়ার বেচে বাজারে তালিকাভুক্ত হওয়া।</p>
-  </a>
-</div>
-</section>
 
-<section id="instruments">
-<span class="section-label mono">বিনিয়োগের মাধ্যম</span>
-<div class="cards term-grid">
-  <a class="cell term-card term" href="terms/mutual-fund.html">
-    <h3 class="bn-h">মিউচুয়াল ফান্ড <span class="en-sub">Mutual Fund</span></h3>
-    <p>অনেকের টাকা এক করে পেশাদার ম্যানেজারের হাতে বিনিয়োগ — ছোট টাকায় বড় পোর্টফোলিওর স্বাদ।</p>
-  </a>
-  <a class="cell term-card term" href="terms/sanchayapatra.html">
-    <h3 class="bn-h">সঞ্চয়পত্র <span class="en-sub">Savings Certificate</span></h3>
-    <p>সরকারের কাছে টাকা ধার দেওয়া — বাংলাদেশের সবচেয়ে জনপ্রিয় নিরাপদ সঞ্চয়ের মাধ্যম।</p>
-  </a>
-  <a class="cell term-card term" href="terms/bond.html">
-    <h3 class="bn-h">বন্ড <span class="en-sub">Bond</span></h3>
-    <p>কোম্পানি বা সরকারকে ধার দেওয়ার দলিল — মালিকানা না, পাওনাদারি।</p>
-  </a>
-  <a class="cell term-card term" href="terms/fdr.html">
-    <h3 class="bn-h">এফডিআর <span class="en-sub">Fixed Deposit (FDR)</span></h3>
-    <p>ব্যাংকে নির্দিষ্ট মেয়াদে টাকা রেখে নির্দিষ্ট হারে মুনাফা — সহজ, পরিচিত, কিন্তু সীমিত।</p>
-  </a>
-</div>
-</section>
-
-<section id="analysis">
-<span class="section-label mono">কোম্পানি বিশ্লেষণ</span>
-<div class="cards term-grid">
-  <a class="cell term-card term" href="terms/dividend.html">
-    <h3 class="bn-h">ডিভিডেন্ড <span class="en-sub">Dividend</span></h3>
-    <p>কোম্পানির লাভ থেকে শেয়ারহোল্ডারদের দেওয়া ভাগ — নগদ টাকায় বা বোনাস শেয়ারে।</p>
-  </a>
-  <a class="cell term-card term" href="terms/eps.html">
-    <h3 class="bn-h">ইপিএস <span class="en-sub">EPS</span></h3>
-    <p>প্রতি শেয়ারে কোম্পানির আয় — কোম্পানির লাভকে শেয়ার সংখ্যা দিয়ে ভাগ করলে যা পাওয়া যায়।</p>
-  </a>
-  <a class="cell term-card term" href="terms/pe-ratio.html">
-    <h3 class="bn-h">পিই রেশিও <span class="en-sub">P/E Ratio</span></h3>
-    <p>শেয়ারের দাম তার আয়ের কত গুণ — দামটা সস্তা না চড়া, তার প্রথম আন্দাজ।</p>
-  </a>
-  <a class="cell term-card term" href="terms/nav.html">
-    <h3 class="bn-h">এনএভি <span class="en-sub">NAV</span></h3>
-    <p>ফান্ড বা কোম্পানির সম্পদ থেকে দায় বাদ দিলে প্রতি ইউনিটে যা থাকে — 'আসল' মূল্যের হিসাব।</p>
-  </a>
-</div>
-</section>
-
-<section id="risk">
-<span class="section-label mono">ঝুঁকি ও কৌশল</span>
-<div class="cards term-grid">
-  <a class="cell term-card term" href="terms/risk-return.html">
-    <h3 class="bn-h">ঝুঁকি ও রিটার্ন <span class="en-sub">Risk & Return</span></h3>
-    <p>বেশি লাভের আশা মানেই বেশি লসের সম্ভাবনা — বিনিয়োগের সবচেয়ে সৎ নিয়ম।</p>
-  </a>
-  <a class="cell term-card term" href="terms/diversification.html">
-    <h3 class="bn-h">ডাইভারসিফিকেশন <span class="en-sub">Diversification</span></h3>
-    <p>সব ডিম এক ঝুড়িতে না রাখা — এক জায়গার লস যেন অন্য জায়গার লাভে সামাল দেওয়া যায়।</p>
-  </a>
-  <a class="cell term-card term" href="terms/inflation.html">
-    <h3 class="bn-h">মূল্যস্ফীতি <span class="en-sub">Inflation</span></h3>
-    <p>টাকার নীরব ক্ষয় — অঙ্ক একই থাকলেও কেনার ক্ষমতা প্রতি বছর একটু করে কমে।</p>
-  </a>
-  <a class="cell term-card term" href="terms/compounding.html">
-    <h3 class="bn-h">চক্রবৃদ্ধি <span class="en-sub">Compounding</span></h3>
-    <p>মুনাফার ওপর মুনাফা — সময় যত লম্বা, টাকার বাড়া তত দ্রুত। ধৈর্যের পুরস্কার।</p>
-  </a>
-</div>
-</section>
-
-      <section id="glossary-section">
-        <span class="section-label mono">A–Z · সব টার্ম একসাথে</span>
-        <p class="measure" style="color:var(--ink-soft);font-size:0.95rem">
-          পুরো লাইব্রেরি ইংরেজি বর্ণানুক্রমে — ইংরেজি নামটা জানা থাকলে এখান থেকেই দ্রুত খুঁজে নিন।
-        </p>
-        <div class="az" id="az"></div>
-        <div class="glossary" id="glossary"></div>
+      <!-- ============================================================
+           WHERE DO I START?
+           Three doors, because "eight stages" is too much to choose
+           from cold. Each one scrolls to the right place rather than
+           navigating away — the map stays visible.
+           ============================================================ -->
+      <section id="doors" class="no-filter">
+        <span class="section-label mono">কোথা থেকে শুরু করবেন</span>
+        <div class="cards door-grid">
+          <a class="cell door" href="#starter">
+            <span class="door-art" data-icon="seed" aria-hidden="true"></span>
+            <h3 class="bn-h">আমি একদম নতুন</h3>
+            <p>বিনিয়োগ কখনো করিনি, শব্দগুলোও জানি না। কী করতে হবে ধাপে ধাপে বলুন।</p>
+            <span class="more">হাতেখড়ি থেকে শুরু →</span>
+          </a>
+          <a class="cell door" href="#ladder">
+            <span class="door-art" data-icon="book" aria-hidden="true"></span>
+            <h3 class="bn-h">কিছুটা জানি</h3>
+            <p>টুকটাক শুনেছি, হয়তো বিও অ্যাকাউন্টও আছে। এখন গুছিয়ে শিখতে চাই।</p>
+            <span class="more">ধাপগুলো দেখুন →</span>
+          </a>
+          <a class="cell door" href="#contents">
+            <span class="door-art" data-icon="cap" aria-hidden="true"></span>
+            <h3 class="bn-h">ছাত্র বা পেশাদার</h3>
+            <p>পড়াশোনা, থিসিস বা চাকরির জন্য দরকার। নির্দিষ্ট বিষয় খুঁজছি।</p>
+            <span class="more">সব বিষয়ের তালিকা →</span>
+          </a>
+        </div>
       </section>
 
-      <section>
+      <!-- ============================================================
+           STAGE 0 — হাতেখড়ি, THE STARTER GUIDE
+
+           These eight steps are on the hub itself rather than on
+           pages of their own, on purpose: someone who has never
+           invested should not have to learn a site's navigation
+           before being told what to do first. Everything they need
+           for the first month is on this one page, in order.
+
+           Each <details> is a step. hub.js handles the ticks, the
+           auto-scroll and opening the next one; without JavaScript
+           they are still eight ordinary expandable sections that
+           work perfectly well.
+           ============================================================ -->
+      <section id="starter" class="starter">
+        <span class="section-label mono">ধাপ ০ · হাতেখড়ি · Starter Guide</span>
+
+        <div class="starter-intro measure">
+          <h2 class="bn-h">আটটা ধাপ, একটার পর একটা</h2>
+          <p>তাড়াহুড়ার কিছু নেই। বেশিরভাগ মানুষের প্রথম চার ধাপ শেষ করতে দুই থেকে চার সপ্তাহ লাগে,
+          আর সেটাই স্বাভাবিক। প্রতিটা ধাপে তিনটা জিনিস আলাদা করে লেখা আছে —</p>
+          <ul class="legend">
+            <li><span class="legend-dot do" aria-hidden="true"></span> <b>আপনি যা করবেন</b> — যে কাজটা আপনাকেই করতে হবে</li>
+            <li><span class="legend-dot others" aria-hidden="true"></span> <b>অন্যরা যা করে দেবে</b> — ব্যাংক, ব্রোকার বা সরকারি প্রতিষ্ঠান যেটা সামলাবে</li>
+            <li><span class="legend-dot danger" aria-hidden="true"></span> <b>ঝুঁকি</b> — এই ধাপে টাকা হারানোর সম্ভাবনা কতটা</li>
+          </ul>
+          <p class="starter-progress-note mono" id="starter-count"></p>
+        </div>
+
+        <div class="steps" id="steps">
+
+          <!-- ধাপ ১ -->
+          <details class="step" id="step-money-first" data-lesson-id="start/money-first">
+            <summary>
+              <span class="step-num mono">ধাপ ১</span>
+              <span class="step-art" data-icon="wallet" aria-hidden="true"></span>
+              <span class="step-head">
+                <span class="step-title bn-h">টাকাটা আগে ঠিক করুন</span>
+                <span class="step-blurb">বিনিয়োগ শুরুর আগে যে তিনটা জিনিস ঠিক থাকতে হয়।</span>
+              </span>
+              <span class="step-meta">
+                <span class="risk" data-risk="low">ঝুঁকি কম</span>
+                <span class="mono">৬ মিনিট</span>
+              </span>
+            </summary>
+            <div class="step-body">
+              <p>সবচেয়ে বড় ভুলটা মানুষ করে শুরুতেই — যে টাকা তার দরকার হবে, সেই টাকা বিনিয়োগ করে ফেলে।
+              তারপর ঠিক যখন টাকাটা লাগে, তখন বাজার নিচে, আর বাধ্য হয়ে লসে বেচতে হয়। এই একটা ভুল
+              এড়াতে পারলে আপনি অনেকের চেয়ে এগিয়ে।</p>
+
+              <h4 class="bn-h">১. জরুরি তহবিল</h4>
+              <p>বিনিয়োগ করার আগে অন্তত তিন মাসের — পারলে ছয় মাসের — সংসারের খরচ এমন জায়গায় রাখুন
+              যেখান থেকে এক দিনে টাকা তোলা যায়। সেভিংস অ্যাকাউন্টই যথেষ্ট। এই টাকাটা লাভের জন্য না,
+              এটা আপনার ঢাল। চাকরি চলে গেলে, কেউ অসুস্থ হলে বা বাড়িতে কিছু ভাঙলে এই টাকাটা আপনাকে
+              বিনিয়োগে হাত দিতে দেবে না।</p>
+
+              <h4 class="bn-h">২. চড়া সুদের ধার আগে শোধ</h4>
+              <p>ক্রেডিট কার্ডের বকেয়া বা ব্যক্তিগত ঋণের সুদ বছরে ২০–৩০% হতে পারে। শেয়ারবাজার থেকে
+              ধারাবাহিকভাবে ওই হারে রিটার্ন পাওয়া যায় না — কেউ পায় না। তাই ওই ধার শোধ করা মানেই
+              নিশ্চিত ২০–৩০% রিটার্ন, ঝুঁকি ছাড়াই। এটা বাজারের যেকোনো সুযোগের চেয়ে ভালো।</p>
+
+              <h4 class="bn-h">৩. কত টাকা কতদিন আটকে রাখতে পারবেন</h4>
+              <p>নিজেকে সৎভাবে জিজ্ঞেস করুন: এই টাকাটা পাঁচ বছর না ছুঁয়ে থাকতে পারব? উত্তর "না" হলে
+              সেটা শেয়ারে যাবে না। যে টাকা এক-দুই বছরে লাগবে, সেটা <a class="term" href="/learn/terms/fdr.html">এফডিআর</a>
+              বা সেভিংসেই ভালো।</p>
+
+              <div class="split">
+                <div class="do">
+                  <h5>আপনি যা করবেন</h5>
+                  <ul>
+                    <li>এক মাসের আয় আর খরচ কাগজে লিখুন</li>
+                    <li>তিন মাসের খরচের অঙ্কটা বের করুন — এটাই আপনার লক্ষ্য</li>
+                    <li>সব ধারের তালিকা বানান, সুদের হারসহ</li>
+                    <li>ঠিক করুন প্রতি মাসে কত টাকা সরিয়ে রাখতে পারবেন</li>
+                  </ul>
+                </div>
+                <div class="others">
+                  <h5>অন্যরা যা করে দেবে</h5>
+                  <ul>
+                    <li>ব্যাংক চাইলে প্রতি মাসে নির্দিষ্ট দিনে টাকা কেটে আলাদা অ্যাকাউন্টে রাখতে পারে</li>
+                    <li>ইচ্ছাশক্তির ওপর ভরসা করার চেয়ে এই স্বয়ংক্রিয় ব্যবস্থাটা অনেক বেশি কাজ করে</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="ex"><b>হিসাব করে দেখুন:</b> মাসে ছোট অঙ্ক সরিয়ে রাখলে দশ-বিশ বছরে কী দাঁড়ায়,
+              সেটা <a href="/tools/index.html#compounding">চক্রবৃদ্ধি ক্যালকুলেটরে</a> নিজের সংখ্যা বসিয়ে দেখুন।
+              সংখ্যাটা দেখলে শুরু করার আগ্রহ বাড়ে।</div>
+            </div>
+          </details>
+
+          <!-- ধাপ ২ -->
+          <details class="step" id="step-papers" data-lesson-id="start/papers">
+            <summary>
+              <span class="step-num mono">ধাপ ২</span>
+              <span class="step-art" data-icon="id" aria-hidden="true"></span>
+              <span class="step-head">
+                <span class="step-title bn-h">কাগজপত্র গুছিয়ে নিন</span>
+                <span class="step-blurb">একবার গুছিয়ে রাখলে বাকি সব ধাপ দ্রুত হয়ে যায়।</span>
+              </span>
+              <span class="step-meta">
+                <span class="risk" data-risk="low">ঝুঁকি কম</span>
+                <span class="mono">৫ মিনিট</span>
+              </span>
+            </summary>
+            <div class="step-body">
+              <p>বাংলাদেশে যেকোনো আর্থিক অ্যাকাউন্ট খুলতে মোটামুটি একই কাগজ লাগে। একবার একটা ফোল্ডারে
+              সব জমা করে রাখলে — কাগজে আর ফোনে ছবি তুলে — পরের প্রতিটা ধাপ অনেক কম ঝামেলার হবে।</p>
+
+              <h4 class="bn-h">যা যা লাগবে</h4>
+              <ul>
+                <li><b>জাতীয় পরিচয়পত্র (এনআইডি)</b> — মূল ও ফটোকপি। এটাই সবচেয়ে জরুরি।</li>
+                <li><b>টিআইএন সার্টিফিকেট</b> — কর শনাক্তকরণ নম্বর। অনলাইনে বিনামূল্যে নেওয়া যায়, আর
+                    এটা থাকলে লভ্যাংশে উৎসে কর কম কাটে। না থাকলে বেশি কাটে — তাই এটা করে নেওয়াই লাভ।</li>
+                <li><b>পাসপোর্ট সাইজের ছবি</b> — অন্তত চার কপি, সাম্প্রতিক।</li>
+                <li><b>ব্যাংক অ্যাকাউন্ট</b> — নিজের নামে, চালু। সাথে একটা বাতিল চেকের পাতা।</li>
+                <li><b>নমিনির তথ্য</b> — নাম, এনআইডি, সম্পর্ক আর ছবি। এটা বাদ দেবেন না।</li>
+              </ul>
+
+              <h4 class="bn-h">নমিনি কেন গুরুত্বপূর্ণ</h4>
+              <p>নমিনি হলেন সেই ব্যক্তি, আপনার অবর্তমানে অ্যাকাউন্টটা যাঁর কাছে যাবে। নমিনি না থাকলে
+              পরিবারকে আইনি প্রক্রিয়ায় যেতে হয়, যেটা দীর্ঘ ও ব্যয়বহুল। এটা লিখতে দুই মিনিট লাগে
+              আর পরিবারকে বছরের ভোগান্তি থেকে বাঁচায়। প্রতিটা অ্যাকাউন্টে দিন।</p>
+
+              <div class="split">
+                <div class="do">
+                  <h5>আপনি যা করবেন</h5>
+                  <ul>
+                    <li>উপরের পাঁচটা জিনিস এক জায়গায় জড়ো করুন</li>
+                    <li>টিআইএন না থাকলে অনলাইনে নিয়ে নিন — বিনামূল্যে</li>
+                    <li>প্রতিটার ছবি তুলে ফোনে একটা ফোল্ডারে রাখুন</li>
+                    <li>নমিনি কে হবেন, সেটা পরিবারের সাথে কথা বলে ঠিক করুন</li>
+                  </ul>
+                </div>
+                <div class="others">
+                  <h5>অন্যরা যা করে দেবে</h5>
+                  <ul>
+                    <li>ব্রোকারেজ হাউস ফর্মগুলো নিজেরাই পূরণ করে দেয় — আপনি শুধু সই করবেন</li>
+                    <li>যাচাই-বাছাই (KYC) ওরাই করে</li>
+                    <li>ব্যাংকের সাথে সংযোগও ওরাই করিয়ে দেয়</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="ex warn"><b>সাবধান:</b> সই সবসময় একরকম করুন এবং যা সই করছেন তা পড়ে নিন।
+              ফাঁকা ফর্মে কখনো সই করবেন না — "বাকিটা আমরা ভরে দেব" শুনলে না বলুন। এটা ছোট মনে হলেও
+              পরে বিরোধ হলে এই একটা জিনিসই সবচেয়ে বেশি কাজে দেয়।</div>
+            </div>
+          </details>
+
+          <!-- ধাপ ৩ -->
+          <details class="step" id="step-safest-first" data-lesson-id="start/safest-first">
+            <summary>
+              <span class="step-num mono">ধাপ ৩</span>
+              <span class="step-art" data-icon="shield" aria-hidden="true"></span>
+              <span class="step-head">
+                <span class="step-title bn-h">সবচেয়ে নিরাপদটা দিয়ে শুরু</span>
+                <span class="step-blurb">শেয়ার ছোঁয়ার আগেই যেগুলোতে হাত পাকানো যায়।</span>
+              </span>
+              <span class="step-meta">
+                <span class="risk" data-risk="low">ঝুঁকি কম</span>
+                <span class="mono">৭ মিনিট</span>
+              </span>
+            </summary>
+            <div class="step-body">
+              <p>প্রথম দিনেই শেয়ার কেনার দরকার নেই। বরং তিন থেকে ছয় মাস নিরাপদ জায়গায় নিয়মিত টাকা
+              রাখার অভ্যাসটা করুন। এতে দুইটা জিনিস হয়: টাকা জমানোর অভ্যাস তৈরি হয়, আর আপনি
+              আর্থিক প্রতিষ্ঠানের সাথে লেনদেন করতে শিখে যান — কোনো ঝুঁকি না নিয়েই।</p>
+
+              <h4 class="bn-h">তিনটা নিরাপদ বিকল্প</h4>
+
+              <p><b>ডিপিএস / মাসিক সঞ্চয় স্কিম।</b> প্রতি মাসে নির্দিষ্ট টাকা ব্যাংকে জমা, নির্দিষ্ট
+              মেয়াদ শেষে সুদসহ ফেরত। শুরু করার জন্য সবচেয়ে সহজ — অল্প টাকায় হয়, আর ব্যাংক নিজেই
+              প্রতি মাসে কেটে নেয়, তাই ভুলে যাওয়ার সুযোগ নেই।</p>
+
+              <p><b><a class="term" href="/learn/terms/fdr.html">এফডিআর</a>।</b> একবারে একটা অঙ্ক নির্দিষ্ট
+              মেয়াদে রাখা। হাতে থোক টাকা থাকলে এটা কাজের। মেয়াদের আগে ভাঙলে সুদ কম পাবেন।</p>
+
+              <p><b><a class="term" href="/learn/terms/sanchayapatra.html">সঞ্চয়পত্র</a>।</b> সরকারের কাছে
+              টাকা ধার দেওয়া — বাংলাদেশে সবচেয়ে নিরাপদ বিকল্পগুলোর একটা, আর সাধারণত ব্যাংকের চেয়ে
+              ভালো হার দেয়। তবে কেনার সীমা আছে, উৎসে কর কাটে, আর মেয়াদের আগে ভাঙালে ক্ষতি।</p>
+
+              <h4 class="bn-h">একটা কথা মনে রাখুন</h4>
+              <p>এগুলো নিরাপদ, কিন্তু "নিরাপদ" মানে "সবসময় লাভজনক" না। <a class="term" href="/learn/terms/inflation.html">মূল্যস্ফীতি</a>
+              যদি আপনার সুদের হারের চেয়ে বেশি হয়, তাহলে টাকার অঙ্ক বাড়লেও কেনার ক্ষমতা কমছে। এইজন্যই
+              দীর্ঘমেয়াদে শুধু এখানে থেমে থাকা যায় না — কিন্তু শুরুটা এখান থেকেই ভালো।</p>
+
+              <div class="split">
+                <div class="do">
+                  <h5>আপনি যা করবেন</h5>
+                  <ul>
+                    <li>নিজের ব্যাংকে গিয়ে ডিপিএসের হার আর মেয়াদ জিজ্ঞেস করুন</li>
+                    <li>দুই-তিনটা ব্যাংকের হার তুলনা করুন — পার্থক্য হয়</li>
+                    <li>ছোট অঙ্ক দিয়ে শুরু করুন, যেটা প্রতি মাসে দিতে কষ্ট হবে না</li>
+                    <li>নমিনি দিন</li>
+                  </ul>
+                </div>
+                <div class="others">
+                  <h5>অন্যরা যা করে দেবে</h5>
+                  <ul>
+                    <li>ব্যাংক প্রতি মাসে নিজেই টাকা কেটে নেবে</li>
+                    <li>সুদের হিসাব, কর কাটা আর মেয়াদ শেষে ফেরত — সবই ব্যাংকের কাজ</li>
+                    <li>সঞ্চয়পত্রে উৎসে কর সরকারই কেটে রাখে</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="ex"><b>নিজে মিলিয়ে দেখুন:</b> সঞ্চয়পত্র আর এফডিআর — কর কাটার পর কোনটা আসলে
+              বেশি দেয়? <a href="/tools/index.html#sanchayapatra">এই ক্যালকুলেটরে</a> নিজের পাওয়া হারটা
+              বসিয়ে দেখুন। উত্তরটা মেয়াদ আর অঙ্কভেদে বদলায়, তাই কারো কথা না শুনে নিজে হিসাব করাই ভালো।</div>
+            </div>
+          </details>
+
+          <!-- ধাপ ৪ -->
+          <details class="step" id="step-bo-account" data-lesson-id="start/bo-account">
+            <summary>
+              <span class="step-num mono">ধাপ ৪</span>
+              <span class="step-art" data-icon="door" aria-hidden="true"></span>
+              <span class="step-head">
+                <span class="step-title bn-h">বিও অ্যাকাউন্ট খুলুন</span>
+                <span class="step-blurb">শেয়ারবাজারে ঢোকার দরজা — আর ব্রোকার বাছাই।</span>
+              </span>
+              <span class="step-meta">
+                <span class="risk" data-risk="low">ঝুঁকি কম</span>
+                <span class="mono">৮ মিনিট</span>
+              </span>
+            </summary>
+            <div class="step-body">
+              <p>শেয়ার কিনতে হলে একটা <a class="term" href="/learn/terms/bo-account.html">বিও অ্যাকাউন্ট</a>
+              লাগবে — Beneficiary Owner অ্যাকাউন্ট। এখানে আপনার শেয়ারগুলো ইলেকট্রনিকভাবে জমা থাকে,
+              অনেকটা ব্যাংক অ্যাকাউন্টে টাকা থাকার মতো।</p>
+
+              <h4 class="bn-h">অ্যাকাউন্টটা আসলে কোথায় থাকে</h4>
+              <p>এটা গুরুত্বপূর্ণ, আর বেশিরভাগ মানুষ জানেন না: <b>আপনার শেয়ার ব্রোকারের কাছে থাকে না।</b>
+              থাকে সিডিবিএল নামের একটা কেন্দ্রীয় প্রতিষ্ঠানের খাতায়, আপনার নিজের নামে। ব্রোকারেজ হাউস
+              শুধু আপনার হয়ে অর্ডারটা দেয়। ব্রোকার বন্ধ হয়ে গেলেও শেয়ারগুলো আপনারই থাকে এবং অন্য
+              ব্রোকারে সরিয়ে নেওয়া যায়। এটা জেনে রাখলে অনেক অহেতুক ভয় কমে যাবে।</p>
+
+              <h4 class="bn-h">ব্রোকার বাছাইয়ে যা দেখবেন</h4>
+              <ul>
+                <li><b>লাইসেন্স আছে কি না</b> — ডিএসইর ওয়েবসাইটে সদস্য ব্রোকারেজ হাউসের তালিকা আছে।
+                    তালিকায় নাম না থাকলে যাবেন না, যত ভালো অফারই দিক।</li>
+                <li><b>কমিশন কত</b> — শতাংশ, আর ন্যূনতম কত। ছোট লেনদেনে ন্যূনতমটাই বেশি লাগে।</li>
+                <li><b>বার্ষিক ফি</b> — বিও অ্যাকাউন্ট রক্ষণাবেক্ষণে বছরে একটা নির্দিষ্ট ফি লাগে।</li>
+                <li><b>অ্যাপ কেমন</b> — নিজের পোর্টফোলিও আর স্টেটমেন্ট নিজে দেখতে পারবেন কি না।</li>
+                <li><b>টাকা তুলতে কত দিন</b> — বেচার পর ব্যাংকে টাকা আসতে কত দিন লাগে, আগেই জেনে নিন।</li>
+              </ul>
+
+              <p>বিস্তারিত তুলনার পদ্ধতি আছে <a href="/learn/basics-2/choosing-a-broker.html">ব্রোকারেজ হাউস বাছাই</a> লেখায়।</p>
+
+              <div class="split">
+                <div class="do">
+                  <h5>আপনি যা করবেন</h5>
+                  <ul>
+                    <li>দুই-তিনটা ব্রোকারেজ হাউসের কমিশন আর ফি জিজ্ঞেস করুন</li>
+                    <li>ডিএসইর সাইটে নামটা তালিকায় মিলিয়ে নিন</li>
+                    <li>ধাপ ২-এর কাগজগুলো নিয়ে যান</li>
+                    <li>ফর্ম পড়ে সই করুন, নমিনি দিন</li>
+                    <li>বিও নম্বরটা আলাদা করে লিখে রাখুন</li>
+                  </ul>
+                </div>
+                <div class="others">
+                  <h5>অন্যরা যা করে দেবে</h5>
+                  <ul>
+                    <li>ব্রোকারেজ হাউস সিডিবিএলে অ্যাকাউন্ট খোলার কাজটা করে দেবে</li>
+                    <li>ব্যাংক অ্যাকাউন্টের সাথে সংযোগ ওরাই করবে</li>
+                    <li>অ্যাপের লগইন ওরা দেবে</li>
+                    <li>কেনাবেচার পর নিষ্পত্তি ও শেয়ার জমা — পুরোটাই স্বয়ংক্রিয়</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="ex warn"><b>কখনো করবেন না:</b> আপনার বিও নম্বর আর অ্যাপের পাসওয়ার্ড কাউকে দেবেন না —
+              ব্রোকারের কর্মীকেও না। "আমি আপনার হয়ে কেনাবেচা করে দিচ্ছি, আপনাকে কিছু দেখতে হবে না" —
+              এই প্রস্তাবটা যত আন্তরিকভাবেই আসুক, না বলুন। অ্যাকাউন্টটা আপনার, সিদ্ধান্তও আপনার।</div>
+            </div>
+          </details>
+
+          <!-- ধাপ ৫ -->
+          <details class="step" id="step-first-buy" data-lesson-id="start/first-buy">
+            <summary>
+              <span class="step-num mono">ধাপ ৫</span>
+              <span class="step-art" data-icon="cart" aria-hidden="true"></span>
+              <span class="step-head">
+                <span class="step-title bn-h">প্রথম কেনাকাটা</span>
+                <span class="step-blurb">কেন একক শেয়ার দিয়ে শুরু না করাই ভালো।</span>
+              </span>
+              <span class="step-meta">
+                <span class="risk" data-risk="mid">ঝুঁকি মাঝারি</span>
+                <span class="mono">৯ মিনিট</span>
+              </span>
+            </summary>
+            <div class="step-body">
+              <p>এই প্রথম ধাপ যেখানে সত্যিকারের ঝুঁকি আছে — এখানে টাকা কমতে পারে। তাই ধীরে।</p>
+
+              <h4 class="bn-h">প্রথমে মিউচুয়াল ফান্ড, একক শেয়ার না</h4>
+              <p>একটা <a class="term" href="/learn/terms/mutual-fund.html">মিউচুয়াল ফান্ড</a> মানে অনেক
+              মানুষের টাকা একসাথে করে অনেকগুলো কোম্পানিতে ছড়িয়ে বিনিয়োগ, আর সেটা চালান পেশাদার
+              ম্যানেজার। নতুনদের জন্য এটা দুই কারণে ভালো শুরু: আপনার টাকা এমনিতেই ছড়ানো
+              (<a class="term" href="/learn/terms/diversification.html">ডাইভারসিফিকেশন</a>), আর একটা
+              কোম্পানি ডুবলে আপনার সব যায় না।</p>
+
+              <p>একক শেয়ার কেনার আগে অন্তত <a href="/learn/basics-1/index.html">ভিত্তি ধাপ ১</a>-এর
+              শব্দগুলো শিখে নিন। কোন কোম্পানি ভালো সেটা বোঝা একটা দক্ষতা, আর সেটা শিখতে সময় লাগে।</p>
+
+              <h4 class="bn-h">ছোট অঙ্ক দিয়ে শুরু করুন</h4>
+              <p>প্রথমবার এমন অঙ্ক দিন যেটা পুরোটা হারালেও আপনার জীবনে কিছু বদলাবে না। এটা হতাশাবাদ না —
+              এটা শেখার খরচ। প্রথম কয়েক মাসে আপনি আসলে বাজার শিখছেন, টাকা বানাচ্ছেন না।</p>
+
+              <h4 class="bn-h">অর্ডার দেওয়ার সময় দুইটা শব্দ</h4>
+              <ul>
+                <li><b>মার্কেট অর্ডার</b> — যে দামে পাওয়া যায় সেই দামে কিনে ফেলো। দ্রুত, কিন্তু দামটা
+                    আপনার নিয়ন্ত্রণে না।</li>
+                <li><b>লিমিট অর্ডার</b> — "৪৮ টাকা বা তার কমে কিনবে"। দাম আপনার নিয়ন্ত্রণে, কিন্তু দাম
+                    ওখানে না নামলে অর্ডারটা হবেই না।</li>
+              </ul>
+              <p>নতুন হিসেবে <b>লিমিট অর্ডার ব্যবহার করুন</b>। এতে ভুল করে অনেক বেশি দামে কেনার
+              সম্ভাবনা থাকে না, আর অভ্যাসটাও ভালো।</p>
+
+              <div class="split">
+                <div class="do">
+                  <h5>আপনি যা করবেন</h5>
+                  <ul>
+                    <li>ব্যাংক থেকে ব্রোকারেজ অ্যাকাউন্টে অল্প টাকা পাঠান</li>
+                    <li>একটা মিউচুয়াল ফান্ড বেছে নিন — ফি আর গত পাঁচ বছরের ফল দেখে</li>
+                    <li>লিমিট অর্ডার দিন</li>
+                    <li>কী কিনলেন, কত দামে, কেন — খাতায় লিখে রাখুন</li>
+                  </ul>
+                </div>
+                <div class="others">
+                  <h5>অন্যরা যা করে দেবে</h5>
+                  <ul>
+                    <li>ব্রোকার অর্ডারটা ডিএসইতে পাঠাবে</li>
+                    <li>মিল হলে লেনদেন হবে, আর শেয়ার আপনার বিও-তে জমা হবে</li>
+                    <li>কমিশন আর কর নিজে থেকেই কেটে নেওয়া হবে</li>
+                    <li>ফান্ডের ভেতরে কোন শেয়ার কেনা হবে, সেটা ম্যানেজারের কাজ</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="ex warn"><b>প্রথম মাসের নিয়ম:</b> কেনার পর দাম রোজ দেখবেন না। প্রথম কয়েক
+              সপ্তাহে দাম ওঠানামা করবেই, আর সেটা কিছুই প্রমাণ করে না। রোজ দেখলে আপনি আবেগে বেচে
+              দেবেন — প্রায় সবাই দেয়।</div>
+            </div>
+          </details>
+
+          <!-- ধাপ ৬ -->
+          <details class="step" id="step-make-a-rule" data-lesson-id="start/make-a-rule">
+            <summary>
+              <span class="step-num mono">ধাপ ৬</span>
+              <span class="step-art" data-icon="calendar" aria-hidden="true"></span>
+              <span class="step-head">
+                <span class="step-title bn-h">নিয়ম বানান, তারপর ধৈর্য</span>
+                <span class="step-blurb">প্রতি মাসে একই দিনে একই টাকা — আর কখন হিসাব দেখবেন না।</span>
+              </span>
+              <span class="step-meta">
+                <span class="risk" data-risk="low">ঝুঁকি কম</span>
+                <span class="mono">৬ মিনিট</span>
+              </span>
+            </summary>
+            <div class="step-body">
+              <p>এখান থেকে কাজটা আর উত্তেজনাপূর্ণ না, আর সেটাই ঠিক আছে। ভালো বিনিয়োগ বিরক্তিকর হওয়ার কথা।</p>
+
+              <h4 class="bn-h">নিয়মটা: প্রতি মাসে একই দিনে একই টাকা</h4>
+              <p>মাসের একটা দিন ঠিক করুন — ধরুন বেতন পাওয়ার পরের দিন — আর ওই দিন একটা নির্দিষ্ট অঙ্ক
+              বিনিয়োগ করুন। বাজার উপরে না নিচে, সেটা দেখবেন না।</p>
+
+              <p>এতে যা হয়: দাম বেশি থাকলে আপনি কম ইউনিট পাবেন, দাম কম থাকলে বেশি ইউনিট পাবেন। ফলে
+              গড় দামটা আপনাআপনি ভারসাম্যে চলে আসে, আর সবচেয়ে বড় কথা — "এখন কি কেনার সময়?" এই
+              প্রশ্নটা আপনার ঘাড় থেকে নেমে যায়। ওই প্রশ্নের উত্তর কেউ জানে না, পেশাদাররাও না।</p>
+
+              <h4 class="bn-h">কখন হিসাব দেখবেন</h4>
+              <p>তিন মাসে একবার। ওই সময় কোম্পানিগুলোর ত্রৈমাসিক ফল আসে — সেটাই দেখার মতো আসল খবর।
+              বাকি সময় দামের ওঠানামা বেশিরভাগই শব্দ, সংকেত না।</p>
+
+              <h4 class="bn-h">কখন দেখবেন না</h4>
+              <ul>
+                <li>বাজার বড় পতনের দিনে — সেদিন আপনি ভালো সিদ্ধান্ত নিতে পারবেন না</li>
+                <li>রাতে ঘুমানোর আগে</li>
+                <li>কারো কাছে "খবর" শোনার পরপরই</li>
+              </ul>
+
+              <div class="split">
+                <div class="do">
+                  <h5>আপনি যা করবেন</h5>
+                  <ul>
+                    <li>মাসের একটা তারিখ ঠিক করুন, ফোনে রিমাইন্ডার দিন</li>
+                    <li>অঙ্কটা ঠিক করুন — ছোট রাখুন, যাতে চালিয়ে যেতে পারেন</li>
+                    <li>তিন মাস পরপর হিসাব দেখার দিন ক্যালেন্ডারে বসান</li>
+                    <li>প্রতিটা কেনার তারিখ ও দাম খাতায় লিখুন</li>
+                  </ul>
+                </div>
+                <div class="others">
+                  <h5>অন্যরা যা করে দেবে</h5>
+                  <ul>
+                    <li>ব্যাংক প্রতি মাসে টাকা স্বয়ংক্রিয়ভাবে সরিয়ে দিতে পারে</li>
+                    <li>ব্রোকারেজ অ্যাপ আপনার পোর্টফোলিওর হিসাব রাখবে</li>
+                    <li>লভ্যাংশ এলে সেটা নিজে থেকেই আপনার অ্যাকাউন্টে ঢুকবে</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="ex"><b>কেন এত জোর দিচ্ছি:</b> <a class="term" href="/learn/terms/compounding.html">চক্রবৃদ্ধির</a>
+              একমাত্র জ্বালানি সময়। যিনি ছোট অঙ্ক দিয়ে বিশ বছর চালিয়ে গেলেন, তিনি প্রায় সবসময়
+              সেই মানুষটার চেয়ে ভালো করেন যিনি বড় অঙ্ক দিয়ে দুই বছর পর হাল ছেড়ে দিলেন।</div>
+            </div>
+          </details>
+
+          <!-- ধাপ ৭ -->
+          <details class="step" id="step-dont-get-cheated" data-lesson-id="start/dont-get-cheated">
+            <summary>
+              <span class="step-num mono">ধাপ ৭</span>
+              <span class="step-art" data-icon="warning" aria-hidden="true"></span>
+              <span class="step-head">
+                <span class="step-title bn-h">ঠকবেন না</span>
+                <span class="step-blurb">বাংলাদেশে যেভাবে মানুষ আসলে টাকা হারায়।</span>
+              </span>
+              <span class="step-meta">
+                <span class="risk" data-risk="high">সবচেয়ে বড় ঝুঁকি</span>
+                <span class="mono">৮ মিনিট</span>
+              </span>
+            </summary>
+            <div class="step-body">
+              <p>বাজারে লস হওয়া আর ঠকে যাওয়া — দুইটা আলাদা জিনিস। প্রথমটা বিনিয়োগের অংশ, দ্বিতীয়টা
+              এড়ানো যায়। এই ধাপটা সবচেয়ে মন দিয়ে পড়ুন।</p>
+
+              <h4 class="bn-h">১. "নিশ্চিত রিটার্ন"</h4>
+              <p>কেউ যদি বলে মাসে ৫%, বা বছরে ৪০%, বা "গ্যারান্টেড" — সেটা মিথ্যা। শেয়ারবাজারে কোনো
+              রিটার্ন নিশ্চিত না, এবং কারো পক্ষে নিশ্চয়তা দেওয়া বেআইনি। এই একটা বাক্য শুনলেই কথা
+              শেষ করে সরে আসুন। এমএলএম, "ক্রিপ্টো ট্রেডিং কোম্পানি", "ফরেক্স স্কিম" — বাংলাদেশে
+              বেশিরভাগ বড় প্রতারণা এই একটা প্রতিশ্রুতি দিয়েই শুরু হয়েছে।</p>
+
+              <h4 class="bn-h">২. লগইন ভাগ করা</h4>
+              <p>আপনার বিও নম্বর, অ্যাপের পাসওয়ার্ড বা ওটিপি কাউকে দেবেন না। কেউ না — ব্রোকারের কর্মী,
+              আত্মীয়, "অভিজ্ঞ ভাই", কেউ না। যে অ্যাপ বা ওয়েবসাইট আপনার ব্রোকারেজ পাসওয়ার্ড চায়
+              "পোর্টফোলিও ট্র্যাক করার জন্য", সেটা প্রতারণা।</p>
+
+              <h4 class="bn-h">৩. ফেসবুক আর হোয়াটসঅ্যাপের টিপস</h4>
+              <p>"আজকে এই শেয়ারটা কিনুন, ভেতরের খবর আছে" — এটা কীভাবে কাজ করে সেটা বোঝা দরকার।
+              যিনি বার্তাটা পাঠাচ্ছেন, তিনি আগেই কম দামে কিনে রেখেছেন। আপনারা অনেকে কিনলে দাম উঠবে,
+              আর তিনি তখন বেচে দেবেন। দাম পড়ে যাবে, আর শেয়ারটা আপনার হাতে থাকবে। এটার নাম
+              pump and dump, আর এটা অপরাধ।</p>
+
+              <h4 class="bn-h">৪. অনিবন্ধিত স্কিম</h4>
+              <p>বিনিয়োগ নেওয়ার লাইসেন্স যাদের নেই, তাদের কাছে টাকা দেবেন না। ব্রোকারেজ হাউস ডিএসইর
+              তালিকায় আছে কি না, আর মিউচুয়াল ফান্ড বিএসইসি অনুমোদিত কি না — দুইটাই অনলাইনে দুই
+              মিনিটে যাচাই করা যায়।</p>
+
+              <h4 class="bn-h">৫. তাড়াহুড়ার চাপ</h4>
+              <p>"আজকের মধ্যে না করলে সুযোগ চলে যাবে" — প্রতারকরা তাড়াহুড়া তৈরি করে, কারণ ভাবার সময়
+              পেলে মানুষ ধরে ফেলে। সত্যিকারের ভালো সুযোগ ৪৮ ঘণ্টায় উবে যায় না।</p>
+
+              <div class="split">
+                <div class="do">
+                  <h5>আপনি যা করবেন</h5>
+                  <ul>
+                    <li>যেকোনো প্রস্তাবে ৪৮ ঘণ্টা অপেক্ষা করার নিয়ম করুন</li>
+                    <li>প্রতিষ্ঠানের লাইসেন্স ডিএসই বা বিএসইসির সাইটে মিলিয়ে নিন</li>
+                    <li>পাসওয়ার্ড কারো সাথে ভাগ করবেন না</li>
+                    <li>"গ্যারান্টেড" শব্দটা শুনলেই কথা শেষ করুন</li>
+                  </ul>
+                </div>
+                <div class="others">
+                  <h5>অন্যরা যা করে দেবে</h5>
+                  <ul>
+                    <li>বিএসইসি লাইসেন্স দেয় ও তদন্ত করে — কিন্তু আপনার হারানো টাকা ফেরত দেয় না</li>
+                    <li>ডিএসইর বিনিয়োগকারী অভিযোগ সেলে অভিযোগ করা যায়</li>
+                    <li>ব্রোকারেজ হাউসের কমপ্লায়েন্স কর্মকর্তার কাছে লিখিত অভিযোগ দেওয়া যায়</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="ex warn"><b>সবচেয়ে দরকারি বাক্য:</b> "আমি ভেবে জানাচ্ছি।" এটা বলতে শিখুন।
+              যে প্রস্তাব এই বাক্যটা সহ্য করতে পারে না, সেটা প্রস্তাবই না — ফাঁদ।</div>
+            </div>
+          </details>
+
+          <!-- ধাপ ৮ -->
+          <details class="step" id="step-where-next" data-lesson-id="start/where-next">
+            <summary>
+              <span class="step-num mono">ধাপ ৮</span>
+              <span class="step-art" data-icon="signpost" aria-hidden="true"></span>
+              <span class="step-head">
+                <span class="step-title bn-h">এরপর কোথায়</span>
+                <span class="step-blurb">হাতেখড়ি শেষ। এখন শব্দগুলো শেখার পালা।</span>
+              </span>
+              <span class="step-meta">
+                <span class="risk" data-risk="low">ঝুঁকি কম</span>
+                <span class="mono">৩ মিনিট</span>
+              </span>
+            </summary>
+            <div class="step-body">
+              <p>এতদূর এলে আপনার হাতে যা আছে: একটা জরুরি তহবিল, গোছানো কাগজপত্র, একটা নিরাপদ সঞ্চয়ের
+              অভ্যাস, একটা বিও অ্যাকাউন্ট, প্রথম বিনিয়োগ, একটা মাসিক নিয়ম, আর প্রতারণা চেনার চোখ।</p>
+
+              <p>এটা সামান্য না। বাংলাদেশের বেশিরভাগ মানুষ যাঁরা শেয়ারবাজারে ঢোকেন, তাঁরা এই সাতটা
+              জিনিসের তিনটাও ছাড়াই ঢোকেন — এবং সেটাই তাঁদের সবচেয়ে বড় সমস্যা, বাজার না।</p>
+
+              <h4 class="bn-h">এবার কী</h4>
+              <p>এখন শব্দগুলো শেখার পালা। <b>ভিত্তি · ধাপ ১</b>-এ আঠারোটা শব্দের আলাদা আলাদা ছোট লেখা
+              আছে — শেয়ার, ডিভিডেন্ড, পিই রেশিও, এনএভি, চক্রবৃদ্ধি। প্রতিটা দুই-তিন মিনিটের, আর
+              একটার ভেতরে আরেকটার লিংক দেওয়া, তাই যেকোনো একটা থেকে শুরু করা যায়।</p>
+
+              <p>তারপর <b>ধাপ ২</b>-এ শিখবেন বাজারটা কীভাবে চলে, আর <b>ধাপ ৩</b>-এ নিজে একটা কোম্পানি
+              যাচাই করতে। তাড়াহুড়ার কিছু নেই — এই সাইট কোথাও যাচ্ছে না, আর আপনার অগ্রগতি
+              আপনার ব্রাউজারে জমা থাকছে।</p>
+
+              <div class="step-cta">
+                <a class="btn btn-solid" href="/learn/basics-1/index.html">ভিত্তি · ধাপ ১ শুরু করুন →</a>
+                <a class="btn btn-ghost" href="/tools/index.html">ক্যালকুলেটর দেখুন</a>
+              </div>
+            </div>
+          </details>
+
+        </div>
+      </section>
+
+      <!-- ============================================================
+           THE LADDER — every stage, in order
+           ============================================================ -->
+      <section id="ladder">
+        <span class="section-label mono">পুরো পথটা · The whole ladder</span>
+        <p class="measure ladder-intro">আটটা ধাপ, সহজ থেকে কঠিন। যেখান থেকে খুশি শুরু করতে পারেন —
+        কিছুই বন্ধ করা নেই — তবে ক্রম মেনে গেলে প্রতিটা ধাপ আগেরটার ওপর দাঁড়ায়।</p>
+        <!-- built by hub.js from curriculum.js, so a stage renamed
+             there is renamed here, in the menu and in the sitemap
+             at the same time -->
+        <div class="ladder" id="ladder-list"></div>
+      </section>
+
+      <!-- ============================================================
+           EVERYTHING, IN ONE LIST — on its own page.
+
+           The full index and the A–Z used to sit here. Together they
+           were more than half the height of this page, so the reader
+           had to scroll past ninety lesson rows to reach the FAQ. An
+           index is a reference you go TO, not something you wade
+           through on the way somewhere, so it moved to
+           /learn/contents.html and this is the door to it.
+           ============================================================ -->
+      <section id="contents-link" class="no-filter">
+        <span class="section-label mono">সব বিষয় · Full contents</span>
+        <a class="cell contents-cta" href="/learn/contents.html">
+          <span class="contents-cta-art" data-icon="book" aria-hidden="true"></span>
+          <span class="contents-cta-text">
+            <strong class="bn-h">সব বিষয় এক নজরে</strong>
+            <span>আট ধাপের প্রতিটা লেখা এক পাতায়, সাথে ইংরেজি বর্ণানুক্রমে শব্দকোষ —
+            কোনো নির্দিষ্ট বিষয় খুঁজলে এখান থেকে দ্রুত পাবেন।</span>
+          </span>
+          <span class="more">সূচিপত্র খুলুন →</span>
+        </a>
+      </section>
+
+      <!-- ============================================================
+           HOW TO USE THIS
+           ============================================================ -->
+      <section id="how" class="no-filter">
         <span class="section-label mono">কীভাবে পড়বেন</span>
         <div class="stack measure">
           <details class="faq">
-            <summary>কোনটা দিয়ে শুরু করব?</summary>
-            <p><a class="term" href="terms/share.html">শেয়ার</a> দিয়ে শুরু করুন, তারপর
-               <a class="term" href="terms/risk-return.html">ঝুঁকি ও রিটার্ন</a> আর
-               <a class="term" href="terms/compounding.html">চক্রবৃদ্ধি</a>। এই তিনটা বুঝলে বাকিগুলো
-               অনেক সহজ লাগবে। লেখার ভেতরে যে টার্মগুলো লিংক করা, সেগুলোতে ক্লিক করলে ছোট
-               উইন্ডোতে খুলবে — পড়া শেষে যেখানে ছিলেন সেখানেই ফিরে আসবেন।</p>
+            <summary>আমি একদম কিছু জানি না। কোথা থেকে শুরু করব?</summary>
+            <p>উপরের <a href="#starter">হাতেখড়ি</a> থেকে, ধাপ ১ দিয়ে। ওখানে কোনো আগের জ্ঞান ধরে
+               নেওয়া হয়নি। আটটা ধাপ শেষ করতে বেশিরভাগ মানুষের দুই থেকে চার সপ্তাহ লাগে — এবং
+               সেটাই ঠিক গতি।</p>
+          </details>
+          <details class="faq">
+            <summary>আমার পড়া কি মনে থাকবে? আবার এসে খুঁজতে হবে?</summary>
+            <p>না। আপনি কোন লেখাটা পড়েছেন সেটা আপনার ব্রাউজার মনে রাখে, আর পরেরবার এই পাতায়
+               এলে উপরে "যেখানে ছিলেন সেখান থেকে" বলে একটা বাক্স দেখবেন — এক ক্লিকেই ঠিক
+               জায়গায় ফিরে যাবেন। পাতাটাও নিজে থেকেই আপনার ধাপে নেমে আসবে।</p>
+          </details>
+          <details class="faq">
+            <summary>টিক চিহ্নগুলো কোথায় জমা থাকে?</summary>
+            <p>আপনার নিজের ব্রাউজারে, আপনার ডিভাইসেই — কোথাও পাঠানো হয় না, কোনো অ্যাকাউন্ট
+               লাগে না, কোনো লগইন নেই। অন্য ফোনে খুললে নতুন করে শুরু হবে, আর ব্রাউজারের
+               ডেটা মুছলে টিকগুলোও চলে যাবে।</p>
           </details>
           <details class="faq">
             <summary>এখানে কি কোনো শেয়ার কেনার পরামর্শ আছে?</summary>
@@ -218,10 +719,24 @@
                করতে পারবেন — সেটাই বেশি কাজের।</p>
           </details>
           <details class="faq">
-            <summary>টিক চিহ্নগুলো কোথায় জমা থাকে?</summary>
-            <p>আপনার নিজের ব্রাউজারে, আপনার ডিভাইসেই — কোথাও পাঠানো হয় না, কোনো অ্যাকাউন্ট
-               লাগে না। ব্রাউজারের ডেটা মুছলে টিকগুলোও চলে যাবে।</p>
+            <summary>লেখার ভেতরের রঙিন শব্দগুলোতে ক্লিক করলে কী হয়?</summary>
+            <p>ছোট একটা উইন্ডোতে ওই শব্দের ব্যাখ্যা খুলবে, আর বন্ধ করলে আপনি ঠিক যেখানে ছিলেন
+               সেখানেই ফিরবেন — পড়ার সুতো কাটবে না। ভেতরে আরেকটা শব্দে ক্লিক করলে সেটাও খুলবে,
+               আর "ফিরুন" বোতামে আগেরটায় ফিরে যেতে পারবেন।</p>
           </details>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           WHAT ELSE IS COMING
+           ============================================================ -->
+      <section id="other-schools" class="no-filter">
+        <span class="section-label mono">আরও শেখার বিষয় · Coming</span>
+        <div class="band soft">
+          <h2 class="bn-h">টাকার বাইরেও</h2>
+          <p>বাংলা থেকে জার্মান, শুরু থেকে সহজ ইংরেজি, কুরআনের আরবি ভাষা হিসেবে, রান্নার হাতেখড়ি,
+          দৈনন্দিন কাজের চেকলিস্ট আর ভ্রমণের প্রাথমিক জ্ঞান — এগুলো নিয়ে আলাদা একটা শেখার জায়গা
+          তৈরি হচ্ছে। এই পাতাটা শুধু টাকা আর বাজারের জন্যই থাকবে, যাতে গুলিয়ে না যায়।</p>
         </div>
       </section>
 
@@ -241,6 +756,7 @@
 
     </div>
   </main>
+
   <footer>
     <div class="wrap">
       <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
@@ -260,7 +776,6 @@
       <div class="reader-body" id="reader-body"></div>
     </div>
   </div>
-
 
   <script type="module" src="/app.js"></script>
   <script type="module" src="/learn/learn.js"></script>
