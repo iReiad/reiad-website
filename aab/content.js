@@ -211,19 +211,19 @@ export const PAGES = [
   { title: "Learn hub — শেখার লাইব্রেরি", url: "/learn/index.html",
     hint: "Page", blurb: "Start-to-research investing course in plain Bangla, eight stages deep." },
   { title: "Learn — সব বিষয় এক নজরে", url: "/learn/contents.html",
-    hint: "Page", blurb: "Every lesson in the Learn area on one page, plus the A–Z of terms." },
+    hint: "Page", group: "learn", blurb: "Every lesson in the Learn area on one page, plus the A–Z of terms." },
   { title: "Tools & calculators", url: "/tools/index.html",
     hint: "Page", blurb: "Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing." },
   { title: "Stock check — buy, hold or sell", url: "/tools/stock.html",
-    hint: "Tool", blurb: "Thirty-odd ratios across six pillars, a verdict that shows its own arithmetic, in English or Bangla." },
+    hint: "Tool", group: "tool", blurb: "Thirty-odd ratios across six pillars, a verdict that shows its own arithmetic, in English or Bangla." },
   { title: "Insights", url: "/insights.html",
     hint: "Page", blurb: "Longer pieces, plus an auto-updating pulse of market news." },
   { title: "Three-statement model — interactive case study", url: "/portfolio/three-statement.html",
-    hint: "Case study", blurb: "A live financial model: edit the assumptions, watch all three statements move." },
+    hint: "Case study", group: "case", blurb: "A live financial model: edit the assumptions, watch all three statements move." },
   { title: "DCF with sensitivity tables — interactive case study", url: "/portfolio/dcf.html",
-    hint: "Case study", blurb: "A live discounted cash flow: build the WACC, switch terminal value method, read the grid." },
+    hint: "Case study", group: "case", blurb: "A live discounted cash flow: build the WACC, switch terminal value method, read the grid." },
   { title: "Index volatility & drawdowns — interactive case study", url: "/portfolio/dsex.html",
-    hint: "Case study", blurb: "Rolling volatility, drawdowns, tail risk and holding periods — with CSV import." },
+    hint: "Case study", group: "case", blurb: "Rolling volatility, drawdowns, tail risk and holding periods — with CSV import." },
   { title: "Portfolio & services", url: "/portfolio.html",
     hint: "Page", blurb: "Financial modeling, data analysis and finance writing." },
   { title: "About Rony", url: "/about.html",
@@ -260,27 +260,49 @@ export const topics = () => {
     the stage, so a result reads as "মূল্যায়ন — মাঝারি · ধাপ ১"
     and the reader knows how deep they are about to go. */
 export const searchIndex = () => [
-  ...PAGES.map((p) => ({ title: p.title, url: p.url, hint: p.hint })),
+  /* `private` pages are out. The Article Studio was appearing in
+     public search results — an admin screen offered to every reader
+     who typed a letter that happened to match it. `private` already
+     kept it out of the menu and the sitemap; search was the one
+     place that ignored the flag. */
+  ...PAGES.filter((p) => !p.private).map((p) => ({
+    title: p.title, url: p.url, hint: p.hint,
+    kind: p.group === "case" ? "case" : p.group === "tool" ? "tool"
+      : p.group === "learn" ? "learn" : "page",
+  })),
   ...liveArticles().map((a) => ({
     title: a.title,
     url: `/insights/${a.slug}.html`,
     hint: "Article",
+    kind: "writing",
   })),
   ...TOOLS.map((t) => ({
     title: `${t.en} — ${t.bn}`,
     url: `/tools/index.html#${t.id}`,
     hint: "Tool",
+    kind: "tool",
   })),
   ...STAGES.map((s) => ({
     title: `${s.kicker} · ${s.bn} — ${s.en}`,
     url: s.inline ? "/learn/index.html#starter" : `/learn/${s.slug}/index.html`,
     hint: "Stage",
+    kind: "learn",
   })),
   ...allLessons().map((l) => ({
     title: `${l.bn} — ${l.en}`,
     url: l.url,
     hint: `${l.stage.kicker}`,
+    kind: "learn",
   })),
+];
+
+/** The order the palette shows groups in, and what it calls them. */
+export const SEARCH_GROUPS = [
+  ["page", "Pages"],
+  ["tool", "Tools"],
+  ["case", "Case studies"],
+  ["learn", "শেখার লাইব্রেরি · Learn"],
+  ["writing", "Writing"],
 ];
 
 /** "1 August 2026" — or "" when a piece has no date yet. */

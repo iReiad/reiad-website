@@ -24,6 +24,36 @@
 
   let stack = [];        // absolute pathnames opened in this session
   let lastFocused = null;
+  let token = 0;         // guards against a slow load landing after a newer one
+  const warmed = new Set();
+
+  /* Warm a term page the moment the reader looks like they might
+     open it. The modal fetches the page on click, and on a cold
+     cache over a phone connection that fetch is the whole delay —
+     which is why the first tap felt broken and the second felt
+     instant. A prefetch on hover, focus or pointerdown puts the
+     page in the HTTP cache before the tap lands.
+
+     This replaces a prerender: /app.js prerenders every same-origin
+     link on hover, and for a term link that is pure waste, because
+     clicking one never navigates anywhere. app.js now excludes
+     a.term and this picks up the job far more cheaply. */
+  function warm(url) {
+    if (warmed.has(url)) return;
+    warmed.add(url);
+    const link = document.createElement("link");
+    link.rel = "prefetch";
+    link.as = "document";
+    link.href = url;
+    document.head.append(link);
+  }
+
+  for (const ev of ["pointerenter", "focusin", "pointerdown"]) {
+    document.addEventListener(ev, (e) => {
+      const a = e.target.closest?.("a.term");
+      if (a) warm(absPath(a.getAttribute("href")));
+    }, { capture: true, passive: true });
+  }
 
   /* Resolve any href to a root-absolute pathname, against an
      explicit base URL (defaults to the current page). */
@@ -33,14 +63,22 @@
 
   function updateBackBtn() { backBtn.hidden = stack.length < 2; }
 
-  /* Fetch a term page, pull out its <article>, show it in the modal */
-  async function load(url, pushToStack) {
-    body.innerHTML = '<p class="reader-loading mono">লোড হচ্ছে…</p>';
+  /* Fetch a term page, pull out its <article>, show it in the modal.
+
+     `mine` is a token taken at the start and checked before any
+     write. Two loads can be in flight at once — click a term, then
+     click another inside the modal before the first arrives — and
+     without this the slower one wins and the reader is left looking
+     at an article they did not ask for. */
+  async function load(url, pushToStack, attempt = 0) {
+    const mine = ++token;
+    body.innerHTML = skeleton();
     fullLink.href = url;
     try {
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: "default" });
       if (!res.ok) throw new Error(res.status);
       const html = await res.text();
+      if (mine !== token) return;              // a newer load has started
       const doc = new DOMParser().parseFromString(html, "text/html");
       const article = doc.querySelector("article.term-article");
       if (!article) throw new Error("no article");
@@ -58,6 +96,7 @@
         a.setAttribute("href", absPath(a.getAttribute("href"), base));
       });
 
+      if (mine !== token) return;
       body.innerHTML = "";
       body.appendChild(article);
       body.scrollTop = 0;
@@ -75,16 +114,39 @@
 
       if (pushToStack && stack[stack.length - 1] !== url) stack.push(url);
     } catch (err) {
-      // Keep the escape hatches alive: the full-page link still points
-      // at the requested URL, and back (if available) still works.
+      if (mine !== token) return;
+
+      /* One silent retry. A single dropped request on a phone
+         connection used to leave this message sitting there with no
+         way out but closing the modal and opening it again — which
+         is exactly what it looked like from outside: "it doesn't
+         work the first time". */
+      if (attempt === 0) {
+        await new Promise((r) => setTimeout(r, 350));
+        if (mine !== token) return;
+        return load(url, pushToStack, 1);
+      }
+
+      // Second failure: say so, and offer a button rather than
+      // requiring the reader to work out that reopening fixes it.
       body.innerHTML =
         '<p class="reader-loading">লেখাটা লোড করা গেল না। ' +
-        '<a href="' + url + '">পুরো পেজে খুলে দেখুন</a>' +
-        (stack.length >= 2 ? ' — অথবা "ফিরুন" চাপুন।' : '।') +
-        '</p>';
+        '<button type="button" class="btn btn-ghost" id="reader-retry">আবার চেষ্টা করুন</button> ' +
+        '<a href="' + url + '">অথবা পুরো পেজে খুলুন</a></p>';
+      body.querySelector("#reader-retry")?.addEventListener("click", () => load(url, false));
     } finally {
       updateBackBtn();
     }
+  }
+
+  /* A shaped placeholder rather than one line of text: a slow load
+     then reads as loading rather than as an empty box. */
+  function skeleton() {
+    return '<div class="reader-skeleton" aria-label="লোড হচ্ছে" role="status">' +
+      '<span class="sk sk-kicker"></span><span class="sk sk-title"></span>' +
+      '<span class="sk sk-line"></span><span class="sk sk-line"></span>' +
+      '<span class="sk sk-line short"></span><span class="sk sk-line"></span>' +
+      '<span class="sk sk-line short"></span></div>';
   }
 
   function openReader(url) {

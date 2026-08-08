@@ -85,17 +85,29 @@ function stepFooters() {
   });
 }
 
+/** Put a step's heading just under the sticky header.
+
+    Only scrolls when it needs to: if the summary is already sitting
+    comfortably in the top half of the reading area, moving the page
+    is a twitch rather than a help. */
+function scrollStepIntoView(step) {
+  requestAnimationFrame(() => {
+    if (!step.isConnected) return;
+    const top = step.getBoundingClientRect().top;
+    const headerH = parseFloat(getComputedStyle(document.documentElement)
+      .getPropertyValue("--header-h")) || 80;
+    // already in a good place — leave it alone
+    if (top >= headerH && top < headerH + innerHeight * 0.35) return;
+    step.scrollIntoView({ behavior: prefersReduce() ? "auto" : "smooth", block: "start" });
+  });
+}
+
 /** Open one step, close the rest, and bring it into view.
     Only one step open at a time: eight open accordions is a wall
     of text, and the reader loses the sense of a sequence. */
 function openStep(step, { scroll = false } = {}) {
   steps.forEach((s) => { s.open = s === step; });
-  if (scroll) {
-    // let the browser finish the open animation before measuring
-    requestAnimationFrame(() =>
-      step.scrollIntoView({ behavior: prefersReduce() ? "auto" : "smooth", block: "start" })
-    );
-  }
+  if (scroll) scrollStepIntoView(step);
 }
 
 const prefersReduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -104,6 +116,15 @@ function wireSteps() {
   steps.forEach((step) => {
     step.addEventListener("toggle", () => {
       if (!step.open) return;
+
+      /* Bring the step you just opened to the top of the reading
+         area. Without this, tapping a summary sitting low in the
+         viewport expanded it downwards and left the reader looking
+         at the middle of a card they had not started — the content
+         opened below the fold and they had to scroll to find its
+         beginning. scrollIntoView respects scroll-padding-top, so
+         it lands just under the header. */
+      scrollStepIntoView(step);
       // opening a step is reading it, the same rule term pages use
       markRead(step.dataset.lessonId);
       setLast({
@@ -262,7 +283,64 @@ function stageRow(stage) {
 function buildLadder() {
   const host = document.getElementById("ladder-list");
   if (!host) return;
-  host.replaceChildren(...STAGES.map(stageRow));
+
+  /* The starter guide is NOT a rung. Its eight steps are printed in
+     full further up this same page, so listing it again here made
+     the ladder open with a stage the reader had just scrolled past
+     — and a rung that, uniquely, led nowhere new. The ladder now
+     starts at Basics stage 1, which is the first thing on it that
+     is somewhere else. */
+  host.replaceChildren(...STAGES.filter((s) => !s.inline).map(stageRow));
+}
+
+/* ============================================================
+   4b. THE THREE DOORS
+
+   "Where do I start?" is the first question, and answering it
+   should not itself be a decision that costs a screenful. These
+   are three small buttons: pick one, it scrolls you there and
+   stays marked, so a reader coming back can see which route they
+   chose last time. The description that used to sit inside each
+   card now appears under the row for the chosen one only.
+   ============================================================ */
+const DOOR_KEY = "learn-door";
+const DOOR_HINT = {
+  new: "বিনিয়োগ কখনো করেননি, শব্দগুলোও চেনেন না — একদম শুরু থেকে, ধাপে ধাপে। নিচের হাতেখড়ির আটটা ধাপই আপনার জন্য।",
+  some: "টুকটাক শুনেছেন, হয়তো বিও অ্যাকাউন্টও আছে। ধাপগুলো ঘুরে দেখুন আর যেটা দরকার সেখান থেকে শুরু করুন।",
+  pro: "পড়াশোনা, থিসিস বা চাকরির জন্য নির্দিষ্ট বিষয় খুঁজছেন — সব বিষয়ের তালিকা থেকে সরাসরি সেখানে যান।",
+};
+
+function initDoors() {
+  const picker = document.getElementById("door-picker");
+  const hint = document.getElementById("door-hint");
+  if (!picker || !hint) return;
+
+  const buttons = [...picker.querySelectorAll(".door-btn")];
+
+  const select = (door, { scroll }) => {
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.door === door)));
+    const chosen = buttons.find((b) => b.dataset.door === door);
+    hint.textContent = DOOR_HINT[door] ?? "";
+    hint.hidden = !hint.textContent;
+    if (!chosen) return;
+    try { localStorage.setItem(DOOR_KEY, door); } catch { /* private mode */ }
+    if (!scroll) return;
+    const target = document.getElementById(chosen.dataset.target);
+    target?.scrollIntoView({
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      block: "start",
+    });
+  };
+
+  picker.addEventListener("click", (e) => {
+    const b = e.target.closest(".door-btn");
+    if (b) select(b.dataset.door, { scroll: true });
+  });
+
+  // remember, but never move the page on arrival
+  let saved = null;
+  try { saved = localStorage.getItem(DOOR_KEY); } catch { /* private mode */ }
+  if (saved && DOOR_HINT[saved]) select(saved, { scroll: false });
 }
 
 /* ============================================================
@@ -478,6 +556,7 @@ paintIcons();
 stepFooters();
 wireSteps();
 initFilter();
+initDoors();
 repaint();
 
 // The first paint decides where to send them. Later repaints — a tick
