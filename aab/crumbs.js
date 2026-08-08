@@ -81,6 +81,12 @@ function trailFor(path) {
     return { crumbs, here: document.title.split("—")[0].trim() };
   }
 
+  /* ---------- the advanced tools, which have their own pages ---------- */
+  if (p.startsWith("/tools/") && p !== "/tools/index.html") {
+    crumbs.push({ name: isBn() ? "টুল" : "Tools", url: "/tools/index.html" });
+    return { crumbs, here: document.title.split("—")[0].trim() };
+  }
+
   /* ---------- portfolio case studies ---------- */
   if (p.startsWith("/portfolio/")) {
     crumbs.push({ name: "Portfolio", url: "/portfolio.html" });

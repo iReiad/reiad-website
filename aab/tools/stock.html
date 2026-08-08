@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>Stock check — buy, hold or sell — Rony Reiad</title>
+  <meta name="description" content="An interactive stock analyser for the Dhaka Stock Exchange: thirty-odd ratios across six pillars, a verdict that shows its own arithmetic, and a full Bangla translation. P/E, ROE, Altman Z, Piotroski F-score, dividend cover and bank-specific ratios.">
+  <link rel="canonical" href="https://reiad.co.uk/tools/stock.html">
+
+  <script>
+    (function () {
+      var d = document.documentElement;
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
+        var a = localStorage.getItem("audience");
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+        /* The language has to be settled before first paint, or a
+           Bangla reader gets a flash of English on every visit.
+           The URL wins over the stored choice so a shared link
+           arrives in the language it was sent in. */
+        var q = new URLSearchParams(location.search).get("lang");
+        var l = (q === "bn" || q === "en") ? q : localStorage.getItem("tool-lang");
+        if (l === "bn" || l === "en") { d.lang = l; d.setAttribute("data-lang", l); }
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Stock check — buy, hold or sell a DSE share">
+  <meta property="og:description" content="Thirty-odd ratios across six pillars, a verdict that shows its own arithmetic, and every word in English or Bangla.">
+  <meta property="og:image" content="https://reiad.co.uk/og/default.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Rony Reiad">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+  <a class="skip" href="#verdict">Skip to the verdict</a>
+
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="/index.html">
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Rony Reiad
+      </a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/tools/index.html" aria-current="page">Tools</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html">Contact</a>
+      </nav>
+      <button class="menu-btn" id="menu-btn" aria-label="Menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+
+      <!-- ============ hero ============ -->
+      <section class="hero-compact">
+        <span class="mono eyebrow" data-i18n="page.eyebrow">Tools · advanced</span>
+        <h1 data-i18n="page.h1">Should you buy, hold or sell this share?</h1>
+        <p class="lede" data-i18n="page.lede">Type the numbers off the annual report and the price off your broker's app.</p>
+
+        <div class="tool-topbar">
+          <div class="lang-picker">
+            <span class="mono" data-i18n="page.langLabel">Language</span>
+            <div class="segmented" id="lang-switch" role="group">
+              <button type="button" data-lang="en" aria-pressed="true">English</button>
+              <button type="button" data-lang="bn" aria-pressed="false" lang="bn">বাংলা</button>
+            </div>
+          </div>
+          <div class="preset-picker">
+            <span class="mono" data-i18n="preset.label">Load an example</span>
+            <div class="scenarios" id="preset-row"></div>
+          </div>
+        </div>
+        <p class="note-inline" data-i18n="preset.note">These are archetypes, not real companies.</p>
+      </section>
+
+      <!-- ============ the verdict ============ -->
+      <section class="verdict-card verdict-big" id="verdict" data-state="good">
+        <div id="verdict-dial"></div>
+        <div class="verdict-text">
+          <span class="mono" data-i18n="verdict.title">The verdict</span>
+          <strong class="verdict-value" id="verdict-band">—</strong>
+          <p class="verdict-detail" id="verdict-why"></p>
+          <p class="verdict-headroom" id="verdict-headroom" hidden></p>
+        </div>
+        <div class="verdict-aside">
+          <span class="mono" data-i18n="verdict.buyBelow">Buy-below price</span>
+          <strong id="verdict-buybelow">—</strong>
+        </div>
+      </section>
+
+      <div class="tiles" id="tiles"></div>
+
+      <!-- ============ inputs + everything else ============ -->
+      <div class="model-body">
+
+        <aside class="model-drivers" id="driver-panel">
+          <div class="drivers-head">
+            <h2 data-i18n="g.weights">What kind of investor are you?</h2>
+          </div>
+          <p class="drivers-note" data-i18n="g.weightsNote"></p>
+          <div id="weights"></div>
+          <div id="drivers"></div>
+          <div class="model-actions">
+            <button class="btn btn-ghost" id="copy-link" type="button" data-i18n="a.copyLink">Copy link</button>
+            <button class="btn btn-ghost" id="download-csv" type="button" data-i18n="a.download">Download CSV</button>
+            <button class="btn btn-ghost" id="reset" type="button" data-i18n="a.reset">Reset</button>
+          </div>
+        </aside>
+
+        <div class="model-charts">
+
+          <section class="chart-card">
+            <div class="section-head">
+              <h2 data-i18n="sec.pillars">The six pillars</h2>
+              <button class="toggle" id="expand-all" type="button" data-mode="closed"
+                      data-i18n="a.expandAll">Open every pillar</button>
+            </div>
+            <p class="statement-note" data-i18n="sec.pillarsNote"></p>
+            <div id="pillars"></div>
+          </section>
+
+          <section class="chart-card">
+            <h2 data-i18n="sec.flags">Flags</h2>
+            <p class="statement-note" data-i18n="sec.flagsNote"></p>
+            <div id="flags"></div>
+          </section>
+
+          <section class="chart-card">
+            <h2 data-i18n="sec.signals">Patterns worth naming</h2>
+            <p class="statement-note" data-i18n="sec.signalsNote"></p>
+            <div class="signals" id="signals"></div>
+          </section>
+
+          <section class="chart-card">
+            <h2 data-i18n="sec.fair">What is it worth?</h2>
+            <p class="statement-note" data-i18n="sec.fairNote"></p>
+            <div id="chart-fair"></div>
+            <p class="statement-note is-warn" id="fair-note" hidden></p>
+            <div class="table-scroll" id="fair-table"></div>
+          </section>
+
+          <section class="chart-card">
+            <h2 data-i18n="sec.market">Where the price sits</h2>
+            <div id="chart-range"></div>
+            <div id="chart-yields"></div>
+          </section>
+
+          <section class="chart-card">
+            <h2 data-i18n="sec.dupont">Where the return comes from</h2>
+            <p class="statement-note" data-i18n="sec.dupontNote"></p>
+            <div id="chart-dupont"></div>
+          </section>
+
+          <section class="chart-card">
+            <h2 data-i18n="sec.piotroski">The nine tests</h2>
+            <p class="statement-note" data-i18n="sec.piotroskiNote"></p>
+            <div id="piotroski"></div>
+          </section>
+
+          <section class="chart-card">
+            <h2 data-i18n="sec.drags">What is holding the score down</h2>
+            <p class="statement-note" data-i18n="sec.dragsNote"></p>
+            <div id="drags"></div>
+          </section>
+
+          <section class="chart-card">
+            <h2 data-i18n="sec.shariah">Shariah screen</h2>
+            <p class="statement-note" data-i18n="sec.shariahNote"></p>
+            <div id="shariah"></div>
+          </section>
+
+          <section class="chart-card">
+            <h2 data-i18n="sec.scorecard">Every number, in one table</h2>
+            <p class="statement-note" data-i18n="sec.scorecardNote"></p>
+            <div class="table-scroll" id="scorecard"></div>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- ============ the caveat ============ -->
+      <section class="balance-check" data-state="warn" id="disclaimer">
+        <span class="check-mark" aria-hidden="true">!</span>
+        <div>
+          <strong data-i18n="disc.title">What this cannot see</strong>
+          <p class="check-detail" data-i18n="disc.body"></p>
+          <p class="check-detail" data-i18n="disc.units"></p>
+        </div>
+      </section>
+
+      <div class="band">
+        <span class="mono">Working together</span>
+        <h2>Need this built properly, on your own data?</h2>
+        <p>Screening frameworks, valuation models and research notes — the same
+           method as this page, in Excel or Python, against a real portfolio.</p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/contact.html">Start a conversation</a>
+          <a class="btn btn-ghost" href="/tools/index.html">Back to the calculators</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <p>Everything on this site is general education, not investment advice.</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/tools/stock.js"></script>
+</body>
+</html>
