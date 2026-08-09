@@ -201,7 +201,7 @@
   /* body is a flex column (see the sticky-footer note above), so main
      takes the slack and footer stays put. */
   main { flex: 1 0 auto; }
-  footer { flex-shrink: 0; }
+  body > footer { flex-shrink: 0; }
 
   .wrap {
     max-width: 1080px;
@@ -233,7 +233,22 @@
   .prose p:last-child { margin-bottom: 0; }
 
   /* ---------- STICKY HEADER ---------- */
-  header {
+  /* `body >` matters. These four rules are the page chrome, but a
+     bare `header`/`footer` selector claims EVERY <header> and
+     <footer> on the page — and those elements are ordinary HTML
+     that belongs inside an <article> or a <section> too.
+
+     The practice book's day header is a <header>, and it was
+     inheriting position:sticky, z-index:50 and the glass blur: it
+     pinned itself over the site's own header and hid the top of
+     every day. The five calculator panels on /tools/ were doing
+     the same thing, quietly, long before that. And
+     view-transition-name has to be unique per document — two
+     elements called site-header is a transition that gives up.
+
+     The page chrome is a direct child of <body> on every page
+     here, so say so. */
+  body > header {
     position: sticky; top: 0; z-index: 50;
     background: color-mix(in oklab, var(--paper) 86%, transparent);
     backdrop-filter: blur(10px) saturate(1.4);
@@ -277,7 +292,7 @@
   }
 
   /* ---------- FOOTER ---------- */
-  footer {
+  body > footer {
     margin-top: 56px;
     background: var(--green-strong);
     color: oklch(93.5% 0.008 var(--h-green));
@@ -1065,8 +1080,12 @@
     container-type: inline-size;
     scroll-margin-top: 90px;
   }
+  /* This used to begin `position: static; background: none;
+     border: 0; backdrop-filter: none` — four declarations undoing
+     the page chrome, because a bare `header` selector was
+     claiming these five calculator panels. The chrome is scoped
+     to `body > header` now, so there is nothing left to undo. */
   .tool > header {
-    position: static; background: none; border: 0; backdrop-filter: none;
     padding: 0 0 18px; margin-bottom: 20px;
     border-bottom: 1px solid var(--hairline);
     display: block;
@@ -4438,7 +4457,7 @@
 
   /* ---------- PRINT ---------- */
   @media print {
-    header, footer, #palette, .read-progress, .hero-chart, .ticker,
+    body > header, body > footer, #palette, .read-progress, .hero-chart, .ticker,
     .icon-btn, .prev-next, .studio-pane.editor { display: none !important; }
     body { background: #fff; color: #000; font-size: 11pt; }
     .article a::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #555; }

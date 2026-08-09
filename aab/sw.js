@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v24: `header` and `footer`. The page chrome was claimed with
+   bare element selectors, so every <header> and <footer> nested
+   inside an article got position:sticky, z-index:50 and the glass
+   blur — the practice book's day header pinned itself over the
+   site's own and hid the top of every day, and the five
+   calculator panels on /tools/ had been carrying a four-line
+   workaround for the same thing. Scoped to `body >`. styles.css
+   again, and the practice book's markup with it.
+
    v23: .tag. The German school styled a class the whole site
    already used for the small label above an article card, and
    because a school's layer beats components everywhere, every
@@ -123,7 +132,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v23";
+const VERSION = "v24";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

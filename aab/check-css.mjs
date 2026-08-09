@@ -152,9 +152,15 @@ for (const { layer, owns } of SCHOOLS) {
   };
 
   for (const sel of topLevelSelectors(body)) {
+    /* A selector is safe when something in it can only mean this
+       school: the body class the school's pages carry, or a class
+       used nowhere else. Anything else matches the rest of the
+       site — including a selector with no class at all, which is
+       how a bare `header { position: sticky }` came to pin the
+       practice book's day header over the site's own. */
+    if (sel.includes(`body.${layer}`)) continue;
     const classes = [...sel.matchAll(/\.([a-zA-Z][\w-]*)/g)].map((m) => m[1]);
-    if (!classes.length) continue;            // e.g. body.deutsch [lang="de"]
-    if (classes.some(isMine)) continue;       // anchored by something German
+    if (classes.some(isMine)) continue;
 
     const strangers = classes
       .flatMap(usedIn)

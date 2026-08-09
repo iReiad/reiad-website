@@ -1,10 +1,10 @@
 {
-  "version": "v23",
+  "version": "v24",
   "hashes": {
     "/": "a5dbaf59a53eeae3",
     "/index.html": "a5dbaf59a53eeae3",
     "/offline.html": "e5c892d1fd6cd010",
-    "/styles.css": "9b2b6f5f3dba1140",
+    "/styles.css": "df95c9448b609b42",
     "/app.js": "f035f9c8e3623be2",
     "/content.js": "bb491b2e0e46b153",
     "/api.js": "9e58fcd815993f9c",
@@ -20,7 +20,7 @@
     "/learn/contents.html": "d4e8bef731c36954",
     "/learn/contents.js": "b8a1193a3cc2fde9",
     "/deutsch/curriculum.js": "96ac48fad9a22e1b",
-    "/deutsch/index.html": "f66f57712a57d86a",
+    "/deutsch/index.html": "524c848417825bb3",
     "/deutsch/hub.js": "73880f29f2b30ed4",
     "/deutsch/progress.js": "b53ad7e3cab3e862",
     "/deutsch/icons.js": "5063bf9ce028cd96",
