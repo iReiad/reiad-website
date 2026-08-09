@@ -211,13 +211,29 @@ everything else Word smuggles in gets thrown away."></div>
           <button class="btn btn-solid" id="btn-publish" hidden>Publish to the site</button>
           <button class="btn btn-ghost" id="btn-save-draft" hidden>Save draft to the site</button>
           <button class="btn btn-ghost" id="btn-view" hidden>View it</button>
-          <button class="btn btn-solid" id="btn-html">Download the page</button>
-          <button class="btn btn-ghost" id="btn-zip">Download .zip (page + photo files)</button>
-          <button class="btn btn-ghost" id="btn-entry">Get the index entry</button>
-          <button class="btn btn-ghost" id="btn-copy-html">Copy the HTML</button>
           <button class="btn btn-ghost" id="btn-clear">Clear</button>
           <button class="btn btn-ghost push" id="btn-lock" title="Lock the Studio on this device">Lock</button>
         </div>
+
+        <!-- The other way to publish: build the files yourself and
+             commit them. It is the whole story without a database,
+             and a fallback with one, so it folds away rather than
+             sitting next to the button you actually use. -->
+        <details class="file-tools" id="file-tools">
+          <summary>Publish as files instead</summary>
+          <p class="measure">
+            For when the database isn't there, or you want the piece in the
+            repository rather than in D1. The index entry is the part that
+            makes it appear on the Insights page, in Ctrl+K and in the feed —
+            publishing to the database does all of that on its own.
+          </p>
+          <div class="row-flex">
+            <button class="btn btn-solid" id="btn-html">Download the page</button>
+            <button class="btn btn-ghost" id="btn-zip">Download .zip (page + photo files)</button>
+            <button class="btn btn-ghost" id="btn-entry">Get the index entry</button>
+            <button class="btn btn-ghost" id="btn-copy-html">Copy the HTML</button>
+          </div>
+        </details>
 
         <ol class="studio-steps measure" id="steps-dynamic" hidden>
           <li>Press <strong>Publish to the site</strong>. Photos are uploaded to

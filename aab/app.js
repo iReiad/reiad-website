@@ -79,7 +79,24 @@ function initTheme() {
 /* ============================================================
    2. COMMAND PALETTE
    ============================================================ */
-const INDEX = searchIndex();
+/* content.js can only list what is written as a file, so a piece
+   published through the Studio was live, readable, and unfindable in
+   Ctrl+K. The database is merged in once it answers; until then this
+   is exactly the index it always was. */
+let INDEX = searchIndex();
+
+export function addToSearchIndex(articles) {
+  const known = new Set(INDEX.map((i) => i.url));
+  const extra = articles
+    .map((a) => ({
+      title: a.title,
+      url: `/insights/${a.slug}.html`,
+      hint: "Article",
+      kind: "writing",
+    }))
+    .filter((i) => !known.has(i.url));
+  if (extra.length) INDEX = [...extra, ...INDEX];
+}
 
 /** Subsequence match with a light score: exact substring wins,
     then word-start, then scattered letters ("dsx" finds DSEX). */
@@ -734,6 +751,12 @@ function initServiceWorker() {
    ============================================================ */
 function initDynamic() {
   countView();
+
+  // Every page, not just the ones showing cards: Ctrl+K works
+  // everywhere, so the index has to be complete everywhere.
+  getArticles().then((articles) => {
+    if (articles?.length) addToSearchIndex(articles);
+  });
   // Reactions and reader questions attach themselves to article pages,
   // so no article file has to know they exist.
   if (/^\/insights\/[a-z0-9-]+/i.test(location.pathname)) {

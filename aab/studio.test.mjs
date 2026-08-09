@@ -381,6 +381,38 @@ if (haveFileRow) {
   await page.click("#open-close");
 }
 
+/* ---------- 7b. the file name ----------
+   A slug becomes a URL and only some strings can. This field used to
+   take whatever was typed, so "German Alphabets" stayed that in the
+   index-entry block while the server stored "germanalphabets" — and
+   the broken one is what got pasted into content.js. */
+
+await page.click("#btn-new");
+await page.waitForTimeout(300);
+await page.fill("#f-title", "A piece");
+await page.fill("#f-slug", "German Alphabets");
+await page.locator("#f-title").focus();          // blur the slug field
+await page.waitForTimeout(500);
+check("a typed file name is tidied into a usable slug",
+  (await page.inputValue("#f-slug")) === "german-alphabets",
+  await page.inputValue("#f-slug"));
+
+// Without a database this is already open, so set it rather than
+// toggling — a click here would close it.
+check("the file-publishing tools are open without a database",
+  await page.evaluate(() => document.querySelector("#file-tools").open));
+await page.evaluate(() => { document.querySelector("#file-tools").open = true; });
+await page.waitForTimeout(200);
+await page.click("#btn-entry");
+await page.waitForTimeout(400);
+{
+  const entry = await page.locator("#sheet-body").textContent();
+  check("and the index entry quotes the tidied one",
+    entry.includes('"german-alphabets"'), entry.slice(0, 140));
+  check("never the raw text", !entry.includes("German Alphabets"));
+}
+await page.click("#sheet-close");
+
 /* ---------- 8. photos hosted somewhere else ----------
    A paste from Google Docs is cross-origin: the browser cannot fetch
    it to resize, so the upload fails and the article keeps an image
