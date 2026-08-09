@@ -907,6 +907,7 @@ function buildPage(m) {
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/deutsch/index.html">Deutsch</a>
         <a href="/insights.html" aria-current="page">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
         <a href="/about.html">About</a>

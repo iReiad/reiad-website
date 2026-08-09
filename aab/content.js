@@ -99,9 +99,18 @@ import {
   STAGES, SCHOOLS, allLessons, stageLessons, stageUrl, lessonUrl, findStage,
 } from "./learn/curriculum.js";
 
+/* The second school. German has its own curriculum file for the
+   same reason it has its own mount: nothing about ব্রোকার belongs
+   in a file about Akkusativ. Both are imported here so the menu,
+   the palette and build-meta.mjs still have a single import. */
+import {
+  STUFEN, SCHOOL as DEUTSCH, allTeile, stufeUrl, teilUrl, workbookUrl,
+} from "./deutsch/curriculum.js";
+
 // re-exported, because `export … from` alone would not give this
 // file the local bindings that searchIndex() below needs
 export { STAGES, SCHOOLS, allLessons, stageLessons, stageUrl, lessonUrl, findStage };
+export { STUFEN, DEUTSCH, allTeile, stufeUrl, teilUrl, workbookUrl };
 
 export const TERM_GROUPS = [
   {
@@ -202,6 +211,10 @@ export const PAGES = [
     hint: "Page", blurb: "Start-to-research investing course in plain Bangla, eight stages deep." },
   { title: "Learn: সব বিষয় এক নজরে", url: "/learn/contents.html",
     hint: "Page", group: "learn", blurb: "Every lesson in the Learn area on one page, plus the A–Z of terms." },
+  { title: "Deutsch: জার্মান, বাংলায়", url: "/deutsch/index.html",
+    hint: "Page", blurb: "German from Bangla in four stages, with a thirty-day practice book for each." },
+  { title: "৩০ দিনের অনুশীলন খাতা · Das 30-Tage-Arbeitsbuch", url: "/deutsch/stufe-1/arbeitsbuch.html",
+    hint: "Workbook", group: "deutsch", blurb: "One page a day: a pattern, five models, eight of your own sentences, six translations, and one true paragraph." },
   { title: "Tools & calculators", url: "/tools/index.html",
     hint: "Page", blurb: "Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing." },
   { title: "Stock check: buy, hold or sell", url: "/tools/stock.html",
@@ -260,7 +273,8 @@ export const searchIndex = () => [
   ...PAGES.filter((p) => !p.private).map((p) => ({
     title: p.title, url: p.url, hint: p.hint,
     kind: p.group === "case" ? "case" : p.group === "tool" ? "tool"
-      : p.group === "learn" ? "learn" : "page",
+      : p.group === "learn" ? "learn"
+      : p.group === "deutsch" || p.url.startsWith("/deutsch/") ? "deutsch" : "page",
   })),
   ...liveArticles().map((a) => ({
     title: a.title,
@@ -286,6 +300,25 @@ export const searchIndex = () => [
     hint: `${l.stage.kicker}`,
     kind: "learn",
   })),
+
+  /* German. Both the four Stufen and every Teil inside them,
+     including the ones still marked "soon" — someone searching
+     for "Dativ" should find the place it will be, not nothing.
+     The German name is in the title as well as the Bangla one,
+     because a learner halfway through the course will reach for
+     "Klammer" or "sein" long before they reach for "বন্ধনী". */
+  ...STUFEN.map((s) => ({
+    title: `${s.kicker} · ${s.bn}: ${s.de}`,
+    url: stufeUrl(s),
+    hint: "Stufe",
+    kind: "deutsch",
+  })),
+  ...allTeile().map((t) => ({
+    title: `${t.bn} · ${t.de}`,
+    url: t.url,
+    hint: `${t.stufe.kicker}`,
+    kind: "deutsch",
+  })),
 ];
 
 /** The order the palette shows groups in, and what it calls them. */
@@ -294,6 +327,7 @@ export const SEARCH_GROUPS = [
   ["tool", "Tools"],
   ["case", "Case studies"],
   ["learn", "শেখার লাইব্রেরি · Learn"],
+  ["deutsch", "জার্মান · Deutsch"],
   ["writing", "Writing"],
 ];
 

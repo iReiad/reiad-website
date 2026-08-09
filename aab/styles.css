@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, check, about, utilities;
+@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, deutsch, check, about, utilities;
 
 /* ============================================================
    TOKENS
@@ -289,10 +289,12 @@
   }
 
   /* ---------- RESPONSIVE ----------
-     The header has to fit six links and three buttons. Below the
-     desktop width the inline nav stands down and the Menu button
-     carries the whole site — it lists every page, so nothing is
-     lost, and the row stops overflowing. */
+     The header has to fit seven links and three buttons — seven
+     since the German school arrived, which is the point at which
+     the inline nav stops being roomy. Below the desktop width it
+     stands down and the Menu button carries the whole site — it
+     lists every page, so nothing is lost, and the row stops
+     overflowing. */
   @media (width <= 900px) {
     .header-inner { gap: 10px; }
     nav a { display: none; }
@@ -2562,6 +2564,7 @@
   :root[data-audience="work"] nav a[href*="contact"]   { order: -1; }
   :root[data-audience="work"] nav a[href*="learn"]     { order: 1; }
   :root[data-audience="work"] nav a[href*="tools"]     { order: 2; }
+  :root[data-audience="work"] nav a[href*="deutsch"]   { order: 3; }
 
   /* ---------- the home page, led by the half they came for ----------
 
@@ -3126,6 +3129,444 @@
   @media (prefers-reduced-motion: reduce) {
     .ring-fill, .stage-progress .track i { transition: none; }
     .door:hover, .lesson-card:hover { transform: none; }
+  }
+}
+
+/* ============================================================
+   THE GERMAN SCHOOL  (/deutsch/**)
+
+   Declared AFTER `learn`, because it reuses that layer's
+   furniture — .rung, .lesson-card, .stage-hero, .resume,
+   .progress-line, .ring — and adjusts a few pieces of it. A rule
+   sitting in `learn` would otherwise beat these on layer order
+   however specific they were.
+
+   Only what German actually needs is here. Everything a lesson
+   page and a stage page have in common with the Learn area is
+   inherited, on purpose: two schools that look like two
+   different sites would be two sites.
+
+   The genuinely new pieces:
+     .muster        the pattern box — the shape before the words
+     .satz-list     German line beside its Bangla meaning, the
+                    single most repeated object in the course
+     .hut           der/die/das in the three colours the workbook
+                    asks the learner to write in
+     .tag           one day of the practice book
+     .tracker       thirty little squares, ticked by hand
+   ============================================================ */
+@layer deutsch {
+
+  /* ---------- the three hats ----------
+     Blue, red, green: the same three colours the printed workbook
+     tells the learner to use for der, die and das. The whole
+     memory trick depends on them being the same three colours
+     everywhere they appear, so they are tokens, not literals. */
+  body.deutsch {
+    --hut-der: light-dark(oklch(48% 0.130 255), oklch(74% 0.120 255));
+    --hut-die: light-dark(oklch(52% 0.150 18),  oklch(74% 0.130 18));
+    --hut-das: light-dark(oklch(43% 0.100 var(--h-green)), oklch(72% 0.110 var(--h-green)));
+    --hut-der-soft: light-dark(oklch(95% 0.028 255), oklch(26% 0.045 255));
+    --hut-die-soft: light-dark(oklch(95.5% 0.028 18), oklch(26% 0.045 18));
+    --hut-das-soft: light-dark(oklch(94.5% 0.028 var(--h-green)), oklch(25% 0.040 var(--h-green)));
+  }
+
+  .hut {
+    font-family: var(--font-mono); font-size: 0.86em; font-weight: 500;
+    border-radius: 5px; padding: 1px 6px; white-space: nowrap;
+  }
+  .hut[data-hut="der"] { color: var(--hut-der); background: var(--hut-der-soft); }
+  .hut[data-hut="die"] { color: var(--hut-die); background: var(--hut-die-soft); }
+  .hut[data-hut="das"] { color: var(--hut-das); background: var(--hut-das-soft); }
+
+  /* ---------- German inside Bangla prose ----------
+     The Bangla face has no Latin italics worth the name and its
+     line height is set for Bengali, so German set in it looks
+     limp next to the text explaining it. Every German string in
+     this school carries lang="de"; this is the one rule that
+     makes that markup earn its keep. */
+  [lang="de"] {
+    font-family: var(--font-sans);
+    font-feature-settings: "kern" 1;
+  }
+  b[lang="de"], strong[lang="de"] { font-weight: 600; }
+
+  /* ---------- the hub ---------- */
+  .deutsch-hero .lede [lang="de"] { color: var(--gold); }
+
+  .wie-gitter {
+    display: grid; gap: var(--gap);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+
+    & .cell { padding: 20px 22px; }
+    & h3 { font-size: 1.05rem; margin-bottom: 8px; }
+    & p { color: var(--ink-soft); font-size: 0.94rem; margin: 0; }
+  }
+
+  .ein-regel {
+    margin-top: var(--gap);
+    border: 1px solid var(--gold); border-radius: var(--radius);
+    background: var(--paper-sunk); padding: 20px 22px;
+
+    & .mono { color: var(--gold); display: block; margin-bottom: 8px; }
+    & p { margin: 0; max-width: var(--measure); }
+  }
+
+  /* The static list the ladder replaces. It has to be a decent
+     list in its own right — with JavaScript off it IS the ladder. */
+  .leiter-fallback {
+    list-style: none; padding: 0; display: grid; gap: 10px;
+
+    & li {
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      padding: 14px 16px; background: var(--panel);
+      color: var(--ink-soft); font-size: 0.94rem;
+    }
+    & a { display: block; margin-bottom: 4px; }
+  }
+
+  .rung-can {
+    margin: 10px 0 0; color: var(--ink);
+    border-left: 3px solid var(--gold); padding-left: 12px;
+    max-width: 62ch; font-size: 0.95rem;
+
+    & .mono { color: var(--gold); }
+  }
+
+  .stunde-liste {
+    list-style: none; padding: 0; margin: 18px 0 22px; display: grid; gap: 10px;
+
+    & li { display: grid; grid-template-columns: 62px 1fr; gap: 12px; align-items: baseline; }
+    & .mono { color: var(--gold); font-size: 0.72rem; }
+  }
+
+  /* ---------- a Stufe page ---------- */
+  .stufe-hero .stufe-can {
+    margin-top: 16px; color: var(--ink);
+    border-left: 3px solid var(--green); padding-left: 14px; max-width: 60ch;
+  }
+  .teil-de {
+    font-family: var(--font-mono); font-size: 0.78rem;
+    letter-spacing: 0.04em; color: var(--gold);
+  }
+  .lesson-card .teil-de { display: block; margin: 2px 0 8px; }
+  .term-article .teil-de { margin: -6px 0 14px; font-size: 0.86rem; }
+
+  .buch-cta {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 18px;
+    align-items: center; text-decoration: none; color: var(--ink);
+
+    & .buch-art { color: var(--gold); }
+    & .buch-art svg { width: 30px; height: 30px; }
+    & strong { display: block; font-size: 1.1rem; margin-bottom: 4px; }
+    & .buch-text span { color: var(--ink-soft); font-size: 0.93rem; }
+    & .more { color: var(--green); white-space: nowrap; font-family: var(--font-mono);
+              font-size: 0.76rem; }
+  }
+  @media (width <= 640px) {
+    .buch-cta { grid-template-columns: auto 1fr; }
+    .buch-cta .more { grid-column: 2; }
+  }
+
+  /* ---------- the pattern box ----------
+     The single most important object in the course: the shape,
+     alone, before any explanation of it. It is deliberately the
+     loudest thing on a lesson page. */
+  .muster {
+    border: 1px solid var(--green); border-radius: var(--radius);
+    background: var(--green-soft); padding: 20px 22px;
+    margin-block: 26px;
+
+    & .muster-label {
+      display: block; color: var(--green); font-size: 0.68rem;
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;
+    }
+    & .muster-shape {
+      font-family: var(--font-sans); font-size: clamp(1.15rem, 3vw, 1.5rem);
+      font-weight: 500; color: var(--ink); margin-bottom: 10px; max-width: none;
+
+      & i { font-style: normal; color: var(--gold); letter-spacing: 0.05em; }
+      & b { font-weight: 600; }
+    }
+    & .muster-why, & .muster-tipp { margin-bottom: 0; color: var(--ink-soft); font-size: 0.95rem; }
+    & .muster-beispiel {
+      margin-block: 10px; font-family: var(--font-sans); color: var(--ink);
+    }
+    & .muster-tipp { margin-top: 10px; font-style: italic; }
+  }
+
+  /* ---------- German line beside its meaning ---------- */
+  .satz-list {
+    display: grid; gap: 2px; margin-block: 14px 20px;
+
+    & .satz {
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 6px 18px; margin: 0; padding: 7px 10px; max-width: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.97rem;
+    }
+    & .satz:nth-child(odd) { background: var(--paper-sunk); }
+    & .satz b { font-weight: 600; color: var(--ink); }
+    & .satz span { color: var(--ink-soft); }
+  }
+  @media (width <= 560px) {
+    .satz-list .satz { grid-template-columns: 1fr; gap: 2px; }
+  }
+  /* the English-bridge list on the first page is short pairs, so
+     it can run several to a row instead of one per line */
+  .satz-list.bruecke {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  }
+
+  /* ---------- the one line worth remembering ---------- */
+  .merke {
+    border-left: 3px solid var(--gold);
+    background: var(--paper-sunk);
+    padding: 14px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin-block: 22px; max-width: var(--measure); font-size: 0.96rem;
+  }
+  .merke.warn { border-left-color: var(--danger); }
+
+  /* ---------- word cards ---------- */
+  .wort-karten {
+    list-style: none; padding: 0; display: grid; gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+    margin-block: 18px 24px;
+
+    & li {
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      background: var(--panel); padding: 12px 14px; margin: 0; max-width: none;
+      display: grid; gap: 2px;
+    }
+    & b { font-size: 1.05rem; }
+    & .lautschrift { color: var(--gold); font-size: 0.92rem; }
+    & span:last-child { color: var(--ink-soft); font-size: 0.86rem; }
+  }
+
+  /* ---------- the wardrobe: 24 nouns in three columns ---------- */
+  .hut-spalten {
+    display: grid; gap: var(--gap); margin-block: 20px 26px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  }
+  .hut-spalte {
+    border: 1px solid var(--hairline); border-top-width: 3px;
+    border-radius: var(--radius-sm); background: var(--panel); padding: 14px 16px;
+
+    & .hut-kopf {
+      display: block; font-family: var(--font-mono); font-size: 1.05rem;
+      font-weight: 600; margin-bottom: 10px;
+    }
+    & ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+    & li { margin: 0; max-width: none; font-size: 0.95rem; }
+    & li span { color: var(--ink-soft); font-size: 0.86rem; }
+  }
+  .hut-spalte[data-hut="der"] { border-top-color: var(--hut-der); & .hut-kopf { color: var(--hut-der); } }
+  .hut-spalte[data-hut="die"] { border-top-color: var(--hut-die); & .hut-kopf { color: var(--hut-die); } }
+  .hut-spalte[data-hut="das"] { border-top-color: var(--hut-das); & .hut-kopf { color: var(--hut-das); } }
+
+  /* ---------- small grids: 30 verbs, 20 numbers ---------- */
+  .verb-gitter, .zahl-gitter {
+    display: grid; gap: 6px; margin-block: 18px 24px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+
+    & > span {
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      padding: 8px 10px; background: var(--panel);
+      font-size: 0.9rem; color: var(--ink-soft);
+    }
+    & b { display: block; color: var(--ink); font-size: 0.98rem; }
+  }
+  .stern { color: var(--gold); font-style: normal; }
+
+  /* ---------- right/wrong pairs ---------- */
+  .paar-tabelle td:first-child { color: var(--ink); }
+  .paar-tabelle tr td:nth-child(2) { color: var(--ink-soft); }
+  .laut-key td:nth-child(2) { color: var(--gold); font-weight: 500; }
+  .platz-tabelle td:nth-child(2) { color: var(--green); }
+  .konjugation td:nth-child(2) b { color: var(--green); }
+
+  /* ============================================================
+     THE PRACTICE BOOK
+     ============================================================ */
+
+  .buch-warnung {
+    margin-top: 14px; max-width: var(--measure);
+    color: var(--ink-soft); font-size: 0.95rem;
+  }
+
+  .buch-fortschritt {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin-block: 20px;
+
+    & .track {
+      flex: 1; min-width: 160px; max-width: 340px; height: 6px;
+      background: var(--hairline); border-radius: 999px; overflow: hidden;
+    }
+    & .track i {
+      display: block; height: 100%; width: 0; background: var(--green);
+      transition: width var(--slow) var(--ease);
+    }
+    & .count { color: var(--ink-soft); font-size: 0.78rem; }
+    &[data-state="done"] .track i { background: var(--gold); }
+  }
+
+  /* ---------- the thirty squares ---------- */
+  .tracker {
+    display: grid; gap: 6px; margin-top: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+
+    & .tracker-tag {
+      display: grid; place-items: center; text-decoration: none;
+      aspect-ratio: 1; border: 1px solid var(--hairline);
+      border-radius: var(--radius-sm); background: var(--panel);
+      color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.82rem;
+      transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
+    }
+    & .tracker-tag:hover { border-color: var(--green); opacity: 1; }
+    & .tracker-tag[data-done] {
+      background: var(--green-soft); border-color: var(--green); color: var(--green);
+    }
+    & .tracker-tag[data-current] { outline: 2px solid var(--gold); outline-offset: 1px; }
+  }
+
+  /* ---------- the sound key, folded away ---------- */
+  .laut-gitter {
+    display: grid; gap: 6px; margin-top: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+
+    & .laut-paar {
+      display: flex; justify-content: space-between; gap: 10px;
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      padding: 8px 12px; background: var(--panel); font-size: 0.9rem;
+    }
+    & b { font-weight: 500; }
+    & span { color: var(--gold); }
+  }
+
+  /* ---------- the noun collection ---------- */
+  .hut-sammlung {
+    display: grid; gap: var(--gap); margin-top: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+
+    & .hut-spalte { display: grid; }
+    & textarea {
+      width: 100%; resize: vertical; min-height: 120px;
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      background: var(--paper); color: var(--ink);
+      font-family: var(--font-sans); font-size: 0.95rem; line-height: 1.7;
+      padding: 10px 12px;
+    }
+    & textarea:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+  }
+
+  /* ---------- the day walker ---------- */
+  .tag-nav {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    margin-block: 16px 26px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--hairline);
+
+    & .push { margin-inline-start: auto; }
+    & .btn:disabled { opacity: 0.35; pointer-events: none; }
+  }
+  .tag-waehler {
+    display: flex; align-items: center; gap: 8px;
+
+    & .mono { color: var(--ink-soft); font-size: 0.72rem; }
+    & select {
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      background: var(--panel); color: var(--ink);
+      font-family: var(--font-bn); font-size: 0.9rem; padding: 7px 10px;
+      max-width: min(58vw, 320px);
+    }
+    & select:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+  }
+
+  /* ---------- one day ---------- */
+  .tag {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); padding: clamp(18px, 3vw, 30px);
+    margin-bottom: var(--gap);
+  }
+  .tag-kopf {
+    border-bottom: 1px solid var(--hairline); padding-bottom: 14px; margin-bottom: 18px;
+
+    & .tag-num { color: var(--gold); font-size: 0.74rem; letter-spacing: 0.08em; }
+    & h2 { font-size: clamp(1.2rem, 3vw, 1.5rem); margin: 6px 0 4px; }
+    & .tag-bn { color: var(--ink-soft); margin: 0; }
+  }
+  .tag .muster { margin-top: 0; }
+
+  .tag-teil {
+    margin-top: 26px;
+
+    & h3 {
+      font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--green); margin-bottom: 10px;
+    }
+  }
+  .tag-hinweis { color: var(--ink-soft); font-size: 0.86rem; margin-top: 10px; }
+
+  /* the eight boxes you fill in yourself */
+  .felder {
+    display: grid; gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+  .feld, .sag-zeile {
+    display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start;
+  }
+  .feld-num { color: var(--gold); font-size: 0.78rem; padding-top: 9px; }
+
+  .tag textarea[data-schrift] {
+    width: 100%; resize: none; overflow: hidden;
+    border: 0; border-bottom: 1px solid var(--hairline);
+    background: transparent; color: var(--ink);
+    font-family: var(--font-sans); font-size: 0.98rem; line-height: 1.8;
+    padding: 6px 2px;
+  }
+  .tag textarea[data-schrift]:focus {
+    outline: none; border-bottom-color: var(--green);
+    background: var(--green-soft);
+  }
+  .tag textarea[data-schrift]::placeholder { color: var(--ink-soft); opacity: 0.55; }
+
+  /* the six to translate, with the answer hidden until asked for */
+  .sag-liste { display: grid; gap: 12px; }
+  .sag-zeile { grid-template-columns: 26px 1fr; }
+  .sag-frage { grid-column: 2; font-size: 0.97rem; }
+  .sag-zeile textarea { grid-column: 2; }
+  .sag-antwort {
+    grid-column: 2; display: none;
+    color: var(--green); font-size: 0.93rem; padding-top: 2px;
+  }
+  .tag[data-antworten] .sag-antwort { display: block; }
+  .antwort-schalter { margin-top: 14px; }
+
+  .herz-aufgabe { margin-bottom: 2px; }
+  .herz-en { color: var(--ink-soft); font-size: 0.76rem; margin-bottom: 10px; }
+  .herzen textarea[data-schrift] {
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    padding: 10px 12px; min-height: 96px; resize: vertical; overflow: auto;
+  }
+
+  .tag-fuss {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--hairline);
+
+    & .tag-fuss-note { color: var(--ink-soft); font-size: 0.72rem; }
+  }
+  .tag-fertig[aria-pressed="true"] { color: var(--green); border-color: var(--green); }
+
+  /* Printing the book should give you the book, not one day of it
+     and a navigation bar. */
+  @media print {
+    .tag-nav, .tracker, .buch-fortschritt, .hero-actions { display: none; }
+    .tag { break-inside: avoid; border-color: #999; }
+    .tag[hidden] { display: block !important; }
+    .sag-antwort { display: none !important; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .buch-fortschritt .track i { transition: none; }
   }
 }
 

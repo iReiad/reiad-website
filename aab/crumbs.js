@@ -26,11 +26,15 @@
 import {
   STAGES, stageUrl, allLessons, findStage,
 } from "/learn/curriculum.js";
+import {
+  STUFEN, stufeUrl, allTeile, findStufe, workbookUrl,
+} from "/deutsch/curriculum.js";
 import { PAGES, SITE, liveArticles } from "/content.js";
 
 const isBn = () => document.documentElement.lang === "bn";
 const HOME = () => (isBn() ? "হোম" : "Home");
 const LEARN = () => (isBn() ? "শেখার লাইব্রেরি" : "Learn");
+const DEUTSCH = () => (isBn() ? "জার্মান" : "Deutsch");
 
 /** Normalise the URL Pages might serve us: /learn, /learn/ and
     /learn/index.html are all the same place. */
@@ -39,9 +43,11 @@ function normalise(path) {
   if (!p) return "/index.html";
   if (!/\.[a-z0-9]+$/i.test(p)) {
     // extensionless: either a folder index or a stripped .html
-    return STAGES.some((s) => `/learn/${s.slug}` === p) || p === "/learn" || p === "/tools"
-      ? `${p}/index.html`
-      : `${p}.html`;
+    const isFolder =
+      STAGES.some((s) => `/learn/${s.slug}` === p) ||
+      STUFEN.some((s) => `/deutsch/${s.slug}` === p) ||
+      p === "/learn" || p === "/deutsch" || p === "/tools";
+    return isFolder ? `${p}/index.html` : `${p}.html`;
   }
   return p;
 }
@@ -79,6 +85,43 @@ function trailFor(path) {
       return { crumbs, here: document.title.split("—")[0].trim() };
     }
     return { crumbs, here: document.title.split("—")[0].trim() };
+  }
+
+  /* ---------- the German school ---------- */
+  if (p.startsWith("/deutsch/")) {
+    if (p === "/deutsch/index.html") return { crumbs, here: DEUTSCH() };
+
+    crumbs.push({ name: DEUTSCH(), url: "/deutsch/index.html" });
+
+    // a Stufe index: /deutsch/stufe-2/index.html
+    const stufeHere = STUFEN.find((s) => p === `/deutsch/${s.slug}/index.html`);
+    if (stufeHere) return { crumbs, here: `${stufeHere.kicker} · ${stufeHere.bn}` };
+
+    // the practice book, which hangs off its Stufe rather than off a Teil
+    const bookStufe = STUFEN.find((s) => workbookUrl(s) === p);
+    if (bookStufe) {
+      crumbs.push({
+        name: `${bookStufe.kicker} · ${bookStufe.bn}`,
+        url: stufeUrl(bookStufe),
+      });
+      return { crumbs, here: "৩০ দিনের খাতা" };
+    }
+
+    // a Teil
+    const teil = allTeile().find((t) => t.url === p);
+    if (teil) {
+      crumbs.push({
+        name: `${teil.stufe.kicker} · ${teil.stufe.bn}`,
+        url: stufeUrl(teil.stufe),
+      });
+      return { crumbs, here: teil.bn };
+    }
+
+    // anything else under /deutsch/ — still give it the school
+    const slug = p.split("/")[2];
+    const stufe = findStufe(slug);
+    if (stufe) crumbs.push({ name: `${stufe.kicker} · ${stufe.bn}`, url: stufeUrl(stufe) });
+    return { crumbs, here: document.title.split("·")[0].trim() };
   }
 
   /* ---------- the advanced tools, which have their own pages ---------- */
