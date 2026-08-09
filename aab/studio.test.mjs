@@ -346,7 +346,62 @@ check("an over-long headline is flagged",
 
 await page.click('[data-view="article"]');
 
-/* ---------- 7. the desk ----------
+/* ---------- 7. the articles that are still files ----------
+   The pieces written before the Studio existed are committed HTML.
+   Open… could not see them, so changing a word meant editing the
+   file by hand. */
+
+await page.click("#btn-open");
+await page.waitForTimeout(600);
+{
+  const text = await page.locator("#open-body").textContent();
+  check("Open lists the file-based articles", text.includes("Written as files"), text.slice(0, 200));
+}
+/* Drafts offer Open and Delete; only a file-based article offers
+   Edit, because without a backend there are no database rows here.
+   Matching on a title would find the draft an earlier step left. */
+const fileRow = page.locator("#open-body .admin-line")
+  .filter({ has: page.getByRole("button", { name: "Edit", exact: true }) }).first();
+const haveFileRow = (await fileRow.count()) > 0;
+check("a file-based article is listed with an Edit button", haveFileRow);
+
+if (haveFileRow) {
+  await fileRow.getByRole("button", { name: "Edit", exact: true }).click();
+  await page.waitForTimeout(1200);
+  check("editing one loads its body", (await html()).length > 200, `${(await html()).length} chars`);
+  check("and fills in its headline", (await page.inputValue("#f-title")).length > 5);
+  check("and its file name", (await page.inputValue("#f-slug")).length > 3);
+  // The furniture every article page repeats must not come with it.
+  const body = await html();
+  check("without dragging in the byline", !body.includes("byline"), body.slice(0, 160));
+  check("or the standing disclaimer",
+    !/general education, not investment advice/i.test(body));
+  check("or the back-to-index links", !body.includes("prev-next"));
+} else {
+  await page.click("#open-close");
+}
+
+/* ---------- 8. photos hosted somewhere else ----------
+   A paste from Google Docs is cross-origin: the browser cannot fetch
+   it to resize, so the upload fails and the article keeps an image
+   pointing at a server nobody here controls. */
+
+await page.evaluate(() => {
+  document.querySelector("#editor").innerHTML =
+    '<p>Text</p><figure><img src="https://lh3.googleusercontent.com/x.png" alt="a chart"></figure>';
+  document.querySelector("#editor").dispatchEvent(new Event("input", { bubbles: true }));
+});
+await page.fill("#f-title", "A piece with a borrowed photo");
+await page.waitForTimeout(700);
+{
+  const issues = await page.locator("#preflight-list li").allTextContents();
+  check("pre-flight warns about an off-site photo",
+    issues.some((t) => /hosted elsewhere/.test(t)), issues.join(" | "));
+  check("and names where it is hosted",
+    issues.some((t) => t.includes("googleusercontent.com")), issues.join(" | "));
+}
+
+/* ---------- 9. the desk ----------
    Only the static half is checkable here: every panel on that page
    reads from the database, so the rest belongs to test-api.sh and to
    driving it against `wrangler dev`. What matters statically is that

@@ -45,9 +45,32 @@ const safeCover = (value) => {
   return /^\/(media|og)\/[A-Za-z0-9._/-]+$/.test(v) ? v : "";
 };
 
+/** Keep the last twenty bodies for a slug, and no more. */
+const KEEP_VERSIONS = 20;
+
+async function snapshot(d1, row) {
+  if (!row) return;
+  await run(d1,
+    `INSERT INTO article_versions (slug, title, dek, tag, lang, body, cover, saved_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    row.slug, row.title ?? "", row.dek ?? "", row.tag ?? "",
+    row.lang ?? "en", row.body ?? "", row.cover ?? "", nowISO());
+
+  // An article edited daily for a year should not carry a year of
+  // bodies around with it.
+  await run(d1,
+    `DELETE FROM article_versions
+      WHERE slug = ? AND id NOT IN (
+        SELECT id FROM article_versions WHERE slug = ?
+        ORDER BY saved_at DESC, id DESC LIMIT ?)`,
+    row.slug, row.slug, KEEP_VERSIONS);
+}
+
 export async function onRequest(context) {
   const { request, params } = context;
-  const slug = (params.slug ?? [])[0] ?? null;
+  const parts = params.slug ?? [];
+  const slug = parts[0] ?? null;
+  const section = parts[1] ?? null;      // "versions"
   const url = new URL(request.url);
 
   const d1 = await db(context.env);
@@ -58,6 +81,17 @@ export async function onRequest(context) {
     GET: async () => {
       const signedIn = !!(await readSession(context));
       const wantsAll = url.searchParams.get("all") === "1" && signedIn;
+
+      /* ---- /api/articles/<slug>/versions ---- */
+      if (slug && section === "versions") {
+        const guard = await requireAdmin(context);
+        if (guard) return guard;
+        const rows = await all(d1,
+          `SELECT id, title, dek, tag, lang, cover, saved_at, length(body) AS size
+             FROM article_versions WHERE slug = ?
+            ORDER BY saved_at DESC, id DESC`, slug);
+        return ok({ versions: rows });
+      }
 
       if (slug) {
         const row = await one(d1,
@@ -82,6 +116,34 @@ export async function onRequest(context) {
     POST: async () => {
       const guard = await requireAdmin(context);
       if (guard) return guard;
+
+      /* ---- put an older body back ---- */
+      if (slug && section === "versions") {
+        const wanted = Number((await body(request)).id) || 0;
+        const version = await one(d1,
+          `SELECT * FROM article_versions WHERE id = ? AND slug = ?`, wanted, slug);
+        if (!version) return fail("not-found", 404);
+
+        const live = await one(d1, `SELECT * FROM articles WHERE slug = ?`, slug);
+        if (!live) return fail("not-found", 404);
+
+        // Restoring replaces a body too, so it is itself snapshotted.
+        // Going back is never the thing that loses the newer draft.
+        await snapshot(d1, live);
+
+        await run(d1,
+          `UPDATE articles
+              SET title = ?, dek = ?, tag = ?, lang = ?, body = ?, cover = ?,
+                  minutes = ?, updated_at = ?
+            WHERE slug = ?`,
+          version.title, version.dek, version.tag, version.lang,
+          version.body, version.cover, readingMinutes(version.body), nowISO(), slug);
+
+        return ok({
+          article: shape(await one(d1, `SELECT ${PUBLIC_COLUMNS} FROM articles WHERE slug = ?`, slug)),
+          restored: version.id,
+        });
+      }
 
       const input = await body(request);
       const newSlug = str(input.slug, 80).toLowerCase().replace(/[^a-z0-9-]/g, "");
@@ -115,6 +177,11 @@ export async function onRequest(context) {
       const clean = sanitiseHTML(raw);
       const status = input.status === "live" ? "live" : "draft";
       const now = nowISO();
+
+      // Keep what is about to be replaced, before replacing it.
+      if (existing) {
+        await snapshot(d1, await one(d1, `SELECT * FROM articles WHERE slug = ?`, newSlug));
+      }
 
       await run(d1,
         `INSERT INTO articles
@@ -191,6 +258,8 @@ export async function onRequest(context) {
       if (guard) return guard;
       if (!slug) return fail("slug-required");
       await run(d1, `DELETE FROM articles WHERE slug = ?`, slug);
+      // The history of something that no longer exists is just weight.
+      await run(d1, `DELETE FROM article_versions WHERE slug = ?`, slug);
       return ok({ deleted: slug });
     },
   });

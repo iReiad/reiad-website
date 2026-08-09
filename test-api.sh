@@ -137,6 +137,32 @@ check "and then it falls back to the site default" '/og/insights.png' \
   "$(curl -s $B/insights/cover-test.html | grep 'og:image')"
 curl -s -b $C -X DELETE $B/api/articles/cover-test > /dev/null
 
+# Publishing replaces an article in place, and until versions existed
+# a republish you regretted had nothing to go back to.
+check "history needs auth" 'unauthorised' \
+  "$(curl -s "$B/api/articles/sanchayapatra-vs-fdr/versions")"
+check "the first publish has no history yet" '"versions":[]' \
+  "$(curl -s -b $C -X POST -H "$J" -d '{"slug":"history-test","title":"First","status":"live","overwrite":true,"body":"<p>Version one.</p>"}' $B/api/articles >/dev/null; \
+     curl -s -b $C "$B/api/articles/history-test/versions")"
+check "overwriting keeps what it replaced" 'First' \
+  "$(curl -s -b $C -X POST -H "$J" -d '{"slug":"history-test","title":"Second","status":"live","overwrite":true,"body":"<p>Version two.</p>"}' $B/api/articles >/dev/null; \
+     curl -s -b $C "$B/api/articles/history-test/versions")"
+check "the live copy is the new one" 'Version two' \
+  "$(curl -s -b $C "$B/api/articles/history-test")"
+VID=$(curl -s -b $C "$B/api/articles/history-test/versions" | python3 -c 'import sys,json;print(json.load(sys.stdin)["versions"][0]["id"])')
+check "restoring puts the old body back" 'Version one' \
+  "$(curl -s -b $C -X POST -H "$J" -d "{\"id\":$VID}" $B/api/articles/history-test/versions >/dev/null; \
+     curl -s -b $C "$B/api/articles/history-test")"
+# Going back must never be the thing that loses the newer version, so
+# the restore is snapshotted too and "Second" is now in the history.
+check "and the version it replaced is itself kept" 'Second' \
+  "$(curl -s -b $C "$B/api/articles/history-test/versions")"
+check "restoring a version that isn't ours is refused" 'not-found' \
+  "$(curl -s -b $C -X POST -H "$J" -d '{"id":999999}' $B/api/articles/history-test/versions)"
+check "deleting an article takes its history" '"versions":[]' \
+  "$(curl -s -b $C -X DELETE $B/api/articles/history-test >/dev/null; \
+     curl -s -b $C "$B/api/articles/history-test/versions")"
+
 echo "── media ──────────────────────────────"
 check "upload needs auth" 'unauthorised' \
   "$(curl -s -X POST -H 'Content-Type: image/webp' --data-binary 'x' $B/api/media)"
@@ -178,6 +204,19 @@ check "it serves back as an image" 'image/webp' \
 check "and says so with immutable" 'immutable' \
   "$(curl -s -o /dev/null -D - "$B/media/$KEY" | tr -d '\r')"
 check "the listing shows it" "$KEY" "$(curl -s -b $C "$B/api/media?slug=test-piece")"
+# A photo pasted from Google Docs is cross-origin, so the browser is
+# blocked from fetching it to resize — the upload failed and the
+# article silently kept an image hotlinked to someone else's server.
+check "the fetch proxy needs auth" 'unauthorised' \
+  "$(curl -s "$B/api/media/fetch?u=https%3A%2F%2Fexample.com%2Fx.png")"
+check "it refuses plain http" 'https-only' \
+  "$(curl -s -b $C "$B/api/media/fetch?u=http%3A%2F%2Fexample.com%2Fx.png")"
+check "it refuses a private address" 'host-not-allowed' \
+  "$(curl -s -b $C "$B/api/media/fetch?u=https%3A%2F%2F127.0.0.1%2Fx.png")"
+check "it refuses a nonsense URL" 'bad-url' \
+  "$(curl -s -b $C "$B/api/media/fetch?u=notaurl")"
+check "and asks for one when it's missing" 'url-required' \
+  "$(curl -s -b $C "$B/api/media/fetch")"
 check "delete needs auth" 'unauthorised' "$(curl -s -X DELETE "$B/api/media/$KEY")"
 check "delete"            '"deleted"' "$(curl -s -b $C -X DELETE "$B/api/media/$KEY")"
 
@@ -191,6 +230,8 @@ NOTION_ON=$(curl -s -b $C $B/api/notion/status | grep -o '"configured":true')
 if [[ -z "$NOTION_ON" ]]; then
   check "unconfigured Notion is 503, not an error" 'not-configured' \
     "$(curl -s -b $C $B/api/notion/pages)"
+  check "and so is the sync the Cron trigger runs" 'not-configured' \
+    "$(curl -s -b $C -X POST $B/api/notion/sync)"
   echo "  --   live Notion checks skipped (no NOTION_TOKEN)"
 else
   check "the asset proxy needs auth" 'unauthorised' \

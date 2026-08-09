@@ -42,6 +42,14 @@ const MIGRATIONS = [
   `CREATE TABLE IF NOT EXISTS sessions (
      token TEXT PRIMARY KEY, label TEXT NOT NULL DEFAULT '',
      created_at TEXT NOT NULL, expires_at TEXT NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS article_versions (
+     id INTEGER PRIMARY KEY AUTOINCREMENT, slug TEXT NOT NULL,
+     title TEXT NOT NULL DEFAULT '', dek TEXT NOT NULL DEFAULT '',
+     tag TEXT NOT NULL DEFAULT '', lang TEXT NOT NULL DEFAULT 'en',
+     body TEXT NOT NULL DEFAULT '', cover TEXT NOT NULL DEFAULT '',
+     saved_at TEXT NOT NULL)`,
+  `CREATE INDEX IF NOT EXISTS idx_versions_slug
+     ON article_versions (slug, saved_at DESC)`,
   `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS throttle (
      bucket TEXT PRIMARY KEY, count INTEGER NOT NULL DEFAULT 0, resets TEXT NOT NULL)`,

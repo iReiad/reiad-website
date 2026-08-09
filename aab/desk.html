@@ -106,6 +106,19 @@
     </div>
   </footer>
 
+  <dialog class="sheet" id="history-sheet" aria-labelledby="history-title">
+    <div class="pane-bar">
+      <span class="mono" id="history-title">History</span>
+      <button class="icon-btn" id="history-close" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet-body"><div id="history-body"></div></div>
+  </dialog>
+
+  <script type="module">
+    const sheet = document.getElementById("history-sheet");
+    document.getElementById("history-close").addEventListener("click", () => sheet.close());
+  </script>
+
   <script type="module" src="/app.js"></script>
   <script type="module">
     import { requireOwner } from "/auth.js";

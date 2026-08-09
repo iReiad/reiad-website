@@ -404,12 +404,61 @@ async function renderArticles(host) {
               body: { status: a.status === "live" ? "draft" : "live" } });
             redraw();
           }),
+          button("History", () => showHistory(a, redraw)),
           button("Copy link",
             () => copyText(`${location.origin}/insights/${a.slug}.html`, "Link copied")),
           button("Delete", async () => {
             if (!confirm(`Delete "${a.title}" from the database? This cannot be undone.`)) return;
             const res = await api(`articles/${a.slug}`, { method: "DELETE" });
             if (res?.ok) { toast("Deleted"); redraw(); } else toast("That didn't delete");
+          })
+        ))
+    )
+  );
+}
+
+/* ============================================================
+   History
+
+   Publishing replaces an article in place. Every overwrite now keeps
+   the body it replaced, twenty deep, so a republish you regret has
+   somewhere to go back to. Restoring is itself an overwrite and is
+   snapshotted too — going back never costs you the newer version.
+   ============================================================ */
+
+async function showHistory(article, onDone) {
+  const sheet = document.getElementById("history-sheet");
+  const body = document.getElementById("history-body");
+  document.getElementById("history-title").textContent = `History: ${article.title}`;
+  body.replaceChildren(loading());
+  sheet.showModal();
+
+  const versions = (await api(`articles/${article.slug}/versions`))?.versions ?? [];
+
+  if (!versions.length) {
+    body.replaceChildren(empty(
+      "Nothing yet. A version is kept each time this article is overwritten, "
+      + "so the first one appears the next time you republish it."));
+    return;
+  }
+
+  body.replaceChildren(
+    el("p", { className: "admin-count mono", textContent:
+      `${versions.length} earlier version${versions.length === 1 ? "" : "s"}, newest first` }),
+    el("div", { className: "admin-table" },
+      ...versions.map((v) =>
+        el("div", { className: "admin-line" },
+          el("span", { textContent: v.title || "(untitled)" }),
+          el("span", { className: "mono muted", textContent: new Date(v.saved_at).toLocaleString() }),
+          el("span", { className: "mono muted", textContent: `${Math.round((v.size ?? 0) / 1024)} KB` }),
+          button("Restore", async () => {
+            if (!confirm(`Put this version of "${article.title}" back?\n\n`
+              + "What is live now is kept in the history too, so this can be undone.")) return;
+            const res = await api(`articles/${article.slug}/versions`, {
+              method: "POST", body: { id: v.id },
+            });
+            if (res?.ok) { toast("Restored"); sheet.close(); onDone?.(); }
+            else toast("That didn't restore");
           })
         ))
     )

@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v19: content.js lost a live article whose slug could never
+   resolve, and the Studio learned to open the file-based pieces —
+   content.js and styles.css both changed.
+
    v18: the preview grew a card view, a share-card view, width and
    theme switches, and the per-article social image that goes with
    them — styles.css again.
@@ -88,7 +92,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v18";
+const VERSION = "v19";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
