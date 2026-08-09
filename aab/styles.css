@@ -1419,6 +1419,79 @@
   .preview-scroll .article { padding-block: 26px 10px; }
   .preview-scroll .article h1 { font-size: clamp(1.5rem, 3.4vw, 2rem); }
 
+  /* ---------- preview controls ---------- */
+  .preview-controls {
+    gap: 14px; row-gap: 8px;
+
+    & .chip-row { gap: 5px; }
+    & .chip { padding: 4px 9px; font-size: 0.64rem; }
+    & .chip:disabled { opacity: 0.4; cursor: default; }
+    & .chip:disabled:hover { border-color: var(--hairline); color: var(--ink-soft); }
+    & > :last-child { margin-inline-start: auto; }
+  }
+
+  /* The site's theme toggle is :root[data-theme=…] and cannot be
+     scoped to a subtree. This can: color-scheme inherits, and the
+     light-dark() inside every token is resolved against the element
+     that *uses* the token — which is inside here. */
+  .preview-scroll[data-preview-theme="light"] { color-scheme: light; }
+  .preview-scroll[data-preview-theme="dark"]  { color-scheme: dark; }
+  .preview-scroll[data-preview-theme]:not([data-preview-theme="auto"]) {
+    background: var(--paper); color: var(--ink);
+  }
+
+  #preview-stage {
+    margin-inline: auto;
+    transition: max-width var(--slow) var(--ease);
+  }
+  /* A phone-width column inside a wide pane needs an edge, or it
+     reads as a narrow page rather than a narrow screen. */
+  #preview-stage:not([data-width="full"]) {
+    border-inline: 1px dashed var(--hairline);
+    padding-inline: 14px;
+  }
+
+  .preview-frame { padding-block: 22px; }
+  .preview-caption {
+    display: block; margin-bottom: 12px;
+    font-size: 0.64rem; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- the share card ---------- */
+  .share-card {
+    max-width: 520px;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    overflow: clip; background: var(--panel);
+  }
+  .share-image {
+    aspect-ratio: 1200 / 630; background: var(--paper-sunk);
+
+    & img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  }
+  .share-text {
+    display: flex; flex-direction: column; gap: 5px;
+    padding: 12px 14px;
+    /* A headline with no spaces in it — a pasted URL, a long Bangla
+       compound — has no break opportunity and will run straight out
+       of the card, which is not what any of these apps would do. */
+    overflow-wrap: anywhere;
+
+    & .share-host { font-size: 0.66rem; color: var(--ink-soft); text-transform: uppercase; }
+    & strong { font-family: var(--font-sans); font-size: 1rem; line-height: 1.3; }
+    & p { font-size: 0.86rem; color: var(--ink-soft); margin: 0; max-width: none; }
+  }
+  .share-notes {
+    list-style: none; margin: 16px 0 0; padding: 0;
+    display: grid; gap: 6px;
+    font-size: 0.84rem; color: var(--ink-soft);
+
+    & li { padding-inline-start: 14px; position: relative; }
+    & li::before {
+      content: "·"; position: absolute; inset-inline-start: 2px; color: var(--green);
+    }
+  }
+
   .studio-meter {
     display: flex; align-items: center; gap: 10px;
     font-family: var(--font-mono); font-size: 0.7rem;

@@ -117,6 +117,26 @@ check "a /media cover is kept" '"cover":"/media/x/0123456789abcdef.webp"' \
   "$(curl -s -b $C -X PATCH -H "$J" -d '{"cover":"/media/x/0123456789abcdef.webp"}' $B/api/articles/secret-draft)"
 check "delete"           '"deleted"' "$(curl -s -b $C -X DELETE $B/api/articles/secret-draft)"
 
+# The lead photo becomes the article's own social image, instead of
+# every piece sharing the one generic card.
+check "publishing keeps a /media cover" '"cover":"/media/cover-test/0123456789abcdef.webp"' \
+  "$(curl -s -b $C -X POST -H "$J" -d '{
+      "slug":"cover-test","title":"With a cover","status":"live","overwrite":true,
+      "cover":"/media/cover-test/0123456789abcdef.webp","body":"<p>Body.</p>"
+    }' $B/api/articles)"
+# The origin comes from SITE_ORIGIN, so match on the path only.
+check "and the rendered page uses it as og:image" \
+  '/media/cover-test/0123456789abcdef.webp' \
+  "$(curl -s $B/insights/cover-test.html | grep 'og:image')"
+check "an off-site cover is refused on publish" '"cover":""' \
+  "$(curl -s -b $C -X POST -H "$J" -d '{
+      "slug":"cover-test","title":"With a cover","status":"live","overwrite":true,
+      "cover":"https://evil.example.com/x.png","body":"<p>Body.</p>"
+    }' $B/api/articles)"
+check "and then it falls back to the site default" '/og/insights.png' \
+  "$(curl -s $B/insights/cover-test.html | grep 'og:image')"
+curl -s -b $C -X DELETE $B/api/articles/cover-test > /dev/null
+
 echo "── media ──────────────────────────────"
 check "upload needs auth" 'unauthorised' \
   "$(curl -s -X POST -H 'Content-Type: image/webp' --data-binary 'x' $B/api/media)"

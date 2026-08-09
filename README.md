@@ -32,6 +32,8 @@ immediately** — no file to move, no commit, no push.
 | Writing in Notion and publishing from here | Studio → Import from Notion |
 | Photos stored in R2, not in the article | automatic, on publish |
 | Pre-flight checks before anything goes out | Studio → 3 · Publish it |
+| Previewing the card and the shared link | Studio → preview → Card / Share |
+| Per-article social image, from the lead photo | automatic, on publish |
 | Reader questions, moderated | bottom of every article; queue on the desk |
 | Reactions (helpful / confusing / go deeper) | bottom of every article |
 | Subscriber list, confirmed opt-in, CSV export | Insights page; list on the desk |
@@ -129,9 +131,9 @@ flips it back on any page.
 
 ```sh
 npx wrangler dev                    # the real Cloudflare runtime, local D1 and R2
-./test-api.sh                       # 83 checks over every endpoint
+./test-api.sh                       # 87 checks over every endpoint
 node functions/_lib/notion.test.mjs # 74 checks on the Notion → HTML conversion
-node aab/studio.test.mjs            # 42 checks driving the editor in a browser
+node aab/studio.test.mjs            # 53 checks driving the editor in a browser
 node aab/check-routes.mjs           # catches redirect loops before deploying
 node aab/check-sw.mjs               # did a precached file change without a VERSION bump?
 node aab/portfolio/dissertation.test.mjs   # 141 checks on the statistics engine

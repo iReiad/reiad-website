@@ -978,22 +978,99 @@ function onEdit() {
   }, 200);
 }
 
-function renderPreview() {
-  const m = meta();
-  const dateLabel = new Intl.DateTimeFormat(m.lang === "bn" ? "bn-BD" : "en-GB", {
+/* ---------- what the preview is showing ----------
+
+   An article is not the only thing a reader meets. Most of them meet
+   the card on the Insights page, or the box that appears when someone
+   pastes the link into WhatsApp — and both of those decide whether
+   the article gets opened at all. Neither was visible from here. */
+
+const view = { mode: "article", width: "full", theme: "auto" };
+
+const dateLabelFor = (m) =>
+  new Intl.DateTimeFormat(m.lang === "bn" ? "bn-BD" : "en-GB", {
     day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
   }).format(new Date(`${m.date}T00:00:00Z`));
 
-  preview.lang = m.lang;
-  preview.innerHTML = `
+/** The image a social card would use. The lead photo if one is
+    marked, otherwise the first photo, otherwise the site's default.
+    Data URLs are fine here — this is a preview, and the same picture
+    becomes a /media path on publish. */
+function coverFor(m) {
+  const doc = new DOMParser().parseFromString(m.body, "text/html");
+  const lead = doc.querySelector("figure.lead-photo img, img.lead-photo");
+  const first = doc.querySelector("img");
+  return lead?.getAttribute("src") || first?.getAttribute("src") || "/og/insights.png";
+}
+
+/** Only a path this site serves can be stored as the cover; a data
+    URL is still waiting to be uploaded, and the default is not worth
+    recording. Mirrors safeCover() on the server. */
+const storableCover = (src) => (/^\/media\//.test(src) ? src : "");
+
+const ARTICLE_VIEW = (m) => `
     <article class="article">
       <span class="eyebrow mono">${escapeHtml(m.tag)}</span>
       <h1>${escapeHtml(m.title)}</h1>
       ${m.dek ? `<p class="lede">${escapeHtml(m.dek)}</p>` : ""}
       <p class="byline mono"><span>Rony Reiad</span><span class="dot"></span>
-        <time>${dateLabel}</time><span class="dot"></span><span>${m.minutes} min read</span></p>
+        <time>${dateLabelFor(m)}</time><span class="dot"></span><span>${m.minutes} min read</span></p>
       ${m.body || '<p class="muted"><em>Your article will appear here as you paste it.</em></p>'}
     </article>`;
+
+/* The same markup app.js builds for /insights.html, so what shows
+   here is the card, not an impression of one. */
+const CARD_VIEW = (m) => `
+    <div class="preview-frame">
+      <span class="mono preview-caption">How it looks on the Insights page and the home page</span>
+      <div class="cards">
+        <div class="cell sample-card">
+          <span class="tag mono">${escapeHtml(m.tag)}</span>
+          <h3>${escapeHtml(m.title)}</h3>
+          <p>${escapeHtml(m.dek) || "<em>No standfirst yet, so the card has nothing under the headline.</em>"}</p>
+          <span class="more">${dateLabelFor(m)} · ${m.minutes} min read  →</span>
+        </div>
+      </div>
+    </div>`;
+
+/* WhatsApp, LinkedIn, X and Slack all draw roughly this: the image,
+   the domain, the title, the description. The truncation lengths are
+   the conservative end of what they show. */
+const SHARE_VIEW = (m) => {
+  const cover = coverFor(m);
+  const clip = (s, n) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
+  return `
+    <div class="preview-frame">
+      <span class="mono preview-caption">What a pasted link looks like</span>
+      <div class="share-card">
+        <div class="share-image"><img src="${escapeHtml(cover)}" alt=""></div>
+        <div class="share-text">
+          <span class="mono share-host">reiad.co.uk</span>
+          <strong>${escapeHtml(clip(m.title, 60))}</strong>
+          <p>${escapeHtml(clip(m.dek, 160)) || "No standfirst, so most apps show the URL here instead."}</p>
+        </div>
+      </div>
+      <ul class="share-notes">
+        <li>${m.title.length > 60
+          ? `The headline is ${m.title.length} characters and will be cut around 60.`
+          : `Headline fits: ${m.title.length} of about 60 characters.`}</li>
+        <li>${m.dek.length > 160
+          ? `The standfirst is ${m.dek.length} characters and will be cut around 160.`
+          : `Standfirst fits: ${m.dek.length} of about 160 characters.`}</li>
+        <li>${cover === "/og/insights.png"
+          ? "No photo in the piece, so the site's default image is used. Mark a photo as Lead to use it here."
+          : "Uses the lead photo from the article."}</li>
+      </ul>
+    </div>`;
+};
+
+const VIEWS = { article: ARTICLE_VIEW, card: CARD_VIEW, share: SHARE_VIEW };
+
+function renderPreview() {
+  const m = meta();
+
+  preview.lang = m.lang;
+  preview.innerHTML = (VIEWS[view.mode] ?? ARTICLE_VIEW)(m);
 
   statLine.textContent =
     `${m.words} word${m.words === 1 ? "" : "s"} · ${m.minutes} min read · ${m.photos} photo${m.photos === 1 ? "" : "s"}`;
@@ -1015,6 +1092,58 @@ function renderPreview() {
 }
 
 Object.values(fields).forEach((el) => el.addEventListener("input", onEdit));
+
+/* ---------- preview controls ---------- */
+
+const WIDTHS = { phone: "390px", tablet: "768px", full: "100%" };
+
+function applyView() {
+  const stage = $("#preview-stage");
+  const scroll = $("#preview-scroll");
+
+  // A card and a share box have their own natural size; constraining
+  // them to a phone width would only be misleading.
+  const constrain = view.mode === "article" ? view.width : "full";
+  stage.style.maxWidth = WIDTHS[constrain];
+  stage.dataset.width = constrain;
+
+  /* The site's theme switch is :root[data-theme], so it cannot be
+     scoped. color-scheme can: it inherits, and the light-dark() in
+     every token is resolved where the token is *used*, which is
+     inside here. */
+  scroll.dataset.previewTheme = view.theme;
+
+  for (const btn of document.querySelectorAll("[data-view]")) {
+    btn.setAttribute("aria-pressed", String(btn.dataset.view === view.mode));
+  }
+  for (const btn of document.querySelectorAll("[data-width]")) {
+    btn.setAttribute("aria-pressed", String(btn.dataset.width === view.width));
+    // Width is meaningless for the card and share views.
+    btn.disabled = view.mode !== "article";
+  }
+  $("#preview-theme").textContent = `Theme: ${view.theme}`;
+}
+
+document.querySelectorAll("[data-view]").forEach((btn) =>
+  btn.addEventListener("click", () => {
+    view.mode = btn.dataset.view;
+    applyView();
+    renderPreview();
+  })
+);
+
+document.querySelectorAll("[data-width]").forEach((btn) =>
+  btn.addEventListener("click", () => {
+    view.width = btn.dataset.width;
+    applyView();
+  })
+);
+
+const THEME_CYCLE = ["auto", "light", "dark"];
+$("#preview-theme").addEventListener("click", () => {
+  view.theme = THEME_CYCLE[(THEME_CYCLE.indexOf(view.theme) + 1) % THEME_CYCLE.length];
+  applyView();
+});
 
 /* ============================================================
    6. EXPORT
@@ -1702,6 +1831,7 @@ function refreshNow() {
 (async () => {
   fields.date.value = new Date().toISOString().slice(0, 10);
   await restoreDraft();
+  applyView();
   renderPreview();
   refreshNow();
 })();
@@ -1808,6 +1938,9 @@ async function send(status, button, label) {
       slug, title: m.title, dek: m.dek, tag: m.tag,
       topics: m.tag.split("·").map((t) => t.trim()).filter(Boolean),
       lang: m.lang, body: m.body, status, published_at: m.date,
+      // Photos are on /media by this point, so the lead one can be
+      // the article's own social image instead of the site default.
+      cover: storableCover(coverFor(m)),
       notion_page_id: current.notionPageId ?? undefined,
       // Editing something already opened from the database is the
       // one case where replacing it is exactly the intent.

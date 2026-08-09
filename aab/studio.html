@@ -167,8 +167,25 @@ everything else Word smuggles in gets thrown away."></div>
               <span id="meter-text">0 KB page</span>
             </span>
           </div>
-          <div class="preview-scroll">
-            <div id="preview"></div>
+          <!-- What a reader actually meets: the piece itself, the card
+               that has to earn the click on the Insights page, and the
+               thing that appears when someone pastes the link. -->
+          <div class="pane-bar preview-controls">
+            <div class="chip-row" role="group" aria-label="What to preview">
+              <button class="chip" data-view="article" aria-pressed="true">Article</button>
+              <button class="chip" data-view="card" aria-pressed="false">Card</button>
+              <button class="chip" data-view="share" aria-pressed="false">Share</button>
+            </div>
+            <div class="chip-row" role="group" aria-label="Preview width">
+              <button class="chip" data-width="phone" aria-pressed="false">Phone</button>
+              <button class="chip" data-width="tablet" aria-pressed="false">Tablet</button>
+              <button class="chip" data-width="full" aria-pressed="true">Full</button>
+            </div>
+            <button class="chip" id="preview-theme" aria-label="Preview theme">Theme: auto</button>
+          </div>
+
+          <div class="preview-scroll" id="preview-scroll">
+            <div id="preview-stage"><div id="preview"></div></div>
           </div>
           <div class="pane-bar" style="border-top:1px solid var(--hairline);border-bottom:0">
             <span class="mono" id="stat-line">0 words</span>
