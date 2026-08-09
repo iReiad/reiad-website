@@ -300,7 +300,10 @@ not just its own. The German school called one day of its practice book
 the small label above an article card. One rule put an empty bordered box
 around that label on every card on the site, and nothing caught it: routes,
 caches and links were all checked, CSS was not. Now every top-level selector
-in a school's layer must be anchored by a class only that school uses.
+in a school's layer must be anchored by something only that school can mean —
+its body class, or a class used nowhere else. That also catches a bare element
+selector, which is how the practice book's `<header>` inherited the site's
+sticky page chrome and pinned itself over the real header.
 
 `test-api.sh` is idempotent — run it as often as you like against the same
 local database. That is why its publish call passes `overwrite: true`: a
