@@ -674,31 +674,27 @@ function initShortcuts() {
 /* ============================================================
    3. KINETIC HEADLINE
    ============================================================ */
-function splitWords(host) {
-  const words = host.textContent.trim().split(/\s+/);
-  host.replaceChildren();
+/* This reads the element's text and rebuilds it as one span per
+   word, which means whatever is in #kinetic when this runs is what
+   the reader ends up with. The home page carries four possible
+   headlines; only ever ONE of them is in the element, because the
+   other three are attributes and the swap happens inline next to
+   the markup. See the note above the headline in index.html for
+   what happened when they were all children of it. */
+function initKinetic() {
+  const el = document.getElementById("kinetic");
+  if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const words = el.textContent.trim().split(/\s+/);
+  el.replaceChildren();
   words.forEach((word, i) => {
     const span = document.createElement("span");
     span.className = "w";
     span.style.setProperty("--i", i);
     span.textContent = word;
-    host.append(span);
-    if (i < words.length - 1) host.append(" ");
+    el.append(span);
+    if (i < words.length - 1) el.append(" ");
   });
-}
-
-function initKinetic() {
-  const host = document.getElementById("kinetic");
-  if (!host || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-  /* The home page carries one headline per audience and shows one
-     of them; every other page has a single run of text. Splitting
-     each variant separately keeps the wrappers — and the lang and
-     the Bangla face they carry — instead of flattening four
-     headlines into one stream of words. */
-  const variants = host.querySelectorAll(".hl");
-  if (variants.length) variants.forEach(splitWords);
-  else splitWords(host);
 }
 
 /* ============================================================

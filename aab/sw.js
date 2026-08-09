@@ -139,8 +139,17 @@
    old app.js, whose imports of /recent.js and /tilt.js do not
    exist in it — so the whole module would fail to evaluate and
    every page would lose its menu, its palette and its theme
-   toggle at once. */
-const VERSION = "v25";
+   toggle at once.
+
+   v26: the home page's intro stopped depending on either of them.
+   Worth spelling out, because the shape of this cache is what made
+   it matter: HTML is network-first and everything else is served
+   from cache and refreshed behind you, so the first load after any
+   deploy pairs new markup with the PREVIOUS app.js and styles.css.
+   An intro that needed the three in step was an intro that broke
+   once per deploy — and it did. The selection now ships inside the
+   document. */
+const VERSION = "v26";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

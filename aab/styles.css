@@ -2953,41 +2953,21 @@
     &:hover { border-color: var(--green); color: var(--green); }
   }
 
-  /* ---------- ONE HEADLINE PER VISITOR ----------
-     Four headlines and four ledes live in the markup; exactly one
-     of each is shown. `display: none` and not visibility or a
-     clip, because the other three must be out of the
-     accessibility tree as well as off the screen — nobody should
-     hear all four read out.
+  /* ---------- ONE INTRO PER VISITOR ----------
+     Which of the four ledes and button rows is shown is decided by
+     a <style> the page writes into its own <head>, and the
+     headline is swapped by three lines of script sitting next to
+     it. Neither is here, and that is deliberate: sw.js serves HTML
+     network-first and stylesheets cache-first, so on the first
+     load after a deploy this file is one version behind the markup
+     — and an intro that needs them in step is an intro that breaks
+     once per deploy. See the comments in index.html.
 
-     `data-when="open"` is the master version, the one an
-     undecided visitor gets. */
-  .hl { display: none; }
-  :root:not([data-audience]) .hl[data-when="open"] { display: revert; }
-  :root[data-audience="work"] .hl[data-when="work"] { display: revert; }
-  :root[data-audience="learn"] .hl[data-when="finance"] { display: revert; }
-  :root[data-audience="learn"][data-track="skills"] .hl[data-when="finance"] { display: none; }
-  :root[data-audience="learn"][data-track="skills"] .hl[data-when="skills"] { display: revert; }
-
-  /* `revert` lands a <span> back on inline, which is what the two
-     headline variants want, and the ledes and button rows back on
-     block/flex, which is what those want. Named here rather than
-     left to chance for the flex ones, since `revert` on a .lede
-     paragraph is block and on a .hero-actions row it must not be. */
-  .hero-actions.hl[data-when] { display: none; }
-  :root[data-audience="work"] .hero-actions.hl[data-when="work"],
-  :root[data-audience="learn"] .hero-actions.hl[data-when="finance"],
-  :root[data-audience="learn"][data-track="skills"] .hero-actions.hl[data-when="skills"] {
-    display: flex;
-  }
-  :root[data-audience="learn"][data-track="skills"] .hero-actions.hl[data-when="finance"] {
-    display: none;
-  }
-
-  /* The two Bangla headlines set solid; the English ones keep the
-     hero's default. Bangla at 3.8rem with 1.9 leading is two
-     lines of daylight between them. */
-  .home-h1 .bn-h { line-height: 1.28; }
+     What is left here is only what makes the chosen one look
+     right. Bangla at 3.8rem with the 1.9 leading it inherits gives
+     two lines of daylight; the headline is one line of speech and
+     wants to set solid. */
+  .home-h1.bn-h { line-height: 1.28; }
 
   /* ---------- the doors on the home page ----------
      Kept deliberately compact. These are a signpost, not the
