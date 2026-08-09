@@ -39,6 +39,7 @@ const MIN_SCORE = 2;        // below this = not important enough
 const MAX_PER_SOURCE = 4;   // keep the mix diverse
 const MAX_ITEMS = 10;
 const CACHE_SECONDS = 1800; // 30 minutes
+const SUMMARY_CHARS = 240;  // a standfirst, not an article
 
 function decode(s) {
   return s
@@ -48,6 +49,15 @@ function decode(s) {
     .replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&apos;/g, "'")
     .replace(/&nbsp;/g, " ")
     .replace(/\s+/g, " ").trim();
+}
+
+/** Cut at a word boundary, never mid-word, and only add the
+    ellipsis when something was actually cut off. */
+function trim(s, max) {
+  if (!s || s.length <= max) return s;
+  const cut = s.slice(0, max);
+  const at = cut.lastIndexOf(" ");
+  return `${(at > max * 0.6 ? cut.slice(0, at) : cut).replace(/[\s.,;:]+$/, "")}…`;
 }
 
 function pick(chunk, tag) {
@@ -62,11 +72,19 @@ function parseFeed(xml, feed) {
     const title = pick(c, "title");
     const link = pick(c, "link");
     const pubDate = pick(c, "pubDate");
-    const desc = pick(c, "description").slice(0, 300); // scoring only, never output
+    const desc = pick(c, "description").slice(0, 300);
     if (!title || !link) continue;
     const ts = Date.parse(pubDate);
     out.push({
       title, url: link,
+      /* The publisher's own standfirst, trimmed at a word boundary.
+         It used to be read for keyword scoring and thrown away,
+         which left the mini window on the site with a headline and
+         nothing else to show — and a card that opens to repeat its
+         own title is a card not worth opening. One sentence with
+         the source named and a link straight to the original is
+         what a reader needs to decide whether to go and read it. */
+      summary: trim(desc, SUMMARY_CHARS),
       source: feed.source, region: feed.region,
       published: Number.isFinite(ts) ? new Date(ts).toISOString() : null,
       _ts: Number.isFinite(ts) ? ts : 0,
@@ -122,7 +140,8 @@ export async function onRequestGet(context) {
     if (perSource[it.source] > MAX_PER_SOURCE) continue;
     seen.add(key);
     picked.push({ title: it.title, url: it.url, source: it.source,
-                  region: it.region, published: it.published });
+                  region: it.region, published: it.published,
+                  summary: it.summary || undefined });
     if (picked.length >= MAX_ITEMS) break;
   }
 

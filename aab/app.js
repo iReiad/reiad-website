@@ -21,11 +21,14 @@
 import {
   searchIndex, liveArticles, ARTICLES, formatDate, topics,
   PAGES, TOOLS, STAGES, STUFEN, stufeUrl, SITE, SEARCH_GROUPS,
+  SKILLS, skillUrl,
 } from "/content.js";
 import { countView, getArticles } from "/api.js";
 import { initCrumbs } from "/crumbs.js";
 import { initAudience, audienceBoost } from "/audience.js";
 import { recordVisit } from "/learn/progress.js";
+import { recordPage } from "/recent.js";
+import { initTilt, tiltIn } from "/tilt.js";
 
 /* ============================================================
    1. THEME
@@ -356,13 +359,17 @@ function buildMenu() {
         )
       ),
 
-      /* The second school gets a column of its own rather than a
+      /* The other schools get a column of their own rather than a
          line inside the Learn one. Someone who came for German
          is not browsing a finance site that happens to have
          German in it — and four Stufe names take less room than
-         one line explaining where they are hiding. */
+         one line explaining where they are hiding.
+
+         German is opened out in full because it is the one that
+         exists; the rest are named so that a reader can see what
+         is coming without opening another page to find out. */
       el("div", { className: "menu-col" },
-        el("span", { className: "mono menu-col-title", textContent: "জার্মান · Deutsch" }),
+        el("span", { className: "mono menu-col-title", textContent: "দক্ষতা · Skills" }),
         el("ul", { className: "menu-list" },
           ...STUFEN.map((s) =>
             el("li", {},
@@ -378,6 +385,16 @@ function buildMenu() {
           ...deutschPages.map((p) =>
             el("li", { className: "menu-standout" },
               el("a", { href: p.url }, el("strong", { textContent: p.title }))
+            )
+          ),
+          ...SKILLS.filter((s) => s.slug !== "deutsch").map((s) =>
+            el("li", {},
+              el("a", { href: skillUrl(s) },
+                el("strong", { className: "bn-h", textContent: s.bn }),
+                el("small", {
+                  textContent: `${s.en}${s.status === "soon" ? " · আসছে" : ""}`,
+                })
+              )
             )
           )
         )
@@ -459,6 +476,141 @@ const isTyping = (node) =>
   /^(input|textarea|select)$/i.test(node?.tagName) || node?.isContentEditable;
 
 /* ============================================================
+   2d. THE SKILLS DROPDOWN
+
+   German used to have its own word in the header. That stopped
+   working the moment there was going to be a second non-finance
+   school, and a third: seven links was already the width at which
+   the inline nav gives up (see the RESPONSIVE note in styles.css),
+   and eleven is not a nav bar, it is a list.
+
+   So one word, "Skills", and everything under it. The panel is
+   built from the SKILLS list in content.js — add a school there
+   and it appears here, on /skills/ and in the overlay menu at
+   once, with no page's markup to edit.
+
+   The <a href="/skills/"> that every page ships is what this
+   replaces. With JavaScript off that link is still there and
+   still goes somewhere useful, which is why the markup is a link
+   and the upgrade is a button: a button that navigates nowhere
+   would be a dead end without a script to run it.
+
+   Opens on hover AND on click, because both were asked for and
+   they want different things: hover opens after a beat so that a
+   pointer travelling to Insights doesn't drag the panel open on
+   the way past, and closes after a longer one so the diagonal
+   trip down to the last item doesn't lose it. Click is instant
+   and sticky, which is also what touch gets, since a tap fires
+   both.
+   ============================================================ */
+const HOVER_IN = 90;
+const HOVER_OUT = 260;
+
+function skillsPanel() {
+  const panel = el("div", { className: "nav-drop", id: "skills-drop", hidden: true });
+
+  for (const s of SKILLS) {
+    const link = el("a", { href: skillUrl(s) },
+      el("strong", { textContent: s.bn }),
+      s.status === "soon"
+        ? el("span", { className: "soon mono", textContent: "আসছে" })
+        : null,
+      el("small", { textContent: s.en })
+    );
+    panel.append(link);
+  }
+
+  panel.append(
+    el("a", { className: "nav-drop-all", href: "/skills/index.html" },
+      el("strong", { textContent: "সব দক্ষতা · All skills →" })
+    )
+  );
+  return panel;
+}
+
+function initSkillsNav() {
+  const link = document.querySelector("body > header nav [data-nav-skills]");
+  if (!link) return;
+
+  const group = el("div", { className: "nav-group" });
+  // carried across so the audience ordering and the responsive
+  // rules keep treating this as the nav item it replaced
+  if (link.hasAttribute("data-keep")) group.setAttribute("data-keep", "");
+
+  const button = el("button", {
+    type: "button", className: "nav-top", id: "skills-top",
+    innerHTML: 'Skills <span class="caret" aria-hidden="true">▾</span>',
+  });
+  button.setAttribute("aria-expanded", "false");
+  button.setAttribute("aria-haspopup", "true");
+  button.setAttribute("aria-controls", "skills-drop");
+  const current = link.getAttribute("aria-current");
+  if (current) button.setAttribute("aria-current", current);
+
+  const panel = skillsPanel();
+  group.append(button, panel);
+  link.replaceWith(group);
+
+  let timer;
+  const set = (open) => {
+    clearTimeout(timer);
+    panel.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+  };
+  const later = (open, delay) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => set(open), delay);
+  };
+
+  group.addEventListener("pointerenter", (e) => {
+    if (e.pointerType === "touch") return;   // a tap is a click, not a hover
+    later(true, HOVER_IN);
+  });
+  group.addEventListener("pointerleave", (e) => {
+    if (e.pointerType === "touch") return;
+    later(false, HOVER_OUT);
+  });
+
+  button.addEventListener("click", () => set(panel.hidden));
+
+  /* Tabbing out of the last item, or clicking anywhere else, closes
+     it. `relatedTarget` and not document.activeElement: during a
+     focusout the focus has left one element and not yet landed on
+     the next, so activeElement is <body> — which read as "they've
+     gone" for a keyboard user moving from the button INTO the panel,
+     closed it under them, and left the .focus() call pointing at a
+     display:none link. The deferred check is the fallback for the
+     browsers that hand you a null relatedTarget. */
+  group.addEventListener("focusout", (e) => {
+    if (e.relatedTarget && group.contains(e.relatedTarget)) return;
+    setTimeout(() => {
+      if (!group.contains(document.activeElement)) set(false);
+    });
+  });
+  addEventListener("click", (e) => {
+    if (!group.contains(e.target)) set(false);
+  });
+
+  group.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !panel.hidden) {
+      e.preventDefault();
+      set(false);
+      button.focus();
+      return;
+    }
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    e.preventDefault();
+    if (panel.hidden) set(true);
+    const items = [...panel.querySelectorAll("a")];
+    const at = items.indexOf(document.activeElement);
+    const next = e.key === "ArrowDown"
+      ? (at + 1) % items.length
+      : (at <= 0 ? items.length : at) - 1;
+    items[next]?.focus();
+  });
+}
+
+/* ============================================================
    2c. KEYBOARD SHORTCUTS  ("?")
    ============================================================ */
 const SHORTCUTS = [
@@ -467,6 +619,7 @@ const SHORTCUTS = [
   ["T", "Light ↔ dark"],
   ["G then H", "Go home"],
   ["G then L", "Go to the Learn hub"],
+  ["G then S", "Go to Skills"],
   ["G then D", "Go to Deutsch"],
   ["G then I", "Go to Insights"],
   ["G then T", "Go to Tools"],
@@ -497,7 +650,7 @@ function initShortcuts() {
   let goMode = false;
   const GO = {
     h: "/index.html", l: "/learn/index.html", d: "/deutsch/index.html",
-    i: "/insights.html", t: "/tools/index.html",
+    s: "/skills/index.html", i: "/insights.html", t: "/tools/index.html",
   };
 
   addEventListener("keydown", (e) => {
@@ -521,20 +674,31 @@ function initShortcuts() {
 /* ============================================================
    3. KINETIC HEADLINE
    ============================================================ */
-function initKinetic() {
-  const el = document.getElementById("kinetic");
-  if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-  const words = el.textContent.trim().split(/\s+/);
-  el.replaceChildren();
+function splitWords(host) {
+  const words = host.textContent.trim().split(/\s+/);
+  host.replaceChildren();
   words.forEach((word, i) => {
     const span = document.createElement("span");
     span.className = "w";
     span.style.setProperty("--i", i);
     span.textContent = word;
-    el.append(span);
-    if (i < words.length - 1) el.append(" ");
+    host.append(span);
+    if (i < words.length - 1) host.append(" ");
   });
+}
+
+function initKinetic() {
+  const host = document.getElementById("kinetic");
+  if (!host || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  /* The home page carries one headline per audience and shows one
+     of them; every other page has a single run of text. Splitting
+     each variant separately keeps the wrappers — and the lang and
+     the Bangla face they carry — instead of flattening four
+     headlines into one stream of words. */
+  const variants = host.querySelectorAll(".hl");
+  if (variants.length) variants.forEach(splitWords);
+  else splitWords(host);
 }
 
 /* ============================================================
@@ -658,6 +822,7 @@ async function initArticleCards() {
     ...live.map(card),
     ...soon.filter((a) => !liveSlugs.has(a.slug)).map(card)
   );
+  tiltIn(host);   // these arrive after initTilt has already run
   initTopicFilter(host, live);
 }
 
@@ -762,6 +927,9 @@ function markLessonRead() {
   try {
     recordVisit();
   } catch { /* private mode; the tick is a nicety */ }
+  try {
+    recordPage();
+  } catch { /* ditto — see /recent.js */ }
 }
 
 /* ============================================================
@@ -803,8 +971,10 @@ initAudience();
 initCrumbs();
 initPalette();
 initMenu();
+initSkillsNav();
 initShortcuts();
 initKinetic();
+initTilt();
 initSpeculation();
 initArticleCards();
 markLessonRead();

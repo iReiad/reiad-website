@@ -35,6 +35,7 @@ const isBn = () => document.documentElement.lang === "bn";
 const HOME = () => (isBn() ? "হোম" : "Home");
 const LEARN = () => (isBn() ? "শেখার লাইব্রেরি" : "Learn");
 const DEUTSCH = () => (isBn() ? "জার্মান" : "Deutsch");
+const SKILLS = () => (isBn() ? "দক্ষতা" : "Skills");
 
 /** Normalise the URL Pages might serve us: /learn, /learn/ and
     /learn/index.html are all the same place. */
@@ -46,7 +47,7 @@ function normalise(path) {
     const isFolder =
       STAGES.some((s) => `/learn/${s.slug}` === p) ||
       STUFEN.some((s) => `/deutsch/${s.slug}` === p) ||
-      p === "/learn" || p === "/deutsch" || p === "/tools";
+      p === "/learn" || p === "/deutsch" || p === "/tools" || p === "/skills";
     return isFolder ? `${p}/index.html` : `${p}.html`;
   }
   return p;
@@ -87,8 +88,14 @@ function trailFor(path) {
     return { crumbs, here: document.title.split("—")[0].trim() };
   }
 
-  /* ---------- the German school ---------- */
+  /* ---------- the skills index ---------- */
+  if (p === "/skills/index.html") return { crumbs, here: SKILLS() };
+
+  /* ---------- the German school ----------
+     German sits under Skills now, so the trail says so: a Teil is
+     Home › Skills › Deutsch › Stufe 1 › the Teil. */
   if (p.startsWith("/deutsch/")) {
+    crumbs.push({ name: SKILLS(), url: "/skills/index.html" });
     if (p === "/deutsch/index.html") return { crumbs, here: DEUTSCH() };
 
     crumbs.push({ name: DEUTSCH(), url: "/deutsch/index.html" });

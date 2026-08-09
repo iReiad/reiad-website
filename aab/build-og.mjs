@@ -103,6 +103,9 @@ const CARDS = [
      previewed as the site's generic card, which says nothing
      about German at all. Same rule as the stages: one per Stufe,
      so a shared Teil previews as the Stufe it belongs to. */
+  { file: "skills.png", eyebrow: "দক্ষতা · Skills",
+    title: "টাকা ছাড়া বাকি যা কিছু।",
+    sub: "জার্মান · কুরআন · ইংরেজি · রান্না · ভ্রমণ · রিভিউ", bn: true },
   { file: "deutsch.png", eyebrow: "জার্মান · Deutsch von Herzen",
     title: "মন থেকে জার্মান।",
     sub: "শব্দ মুখস্থ নয়, কাঠামো · চারটা স্তর · রোজ একটা পাতার অনুশীলন", bn: true },
@@ -141,6 +144,7 @@ const ASSIGN = [
     `stage-${st.slug}.png`,
   ]),
   [/^learn\//, "learn.png"],
+  [/^skills\//, "skills.png"],
   [/^deutsch\/stufe-1\/arbeitsbuch\.html$/, "deutsch-arbeitsbuch.png"],
   [/^deutsch\/index\.html$/, "deutsch.png"],
   ...STUFEN.map((st) => [

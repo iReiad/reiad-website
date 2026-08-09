@@ -1,23 +1,40 @@
 /* ============================================================
    audience.js — the front door.
 
-   Two completely different people arrive at this site:
+   Three completely different people arrive at this site:
 
      · a Bangladeshi reader who wants to understand money, in
        Bangla, and has no interest whatsoever in a CV;
+     · a Bangladeshi reader who came for one of the other
+       schools — German today, five more being written — and
+       does not want a savings lesson either;
      · a recruiter or a client, in English, who wants the work
-       and the credentials and does not need a savings lesson.
+       and the credentials and needs neither.
 
-   Serving both from one undifferentiated homepage means each of
-   them reads past the other's half. So the home page asks once,
-   in two big doors, and remembers the answer.
+   Serving all three from one undifferentiated homepage means
+   each of them reads past the others' share of it. So the home
+   page asks once and remembers the answer.
+
+   TWO AXES, not three doors, and the distinction matters:
+
+     audience   "learn" | "work"      who you are
+     track      "finance" | "skills"  which library you came for,
+                                      and only meaningful for a
+                                      learner
+
+   Keeping the learner one value rather than splitting it in two
+   is what lets every rule written before the second school
+   arrived — the nav order, the menu columns, the palette
+   ranking — go on working untouched. `track` refines; it never
+   contradicts.
 
    What the answer changes:
      · the order of the header nav (CSS only — see the `audience`
        block in styles.css, so there is no flash and no reflow)
      · which column of the overlay menu comes first
      · how the Ctrl+K palette ranks its results
-     · which half of the home page leads
+     · which half of the home page leads, and which headline it
+       is written in
 
    What it never changes: what exists. Nothing is hidden from
    anybody, no page becomes unreachable, and the choice is
@@ -25,13 +42,15 @@
    preference, not a gate — someone who picked "hiring" and then
    wants to read the Bangla library must never hit a wall.
 
-   The attribute itself is set before first paint by the inline
+   Both attributes are set before first paint by the inline
    script in each page's <head>, next to the theme. This module
-   handles the behaviour on top of it.
+   handles the behaviour on top of them.
    ============================================================ */
 
 const KEY = "audience";
+const TRACK_KEY = "track";
 const VALID = new Set(["learn", "work"]);
+const TRACKS = new Set(["finance", "skills"]);
 
 export const getAudience = () => {
   try {
@@ -42,22 +61,51 @@ export const getAudience = () => {
   }
 };
 
-export function setAudience(value) {
+export const getTrack = () => {
+  try {
+    const v = localStorage.getItem(TRACK_KEY);
+    return TRACKS.has(v) ? v : null;
+  } catch {
+    return null;
+  }
+};
+
+export function setAudience(value, track) {
   if (!VALID.has(value)) return;
-  try { localStorage.setItem(KEY, value); } catch { /* private mode */ }
-  apply(value);
+  try {
+    localStorage.setItem(KEY, value);
+    /* A recruiter has no track. Clearing it rather than leaving
+       the last one lying around means the work half is never
+       described as "finance" or "skills" — it is neither. */
+    if (value === "work") localStorage.removeItem(TRACK_KEY);
+    else if (TRACKS.has(track)) localStorage.setItem(TRACK_KEY, track);
+  } catch { /* private mode */ }
+  apply(value, value === "work" ? null : (track ?? getTrack()));
   dispatchEvent(new CustomEvent("audience:change", { detail: value }));
 }
 
+export function setTrack(track) {
+  if (!TRACKS.has(track)) return;
+  setAudience("learn", track);
+}
+
 export function clearAudience() {
-  try { localStorage.removeItem(KEY); } catch { /* ignore */ }
+  try {
+    localStorage.removeItem(KEY);
+    localStorage.removeItem(TRACK_KEY);
+  } catch { /* ignore */ }
   document.documentElement.removeAttribute("data-audience");
+  document.documentElement.removeAttribute("data-track");
   dispatchEvent(new CustomEvent("audience:change", { detail: null }));
 }
 
-function apply(value) {
-  if (value) document.documentElement.setAttribute("data-audience", value);
-  else document.documentElement.removeAttribute("data-audience");
+function apply(value, track = getTrack()) {
+  const root = document.documentElement;
+  if (value) root.setAttribute("data-audience", value);
+  else root.removeAttribute("data-audience");
+
+  if (value === "learn" && TRACKS.has(track)) root.setAttribute("data-track", track);
+  else root.removeAttribute("data-track");
 }
 
 /* ------------------------------------------------------------
@@ -77,7 +125,7 @@ function initDoorway() {
     if (!door) return;
     // Let a modified click open a tab without silently setting a preference
     if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-    setAudience(door.dataset.audiencePick);
+    setAudience(door.dataset.audiencePick, door.dataset.trackPick);
     // the href carries on to the destination on its own
   });
 }
@@ -106,7 +154,33 @@ function buildSwitcher() {
   };
   paint();
   button.addEventListener("click", () => {
-    setAudience(button.dataset.to);
+    /* Going back to the library keeps whichever half of it they
+       last read. Someone who came for German and wandered into a
+       CV should land back in German, not in a savings lesson. */
+    setAudience(button.dataset.to, getTrack() ?? "finance");
+    paint();
+  });
+  addEventListener("audience:change", paint);
+  return button;
+}
+
+/** Finance ↔ skills, shown only to someone who is here to learn. */
+function buildTrackSwitcher() {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "audience-switch track-switch";
+  const paint = () => {
+    const who = getAudience();
+    const track = getTrack();
+    button.hidden = who !== "learn";
+    button.dataset.to = track === "skills" ? "finance" : "skills";
+    button.textContent = track === "skills"
+      ? "টাকা ও বিনিয়োগে ফিরে যান"
+      : "দক্ষতার অংশে যান";
+  };
+  paint();
+  button.addEventListener("click", () => {
+    setTrack(button.dataset.to);
     paint();
   });
   addEventListener("audience:change", paint);
@@ -118,7 +192,7 @@ function initSwitcher() {
   if (!foot || foot.querySelector(".audience-switch")) return;
   const row = document.createElement("p");
   row.className = "audience-row";
-  row.append(buildSwitcher());
+  row.append(buildSwitcher(), buildTrackSwitcher());
   foot.append(row);
 }
 
@@ -130,21 +204,31 @@ function initSwitcher() {
    ------------------------------------------------------------ */
 const WORK_HINTS = new Set(["Page", "Article"]);
 const WORK_URLS = ["/portfolio", "/about", "/contact", "/colophon"];
+const SKILL_URLS = ["/skills", "/deutsch"];
 
 export function audienceBoost(item) {
   const who = getAudience();
   if (!who) return 0;
-  const isLearn =
+  const isSkill = SKILL_URLS.some((u) => item.url.startsWith(u));
+  const isMoney =
     item.url.startsWith("/learn") ||
     item.url.startsWith("/tools") ||
     item.hint === "Learn" ||
     item.hint === "Tool";
+  const isLearn = isMoney || isSkill;
   const isWork = WORK_URLS.some((u) => item.url.startsWith(u)) ||
     (WORK_HINTS.has(item.hint) && !isLearn);
 
-  if (who === "learn" && isLearn) return 220;
-  if (who === "work" && isWork) return 220;
-  return 0;
+  if (who === "work") return isWork ? 220 : 0;
+  if (!isLearn) return 0;
+
+  /* Inside the library the track is a nudge, not a second wall:
+     the half they came for goes above the half they didn't, and
+     both stay well above the CV. */
+  const track = getTrack();
+  if (track === "skills") return isSkill ? 260 : 180;
+  if (track === "finance") return isMoney ? 260 : 180;
+  return 220;
 }
 
 /** Menu column order, so the overlay leads with the right half. */
