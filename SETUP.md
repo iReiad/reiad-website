@@ -167,8 +167,9 @@ cache. A second load picks up the new version.
 
 ```sh
 npx wrangler dev                     # the real runtime, local D1 and R2
-./test-api.sh                        # 77 checks over every endpoint
+./test-api.sh                        # 83 checks over every endpoint
 node functions/_lib/notion.test.mjs  # 74 checks on the Notion conversion
+node aab/studio.test.mjs             # 42 browser checks (needs Playwright)
 node aab/check-routes.mjs            # catches redirect loops
 node aab/check-sw.mjs                # precached file changed without a VERSION bump?
 ```
@@ -182,4 +183,12 @@ should be deleted if it hasn't been already — **My Profile → API Tokens**. A
 chat transcript is not somewhere a live credential should live. The build needs
 only its own token with Workers Scripts: Edit.
 
-Same for the R2 keys (**R2 → Manage API tokens**). Nothing here uses R2.
+The same rule caught `NOTION_TOKEN` once: an integration token was pasted into
+a chat to get the import working. Rotate anything that has been through a
+transcript — **notion.so/my-integrations → the integration → Secrets →
+Rotate** — then `npx wrangler secret put NOTION_TOKEN` with the new value.
+
+R2 **is** used now, for article photos (see above). The Worker reaches the
+bucket through the `MEDIA` binding, not through an access key, so there are
+still no R2 keys that need to exist. If any were created while setting this
+up, they can go: **R2 → Manage API tokens**.

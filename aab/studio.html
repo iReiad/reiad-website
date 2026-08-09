@@ -87,6 +87,9 @@
         <button class="btn btn-ghost" id="btn-open">Open…</button>
         <button class="btn btn-ghost" id="btn-notion" hidden>Import from Notion</button>
         <button class="btn btn-ghost" id="btn-resync" hidden>Re-sync from Notion</button>
+        <!-- Everything the site collected now has its own room. The
+             count is here so you don't have to go and look. -->
+        <a class="btn btn-ghost" id="btn-desk" href="/desk.html" hidden>The desk →</a>
         <span class="studio-now" id="now-line"></span>
       </div>
 
@@ -173,16 +176,6 @@ everything else Word smuggles in gets thrown away."></div>
         </div>
       </div>
 
-      <!-- ============ DASHBOARD ============ -->
-      <section id="dashboard-section" hidden>
-        <span class="section-label mono">The site, answering back</span>
-        <p class="measure" style="color:var(--ink-soft);font-size:0.95rem;margin-bottom:6px">
-          Everything readers have sent, and what they're actually reading.
-          Only visible to you, and only while you're signed in.
-        </p>
-        <div id="dashboard"></div>
-      </section>
-
       <!-- ============ EXPORT ============ -->
       <section>
         <span class="section-label mono">3 · Publish it</span>
@@ -215,9 +208,9 @@ everything else Word smuggles in gets thrown away."></div>
               same photo pasted twice is only stored once.</li>
           <li>That's it: the piece is live, the Insights page picks it up, and
               readers can react and ask questions on it straight away.</li>
-          <li>Changed your mind? <strong>Published</strong> in the dashboard below
-              unpublishes anything with one click, and <strong>Open…</strong> above
-              loads it back in to edit and republish.</li>
+          <li>Changed your mind? <strong>Open…</strong> loads anything back in to
+              edit and republish, and <strong>Published</strong> on
+              <a href="/desk.html">the desk</a> unpublishes with one click.</li>
         </ol>
 
         <ol class="studio-steps measure" id="steps-static">
@@ -299,7 +292,7 @@ everything else Word smuggles in gets thrown away."></div>
     import { requireOwner } from "/auth.js";
     const session = await requireOwner(document.getElementById("studio-root"));
     const studio = await import("/studio.js");
-    // A server session unlocks one-click publishing and the dashboard.
+    // A server session unlocks one-click publishing and the desk.
     if (session?.server) studio.enableDynamic();
   </script>
 </body>

@@ -18,7 +18,6 @@
 import { toast, copyText, download } from "/app.js";
 import { lock } from "/auth.js";
 import { api, uploadMedia, notion } from "/api.js";
-import { mountDashboard } from "/admin.js";
 
 /* ============================================================
    Elements
@@ -1734,12 +1733,28 @@ export function enableDynamic() {
     if (res?.configured) $("#btn-notion").hidden = false;
   });
 
+  const desk = $("#btn-desk");
+  desk.hidden = false;
+  // How many people are waiting, without having to go and look.
+  Promise.all([api("questions?status=pending"), api("enquiries")]).then(([q, e]) => {
+    const n = (q?.questions ?? []).length
+      + (e?.enquiries ?? []).filter((row) => row.status === "new").length;
+    if (n) desk.textContent = `The desk (${n}) →`;
+  });
+
   refreshSlugs();
   refreshNow();
+  openFromQuery();
+}
 
-  const section = document.getElementById("dashboard-section");
-  section.hidden = false;
-  mountDashboard(document.getElementById("dashboard"));
+/** The desk's Edit links land here as ?edit=<slug>. */
+function openFromQuery() {
+  const slug = new URLSearchParams(location.search).get("edit");
+  if (!slug) return;
+  // Drop it from the URL so a reload doesn't discard whatever has
+  // been typed since by loading the article over the top of it.
+  history.replaceState(null, "", location.pathname);
+  openArticle(slug);
 }
 
 /**
@@ -1821,8 +1836,6 @@ async function send(status, button, label) {
       toast(status === "live"
         ? `Published: /insights/${slug}.html`
         : `Saved as a draft. It isn't public until you publish it.`);
-      document.getElementById("dashboard-section").hidden = false;
-      mountDashboard(document.getElementById("dashboard"));
     } else if (result?.reason === "body-too-large") {
       toast(`Still too big at ${Math.round((result.size ?? 0) / 1024)} KB. `
         + "Some photos didn't upload, so they're inflating the article.");

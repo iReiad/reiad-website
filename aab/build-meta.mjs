@@ -91,8 +91,9 @@ const robots = `# ${SITE.name}: ${SITE.tagline}
 User-agent: *
 Allow: /
 
-# The publishing tool is mine, not content.
+# The publishing tool and what it collected are mine, not content.
 Disallow: /studio.html
+Disallow: /desk.html
 Disallow: /insights/_template.html
 
 Sitemap: ${SITE.origin}/sitemap.xml

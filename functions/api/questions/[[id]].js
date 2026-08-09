@@ -34,10 +34,35 @@ export async function onRequest(context) {
       if (status && status !== "published") {
         const guard = await requireAdmin(context);
         if (guard) return guard;
-        const rows = await all(d1,
-          `SELECT * FROM questions WHERE status = ? ORDER BY created_at DESC LIMIT 200`,
-          status);
-        return ok({ questions: rows });
+
+        /* "all" exists because the alternative was worse: the desk
+           could only ask for pending and published, so anything
+           archived or marked spam left the interface for good. A
+           button labelled "Not spam, just private" quietly became a
+           delete. */
+        const q = str(url.searchParams.get("q"), 120);
+        const like = `%${q.replace(/[%_]/g, "")}%`;
+
+        const rows = status === "all"
+          ? await all(d1,
+              `SELECT * FROM questions
+                WHERE (? = '' OR body LIKE ? OR name LIKE ? OR slug LIKE ?)
+                ORDER BY created_at DESC LIMIT 300`, q, like, like, like)
+          : await all(d1,
+              `SELECT * FROM questions
+                WHERE status = ?
+                  AND (? = '' OR body LIKE ? OR name LIKE ? OR slug LIKE ?)
+                ORDER BY created_at DESC LIMIT 300`, status, q, like, like, like);
+
+        // Counts for every status, so the desk can show what is where
+        // without fetching all of it.
+        const tally = await all(d1,
+          `SELECT status, COUNT(*) AS n FROM questions GROUP BY status`);
+
+        return ok({
+          questions: rows,
+          counts: Object.fromEntries(tally.map((r) => [r.status, r.n])),
+        });
       }
 
       const slug = str(url.searchParams.get("slug"), 80);
@@ -59,18 +84,26 @@ export async function onRequest(context) {
       const text = str(input.body, 4000);
       if (text.length < 10) return fail("too-short");
 
-      // Honeypot: a hidden field only a bot fills in. Accept it so the
-      // bot thinks it worked, and drop it on the floor.
-      if (str(input.website, 100)) return ok({ queued: true });
+      /* Honeypot: a hidden field only a bot fills in. The reply is
+         still a cheerful "queued", so the bot has nothing to learn.
+
+         What changed is what happens to the question. It used to be
+         dropped on the floor — and a person whose password manager
+         filled that hidden field got told "Got it, I read every one
+         of these" while their question was destroyed, leaving no
+         record that it had ever existed. Quarantining costs a row
+         and makes that recoverable. */
+      const trapped = !!str(input.website, 100);
 
       const email = str(input.email, 200);
       await run(d1,
         `INSERT INTO questions (slug, name, email, body, status, created_at)
-         VALUES (?, ?, ?, ?, 'pending', ?)`,
+         VALUES (?, ?, ?, ?, ?, ?)`,
         str(input.slug, 80) || null,
         str(input.name, 80),
         email && isEmail(email) ? email : null,
         text,
+        trapped ? "spam" : "pending",
         nowISO());
 
       return ok({ queued: true });

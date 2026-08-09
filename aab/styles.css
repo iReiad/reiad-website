@@ -1483,6 +1483,41 @@
     display: flex; gap: 6px; padding: 6px;
   }
 
+  /* ---------- the desk ---------- */
+  .desk-tiles {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  }
+  .desk-tile {
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 16px 18px; text-align: start;
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color var(--fast) var(--ease);
+
+    & .k { font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+    & .v { font-size: 1.7rem; font-family: var(--font-sans); color: var(--ink); }
+    &:hover { border-color: var(--green); }
+    /* Only the two that mean a person is waiting for a reply, and
+       only when the number isn't zero. */
+    &.urgent { border-inline-start: 3px solid var(--gold); }
+    &.urgent .v { color: var(--gold); }
+  }
+
+  .desk-filters { margin-bottom: 12px; }
+  .desk-search {
+    width: 100%; max-width: 420px; margin-bottom: 14px;
+    padding: 9px 12px; font-size: 0.95rem;
+    font-family: var(--font-sans);
+    color: var(--ink); background: var(--paper);
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+
+    &:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+  }
+  .pill-new { border-color: var(--gold); color: var(--gold); }
+
   /* ---------- pre-flight ---------- */
   .preflight {
     background: var(--panel);
