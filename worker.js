@@ -45,6 +45,7 @@ import { onRequestGet as news } from "./functions/api/news.js";
 import { onRequest as media } from "./functions/api/media/[[key]].js";
 import { onRequest as notion } from "./functions/api/notion/[[route]].js";
 import { onRequest as insight } from "./functions/insights/[slug].js";
+import { onRequest as feeds } from "./functions/feeds/[kind].js";
 import { db } from "./functions/_lib/db.js";
 import { syncFromNotion } from "./functions/_lib/sync.js";
 
@@ -101,6 +102,11 @@ export default {
 
       const image = path.match(MEDIA);
       if (image) return await media(context({ key: image[1].split("/") }));
+
+      // The generated feed and sitemap, with the database merged in.
+      if (path === "/feed.xml" || path === "/sitemap.xml") {
+        return await feeds(context({ kind: path.slice(1) }));
+      }
 
       const article = path.match(ARTICLE);
       if (article) return await insight(context({ slug: article[1] }));

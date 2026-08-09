@@ -819,7 +819,12 @@ function meta() {
     title,
     dek: fields.dek.value.trim(),
     tag: fields.tag.value.trim() || "Note",
-    slug: fields.slug.value.trim() || slugify(title),
+    // Slugified even when typed by hand. It used to be taken raw, so
+    // "German Alphabets" stayed "German Alphabets" here and in the
+    // index-entry block, while the server quietly stored
+    // "germanalphabets" — two different answers to what the URL is,
+    // and the one that got pasted into content.js was the broken one.
+    slug: slugify(fields.slug.value.trim() || title),
     date: fields.date.value || new Date().toISOString().slice(0, 10),
     lang,
     body,
@@ -1107,6 +1112,20 @@ function renderPreview() {
 }
 
 Object.values(fields).forEach((el) => el.addEventListener("input", onEdit));
+
+/* Tidy the file name as soon as you leave the box, so what is on
+   screen is what the URL will be. Doing it on every keystroke would
+   fight the typing — a hyphen you are about to follow with a word
+   would vanish mid-thought. */
+fields.slug.addEventListener("blur", () => {
+  const typed = fields.slug.value.trim();
+  if (!typed) return;
+  const tidy = slugify(typed);
+  if (tidy === typed) return;
+  fields.slug.value = tidy;
+  onEdit();
+  toast(`File name tidied to "${tidy}" — that's what the URL can be.`);
+});
 
 /* ---------- preview controls ---------- */
 
@@ -1931,6 +1950,9 @@ function refreshNow() {
    Boot
    ============================================================ */
 (async () => {
+  // Without a database this is the only way to publish, so it starts
+  // open; enableDynamic() closes it when there is a better one.
+  $("#file-tools").open = true;
   fields.date.value = new Date().toISOString().slice(0, 10);
   await restoreDraft();
   applyView();
@@ -1950,6 +1972,9 @@ export function enableDynamic() {
   dynamic = true;
   document.getElementById("steps-static").hidden = true;
   document.getElementById("steps-dynamic").hidden = false;
+  // With a database there is nothing to copy anywhere, so the
+  // file-publishing tools fold away instead of implying there is.
+  $("#file-tools").open = false;
 
   const publish = $("#btn-publish");
   const saveDraftToSite = $("#btn-save-draft");

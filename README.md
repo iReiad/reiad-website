@@ -75,6 +75,13 @@ Once imported, the piece stays linked to its Notion page: **Re-sync from
 Notion** pulls the current version back over the body, so Notion can stay the
 place the writing happens.
 
+**Photos are the part worth understanding.** Notion serves uploaded files from
+S3 on signed URLs that expire in about an hour, so an imported photo cannot
+keep the URL it arrived with — the article would lose its pictures within the
+day. Imported images therefore point at `/api/notion/asset`, an admin-only
+same-origin proxy, and publishing re-encodes each one to WebP and uploads it
+to `/media`. By the time anything is public, no Notion URL is left in it.
+
 ### Letting Notion publish itself
 
 A Cron trigger (`wrangler.toml`, every fifteen minutes) checks every article
@@ -102,18 +109,66 @@ keystroke, and the middle of an unfinished sentence should not be live.
 `POST /api/notion/sync` runs the same pass immediately if fifteen minutes is
 too long to wait.
 
-Photos are the one compromise. A Worker has no canvas, so the scheduled sync
-cannot resize or re-encode: it copies images to `/media` at whatever size
+Photos are the one compromise here. A Worker has no canvas, so the scheduled
+sync cannot resize or re-encode: it copies images to `/media` at whatever size
 Notion holds them, skipping anything over 8 MB. Importing through the Studio
 still runs the full resize-and-WebP pipeline, so a piece you import by hand is
 lighter than one that syncs itself.
 
-**Photos are the part worth understanding.** Notion serves uploaded files from
-S3 on signed URLs that expire in about an hour, so an imported photo cannot
-keep the URL it arrived with — the article would lose its pictures within the
-day. Imported images therefore point at `/api/notion/asset`, an admin-only
-same-origin proxy, and publishing re-encodes each one to WebP and uploads it
-to `/media`. By the time anything is public, no Notion URL is left in it.
+## Where an article lives
+
+There are two ways to publish, and the difference is worth knowing because
+only one of them asks anything of you.
+
+### The database — the normal way
+
+Press **Publish to the site**. The article is a row in D1, served by
+`functions/insights/[slug].js`, and it is live immediately. Nothing to copy,
+no file to move, no commit.
+
+Everything that has to know about it finds out on its own:
+
+| What | How it finds out |
+| --- | --- |
+| The Insights page and the home page | `app.js` asks `/api/articles`, which wins over `content.js` |
+| Ctrl+K search | same list, merged into the index on every page |
+| `/feed.xml` and `/sitemap.xml` | `functions/feeds/[kind].js` merges the database into the generated file |
+| Reactions and reader questions | attach themselves to any `/insights/…` page |
+
+### Files — the fallback
+
+The route from before the database: download the page, drop it in
+`aab/insights/`, paste an entry into the `ARTICLES` list in `content.js`,
+commit. That entry is what puts it on the Insights page, in Ctrl+K, in the
+feed and in the sitemap — for a **file**. It has nothing to do with database
+articles, and the Studio folds those buttons away under *Publish as files
+instead* when there is a database to publish to.
+
+Two older pieces still live this way. `Open… → Written as files` loads one
+into the editor; publishing it moves it to the database, because
+`worker.js` prefers a row over a file for the same slug. The file stays put
+as the fallback.
+
+### Slugs
+
+A slug becomes a URL, so it can only be lowercase letters, digits and
+hyphens — `worker.js` matches `[a-z0-9-]+` and nothing else resolves. The
+Studio tidies the file-name box for you when you leave it, and
+`check-routes.mjs` fails the build on an entry that could never work.
+
+That check exists because of a real one: an entry with the slug
+`"German Alphabets"` reached `feed.xml` and `sitemap.xml`, putting a URL with
+a raw space in front of search engines. The Studio had taken the field
+exactly as typed while the server quietly stored `germanalphabets`, so the
+index entry you copied and the URL that worked disagreed. Both halves of that
+are fixed.
+
+### What the Studio cannot edit
+
+The Learn lessons and term pages are generated from `curriculum.js` and
+`lessons/*.js` by `build-lessons.mjs` and committed. About, Portfolio, Tools
+and the rest are hand-written. All of it lives in git, and a Worker cannot
+commit — so those are edited in the repository, not in the Studio.
 
 ## The Learn area
 
@@ -167,9 +222,9 @@ flips it back on any page.
 
 ```sh
 npx wrangler dev                    # the real Cloudflare runtime, local D1 and R2
-./test-api.sh                       # 101 checks over every endpoint
+./test-api.sh                       # 108 checks over every endpoint
 node functions/_lib/notion.test.mjs # 74 checks on the Notion → HTML conversion
-node aab/studio.test.mjs            # 63 checks driving the editor in a browser
+node aab/studio.test.mjs            # 67 checks driving the editor in a browser
 node aab/check-routes.mjs           # catches redirect loops before deploying
 node aab/check-sw.mjs               # did a precached file change without a VERSION bump?
 node aab/portfolio/dissertation.test.mjs   # 141 checks on the statistics engine

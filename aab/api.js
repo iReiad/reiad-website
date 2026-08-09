@@ -51,7 +51,14 @@ export function backendReady() {
 }
 
 /* ---------- reading ---------- */
-export const getArticles = async () => (await api("articles"))?.articles ?? null;
+/* Asked for by the cards and by the Ctrl+K index, which are on
+   different code paths and often the same page. Cached for the life
+   of the page so that is one request, not two. */
+let articlesPromise;
+export const getArticles = () => {
+  articlesPromise ??= api("articles").then((r) => r?.articles ?? null);
+  return articlesPromise;
+};
 export const getArticle = async (slug) => (await api(`articles/${slug}`))?.article ?? null;
 export const getQuestions = async (slug) =>
   (await api(`questions?slug=${encodeURIComponent(slug)}`))?.questions ?? null;

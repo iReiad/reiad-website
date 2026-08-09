@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v20: app.js merges database articles into the Ctrl+K index,
+   api.js caches the article list, and styles.css gained the folded
+   file-publishing tools. All three are precached.
+
    v19: content.js lost a live article whose slug could never
    resolve, and the Studio learned to open the file-based pieces —
    content.js and styles.css both changed.
@@ -92,7 +96,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v19";
+const VERSION = "v20";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -317,6 +317,29 @@ check "bad reaction"     'bad-reaction' \
 check "stats need auth"  'unauthorised' "$(curl -s $B/api/signals/stats)"
 check "stats"            'sanchayapatra' "$(curl -s -b $C $B/api/signals/stats)"
 
+echo "── feed & sitemap ─────────────────────"
+# Both are generated from content.js, which cannot see an article
+# published to the database — so a piece from the Studio was live,
+# readable, and in neither. That is what the "index entry" button was
+# for, and it could never work for an article the Worker publishes.
+check "the feed carries a database article" 'sanchayapatra-vs-fdr' \
+  "$(curl -s $B/feed.xml)"
+check "and still carries the file-based ones" 'dse-basics' \
+  "$(curl -s $B/feed.xml)"
+check "the feed is served as RSS" 'application/rss+xml' \
+  "$(curl -s -o /dev/null -D - $B/feed.xml | tr -d '\r')"
+check "nothing is listed twice" '1' \
+  "$(curl -s $B/feed.xml | grep -c 'insights/sanchayapatra-vs-fdr.html</link>')"
+check "the sitemap carries it too" 'sanchayapatra-vs-fdr' \
+  "$(curl -s $B/sitemap.xml)"
+check "and the sitemap stays valid XML" '</urlset>' \
+  "$(curl -s $B/sitemap.xml)"
+# A draft must not be advertised anywhere.
+check "a draft is in neither" 'absent' \
+  "$(curl -s -b $C -X POST -H "$J" -d '{"slug":"quiet-draft","title":"Quiet","status":"draft","overwrite":true,"body":"<p>x</p>"}' $B/api/articles >/dev/null; \
+     curl -s $B/feed.xml $B/sitemap.xml | grep -q 'quiet-draft' && echo listed || echo absent)"
+curl -s -b $C -X DELETE $B/api/articles/quiet-draft > /dev/null
+
 echo "── search ─────────────────────────────"
 check "finds body text"  'Tax at source' "$(curl -s "$B/api/search?q=tax%20at%20source")"
 check "short query"      '"results":[]' "$(curl -s "$B/api/search?q=a")"

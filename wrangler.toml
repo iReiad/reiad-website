@@ -59,7 +59,13 @@ not_found_handling = "404-page"
 #                set, the asset router answers an unmatched path with
 #                404.html and the Worker is never called, so every
 #                published photo 404s. It has to be listed.
-run_worker_first = ["/api/*", "/insights/*", "/media/*"]
+#   /feed.xml    both are generated from content.js, which cannot see
+#   /sitemap.xml an article published to the database. The Worker
+#                serves the generated file with those merged in, so a
+#                piece published from the Studio is actually
+#                findable. Assets would otherwise win and the merge
+#                would never run.
+run_worker_first = ["/api/*", "/insights/*", "/media/*", "/feed.xml", "/sitemap.xml"]
 
 # ---------- D1: the database everything dynamic runs on ----------
 # Articles, reader questions, subscribers, enquiries, view counts and
