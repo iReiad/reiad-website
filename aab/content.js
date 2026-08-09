@@ -185,6 +185,92 @@ export const TERMS = TERM_GROUPS.flatMap((g) =>
 );
 
 /* ============================================================
+   SKILLS — the second thing this site teaches.
+
+   German was the first non-finance school here, and it went into
+   the header as its own link. That does not scale: the next four
+   subjects would each want a link too, and a nav bar cannot hold
+   eleven. So the header carries one word, "Skills", and this list
+   is what sits under it — in the dropdown, on /skills/, and in
+   the overlay menu.
+
+   Everything about a school is described HERE, once. Add one
+   entry and it appears in all three places plus the sitemap; no
+   HTML anywhere has to be edited.
+
+   Fields:
+     slug     stable id, used for the anchor on /skills/
+     bn / en  the name, in both languages
+     url      where it lives, for a school that has been built
+     icon     a key in /learn/icons.js — see that file's rules
+     status   "live" or "soon"
+     blurb    one Bangla sentence: what you would actually get
+     note     what still has to be written, for a "soon" one
+   ============================================================ */
+export const SKILLS = [
+  {
+    slug: "deutsch",
+    bn: "জার্মান",
+    en: "Deutsch · German",
+    url: "/deutsch/index.html",
+    icon: "book",
+    status: "live",
+    blurb: "চারটা স্তরে জার্মান, বাংলা দিয়ে বোঝানো, আর রোজ এক পাতার অনুশীলন খাতা।",
+  },
+  {
+    slug: "quran",
+    bn: "কুরআন",
+    en: "Quran: reading and meaning",
+    icon: "scroll",
+    status: "soon",
+    blurb: "হরফ থেকে শুরু করে শুদ্ধ উচ্চারণ, তারপর শব্দ ধরে ধরে অর্থ।",
+    note: "বর্ণ ও উচ্চারণের অংশটা লেখা হচ্ছে।",
+  },
+  {
+    slug: "english",
+    bn: "ইংরেজি",
+    en: "English for work",
+    icon: "signpost",
+    status: "soon",
+    blurb: "ইমেইল, ইন্টারভিউ আর অফিসের ইংরেজি: মুখস্থ নয়, ব্যবহারের ছাঁচ।",
+    note: "প্রথম স্তরের রূপরেখা তৈরি, লেখা বাকি।",
+  },
+  {
+    slug: "cooking",
+    bn: "রান্না",
+    en: "Cooking",
+    icon: "cart",
+    status: "soon",
+    blurb: "মাপ, তাপ আর সময়: রেসিপি মুখস্থ না করে রান্নাটা বোঝা।",
+    note: "প্রথম দশটা পদের তালিকা হচ্ছে।",
+  },
+  {
+    slug: "travel",
+    bn: "ভ্রমণ",
+    en: "Travel",
+    icon: "compass",
+    status: "soon",
+    blurb: "ভিসা, টিকিট, বাজেট আর ব্যাগ: প্রথমবার দেশের বাইরে যাওয়ার পুরো ধাপ।",
+    note: "ভিসার কাগজপত্রের অংশটা আগে আসবে।",
+  },
+  {
+    slug: "reviews",
+    bn: "রিভিউ",
+    en: "Reviews",
+    icon: "magnifier",
+    status: "soon",
+    blurb: "বই, কোর্স, অ্যাপ আর যন্ত্রপাতি: কেনার আগে সৎ একটা মতামত।",
+    note: "প্রথম কয়েকটা রিভিউ লেখা হচ্ছে।",
+  },
+];
+
+/** The schools that actually exist, for anything that links out. */
+export const liveSkills = () => SKILLS.filter((s) => s.status === "live");
+
+/** Where a skill points: its own school, or its slot on /skills/. */
+export const skillUrl = (s) => s.url || `/skills/index.html#${s.slug}`;
+
+/* ============================================================
    Calculators on /tools/
    ============================================================ */
 export const TOOLS = [
@@ -211,6 +297,8 @@ export const PAGES = [
     hint: "Page", blurb: "Start-to-research investing course in plain Bangla, eight stages deep." },
   { title: "Learn: সব বিষয় এক নজরে", url: "/learn/contents.html",
     hint: "Page", group: "learn", blurb: "Every lesson in the Learn area on one page, plus the A–Z of terms." },
+  { title: "Skills: দক্ষতা", url: "/skills/index.html",
+    hint: "Page", blurb: "Everything here that isn't money: German, Quran, English, cooking, travel, reviews." },
   { title: "Deutsch: জার্মান, বাংলায়", url: "/deutsch/index.html",
     hint: "Page", blurb: "German from Bangla in four stages, with a thirty-day practice book for each." },
   { title: "৩০ দিনের অনুশীলন খাতা · Das 30-Tage-Arbeitsbuch", url: "/deutsch/stufe-1/arbeitsbuch.html",
@@ -319,6 +407,17 @@ export const searchIndex = () => [
     hint: `${t.stufe.kicker}`,
     kind: "deutsch",
   })),
+
+  /* The other schools. A skill still being written is in here on
+     purpose: someone typing "Quran" should be told where it will
+     be, not handed "No matches". Deutsch is skipped because it
+     already has a page entry and every Teil of its own above. */
+  ...SKILLS.filter((s) => s.slug !== "deutsch").map((s) => ({
+    title: `${s.bn}: ${s.en}`,
+    url: skillUrl(s),
+    hint: s.status === "soon" ? "Skill · আসছে" : "Skill",
+    kind: "skill",
+  })),
 ];
 
 /** The order the palette shows groups in, and what it calls them. */
@@ -328,6 +427,7 @@ export const SEARCH_GROUPS = [
   ["case", "Case studies"],
   ["learn", "শেখার লাইব্রেরি · Learn"],
   ["deutsch", "জার্মান · Deutsch"],
+  ["skill", "দক্ষতা · Skills"],
   ["writing", "Writing"],
 ];
 

@@ -210,10 +210,29 @@ account. Opening a lesson ticks it off; returning to `/learn/` shows a
 resume card and scrolls to the stage they were in. `aab/learn/progress.js`
 is the only file that touches that storage.
 
+## Skills
+
+`/skills/` is the index of everything here that isn't money. German is
+the one that exists; Quran, English for work, cooking, travel and reviews
+are named with what they will cover and marked *আসছে*, because knowing
+what is coming beats walking into an empty page.
+
+**`SKILLS` in `aab/content.js` is the one list you edit.** Adding an entry
+puts the school in the header dropdown, on `/skills/`, in the overlay
+menu, in the Ctrl+K index and — once it has a URL — in the sitemap, with
+no page's markup to touch.
+
+The header carries one word, "Skills", rather than a link per school:
+seven links was already the width at which the inline nav gives up (see
+the RESPONSIVE note in `styles.css`), and eleven is not a nav bar. The
+dropdown is built by `app.js` over the plain `<a href="/skills/">` every
+page ships, so with JavaScript off the link still goes somewhere useful.
+
 ## The German school
 
-`/deutsch/` is the site's **second school**, and it is deliberately a
-separate mount rather than another stage of `/learn/`. The Learn area is
+`/deutsch/` is the site's **second school** — the first entry in `SKILLS`
+above — and it is deliberately a separate mount rather than another stage
+of `/learn/`. The Learn area is
 about money in Bangladesh — risk labels, brokers, a starter guide about
 opening a BO account. Nothing in that vocabulary belongs next to
 Akkusativ, and someone looking for one should never have to scroll past
@@ -270,13 +289,40 @@ Reading a Teil ticks it off by opening it; **a practice day is only ticked
 by hand** — the book's promise is that you said it out loud, and no page
 can verify that but the learner.
 
-## Two front doors
+## The front door
 
-A recruiter and a Bangladeshi reader learning about savings want opposite
-halves of this site, so the home page asks once and remembers
-(`aab/audience.js`). The choice reorders the header nav, the overlay menu
-and the search ranking — it never hides anything, and the footer switch
-flips it back on any page.
+Three people arrive here and want different halves of the site: a reader
+learning about money in Bangla, a reader who came for one of the other
+schools, and a recruiter or client. The home page asks once and remembers
+(`aab/audience.js`).
+
+Two axes, not three doors:
+
+| Key | Values | What it means |
+| --- | --- | --- |
+| `audience` | `learn` \| `work` | who you are |
+| `track` | `finance` \| `skills` | which library you came for — only meaningful for a learner |
+
+Keeping the learner one value is what lets every rule written before the
+second school arrived go on working untouched; `track` refines, it never
+contradicts. Both are set on `<html>` before first paint by the inline
+script in each `<head>`, so the headline, the running order and the nav
+are right on the first frame rather than swapped afterwards.
+
+The choice reorders the header nav, the overlay menu, the home page and
+the search ranking, and picks which of four headlines is the one shown —
+all four ship in the markup and CSS shows one. It never hides anything,
+and the footer switch flips it back on any page.
+
+### The welcome-back band
+
+Above all of that, a returning reader gets one band (`aab/home.js`):
+where they stopped in each school, what else they had open
+(`aab/recent.js` — title, url, kind, ten deep, on the device only), and
+one rotating headline from the market pulse. A first-time visitor sees
+none of it: the whole section stays `hidden` until there is something in
+it, because an empty "continue where you left off" tells someone who has
+never been here that the site lost their place.
 
 ## Testing
 
@@ -386,7 +432,11 @@ which mode it's in.
 | `aab/studio.test.mjs` | The Studio driven in a real browser. Optional, needs Playwright, serves `aab/` itself |
 | `aab/tools/` | The five calculators |
 | `aab/crumbs.js` | The path line on every page, built from the curriculum and `PAGES`, plus its `BreadcrumbList` JSON-LD |
-| `aab/audience.js` | The two front doors — learner or recruiter — and what the answer reorders |
+| `aab/audience.js` | The front door — learner or recruiter, money or skills — and what the answer reorders |
+| `aab/home.js` | The home page's welcome-back band: continue, recently viewed, one headline |
+| `aab/recent.js` | The last ten pages this device opened. A history list, not analytics |
+| `aab/tilt.js` | Cards lean a couple of degrees towards the pointer. `rotate`, never `transform` — see the note at the top of the file |
+| `aab/skills/index.html`, `skills.js` | The Skills index, rendered from `SKILLS` in `content.js` |
 | `aab/learn/curriculum.js` | **The one file you edit for Learn.** Every stage, section and lesson |
 | `aab/learn/index.html` | The hub — hand-written, because the eight starter steps live in it |
 | `aab/learn/hub.js` | The hub's live layer: steps, ladder, contents index, resume card, filter |
@@ -405,7 +455,8 @@ which mode it's in.
 | `aab/deutsch/arbeitsbuch.js` | Turns the printed workbook into a daily one: one day at a time, saved writing, hidden answers, the tracker |
 | `aab/deutsch/build-deutsch.mjs` | Writes the Stufe pages, the Teil pages and the practice book. Not a build step |
 | `aab/deutsch/icons.js`, `stufe.js`, `teil.js` | The German marks; ticks on a Stufe page; the one line a Teil page needs |
-| `aab/pulse.js` | The auto-updating market-news list |
+| `aab/news.js` | The market pulse, shared: the fetch, the square card, and the mini window it opens into |
+| `aab/pulse.js` | The Insights page's side of the pulse — the grid, the skeleton, the fallback |
 | `aab/sw.js` | Service worker — offline reading, never stale articles |
 | `functions/api/news.js` | Serves `/api/news` — the market-pulse feed |
 | `aab/_headers`, `_redirects` | Cloudflare security headers, CSP and redirects |
@@ -420,7 +471,8 @@ which mode it's in.
 ## Keyboard
 
 `Ctrl/Cmd K` or `/` search · `M` menu · `T` theme · `?` shortcuts ·
-`G` then `H`/`L`/`D`/`I`/`T` to jump to Home, Learn, Deutsch, Insights or Tools.
+`G` then `H`/`L`/`S`/`D`/`I`/`T` to jump to Home, Learn, Skills, Deutsch,
+Insights or Tools.
 
 **Inside the Studio's editor** those give way to writing: `/` opens the block
 menu, `Ctrl/Cmd K` makes a link rather than opening search, `Ctrl/Cmd S`

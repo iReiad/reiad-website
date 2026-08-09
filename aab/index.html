@@ -24,6 +24,14 @@
         if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
         var a = localStorage.getItem("audience");
         if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+        /* The learner's half is two libraries now, money and
+           everything else. Setting the track here as well means
+           the right headline is the one that gets painted, rather
+           than the wrong one being swapped out afterwards. */
+        var k = localStorage.getItem("track");
+        if (a === "learn" && (k === "finance" || k === "skills")) {
+          d.setAttribute("data-track", k);
+        }
       } catch (e) {}
     })();
   </script>
@@ -76,7 +84,7 @@
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
-        <a href="/deutsch/index.html">Deutsch</a>
+        <a href="/skills/index.html" data-nav-skills>Skills</a>
         <a href="/tools/index.html">Tools</a>
         <a href="/insights.html">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
@@ -104,45 +112,124 @@
         </svg>
 
         <span class="eyebrow mono">Rony Reiad · Dhaka / Brighton · CFA L1 candidate</span>
-        <h1 id="kinetic">Bangladesh's markets, explained in the language we speak.</h1>
-        <p class="lede">
-          Plain-Bangla investment education (DSE, mutual funds, sanchayapatra and
-          more) from a finance and risk management graduate. Plus financial
-          modeling and analysis for clients who need the numbers done right.
-        </p>
-        <!-- ============ THE FRONT DOOR ============
-             Two very different people arrive here: a Bangladeshi
-             reader who wants to understand money in Bangla, and a
-             recruiter or client who wants the work. Asking once
-             beats making each of them read past the other's half.
 
-             Both doors are ordinary links, so this works with
+        <!-- ============ ONE HEADLINE PER VISITOR ============
+             Four of them, and CSS shows exactly one. They are all
+             in the markup rather than swapped in by script for two
+             reasons: a headline that changes after first paint is
+             a headline the reader watched change, and `display:
+             none` takes the other three out of the accessibility
+             tree as well as off the screen, so nobody hears all
+             four read out.
+
+             Which one shows is decided by data-audience and
+             data-track on <html>, both set by the inline script in
+             <head> above. See the `audience` block in styles.css.
+
+             The learner's two are Bangla, because the learning half
+             of this site is Bangla — the person it is written for
+             should not have to read English to be told it exists. -->
+        <h1 id="kinetic" class="home-h1">
+          <span class="hl" data-when="open">Bangladesh's markets, explained in the language we speak.</span>
+          <span class="hl bn-h" data-when="finance" lang="bn">টাকার ভাষা, আমাদের ভাষায়।</span>
+          <span class="hl bn-h" data-when="skills" lang="bn">যা শিখতে চান, নিজের ভাষায়।</span>
+          <span class="hl" data-when="work">Financial models you can open, edit and trust.</span>
+        </h1>
+
+        <p class="lede hl" data-when="open">
+          Two libraries in plain Bangla — money, and everything else worth
+          learning — plus financial modeling and analysis for clients who
+          need the numbers done right.
+        </p>
+        <p class="lede hl" data-when="finance" lang="bn">
+          বিও অ্যাকাউন্ট খোলা থেকে গবেষণা পর্যন্ত: শেয়ার, সঞ্চয়পত্র, মিউচুয়াল ফান্ড আর
+          ঝুঁকির হিসাব, সবটাই সহজ বাংলায়। সঙ্গে পাঁচটা ক্যালকুলেটর, যাতে হিসাবটা
+          নিজেই করে দেখতে পারেন।
+        </p>
+        <p class="lede hl" data-when="skills" lang="bn">
+          টাকা ছাড়া বাকি যা কিছু: জার্মান আজই শুরু করা যায়, আর কুরআন, ইংরেজি,
+          রান্না, ভ্রমণ ও রিভিউ লেখা হচ্ছে। ব্যাখ্যা বাংলায়, অনুশীলন আসল জিনিসে,
+          কোনো লগইন বা দাম ছাড়াই।
+        </p>
+        <p class="lede hl" data-when="work">
+          Three-statement models, DCFs, Python analysis and finance writing —
+          from an MSc in finance and risk management. Every case study on this
+          site runs in your browser, so you can take the work apart before you
+          decide whether to commission any.
+        </p>
+
+        <!-- ============ THE FRONT DOOR ============
+             Three very different people arrive here: a Bangladeshi
+             reader who wants to understand money in Bangla, one who
+             came for German or one of the schools being written
+             beside it, and a recruiter or client who wants the
+             work. Asking once beats making each of them read past
+             the other two.
+
+             The learning pair is grouped rather than laid out as
+             three equal doors, because the real question is "are
+             you here to learn or to hire?" and the second question
+             — which library — only exists for one of those
+             answers. Grouping asks both at once without pretending
+             they are the same question.
+
+             Every door is an ordinary link, so this works with
              JavaScript off; audience.js only adds the remembering.
              Nothing is ever hidden as a result of the answer — see
              the note at the top of audience.js. -->
         <div class="doorway" id="doorway">
-          <a class="cell door" href="/learn/index.html" data-audience-pick="learn" data-keep>
-            <span class="door-art" data-icon="seed" aria-hidden="true">
-              <svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-7"/><path d="M12 14c0-3.3 2.7-6 6-6 0 3.3-2.7 6-6 6Z"/><path d="M12 16c0-2.5-2-4.5-4.5-4.5C7.5 14 9.5 16 12 16Z"/></svg>
-            </span>
-            <h3 class="bn-h">আমি শিখতে এসেছি</h3>
-            <p>বাংলায় বিনিয়োগ শেখার পুরো পথ, একদম শুরু থেকে।</p>
-            <span class="more">শেখা শুরু করুন →</span>
-          </a>
-          <a class="cell door" href="/portfolio.html" data-audience-pick="work">
-            <span class="door-art" aria-hidden="true">
-              <svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h18v11H3z"/><path d="M9 8V6a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 6v2"/><path d="M3 13h18"/><path d="M11 13v2h2v-2"/></svg>
-            </span>
-            <h3>I'm hiring, or I need work done</h3>
-            <p>Financial modeling, data analysis and finance writing.</p>
-            <span class="more">See the portfolio →</span>
-          </a>
+          <div class="door-group">
+            <span class="door-group-label mono">আমি শিখতে এসেছি · I'm here to learn</span>
+            <div class="door-pair">
+              <a class="cell door" href="/learn/index.html"
+                 data-audience-pick="learn" data-track-pick="finance" data-keep>
+                <span class="door-art" aria-hidden="true">
+                  <svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-7"/><path d="M12 14c0-3.3 2.7-6 6-6 0 3.3-2.7 6-6 6Z"/><path d="M12 16c0-2.5-2-4.5-4.5-4.5C7.5 14 9.5 16 12 16Z"/></svg>
+                </span>
+                <h3 class="bn-h">টাকা ও বিনিয়োগ</h3>
+                <p>শেয়ার, সঞ্চয়পত্র, ঝুঁকি — একদম শুরু থেকে।</p>
+                <span class="more">শেখার লাইব্রেরি →</span>
+              </a>
+              <a class="cell door" href="/skills/index.html"
+                 data-audience-pick="learn" data-track-pick="skills">
+                <span class="door-art" aria-hidden="true">
+                  <svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5Z"/><path d="M4 19.5A1.5 1.5 0 0 1 5.5 21H19v-3"/><path d="M8 7.5h7"/></svg>
+                </span>
+                <h3 class="bn-h">দক্ষতা</h3>
+                <p>জার্মান, কুরআন, ইংরেজি, রান্না, ভ্রমণ, রিভিউ।</p>
+                <span class="more">দক্ষতার তালিকা →</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="door-group">
+            <span class="door-group-label mono">Or you're here for the work</span>
+            <a class="cell door door-work" href="/portfolio.html" data-audience-pick="work">
+              <span class="door-art" aria-hidden="true">
+                <svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h18v11H3z"/><path d="M9 8V6a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 6v2"/><path d="M3 13h18"/><path d="M11 13v2h2v-2"/></svg>
+              </span>
+              <h3>I'm hiring, or I need work done</h3>
+              <p>Financial modeling, data analysis and finance writing — open a
+                 case study and edit the assumptions yourself.</p>
+              <span class="more">See the portfolio →</span>
+            </a>
+          </div>
         </div>
 
-        <div class="hero-actions after-doors">
-          <a class="btn btn-solid" href="/learn/index.html">Start learning · বাংলায়</a>
-          <a class="btn btn-ghost" href="/tools/index.html">Run the numbers</a>
-          <a class="btn btn-ghost" href="/portfolio.html">Work with me</a>
+        <div class="hero-actions after-doors hl" data-when="finance">
+          <a class="btn btn-solid" href="/learn/index.html">শেখার লাইব্রেরি →</a>
+          <a class="btn btn-ghost" href="/tools/index.html">ক্যালকুলেটর</a>
+          <a class="btn btn-ghost" href="/skills/index.html">দক্ষতা</a>
+        </div>
+        <div class="hero-actions after-doors hl" data-when="skills">
+          <a class="btn btn-solid" href="/skills/index.html">দক্ষতার তালিকা →</a>
+          <a class="btn btn-ghost" href="/deutsch/index.html">জার্মান শুরু করুন</a>
+          <a class="btn btn-ghost" href="/learn/index.html">টাকা ও বিনিয়োগ</a>
+        </div>
+        <div class="hero-actions after-doors hl" data-when="work">
+          <a class="btn btn-solid" href="/portfolio.html">See the portfolio</a>
+          <a class="btn btn-ghost" href="/portfolio/three-statement.html">Open a live model</a>
+          <a class="btn btn-ghost" href="/contact.html">Start a conversation</a>
         </div>
 
         <!-- Ticker tape: decorative, pauses on hover, static under
@@ -172,6 +259,29 @@
           </div>
         </div>
       </div>
+
+      <!-- ============ WELCOME BACK ============
+           Three things a returning reader wants and a first-time
+           one must never be shown: where they stopped, what else
+           they had open, and what has happened since.
+
+           Built by /home.js entirely from what is already on the
+           device — the two schools' own bookmarks, the recent
+           list in /recent.js, and the cached market pulse. The
+           whole section stays `hidden` until there is genuinely
+           something in it, because an empty "continue where you
+           left off" is worse than no such offer at all: it tells
+           a new visitor the site has lost their place. -->
+      <section id="welcome-back" class="welcome-back" data-for="both" hidden>
+        <span class="section-label mono" id="welcome-label">Pick up where you left off</span>
+        <div class="wb-grid">
+          <div class="wb-continue" id="wb-continue"></div>
+          <div class="wb-side">
+            <div class="wb-recent" id="wb-recent" hidden></div>
+            <div class="wb-news" id="wb-news" hidden></div>
+          </div>
+        </div>
+      </section>
 
       <!-- data-for marks who a block is mainly for; the `audience`
            block in styles.css reorders on it. Everything stays on the
@@ -205,9 +315,9 @@
         <div class="cell cell-about" data-for="work">
           <span class="tag mono">About</span>
           <h3>Economics first, risk second, plain language always</h3>
-          <p>BSS Economics (Chittagong), MSc in Brighton, research on Islamic
-             fund performance, and a habit of turning jargon into sentences
-             people actually use.</p>
+          <p>Economics in Chittagong, an MSc in Brighton, published research on
+             fund performance across 220 UK equity funds, and a habit of turning
+             jargon into sentences people actually use.</p>
           <a class="more" href="/about.html">More about me →</a>
         </div>
 
@@ -234,6 +344,7 @@
               <a href="/portfolio/dsex.html">Python for finance</a>,
               <a href="/portfolio/dissertation.html">empirical research</a></span>
             <span>Finance writing: English &amp; Bangla</span>
+            <span>Emerging &amp; frontier markets, where the data is thin</span>
           </div>
           <a class="more" href="/portfolio.html">See portfolio →</a>
         </div>
@@ -250,11 +361,12 @@
         <span class="section-label mono">Open one and take it apart</span>
         <p class="measure section-intro">Every model below runs in the browser. Change an
            assumption and watch the statements, the valuation or the charts move with it,
-           no download, no sign-up.</p>
+           no download, no sign-up. The methods are the standard ones and travel to any
+           market; the worked examples happen to be the ones I know best.</p>
         <div class="big-links">
           <a class="big-link" href="/portfolio/three-statement.html">
             <span class="num">01</span>
-            <span class="t">Three-statement model: a DSE-listed manufacturer</span>
+            <span class="t">Three-statement model: a listed manufacturer</span>
             <span class="go">→</span>
             <span class="d">Linked income statement, balance sheet and cash flow with a
               revolver and a scenario switch. The balance check is on the page, and it ties.</span>
@@ -294,16 +406,21 @@
         </div>
       </section>
 
-      <!-- ============ WHAT'S HERE ============ -->
+      <!-- ============ WHAT'S HERE: THE MONEY LIBRARY ============ -->
       <!-- The learner's half of the home page, in Bangla.
 
            It was written in English about Bangla content, which is
            the wrong way round: someone who came here because the
            explanations exist in their own language should not have
            to read English to find them. The English half is
-           untouched — it is a page ordering, not a translation. -->
-      <section data-for="learn" lang="bn" class="learn-half">
-        <span class="section-label mono">এখান থেকে শুরু করুন</span>
+           untouched — it is a page ordering, not a translation.
+
+           There are two of these now, one per track. Both are on
+           the page for everyone, always; the track only decides
+           which comes first. See the note at the top of
+           audience.js for why that is never a filter. -->
+      <section data-for="learn" data-track="finance" lang="bn" class="learn-half">
+        <span class="section-label mono">টাকা ও বিনিয়োগ · এখান থেকে শুরু করুন</span>
         <div class="big-links">
           <a class="big-link" href="/learn/index.html" data-keep>
             <span class="num">০১</span>
@@ -314,16 +431,8 @@
               আর কোনটা অন্যরা করে দেবে, সব লেখা আছে। তারপর সাতটা ধাপ, শব্দ শেখা
               থেকে গবেষণা পর্যন্ত।</span>
           </a>
-          <a class="big-link" href="/deutsch/index.html">
-            <span class="num">০২</span>
-            <span class="t bn-h">জার্মান, বাংলায়: একদম শুরু থেকে</span>
-            <span class="go">→</span>
-            <span class="d">চারটা স্তরে জার্মান, আর রোজ একটা পাতার অনুশীলন খাতা।
-              শব্দ মুখস্থ নয়, কাঠামো: একটা ছাঁচ শিখে নিজের হাজারটা বাক্য বানানো।
-              ধ্বনি থেকে শুরু, তাই প্রথম দিনেই যেকোনো জার্মান শব্দ পড়তে পারবেন।</span>
-          </a>
           <a class="big-link" href="/tools/stock.html">
-            <span class="num">০৩</span>
+            <span class="num">০২</span>
             <span class="t bn-h">শেয়ার যাচাই: কিনবেন, ধরে রাখবেন, নাকি বেচবেন?</span>
             <span class="go">→</span>
             <span class="d">বার্ষিক প্রতিবেদনের সংখ্যা বসান, আর দেখুন ছত্রিশটার বেশি রেশিও
@@ -331,7 +440,7 @@
               পুরোটা বাংলায় পড়া যায়।</span>
           </a>
           <a class="big-link" href="/tools/index.html">
-            <span class="num">০৪</span>
+            <span class="num">০৩</span>
             <span class="t bn-h">ক্যালকুলেটর: যে পাঁচটা হিসাব আগে করা দরকার</span>
             <span class="go">→</span>
             <span class="d">চক্রবৃদ্ধি, কর বাদ দিয়ে সঞ্চয়পত্র বনাম এফডিআর, মূল্যস্ফীতি আসলে
@@ -339,11 +448,52 @@
               লিংক কপি করলে পুরো হিসাবটাই সঙ্গে যায়।</span>
           </a>
           <a class="big-link" href="/insights.html">
-            <span class="num">০৫</span>
+            <span class="num">০৪</span>
             <span class="t bn-h">লেখালেখি: একটু লম্বা আলোচনা</span>
             <span class="go">→</span>
             <span class="d">বাজার নিয়ে ব্যাখ্যা আর বিশ্লেষণ, সঙ্গে যে খবরগুলো আসলে গুরুত্বপূর্ণ
               তার নিয়মিত হালনাগাদ।</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- ============ WHAT'S HERE: THE SKILLS ============ -->
+      <section data-for="learn" data-track="skills" lang="bn" class="learn-half">
+        <span class="section-label mono">দক্ষতা · টাকা ছাড়া বাকি যা কিছু</span>
+        <p class="measure section-intro">একটা স্কুল পুরো লেখা হয়ে গেছে, বাকিগুলো হচ্ছে।
+          যেটা এখনো আসেনি সেটাও নিচে বলা আছে — খালি পাতায় ঢুকে সময় নষ্ট করার
+          চেয়ে আগে জানা ভালো।</p>
+        <div class="big-links">
+          <a class="big-link" href="/deutsch/index.html">
+            <span class="num">০১</span>
+            <span class="t bn-h">জার্মান, বাংলায়: একদম শুরু থেকে</span>
+            <span class="go">→</span>
+            <span class="d">চারটা স্তরে জার্মান, আর রোজ একটা পাতার অনুশীলন খাতা।
+              শব্দ মুখস্থ নয়, কাঠামো: একটা ছাঁচ শিখে নিজের হাজারটা বাক্য বানানো।
+              ধ্বনি থেকে শুরু, তাই প্রথম দিনেই যেকোনো জার্মান শব্দ পড়তে পারবেন।</span>
+          </a>
+          <a class="big-link" href="/skills/index.html">
+            <span class="num">০২</span>
+            <span class="t bn-h">দক্ষতার পুরো তালিকা</span>
+            <span class="go">→</span>
+            <span class="d">কুরআন, ইংরেজি, রান্না, ভ্রমণ আর রিভিউ — প্রতিটার কী থাকবে
+              আর কতটা লেখা হয়েছে, এক পাতায়। যেটা তৈরি সেটায় ঢোকা যায়, বাকিগুলোয়
+              কী আসছে তা বলা আছে।</span>
+          </a>
+          <a class="big-link" href="/deutsch/stufe-1/arbeitsbuch.html">
+            <span class="num">০৩</span>
+            <span class="t bn-h">৩০ দিনের অনুশীলন খাতা</span>
+            <span class="go">→</span>
+            <span class="d">দিনে একটা পাতা: একটা ছাঁচ, পাঁচটা নমুনা, নিজের আটটা বাক্য,
+              ছয়টা অনুবাদ, আর নিজের জীবনের একটা সত্যি অনুচ্ছেদ। যা লিখবেন সেটা
+              আপনার ব্রাউজারেই থাকবে।</span>
+          </a>
+          <a class="big-link" href="/learn/index.html" data-keep>
+            <span class="num">০৪</span>
+            <span class="t bn-h">টাকার অংশটাও আছে, আর অনেক বড়</span>
+            <span class="go">→</span>
+            <span class="d">বিও অ্যাকাউন্ট খোলা থেকে গবেষণা পর্যন্ত আটটা ধাপ, ষাটের বেশি
+              লেখা, সঙ্গে পাঁচটা ক্যালকুলেটর। সবটাই সহজ বাংলায়।</span>
           </a>
         </div>
       </section>
@@ -362,10 +512,11 @@
         <div class="principles">
           <div class="principle">
             <h3>The jargon is the barrier</h3>
-            <p>Most Bangladeshi savings decisions are made without the vocabulary to
+            <p>Most savings decisions in Bangladesh are made without the vocabulary to
                examine them, not from a lack of intelligence, but because the
                explanations only exist in English, written for people who already
-               understand. That's a solvable problem.</p>
+               understand. The same is true of German grammar, of Quranic Arabic, of
+               half the things worth learning. That's a solvable problem.</p>
           </div>
           <div class="principle">
             <h3>Arithmetic before opinion</h3>
@@ -388,7 +539,8 @@
         <h2>Numbers that need doing properly</h2>
         <p>Freelance financial modeling, data analysis and finance writing, for
            founders raising money, teams that need a model they can actually edit,
-           and publications that need finance explained without the fog.</p>
+           and publications that need finance explained without the fog. Remote,
+           and used to working across time zones.</p>
         <div class="hero-actions">
           <a class="btn btn-solid" href="/contact.html">Start a conversation</a>
           <a class="btn btn-ghost" href="/portfolio.html">See what that looks like</a>
@@ -408,5 +560,6 @@
   </footer>
 
   <script type="module" src="/app.js"></script>
+  <script type="module" src="/home.js"></script>
 </body>
 </html>

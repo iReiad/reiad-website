@@ -132,7 +132,15 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v24";
+/* v25: the header's Deutsch link became a Skills dropdown, the
+   home page grew a welcome-back band, and app.js gained three new
+   imports (recent, tilt, and by way of home.js the shared news
+   module). A returning reader served the v24 shell would get the
+   old app.js, whose imports of /recent.js and /tilt.js do not
+   exist in it — so the whole module would fail to evaluate and
+   every page would lose its menu, its palette and its theme
+   toggle at once. */
+const VERSION = "v25";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -154,6 +162,16 @@ const PRECACHE = [
   "/crumbs.js",
   "/audience.js",
   "/activation.js",
+  /* app.js imports these two directly, so a cached app.js without
+     them is an app.js whose imports 404 — which is worse than no
+     app.js at all. home.js and news.js belong to the home page and
+     the Insights page and are listed with them. */
+  "/recent.js",
+  "/tilt.js",
+  "/home.js",
+  "/news.js",
+  "/skills/index.html",
+  "/skills/skills.js",
   "/learn/index.html",
   "/learn/learn.js",
   "/learn/hub.js",

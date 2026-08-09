@@ -90,6 +90,7 @@ function render(article, origin) {
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/skills/index.html" data-nav-skills>Skills</a>
         <a href="/tools/index.html">Tools</a>
         <a href="/insights.html" aria-current="page">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
