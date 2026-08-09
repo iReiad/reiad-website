@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v21: the German school landed. This one is not optional in the
+   way a styling change is: content.js now imports
+   /deutsch/curriculum.js, and app.js and crumbs.js import
+   content.js. A returning visitor holding the v20 shell would be
+   served a cached content.js whose new import resolves to
+   nothing — the menu, the palette and the breadcrumbs would all
+   die together. So the German modules the shell depends on are
+   precached alongside it, and the version moves.
+
    v20: app.js merges database articles into the Ctrl+K index,
    api.js caches the article list, and styles.css gained the folded
    file-publishing tools. All three are precached.
@@ -96,7 +105,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v20";
+const VERSION = "v21";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -126,6 +135,22 @@ const PRECACHE = [
   "/learn/icons.js",
   "/learn/contents.html",
   "/learn/contents.js",
+  /* The German school. curriculum.js is not a nicety here: it is
+     an import of content.js, which is an import of app.js and
+     crumbs.js, so the shell is broken without it. The hub and the
+     practice book are precached too — the book is the page a
+     learner opens every evening, and a bus with no signal is
+     exactly where they open it.
+     (Keep double quotes out of this comment: check-sw.mjs reads
+     the list below by pulling quoted strings out of the block.) */
+  "/deutsch/curriculum.js",
+  "/deutsch/index.html",
+  "/deutsch/hub.js",
+  "/deutsch/progress.js",
+  "/deutsch/icons.js",
+  "/deutsch/stufe-1/index.html",
+  "/deutsch/stufe-1/arbeitsbuch.html",
+  "/deutsch/arbeitsbuch.js",
   "/tools/index.html",
   "/tools/stock.html",
   "/tools/stock.js",

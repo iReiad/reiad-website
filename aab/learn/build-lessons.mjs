@@ -30,6 +30,27 @@
    Lesson text comes from ./lessons/<stage>.js. A lesson with no
    text there gets a proper "আসছে" page rather than a 404 — a
    listed thing must always be a place you can go.
+
+   ------------------------------------------------------------
+   BEFORE YOU RUN THIS: IT WILL REWRITE MORE THAN YOU EXPECT
+
+   The committed pages and this template have drifted. Several
+   lesson blurbs and titles were edited on the pages themselves
+   (mostly a comma tightened into a colon — "কমিশন, স্প্রেড আর
+   ভুলের সময়: …"), and curriculum.js never caught up. Page titles
+   drifted the same way: the pages join every part with " · ",
+   including inside a lesson name, where this file uses ", ".
+
+   So a run today rewrites about seventy pages, and most of that
+   diff is the published wording being reverted to the older
+   version in curriculum.js — not what anyone running a generator
+   is trying to do.
+
+   Reconcile it deliberately, in its own change: decide which
+   wording is right, put it in curriculum.js, run this once, and
+   read the diff. Until then, `git diff` after every run and keep
+   only the lines you meant.
+   ------------------------------------------------------------
    ============================================================ */
 
 import { writeFileSync, mkdirSync, existsSync } from "node:fs";
@@ -90,7 +111,6 @@ const HEAD_TAIL = `  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <link rel="alternate" type="application/rss+xml" title="Rony Reiad · Insights" href="/feed.xml">
-  <meta property="og:image" content="https://reiad.co.uk/og/learn.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
@@ -111,6 +131,7 @@ const HEADER = `  <a class="skip" href="#main">মূল লেখায় য�
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep aria-current="page">Learn</a>
+        <a href="/deutsch/index.html">Deutsch</a>
         <a href="/tools/index.html">Tools</a>
         <a href="/insights.html">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
@@ -146,7 +167,13 @@ const FOOTER = `  <footer>
   <script type="module" src="/app.js"></script>
   <script type="module" src="/learn/learn.js"></script>`;
 
-function page({ title, description, canonical, body, extraScripts = "" }) {
+/* `og` is a file name inside /og/, not a full URL. build-og.mjs
+   renders one share image per stage — stage-basics-2.png and
+   friends, all of them committed — and the published pages point
+   at them. This generator used to hard-code /og/learn.png for
+   every page, so running it silently replaced each per-stage
+   image with the generic one. It is an argument now. */
+function page({ title, description, canonical, body, og = "learn.png", extraScripts = "" }) {
   return `<!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -159,6 +186,7 @@ function page({ title, description, canonical, body, extraScripts = "" }) {
   <meta property="og:type" content="article">
   <meta property="og:title" content="${esc(title)}">
   <meta property="og:description" content="${esc(description)}">
+  <meta property="og:image" content="https://reiad.co.uk/og/${og}">
 ${PREPAINT}
 ${HEAD_TAIL}
 </head>
@@ -217,6 +245,7 @@ function lessonPage(stage, lessons, index, bodies) {
     title: `${lesson.bn}: ${stage.bn}, শেখার লাইব্রেরি, Rony Reiad`,
     description: lesson.blurb,
     canonical: lesson.url,
+    og: `stage-${stage.slug}.png`,
     body: `
       <article class="term-article lesson"
                data-lesson-id="${esc(lessonId(stage, lesson))}"
@@ -291,6 +320,7 @@ ${cards}
     title: `${stage.kicker} · ${stage.bn}, শেখার লাইব্রেরি, Rony Reiad`,
     description: stage.blurb,
     canonical: stageUrl(stage),
+    og: `stage-${stage.slug}.png`,
     body: `
       <div class="hero stage-hero" data-stage="${esc(stage.slug)}">
         <span class="eyebrow mono">${esc(stage.kicker)} · ${esc(stage.en)}</span>
@@ -430,6 +460,7 @@ ${sections}
     description:
       "শেখার লাইব্রেরির প্রতিটা লেখা এক পাতায়: আট ধাপের পুরো তালিকা, আর ইংরেজি বর্ণানুক্রমে শব্দকোষ।",
     canonical: "/learn/contents.html",
+    og: "contents.png",
     body: `
       <div class="hero">
         <span class="eyebrow mono">শেখার লাইব্রেরি · সূচিপত্র</span>

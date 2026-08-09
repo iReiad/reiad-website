@@ -20,7 +20,7 @@
 
 import {
   searchIndex, liveArticles, ARTICLES, formatDate, topics,
-  PAGES, TOOLS, STAGES, SITE, SEARCH_GROUPS,
+  PAGES, TOOLS, STAGES, STUFEN, stufeUrl, SITE, SEARCH_GROUPS,
 } from "/content.js";
 import { countView, getArticles } from "/api.js";
 import { initCrumbs } from "/crumbs.js";
@@ -292,6 +292,7 @@ function buildMenu() {
   const caseStudies = visible.filter((p) => p.group === "case");
   const learnPages = visible.filter((p) => p.group === "learn");
   const toolPages = visible.filter((p) => p.group === "tool");
+  const deutschPages = visible.filter((p) => p.group === "deutsch");
 
   const articles = liveArticles().slice(0, 3);
 
@@ -348,6 +349,33 @@ function buildMenu() {
             )
           ),
           ...learnPages.map((p) =>
+            el("li", { className: "menu-standout" },
+              el("a", { href: p.url }, el("strong", { textContent: p.title }))
+            )
+          )
+        )
+      ),
+
+      /* The second school gets a column of its own rather than a
+         line inside the Learn one. Someone who came for German
+         is not browsing a finance site that happens to have
+         German in it — and four Stufe names take less room than
+         one line explaining where they are hiding. */
+      el("div", { className: "menu-col" },
+        el("span", { className: "mono menu-col-title", textContent: "জার্মান · Deutsch" }),
+        el("ul", { className: "menu-list" },
+          ...STUFEN.map((s) =>
+            el("li", {},
+              el("a", { href: stufeUrl(s) },
+                el("strong", { className: "bn-h", textContent: `${s.kicker} · ${s.bn}` }),
+                el("small", {
+                  lang: "de",
+                  textContent: `${s.de}${s.status === "soon" ? " · আসছে" : ""}`,
+                })
+              )
+            )
+          ),
+          ...deutschPages.map((p) =>
             el("li", { className: "menu-standout" },
               el("a", { href: p.url }, el("strong", { textContent: p.title }))
             )
@@ -439,6 +467,7 @@ const SHORTCUTS = [
   ["T", "Light ↔ dark"],
   ["G then H", "Go home"],
   ["G then L", "Go to the Learn hub"],
+  ["G then D", "Go to Deutsch"],
   ["G then I", "Go to Insights"],
   ["G then T", "Go to Tools"],
   ["?", "This list"],
@@ -466,7 +495,10 @@ function initShortcuts() {
   document.body.append(dialog);
 
   let goMode = false;
-  const GO = { h: "/index.html", l: "/learn/index.html", i: "/insights.html", t: "/tools/index.html" };
+  const GO = {
+    h: "/index.html", l: "/learn/index.html", d: "/deutsch/index.html",
+    i: "/insights.html", t: "/tools/index.html",
+  };
 
   addEventListener("keydown", (e) => {
     if (isTyping(e.target) || e.ctrlKey || e.metaKey || e.altKey) return;

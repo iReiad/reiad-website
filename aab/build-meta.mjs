@@ -21,8 +21,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const { SITE, PAGES, TOOLS, STAGES, allLessons, liveArticles } =
-  await import(join(HERE, "content.js"));
+const {
+  SITE, PAGES, TOOLS, STAGES, allLessons, liveArticles,
+  STUFEN, allTeile, stufeUrl, workbookUrl,
+} = await import(join(HERE, "content.js"));
 
 const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) =>
@@ -68,11 +70,22 @@ const lessons = allLessons().filter(
   (l) => l.status === "live" && !l.stage.inline
 );
 
+/* The German school, on the same rule: every Stufe index, every
+   written Teil, and each Stufe's practice book. Unwritten Teile
+   stay out — those pages exist so a listed thing is never a dead
+   link, not so a search engine can index a placeholder. */
+const teile = allTeile().filter((t) => t.status === "live");
+const workbooks = STUFEN.filter((s) => s.workbook && s.status === "live")
+  .map((s) => workbookUrl(s));
+
 const urls = [
   ...PAGES.filter((p) => !p.private).map((p) => ({ loc: p.url, priority: "0.8" })),
   ...articles.map((a) => ({ loc: `/insights/${a.slug}.html`, lastmod: a.date, priority: "0.9" })),
   ...STAGES.map((s) => ({ loc: `/learn/${s.slug}/index.html`, priority: "0.8" })),
   ...lessons.map((l) => ({ loc: l.url, priority: "0.7" })),
+  ...STUFEN.map((s) => ({ loc: stufeUrl(s), priority: "0.8" })),
+  ...workbooks.map((loc) => ({ loc, priority: "0.8" })),
+  ...teile.map((t) => ({ loc: t.url, priority: "0.7" })),
 ];
 urls[0].priority = "1.0";
 
@@ -109,4 +122,8 @@ console.log("robots.txt   written");
 console.log(
   `(${TOOLS.length} calculators, ${STAGES.length} learn stages, ` +
   `${lessons.length} written lesson(s) of ${allLessons().length})`
+);
+console.log(
+  `(${STUFEN.length} German Stufen, ${teile.length} written Teil(e) of ${allTeile().length}, ` +
+  `${workbooks.length} practice book(s))`
 );

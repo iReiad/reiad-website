@@ -13,6 +13,14 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/deutsch/index.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/arbeitsbuch.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/tools/index.html</loc>
     <priority>0.8</priority>
   </url>
@@ -299,6 +307,82 @@
   </url>
   <url>
     <loc>https://reiad.co.uk/learn/basics-3/your-own-biases.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/index.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/index.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/index.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/index.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/arbeitsbuch.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/anfang.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/laute.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/satzbau.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/sein.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/haben.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/artikel.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/verben.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/negation.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/fragen.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/modalverben.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/zahlen-zeit.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/satzbank.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/von-herzen.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-1/plan.html</loc>
     <priority>0.7</priority>
   </url>
 </urlset>

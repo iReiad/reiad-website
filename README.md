@@ -210,6 +210,66 @@ account. Opening a lesson ticks it off; returning to `/learn/` shows a
 resume card and scrolls to the stage they were in. `aab/learn/progress.js`
 is the only file that touches that storage.
 
+## The German school
+
+`/deutsch/` is the site's **second school**, and it is deliberately a
+separate mount rather than another stage of `/learn/`. The Learn area is
+about money in Bangladesh — risk labels, brokers, a starter guide about
+opening a BO account. Nothing in that vocabulary belongs next to
+Akkusativ, and someone looking for one should never have to scroll past
+the other.
+
+It is the same machinery, though: the same ladder, the same lesson cards,
+the same tick-in-your-own-browser progress, so anyone who has used the
+Learn area already knows how to use this one.
+
+| Stufe | | What it covers |
+| --- | --- | --- |
+| Stufe 1 | একদম শুরু থেকে · Der Anfang | Sounds, verb-in-seat-two, `sein`/`haben`, der·die·das, the endings machine, `nicht`/`kein`, questions, the sentence bracket, numbers, real-life sentence banks — **14 Teile, all written** |
+| Stufe 2 | কারক ও অতীত · Die Fälle | Accusative, dative, prepositions, possessives, `Perfekt`, separable verbs, plurals — *outline live, text to come* |
+| Stufe 3 | কারণ, তুলনা ও গল্প · Die Verbindung | `weil`/`dass`/`wenn`, relative clauses, adjective endings, comparatives, future — *outline live* |
+| Stufe 4 | মুক্তভাবে বলা · Frei sprechen | `Konjunktiv II`, passive, opinion and argument, formal letters, the exams — *outline live* |
+
+**`aab/deutsch/curriculum.js` is the one file you edit**, exactly as
+`learn/curriculum.js` is for the Learn area. Stufen → sections → Teile,
+plus each Stufe's practice book.
+
+### The practice book
+
+Each Stufe has a thirty-day workbook — one page a day: a pattern, five
+model lines, eight sentences of the learner's own, six translations with
+a hidden answer key, and one true paragraph. Stufe 1's is live at
+`/deutsch/stufe-1/arbeitsbuch.html`.
+
+All thirty days are written into that **one page**, in full. With
+JavaScript on it becomes a day-at-a-time book with a tracker, boxes that
+remember what was typed, and answers that stay shut until asked for. With
+JavaScript off it is the printable workbook it came from. It is one page
+and not thirty because a practice book is not thirty articles — it is one
+thing you bookmark on the first evening and open every evening after.
+
+`aab/deutsch/arbeitsbuch.data.js` holds the days and is read by the
+generator only; the browser never downloads it, because every word is
+already in the markup.
+
+### Adding or editing a Teil
+
+1. Add it to its Stufe in **`aab/deutsch/curriculum.js`**.
+2. Write the body in **`aab/deutsch/content/<stufe>.js`**, keyed by slug.
+   (Skip this and it ships as a proper "আসছে" page, not a 404.)
+3. `node aab/deutsch/build-deutsch.mjs` — writes the Stufe pages, the Teil
+   pages and the practice book.
+4. `node aab/build-meta.mjs && node aab/check-routes.mjs`.
+
+### Progress
+
+Separate keys from the Learn area (`deutsch-read`, `deutsch-days`,
+`deutsch-last`, `deutsch-schrift`), so finishing the money ladder never
+claims you finished German and resetting one never wipes the other.
+Reading a Teil ticks it off by opening it; **a practice day is only ticked
+by hand** — the book's promise is that you said it out loud, and no page
+can verify that but the learner.
+
 ## Two front doors
 
 A recruiter and a Bangladeshi reader learning about savings want opposite
@@ -292,7 +352,7 @@ which mode it's in.
 
 | Path | What it is |
 | --- | --- |
-| `aab/styles.css` | The whole design system in nine `@layer`s: tokens → base → layout → components → menu → tools → article → studio → utilities |
+| `aab/styles.css` | The whole design system in `@layer`s, in cascade order: tokens → base → layout → components → menu → tools → article → studio → work → learn → deutsch → check → about → utilities |
 | `aab/app.js` | Theme, overlay menu, Ctrl+K palette, keyboard shortcuts, prerender rules, article cards, service-worker registration |
 | `aab/content.js` | **The one file you edit to publish.** Articles, Bangla terms, tools, pages |
 | `aab/api.js` | Browser side of the dynamic layer — returns null instead of throwing when there's no backend |
@@ -322,6 +382,15 @@ which mode it's in.
 | `aab/learn/lessons/` | Lesson text, one module per stage |
 | `aab/learn/build-lessons.mjs` | Writes the stage and lesson pages. Not a build step — run it and commit what it writes |
 | `aab/learn/terms/` | The original eighteen term pages, at the URLs they were published on |
+| `aab/deutsch/curriculum.js` | **The one file you edit for German.** Four Stufen, their sections and Teile, and each Stufe's practice book |
+| `aab/deutsch/index.html` | The school hub — hand-written, because "how this works" lives in it |
+| `aab/deutsch/hub.js` | The hub's live layer: the four-Stufe ladder, the resume card, the two progress bars |
+| `aab/deutsch/progress.js` | The only file that touches German progress in `localStorage` — its own keys, separate from Learn |
+| `aab/deutsch/content/` | Teil text, one module per Stufe |
+| `aab/deutsch/arbeitsbuch.data.js` | The thirty days of Stufe 1. Read by the generator only — the browser never downloads it |
+| `aab/deutsch/arbeitsbuch.js` | Turns the printed workbook into a daily one: one day at a time, saved writing, hidden answers, the tracker |
+| `aab/deutsch/build-deutsch.mjs` | Writes the Stufe pages, the Teil pages and the practice book. Not a build step |
+| `aab/deutsch/icons.js`, `stufe.js`, `teil.js` | The German marks; ticks on a Stufe page; the one line a Teil page needs |
 | `aab/pulse.js` | The auto-updating market-news list |
 | `aab/sw.js` | Service worker — offline reading, never stale articles |
 | `functions/api/news.js` | Serves `/api/news` — the market-pulse feed |
@@ -336,7 +405,7 @@ which mode it's in.
 ## Keyboard
 
 `Ctrl/Cmd K` or `/` search · `M` menu · `T` theme · `?` shortcuts ·
-`G` then `H`/`L`/`I`/`T` to jump to Home, Learn, Insights or Tools.
+`G` then `H`/`L`/`D`/`I`/`T` to jump to Home, Learn, Deutsch, Insights or Tools.
 
 **Inside the Studio's editor** those give way to writing: `/` opens the block
 menu, `Ctrl/Cmd K` makes a link rather than opening search, `Ctrl/Cmd S`
