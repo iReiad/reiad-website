@@ -67,6 +67,39 @@ export const react = (slug, kind) =>
 export const reactions = async (slug) =>
   (await api(`signals/react?slug=${encodeURIComponent(slug)}`))?.counts ?? null;
 
+/* ---------- media ----------
+   Photos go up as raw bytes, not JSON: base64 would cost a third
+   more on the wire for no reason, and the endpoint wants the
+   content type in the header anyway. So this one can't go through
+   api() above, which stringifies everything it's handed. */
+export async function uploadMedia(blob, slug) {
+  try {
+    const res = await fetch(`/api/media?slug=${encodeURIComponent(slug)}`, {
+      method: "POST",
+      headers: { "Content-Type": blob.type },
+      body: blob,
+      credentials: "same-origin",
+      signal: AbortSignal.timeout(60_000),
+    });
+    if (res.status === 503) return null;
+    return await res.json().catch(() => null);
+  } catch {
+    return null;
+  }
+}
+
+export const listMedia = (slug = "") =>
+  api(`media${slug ? `?slug=${encodeURIComponent(slug)}` : ""}`);
+
+/* ---------- Notion ----------
+   Importing a page fetches its whole block tree and can re-fetch
+   for nested lists and tables, so it gets a long timeout. */
+export const notion = {
+  status: () => api("notion/status"),
+  pages: (q = "") => api(`notion/pages${q ? `?q=${encodeURIComponent(q)}` : ""}`, { timeout: 20_000 }),
+  page: (id) => api(`notion/pages/${encodeURIComponent(id)}`, { timeout: 45_000 }),
+};
+
 /* ---------- admin ----------
    setup and login take a derived key, not a passphrase: the
    PBKDF2 runs in the browser because the free plan's 10ms of CPU

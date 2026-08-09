@@ -1435,6 +1435,107 @@
   .studio-meter[data-state="warn"] .bar i { background: var(--gold); }
   .studio-meter[data-state="over"] .bar i { background: var(--danger); }
 
+  /* ---------- the library bar ---------- */
+  .studio-bar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding-bottom: 16px;
+  }
+  .studio-now {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    color: var(--ink-soft); margin-inline-start: auto;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- the slash menu and the figure toolbar ----------
+     Both float over the editor, positioned from a caret or an image
+     rectangle, so they are fixed to the viewport rather than laid
+     out in the page. */
+  .slash-menu, .fig-bar {
+    position: fixed; z-index: 70;
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lift, 0 14px 34px oklch(0% 0 0 / 0.25));
+  }
+
+  .slash-menu {
+    width: 268px; padding: 5px;
+    max-height: 320px; overflow-y: auto;
+  }
+  .slash-item {
+    display: flex; align-items: baseline; gap: 8px;
+    width: 100%; padding: 7px 10px;
+    border: 0; border-radius: var(--radius-sm);
+    background: transparent; color: var(--ink);
+    font-family: var(--font-sans); font-size: 0.92rem;
+    text-align: start; cursor: pointer;
+
+    & .mono {
+      margin-inline-start: auto;
+      font-size: 0.62rem; color: var(--ink-soft);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    &:hover { background: var(--paper-sunk); }
+    &[aria-selected="true"] { background: var(--green-soft); color: var(--green); }
+  }
+
+  .fig-bar {
+    display: flex; gap: 6px; padding: 6px;
+  }
+
+  /* ---------- pre-flight ---------- */
+  .preflight {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    overflow: clip;
+    margin-bottom: 18px;
+
+    &[data-state="blocked"] { border-color: var(--danger); }
+    & > ul { list-style: none; margin: 0; padding: 4px 0; }
+
+    & li {
+      display: grid;
+      grid-template-columns: 130px minmax(0, 1fr);
+      gap: 12px; align-items: baseline;
+      padding: 9px 16px;
+      font-size: 0.92rem; color: var(--ink-soft);
+      border-top: 1px solid var(--hairline);
+    }
+    & li:first-child { border-top: 0; }
+    @media (width <= 620px) {
+      & li { grid-template-columns: 1fr; gap: 2px; }
+    }
+
+    & li .mono {
+      font-size: 0.64rem; letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    & li[data-level="error"] .mono { color: var(--danger); }
+    & li[data-level="warn"]  .mono { color: var(--gold); }
+    & li[data-level="info"]  .mono { color: var(--ink-soft); opacity: 0.8; }
+  }
+
+  /* ---------- the Open and Notion sheets ---------- */
+  .notion-search {
+    display: flex; flex-direction: column; gap: 5px;
+    margin-bottom: 16px;
+
+    & span { font-size: 0.8rem; color: var(--ink-soft); }
+    & input {
+      padding: 10px 12px; font-size: 0.98rem;
+      font-family: var(--font-sans);
+      color: var(--ink); background: var(--paper);
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    }
+    & input:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+  }
+
+  /* The sheets reuse .admin-line from the `work` layer, which
+     already flexes and gives its first child the room. All that's
+     missing is air above each group heading. */
+  #open-body .section-label { display: block; margin-top: 24px; }
+  #open-body .section-label:first-child { margin-top: 0; }
+
   .studio-steps {
     counter-reset: step;
     display: grid; gap: 10px; margin-top: 16px;
@@ -1469,7 +1570,21 @@
     transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
 
     &:hover { border-color: var(--green); color: var(--green); }
-    &[aria-pressed="true"] { border-color: var(--green); color: var(--green); background: var(--green-soft); }
+    /* aria-pressed is the toggle-button state, aria-selected the tab
+       one. The dashboard uses real tabs now and both appear here. */
+    &[aria-pressed="true"], &[aria-selected="true"] {
+      border-color: var(--green); color: var(--green); background: var(--green-soft);
+    }
+  }
+
+  /* How many things are waiting behind a tab, so it doesn't take a
+     click to find out. */
+  .tab-count {
+    display: inline-grid; place-items: center;
+    min-width: 16px; height: 16px; margin-inline-start: 6px; padding-inline: 4px;
+    border-radius: 999px;
+    background: var(--green); color: var(--paper);
+    font-size: 0.6rem; line-height: 1;
   }
 
   dialog.sheet {

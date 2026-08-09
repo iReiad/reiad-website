@@ -52,7 +52,7 @@ function render(article, origin) {
   <meta property="og:title" content="${esc(article.title)}">
   <meta property="og:description" content="${esc(article.dek)}">
   <meta property="og:url" content="${origin}/insights/${article.slug}.html">
-  <meta property="og:image" content="${origin}/og/insights.png">
+  <meta property="og:image" content="${origin}${article.cover || "/og/insights.png"}">
   <meta name="twitter:card" content="summary_large_image">
   <script>
     (function () {

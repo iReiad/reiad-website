@@ -1,13 +1,13 @@
 {
-  "version": "v14",
+  "version": "v16",
   "hashes": {
     "/": "9277c20e61b006ee",
     "/index.html": "9277c20e61b006ee",
     "/offline.html": "5f1fe70c6d32430b",
-    "/styles.css": "79f1bbcfe9b48ef0",
+    "/styles.css": "d4306164c7cb83ef",
     "/app.js": "ffd0c61fe939a6ce",
     "/content.js": "53ff568c43e3d63e",
-    "/api.js": "0f53f38170635ed4",
+    "/api.js": "9255a69451a738fd",
     "/crumbs.js": "c75e1a21a2dce455",
     "/audience.js": "85f10d3926810bf7",
     "/activation.js": "a8cbc5e6da2ca2a2",

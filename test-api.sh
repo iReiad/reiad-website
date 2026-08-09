@@ -58,15 +58,41 @@ check "the passphrase never reaches the server" 'bad-password' \
 echo "── articles ───────────────────────────"
 check "write needs auth" 'unauthorised' \
   "$(curl -s -X POST -H "$J" -d '{"slug":"x","title":"x"}' $B/api/articles)"
+# overwrite:true because the suite is idempotent and a second run is,
+# by definition, a republish of a slug that already exists.
 check "publish" '"slug":"sanchayapatra-vs-fdr"' \
   "$(curl -s -b $C -X POST -H "$J" -d '{
       "slug":"sanchayapatra-vs-fdr",
       "title":"Sanchayapatra vs bank FDR",
       "dek":"Where a saver'"'"'s taka works harder.",
       "tag":"Comparison · Savings","topics":["Savings","Beginner"],
-      "status":"live",
+      "status":"live","overwrite":true,
       "body":"<h2>The rates</h2><p>Gross rates are <strong>not</strong> what you receive.</p><script>alert(1)</script><p onclick=\"evil()\">Tax at source comes off first.</p><a href=\"javascript:evil()\">bad</a>"
     }' $B/api/articles)"
+
+# The upsert used to be unguarded, so one repeated headline replaced a
+# live piece with nothing to go back to.
+check "a taken slug is refused" 'slug-exists' \
+  "$(curl -s -b $C -X POST -H "$J" -d '{
+      "slug":"sanchayapatra-vs-fdr","title":"Something else","body":"<p>no</p>"
+    }' $B/api/articles)"
+check "and says what it would have replaced" 'Sanchayapatra vs bank FDR' \
+  "$(curl -s -b $C -X POST -H "$J" -d '{
+      "slug":"sanchayapatra-vs-fdr","title":"Something else","body":"<p>no</p>"
+    }' $B/api/articles)"
+check "the refusal left the original alone" 'Sanchayapatra vs bank FDR' \
+  "$(curl -s $B/api/articles/sanchayapatra-vs-fdr)"
+
+# A body over the limit used to be silently sliced, which published
+# half an article and closed the dangling tags on the way.
+check "an oversized body is refused, not truncated" 'body-too-large' \
+  "$(python3 -c '
+import json,sys
+sys.stdout.write(json.dumps({"slug":"too-big","title":"Too big",
+  "body":"<p>" + "x"*1_100_000 + "</p>","overwrite":True}))' \
+    | curl -s -b $C -X POST -H "$J" --data-binary @- $B/api/articles)"
+check "and nothing was stored for it" 'not-found' \
+  "$(curl -s -b $C $B/api/articles/too-big)"
 check "script stripped"  'clean' \
   "$(curl -s $B/api/articles/sanchayapatra-vs-fdr | grep -qc '<script' && echo dirty || echo clean)"
 check "onclick stripped" 'clean' \
@@ -79,7 +105,85 @@ check "admin sees draft" 'secret-draft' "$(curl -s -b $C "$B/api/articles?all=1"
 check "draft 404s public" 'not-found' "$(curl -s $B/api/articles/secret-draft)"
 check "publish via PATCH" '"status":"live"' \
   "$(curl -s -b $C -X PATCH -H "$J" -d '{"status":"live"}' $B/api/articles/secret-draft)"
+# PATCH could only ever change a status, so fixing a typo in a dek
+# meant republishing the whole body.
+check "PATCH edits a field on its own" '"dek":"Fixed."' \
+  "$(curl -s -b $C -X PATCH -H "$J" -d '{"dek":"Fixed."}' $B/api/articles/secret-draft)"
+check "and leaves the rest alone" '"status":"live"' \
+  "$(curl -s -b $C "$B/api/articles/secret-draft")"
+check "an off-site cover is refused" '"cover":""' \
+  "$(curl -s -b $C -X PATCH -H "$J" -d '{"cover":"https://evil.example.com/x.png"}' $B/api/articles/secret-draft)"
+check "a /media cover is kept" '"cover":"/media/x/0123456789abcdef.webp"' \
+  "$(curl -s -b $C -X PATCH -H "$J" -d '{"cover":"/media/x/0123456789abcdef.webp"}' $B/api/articles/secret-draft)"
 check "delete"           '"deleted"' "$(curl -s -b $C -X DELETE $B/api/articles/secret-draft)"
+
+echo "── media ──────────────────────────────"
+check "upload needs auth" 'unauthorised' \
+  "$(curl -s -X POST -H 'Content-Type: image/webp' --data-binary 'x' $B/api/media)"
+check "the listing needs auth" 'unauthorised' "$(curl -s $B/api/media)"
+check "a non-image type is refused" 'unsupported-type' \
+  "$(curl -s -b $C -X POST -H 'Content-Type: text/html' --data-binary '<b>x</b>' $B/api/media)"
+check "an empty upload is refused" 'empty-body' \
+  "$(curl -s -b $C -X POST -H 'Content-Type: image/webp' --data-binary '' $B/api/media)"
+# A key is <slug>/<content-hash>.<ext> and nothing else, so that a
+# path can't be talked into pointing somewhere it shouldn't. These go
+# through --path-as-is, because curl resolves ".." itself otherwise
+# and the request never reaches the guard being tested.
+check "a shapeless key is refused"  'not-found' \
+  "$(curl -s "$B/media/not-a-key")"
+# The runtime resolves ".." out of the path before routing, so this
+# never reaches the key guard at all — it stops being a /media URL
+# and becomes an ordinary miss. What matters is the outcome, so that
+# is what this asserts rather than which layer said no.
+check "a traversal key leaks nothing" 'safe' \
+  "$(curl -s --path-as-is "$B/media/a/../../../wrangler.toml" \
+     | grep -qc 'database_id' && echo leaked || echo safe)"
+check "a non-hash key is refused"   'not-found' \
+  "$(curl -s "$B/media/piece/hello.webp")"
+check "an odd extension is refused" 'not-found' \
+  "$(curl -s "$B/media/piece/0123456789abcdef.exe")"
+check "a well-formed but absent key is not found" 'not-found' \
+  "$(curl -s "$B/media/nope/0123456789abcdef.webp")"
+
+MEDIA=$(printf 'RIFF$\0\0\0WEBPVP8 \x18\0\0\0\x30\x01\0\x9d\x01\x2a\x01\0\x01\0\x0e\x25\xa4\0\x03\x70\0\xfe\xfb\xfd\x50\0' \
+  | curl -s -b $C -X POST -H 'Content-Type: image/webp' --data-binary @- "$B/api/media?slug=test-piece")
+check "upload returns a /media URL" '"url":"/media/test-piece/' "$MEDIA"
+KEY=$(sed -n 's/.*"key":"\([^"]*\)".*/\1/p' <<<"$MEDIA")
+check "the same bytes upload once" '"deduplicated":true' \
+  "$(printf 'RIFF$\0\0\0WEBPVP8 \x18\0\0\0\x30\x01\0\x9d\x01\x2a\x01\0\x01\0\x0e\x25\xa4\0\x03\x70\0\xfe\xfb\xfd\x50\0' \
+     | curl -s -b $C -X POST -H 'Content-Type: image/webp' --data-binary @- "$B/api/media?slug=test-piece")"
+check "it serves back as an image" 'image/webp' \
+  "$(curl -s -o /dev/null -D - "$B/media/$KEY" | tr -d '\r')"
+# A content-hashed key can never point at different bytes later.
+check "and says so with immutable" 'immutable' \
+  "$(curl -s -o /dev/null -D - "$B/media/$KEY" | tr -d '\r')"
+check "the listing shows it" "$KEY" "$(curl -s -b $C "$B/api/media?slug=test-piece")"
+check "delete needs auth" 'unauthorised' "$(curl -s -X DELETE "$B/api/media/$KEY")"
+check "delete"            '"deleted"' "$(curl -s -b $C -X DELETE "$B/api/media/$KEY")"
+
+echo "── notion ─────────────────────────────"
+check "status needs auth" 'unauthorised' "$(curl -s $B/api/notion/status)"
+# Without NOTION_TOKEN the whole feature reports itself absent rather
+# than half-working, which is what hides the Studio's button.
+check "status answers even when unconfigured" '"configured":' \
+  "$(curl -s -b $C $B/api/notion/status)"
+NOTION_ON=$(curl -s -b $C $B/api/notion/status | grep -o '"configured":true')
+if [[ -z "$NOTION_ON" ]]; then
+  check "unconfigured Notion is 503, not an error" 'not-configured' \
+    "$(curl -s -b $C $B/api/notion/pages)"
+  echo "  --   live Notion checks skipped (no NOTION_TOKEN)"
+else
+  check "the asset proxy needs auth" 'unauthorised' \
+    "$(curl -s "$B/api/notion/asset?u=https://example.com/x.png")"
+  # An open image proxy on someone else's domain is a gift to
+  # whoever finds it.
+  check "the proxy refuses a host that isn't Notion's" 'host-not-allowed' \
+    "$(curl -s -b $C "$B/api/notion/asset?u=https%3A%2F%2Fevil.example.com%2Fx.png")"
+  check "the proxy refuses a non-URL" 'bad-url' \
+    "$(curl -s -b $C "$B/api/notion/asset?u=notaurl")"
+  check "a junk page id is refused" 'bad-page-id' \
+    "$(curl -s -b $C $B/api/notion/pages/nonsense)"
+fi
 
 RUN=$(date +%s)
 echo "── questions ──────────────────────────"

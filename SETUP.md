@@ -84,6 +84,56 @@ after it was added, which is the step people miss.
 
 ---
 
+## The R2 bucket
+
+Article photos live in R2 rather than inside the article body, because a
+base64 data URL costs a third more than the bytes it encodes and D1 caps a
+single value at 2 MB. `wrangler.toml` declares the binding:
+
+```toml
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "reiad-media"
+```
+
+**Unlike the database, this one has to exist before the first deploy** —
+`wrangler deploy` stops with an error if the bucket is missing rather than
+creating it:
+
+```sh
+npx wrangler r2 bucket create reiad-media
+```
+
+(`./setup.sh` does this as step 4.) Without the binding, `/api/media` answers
+`not-configured` and the Studio falls back to embedding photos in the page,
+exactly as it did before.
+
+`/media/*` is in `run_worker_first`, and it has to be. Nothing in `aab/`
+matches that prefix, and with `not_found_handling` set the asset router
+answers an unmatched path with `404.html` **without invoking the Worker** — so
+leaving it out means every published photo 404s while the upload appears to
+have worked.
+
+---
+
+## Notion (optional)
+
+Write in Notion, publish from the Studio. It needs a secret, not a binding:
+
+```sh
+npx wrangler secret put NOTION_TOKEN
+```
+
+Create the integration at [notion.so/my-integrations](https://notion.so/my-integrations),
+then open each page or database you write in and add it under **Connections**.
+Notion shares nothing with an integration by default, so a page you haven't
+connected is invisible to the import and comes back as `notion-not-shared`.
+
+Without the secret every `/api/notion/*` route answers `not-configured` and
+the Studio never shows the button.
+
+---
+
 ## How to tell whether it worked
 
 Open `https://reiad.co.uk/api/auth/me`.
@@ -116,9 +166,11 @@ cache. A second load picks up the new version.
 ## Testing before you push
 
 ```sh
-npx wrangler dev            # the real runtime, local D1
-./test-api.sh               # 52 checks over every endpoint
-node aab/check-routes.mjs   # catches redirect loops
+npx wrangler dev                     # the real runtime, local D1 and R2
+./test-api.sh                        # 77 checks over every endpoint
+node functions/_lib/notion.test.mjs  # 74 checks on the Notion conversion
+node aab/check-routes.mjs            # catches redirect loops
+node aab/check-sw.mjs                # precached file changed without a VERSION bump?
 ```
 
 ---

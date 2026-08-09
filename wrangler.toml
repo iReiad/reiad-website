@@ -54,7 +54,12 @@ not_found_handling = "404-page"
 #                an article published to D1 under the same slug never
 #                got a look in, so the Worker decides and falls back
 #                to the file itself.
-run_worker_first = ["/api/*", "/insights/*"]
+#   /media/*     photos live in R2, and nothing in aab/ matches. That
+#                is precisely the problem: with not_found_handling
+#                set, the asset router answers an unmatched path with
+#                404.html and the Worker is never called, so every
+#                published photo 404s. It has to be listed.
+run_worker_first = ["/api/*", "/insights/*", "/media/*"]
 
 # ---------- D1: the database everything dynamic runs on ----------
 # Articles, reader questions, subscribers, enquiries, view counts and
@@ -68,6 +73,35 @@ run_worker_first = ["/api/*", "/insights/*"]
 binding = "DB"
 database_name = "reiad"
 database_id = "ad23dea3-74fc-4346-8119-ab5936f1a708"
+
+# ---------- R2: the photo store ----------
+# Article photos used to be base64 data URLs inside the article body.
+# That put a third more bytes than the photo into a D1 column capped
+# at 2 MB, and the body was being truncated to fit. Photos live here
+# now and the body carries a `/media/...` path.
+#
+# The bucket has to exist before the first deploy, or wrangler stops:
+#
+#   npx wrangler r2 bucket create reiad-media
+#
+# (./setup.sh does this for you.) Without the binding, /api/media
+# answers "not configured" and the Studio goes back to embedding
+# photos in the page, exactly as it did before.
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "reiad-media"
+
+# ---------- Notion (optional) ----------
+# Set NOTION_TOKEN and the Studio grows an "Import from Notion"
+# button: write in Notion, pull the page in, publish from here.
+# It is a secret, so it is not in this file:
+#
+#   npx wrangler secret put NOTION_TOKEN
+#
+# Create the integration at notion.so/my-integrations, then open the
+# page or database you write in and Connections → add it. Without
+# the secret, /api/notion answers "not configured" and the button
+# never appears.
 
 # ---------- Workers AI (optional) ----------
 # functions/api/news.js uses an `AI` binding to translate headlines

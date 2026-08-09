@@ -28,12 +28,54 @@ immediately** — no file to move, no commit, no push.
 | Feature | Where |
 | --- | --- |
 | One-click publishing | `/studio.html` → Publish |
+| Editing a published piece, in place | Studio → Open… → Edit |
+| Writing in Notion and publishing from here | Studio → Import from Notion |
+| Photos stored in R2, not in the article | automatic, on publish |
+| Pre-flight checks before anything goes out | Studio → 3 · Publish it |
 | Reader questions, moderated | bottom of every article; queue in the Studio |
 | Reactions (helpful / confusing / go deeper) | bottom of every article |
 | Subscriber list, confirmed opt-in, CSV export | Insights page; list in the Studio |
 | Client enquiry pipeline (new → replied → closed) | contact form; pipeline in the Studio |
 | Page analytics that can't identify anyone | Studio → What's read |
 | Full-text search across article bodies | `/api/search` |
+
+### Writing in Notion
+
+Set `NOTION_TOKEN` (`npx wrangler secret put NOTION_TOKEN`, from an
+integration at [notion.so/my-integrations](https://notion.so/my-integrations))
+and the Studio grows an **Import from Notion** button. Share a page with the
+integration — Notion's own Connections menu, per page — then search for it,
+import it, and publish. Without the token the button never appears.
+
+The conversion is deliberately lossy: Notion has infinite block types and this
+site has about twenty tags, so a callout becomes the site's `note` box, a
+divider an `<hr>`, a table the scrollable wrapper, and a synced block full of
+database views becomes nothing at all. What comes out is already the small set
+of tags `functions/_lib/sanitise.js` allows, which is the only set that
+survives the write anyway.
+
+A page that is a row in a Notion database can carry the rest of the article's
+fields in its columns. Name them any of these and they're picked up:
+
+| Field | Column names it answers to |
+| --- | --- |
+| Standfirst | Dek, Standfirst, Summary, Description, Subtitle, Excerpt |
+| Label | Tag, Label, Category, Section, Topic |
+| File name | Slug, URL, Path, Filename |
+| Date | Date, Published, Publish date, Published at |
+| Language | Lang, Language — anything starting "bn"/"bangla"/"bengali" is Bangla |
+| Topics | Topics, Tags, Keywords (a multi-select, or one comma-separated string) |
+
+Once imported, the piece stays linked to its Notion page: **Re-sync from
+Notion** pulls the current version back over the body, so Notion can stay the
+place the writing happens.
+
+**Photos are the part worth understanding.** Notion serves uploaded files from
+S3 on signed URLs that expire in about an hour, so an imported photo cannot
+keep the URL it arrived with — the article would lose its pictures within the
+day. Imported images therefore point at `/api/notion/asset`, an admin-only
+same-origin proxy, and publishing re-encodes each one to WebP and uploads it
+to `/media`. By the time anything is public, no Notion URL is left in it.
 
 ## The Learn area
 
@@ -86,13 +128,27 @@ flips it back on any page.
 ## Testing
 
 ```sh
-npx wrangler dev                    # the real Cloudflare runtime, local D1
-./test-api.sh                       # 52 checks over every endpoint
+npx wrangler dev                    # the real Cloudflare runtime, local D1 and R2
+./test-api.sh                       # 77 checks over every endpoint
+node functions/_lib/notion.test.mjs # 74 checks on the Notion → HTML conversion
+node aab/studio.test.mjs            # 38 checks driving the editor in a browser
 node aab/check-routes.mjs           # catches redirect loops before deploying
 node aab/check-sw.mjs               # did a precached file change without a VERSION bump?
 node aab/portfolio/dissertation.test.mjs   # 141 checks on the statistics engine
 node aab/learn/build-lessons.mjs    # regenerate the Learn pages
 ```
+
+`test-api.sh` is idempotent — run it as often as you like against the same
+local database. That is why its publish call passes `overwrite: true`: a
+second run is, by definition, republishing a slug that already exists, and
+the endpoint refuses to do that silently.
+
+`studio.test.mjs` needs Playwright and skips itself with a note if it isn't
+installed, the same optional-tool arrangement as `build-og.mjs`. It serves
+`aab/` itself, so there is no server to start first. The editor is the one
+part of the site that cannot be checked by reading it: that suite found the
+browser sanitiser quietly destroying note boxes, and the markdown shortcuts
+doing nothing on the first line of every new article.
 
 ## Publishing an article — the manual way
 
@@ -153,10 +209,14 @@ which mode it's in.
 | `worker.js` | **The entry point.** Routes `/api/*` and `/insights/:slug` to `functions/`, and hands everything else to the static assets |
 | `functions/` | The request handlers, written in the Pages Functions shape (`onRequest`, `context.params`, `context.next()`). `worker.js` maps them to paths |
 | `functions/_lib/` | Database, HTTP helpers, server-side auth, server-side HTML sanitiser |
+| `functions/_lib/notion.js` | Notion's block tree → this site's HTML. Pure, so `notion.test.mjs` can check it without a token or a network |
+| `functions/api/media/` | Photos in R2. Keys are content hashes, which is what lets them be served `immutable` |
+| `functions/api/notion/` | Listing and importing Notion pages, plus the image proxy |
 | `aab/schema.sql` | The database. Also applied automatically on first request |
 | `setup.sh` | One-time Cloudflare setup |
 | `test-api.sh` | 52 end-to-end API checks |
 | `aab/studio.html`, `studio.js` | The Article Studio |
+| `aab/studio.test.mjs` | The Studio driven in a real browser. Optional, needs Playwright, serves `aab/` itself |
 | `aab/tools/` | The five calculators |
 | `aab/crumbs.js` | The path line on every page, built from the curriculum and `PAGES`, plus its `BreadcrumbList` JSON-LD |
 | `aab/audience.js` | The two front doors — learner or recruiter — and what the answer reorders |
@@ -183,6 +243,11 @@ which mode it's in.
 
 `Ctrl/Cmd K` or `/` search · `M` menu · `T` theme · `?` shortcuts ·
 `G` then `H`/`L`/`I`/`T` to jump to Home, Learn, Insights or Tools.
+
+**Inside the Studio's editor** those give way to writing: `/` opens the block
+menu, `Ctrl/Cmd K` makes a link rather than opening search, `Ctrl/Cmd S`
+saves the draft and `Ctrl/Cmd Enter` publishes. Markdown works as you type —
+`##`, `###`, `-`, `1.`, `>` and `---`.
 
 ## Local preview
 
