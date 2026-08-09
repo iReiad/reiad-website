@@ -287,9 +287,20 @@ node functions/_lib/notion.test.mjs # 74 checks on the Notion → HTML conversio
 node aab/studio.test.mjs            # 67 checks driving the editor in a browser
 node aab/check-routes.mjs           # catches redirect loops before deploying
 node aab/check-sw.mjs               # did a precached file change without a VERSION bump?
+node aab/check-css.mjs              # is a school's CSS styling the whole site?
 node aab/portfolio/dissertation.test.mjs   # 141 checks on the statistics engine
 node aab/learn/build-lessons.mjs    # regenerate the Learn pages
+node aab/deutsch/build-deutsch.mjs  # regenerate the German pages
 ```
+
+`check-css.mjs` exists because of one shipped bug. styles.css is a single
+cascade of `@layer`s, so a school's layer beats `components` on *every* page,
+not just its own. The German school called one day of its practice book
+`.tag` — Tag, German for day — and `.tag` is what this site has always called
+the small label above an article card. One rule put an empty bordered box
+around that label on every card on the site, and nothing caught it: routes,
+caches and links were all checked, CSS was not. Now every top-level selector
+in a school's layer must be anchored by a class only that school uses.
 
 `test-api.sh` is idempotent — run it as often as you like against the same
 local database. That is why its publish call passes `overwrite: true`: a
@@ -396,6 +407,7 @@ which mode it's in.
 | `functions/api/news.js` | Serves `/api/news` — the market-pulse feed |
 | `aab/_headers`, `_redirects` | Cloudflare security headers, CSP and redirects |
 | `aab/check-routes.mjs` | **Run before deploying.** Walks every URL through the routing rules and fails on loops, dead ends, broken links, and article slugs that could never resolve |
+| `aab/check-css.mjs` | **Run before deploying.** Fails when a school's cascade layer styles a class the rest of the site uses — see Testing |
 | `functions/_lib/sync.js` | The scheduled Notion pull, and the rules that stop it publishing something half-written |
 | `aab/build-meta.mjs` | Regenerates `feed.xml`, `sitemap.xml`, `robots.txt` |
 | `aab/build-og.mjs` | Re-renders the social share images in `og/` (needs Playwright) |

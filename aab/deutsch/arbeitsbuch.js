@@ -133,7 +133,7 @@ function wireWriting() {
    one day at a time
    ------------------------------------------------------------ */
 
-const articles = [...book.querySelectorAll(".tag[data-tag]")];
+const articles = [...book.querySelectorAll(".buch-tag[data-tag]")];
 
 /** { n, title } for every day, read off the page itself. */
 const days = articles.map((a) => ({
@@ -317,7 +317,7 @@ function wireTicks() {
 
     const antwort = e.target.closest("[data-antwort]");
     if (antwort) {
-      const article = antwort.closest(".tag");
+      const article = antwort.closest(".buch-tag");
       const open = article.toggleAttribute("data-antworten");
       antwort.setAttribute("aria-expanded", String(open));
       antwort.textContent = open ? "উত্তর লুকান" : "উত্তর দেখুন";

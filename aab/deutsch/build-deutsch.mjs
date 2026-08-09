@@ -411,7 +411,7 @@ function dayArticle(d, stufe) {
               <span class="sag-antwort" lang="de">${esc(s.a)}</span>
             </div>`).join("\n");
 
-  return `      <article class="tag" id="tag-${d.n}" data-tag="${d.n}" data-day-id="${esc(stufe.slug)}/tag-${d.n}">
+  return `      <article class="buch-tag" id="tag-${d.n}" data-tag="${d.n}" data-day-id="${esc(stufe.slug)}/tag-${d.n}">
         <header class="tag-kopf">
           <span class="tag-num mono"><span lang="de">Tag</span> ${bn(d.n)}</span>
           <h2 lang="de">${esc(d.de)}</h2>
