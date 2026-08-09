@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v22: the German school's first fixes — the practice book's
+   boxes are usable with scripts off, the resume card offers
+   whichever half is actually behind, the Teil cards match the
+   Learn cards again, and a print rule that was hiding every
+   page's buttons is scoped where it belongs. styles.css,
+   deutsch/hub.js, deutsch/arbeitsbuch.js and the German pages
+   are all precached, so none of it reaches a returning visitor
+   without this.
+
    v21: the German school landed. This one is not optional in the
    way a styling change is: content.js now imports
    /deutsch/curriculum.js, and app.js and crumbs.js import
@@ -105,7 +114,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v21";
+const VERSION = "v22";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

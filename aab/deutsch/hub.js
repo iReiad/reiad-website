@@ -25,7 +25,7 @@ import {
 } from "/deutsch/curriculum.js";
 import {
   readSet, stufeStats, stufeState, dayStats, overallStats,
-  nextUp, getLast, resetAll, onProgress,
+  nextUp, resetAll, onProgress,
 } from "/deutsch/progress.js";
 import { icon } from "/deutsch/icons.js";
 
@@ -163,29 +163,40 @@ function buildResume() {
   const host = document.getElementById("resume");
   if (!host) return;
 
-  const last = getLast();
   const next = nextUp();
   const stufe1 = STUFEN[0];
   const days = dayStats(stufe1);
 
   /* Nothing read and no day ticked: a first-time visitor should
      see a clean start, not an empty box telling them they have
-     done nothing. */
-  if (!last && !next?.stufe && !days.done) {
-    host.hidden = true;
-    return;
-  }
-  if (!last && !days.done) {
+     done nothing.
+
+     The test is progress itself, not the bookmark. Keying it on
+     `last` meant a learner who had read five Teile but whose
+     deutsch-last had gone — a half-cleared storage, a second
+     device, a key that changed — was shown no way back in at all,
+     with a ladder full of ticks right underneath saying otherwise. */
+  if (!readSet().size && !days.done) {
     host.hidden = true;
     return;
   }
 
   /* Two things can be resumed and they are not the same thing:
-     the reading, and the daily practice. Whichever is further
+     the reading and the daily practice. Whichever is further
      behind is the one worth offering, because that is the one
      quietly being skipped — and on a language course it is
-     almost always the practice. */
-  const target = days.done && days.done < days.total && (!next || days.done <= 3)
+     almost always the practice.
+
+     "Further behind" used to be spelled `days.done <= 3`, which
+     is not that at all: it meant the card stopped offering
+     practice on the fourth day and pointed at reading from then
+     on, however far the practice had fallen behind. Compare the
+     two percentages instead, which is what the sentence above
+     always claimed it did. */
+  const practiceBehind =
+    days.done < days.total && (!next || days.pct <= overallStats().pct);
+
+  const target = practiceBehind
     ? {
         label: "আজকের অনুশীলন",
         title: `দিন ${bn(days.next)}`,
@@ -203,8 +214,12 @@ function buildResume() {
           art: next.icon ?? next.stufe.icon,
           pct: stufeStats(next.stufe).pct,
         }
+      /* Read everything and done all thirty days. There is nothing
+         left to resume, so say so rather than pretending there is
+         one more thing — and send them back through the book,
+         which is the only honest next step until Stufe 2. */
       : {
-          label: "সব পাঠ পড়া শেষ",
+          label: days.complete ? "Stufe ১ শেষ ✓" : "সব পাঠ পড়া শেষ",
           title: "৩০ দিনের খাতা",
           where: `${stufe1.kicker} · রোজকার অনুশীলন`,
           url: workbookUrl(stufe1),
