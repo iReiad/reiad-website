@@ -131,6 +131,7 @@ flips it back on any page.
 npx wrangler dev                    # the real Cloudflare runtime, local D1 and R2
 ./test-api.sh                       # 77 checks over every endpoint
 node functions/_lib/notion.test.mjs # 74 checks on the Notion → HTML conversion
+node aab/studio.test.mjs            # 38 checks driving the editor in a browser
 node aab/check-routes.mjs           # catches redirect loops before deploying
 node aab/check-sw.mjs               # did a precached file change without a VERSION bump?
 node aab/portfolio/dissertation.test.mjs   # 141 checks on the statistics engine
@@ -141,6 +142,13 @@ node aab/learn/build-lessons.mjs    # regenerate the Learn pages
 local database. That is why its publish call passes `overwrite: true`: a
 second run is, by definition, republishing a slug that already exists, and
 the endpoint refuses to do that silently.
+
+`studio.test.mjs` needs Playwright and skips itself with a note if it isn't
+installed, the same optional-tool arrangement as `build-og.mjs`. It serves
+`aab/` itself, so there is no server to start first. The editor is the one
+part of the site that cannot be checked by reading it: that suite found the
+browser sanitiser quietly destroying note boxes, and the markdown shortcuts
+doing nothing on the first line of every new article.
 
 ## Publishing an article — the manual way
 
@@ -208,6 +216,7 @@ which mode it's in.
 | `setup.sh` | One-time Cloudflare setup |
 | `test-api.sh` | 52 end-to-end API checks |
 | `aab/studio.html`, `studio.js` | The Article Studio |
+| `aab/studio.test.mjs` | The Studio driven in a real browser. Optional, needs Playwright, serves `aab/` itself |
 | `aab/tools/` | The five calculators |
 | `aab/crumbs.js` | The path line on every page, built from the curriculum and `PAGES`, plus its `BreadcrumbList` JSON-LD |
 | `aab/audience.js` | The two front doors — learner or recruiter — and what the answer reorders |
@@ -234,6 +243,11 @@ which mode it's in.
 
 `Ctrl/Cmd K` or `/` search · `M` menu · `T` theme · `?` shortcuts ·
 `G` then `H`/`L`/`I`/`T` to jump to Home, Learn, Insights or Tools.
+
+**Inside the Studio's editor** those give way to writing: `/` opens the block
+menu, `Ctrl/Cmd K` makes a link rather than opening search, `Ctrl/Cmd S`
+saves the draft and `Ctrl/Cmd Enter` publishes. Markdown works as you type —
+`##`, `###`, `-`, `1.`, `>` and `---`.
 
 ## Local preview
 

@@ -1446,6 +1446,43 @@
     letter-spacing: 0.04em;
   }
 
+  /* ---------- the slash menu and the figure toolbar ----------
+     Both float over the editor, positioned from a caret or an image
+     rectangle, so they are fixed to the viewport rather than laid
+     out in the page. */
+  .slash-menu, .fig-bar {
+    position: fixed; z-index: 70;
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lift, 0 14px 34px oklch(0% 0 0 / 0.25));
+  }
+
+  .slash-menu {
+    width: 268px; padding: 5px;
+    max-height: 320px; overflow-y: auto;
+  }
+  .slash-item {
+    display: flex; align-items: baseline; gap: 8px;
+    width: 100%; padding: 7px 10px;
+    border: 0; border-radius: var(--radius-sm);
+    background: transparent; color: var(--ink);
+    font-family: var(--font-sans); font-size: 0.92rem;
+    text-align: start; cursor: pointer;
+
+    & .mono {
+      margin-inline-start: auto;
+      font-size: 0.62rem; color: var(--ink-soft);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    &:hover { background: var(--paper-sunk); }
+    &[aria-selected="true"] { background: var(--green-soft); color: var(--green); }
+  }
+
+  .fig-bar {
+    display: flex; gap: 6px; padding: 6px;
+  }
+
   /* ---------- pre-flight ---------- */
   .preflight {
     background: var(--panel);
@@ -1533,7 +1570,21 @@
     transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
 
     &:hover { border-color: var(--green); color: var(--green); }
-    &[aria-pressed="true"] { border-color: var(--green); color: var(--green); background: var(--green-soft); }
+    /* aria-pressed is the toggle-button state, aria-selected the tab
+       one. The dashboard uses real tabs now and both appear here. */
+    &[aria-pressed="true"], &[aria-selected="true"] {
+      border-color: var(--green); color: var(--green); background: var(--green-soft);
+    }
+  }
+
+  /* How many things are waiting behind a tab, so it doesn't take a
+     click to find out. */
+  .tab-count {
+    display: inline-grid; place-items: center;
+    min-width: 16px; height: 16px; margin-inline-start: 6px; padding-inline: 4px;
+    border-radius: 999px;
+    background: var(--green); color: var(--paper);
+    font-size: 0.6rem; line-height: 1;
   }
 
   dialog.sheet {

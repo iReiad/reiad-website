@@ -79,6 +79,22 @@ const ATTRS = {
   TH: ["colspan", "rowspan"],
 };
 
+/* The class names the stylesheet actually knows about — the same list
+   _lib/sanitise.js enforces server-side.
+
+   Without this the two sanitisers disagreed, and the browser's was
+   the stricter one: a <div class="note"> became a plain paragraph and
+   figure.wide lost its class on the way out of the editor. Which
+   meant the server's support for these was unreachable from the one
+   tool that writes to it, and every callout imported from Notion
+   arrived flattened. */
+const KEEP_CLASSES = new Set([
+  "wide", "duo", "table-scroll", "term", "note", "ex", "lead-photo",
+]);
+
+const keptClasses = (node) =>
+  [...(node.classList ?? [])].filter((c) => KEEP_CLASSES.has(c));
+
 /** Turn arbitrary HTML into the small set of tags the site styles. */
 export function sanitize(html) {
   const doc = new DOMParser().parseFromString(`<body>${html}</body>`, "text/html");
@@ -90,7 +106,14 @@ export function sanitize(html) {
     [...node.children].forEach(walk);
 
     let tag = node.tagName;
-    if (!KEEP.has(tag) && RENAME[tag]) {
+    const classes = keptClasses(node);
+
+    // A div is stray markup from whatever produced the paste, unless
+    // it carries one of the site's own class names — then it is a
+    // note box or a worked example and belongs in the article.
+    const structural = tag === "DIV" && classes.length > 0;
+
+    if (!KEEP.has(tag) && !structural && RENAME[tag]) {
       // An inline wrapper (span/font) around text should just dissolve,
       // and a DIV that only holds block content shouldn't become a <p>.
       const hasBlock = [...node.children].some((c) =>
@@ -105,7 +128,7 @@ export function sanitize(html) {
       node.replaceWith(el);
       node = el;
       tag = el.tagName;
-    } else if (!KEEP.has(tag)) {
+    } else if (!KEEP.has(tag) && !structural) {
       node.replaceWith(...node.childNodes);
       return;
     }
@@ -115,6 +138,10 @@ export function sanitize(html) {
     [...node.attributes].forEach((a) => {
       if (!allowed.includes(a.name.toLowerCase())) node.removeAttribute(a.name);
     });
+
+    // …then put back the classes the site defines, which the scrub
+    // above has just removed along with everything else.
+    if (classes.length) node.setAttribute("class", classes.join(" "));
 
     // no javascript: or other exotic URL schemes
     for (const attr of ["href", "src"]) {
@@ -384,6 +411,348 @@ $("#add-photo").addEventListener("click", () => $("#photo-input").click());
 $("#photo-input").addEventListener("change", (e) => {
   insertImages(e.target.files);
   e.target.value = "";
+});
+
+/* ============================================================
+   3b. BLOCKS AT THE CARET
+
+   The site's article vocabulary is small and specific — a note box,
+   a worked example, a wide figure, a table that scrolls on a phone —
+   and until now the only way to get one was to write the HTML by
+   hand and paste it in. These put the whole set a slash away, and
+   the markdown rules cover the shapes people type out of habit.
+   ============================================================ */
+
+/** The top-level block the caret is in.
+
+    An empty editor has no blocks at all — the first characters typed
+    land in a bare text node parented to the editor itself — so that
+    case returns the editor. Without it the markdown rules did nothing
+    until the article already had a paragraph in it, which is to say
+    they did nothing on the first line of every new piece. */
+function blockOf(node) {
+  let el = node?.nodeType === Node.TEXT_NODE ? node.parentNode : node;
+  if (el === editor) return editor;
+  while (el && el !== editor && el.parentNode !== editor) el = el.parentNode;
+  return el && el !== editor ? el : null;
+}
+
+/** Insert a block and put the caret where the writing goes.
+    `data-fill` marks that spot; it never survives sanitize(). */
+function insertBlockHtml(html) {
+  insertHtmlAtCaret(html);
+  const target = editor.querySelector("[data-fill]");
+  if (target) {
+    target.removeAttribute("data-fill");
+    getSelection().selectAllChildren(target);
+  }
+  onEdit();
+}
+
+const exec = (cmd, value = null) => document.execCommand(cmd, false, value);
+
+const TABLE_SKELETON =
+  '<div class="table-scroll"><table><thead><tr>'
+  + "<th data-fill>Column</th><th>Column</th><th>Column</th></tr></thead><tbody>"
+  + "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>"
+  + "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>"
+  + "</tbody></table></div><p><br></p>";
+
+const BLOCKS = [
+  { label: "Heading", hint: "Section heading", run: () => exec("formatBlock", "h2") },
+  { label: "Sub-heading", hint: "Under a heading", run: () => exec("formatBlock", "h3") },
+  { label: "Bullet list", hint: "Unordered", run: () => exec("insertUnorderedList") },
+  { label: "Numbered list", hint: "Ordered", run: () => exec("insertOrderedList") },
+  { label: "Quote", hint: "Pulled out, green rule", run: () => exec("formatBlock", "blockquote") },
+  { label: "Note", hint: "Gold-edged aside",
+    run: () => insertBlockHtml('<div class="note" data-fill>Something worth flagging.</div><p><br></p>') },
+  { label: "Example", hint: "Tinted worked example",
+    run: () => insertBlockHtml('<div class="ex" data-fill>A worked example.</div><p><br></p>') },
+  { label: "Table", hint: "Scrolls on a phone", run: () => insertBlockHtml(TABLE_SKELETON) },
+  { label: "Divider", hint: "Horizontal rule", run: () => insertBlockHtml("<hr><p><br></p>") },
+  { label: "Photo", hint: "Resized and re-encoded", run: () => $("#photo-input").click() },
+];
+
+/* ---------- markdown, for the shapes people type anyway ---------- */
+
+const INPUT_RULES = [
+  { re: /^#{1,2}$/, run: () => exec("formatBlock", "h2") },
+  { re: /^#{3,6}$/, run: () => exec("formatBlock", "h3") },
+  { re: /^[-*+]$/, run: () => exec("insertUnorderedList") },
+  { re: /^1[.)]$/, run: () => exec("insertOrderedList") },
+  { re: /^>$/, run: () => exec("formatBlock", "blockquote") },
+  { re: /^---$/, run: () => insertBlockHtml("<hr><p><br></p>") },
+];
+
+editor.addEventListener("input", (e) => {
+  if (e.inputType !== "insertText" || e.data !== " ") return;
+
+  const sel = getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  const node = range.startContainer;
+  if (node.nodeType !== Node.TEXT_NODE) return;
+
+  // The marker, without the space that just triggered this.
+  const marker = node.textContent.slice(0, range.startOffset - 1);
+  if (!blockOf(node)) return;
+
+  // Only at the very start of a block: "1." mid-sentence is a
+  // sentence, not a list. A <br> in front is the empty paragraph the
+  // browser leaves behind, not content.
+  const prev = node.previousSibling;
+  const atStart = range.startOffset - marker.length - 1 === 0
+    && (!prev || prev.nodeName === "BR");
+  if (!atStart) return;
+
+  const rule = INPUT_RULES.find((r) => r.re.test(marker));
+  if (!rule) return;
+
+  const kill = document.createRange();
+  kill.setStart(node, range.startOffset - marker.length - 1);
+  kill.setEnd(node, range.startOffset);
+  kill.deleteContents();
+
+  /* formatBlock needs a block to replace, and bare text in an empty
+     editor has none — it silently does nothing, which is why "##"
+     worked on the second line and not the first. The list commands
+     build their own container, so they never noticed. */
+  if (node.parentNode === editor) {
+    const p = document.createElement("p");
+    node.replaceWith(p);
+    p.append(node);
+    const caret = document.createRange();
+    caret.setStart(node, 0);
+    caret.collapse(true);
+    const selection = getSelection();
+    selection.removeAllRanges();
+    selection.addRange(caret);
+  }
+
+  rule.run();
+  onEdit();
+});
+
+/* ---------- the slash menu ---------- */
+
+let slash = null;          // { node, offset } where the "/" was typed
+const slashMenu = Object.assign(document.createElement("div"), { className: "slash-menu" });
+slashMenu.hidden = true;
+slashMenu.setAttribute("role", "listbox");
+slashMenu.setAttribute("aria-label", "Insert a block");
+document.body.append(slashMenu);
+
+let slashIndex = 0;
+let slashShown = [];
+
+function closeSlash() {
+  slash = null;
+  slashMenu.hidden = true;
+  slashMenu.replaceChildren();
+}
+
+function drawSlash(query) {
+  slashShown = BLOCKS.filter((b) => b.label.toLowerCase().includes(query.toLowerCase()));
+  if (!slashShown.length) { closeSlash(); return; }
+  slashIndex = Math.min(slashIndex, slashShown.length - 1);
+
+  slashMenu.replaceChildren(...slashShown.map((item, i) => {
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "slash-item";
+    row.setAttribute("role", "option");
+    row.setAttribute("aria-selected", String(i === slashIndex));
+    row.append(
+      Object.assign(document.createElement("span"), { textContent: item.label }),
+      Object.assign(document.createElement("span"), { className: "mono", textContent: item.hint })
+    );
+    // mousedown, not click: click would land after the editor has
+    // already lost the selection the block is about to be inserted at.
+    row.addEventListener("mousedown", (e) => { e.preventDefault(); runSlash(i); });
+    return row;
+  }));
+
+  const rect = caretRect();
+  if (rect) {
+    slashMenu.style.left = `${Math.min(rect.left, innerWidth - 280)}px`;
+    slashMenu.style.top = `${rect.bottom + 6}px`;
+  }
+  slashMenu.hidden = false;
+}
+
+function caretRect() {
+  const sel = getSelection();
+  if (!sel.rangeCount) return null;
+  const rect = sel.getRangeAt(0).getBoundingClientRect();
+  // A collapsed caret in an empty block measures 0×0, so fall back to
+  // the block itself.
+  if (rect.width || rect.height || rect.top) return rect;
+  return blockOf(sel.getRangeAt(0).startContainer)?.getBoundingClientRect() ?? null;
+}
+
+function runSlash(index) {
+  const item = slashShown[index];
+  if (!item || !slash) return;
+
+  // Delete the "/" and whatever was typed after it.
+  const sel = getSelection();
+  const caret = sel.rangeCount ? sel.getRangeAt(0) : null;
+  if (caret && caret.startContainer === slash.node) {
+    const kill = document.createRange();
+    kill.setStart(slash.node, slash.offset);
+    kill.setEnd(caret.startContainer, caret.startOffset);
+    kill.deleteContents();
+  }
+  closeSlash();
+  editor.focus();
+  item.run();
+  onEdit();
+}
+
+editor.addEventListener("input", (e) => {
+  if (e.inputType === "insertText" && e.data === "/") {
+    const sel = getSelection();
+    const range = sel.rangeCount ? sel.getRangeAt(0) : null;
+    if (range?.startContainer.nodeType === Node.TEXT_NODE) {
+      const text = range.startContainer.textContent;
+      const before = text[range.startOffset - 2];
+      // Only where a new word starts, so a URL doesn't open the menu.
+      if (before === undefined || /\s/.test(before)) {
+        slash = { node: range.startContainer, offset: range.startOffset - 1 };
+        slashIndex = 0;
+        drawSlash("");
+        return;
+      }
+    }
+  }
+
+  if (!slash) return;
+
+  // Keep the query in step with what's been typed since the slash.
+  const sel = getSelection();
+  const range = sel.rangeCount ? sel.getRangeAt(0) : null;
+  if (!range || range.startContainer !== slash.node || range.startOffset <= slash.offset) {
+    closeSlash();
+    return;
+  }
+  const query = slash.node.textContent.slice(slash.offset + 1, range.startOffset);
+  if (/\s/.test(query)) { closeSlash(); return; }
+  drawSlash(query);
+});
+
+editor.addEventListener("keydown", (e) => {
+  if (!slash || slashMenu.hidden) return;
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    slashIndex = (slashIndex + (e.key === "ArrowDown" ? 1 : -1) + slashShown.length) % slashShown.length;
+    drawSlash(slash.node.textContent.slice(slash.offset + 1, getSelection().getRangeAt(0).startOffset));
+  } else if (e.key === "Enter" || e.key === "Tab") {
+    e.preventDefault();
+    runSlash(slashIndex);
+  } else if (e.key === "Escape") {
+    e.preventDefault();
+    closeSlash();
+  }
+});
+
+editor.addEventListener("blur", () => setTimeout(closeSlash, 120));
+
+/* ---------- the figure toolbar ----------
+   Alt text had no way in at all: it was set once from the file name
+   and never editable, which is why pre-flight could warn about it
+   and offer nothing to do about it. */
+
+const figBar = Object.assign(document.createElement("div"), { className: "fig-bar" });
+figBar.hidden = true;
+document.body.append(figBar);
+
+let activeFigure = null;
+
+function hideFigBar() {
+  activeFigure = null;
+  figBar.hidden = true;
+}
+
+function showFigBar(img) {
+  activeFigure = img;
+  const figure = img.closest("figure");
+
+  const chip = (label, pressed, onClick) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip";
+    b.textContent = label;
+    if (pressed !== null) b.setAttribute("aria-pressed", String(pressed));
+    b.addEventListener("mousedown", (e) => { e.preventDefault(); onClick(); });
+    return b;
+  };
+
+  const toggle = (cls) => {
+    if (!figure) return;
+    figure.classList.toggle(cls);
+    onEdit();
+    showFigBar(img);
+  };
+
+  figBar.replaceChildren(
+    chip(img.getAttribute("alt")?.trim() ? "Alt text ✓" : "Alt text", null, () => {
+      const alt = prompt("Describe the photo for a screen reader:", img.getAttribute("alt") ?? "");
+      if (alt !== null) { img.setAttribute("alt", alt.trim()); onEdit(); showFigBar(img); }
+    }),
+    figure ? chip("Wide", figure.classList.contains("wide"), () => toggle("wide")) : null,
+    figure ? chip("Lead", figure.classList.contains("lead-photo"), () => toggle("lead-photo")) : null,
+    chip("Remove", null, () => {
+      if (!confirm("Remove this photo?")) return;
+      (figure ?? img).remove();
+      hideFigBar();
+      onEdit();
+    })
+  );
+
+  const rect = img.getBoundingClientRect();
+  figBar.style.left = `${Math.max(8, rect.left)}px`;
+  figBar.style.top = `${Math.max(8, rect.top - 42)}px`;
+  figBar.hidden = false;
+}
+
+editor.addEventListener("click", (e) => {
+  const img = e.target.closest?.("img");
+  if (img) showFigBar(img);
+  else hideFigBar();
+});
+addEventListener("scroll", () => { if (activeFigure) showFigBar(activeFigure); }, { passive: true });
+
+/* ---------- keyboard ---------- */
+
+editor.addEventListener("keydown", (e) => {
+  const mod = e.ctrlKey || e.metaKey;
+  if (!mod) return;
+  const key = e.key.toLowerCase();
+
+  if (key === "k") {
+    // The site binds Ctrl+K to search, on window. Inside the editor a
+    // link is the more useful thing, so this stops it bubbling there.
+    e.preventDefault();
+    e.stopPropagation();
+    const url = prompt("Link to which URL?", "https://");
+    if (url) exec("createLink", url);
+    onEdit();
+    return;
+  }
+
+  if (key === "s") {
+    e.preventDefault();
+    saveDraft();
+    toast("Draft saved on this device.");
+    return;
+  }
+
+  if (key === "enter") {
+    e.preventDefault();
+    const publish = $("#btn-publish");
+    if (dynamic && publish && !publish.hidden && !publish.disabled) publish.click();
+    else $("#btn-html").click();
+  }
 });
 
 /* ============================================================

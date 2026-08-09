@@ -278,24 +278,82 @@ const PANELS = {
   subscribers: { label: "Subscribers", render: renderSubscribers },
 };
 
-export function mountDashboard(root) {
-  const tabs = el("div", { className: "chip-row", role: "tablist" });
-  const panel = el("div", { className: "admin-panel" });
+/** What is actually waiting, so the tabs can say so without being
+    clicked. Only the two things that represent someone waiting on a
+    reply get a number; the rest are just places to look. */
+async function waiting() {
+  const [questions, enquiries] = await Promise.all([
+    api("questions?status=pending"),
+    api("enquiries"),
+  ]);
+  return {
+    queue: (questions?.questions ?? []).length,
+    enquiries: (enquiries?.enquiries ?? []).filter((e) => e.status === "new").length,
+  };
+}
 
-  const show = (key) => {
-    tabs.querySelectorAll("button").forEach((b) =>
-      b.setAttribute("aria-pressed", String(b.dataset.key === key)));
+export function mountDashboard(root) {
+  /* This said role="tablist" while the buttons used aria-pressed,
+     which describes a row of toggle buttons — so a screen reader was
+     told to expect tabs and then handed something else, with no
+     indication of which panel each one controlled. Proper tabs:
+     aria-selected, aria-controls, a labelled panel, and the arrow-key
+     behaviour the role implies. */
+  const tabs = el("div", {
+    className: "chip-row", role: "tablist", "aria-label": "Dashboard sections",
+  });
+  const panel = el("div", { className: "admin-panel", role: "tabpanel", tabIndex: 0 });
+
+  const keys = Object.keys(PANELS);
+  const buttons = new Map();
+
+  const show = (key, { focus = false } = {}) => {
+    for (const [k, b] of buttons) {
+      const on = k === key;
+      b.setAttribute("aria-selected", String(on));
+      // Roving tabindex: one stop for the whole group, then arrows.
+      b.tabIndex = on ? 0 : -1;
+    }
+    panel.setAttribute("aria-labelledby", `tab-${key}`);
     panel.replaceChildren(el("p", { className: "muted mono", textContent: "Loading…" }));
     PANELS[key].render(panel);
+    if (focus) buttons.get(key)?.focus();
   };
 
-  Object.entries(PANELS).forEach(([key, { label }]) => {
-    const b = el("button", { className: "chip", type: "button", textContent: label });
+  keys.forEach((key) => {
+    const b = el("button", {
+      className: "chip", type: "button", id: `tab-${key}`,
+      textContent: PANELS[key].label,
+    });
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-controls", "admin-panel");
     b.dataset.key = key;
     b.addEventListener("click", () => show(key));
+    buttons.set(key, b);
     tabs.append(b);
   });
 
+  tabs.addEventListener("keydown", (e) => {
+    const step = { ArrowRight: 1, ArrowLeft: -1, Home: "first", End: "last" }[e.key];
+    if (step === undefined) return;
+    e.preventDefault();
+    const at = keys.indexOf(e.target.dataset.key);
+    const next = step === "first" ? 0
+      : step === "last" ? keys.length - 1
+      : (at + step + keys.length) % keys.length;
+    show(keys[next], { focus: true });
+  });
+
+  panel.id = "admin-panel";
   root.replaceChildren(tabs, panel);
   show("queue");
+
+  // Badges arrive when they arrive; the dashboard is usable meanwhile.
+  waiting().then((counts) => {
+    for (const [key, n] of Object.entries(counts)) {
+      if (!n) continue;
+      const b = buttons.get(key);
+      if (b) b.append(el("span", { className: "tab-count", textContent: String(n) }));
+    }
+  });
 }
