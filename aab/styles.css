@@ -573,6 +573,16 @@
   @keyframes tick { to { transform: translateX(-50%); } }
 
   /* ---------- BENTO GRID ---------- */
+  /* The home page's vertical rhythm is carried entirely by
+     `section { padding-block: var(--step) 6px }` — every top-level
+     block on that page sets its own space above itself. The bento
+     is the one that is a <div> rather than a <section>, so it was
+     the one getting none of it: the last row of whichever list ran
+     above it ended, and the cards started six pixels later.
+
+     Same --step as everything else, so the bento sits in the run
+     of the page instead of being shoved against whatever the
+     audience order happens to put in front of it. */
   .bento {
     display: grid;
     gap: var(--gap);
@@ -581,7 +591,7 @@
       "feature feature stats"
       "feature feature about"
       "note    services about";
-    padding-bottom: 24px;
+    padding-block: var(--step) 24px;
   }
 
   .cell {
