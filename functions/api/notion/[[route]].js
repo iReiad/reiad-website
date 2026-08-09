@@ -168,6 +168,17 @@ export async function onRequest(context) {
             message: "NOTION_TOKEN was rejected. Check the integration still exists.",
           });
         }
+        if (err.status === 403) {
+          // Notion answers 403 when the token is valid but the
+          // integration lacks the capability being used — reading
+          // content, most often, which is off by default on an
+          // integration created for something else.
+          return fail("notion-forbidden", 403, {
+            message: "Notion refused the request. Check the integration has "
+              + "read access under Capabilities, and that it is connected to "
+              + "the page.",
+          });
+        }
         if (err.status === 404) {
           return fail("notion-not-shared", 404, {
             message: "Notion can't see that page. Open it in Notion, then "
@@ -180,7 +191,14 @@ export async function onRequest(context) {
           });
         }
         console.error("notion", err?.stack ?? err);
-        return fail("notion-error", 502, { message: String(err?.message ?? err) });
+        // Carrying the upstream status through matters: without it a
+        // network-level refusal between here and Notion is
+        // indistinguishable from Notion itself saying no, and the two
+        // have completely different fixes.
+        return fail("notion-error", 502, {
+          upstream: err?.status ?? null,
+          message: String(err?.message ?? err),
+        });
       }
     },
   });
