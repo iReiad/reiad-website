@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v15–v17: the Studio rebuild, in three passes. api.js gained the
+   media and Notion clients (v15); styles.css gained the slash menu,
+   the figure toolbar and the pre-flight panel (v16); and the desk
+   moved onto its own page, taking the dashboard's styles with it
+   (v17). styles.css is precached and changed in all three, which is
+   exactly the shape of the v3 and v10 mistakes — check-sw.mjs caught
+   each one before it shipped.
+
    v12: the About page was rebuilt — new markup, a new `about`
    cascade layer in styles.css and a small about.js that counts the
    library from content.js rather than trusting a typed number.
@@ -76,7 +84,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v16";
+const VERSION = "v17";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<!-- desk.html — the site, answering back.
+
+     Questions, enquiries, subscribers, what people read, and what is
+     live. This used to be five tabs under the Studio's publish
+     buttons, which made it something you scrolled past on the way to
+     writing. It is its own room now. -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>The desk · Rony Reiad</title>
+  <meta name="description" content="Reader questions, enquiries, subscribers and what the site is being read for.">
+  <meta name="robots" content="noindex, nofollow">
+
+  <script>
+    (function () {
+      var d = document.documentElement;
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
+        var a = localStorage.getItem("audience");
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+  <a class="skip" href="#desk">Skip to the desk</a>
+
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="/index.html">
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Rony Reiad
+      </a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/tools/index.html">Tools</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hidden until auth.js says who's asking, exactly as the
+         Studio is. desk.js is not fetched before that. -->
+    <div class="wrap" id="desk-root">
+
+      <div class="hero" style="padding-block:52px 20px">
+        <span class="eyebrow mono">The desk · private</span>
+        <h1 style="font-size:clamp(1.9rem,4.4vw,2.8rem)">The site, answering back.</h1>
+        <p class="lede">
+          Everything readers have sent, and what they are actually reading.
+          Nothing here is public, and nothing here can identify anyone.
+        </p>
+      </div>
+
+      <div class="studio-bar">
+        <a class="btn btn-ghost" href="/studio.html">← The Studio</a>
+        <span class="studio-now" id="desk-note"></span>
+      </div>
+
+      <div id="overview"></div>
+
+      <section id="desk" style="margin-top:26px"></section>
+
+      <div class="note measure" style="margin-top:30px">
+        <strong>Nothing here is a one-way door.</strong> Archiving or marking
+        something as spam only moves it: <em>Everything</em> shows all of it, and
+        anything can go back to waiting. Only <em>Delete</em> removes a question,
+        and it asks first.
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="mono">Rony Reiad &middot; Finance &amp; Bangladesh markets</span>
+      <p>The desk is private and excluded from search engines.</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+  <script type="module">
+    import { requireOwner } from "/auth.js";
+    const root = document.getElementById("desk-root");
+    const session = await requireOwner(root);
+
+    if (session?.server) {
+      const { mountDesk } = await import("/desk.js");
+      mountDesk(document.getElementById("desk"), document.getElementById("overview"));
+    } else {
+      /* Everything on this page comes out of the database. Without
+         one there is nothing to show, and saying so is better than an
+         empty page that looks broken. */
+      document.getElementById("desk").append(
+        Object.assign(document.createElement("p"), {
+          className: "muted",
+          textContent: "The database isn't connected, so there is nothing to collect yet. "
+            + "See wrangler.toml.",
+        })
+      );
+    }
+  </script>
+</body>
+</html>

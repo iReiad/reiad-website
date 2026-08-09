@@ -189,14 +189,33 @@ RUN=$(date +%s)
 echo "── questions ──────────────────────────"
 check "ask"              '"queued":true' \
   "$(curl -s -X POST -H "$J" -d '{"slug":"sanchayapatra-vs-fdr","name":"Rumi","body":"Run '"$RUN"' — does the tax at source apply to the 5-year certificate too?"}' $B/api/questions)"
+# The bot still hears success — it has nothing to learn from the reply.
 check "honeypot swallowed" '"queued":true' \
   "$(curl -s -X POST -H "$J" -d '{"body":"buy cheap watches now click here","website":"http://spam"}' $B/api/questions)"
+# …but the question is quarantined rather than destroyed. It used to be
+# dropped on the floor, so a reader whose password manager filled the
+# hidden field was told "Got it" and lost the question with no record.
+check "and quarantined rather than destroyed" 'buy cheap watches' \
+  "$(curl -s -b $C "$B/api/questions?status=spam")"
 check "too short"        'too-short' \
   "$(curl -s -X POST -H "$J" -d '{"body":"hi"}' $B/api/questions)"
 check "not public yet"   'clean' \
   "$(curl -s "$B/api/questions?slug=sanchayapatra-vs-fdr" | grep -q "Run $RUN" && echo leaked || echo clean)"
 check "queue needs auth" 'unauthorised' "$(curl -s "$B/api/questions?status=pending")"
 check "queue"            "Run $RUN" "$(curl -s -b $C "$B/api/questions?status=pending")"
+# Archived and spam used to be unreachable: the desk asked only for
+# pending and published, so a button labelled "Not spam, just private"
+# removed a question from the interface permanently.
+check "every status is reachable at once" 'buy cheap watches' \
+  "$(curl -s -b $C "$B/api/questions?status=all")"
+check "counts come back per status" '"spam":' \
+  "$(curl -s -b $C "$B/api/questions?status=all")"
+check "the queue is searchable" 'buy cheap watches' \
+  "$(curl -s -b $C "$B/api/questions?status=all&q=cheap%20watches")"
+check "a search matching nothing says so" '"questions":[]' \
+  "$(curl -s -b $C "$B/api/questions?status=all&q=zzzznothingmatches")"
+check "searching still needs auth" 'unauthorised' \
+  "$(curl -s "$B/api/questions?status=all&q=cheap")"
 QID=$(curl -s -b $C "$B/api/questions?status=pending" | python3 -c 'import sys,json;print(json.load(sys.stdin)["questions"][-1]["id"])')
 check "answer+publish"   '"status":"published"' \
   "$(curl -s -b $C -X PATCH -H "$J" -d '{"answer":"Yes — 10% at source on the profit, deducted before it reaches you.","status":"published"}' $B/api/questions/$QID)"

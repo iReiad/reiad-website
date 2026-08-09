@@ -280,6 +280,25 @@ check("no database section without a backend",
   !(await page.locator("#open-body").textContent()).includes("Published through the Studio"));
 await page.click("#open-close");
 
+/* ---------- 6. the desk ----------
+   Only the static half is checkable here: every panel on that page
+   reads from the database, so the rest belongs to test-api.sh and to
+   driving it against `wrangler dev`. What matters statically is that
+   it degrades honestly rather than rendering an empty page that
+   looks broken. */
+
+check("the Studio points at the desk", await page.locator("#btn-desk").count() > 0);
+check("and no longer embeds the dashboard",
+  (await page.locator("#dashboard-section").count()) === 0);
+
+await page.goto(`http://127.0.0.1:${PORT}/desk.html`, { waitUntil: "domcontentloaded" });
+await page.waitForTimeout(1200);
+check("the desk says so when there's no database",
+  (await page.locator("#desk").textContent()).includes("isn't connected"),
+  await page.locator("#desk").textContent());
+check("the desk keeps itself out of search engines",
+  (await page.getAttribute('meta[name="robots"]', "content") ?? "").includes("noindex"));
+
 /* ---------- done ---------- */
 
 await browser.close();

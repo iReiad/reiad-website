@@ -32,11 +32,11 @@ immediately** — no file to move, no commit, no push.
 | Writing in Notion and publishing from here | Studio → Import from Notion |
 | Photos stored in R2, not in the article | automatic, on publish |
 | Pre-flight checks before anything goes out | Studio → 3 · Publish it |
-| Reader questions, moderated | bottom of every article; queue in the Studio |
+| Reader questions, moderated | bottom of every article; queue on the desk |
 | Reactions (helpful / confusing / go deeper) | bottom of every article |
-| Subscriber list, confirmed opt-in, CSV export | Insights page; list in the Studio |
-| Client enquiry pipeline (new → replied → closed) | contact form; pipeline in the Studio |
-| Page analytics that can't identify anyone | Studio → What's read |
+| Subscriber list, confirmed opt-in, CSV export | Insights page; list on the desk |
+| Client enquiry pipeline (new → replied → closed) | contact form; pipeline on the desk |
+| Page analytics that can't identify anyone | `/desk.html` → What's read |
 | Full-text search across article bodies | `/api/search` |
 
 ### Writing in Notion
@@ -129,9 +129,9 @@ flips it back on any page.
 
 ```sh
 npx wrangler dev                    # the real Cloudflare runtime, local D1 and R2
-./test-api.sh                       # 77 checks over every endpoint
+./test-api.sh                       # 83 checks over every endpoint
 node functions/_lib/notion.test.mjs # 74 checks on the Notion → HTML conversion
-node aab/studio.test.mjs            # 38 checks driving the editor in a browser
+node aab/studio.test.mjs            # 42 checks driving the editor in a browser
 node aab/check-routes.mjs           # catches redirect loops before deploying
 node aab/check-sw.mjs               # did a precached file change without a VERSION bump?
 node aab/portfolio/dissertation.test.mjs   # 141 checks on the statistics engine
@@ -204,7 +204,7 @@ which mode it's in.
 | `aab/content.js` | **The one file you edit to publish.** Articles, Bangla terms, tools, pages |
 | `aab/api.js` | Browser side of the dynamic layer — returns null instead of throwing when there's no backend |
 | `aab/auth.js`, `auth-config.js` | The Studio's gate: server session when available, browser-side fallback |
-| `aab/admin.js` | The dashboard — questions, subscribers, enquiries, stats |
+| `aab/desk.html`, `desk.js` | The desk — questions, enquiries, subscribers, what's read, what's live |
 | `aab/engage.js` | Reactions and reader Q&A; attaches itself to any article page |
 | `worker.js` | **The entry point.** Routes `/api/*` and `/insights/:slug` to `functions/`, and hands everything else to the static assets |
 | `functions/` | The request handlers, written in the Pages Functions shape (`onRequest`, `context.params`, `context.next()`). `worker.js` maps them to paths |
