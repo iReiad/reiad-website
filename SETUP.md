@@ -167,9 +167,9 @@ cache. A second load picks up the new version.
 
 ```sh
 npx wrangler dev                     # the real runtime, local D1 and R2
-./test-api.sh                        # 83 checks over every endpoint
+./test-api.sh                        # 87 checks over every endpoint
 node functions/_lib/notion.test.mjs  # 74 checks on the Notion conversion
-node aab/studio.test.mjs             # 42 browser checks (needs Playwright)
+node aab/studio.test.mjs             # 53 browser checks (needs Playwright)
 node aab/check-routes.mjs            # catches redirect loops
 node aab/check-sw.mjs                # precached file changed without a VERSION bump?
 ```

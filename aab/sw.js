@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v18: the preview grew a card view, a share-card view, width and
+   theme switches, and the per-article social image that goes with
+   them — styles.css again.
+
    v15–v17: the Studio rebuild, in three passes. api.js gained the
    media and Notion clients (v15); styles.css gained the slash menu,
    the figure toolbar and the pre-flight panel (v16); and the desk
@@ -84,7 +88,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v17";
+const VERSION = "v18";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

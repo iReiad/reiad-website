@@ -280,7 +280,73 @@ check("no database section without a backend",
   !(await page.locator("#open-body").textContent()).includes("Published through the Studio"));
 await page.click("#open-close");
 
-/* ---------- 6. the desk ----------
+/* ---------- 6. the preview ----------
+   Most readers meet the card on the Insights page, or the box a
+   pasted link turns into, long before they meet the article. Both
+   decide whether it gets opened, and neither was visible from here. */
+
+await page.evaluate(() => { document.querySelector("#editor").innerHTML = "<p>Body text.</p>"; });
+await page.fill("#f-title", "How the Dhaka Stock Exchange actually works");
+await page.fill("#f-dek", "What the DSEX index measures, and the questions to ask first.");
+await page.fill("#f-tag", "Explainer · Equities");
+await page.waitForTimeout(600);
+
+check("the article view is the default",
+  (await page.getAttribute('[data-view="article"]', "aria-pressed")) === "true");
+
+await page.click('[data-width="phone"]');
+await page.waitForTimeout(900);        // --slow is 0.45s; measure after it settles
+check("phone width constrains the stage",
+  (await page.evaluate(() => document.querySelector("#preview-stage").style.maxWidth)) === "390px");
+
+/* The site's theme toggle is :root-scoped, so scoping one to the
+   preview leans on color-scheme inheriting and light-dark() being
+   resolved where the token is used. Worth asserting, not assuming. */
+const bgOf = () => page.evaluate(() =>
+  getComputedStyle(document.querySelector("#preview-scroll")).backgroundColor);
+await page.click("#preview-theme");                 // light
+const lightBg = await bgOf();
+await page.click("#preview-theme");                 // dark
+await page.waitForTimeout(200);
+const darkBg = await bgOf();
+const bodyBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+check("the preview theme changes the preview's colours", lightBg !== darkBg, `${lightBg} vs ${darkBg}`);
+check("and leaves the rest of the page alone", bodyBg !== darkBg, `${bodyBg} vs ${darkBg}`);
+await page.click("#preview-theme");                 // back to auto
+await page.click('[data-width="full"]');
+
+await page.click('[data-view="card"]');
+await page.waitForTimeout(500);
+check("the card view uses the real card markup",
+  (await page.locator("#preview .cell.sample-card h3").textContent()).includes("Dhaka"));
+check("width buttons switch off outside the article view",
+  await page.locator('[data-width="phone"]').isDisabled());
+
+await page.click('[data-view="share"]');
+await page.waitForTimeout(500);
+check("the share view renders a link card", await page.locator(".share-card").isVisible());
+check("with the site's default image when there's no photo",
+  (await page.getAttribute(".share-image img", "src")) === "/og/insights.png");
+check("and it reports how the lengths compare",
+  (await page.locator(".share-notes li").allTextContents()).join(" ").includes("Headline fits"));
+
+await page.fill("#f-title", "x".repeat(80));
+await page.waitForTimeout(600);
+check("an over-long headline is flagged",
+  (await page.locator(".share-notes li").allTextContents()).join(" ").includes("will be cut"));
+{
+  // A headline with no spaces has no break opportunity, and ran
+  // straight out of the card until overflow-wrap was set.
+  const card = await page.locator(".share-card").boundingBox();
+  const text = await page.locator(".share-text strong").boundingBox();
+  check("a headline with no spaces stays inside the card",
+    text.x + text.width <= card.x + card.width + 1,
+    `card ends at ${card.x + card.width}, text at ${text.x + text.width}`);
+}
+
+await page.click('[data-view="article"]');
+
+/* ---------- 7. the desk ----------
    Only the static half is checkable here: every panel on that page
    reads from the database, so the rest belongs to test-api.sh and to
    driving it against `wrangler dev`. What matters statically is that
