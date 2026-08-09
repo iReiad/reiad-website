@@ -22,12 +22,28 @@ import { requireAdmin, readSession } from "../../_lib/auth.js";
 import { sanitiseHTML, readingMinutes } from "../../_lib/sanitise.js";
 
 const PUBLIC_COLUMNS =
-  `slug, title, dek, tag, topics, lang, minutes, status, published_at, updated_at`;
+  `slug, title, dek, tag, topics, lang, minutes, status, cover,
+   published_at, updated_at, notion_page_id, notion_synced_at`;
+
+/* D1 caps a single value at 2 MB. A body is measured in bytes rather
+   than characters because Bangla costs three of them per character,
+   so a character count would let a Bangla piece through at three
+   times the size of the English one it was meant to match. */
+const MAX_BODY_BYTES = 1_000_000;
+const bytes = (s) => new TextEncoder().encode(s).length;
 
 const shape = (row) => ({
   ...row,
   topics: row.topics ? row.topics.split("|").filter(Boolean) : [],
 });
+
+/* A cover ends up in an og:image tag, so it has to be a path this
+   site serves. An off-site URL there is someone else's bandwidth and
+   someone else's uptime on our social cards. */
+const safeCover = (value) => {
+  const v = str(value, 300);
+  return /^\/(media|og)\/[A-Za-z0-9._/-]+$/.test(v) ? v : "";
+};
 
 export async function onRequest(context) {
   const { request, params } = context;
@@ -73,21 +89,47 @@ export async function onRequest(context) {
       if (!newSlug) return fail("slug-required");
       if (!title) return fail("title-required");
 
-      const clean = sanitiseHTML(str(input.body, 400_000));
+      /* The body used to be capped with slice(), which is a silent
+         truncation: an article with two embedded photos was stored
+         with its tail cut off, the sanitiser closed the tags that
+         left dangling, and the result published cleanly as half a
+         piece. Refusing is the only honest answer. */
+      const raw = String(input.body ?? "");
+      if (bytes(raw) > MAX_BODY_BYTES) {
+        return fail("body-too-large", 413, {
+          size: bytes(raw),
+          limit: MAX_BODY_BYTES,
+          message: "Upload the photos to /media instead of embedding them.",
+        });
+      }
+
+      /* An unguarded upsert means one repeated headline silently
+         replaces a published piece, with no version to go back to.
+         The Studio asks first; anything else has to say so too. */
+      const existing = await one(d1,
+        `SELECT slug, title, status, updated_at FROM articles WHERE slug = ?`, newSlug);
+      if (existing && input.overwrite !== true) {
+        return fail("slug-exists", 409, { existing });
+      }
+
+      const clean = sanitiseHTML(raw);
       const status = input.status === "live" ? "live" : "draft";
       const now = nowISO();
 
       await run(d1,
         `INSERT INTO articles
-           (slug, title, dek, tag, topics, lang, body, minutes, status,
-            published_at, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           (slug, title, dek, tag, topics, lang, body, minutes, status, cover,
+            published_at, created_at, updated_at, notion_page_id, notion_synced_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(slug) DO UPDATE SET
            title = excluded.title, dek = excluded.dek, tag = excluded.tag,
            topics = excluded.topics, lang = excluded.lang, body = excluded.body,
            minutes = excluded.minutes, status = excluded.status,
+           cover = excluded.cover,
            published_at = COALESCE(articles.published_at, excluded.published_at),
-           updated_at = excluded.updated_at`,
+           updated_at = excluded.updated_at,
+           notion_page_id = COALESCE(excluded.notion_page_id, articles.notion_page_id),
+           notion_synced_at = COALESCE(excluded.notion_synced_at, articles.notion_synced_at)`,
         newSlug, title, str(input.dek, 600), str(input.tag, 80),
         (Array.isArray(input.topics) ? input.topics : [])
           .map((t) => str(t, 40)).filter(Boolean).join("|"),
@@ -95,11 +137,14 @@ export async function onRequest(context) {
         clean,
         readingMinutes(clean),
         status,
+        safeCover(input.cover),
         status === "live" ? (str(input.published_at, 10) || today()) : null,
-        now, now);
+        now, now,
+        str(input.notion_page_id, 64) || null,
+        input.notion_page_id ? now : null);
 
       const saved = await one(d1, `SELECT ${PUBLIC_COLUMNS} FROM articles WHERE slug = ?`, newSlug);
-      return ok({ article: shape(saved) });
+      return ok({ article: shape(saved), replaced: !!existing });
     },
 
     /* ---------------- partial update ---------------- */
@@ -115,8 +160,23 @@ export async function onRequest(context) {
       const status = input.status === "live" || input.status === "draft"
         ? input.status : existing.status;
 
+      /* Everything here is optional: a PATCH that names only a status
+         is the publish/unpublish button, and one that names a title
+         is fixing a typo without republishing the whole body. */
+      const pick = (key, value) => (key in input ? value : existing[key]);
+
       await run(d1,
-        `UPDATE articles SET status = ?, published_at = ?, updated_at = ? WHERE slug = ?`,
+        `UPDATE articles
+            SET title = ?, dek = ?, tag = ?, topics = ?, lang = ?, cover = ?,
+                status = ?, published_at = ?, updated_at = ?
+          WHERE slug = ?`,
+        pick("title", str(input.title, 300) || existing.title),
+        pick("dek", str(input.dek, 600)),
+        pick("tag", str(input.tag, 80)),
+        pick("topics", (Array.isArray(input.topics) ? input.topics : [])
+          .map((t) => str(t, 40)).filter(Boolean).join("|")),
+        pick("lang", input.lang === "bn" ? "bn" : "en"),
+        pick("cover", safeCover(input.cover)),
         status,
         status === "live" ? (existing.published_at ?? today()) : existing.published_at,
         nowISO(), slug);

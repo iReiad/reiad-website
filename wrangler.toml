@@ -69,6 +69,35 @@ binding = "DB"
 database_name = "reiad"
 database_id = "ad23dea3-74fc-4346-8119-ab5936f1a708"
 
+# ---------- R2: the photo store ----------
+# Article photos used to be base64 data URLs inside the article body.
+# That put a third more bytes than the photo into a D1 column capped
+# at 2 MB, and the body was being truncated to fit. Photos live here
+# now and the body carries a `/media/...` path.
+#
+# The bucket has to exist before the first deploy, or wrangler stops:
+#
+#   npx wrangler r2 bucket create reiad-media
+#
+# (./setup.sh does this for you.) Without the binding, /api/media
+# answers "not configured" and the Studio goes back to embedding
+# photos in the page, exactly as it did before.
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "reiad-media"
+
+# ---------- Notion (optional) ----------
+# Set NOTION_TOKEN and the Studio grows an "Import from Notion"
+# button: write in Notion, pull the page in, publish from here.
+# It is a secret, so it is not in this file:
+#
+#   npx wrangler secret put NOTION_TOKEN
+#
+# Create the integration at notion.so/my-integrations, then open the
+# page or database you write in and Connections → add it. Without
+# the secret, /api/notion answers "not configured" and the button
+# never appears.
+
 # ---------- Workers AI (optional) ----------
 # functions/api/news.js uses an `AI` binding to translate headlines
 # into Bangla, and skips the translation when it isn't there.

@@ -47,12 +47,28 @@ const MIGRATIONS = [
      bucket TEXT PRIMARY KEY, count INTEGER NOT NULL DEFAULT 0, resets TEXT NOT NULL)`,
 ];
 
+/* Columns added after the first release.
+   `CREATE TABLE IF NOT EXISTS` above only ever builds the original
+   shape, so a database created before these existed would never grow
+   them. SQLite has no ADD COLUMN IF NOT EXISTS, and a batch is
+   atomic — one "duplicate column name" would roll the whole thing
+   back — so each runs alone and its failure is the expected answer on
+   every request after the first. */
+const ADDITIONS = [
+  `ALTER TABLE articles ADD COLUMN cover TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE articles ADD COLUMN notion_page_id TEXT`,
+  `ALTER TABLE articles ADD COLUMN notion_synced_at TEXT`,
+];
+
 /** Returns the D1 binding, or null when it hasn't been created yet. */
 export async function db(env) {
   if (!env?.DB) return null;
   if (!ready) {
     try {
       await env.DB.batch(MIGRATIONS.map((sql) => env.DB.prepare(sql)));
+      await Promise.all(
+        ADDITIONS.map((sql) => env.DB.prepare(sql).run().catch(() => {}))
+      );
       ready = true;
     } catch (err) {
       // A migration failure must not take the site down: the caller

@@ -42,6 +42,8 @@ import { onRequest as enquiries } from "./functions/api/enquiries/[[id]].js";
 import { onRequest as signals } from "./functions/api/signals/[[kind]].js";
 import { onRequest as search } from "./functions/api/search.js";
 import { onRequestGet as news } from "./functions/api/news.js";
+import { onRequest as media } from "./functions/api/media/[[key]].js";
+import { onRequest as notion } from "./functions/api/notion/[[route]].js";
 import { onRequest as insight } from "./functions/insights/[slug].js";
 
 /** prefix → handler, and the name of the catch-all parameter it
@@ -55,7 +57,15 @@ const API_ROUTES = [
   ["/api/signals", signals, "kind"],
   ["/api/search", search, null],
   ["/api/news", news, null],
+  ["/api/media", media, "key"],
+  ["/api/notion", notion, "route"],
 ];
+
+/** Photos published through the Studio. Served by the same handler
+    that stores them, so there is one place that knows the key
+    format — but on a short URL, because it ends up in the HTML of
+    every article that has a picture in it. */
+const MEDIA = /^\/media\/(.+)$/;
 
 /** Published articles live in D1; the files in aab/insights/ are the
     ones written before the Studio existed. Both answer here. */
@@ -86,6 +96,9 @@ export default {
           : {};
         return await handler(context(params));
       }
+
+      const image = path.match(MEDIA);
+      if (image) return await media(context({ key: image[1].split("/") }));
 
       const article = path.match(ARTICLE);
       if (article) return await insight(context({ slug: article[1] }));

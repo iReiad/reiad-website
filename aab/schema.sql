@@ -30,7 +30,10 @@ CREATE TABLE IF NOT EXISTS articles (
   status       TEXT NOT NULL DEFAULT 'draft', -- draft | live
   published_at TEXT,                          -- ISO date, set when it goes live
   created_at   TEXT NOT NULL,
-  updated_at   TEXT NOT NULL
+  updated_at   TEXT NOT NULL,
+  cover            TEXT NOT NULL DEFAULT '',  -- /media/... lead image, also the og:image
+  notion_page_id   TEXT,                      -- set when the piece came from Notion
+  notion_synced_at TEXT                       -- when it was last pulled from there
 );
 CREATE INDEX IF NOT EXISTS idx_articles_live
   ON articles (status, published_at DESC);
