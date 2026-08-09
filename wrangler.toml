@@ -54,7 +54,12 @@ not_found_handling = "404-page"
 #                an article published to D1 under the same slug never
 #                got a look in, so the Worker decides and falls back
 #                to the file itself.
-run_worker_first = ["/api/*", "/insights/*"]
+#   /media/*     photos live in R2, and nothing in aab/ matches. That
+#                is precisely the problem: with not_found_handling
+#                set, the asset router answers an unmatched path with
+#                404.html and the Worker is never called, so every
+#                published photo 404s. It has to be listed.
+run_worker_first = ["/api/*", "/insights/*", "/media/*"]
 
 # ---------- D1: the database everything dynamic runs on ----------
 # Articles, reader questions, subscribers, enquiries, view counts and

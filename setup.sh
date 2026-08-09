@@ -12,11 +12,11 @@
 # ============================================================
 set -euo pipefail
 
-echo "→ 1/4  Signing in to Cloudflare (a browser window will open)"
+echo "→ 1/5  Signing in to Cloudflare (a browser window will open)"
 npx wrangler login
 
 echo
-echo "→ 2/4  Creating the database"
+echo "→ 2/5  Creating the database"
 npx wrangler d1 create reiad || echo "   (already exists — carrying on)"
 
 echo
@@ -40,11 +40,18 @@ if grep -q "PASTE_THE_ID" wrangler.toml; then
 fi
 
 echo
-echo "→ 3/4  Creating the tables"
+echo "→ 3/5  Creating the tables"
 npx wrangler d1 execute reiad --remote --file=aab/schema.sql
 
 echo
-echo "→ 4/4  Deploying"
+echo "→ 4/5  Creating the photo bucket"
+# Article photos live in R2 rather than inside the article body. The
+# bucket is declared in wrangler.toml, so deploying without it stops
+# with an error rather than quietly working — hence creating it here.
+npx wrangler r2 bucket create reiad-media || echo "   (already exists — carrying on)"
+
+echo
+echo "→ 5/5  Deploying"
 npx wrangler deploy
 
 cat <<'DONE'
@@ -58,6 +65,16 @@ Done. Two things left, both in a browser:
   2. Optional: Cloudflare dashboard → your Worker → Settings →
      Bindings → Add → Workers AI → variable name: AI
      That switches Bangla headline translation back on.
+
+  3. Optional: write in Notion instead of the Studio's editor.
+     Create an integration at https://notion.so/my-integrations,
+     copy its token, then:
+
+         npx wrangler secret put NOTION_TOKEN
+
+     Open the page or database you write in, Connections → add the
+     integration, and the Studio grows an "Import from Notion"
+     button. Without the token the button never appears.
 
 Then: writing a piece in the Studio and pressing "Publish to the site"
 puts it live immediately. No commit, no push, no file to move.

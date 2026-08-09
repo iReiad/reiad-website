@@ -78,6 +78,18 @@
         </p>
       </div>
 
+      <!-- ============ LIBRARY BAR ============
+           What you're working on, and how to get at everything else.
+           The Notion button stays hidden until the server says the
+           integration is actually configured. -->
+      <div class="studio-bar">
+        <button class="btn btn-ghost" id="btn-new">＋ New</button>
+        <button class="btn btn-ghost" id="btn-open">Open…</button>
+        <button class="btn btn-ghost" id="btn-notion" hidden>Import from Notion</button>
+        <button class="btn btn-ghost" id="btn-resync" hidden>Re-sync from Notion</button>
+        <span class="studio-now" id="now-line"></span>
+      </div>
+
       <div class="studio-grid">
 
         <!-- ============ EDITOR ============ -->
@@ -168,22 +180,37 @@ everything else Word smuggles in gets thrown away."></div>
       <section>
         <span class="section-label mono">3 · Publish it</span>
 
+        <!-- Pre-flight. Errors disable the publish button; warnings
+             are things worth knowing that shouldn't block anyone. -->
+        <div class="preflight" id="preflight" hidden>
+          <div class="pane-bar">
+            <span class="mono">Before it goes out</span>
+            <span class="mono" id="preflight-summary"></span>
+          </div>
+          <ul id="preflight-list"></ul>
+        </div>
+
         <div class="row-flex">
+          <button class="btn btn-solid" id="btn-publish" hidden>Publish to the site</button>
+          <button class="btn btn-ghost" id="btn-save-draft" hidden>Save draft to the site</button>
+          <button class="btn btn-ghost" id="btn-view" hidden>View it</button>
           <button class="btn btn-solid" id="btn-html">Download the page</button>
           <button class="btn btn-ghost" id="btn-zip">Download .zip (page + photo files)</button>
           <button class="btn btn-ghost" id="btn-entry">Get the index entry</button>
           <button class="btn btn-ghost" id="btn-copy-html">Copy the HTML</button>
-          <button class="btn btn-solid" id="btn-publish" hidden>Publish to the site</button>
           <button class="btn btn-ghost" id="btn-clear">Clear</button>
           <button class="btn btn-ghost push" id="btn-lock" title="Lock the Studio on this device">Lock</button>
         </div>
 
         <ol class="studio-steps measure" id="steps-dynamic" hidden>
-          <li>Press <strong>Publish to the site</strong>. That's it: the piece is
-              live, the Insights page picks it up, and readers can react and ask
-              questions on it straight away.</li>
+          <li>Press <strong>Publish to the site</strong>. Photos are uploaded to
+              <code>/media</code> first, so the article itself stays small and the
+              same photo pasted twice is only stored once.</li>
+          <li>That's it: the piece is live, the Insights page picks it up, and
+              readers can react and ask questions on it straight away.</li>
           <li>Changed your mind? <strong>Published</strong> in the dashboard below
-              unpublishes anything with one click.</li>
+              unpublishes anything with one click, and <strong>Open…</strong> above
+              loads it back in to edit and republish.</li>
         </ol>
 
         <ol class="studio-steps measure" id="steps-static">
@@ -197,13 +224,19 @@ everything else Word smuggles in gets thrown away."></div>
         </ol>
 
         <div class="note measure">
-          <strong>Photos, two ways.</strong> By default they're embedded in the
-          page itself, so one file is the whole article, simplest, but the page
-          grows. If the meter goes gold or red, use the <em>.zip</em> instead:
-          it gives you the page plus a <code>photos/</code> folder, already
-          wired up. Unzip both into <code>insights/</code>.
-          Every photo is resized to 1600px on its long side and re-encoded as
-          WebP, which also strips the location data phones bury in JPEGs.
+          <strong>Photos.</strong> Every one is resized to 1600px on its long
+          side and re-encoded as WebP, which also strips the location data
+          phones bury in JPEGs.
+          <br><br>
+          <strong>Publishing</strong> uploads them to <code>/media</code> and
+          leaves a link in the article, so the piece itself stays a few
+          kilobytes and the same photo used twice is stored once.
+          <br><br>
+          <strong>Downloading</strong> embeds them in the page instead, so one
+          file is the whole article. That's simplest, but the page grows: if
+          the meter goes gold or red, use the <em>.zip</em>, which gives you
+          the page plus a <code>photos/</code> folder already wired up. Unzip
+          both into <code>insights/</code>.
         </div>
       </section>
 
@@ -226,6 +259,30 @@ everything else Word smuggles in gets thrown away."></div>
       <button class="icon-btn" id="sheet-close" aria-label="Close">✕</button>
     </div>
     <div class="sheet-body"><pre id="sheet-body"></pre></div>
+  </dialog>
+
+  <!-- Everything you could be working on: drafts held on this device,
+       and articles already in the database. -->
+  <dialog class="sheet" id="open-sheet" aria-labelledby="open-title">
+    <div class="pane-bar">
+      <span class="mono" id="open-title">Open</span>
+      <button class="icon-btn" id="open-close" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet-body"><div id="open-body"></div></div>
+  </dialog>
+
+  <dialog class="sheet" id="notion-sheet" aria-labelledby="notion-title">
+    <div class="pane-bar">
+      <span class="mono" id="notion-title">Import from Notion</span>
+      <button class="icon-btn" id="notion-close" aria-label="Close">✕</button>
+    </div>
+    <div class="sheet-body">
+      <label class="notion-search">
+        <span class="mono">Search your Notion pages, or paste a page URL</span>
+        <input type="search" id="notion-q" placeholder="Dhaka Stock Exchange" spellcheck="false">
+      </label>
+      <div id="notion-body"></div>
+    </div>
   </dialog>
 
   <script type="module" src="/app.js"></script>
