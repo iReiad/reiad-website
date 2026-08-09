@@ -19,6 +19,7 @@
   <script>
     (function () {
       var d = document.documentElement;
+      var pick = "open";
       try {
         var t = localStorage.getItem("theme");
         if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
@@ -26,15 +27,40 @@
         if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
         /* The learner's half is two libraries now, money and
            everything else. Setting the track here as well means
-           the right headline is the one that gets painted, rather
-           than the wrong one being swapped out afterwards. */
+           the right half of the page is the one that gets painted,
+           rather than the wrong one being swapped out afterwards. */
         var k = localStorage.getItem("track");
         if (a === "learn" && (k === "finance" || k === "skills")) {
           d.setAttribute("data-track", k);
         }
+        if (a === "work") pick = "work";
+        else if (a === "learn") pick = k === "skills" ? "skills" : "finance";
       } catch (e) {}
+
+      /* The intro comes in four versions and one of them is shown.
+         The rule that does the hiding is written HERE, inline, and
+         not in styles.css — on purpose.
+
+         sw.js serves HTML network-first and everything else
+         cache-first, so the first load after any deploy pairs a
+         brand-new index.html with the PREVIOUS styles.css and
+         app.js. A page whose intro is only legible when the
+         stylesheet is in step is a page that is illegible once per
+         deploy, and this one was: four headlines and four standfirsts
+         all at once, run together. A rule that ships inside the
+         document cannot be out of step with the document. */
+      d.setAttribute("data-hl", pick);
+      var s = document.createElement("style");
+      s.textContent = "[data-when]{display:none}[data-when=\"" + pick + "\"]{display:revert}"
+        + ".hero-actions[data-when=\"" + pick + "\"]{display:flex}";
+      document.head.appendChild(s);
     })();
   </script>
+  <noscript>
+    <!-- No script, no stored preference to read: everyone gets the
+         version written for someone who has just arrived. -->
+    <style>[data-when]:not([data-when="open"]) { display: none }</style>
+  </noscript>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -114,44 +140,70 @@
         <span class="eyebrow mono">Rony Reiad · Dhaka / Brighton · CFA L1 candidate</span>
 
         <!-- ============ ONE HEADLINE PER VISITOR ============
-             Four of them, and CSS shows exactly one. They are all
-             in the markup rather than swapped in by script for two
-             reasons: a headline that changes after first paint is
-             a headline the reader watched change, and `display:
-             none` takes the other three out of the accessibility
-             tree as well as off the screen, so nobody hears all
-             four read out.
+             The headline holds ONE version, and the other three
+             live in attributes beside it rather than in the element.
 
-             Which one shows is decided by data-audience and
-             data-track on <html>, both set by the inline script in
-             <head> above. See the `audience` block in styles.css.
+             That is not a style choice, it is the fix for a real
+             break. app.js animates this headline word by word, and
+             the way it does that is to read the element's
+             textContent and replace its children with one span per
+             word. Four headlines inside it meant four headlines
+             read out as one string and rebuilt as one paragraph —
+             which is exactly what a reader got on the first load
+             after the deploy, because sw.js serves HTML
+             network-first and scripts cache-first, so new markup
+             met the previous app.js. Text that only makes sense to
+             one version of a script does not belong in the DOM.
+
+             An attribute is invisible to textContent, so every
+             version of that script — including the one from before
+             any of this existed — sees a single ordinary headline
+             and does the right thing with it.
 
              The learner's two are Bangla, because the learning half
              of this site is Bangla — the person it is written for
              should not have to read English to be told it exists. -->
-        <h1 id="kinetic" class="home-h1">
-          <span class="hl" data-when="open">Bangladesh's markets, explained in the language we speak.</span>
-          <span class="hl bn-h" data-when="finance" lang="bn">টাকার ভাষা, আমাদের ভাষায়।</span>
-          <span class="hl bn-h" data-when="skills" lang="bn">যা শিখতে চান, নিজের ভাষায়।</span>
-          <span class="hl" data-when="work">Financial models you can open, edit and trust.</span>
-        </h1>
+        <h1 id="kinetic" class="home-h1"
+            data-hl-finance="টাকার ভাষা, আমাদের ভাষায়।"
+            data-hl-skills="যা শিখতে চান, নিজের ভাষায়।"
+            data-hl-work="Financial models you can open, edit and trust."
+        >Bangladesh's markets, explained in the language we speak.</h1>
+        <script>
+          /* Swap it before the browser has painted it. Inline and
+             adjacent on purpose: this runs the moment the headline
+             above is parsed, it ships inside the document so it can
+             never be a version behind it, and with no script at all
+             the headline in the markup is already the right one for
+             someone who has just arrived. */
+          (function () {
+            var h = document.currentScript.previousElementSibling;
+            var pick = document.documentElement.getAttribute("data-hl");
+            var next = pick && h.dataset["hl" + pick[0].toUpperCase() + pick.slice(1)];
+            if (!next) return;
+            h.textContent = next;
+            if (pick === "finance" || pick === "skills") {
+              h.classList.add("bn-h");
+              h.lang = "bn";
+            }
+          })();
+        </script>
 
-        <p class="lede hl" data-when="open">
+        <p class="lede" data-when="open">
           Two libraries in plain Bangla — money, and everything else worth
           learning — plus financial modeling and analysis for clients who
           need the numbers done right.
         </p>
-        <p class="lede hl" data-when="finance" lang="bn">
+        <p class="lede" data-when="finance" lang="bn">
           বিও অ্যাকাউন্ট খোলা থেকে গবেষণা পর্যন্ত: শেয়ার, সঞ্চয়পত্র, মিউচুয়াল ফান্ড আর
           ঝুঁকির হিসাব, সবটাই সহজ বাংলায়। সঙ্গে পাঁচটা ক্যালকুলেটর, যাতে হিসাবটা
           নিজেই করে দেখতে পারেন।
         </p>
-        <p class="lede hl" data-when="skills" lang="bn">
+        <p class="lede" data-when="skills" lang="bn">
           টাকা ছাড়া বাকি যা কিছু: জার্মান আজই শুরু করা যায়, আর কুরআন, ইংরেজি,
           রান্না, ভ্রমণ ও রিভিউ লেখা হচ্ছে। ব্যাখ্যা বাংলায়, অনুশীলন আসল জিনিসে,
           কোনো লগইন বা দাম ছাড়াই।
         </p>
-        <p class="lede hl" data-when="work">
+        <p class="lede" data-when="work">
           Three-statement models, DCFs, Python analysis and finance writing —
           from an MSc in finance and risk management. Every case study on this
           site runs in your browser, so you can take the work apart before you
@@ -216,17 +268,21 @@
           </div>
         </div>
 
-        <div class="hero-actions after-doors hl" data-when="finance">
+        <!-- The button row that replaces the doors once a visitor has
+             chosen. There is no `open` version: before they choose,
+             the doorway above is the thing to act on and this row
+             would only be the same links twice. -->
+        <div class="hero-actions after-doors" data-when="finance">
           <a class="btn btn-solid" href="/learn/index.html">শেখার লাইব্রেরি →</a>
           <a class="btn btn-ghost" href="/tools/index.html">ক্যালকুলেটর</a>
           <a class="btn btn-ghost" href="/skills/index.html">দক্ষতা</a>
         </div>
-        <div class="hero-actions after-doors hl" data-when="skills">
+        <div class="hero-actions after-doors" data-when="skills">
           <a class="btn btn-solid" href="/skills/index.html">দক্ষতার তালিকা →</a>
           <a class="btn btn-ghost" href="/deutsch/index.html">জার্মান শুরু করুন</a>
           <a class="btn btn-ghost" href="/learn/index.html">টাকা ও বিনিয়োগ</a>
         </div>
-        <div class="hero-actions after-doors hl" data-when="work">
+        <div class="hero-actions after-doors" data-when="work">
           <a class="btn btn-solid" href="/portfolio.html">See the portfolio</a>
           <a class="btn btn-ghost" href="/portfolio/three-statement.html">Open a live model</a>
           <a class="btn btn-ghost" href="/contact.html">Start a conversation</a>
