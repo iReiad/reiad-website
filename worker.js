@@ -45,6 +45,8 @@ import { onRequestGet as news } from "./functions/api/news.js";
 import { onRequest as media } from "./functions/api/media/[[key]].js";
 import { onRequest as notion } from "./functions/api/notion/[[route]].js";
 import { onRequest as insight } from "./functions/insights/[slug].js";
+import { db } from "./functions/_lib/db.js";
+import { syncFromNotion } from "./functions/_lib/sync.js";
 
 /** prefix → handler, and the name of the catch-all parameter it
     expects (null where the route takes none). */
@@ -117,5 +119,31 @@ export default {
       }
       return env.ASSETS.fetch(request);
     }
+  },
+
+  /* ---- the Cron trigger ----
+
+     Notion is where the writing happens; this is what makes an edit
+     there show up here without anyone pressing anything. It only
+     touches articles that were already imported and published, and
+     only when the Notion page says it is ready — see _lib/sync.js
+     for why "as you type" is neither possible nor desirable.
+
+     A throw here would be an unhandled rejection in a context with
+     nobody to report it to, so the whole pass is caught and logged;
+     the next run tries again. */
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil((async () => {
+      try {
+        const d1 = await db(env);
+        if (!d1) return;
+        const report = await syncFromNotion(env, d1, { origin: env.SITE_ORIGIN });
+        if (report?.updated?.length || report?.failed?.length) {
+          console.log("notion sync", JSON.stringify(report));
+        }
+      } catch (err) {
+        console.error("notion sync failed", err?.stack ?? err);
+      }
+    })());
   },
 };

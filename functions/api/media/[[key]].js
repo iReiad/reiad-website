@@ -43,6 +43,12 @@ const TYPES = {
 
 const MAX_BYTES = 8 * 1024 * 1024;
 
+/* The fetch proxy is admin-only, so this is not the main line of
+   defence — but a Worker sits inside Cloudflare's network and there
+   is no reason for it to ever be pointed at a private address. */
+const PRIVATE_HOST =
+  /^(localhost$|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1\]?$|.*\.internal$|.*\.local$)/i;
+
 const extFor = (type) => TYPES[String(type ?? "").split(";")[0].trim().toLowerCase()];
 const typeFor = (key) =>
   Object.keys(TYPES).find((t) => TYPES[t] === key.split(".").pop()) ?? "application/octet-stream";
@@ -70,8 +76,51 @@ export async function onRequest(context) {
   if (!bucket) return notConfigured();
 
   return methods(request, {
-    /* ---------------- serve, or list ---------------- */
+    /* ---------------- serve, list, or fetch ---------------- */
     GET: async () => {
+      /* A photo pasted from Google Docs, or any web page, arrives as
+         a cross-origin URL. The browser cannot re-host it: fetching
+         it to resize is blocked by CORS, so the upload failed and the
+         article kept an image hotlinked to somebody else's server,
+         which will rot without warning.
+
+         This hands the bytes back same-origin so the Studio's own
+         resize-and-re-encode pipeline can run on them. It is
+         admin-only, for the same reason the Notion proxy is: an open
+         image proxy on someone else's domain is a gift to whoever
+         finds it. */
+      if (key === "fetch") {
+        const guard = await requireAdmin(context);
+        if (guard) return guard;
+
+        const target = url.searchParams.get("u");
+        if (!target) return fail("url-required");
+
+        let parsed;
+        try { parsed = new URL(target); } catch { return fail("bad-url"); }
+        if (parsed.protocol !== "https:") return fail("https-only", 400);
+        if (PRIVATE_HOST.test(parsed.hostname)) {
+          return fail("host-not-allowed", 403, { host: parsed.hostname });
+        }
+
+        const upstream = await fetch(parsed.toString(), { redirect: "follow" });
+        if (!upstream.ok) return fail("unavailable", upstream.status);
+
+        const type = upstream.headers.get("Content-Type") ?? "";
+        if (!type.startsWith("image/")) return fail("not-an-image", 415, { type });
+
+        const size = Number(upstream.headers.get("Content-Length") ?? 0);
+        if (size > MAX_BYTES) return fail("too-large", 413, { size, limit: MAX_BYTES });
+
+        return new Response(upstream.body, {
+          headers: {
+            "Content-Type": type,
+            "X-Content-Type-Options": "nosniff",
+            "Cache-Control": "private, max-age=300",
+          },
+        });
+      }
+
       // No key: the admin's inventory, not a public index.
       if (!key) {
         const guard = await requireAdmin(context);

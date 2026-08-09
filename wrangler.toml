@@ -103,6 +103,18 @@ bucket_name = "reiad-media"
 # the secret, /api/notion answers "not configured" and the button
 # never appears.
 
+# ---------- Notion auto-sync ----------
+# Every quarter hour, any article that came from Notion is checked
+# against its page and pulled in again if it changed. Nothing happens
+# without NOTION_TOKEN, and nothing happens to a page whose Status
+# column says it isn't ready — see functions/_lib/sync.js.
+#
+# Cron triggers are free and are not billed as requests. Fifteen
+# minutes is a deliberate floor: Notion rate-limits at roughly three
+# requests a second, and a sync costs several per article.
+[triggers]
+crons = ["*/15 * * * *"]
+
 # ---------- Workers AI (optional) ----------
 # functions/api/news.js uses an `AI` binding to translate headlines
 # into Bangla, and skips the translation when it isn't there.

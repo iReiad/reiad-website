@@ -32,16 +32,6 @@ export const SITE = {
 };
 
 export const ARTICLES = [
-   {
-    slug: "German Alphabets",
-    title: "বাংলায় জার্মান",
-    dek: "Umm.. this one is absolutely a test one",
-    tag: "Explainer . Equities",
-    date: "2026-08-05",
-    minutes: 1,
-    lang: "bn",
-    status: "live",
-  },
   {
     slug: "dse-basics",
     title: "How the Dhaka Stock Exchange actually works",

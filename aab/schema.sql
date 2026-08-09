@@ -38,6 +38,23 @@ CREATE TABLE IF NOT EXISTS articles (
 CREATE INDEX IF NOT EXISTS idx_articles_live
   ON articles (status, published_at DESC);
 
+-- The body before the last overwrite, and the nineteen before that.
+-- Publishing replaces an article in place, which until this existed
+-- meant a republish you regretted had nothing to go back to.
+CREATE TABLE IF NOT EXISTS article_versions (
+  id       INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug     TEXT NOT NULL,
+  title    TEXT NOT NULL DEFAULT '',
+  dek      TEXT NOT NULL DEFAULT '',
+  tag      TEXT NOT NULL DEFAULT '',
+  lang     TEXT NOT NULL DEFAULT 'en',
+  body     TEXT NOT NULL DEFAULT '',
+  cover    TEXT NOT NULL DEFAULT '',
+  saved_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_versions_slug
+  ON article_versions (slug, saved_at DESC);
+
 -- ---------- reader questions (the content flywheel) ----------
 CREATE TABLE IF NOT EXISTS questions (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,

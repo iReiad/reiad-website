@@ -30,6 +30,8 @@
 
 import { fail, methods, notConfigured, ok, str } from "../../_lib/http.js";
 import { requireAdmin } from "../../_lib/auth.js";
+import { db } from "../../_lib/db.js";
+import { syncFromNotion } from "../../_lib/sync.js";
 import {
   client, convert, fetchBlocks, normaliseId, pageTitle, proxyURL, readFields,
 } from "../../_lib/notion.js";
@@ -60,6 +62,24 @@ export async function onRequest(context) {
   if (!token) return notConfigured();
   const notion = client(token);
   const origin = env.SITE_ORIGIN || url.origin;
+
+  /* The same pass the Cron trigger runs, on demand. Useful when you
+     have just finished something in Notion and don't want to wait
+     for the next quarter hour. */
+  if (head === "sync") {
+    return methods(request, {
+      POST: async () => {
+        const guard = await requireAdmin(context);
+        if (guard) return guard;
+        const d1 = await db(env);
+        if (!d1) return notConfigured();
+        return ok(await syncFromNotion(env, d1, {
+          origin,
+          force: url.searchParams.get("force") === "1",
+        }));
+      },
+    });
+  }
 
   return methods(request, {
     GET: async () => {

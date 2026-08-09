@@ -29,6 +29,9 @@ immediately** — no file to move, no commit, no push.
 | --- | --- |
 | One-click publishing | `/studio.html` → Publish |
 | Editing a published piece, in place | Studio → Open… → Edit |
+| Editing the older file-based articles | Studio → Open… → Written as files |
+| Going back to an earlier version | desk → Published → History |
+| Notion edits appearing on their own | every 15 minutes, if the page says it's ready |
 | Writing in Notion and publishing from here | Studio → Import from Notion |
 | Photos stored in R2, not in the article | automatic, on publish |
 | Pre-flight checks before anything goes out | Studio → 3 · Publish it |
@@ -71,6 +74,39 @@ fields in its columns. Name them any of these and they're picked up:
 Once imported, the piece stays linked to its Notion page: **Re-sync from
 Notion** pulls the current version back over the body, so Notion can stay the
 place the writing happens.
+
+### Letting Notion publish itself
+
+A Cron trigger (`wrangler.toml`, every fifteen minutes) checks every article
+that came from Notion and pulls it in again if the page has changed. Edit in
+Notion, and the site catches up on its own.
+
+**It will not publish something you are still writing.** Give the page a
+`Status` column and the sync only runs when it says one of *live, published,
+publish, ready, done, complete*. Anything else — *drafting*, *idea*, empty
+after having been set — and the page is left alone however often it changes. A
+page with no Status column at all syncs freely, so add one the moment a piece
+matters.
+
+Three other things it refuses to do, all for the same reason (a sync that runs
+unattended must never be the thing that damages an article):
+
+- a page that converts to nothing leaves the article alone, because that is
+  almost always the integration having lost access rather than a piece that
+  became empty
+- a change that renders identically updates only the timestamp
+- every overwrite keeps the body it replaced, exactly as publishing does
+
+"As I type" is not on offer and would not be wanted: Notion does not push per
+keystroke, and the middle of an unfinished sentence should not be live.
+`POST /api/notion/sync` runs the same pass immediately if fifteen minutes is
+too long to wait.
+
+Photos are the one compromise. A Worker has no canvas, so the scheduled sync
+cannot resize or re-encode: it copies images to `/media` at whatever size
+Notion holds them, skipping anything over 8 MB. Importing through the Studio
+still runs the full resize-and-WebP pipeline, so a piece you import by hand is
+lighter than one that syncs itself.
 
 **Photos are the part worth understanding.** Notion serves uploaded files from
 S3 on signed URLs that expire in about an hour, so an imported photo cannot
@@ -131,9 +167,9 @@ flips it back on any page.
 
 ```sh
 npx wrangler dev                    # the real Cloudflare runtime, local D1 and R2
-./test-api.sh                       # 87 checks over every endpoint
+./test-api.sh                       # 101 checks over every endpoint
 node functions/_lib/notion.test.mjs # 74 checks on the Notion → HTML conversion
-node aab/studio.test.mjs            # 53 checks driving the editor in a browser
+node aab/studio.test.mjs            # 63 checks driving the editor in a browser
 node aab/check-routes.mjs           # catches redirect loops before deploying
 node aab/check-sw.mjs               # did a precached file change without a VERSION bump?
 node aab/portfolio/dissertation.test.mjs   # 141 checks on the statistics engine
@@ -235,7 +271,8 @@ which mode it's in.
 | `aab/sw.js` | Service worker — offline reading, never stale articles |
 | `functions/api/news.js` | Serves `/api/news` — the market-pulse feed |
 | `aab/_headers`, `_redirects` | Cloudflare security headers, CSP and redirects |
-| `aab/check-routes.mjs` | **Run before deploying.** Walks every URL through the routing rules and fails on loops, dead ends and broken links |
+| `aab/check-routes.mjs` | **Run before deploying.** Walks every URL through the routing rules and fails on loops, dead ends, broken links, and article slugs that could never resolve |
+| `functions/_lib/sync.js` | The scheduled Notion pull, and the rules that stop it publishing something half-written |
 | `aab/build-meta.mjs` | Regenerates `feed.xml`, `sitemap.xml`, `robots.txt` |
 | `aab/build-og.mjs` | Re-renders the social share images in `og/` (needs Playwright) |
 | `aab/portfolio/` | The four case studies. Each is a page, a DOM-free engine (`*.model.js`) and its charts (`*.js`) |

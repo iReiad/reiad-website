@@ -24,6 +24,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { liveArticles } from "./content.js";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const MAX_HOPS = 10;
@@ -99,6 +100,26 @@ for (const page of pages) {
 }
 
 let failures = 0;
+
+/* An article's slug becomes a URL, and only some strings can.
+   worker.js matches /insights/([a-z0-9-]+) and static assets are no
+   more forgiving, so a slug with a capital or a space cannot resolve
+   however it is published — but it still reaches feed.xml, the
+   sitemap and the Ctrl+K index, because those are built straight
+   from content.js.
+
+   That is exactly what happened: a live entry with the slug
+   "German Alphabets" put a URL containing a raw space into the
+   sitemap submitted to search engines. Nothing here looked at
+   ARTICLES, so nothing caught it. */
+const SLUG = /^[a-z0-9-]+$/;
+for (const article of liveArticles()) {
+  if (SLUG.test(article.slug)) continue;
+  failures++;
+  console.error(`bad-slug  ${JSON.stringify(article.slug)}   (content.js: "${article.title}")`);
+  console.error("        a slug may only contain lowercase letters, digits and hyphens");
+}
+
 for (const url of [...targets].sort()) {
   const t = trace(url);
   if (t.status === "ok") continue;

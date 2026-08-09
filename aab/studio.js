@@ -18,6 +18,7 @@
 import { toast, copyText, download } from "/app.js";
 import { lock } from "/auth.js";
 import { api, uploadMedia, notion } from "/api.js";
+import { liveArticles } from "/content.js";
 
 /* ============================================================
    Elements
@@ -283,6 +284,21 @@ async function insertImages(files) {
 
 const ALREADY_HOSTED = /^\/media\//;
 
+/** Is this photo on somebody else's server? */
+const isOffSite = (src) => /^https?:\/\//i.test(src ?? "");
+
+/**
+ * A URL the browser is actually allowed to read the bytes of.
+ *
+ * A data: URL and our own Notion proxy are same-origin and fine. A
+ * cross-origin one is not: fetching it to resize is blocked by CORS,
+ * which used to mean the upload failed and the article silently kept
+ * an image hotlinked to a server we don't control. Those go through
+ * /api/media/fetch, which hands the bytes back same-origin.
+ */
+const fetchableSrc = (src) =>
+  isOffSite(src) ? `/api/media/fetch?u=${encodeURIComponent(src)}` : src;
+
 async function hostPhotos(html, slug, onProgress) {
   const doc = new DOMParser().parseFromString(html, "text/html");
   const pending = [...doc.querySelectorAll("img")].filter((img) => {
@@ -298,9 +314,8 @@ async function hostPhotos(html, slug, onProgress) {
   for (const [i, img] of pending.entries()) {
     onProgress?.(i + 1, pending.length);
     try {
-      // Same-origin for both kinds: a data: URL, or our own proxy,
-      // which needs the session cookie to answer at all.
-      const res = await fetch(img.getAttribute("src"), { credentials: "same-origin" });
+      const res = await fetch(fetchableSrc(img.getAttribute("src")),
+        { credentials: "same-origin" });
       if (!res.ok) throw new Error(String(res.status));
 
       const { blob, width, height } = await encodeImage(await res.blob());
@@ -1303,9 +1318,18 @@ function preflight(m) {
   }
 
   const unhosted = [...doc.querySelectorAll("img")]
-    .filter((i) => !ALREADY_HOSTED.test(i.getAttribute("src") ?? "")).length;
-  if (unhosted && dynamic) {
-    add("info", `${unhosted} photo${unhosted === 1 ? "" : "s"} will be uploaded to /media on publish.`);
+    .filter((i) => !ALREADY_HOSTED.test(i.getAttribute("src") ?? ""));
+  const offSite = unhosted.filter((i) => isOffSite(i.getAttribute("src")));
+
+  if (unhosted.length && dynamic) {
+    add("info", `${unhosted.length} photo${unhosted.length === 1 ? "" : "s"} will be uploaded to /media on publish.`);
+  }
+  // Worth saying out loud: these are the ones that would rot if the
+  // copy failed, because they point at a server nobody here controls.
+  if (offSite.length) {
+    add("warn", `${offSite.length} photo${offSite.length === 1 ? " is" : "s are"} still hosted elsewhere `
+      + `(${new URL(offSite[0].getAttribute("src")).hostname}). Publishing copies `
+      + "them here; until then they can disappear without warning.");
   }
 
   return issues;
@@ -1410,6 +1434,28 @@ async function showOpen() {
     nodes.push(line);
   }
 
+  /* The pieces that are still committed files. Anything already
+     taken over by a database row is listed below instead, so the
+     same article never appears twice. */
+  const inDatabase = new Set(articles.map((a) => a.slug));
+  const files = liveArticles().filter((a) => !inDatabase.has(a.slug));
+
+  if (files.length) {
+    nodes.push(sectionLabel("Written as files, before the Studio"));
+    for (const entry of files) {
+      const line = document.createElement("div");
+      line.className = "admin-line";
+      line.append(
+        Object.assign(document.createElement("span"), { textContent: entry.title }),
+        Object.assign(document.createElement("span"), {
+          className: "mono muted", textContent: entry.date ?? "",
+        }),
+        rowButton("Edit", () => openFile(entry))
+      );
+      nodes.push(line);
+    }
+  }
+
   if (dynamic) {
     nodes.push(sectionLabel("Published through the Studio"));
     if (!articles.length) {
@@ -1431,6 +1477,62 @@ async function showOpen() {
   }
 
   body.replaceChildren(...nodes);
+}
+
+/* ---------- articles that are still files ----------
+
+   The pieces written before the Studio existed are committed HTML in
+   aab/insights/. They are not in the database, so Open… could not
+   see them and there was no way to change a word of one without
+   editing the file by hand.
+
+   Reading the file back is enough, because worker.js already prefers
+   a D1 row over a file for /insights/*: publishing what comes out of
+   here takes over that URL, and the file stays where it is as the
+   fallback if the row is ever removed. */
+
+/** The article body, with the furniture every page repeats stripped. */
+function bodyFromPage(html) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const article = doc.querySelector("article.article");
+  if (!article) return null;
+
+  // Everything up to and including the byline is rebuilt from the
+  // fields; the disclaimer and the prev/next pair are added back on
+  // export. What is left is the piece itself.
+  article.querySelectorAll(
+    ".eyebrow, h1, .lede, .byline, .prev-next, .engage-block, .read-progress"
+  ).forEach((n) => n.remove());
+  article.querySelectorAll(".note").forEach((n) => {
+    if (/general education, not investment advice/i.test(n.textContent)) n.remove();
+  });
+
+  return sanitize(article.innerHTML);
+}
+
+async function openFile(entry) {
+  const res = await fetch(`/insights/${entry.slug}.html`, { credentials: "same-origin" });
+  if (!res.ok) { toast("Couldn't read that file."); return; }
+
+  const body = bodyFromPage(await res.text());
+  if (body === null) { toast("That page isn't shaped like an article."); return; }
+
+  current.draftId = newDraftId();
+  current.slug = null;          // not in the database yet, so publishing is a first publish
+  current.notionPageId = null;
+
+  editor.innerHTML = body;
+  fields.title.value = entry.title ?? "";
+  fields.dek.value = entry.dek ?? "";
+  fields.tag.value = entry.tag ?? "";
+  fields.slug.value = entry.slug ?? "";
+  fields.date.value = (entry.date ?? "").slice(0, 10) || new Date().toISOString().slice(0, 10);
+  fields.lang.value = entry.lang === "bn" ? "bn" : "en";
+
+  openSheet.close();
+  onEdit();
+  refreshNow();
+  toast(`Loaded "${entry.title}" from its file. Publishing takes over that URL.`);
 }
 
 /** Pull a published article back into the editor. Without this the
