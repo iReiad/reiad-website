@@ -88,10 +88,19 @@ function saveSchrift(schrift) {
   }, 400);
 }
 
-/* A textarea that grows with what is in it. Without this the
-   eight boxes are one line tall and a learner writing a long
-   sentence types into a slot they cannot read back. */
+/* A textarea that grows with what is in it, so eight sentences
+   read back as eight sentences rather than eight slots.
+
+   The overflow/resize switch matters: the boxes ship as ordinary
+   scrollable, resizable textareas so that with scripts off they
+   are still usable. Autosizing only works if nothing can scroll
+   inside them, so this takes that over the moment it runs — and
+   only then. */
 function fit(area) {
+  if (area.style.overflow !== "hidden") {
+    area.style.overflow = "hidden";
+    area.style.resize = "none";
+  }
   area.style.height = "auto";
   area.style.height = `${area.scrollHeight}px`;
 }
@@ -181,6 +190,14 @@ function show(n, { scroll = false, writeHash = true } = {}) {
 
 const nav = document.querySelector("[data-tag-nav]");
 
+/* Day titles come off the page, and the page is generated from
+   arbeitsbuch.data.js — but they are still going back in through
+   innerHTML, and a Teil called `a < b` would end the option early.
+   Escaping costs one line and removes the question. */
+const esc = (s) =>
+  String(s).replace(/[&<>"]/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
 function buildNav() {
   if (!nav) return;
   nav.hidden = false;
@@ -189,7 +206,7 @@ function buildNav() {
     <label class="tag-waehler">
       <span class="mono">দিন</span>
       <select aria-label="দিন বেছে নিন">
-        ${days.map((d) => `<option value="${d.n}">${bn(d.n)} · ${d.title}</option>`).join("")}
+        ${days.map((d) => `<option value="${d.n}">${bn(d.n)} · ${esc(d.title)}</option>`).join("")}
       </select>
     </label>
     <button type="button" class="btn btn-ghost" data-go="next">পরের দিন →</button>
@@ -221,6 +238,10 @@ function toggleAll() {
       a.hidden = false;
       a.querySelectorAll("textarea[data-schrift]").forEach(fit);
     });
+    /* Without this the tracker keeps one square ringed as "the day
+       you are on" while all thirty are on screen — a highlight
+       pointing at nothing in particular. */
+    paintTracker();
   } else {
     show(current);
   }

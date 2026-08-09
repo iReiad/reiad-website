@@ -99,7 +99,6 @@ const HEAD_TAIL = `  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <link rel="alternate" type="application/rss+xml" title="Rony Reiad · Insights" href="/feed.xml">
-  <meta property="og:image" content="https://reiad.co.uk/og/learn.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
@@ -143,7 +142,11 @@ const FOOTER = `  <footer>
 
   <script type="module" src="/app.js"></script>`;
 
-function page({ title, description, canonical, body, extraScripts = "" }) {
+/* `og` is a file name inside /og/. build-og.mjs both renders the
+   cards and repoints every page at the right one, so the value
+   here has to agree with its ASSIGN table — otherwise the two
+   generators take turns overwriting each other. */
+function page({ title, description, canonical, body, og = "deutsch.png", extraScripts = "" }) {
   return `<!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -156,6 +159,7 @@ function page({ title, description, canonical, body, extraScripts = "" }) {
   <meta property="og:type" content="article">
   <meta property="og:title" content="${esc(title)}">
   <meta property="og:description" content="${esc(description)}">
+  <meta property="og:image" content="https://reiad.co.uk/og/${og}">
 ${PREPAINT}
 ${HEAD_TAIL}
 </head>
@@ -227,6 +231,7 @@ function teilPage(stufe, teile, index, bodies) {
     title: `${teil.bn}: ${stufe.kicker}, জার্মান বাংলায়, Rony Reiad`,
     description: teil.blurb,
     canonical: teil.url,
+    og: `deutsch-${stufe.slug}.png`,
     body: `
       <article class="term-article lesson teil"
                data-teil-id="${esc(teilId(stufe, teil))}"
@@ -236,8 +241,7 @@ function teilPage(stufe, teile, index, bodies) {
           <a href="${stufeUrl(stufe)}">${esc(stufe.kicker)} · ${esc(stufe.bn)}</a>
           · ${esc(teil.section?.bn ?? "")}
         </span>
-        <h1 class="bn-h">${art}${esc(teil.bn)}</h1>
-        <p class="teil-de" lang="de">${esc(teil.de)} <span class="en-sub">${esc(teil.en)}</span></p>
+        <h1 class="bn-h">${art}${esc(teil.bn)} <span class="en-sub" lang="de">${esc(teil.de)}</span></h1>
         <p class="one-liner">${esc(teil.blurb)}</p>
         <p class="lesson-meta mono">${soon ? "আসছে" : `${bn(teil.minutes)} মিনিটের পড়া`}</p>
 ${body || SOON_BODY}
@@ -271,8 +275,7 @@ function stufeIndexPage(stufe, teile) {
           return `        <a class="cell lesson-card${soon ? " is-soon" : ""}" href="${t.url}"
            data-teil-id="${esc(t.id)}">
           <span class="lesson-card-art" aria-hidden="true">${icon(t.icon ?? stufe.icon)}</span>
-          <h3 class="bn-h">${esc(t.bn)}</h3>
-          <span class="teil-de mono" lang="de">${esc(t.de)}</span>
+          <h3 class="bn-h">${esc(t.bn)} <span class="en-sub" lang="de">${esc(t.de)}</span></h3>
           <p>${esc(t.blurb)}</p>
           <span class="lesson-card-foot mono">${soon ? "আসছে" : `${bn(t.minutes)} মিনিট`}</span>
         </a>`;
@@ -324,6 +327,7 @@ ${cards}
     title: `${stufe.kicker} · ${stufe.bn}, জার্মান বাংলায়, Rony Reiad`,
     description: stufe.blurb,
     canonical: stufeUrl(stufe),
+    og: `deutsch-${stufe.slug}.png`,
     body: `
       <div class="hero stage-hero stufe-hero" data-stufe="${esc(stufe.slug)}">
         <span class="eyebrow mono">${esc(stufe.kicker)} · <span lang="de">${esc(stufe.de)}</span></span>
@@ -391,7 +395,7 @@ function dayArticle(d, stufe) {
   const tausche = Array.from({ length: 8 }, (_, i) =>
     `            <label class="feld">
               <span class="feld-num mono">${bn(i + 1)}</span>
-              <textarea rows="1" data-schrift="tag-${d.n}-tausche-${i + 1}"
+              <textarea rows="2" data-schrift="tag-${d.n}-tausche-${i + 1}"
                         aria-label="দিন ${bn(d.n)}, নিজের বাক্য ${bn(i + 1)}"
                         placeholder="নিজের বাক্য…"></textarea>
             </label>`).join("\n");
@@ -401,7 +405,7 @@ function dayArticle(d, stufe) {
       `            <div class="sag-zeile">
               <span class="feld-num mono">${bn(i + 1)}</span>
               <span class="sag-frage">${esc(s.q)}</span>
-              <textarea rows="1" data-schrift="tag-${d.n}-sag-${i + 1}"
+              <textarea rows="2" data-schrift="tag-${d.n}-sag-${i + 1}"
                         aria-label="দিন ${bn(d.n)}, অনুবাদ ${bn(i + 1)}"
                         placeholder="আগে বলো, তারপর লেখো…"></textarea>
               <span class="sag-antwort" lang="de">${esc(s.a)}</span>
@@ -410,7 +414,7 @@ function dayArticle(d, stufe) {
   return `      <article class="tag" id="tag-${d.n}" data-tag="${d.n}" data-day-id="${esc(stufe.slug)}/tag-${d.n}">
         <header class="tag-kopf">
           <span class="tag-num mono"><span lang="de">Tag</span> ${bn(d.n)}</span>
-          <h2 class="bn-h" lang="de">${esc(d.de)}</h2>
+          <h2 lang="de">${esc(d.de)}</h2>
           <p class="tag-bn">${esc(d.bn)}</p>
         </header>
 
@@ -483,6 +487,7 @@ function arbeitsbuchPage(stufe) {
     description:
       "দিনে একটা পাতা, একটা ছাঁচ, নিজের জীবনের একটা সত্যি অনুচ্ছেদ। জার্মান স্তর ১-এর ত্রিশ দিনের অনুশীলন খাতা, বাংলায়, উত্তরমালাসহ।",
     canonical: url,
+    og: "deutsch-arbeitsbuch.png",
     body: `
       <div class="hero buch-hero" data-buch="${esc(stufe.slug)}">
         <span class="eyebrow mono"><span lang="de">Das 30-Tage-Arbeitsbuch</span> · ${esc(stufe.kicker)}</span>

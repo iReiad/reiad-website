@@ -3184,12 +3184,17 @@
      line height is set for Bengali, so German set in it looks
      limp next to the text explaining it. Every German string in
      this school carries lang="de"; this is the one rule that
-     makes that markup earn its keep. */
-  [lang="de"] {
+     makes that markup earn its keep.
+
+     Scoped to body.deutsch rather than left as a bare attribute
+     selector: an article elsewhere on the site is free to quote a
+     German phrase without this school reaching in and restyling
+     it. */
+  body.deutsch [lang="de"] {
     font-family: var(--font-sans);
     font-feature-settings: "kern" 1;
   }
-  b[lang="de"], strong[lang="de"] { font-weight: 600; }
+  body.deutsch :is(b, strong)[lang="de"] { font-weight: 600; }
 
   /* ---------- the hub ---------- */
   .deutsch-hero .lede [lang="de"] { color: var(--gold); }
@@ -3245,12 +3250,12 @@
     margin-top: 16px; color: var(--ink);
     border-left: 3px solid var(--green); padding-left: 14px; max-width: 60ch;
   }
-  .teil-de {
-    font-family: var(--font-mono); font-size: 0.78rem;
-    letter-spacing: 0.04em; color: var(--gold);
-  }
-  .lesson-card .teil-de { display: block; margin: 2px 0 8px; }
-  .term-article .teil-de { margin: -6px 0 14px; font-size: 0.86rem; }
+  /* A Teil's German name rides inline in the heading as .en-sub —
+     the same slot, the same mono grey, the same rhythm the Learn
+     cards have used since they were written. It had its own gold
+     line under the title for a while, which made every card a line
+     taller, put a second accent colour beside the icon, and made
+     the two schools' card grids look like two different sites. */
 
   .buch-cta {
     display: grid; grid-template-columns: auto 1fr auto; gap: 18px;
@@ -3516,8 +3521,14 @@
   }
   .feld-num { color: var(--gold); font-size: 0.78rem; padding-top: 9px; }
 
+  /* resize/overflow are deliberately the no-JavaScript values.
+     arbeitsbuch.js sets overflow:hidden on the boxes it takes over
+     and grows them to fit instead; without it they stay ordinary
+     resizable, scrollable textareas. They used to ship as
+     rows="1" with overflow:hidden — which, with scripts off, is a
+     one-line box you can type into and never read back. */
   .tag textarea[data-schrift] {
-    width: 100%; resize: none; overflow: hidden;
+    width: 100%; resize: vertical; overflow: auto;
     border: 0; border-bottom: 1px solid var(--hairline);
     background: transparent; color: var(--ink);
     font-family: var(--font-sans); font-size: 0.98rem; line-height: 1.8;
@@ -3557,12 +3568,17 @@
   .tag-fertig[aria-pressed="true"] { color: var(--green); border-color: var(--green); }
 
   /* Printing the book should give you the book, not one day of it
-     and a navigation bar. */
+     and a navigation bar.
+
+     Every selector is under body.deutsch, including the ones that
+     look German-only. .hero-actions is not German-only at all —
+     unscoped, this block was hiding the call-to-action buttons on
+     every page of the site whenever anyone printed anything. */
   @media print {
-    .tag-nav, .tracker, .buch-fortschritt, .hero-actions { display: none; }
-    .tag { break-inside: avoid; border-color: #999; }
-    .tag[hidden] { display: block !important; }
-    .sag-antwort { display: none !important; }
+    body.deutsch :is(.tag-nav, .tracker, .buch-fortschritt, .hero-actions) { display: none; }
+    body.deutsch .tag { break-inside: avoid; border-color: #999; }
+    body.deutsch .tag[hidden] { display: block !important; }
+    body.deutsch .sag-antwort { display: none !important; }
   }
 
   @media (prefers-reduced-motion: reduce) {

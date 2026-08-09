@@ -20,10 +20,34 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { globSync } from "node:fs";
 import { chromium } from "playwright";
 import { STAGES } from "./learn/curriculum.js";
+import { STUFEN } from "./deutsch/curriculum.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, "og");
 mkdirSync(OUT, { recursive: true });
+
+/* ------------------------------------------------------------
+   Two flags, both for the same hazard: this script overwrites
+   every PNG in og/, and a card rendered without the site's
+   webfonts is a card in Arial. Somewhere with no route to
+   fonts.googleapis.com — a locked-down CI box, a sandbox — an
+   innocent run silently replaces twenty good images with bad
+   ones.
+
+     --only=<substring>   render just the cards whose file name
+                          contains it, and leave the rest alone
+     --fonts=<file.css>   inline this CSS instead of fetching from
+                          Google. Give it @font-face rules whose
+                          src is a data: URL and the render needs
+                          no network at all
+
+   Pointing the pages at their cards runs either way: it touches
+   no network and is idempotent.
+   ------------------------------------------------------------ */
+const flag = (name) =>
+  process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=").slice(1).join("=");
+const ONLY = flag("only");
+const FONT_CSS = flag("fonts");
 
 const CARDS = [
   { file: "default.png", eyebrow: "reiad.co.uk", title: "Bangladesh's markets, explained in the language we speak.",
@@ -73,6 +97,25 @@ const CARDS = [
     sub: (st.blurb ?? st.en ?? "").slice(0, 150),
     bn: true,
   })),
+
+  /* The German school. Without these every /deutsch/ link — the
+     hub, four Stufen, fourteen Teile and the practice book —
+     previewed as the site's generic card, which says nothing
+     about German at all. Same rule as the stages: one per Stufe,
+     so a shared Teil previews as the Stufe it belongs to. */
+  { file: "deutsch.png", eyebrow: "জার্মান · Deutsch von Herzen",
+    title: "মন থেকে জার্মান।",
+    sub: "শব্দ মুখস্থ নয়, কাঠামো · চারটা স্তর · রোজ একটা পাতার অনুশীলন", bn: true },
+  { file: "deutsch-arbeitsbuch.png", eyebrow: "Das 30-Tage-Arbeitsbuch · অনুশীলন",
+    title: "দিনে একটা পাতা।",
+    sub: "একটা ছাঁচ · পাঁচটা নমুনা · নিজের আটটা বাক্য · একটা সত্যি অনুচ্ছেদ", bn: true },
+  ...STUFEN.map((st) => ({
+    file: `deutsch-${st.slug}.png`,
+    eyebrow: `${st.kicker} · ${st.de}`,
+    title: st.bn,
+    sub: (st.blurb ?? "").slice(0, 150),
+    bn: true,
+  })),
 ];
 
 /* ------------------------------------------------------------
@@ -98,6 +141,13 @@ const ASSIGN = [
     `stage-${st.slug}.png`,
   ]),
   [/^learn\//, "learn.png"],
+  [/^deutsch\/stufe-1\/arbeitsbuch\.html$/, "deutsch-arbeitsbuch.png"],
+  [/^deutsch\/index\.html$/, "deutsch.png"],
+  ...STUFEN.map((st) => [
+    new RegExp(`^deutsch\\/${st.slug}\\/`),
+    `deutsch-${st.slug}.png`,
+  ]),
+  [/^deutsch\//, "deutsch.png"],
   [/^insights/, "insights.png"],
   [/^about\.html$/, "about.png"],
   [/^contact\.html$/, "contact.png"],
@@ -106,8 +156,12 @@ const ASSIGN = [
 
 const cardFor = (rel) => (ASSIGN.find(([re]) => re.test(rel)) ?? [])[1] ?? "default.png";
 
+const FONTS = FONT_CSS
+  ? `<style>${readFileSync(FONT_CSS, "utf8")}</style>`
+  : `<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Bengali:wght@600&family=Noto+Sans+Bengali:wght@400&display=swap" rel="stylesheet">`;
+
 const page = (card) => `<!doctype html><meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Bengali:wght@600&family=Noto+Sans+Bengali:wght@400&display=swap" rel="stylesheet">
+${FONTS}
 <style>
   * { margin: 0; box-sizing: border-box; }
   body {
@@ -182,9 +236,22 @@ const context = await browser.newContext({
 });
 const tab = await context.newPage();
 
-for (const card of CARDS) {
+const wanted = ONLY ? CARDS.filter((c) => c.file.includes(ONLY)) : CARDS;
+if (ONLY) console.log(`--only=${ONLY}: ${wanted.length} of ${CARDS.length} card(s)\n`);
+
+for (const card of wanted) {
   await tab.setContent(page(card), { waitUntil: "networkidle" });
   await tab.evaluate(() => document.fonts.ready);
+  /* A card in the wrong typeface is worse than no new card, and
+     silent is how that ships. Say so, and write nothing. */
+  if (!(await tab.evaluate(() => document.fonts.size))) {
+    console.error(
+      `\nNo webfonts loaded — og/${card.file} would render in the fallback face.\n` +
+      "Nothing written. Run this where fonts.googleapis.com is reachable, or\n" +
+      "pass --fonts=<file.css> holding @font-face rules with data: URLs.");
+    await browser.close();
+    process.exit(1);
+  }
   await tab.screenshot({ path: join(OUT, card.file) });
   console.log("wrote og/" + card.file);
 }
@@ -197,8 +264,12 @@ await browser.close();
 const files = globSync("**/*.html", { cwd: HERE })
   .filter((f) => !f.startsWith("og/") && f !== "offline.html");
 
-/* Pages that are nobody's business to share. */
-const PRIVATE = new Set(["studio.html", "offline.html", "insights/_template.html"]);
+/* Pages that are nobody's business to share. The list matches
+   the Disallow block in robots.txt — desk.html was in one and not
+   the other, so a run quietly gave the admin desk a share card. */
+const PRIVATE = new Set([
+  "studio.html", "desk.html", "offline.html", "insights/_template.html",
+]);
 
 const esc = (t) => t.replace(/&/g, "&amp;").replace(/"/g, "&quot;")
   .replace(/</g, "&lt;").replace(/>/g, "&gt;");
