@@ -31,6 +31,32 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v27: one line out of the home page's services cell, which made
+   that card taller than the two beside it and put a band of empty
+   panel across the whole row. index.html is precached, so the
+   offline copy has to move with it.
+
+   v26: the home page's intro stopped depending on app.js and
+   styles.css being in step with it. Worth spelling out here,
+   because the shape of THIS cache is what made it matter: HTML is
+   network-first and everything else is served from cache and
+   refreshed behind you, so the first load after any deploy pairs
+   new markup with the PREVIOUS app.js and styles.css. That is a
+   good trade for a reading site right up until the markup stops
+   being legible without them — four headlines were spans inside
+   the element app.js rebuilds word by word, and the older app.js
+   welded them into one paragraph. The selection now ships inside
+   the document, so the pairing is harmless again.
+
+   v25: the header's Deutsch link became a Skills dropdown, the
+   home page grew a welcome-back band, and app.js gained three new
+   imports (recent, tilt, and by way of home.js the shared news
+   module). A returning reader served the v24 shell would get the
+   old app.js, whose imports of /recent.js and /tilt.js do not
+   exist in it — so the whole module would fail to evaluate and
+   every page would lose its menu, its palette and its theme
+   toggle at once.
+
    v24: `header` and `footer`. The page chrome was claimed with
    bare element selectors, so every <header> and <footer> nested
    inside an article got position:sticky, z-index:50 and the glass
@@ -132,24 +158,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-/* v25: the header's Deutsch link became a Skills dropdown, the
-   home page grew a welcome-back band, and app.js gained three new
-   imports (recent, tilt, and by way of home.js the shared news
-   module). A returning reader served the v24 shell would get the
-   old app.js, whose imports of /recent.js and /tilt.js do not
-   exist in it — so the whole module would fail to evaluate and
-   every page would lose its menu, its palette and its theme
-   toggle at once.
-
-   v26: the home page's intro stopped depending on either of them.
-   Worth spelling out, because the shape of this cache is what made
-   it matter: HTML is network-first and everything else is served
-   from cache and refreshed behind you, so the first load after any
-   deploy pairs new markup with the PREVIOUS app.js and styles.css.
-   An intro that needed the three in step was an intro that broke
-   once per deploy — and it did. The selection now ships inside the
-   document. */
-const VERSION = "v26";
+const VERSION = "v27";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

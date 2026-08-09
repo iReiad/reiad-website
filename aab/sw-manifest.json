@@ -1,8 +1,8 @@
 {
-  "version": "v26",
+  "version": "v27",
   "hashes": {
-    "/": "4033e5724043a077",
-    "/index.html": "4033e5724043a077",
+    "/": "6f82687fd011f9b4",
+    "/index.html": "6f82687fd011f9b4",
     "/offline.html": "15451a783a4e28ae",
     "/styles.css": "7695a616a31262cf",
     "/app.js": "3d1b12cd3f856463",
