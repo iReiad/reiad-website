@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v23: .tag. The German school styled a class the whole site
+   already used for the small label above an article card, and
+   because a school's layer beats components everywhere, every
+   card on the site grew an empty bordered box around its label.
+   styles.css, the practice book and its script all changed, and
+   all three are precached — without the bump the fix would have
+   reached nobody who had been to the site before. check-css.mjs
+   now fails on the general case.
+
    v22: the German school's first fixes — the practice book's
    boxes are usable with scripts off, the resume card offers
    whichever half is actually behind, the Teil cards match the
@@ -114,7 +123,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v22";
+const VERSION = "v23";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -1,10 +1,10 @@
 {
-  "version": "v22",
+  "version": "v23",
   "hashes": {
     "/": "a5dbaf59a53eeae3",
     "/index.html": "a5dbaf59a53eeae3",
     "/offline.html": "e5c892d1fd6cd010",
-    "/styles.css": "ee8bf854a2949dd6",
+    "/styles.css": "9b2b6f5f3dba1140",
     "/app.js": "f035f9c8e3623be2",
     "/content.js": "bb491b2e0e46b153",
     "/api.js": "9e58fcd815993f9c",
@@ -25,8 +25,8 @@
     "/deutsch/progress.js": "b53ad7e3cab3e862",
     "/deutsch/icons.js": "5063bf9ce028cd96",
     "/deutsch/stufe-1/index.html": "0c8d07b7a8908607",
-    "/deutsch/stufe-1/arbeitsbuch.html": "4668ee034f7a79a3",
-    "/deutsch/arbeitsbuch.js": "0618b2cdaeffa9b2",
+    "/deutsch/stufe-1/arbeitsbuch.html": "1798802a1b3623bd",
+    "/deutsch/arbeitsbuch.js": "b752a65c5a297912",
     "/tools/index.html": "93cdd65dc81eeb73",
     "/tools/stock.html": "f31354b03ff02fb4",
     "/tools/stock.js": "74c5b224ff317f5c",

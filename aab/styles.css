@@ -3152,8 +3152,22 @@
                     single most repeated object in the course
      .hut           der/die/das in the three colours the workbook
                     asks the learner to write in
-     .tag           one day of the practice book
+     .buch-tag      one day of the practice book
      .tracker       thirty little squares, ticked by hand
+
+   NAME EVERYTHING IN THIS LAYER SO IT COULD ONLY EVER MEAN
+   GERMAN. This layer is declared after `components`, so a class
+   here beats the same class there on every page of the site, not
+   just on /deutsch/. A day of the practice book was called .tag
+   — German for day — and .tag is what the site has always called
+   the small label above an article card. One bare rule in here
+   put a 30px padded, bordered, 16px-radius box around the label
+   on every card on the site: the home page bento, the Insights
+   list, the About and Services cards, all of it. Nothing caught
+   it, because every check the site has looks at routes, caches
+   and links, and none of them look at CSS.
+
+   check-css.mjs now does, and runs with the others.
    ============================================================ */
 @layer deutsch {
 
@@ -3487,7 +3501,7 @@
   }
 
   /* ---------- one day ---------- */
-  .tag {
+  .buch-tag {
     border: 1px solid var(--hairline); border-radius: var(--radius);
     background: var(--panel); padding: clamp(18px, 3vw, 30px);
     margin-bottom: var(--gap);
@@ -3499,7 +3513,7 @@
     & h2 { font-size: clamp(1.2rem, 3vw, 1.5rem); margin: 6px 0 4px; }
     & .tag-bn { color: var(--ink-soft); margin: 0; }
   }
-  .tag .muster { margin-top: 0; }
+  .buch-tag .muster { margin-top: 0; }
 
   .tag-teil {
     margin-top: 26px;
@@ -3527,18 +3541,18 @@
      resizable, scrollable textareas. They used to ship as
      rows="1" with overflow:hidden — which, with scripts off, is a
      one-line box you can type into and never read back. */
-  .tag textarea[data-schrift] {
+  .buch-tag textarea[data-schrift] {
     width: 100%; resize: vertical; overflow: auto;
     border: 0; border-bottom: 1px solid var(--hairline);
     background: transparent; color: var(--ink);
     font-family: var(--font-sans); font-size: 0.98rem; line-height: 1.8;
     padding: 6px 2px;
   }
-  .tag textarea[data-schrift]:focus {
+  .buch-tag textarea[data-schrift]:focus {
     outline: none; border-bottom-color: var(--green);
     background: var(--green-soft);
   }
-  .tag textarea[data-schrift]::placeholder { color: var(--ink-soft); opacity: 0.55; }
+  .buch-tag textarea[data-schrift]::placeholder { color: var(--ink-soft); opacity: 0.55; }
 
   /* the six to translate, with the answer hidden until asked for */
   .sag-liste { display: grid; gap: 12px; }
@@ -3549,7 +3563,7 @@
     grid-column: 2; display: none;
     color: var(--green); font-size: 0.93rem; padding-top: 2px;
   }
-  .tag[data-antworten] .sag-antwort { display: block; }
+  .buch-tag[data-antworten] .sag-antwort { display: block; }
   .antwort-schalter { margin-top: 14px; }
 
   .herz-aufgabe { margin-bottom: 2px; }
@@ -3576,8 +3590,8 @@
      every page of the site whenever anyone printed anything. */
   @media print {
     body.deutsch :is(.tag-nav, .tracker, .buch-fortschritt, .hero-actions) { display: none; }
-    body.deutsch .tag { break-inside: avoid; border-color: #999; }
-    body.deutsch .tag[hidden] { display: block !important; }
+    body.deutsch .buch-tag { break-inside: avoid; border-color: #999; }
+    body.deutsch .buch-tag[hidden] { display: block !important; }
     body.deutsch .sag-antwort { display: none !important; }
   }
 
