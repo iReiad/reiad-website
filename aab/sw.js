@@ -31,6 +31,9 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v28: the bento got the top padding every other block on the home
+   page has always had. styles.css, so it needs the bump.
+
    v27: one line out of the home page's services cell, which made
    that card taller than the two beside it and put a band of empty
    panel across the whole row. index.html is precached, so the
@@ -158,7 +161,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v27";
+const VERSION = "v28";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
