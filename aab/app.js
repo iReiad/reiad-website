@@ -290,7 +290,7 @@ function buildMenu() {
     return el("li", {}, a);
   };
 
-  const visible = PAGES.filter((p) => !p.private && p.menu !== false);
+  const visible = PAGES.filter((p) => !p.private);
   const plainPages = visible.filter((p) => !p.group);
   const caseStudies = visible.filter((p) => p.group === "case");
   const learnPages = visible.filter((p) => p.group === "learn");
@@ -303,7 +303,7 @@ function buildMenu() {
   dialog.setAttribute("aria-label", "Site menu");
 
   dialog.append(
-    el("div", { className: "wrap header-inner" },
+    el("div", { className: "menu-bar" },
       el("a", { className: "site-name", href: "/index.html", innerHTML: '<svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true"><rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/><rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/><rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/><circle cx="63" cy="24" r="5.5" fill="currentColor"/></svg> Rony Reiad' }),
       el("button", {
         className: "icon-btn", id: "menu-close",
@@ -407,12 +407,10 @@ function buildMenu() {
          splitting them into two near-empty columns left the menu
          looking unbalanced — thirteen items beside two. */
       el("div", { className: "menu-col" },
-        ...(caseStudies.length ? [
-          el("span", { className: "mono menu-col-title", textContent: "Case studies" }),
-          el("ul", { className: "menu-list" }, ...caseStudies.map(pageLink))
-        ] : []),
+        el("span", { className: "mono menu-col-title", textContent: "Case studies" }),
+        el("ul", { className: "menu-list" }, ...caseStudies.map(pageLink)),
         el("span", {
-          className: `mono menu-col-title ${caseStudies.length ? "menu-col-title-second" : ""}`,
+          className: "mono menu-col-title menu-col-title-second",
           textContent: articles.length ? "Latest writing" : "Writing",
         }),
         el("ul", { className: "menu-list" },

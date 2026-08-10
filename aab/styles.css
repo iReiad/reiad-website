@@ -480,6 +480,10 @@
 
     &:hover { border-color: var(--green); color: var(--green); }
   }
+  #open-menu, #menu-close {
+    width: 76px;
+    justify-content: center;
+  }
   .kbd-hint { opacity: 0.6; font-size: 0.7rem; }
 
   /* ---------- HERO ---------- */
@@ -1219,14 +1223,19 @@
     &::backdrop { background: oklch(18% 0.02 var(--h-green) / 0.6); }
   }
 
-  .menu-bar, .menu-foot {
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    padding: 14px clamp(20px, 4vw, 44px);
+  .menu-bar {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 14px var(--wrap-pad);
     border-bottom: 1px solid var(--hairline);
     background: var(--paper);
   }
+  .menu-foot {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 14px clamp(20px, 4vw, 44px);
+    border-bottom: 0; border-top: 1px solid var(--hairline); margin-top: auto;
+    background: var(--paper);
+  }
   .menu-bar .mono { color: var(--ink-soft); }
-  .menu-foot { border-bottom: 0; border-top: 1px solid var(--hairline); margin-top: auto; }
   .menu-hint { color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
   .menu-hint kbd, .shortcut-list kbd, .palette-foot kbd {
     font-family: var(--font-mono); font-size: 0.68rem;
