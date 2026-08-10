@@ -808,9 +808,11 @@
     max-height: 70vh;
     margin: 12vh auto auto;
     padding: 0;
-    border: 1px solid var(--hairline);
+    border: 1px solid var(--glass-edge);
     border-radius: 14px;
-    background: var(--panel);
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     color: var(--ink);
     box-shadow: 0 24px 60px oklch(0% 0 0 / 0.32);
     overflow: clip;
