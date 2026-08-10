@@ -46,7 +46,7 @@ function applyTheme(mode) {
     (mode === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", dark ? "#0E1512" : "#FBFBF7");
+    ?.setAttribute("content", dark ? "#0E1512" : "#FAF6EE");
 }
 
 function currentTheme() {
