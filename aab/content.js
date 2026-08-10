@@ -324,7 +324,7 @@ export const PAGES = [
   { title: "Contact / register interest", url: "/contact.html",
     hint: "Page", blurb: "For recruiters, clients and readers." },
   { title: "Colophon: how this site is built", url: "/colophon.html",
-    hint: "Page", blurb: "Every technical decision behind the site, written down." },
+    hint: "Page", blurb: "Every technical decision behind the site, written down.", private: true },
   { title: "Article Studio: publish a new piece", url: "/studio.html",
     hint: "Tool", blurb: "Paste an article and its photos, get a finished page.", private: true },
 ];
