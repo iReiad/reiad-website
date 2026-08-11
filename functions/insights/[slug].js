@@ -16,11 +16,11 @@
 import { db, one } from "../_lib/db.js";
 
 const esc = (s) =>
-  String(s ?? "").replace(/[&<>"]/g, (c) =>
+  String(s ?? "").replace(/[&<>\"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 const FONTS =
-  "https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Serif+Bengali:wght@500;600&display=swap";
+  "https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Seri[...]";
 
 function render(article, origin) {
   const date = new Intl.DateTimeFormat(article.lang === "bn" ? "bn-BD" : "en-GB", {
@@ -144,6 +144,8 @@ ${article.body}
     </div>
   </footer>
 
+  <!-- Read-aloud script: served from the static assets -->
+  <script src="/read-aloud.js" defer></script>
   <script type="module" src="/app.js"></script>
 </body>
 </html>`;
