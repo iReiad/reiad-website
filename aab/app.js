@@ -123,8 +123,19 @@ function buildPalette() {
   dialog.id = "palette";
   dialog.setAttribute("aria-label", "Search this site");
   dialog.innerHTML = `
-    <input id="palette-input" type="search" autocomplete="off" spellcheck="false"
-           placeholder="Search pages, articles and Bangla terms…" aria-label="Search">
+    <div class="palette-search">
+      <span class="palette-search-mark" aria-hidden="true">⌕</span>
+      <div class="palette-search-copy">
+        <span class="palette-kicker mono">Search the library</span>
+        <input id="palette-input" type="search" autocomplete="off" spellcheck="false"
+               placeholder="Pages, articles and Bangla terms…" aria-label="Search">
+      </div>
+      <kbd class="palette-slash" aria-hidden="true">/</kbd>
+    </div>
+    <div class="palette-meta">
+      <span id="palette-count" class="mono" aria-live="polite"></span>
+      <span class="palette-active-hint mono"><kbd>↵</kbd> opens selection</span>
+    </div>
     <ul id="palette-list" role="listbox" aria-label="Results"></ul>
     <div class="palette-foot mono">
       <span><kbd>↑</kbd><kbd>↓</kbd> move</span>
@@ -139,6 +150,7 @@ function initPalette() {
   const dialog = buildPalette();
   const input = dialog.querySelector("#palette-input");
   const list = dialog.querySelector("#palette-list");
+  const count = dialog.querySelector("#palette-count");
   let active = 0;
 
   const render = (query) => {
@@ -167,10 +179,16 @@ function initPalette() {
     if (!groups.length) {
       const li = document.createElement("li");
       li.className = "palette-empty";
-      li.textContent = "No matches: try a different word.";
+      li.innerHTML = `<span aria-hidden="true">⌕</span><strong>No matches yet</strong><small>Try a different word, or search in Bangla.</small>`;
       list.append(li);
+      count.textContent = "No results";
       return;
     }
+
+    const total = groups.reduce((sum, [, items]) => sum + items.length, 0);
+    count.textContent = query.trim()
+      ? `${total} ${total === 1 ? "result" : "results"}`
+      : "Start anywhere";
 
     let n = 0;
     for (const [label, items] of groups) {
