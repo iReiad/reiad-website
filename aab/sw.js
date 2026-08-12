@@ -31,6 +31,8 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v33: Studio exports and dynamic articles now keep their lead photo
+        in the social-preview metadata instead of falling back.
    v32: the public site identity became Reiad's Library.
    v31: the search palette gained a dedicated visual hierarchy.
    v30: the homepage route cards gained a slight resting shadow.
@@ -167,7 +169,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v32";
+const VERSION = "v33";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

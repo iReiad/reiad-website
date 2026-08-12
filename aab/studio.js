@@ -850,6 +850,7 @@ function buildPage(m) {
     inLanguage: m.lang,
     author: { "@type": "Person", name: "Rony Reiad", url: "https://reiad.co.uk/about.html" },
     mainEntityOfPage: `https://reiad.co.uk/insights/${m.slug}.html`,
+    image: socialCoverURL(coverFor(m)),
   }).replace(/</g, "\\u003c");
 
   return `<!DOCTYPE html>
@@ -865,6 +866,10 @@ function buildPage(m) {
   <meta property="og:title" content="${escapeHtml(m.title)}">
   <meta property="og:description" content="${escapeHtml(m.dek)}">
   <meta property="og:url" content="https://reiad.co.uk/insights/${m.slug}.html">
+  <meta property="og:image" content="${escapeHtml(socialCoverURL(coverFor(m)))}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="Reiad's Library">
   <meta name="twitter:card" content="summary_large_image">
 
   <!-- Set the theme before first paint, so dark-mode readers
@@ -1019,6 +1024,22 @@ const dateLabelFor = (m) =>
     becomes a /media path on publish. */
 function coverFor(m) {
   const doc = new DOMParser().parseFromString(m.body, "text/html");
+  return coverFromDocument(doc);
+}
+
+/** A social crawler must fetch an ordinary public URL. The Studio can
+    display a data URL while the writer is editing, but it cannot put
+    one in og:image: social platforms ignore it and show the fallback.
+    The ZIP route rewrites the selected image to /insights/photos/ just
+    before download; the publish route has already rewritten it to
+    /media/. Both are safe to put on an absolute public URL. */
+function socialCoverURL(src) {
+  return /^\/(?:media|insights\/photos)\/[A-Za-z0-9._/-]+$/.test(src ?? "")
+    ? `https://reiad.co.uk${src}`
+    : "https://reiad.co.uk/og/insights.png";
+}
+
+function coverFromDocument(doc) {
   const lead = doc.querySelector("figure.lead-photo img, img.lead-photo");
   const first = doc.querySelector("img");
   return lead?.getAttribute("src") || first?.getAttribute("src") || "/og/insights.png";
@@ -1731,6 +1752,12 @@ async function externalisePhotos(m) {
     files.push({ name, data: new Uint8Array(await blob.arrayBuffer()) });
     img.setAttribute("src", `/insights/${name}`);
   }
+  // buildPage deliberately uses the default while the selected picture
+  // is still a data URL. Now that ZIP export has given it a public path,
+  // update the same og:image tag that social platforms will fetch.
+  doc.querySelector('meta[property="og:image"]')?.setAttribute(
+    "content", socialCoverURL(coverFromDocument(doc))
+  );
   return { html: `<!DOCTYPE html>\n${doc.documentElement.outerHTML}\n`, files };
 }
 

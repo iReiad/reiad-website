@@ -23,6 +23,16 @@ const FONTS =
   "https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Seri[...]";
 
 function render(article, origin) {
+  /* Articles published before `cover` was added have an empty database
+     column even when their body already contains a hosted photo. Recover
+     the lead (or first) /media image here so a re-save is not required
+     just to repair their social preview. The Studio stores this value on
+     every new publish; this is the backwards-compatible bridge. */
+  const lead = article.body?.match(
+    /<figure\b[^>]*class="[^"]*\blead-photo\b[^"]*"[^>]*>[\s\S]*?<img\b[^>]*\bsrc="(\/media\/[A-Za-z0-9._/-]+)"/i
+  )?.[1];
+  const first = article.body?.match(/<img\b[^>]*\bsrc="(\/media\/[A-Za-z0-9._/-]+)"/i)?.[1];
+  const cover = article.cover || lead || first || "/og/insights.png";
   const date = new Intl.DateTimeFormat(article.lang === "bn" ? "bn-BD" : "en-GB", {
     day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
   }).format(new Date(`${article.published_at || "2026-01-01"}T00:00:00Z`));
@@ -52,7 +62,7 @@ function render(article, origin) {
   <meta property="og:title" content="${esc(article.title)}">
   <meta property="og:description" content="${esc(article.dek)}">
   <meta property="og:url" content="${origin}/insights/${article.slug}.html">
-  <meta property="og:image" content="${origin}${article.cover || "/og/insights.png"}">
+  <meta property="og:image" content="${origin}${cover}">
   <meta name="twitter:card" content="summary_large_image">
   <script>
     (function () {
