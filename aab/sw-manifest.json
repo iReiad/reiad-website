@@ -1,11 +1,11 @@
 {
-  "version": "v30",
+  "version": "v31",
   "hashes": {
     "/": "32f433d68bb0d44a",
     "/index.html": "32f433d68bb0d44a",
     "/offline.html": "15451a783a4e28ae",
-    "/styles.css": "1964e74f05ffb923",
-    "/app.js": "3d1b12cd3f856463",
+    "/styles.css": "4793b33c90407dc7",
+    "/app.js": "043fecf1530d0f80",
     "/content.js": "92e767eaf410e75a",
     "/api.js": "9e58fcd815993f9c",
     "/crumbs.js": "18bc4ba6a6d02f3e",
