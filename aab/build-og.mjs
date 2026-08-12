@@ -225,7 +225,7 @@ ${FONTS}
   <p class="sub" style="margin-top:24px">${card.sub}</p>
 </div>
 <div class="foot">
-  <span class="name">Rony Reiad</span>
+  <span class="name">Reiad's Library</span>
   <span class="url">reiad.co.uk</span>
 </div>`;
 
@@ -296,7 +296,7 @@ for (const rel of files) {
      the most linkable pages on the site previewing as a bare URL.
      Build the whole block from what the page already declares, so
      the preview says the same thing as the page. */
-  const title = html.match(/<title>([^<]*)<\/title>/)?.[1]?.trim() ?? "Rony Reiad";
+  const title = html.match(/<title>([^<]*)<\/title>/)?.[1]?.trim() ?? "Reiad's Library";
   const desc = html.match(/<meta name="description" content="([^"]*)"/)?.[1]?.trim() ?? "";
   const canonical = html.match(/<link rel="canonical" href="([^"]*)"/)?.[1]
     ?? `https://reiad.co.uk/${rel}`;
@@ -309,7 +309,7 @@ for (const rel of files) {
     `  <meta property="og:image" content="${want}">`,
     `  <meta property="og:image:width" content="1200">`,
     `  <meta property="og:image:height" content="630">`,
-    `  <meta property="og:site_name" content="Rony Reiad">`,
+    `  <meta property="og:site_name" content="Reiad's Library">`,
     `  <meta name="twitter:card" content="summary_large_image">`,
   ].filter(Boolean).join("\n");
 

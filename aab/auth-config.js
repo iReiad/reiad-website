@@ -31,5 +31,5 @@ export const AUTH = {
   rememberDays: 30,
 
   // Shown on the lock screen so you know you're on the right site.
-  label: "Rony Reiad · Article Studio",
+  label: "Reiad's Library · Article Studio",
 };

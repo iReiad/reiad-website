@@ -32,7 +32,7 @@ const page = (title, message, tone = "ok") =>
   new Response(
     `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="light dark"><title>${title} — Rony Reiad</title>
+<meta name="color-scheme" content="light dark"><title>${title} — Reiad's Library</title>
 <link rel="stylesheet" href="/styles.css"><link rel="icon" href="/favicon.ico">
 </head><body><main id="main"><div class="wrap" style="padding-block:110px;max-width:640px">
 <span class="eyebrow mono">${tone === "ok" ? "Done" : "Hmm"}</span>

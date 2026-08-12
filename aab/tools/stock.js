@@ -213,8 +213,8 @@ function applyLang(next, { save = true } = {}) {
     b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
   }
   document.title = lang === "bn"
-    ? "শেয়ার যাচাই · কিনবেন, ধরে রাখবেন, নাকি বেচবেন · Rony Reiad"
-    : "Stock check · buy, hold or sell · Rony Reiad";
+    ? "শেয়ার যাচাই · কিনবেন, ধরে রাখবেন, নাকি বেচবেন · Reiad's Library"
+    : "Stock check · buy, hold or sell · Reiad's Library";
 
   localiseCrumbs();
   buildInputs();
