@@ -1,4 +1,4 @@
-# Rony Reiad: Finance & Bangladesh markets
+# Reiad's Library: Finance & Bangladesh markets
 User-agent: *
 Allow: /
 

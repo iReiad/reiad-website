@@ -110,11 +110,11 @@ const HEAD_TAIL = `  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="alternate" type="application/rss+xml" title="Rony Reiad · Insights" href="/feed.xml">
+  <link rel="alternate" type="application/rss+xml" title="Reiad's Library · Insights" href="/feed.xml">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <meta property="og:site_name" content="Rony Reiad">
+  <meta property="og:site_name" content="Reiad's Library">
   <meta name="theme-color" content="#0B3D2E">`;
 
 const HEADER = `  <a class="skip" href="#main">মূল লেখায় যান</a>
@@ -127,7 +127,7 @@ const HEADER = `  <a class="skip" href="#main">মূল লেখায় য�
           <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
           <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
         </svg>
-        Rony Reiad
+        Reiad's Library
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep aria-current="page">Learn</a>
@@ -146,7 +146,7 @@ const HEADER = `  <a class="skip" href="#main">মূল লেখায় য�
 
 const FOOTER = `  <footer>
     <div class="wrap">
-      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
       <p>এই সাইটের সবকিছু সাধারণ শিক্ষামূলক তথ্য: বিনিয়োগ পরামর্শ না। টাকা কোথাও রাখার আগে নিজে যাচাই করুন।</p>
       <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
@@ -242,7 +242,7 @@ function lessonPage(stage, lessons, index, bodies) {
   const art = icon(lesson.icon ?? stage.icon, "art lesson-art");
 
   return page({
-    title: `${lesson.bn}: ${stage.bn}, শেখার লাইব্রেরি, Rony Reiad`,
+    title: `${lesson.bn}: ${stage.bn}, শেখার লাইব্রেরি, Reiad's Library`,
     description: lesson.blurb,
     canonical: lesson.url,
     og: `stage-${stage.slug}.png`,
@@ -317,7 +317,7 @@ ${cards}
       : "";
 
   return page({
-    title: `${stage.kicker} · ${stage.bn}, শেখার লাইব্রেরি, Rony Reiad`,
+    title: `${stage.kicker} · ${stage.bn}, শেখার লাইব্রেরি, Reiad's Library`,
     description: stage.blurb,
     canonical: stageUrl(stage),
     og: `stage-${stage.slug}.png`,
@@ -456,7 +456,7 @@ ${sections}
   );
 
   return page({
-    title: "সব বিষয় এক নজরে, শেখার লাইব্রেরি, Rony Reiad",
+    title: "সব বিষয় এক নজরে, শেখার লাইব্রেরি, Reiad's Library",
     description:
       "শেখার লাইব্রেরির প্রতিটা লেখা এক পাতায়: আট ধাপের পুরো তালিকা, আর ইংরেজি বর্ণানুক্রমে শব্দকোষ।",
     canonical: "/learn/contents.html",

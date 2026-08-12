@@ -1,4 +1,4 @@
-# reiad.co.uk
+# Reiad's Library
 
 A static site with a dynamic half. Every file in `aab/` is served as-is — no
 framework, no build step, no dependencies — and a Worker over a D1 database

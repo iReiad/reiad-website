@@ -24,7 +24,7 @@
    ============================================================ */
 
 export const SITE = {
-  name: "Rony Reiad",
+  name: "Reiad's Library",
   tagline: "Finance & Bangladesh markets",
   origin: "https://reiad.co.uk",
   email: "i@reiad.co.uk",

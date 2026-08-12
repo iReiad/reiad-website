@@ -857,7 +857,7 @@ function buildPage(m) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(m.title)} · Rony Reiad</title>
+  <title>${escapeHtml(m.title)} · Reiad's Library</title>
   <meta name="description" content="${escapeHtml(m.dek)}">
   <link rel="canonical" href="https://reiad.co.uk/insights/${m.slug}.html">
 
@@ -903,7 +903,7 @@ function buildPage(m) {
           <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
           <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
         </svg>
-        Rony Reiad
+        Reiad's Library
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
@@ -954,7 +954,7 @@ ${indent(m.body, 6)}
 
   <footer>
     <div class="wrap">
-      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
       <p>Everything on this site is general education, not investment advice.
          Do your own research before putting money anywhere.</p>
       <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>

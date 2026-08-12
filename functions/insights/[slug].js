@@ -45,7 +45,7 @@ function render(article, origin) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <title>${esc(article.title)} — Rony Reiad</title>
+  <title>${esc(article.title)} — Reiad's Library</title>
   <meta name="description" content="${esc(article.dek)}">
   <link rel="canonical" href="${origin}/insights/${article.slug}.html">
   <meta property="og:type" content="article">
@@ -69,7 +69,7 @@ function render(article, origin) {
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="alternate" type="application/rss+xml" title="Rony Reiad — Insights" href="/feed.xml">
+  <link rel="alternate" type="application/rss+xml" title="Reiad's Library — Insights" href="/feed.xml">
   <meta name="theme-color" content="#0B3D2E">
   <script type="application/ld+json">${jsonLd}</script>
 </head>
@@ -86,7 +86,7 @@ function render(article, origin) {
           <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
           <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
         </svg>
-        Rony Reiad
+        Reiad's Library
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
@@ -137,7 +137,7 @@ ${article.body}
 
   <footer>
     <div class="wrap">
-      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
       <p>Everything on this site is general education, not investment advice.
          Do your own research before putting money anywhere.</p>
       <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>

@@ -98,11 +98,11 @@ const HEAD_TAIL = `  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="alternate" type="application/rss+xml" title="Rony Reiad · Insights" href="/feed.xml">
+  <link rel="alternate" type="application/rss+xml" title="Reiad's Library · Insights" href="/feed.xml">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <meta property="og:site_name" content="Rony Reiad">
+  <meta property="og:site_name" content="Reiad's Library">
   <meta name="theme-color" content="#0B3D2E">`;
 
 const HEADER = `  <a class="skip" href="#main">মূল লেখায় যান</a>
@@ -115,7 +115,7 @@ const HEADER = `  <a class="skip" href="#main">মূল লেখায় য�
           <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
           <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
         </svg>
-        Rony Reiad
+        Reiad's Library
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
@@ -134,7 +134,7 @@ const HEADER = `  <a class="skip" href="#main">মূল লেখায় য�
 
 const FOOTER = `  <footer>
     <div class="wrap">
-      <span class="mono">Rony Reiad · Finance &amp; Bangladesh markets</span>
+      <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
       <p>জার্মান অংশটা বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া। আপনার অগ্রগতি আপনার নিজের ব্রাউজারেই থাকে।</p>
       <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
@@ -228,7 +228,7 @@ function teilPage(stufe, teile, index, bodies) {
   const art = icon(teil.icon ?? stufe.icon, "art lesson-art");
 
   return page({
-    title: `${teil.bn}: ${stufe.kicker}, জার্মান বাংলায়, Rony Reiad`,
+    title: `${teil.bn}: ${stufe.kicker}, জার্মান বাংলায়, Reiad's Library`,
     description: teil.blurb,
     canonical: teil.url,
     og: `deutsch-${stufe.slug}.png`,
@@ -324,7 +324,7 @@ ${cards}
     : "";
 
   return page({
-    title: `${stufe.kicker} · ${stufe.bn}, জার্মান বাংলায়, Rony Reiad`,
+    title: `${stufe.kicker} · ${stufe.bn}, জার্মান বাংলায়, Reiad's Library`,
     description: stufe.blurb,
     canonical: stufeUrl(stufe),
     og: `deutsch-${stufe.slug}.png`,
@@ -483,7 +483,7 @@ function arbeitsbuchPage(stufe) {
     .join("\n");
 
   return page({
-    title: `৩০ দিনের অনুশীলন খাতা: ${stufe.kicker}, জার্মান বাংলায়, Rony Reiad`,
+    title: `৩০ দিনের অনুশীলন খাতা: ${stufe.kicker}, জার্মান বাংলায়, Reiad's Library`,
     description:
       "দিনে একটা পাতা, একটা ছাঁচ, নিজের জীবনের একটা সত্যি অনুচ্ছেদ। জার্মান স্তর ১-এর ত্রিশ দিনের অনুশীলন খাতা, বাংলায়, উত্তরমালাসহ।",
     canonical: url,
