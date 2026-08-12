@@ -3044,23 +3044,62 @@
   }
 
   .door {
+    /* ---------- THE FRONT-DOOR CARDS ----------
+       These are navigation choices, not ordinary content cards.
+       The first pass made all three perfectly even, which was tidy
+       but made the two Bangla libraries and the client-work route
+       feel interchangeable at a glance. Each now gets a barely-there
+       colour wash and a corner glint: enough to make the three routes
+       memorable without breaking the site's restrained paper-and-ink
+       system or adding an extra line of copy to an already compact
+       first screen.
+
+       The colour lives in a custom property rather than three copied
+       card rules. A new route can choose its own accent in markup;
+       the layout, focus treatment and motion stay exactly the same.
+       `isolation` keeps the decorative corner behind this card alone,
+       rather than letting it layer under a neighbouring card. */
+    --door-accent: var(--green);
+    --door-wash: var(--green-soft);
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     display: grid; gap: 4px 12px; align-content: start;
     grid-template-columns: auto 1fr;
     padding: 16px 18px; text-decoration: none; color: inherit;
     border: 1px solid var(--hairline); border-radius: var(--radius);
-    background: var(--panel);
-    transition: border-color var(--fast) var(--ease), transform var(--fast) var(--ease);
+    background: linear-gradient(135deg, var(--door-wash), var(--panel) 46%);
+    box-shadow: var(--shadow);
+    transition: border-color var(--fast) var(--ease), transform var(--fast) var(--ease),
+                box-shadow var(--fast) var(--ease);
 
-    &:hover { border-color: var(--green); transform: translateY(-2px); opacity: 1; }
+    /* An asymmetric, quiet cue for a clickable route. It is
+       decorative only; the icon, title and destination remain the
+       accessible description of the card. */
+    &::after {
+      content: ""; position: absolute; z-index: -1;
+      width: 96px; aspect-ratio: 1; border-radius: 50%;
+      inset-inline-end: -46px; inset-block-start: -56px;
+      background: var(--door-accent); opacity: 0.09;
+      transition: opacity var(--fast) var(--ease), scale var(--slow) var(--ease);
+    }
+
+    &:hover { border-color: var(--door-accent); transform: translateY(-2px); box-shadow: var(--shadow-lift); opacity: 1; }
+    &:hover::after { opacity: 0.16; scale: 1.16; }
+    &:focus-visible { outline-color: var(--door-accent); outline-offset: 4px; }
     & h3 { font-size: 1.04rem; align-self: center; }
     & p {
       grid-column: 2; color: var(--ink-soft); font-size: 0.88rem;
       line-height: 1.5; margin: 0;
     }
-    & .more { grid-column: 2; color: var(--green); font-size: 0.84rem; margin-top: 2px; }
+    & .more { grid-column: 2; color: var(--door-accent); font-size: 0.84rem; margin-top: 2px; }
   }
+  .door[data-door="finance"] { --door-accent: var(--green); --door-wash: var(--green-soft); }
+  .door[data-door="skills"]  { --door-accent: var(--gold); --door-wash: color-mix(in oklab, var(--green-soft) 62%, var(--gold) 10%); }
+  .door[data-door="work"]    { --door-accent: var(--green); --door-wash: color-mix(in oklab, var(--green-soft) 56%, var(--panel) 44%); }
+
   .door-art, .door .art { width: 22px; height: 22px; }
-  .door-art { display: flex; align-items: center; color: var(--gold); grid-row: 1; }
+  .door-art { display: flex; align-items: center; color: var(--door-accent); grid-row: 1; }
 
   /* ---------- THE WELCOME-BACK BAND (home page) ----------
      Built by /home.js, and hidden outright for anyone with

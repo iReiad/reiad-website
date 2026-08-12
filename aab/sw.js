@@ -31,6 +31,9 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v29: the homepage route cards gained their own visual treatments.
+        The homepage shell and stylesheet must arrive together, or a
+        returning reader gets the previous first-screen design.
    v28: the bento got the top padding every other block on the home
    page has always had. styles.css, so it needs the bump.
 
@@ -161,7 +164,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v28";
+const VERSION = "v29";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
