@@ -1,8 +1,8 @@
 {
-  "version": "v33",
+  "version": "v34",
   "hashes": {
-    "/": "b13fc30db1751dcb",
-    "/index.html": "b13fc30db1751dcb",
+    "/": "94e34aa35bfac692",
+    "/index.html": "94e34aa35bfac692",
     "/offline.html": "77ae2be6c429a55a",
     "/styles.css": "4793b33c90407dc7",
     "/app.js": "043fecf1530d0f80",
