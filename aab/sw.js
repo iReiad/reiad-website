@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v38: the probability-of-default case study landed. content.js
+        gained its entry, which is what puts it in the Ctrl+K
+        index, and styles.css gained the page's charts. Both are
+        precached, so a returning reader would otherwise keep the
+        old pair and never see the new page in search.
+
    v37: the stress-testing case study landed. content.js gained its
         entry, which is what puts it in the Ctrl+K index, and
         styles.css gained the page's charts plus one fix that
@@ -193,7 +199,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v37";
+const VERSION = "v38";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -315,6 +315,8 @@ export const PAGES = [
     hint: "Case study", group: "case", blurb: "A live discounted cash flow: build the WACC, switch terminal value method, read the grid." },
   { title: "Index volatility & drawdowns: interactive case study", url: "/portfolio/dsex.html",
     hint: "Case study", group: "case", blurb: "Rolling volatility, drawdowns, tail risk and holding periods, with CSV import." },
+  { title: "Probability of default: scorecard vs gradient boosting", url: "/portfolio/scorecard.html",
+    hint: "Case study", group: "case", blurb: "A live PD model on a public dataset: logistic regression against gradient boosting, cross-validated, calibrated, and priced." },
   { title: "Portfolio stress testing: interactive case study", url: "/portfolio/stress.html",
     hint: "Case study", group: "case", blurb: "A live credit stress test: macro shocks to default rates through a Merton model and a vintage one, then provisions and capital." },
   { title: "Islamic vs conventional funds: MSc dissertation", url: "/portfolio/dissertation.html",

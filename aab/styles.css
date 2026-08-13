@@ -5438,3 +5438,92 @@ German for day, and .tag is what the site has always called
     .macro-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); }
   }
 }
+
+@layer work {
+  /* ============================================================
+     The probability-of-default case study.
+
+     Two models on one page, so the colour rule is simple and has
+     to hold everywhere: the scorecard is the site's green, the
+     boosted model is its gold, and nothing else on the page is
+     allowed to use either of them for anything other than those
+     two models. Outcomes are a separate axis again: a defaulted
+     applicant is red wherever one appears.
+     ============================================================ */
+  .chip-row {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-block: 4px 14px;
+
+    & .chip[aria-pressed="true"] {
+      border-color: var(--green); color: var(--green); background: var(--green-soft);
+    }
+  }
+
+  /* ---------- the two models ---------- */
+  .line-logit { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-gbm { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
+  .dot-logit { fill: var(--green); }
+  .dot-gbm { fill: var(--gold); }
+  .key-logit { background: var(--green); }
+  .key-gbm { background: var(--gold); }
+
+  /* ---------- outcomes ---------- */
+  .dot-good { fill: var(--green); opacity: 0.42; }
+  .dot-bad { fill: var(--danger); opacity: 0.72; }
+  .bar-good { fill: var(--green); opacity: 0.42; }
+  .bar-bad { fill: var(--danger); opacity: 0.62; }
+
+  /* ---------- the reference a curve is judged against ---------- */
+  .chart-diagonal { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.5; }
+
+  /* ---------- information value ---------- */
+  .bar-iv { fill: var(--green); opacity: 0.55; }
+  /* Protected characteristics are marked rather than hidden. The
+     page's argument is about what they are worth, so they have to
+     be visible and obviously different. */
+  .bar-iv-protected { fill: var(--gold); opacity: 0.6; }
+
+  /* ---------- learning curve ---------- */
+  .line-train { stroke: var(--ink-soft); stroke-width: 1.6; fill: none; }
+  .line-valid { stroke: var(--green); stroke-width: 2; fill: none; }
+  .key-train { background: var(--ink-soft); }
+  .key-valid { background: var(--green); }
+
+  /* ---------- calibration ---------- */
+  .line-uncal { stroke: var(--danger); stroke-width: 1.6; stroke-dasharray: 4 3; fill: none; }
+  .line-cal { stroke: var(--green); stroke-width: 2; fill: none; }
+  .dot-uncal { fill: var(--danger); }
+  .dot-cal { fill: var(--green); }
+
+  /* ---------- contributions to one decision ---------- */
+  .bar-better { fill: var(--green); opacity: 0.62; }
+  .bar-worse { fill: var(--danger); opacity: 0.62; }
+
+  /* ---------- approval rates ---------- */
+  .bar-approval { fill: var(--green); opacity: 0.5; }
+
+  /* ---------- the confusion matrix ----------
+     Four cells, and the two that are mistakes do not cost the
+     same, so they do not look the same either. */
+  #confusion {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-block: 6px 4px;
+  }
+  .conf-cell {
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    background: var(--paper-sunk); padding: 12px 14px;
+    display: grid; gap: 2px; align-content: start;
+
+    & strong { font-family: var(--font-mono); font-size: 1.3rem; }
+    & span { font-size: 0.78rem; color: var(--ink-soft); line-height: 1.35; }
+
+    &[data-tone="good"] { border-inline-start: 3px solid var(--green); }
+    &[data-tone="warn"] { border-inline-start: 3px solid var(--gold); }
+    &[data-tone="bad"] {
+      border-inline-start: 3px solid var(--danger);
+      background: color-mix(in oklab, var(--danger) 7%, var(--paper-sunk));
+    }
+  }
+
+  @media (width <= 620px) {
+    #confusion { grid-template-columns: 1fr; }
+  }
+}
