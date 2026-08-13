@@ -31,6 +31,16 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v37: the stress-testing case study landed. content.js gained its
+        entry, which is what puts it in the Ctrl+K index, and
+        styles.css gained the page's charts plus one fix that
+        reaches every page: .formula no longer inherits .mono's
+        uppercase, which had been turning lowercase Greek into
+        different letters (ρ into Ρ, σ into Σ) in the formulas on
+        the dissertation page as well as this one. Both files are
+        precached, so a returning reader would otherwise keep the
+        old pair.
+
    v36: the em dash is gone from the whole site. 1,420 of them became
         commas, colons or en dashes, in page copy, in Bangla lesson
         text, in the strings scripts write into the DOM and in the
@@ -183,7 +193,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v36";
+const VERSION = "v37";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

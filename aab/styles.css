@@ -5263,3 +5263,178 @@ German for day, and .tag is what the site has always called
   .method-steps { grid-template-columns: repeat(auto-fit, minmax(min(100%, 430px), 1fr)); }
   .formula.is-long { font-size: 0.74rem !important; }
 }
+
+@layer work {
+  /* ============================================================
+     The stress-testing case study.
+
+     Everything here is scoped to classes that page invents. The
+     one shared thing it borrows is the categorical palette
+     below, seven hues that have to stay apart from each other in
+     both themes and in a black and white print, because seven
+     lines on one chart is the most this site asks of a reader.
+
+     They are built from the site's own two hues plus five turns
+     around the wheel, at a lightness that holds against paper
+     and against the dark panel. Chroma stays low: these are
+     lines on a document, not a dashboard.
+     ============================================================ */
+  .model {
+    --seg-0: light-dark(oklch(41% 0.090 162), oklch(72% 0.115 162));
+    --seg-1: light-dark(oklch(52% 0.095  85), oklch(74% 0.095  85));
+    --seg-2: light-dark(oklch(48% 0.110 250), oklch(74% 0.105 250));
+    --seg-3: light-dark(oklch(50% 0.130  28), oklch(72% 0.125  28));
+    --seg-4: light-dark(oklch(46% 0.100 310), oklch(74% 0.100 310));
+    --seg-5: light-dark(oklch(44% 0.075 200), oklch(76% 0.080 200));
+    --seg-6: light-dark(oklch(38% 0.045 130), oklch(66% 0.050 130));
+  }
+
+  /* ---------- formulas keep their case ----------
+     .formula pairs with .mono, and .mono uppercases. On a line of
+     prose that is a design choice; in a formula it changes the
+     symbols. Greek lowercase has uppercase forms, so σ became Σ,
+     γ became Γ and, worst of all, ρ became Ρ, which is a capital
+     rho and reads as a Latin P. The correlation term in the Basel
+     formula was printed as "√P" on a page whose whole argument is
+     what ρ does. It also flattened MktRF and IVOL in the
+     dissertation's factor models, where the case is the notation.
+
+     Fixed here rather than by dropping .mono from the markup,
+     because every formula on the site wants the mono face and
+     none of them want the transform. Two selectors, because a
+     formula sitting inside a method card is also matched by
+     `.method-step > .mono`, which is two classes and would
+     otherwise win on specificity alone. */
+  .formula,
+  .formula.mono {
+    text-transform: none;
+    letter-spacing: 0.03em;
+  }
+
+  /* ---------- the scenario, as six small charts ---------- */
+  .macro-grid {
+    display: grid; gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  }
+  .macro-cell {
+    margin: 0; padding: 6px 8px 4px;
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    background: var(--paper-sunk);
+
+    & figcaption {
+      font-size: 0.64rem; color: var(--ink-soft);
+      letter-spacing: 0.02em; padding: 2px 2px 4px;
+    }
+  }
+  .chart-base-line { stroke: var(--hairline); stroke-width: 1; stroke-dasharray: 3 3; }
+  .line-macro { stroke: var(--green); stroke-width: 1.6; }
+  .dot-macro { fill: var(--gold); }
+  .chart-tag-worst { font-family: var(--font-mono); font-size: 9px; fill: var(--gold); }
+
+  /* ---------- the capital path ---------- */
+  .line-capital { stroke: var(--green); stroke-width: 2.2; }
+  .dot-capital { fill: var(--green); opacity: 0.75; }
+  .dot-trough { fill: var(--danger); }
+  .chart-req { stroke: var(--danger); stroke-width: 1.4; stroke-dasharray: 5 3; }
+  .chart-min { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0.7; }
+  .shortfall-band { fill: var(--danger); opacity: 0.16; }
+
+  /* ---------- the seven segments ---------- */
+  .line-seg { stroke-width: 1.8; fill: none; }
+  .line-seg[data-seg="0"] { stroke: var(--seg-0); }
+  .line-seg[data-seg="1"] { stroke: var(--seg-1); }
+  .line-seg[data-seg="2"] { stroke: var(--seg-2); }
+  .line-seg[data-seg="3"] { stroke: var(--seg-3); }
+  .line-seg[data-seg="4"] { stroke: var(--seg-4); }
+  .line-seg[data-seg="5"] { stroke: var(--seg-5); }
+  .line-seg[data-seg="6"] { stroke: var(--seg-6); }
+  .dot-seg[data-seg="0"] { fill: var(--seg-0); }
+  .dot-seg[data-seg="1"] { fill: var(--seg-1); }
+  .dot-seg[data-seg="2"] { fill: var(--seg-2); }
+  .dot-seg[data-seg="3"] { fill: var(--seg-3); }
+  .chart-seg-label {
+    font-family: var(--font-mono); font-size: 9.5px; fill: var(--ink-soft);
+  }
+  .chart-seg-label[data-seg="0"] { fill: var(--seg-0); }
+  .chart-seg-label[data-seg="1"] { fill: var(--seg-1); }
+  .chart-seg-label[data-seg="2"] { fill: var(--seg-2); }
+  .chart-seg-label[data-seg="3"] { fill: var(--seg-3); }
+  .chart-seg-label[data-seg="4"] { fill: var(--seg-4); }
+  .chart-seg-label[data-seg="5"] { fill: var(--seg-5); }
+  .chart-seg-label[data-seg="6"] { fill: var(--seg-6); }
+
+  /* ---------- vintage curves ----------
+     The projected half is the same colour and the same width,
+     dashed. A lighter projection would read as less important,
+     when what it actually is is less certain. */
+  .vintage-controls {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-block: 4px 12px;
+  }
+  .vintage-controls .chip[aria-pressed="true"] {
+    border-color: var(--green); color: var(--green); background: var(--green-soft);
+  }
+  .line-vintage { stroke-width: 1.8; fill: none; }
+  .line-vintage.is-projected { stroke-dasharray: 4 3; opacity: 0.9; }
+  .line-vintage[data-v="0"] { stroke: var(--seg-0); }
+  .line-vintage[data-v="1"] { stroke: var(--seg-1); }
+  .line-vintage[data-v="2"] { stroke: var(--seg-2); }
+  .line-vintage[data-v="3"] { stroke: var(--seg-3); }
+  .line-vintage[data-v="4"] { stroke: var(--seg-4); }
+  .line-vintage[data-v="5"] { stroke: var(--seg-5); }
+  .line-vintage[data-v="6"] { stroke: var(--seg-6); }
+  .chart-seg-label[data-v="0"] { fill: var(--seg-0); }
+  .chart-seg-label[data-v="1"] { fill: var(--seg-1); }
+  .chart-seg-label[data-v="2"] { fill: var(--seg-2); }
+  .chart-seg-label[data-v="3"] { fill: var(--seg-3); }
+  .chart-seg-label[data-v="4"] { fill: var(--seg-4); }
+  .chart-seg-label[data-v="5"] { fill: var(--seg-5); }
+  .chart-seg-label[data-v="6"] { fill: var(--seg-6); }
+
+  /* ---------- the two engines ---------- */
+  .line-merton { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-vintage-engine { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
+  .engine-gap { fill: var(--gold); opacity: 0.14; }
+  .key-merton { background: var(--green); }
+  .key-vintage { background: var(--gold); }
+
+  /* ---------- the double whammy ---------- */
+  .line-el { stroke: var(--danger); stroke-width: 2.2; fill: none; }
+  .line-lgd { stroke: var(--gold); stroke-width: 1.6; stroke-dasharray: 4 3; fill: none; }
+
+  /* ---------- IFRS 9 staging ---------- */
+  .area-stage1 { fill: var(--green); opacity: 0.18; }
+  .area-stage2 { fill: var(--gold); opacity: 0.38; }
+  .area-stage3 { fill: var(--danger); opacity: 0.42; }
+  .line-ecl { stroke: var(--ink); stroke-width: 1.8; fill: none; }
+  .key-stage1 { background: var(--green); opacity: 0.5; }
+  .key-stage2 { background: var(--gold); }
+  .key-stage3 { background: var(--danger); }
+
+  /* ---------- the severity axis ---------- */
+  .density-body { fill: var(--ink-soft); opacity: 0.14; }
+  .density-tail { fill: var(--danger); opacity: 0.28; }
+  .mark-scenario { stroke: var(--danger); stroke-width: 1.6; }
+  .mark-capital { stroke: var(--ink); stroke-width: 1.2; stroke-dasharray: 3 3; opacity: 0.7; }
+
+  /* ---------- attribution and tornado ---------- */
+  .attrib-bad { fill: var(--danger); opacity: 0.7; }
+  .attrib-good { fill: var(--green); opacity: 0.7; }
+  .attrib-total { fill: var(--ink-soft); opacity: 0.55; }
+  .bar-tornado { fill: var(--green); opacity: 0.6; }
+
+  /* ---------- the views that lag on purpose ----------
+     Seventy full runs of the model cannot happen between two
+     frames of a dragged slider, so they are scheduled. Saying
+     so with a dim is better than either freezing the page or
+     letting a stale grid look live. */
+  [data-stale] { opacity: 0.45; transition: opacity var(--fast) var(--ease); }
+
+  .csv-panel[data-over] { border-color: var(--green); background: var(--green-soft); }
+  .csv-status[data-state="good"] { color: var(--green); }
+  .csv-status[data-state="warn"] { color: var(--gold); }
+  .csv-status[data-state="bad"] { color: var(--danger); }
+
+  @media (width <= 620px) {
+    .macro-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); }
+  }
+}
