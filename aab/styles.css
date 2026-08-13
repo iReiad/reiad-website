@@ -5527,3 +5527,50 @@ German for day, and .tag is what the site has always called
     #confusion { grid-template-columns: 1fr; }
   }
 }
+
+@layer work {
+  /* ============================================================
+     The portfolio-construction case study.
+
+     One colour rule, held everywhere: the portfolio being held is
+     the site's green, the equal-weight benchmark is its gold, and
+     the individual holdings are neutral dots that never compete
+     with either.
+     ============================================================ */
+  .line-frontier { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-chosen { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-equal { stroke: var(--gold); stroke-width: 1.8; stroke-dasharray: 5 3; fill: none; }
+  .line-hold { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-rebal { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
+  .key-chosen { background: var(--green); }
+  .key-equal { background: var(--gold); }
+  .key-bench { background: var(--ink-soft); }
+  .key-risk { background: var(--gold); }
+
+  .dot-asset { fill: var(--ink-soft); opacity: 0.55; }
+  .dot-named { fill: var(--gold); }
+  .dot-equal { fill: var(--gold); }
+  .dot-chosen { fill: var(--green); stroke: var(--paper); stroke-width: 1.5; }
+  .chart-tag-asset { font-family: var(--font-mono); font-size: 8.5px; fill: var(--ink-soft); }
+  .chart-tag-held { font-family: var(--font-mono); font-size: 9px; fill: var(--green); }
+
+  .bar-weight { fill: var(--green); opacity: 0.6; }
+  .bar-risk { fill: var(--gold); opacity: 0.65; }
+  .bar-chosen { fill: var(--green); opacity: 0.7; }
+  .bar-bench { fill: var(--ink-soft); opacity: 0.45; }
+
+  /* ---------- the correlation matrix ----------
+     One hue for positive, another for negative, and the opacity
+     carries the size. A rainbow scale would read as five
+     categories rather than one number. */
+  .corr-pos { fill: var(--green); opacity: calc(var(--v) * 0.85 + 0.05); }
+  .corr-neg { fill: var(--danger); opacity: calc(var(--v) * 0.85 + 0.05); }
+
+  /* A candidate that was screened in but not held. */
+  .fin-table tr.is-dropped { opacity: 0.55; }
+  .fin-table td.is-capped { color: var(--gold); font-weight: 500; }
+
+  @media (width <= 620px) {
+    #hindsight-chart .fin-chart { min-width: 620px; }
+  }
+}

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>Portfolio construction: a screened FTSE 250 fund · Reiad's Library</title>
+  <meta name="description" content="Ten FTSE 250 holdings screened on leverage, sustainability and returns, optimised on one year of daily prices, then held for five years. The efficient frontier is solved live in the browser and tested on the years the optimiser never saw.">
+  <link rel="canonical" href="https://reiad.co.uk/portfolio/frontier.html">
+
+  <script>
+    (function () {
+      var d = document.documentElement;
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
+        var a = localStorage.getItem("audience");
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Reiad's Library · Insights" href="/feed.xml">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Portfolio construction: a screened FTSE 250 fund">
+  <meta property="og:description" content="Screen, optimise, then hold for five years. The frontier is solved in the browser and tested on the years the optimiser never saw.">
+  <meta property="og:image" content="https://reiad.co.uk/og/frontier.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Reiad's Library">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body>
+  <a class="skip" href="#fund">Skip to the portfolio</a>
+
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="/index.html">
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Reiad's Library
+      </a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/skills/index.html" data-nav-skills>Skills</a>
+        <a href="/tools/index.html">Tools</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html" aria-current="page">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+
+      <div class="hero" style="padding-block:56px 26px">
+        <span class="eyebrow mono">Case study · Portfolio construction · Interactive</span>
+        <h1>Screen, optimise, then wait five years to find out whether any of it worked.</h1>
+        <p class="lede">
+          Thirteen FTSE 250 companies that pass a leverage, sustainability and
+          profitability screen. One year of daily prices to estimate a covariance
+          matrix. An efficient frontier solved in your browser, not looked up, and a
+          set of weights chosen off it. Then the part that matters: those weights are
+          held through the five years that follow, which the optimiser never saw, and
+          measured against the most stubborn benchmark in portfolio theory, which is
+          putting the same amount in each.
+        </p>
+        <p class="model-co">
+          <strong id="fund-title">–</strong>
+          <span class="mono" id="fund-meta">–</span>
+        </p>
+        <p class="note note-inline" id="fund-note">–</p>
+      </div>
+
+      <nav class="page-toc" id="page-toc" aria-label="On this page"></nav>
+
+      <section id="fund" class="model">
+
+        <div class="model-bar">
+          <div class="scenarios" role="group" aria-label="Which portfolio to hold">
+            <button class="scenario" type="button" data-strategy="tangency" aria-pressed="true">Max Sharpe</button>
+            <button class="scenario" type="button" data-strategy="minvar" aria-pressed="false">Min variance</button>
+            <button class="scenario" type="button" data-strategy="equal" aria-pressed="false">Equal weight</button>
+            <button class="scenario" type="button" data-strategy="inverse" aria-pressed="false">Inverse variance</button>
+          </div>
+          <p class="scenario-blurb" id="strategy-blurb">–</p>
+          <div class="model-actions">
+            <button class="btn btn-ghost" type="button" id="download-csv">Download CSV</button>
+            <button class="btn btn-ghost" type="button" id="copy-link">Copy this run's link</button>
+          </div>
+        </div>
+
+        <!-- ============ THE ANSWER ============ -->
+        <div class="verdict-card" id="verdict" data-state="up" role="status">
+          <div class="verdict-main">
+            <span class="mono">Five years held, against equal weight</span>
+            <strong class="verdict-value">–</strong>
+          </div>
+          <p class="verdict-detail">–</p>
+        </div>
+
+        <div class="tiles">
+          <div class="tile" data-tile="ret">
+            <span class="mono">Hold-out return</span><strong class="tile-value">–</strong>
+            <small>Cumulative over the five years</small>
+          </div>
+          <div class="tile" data-tile="cagr">
+            <span class="mono">Annualised</span><strong class="tile-value">–</strong>
+            <small>Compound, after the whole period</small>
+          </div>
+          <div class="tile" data-tile="vol">
+            <span class="mono">Realised volatility</span><strong class="tile-value">–</strong>
+            <small>Against <span id="vol-expected">–</span> the estimate promised</small>
+          </div>
+          <div class="tile" data-tile="sharpe">
+            <span class="mono">Sharpe</span><strong class="tile-value">–</strong>
+            <small>Realised, on the held-out years</small>
+          </div>
+          <div class="tile" data-tile="dd">
+            <span class="mono">Deepest drawdown</span><strong class="tile-value">–</strong>
+            <small>Peak to trough, along the way</small>
+          </div>
+          <div class="tile" data-tile="concentration">
+            <span class="mono">Largest holding</span><strong class="tile-value">–</strong>
+            <small>What the optimiser wanted most of</small>
+          </div>
+        </div>
+
+        <div class="model-body">
+          <aside class="model-drivers">
+            <div class="drivers-head">
+              <h2>Inputs</h2>
+              <button class="chip" type="button" id="reset-drivers" hidden>Reset</button>
+            </div>
+            <p class="drivers-note">Every change re-solves the frontier: forty
+              constrained optimisations, then a five-year backtest of the result. None
+              of it is precomputed.</p>
+
+            <div class="method-row">
+              <span class="mono">Holding</span>
+              <div class="segmented" role="group" aria-label="Rebalancing convention">
+                <button type="button" data-mode="hold" aria-pressed="true">Buy and hold</button>
+                <button type="button" data-mode="rebalance" aria-pressed="false">Rebalance</button>
+              </div>
+            </div>
+            <div class="method-row">
+              <span class="mono">Universe</span>
+              <div class="segmented" role="group" aria-label="Which candidates to optimise over">
+                <button type="button" data-universe="ten" aria-pressed="true">The ten held</button>
+                <button type="button" data-universe="all" aria-pressed="false">All thirteen</button>
+              </div>
+            </div>
+
+            <div id="drivers"></div>
+          </aside>
+
+          <div class="model-charts">
+            <figure class="chart-card">
+              <figcaption>
+                <strong>The efficient frontier, estimated on 2015</strong>
+                <span class="mono">annualised, long only, capped</span>
+              </figcaption>
+              <div id="frontier-chart"></div>
+              <p class="statement-note" id="frontier-note">–</p>
+            </figure>
+
+            <figure class="chart-card">
+              <figcaption>
+                <strong>What five years did to it</strong>
+                <span class="mono"><i class="key key-chosen"></i>Chosen <i class="key key-equal"></i>Equal weight</span>
+              </figcaption>
+              <div id="nav-chart"></div>
+              <p class="statement-note" id="nav-note">–</p>
+            </figure>
+          </div>
+        </div>
+
+        <!-- ============ 1 · THE SCREEN ============ -->
+        <section class="statement" id="sec-universe" data-toc="The screen">
+          <h2>What got in, and what the screen threw out</h2>
+          <p class="prose">The universe starts as the FTSE 250 and is cut by rules
+            that are stated before any price is looked at: leverage below a third of
+            equity, a sustainability score away from the laggards, a return on equity
+            in double figures, and a return on invested capital above the cost of it.
+            Sector caps then stop the survivors from being ten versions of the same
+            bet.</p>
+          <div class="table-scroll" id="screen-table"></div>
+          <p class="statement-note" id="screen-note">–</p>
+        </section>
+
+        <!-- ============ 2 · THE ESTIMATE ============ -->
+        <section class="statement" id="sec-estimate" data-toc="One year of data">
+          <h2>Everything the optimiser knows</h2>
+          <p class="prose">One year of daily closes. From it: an average return and a
+            volatility for each holding, and a correlation with every other. That is
+            fifty-five numbers estimated from 252 days, and the optimiser will treat
+            all of them as though they were facts.</p>
+          <div class="grid-2">
+            <figure class="chart-card">
+              <figcaption><strong>Risk and return, one year</strong>
+                <span class="mono">each holding, annualised</span></figcaption>
+              <div id="scatter-chart"></div>
+            </figure>
+            <figure class="chart-card">
+              <figcaption><strong>Correlations</strong>
+                <span class="mono">daily, over the estimation window</span></figcaption>
+              <div id="corr-chart"></div>
+            </figure>
+          </div>
+          <div class="callout">
+            <span class="mono">Why there is a shrinkage dial</span>
+            <p>A covariance matrix estimated from a single year is mostly signal in its
+               diagonal and mostly noise off it. A minimum-variance objective is drawn
+               to whichever pair of holdings looks least correlated, which is exactly
+               where the estimate is least trustworthy, so the optimiser reliably falls
+               in love with an artefact. Pulling the off-diagonal terms towards zero is
+               the standard defence. Move the dial and watch how much of the answer was
+               resting on those numbers.</p>
+          </div>
+        </section>
+
+        <!-- ============ 3 · THE FRONTIER ============ -->
+        <section class="statement" id="sec-frontier" data-toc="The frontier">
+          <h2>Solving it, forty times</h2>
+          <p class="prose">Every point on the curve above is a constrained
+            optimisation, solved here, of</p>
+          <p class="formula mono">maximise w′μ − (γ/2)·w′Σw  subject to  Σw = 1,  0 ≤ w ≤ cap</p>
+          <p class="prose">Sweeping the risk aversion γ from large to small traces the
+            whole frontier without ever fixing a target return. The projection onto the
+            constraint set is exact rather than a clip followed by a renormalisation,
+            which matters more than it sounds: clipping quietly pushes every solution
+            towards the cap and makes the frontier look better behaved than it is.</p>
+          <div class="table-scroll" id="weights-table"></div>
+          <p class="statement-note" id="weights-note">–</p>
+        </section>
+
+        <!-- ============ 4 · RISK ============ -->
+        <section class="statement" id="sec-risk" data-toc="Where the risk is">
+          <h2>Weights are not risk</h2>
+          <p class="prose">A holding's share of the portfolio's volatility is not its
+            share of the money. The component contributions below add up to the
+            portfolio volatility exactly, which is what makes them worth quoting: a
+            small position in something wild can carry more risk than a large position
+            in something dull.</p>
+          <figure class="chart-card wide-chart">
+            <figcaption>
+              <strong>Share of money against share of risk</strong>
+              <span class="mono"><i class="key key-chosen"></i>Weight <i class="key key-risk"></i>Risk</span>
+            </figcaption>
+            <div id="risk-chart"></div>
+            <p class="statement-note" id="risk-note">–</p>
+          </figure>
+        </section>
+
+        <!-- ============ 5 · THE HOLD-OUT ============ -->
+        <section class="statement" id="sec-holdout" data-toc="Five years later">
+          <h2>The only test that counts</h2>
+          <p class="prose">The weights are fixed at the end of the estimation window
+            and held through 2016 to 2020. Nothing is re-estimated, nothing is
+            re-optimised, and no holding is replaced. Every number below comes from
+            days the optimiser never saw.</p>
+          <div class="grid-2">
+            <figure class="chart-card">
+              <figcaption><strong>Underwater</strong>
+                <span class="mono">how far below the previous peak</span></figcaption>
+              <div id="dd-chart"></div>
+            </figure>
+            <figure class="chart-card">
+              <figcaption><strong>Calendar years</strong>
+                <span class="mono"><i class="key key-chosen"></i>Portfolio <i class="key key-bench"></i>FTSE 250</span></figcaption>
+              <div id="annual-chart"></div>
+            </figure>
+          </div>
+          <p class="statement-note">The index comparison is annual because the index
+            history collected for this work was annual. Anywhere the portfolio is set
+            against the FTSE 250 it is set against five numbers, not a daily series,
+            and a five-point comparison is worth exactly as much as it sounds.</p>
+        </section>
+
+        <!-- ============ 6 · HINDSIGHT ============ -->
+        <section class="statement" id="sec-hindsight" data-toc="Against hindsight">
+          <h2>The frontier that was actually there</h2>
+          <p class="prose">The curve on the left was estimated from 2015 and is what
+            the optimiser was aiming at. The curve on the right is the frontier those
+            same ten holdings actually offered over 2016 to 2020, which nobody could
+            have known and which is drawn here only to measure the distance. The gap
+            between where the chosen portfolio sat on the first and where it landed on
+            the second is not a mistake in the optimisation. It is what estimating a
+            covariance matrix from one year of data buys you.</p>
+          <figure class="chart-card wide-chart">
+            <figcaption>
+              <strong>Estimated against realised</strong>
+              <span class="mono">the same holdings, two windows</span>
+            </figcaption>
+            <div id="hindsight-chart"></div>
+            <p class="statement-note" id="hindsight-note">–</p>
+          </figure>
+        </section>
+
+        <!-- ============ 7 · REBALANCING ============ -->
+        <section class="statement" id="sec-rebalance" data-toc="The decision nobody states">
+          <h2>Holding is a strategy, not an accounting convention</h2>
+          <p class="prose">"The weights were held constant" can mean two entirely
+            different things. Buy once and never trade, and the weights drift towards
+            whatever won. Hold the weights constant, and you are selling what rose and
+            buying what fell, every day, on purpose. Over five years on these ten
+            holdings the two differ by more than any choice made on the frontier.</p>
+          <figure class="chart-card wide-chart">
+            <figcaption>
+              <strong>The same weights, the two conventions</strong>
+              <span class="mono" id="rebal-label">–</span>
+            </figcaption>
+            <div id="rebal-chart"></div>
+            <p class="statement-note" id="rebal-note">–</p>
+          </figure>
+        </section>
+
+        <!-- ============ 8 · LIMITS ============ -->
+        <section class="statement" id="sec-limits" data-toc="What this is not">
+          <h2>What this is not</h2>
+          <div class="method-steps">
+            <div class="method-step">
+              <span class="mono">1 · One window, one draw</span>
+              <h3>A single five-year path is one observation</h3>
+              <p>Every conclusion here rests on one estimation window and one hold-out
+                 period. A serious answer would roll the whole exercise forward month by
+                 month over decades and report the distribution, not the anecdote.</p>
+            </div>
+            <div class="method-step">
+              <span class="mono">2 · Ten names</span>
+              <h3>Idiosyncratic risk everywhere</h3>
+              <p>At ten holdings, a single company can move the fund by several per cent
+                 in a day, and one of these ten returned two hundred and forty six per
+                 cent while another lost a third. Attributing any of that to the
+                 optimisation would be reading the wrong thing.</p>
+            </div>
+            <div class="method-step">
+              <span class="mono">3 · Prices only</span>
+              <h3>No dividends in the path</h3>
+              <p>The return series is built from closing prices, so income is missing from
+                 the compounding. On a book yielding three to four per cent that is
+                 several points a year, and it is missing from every strategy equally.</p>
+            </div>
+            <div class="method-step">
+              <span class="mono">4 · No costs</span>
+              <h3>Free trading, infinite liquidity</h3>
+              <p>Nothing here pays spread, commission or stamp duty, and the rebalancing
+                 convention above would pay all three every day. That comparison flatters
+                 rebalancing by more than the gap it shows.</p>
+            </div>
+            <div class="method-step">
+              <span class="mono">5 · The screen is a snapshot</span>
+              <h3>Fundamentals as at one date</h3>
+              <p>Leverage, sustainability scores and returns on equity are taken once, at
+                 the start. A company that fails the screen in year three stays in the
+                 portfolio, which is not how anyone would run it.</p>
+            </div>
+            <div class="method-step">
+              <span class="mono">6 · Survivorship</span>
+              <h3>The universe is today's list</h3>
+              <p>The candidates were drawn from an index membership list, and companies
+                 that left the index or the market are not in it. That biases every
+                 backtest built this way upwards, including this one.</p>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- ============ HOW IT'S BUILT ============ -->
+      <section>
+        <span class="section-label mono">How this is built</span>
+        <div class="principles">
+          <div class="principle">
+            <h3>Solved, not stored</h3>
+            <p>The covariance matrix, the frontier and the weights are computed in the
+               browser from the daily prices in the repository. Move the cap and forty
+               optimisations run again. There is no stored answer to drift away from
+               the code that produced it.</p>
+          </div>
+          <div class="principle">
+            <h3>An exact projection</h3>
+            <p>The constraint set is handled by projecting onto it exactly, through a
+               one-dimensional root find on the multiplier. Clipping and renormalising
+               is the usual shortcut and it biases every weight towards the cap.</p>
+          </div>
+          <div class="principle">
+            <h3>The estimation window is sealed</h3>
+            <p>Weights are chosen using 2015 and nothing else. The hold-out years are
+               never touched until the weights are fixed, which is the whole point and
+               is the step most easily lost when a backtest is written in a hurry.</p>
+          </div>
+          <div class="principle">
+            <h3>Checked against closed forms</h3>
+            <p>The minimum-variance weights must equal Σ⁻¹1/(1′Σ⁻¹1) where that
+               solution is interior. The variance of the realised return series must
+               equal w′Σw. Equal-weight buy and hold must end at the average price
+               relative. All three hold to machine precision or the tests fail.</p>
+          </div>
+          <div class="principle">
+            <h3>Both conventions, stated</h3>
+            <p>Buy and hold and constant weights are offered as a switch rather than
+               assumed, because on this data the choice between them is worth more
+               than the choice of portfolio, and leaving it unstated would be the
+               single most misleading thing the page could do.</p>
+          </div>
+          <div class="principle">
+            <h3>118 checks on the engine</h3>
+            <p>Including the identities above, the projection tested against a grid
+               search for nearest point, the frontier checked for dominated points,
+               and a hold-out return reproduced from a figure computed independently
+               in a spreadsheet.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="note" id="attribution">–</div>
+
+      <div class="band">
+        <span class="mono">Working together</span>
+        <h2>Need a portfolio built and then honestly tested?</h2>
+        <p>Screening, covariance estimation, constrained optimisation, and the
+           out-of-sample work that says whether any of it survives contact with the
+           years that follow. In Python or Excel, with the data and the code handed
+           over.</p>
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/contact.html">Start a conversation</a>
+          <a class="btn btn-ghost" href="/portfolio.html">Back to the portfolio</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
+      <p>Everything on this site is general education, not investment advice.</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/portfolio/frontier.js"></script>
+</body>
+</html>
