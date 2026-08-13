@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v35: both hubs carry the free-education pledge, and styles.css
+        gained the .pledge component it is set in. Markup and
+        stylesheet again have to arrive together.
+
    v34: the home page's three link lists were cut back to three rows
         and one line each — thirteen rows of blurb between a visitor
         and the cards below them. index.html only, but it is
@@ -174,7 +178,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v34";
+const VERSION = "v35";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
