@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v34: the home page's three link lists were cut back to three rows
+        and one line each — thirteen rows of blurb between a visitor
+        and the cards below them. index.html only, but it is
+        precached, so a returning reader would keep the long one.
+
    v33: Studio exports and dynamic articles now keep their lead photo
         in the social-preview metadata instead of falling back.
    v32: the public site identity became Reiad's Library.
@@ -169,7 +174,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v33";
+const VERSION = "v34";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
