@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-routes.mjs — catch broken URLs before deploying.
+   check-routes.mjs, catch broken URLs before deploying.
 
        node aab/check-routes.mjs
 
@@ -104,7 +104,7 @@ let failures = 0;
 /* An article's slug becomes a URL, and only some strings can.
    worker.js matches /insights/([a-z0-9-]+) and static assets are no
    more forgiving, so a slug with a capital or a space cannot resolve
-   however it is published — but it still reaches feed.xml, the
+   however it is published, but it still reaches feed.xml, the
    sitemap and the Ctrl+K index, because those are built straight
    from content.js.
 

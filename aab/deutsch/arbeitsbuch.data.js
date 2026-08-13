@@ -1,10 +1,10 @@
 /* ============================================================
-   arbeitsbuch.data.js — the thirty days of Stufe Eins.
+   arbeitsbuch.data.js: the thirty days of Stufe Eins.
 
    Straight out of "Das 30-Tage-Arbeitsbuch · Stufe Eins", one
    object per day, in order. The workbook page reads this and
    nothing else, so a day is corrected here and corrected
-   everywhere — the day list, the tracker, the answer key.
+   everywhere: the day list, the tracker, the answer key.
 
    A day has five parts, and they are always the same five, which
    is the whole point of the book: the shape of the page never
@@ -16,7 +16,7 @@
      schau       five model lines to read aloud. de is what you
                  say, bn is what it means
      sagEs       six prompts to translate. Speak first, write
-                 second — the learner types into the page and it
+                 second: the learner types into the page and it
                  is kept in their own browser
      answers     the answer key for those six, revealed only when
                  they ask for it
@@ -31,12 +31,12 @@ export const DAYS = [
   {
     n: 1,
     de: "Die Laute I: w · v · z · s",
-    bn: "বড় চমকগুলো — w মানে ভ!",
+    bn: "বড় চমকগুলো, w মানে ভ!",
     muster: {
       pattern: "w = ভ v = ফ z = ৎস s + স্বর = জ়",
       why: "জার্মান কথা রাখে: যা লেখা, তাই বলা। আজ শুধু চারটা বড় চমক মুখে বসাও।",
       examples: "Wasser (ভাসা) · Vater (ফাটা) · zehn (ৎসেন) · sie (জ়ী)",
-      tip: "w কখনোই ইংরেজি w নয় — সবসময় ভ। এটাই প্রথম দিনের সবচেয়ে বড় উপহার।",
+      tip: "w কখনোই ইংরেজি w নয়, সবসময় ভ। এটাই প্রথম দিনের সবচেয়ে বড় উপহার।",
     },
     schau: [
       { de: "Wasser = ভাসা", bn: "পানি" },
@@ -61,9 +61,9 @@ export const DAYS = [
     bn: "ঠোঁটের ব্যায়াম ও দুই রকম ch",
     muster: {
       pattern: "ö = এ + ও-ঠোঁট ü = ই + উ-ঠোঁট ß = স ch = ইশ্ / খ",
-      why: "ö আর ü নতুন ধ্বনি নয় — ঠোঁটের ব্যায়াম। আয়নার সামনে করো। ch: i/e-র পরে ইশ্, a/o/u-র পরে খ।",
+      why: "ö আর ü নতুন ধ্বনি নয়, ঠোঁটের ব্যায়াম। আয়নার সামনে করো। ch: i/e-র পরে ইশ্, a/o/u-র পরে খ।",
       examples: "schön (শ্যোন) · fünf (ফ্যুন্ফ) · ich (ইশ্) · Buch (বুখ)",
-      tip: "'ই' বলতে বলতে ঠোঁট গোল করো — ü নিজেই বেরিয়ে আসবে।",
+      tip: "'ই' বলতে বলতে ঠোঁট গোল করো, ü নিজেই বেরিয়ে আসবে।",
     },
     schau: [
       { de: "schön = শ্যোন", bn: "সুন্দর" },
@@ -85,10 +85,10 @@ export const DAYS = [
   {
     n: 3,
     de: "Die Laute III: ei · ie · au · eu",
-    bn: "জোড়া-স্বর — এবং তোমার প্রথম বাক্য",
+    bn: "জোড়া-স্বর, এবং তোমার প্রথম বাক্য",
     muster: {
       pattern: "ei = আই ie = ঈ au = আউ eu = অয়",
-      why: "ছড়াটা মনে রাখো: ei = আই, ie = ঈ। আজ প্রথমবার সম্পূর্ণ জার্মান বাক্য পড়বে — নিজের নাম দিয়ে।",
+      why: "ছড়াটা মনে রাখো: ei = আই, ie = ঈ। আজ প্রথমবার সম্পূর্ণ জার্মান বাক্য পড়বে, নিজের নাম দিয়ে।",
       examples: "nein (নাইন) · vier (ফীয়া) · Haus (হাউস) · Deutsch (ডয়চ)",
       tip: "ভাষার নামটাই eu দিয়ে: Deutsch = ডয়চ!",
     },
@@ -107,7 +107,7 @@ export const DAYS = [
       { q: "পড়ো: Ich heiße Rima.", a: "ইশ্ হাইসে রিমা।" },
       { q: "পড়ো: Ich wohne in Dhaka.", a: "ইশ্ ভোনে ইন ঢাকা।" },
     ],
-    vonHerzen: { en: "Read Days 1–3 aloud once more. Then write: Ich heiße ______.", bn: "১–৩ দিনের পাতা আরেকবার জোরে পড়ো। তারপর লেখো: Ich heiße ___ — তোমার নাম!" },
+    vonHerzen: { en: "Read Days 1–3 aloud once more. Then write: Ich heiße ______.", bn: "১–৩ দিনের পাতা আরেকবার জোরে পড়ো। তারপর লেখো: Ich heiße ___, তোমার নাম!" },
   },
   {
     n: 4,
@@ -115,9 +115,9 @@ export const DAYS = [
     bn: "আমি হই · তুমি হও",
     muster: {
       pattern: "Ich bin ______ Du bist ______",
-      why: "সেই লুকানো ক্রিয়া — ইংরেজির am/is। বাংলায় নেই, জার্মানে বলতেই হবে।",
+      why: "সেই লুকানো ক্রিয়া, ইংরেজির am/is। বাংলায় নেই, জার্মানে বলতেই হবে।",
       examples: "❌ Ich müde. ✅ Ich bin müde.",
-      tip: "bin ছাড়া বাক্য অসম্পূর্ণ — ইংরেজির সেই একই পাঠ।",
+      tip: "bin ছাড়া বাক্য অসম্পূর্ণ, ইংরেজির সেই একই পাঠ।",
     },
     schau: [
       { de: "Ich bin müde.", bn: "আমি ক্লান্ত।" },
@@ -142,8 +142,8 @@ export const DAYS = [
     bn: "সে হয় · আমরা হই · তোমরা হও",
     muster: {
       pattern: "er/sie/es ist · wir sind · ihr seid · sie/Sie sind",
-      why: "ছড়াটা গাও: বিন–বিস্ট–ইস্ট, জ়িন্ট–জ়াইট–জ়িন্ট। দশবার — গানের মতো ঢুকে যাবে।",
-      examples: "ihr seid — শুধু ihr-এর জন্য। du bist, কিন্তু ihr seid।",
+      why: "ছড়াটা গাও: বিন–বিস্ট–ইস্ট, জ়িন্ট–জ়াইট–জ়িন্ট। দশবার, গানের মতো ঢুকে যাবে।",
+      examples: "ihr seid, শুধু ihr-এর জন্য। du bist, কিন্তু ihr seid।",
       tip: "seid আর sind গুলিয়ো না: তোমরা seid, তারা sind।",
     },
     schau: [
@@ -166,11 +166,11 @@ export const DAYS = [
   {
     n: 6,
     de: "sein III: nicht + Fragen",
-    bn: "না বলা ও প্রশ্ন — কোনো 'do' নেই!",
+    bn: "না বলা ও প্রশ্ন, কোনো 'do' নেই!",
     muster: {
       pattern: "Ich bin nicht ______ Bist du ______ ?",
       why: "না = nicht বসাও। প্রশ্ন = ক্রিয়া সামনে আনো। ইংরেজির Do/Does-এর ভারা এখানে লাগে না!",
-      examples: "Du bist müde. → Bist du müde? — দুটো শব্দ জায়গা বদল, ব্যস।",
+      examples: "Du bist müde. → Bist du müde?, দুটো শব্দ জায়গা বদল, ব্যস।",
       tip: "বাংলার 'কি'-প্রশ্নের মতোই সরল।",
     },
     schau: [
@@ -178,7 +178,7 @@ export const DAYS = [
       { de: "Er ist nicht hier.", bn: "সে এখানে নেই।" },
       { de: "Bist du glücklich?", bn: "তুমি কি খুশি?" },
       { de: "Ist das schwer?", bn: "এটা কি কঠিন?" },
-      { de: "— Ja. / Nein.", bn: "উত্তর ছোট: হ্যাঁ / না।" },
+      { de: "– Ja. / Nein.", bn: "উত্তর ছোট: হ্যাঁ / না।" },
     ],
     sagEs: [
       { q: "আমি একা নই।", a: "Ich bin nicht allein." },
@@ -188,7 +188,7 @@ export const DAYS = [
       { q: "তোমরা কি প্রস্তুত?", a: "Seid ihr bereit?" },
       { q: "আপনি কি শিক্ষক?", a: "Sind Sie Lehrer?" },
     ],
-    vonHerzen: { en: "Three questions for a new friend — auf Deutsch.", bn: "নতুন বন্ধুকে করার মতো তিনটা প্রশ্ন — জার্মানে।" },
+    vonHerzen: { en: "Three questions for a new friend, auf Deutsch.", bn: "নতুন বন্ধুকে করার মতো তিনটা প্রশ্ন, জার্মানে।" },
   },
   {
     n: 7,
@@ -215,17 +215,17 @@ export const DAYS = [
       { q: "তার একটা বোন আছে।", a: "Er hat eine Schwester." },
       { q: "আমার একটা বুদ্ধি আছে।", a: "Ich habe eine Idee." },
     ],
-    vonHerzen: { en: "Three things you have.", bn: "তোমার যা যা আছে — তিনটা বাক্য।" },
+    vonHerzen: { en: "Three things you have.", bn: "তোমার যা যা আছে, তিনটা বাক্য।" },
   },
   {
     n: 8,
     de: "haben II: Hunger · Durst · Angst",
-    bn: "খিদে-তেষ্টা-ভয় — জার্মানে এগুলো 'থাকে'",
+    bn: "খিদে-তেষ্টা-ভয়, জার্মানে এগুলো 'থাকে'",
     muster: {
       pattern: "Ich habe Hunger. · Wir haben … · Ihr habt … · Sie haben …",
-      why: "ইংরেজির 'I am hungry' ভুলে যাও — জার্মানে খিদে তোমার 'আছে': Ich habe Hunger!",
-      examples: "Hunger (খিদে) · Durst (তেষ্টা) · Angst (ভয়) — সব haben দিয়ে।",
-      tip: "এটা জার্মান ভাবনার ধরন — মেনে নাও, অনুবাদ কোরো না।",
+      why: "ইংরেজির 'I am hungry' ভুলে যাও, জার্মানে খিদে তোমার 'আছে': Ich habe Hunger!",
+      examples: "Hunger (খিদে) · Durst (তেষ্টা) · Angst (ভয়), সব haben দিয়ে।",
+      tip: "এটা জার্মান ভাবনার ধরন, মেনে নাও, অনুবাদ কোরো না।",
     },
     schau: [
       { de: "Ich habe Hunger!", bn: "আমার খিদে পেয়েছে!" },
@@ -242,17 +242,17 @@ export const DAYS = [
       { q: "তাদের দুটো সন্তান আছে।", a: "Sie haben zwei Kinder." },
       { q: "সে ভয় পাচ্ছে।", a: "Sie hat Angst." },
     ],
-    vonHerzen: { en: "What do your family members have? Three sentences.", bn: "পরিবারের কার কী আছে — তিনটা বাক্য।" },
+    vonHerzen: { en: "What do your family members have? Three sentences.", bn: "পরিবারের কার কী আছে, তিনটা বাক্য।" },
   },
   {
     n: 9,
     de: "kein · keine",
-    bn: "নেই — ein-এর সামনে k",
+    bn: "নেই, ein-এর সামনে k",
     muster: {
       pattern: "ein → kein eine → keine বহুবচন → keine",
       why: "'নেই' বলার জার্মান অস্ত্র: ein-এর মাথায় k বসাও। kein Geld, keine Zeit।",
       examples: "❌ Ich habe nicht Geld. ✅ Ich habe kein Geld.",
-      tip: "বিশেষ্যকে মারে kein — nicht নয়। (nicht-এর পালা ১৮ দিনে।)",
+      tip: "বিশেষ্যকে মারে kein, nicht নয়। (nicht-এর পালা ১৮ দিনে।)",
     },
     schau: [
       { de: "Ich habe kein Geld.", bn: "আমার টাকা নেই।" },
@@ -269,7 +269,7 @@ export const DAYS = [
       { q: "আমার কোনো প্রশ্ন নেই।", a: "Ich habe keine Frage." },
       { q: "আমার ভয় নেই।", a: "Ich habe keine Angst." },
     ],
-    vonHerzen: { en: "Three things you don't have — and want one day.", bn: "যা নেই কিন্তু একদিন চাও — তিনটা।" },
+    vonHerzen: { en: "Three things you don't have, and want one day.", bn: "যা নেই কিন্তু একদিন চাও, তিনটা।" },
   },
   {
     n: 10,
@@ -296,7 +296,7 @@ export const DAYS = [
       { q: "তুমি ক্রিকেট খেলো।", a: "Du spielst Cricket." },
       { q: "আমি ভাত রান্না করি।", a: "Ich koche Reis." },
     ],
-    vonHerzen: { en: "Three things you do every day — ich-form.", bn: "রোজ যা করো — ich দিয়ে তিনটা।" },
+    vonHerzen: { en: "Three things you do every day, ich-form.", bn: "রোজ যা করো, ich দিয়ে তিনটা।" },
   },
   {
     n: 11,
@@ -306,7 +306,7 @@ export const DAYS = [
       pattern: "er lernt · sie kocht · es spielt",
       why: "একজন অন্য কেউ করলে -t। ইংরেজির সেই ছোট্ট -s মনে আছে? এটা তার জার্মান ভাই।",
       examples: "kochen → sie kocht · spielen → das Kind spielt",
-      tip: "-t ভুললে মানুষ তবু বুঝবে — কিন্তু অভ্যাস করো।",
+      tip: "-t ভুললে মানুষ তবু বুঝবে, কিন্তু অভ্যাস করো।",
     },
     schau: [
       { de: "Er trinkt Tee.", bn: "সে চা খায়।" },
@@ -332,7 +332,7 @@ export const DAYS = [
     muster: {
       pattern: "wir lernen · ihr lernt · sie/Sie lernen",
       why: "wir আর sie/Sie সবসময় অভিধানের পুরো রূপ। ihr-এ -t। মেশিন সম্পূর্ণ!",
-      examples: "-e, -st, -t, -en, -t, -en — এই ছয় পোশাকে জার্মানের ৯০% ক্রিয়া চলে।",
+      examples: "-e, -st, -t, -en, -t, -en, এই ছয় পোশাকে জার্মানের ৯০% ক্রিয়া চলে।",
       tip: "তিনটা ক্রিয়া নিয়ে ছয় ঘরের ছক নিজে বানাও।",
     },
     schau: [
@@ -358,9 +358,9 @@ export const DAYS = [
     bn: "sprechen → spricht · sehen → sieht",
     muster: {
       pattern: "ich spreche → du sprichst, er spricht ich sehe → du siehst, er sieht",
-      why: "শুধু du আর er/sie/es-এর ঘরে চেহারা বদলায়। ich, wir, ihr, sie — সব স্বাভাবিক।",
+      why: "শুধু du আর er/sie/es-এর ঘরে চেহারা বদলায়। ich, wir, ihr, sie, সব স্বাভাবিক।",
       examples: "essen → isst · lesen → liest · geben → gibt · helfen → hilft",
-      tip: "নিয়ম নয়, জোড়াটা গাও: ich spreche, du sprichst — দশবার।",
+      tip: "নিয়ম নয়, জোড়াটা গাও: ich spreche, du sprichst, দশবার।",
     },
     schau: [
       { de: "Ich spreche Bangla.", bn: "আমি বাংলা বলি।" },
@@ -385,9 +385,9 @@ export const DAYS = [
     bn: "schlafen → schläft · আর 'জানা'র বিশেষ ক্রিয়া",
     muster: {
       pattern: "ich schlafe → du schläfst, er schläft wissen: ich weiß, du weißt, er weiß",
-      why: "a → ä শুধু du/er-এ। আর wissen একমাত্র ব্যতিক্রম — ich-ও বদলায়: ich weiß।",
+      why: "a → ä শুধু du/er-এ। আর wissen একমাত্র ব্যতিক্রম, ich-ও বদলায়: ich weiß।",
       examples: "fahren → du fährst, sie fährt (গাড়ি/বাসে যাওয়া)",
-      tip: "'Ich weiß nicht' (জানি না) — রোজকার সবচেয়ে দরকারি বাক্যগুলোর একটা।",
+      tip: "'Ich weiß nicht' (জানি না), রোজকার সবচেয়ে দরকারি বাক্যগুলোর একটা।",
     },
     schau: [
       { de: "Er schläft viel.", bn: "সে অনেক ঘুমায়।" },
@@ -404,17 +404,17 @@ export const DAYS = [
       { q: "তুমি জানো।", a: "Du weißt." },
       { q: "সে জানে না।", a: "Sie weiß nicht." },
     ],
-    vonHerzen: { en: "One true sentence each with schlafen, fahren, wissen. schlafen, fahren, wissen —", bn: "প্রতিটা দিয়ে নিজের একটা সত্যি বাক্য।" },
+    vonHerzen: { en: "One true sentence each with schlafen, fahren, wissen. schlafen, fahren, wissen,", bn: "প্রতিটা দিয়ে নিজের একটা সত্যি বাক্য।" },
   },
   {
     n: 15,
     de: "der · die · das I: মানুষ ও ঘর",
-    bn: "টুপি পরানো শুরু — তিন রঙে",
+    bn: "টুপি পরানো শুরু, তিন রঙে",
     muster: {
       pattern: "der (নীল) · die (লাল) · das (সবুজ)",
       why: "প্রতিটা শব্দ টুপিসহ, এক নিঃশ্বাসে: derVater, dieMutter, dasKind। রঙিন কলম থাকলে তিন রঙে লেখো।",
-      examples: "das Mädchen — 'মেয়ে' পর্যন্ত das! যুক্তি খুঁজো না, রঙ মনে রাখো।",
-      tip: "টুপি ভুল হলেও সবাই বুঝবে — থেমো না, শুধু আবার বলো।",
+      examples: "das Mädchen, 'মেয়ে' পর্যন্ত das! যুক্তি খুঁজো না, রঙ মনে রাখো।",
+      tip: "টুপি ভুল হলেও সবাই বুঝবে, থেমো না, শুধু আবার বলো।",
     },
     schau: [
       { de: "der Vater · der Bruder", bn: "বাবা · ভাই (নীল)" },
@@ -431,23 +431,23 @@ export const DAYS = [
       { q: "শিশু", a: "das Kind" },
       { q: "বাড়ি", a: "das Haus" },
     ],
-    vonHerzen: { en: "Six nouns from YOUR home, with hats. Colours if you can.", bn: "নিজের বাড়ির ছয়টা জিনিস — টুপিসহ। পারলে তিন রঙে।" },
+    vonHerzen: { en: "Six nouns from YOUR home, with hats. Colours if you can.", bn: "নিজের বাড়ির ছয়টা জিনিস, টুপিসহ। পারলে তিন রঙে।" },
   },
   {
     n: 16,
     de: "der · die · das II: জিনিসপত্র",
-    bn: "আলমারি বড় হচ্ছে — আর বহুবচনের সুখবর",
+    bn: "আলমারি বড় হচ্ছে, আর বহুবচনের সুখবর",
     muster: {
       pattern: "সব বহুবচন = die: das Buch → die Bücher",
-      why: "যত শব্দ, তত টুপি — কিন্তু বহুবচনে সবাই die পরে। একটাই নিয়ম, শূন্য ব্যতিক্রম।",
+      why: "যত শব্দ, তত টুপি, কিন্তু বহুবচনে সবাই die পরে। একটাই নিয়ম, শূন্য ব্যতিক্রম।",
       examples: "der Tisch · die Schule · das Wasser · die Zeit · der Tee",
-      tip: "প্রতিদিন ১০টা শব্দ টুপিসহ — খাতার শেষের 'Hut-Sammlung' পাতায় জমাও।",
+      tip: "প্রতিদিন ১০টা শব্দ টুপিসহ, খাতার শেষের 'Hut-Sammlung' পাতায় জমাও।",
     },
     schau: [
       { de: "der Tisch · der Tee", bn: "টেবিল · চা" },
       { de: "die Tür · die Schule", bn: "দরজা · স্কুল" },
       { de: "das Buch · das Wasser", bn: "বই · পানি" },
-      { de: "die Bücher (বহুবচন!)", bn: "বইগুলো — die!" },
+      { de: "die Bücher (বহুবচন!)", bn: "বইগুলো, die!" },
       { de: "die Zeit · das Brot", bn: "সময় · রুটি" },
     ],
     sagEs: [
@@ -463,12 +463,12 @@ export const DAYS = [
   {
     n: 17,
     de: "ein · eine + kein মিল",
-    bn: "একটা — আর তার 'নেই' জোড়া",
+    bn: "একটা, আর তার 'নেই' জোড়া",
     muster: {
       pattern: "der/das → ein → kein die → eine → keine",
       why: "নীল ও সবুজ দল: ein/kein। লাল দল: eine/keine। জোড়ায় জোড়ায় মেলে।",
       examples: "Das ist ein Buch. → Ich habe kein Buch.",
-      tip: "ein চিনলে kein ফ্রি — একই পোশাক, সামনে শুধু k।",
+      tip: "ein চিনলে kein ফ্রি, একই পোশাক, সামনে শুধু k।",
     },
     schau: [
       { de: "Das ist ein Buch.", bn: "এটা একটা বই।" },
@@ -489,11 +489,11 @@ export const DAYS = [
   },
   {
     n: 18,
-    de: "nicht — কোথায় বসে",
+    de: "nicht, কোথায় বসে",
     bn: "nicht-এর আসন",
     muster: {
       pattern: "ক্রিয়ার পরে: Ich verstehe nicht. বিশেষণের আগে: Ich bin nicht müde.",
-      why: "nicht ক্রিয়াকে বা বিশেষণকে মারে। ক্রিয়া কিন্তু ২ নম্বর আসনে অটল — nicht তার পরে।",
+      why: "nicht ক্রিয়াকে বা বিশেষণকে মারে। ক্রিয়া কিন্তু ২ নম্বর আসনে অটল, nicht তার পরে।",
       examples: "❌ Ich nicht verstehe. ✅ Ich verstehe nicht.",
       tip: "nicht কখনো ক্রিয়ার আগে বসে না।",
     },
@@ -512,7 +512,7 @@ export const DAYS = [
       { q: "আমি খেলি না।", a: "Ich spiele nicht." },
       { q: "সে আসছে না।", a: "Sie kommt nicht." },
     ],
-    vonHerzen: { en: "Three things you do NOT do.", bn: "যা করো না — তিনটা।" },
+    vonHerzen: { en: "Three things you do NOT do.", bn: "যা করো না, তিনটা।" },
   },
   {
     n: 19,
@@ -522,14 +522,14 @@ export const DAYS = [
       pattern: "বিশেষ্য (ein-ওয়ালা/খালি) → kein বাকি সব → nicht",
       why: "দ্রুত পরীক্ষা: ক্রিয়ার পরে কি একটা 'জিনিস' আছে? জিনিস হলে kein, নাহলে nicht।",
       examples: "kein Geld (জিনিস) · verstehe nicht (কাজ) · nicht müde (অবস্থা)",
-      tip: "এই বাছাইটাই ১৯ দিনের পুরো কাজ — বাকি সব চেনা।",
+      tip: "এই বাছাইটাই ১৯ দিনের পুরো কাজ, বাকি সব চেনা।",
     },
     schau: [
-      { de: "Ich habe kein Geld.", bn: "টাকা নেই — জিনিস → kein।" },
-      { de: "Ich verstehe nicht.", bn: "বুঝি না — কাজ → nicht।" },
-      { de: "Das ist kein Problem.", bn: "সমস্যা না — জিনিস → kein।" },
-      { de: "Ich bin nicht müde.", bn: "ক্লান্ত নই — অবস্থা → nicht।" },
-      { de: "Wir haben keine Zeit.", bn: "সময় নেই — জিনিস → keine।" },
+      { de: "Ich habe kein Geld.", bn: "টাকা নেই, জিনিস → kein।" },
+      { de: "Ich verstehe nicht.", bn: "বুঝি না, কাজ → nicht।" },
+      { de: "Das ist kein Problem.", bn: "সমস্যা না, জিনিস → kein।" },
+      { de: "Ich bin nicht müde.", bn: "ক্লান্ত নই, অবস্থা → nicht।" },
+      { de: "Wir haben keine Zeit.", bn: "সময় নেই, জিনিস → keine।" },
     ],
     sagEs: [
       { q: "আমার টাকা নেই।", a: "Ich habe kein Geld." },
@@ -539,7 +539,7 @@ export const DAYS = [
       { q: "আমাদের সময় নেই।", a: "Wir haben keine Zeit." },
       { q: "সে এখানে নেই।", a: "Er ist nicht hier." },
     ],
-    vonHerzen: { en: "Two kein-sentences + two nicht-sentences. True ones.", bn: "দুটো kein, দুটো nicht — সব নিজের সত্যি।" },
+    vonHerzen: { en: "Two kein-sentences + two nicht-sentences. True ones.", bn: "দুটো kein, দুটো nicht, সব নিজের সত্যি।" },
   },
   {
     n: 20,
@@ -547,9 +547,9 @@ export const DAYS = [
     bn: "না বলাও একটা শিল্প",
     muster: {
       pattern: "Nein, danke. · Leider … · Ich kann heute nicht.",
-      why: "'না' রুক্ষ শোনায় — danke আর leider (দুঃখিত/দুর্ভাগ্যবশত) সেটাকে নরম করে।",
-      examples: "Leider habe ich keine Zeit. — leider সামনে এলে ক্রিয়া ২ নম্বরে!",
-      tip: "আসন-দুই আইন সব জায়গায় — এমনকি 'না'-তেও।",
+      why: "'না' রুক্ষ শোনায়, danke আর leider (দুঃখিত/দুর্ভাগ্যবশত) সেটাকে নরম করে।",
+      examples: "Leider habe ich keine Zeit., leider সামনে এলে ক্রিয়া ২ নম্বরে!",
+      tip: "আসন-দুই আইন সব জায়গায়, এমনকি 'না'-তেও।",
     },
     schau: [
       { de: "Nein, danke.", bn: "না, ধন্যবাদ।" },
@@ -566,12 +566,12 @@ export const DAYS = [
       { q: "আমি চাই না।", a: "Ich möchte nicht." },
       { q: "আমি আজ পারবো না।", a: "Ich kann heute nicht." },
     ],
-    vonHerzen: { en: "Politely refuse three imaginary invitations.", bn: "তিনটা কাল্পনিক দাওয়াত ভদ্রভাবে ফিরিয়ে দাও — জার্মানে।" },
+    vonHerzen: { en: "Politely refuse three imaginary invitations.", bn: "তিনটা কাল্পনিক দাওয়াত ভদ্রভাবে ফিরিয়ে দাও, জার্মানে।" },
   },
   {
     n: 21,
-    de: "হ্যাঁ/না প্রশ্ন — ক্রিয়া সামনে",
-    bn: "লাফ দাও — 'do' ছাড়াই",
+    de: "হ্যাঁ/না প্রশ্ন, ক্রিয়া সামনে",
+    bn: "লাফ দাও, 'do' ছাড়াই",
     muster: {
       pattern: "Du kommst. → Kommst du? Sie hat Zeit. → Hat sie Zeit?",
       why: "বলা থেকে প্রশ্ন: প্রথম দুটো শব্দ জায়গা বদল করে। ইংরেজির Do/Does-এর কষ্ট এখানে নেই।",
@@ -601,9 +601,9 @@ export const DAYS = [
     bn: "কে · কী · কোথায় · কোথা থেকে",
     muster: {
       pattern: "W-শব্দ + ক্রিয়া + কে ?",
-      why: "গঠন সবসময় এক: Wo | wohnst | du? প্রশ্নের মেশিনে ক্রিয়া দুই নম্বরে — চেনা আইন।",
+      why: "গঠন সবসময় এক: Wo | wohnst | du? প্রশ্নের মেশিনে ক্রিয়া দুই নম্বরে, চেনা আইন।",
       examples: "Wer? কে · Was? কী · Wo? কোথায় · Woher? কোথা থেকে",
-      tip: "সব W দিয়ে শুরু — তাই নাম W-Fragen।",
+      tip: "সব W দিয়ে শুরু, তাই নাম W-Fragen।",
     },
     schau: [
       { de: "Wer ist das?", bn: "ওটা কে?" },
@@ -620,7 +620,7 @@ export const DAYS = [
       { q: "তুমি কোথা থেকে এসেছো?", a: "Woher kommst du?" },
       { q: "সে কোথায়?", a: "Wo ist er?" },
     ],
-    vonHerzen: { en: "Interview a family member with 3 W-questions.", bn: "পরিবারের কাউকে তিনটা W-প্রশ্ন করো — জার্মানে জিজ্ঞেস করে বাংলায় উত্তর নাও।" },
+    vonHerzen: { en: "Interview a family member with 3 W-questions.", bn: "পরিবারের কাউকে তিনটা W-প্রশ্ন করো, জার্মানে জিজ্ঞেস করে বাংলায় উত্তর নাও।" },
   },
   {
     n: 23,
@@ -628,15 +628,15 @@ export const DAYS = [
     bn: "কখন · কেন · কেমন · কত",
     muster: {
       pattern: "Wie heißt du? · Wie geht's? · Wie viel kostet das?",
-      why: "wie একাই তিনটা কাজ করে: নাম, কুশল, দাম। এই তিন বাক্য মুখস্থ চলবে — এগুলোই দরজা খোলে।",
+      why: "wie একাই তিনটা কাজ করে: নাম, কুশল, দাম। এই তিন বাক্য মুখস্থ চলবে, এগুলোই দরজা খোলে।",
       examples: "Wann? কখন · Warum? কেন · Wie? কেমন/কীভাবে · Wie viel? কত",
-      tip: "Warum-এর উত্তর পরে শিখবে — আগে প্রশ্নটা করতে শেখো।",
+      tip: "Warum-এর উত্তর পরে শিখবে, আগে প্রশ্নটা করতে শেখো।",
     },
     schau: [
       { de: "Wann kommst du?", bn: "তুমি কখন আসবে?" },
       { de: "Warum lernst du Deutsch?", bn: "তুমি কেন জার্মান শিখছো?" },
       { de: "Wie heißt du?", bn: "তোমার নাম কী?" },
-      { de: "Wie geht's? — Gut, danke!", bn: "কেমন আছো? — ভালো!" },
+      { de: "Wie geht's?, Gut, danke!", bn: "কেমন আছো?, ভালো!" },
       { de: "Wie viel kostet das?", bn: "এটার দাম কত?" },
     ],
     sagEs: [
@@ -652,12 +652,12 @@ export const DAYS = [
   {
     n: 24,
     de: "möchte + বন্ধনী",
-    bn: "চাই — আর কাজ শেষে",
+    bn: "চাই, আর কাজ শেষে",
     muster: {
       pattern: "Ich möchte … মাঝে যা খুশি … VERB (শেষে!)",
       why: "জার্মানের স্বাক্ষর: সাহায্যকারী ২ নম্বরে, আসল কাজ একদম শেষে। খিলানটা অনুভব করো।",
       examples: "❌ Ich möchte lernen Deutsch. ✅ Ich möchte Deutsch lernen.",
-      tip: "শেষ শব্দটা দরজা বন্ধ করে — তবেই জার্মান কানে 'সম্পূর্ণ' লাগে।",
+      tip: "শেষ শব্দটা দরজা বন্ধ করে, তবেই জার্মান কানে 'সম্পূর্ণ' লাগে।",
     },
     schau: [
       { de: "Ich möchte Deutsch lernen.", bn: "আমি জার্মান শিখতে চাই।" },
@@ -674,17 +674,17 @@ export const DAYS = [
       { q: "আমরা বাড়ি যেতে চাই।", a: "Wir möchten nach Hause gehen." },
       { q: "সে পড়তে চায়।", a: "Sie möchte lesen." },
     ],
-    vonHerzen: { en: "Three real wishes — verb at the END.", bn: "নিজের তিনটা সত্যি ইচ্ছা — ক্রিয়া শেষে!" },
+    vonHerzen: { en: "Three real wishes, verb at the END.", bn: "নিজের তিনটা সত্যি ইচ্ছা, ক্রিয়া শেষে!" },
   },
   {
     n: 25,
-    de: "kann — পারা",
+    de: "kann, পারা",
     bn: "পারি / পারি না",
     muster: {
       pattern: "Ich kann … VERB. Kannst du … VERB?",
-      why: "একই খিলান, নতুন সাহায্যকারী। মজা: ich আর er/sie/es-এ kann একই — কোনো -t নেই!",
+      why: "একই খিলান, নতুন সাহায্যকারী। মজা: ich আর er/sie/es-এ kann একই, কোনো -t নেই!",
       examples: "kann · kannst · kann · können · könnt · können",
-      tip: "পরের ক্রিয়া কখনো বদলায় না — অভিধান-রূপ, শেষে।",
+      tip: "পরের ক্রিয়া কখনো বদলায় না, অভিধান-রূপ, শেষে।",
     },
     schau: [
       { de: "Ich kann kochen.", bn: "আমি রান্না করতে পারি।" },
@@ -705,13 +705,13 @@ export const DAYS = [
   },
   {
     n: 26,
-    de: "muss — করতেই হবে + তিনে মিল",
-    bn: "বাধ্যতা — আর তিন সাহায্যকারী একসাথে",
+    de: "muss, করতেই হবে + তিনে মিল",
+    bn: "বাধ্যতা, আর তিন সাহায্যকারী একসাথে",
     muster: {
       pattern: "muss · musst · muss · müssen · müsst · müssen",
       why: "আজ তিনজন একসাথে: möchte (চাই), kann (পারি), muss (হবেই)। একই খিলান, তিন রঙ।",
       examples: "Ich möchte spielen, aber ich muss lernen.",
-      tip: "'চাই কিন্তু হবেই' — এই বাক্যটা জীবনের অর্ধেক!",
+      tip: "'চাই কিন্তু হবেই'– এই বাক্যটা জীবনের অর্ধেক!",
     },
     schau: [
       { de: "Ich muss jetzt gehen.", bn: "আমাকে এখন যেতেই হবে।" },
@@ -733,11 +733,11 @@ export const DAYS = [
   {
     n: 27,
     de: "Zahlen 0–100",
-    bn: "সংখ্যা — আর উল্টো প্যাঁচ",
+    bn: "সংখ্যা, আর উল্টো প্যাঁচ",
     muster: {
       pattern: "21 = einundzwanzig (এক-আর-বিশ!) 35 = fünfunddreißig",
-      why: "ছোট সংখ্যা আগে, দশক পরে — ইংরেজির উল্টো। তিন দিনে অভ্যাস হয়ে যায়।",
-      examples: "eins zwei drei vier fünf sechs sieben acht neun zehn — elf zwölf!",
+      why: "ছোট সংখ্যা আগে, দশক পরে, ইংরেজির উল্টো। তিন দিনে অভ্যাস হয়ে যায়।",
+      examples: "eins zwei drei vier fünf sechs sieben acht neun zehn, elf zwölf!",
       tip: "১৬ = sechzehn (s-এর x নেই), ১৭ = siebzehn (sieben ছোট)।",
     },
     schau: [
@@ -760,12 +760,12 @@ export const DAYS = [
   {
     n: 28,
     de: "Tage + Uhrzeit",
-    bn: "দিন ও ঘড়ি — halb-ফাঁদসহ",
+    bn: "দিন ও ঘড়ি, halb-ফাঁদসহ",
     muster: {
-      pattern: "Wie spät ist es? — Es ist drei Uhr. um drei Uhr = তিনটায়",
+      pattern: "Wie spät ist es?, Es ist drei Uhr. um drei Uhr = তিনটায়",
       why: "দিনের আগে am (am Montag), ঘণ্টার আগে um (um drei Uhr)। আর সাবধান: halb vier = সাড়ে তিন!",
       examples: "Montag Dienstag Mittwoch Donnerstag Freitag Samstag Sonntag",
-      tip: "halb মানে 'পরের ঘণ্টার অর্ধেক পথে' — halb sechs = ৫:৩০।",
+      tip: "halb মানে 'পরের ঘণ্টার অর্ধেক পথে'– halb sechs = ৫:৩০।",
     },
     schau: [
       { de: "Heute ist Montag.", bn: "আজ সোমবার।" },
@@ -787,39 +787,39 @@ export const DAYS = [
   {
     n: 29,
     de: "Satzbank-Tag: Café & Straße",
-    bn: "বাস্তবের মহড়া — ক্যাফে ও রাস্তা",
+    bn: "বাস্তবের মহড়া, ক্যাফে ও রাস্তা",
     muster: {
       pattern: "Ich möchte einen Tee, bitte. · Wie viel kostet das? · Zahlen, bitte!",
-      why: "'einen Tee' — তৈরি টুকরো হিসেবে নাও (নীল দলের object-রূপ, Stufe Zwei-র গল্প)। আজ মহড়ার দিন: দুই ভূমিকাতেই বলো।",
+      why: "'einen Tee'– তৈরি টুকরো হিসেবে নাও (নীল দলের object-রূপ, Stufe Zwei-র গল্প)। আজ মহড়ার দিন: দুই ভূমিকাতেই বলো।",
       examples: "Entschuldigung! · Vielen Dank! · Bitte schön! · Langsam, bitte!",
-      tip: "ভদ্রতার শব্দগুলো সোনার চাবি — প্রতিটা কথোপকথনে।",
+      tip: "ভদ্রতার শব্দগুলো সোনার চাবি, প্রতিটা কথোপকথনে।",
     },
     schau: [
       { de: "Ich möchte einen Tee, bitte.", bn: "একটা চা দিন, প্লিজ।" },
       { de: "Wie viel kostet das?", bn: "এটার দাম কত?" },
       { de: "Zahlen, bitte!", bn: "বিল দিন, প্লিজ!" },
       { de: "Entschuldigung, wo ist der Bahnhof?", bn: "মাফ করবেন, স্টেশন কোথায়?" },
-      { de: "Vielen Dank! — Bitte schön!", bn: "অনেক ধন্যবাদ! — কিছু না!" },
+      { de: "Vielen Dank!, Bitte schön!", bn: "অনেক ধন্যবাদ!, কিছু না!" },
     ],
     sagEs: [
-      { q: "কেমন আছো? — ভালো, ধন্যবাদ!", a: "Wie geht's? — Gut, danke!" },
+      { q: "কেমন আছো?, ভালো, ধন্যবাদ!", a: "Wie geht's?, Gut, danke!" },
       { q: "এটার দাম কত?", a: "Wie viel kostet das?" },
       { q: "বিল দিন, প্লিজ!", a: "Zahlen, bitte!" },
       { q: "মাফ করবেন, স্টেশন কোথায়?", a: "Entschuldigung, wo ist der Bahnhof?" },
       { q: "আমি বুঝিনি। আস্তে বলুন, প্লিজ!", a: "Ich verstehe nicht. Langsam, bitte!" },
       { q: "অনেক ধন্যবাদ!", a: "Vielen Dank!" },
     ],
-    vonHerzen: { en: "Role-play the café aloud — both roles: order, price, pay, thank.", bn: "ক্যাফের দৃশ্যটা জোরে অভিনয় করো — দুই চরিত্রেই: অর্ডার, দাম, বিল, ধন্যবাদ।" },
+    vonHerzen: { en: "Role-play the café aloud, both roles: order, price, pay, thank.", bn: "ক্যাফের দৃশ্যটা জোরে অভিনয় করো, দুই চরিত্রেই: অর্ডার, দাম, বিল, ধন্যবাদ।" },
   },
   {
     n: 30,
-    de: "Alles zusammen — মুক্ত কথা",
-    bn: "সব একসাথে — এবার নিজের গল্প",
+    de: "Alles zusammen, মুক্ত কথা",
+    bn: "সব একসাথে, এবার নিজের গল্প",
     muster: {
       pattern: "Ich heiße … Ich komme aus … Ich lerne … Ich möchte … Ich gebe nicht auf!",
       why: "আজ সব হাতিয়ার একসাথে: sein, haben, ক্রিয়া-মেশিন, টুপি, না-বলা, প্রশ্ন, বন্ধনী। তোমার প্রথম জার্মান আত্মপরিচয়।",
       examples: "Es ist schwer, aber ich kann das!",
-      tip: "'কঠিন, কিন্তু আমি পারি' — এটাই এই খাতার শেষ কথা, আর তোমার শুরুর কথা।",
+      tip: "'কঠিন, কিন্তু আমি পারি'– এটাই এই খাতার শেষ কথা, আর তোমার শুরুর কথা।",
     },
     schau: [
       { de: "Ich heiße Rima.", bn: "আমার নাম রিমা।" },

@@ -1,11 +1,11 @@
 /* ============================================================
-   activation.js — don't act on a page nobody has opened yet.
+   activation.js, don't act on a page nobody has opened yet.
 
    THE BUG THIS EXISTS TO PREVENT
 
    app.js injects speculation rules with eagerness "moderate",
    which tells the browser to PRERENDER a link when the pointer
-   hovers it. That is a real speed win — the click is instant —
+   hovers it. That is a real speed win, the click is instant,
    but a prerendered page is not a preview. It is the page,
    fully loaded, with its scripts running, sharing this origin's
    localStorage. It simply isn't visible yet.
@@ -26,8 +26,8 @@
    THE RULE
 
    Reading the DOM during prerender is fine. Anything a reader
-   would recognise as "I did that" — writing progress, counting
-   a view, recording a position — waits for activation.
+   would recognise as "I did that"– writing progress, counting
+   a view, recording a position, waits for activation.
 
    whenActivated(fn) runs fn now on a normally loaded page, or
    at the moment a prerendered page is actually shown.
@@ -48,7 +48,7 @@ export const wasPrerendered = () =>
  * Run fn once the page is really being looked at.
  *
  * On an ordinary navigation that is immediately. On a prerender
- * it is when the reader clicks the link that was prerendered —
+ * it is when the reader clicks the link that was prerendered,
  * which may be never, in which case fn never runs, which is the
  * entire point.
  */

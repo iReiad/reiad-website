@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================
-   build-og.mjs — renders the social share images.
+   build-og.mjs, renders the social share images.
 
    A 1200×630 PNG is what WhatsApp, LinkedIn, Facebook and X show
    when someone shares a link, and it's the first impression most
@@ -30,7 +30,7 @@ mkdirSync(OUT, { recursive: true });
    Two flags, both for the same hazard: this script overwrites
    every PNG in og/, and a card rendered without the site's
    webfonts is a card in Arial. Somewhere with no route to
-   fonts.googleapis.com — a locked-down CI box, a sandbox — an
+   fonts.googleapis.com, a locked-down CI box, a sandbox, an
    innocent run silently replaces twenty good images with bad
    ones.
 
@@ -98,8 +98,8 @@ const CARDS = [
     bn: true,
   })),
 
-  /* The German school. Without these every /deutsch/ link — the
-     hub, four Stufen, fourteen Teile and the practice book —
+  /* The German school. Without these every /deutsch/ link, the
+     hub, four Stufen, fourteen Teile and the practice book,
      previewed as the site's generic card, which says nothing
      about German at all. Same rule as the stages: one per Stufe,
      so a shared Teil previews as the Stufe it belongs to. */
@@ -250,7 +250,7 @@ for (const card of wanted) {
      silent is how that ships. Say so, and write nothing. */
   if (!(await tab.evaluate(() => document.fonts.size))) {
     console.error(
-      `\nNo webfonts loaded — og/${card.file} would render in the fallback face.\n` +
+      `\nNo webfonts loaded, og/${card.file} would render in the fallback face.\n` +
       "Nothing written. Run this where fonts.googleapis.com is reachable, or\n" +
       "pass --fonts=<file.css> holding @font-face rules with data: URLs.");
     await browser.close();
@@ -269,7 +269,7 @@ const files = globSync("**/*.html", { cwd: HERE })
   .filter((f) => !f.startsWith("og/") && f !== "offline.html");
 
 /* Pages that are nobody's business to share. The list matches
-   the Disallow block in robots.txt — desk.html was in one and not
+   the Disallow block in robots.txt, desk.html was in one and not
    the other, so a run quietly gave the admin desk a share card. */
 const PRIVATE = new Set([
   "studio.html", "desk.html", "offline.html", "insights/_template.html",
@@ -292,7 +292,7 @@ for (const rel of files) {
     continue;
   }
 
-  /* No card at all. Every term page was in this state — eighteen of
+  /* No card at all. Every term page was in this state, eighteen of
      the most linkable pages on the site previewing as a bare URL.
      Build the whole block from what the page already declares, so
      the preview says the same thing as the page. */

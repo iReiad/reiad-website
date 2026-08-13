@@ -1,5 +1,5 @@
 # ============================================================
-# _redirects — Cloudflare Pages. First match wins.
+# _redirects: Cloudflare Pages. First match wins.
 # 301 = permanent (search engines move the ranking across).
 #
 # DO NOT add "pretty URL" rules like `/about  /about.html`.
@@ -9,7 +9,7 @@
 #
 #     /about → (this file) → /about.html → (Pages) → /about → …
 #
-# which browsers show as ERR_TOO_MANY_REDIRECTS — the page simply
+# which browsers show as ERR_TOO_MANY_REDIRECTS, the page simply
 # never loads. That is exactly what a previous version of this
 # file did to about, insights, portfolio, colophon, contact,
 # tools and learn. Every destination below is therefore
@@ -25,7 +25,7 @@
 /insights/dsex.html   /learn/terms/dsex     301
 /insights/dsex        /learn/terms/dsex     301
 
-# Feed aliases — .xml isn't touched by the HTML handling, so these are safe.
+# Feed aliases: .xml isn't touched by the HTML handling, so these are safe.
 /rss                  /feed.xml             301
 /feed                 /feed.xml             301
 /sitemap              /sitemap.xml          301

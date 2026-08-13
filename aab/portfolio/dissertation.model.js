@@ -1,15 +1,15 @@
 /* ============================================================
-   dissertation.model.js — the statistics engine for the
+   dissertation.model.js: the statistics engine for the
    Islamic-vs-conventional fund case study.
 
    No DOM in here. Everything takes numbers and returns numbers,
    which is the only way to check it against values a textbook
-   already agrees on. dissertation.test.mjs does exactly that —
+   already agrees on. dissertation.test.mjs does exactly that,
    run `node aab/portfolio/dissertation.test.mjs`.
 
    Three groups of things live here:
 
-     1. Distribution functions — Student's t and the normal,
+     1. Distribution functions, Student's t and the normal,
         plus the NONCENTRAL t, which is the one that makes an
         honest power calculation possible on a sample of three.
         A normal approximation would be comfortable and wrong:
@@ -17,12 +17,12 @@
         remotely normal, and the whole point of the exercise is
         to be truthful about what three funds can detect.
 
-     2. Test and power routines — Welch's unequal-variance
+     2. Test and power routines, Welch's unequal-variance
         t-test (the test the dissertation used), the power of
         that test, and its inverse: the smallest difference the
         design could have found.
 
-     3. Small series helpers — drawdown, rebasing, box-plot
+     3. Small series helpers, drawdown, rebasing, box-plot
         statistics, histogram re-binning.
    ============================================================ */
 
@@ -148,7 +148,7 @@ export function tQuantile(p, df) {
 }
 
 /* ------------------------------------------------------------
-   The noncentral t CDF — Lenth (1989), AS 243.
+   The noncentral t CDF, Lenth (1989), AS 243.
 
    P(T ≤ t) where T follows a noncentral t with `df` degrees of
    freedom and noncentrality δ. This is what turns "the study
@@ -202,7 +202,7 @@ export function nctCdf(t, df, delta) {
    ------------------------------------------------------------ */
 
 /**
- * Welch's unequal-variance two-sample t-test — the test the
+ * Welch's unequal-variance two-sample t-test: the test the
  * dissertation ran on every fund-level metric.
  * Returns the difference (group 1 − group 2), its standard error,
  * the t statistic, the Welch–Satterthwaite df and the two-tailed p.
@@ -220,7 +220,7 @@ export function welch({ m1, s1, n1, m2, s2, n2 }) {
 
 /**
  * Power of a two-sided two-sample t-test to detect a true mean
- * difference of `delta`, using the noncentral t — not a normal
+ * difference of `delta`, using the noncentral t, not a normal
  * approximation, because at n₁ = 3 the two differ enormously.
  */
 export function power({ n1, n2, sd1, sd2, delta, alpha = 0.05 }) {

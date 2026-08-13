@@ -1,5 +1,5 @@
 /* ============================================================
-   /api/media — where the photos actually live.
+   /api/media, where the photos actually live.
 
    GET    /media/<key>        public: serve an image out of R2
    POST   /api/media          admin:  upload raw bytes, get a URL back
@@ -24,7 +24,7 @@
 
    A key is `<slug>/<content-hash>.<ext>`. Hashing the bytes means
    uploading the same photo twice writes it once, and that a URL can
-   never point at different bytes later — which is what lets the
+   never point at different bytes later, which is what lets the
    response say `immutable` and mean it.
    ============================================================ */
 
@@ -44,7 +44,7 @@ const TYPES = {
 const MAX_BYTES = 8 * 1024 * 1024;
 
 /* The fetch proxy is admin-only, so this is not the main line of
-   defence — but a Worker sits inside Cloudflare's network and there
+   defence, but a Worker sits inside Cloudflare's network and there
    is no reason for it to ever be pointed at a private address. */
 const PRIVATE_HOST =
   /^(localhost$|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1\]?$|.*\.internal$|.*\.local$)/i;
@@ -53,7 +53,7 @@ const extFor = (type) => TYPES[String(type ?? "").split(";")[0].trim().toLowerCa
 const typeFor = (key) =>
   Object.keys(TYPES).find((t) => TYPES[t] === key.split(".").pop()) ?? "application/octet-stream";
 
-/** First 16 hex characters of the SHA-256 — 64 bits, which is far
+/** First 16 hex characters of the SHA-256, 64 bits, which is far
     more than enough to tell one person's photo library apart. */
 async function contentHash(buffer) {
   const digest = await crypto.subtle.digest("SHA-256", buffer);

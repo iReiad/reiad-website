@@ -1,5 +1,5 @@
 /* ============================================================
-   auth-config.js — who is allowed into /studio.html.
+   auth-config.js, who is allowed into /studio.html.
 
    RIGHT NOW THIS IS UNCONFIGURED, so the first visit to the
    Studio shows a one-time setup screen: pick a passphrase, and
@@ -11,7 +11,7 @@
    put through PBKDF2-SHA256 600,000 times with `salt`; you
    cannot work backwards from it to the passphrase.
 
-   BE HONEST ABOUT WHAT THIS IS. This is a static site — there
+   BE HONEST ABOUT WHAT THIS IS. This is a static site: there
    is no server to check anything, so the gate runs in the
    visitor's own browser. It keeps the Studio out of the hands
    of anyone who wanders in, and keeps it out of Google. A

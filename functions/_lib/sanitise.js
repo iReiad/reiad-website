@@ -1,5 +1,5 @@
 /* ============================================================
-   _lib/sanitise.js — server-side HTML cleaning.
+   _lib/sanitise.js, server-side HTML cleaning.
 
    The Studio already sanitises what you paste, but that protects
    the person doing the pasting, not the site: a client-side
@@ -23,7 +23,7 @@ const ALLOWED = {
   img: ["src", "alt", "width", "height", "loading", "decoding"],
 };
 
-/* Only these class names survive — they're the ones the stylesheet
+/* Only these class names survive: they're the ones the stylesheet
    knows about. Anything else is styling smuggled in from outside. */
 const ALLOWED_CLASSES = new Set([
   "wide", "duo", "table-scroll", "term", "note", "ex", "lead-photo",
@@ -106,7 +106,7 @@ export function sanitiseHTML(input) {
   return out.trim();
 }
 
-/** Plain text out of cleaned HTML — for reading time and search. */
+/** Plain text out of cleaned HTML, for reading time and search. */
 export const textOf = (html) =>
   String(html ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 

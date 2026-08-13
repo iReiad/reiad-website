@@ -1,9 +1,9 @@
 /* ============================================================
-   stage.js — the small live layer on a stage's contents page.
+   stage.js: the small live layer on a stage's contents page.
 
    The page itself is complete static HTML: every lesson is
    listed, described and linked before this file runs. All this
-   adds is the reader's own position within it —
+   adds is the reader's own position within it,
 
      1. ticks on the lessons already read
      2. the progress bar and its count

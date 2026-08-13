@@ -1,5 +1,5 @@
 /* ============================================================
-   dcf.model.js — a discounted cash flow valuation.
+   dcf.model.js, a discounted cash flow valuation.
 
    No DOM here, same as three-statement.model.js. The page is a
    way of looking at this; this is the thing being looked at.
@@ -10,7 +10,7 @@
    The cash flows are not a second set of invented numbers. They
    are derived from the three-statement model in this same
    folder, which means the DCF inherits a forecast whose balance
-   sheet balances — and switching the operating scenario changes
+   sheet balances, and switching the operating scenario changes
    the valuation, because it changes the cash flows.
 
    That is how it works in practice, and it is the part most
@@ -24,7 +24,7 @@
      unlevered free cash flow
        = EBIT × (1 − tax) + D&A − capex − increase in working capital
 
-     Unlevered — before financing. Interest is deliberately NOT
+     Unlevered, before financing. Interest is deliberately NOT
      deducted: the cost of debt is already inside the discount
      rate, and subtracting it here as well would double-count it.
      This gives enterprise value, from which net debt is bridged
@@ -61,7 +61,7 @@
       forecast, not a flow through it.
 
    3. Gordon growth requires WACC > g. Where it isn't, the model
-      returns a flagged invalid result rather than a number — a
+      returns a flagged invalid result rather than a number, a
       negative denominator produces a confidently wrong valuation,
       which is worse than no valuation.
    ============================================================ */
@@ -77,7 +77,7 @@ import {
 export { COMPANY, SCENARIOS };
 
 /* ------------------------------------------------------------
-   The equity story — shares, price, and what bridges EV to equity
+   The equity story, shares, price, and what bridges EV to equity
    ------------------------------------------------------------ */
 export const EQUITY = {
   // in lakh, to match the operating model's unit
@@ -104,7 +104,7 @@ export const DEFAULTS = {
      rather than an omission. The risk-free rate above is a BDT
      government yield, which ALREADY prices Bangladesh sovereign
      risk. Adding a country premium on top charges for the same
-     risk twice — it cut roughly 40% off the valuation here before
+     risk twice: it cut roughly 40% off the valuation here before
      it was spotted. Build from a local risk-free with no CRP, or
      from a US risk-free with one; never both. The slider stays so
      the second approach is available. */
@@ -179,7 +179,7 @@ export function wacc(a) {
 
 /**
  * Unlevered free cash flow for each forecast year.
- * Interest is not deducted — see the note at the top.
+ * Interest is not deducted, see the note at the top.
  */
 export function cashFlows(scenarioId = "base", taxRate = DEFAULTS.taxRate) {
   const op = runOperating(SCENARIOS[scenarioId] ?? SCENARIOS.base);
@@ -225,7 +225,7 @@ export const impliedExitMultiple = (tv, ebitdaN) =>
 
 /**
  * @param {object} a assumptions
- * @param {object} over  { wacc, terminalGrowth, exitMultiple } — used by
+ * @param {object} over  { wacc, terminalGrowth, exitMultiple }, used by
  *        the sensitivity grid, which varies these directly rather than
  *        working backwards through the WACC build-up.
  */
@@ -247,7 +247,7 @@ export function value(a, over = {}) {
 
   const pvExplicit = rows.reduce((s, r) => s + r.pv, 0);
 
-  // terminal value — a lump sum at the end of year n, so always
+  // terminal value, a lump sum at the end of year n, so always
   // discounted at the full n even when the flows use mid-year
   const tvDf = 1 / (1 + w) ** n;
 

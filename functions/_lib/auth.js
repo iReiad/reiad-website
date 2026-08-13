@@ -1,5 +1,5 @@
 /* ============================================================
-   _lib/auth.js — real authentication, at last.
+   _lib/auth.js, real authentication, at last.
 
    The old Studio gate ran entirely in the browser, which I was
    careful to describe honestly as a lock on a glass house: with
@@ -7,7 +7,7 @@
 
    There is a server now, so this is the real thing:
 
-     · the password is never stored — only PBKDF2-SHA256 at
+     · the password is never stored: only PBKDF2-SHA256 at
        210,000 iterations over a random 16-byte salt
      · comparison is constant-time
      · a successful login mints a 256-bit session token, stored
@@ -27,7 +27,7 @@
    request, and PBKDF2-SHA256 at 210,000 iterations costs about
    30ms. Every login and every first-run setup was killed by the
    runtime mid-request (Cloudflare error 1102), which reaches the
-   browser as an HTML error page rather than JSON — so the Studio
+   browser as an HTML error page rather than JSON, so the Studio
    could only report "couldn't reach the server".
 
    So the work moved to the browser, where there is no CPU limit,
@@ -39,7 +39,7 @@
    The security that matters is unchanged. Anyone who steals the
    database gets SHA-256(dk), and to turn that back into the
    passphrase they still have to run 210,000 iterations of PBKDF2
-   per guess — exactly as before. A single SHA-256 is the right
+   per guess, exactly as before. A single SHA-256 is the right
    hash for the server's half because its input is 256 bits of
    derived key, not a guessable human password.
 
@@ -62,7 +62,7 @@ const enc = new TextEncoder();
 const toB64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
 const fromB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 /* base64url, unpadded. A session token travels in a cookie, and
-   padded base64 puts "=" inside the value — which trips up naive
+   padded base64 puts "=" inside the value, which trips up naive
    cookie parsers (including, briefly, the one below). Sticking to
    [A-Za-z0-9_-] sidesteps the entire class of problem. */
 const randomToken = (bytes = 32) =>
@@ -85,7 +85,7 @@ async function derive(password, salt, iterations = ITERATIONS) {
   return toB64(bits);
 }
 
-/** "pbkdf2$iterations$salt$hash" — everything needed to verify, and
+/** "pbkdf2$iterations$salt$hash"– everything needed to verify, and
     nothing that helps an attacker who reads the database.
 
     Legacy: this derives server-side and cannot complete inside the
@@ -114,7 +114,7 @@ export async function verifyPassword(password, stored) {
 
 export const CLIENT_ITERATIONS = ITERATIONS;
 
-/** The salt is public by design — it stops one rainbow table from
+/** The salt is public by design: it stops one rainbow table from
     working against every site, and it is useless on its own. */
 export const newSalt = () => toB64(crypto.getRandomValues(new Uint8Array(16)));
 
@@ -165,8 +165,8 @@ function cookieFrom(request) {
 /** `secure` is decided by the request, not hard-coded: a Secure cookie
     is never stored over plain http, so hard-coding it would make
     `wrangler pages dev` on http://localhost impossible to sign into.
-    Anything that isn't localhost is https in production — Cloudflare
-    redirects and HSTS see to that — so this gives up nothing real. */
+    Anything that isn't localhost is https in production, Cloudflare
+    redirects and HSTS see to that, so this gives up nothing real. */
 export function sessionCookie(token, { clear = false, secure = true } = {}) {
   return [
     `${COOKIE}=${clear ? "" : token}`,

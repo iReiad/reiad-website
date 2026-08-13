@@ -1,11 +1,11 @@
 /* ============================================================
-   home.js — the part of the home page that knows who you are.
+   home.js: the part of the home page that knows who you are.
 
    Everything else on / is the same for everybody. This is the
    band that isn't: where you stopped reading, what else you had
    open, and one headline from the market pulse.
 
-   All three are read off this device — the two schools' own
+   All three are read off this device: the two schools' own
    bookmarks (/learn/progress.js, /deutsch/progress.js), the
    trail in /recent.js, and the pulse cache in /news.js. Nothing
    is fetched to build it except the news, and that is allowed to
@@ -14,7 +14,7 @@
    THE RULE THIS FILE IS BUILT AROUND
 
    A first-time visitor sees none of it. Not an empty state, not
-   a "nothing here yet" — the whole section stays `hidden`. An
+   a "nothing here yet"– the whole section stays `hidden`. An
    empty "continue where you left off" is worse than no offer at
    all, because it tells someone who has never been here that the
    site has lost their place. Each of the three parts is shown
@@ -45,8 +45,8 @@ const section = document.getElementById("welcome-back");
 /* ------------------------------------------------------------
    1. CONTINUE
 
-   Each school is asked the same two questions — where were you,
-   and what is next — and the answers are sorted by when they
+   Each school is asked the same two questions, where were you,
+   and what is next, and the answers are sorted by when they
    last happened. Two cards at most: a reader doing German in the
    evenings and the money ladder at weekends is one person with
    two places to be, and picking one for them would be wrong.
@@ -59,7 +59,7 @@ function learnResume() {
   if (!last?.url) return null;
 
   /* The next lesson OF THEIR OWN STAGE, not the earliest gap in
-     the whole ladder — the same rule the Learn hub's own resume
+     the whole ladder: the same rule the Learn hub's own resume
      card uses, and for the same reason: being sent back to an
      unread starter step reads as the site losing your place. */
   const stage = findStage(last.stage);
@@ -151,7 +151,7 @@ function buildContinue() {
 
 /* Latin, deliberately. These are set in the site's mono face at
    0.6rem and uppercased, which is a treatment Bangla neither needs
-   nor survives — "শব্দ" at that size in a fallback font is a smudge
+   nor survives, "শব্দ" at that size in a fallback font is a smudge
    where "TERM" is a word. The titles beside them stay in whatever
    language the page was written in. */
 const KIND_LABEL = {
@@ -198,9 +198,9 @@ function buildRecent(skipUrls) {
    ten and a home page that always leads with the same story is
    a home page that stops being read.
 
-   The cache is tried first and painted immediately — a headline
+   The cache is tried first and painted immediately, a headline
    from twenty minutes ago is worth more on screen now than a
-   fresh one after a spinner — and the wire refreshes it if it
+   fresh one after a spinner, and the wire refreshes it if it
    answers. If neither has anything, the slot stays hidden.
    ------------------------------------------------------------ */
 
@@ -241,7 +241,7 @@ function reveal() {
 
 /* The heading has to describe what is actually underneath it. A
    band holding one news card should not be titled "pick up where
-   you left off" — there is nothing to pick up. */
+   you left off"– there is nothing to pick up. */
 function relabel(hasContinue, hasRecent) {
   const label = document.getElementById("welcome-label");
   if (!label) return;

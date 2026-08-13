@@ -1,5 +1,5 @@
 /* ============================================================
-   pulse.js — the Insights page's market pulse.
+   pulse.js: the Insights page's market pulse.
 
    The fetching, the card and the mini window all live in
    /news.js now, because the home page shows one of these too and
@@ -15,7 +15,7 @@
         retry button
 
    The section is never allowed to become a dead apology at the
-   top of the page — if it can't be useful it gets out of the way.
+   top of the page, if it can't be useful it gets out of the way.
    ============================================================ */
 
 import { el, loadNews, newsCard, openNews, relTime } from "/news.js";
@@ -70,7 +70,7 @@ async function load(isRetry = false) {
     const { data, staleFrom } = await loadNews();
     render(data, staleFrom);
   } catch {
-    // One quiet second chance — a first load during a flaky moment
+    // One quiet second chance, a first load during a flaky moment
     // shouldn't condemn the section for the whole visit.
     if (!isRetry) {
       setTimeout(() => load(true), 2500);

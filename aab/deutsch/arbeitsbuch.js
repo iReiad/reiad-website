@@ -1,5 +1,5 @@
 /* ============================================================
-   arbeitsbuch.js — turns the printed workbook into a daily one.
+   arbeitsbuch.js, turns the printed workbook into a daily one.
 
    The page ships all thirty days as complete static HTML. With
    JavaScript off it is exactly the book it came from: thirty
@@ -12,7 +12,7 @@
      1. ONE DAY AT A TIME. Thirty days on screen at once is a
         wall; the book was always meant to be opened at today's
         page. So the other twenty-nine are hidden and a small
-        nav walks between them — with an escape hatch that puts
+        nav walks between them, with an escape hatch that puts
         them all back, because someone revising, searching with
         Ctrl+F, or printing wants the whole book.
 
@@ -22,7 +22,7 @@
         what you wrote on day 4 and see that you have moved.
 
      3. THE ANSWERS STAY SHUT until asked for. The book's own
-        rule — check ONLY after trying — is a rule the page can
+        rule, check ONLY after trying, is a rule the page can
         actually enforce, where paper could only request it.
 
      4. THE TRACKER. Ticked by hand, never by arriving: the
@@ -39,8 +39,8 @@ import {
 } from "/deutsch/progress.js";
 
 /* Note what is NOT imported: arbeitsbuch.data.js. Every word of
-   all thirty days is already in the markup — that is what makes
-   the no-JavaScript fallback a real workbook — so pulling the
+   all thirty days is already in the markup, that is what makes
+   the no-JavaScript fallback a real workbook, so pulling the
    same 56 KB down a second time as a module would buy nothing
    but a slower page. The day list below is read off the DOM. */
 
@@ -59,7 +59,7 @@ const book = document.getElementById("tage");
 
    One object, one key, written on a debounce. Typing eight
    sentences fires a hundred input events and localStorage is
-   synchronous — writing on every keystroke is how a cheap phone
+   synchronous, writing on every keystroke is how a cheap phone
    starts dropping characters.
    ------------------------------------------------------------ */
 
@@ -94,7 +94,7 @@ function saveSchrift(schrift) {
    The overflow/resize switch matters: the boxes ship as ordinary
    scrollable, resizable textareas so that with scripts off they
    are still usable. Autosizing only works if nothing can scroll
-   inside them, so this takes that over the moment it runs — and
+   inside them, so this takes that over the moment it runs, and
    only then. */
 function fit(area) {
   if (area.style.overflow !== "hidden") {
@@ -166,7 +166,7 @@ function show(n, { scroll = false, writeHash = true } = {}) {
      the learner then has to press their way out of.
 
      writeHash is false for the very first paint, and that is not
-     a detail: changing the fragment — even through replaceState —
+     a detail: changing the fragment, even through replaceState,
      makes the browser run its scroll-to-fragment step, and with
      the site's `scroll-behavior: smooth` that showed up as the
      page sliding 1,800px down on its own the moment it loaded,
@@ -191,7 +191,7 @@ function show(n, { scroll = false, writeHash = true } = {}) {
 const nav = document.querySelector("[data-tag-nav]");
 
 /* Day titles come off the page, and the page is generated from
-   arbeitsbuch.data.js — but they are still going back in through
+   arbeitsbuch.data.js, but they are still going back in through
    innerHTML, and a Teil called `a < b` would end the option early.
    Escaping costs one line and removes the question. */
 const esc = (s) =>
@@ -239,7 +239,7 @@ function toggleAll() {
       a.querySelectorAll("textarea[data-schrift]").forEach(fit);
     });
     /* Without this the tracker keeps one square ringed as "the day
-       you are on" while all thirty are on screen — a highlight
+       you are on" while all thirty are on screen, a highlight
        pointing at nothing in particular. */
     paintTracker();
   } else {
@@ -274,7 +274,7 @@ function paintTracker() {
     bar.querySelector(".count").textContent = stats.done === 0
       ? `${bn(stats.total)} দিন, এখনো শুরু হয়নি`
       : stats.complete
-        ? `৩০ দিনই শেষ ✓ — এবার Tag ৩১`
+        ? `৩০ দিনই শেষ ✓, এবার Tag ৩১`
         : `${bn(stats.done)}/${bn(stats.total)} দিন হয়েছে`;
     bar.dataset.state = stats.complete ? "done" : stats.done ? "going" : "new";
   }
@@ -307,7 +307,7 @@ function wireTicks() {
       const nowDone = toggleDay(stufe, n);
       paintTracker();
       /* Ticking a day off and being left staring at the same
-         page is an odd place to end an evening. Move on — but
+         page is an odd place to end an evening. Move on, but
          only forwards, and only when the tick went on. */
       if (nowDone && n === current && n < LAST) {
         setTimeout(() => show(n + 1, { scroll: true }), 450);
@@ -337,7 +337,7 @@ function wireTicks() {
    which day to open with
 
    A hash wins, because it is an address someone chose. Failing
-   that, the day they were last on — the book should open where
+   that, the day they were last on: the book should open where
    they left it, the way a real one falls open at the bookmark.
    Failing that, day one.
    ------------------------------------------------------------ */
@@ -371,7 +371,7 @@ function init() {
 
   /* The tracker and the bar are drawn from the same numbers in
      three places. Rather than have each poll, anything that
-     writes fires one event and everything repaints — including
+     writes fires one event and everything repaints, including
      a second tab left open on the same book. */
   onProgress(paintTracker);
 }

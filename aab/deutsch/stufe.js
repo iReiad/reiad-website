@@ -1,9 +1,9 @@
 /* ============================================================
-   stufe.js — the small live layer on a Stufe's contents page.
+   stufe.js: the small live layer on a Stufe's contents page.
 
    The page itself is complete static HTML: every Teil is listed,
    described and linked before this file runs. All this adds is
-   the learner's own position within it —
+   the learner's own position within it,
 
      1. ticks on the Teile already read
      2. the progress bar and its count
@@ -55,7 +55,7 @@ function paintAll() {
     const next = teile.find((t) => t.status === "live" && !read.has(t.id));
     if (!next) {
       /* Finished reading. The next thing is not another Teil, it
-         is the practice book — so send them there rather than
+         is the practice book: so send them there rather than
          back to Teil one. */
       const book = document.querySelector(`[data-workbook="${stufe.slug}"]`);
       if (book) {

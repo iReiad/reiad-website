@@ -1,5 +1,5 @@
 /* ============================================================
-   lessons/basics-2.js — the text of ভিত্তি · ধাপ ২.
+   lessons/basics-2.js: the text of ভিত্তি · ধাপ ২.
 
    Keys match the lesson slugs in curriculum.js. The value is the
    body of the page: everything between the standfirst and the
@@ -14,7 +14,7 @@
        absolute, so the pop-up reader can rewrite them safely.
      · <div class="ex"> for the worked example at the end
      · <div class="ex warn"> when the example is a warning
-     · numbers are illustrative and say so — rates change
+     · numbers are illustrative and say so, rates change
    ============================================================ */
 
 export default {

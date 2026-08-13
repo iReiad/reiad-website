@@ -1,5 +1,5 @@
 /* ============================================================
-   studio.test.mjs — the Studio, driven in a real browser.
+   studio.test.mjs: the Studio, driven in a real browser.
 
      node aab/studio.test.mjs
 
@@ -10,8 +10,8 @@
        PLAYWRIGHT=/path/to/playwright node aab/studio.test.mjs
 
    It serves aab/ itself on a spare port, so there is no server to
-   start first. Everything runs in the static mode of the Studio —
-   no database — which is the half that can be checked without a
+   start first. Everything runs in the static mode of the Studio,
+   no database, which is the half that can be checked without a
    Worker. The dynamic half is test-api.sh's job.
 
    ---- why this exists ----
@@ -22,7 +22,7 @@
 
      · the browser's sanitiser was stricter than the server's, so a
        note box became a plain paragraph and figure.wide lost its
-       class on the way out of the editor — which quietly made the
+       class on the way out of the editor, which quietly made the
        server's support for those classes unreachable
      · the markdown rules did nothing in an empty editor, because
        the first characters typed have no block to belong to; that
@@ -384,7 +384,7 @@ if (haveFileRow) {
 /* ---------- 7b. the file name ----------
    A slug becomes a URL and only some strings can. This field used to
    take whatever was typed, so "German Alphabets" stayed that in the
-   index-entry block while the server stored "germanalphabets" — and
+   index-entry block while the server stored "germanalphabets"– and
    the broken one is what got pasted into content.js. */
 
 await page.click("#btn-new");
@@ -398,7 +398,7 @@ check("a typed file name is tidied into a usable slug",
   await page.inputValue("#f-slug"));
 
 // Without a database this is already open, so set it rather than
-// toggling — a click here would close it.
+// toggling, a click here would close it.
 check("the file-publishing tools are open without a database",
   await page.evaluate(() => document.querySelector("#file-tools").open));
 await page.evaluate(() => { document.querySelector("#file-tools").open = true; });

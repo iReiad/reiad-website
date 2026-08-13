@@ -1,24 +1,24 @@
 /* ============================================================
-   recent.js — the last few pages this reader actually opened.
+   recent.js: the last few pages this reader actually opened.
 
    The two schools already remember where you were: /learn/ and
    /deutsch/ each keep a "last lesson" bookmark and a set of
    ticks. What neither of them can answer is the question the
-   home page needs to ask — "what were you looking at?" — because
+   home page needs to ask, "what were you looking at?"– because
    a reader's evening is rarely one school. It is a lesson, then
    a calculator, then an article, then the stock check.
 
    So this is a small, dumb, school-agnostic trail: title, url,
    kind, timestamp. Newest first, deduped by url, capped at TEN,
    stored on the device and never sent anywhere. It is a history
-   list, not analytics — the same deal as the progress stores,
+   list, not analytics: the same deal as the progress stores,
    and it is cleared by clearing browser data.
 
    WHAT IS DELIBERATELY NOT IN HERE
 
      · the home page itself. "You were recently at the page you
        are standing on" is noise.
-     · the Studio, and anything else marked `private` — an admin
+     · the Studio, and anything else marked `private`– an admin
        screen has no business turning up in a public list.
      · a page that is only being prerendered. app.js prerenders
        the link under your pointer, scripts and all, so without
@@ -59,7 +59,7 @@ export function readRecent() {
 function write(list) {
   try {
     localStorage.setItem(KEY, JSON.stringify(list.slice(0, MAX)));
-  } catch { /* private mode, or full — a history list is a nicety */ }
+  } catch { /* private mode, or full: a history list is a nicety */ }
   dispatchEvent(new CustomEvent("recent:change"));
 }
 
@@ -82,7 +82,7 @@ function titleOf() {
   const h1 = document.querySelector("main h1")?.textContent?.trim();
   if (h1 && h1.length <= 80) return h1;
 
-  return document.title.split(/[·—|]/)[0].trim();
+  return document.title.split(/[·:|]/)[0].trim();
 }
 
 /** Record this page. Called once, from app.js, on every page. */

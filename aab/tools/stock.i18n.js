@@ -1,5 +1,5 @@
 /* ============================================================
-   stock.i18n.js — every word on the stock check, twice.
+   stock.i18n.js: every word on the stock check, twice.
 
    HOW IT WORKS
 
@@ -12,7 +12,7 @@
 
    Written the way Bangladeshi investors actually talk about
    this, not the way a textbook would. Terms that everyone uses
-   in English — P/E, ROE, cash flow, free float — stay in
+   in English, P/E, ROE, cash flow, free float, stay in
    English inside a Bangla sentence, because translating them
    into Sanskritised coinages nobody says would make the page
    harder to read, not easier. Where a real Bangla word is in
@@ -779,7 +779,7 @@ export const STRINGS = {
 };
 
 /* ------------------------------------------------------------
-   t(key, lang, vars) — the lookup.
+   t(key, lang, vars): the lookup.
 
    A missing key returns the key itself rather than an empty
    string, because a visible "m.something" in testing is a bug
@@ -801,20 +801,20 @@ export function t(key, lang = "en", vars = null) {
 const locale = (lang) => (lang === "bn" ? "bn-BD" : "en-GB");
 
 export function fmtNum(v, lang = "en", digits = 2) {
-  if (!Number.isFinite(v)) return "—";
+  if (!Number.isFinite(v)) return "–";
   return new Intl.NumberFormat(locale(lang), {
     minimumFractionDigits: digits, maximumFractionDigits: digits,
   }).format(v);
 }
 
 export function fmtInt(v, lang = "en") {
-  if (!Number.isFinite(v)) return "—";
+  if (!Number.isFinite(v)) return "–";
   return new Intl.NumberFormat(locale(lang), { maximumFractionDigits: 0 }).format(v);
 }
 
 /** A metric's raw value, printed the way its `fmt` hint asks. */
 export function fmtValue(v, kind, lang = "en") {
-  if (!Number.isFinite(v)) return "—";
+  if (!Number.isFinite(v)) return "–";
   switch (kind) {
     case "x": return `${fmtNum(v, lang, 2)}×`;
     case "%": return `${fmtNum(v, lang, 1)}%`;
@@ -826,11 +826,11 @@ export function fmtValue(v, kind, lang = "en") {
 
 /** ৳ figures held in lakh, printed at whatever scale reads best. */
 export function fmtLakh(v, lang = "en") {
-  if (!Number.isFinite(v)) return "—";
+  if (!Number.isFinite(v)) return "–";
   const abs = Math.abs(v);
   if (abs >= 100) return `৳${fmtNum(v / 100, lang, abs >= 10000 ? 0 : 1)} ${t("t.crore", lang)}`;
   return `৳${fmtInt(v, lang)} ${lang === "bn" ? "লাখ" : "lakh"}`;
 }
 
 export const fmtTk = (v, lang = "en", digits = 2) =>
-  Number.isFinite(v) ? `৳${fmtNum(v, lang, digits)}` : "—";
+  Number.isFinite(v) ? `৳${fmtNum(v, lang, digits)}` : "–";

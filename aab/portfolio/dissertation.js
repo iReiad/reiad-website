@@ -1,17 +1,17 @@
 /* ============================================================
-   dissertation.js — the exhibits.
+   dissertation.js: the exhibits.
 
    Nine views over one piece of research:
 
      1. the two indices, rebased, over the sample window
-     2. the sample itself — 220 dots, three of them Islamic
+     2. the sample itself, 220 dots, three of them Islamic
      3. the excess-return column, against a normal curve
      4. the univariate comparison, as dumbbells with p-values
      5. the factor loadings, as a forest plot with intervals
      6. market beta across the three specifications
      7. the two group drawdown curves
-     8. the evidence map — what the literature already said
-     9. the power curve — what this sample could have detected
+     8. the evidence map, what the literature already said
+     9. the power curve, what this sample could have detected
 
    Charts are hand-drawn inline SVG, like everywhere else on the
    site: they inherit the theme's colours, they cost nothing, and
@@ -39,15 +39,15 @@ const n1 = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 1 });
 const n2 = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 });
 
 const num = (v, d = 4) =>
-  Number.isFinite(v) ? v.toFixed(d) : "—";
+  Number.isFinite(v) ? v.toFixed(d) : "–";
 const pc = (v, d = 1) =>
-  Number.isFinite(v) ? `${(v * 100).toFixed(d)}%` : "—";
+  Number.isFinite(v) ? `${(v * 100).toFixed(d)}%` : "–";
 const signedPc = (v, d = 1) =>
-  Number.isFinite(v) ? `${v >= 0 ? "+" : ""}${(v * 100).toFixed(d)}%` : "—";
+  Number.isFinite(v) ? `${v >= 0 ? "+" : ""}${(v * 100).toFixed(d)}%` : "–";
 
 /** p-values: exact where it matters, scientific where it doesn't. */
 function fmtP(p) {
-  if (!Number.isFinite(p)) return "—";
+  if (!Number.isFinite(p)) return "–";
   if (p === 0 || p < 1e-16) return "< 1e-16";
   if (p < 0.001) return p.toExponential(2).replace("e-", " × 10⁻");
   return p.toFixed(4);
@@ -136,7 +136,7 @@ function drawIndices(host, { rebased }) {
   monthTicks(UKX_FROM, UKX.length).forEach(([y, i]) =>
     svg.append(text(X(i), H - 8, y, "chart-label")));
 
-  // COVID, marked once — it is the only event both series share
+  // COVID, marked once: it is the only event both series share
   const covid = 26; // March 2020, counting from Jan 2018
   svg.append(line(X(covid), pad.t, X(covid), pad.t + ih, "chart-event"));
   svg.append(text(X(covid) + 4, pad.t + 10, "Mar 2020", "chart-label-sm", "start"));
@@ -230,7 +230,7 @@ function drawExcess(host, { logScale, factor }) {
     .join(" ");
   if (d) svg.append(el("path", { d, class: "line-normal", fill: "none" }));
 
-  // zero, and the sample mean — the gap between them is the story
+  // zero, and the sample mean: the gap between them is the story
   svg.append(line(X(0), pad.t, X(0), pad.t + ih, "chart-event"));
   svg.append(text(X(0) + 4, pad.t + 10, "zero", "chart-label-sm", "start"));
   svg.append(line(X(EXCESS_STATS.mean), pad.t, X(EXCESS_STATS.mean), pad.t + ih, "chart-mean"));
@@ -638,7 +638,7 @@ function drawEvidenceBar(host) {
   /* The count sits above its band rather than inside it: a label
      printed on top of a filled bar has to survive five different
      fills in two themes, and one of them is always going to lose.
-     The names go in an HTML key underneath, where they can wrap —
+     The names go in an HTML key underneath, where they can wrap:
      the two narrowest bands are 2 studies wide and SVG text has no
      way to fit "Depends on the specification" into 60 pixels. */
   const svg = chart(W, H, "How the literature splits");

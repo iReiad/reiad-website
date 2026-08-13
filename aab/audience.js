@@ -1,12 +1,12 @@
 /* ============================================================
-   audience.js — the front door.
+   audience.js: the front door.
 
    Three completely different people arrive at this site:
 
      · a Bangladeshi reader who wants to understand money, in
        Bangla, and has no interest whatsoever in a CV;
      · a Bangladeshi reader who came for one of the other
-       schools — German today, five more being written — and
+       schools, German today, five more being written, and
        does not want a savings lesson either;
      · a recruiter or a client, in English, who wants the work
        and the credentials and needs neither.
@@ -24,12 +24,12 @@
 
    Keeping the learner one value rather than splitting it in two
    is what lets every rule written before the second school
-   arrived — the nav order, the menu columns, the palette
-   ranking — go on working untouched. `track` refines; it never
+   arrived, the nav order, the menu columns, the palette
+   ranking, go on working untouched. `track` refines; it never
    contradicts.
 
    What the answer changes:
-     · the order of the header nav (CSS only — see the `audience`
+     · the order of the header nav (CSS only, see the `audience`
        block in styles.css, so there is no flash and no reflow)
      · which column of the overlay menu comes first
      · how the Ctrl+K palette ranks its results
@@ -39,7 +39,7 @@
    What it never changes: what exists. Nothing is hidden from
    anybody, no page becomes unreachable, and the choice is
    reversible from the menu and the footer on every page. It is a
-   preference, not a gate — someone who picked "hiring" and then
+   preference, not a gate: someone who picked "hiring" and then
    wants to read the Bangla library must never hit a wall.
 
    Both attributes are set before first paint by the inline
@@ -76,7 +76,7 @@ export function setAudience(value, track) {
     localStorage.setItem(KEY, value);
     /* A recruiter has no track. Clearing it rather than leaving
        the last one lying around means the work half is never
-       described as "finance" or "skills" — it is neither. */
+       described as "finance" or "skills"– it is neither. */
     if (value === "work") localStorage.removeItem(TRACK_KEY);
     else if (TRACKS.has(track)) localStorage.setItem(TRACK_KEY, track);
   } catch { /* private mode */ }
@@ -133,7 +133,7 @@ function initDoorway() {
 /* ------------------------------------------------------------
    the switcher
 
-   Small, quiet, and on every page — in the footer, and again in
+   Small, quiet, and on every page: in the footer, and again in
    the overlay menu. Someone who chose wrong should be one tap
    from fixing it, wherever they realise.
    ------------------------------------------------------------ */

@@ -1,5 +1,5 @@
 /* ============================================================
-   news.js — the market pulse, as a thing you can look at.
+   news.js: the market pulse, as a thing you can look at.
 
    Headlines are external text. Every value goes in through
    textContent; nothing from the feed ever touches innerHTML.
@@ -8,7 +8,7 @@
    the home page need, and neither should own twice:
 
      1. FETCHING.  Two endpoints, raced, first usable answer
-        wins — /api/news (the handler in functions/api/news.js)
+        wins: /api/news (the handler in functions/api/news.js)
         and the same job running as a standalone Worker. Racing
         them means the page doesn't care which one is currently
         deployed and doesn't wait out a timeout on the one that
@@ -17,14 +17,14 @@
 
      2. THE CARD.  A square, because a grid of squares reads as a
         board of stories where a list of rules reads as a table
-        of contents — and because the thing being scanned here is
+        of contents, and because the thing being scanned here is
         the headline, not the ordering.
 
      3. THE MINI WINDOW.  A card opens into a <dialog> rather
         than straight out to the publisher, so that a reader can
         see the standfirst, the source and the time and then
-        decide. The window grows out of the card it came from —
-        a real FLIP, measured from the card's own rectangle — so
+        decide. The window grows out of the card it came from,
+        a real FLIP, measured from the card's own rectangle, so
         it is obvious which of twelve squares you just opened.
         Under prefers-reduced-motion it simply appears.
 
@@ -86,7 +86,7 @@ export function cached() {
 }
 
 /**
- * { data, staleFrom } — staleFrom set when this came off the device
+ * { data, staleFrom }, staleFrom set when this came off the device
  * rather than off the wire. Throws only when there is neither.
  */
 export async function loadNews() {
@@ -107,7 +107,7 @@ export async function loadNews() {
 
 const regionLabel = (it) => (it.region === "BD" ? "Bangladesh" : "Global");
 
-/** One square. `onOpen` gets (item, card) — see openNews below. */
+/** One square. `onOpen` gets (item, card): see openNews below. */
 export function newsCard(it, onOpen) {
   const card = el("button", { type: "button", className: "news-card" });
   card.dataset.region = it.region === "BD" ? "bd" : "global";
@@ -137,7 +137,7 @@ export function newsCard(it, onOpen) {
       /* An arrow and not a word. "আরও →" was 55px of a 209px row,
          and the only way to fit it beside "The Business Standard"
          was to take the last five letters off the publisher's
-         name — on every card that named them. */
+         name, on every card that named them. */
       el("span", { className: "news-card-go", ariaHidden: "true", textContent: "→" })
     )
   );

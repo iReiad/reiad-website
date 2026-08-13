@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================
-   build-meta.mjs — regenerates the machine-readable files from
+   build-meta.mjs, regenerates the machine-readable files from
    content.js, so they can never drift out of date:
 
      feed.xml      RSS for the articles
@@ -11,7 +11,7 @@
 
        node aab/build-meta.mjs
 
-   It is deliberately not a build step — the site works whether
+   It is deliberately not a build step: the site works whether
    or not you remember to run it; you just get a stale feed if
    you don't.
    ============================================================ */
@@ -72,7 +72,7 @@ const lessons = allLessons().filter(
 
 /* The German school, on the same rule: every Stufe index, every
    written Teil, and each Stufe's practice book. Unwritten Teile
-   stay out — those pages exist so a listed thing is never a dead
+   stay out, those pages exist so a listed thing is never a dead
    link, not so a search engine can index a placeholder. */
 const teile = allTeile().filter((t) => t.status === "live");
 const workbooks = STUFEN.filter((s) => s.workbook && s.status === "live")

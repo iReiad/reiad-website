@@ -1,5 +1,5 @@
 /* ============================================================
-   _lib/http.js — the small conveniences every endpoint wants.
+   _lib/http.js: the small conveniences every endpoint wants.
 
    Anything under functions/ whose name starts with an underscore
    is not routed, so this is a plain module, not a URL.
@@ -24,7 +24,7 @@ export const ok = (data = {}, headers = {}) => json({ ok: true, ...data }, 200, 
 export const fail = (reason, status = 400, extra = {}) =>
   json({ ok: false, reason, ...extra }, status);
 
-/** The database isn't bound yet — say so plainly so the front end
+/** The database isn't bound yet, say so plainly so the front end
     can fall back to its static behaviour instead of erroring. */
 export const notConfigured = () =>
   fail("not-configured", 503, {
@@ -41,7 +41,7 @@ export async function body(request) {
   }
 }
 
-/** Trim, cap and coerce to string — every field from the outside
+/** Trim, cap and coerce to string: every field from the outside
     goes through this before it reaches SQL. */
 export const str = (value, max = 2000) =>
   String(value ?? "").trim().slice(0, max);

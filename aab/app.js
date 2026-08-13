@@ -1,10 +1,10 @@
 /* ============================================================
-   app.js — sitewide behaviour for reiad.co.uk  (ES module)
+   app.js, sitewide behaviour for reiad.co.uk  (ES module)
 
    1. Theme        tri-state (system / light / dark), swapped
                    inside a View Transition so it cross-fades.
    2. Palette      Ctrl/Cmd+K search, built at runtime as a
-                   native <dialog> — pages don't need the markup,
+                   native <dialog>, pages don't need the markup,
                    and any legacy <div id="palette"> is upgraded.
    3. Kinetic      the homepage headline, word by word.
    4. Speculation  <script type="speculationrules"> prerenders the
@@ -14,7 +14,7 @@
 
    Loaded with <script type="module" src="/app.js">, so it defers
    automatically and never blocks paint.
-   NOTE: root-absolute URLs need a web server — preview with
+   NOTE: root-absolute URLs need a web server, preview with
    `python3 -m http.server`, not file://
    ============================================================ */
 
@@ -163,7 +163,7 @@ function initPalette() {
 
     /* Grouped, not one flat run of twelve. The Learn area is 98 of
        the 117 things in the index, so an ungrouped list was almost
-       always eight lessons, a stage and whatever else squeezed in —
+       always eight lessons, a stage and whatever else squeezed in,
        and a reader looking for the Tools page could not see it for
        the lessons. Each group gets a few slots and a heading, so
        every kind of thing on the site stays reachable. */
@@ -241,7 +241,7 @@ function initPalette() {
       dialog.open ? dialog.close() : open();
       return;
     }
-    // "/" opens search, the way every good reading site does —
+    // "/" opens search, the way every good reading site does:
     // unless you're already typing in a field.
     if (e.key === "/" && !dialog.open && !/^(input|textarea)$/i.test(e.target.tagName)
         && !e.target.isContentEditable) {
@@ -273,7 +273,7 @@ function initPalette() {
 /* ============================================================
    2b. THE MENU
    A full-screen <dialog> built at runtime, so every page gets
-   the same menu without carrying its markup — including the
+   the same menu without carrying its markup, including the
    pages nobody has touched in a year. showModal() handles the
    focus trap, the backdrop and Escape for free.
    ============================================================ */
@@ -297,7 +297,7 @@ function buildMenu() {
   /* Titles only in the menu.
 
      Every page carried its full blurb here, which turned the first
-     column into thirteen paragraphs — taller than the viewport, so
+     column into thirteen paragraphs, taller than the viewport, so
      the last few pages were cut off entirely and the menu read as a
      wall of text rather than a way to get somewhere. The blurbs
      still do their job on the pages that list these properly; a
@@ -380,7 +380,7 @@ function buildMenu() {
       /* The other schools get a column of their own rather than a
          line inside the Learn one. Someone who came for German
          is not browsing a finance site that happens to have
-         German in it — and four Stufe names take less room than
+         German in it, and four Stufe names take less room than
          one line explaining where they are hiding.
 
          German is opened out in full because it is the one that
@@ -421,7 +421,7 @@ function buildMenu() {
       /* The case studies and the newest writing share a column.
          Both are "things to look at" rather than places to go, and
          splitting them into two near-empty columns left the menu
-         looking unbalanced — thirteen items beside two. */
+         looking unbalanced, thirteen items beside two. */
       el("div", { className: "menu-col" },
         el("span", { className: "mono menu-col-title", textContent: "Case studies" }),
         el("ul", { className: "menu-list" }, ...caseStudies.map(pageLink)),
@@ -503,7 +503,7 @@ const isTyping = (node) =>
    and eleven is not a nav bar, it is a list.
 
    So one word, "Skills", and everything under it. The panel is
-   built from the SKILLS list in content.js — add a school there
+   built from the SKILLS list in content.js, add a school there
    and it appears here, on /skills/ and in the overlay menu at
    once, with no page's markup to edit.
 
@@ -594,7 +594,7 @@ function initSkillsNav() {
   /* Tabbing out of the last item, or clicking anywhere else, closes
      it. `relatedTarget` and not document.activeElement: during a
      focusout the focus has left one element and not yet landed on
-     the next, so activeElement is <body> — which read as "they've
+     the next, so activeElement is <body>– which read as "they've
      gone" for a keyboard user moving from the button INTO the panel,
      closed it under them, and left the .focus() call pointing at a
      display:none link. The deferred check is the fallback for the
@@ -716,7 +716,7 @@ function initKinetic() {
 }
 
 /* ============================================================
-   3b. HEADER HEIGHT — one number the whole site scrolls by
+   3b. HEADER HEIGHT: one number the whole site scrolls by
 
    The header is sticky, so every in-page jump has to clear it.
    That clearance was a hard-coded 5rem, which is right on no
@@ -742,7 +742,7 @@ function initHeaderHeight() {
 }
 
 /* ============================================================
-   4. SPECULATION RULES — prerender on hover, instant on click
+   4. SPECULATION RULES, prerender on hover, instant on click
    ============================================================ */
 function initSpeculation() {
   if (!HTMLScriptElement.supports?.("speculationrules")) return;
@@ -773,7 +773,7 @@ function initSpeculation() {
 }
 
 /* ============================================================
-   5. INSIGHTS CARDS — rendered from content.js
+   5. INSIGHTS CARDS, rendered from content.js
    ============================================================ */
 async function initArticleCards() {
   const host = document.getElementById("article-cards");
@@ -932,7 +932,7 @@ export function download(filename, data, type = "text/html;charset=utf-8") {
 /* ============================================================
    5b. READING PROGRESS in the Learn area
    Opening a lesson ticks it off and records it as the place to
-   resume from. Stored on the device only — it's a bookmark, not
+   resume from. Stored on the device only: it's a bookmark, not
    analytics, and nothing leaves the browser. The logic lives in
    /learn/progress.js so that the hub, the stage pages and the
    lesson pages all agree on what "read" means.
@@ -943,11 +943,11 @@ function markLessonRead() {
   } catch { /* private mode; the tick is a nicety */ }
   try {
     recordPage();
-  } catch { /* ditto — see /recent.js */ }
+  } catch { /* ditto, see /recent.js */ }
 }
 
 /* ============================================================
-   6. SERVICE WORKER — offline reading, instant repeat visits
+   6. SERVICE WORKER, offline reading, instant repeat visits
    ============================================================ */
 function initServiceWorker() {
   if (!("serviceWorker" in navigator)) return;

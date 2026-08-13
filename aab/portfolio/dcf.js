@@ -1,5 +1,5 @@
 /* ============================================================
-   dcf.js — the dashboard around the valuation.
+   dcf.js: the dashboard around the valuation.
 
    Same split as the three-statement model: dcf.model.js holds
    the arithmetic and is tested on its own; this turns it into
@@ -19,15 +19,15 @@ const n0 = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 });
 const n1 = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 1 });
 const n2 = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 });
 
-const lakh = (v) => (Number.isFinite(v) ? n0.format(Math.round(v)) : "—");
-const pc = (v) => (Number.isFinite(v) ? `${n1.format(v * 100)}%` : "—");
-const pc2 = (v) => (Number.isFinite(v) ? `${n2.format(v * 100)}%` : "—");
-const mult = (v) => (Number.isFinite(v) ? `${n1.format(v)}×` : "—");
-const bdt = (v) => (Number.isFinite(v) ? n2.format(v) : "—");
+const lakh = (v) => (Number.isFinite(v) ? n0.format(Math.round(v)) : "–");
+const pc = (v) => (Number.isFinite(v) ? `${n1.format(v * 100)}%` : "–");
+const pc2 = (v) => (Number.isFinite(v) ? `${n2.format(v * 100)}%` : "–");
+const mult = (v) => (Number.isFinite(v) ? `${n1.format(v)}×` : "–");
+const bdt = (v) => (Number.isFinite(v) ? n2.format(v) : "–");
 const signed = (v) =>
-  Number.isFinite(v) ? `${v >= 0 ? "+" : ""}${n1.format(v * 100)}%` : "—";
+  Number.isFinite(v) ? `${v >= 0 ? "+" : ""}${n1.format(v * 100)}%` : "–";
 const acc = (v) => {
-  if (!Number.isFinite(v)) return "—";
+  if (!Number.isFinite(v)) return "–";
   const r = Math.round(v) || 0;
   return r < 0 ? `(${n0.format(Math.abs(r))})` : n0.format(r);
 };
@@ -132,7 +132,7 @@ function paintControls() {
       ? `${n1.format(raw * 100)}%`
       : `${n2.format(raw)}${d.unit === "×" ? "×" : ""}`;
     wrap.toggleAttribute("data-edited", edited.has(d.key));
-    // the driver that isn't in play is dimmed rather than hidden —
+    // the driver that isn't in play is dimmed rather than hidden,
     // switching method should not make a control vanish from under
     // the reader's cursor
     const inactive =
@@ -305,7 +305,7 @@ function buildGrid(grid) {
 }
 
 /* Clicking a cell adopts it. WACC is an output of the build-up, so
-   it can't be set directly — instead the risk-free rate is shifted
+   it can't be set directly, instead the risk-free rate is shifted
    by the difference, which is the honest way to say "what if the
    discount rate were this". */
 function adoptCell(td, grid) {
@@ -354,7 +354,7 @@ function render() {
   if (verdict) {
     if (!v.tvValid) {
       verdict.dataset.state = "bad";
-      $(".verdict-value", verdict).textContent = "—";
+      $(".verdict-value", verdict).textContent = "–";
       $(".verdict-detail", verdict).textContent =
         `Terminal growth of ${pc(v.growth)} is at or above the ${pc2(v.wacc)} discount rate. ` +
         "A perpetuity growing faster than it is discounted has no finite value; this is refused rather than approximated.";

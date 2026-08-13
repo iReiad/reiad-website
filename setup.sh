@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # ============================================================
-# setup.sh — turn on the dynamic half of the site.
+# setup.sh, turn on the dynamic half of the site.
 #
 #     ./setup.sh
 #
 # Everything below needs YOUR Cloudflare account, which is the
 # one part nobody can do on your behalf. It's three commands and
 # about three minutes, and until you run it the site works
-# exactly as it does today — every dynamic feature checks for the
+# exactly as it does today: every dynamic feature checks for the
 # database and quietly falls back if it isn't there.
 # ============================================================
 set -euo pipefail
@@ -17,7 +17,7 @@ npx wrangler login
 
 echo
 echo "→ 2/5  Creating the database"
-npx wrangler d1 create reiad || echo "   (already exists — carrying on)"
+npx wrangler d1 create reiad || echo "   (already exists, carrying on)"
 
 echo
 echo "   Now edit wrangler.toml:"
@@ -47,8 +47,8 @@ echo
 echo "→ 4/5  Creating the photo bucket"
 # Article photos live in R2 rather than inside the article body. The
 # bucket is declared in wrangler.toml, so deploying without it stops
-# with an error rather than quietly working — hence creating it here.
-npx wrangler r2 bucket create reiad-media || echo "   (already exists — carrying on)"
+# with an error rather than quietly working, hence creating it here.
+npx wrangler r2 bucket create reiad-media || echo "   (already exists, carrying on)"
 
 echo
 echo "→ 5/5  Deploying"
@@ -59,7 +59,7 @@ cat <<'DONE'
 Done. Two things left, both in a browser:
 
   1. Open https://reiad.co.uk/studio.html and set your passphrase.
-     It's stretched in your browser and never sent — the server only
+     It's stretched in your browser and never sent: the server only
      stores a hash of the result.
 
   2. Optional: Cloudflare dashboard → your Worker → Settings →

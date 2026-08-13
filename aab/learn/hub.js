@@ -1,9 +1,9 @@
 /* ============================================================
-   hub.js — everything live on /learn/.
+   hub.js: everything live on /learn/.
 
    The page is already complete before this file runs: the eight
    starter steps are written into the HTML and every link works.
-   What this adds is the reader's own position in it —
+   What this adds is the reader's own position in it,
 
      1. icons dropped into their slots
      2. the starter steps: ticks, "step done", auto-advance
@@ -13,7 +13,7 @@
      6. the filter box, across the steps and the ladder
 
    The full contents index and the A–Z glossary used to be built
-   here too. They are now static HTML on /learn/contents.html —
+   here too. They are now static HTML on /learn/contents.html,
    together they were more than half the height of this page.
 
    Everything reads from /learn/curriculum.js and writes through
@@ -40,7 +40,7 @@ const el = (tag, props = {}, ...kids) => {
 const bn = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
 
 /* ============================================================
-   1. ICONS — fill every [data-icon] slot
+   1. ICONS, fill every [data-icon] slot
    ============================================================ */
 function paintIcons(root = document) {
   root.querySelectorAll("[data-icon]:empty").forEach((slot) => {
@@ -96,7 +96,7 @@ function scrollStepIntoView(step) {
     const top = step.getBoundingClientRect().top;
     const headerH = parseFloat(getComputedStyle(document.documentElement)
       .getPropertyValue("--header-h")) || 80;
-    // already in a good place — leave it alone
+    // already in a good place, leave it alone
     if (top >= headerH && top < headerH + innerHeight * 0.35) return;
     step.scrollIntoView({ behavior: prefersReduce() ? "auto" : "smooth", block: "start" });
   });
@@ -120,7 +120,7 @@ function wireSteps() {
       /* Bring the step you just opened to the top of the reading
          area. Without this, tapping a summary sitting low in the
          viewport expanded it downwards and left the reader looking
-         at the middle of a card they had not started — the content
+         at the middle of a card they had not started: the content
          opened below the fold and they had to scroll to find its
          beginning. scrollIntoView respects scroll-padding-top, so
          it lands just under the header. */
@@ -230,7 +230,7 @@ function stageRow(stage) {
       textContent: "এই ধাপের লেখাগুলো এখনো তৈরি হচ্ছে: কাঠামোটা দেখে নিতে পারেন।" }));
   }
 
-  /* What's inside, as section names and counts — not ninety lesson
+  /* What's inside, as section names and counts: not ninety lesson
      titles. Each stage has a page of its own that lists its lessons
      properly; repeating that here made the hub enormous and gave the
      reader two places to read the same thing. The exception is the
@@ -286,8 +286,8 @@ function buildLadder() {
 
   /* The starter guide is NOT a rung. Its eight steps are printed in
      full further up this same page, so listing it again here made
-     the ladder open with a stage the reader had just scrolled past
-     — and a rung that, uniquely, led nowhere new. The ladder now
+     the ladder open with a stage the reader had just scrolled past,
+and a rung that, uniquely, led nowhere new. The ladder now
      starts at Basics stage 1, which is the first thing on it that
      is somewhere else. */
   host.replaceChildren(...STAGES.filter((s) => !s.inline).map(stageRow));
@@ -363,7 +363,7 @@ function buildResume() {
   /* "Where you were" has to mean the stage they were actually in,
      not the earliest gap in the whole ladder. A reader who dipped
      into stage 2 and then came back should be offered the next
-     lesson OF STAGE 2 — being sent back to an unread starter step
+     lesson OF STAGE 2, being sent back to an unread starter step
      reads as though the site lost their place. Only when their own
      stage is finished do we fall through to the global next. */
   const lastStage = findStage(last?.stage);
@@ -406,7 +406,7 @@ function buildResume() {
 
     Deliberately a scroll and not a redirect: the map is the point
     of this page, and someone who tapped "Learn" may well have
-    wanted to browse rather than resume. They get both — the whole
+    wanted to browse rather than resume. They get both: the whole
     ladder above them, their own place under the cursor.
 
     Getting this to feel right took more care than it looks. Four
@@ -428,14 +428,14 @@ function scrollToPlace(stage) {
   if (!stage) return;
   if (!getLast()) return;                 // first-timers stay at the top
 
-  // the browser is restoring a position from history — leave it alone
+  // the browser is restoring a position from history, leave it alone
   const nav = performance.getEntriesByType("navigation")[0];
   if (nav?.type === "back_forward") return;
 
   /* Look the target up INSIDE go(), never before it.
 
      buildLadder() rebuilds the whole ladder with replaceChildren, so
-     any rung captured earlier is detached by the time this runs — and
+     any rung captured earlier is detached by the time this runs, and
      a detached element reports getBoundingClientRect().top === 0 and
      ignores scrollIntoView entirely. That is what made the scroll
      "sometimes work": it was racing a repaint, and whether it landed
@@ -495,7 +495,7 @@ document.getElementById("learn-reset")?.addEventListener("click", () => {
    7. THE FILTER BOX
    Searches the steps, the ladder, the contents index and the
    glossary at once, and says how many it found. Sections marked
-   .no-filter (the doors, the FAQ) are never hidden — hiding the
+   .no-filter (the doors, the FAQ) are never hidden, hiding the
    help while someone is searching is the wrong way round.
    ============================================================ */
 function initFilter() {
@@ -559,8 +559,8 @@ initFilter();
 initDoors();
 repaint();
 
-// The first paint decides where to send them. Later repaints — a tick
-// landing, a step opening — must never scroll the page again: moving
+// The first paint decides where to send them. Later repaints, a tick
+// landing, a step opening, must never scroll the page again: moving
 // the ground under someone's finger is how you lose them.
 scrollToPlace(placeOnFirstPaint);
 

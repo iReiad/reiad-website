@@ -1,12 +1,12 @@
 /* ============================================================
-   dsex.model.js — the statistics engine.
+   dsex.model.js: the statistics engine.
 
    No DOM. Every function here takes numbers and returns numbers,
    which is what makes them testable against hand-computable
    cases rather than against themselves.
 
    ------------------------------------------------------------
-   ABOUT THE DATA — READ THIS FIRST
+   ABOUT THE DATA, READ THIS FIRST
 
    The series shipped with this page is SIMULATED. It is not the
    Dhaka Stock Exchange's index history, and it is not presented
@@ -18,8 +18,8 @@
    anyone who checked would find it doesn't match. A portfolio
    piece that fails that check is worse than no portfolio piece.
 
-   What is real here is the METHOD — rolling volatility, drawdown
-   decomposition, holding-period distributions, tail measures —
+   What is real here is the METHOD, rolling volatility, drawdown
+   decomposition, holding-period distributions, tail measures,
    and the method is what a client is buying. So the page also
    takes a CSV of actual prices and runs exactly the same
    analysis over it. DSE publishes daily index history; paste it
@@ -27,8 +27,8 @@
 
    The simulation is deterministic (seeded), so the same numbers
    appear for every visitor and in every test run. It is built to
-   have the properties that make this analysis worth doing —
-   volatility clustering, fat tails, long drawdowns — because a
+   have the properties that make this analysis worth doing,
+   volatility clustering, fat tails, long drawdowns, because a
    demonstration on tidy Gaussian noise would be a demonstration
    of nothing.
    ============================================================ */
@@ -73,7 +73,7 @@ export function skewness(xs) {
   return xs.reduce((acc, x) => acc + ((x - m) / s) ** 3, 0) / n;
 }
 
-/** EXCESS kurtosis — 0 for a normal distribution, positive for fat tails. */
+/** EXCESS kurtosis, 0 for a normal distribution, positive for fat tails. */
 export function excessKurtosis(xs) {
   const n = xs.length;
   if (n < 4) return NaN;
@@ -115,7 +115,7 @@ export const annualisedVol = (rets, ppy = TRADING_DAYS) => stdev(rets) * Math.sq
 /**
  * Rolling annualised volatility.
  * Index i of the result aligns with returns[i], and the first
- * (window − 1) entries are NaN rather than a shorter window —
+ * (window − 1) entries are NaN rather than a shorter window,
  * silently computing a 3-day "30-day vol" at the start of a series
  * is how misleading charts get made.
  */
@@ -142,7 +142,7 @@ export function cagr(prices, years) {
 
    A drawdown is how far below the previous peak you are. It is
    the number that actually describes the experience of holding
-   something — volatility is a statistic, a drawdown is a year of
+   something, volatility is a statistic, a drawdown is a year of
    your life.
    ------------------------------------------------------------ */
 
@@ -162,7 +162,7 @@ export const maxDrawdown = (prices) => Math.min(...drawdownSeries(prices), 0);
  *
  * An episode runs from the peak, through the trough, to the day the
  * index first regains that peak. An episode still underwater at the
- * end of the data is returned with recovered:false — reporting it as
+ * end of the data is returned with recovered:false, reporting it as
  * though it had ended would understate exactly the risk this whole
  * page is about.
  */
@@ -228,7 +228,7 @@ export function drawdownEpisodes(prices, dates, top = 5) {
    Overlapping windows are used deliberately: the question is
    "if I had started on any given day", and every given day is a
    real starting point someone had. They are not independent
-   samples and this is not a significance test — it is a record
+   samples and this is not a significance test: it is a record
    of what actually happened.
    ------------------------------------------------------------ */
 export function holdingPeriod(prices, days) {
@@ -257,7 +257,7 @@ export function holdingPeriod(prices, days) {
   };
 }
 
-/** The same, swept across a ladder of horizons — the money chart. */
+/** The same, swept across a ladder of horizons: the money chart. */
 export const holdingPeriodCurve = (prices, horizons) =>
   horizons.map((h) => holdingPeriod(prices, h.days)).map((s, i) => ({
     ...s, label: horizons[i].label,
@@ -420,18 +420,18 @@ export function analyse(series, { volWindow = 60 } = {}) {
    numbers. Built to have the three properties that make this
    analysis worth doing at all:
 
-     · volatility clustering — quiet months and violent months,
+     · volatility clustering, quiet months and violent months,
        via a GARCH(1,1) variance process
-     · fat tails — a jump component, so the worst days are far
+     · fat tails, a jump component, so the worst days are far
        worse than a normal distribution allows
-     · long drawdowns — a slow-burn bear phase, because the
+     · long drawdowns, a slow-burn bear phase, because the
        holding-period question only bites when recovery is slow
 
    Calibrated to be PLAUSIBLE for a frontier equity index, not to
    reproduce any particular one.
    ============================================================ */
 
-/** mulberry32 — small, fast, and identical everywhere. */
+/** mulberry32, small, fast, and identical everywhere. */
 export function rng(seed) {
   let a = seed >>> 0;
   return function next() {
@@ -478,7 +478,7 @@ export function simulate(opts = {}) {
      `mu` is the LOG drift, and the −variance/2 correction below
      makes that true: without it, exponentiating a mean-zero shock
      adds half the variance back as drift, and the first calibration
-     of this series lost 6.9% a year as a result — which quietly
+     of this series lost 6.9% a year as a result, which quietly
      inverted the entire holding-period lesson, since holding a
      falling asset for longer is worse, not better. */
   const phase = (i) => {
@@ -494,7 +494,7 @@ export function simulate(opts = {}) {
   const day = new Date(`${cfg.startDate}T00:00:00Z`);
 
   for (let i = 0; i < cfg.days; i++) {
-    // weekends off — Bangladesh trades Sunday to Thursday, so
+    // weekends off, Bangladesh trades Sunday to Thursday, so
     // Friday and Saturday are the closed days
     do {
       day.setUTCDate(day.getUTCDate() + (i === 0 ? 0 : 1));
@@ -504,7 +504,7 @@ export function simulate(opts = {}) {
     variance = omega + alpha * (variance * shock * shock) + beta * variance;
     let r = phase(i) - variance / 2 + Math.sqrt(variance) * shock;
 
-    // jumps: rare, large, and asymmetric — crashes are sharper than rallies
+    // jumps: rare, large, and asymmetric, crashes are sharper than rallies
     if (next() < 0.005) r += (next() < 0.56 ? -1 : 1) * (0.015 + next() * 0.035);
 
     level *= Math.exp(r);
@@ -516,7 +516,7 @@ export function simulate(opts = {}) {
 }
 
 /* ============================================================
-   CSV import — so the same analysis runs on real data
+   CSV import, so the same analysis runs on real data
    ============================================================ */
 
 /**
@@ -524,7 +524,7 @@ export function simulate(opts = {}) {
  * and most exports actually produce: a header or none, extra
  * columns, thousands separators, DD/MM/YYYY or ISO dates.
  *
- * Returns { series, errors } rather than throwing — a bad row
+ * Returns { series, errors } rather than throwing, a bad row
  * should cost you that row, not the whole file.
  */
 export function parseCsv(text, { dateCol = 0, priceCol = 1 } = {}) {
@@ -572,7 +572,7 @@ export function parseCsv(text, { dateCol = 0, priceCol = 1 } = {}) {
  * A naive split on /[,;\t]/ breaks the single most common shape a
  * real export has: a quoted number with a thousands separator, as
  * in `2024-01-02,"6,180.10"`. Splitting inside the quotes turned
- * 6,180.10 into 6 — a silent 1000× error in the price series, which
+ * 6,180.10 into 6: a silent 1000× error in the price series, which
  * is the worst kind, because every statistic downstream still looks
  * like a number.
  */

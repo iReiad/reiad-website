@@ -1,12 +1,12 @@
 /* ============================================================
-   auth.js — the Studio's front door.
+   auth.js: the Studio's front door.
 
    This used to do the checking itself, in the browser, and I was
    careful to describe that honestly: with no server there was
    nothing to verify against, so it kept the tool away from
    passers-by and no more.
 
-   There is a server now. This file no longer decides anything —
+   There is a server now. This file no longer decides anything:
    it collects a passphrase, hands it to /api/auth, and shows what
    comes back. The password is checked server-side against a
    PBKDF2 hash, the session lives in an HttpOnly cookie this code
@@ -15,7 +15,7 @@
 
    If the database isn't connected yet, it falls back to the old
    browser-side gate so the Studio still opens on a purely static
-   deployment — with a line on screen saying which mode you're in.
+   deployment, with a line on screen saying which mode you're in.
    ============================================================ */
 
 import { auth } from "/api.js";
@@ -207,7 +207,7 @@ export function requireOwner(protectedRoot) {
   });
 }
 
-/** Sign out — server session if there is one, local flag either way. */
+/** Sign out, server session if there is one, local flag either way. */
 export async function lock() {
   sessionStorage.removeItem(KEY_LOCAL);
   localStorage.removeItem("studio-unlocked");

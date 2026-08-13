@@ -1,5 +1,5 @@
 /* ============================================================
-   content/stufe-1.js — the text of Stufe 1.
+   content/stufe-1.js: the text of Stufe 1.
 
    Keys match the Teil slugs in ../curriculum.js. The value is
    the body of the page: everything between the standfirst and
@@ -7,7 +7,7 @@
    shell, so nothing here repeats the header, the fonts or the
    modal reader.
 
-   HOUSE STYLE — the same rules the course itself teaches by:
+   HOUSE STYLE: the same rules the course itself teaches by:
 
      · Bangla is the language of explanation; German is the thing
        being explained. Never the other way round.
@@ -20,7 +20,7 @@
      · every German word is wrapped in lang="de" so the browser
        hyphenates and reads it correctly
      · every rule is followed by examples you could say today
-     · <div class="muster"> for the pattern of the section — the
+     · <div class="muster"> for the pattern of the section: the
        shape itself, before any explanation of it
      · <div class="satz-list"> for German line + Bangla meaning
      · <div class="merke"> for the one line worth remembering,
@@ -39,7 +39,7 @@ export default {
 
 anfang: `
 <p>তুমি একবার এই পথ হেঁটেছো। শূন্য থেকে শুরু করে এমন একটা ভাষায় সত্যিকারের বাক্য বলা শিখেছো,
-যেটা একসময় অসম্ভব মনে হতো। জার্মান কঠিন নয় — শুধু নতুন। আর এবার তুমি রাস্তাটা চেনো।</p>
+যেটা একসময় অসম্ভব মনে হতো। জার্মান কঠিন নয়, শুধু নতুন। আর এবার তুমি রাস্তাটা চেনো।</p>
 
 <p>তাই শুরুর আগে দুটো জিনিস: জার্মান তোমাকে যে চারটা উপহার আগেই দিয়ে রেখেছে, আর যে ছয়টা
 নিয়ম মানলে ৩০ দিনে সত্যি কিছু হবে।</p>
@@ -48,13 +48,13 @@ anfang: `
 
 <p>জার্মান তোমার সাথে ইংরেজির চেয়ে ভদ্র ব্যবহার করবে। কেন, সেটা এখানে।</p>
 
-<h3>১. <span lang="de">du · ihr · Sie</span> — তুমি, তোমরা, আপনি</h3>
-<p>ইংরেজি সবাইকে এক করে <i>you</i> বানিয়ে দিয়েছিল। বন্ধু, শিক্ষক, অচেনা লোক — সবাই এক।
+<h3>১. <span lang="de">du · ihr · Sie</span>: তুমি, তোমরা, আপনি</h3>
+<p>ইংরেজি সবাইকে এক করে <i>you</i> বানিয়ে দিয়েছিল। বন্ধু, শিক্ষক, অচেনা লোক: সবাই এক।
 বাংলায় যে সম্মানবোধটা তোমার স্বাভাবিক, ইংরেজিতে সেটা হারিয়ে যেত। জার্মানে তিনটাই আলাদা
-আছে, ঠিক বাংলার মতো। এই অনুভূতিটা তোমার চেনা, তাই এটা শিখতে হবে না — মনে করলেই হবে।</p>
+আছে, ঠিক বাংলার মতো। এই অনুভূতিটা তোমার চেনা, তাই এটা শিখতে হবে না: মনে করলেই হবে।</p>
 
 <h3>২. যেমন বানান, তেমন উচ্চারণ</h3>
-<p>ইংরেজি বানান ছিল ধাঁধা: <i>though</i>, <i>through</i>, <i>tough</i> — একই অক্ষরগুচ্ছ,
+<p>ইংরেজি বানান ছিল ধাঁধা: <i>though</i>, <i>through</i>, <i>tough</i>: একই অক্ষরগুচ্ছ,
 তিন রকম উচ্চারণ। জার্মান সৎ। অক্ষর যা বলে, মুখ তাই বলে। নিয়মগুলো একবার শিখলে জীবনে
 না-দেখা শব্দও জোরে পড়তে পারবে। সেই নিয়মগুলো আছে
 <a href="/deutsch/stufe-1/laute.html">পরের Teil-এ</a>।</p>
@@ -85,7 +85,7 @@ anfang: `
 
 <h2>ছয়টা নিয়ম · Die sechs Regeln</h2>
 
-<p>পাঁচটা ইংরেজি শেখার সময় থেকে চেনা। একটা একদম নতুন — আর সেটাই সবচেয়ে জরুরি।</p>
+<p>পাঁচটা ইংরেজি শেখার সময় থেকে চেনা। একটা একদম নতুন, আর সেটাই সবচেয়ে জরুরি।</p>
 
 <div class="table-scroll">
 <table>
@@ -96,7 +96,7 @@ anfang: `
     <tr><td><b lang="de">Laut sprechen. Immer.</b></td>
         <td>সবসময় জোরে বলো। চুপচাপ পড়া = শূন্য। জার্মান মুখের ভাষা, মুখকেই শেখাও।</td></tr>
     <tr><td><b lang="de">Nie ein nacktes Nomen.</b> <span class="neu mono">নতুন</span></td>
-        <td>জার্মান বিশেষ্য কখনো খালি গায়ে শিখো না, টুপিসহ শিখো। <span lang="de">Tisch</span> নয় —
+        <td>জার্মান বিশেষ্য কখনো খালি গায়ে শিখো না, টুপিসহ শিখো। <span lang="de">Tisch</span> নয়,
             <span lang="de">der Tisch</span>। কেন, সেটা <a href="/deutsch/stufe-1/artikel.html">Teil ৭-এ</a>।</td></tr>
     <tr><td><b lang="de">Muster, nicht Sätze.</b></td>
         <td>বাক্য নয়, কাঠামো শেখো। একটা ছাঁচ = হাজার বাক্য।</td></tr>
@@ -151,7 +151,7 @@ anfang: `
 আজ শুধু ব্যবহার করো, ব্যাখ্যা পরে।</p>
 
 <div class="merke"><b lang="de">Sprich schlecht. Sprich heute.</b> ভুলভাবে বলো, কিন্তু আজই বলো।
-আজকের ভাঙা জার্মান কালকের নিখুঁত জার্মানের চেয়ে অনেক দামি — কারণ কালকেরটা কখনো আসে না।</div>
+আজকের ভাঙা জার্মান কালকের নিখুঁত জার্মানের চেয়ে অনেক দামি, কারণ কালকেরটা কখনো আসে না।</div>
 `,
 
 /* ------------------------------------------------------------
@@ -160,7 +160,7 @@ anfang: `
 
 laute: `
 <p>জার্মান কথা রাখে: যা লেখা, তাই বলা। ইংরেজির মতো ধোঁকা নেই। তাই এই কোর্স ব্যাকরণ দিয়ে
-শুরু হচ্ছে না, ধ্বনি দিয়ে শুরু হচ্ছে — আগে কান আর মুখ, পরে মাথা।</p>
+শুরু হচ্ছে না, ধ্বনি দিয়ে শুরু হচ্ছে, আগে কান আর মুখ, পরে মাথা।</p>
 
 <p>এই এক পাতা শেখা হয়ে গেলে তুমি যেকোনো জার্মান শব্দ জোরে পড়তে পারবে, এমনকি জীবনে
 কোনোদিন না দেখা শব্দও। এটা ছোট প্রতিশ্রুতি নয়। ইংরেজিতে এই জিনিসটা কোনোদিন সম্ভব হয়নি।</p>
@@ -177,7 +177,7 @@ laute: `
       <span lang="de">kommen</span> = কম্‌মেন (আসা)।</li>
 </ul>
 
-<p>এটুকু জেনেই নিচের শব্দগুলো জোরে পড়ে ফেলো। প্রতিটা অক্ষর আলাদা করে বলো — জার্মান
+<p>এটুকু জেনেই নিচের শব্দগুলো জোরে পড়ে ফেলো। প্রতিটা অক্ষর আলাদা করে বলো, জার্মান
 কোনো অক্ষর গিলে ফেলে না।</p>
 
 <ul class="wort-karten">
@@ -191,7 +191,7 @@ laute: `
 
 <h2>চারটা বিশেষ অক্ষর: ä ö ü ß</h2>
 
-<p>ভয়ের কিছু নেই। <b lang="de">ö</b> আর <b lang="de">ü</b> নতুন ধ্বনি নয় — ঠোঁটের ব্যায়াম।
+<p>ভয়ের কিছু নেই। <b lang="de">ö</b> আর <b lang="de">ü</b> নতুন ধ্বনি নয়, ঠোঁটের ব্যায়াম।
 আয়নার সামনে দাঁড়িয়ে করো, দশবার করে।</p>
 
 <div class="table-scroll">
@@ -214,7 +214,7 @@ laute: `
 </table>
 </div>
 
-<div class="merke">আয়না-অনুশীলন: 'ই' বলতে বলতে ঠোঁট গোল করতে থাকো — <span lang="de">ü</span>
+<div class="merke">আয়না-অনুশীলন: 'ই' বলতে বলতে ঠোঁট গোল করতে থাকো, <span lang="de">ü</span>
 নিজেই বেরিয়ে আসবে। এটা শেখার জিনিস নয়, করার জিনিস।</div>
 
 <h2>ব্যঞ্জনের চমক</h2>
@@ -249,10 +249,10 @@ laute: `
         <td>j কখনো 'জ' নয়।</td></tr>
     <tr><td><b lang="de">ch</b> (i/e-র পরে)</td><td>শ্‌ (হালকা)</td>
         <td lang="de">ich (ইশ্) · nicht (নিশ্ট)</td>
-        <td>জিভ সামনে, হাওয়া ছাড়ো — বিড়ালের হিসের মতো।</td></tr>
+        <td>জিভ সামনে, হাওয়া ছাড়ো: বিড়ালের হিসের মতো।</td></tr>
     <tr><td><b lang="de">ch</b> (a/o/u-র পরে)</td><td>খ</td>
         <td lang="de">Buch (বুখ) · acht (আখট)</td>
-        <td>গলার খ — বাংলার খ-ই।</td></tr>
+        <td>গলার খ, বাংলার খ-ই।</td></tr>
     <tr><td><b lang="de">-er</b> (শেষে)</td><td>আ</td>
         <td lang="de">Mutter (মুটা) · Wasser (ভাসা)</td>
         <td>শেষের -er প্রায় 'আ' হয়ে যায়।</td></tr>
@@ -261,7 +261,7 @@ laute: `
 </div>
 
 <div class="merke"><b lang="de">r</b> গলা থেকে আসে, অনেকটা কুলকুচার মতো। না পারলে বাংলার
-'র'-ই বলো, সবাই বুঝবে। এটা নিয়ে থেমে থেকো না — এক মাস পরে এমনিই আসবে।</div>
+'র'-ই বলো, সবাই বুঝবে। এটা নিয়ে থেমে থেকো না, এক মাস পরে এমনিই আসবে।</div>
 
 <h2>জোড়া-স্বর: ei · ie · au · eu</h2>
 
@@ -301,7 +301,7 @@ laute: `
 </ul>
 
 <div class="merke">পেরেছো? তাহলে জার্মান পড়তে শেখা তোমার হয়ে গেছে। বাকি ২৯ দিন শুধু
-বলার আর বোঝার। এই পাতাটা বুকমার্ক করে রাখো — আটকে গেলেই ফিরে এসো।</div>
+বলার আর বোঝার। এই পাতাটা বুকমার্ক করে রাখো, আটকে গেলেই ফিরে এসো।</div>
 `,
 
 /* ------------------------------------------------------------
@@ -310,14 +310,14 @@ laute: `
 
 satzbau: `
 <p>ইংরেজি শেখার প্রথম পাঠটা মনে আছে? বাংলায় ক্রিয়া বাক্যের শেষে বসে, ইংরেজিতে সামনে
-এগিয়ে আসে। জার্মানেও ঠিক তাই — শুধু এখানে নিয়মটা আরও কড়া, আর সেই কড়া নিয়মটাই তোমার
+এগিয়ে আসে। জার্মানেও ঠিক তাই, শুধু এখানে নিয়মটা আরও কড়া, আর সেই কড়া নিয়মটাই তোমার
 বন্ধু, কারণ ব্যতিক্রম নেই।</p>
 
 <div class="muster">
   <span class="muster-label mono">Das Muster · ছাঁচ</span>
   <p class="muster-shape">কে · <b>কাজ</b> · কী</p>
-  <p class="muster-why">বাংলা: আমি <i>ভাত</i> <b>খাই</b> — কাজটা শেষে।<br>
-  জার্মান: <span lang="de">Ich <b>esse</b> Reis.</span> — কাজটা দুই নম্বরে।</p>
+  <p class="muster-why">বাংলা: আমি <i>ভাত</i> <b>খাই</b>: কাজটা শেষে।<br>
+  জার্মান: <span lang="de">Ich <b>esse</b> Reis.</span>: কাজটা দুই নম্বরে।</p>
 </div>
 
 <div class="satz-list">
@@ -349,20 +349,20 @@ satzbau: `
 </div>
 
 <div class="merke">এই এক আইনেই জার্মান বাক্যের অর্ধেক শেখা হয়ে গেল। কিছু একটা সামনে
-আনলে কর্তাটা ক্রিয়ার পরে চলে যায় — ভুলে যাওয়ার মতো নয়, শুধু অভ্যাস করার মতো।</div>
+আনলে কর্তাটা ক্রিয়ার পরে চলে যায়, ভুলে যাওয়ার মতো নয়, শুধু অভ্যাস করার মতো।</div>
 
 <h2>নয়জন কর্তা · <span lang="de">Die Personen</span></h2>
 
-<p>আর এখানেই বাংলার চেনা মুখগুলো: তুমি, তোমরা, আপনি — তিনটাই আলাদা আছে।</p>
+<p>আর এখানেই বাংলার চেনা মুখগুলো: তুমি, তোমরা, আপনি, তিনটাই আলাদা আছে।</p>
 
 <div class="table-scroll">
 <table>
   <thead><tr><th lang="de">Deutsch</th><th>বাংলা</th><th>কখন</th></tr></thead>
   <tbody>
     <tr><td lang="de">ich</td><td>আমি</td>
-        <td>নিজের কথা। ছোট হাতের i — বাক্যের শুরু ছাড়া কখনো বড় হয় না।</td></tr>
+        <td>নিজের কথা। ছোট হাতের i, বাক্যের শুরু ছাড়া কখনো বড় হয় না।</td></tr>
     <tr><td lang="de">du</td><td>তুমি</td>
-        <td>বন্ধু, পরিবার, শিশু — কাছের মানুষ।</td></tr>
+        <td>বন্ধু, পরিবার, শিশু: কাছের মানুষ।</td></tr>
     <tr><td lang="de">er / sie / es</td><td>সে (ছেলে) / সে (মেয়ে) / এটা</td>
         <td>একজন ছেলে / একজন মেয়ে / একটা জিনিস।</td></tr>
     <tr><td lang="de">wir</td><td>আমরা</td><td>আমি + আরও কেউ।</td></tr>
@@ -370,14 +370,14 @@ satzbau: `
         <td>অনেকজন কাছের মানুষ। ইংরেজিতে এটা ছিল না!</td></tr>
     <tr><td lang="de">sie</td><td>তারা</td><td>অনেকজন মানুষ বা জিনিস।</td></tr>
     <tr><td lang="de">Sie</td><td>আপনি / আপনারা</td>
-        <td>অচেনা, বয়োজ্যেষ্ঠ, অফিস — সম্মান। লেখায় সবসময় বড় S।</td></tr>
+        <td>অচেনা, বয়োজ্যেষ্ঠ, অফিস: সম্মান। লেখায় সবসময় বড় S।</td></tr>
   </tbody>
 </table>
 </div>
 
 <div class="merke warn">খেয়াল করো: <span lang="de">sie</span> (ছোট s) = সে/তারা, আর
 <span lang="de">Sie</span> (বড় S) = আপনি। লেখায় S-টাই একমাত্র পার্থক্য, বলায় বোঝা যায়
-প্রসঙ্গ থেকে। সন্দেহ হলে <span lang="de">Sie</span> বলো — ভদ্রতা কখনো ভুল নয়।</div>
+প্রসঙ্গ থেকে। সন্দেহ হলে <span lang="de">Sie</span> বলো, ভদ্রতা কখনো ভুল নয়।</div>
 `,
 
 /* ------------------------------------------------------------
@@ -385,11 +385,11 @@ satzbau: `
    ------------------------------------------------------------ */
 
 sein: `
-<p>বাংলায় একটা ক্রিয়া প্রায়ই লুকিয়ে থাকে। "আমি ক্লান্ত" — এখানে কোনো ক্রিয়া দেখছো?
+<p>বাংলায় একটা ক্রিয়া প্রায়ই লুকিয়ে থাকে। "আমি ক্লান্ত"– এখানে কোনো ক্রিয়া দেখছো?
 নেই। ইংরেজি শেখার সময় এই জায়গাটাতেই সবচেয়ে বেশি ভুল হতো: <i>I tired</i> নয়,
 <i>I <b>am</b> tired</i>।</p>
 
-<p>জার্মানেও তাই। আর এখানে সেই ক্রিয়াটার ছয়টা মুখ আছে। ভয় পেয়ো না — বাংলাও ক্রিয়া
+<p>জার্মানেও তাই। আর এখানে সেই ক্রিয়াটার ছয়টা মুখ আছে। ভয় পেয়ো না, বাংলাও ক্রিয়া
 বদলায় (খাই-খাও-খায়), তাই এটা তোমার চেনা খেলা।</p>
 
 <div class="muster">
@@ -454,19 +454,19 @@ sein: `
   </div>
 </div>
 
-<p>একটা জিনিস খেয়াল করো: <span lang="de">Ich bin Schülerin</span> — পেশা বা পরিচয়ের আগে
+<p>একটা জিনিস খেয়াল করো: <span lang="de">Ich bin Schülerin</span>: পেশা বা পরিচয়ের আগে
 'একজন' (<span lang="de">ein</span>) লাগে না। ইংরেজিতে <i>I am <b>a</b> student</i> বলতেই
 হতো; জার্মানে এক শব্দ কম!</p>
 
 <h2>না বলা, আর প্রশ্ন করা</h2>
 
-<p>সুখবর: জার্মানে কোনো <i>do</i> নেই। প্রশ্ন করতে শুধু ক্রিয়াটা সামনে আনো — বাংলার
+<p>সুখবর: জার্মানে কোনো <i>do</i> নেই। প্রশ্ন করতে শুধু ক্রিয়াটা সামনে আনো, বাংলার
 'কি'-প্রশ্নের মতোই সরল।</p>
 
 <div class="split">
   <div class="do">
     <h5><span lang="de">Nein</span> · না</h5>
-    <p class="muster-why"><span lang="de">nicht</span> বসাও — ব্যস।</p>
+    <p class="muster-why"><span lang="de">nicht</span> বসাও, ব্যস।</p>
     <div class="satz-list">
       <p class="satz"><b lang="de">Ich bin nicht müde.</b><span>আমি ক্লান্ত নই।</span></p>
       <p class="satz"><b lang="de">Er ist nicht hier.</b><span>সে এখানে নেই।</span></p>
@@ -476,7 +476,7 @@ sein: `
   </div>
   <div class="others">
     <h5><span lang="de">Frage</span> · প্রশ্ন</h5>
-    <p class="muster-why">ক্রিয়া সামনে — কোনো <i>do</i> নেই।</p>
+    <p class="muster-why">ক্রিয়া সামনে, কোনো <i>do</i> নেই।</p>
     <div class="satz-list">
       <p class="satz"><b lang="de">Bist du müde?</b><span>তুমি কি ক্লান্ত?</span></p>
       <p class="satz"><b lang="de">Ist sie deine Schwester?</b><span>সে কি তোমার বোন?</span></p>
@@ -487,7 +487,7 @@ sein: `
 </div>
 
 <div class="merke">ইংরেজিতে ভারা বানাতে হতো: <i>Do you…? Does she…?</i> জার্মানে শুধু
-ক্রিয়াটা সামনে আনো — <span lang="de">Bist du…?</span> এটুকুই। এক বছর পরে বুঝবে
+ক্রিয়াটা সামনে আনো, <span lang="de">Bist du…?</span> এটুকুই। এক বছর পরে বুঝবে
 এটা কত বড় উপহার।</div>
 `,
 
@@ -497,13 +497,13 @@ sein: `
 
 haben: `
 <p>বাংলায় জিনিসটা আগে আসে: "আমার একটা বোন আছে।" জার্মানে মানুষটা আগে আসে:
-<span lang="de">Ich habe eine Schwester.</span> — ইংরেজির সেই একই উল্টো, যেটা তুমি
+<span lang="de">Ich habe eine Schwester.</span>: ইংরেজির সেই একই উল্টো, যেটা তুমি
 আগে একবার শিখেছো।</p>
 
 <div class="muster">
   <span class="muster-label mono">Das Muster · ছাঁচ</span>
   <p class="muster-shape"><b lang="de">Ich habe</b> <i>________</i></p>
-  <p class="muster-why">আমার ___ আছে। পরিবার, জিনিস, সময়, এমনকি খিদে — সবই এই ছাঁচে।</p>
+  <p class="muster-why">আমার ___ আছে। পরিবার, জিনিস, সময়, এমনকি খিদে: সবই এই ছাঁচে।</p>
 </div>
 
 <div class="table-scroll">
@@ -602,11 +602,11 @@ artikel: `
   <p class="satz"><b lang="de">das Messer</b><span>ছুরি</span></p>
 </div>
 
-<p>তিনটা যন্ত্র, একই ড্রয়ারে থাকে, একসাথে ব্যবহার হয় — তিনটা আলাদা টুপি। যুক্তি শূন্য।
-আর সবচেয়ে বড় প্রমাণ: <span lang="de">das Mädchen</span> — 'মেয়ে' শব্দটাই
+<p>তিনটা যন্ত্র, একই ড্রয়ারে থাকে, একসাথে ব্যবহার হয়: তিনটা আলাদা টুপি। যুক্তি শূন্য।
+আর সবচেয়ে বড় প্রমাণ: <span lang="de">das Mädchen</span>: 'মেয়ে' শব্দটাই
 <span class="hut" data-hut="das">das</span>, <span class="hut" data-hut="die">die</span> নয়।</p>
 
-<div class="merke">তাই 'কেন' জিজ্ঞেস কোরো না। কেউ জানে না। জার্মানরা নিজেরাও জানে না —
+<div class="merke">তাই 'কেন' জিজ্ঞেস কোরো না। কেউ জানে না। জার্মানরা নিজেরাও জানে না,
 তারা শিশুকালে শুনে শুনে শিখেছে। তোমার পরিকল্পনাটাও তাই হবে: <b>টুপি ছাড়া কোনো শব্দের
 সাথে দেখা কোরো না।</b></div>
 
@@ -614,7 +614,7 @@ artikel: `
 
 <ul>
   <li><b>এক নিঃশ্বাসে বলো।</b> <span lang="de">Tisch</span> নয়,
-      <span lang="de">derTisch</span> — যেন একটাই শব্দ।</li>
+      <span lang="de">derTisch</span>: যেন একটাই শব্দ।</li>
   <li><b>রঙ দাও।</b> <span class="hut" data-hut="der">der</span> = নীল,
       <span class="hut" data-hut="die">die</span> = লাল,
       <span class="hut" data-hut="das">das</span> = সবুজ। খাতায় তিন রঙে লেখো।</li>
@@ -628,14 +628,14 @@ artikel: `
 <ol>
   <li><b>সব বহুবচন <span class="hut" data-hut="die">die</span> পরে।</b>
       <span lang="de">die Bücher</span>, <span lang="de">die Kinder</span>,
-      <span lang="de">die Männer</span> — ব্যতিক্রম নেই।</li>
+      <span lang="de">die Männer</span>: ব্যতিক্রম নেই।</li>
   <li><b>ভুল টুপি মানে ভুল কথা নয়।</b> <span lang="de">das Tisch</span> বললেও সবাই বুঝবে
       তুমি টেবিলের কথা বলছো। থেমো না, বলতে থাকো, ঠিক হতে থাকবে।</li>
 </ol>
 
 <h2>তোমার প্রথম আলমারি: ২৪টা শব্দ</h2>
 
-<p>প্রতিটা কার্ড এক নিঃশ্বাসে জোরে পড়ো — টুপি আর শব্দ একসাথে, কখনো আলাদা নয়।</p>
+<p>প্রতিটা কার্ড এক নিঃশ্বাসে জোরে পড়ো, টুপি আর শব্দ একসাথে, কখনো আলাদা নয়।</p>
 
 <div class="hut-spalten">
   <div class="hut-spalte" data-hut="der">
@@ -679,7 +679,7 @@ artikel: `
   </div>
 </div>
 
-<h2><span lang="de">ein · eine</span> — 'একটা'</h2>
+<h2><span lang="de">ein · eine</span>: 'একটা'</h2>
 
 <div class="table-scroll">
 <table>
@@ -694,7 +694,7 @@ artikel: `
     <tr><td><span class="hut" data-hut="die">die</span></td>
         <td lang="de">eine</td><td lang="de">keine</td>
         <td lang="de">Das ist eine Schule. · Ich habe keine Zeit.</td></tr>
-    <tr><td>বহুবচন</td><td>— (কিছু না)</td><td lang="de">keine</td>
+    <tr><td>বহুবচন</td><td>– (কিছু না)</td><td lang="de">keine</td>
         <td lang="de">Ich habe Bücher. · Ich habe keine Bücher.</td></tr>
   </tbody>
 </table>
@@ -712,7 +712,7 @@ artikel: `
 </div>
 
 <p><span class="hut" data-hut="die">die</span> আর <span class="hut" data-hut="das">das</span>
-এখানে কখনো বদলায় না। শুধু নীল দলটাই বদলায়। এক দল, এক বদল — আর তার পুরো গল্প
+এখানে কখনো বদলায় না। শুধু নীল দলটাই বদলায়। এক দল, এক বদল, আর তার পুরো গল্প
 <a href="/deutsch/stufe-2/index.html">Stufe ২-তে</a>। আজ ভুল করলেও সবাই বুঝবে।</p>
 `,
 
@@ -727,7 +727,7 @@ verben: `
 <div class="muster">
   <span class="muster-label mono">Das Muster · ছাঁচ</span>
   <p class="muster-shape"><b>-e &nbsp; -st &nbsp; -t &nbsp; -en &nbsp; -t &nbsp; -en</b></p>
-  <p class="muster-why">ছয়টা কর্তা, ছয়টা লেজ। এই ছকেই জার্মানের ৯০% ক্রিয়া চলে — চিরকাল।</p>
+  <p class="muster-why">ছয়টা কর্তা, ছয়টা লেজ। এই ছকেই জার্মানের ৯০% ক্রিয়া চলে, চিরকাল।</p>
 </div>
 
 <div class="table-scroll">
@@ -748,11 +748,11 @@ verben: `
 </div>
 
 <div class="merke"><span lang="de">wir</span> আর <span lang="de">sie/Sie</span> সবসময়
-অভিধানের পুরো রূপটাই নেয় — কিছু শিখতেই হয় না। <span lang="de">ich</span>-এ একটা -e,
+অভিধানের পুরো রূপটাই নেয়, কিছু শিখতেই হয় না। <span lang="de">ich</span>-এ একটা -e,
 <span lang="de">du</span>-তে -st। মোটে দুটো জিনিস মনে রাখার।</div>
 
 <p>ছোট একটা ব্যতিক্রম, আর সেটা শুধু বলার সুবিধার জন্য: <span lang="de">arbeiten</span>-এর
-মতো t বা d দিয়ে শেষ হওয়া ক্রিয়ায় একটা <b>e</b> ঢুকে যায় —
+মতো t বা d দিয়ে শেষ হওয়া ক্রিয়ায় একটা <b>e</b> ঢুকে যায়,
 <span lang="de">du arbeitest, er arbeitet</span>। <span lang="de">arbeitst</span> বলা যায় না,
 চেষ্টা করে দেখো।</p>
 
@@ -795,13 +795,13 @@ verben: `
 </div>
 
 <div class="merke">নিয়ম সেই একটাই: ক্রিয়া একা বোলো না, বাক্যে বলো।
-<span lang="de">Ich koche Reis</span> — শুধু <span lang="de">kochen</span> নয়। একা শেখা
+<span lang="de">Ich koche Reis</span>: শুধু <span lang="de">kochen</span> নয়। একা শেখা
 শব্দ একা থেকে যায়।</div>
 
 <h2>রূপবদলকারীরা · <span lang="de">Die Vokalwechsler</span></h2>
 
 <p>কিছু ক্রিয়া <span lang="de">du</span> আর <span lang="de">er/sie/es</span>-এর ঘরে
-চেহারা বদলায়। বাকি চার ঘরে সব স্বাভাবিক — <span lang="de">ich</span>,
+চেহারা বদলায়। বাকি চার ঘরে সব স্বাভাবিক, <span lang="de">ich</span>,
 <span lang="de">wir</span>, <span lang="de">ihr</span>, <span lang="de">sie</span> কখনো বদলায় না।</p>
 
 <div class="table-scroll">
@@ -844,7 +844,7 @@ negation: `
      <b lang="de">nicht</b> মারে বাকি সব</p>
   <p class="muster-why">দ্রুত পরীক্ষা: ক্রিয়ার পরে কি <span lang="de">ein</span>-ওয়ালা
   (বা খালি) বিশেষ্য আছে? তাহলে <span lang="de">kein</span>। নাহলে
-  <span lang="de">nicht</span> — সাধারণত বাক্যের শেষে, বা বিশেষণের ঠিক আগে।</p>
+  <span lang="de">nicht</span>: সাধারণত বাক্যের শেষে, বা বিশেষণের ঠিক আগে।</p>
 </div>
 
 <h2>ছয়টা ভুল, যেগুলো সবাই করে</h2>
@@ -860,7 +860,7 @@ negation: `
     <tr><td lang="de">Ich bin nicht müde.</td><td lang="de">Ich bin müde nicht.</td>
         <td>বিশেষণের ঠিক আগে <span lang="de">nicht</span>।</td></tr>
     <tr><td lang="de">Er wohnt nicht hier.</td><td lang="de">Er nicht wohnt hier.</td>
-        <td>ক্রিয়া দুই নম্বরে অটল — <span lang="de">nicht</span> পরে।</td></tr>
+        <td>ক্রিয়া দুই নম্বরে অটল, <span lang="de">nicht</span> পরে।</td></tr>
     <tr><td lang="de">Das ist kein Problem.</td><td lang="de">Das ist nicht Problem.</td>
         <td><span lang="de">Problem</span> বিশেষ্য → <span lang="de">kein</span>।</td></tr>
     <tr><td lang="de">Ich trinke keinen Kaffee.</td><td lang="de">Ich trinke nicht Kaffee.</td>
@@ -872,7 +872,7 @@ negation: `
 
 <h2>ভদ্রভাবে 'না'</h2>
 
-<p>না বলাটাও একটা শিল্প, আর জার্মানরা সরাসরি না বলাকে অভদ্রতা মনে করে না — কিন্তু একটা
+<p>না বলাটাও একটা শিল্প, আর জার্মানরা সরাসরি না বলাকে অভদ্রতা মনে করে না, কিন্তু একটা
 নরম মোড়ক থাকলে সেটা আরও ভালো শোনায়।</p>
 
 <div class="satz-list">
@@ -884,7 +884,7 @@ negation: `
   <p class="satz"><b lang="de">Tut mir leid.</b><span>আমি দুঃখিত।</span></p>
 </div>
 
-<div class="merke"><span lang="de">leider</span> (দুঃখজনকভাবে) — এই এক শব্দটা যেকোনো
+<div class="merke"><span lang="de">leider</span> (দুঃখজনকভাবে), এই এক শব্দটা যেকোনো
 'না'-কে ভদ্র করে দেয়। শিখে রাখো, রোজ কাজে লাগবে।</div>
 `,
 
@@ -938,27 +938,27 @@ fragen: `
   <thead><tr><th lang="de">W-Wort</th><th>মানে</th><th>উদাহরণ ও উত্তর</th></tr></thead>
   <tbody>
     <tr><td lang="de"><b>Wer?</b></td><td>কে</td>
-        <td lang="de">Wer ist das? — Das ist meine Mutter.</td></tr>
+        <td lang="de">Wer ist das?, Das ist meine Mutter.</td></tr>
     <tr><td lang="de"><b>Was?</b></td><td>কী</td>
-        <td lang="de">Was machst du? — Ich lerne.</td></tr>
+        <td lang="de">Was machst du?, Ich lerne.</td></tr>
     <tr><td lang="de"><b>Wo?</b></td><td>কোথায়</td>
-        <td lang="de">Wo wohnst du? — In Dhaka.</td></tr>
+        <td lang="de">Wo wohnst du?, In Dhaka.</td></tr>
     <tr><td lang="de"><b>Woher?</b></td><td>কোথা থেকে</td>
-        <td lang="de">Woher kommst du? — Aus Bangladesch.</td></tr>
+        <td lang="de">Woher kommst du?, Aus Bangladesch.</td></tr>
     <tr><td lang="de"><b>Wann?</b></td><td>কখন</td>
-        <td lang="de">Wann kommst du? — Um drei Uhr.</td></tr>
+        <td lang="de">Wann kommst du?, Um drei Uhr.</td></tr>
     <tr><td lang="de"><b>Warum?</b></td><td>কেন</td>
-        <td lang="de">Warum lernst du Deutsch? — Für die Zukunft!</td></tr>
+        <td lang="de">Warum lernst du Deutsch?, Für die Zukunft!</td></tr>
     <tr><td lang="de"><b>Wie?</b></td><td>কেমন / কীভাবে</td>
-        <td lang="de">Wie geht's? — Gut, danke!</td></tr>
+        <td lang="de">Wie geht's?, Gut, danke!</td></tr>
     <tr><td lang="de"><b>Wie viel?</b></td><td>কত</td>
-        <td lang="de">Wie viel kostet das? — Zwei Euro.</td></tr>
+        <td lang="de">Wie viel kostet das?, Zwei Euro.</td></tr>
   </tbody>
 </table>
 </div>
 
 <div class="merke">আজই একটা সত্যিকারের মানুষকে জার্মানে একটা প্রশ্ন করো। উত্তরটা বাংলায়
-এলেও ক্ষতি নেই — প্রশ্নটাই আসল কাজ।</div>
+এলেও ক্ষতি নেই, প্রশ্নটাই আসল কাজ।</div>
 `,
 
 /* ------------------------------------------------------------
@@ -967,7 +967,7 @@ fragen: `
 
 modalverben: `
 <p>এবার সবচেয়ে জার্মান জিনিসটা। বাক্যটা একটা খিলানের মতো: সাহায্যকারী ক্রিয়া দুই নম্বর
-আসনে বসে, আর আসল কাজটা বাক্যের একদম শেষে গিয়ে দরজা বন্ধ করে। মাঝখানে যা খুশি ঢোকাও —
+আসনে বসে, আর আসল কাজটা বাক্যের একদম শেষে গিয়ে দরজা বন্ধ করে। মাঝখানে যা খুশি ঢোকাও,
 বন্ধনীটা ধরে রাখতে হবে।</p>
 
 <div class="muster">
@@ -975,7 +975,7 @@ modalverben: `
   <p class="muster-shape">কে · <b lang="de">möchte / kann / muss</b> · … মাঝের সব … ·
      <b>কাজ</b></p>
   <p class="muster-why">শেষ শব্দটা বাক্যের দরজা বন্ধ করে। এটাই জার্মান কানে 'সম্পূর্ণ'
-  শোনায় — শেষ শব্দটা না আসা পর্যন্ত জার্মান শ্রোতা অপেক্ষা করে।</p>
+  শোনায়, শেষ শব্দটা না আসা পর্যন্ত জার্মান শ্রোতা অপেক্ষা করে।</p>
 </div>
 
 <div class="satz-list">
@@ -1005,9 +1005,9 @@ modalverben: `
 </div>
 
 <div class="merke">সব modal-এ <span lang="de">ich</span> আর
-<span lang="de">er/sie/es</span> একই রূপ — কোনো -t নেই! আর পরের মূল ক্রিয়াটা কখনো
+<span lang="de">er/sie/es</span> একই রূপ, কোনো -t নেই! আর পরের মূল ক্রিয়াটা কখনো
 বদলায় না: সবসময় অভিধানের রূপ, বাক্যের শেষে।<br>
-<span lang="de">Ich kann schwimmen. · Er kann schwimmen.</span> —
+<span lang="de">Ich kann schwimmen. · Er kann schwimmen.</span>:
 কখনোই <span lang="de">er kannt</span> বা <span lang="de">ich kann schwimme</span> নয়।</div>
 
 <h2>বেঁচে থাকার বাক্য</h2>
@@ -1031,7 +1031,7 @@ modalverben: `
     <h5>ভদ্রতার সোনার শব্দ</h5>
     <div class="satz-list">
       <p class="satz"><b lang="de">Bitte.</b><span>প্লিজ / আপনাকে স্বাগতম</span></p>
-      <p class="satz"><b lang="de">Danke schön! — Bitte schön!</b><span>অনেক ধন্যবাদ! — কিছু না!</span></p>
+      <p class="satz"><b lang="de">Danke schön!, Bitte schön!</b><span>অনেক ধন্যবাদ!, কিছু না!</span></p>
       <p class="satz"><b lang="de">Entschuldigung!</b><span>মাফ করবেন / এক্সকিউজ মি</span></p>
       <p class="satz"><b lang="de">Kein Problem.</b><span>কোনো সমস্যা নেই।</span></p>
       <p class="satz"><b lang="de">Können Sie mir helfen?</b><span>আমাকে একটু সাহায্য করবেন?</span></p>
@@ -1087,18 +1087,18 @@ modalverben: `
   <span lang="de">58 = achtundfünfzig</span></p>
 </div>
 
-<p>ছোট সংখ্যা আগে, দশক পরে — ইংরেজির ঠিক উল্টো। প্রথম দিন হাসি পাবে, তিন দিনে অভ্যাস
+<p>ছোট সংখ্যা আগে, দশক পরে: ইংরেজির ঠিক উল্টো। প্রথম দিন হাসি পাবে, তিন দিনে অভ্যাস
 হয়ে যাবে। সবচেয়ে দ্রুত পথ: নিজের ফোন নম্বরটা জার্মানে দশবার বলো।</p>
 
 <h2>সপ্তাহের দিন</h2>
 
-<p>মজার ব্যাপার: সব দিনই <span class="hut" data-hut="der">der</span> — নীল দল, ব্যতিক্রম নেই।</p>
+<p>মজার ব্যাপার: সব দিনই <span class="hut" data-hut="der">der</span>: নীল দল, ব্যতিক্রম নেই।</p>
 
 <div class="satz-list">
   <p class="satz"><b lang="de">Montag · Dienstag · Mittwoch</b><span>সোম · মঙ্গল · বুধ</span></p>
   <p class="satz"><b lang="de">Donnerstag · Freitag</b><span>বৃহস্পতি · শুক্র</span></p>
   <p class="satz"><b lang="de">Samstag · Sonntag</b><span>শনি · রবি</span></p>
-  <p class="satz"><b lang="de">am Montag</b><span>সোমবারে — দিনের আগে <span lang="de">am</span></span></p>
+  <p class="satz"><b lang="de">am Montag</b><span>সোমবারে, দিনের আগে <span lang="de">am</span></span></p>
   <p class="satz"><b lang="de">heute · morgen · gestern</b><span>আজ · কাল · গতকাল</span></p>
   <p class="satz"><b lang="de">das Wochenende</b><span>সপ্তাহান্ত</span></p>
 </div>
@@ -1108,14 +1108,14 @@ modalverben: `
 <div class="satz-list">
   <p class="satz"><b lang="de">Wie spät ist es?</b><span>কয়টা বাজে?</span></p>
   <p class="satz"><b lang="de">Es ist drei Uhr.</b><span>তিনটা বাজে।</span></p>
-  <p class="satz"><b lang="de">um drei Uhr</b><span>তিনটায় — সময়ের আগে <span lang="de">um</span></span></p>
-  <p class="satz"><b lang="de">Viertel nach drei</b><span>৩:১৫ — তিনটার পরে সোয়া</span></p>
-  <p class="satz"><b lang="de">Viertel vor vier</b><span>৩:৪৫ — চারটার আগে পৌনে</span></p>
+  <p class="satz"><b lang="de">um drei Uhr</b><span>তিনটায়, সময়ের আগে <span lang="de">um</span></span></p>
+  <p class="satz"><b lang="de">Viertel nach drei</b><span>৩:১৫, তিনটার পরে সোয়া</span></p>
+  <p class="satz"><b lang="de">Viertel vor vier</b><span>৩:৪৫, চারটার আগে পৌনে</span></p>
 </div>
 
 <div class="merke warn"><b lang="de">halb vier</b> মানে <b>সাড়ে তিনটা</b>, সাড়ে চারটা নয়!
 জার্মান ভাবে 'চারের অর্ধেক পথে'। এটা প্রতি বছর হাজারো মানুষকে ট্রেন মিস করায়।
-ভুলে গেলে <span lang="de">drei Uhr dreißig</span> বলো — সবাই বুঝবে, আর কেউ হাসবে না।</div>
+ভুলে গেলে <span lang="de">drei Uhr dreißig</span> বলো, সবাই বুঝবে, আর কেউ হাসবে না।</div>
 `,
 
 /* ------------------------------------------------------------
@@ -1124,10 +1124,10 @@ modalverben: `
 
 satzbank: `
 <p>এতক্ষণ কাঠামো শিখেছো। এই পাতাটা আলাদা: এখানে কোনো নিয়ম নেই, শুধু সেই বাক্যগুলো
-যেগুলো তুমি প্রথম সপ্তাহেই আসলে বলবে। মুখস্থ করা এখানে বৈধ — কারণ এগুলো কাঠামো নয়,
+যেগুলো তুমি প্রথম সপ্তাহেই আসলে বলবে। মুখস্থ করা এখানে বৈধ, কারণ এগুলো কাঠামো নয়,
 হাতিয়ার।</p>
 
-<h2><span lang="de">Hallo!</span> — পরিচয় ও কুশল</h2>
+<h2><span lang="de">Hallo!</span>: পরিচয় ও কুশল</h2>
 
 <div class="split">
   <div class="do">
@@ -1135,7 +1135,7 @@ satzbank: `
     <div class="satz-list">
       <p class="satz"><b lang="de">Hallo! / Guten Morgen!</b><span>হ্যালো! / শুভ সকাল!</span></p>
       <p class="satz"><b lang="de">Guten Tag! / Guten Abend!</b><span>শুভ দিন! / শুভ সন্ধ্যা!</span></p>
-      <p class="satz"><b lang="de">Wie geht's? — Gut, danke!</b><span>কেমন আছো? — ভালো, ধন্যবাদ!</span></p>
+      <p class="satz"><b lang="de">Wie geht's?, Gut, danke!</b><span>কেমন আছো?, ভালো, ধন্যবাদ!</span></p>
       <p class="satz"><b lang="de">Und dir? / Und Ihnen?</b><span>আর তুমি? / আর আপনি?</span></p>
       <p class="satz"><b lang="de">Ich heiße Rima.</b><span>আমার নাম রিমা।</span></p>
       <p class="satz"><b lang="de">Wie heißt du? / Wie heißen Sie?</b><span>তোমার / আপনার নাম কী?</span></p>
@@ -1154,7 +1154,7 @@ satzbank: `
   </div>
 </div>
 
-<h2><span lang="de">Zu Hause</span> — ঘরের ভিতরে</h2>
+<h2><span lang="de">Zu Hause</span>: ঘরের ভিতরে</h2>
 
 <div class="split">
   <div class="do">
@@ -1181,7 +1181,7 @@ satzbank: `
   </div>
 </div>
 
-<h2><span lang="de">Im Café, auf dem Markt</span> — ক্যাফে ও বাজার</h2>
+<h2><span lang="de">Im Café, auf dem Markt</span>: ক্যাফে ও বাজার</h2>
 
 <div class="split">
   <div class="do">
@@ -1192,7 +1192,7 @@ satzbank: `
       <p class="satz"><b lang="de">Ich nehme das.</b><span>আমি এটা নেবো।</span></p>
       <p class="satz"><b lang="de">Haben Sie Reis?</b><span>আপনাদের কি চাল আছে?</span></p>
       <p class="satz"><b lang="de">Ein Kilo Äpfel, bitte.</b><span>এক কেজি আপেল দিন।</span></p>
-      <p class="satz"><b lang="de">Sonst noch etwas? — Nein, danke.</b><span>আর কিছু? — না, ধন্যবাদ।</span></p>
+      <p class="satz"><b lang="de">Sonst noch etwas?, Nein, danke.</b><span>আর কিছু?, না, ধন্যবাদ।</span></p>
     </div>
   </div>
   <div class="others">
@@ -1202,13 +1202,13 @@ satzbank: `
       <p class="satz"><b lang="de">Das ist zu teuer!</b><span>এটা তো বেশি দামি!</span></p>
       <p class="satz"><b lang="de">Das macht fünf Euro.</b><span>পাঁচ ইউরো হয়েছে।</span></p>
       <p class="satz"><b lang="de">Zahlen, bitte!</b><span>বিল দিন, প্লিজ!</span></p>
-      <p class="satz"><b lang="de">Danke schön! — Bitte schön!</b><span>ধন্যবাদ! — কিছু না!</span></p>
+      <p class="satz"><b lang="de">Danke schön!, Bitte schön!</b><span>ধন্যবাদ!, কিছু না!</span></p>
       <p class="satz"><b lang="de">Schönen Tag noch!</b><span>বাকি দিনটা ভালো কাটুক!</span></p>
     </div>
   </div>
 </div>
 
-<h2><span lang="de">Hilfe!</span> — সাহায্য ও পথ</h2>
+<h2><span lang="de">Hilfe!</span>: সাহায্য ও পথ</h2>
 
 <div class="split">
   <div class="do">
@@ -1230,7 +1230,7 @@ satzbank: `
       <p class="satz"><b lang="de">Ist das weit?</b><span>এটা কি দূরে?</span></p>
       <p class="satz"><b lang="de">Links? Rechts? Geradeaus?</b><span>বামে? ডানে? সোজা?</span></p>
       <p class="satz"><b lang="de">Ich suche die Schule.</b><span>আমি স্কুলটা খুঁজছি।</span></p>
-      <p class="satz"><b lang="de">Vielen Dank! — Gern geschehen!</b><span>অনেক ধন্যবাদ! — কিছু না!</span></p>
+      <p class="satz"><b lang="de">Vielen Dank!, Gern geschehen!</b><span>অনেক ধন্যবাদ!, কিছু না!</span></p>
     </div>
   </div>
 </div>
@@ -1246,7 +1246,7 @@ satzbank: `
 <h2>পাঁচটা প্রশ্ন: যেকোনো ছবি থেকে একটা অনুচ্ছেদ</h2>
 
 <p>একটা ছবি নাও, বা জানালা দিয়ে তাকাও, বা নিজের ঘরটা দেখো। তারপর নিজেকে পাঁচটা প্রশ্ন
-করো — উত্তরগুলো জোড়া দিলেই একটা অনুচ্ছেদ।</p>
+করো, উত্তরগুলো জোড়া দিলেই একটা অনুচ্ছেদ।</p>
 
 <div class="table-scroll">
 <table>
@@ -1267,10 +1267,10 @@ satzbank: `
 </div>
 
 <p><span lang="de">in der Küche</span> (রান্নাঘরে) আর <span lang="de">zu Hause</span>
-(বাসায়) — এগুলো এখন 'তৈরি টুকরো'। কেন <span lang="de">der</span> হলো, সেটা
+(বাসায়), এগুলো এখন 'তৈরি টুকরো'। কেন <span lang="de">der</span> হলো, সেটা
 <a href="/deutsch/stufe-2/index.html">Stufe ২-র গল্প</a>। আজ শুধু ব্যবহার করো।</p>
 
-<h2><span lang="de">Mein Tag</span> — রোজ রাতে নিজের দিনটা</h2>
+<h2><span lang="de">Mein Tag</span>: রোজ রাতে নিজের দিনটা</h2>
 
 <p>ঘুমানোর আগে দিনটা জার্মানে বলো। ইংরেজিতে যে অভ্যাসটা তুমি বানিয়েছিলে, এখন সেটা
 দুই ভাষায়।</p>
@@ -1293,12 +1293,12 @@ satzbank: `
 </table>
 </div>
 
-<p>এখানেও কয়েকটা তৈরি টুকরো আছে: <span lang="de">stehe … auf</span> (উঠি — খেয়াল করো,
+<p>এখানেও কয়েকটা তৈরি টুকরো আছে: <span lang="de">stehe … auf</span> (উঠি, খেয়াল করো,
 <span lang="de">auf</span> বাক্যের শেষে চলে গেছে), <span lang="de">zur Schule</span>
 (স্কুলে), <span lang="de">war</span> (ছিল), <span lang="de">gebe nicht auf</span>
-(হাল ছাড়ি না)। এগুলো এখন গানের লাইন — ব্যাকরণ পরে আসবে, আর যখন আসবে তখন চেনা লাগবে।</p>
+(হাল ছাড়ি না)। এগুলো এখন গানের লাইন, ব্যাকরণ পরে আসবে, আর যখন আসবে তখন চেনা লাগবে।</p>
 
-<h2><span lang="de">Selbstgespräch</span> — গোপন অস্ত্র</h2>
+<h2><span lang="de">Selbstgespräch</span>: গোপন অস্ত্র</h2>
 
 <p>সারাদিন, বিনামূল্যে, কেউ শুনছে না। ভাষা শেখার সবচেয়ে কম কথিত আর সবচেয়ে কার্যকর
 কৌশলটা হলো নিজের সাথে কথা বলা।</p>
@@ -1317,7 +1317,7 @@ satzbank: `
 </ol>
 
 <div class="merke"><b lang="de">Niemand hört zu. Niemand lacht. Hier stirbt die Angst.</b><br>
-কেউ শুনছে না, কেউ হাসছে না — এখানেই ভয়টা মরে। আর ভয়টা মরলে বাকিটা শুধু সময়ের ব্যাপার।</div>
+কেউ শুনছে না, কেউ হাসছে না: এখানেই ভয়টা মরে। আর ভয়টা মরলে বাকিটা শুধু সময়ের ব্যাপার।</div>
 `,
 
 /* ------------------------------------------------------------
@@ -1349,7 +1349,7 @@ plan: `
 </div>
 
 <div class="merke">ইংরেজির চর্চা দিনের অন্য সময়ে চলবে, আলাদা ৩০ মিনিটে। দুই ভাষা,
-দুই আলাদা স্লট — এক ঘণ্টায় মেশাবে না। মেশালে দুটোই ঘোলাটে হয়।</div>
+দুই আলাদা স্লট: এক ঘণ্টায় মেশাবে না। মেশালে দুটোই ঘোলাটে হয়।</div>
 
 <h2>৩০ দিনের মানচিত্র</h2>
 
@@ -1372,7 +1372,7 @@ plan: `
     <tr><td class="mono">২১–২৩</td><td lang="de">Fragen</td>
         <td>প্রশ্ন করা, এবং উত্তর শোনা। সাতটা W-চাবি।</td></tr>
     <tr><td class="mono">২৪–২৬</td><td lang="de">möchte · kann · muss</td>
-        <td>চাওয়া, পারা, বাধ্যতা — জার্মান ছন্দে, বন্ধনীসহ।</td></tr>
+        <td>চাওয়া, পারা, বাধ্যতা: জার্মান ছন্দে, বন্ধনীসহ।</td></tr>
     <tr><td class="mono">২৭–২৮</td><td lang="de">Zahlen + Uhrzeit</td>
         <td>দাম, বয়স, সময়: সংখ্যায় স্বাধীনতা।</td></tr>
     <tr><td class="mono">২৯–৩০</td><td lang="de">Satzbank + মুক্ত কথা</td>
@@ -1393,7 +1393,7 @@ plan: `
     <tr><td lang="de">Tisch (খালি শব্দ)</td><td lang="de">der Tisch</td>
         <td>টুপি ছাড়া শব্দ শেখা মানে দুইবার শেখা।</td></tr>
     <tr><td lang="de">Ich müde bin.</td><td lang="de">Ich bin müde.</td>
-        <td>ক্রিয়া দুই নম্বর আসনে — সবসময়।</td></tr>
+        <td>ক্রিয়া দুই নম্বর আসনে, সবসময়।</td></tr>
     <tr><td lang="de">Du kommst morgen?</td><td lang="de">Kommst du morgen?</td>
         <td>প্রশ্নে ক্রিয়া সামনে লাফায়, শুধু সুর বদলালে হয় না।</td></tr>
     <tr><td lang="de">Ich möchte lernen Deutsch.</td><td lang="de">Ich möchte Deutsch lernen.</td>
@@ -1413,7 +1413,7 @@ plan: `
 
 <h2>শেষ কথা</h2>
 
-<p>একবার তুমি এই পথ হেঁটেছো — শূন্য থেকে সত্যিকারের বাক্য পর্যন্ত, এমন একটা ভাষায়
+<p>একবার তুমি এই পথ হেঁটেছো, শূন্য থেকে সত্যিকারের বাক্য পর্যন্ত, এমন একটা ভাষায়
 যেটা তখন অসম্ভব মনে হতো। জার্মান কঠিন নয়, শুধু নতুন। আর এবার তুমি রাস্তাটা চেনো।</p>
 
 <div class="merke"><b lang="de">Jetzt schließ die Datei und sag einen Satz. Laut. Los!</b><br>

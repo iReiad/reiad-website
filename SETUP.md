@@ -8,7 +8,7 @@ for a while and it broke every automatic build.
 
 ## What this is
 
-A **Worker with static assets**. Not a Pages project — there is no Pages
+A **Worker with static assets**. Not a Pages project: there is no Pages
 project in the account, and `wrangler pages deploy` will tell you so.
 
 - everything in `aab/` is uploaded as static assets and served directly
@@ -29,9 +29,9 @@ For a while the live Worker was built from a `worker.js` that existed only on
 a laptop. It was never committed, so:
 
 - `npx wrangler deploy` in CI failed with *"Missing entry-point to Worker
-  script or to assets directory"* — the repo had no `main` and no `[assets]`
+  script or to assets directory"*: the repo had no `main` and no `[assets]`
 - `npx wrangler pages deploy` failed with *"The Pages project does not
-  exist"* — because it genuinely doesn't
+  exist"*, because it genuinely doesn't
 
 Both files are in the repository now, so a clone of this repo deploys the site
 that is actually running. If you ever see either error again, that is the thing
@@ -46,7 +46,7 @@ that has drifted.
 | Field | Value |
 | --- | --- |
 | Deploy command | `npx wrangler deploy` |
-| Build command | *(empty — there is no build step)* |
+| Build command | *(empty: there is no build step)* |
 
 If there is a separate **non-production branch deploy command**, the same
 command works there, or `npx wrangler versions upload` if you want branch
@@ -62,7 +62,7 @@ need Cloudflare Pages permissions, and if you added those while chasing the
 
 ## The D1 binding
 
-`wrangler.toml` declares it, and `wrangler deploy` attaches it — there is
+`wrangler.toml` declares it, and `wrangler deploy` attaches it: there is
 nothing to click:
 
 ```toml
@@ -96,7 +96,7 @@ binding = "MEDIA"
 bucket_name = "reiad-media"
 ```
 
-**Unlike the database, this one has to exist before the first deploy** —
+**Unlike the database, this one has to exist before the first deploy**,
 `wrangler deploy` stops with an error if the bucket is missing rather than
 creating it:
 
@@ -110,7 +110,7 @@ exactly as it did before.
 
 `/media/*` is in `run_worker_first`, and it has to be. Nothing in `aab/`
 matches that prefix, and with `not_found_handling` set the asset router
-answers an unmatched path with `404.html` **without invoking the Worker** — so
+answers an unmatched path with `404.html` **without invoking the Worker**, so
 leaving it out means every published photo 404s while the upload appears to
 have worked.
 
@@ -143,7 +143,7 @@ Open `https://reiad.co.uk/api/auth/me`.
 | `{"ok":true,"configured":false,"signedIn":false}` | Connected, no passphrase set yet. Go and set one. |
 | `{"ok":true,"configured":true,...}` | Connected and claimed. Sign in. |
 | `{"ok":false,"reason":"not-configured"}` | The `DB` binding isn't reaching the deployment. |
-| A 404 page | The Worker isn't routing at all — check `main = "worker.js"` in `wrangler.toml`. |
+| A 404 page | The Worker isn't routing at all, check `main = "worker.js"` in `wrangler.toml`. |
 
 ---
 
@@ -152,8 +152,8 @@ Open `https://reiad.co.uk/api/auth/me`.
 Open `https://reiad.co.uk/studio.html`. You'll get a "Set up Studio access"
 screen.
 
-What you type is stretched **in your browser** — PBKDF2-SHA256, 210,000
-iterations — and never sent. The server stores a hash of the result. It has to
+What you type is stretched **in your browser**, PBKDF2-SHA256, 210,000
+iterations, and never sent. The server stores a hash of the result. It has to
 work this way: a Worker on the free plan gets 10ms of CPU per request and those
 iterations cost about 30ms, so doing it server-side got every attempt killed
 mid-request. `functions/_lib/auth.js` explains the trade-off in full.
@@ -179,14 +179,14 @@ node aab/check-sw.mjs                # precached file changed without a VERSION 
 ## Housekeeping: that API token
 
 The account-scoped token pasted into a chat earlier (`square-waterfall-a740`)
-should be deleted if it hasn't been already — **My Profile → API Tokens**. A
+should be deleted if it hasn't been already, **My Profile → API Tokens**. A
 chat transcript is not somewhere a live credential should live. The build needs
 only its own token with Workers Scripts: Edit.
 
 The same rule caught `NOTION_TOKEN` once: an integration token was pasted into
 a chat to get the import working. Rotate anything that has been through a
-transcript — **notion.so/my-integrations → the integration → Secrets →
-Rotate** — then `npx wrangler secret put NOTION_TOKEN` with the new value.
+transcript, **notion.so/my-integrations → the integration → Secrets →
+Rotate**: then `npx wrangler secret put NOTION_TOKEN` with the new value.
 
 R2 **is** used now, for article photos (see above). The Worker reaches the
 bucket through the `MEDIA` binding, not through an access key, so there are

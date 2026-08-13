@@ -1,5 +1,5 @@
 /* ============================================================
-   /api/signals — analytics that can't identify anybody.
+   /api/signals, analytics that can't identify anybody.
 
    POST /api/signals/view   { path }        counter += 1
    POST /api/signals/react  { slug, kind }  counter += 1
@@ -7,7 +7,7 @@
 
    What is stored: a path, a date, and a number. That's the whole
    record. No IP address, no cookie, no fingerprint, no session, no
-   third party — there is nothing here that could be tied back to a
+   third party: there is nothing here that could be tied back to a
    person even if someone wanted to.
 
    That keeps the promise the colophon makes while still answering

@@ -11,7 +11,7 @@ check() { # name expected_substring actual
   else echo "  FAIL $1"; echo "       want ~ $2"; echo "       got    ${3:0:200}"; fail=$((fail+1)); fi
 }
 
-# The browser derives the key, so the suite has to as well — this is
+# The browser derives the key, so the suite has to as well: this is
 # the same PBKDF2-SHA256 the Studio runs, standing in for it.
 derive() { # salt_b64 iterations passphrase
   node -e 'const c=require("crypto");process.stdout.write(
@@ -178,7 +178,7 @@ check "an empty upload is refused" 'empty-body' \
 check "a shapeless key is refused"  'not-found' \
   "$(curl -s "$B/media/not-a-key")"
 # The runtime resolves ".." out of the path before routing, so this
-# never reaches the key guard at all — it stops being a /media URL
+# never reaches the key guard at all: it stops being a /media URL
 # and becomes an ordinary miss. What matters is the outcome, so that
 # is what this asserts rather than which layer said no.
 check "a traversal key leaks nothing" 'safe' \
@@ -205,7 +205,7 @@ check "and says so with immutable" 'immutable' \
   "$(curl -s -o /dev/null -D - "$B/media/$KEY" | tr -d '\r')"
 check "the listing shows it" "$KEY" "$(curl -s -b $C "$B/api/media?slug=test-piece")"
 # A photo pasted from Google Docs is cross-origin, so the browser is
-# blocked from fetching it to resize — the upload failed and the
+# blocked from fetching it to resize: the upload failed and the
 # article silently kept an image hotlinked to someone else's server.
 check "the fetch proxy needs auth" 'unauthorised' \
   "$(curl -s "$B/api/media/fetch?u=https%3A%2F%2Fexample.com%2Fx.png")"
@@ -249,8 +249,8 @@ fi
 RUN=$(date +%s)
 echo "── questions ──────────────────────────"
 check "ask"              '"queued":true' \
-  "$(curl -s -X POST -H "$J" -d '{"slug":"sanchayapatra-vs-fdr","name":"Rumi","body":"Run '"$RUN"' — does the tax at source apply to the 5-year certificate too?"}' $B/api/questions)"
-# The bot still hears success — it has nothing to learn from the reply.
+  "$(curl -s -X POST -H "$J" -d '{"slug":"sanchayapatra-vs-fdr","name":"Rumi","body":"Run '"$RUN"'– does the tax at source apply to the 5-year certificate too?"}' $B/api/questions)"
+# The bot still hears success: it has nothing to learn from the reply.
 check "honeypot swallowed" '"queued":true' \
   "$(curl -s -X POST -H "$J" -d '{"body":"buy cheap watches now click here","website":"http://spam"}' $B/api/questions)"
 # …but the question is quarantined rather than destroyed. It used to be
@@ -279,7 +279,7 @@ check "searching still needs auth" 'unauthorised' \
   "$(curl -s "$B/api/questions?status=all&q=cheap")"
 QID=$(curl -s -b $C "$B/api/questions?status=pending" | python3 -c 'import sys,json;print(json.load(sys.stdin)["questions"][-1]["id"])')
 check "answer+publish"   '"status":"published"' \
-  "$(curl -s -b $C -X PATCH -H "$J" -d '{"answer":"Yes — 10% at source on the profit, deducted before it reaches you.","status":"published"}' $B/api/questions/$QID)"
+  "$(curl -s -b $C -X PATCH -H "$J" -d '{"answer":"Yes, 10% at source on the profit, deducted before it reaches you.","status":"published"}' $B/api/questions/$QID)"
 check "now public"       'deducted before' "$(curl -s "$B/api/questions?slug=sanchayapatra-vs-fdr")"
 check "email not public" 'clean' \
   "$(curl -s "$B/api/questions?slug=sanchayapatra-vs-fdr" | grep -qc '"email"' && echo leaked || echo clean)"
@@ -319,7 +319,7 @@ check "stats"            'sanchayapatra' "$(curl -s -b $C $B/api/signals/stats)"
 
 echo "── feed & sitemap ─────────────────────"
 # Both are generated from content.js, which cannot see an article
-# published to the database — so a piece from the Studio was live,
+# published to the database, so a piece from the Studio was live,
 # readable, and in neither. That is what the "index entry" button was
 # for, and it could never work for an article the Worker publishes.
 check "the feed carries a database article" 'sanchayapatra-vs-fdr' \

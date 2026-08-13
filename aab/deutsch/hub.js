@@ -1,5 +1,5 @@
 /* ============================================================
-   hub.js — the German school's front page, made live.
+   hub.js: the German school's front page, made live.
 
    The page itself already explains the course, lists what the
    four Stufen are for, and links to Stufe 1 and to the practice
@@ -13,7 +13,7 @@
         do for an hour a night. Nobody should have to remember
         which Teil they stopped at.
      3. THE OVERALL BAR, Teile read and days practised, side by
-        side — because reading fourteen chapters and doing zero
+        side, because reading fourteen chapters and doing zero
         days is not progress, and the page should say so.
 
    With JavaScript off, the ladder falls back to the static list
@@ -173,8 +173,8 @@ function buildResume() {
 
      The test is progress itself, not the bookmark. Keying it on
      `last` meant a learner who had read five Teile but whose
-     deutsch-last had gone — a half-cleared storage, a second
-     device, a key that changed — was shown no way back in at all,
+     deutsch-last had gone, a half-cleared storage, a second
+     device, a key that changed, was shown no way back in at all,
      with a ladder full of ticks right underneath saying otherwise. */
   if (!readSet().size && !days.done) {
     host.hidden = true;
@@ -184,7 +184,7 @@ function buildResume() {
   /* Two things can be resumed and they are not the same thing:
      the reading and the daily practice. Whichever is further
      behind is the one worth offering, because that is the one
-     quietly being skipped — and on a language course it is
+     quietly being skipped, and on a language course it is
      almost always the practice.
 
      "Further behind" used to be spelled `days.done <= 3`, which
@@ -216,7 +216,7 @@ function buildResume() {
         }
       /* Read everything and done all thirty days. There is nothing
          left to resume, so say so rather than pretending there is
-         one more thing — and send them back through the book,
+         one more thing, and send them back through the book,
          which is the only honest next step until Stufe 2. */
       : {
           label: days.complete ? "Stufe ১ শেষ ✓" : "সব পাঠ পড়া শেষ",

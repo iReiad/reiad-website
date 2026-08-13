@@ -39,7 +39,7 @@
 
       /* The intro comes in four versions and one of them is shown.
          The rule that does the hiding is written HERE, inline, and
-         not in styles.css — on purpose.
+         not in styles.css, on purpose.
 
          sw.js serves HTML network-first and everything else
          cache-first, so the first load after any deploy pairs a
@@ -150,7 +150,7 @@
              the way it does that is to read the element's
              textContent and replace its children with one span per
              word. Four headlines inside it meant four headlines
-             read out as one string and rebuilt as one paragraph —
+             read out as one string and rebuilt as one paragraph,
              which is exactly what a reader got on the first load
              after the deploy, because sw.js serves HTML
              network-first and scripts cache-first, so new markup
@@ -158,12 +158,12 @@
              one version of a script does not belong in the DOM.
 
              An attribute is invisible to textContent, so every
-             version of that script — including the one from before
-             any of this existed — sees a single ordinary headline
+             version of that script, including the one from before
+             any of this existed, sees a single ordinary headline
              and does the right thing with it.
 
              The learner's two are Bangla, because the learning half
-             of this site is Bangla — the person it is written for
+             of this site is Bangla: the person it is written for
              should not have to read English to be told it exists. -->
         <h1 id="kinetic" class="home-h1"
             data-hl-finance="টাকার ভাষা, আমাদের ভাষায়।"
@@ -191,9 +191,9 @@
         </script>
 
         <p class="lede" data-when="open">
-          Two libraries in plain Bangla — money, and everything else worth
-          learning — plus financial modeling and analysis for clients who
-          need the numbers done right.
+          Two libraries in plain Bangla, one for money and one for everything
+          else worth learning, plus financial modeling and analysis for clients
+          who need the numbers done right.
         </p>
         <p class="lede" data-when="finance" lang="bn">
           বিও অ্যাকাউন্ট খোলা থেকে গবেষণা পর্যন্ত: শেয়ার, সঞ্চয়পত্র, মিউচুয়াল ফান্ড আর
@@ -206,7 +206,7 @@
           কোনো লগইন বা দাম ছাড়াই।
         </p>
         <p class="lede" data-when="work">
-          Three-statement models, DCFs, Python analysis and finance writing —
+          Three-statement models, DCFs, Python analysis and finance writing,
           from an MSc in finance and risk management. Every case study on this
           site runs in your browser, so you can take the work apart before you
           decide whether to commission any.
@@ -222,14 +222,14 @@
 
              The learning pair is grouped rather than laid out as
              three equal doors, because the real question is "are
-             you here to learn or to hire?" and the second question
-             — which library — only exists for one of those
+             you here to learn or to hire?" and the second question,
+which library, only exists for one of those
              answers. Grouping asks both at once without pretending
              they are the same question.
 
              Every door is an ordinary link, so this works with
              JavaScript off; audience.js only adds the remembering.
-             Nothing is ever hidden as a result of the answer — see
+             Nothing is ever hidden as a result of the answer, see
              the note at the top of audience.js. -->
         <div class="doorway" id="doorway">
           <div class="door-group">
@@ -241,7 +241,7 @@
                   <svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-7"/><path d="M12 14c0-3.3 2.7-6 6-6 0 3.3-2.7 6-6 6Z"/><path d="M12 16c0-2.5-2-4.5-4.5-4.5C7.5 14 9.5 16 12 16Z"/></svg>
                 </span>
                 <h3 class="bn-h">টাকা ও বিনিয়োগ</h3>
-                <p>শেয়ার, সঞ্চয়পত্র, ঝুঁকি — একদম শুরু থেকে।</p>
+                <p>শেয়ার, সঞ্চয়পত্র, ঝুঁকি: একদম শুরু থেকে।</p>
                 <span class="more">শেখার লাইব্রেরি →</span>
               </a>
               <a class="cell door" href="/skills/index.html" data-door="skills"
@@ -263,7 +263,7 @@
                 <svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h18v11H3z"/><path d="M9 8V6a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 6v2"/><path d="M3 13h18"/><path d="M11 13v2h2v-2"/></svg>
               </span>
               <h3>I'm hiring, or I need work done</h3>
-              <p>Financial modeling, data analysis and finance writing — open a
+              <p>Financial modeling, data analysis and finance writing: open a
                  case study and edit the assumptions yourself.</p>
               <span class="more">See the portfolio →</span>
             </a>
@@ -291,7 +291,7 @@
         </div>
 
         <!-- Ticker tape: decorative, pauses on hover, static under
-             reduced motion. The list is duplicated once — the CSS loop
+             reduced motion. The list is duplicated once: the CSS loop
              scrolls exactly half the track for a seamless repeat, so
              KEEP BOTH COPIES IDENTICAL when editing. -->
         <div class="ticker" aria-hidden="true">
@@ -324,7 +324,7 @@
            they had open, and what has happened since.
 
            Built by /home.js entirely from what is already on the
-           device — the two schools' own bookmarks, the recent
+           device: the two schools' own bookmarks, the recent
            list in /recent.js, and the cached market pulse. The
            whole section stays `hidden` until there is genuinely
            something in it, because an empty "continue where you
@@ -343,7 +343,7 @@
 
       <!-- data-for marks who a block is mainly for; the `audience`
            block in styles.css reorders on it. Everything stays on the
-           page for everyone — only the order changes. -->
+           page for everyone: only the order changes. -->
       <div class="bento" data-for="work">
 
         <!-- Featured article (big cell) -->
@@ -393,7 +393,7 @@
           <!-- The model names are links now. They were plain text
                sitting beside pages that let you open the actual
                model and take it apart, which is the whole argument
-               for hiring anyone — and it was two clicks away. -->
+               for hiring anyone, and it was two clicks away. -->
           <div class="svc">
             <span>Financial modeling: Excel,
               <a href="/portfolio/three-statement.html">three-statement</a>,
@@ -424,15 +424,15 @@
            THREE, not five, and one line each. This list was the
            longest single thing on the home page: five rows with a
            three-line blurb apiece, in front of a reader who had
-           not yet decided to care. The last two — the dissertation
-           and the stock check — are one line below, on the page
+           not yet decided to care. The last two, the dissertation
+           and the stock check, are one line below, on the page
            that exists to hold all five. A home page argues; the
            portfolio catalogues. -->
       <section data-for="work">
         <span class="section-label mono">Open one and take it apart</span>
         <p class="measure section-intro">Every model runs in the browser. Change an
            assumption and watch the statements, the valuation or the charts move with
-           it — no download, no sign-up.</p>
+           it: no download, no sign-up.</p>
         <div class="big-links">
           <a class="big-link" href="/portfolio/three-statement.html">
             <span class="num">01</span>
@@ -467,7 +467,7 @@
            the wrong way round: someone who came here because the
            explanations exist in their own language should not have
            to read English to find them. The English half is
-           untouched — it is a page ordering, not a translation.
+           untouched: it is a page ordering, not a translation.
 
            There are two of these now, one per track. Both are on
            the page for everyone, always; the track only decides
@@ -475,7 +475,7 @@
            audience.js for why that is never a filter.
 
            Three rows each, one line each. These are signposts to
-           the two hubs, not a table of contents for them — the
+           the two hubs, not a table of contents for them: the
            hub is better at being that than a home page is, and it
            is one tap away in the nav. What used to be here was
            four rows with a four-line blurb apiece, twice over,
@@ -515,7 +515,7 @@
             <span class="num">০১</span>
             <span class="t bn-h">জার্মান, বাংলায়: একদম শুরু থেকে</span>
             <span class="go">→</span>
-            <span class="d">চারটা স্তর, ধ্বনি থেকে শুরু — প্রথম দিনেই যেকোনো জার্মান শব্দ পড়তে পারবেন।</span>
+            <span class="d">চারটা স্তর, ধ্বনি থেকে শুরু: প্রথম দিনেই যেকোনো জার্মান শব্দ পড়তে পারবেন।</span>
           </a>
           <a class="big-link" href="/deutsch/stufe-1/arbeitsbuch.html">
             <span class="num">০২</span>
@@ -527,7 +527,7 @@
             <span class="num">০৩</span>
             <span class="t bn-h">দক্ষতার পুরো তালিকা</span>
             <span class="go">→</span>
-            <span class="d">কুরআন, ইংরেজি, রান্না, ভ্রমণ আর রিভিউ — কোনটা কতটা তৈরি, এক পাতায়।</span>
+            <span class="d">কুরআন, ইংরেজি, রান্না, ভ্রমণ আর রিভিউ: কোনটা কতটা তৈরি, এক পাতায়।</span>
           </a>
         </div>
       </section>

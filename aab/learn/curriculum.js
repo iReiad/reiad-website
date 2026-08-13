@@ -1,5 +1,5 @@
 /* ============================================================
-   curriculum.js — the whole Learn tree, in one file.
+   curriculum.js: the whole Learn tree, in one file.
 
    THIS IS THE ONE FILE YOU EDIT to add, rename or reorder
    anything in the Learn area. Everything else reads from it:
@@ -16,7 +16,7 @@
    THE SHAPE
 
    SCHOOLS[]                a school is a subject area with its own
-                            front page. Today there is one — money.
+                            front page. Today there is one, money.
                             German, Arabic, English, cooking and the
                             rest become school #2 at their own mount
                             point, using this same code unchanged.
@@ -25,7 +25,7 @@
                             collapsible, tracked.
 
        .sections[]          a heading inside a stage. Never a page
-                            of its own — just a grouping.
+                            of its own, just a grouping.
 
          .lessons[]         one page each.
 
@@ -42,25 +42,25 @@
    FIELDS
 
    stage   slug     folder name, and the id progress is stored under
-           bn/en    the name, Bangla first — matches the term cards
+           bn/en    the name, Bangla first, matches the term cards
            kicker   the tiny label above the name ("ধাপ ২")
            icon     a key in /learn/icons.js
            who      who this stage is for, in one line
            blurb    what it teaches, two lines at most
            needs    what you should have read first (stage slugs)
-           status   "live" | "soon" — "soon" stages are visible and
+           status   "live" | "soon"– "soon" stages are visible and
                     browsable, their unwritten lessons say আসছে
 
    lesson  slug     file name (no .html)
            bn/en    the title
            blurb    the one line on the card
            minutes  reading time
-           risk     "low" | "mid" | "high" — starter steps only
+           risk     "low" | "mid" | "high"– starter steps only
            status   "live" | "soon"
    ============================================================ */
 
 /* ------------------------------------------------------------
-   STAGE 0 — হাতেখড়ি
+   STAGE 0, হাতেখড়ি
    The steps live inline on /learn/index.html rather than on pages
    of their own: someone who has never invested should not have to
    navigate anywhere to be told what to do first. The ids below are
@@ -578,8 +578,8 @@ const MONEY_STAGES = [
 
 /* ------------------------------------------------------------
    SCHOOLS
-   One today. The second one — German from Bangla, beginner
-   English, Quranic Arabic, cooking, daily checklists, travel —
+   One today. The second one, German from Bangla, beginner
+   English, Quranic Arabic, cooking, daily checklists, travel,
    mounts at its own path and reuses every bit of this file's
    machinery. Nothing below assumes there is only one.
    ------------------------------------------------------------ */
@@ -604,7 +604,7 @@ export const STAGES = MONEY_STAGES;
 /** A stage's folder URL. */
 export const stageUrl = (stage) => `/learn/${stage.slug}/index.html`;
 
-/** Where a stage's lessons live — `base` wins, so basics-1 keeps /learn/terms/. */
+/** Where a stage's lessons live, `base` wins, so basics-1 keeps /learn/terms/. */
 export const lessonBase = (stage) => stage.base ?? `/learn/${stage.slug}/`;
 
 /** A lesson's URL. Inline stages (the starter guide) are hub anchors. */

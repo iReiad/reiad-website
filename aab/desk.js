@@ -1,5 +1,5 @@
 /* ============================================================
-   desk.js — the site, answering back.
+   desk.js: the site, answering back.
 
    Everything the site has collected, in one place that is not the
    editor. It used to be a strip of five tabs bolted under the
@@ -8,16 +8,16 @@
 
    Five panels, and an overview that says what is actually waiting:
 
-     · Questions   — the moderation queue, every status reachable
-     · Enquiries   — the client pipeline
-     · Subscribers — the list, searchable
-     · What's read — page views, no visitor identity anywhere
-     · Published   — what is live, and the way back into the editor
+     · Questions, the moderation queue, every status reachable
+     · Enquiries, the client pipeline
+     · Subscribers, the list, searchable
+     · What's read, page views, no visitor identity anywhere
+     · Published, what is live, and the way back into the editor
 
    ---- the bug this file was rebuilt around ----
 
    The queue only ever asked for `pending` and `published`. Anything
-   archived or marked spam left the interface permanently — and the
+   archived or marked spam left the interface permanently, and the
    button that archives is labelled "Not spam, just private", which
    reads like filing something, not deleting it. A real question sat
    invisible in the database for two days. Every status is reachable
@@ -210,7 +210,7 @@ async function renderEnquiries(host) {
       el("div", { className: "admin-meta mono" },
         isNew(item.created_at) ? el("span", { className: "pill pill-new", textContent: "new" }) : null,
         el("span", { className: "pill", textContent: item.kind }),
-        el("span", { textContent: item.name || "—" }),
+        el("span", { textContent: item.name || "–" }),
         el("a", { href: `mailto:${item.email}`, textContent: item.email }),
         el("span", { textContent: when(item.created_at) })
       ),
@@ -423,7 +423,7 @@ async function renderArticles(host) {
    Publishing replaces an article in place. Every overwrite now keeps
    the body it replaced, twenty deep, so a republish you regret has
    somewhere to go back to. Restoring is itself an overwrite and is
-   snapshotted too — going back never costs you the newer version.
+   snapshotted too, going back never costs you the newer version.
    ============================================================ */
 
 async function showHistory(article, onDone) {
@@ -466,7 +466,7 @@ async function showHistory(article, onDone) {
 }
 
 /* ============================================================
-   The overview — what actually needs you
+   The overview, what actually needs you
    ============================================================ */
 
 async function renderOverview(host, go) {

@@ -1,5 +1,5 @@
 /* ============================================================
-   /api/questions — reader questions, moderated.
+   /api/questions, reader questions, moderated.
 
    Nothing a reader submits appears on the site until you publish
    it, so this can't be used to put words on your pages.
@@ -88,7 +88,7 @@ export async function onRequest(context) {
          still a cheerful "queued", so the bot has nothing to learn.
 
          What changed is what happens to the question. It used to be
-         dropped on the floor — and a person whose password manager
+         dropped on the floor, and a person whose password manager
          filled that hidden field got told "Got it, I read every one
          of these" while their question was destroyed, leaving no
          record that it had ever existed. Quarantining costs a row

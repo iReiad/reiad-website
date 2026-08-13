@@ -1,13 +1,13 @@
 /* ============================================================
-   worker.js — the entry point, and the reason CI can build this.
+   worker.js: the entry point, and the reason CI can build this.
 
    This site is a Worker with static assets, not a Pages project.
    Everything in `aab/` is uploaded as assets and served by
    Cloudflare directly; this script exists to put the handlers in
    `functions/` in front of a few paths.
 
-   Those handlers are still written to the Pages Functions shape —
-   `onRequest(context)`, `context.params`, `context.next()` — because
+   Those handlers are still written to the Pages Functions shape,
+   `onRequest(context)`, `context.params`, `context.next()`– because
    that shape is a perfectly good convention and rewriting eight
    files to change nothing would be churn. What Pages did implicitly
    from the directory layout, the table below does explicitly:
@@ -20,7 +20,7 @@
    That is the whole of the naming convention, and it is why the
    table carries a parameter name and the routes carry a shape.
 
-   `context.next()` means "I don't want this one" — under Pages that
+   `context.next()` means "I don't want this one"– under Pages that
    fell through to the static file, and here it does the same thing
    by way of the ASSETS binding.
 
@@ -66,7 +66,7 @@ const API_ROUTES = [
 
 /** Photos published through the Studio. Served by the same handler
     that stores them, so there is one place that knows the key
-    format — but on a short URL, because it ends up in the HTML of
+    format, but on a short URL, because it ends up in the HTML of
     every article that has a picture in it. */
 const MEDIA = /^\/media\/(.+)$/;
 
@@ -132,7 +132,7 @@ export default {
      Notion is where the writing happens; this is what makes an edit
      there show up here without anyone pressing anything. It only
      touches articles that were already imported and published, and
-     only when the Notion page says it is ready — see _lib/sync.js
+     only when the Notion page says it is ready, see _lib/sync.js
      for why "as you type" is neither possible nor desirable.
 
      A throw here would be an unhandled rejection in a context with
