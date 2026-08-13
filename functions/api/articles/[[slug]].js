@@ -1,5 +1,5 @@
 /* ============================================================
-   /api/articles — the CMS.
+   /api/articles: the CMS.
 
    GET    /api/articles           public: every live article
    GET    /api/articles?all=1     admin:  drafts too
@@ -10,7 +10,7 @@
 
    The body is sanitised again here, server-side. The Studio already
    cleans what it pastes, but a client-side sanitiser protects the
-   person pasting, not the site — anything that can reach the write
+   person pasting, not the site, anything that can reach the write
    endpoint has to be cleaned where it can't be bypassed.
    ============================================================ */
 

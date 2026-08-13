@@ -1,5 +1,5 @@
 /* ============================================================
-   dsex.js — the charts and the interaction.
+   dsex.js: the charts and the interaction.
 
    Six views over one series, all recomputed from the same
    analyse() call so they can never disagree with each other:
@@ -8,7 +8,7 @@
      2. rolling volatility, window on a slider
      3. the underwater curve
      4. the return distribution against a normal curve
-     5. holding-period outcomes by horizon — the money chart
+     5. holding-period outcomes by horizon: the money chart
      6. a calendar-year table
 
    Charts are hand-drawn inline SVG. No library: they inherit the
@@ -27,14 +27,14 @@ const n0 = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 });
 const n1 = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 1 });
 const n2 = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 });
 const pc = (v, d = 1) =>
-  Number.isFinite(v) ? `${(d === 1 ? n1 : n2).format(v * 100)}%` : "—";
+  Number.isFinite(v) ? `${(d === 1 ? n1 : n2).format(v * 100)}%` : "–";
 const signedPc = (v) =>
-  Number.isFinite(v) ? `${v >= 0 ? "+" : ""}${n1.format(v * 100)}%` : "—";
-const num = (v) => (Number.isFinite(v) ? n0.format(v) : "—");
+  Number.isFinite(v) ? `${v >= 0 ? "+" : ""}${n1.format(v * 100)}%` : "–";
+const num = (v) => (Number.isFinite(v) ? n0.format(v) : "–");
 
 const fmtDate = (d) =>
   d ? new Date(`${d}T00:00:00Z`).toLocaleDateString("en-GB",
-    { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }) : "—";
+    { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }) : "–";
 
 /* ------------------------------------------------------------
    SVG helpers
@@ -235,7 +235,7 @@ function drawHistogram(host, a) {
 }
 
 /* ------------------------------------------------------------
-   5. holding periods — the chart the whole page is for
+   5. holding periods: the chart the whole page is for
    ------------------------------------------------------------ */
 function drawHorizons(host, a) {
   const W = 760;
@@ -296,7 +296,7 @@ function drawEpisodes(host, a) {
       pc(e.depth),
       `${num(e.declineDays)} days`,
       e.recovered ? fmtDate(e.recoveryDate) : "still underwater",
-      e.recovered ? `${num(e.recoveryDays)} days` : "—",
+      e.recovered ? `${num(e.recoveryDays)} days` : "–",
     ];
     cells.forEach((c, i) => {
       const td = document.createElement("td");
@@ -343,7 +343,7 @@ function drawTails(host, a) {
     const tr = document.createElement("tr");
     const ratio = t.expected > 0 ? t.actual / t.expected : Infinity;
     [`beyond ${t.sigma}σ`, num(t.actual), n1.format(t.expected),
-     t.expected > 0.05 ? `${n1.format(ratio)}×` : "—"].forEach((v, i) => {
+     t.expected > 0.05 ? `${n1.format(ratio)}×` : "–"].forEach((v, i) => {
       const td = document.createElement("td");
       td.textContent = v;
       if (i === 3 && ratio > 2) td.classList.add("is-negative");
@@ -502,7 +502,7 @@ function init() {
   /* Any paste with more than one row gets parsed. The first version
      gated on a character count, which meant a short paste did nothing
      at all AND left the previous "loaded fine" message sitting above
-     it — so a reader who pasted four rows was told their earlier file
+     it, so a reader who pasted four rows was told their earlier file
      was still in use. Silence is the wrong answer to bad input. */
   $("#csv-paste")?.addEventListener("input", (e) => {
     const value = e.target.value;

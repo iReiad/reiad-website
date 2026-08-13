@@ -1,8 +1,8 @@
 /* ============================================================
-   learn.js — the Learn hub's interactive layer.  (v2, bugfix)
+   learn.js: the Learn hub's interactive layer.  (v2, bugfix)
    1. MODAL READER: links with class="term" open in a pop-up.
       Terms clicked inside the pop-up load in place, with a back
-      button — the rabbit hole. Esc / ✕ / backdrop closes.
+      button: the rabbit hole. Esc / ✕ / backdrop closes.
    2. FILTER BOX on the hub index.
    v2 fix: article pages live in /learn/terms/, so their internal
    links are RELATIVE (e.g. "dividend.html"). When shown in the
@@ -29,7 +29,7 @@
 
   /* Warm a term page the moment the reader looks like they might
      open it. The modal fetches the page on click, and on a cold
-     cache over a phone connection that fetch is the whole delay —
+     cache over a phone connection that fetch is the whole delay,
      which is why the first tap felt broken and the second felt
      instant. A prefetch on hover, focus or pointerdown puts the
      page in the HTTP cache before the tap lands.
@@ -66,8 +66,8 @@
   /* Fetch a term page, pull out its <article>, show it in the modal.
 
      `mine` is a token taken at the start and checked before any
-     write. Two loads can be in flight at once — click a term, then
-     click another inside the modal before the first arrives — and
+     write. Two loads can be in flight at once, click a term, then
+     click another inside the modal before the first arrives, and
      without this the slower one wins and the reader is left looking
      at an article they did not ask for. */
   async function load(url, pushToStack, attempt = 0) {
@@ -83,12 +83,12 @@
       const article = doc.querySelector("article.term-article");
       if (!article) throw new Error("no article");
 
-      // Drop the "back to library" link — redundant inside the modal
+      // Drop the "back to library" link, redundant inside the modal
       article.querySelector(".backlink")?.remove();
 
       // THE FIX: rewrite every term link inside the article to a
       // root-absolute path, resolved against the URL this article
-      // was fetched from — so "dividend.html" inside
+      // was fetched from, so "dividend.html" inside
       // /learn/terms/share.html becomes /learn/terms/dividend.html
       // no matter which page is hosting the modal.
       const base = new URL(url, location.origin);
@@ -102,14 +102,14 @@
       body.scrollTop = 0;
 
       // Reading it in the pop-up counts as reading it, same as the
-      // full page does — the hub ticks it off either way.
+      // full page does: the hub ticks it off either way.
       const slug = article.dataset.slug;
       if (slug) {
         try {
           const read = new Set(JSON.parse(localStorage.getItem("learn-read") || "[]"));
           read.add(slug);
           localStorage.setItem("learn-read", JSON.stringify([...read]));
-        } catch { /* private mode — the tick is a nicety, not a feature */ }
+        } catch { /* private mode: the tick is a nicety, not a feature */ }
       }
 
       if (pushToStack && stack[stack.length - 1] !== url) stack.push(url);
@@ -118,7 +118,7 @@
 
       /* One silent retry. A single dropped request on a phone
          connection used to leave this message sitting there with no
-         way out but closing the modal and opening it again — which
+         way out but closing the modal and opening it again, which
          is exactly what it looked like from outside: "it doesn't
          work the first time". */
       if (attempt === 0) {

@@ -1,5 +1,5 @@
 /* ============================================================
-   _lib/db.js — D1 access, plus migrations that run themselves.
+   _lib/db.js, D1 access, plus migrations that run themselves.
 
    The schema is applied on the first request that needs it, so a
    fresh database heals itself and there is no such thing as a
@@ -59,8 +59,8 @@ const MIGRATIONS = [
    `CREATE TABLE IF NOT EXISTS` above only ever builds the original
    shape, so a database created before these existed would never grow
    them. SQLite has no ADD COLUMN IF NOT EXISTS, and a batch is
-   atomic — one "duplicate column name" would roll the whole thing
-   back — so each runs alone and its failure is the expected answer on
+   atomic, one "duplicate column name" would roll the whole thing
+   back, so each runs alone and its failure is the expected answer on
    every request after the first. */
 const ADDITIONS = [
   `ALTER TABLE articles ADD COLUMN cover TEXT NOT NULL DEFAULT ''`,

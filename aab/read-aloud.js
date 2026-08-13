@@ -1,4 +1,4 @@
-// read-aloud.js — attach to article pages and provide a Read aloud control.
+// read-aloud.js, attach to article pages and provide a Read aloud control.
 // Put this file in aab/ so it's served at "/read-aloud.js". It is defensive:
 // if the browser doesn't support speechSynthesis it simply does nothing.
 

@@ -1,11 +1,11 @@
 /* ============================================================
-   tools.js — the calculators.
+   tools.js: the calculators.
 
    Five of them, all live: change an input and the numbers and
    the chart move with it. Every calculator writes its state
    into the URL, so a result is a link you can send someone.
 
-   Charts are inline SVG drawn here — no library, no canvas, and
+   Charts are inline SVG drawn here: no library, no canvas, and
    they inherit the theme's colours so dark mode just works.
 
    The maths is deliberately transparent and every calculator
@@ -25,9 +25,9 @@ const num = new Intl.NumberFormat("en-BD", { maximumFractionDigits: 0 });
 const dec = new Intl.NumberFormat("en-BD", { maximumFractionDigits: 2 });
 const pct = new Intl.NumberFormat("en-BD", { maximumFractionDigits: 1 });
 
-/** ৳12,34,567 — but shortened once it stops being readable. */
+/** ৳12,34,567, but shortened once it stops being readable. */
 function money(n) {
-  if (!Number.isFinite(n)) return "—";
+  if (!Number.isFinite(n)) return "–";
   const abs = Math.abs(n);
   if (abs >= 1e7) return `৳${(n / 1e7).toFixed(2)} crore`;
   if (abs >= 1e5) return `৳${(n / 1e5).toFixed(2)} lakh`;
@@ -35,7 +35,7 @@ function money(n) {
 }
 
 /* ============================================================
-   URL state — a calculation you can link to
+   URL state, a calculation you can link to
    ============================================================ */
 
 function readState(toolId) {
@@ -177,7 +177,7 @@ const setStat = (root, key, value, note) => {
 };
 
 /* ============================================================
-   1 · COMPOUNDING — what a monthly habit becomes
+   1 · COMPOUNDING, what a monthly habit becomes
    ============================================================ */
 bindTool("compounding", (v, root) => {
   const start = Number(v.start) || 0;
@@ -283,7 +283,7 @@ bindTool("sanchayapatra", (v, root) => {
 });
 
 /* ============================================================
-   3 · INFLATION — what money is really worth later
+   3 · INFLATION, what money is really worth later
    ============================================================ */
 bindTool("inflation", (v, root) => {
   const amount = Number(v.amount) || 0;
@@ -396,7 +396,7 @@ bindTool("position", (v, root) => {
   const cost = shares * entry;
   const exposure = capital > 0 ? (cost / capital) * 100 : 0;
 
-  setStat(root, "shares", shares ? num.format(shares) : "—", "shares");
+  setStat(root, "shares", shares ? num.format(shares) : "–", "shares");
   setStat(root, "cost", money(cost),
     cost > capital ? "more than your capital" : `${pct.format(exposure)}% of the portfolio`);
   setStat(root, "risk", money(riskTaka), "at risk if the stop is hit");
@@ -423,7 +423,7 @@ bindTool("position", (v, root) => {
 
    Five stacked calculators meant that whichever one you came for,
    you scrolled past the others to reach it, and the page never
-   looked like a tool — it looked like a list. So the picker in the
+   looked like a tool: it looked like a list. So the picker in the
    hero becomes a real tab set and only the chosen calculator is
    shown, starting with the first.
 
@@ -431,7 +431,7 @@ bindTool("position", (v, root) => {
    ships as five ordinary <section>s and five ordinary anchor
    links, so with JavaScript off the page behaves exactly as it
    did before: all five present, links jumping to them. Nothing is
-   hidden by CSS alone — the hiding only happens once this code
+   hidden by CSS alone: the hiding only happens once this code
    has run and can undo it.
    ============================================================ */
 (function tabs() {

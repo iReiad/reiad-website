@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================
-   dissertation.test.mjs — checks on the statistics engine.
+   dissertation.test.mjs, checks on the statistics engine.
 
        node aab/portfolio/dissertation.test.mjs
 
@@ -8,7 +8,7 @@
    inference: Welch t-tests, and power calculations through the
    noncentral t distribution. Those are easy to get subtly wrong
    and impossible to eyeball, so every routine is checked here
-   against a value some other authority already agrees on —
+   against a value some other authority already agrees on,
    textbook t-tables, Cohen's sample-size tables, and the
    arithmetic identities the functions have to satisfy.
 

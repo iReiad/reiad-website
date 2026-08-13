@@ -1,5 +1,5 @@
 /* ============================================================
-   sw.js — the service worker.
+   sw.js: the service worker.
 
    Goal: the site keeps working on a bad connection or none at
    all, without ever showing anyone a stale article.
@@ -12,7 +12,7 @@
                 fallback.
      CSS/JS     stale-while-revalidate. Instant from cache, then
                 quietly refreshed for next time.
-     Fonts/img  cache first — they don't change, and when they
+     Fonts/img  cache first: they don't change, and when they
                 do they change name.
 
    Bump VERSION to retire every old cache in one go.
@@ -23,7 +23,7 @@
    an offline fallback during that window gets a clean slate.
 
    v3: this file is the only thing that retires a cache, and it did
-   not change when the dynamic layer landed — so every returning
+   not change when the dynamic layer landed, so every returning
    visitor kept being served the shell-v2 copy of app.js, from before
    countView() existed, and kept being served it forever (a script is
    answered from the cache that has it, and only a new VERSION empties
@@ -31,12 +31,17 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v36: the em dash is gone from the whole site. 1,420 of them became
+        commas, colons or en dashes, in page copy, in Bangla lesson
+        text, in the strings scripts write into the DOM and in the
+        comments. Nearly every precached file changed.
+
    v35: both hubs carry the free-education pledge, and styles.css
         gained the .pledge component it is set in. Markup and
         stylesheet again have to arrive together.
 
    v34: the home page's three link lists were cut back to three rows
-        and one line each — thirteen rows of blurb between a visitor
+        and one line each, thirteen rows of blurb between a visitor
         and the cards below them. index.html only, but it is
         precached, so a returning reader would keep the long one.
 
@@ -63,7 +68,7 @@
    refreshed behind you, so the first load after any deploy pairs
    new markup with the PREVIOUS app.js and styles.css. That is a
    good trade for a reading site right up until the markup stops
-   being legible without them — four headlines were spans inside
+   being legible without them, four headlines were spans inside
    the element app.js rebuilds word by word, and the older app.js
    welded them into one paragraph. The selection now ships inside
    the document, so the pairing is harmless again.
@@ -73,14 +78,14 @@
    imports (recent, tilt, and by way of home.js the shared news
    module). A returning reader served the v24 shell would get the
    old app.js, whose imports of /recent.js and /tilt.js do not
-   exist in it — so the whole module would fail to evaluate and
+   exist in it, so the whole module would fail to evaluate and
    every page would lose its menu, its palette and its theme
    toggle at once.
 
    v24: `header` and `footer`. The page chrome was claimed with
    bare element selectors, so every <header> and <footer> nested
    inside an article got position:sticky, z-index:50 and the glass
-   blur — the practice book's day header pinned itself over the
+   blur, the practice book's day header pinned itself over the
    site's own and hid the top of every day, and the five
    calculator panels on /tools/ had been carrying a four-line
    workaround for the same thing. Scoped to `body >`. styles.css
@@ -91,11 +96,11 @@
    because a school's layer beats components everywhere, every
    card on the site grew an empty bordered box around its label.
    styles.css, the practice book and its script all changed, and
-   all three are precached — without the bump the fix would have
+   all three are precached, without the bump the fix would have
    reached nobody who had been to the site before. check-css.mjs
    now fails on the general case.
 
-   v22: the German school's first fixes — the practice book's
+   v22: the German school's first fixes, the practice book's
    boxes are usable with scripts off, the resume card offers
    whichever half is actually behind, the Teil cards match the
    Learn cards again, and a print rule that was hiding every
@@ -109,7 +114,7 @@
    /deutsch/curriculum.js, and app.js and crumbs.js import
    content.js. A returning visitor holding the v20 shell would be
    served a cached content.js whose new import resolves to
-   nothing — the menu, the palette and the breadcrumbs would all
+   nothing: the menu, the palette and the breadcrumbs would all
    die together. So the German modules the shell depends on are
    precached alongside it, and the version moves.
 
@@ -118,26 +123,26 @@
    file-publishing tools. All three are precached.
 
    v19: content.js lost a live article whose slug could never
-   resolve, and the Studio learned to open the file-based pieces —
+   resolve, and the Studio learned to open the file-based pieces,
    content.js and styles.css both changed.
 
    v18: the preview grew a card view, a share-card view, width and
    theme switches, and the per-article social image that goes with
-   them — styles.css again.
+   them, styles.css again.
 
    v15–v17: the Studio rebuild, in three passes. api.js gained the
    media and Notion clients (v15); styles.css gained the slash menu,
    the figure toolbar and the pre-flight panel (v16); and the desk
    moved onto its own page, taking the dashboard's styles with it
    (v17). styles.css is precached and changed in all three, which is
-   exactly the shape of the v3 and v10 mistakes — check-sw.mjs caught
+   exactly the shape of the v3 and v10 mistakes, check-sw.mjs caught
    each one before it shipped.
 
-   v12: the About page was rebuilt — new markup, a new `about`
+   v12: the About page was rebuilt, new markup, a new `about`
    cascade layer in styles.css and a small about.js that counts the
    library from content.js rather than trusting a typed number.
 
-   v11: a UI pass — the modal reader prefetches and retries, the
+   v11: a UI pass, the modal reader prefetches and retries, the
    menu and palette were restructured, the home page gained a
    Bangla half and a models section, and the learn hub's doors
    became buttons. styles.css, app.js, content.js, learn.js,
@@ -145,8 +150,8 @@
    caught this one before it shipped, which is what it is for.
 
    v10: THE SAME MISTAKE AS v3, MADE AGAIN. The stock check shipped
-   at v9 and was then fixed three times — the valuation cap, the
-   header and slider repairs, and the pillar contributions — each
+   at v9 and was then fixed three times, the valuation cap, the
+   header and slider repairs, and the pillar contributions, each
    touching precached files, and VERSION was not bumped once. Every
    returning visitor kept being served the v9 copies and could not
    see any of it. The reader who reported it was quoting text from
@@ -157,7 +162,7 @@
    actually takes effect. A missed bump now costs one stale load
    instead of freezing a file forever. check-sw.mjs guards the rest.
 
-   v9: the stock check landed — a new page under /tools/ with its
+   v9: the stock check landed, a new page under /tools/ with its
    own engine, string table and stylesheet block, plus a changed
    crumbs.js. styles.css changed too, and a cached v8 copy would
    render the new page unstyled.
@@ -174,11 +179,11 @@
    progress.js) and the new /learn/contents.html. A cached v4
    app.js would fail to resolve the new import.
 
-   v4: the Learn area was restructured — app.js gained three new
+   v4: the Learn area was restructured, app.js gained three new
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v35";
+const VERSION = "v36";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -187,7 +192,7 @@ const RUNTIME = `runtime-${VERSION}`;
    app.js is an ES module and its imports are separate requests, so
    each one has to be listed: a cached app.js whose imports 404 is
    worse than no app.js at all. Lesson pages are deliberately NOT
-   precached — there are seventy of them, and the runtime cache
+   precached: there are seventy of them, and the runtime cache
    picks up the ones a reader actually opens. */
 const PRECACHE = [
   "/",
@@ -201,7 +206,7 @@ const PRECACHE = [
   "/audience.js",
   "/activation.js",
   /* app.js imports these two directly, so a cached app.js without
-     them is an app.js whose imports 404 — which is worse than no
+     them is an app.js whose imports 404, which is worse than no
      app.js at all. home.js and news.js belong to the home page and
      the Insights page and are listed with them. */
   "/recent.js",
@@ -221,7 +226,7 @@ const PRECACHE = [
   /* The German school. curriculum.js is not a nicety here: it is
      an import of content.js, which is an import of app.js and
      crumbs.js, so the shell is broken without it. The hub and the
-     practice book are precached too — the book is the page a
+     practice book are precached too: the book is the page a
      learner opens every evening, and a bus with no signal is
      exactly where they open it.
      (Keep double quotes out of this comment: check-sw.mjs reads
@@ -272,7 +277,7 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
 
   const url = new URL(request.url);
-  // Never cache another origin, and never cache the news feed —
+  // Never cache another origin, and never cache the news feed:
   // stale headlines are worse than no headlines.
   if (url.origin !== location.origin) return;
   if (url.pathname.startsWith("/api/")) return;
@@ -299,7 +304,7 @@ self.addEventListener("fetch", (event) => {
      RUNTIME IS CHECKED FIRST, AND THAT ORDER IS THE WHOLE POINT.
      A bare caches.match(request) searches every cache in creation
      order, so the precached SHELL copy answers ahead of anything
-     the background refresh has written — which means a precached
+     the background refresh has written, which means a precached
      file is frozen at whatever VERSION last installed it, and the
      revalidate half of stale-while-revalidate never reaches the
      reader. That is not a theory: styles.css and three stock check

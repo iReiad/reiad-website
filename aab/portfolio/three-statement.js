@@ -1,5 +1,5 @@
 /* ============================================================
-   three-statement.js — the dashboard around the model.
+   three-statement.js: the dashboard around the model.
 
    All the accounting lives in three-statement.model.js, which has
    no DOM in it and is tested on its own. This file only turns the
@@ -8,7 +8,7 @@
 
    Every control writes into one `state` object, the model is
    re-run from scratch, and everything repaints. There is no
-   partial update and no caching — the model runs in well under a
+   partial update and no caching: the model runs in well under a
    millisecond, and a single code path that always rebuilds is
    worth far more than a fast one that can disagree with itself.
    ============================================================ */
@@ -28,17 +28,17 @@ const n0 = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 });
 const n1 = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 1 });
 const n2 = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 });
 
-const lakh = (v) => (Number.isFinite(v) ? n0.format(v) : "—");
-const pc = (v) => (Number.isFinite(v) ? `${n1.format(v * 100)}%` : "—");
-const x = (v) => (Number.isFinite(v) ? `${n2.format(v)}×` : "—");
+const lakh = (v) => (Number.isFinite(v) ? n0.format(v) : "–");
+const pc = (v) => (Number.isFinite(v) ? `${n1.format(v * 100)}%` : "–");
+const x = (v) => (Number.isFinite(v) ? `${n2.format(v)}×` : "–");
 
 /** Accounting style: negatives in brackets, which is what a
     reviewer of a model expects to see. */
 const acc = (v) => {
-  if (!Number.isFinite(v)) return "—";
+  if (!Number.isFinite(v)) return "–";
   // `|| 0` collapses negative zero. Rows shown as an outflow are
   // negated for display, so a genuine zero became -0 and Intl
-  // dutifully printed "-0" — which in a financial statement looks
+  // dutifully printed "-0"– which in a financial statement looks
   // like a defect rather than a nil balance.
   const r = Math.round(v) || 0;
   return r < 0 ? `(${n0.format(Math.abs(r))})` : n0.format(r);
@@ -72,13 +72,13 @@ function readUrl() {
 function writeUrl() {
   const q = new URLSearchParams();
   q.set("s", state.scenario);
-  // only the edits — a clean scenario stays a clean, short link
+  // only the edits, a clean scenario stays a clean, short link
   Object.entries(state.overrides).forEach(([k, v]) => q.set(k, String(+v.toFixed(6))));
   history.replaceState(null, "", `${location.pathname}?${q}`);
 }
 
 /* ------------------------------------------------------------
-   charts — inline SVG, themed by currentColor and the tokens
+   charts, inline SVG, themed by currentColor and the tokens
    ------------------------------------------------------------ */
 const SVG = "http://www.w3.org/2000/svg";
 const svgEl = (tag, attrs = {}) => {
@@ -108,7 +108,7 @@ function barChart(host, rows, { w = 620, h = 220 } = {}) {
 
     /* EBITDA is drawn as the solid lower segment of the revenue bar,
        at full width, rather than as a narrower bar in front of it.
-       EBITDA *is* a share of revenue — around 14% here — so as a
+       EBITDA *is* a share of revenue, around 14% here, so as a
        separate inset bar it rendered as a stub and looked like a
        rendering fault. As a segment it reads correctly at a glance:
        this much of the top line survives to EBITDA. */
@@ -121,7 +121,7 @@ function barChart(host, rows, { w = 620, h = 220 } = {}) {
       width: bw, height: Math.max(0, ebH), rx: 3, class: "bar-ebitda",
     }));
 
-    // the margin, printed above each bar — the number people want
+    // the margin, printed above each bar: the number people want
     const pctLabel = svgEl("text", {
       x: cx, y: pad.t + innerH - revH - 5, "text-anchor": "middle", class: "chart-value",
     });
@@ -277,7 +277,7 @@ function buildTable(host, spec, rows) {
   host.replaceChildren(table);
 }
 
-/* Cash flow lines that don't exist for the last reported year — the
+/* Cash flow lines that don't exist for the last reported year: the
    model starts from its balance sheet, not from a prior-year flow. */
 const CF_ONLY = new Set([
   "deltaNwc", "cfo", "capex", "cfi", "debtRepayment", "dividends",

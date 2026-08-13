@@ -1,5 +1,5 @@
 /* ============================================================
-   functions/api/news.js — Cloudflare Pages Function
+   functions/api/news.js, Cloudflare Pages Function
    Served automatically at /api/news (the /functions folder maps
    to URL routes). Fetches trusted RSS feeds server-side, keeps
    only market-relevant stories via keyword scoring, dedupes,
@@ -17,7 +17,7 @@ const FEEDS = [
 ];
 
 /* Importance filter: a story must hit these keywords to appear.
-   Weights are rough editorial judgment — tune freely. */
+   Weights are rough editorial judgment, tune freely. */
 const KEYWORDS = [
   // strongly Bangladesh-market relevant
   ["dse", 3], ["dsex", 3], ["cse", 2], ["bsec", 3], ["dhaka stock", 3],
@@ -80,7 +80,7 @@ function parseFeed(xml, feed) {
       /* The publisher's own standfirst, trimmed at a word boundary.
          It used to be read for keyword scoring and thrown away,
          which left the mini window on the site with a headline and
-         nothing else to show — and a card that opens to repeat its
+         nothing else to show, and a card that opens to repeat its
          own title is a card not worth opening. One sentence with
          the source named and a link straight to the original is
          what a reader needs to decide whether to go and read it. */
@@ -147,7 +147,7 @@ export async function onRequestGet(context) {
 
   // Bangla summaries via Cloudflare Workers AI (free tier).
   // Defensive: if the AI binding isn't configured, skip silently and
-  // serve English-only — the pulse must never break over a nice-to-have.
+  // serve English-only, the pulse must never break over a nice-to-have.
   if (context.env && context.env.AI) {
     await Promise.allSettled(picked.map(async (it) => {
       try {

@@ -1,5 +1,5 @@
 /* ============================================================
-   _lib/sync.js — keeping Notion and the site in step.
+   _lib/sync.js, keeping Notion and the site in step.
 
    Run from a Cron trigger (see wrangler.toml) and from
    /api/notion/sync for an on-demand pass. For every article that
@@ -11,7 +11,7 @@
    Notion does not push a change per keystroke, and if it did, the
    half-written middle of a sentence would be live on the site. So
    this polls, and it only touches an article that is **already
-   linked and already published** — importing something new is still
+   linked and already published**, importing something new is still
    a decision made in the Studio.
 
    A page can also hold the sync off entirely. If it has a Status
@@ -34,8 +34,8 @@ import { nowISO } from "./http.js";
 import { sanitiseHTML, readingMinutes } from "./sanitise.js";
 import { client, convert, fetchBlocks, readFields } from "./notion.js";
 
-/* A Cron run gets the same subrequest budget as any other request —
-   50 on the free plan — and each article costs at least one page
+/* A Cron run gets the same subrequest budget as any other request,
+   50 on the free plan, and each article costs at least one page
    fetch plus one block page, before any images. Three at a time
    keeps a run comfortably inside it; the next run picks up the rest,
    oldest sync first. */
@@ -59,7 +59,7 @@ async function hash(buffer) {
  * Copy every proxied Notion image into R2 and repoint it.
  *
  * The converter leaves images pointing at /api/notion/asset?u=<signed
- * URL>, which is fine in the Studio — the browser is logged in — and
+ * URL>, which is fine in the Studio, the browser is logged in, and
  * useless in a stored article, because the signature expires. This
  * turns them into /media paths.
  */

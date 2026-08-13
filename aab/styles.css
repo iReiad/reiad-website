@@ -1,6 +1,6 @@
 /* ============================================================
-   styles.css — sitewide styles for reiad.co.uk
-   Identity: "research desk" — banknote green, Spectral serif
+   styles.css, sitewide styles for reiad.co.uk
+   Identity: "research desk"– banknote green, Spectral serif
    headlines, IBM Plex Mono data labels, modern bento layout.
 
    Built on the 2026 web platform:
@@ -24,7 +24,7 @@
    ============================================================ */
 @layer tokens {
 
-  /* Typed properties — these can be transitioned/animated,
+  /* Typed properties: these can be transitioned/animated,
      which plain custom properties cannot. */
   @property --i        { syntax: "<number>";  initial-value: 0;   inherits: false; }
   @property --shine    { syntax: "<angle>";   initial-value: 0deg; inherits: false; }
@@ -86,7 +86,7 @@
     --slow: 0.45s;
 
     /* Let height/width animate to and from keyword sizes
-       (auto, min-content…) — powers the accordions below. */
+       (auto, min-content…), powers the accordions below. */
     interpolate-size: allow-keywords;
   }
 
@@ -111,7 +111,7 @@
   html {
     /* Decorative art (the hero chart) is allowed to bleed past the
        viewport. `clip` kills the sideways scrollbar without creating a
-       scroll container — which `hidden` would, breaking the sticky header. */
+       scroll container, which `hidden` would, breaking the sticky header. */
     overflow-x: clip;
     scroll-behavior: smooth;
     /* Sticky-header clearance for every #anchor and every
@@ -119,7 +119,7 @@
        by app.js, because the header's height changes with the
        viewport and again when the Bangla webfonts land; the 5rem
        fallback covers the moment before that runs. The extra ~1rem
-       is the "little space" — a heading pinned flush against the
+       is the "little space"– a heading pinned flush against the
        header bottom reads as clipped. */
     scroll-padding-top: calc(var(--header-h, 5rem) + 0.9rem);
     -webkit-text-size-adjust: 100%;
@@ -181,7 +181,7 @@
   /* Native form controls follow the theme */
   input, textarea, select, button { font: inherit; color: inherit; }
 
-  /* Skip link — visible only when focused */
+  /* Skip link, visible only when focused */
   .skip {
     position: absolute; left: 12px; top: -60px; z-index: 200;
     background: var(--green); color: #fff;
@@ -214,7 +214,7 @@
     padding-block: var(--step) 6px;
     /* No content-visibility here. It skips layout for offscreen
        sections, which means the page's height is a guess until you
-       scroll past them — and with sections ranging from 250px to
+       scroll past them, and with sections ranging from 250px to
        1800px the scrollbar lurches and the bottom of the page moves
        under you. On a text site the paint saving is worth nothing
        next to a scrollbar you can trust. */
@@ -235,7 +235,7 @@
   /* ---------- STICKY HEADER ---------- */
   /* `body >` matters. These four rules are the page chrome, but a
      bare `header`/`footer` selector claims EVERY <header> and
-     <footer> on the page — and those elements are ordinary HTML
+     <footer> on the page, and those elements are ordinary HTML
      that belongs inside an <article> or a <section> too.
 
      The practice book's day header is a <header>, and it was
@@ -243,7 +243,7 @@
      pinned itself over the site's own header and hid the top of
      every day. The five calculator panels on /tools/ were doing
      the same thing, quietly, long before that. And
-     view-transition-name has to be unique per document — two
+     view-transition-name has to be unique per document, two
      elements called site-header is a transition that gives up.
 
      The page chrome is a direct child of <body> on every page
@@ -260,8 +260,8 @@
   /* The header row is Latin text on every page, including the
      Bangla ones. Without a stated line-height it inherits the
      body's `normal`, which is resolved from whatever font is
-     first in the stack — and on /learn/ and /deutsch/ that is
-     Noto Sans Bengali — and `html[lang="bn"] body` opens the
+     first in the stack, and on /learn/ and /deutsch/ that is
+     Noto Sans Bengali, and `html[lang="bn"] body` opens the
      leading right out to 1.9 to give the Bangla matra room. The
      bar came out 67px on /learn/ and /deutsch/ and 64px
      everywhere else, so the whole navbar shifted down by three
@@ -295,8 +295,8 @@
      the contents jump list, the practice book's day tracker.
 
      They were all inheriting the header's mono font, its
-     letter-spacing, its uppercase — which is why the German
-     lessons' "পরের Teil →" read "পরের TEIL →" — and, worst of
+     letter-spacing, its uppercase, which is why the German
+     lessons' "পরের Teil →" read "পরের TEIL →"– and, worst of
      all, `nav a::after`: a green 1.5px bar pinned 4px below the
      element that grows in on hover. On an inline word in a
      navbar that is an underline; on a bordered card it is a
@@ -305,7 +305,7 @@
   body > header nav { display: flex; gap: 18px; align-items: center; }
 
   /* `aria-current="page"` is the page you are on; `="true"` is the
-     section you are in — a Deutsch lesson lights "Skills" without
+     section you are in, a Deutsch lesson lights "Skills" without
      claiming to BE /skills/. Both take the underline. */
   body > header nav :is(a, .nav-top) {
     font-family: var(--font-mono);
@@ -420,10 +420,10 @@
   }
 
   /* ---------- RESPONSIVE ----------
-     The header has to fit seven links and three buttons — seven
+     The header has to fit seven links and three buttons, seven
      since the German school arrived, which is the point at which
      the inline nav stops being roomy. Below the desktop width it
-     stands down and the Menu button carries the whole site — it
+     stands down and the Menu button carries the whole site: it
      lists every page, so nothing is lost, and the row stops
      overflowing. */
   @media (width <= 900px) {
@@ -524,7 +524,7 @@
   /* The market line: draws itself once on load */
   .hero-chart {
     position: absolute; z-index: 0;
-    /* runs out to the viewport edge exactly — any further and phones
+    /* runs out to the viewport edge exactly, any further and phones
        get a sideways scroll */
     inset-inline-end: calc(-1 * var(--wrap-pad)); top: 0;
     width: min(560px, 62%);
@@ -574,7 +574,7 @@
 
   /* ---------- BENTO GRID ---------- */
   /* The home page's vertical rhythm is carried entirely by
-     `section { padding-block: var(--step) 6px }` — every top-level
+     `section { padding-block: var(--step) 6px }`– every top-level
      block on that page sets its own space above itself. The bento
      is the one that is a <div> rather than a <section>, so it was
      the one getting none of it: the last row of whichever list ran
@@ -619,7 +619,7 @@
   .cell-services { grid-area: services; }
 
   /* The feature cell gets a little more room when its own box is wide,
-     regardless of the viewport — container query, not media query. */
+     regardless of the viewport, container query, not media query. */
   @container (min-width: 460px) {
     .cell-feature h2 { font-size: clamp(1.7rem, 4cqi, 2.3rem); }
   }
@@ -691,7 +691,7 @@
      pointer; this is everything static that goes with it.
 
      The perspective lives on the container so a row of cards
-     shares one vanishing point — give each card its own and the
+     shares one vanishing point, give each card its own and the
      row reads as several separate scenes. It also has to be
      somewhere, or a 3D rotation is just an affine squash.
 
@@ -710,7 +710,7 @@
     }
   }
 
-  /* Cards fade up as they scroll into view — no JS, no observer.
+  /* Cards fade up as they scroll into view: no JS, no observer.
      Guarded so unsupported engines never hide anything. */
   @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
@@ -1028,7 +1028,7 @@
       &:hover { background: color-mix(in oklab, var(--green) 82%, var(--ink)); }
       &:disabled { opacity: 0.6; cursor: wait; }
     }
-    /* :has() — flag an invalid field only once the user has typed in it */
+    /* :has(), flag an invalid field only once the user has typed in it */
     & label:has(input:user-invalid, textarea:user-invalid) { color: var(--danger); }
     & label:has(input:user-invalid) input { border-color: var(--danger); }
   }
@@ -1045,7 +1045,7 @@
      each one a link straight out to the publisher. A list is
      what you read when you already know what you are looking
      for, and nobody arrives at a news feed knowing that. A grid
-     of squares is scanned instead, which is the right verb — and
+     of squares is scanned instead, which is the right verb, and
      it gives the Bangla headline the room to be the headline
      rather than a line item.
 
@@ -1061,8 +1061,8 @@
     aspect-ratio: 1;
     display: flex; flex-direction: column; gap: 10px;
     /* A <button> sizes to its content even as a block-level flex
-       box, so outside the grid — the single card on the home page
-       — it collapsed to the width of the word "Bangladesh". */
+       box, so outside the grid, the single card on the home page,
+it collapsed to the width of the word "Bangladesh". */
     width: 100%;
     position: relative;
     text-align: start; cursor: pointer;
@@ -1375,7 +1375,7 @@
   .tool-tab-bn { font-size: 0.78rem; color: var(--ink-soft); }
 
   /* With one calculator on screen the card no longer needs to be
-     scrolled to — and scroll-margin would drag it under the header
+     scrolled to, and scroll-margin would drag it under the header
      when a tab is chosen. */
   body[data-tool-tabs="on"] .tool { scroll-margin-top: 0; margin-bottom: 0; }
 
@@ -1390,7 +1390,7 @@
     scroll-margin-top: 90px;
   }
   /* This used to begin `position: static; background: none;
-     border: 0; backdrop-filter: none` — four declarations undoing
+     border: 0; backdrop-filter: none`– four declarations undoing
      the page chrome, because a bare `header` selector was
      claiming these five calculator panels. The chrome is scoped
      to `body > header` now, so there is nothing left to undo. */
@@ -1763,7 +1763,7 @@
   /* The site's theme toggle is :root[data-theme=…] and cannot be
      scoped to a subtree. This can: color-scheme inherits, and the
      light-dark() inside every token is resolved against the element
-     that *uses* the token — which is inside here. */
+     that *uses* the token, which is inside here. */
   .preview-scroll[data-preview-theme="light"] { color-scheme: light; }
   .preview-scroll[data-preview-theme="dark"]  { color-scheme: dark; }
   .preview-scroll[data-preview-theme]:not([data-preview-theme="auto"]) {
@@ -1802,8 +1802,8 @@
   .share-text {
     display: flex; flex-direction: column; gap: 5px;
     padding: 12px 14px;
-    /* A headline with no spaces in it — a pasted URL, a long Bangla
-       compound — has no break opportunity and will run straight out
+    /* A headline with no spaces in it, a pasted URL, a long Bangla
+       compound, has no break opportunity and will run straight out
        of the card, which is not what any of these apps would do. */
     overflow-wrap: anywhere;
 
@@ -1999,7 +1999,7 @@
     counter-reset: step;
     display: grid; gap: 10px; margin-top: 16px;
 
-    /* absolute marker, not a grid cell — the text has inline
+    /* absolute marker, not a grid cell: the text has inline
        <code> and <strong> in it and must stay one flow */
     & li {
       counter-increment: step;
@@ -2066,7 +2066,7 @@
 }
 
 /* ============================================================
-   MORE COMPONENTS — the pieces the deeper pages are built from
+   MORE COMPONENTS: the pieces the deeper pages are built from
    ============================================================ */
 @layer components {
 
@@ -2199,7 +2199,7 @@
      take that half.
 
      Deliberately not a `.cell`. A card would file this with the
-     lessons — one more box among the boxes — and it is not a thing
+     lessons, one more box among the boxes, and it is not a thing
      to click. The gold rule is the same one `.principle` uses,
      because this is the first principle. */
   .pledge {
@@ -2403,7 +2403,7 @@
 
 /* ============================================================
    PORTFOLIO CASE STUDIES
-   The interactive pieces under /portfolio/ — currently the
+   The interactive pieces under /portfolio/, currently the
    three-statement model. Everything here is built to survive
    being looked at by someone who builds models for a living, so
    the tables use accounting conventions (tabular figures,
@@ -2428,7 +2428,7 @@
       opacity: 1;
     }
     & .more { margin-top: auto; color: var(--green); }
-    /* a quiet sheen that sweeps once on hover — signals "this opens"
+    /* a quiet sheen that sweeps once on hover, signals "this opens"
        without the card jumping about */
     &::after {
       content: ""; position: absolute; inset: 0;
@@ -2919,7 +2919,7 @@
   html[lang="bn"] .crumbs { font-family: var(--font-bn); letter-spacing: 0; font-size: 0.8rem; }
 
   /* ---------- the audience split ----------
-     Ordering only. Nothing is hidden from anybody — see the note
+     Ordering only. Nothing is hidden from anybody, see the note
      at the top of audience.js. The attribute is set before first
      paint by the inline script in each <head>, so these rules
      apply on the first frame and the nav never visibly reorders. */
@@ -2935,14 +2935,14 @@
   /* ---------- the home page, led by the half they came for ----------
 
      Order only. A recruiter still gets the Learn cards and a learner
-     still gets the credentials — further down. Nothing is display:none,
+     still gets the credentials, further down. Nothing is display:none,
      so nobody has to wonder what is being withheld from them.
 
      Two different mechanisms, because the page uses two layouts:
 
      1. The top-level blocks are a block flow, so they need a flex
         container before `order` means anything. `.home-flow` becomes
-        one ONLY when a choice has been made — an undecided visitor
+        one ONLY when a choice has been made, an undecided visitor
         gets the original block layout untouched, margins and all.
 
      2. The bento is a named-area grid at every breakpoint, so `order`
@@ -2967,7 +2967,7 @@
 
   /* here to learn: the four big "start here" links, then the writing */
   /* The learner's half is written in Bangla, so it takes the
-     Bangla face — the rest of the page stays English. */
+     Bangla face, the rest of the page stays English. */
   .learn-half { font-family: var(--font-bn); }
   .learn-half .big-link .t { font-family: var(--font-bn-serif); }
   .learn-half .num, .learn-half .section-label { font-family: var(--font-mono); }
@@ -2979,7 +2979,7 @@
   :root[data-audience="learn"] .home-flow > [data-for="context"] { order: 4; }
 
   /* Inside the library, the track picks which of the two Bangla
-     halves leads. The other one keeps its place directly after —
+     halves leads. The other one keeps its place directly after,
      ordering, never hiding, so a reader who came for German can
      still see the money ladder without changing a setting. */
   :root[data-track="skills"]  .home-flow > [data-track="skills"]  { order: 1; }
@@ -2998,7 +2998,7 @@
      making them scroll past a pitch to find it would be the wrong
      way round. It carries data-for="both" so that it is still in
      the running order at all when nothing here applies, which is
-     why this has to come after those rules and beat them — it is
+     why this has to come after those rules and beat them: it is
      the same element they are ordering.
 
      It is `hidden` for everyone with nothing in it, which is
@@ -3045,8 +3045,8 @@
      headline is swapped by three lines of script sitting next to
      it. Neither is here, and that is deliberate: sw.js serves HTML
      network-first and stylesheets cache-first, so on the first
-     load after a deploy this file is one version behind the markup
-     — and an intro that needs them in step is an intro that breaks
+     load after a deploy this file is one version behind the markup,
+and an intro that needs them in step is an intro that breaks
      once per deploy. See the comments in index.html.
 
      What is left here is only what makes the chosen one look
@@ -3065,7 +3065,7 @@
 
      Three doors, two groups. The real question is "learning or
      hiring?", and "which library?" only exists for one of those
-     answers — so the two learning doors sit under one label
+     answers, so the two learning doors sit under one label
      rather than lining up as three equal choices, which would
      have asked a question the visitor doesn't have. */
   .doorway {
@@ -3183,7 +3183,7 @@
      beside the smaller "what else" and "what's happened". */
   /* minmax(0, …) throughout, not plain fr. The recent list clips
      long titles with white-space: nowrap, and a nowrap child's
-     min-content size is the whole string — which propagates out
+     min-content size is the whole string, which propagates out
      through every `auto`/`1fr` track above it and pushes the
      column wider than the page. Naming zero as the minimum is
      what lets the ellipsis do its job. */
@@ -3195,8 +3195,8 @@
   @media (width <= 780px) {
     .wb-grid { grid-template-columns: 1fr; }
   }
-  /* Nothing to continue — a recruiter, or a reader who has only
-     ever browsed — leaves the wide column empty and the news card
+  /* Nothing to continue, a recruiter, or a reader who has only
+     ever browsed, leaves the wide column empty and the news card
      squeezed into a third of the band. Give the whole width to
      what is actually there. */
   .wb-grid:has(> #wb-continue[hidden]) {
@@ -3343,7 +3343,7 @@
     flex-shrink: 0; color: var(--ink-soft);
   }
 
-  /* the risk pill — the thing a nervous first-timer looks for */
+  /* the risk pill: the thing a nervous first-timer looks for */
   .risk {
     font-family: var(--font-mono); font-size: 0.62rem;
     letter-spacing: 0.06em; text-transform: uppercase;
@@ -3475,7 +3475,7 @@
   .rung-lesson-min { color: var(--ink-soft); flex-shrink: 0; font-size: 0.62rem; }
 
   /* What's inside a stage, as section names and counts. The full
-     lesson list lives on the stage's own page — repeating it here
+     lesson list lives on the stage's own page, repeating it here
      made the hub 13,400px tall and gave the reader two places to
      read the same thing. */
   .rung-sections {
@@ -3490,7 +3490,7 @@
   .rung-section-name { font-size: 0.97rem; }
   .rung-section-count { color: var(--ink-soft); flex-shrink: 0; font-size: 0.66rem; }
 
-  /* the auto-scroll aims at a rung's top edge — give it clearance
+  /* the auto-scroll aims at a rung's top edge, give it clearance
      under the sticky header instead of tucking it behind */
   /* No scroll-margin here. scroll-padding-top on :root already
      reserves the header, and adding 5.5rem on top of it counted the
@@ -3671,7 +3671,7 @@
      <div> rather than an <a>, gets the dashed `placeholder`
      border every unwritten thing on this site gets, and says
      what is still missing instead of showing an empty progress
-     bar — a bar at 0% reads as a broken feature, a sentence
+     bar, a bar at 0% reads as a broken feature, a sentence
      reads as an honest "not yet". */
   .skill-grid {
     display: grid; gap: var(--gap);
@@ -3731,8 +3731,8 @@
    THE GERMAN SCHOOL  (/deutsch/**)
 
    Declared AFTER `learn`, because it reuses that layer's
-   furniture — .rung, .lesson-card, .stage-hero, .resume,
-   .progress-line, .ring — and adjusts a few pieces of it. A rule
+   furniture, .rung, .lesson-card, .stage-hero, .resume,
+   .progress-line, .ring, and adjusts a few pieces of it. A rule
    sitting in `learn` would otherwise beat these on layer order
    however specific they were.
 
@@ -3742,7 +3742,7 @@
    different sites would be two sites.
 
    The genuinely new pieces:
-     .muster        the pattern box — the shape before the words
+     .muster        the pattern box, the shape before the words
      .satz-list     German line beside its Bangla meaning, the
                     single most repeated object in the course
      .hut           der/die/das in the three colours the workbook
@@ -3753,8 +3753,8 @@
    NAME EVERYTHING IN THIS LAYER SO IT COULD ONLY EVER MEAN
    GERMAN. This layer is declared after `components`, so a class
    here beats the same class there on every page of the site, not
-   just on /deutsch/. A day of the practice book was called .tag
-   — German for day — and .tag is what the site has always called
+   just on /deutsch/. A day of the practice book was called .tag,
+German for day, and .tag is what the site has always called
    the small label above an article card. One bare rule in here
    put a 30px padded, bordered, 16px-radius box around the label
    on every card on the site: the home page bento, the Insights
@@ -3827,7 +3827,7 @@
   }
 
   /* The static list the ladder replaces. It has to be a decent
-     list in its own right — with JavaScript off it IS the ladder. */
+     list in its own right, with JavaScript off it IS the ladder. */
   .leiter-fallback {
     list-style: none; padding: 0; display: grid; gap: 10px;
 
@@ -3859,7 +3859,7 @@
     margin-top: 16px; color: var(--ink);
     border-left: 3px solid var(--green); padding-left: 14px; max-width: 60ch;
   }
-  /* A Teil's German name rides inline in the heading as .en-sub —
+  /* A Teil's German name rides inline in the heading as .en-sub:
      the same slot, the same mono grey, the same rhythm the Learn
      cards have used since they were written. It had its own gold
      line under the title for a while, which made every card a line
@@ -4134,7 +4134,7 @@
      arbeitsbuch.js sets overflow:hidden on the boxes it takes over
      and grows them to fit instead; without it they stay ordinary
      resizable, scrollable textareas. They used to ship as
-     rows="1" with overflow:hidden — which, with scripts off, is a
+     rows="1" with overflow:hidden, which, with scripts off, is a
      one-line box you can type into and never read back. */
   .buch-tag textarea[data-schrift] {
     width: 100%; resize: vertical; overflow: auto;
@@ -4180,7 +4180,7 @@
      and a navigation bar.
 
      Every selector is under body.deutsch, including the ones that
-     look German-only. .hero-actions is not German-only at all —
+     look German-only. .hero-actions is not German-only at all,
      unscoped, this block was hiding the call-to-action buttons on
      every page of the site whenever anyone printed anything. */
   @media print {
@@ -4203,8 +4203,8 @@
 
    Its own layer, and it has to come after `work` rather than
    folding into `tools`. The stock check reuses the case-study
-   furniture — .model-drivers, .driver, .scenarios, .tile,
-   .fin-table — and adjusts it. Those live in `work`, which is
+   furniture, .model-drivers, .driver, .scenarios, .tile,
+   .fin-table, and adjusts it. Those live in `work`, which is
    declared AFTER `tools`, so a rule sitting in `tools` loses to
    them on layer order no matter how specific it is. That is not
    theoretical: `#weights .scenarios { flex-wrap: wrap }` was
@@ -4685,7 +4685,7 @@
   /* ---------- the advanced tool's card on the tools hub ----------
      It carries its own box. The first version leaned on a `panel`
      class that does not exist anywhere in this stylesheet, so the
-     card rendered as loose text with no border at all — invisible
+     card rendered as loose text with no border at all, invisible
      as a card, which is the one thing it had to be. */
   .advanced-card {
     background: var(--panel);
@@ -4963,14 +4963,14 @@
 
   /* Guard rail, in the last layer so it always wins: a closed <dialog>
      takes up no space, whatever a component layer says about display.
-     The exit animations still run — `transition-behavior: allow-discrete`
+     The exit animations still run, `transition-behavior: allow-discrete`
      on those dialogs holds the old display value until the transition
      finishes. */
   dialog:not([open]) { display: none; }
 
   /* The same guard for the `hidden` attribute, and for the same
      reason. `[hidden]` is only a UA rule of `display: none`, so ANY
-     author rule that sets display beats it — and every card on this
+     author rule that sets display beats it, and every card on this
      site sets one.
 
      It bit for real: the simulated-data banner on the index analysis
@@ -5043,8 +5043,8 @@
 /* ============================================================
    THE DISSERTATION CASE STUDY
    Nine exhibits over one piece of empirical research. Everything
-   here rides on the `work` layer's furniture — .tile, .chart-card,
-   .fin-table, .statement — and adds only what a research page
+   here rides on the `work` layer's furniture, .tile, .chart-card,
+   .fin-table, .statement, and adds only what a research page
    needs that a model page doesn't: forest plots, box plots,
    dumbbells, a two-group colour convention and a long-page rail.
 

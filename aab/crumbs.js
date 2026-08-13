@@ -1,10 +1,10 @@
 /* ============================================================
-   crumbs.js — the path line under the header, on every page.
+   crumbs.js: the path line under the header, on every page.
 
    The thing shopping sites do, and the reason they do it: once a
    site has depth, a visitor who arrived from a search result has
    no idea where they are standing. A breadcrumb answers that in
-   one line, and — more usefully — gives them the parent to climb
+   one line, and, more usefully, gives them the parent to climb
    to. The Learn area is now four levels deep, so this stopped
    being decoration.
 
@@ -16,7 +16,7 @@
        article title on an insights page.
 
    No page needs any markup for this. app.js imports the module
-   and it puts itself in place — the same trick the menu uses, so
+   and it puts itself in place: the same trick the menu uses, so
    that a page nobody has touched in a year still gets it.
 
    The JSON-LD copy is what puts the trail into Google's result
@@ -53,7 +53,7 @@ function normalise(path) {
   return p;
 }
 
-/** [{ name, url }] from the root down to — but not including —
+/** [{ name, url }] from the root down to, but not including,
     the current page, which is added by the caller as plain text. */
 function trailFor(path) {
   const p = normalise(path);
@@ -79,13 +79,13 @@ function trailFor(path) {
       return { crumbs, here: lesson.bn };
     }
 
-    // an unlisted page under /learn/terms/ — still give it its stage
+    // an unlisted page under /learn/terms/, still give it its stage
     if (p.startsWith("/learn/terms/")) {
       const stage = findStage("basics-1");
       if (stage) crumbs.push({ name: `${stage.kicker} · ${stage.bn}`, url: stageUrl(stage) });
-      return { crumbs, here: document.title.split("—")[0].trim() };
+      return { crumbs, here: document.title.split("\u2014")[0].trim() };
     }
-    return { crumbs, here: document.title.split("—")[0].trim() };
+    return { crumbs, here: document.title.split("\u2014")[0].trim() };
   }
 
   /* ---------- the skills index ---------- */
@@ -124,7 +124,7 @@ function trailFor(path) {
       return { crumbs, here: teil.bn };
     }
 
-    // anything else under /deutsch/ — still give it the school
+    // anything else under /deutsch/, still give it the school
     const slug = p.split("/")[2];
     const stufe = findStufe(slug);
     if (stufe) crumbs.push({ name: `${stufe.kicker} · ${stufe.bn}`, url: stufeUrl(stufe) });
@@ -134,13 +134,13 @@ function trailFor(path) {
   /* ---------- the advanced tools, which have their own pages ---------- */
   if (p.startsWith("/tools/") && p !== "/tools/index.html") {
     crumbs.push({ name: isBn() ? "টুল" : "Tools", url: "/tools/index.html" });
-    return { crumbs, here: document.title.split("—")[0].trim() };
+    return { crumbs, here: document.title.split("\u2014")[0].trim() };
   }
 
   /* ---------- portfolio case studies ---------- */
   if (p.startsWith("/portfolio/")) {
     crumbs.push({ name: "Portfolio", url: "/portfolio.html" });
-    return { crumbs, here: document.title.split("—")[0].trim() };
+    return { crumbs, here: document.title.split("\u2014")[0].trim() };
   }
 
   /* ---------- insights ---------- */
@@ -148,14 +148,14 @@ function trailFor(path) {
     crumbs.push({ name: "Insights", url: "/insights.html" });
     const slug = p.replace("/insights/", "").replace(".html", "");
     const article = liveArticles().find((a) => a.slug === slug);
-    return { crumbs, here: article?.title ?? document.title.split("—")[0].trim() };
+    return { crumbs, here: article?.title ?? document.title.split("\u2014")[0].trim() };
   }
 
   /* ---------- everything else, from PAGES ---------- */
   const page = PAGES.find((x) => x.url === p);
-  if (page) return { crumbs, here: page.title.split("—")[0].trim() };
+  if (page) return { crumbs, here: page.title.split("\u2014")[0].trim() };
 
-  return { crumbs, here: document.title.split("—")[0].trim() };
+  return { crumbs, here: document.title.split("\u2014")[0].trim() };
 }
 
 /* ------------------------------------------------------------
@@ -163,7 +163,7 @@ function trailFor(path) {
    ------------------------------------------------------------ */
 
 function render() {
-  // The home page is the root — a trail with one item is noise.
+  // The home page is the root, a trail with one item is noise.
   const path = normalise(location.pathname);
   if (path === "/index.html") return;
 

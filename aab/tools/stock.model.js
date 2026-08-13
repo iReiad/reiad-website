@@ -1,5 +1,5 @@
 /* ============================================================
-   stock.model.js — the engine behind the stock check.
+   stock.model.js: the engine behind the stock check.
 
    No DOM in this file. Everything here is a pure function of a
    plain object of numbers, which is what makes it testable: the
@@ -34,9 +34,9 @@
    Metrics are a registry, not a pile of if-statements. Each one
    declares its pillar, its weight inside that pillar, how to
    compute itself, when it doesn't apply, and the anchor points
-   that turn a raw number into a 0–100 score. Everything else —
+   that turn a raw number into a 0–100 score. Everything else,
    the pillar scores, the scorecard table, the "what's dragging
-   this down" list, the CSV export — is a loop over that
+   this down" list, the CSV export, is a loop over that
    registry. Adding a ratio is one entry, and it appears in all
    six places at once.
    ============================================================ */
@@ -54,7 +54,7 @@
    different buckets. And they read like judgement written down:
    [[0.4, 100], [1.0, 60], [2.0, 15]] on relative P/E says "40%
    of the sector is as good as it gets, in line is a pass, double
-   is nearly a fail" — which is arguable, out loud, in a way a
+   is nearly a fail"– which is arguable, out loud, in a way a
    black box isn't.
    ============================================================ */
 
@@ -74,7 +74,7 @@ export function band(v, anchors) {
   return a[a.length - 1][1];
 }
 
-/** strong / good / fair / weak / poor — the word beside the number. */
+/** strong / good / fair / weak / poor: the word beside the number. */
 export function grade(score) {
   if (score === null || !Number.isFinite(score)) return "na";
   if (score >= 80) return "strong";
@@ -100,7 +100,7 @@ export function cagr(now, then, years) {
 /* ============================================================
    SECTORS
 
-   Medians are indicative — they move, and nobody publishes an
+   Medians are indicative: they move, and nobody publishes an
    audited "DSE pharma median P/E". They are here so the tool can
    say "expensive *relative to what*", and every one of them is
    an editable input on the page. Override them with whatever
@@ -129,7 +129,7 @@ export const SECTORS = {
 export const isFinancialSector = (s) => SECTORS[s]?.financial === true;
 
 /* The three headline indices, as a benchmark to price against.
-   DSES is the Shariah index — it is in here because "cheap
+   DSES is the Shariah index: it is in here because "cheap
    against the market" means something different if the only
    market you can buy is the Shariah-compliant part of it. */
 export const INDICES = {
@@ -142,7 +142,7 @@ export const INDICES = {
    DEFAULT INPUTS
 
    The pharma archetype below. Every preset is a complete,
-   internally consistent set of statements — the balance sheet
+   internally consistent set of statements: the balance sheet
    balances, the cash flow is plausible against the income
    statement, and paid-up capital equals shares × 10 BDT face
    value, which is the DSE convention.
@@ -150,7 +150,7 @@ export const INDICES = {
    They are ARCHETYPES, not companies. Publishing invented
    figures under a real listed company's name would be inventing
    that company's accounts, and anyone who checked would find
-   they don't match. What is real is the method — type your own
+   they don't match. What is real is the method, type your own
    numbers off the annual report and every figure on the page is
    about your company.
    ============================================================ */
@@ -244,7 +244,7 @@ export function ratios(d) {
   r.epsCagr3y = cagr(d.netIncome, d.netIncome3y, 3);
   /* Operating cash growth, which is a harder number to manage than
      profit growth and so a better read on whether the business is
-     actually getting bigger. Undefined from a negative base — you
+     actually getting bigger. Undefined from a negative base, you
      cannot express a recovery from cash burn as a growth rate. */
   r.cfoGrowth = d.cfoPrev > 0 ? pctChange(d.cfo, d.cfoPrev) : NaN;
   r.peg = r.pe > 0 && r.epsCagr3y > 0 ? div(r.pe, r.epsCagr3y) : NaN;
@@ -316,7 +316,7 @@ export function ratios(d) {
 }
 
 /* ============================================================
-   ALTMAN Z — the emerging-market variant
+   ALTMAN Z: the emerging-market variant
 
    The original 1968 Z-score was fitted on US manufacturers and
    leans on a market-value term that behaves badly on a thin
@@ -326,8 +326,8 @@ export function ratios(d) {
    are 5.85 (safe) and 4.35 (grey) rather than the 2.6/1.1 you
    will find quoted for the original.
 
-   It does not apply to banks at all — a bank's balance sheet is
-   supposed to look like a distressed manufacturer's — so the
+   It does not apply to banks at all, a bank's balance sheet is
+   supposed to look like a distressed manufacturer's, so the
    financial mode drops it and scores capital adequacy instead.
    ============================================================ */
 
@@ -348,7 +348,7 @@ export function altman(d) {
 
    Nine yes/no tests of whether the business got better or worse
    over the year. Its value is that none of the nine is about the
-   price — it is a question about the company, asked nine times,
+   price: it is a question about the company, asked nine times,
    and a cheap stock that passes eight of them is a very
    different proposition from a cheap stock that passes two.
 
@@ -398,7 +398,7 @@ export function piotroski(d, r) {
    THE METRIC REGISTRY
 
    `w` is the weight inside its own pillar, not across the page.
-   `na` returning true means "this ratio has no meaning here" —
+   `na` returning true means "this ratio has no meaning here"–
    the metric is dropped and its weight is redistributed across
    the rest of the pillar, rather than scoring zero. A bank with
    no current ratio must not be marked down for it.
@@ -441,7 +441,7 @@ export const METRICS = [
     anchors: [[0.4, 100], [0.8, 85], [1.2, 65], [2.0, 35], [3.0, 12], [5.0, 0]] },
 
   /* Cheap against its own sector and cheap against the market are
-     different questions, and on the DSE they come apart often —
+     different questions, and on the DSE they come apart often,
      whole sectors get bid up together, so a company can look fair
      next to its peers and expensive next to everything else. This
      is what the index picker at the top of the panel feeds. */
@@ -601,7 +601,7 @@ export const METRICS = [
      rewarding companies for barely paying. Cover ratios saturate:
      a token 1% dividend is trivially covered and scored 100 on
      both divCover and fcfCoverDiv, which between them outvoted
-     the yield itself — so a 0.95% yield scored 62 and a 2.14%
+     the yield itself, so a 0.95% yield scored 62 and a 2.14%
      yield scored 65, which is nonsense on a pillar whose entire
      question is "is this worth holding for the income".
 
@@ -740,7 +740,7 @@ export function composite(pillars, weights) {
    overrides the composite outright. There are only three,
    deliberately: negative equity, Z category, and a company
    losing money AND burning cash at the same time. Everything
-   else that looks bad is a flag — loud, listed, explained, but
+   else that looks bad is a flag, loud, listed, explained, but
    left for you to weigh.
 
    The reason for the short list is that vetoes are where a tool
@@ -856,7 +856,7 @@ export function signals(d, r, pillars) {
 
    Four anchors, none of them authoritative, deliberately shown
    as a range rather than a single number. A DCF on this page
-   would be false precision — that lives in the portfolio, where
+   would be false precision: that lives in the portfolio, where
    there is room to build the WACC properly. What is useful here
    is the spread: when all four land above the price you have
    something worth a second look, and when they scatter across a
@@ -882,7 +882,7 @@ export function fairValue(d, r) {
 
   /* Gordon growth on the dividend, only where the company pays
      one and the growth assumption stays below the discount rate.
-     Growth is capped well under `req` — a payer growing at the
+     Growth is capped well under `req`– a payer growing at the
      discount rate produces an infinite value, which is a maths
      artefact, not a valuation. */
   if (d.dps > 0) {
@@ -961,7 +961,7 @@ export const bandFor = (score) =>
     : BANDS.find((b) => score >= b.min);
 
 /** The score needed to reach the next band up, and the one
-    below which it drops — so the page can say how much room
+    below which it drops, so the page can say how much room
     there is either side rather than presenting a verdict as
     though it were solid. */
 export function bandEdges(score) {
@@ -1010,7 +1010,7 @@ export function drags(scored, pillars, weights, limit = 6) {
 
    A plain weighted mean cannot answer the question this page
    asks. Valuation is one pillar of six, so on balanced weights
-   it controls about a fifth of the score — and tripling the
+   it controls about a fifth of the score, and tripling the
    share price of the default company moved the total from 69 to
    62 and left the verdict reading "worth accumulating". The
    valuation pillar had collapsed from 46 to 15, exactly as it
@@ -1020,8 +1020,8 @@ export function drags(scored, pillars, weights, limit = 6) {
    buy AT THIS PRICE. Price is the one variable the reader
    controls, and a tool insensitive to it is worse than no tool.
 
-   So the verdict is capped by the valuation pillar. Not a veto —
-   the score is still shown and still honest — but a good
+   So the verdict is capped by the valuation pillar. Not a veto,
+   the score is still shown and still honest, but a good
    business bought badly is a bad investment, and no quality
    score should be able to argue otherwise. The cap is stated on
    the page whenever it bites, so it is never a silent
@@ -1075,12 +1075,12 @@ export function analyse(input, weights = WEIGHT_PRESETS.balanced) {
 }
 
 /* ============================================================
-   PRESETS — seven archetypes, not seven companies.
+   PRESETS, seven archetypes, not seven companies.
 
    Each is internally consistent: assets = liabilities + equity,
    paid-up capital = shares × 10, and the cash flow is plausible
    against the profit. They exist to show what each verdict looks
-   like — including the ones the tool should refuse.
+   like, including the ones the tool should refuse.
    ============================================================ */
 
 export const PRESETS = [

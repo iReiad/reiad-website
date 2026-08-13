@@ -1,5 +1,5 @@
 /* ============================================================
-   lessons/basics-3.js — the text of ভিত্তি · ধাপ ৩.
+   lessons/basics-3.js: the text of ভিত্তি · ধাপ ৩.
 
    Same conventions as basics-2.js. This stage is where a reader
    stops being told things and starts checking them, so nearly

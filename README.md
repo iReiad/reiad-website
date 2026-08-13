@@ -1,27 +1,27 @@
 # Reiad's Library
 
-A static site with a dynamic half. Every file in `aab/` is served as-is — no
-framework, no build step, no dependencies — and a Worker over a D1 database
+A static site with a dynamic half. Every file in `aab/` is served as-is, no
+framework, no build step, no dependencies, and a Worker over a D1 database
 adds publishing, reader questions, subscribers, enquiries and analytics on
 top.
 
 **The two halves are one site.** Every dynamic feature checks whether the
 database is connected and falls back to the static behaviour if it isn't. So
 the site works today, unchanged, and each feature switches on the moment you
-run `./setup.sh` — there is no second version to maintain in between.
+run `./setup.sh`– there is no second version to maintain in between.
 
 ## Turning the dynamic half on
 
 **See [SETUP.md](SETUP.md).** Short version: paste your D1 database ID into
 `wrangler.toml`, commit, then open `/studio.html` and set a passphrase. The
-tables create themselves — there's no schema step, and no dashboard binding to
+tables create themselves: there's no schema step, and no dashboard binding to
 click, because `wrangler.toml` declares it.
 
 `./setup.sh` does the same thing from a terminal if you'd rather (it also
 creates the database, if you haven't).
 
 Then **writing a piece and pressing "Publish to the site" puts it live
-immediately** — no file to move, no commit, no push.
+immediately**: no file to move, no commit, no push.
 
 ## What the dynamic half gives you
 
@@ -49,7 +49,7 @@ immediately** — no file to move, no commit, no push.
 Set `NOTION_TOKEN` (`npx wrangler secret put NOTION_TOKEN`, from an
 integration at [notion.so/my-integrations](https://notion.so/my-integrations))
 and the Studio grows an **Import from Notion** button. Share a page with the
-integration — Notion's own Connections menu, per page — then search for it,
+integration, Notion's own Connections menu, per page, then search for it,
 import it, and publish. Without the token the button never appears.
 
 The conversion is deliberately lossy: Notion has infinite block types and this
@@ -68,7 +68,7 @@ fields in its columns. Name them any of these and they're picked up:
 | Label | Tag, Label, Category, Section, Topic |
 | File name | Slug, URL, Path, Filename |
 | Date | Date, Published, Publish date, Published at |
-| Language | Lang, Language — anything starting "bn"/"bangla"/"bengali" is Bangla |
+| Language | Lang, Language, anything starting "bn"/"bangla"/"bengali" is Bangla |
 | Topics | Topics, Tags, Keywords (a multi-select, or one comma-separated string) |
 
 Once imported, the piece stays linked to its Notion page: **Re-sync from
@@ -77,7 +77,7 @@ place the writing happens.
 
 **Photos are the part worth understanding.** Notion serves uploaded files from
 S3 on signed URLs that expire in about an hour, so an imported photo cannot
-keep the URL it arrived with — the article would lose its pictures within the
+keep the URL it arrived with: the article would lose its pictures within the
 day. Imported images therefore point at `/api/notion/asset`, an admin-only
 same-origin proxy, and publishing re-encodes each one to WebP and uploads it
 to `/media`. By the time anything is public, no Notion URL is left in it.
@@ -90,8 +90,8 @@ Notion, and the site catches up on its own.
 
 **It will not publish something you are still writing.** Give the page a
 `Status` column and the sync only runs when it says one of *live, published,
-publish, ready, done, complete*. Anything else — *drafting*, *idea*, empty
-after having been set — and the page is left alone however often it changes. A
+publish, ready, done, complete*. Anything else, *drafting*, *idea*, empty
+after having been set, and the page is left alone however often it changes. A
 page with no Status column at all syncs freely, so add one the moment a piece
 matters.
 
@@ -120,7 +120,7 @@ lighter than one that syncs itself.
 There are two ways to publish, and the difference is worth knowing because
 only one of them asks anything of you.
 
-### The database — the normal way
+### The database: the normal way
 
 Press **Publish to the site**. The article is a row in D1, served by
 `functions/insights/[slug].js`, and it is live immediately. Nothing to copy,
@@ -135,12 +135,12 @@ Everything that has to know about it finds out on its own:
 | `/feed.xml` and `/sitemap.xml` | `functions/feeds/[kind].js` merges the database into the generated file |
 | Reactions and reader questions | attach themselves to any `/insights/…` page |
 
-### Files — the fallback
+### Files: the fallback
 
 The route from before the database: download the page, drop it in
 `aab/insights/`, paste an entry into the `ARTICLES` list in `content.js`,
 commit. That entry is what puts it on the Insights page, in Ctrl+K, in the
-feed and in the sitemap — for a **file**. It has nothing to do with database
+feed and in the sitemap, for a **file**. It has nothing to do with database
 articles, and the Studio folds those buttons away under *Publish as files
 instead* when there is a database to publish to.
 
@@ -152,7 +152,7 @@ as the fallback.
 ### Slugs
 
 A slug becomes a URL, so it can only be lowercase letters, digits and
-hyphens — `worker.js` matches `[a-z0-9-]+` and nothing else resolves. The
+hyphens, `worker.js` matches `[a-z0-9-]+` and nothing else resolves. The
 Studio tidies the file-name box for you when you leave it, and
 `check-routes.mjs` fails the build on an entry that could never work.
 
@@ -168,7 +168,7 @@ are fixed.
 The Learn lessons and term pages are generated from `curriculum.js` and
 `lessons/*.js` by `build-lessons.mjs` and committed. About, Portfolio, Tools
 and the rest are hand-written. All of it lives in git, and a Worker cannot
-commit — so those are edited in the repository, not in the Studio.
+commit: so those are edited in the repository, not in the Studio.
 
 ## The Learn area
 
@@ -177,15 +177,15 @@ invested" to research level, in Bangla.
 
 | Stage | | What it covers |
 | --- | --- | --- |
-| ধাপ ০ | হাতেখড়ি · Starter Guide | Eight steps to actually start investing in Bangladesh. Lives **inline on `/learn/`** — a first-timer shouldn't have to navigate anywhere to be told what to do first. |
+| ধাপ ০ | হাতেখড়ি · Starter Guide | Eight steps to actually start investing in Bangladesh. Lives **inline on `/learn/`**, a first-timer shouldn't have to navigate anywhere to be told what to do first. |
 | ধাপ ১ | ভিত্তি · শব্দগুলো শিখুন | The original eighteen terms, still at `/learn/terms/*.html` |
 | ধাপ ২ | ভিত্তি · বাজারটা পড়তে শিখুন | Why prices move, when to buy/sell/hold, sectors, institutions, live apps |
 | ধাপ ৩ | ভিত্তি · নিজে যাচাই করুন | Finding data in Bangladesh, reading the three statements, deciding |
-| ধাপ ৪–৬ | মাঝারি ১–৩ | Coursework, dissertation, working in the market — *structure live, text being written* |
-| ধাপ ৭ | গবেষণা স্তর | Research level — *structure live, text being written* |
+| ধাপ ৪–৬ | মাঝারি ১–৩ | Coursework, dissertation, working in the market, *structure live, text being written* |
+| ধাপ ৭ | গবেষণা স্তর | Research level, *structure live, text being written* |
 
 **`aab/learn/curriculum.js` is the one file you edit.** It holds the whole
-tree — schools → stages → sections → lessons. The hub, the stage pages, the
+tree, schools → stages → sections → lessons. The hub, the stage pages, the
 breadcrumbs, the menu, the Ctrl+K palette and the sitemap all read from it,
 so renaming a stage there renames it everywhere at once.
 
@@ -194,13 +194,13 @@ so renaming a stage there renames it everywhere at once.
 1. Add the lesson to its stage in **`aab/learn/curriculum.js`**.
 2. Write the body in **`aab/learn/lessons/<stage>.js`**, keyed by slug.
    (Skip this and the lesson ships as a proper "আসছে" page rather than a
-   404 — a listed thing is always somewhere you can go.)
-3. `node aab/learn/build-lessons.mjs` — writes the stage and lesson pages.
+   404, a listed thing is always somewhere you can go.)
+3. `node aab/learn/build-lessons.mjs`– writes the stage and lesson pages.
 4. `node aab/build-meta.mjs && node aab/check-routes.mjs`.
 
 Generated pages are committed as ordinary static files; the site never
 depends on the generator having been run. The starter guide's eight steps
-are the exception — they are hand-written in `aab/learn/index.html`, since
+are the exception: they are hand-written in `aab/learn/index.html`, since
 they *are* that page.
 
 ### Reading progress
@@ -219,7 +219,7 @@ what is coming beats walking into an empty page.
 
 **`SKILLS` in `aab/content.js` is the one list you edit.** Adding an entry
 puts the school in the header dropdown, on `/skills/`, in the overlay
-menu, in the Ctrl+K index and — once it has a URL — in the sitemap, with
+menu, in the Ctrl+K index and, once it has a URL, in the sitemap, with
 no page's markup to touch.
 
 The header carries one word, "Skills", rather than a link per school:
@@ -230,10 +230,10 @@ page ships, so with JavaScript off the link still goes somewhere useful.
 
 ## The German school
 
-`/deutsch/` is the site's **second school** — the first entry in `SKILLS`
-above — and it is deliberately a separate mount rather than another stage
+`/deutsch/` is the site's **second school**: the first entry in `SKILLS`
+above, and it is deliberately a separate mount rather than another stage
 of `/learn/`. The Learn area is
-about money in Bangladesh — risk labels, brokers, a starter guide about
+about money in Bangladesh, risk labels, brokers, a starter guide about
 opening a BO account. Nothing in that vocabulary belongs next to
 Akkusativ, and someone looking for one should never have to scroll past
 the other.
@@ -244,10 +244,10 @@ Learn area already knows how to use this one.
 
 | Stufe | | What it covers |
 | --- | --- | --- |
-| Stufe 1 | একদম শুরু থেকে · Der Anfang | Sounds, verb-in-seat-two, `sein`/`haben`, der·die·das, the endings machine, `nicht`/`kein`, questions, the sentence bracket, numbers, real-life sentence banks — **14 Teile, all written** |
-| Stufe 2 | কারক ও অতীত · Die Fälle | Accusative, dative, prepositions, possessives, `Perfekt`, separable verbs, plurals — *outline live, text to come* |
-| Stufe 3 | কারণ, তুলনা ও গল্প · Die Verbindung | `weil`/`dass`/`wenn`, relative clauses, adjective endings, comparatives, future — *outline live* |
-| Stufe 4 | মুক্তভাবে বলা · Frei sprechen | `Konjunktiv II`, passive, opinion and argument, formal letters, the exams — *outline live* |
+| Stufe 1 | একদম শুরু থেকে · Der Anfang | Sounds, verb-in-seat-two, `sein`/`haben`, der·die·das, the endings machine, `nicht`/`kein`, questions, the sentence bracket, numbers, real-life sentence banks, **14 Teile, all written** |
+| Stufe 2 | কারক ও অতীত · Die Fälle | Accusative, dative, prepositions, possessives, `Perfekt`, separable verbs, plurals, *outline live, text to come* |
+| Stufe 3 | কারণ, তুলনা ও গল্প · Die Verbindung | `weil`/`dass`/`wenn`, relative clauses, adjective endings, comparatives, future, *outline live* |
+| Stufe 4 | মুক্তভাবে বলা · Frei sprechen | `Konjunktiv II`, passive, opinion and argument, formal letters, the exams, *outline live* |
 
 **`aab/deutsch/curriculum.js` is the one file you edit**, exactly as
 `learn/curriculum.js` is for the Learn area. Stufen → sections → Teile,
@@ -255,7 +255,7 @@ plus each Stufe's practice book.
 
 ### The practice book
 
-Each Stufe has a thirty-day workbook — one page a day: a pattern, five
+Each Stufe has a thirty-day workbook: one page a day: a pattern, five
 model lines, eight sentences of the learner's own, six translations with
 a hidden answer key, and one true paragraph. Stufe 1's is live at
 `/deutsch/stufe-1/arbeitsbuch.html`.
@@ -264,7 +264,7 @@ All thirty days are written into that **one page**, in full. With
 JavaScript on it becomes a day-at-a-time book with a tracker, boxes that
 remember what was typed, and answers that stay shut until asked for. With
 JavaScript off it is the printable workbook it came from. It is one page
-and not thirty because a practice book is not thirty articles — it is one
+and not thirty because a practice book is not thirty articles: it is one
 thing you bookmark on the first evening and open every evening after.
 
 `aab/deutsch/arbeitsbuch.data.js` holds the days and is read by the
@@ -276,7 +276,7 @@ already in the markup.
 1. Add it to its Stufe in **`aab/deutsch/curriculum.js`**.
 2. Write the body in **`aab/deutsch/content/<stufe>.js`**, keyed by slug.
    (Skip this and it ships as a proper "আসছে" page, not a 404.)
-3. `node aab/deutsch/build-deutsch.mjs` — writes the Stufe pages, the Teil
+3. `node aab/deutsch/build-deutsch.mjs`– writes the Stufe pages, the Teil
    pages and the practice book.
 4. `node aab/build-meta.mjs && node aab/check-routes.mjs`.
 
@@ -286,7 +286,7 @@ Separate keys from the Learn area (`deutsch-read`, `deutsch-days`,
 `deutsch-last`, `deutsch-schrift`), so finishing the money ladder never
 claims you finished German and resetting one never wipes the other.
 Reading a Teil ticks it off by opening it; **a practice day is only ticked
-by hand** — the book's promise is that you said it out loud, and no page
+by hand**: the book's promise is that you said it out loud, and no page
 can verify that but the learner.
 
 ## The front door
@@ -301,7 +301,7 @@ Two axes, not three doors:
 | Key | Values | What it means |
 | --- | --- | --- |
 | `audience` | `learn` \| `work` | who you are |
-| `track` | `finance` \| `skills` | which library you came for — only meaningful for a learner |
+| `track` | `finance` \| `skills` | which library you came for: only meaningful for a learner |
 
 Keeping the learner one value is what lets every rule written before the
 second school arrived go on working untouched; `track` refines, it never
@@ -310,7 +310,7 @@ script in each `<head>`, so the headline, the running order and the nav
 are right on the first frame rather than swapped afterwards.
 
 The choice reorders the header nav, the overlay menu, the home page and
-the search ranking, and picks which of four headlines is the one shown —
+the search ranking, and picks which of four headlines is the one shown,
 all four ship in the markup and CSS shows one. It never hides anything,
 and the footer switch flips it back on any page.
 
@@ -318,7 +318,7 @@ and the footer switch flips it back on any page.
 
 Above all of that, a returning reader gets one band (`aab/home.js`):
 where they stopped in each school, what else they had open
-(`aab/recent.js` — title, url, kind, ten deep, on the device only), and
+(`aab/recent.js`– title, url, kind, ten deep, on the device only), and
 one rotating headline from the market pulse. A first-time visitor sees
 none of it: the whole section stays `hidden` until there is something in
 it, because an empty "continue where you left off" tells someone who has
@@ -342,16 +342,16 @@ node aab/deutsch/build-deutsch.mjs  # regenerate the German pages
 `check-css.mjs` exists because of one shipped bug. styles.css is a single
 cascade of `@layer`s, so a school's layer beats `components` on *every* page,
 not just its own. The German school called one day of its practice book
-`.tag` — Tag, German for day — and `.tag` is what this site has always called
+`.tag`– Tag, German for day, and `.tag` is what this site has always called
 the small label above an article card. One rule put an empty bordered box
 around that label on every card on the site, and nothing caught it: routes,
 caches and links were all checked, CSS was not. Now every top-level selector
-in a school's layer must be anchored by something only that school can mean —
+in a school's layer must be anchored by something only that school can mean:
 its body class, or a class used nowhere else. That also catches a bare element
 selector, which is how the practice book's `<header>` inherited the site's
 sticky page chrome and pinned itself over the real header.
 
-`test-api.sh` is idempotent — run it as often as you like against the same
+`test-api.sh` is idempotent, run it as often as you like against the same
 local database. That is why its publish call passes `overwrite: true`: a
 second run is, by definition, republishing a slug that already exists, and
 the endpoint refuses to do that silently.
@@ -363,13 +363,13 @@ part of the site that cannot be checked by reading it: that suite found the
 browser sanitiser quietly destroying note boxes, and the markdown shortcuts
 doing nothing on the first line of every new article.
 
-## Publishing an article — the manual way
+## Publishing an article: the manual way
 
 This still works, and is the fallback when the database isn't connected.
 
 1. Open **`/studio.html`** and unlock it (see *Studio access* below).
 2. Paste the article (from Word, Google Docs, Notion, anywhere). Paste or drag
-   in the photos — they get resized to 1600px and re-encoded as WebP, which
+   in the photos: they get resized to 1600px and re-encoded as WebP, which
    also strips the location data phones hide in JPEGs.
 3. **Download the page** → put the `.html` file in `aab/insights/`.
    (Photos are embedded in the file. If the size meter goes gold or red,
@@ -380,7 +380,7 @@ This still works, and is the fallback when the database isn't connected.
 5. Run `node aab/build-meta.mjs` to refresh the feed and sitemap.
 6. Commit and push.
 
-Prefer writing HTML by hand? Copy `aab/insights/_template.html` — it produces
+Prefer writing HTML by hand? Copy `aab/insights/_template.html`– it produces
 the identical layout and documents every piece you might need.
 
 ## Studio access
@@ -388,7 +388,7 @@ the identical layout and documents every piece you might need.
 `/studio.html` is gated, and how strong that gate is depends on whether the
 database is connected.
 
-**With D1 connected — a real login.** The passphrase is stretched in the
+**With D1 connected, a real login.** The passphrase is stretched in the
 browser (PBKDF2-SHA256, 210,000 iterations) and never sent; the server stores
 and compares a fast hash of the derived key, in constant time. The session is a
 token stored server-side as a hash, handed to the browser as an HttpOnly,
@@ -399,11 +399,11 @@ at once. Set the passphrase by visiting `/studio.html` after setup.
 The stretching runs in the browser for a blunt reason: a Worker on the free
 plan gets 10ms of CPU per request and 210,000 iterations costs about 30ms, so
 doing it server-side got every login killed mid-request. Moving it costs
-nothing in strength — stealing the database still leaves an attacker running
-210,000 iterations per guess — and `functions/_lib/auth.js` explains the
+nothing in strength, stealing the database still leaves an attacker running
+210,000 iterations per guess, and `functions/_lib/auth.js` explains the
 trade-off in full.
 
-**Without D1 — the old browser-side gate.** It keeps the tool away from
+**Without D1: the old browser-side gate.** It keeps the tool away from
 passers-by and out of search results, and it is not cryptographic protection of
 anything, because a static site has no server to ask. The lock screen says
 which mode it's in.
@@ -415,9 +415,9 @@ which mode it's in.
 | `aab/styles.css` | The whole design system in `@layer`s, in cascade order: tokens → base → layout → components → menu → tools → article → studio → work → learn → deutsch → check → about → utilities |
 | `aab/app.js` | Theme, overlay menu, Ctrl+K palette, keyboard shortcuts, prerender rules, article cards, service-worker registration |
 | `aab/content.js` | **The one file you edit to publish.** Articles, Bangla terms, tools, pages |
-| `aab/api.js` | Browser side of the dynamic layer — returns null instead of throwing when there's no backend |
+| `aab/api.js` | Browser side of the dynamic layer, returns null instead of throwing when there's no backend |
 | `aab/auth.js`, `auth-config.js` | The Studio's gate: server session when available, browser-side fallback |
-| `aab/desk.html`, `desk.js` | The desk — questions, enquiries, subscribers, what's read, what's live |
+| `aab/desk.html`, `desk.js` | The desk, questions, enquiries, subscribers, what's read, what's live |
 | `aab/engage.js` | Reactions and reader Q&A; attaches itself to any article page |
 | `worker.js` | **The entry point.** Routes `/api/*` and `/insights/:slug` to `functions/`, and hands everything else to the static assets |
 | `functions/` | The request handlers, written in the Pages Functions shape (`onRequest`, `context.params`, `context.next()`). `worker.js` maps them to paths |
@@ -432,36 +432,36 @@ which mode it's in.
 | `aab/studio.test.mjs` | The Studio driven in a real browser. Optional, needs Playwright, serves `aab/` itself |
 | `aab/tools/` | The five calculators |
 | `aab/crumbs.js` | The path line on every page, built from the curriculum and `PAGES`, plus its `BreadcrumbList` JSON-LD |
-| `aab/audience.js` | The front door — learner or recruiter, money or skills — and what the answer reorders |
+| `aab/audience.js` | The front door, learner or recruiter, money or skills, and what the answer reorders |
 | `aab/home.js` | The home page's welcome-back band: continue, recently viewed, one headline |
 | `aab/recent.js` | The last ten pages this device opened. A history list, not analytics |
-| `aab/tilt.js` | Cards lean a couple of degrees towards the pointer. `rotate`, never `transform` — see the note at the top of the file |
+| `aab/tilt.js` | Cards lean a couple of degrees towards the pointer. `rotate`, never `transform`– see the note at the top of the file |
 | `aab/skills/index.html`, `skills.js` | The Skills index, rendered from `SKILLS` in `content.js` |
 | `aab/learn/curriculum.js` | **The one file you edit for Learn.** Every stage, section and lesson |
-| `aab/learn/index.html` | The hub — hand-written, because the eight starter steps live in it |
+| `aab/learn/index.html` | The hub, hand-written, because the eight starter steps live in it |
 | `aab/learn/hub.js` | The hub's live layer: steps, ladder, contents index, resume card, filter |
 | `aab/learn/progress.js` | The only file that touches reading progress in `localStorage` |
 | `aab/learn/icons.js` | The stroke icons every step and stage is remembered by |
 | `aab/learn/stage.js` | Ticks and the "continue" button on a stage's contents page |
 | `aab/learn/lessons/` | Lesson text, one module per stage |
-| `aab/learn/build-lessons.mjs` | Writes the stage and lesson pages. Not a build step — run it and commit what it writes |
+| `aab/learn/build-lessons.mjs` | Writes the stage and lesson pages. Not a build step, run it and commit what it writes |
 | `aab/learn/terms/` | The original eighteen term pages, at the URLs they were published on |
 | `aab/deutsch/curriculum.js` | **The one file you edit for German.** Four Stufen, their sections and Teile, and each Stufe's practice book |
-| `aab/deutsch/index.html` | The school hub — hand-written, because "how this works" lives in it |
+| `aab/deutsch/index.html` | The school hub, hand-written, because "how this works" lives in it |
 | `aab/deutsch/hub.js` | The hub's live layer: the four-Stufe ladder, the resume card, the two progress bars |
-| `aab/deutsch/progress.js` | The only file that touches German progress in `localStorage` — its own keys, separate from Learn |
+| `aab/deutsch/progress.js` | The only file that touches German progress in `localStorage`– its own keys, separate from Learn |
 | `aab/deutsch/content/` | Teil text, one module per Stufe |
-| `aab/deutsch/arbeitsbuch.data.js` | The thirty days of Stufe 1. Read by the generator only — the browser never downloads it |
+| `aab/deutsch/arbeitsbuch.data.js` | The thirty days of Stufe 1. Read by the generator only: the browser never downloads it |
 | `aab/deutsch/arbeitsbuch.js` | Turns the printed workbook into a daily one: one day at a time, saved writing, hidden answers, the tracker |
 | `aab/deutsch/build-deutsch.mjs` | Writes the Stufe pages, the Teil pages and the practice book. Not a build step |
 | `aab/deutsch/icons.js`, `stufe.js`, `teil.js` | The German marks; ticks on a Stufe page; the one line a Teil page needs |
 | `aab/news.js` | The market pulse, shared: the fetch, the square card, and the mini window it opens into |
-| `aab/pulse.js` | The Insights page's side of the pulse — the grid, the skeleton, the fallback |
-| `aab/sw.js` | Service worker — offline reading, never stale articles |
-| `functions/api/news.js` | Serves `/api/news` — the market-pulse feed |
+| `aab/pulse.js` | The Insights page's side of the pulse, the grid, the skeleton, the fallback |
+| `aab/sw.js` | Service worker, offline reading, never stale articles |
+| `functions/api/news.js` | Serves `/api/news`– the market-pulse feed |
 | `aab/_headers`, `_redirects` | Cloudflare security headers, CSP and redirects |
 | `aab/check-routes.mjs` | **Run before deploying.** Walks every URL through the routing rules and fails on loops, dead ends, broken links, and article slugs that could never resolve |
-| `aab/check-css.mjs` | **Run before deploying.** Fails when a school's cascade layer styles a class the rest of the site uses — see Testing |
+| `aab/check-css.mjs` | **Run before deploying.** Fails when a school's cascade layer styles a class the rest of the site uses, see Testing |
 | `functions/_lib/sync.js` | The scheduled Notion pull, and the rules that stop it publishing something half-written |
 | `aab/build-meta.mjs` | Regenerates `feed.xml`, `sitemap.xml`, `robots.txt` |
 | `aab/build-og.mjs` | Re-renders the social share images in `og/` (needs Playwright) |
@@ -476,7 +476,7 @@ Insights or Tools.
 
 **Inside the Studio's editor** those give way to writing: `/` opens the block
 menu, `Ctrl/Cmd K` makes a link rather than opening search, `Ctrl/Cmd S`
-saves the draft and `Ctrl/Cmd Enter` publishes. Markdown works as you type —
+saves the draft and `Ctrl/Cmd Enter` publishes. Markdown works as you type,
 `##`, `###`, `-`, `1.`, `>` and `---`.
 
 ## Local preview
@@ -504,5 +504,5 @@ the other way is an infinite loop.
 ## Theme
 
 `<html data-theme="dark|light">` forces a theme; no attribute means "follow the
-OS". The colours are defined once with `light-dark()` in `styles.css` — there
+OS". The colours are defined once with `light-dark()` in `styles.css`– there
 is no separate dark stylesheet to keep in sync.

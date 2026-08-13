@@ -1,5 +1,5 @@
 /* ============================================================
-   dissertation.data.js — the numbers behind the case study.
+   dissertation.data.js: the numbers behind the case study.
 
    ------------------------------------------------------------
    WHERE THESE COME FROM
@@ -12,7 +12,7 @@
 
    Every table on this page is transcribed from the submitted
    document. Every series is lifted out of the charts embedded in
-   it — Word stores a chart's data alongside the picture, so the
+   it, Word stores a chart's data alongside the picture, so the
    FTSE 100 series, the Islamic index series, the two group
    drawdown curves, the 216 fund-level standard deviations and
    the full 19,797-observation excess-return column are the
@@ -20,8 +20,8 @@
    redrawing by eye.
 
    Nothing here is invented, smoothed or extended. Where the
-   underlying data cannot be published — Bloomberg's terms cover
-   the fund-level NAV panel — the page shows the derived
+   underlying data cannot be published, Bloomberg's terms cover
+   the fund-level NAV panel, the page shows the derived
    statistics and says so rather than fabricating a stand-in.
 
    PROVENANCE TAGS used below:
@@ -42,7 +42,7 @@ export const STUDY = {
 };
 
 /* ------------------------------------------------------------
-   Sample composition — doc, Methodology §Data Sources
+   Sample composition, doc, Methodology §Data Sources
    ------------------------------------------------------------ */
 export const SAMPLE = {
   months: 91,
@@ -61,7 +61,7 @@ export const SAMPLE = {
 };
 
 /* ------------------------------------------------------------
-   Table 1 — univariate comparison. doc, Analysis §Descriptive
+   Table 1, univariate comparison. doc, Analysis §Descriptive
    Two-sample t-tests, unequal variances, equally weighted across
    funds. Every p-value is far above 0.05.
    ------------------------------------------------------------ */
@@ -94,10 +94,10 @@ export const UNIVARIATE = [
 ];
 
 /* ------------------------------------------------------------
-   Multi-factor regressions — doc, Analysis §Multi-factor results
+   Multi-factor regressions, doc, Analysis §Multi-factor results
    Dependent variable: monthly fund excess return.
    OLS, Excel Data Analysis ToolPak, no clustering (see the
-   limitations section — this matters).
+   limitations section: this matters).
    ------------------------------------------------------------ */
 const COEF = (name, label, b, se, t, p, lo, hi) =>
   ({ name, label, b, se, t, p, lo, hi });
@@ -184,7 +184,7 @@ export const FACTORS = [
 ];
 
 /* ------------------------------------------------------------
-   Table 5 — idiosyncratic volatility. doc, Analysis §IVOL
+   Table 5, idiosyncratic volatility. doc, Analysis §IVOL
    Fund-level residual standard error from a CAPM regression.
    ------------------------------------------------------------ */
 export const IVOL = {
@@ -195,7 +195,7 @@ export const IVOL = {
 };
 
 /* ------------------------------------------------------------
-   Drawdown summary — doc, Analysis §Drawdown
+   Drawdown summary, doc, Analysis §Drawdown
    The only comparison in the whole study that lands anywhere
    near a conventional significance threshold.
    ------------------------------------------------------------ */
@@ -206,7 +206,7 @@ export const MDD = {
 };
 
 /* ------------------------------------------------------------
-   The evidence map — the literature review, made countable.
+   The evidence map: the literature review, made countable.
 
    Each row is a study the review engages with, tagged by what it
    found for Islamic funds relative to conventional ones. The
@@ -258,7 +258,7 @@ export const FINDING_LABELS = {
 };
 
 /* ------------------------------------------------------------
-   References — the works cited on this page, Harvard style,
+   References: the works cited on this page, Harvard style,
    as they appear in the dissertation's reference list.
    ------------------------------------------------------------ */
 export const REFERENCES = [
@@ -301,7 +301,7 @@ export const REFERENCES = [
 ];
 
 /* ============================================================
-   THE SERIES — extracted from the charts embedded in the
+   THE SERIES, extracted from the charts embedded in the
    submitted document. Generated, not hand-typed.
    ============================================================ */
 /* UKX = FTSE 100 monthly close, Jan 2018 - Jul 2025 (91 months). */

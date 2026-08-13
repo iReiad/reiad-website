@@ -1,11 +1,11 @@
 /* ============================================================
-   three-statement.model.js — the engine.
+   three-statement.model.js: the engine.
 
    A real three-statement model: an income statement, a balance
    sheet and a cash flow statement that are LINKED, so that a
    change to one assumption flows through all three and the
    balance sheet still balances afterwards. That last part is the
-   whole discipline — a model whose balance check is a hardcoded
+   whole discipline, a model whose balance check is a hardcoded
    zero is a spreadsheet with three tabs, not a model.
 
    No DOM in this file, on purpose. The maths is testable on its
@@ -38,8 +38,8 @@
    forecast year t, substituting the roll-forwards above gives
 
      A(t) − LE(t) = A(t−1) − LE(t−1)
-
-   — the difference is carried, not created. So if the OPENING
+:
+the difference is carried, not created. So if the OPENING
    balance sheet balances, every forecast year balances, whatever
    the assumptions. That makes the check a genuine test: if it
    ever prints a non-zero, either the opening balance sheet the
@@ -51,7 +51,7 @@
 
    1. Interest is charged on OPENING debt, not on an average or a
       closing balance. Charging it on closing debt makes interest
-      depend on cash, which depends on interest — the classic
+      depend on cash, which depends on interest: the classic
       circular reference. Real models resolve that with iterative
       calculation; here the opening-balance convention keeps it
       deterministic and is a normal convention in practice.
@@ -67,7 +67,7 @@
 /* ------------------------------------------------------------
    The company.
 
-   A representative Bangladeshi listed manufacturer — cement and
+   A representative Bangladeshi listed manufacturer, cement and
    building materials, the profile of a mid-cap on the DSE main
    board. The figures are illustrative and internally consistent,
    NOT the filed accounts of any real company: publishing invented
@@ -84,7 +84,7 @@ export const COMPANY = {
   years: ["FY25E", "FY26E", "FY27E", "FY28E", "FY29E"],
 };
 
-/** The last reported year — the model's starting point. */
+/** The last reported year: the model's starting point. */
 export const ACTUALS = {
   revenue: 48500,
   grossMargin: 0.271,
@@ -93,7 +93,7 @@ export const ACTUALS = {
   interest: 1240,
   taxRate: 0.225,
 
-  // opening balance sheet (this set balances — see BALANCE below)
+  // opening balance sheet (this set balances, see BALANCE below)
   cash: 3120,
   ar: 7980,
   inventory: 8850,
@@ -116,7 +116,7 @@ export const openingCheck = (a = ACTUALS) =>
   a.cash + a.ar + a.inventory + a.ppe - (a.ap + a.debt + a.revolver + a.equity);
 
 /* ------------------------------------------------------------
-   Scenarios — bundles of assumptions, not separate models.
+   Scenarios, bundles of assumptions, not separate models.
    ------------------------------------------------------------ */
 export const SCENARIOS = {
   base: {
@@ -314,7 +314,7 @@ export function run(a, open = ACTUALS, years = COMPANY.years.length) {
     y.da = prev.ppe * a.depRate;
     y.ebit = y.ebitda - y.da;
 
-    // interest on OPENING balances — see the note at the top
+    // interest on OPENING balances, see the note at the top
     y.interest = prev.debt * a.interestRate;
     y.revolverInterest = prev.revolver * a.revolverRate;
     y.ebt = y.ebit - y.interest - y.revolverInterest;
@@ -460,7 +460,7 @@ const CSV_ROWS = [
   ["Closing cash", "cash"],
 ];
 
-/** The model as CSV — the thing a reviewer opens in Excel. */
+/** The model as CSV: the thing a reviewer opens in Excel. */
 export function toCsv(result, assumptions) {
   const esc = (v) =>
     typeof v === "string" && /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;

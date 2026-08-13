@@ -1,5 +1,5 @@
 /* ============================================================
-   /api/subscribers — the list you own.
+   /api/subscribers: the list you own.
 
    Confirmed opt-in only. Signing up stores a pending row and a
    token; the address doesn't count as a subscriber until that
@@ -14,7 +14,7 @@
 
    NOTE: sending mail needs an email provider, which is a separate
    account and out of this site's hands. Everything up to the send
-   is here — including the confirm link — so plugging one in later
+   is here, including the confirm link, so plugging one in later
    is a small job, and the list is yours in the meantime.
    ============================================================ */
 
@@ -32,7 +32,7 @@ const page = (title, message, tone = "ok") =>
   new Response(
     `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="color-scheme" content="light dark"><title>${title} — Reiad's Library</title>
+<meta name="color-scheme" content="light dark"><title>${title}, Reiad's Library</title>
 <link rel="stylesheet" href="/styles.css"><link rel="icon" href="/favicon.ico">
 </head><body><main id="main"><div class="wrap" style="padding-block:110px;max-width:640px">
 <span class="eyebrow mono">${tone === "ok" ? "Done" : "Hmm"}</span>
@@ -60,7 +60,7 @@ export async function onRequest(context) {
       `UPDATE subscribers SET status = 'confirmed', confirmed_at = ? WHERE token = ?`,
       nowISO(), t);
     return page("You're on the list",
-      "You'll hear from me when something new is published — and nothing else. " +
+      "You'll hear from me when something new is published, and nothing else. " +
       "Every email has a one-click unsubscribe that works immediately.");
   }
 
@@ -70,7 +70,7 @@ export async function onRequest(context) {
     if (t) await run(d1, `UPDATE subscribers SET status = 'unsubscribed' WHERE token = ?`, t);
     return page("Unsubscribed",
       "You won't hear from me again. No hard feelings, and no confirmation email about " +
-      "the confirmation — that's the whole point.");
+      "the confirmation: that's the whole point.");
   }
 
   /* ---------- CSV export ---------- */

@@ -1,5 +1,5 @@
 /* ============================================================
-   studio.js — the Article Studio.
+   studio.js: the Article Studio.
 
    Paste an article (from Word, Google Docs, Notion, an email,
    anywhere) and paste or drop the photos. The Studio:
@@ -43,7 +43,7 @@ const nowLine = $("#now-line");
 
 /* What the editor currently holds. `slug` is set once a piece has
    been saved to the database, and is what tells a republish from a
-   first publish — without it, editing a live article and pressing
+   first publish, without it, editing a live article and pressing
    publish would look exactly like a slug collision. */
 const current = {
   draftId: null,
@@ -56,7 +56,7 @@ const current = {
 let dynamic = false;
 
 /* ============================================================
-   1. SANITISER — the pasted-HTML gauntlet
+   1. SANITISER: the pasted-HTML gauntlet
    ============================================================ */
 
 const KEEP = new Set([
@@ -79,7 +79,7 @@ const ATTRS = {
   TH: ["colspan", "rowspan"],
 };
 
-/* The class names the stylesheet actually knows about — the same list
+/* The class names the stylesheet actually knows about: the same list
    _lib/sanitise.js enforces server-side.
 
    Without this the two sanitisers disagreed, and the browser's was
@@ -109,7 +109,7 @@ export function sanitize(html) {
     const classes = keptClasses(node);
 
     // A div is stray markup from whatever produced the paste, unless
-    // it carries one of the site's own class names — then it is a
+    // it carries one of the site's own class names: then it is a
     // note box or a worked example and belongs in the article.
     const structural = tag === "DIV" && classes.length > 0;
 
@@ -214,7 +214,7 @@ const MAX_EDGE = 1600;      // px on the long side) plenty for a blog
 const QUALITY = 0.82;
 
 /** File/Blob → a downscaled WebP blob, stripped of EXIF.
-    The single place that decides what a photo on this site weighs —
+    The single place that decides what a photo on this site weighs:
     both the editor and the /media uploader come through here. */
 async function encodeImage(source) {
   const bitmap = await createImageBitmap(source);
@@ -430,8 +430,8 @@ $("#photo-input").addEventListener("change", (e) => {
 /* ============================================================
    3b. BLOCKS AT THE CARET
 
-   The site's article vocabulary is small and specific — a note box,
-   a worked example, a wide figure, a table that scrolls on a phone —
+   The site's article vocabulary is small and specific, a note box,
+   a worked example, a wide figure, a table that scrolls on a phone,
    and until now the only way to get one was to write the HTML by
    hand and paste it in. These put the whole set a slash away, and
    the markdown rules cover the shapes people type out of habit.
@@ -439,8 +439,8 @@ $("#photo-input").addEventListener("change", (e) => {
 
 /** The top-level block the caret is in.
 
-    An empty editor has no blocks at all — the first characters typed
-    land in a bare text node parented to the editor itself — so that
+    An empty editor has no blocks at all, the first characters typed
+    land in a bare text node parented to the editor itself, so that
     case returns the editor. Without it the markdown rules did nothing
     until the article already had a paragraph in it, which is to say
     they did nothing on the first line of every new piece. */
@@ -528,7 +528,7 @@ editor.addEventListener("input", (e) => {
   kill.deleteContents();
 
   /* formatBlock needs a block to replace, and bare text in an empty
-     editor has none — it silently does nothing, which is why "##"
+     editor has none: it silently does nothing, which is why "##"
      worked on the second line and not the first. The list commands
      build their own container, so they never noticed. */
   if (node.parentNode === editor) {
@@ -822,7 +822,7 @@ function meta() {
     // Slugified even when typed by hand. It used to be taken raw, so
     // "German Alphabets" stayed "German Alphabets" here and in the
     // index-entry block, while the server quietly stored
-    // "germanalphabets" — two different answers to what the URL is,
+    // "germanalphabets"– two different answers to what the URL is,
     // and the one that got pasted into content.js was the broken one.
     slug: slugify(fields.slug.value.trim() || title),
     date: fields.date.value || new Date().toISOString().slice(0, 10),
@@ -835,7 +835,7 @@ function meta() {
 const FONTS =
   "https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Serif+Bengali:wght@500;600&display=swap";
 
-/** The finished, standalone page — same chrome as every other page. */
+/** The finished, standalone page: same chrome as every other page. */
 function buildPage(m) {
   const dateLabel = new Intl.DateTimeFormat(m.lang === "bn" ? "bn-BD" : "en-GB", {
     day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
@@ -1008,7 +1008,7 @@ function onEdit() {
 
    An article is not the only thing a reader meets. Most of them meet
    the card on the Insights page, or the box that appears when someone
-   pastes the link into WhatsApp — and both of those decide whether
+   pastes the link into WhatsApp, and both of those decide whether
    the article gets opened at all. Neither was visible from here. */
 
 const view = { mode: "article", width: "full", theme: "auto" };
@@ -1020,7 +1020,7 @@ const dateLabelFor = (m) =>
 
 /** The image a social card would use. The lead photo if one is
     marked, otherwise the first photo, otherwise the site's default.
-    Data URLs are fine here — this is a preview, and the same picture
+    Data URLs are fine here: this is a preview, and the same picture
     becomes a /media path on publish. */
 function coverFor(m) {
   const doc = new DOMParser().parseFromString(m.body, "text/html");
@@ -1137,7 +1137,7 @@ Object.values(fields).forEach((el) => el.addEventListener("input", onEdit));
 
 /* Tidy the file name as soon as you leave the box, so what is on
    screen is what the URL will be. Doing it on every keystroke would
-   fight the typing — a hyphen you are about to follow with a word
+   fight the typing, a hyphen you are about to follow with a word
    would vanish mid-thought. */
 fields.slug.addEventListener("blur", () => {
   const typed = fields.slug.value.trim();
@@ -1146,7 +1146,7 @@ fields.slug.addEventListener("blur", () => {
   if (tidy === typed) return;
   fields.slug.value = tidy;
   onEdit();
-  toast(`File name tidied to "${tidy}" — that's what the URL can be.`);
+  toast(`File name tidied to "${tidy}"– that's what the URL can be.`);
 });
 
 /* ---------- preview controls ---------- */
@@ -1295,7 +1295,7 @@ function guard(m) {
 
    The things an editor checks before a piece goes out, checked
    every time instead of when someone remembers. An `error` stops
-   the publish; a `warn` is worth knowing and never blocks — the
+   the publish; a `warn` is worth knowing and never blocks: the
    author decides whether a photo needs alt text, not this file.
    ============================================================ */
 
@@ -1414,7 +1414,7 @@ function renderPreflight(m) {
 }
 
 /* ============================================================
-   6c. OPEN — drafts on this device, articles in the database
+   6c. OPEN, drafts on this device, articles in the database
    ============================================================ */
 
 const openSheet = $("#open-sheet");
@@ -1852,7 +1852,7 @@ function makeZip(entries) {
 }
 
 /* ============================================================
-   8. DRAFTS — IndexedDB (photos blow past localStorage's 5 MB)
+   8. DRAFTS, IndexedDB (photos blow past localStorage's 5 MB)
    ============================================================ */
 
 const DB_NAME = "reiad-studio";
@@ -1877,7 +1877,7 @@ async function idb(mode, fn) {
       tx.onerror = () => reject(tx.error);
     });
   } catch {
-    return undefined;   // private mode, quota, disabled storage — never fatal
+    return undefined;   // private mode, quota, disabled storage: never fatal
   }
 }
 
@@ -1910,7 +1910,7 @@ function saveDraft() {
 }
 
 /** Drop the draft the editor is holding. The article it may have
-    been published from is untouched — this is local only. */
+    been published from is untouched: this is local only. */
 async function clearDraft() {
   clearTimeout(saveTimer);
   if (current.draftId) {

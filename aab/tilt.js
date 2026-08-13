@@ -1,5 +1,5 @@
 /* ============================================================
-   tilt.js — cards lean very slightly towards the pointer.
+   tilt.js, cards lean very slightly towards the pointer.
 
    The effect, in one sentence: a card rotates a couple of
    degrees about the axis perpendicular to wherever the pointer
@@ -12,8 +12,8 @@
    1. It uses the `rotate` property, NOT `transform`.
 
       Half the cards on this site already animate `transform` on
-      hover — .door lifts by 2px, the case-study panels have
-      their own translate — and a tilt written as a transform
+      hover, .door lifts by 2px, the case-study panels have
+      their own translate, and a tilt written as a transform
       would have had to know about every one of them and
       re-declare it. `rotate`, `translate` and `scale` are
       independent properties that compose with each other and
@@ -26,7 +26,7 @@
       which is exactly one axis. See axisFor below.
 
    2. The perspective goes on the PARENT, because a 3D rotation
-      with no perspective anywhere is an affine squash — the card
+      with no perspective anywhere is an affine squash: the card
       shears instead of leaning. `perspective` is not an
       independent property, so it cannot go on the card itself
       without also claiming its `transform`; it belongs on the
@@ -40,7 +40,7 @@
    And one that was tried and dropped: a 2px lift to go with the
    lean. It could not be done from here. The cards in .cards and
    .bento carry the scroll-driven `reveal-up` animation, which
-   animates `translate` and holds its end state with fill:both —
+   animates `translate` and holds its end state with fill:both,
    and an animation's output beats an inline style, so the lift
    silently did nothing on exactly the cards the home page is
    made of. A tilt that works everywhere beats a tilt plus a lift
@@ -49,7 +49,7 @@
 
 /* Every card-like thing on the site. Matched at the container so
    that one listener serves a whole grid, rather than one per
-   card — a home page has fourteen of these and an Insights page
+   card, a home page has fourteen of these and an Insights page
    twenty-two. */
 const SCENES = [
   ".bento", ".cards", ".doorway", ".door-pair", ".news-grid",
@@ -120,8 +120,8 @@ export function initTilt() {
   document.querySelectorAll(SCENES.join(",")).forEach(attach);
 }
 
-/** For content built after load — the Insights grid, the home
-    page's news slot — so a card that arrives late tilts too. */
+/** For content built after load, the Insights grid, the home
+    page's news slot, so a card that arrives late tilts too. */
 export function tiltIn(root) {
   if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;

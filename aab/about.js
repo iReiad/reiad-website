@@ -1,10 +1,10 @@
 /* ============================================================
-   about.js — the one thing on the About page that must not be
+   about.js: the one thing on the About page that must not be
    typed by hand.
 
    The page claims a number of lessons, stages, calculators and
    models. Written as literals, those go stale the first time a
-   stage is added and nobody remembers the About page exists —
+   stage is added and nobody remembers the About page exists,
    and a page whose own arithmetic is out of date is a poor
    advertisement for someone who models for a living.
 
@@ -27,7 +27,7 @@ try {
   /* "Models" means the things you can open and drive: the three
      portfolio case studies plus the stock check. They are the
      pages tagged `case` or `tool` in the manifest, which is the
-     same tagging the menu and the palette group by — so adding a
+     same tagging the menu and the palette group by, so adding a
      fourth case study updates this line without anyone editing it. */
   set("models", PAGES.filter((p) => !p.private
     && (p.group === "case" || p.group === "tool")).length);

@@ -1,5 +1,5 @@
 /* ============================================================
-   /api/enquiries — the client pipeline.
+   /api/enquiries: the client pipeline.
 
    The contact form used to post to a third party and land in an
    inbox, where it competed with everything else and could be lost.

@@ -1,5 +1,5 @@
 /* ============================================================
-   curriculum.js — the German school, in one file.
+   curriculum.js: the German school, in one file.
 
    THIS IS THE ONE FILE YOU EDIT to add, rename or reorder
    anything under /deutsch/. Everything else reads from it:
@@ -22,7 +22,7 @@
    looking for Akkusativ scrolling past ব্রোকার.
 
    So it is a second school at its own mount, deliberately built
-   from the same parts — the same ladder, the same lesson cards,
+   from the same parts: the same ladder, the same lesson cards,
    the same tick-in-your-own-browser progress. Someone who has
    used the Learn area already knows how to use this one, and
    nothing here can break anything there.
@@ -40,7 +40,7 @@
                          is what they are called here.
 
    Plus one thing the money school has no equivalent of: each
-   Stufe has a WORKBOOK — thirty days of daily practice on a
+   Stufe has a WORKBOOK, thirty days of daily practice on a
    single page the learner writes into. See arbeitsbuch.data.js.
 
    ------------------------------------------------------------
@@ -53,7 +53,7 @@
            icon     a key in /deutsch/icons.js
            who      who this stage is for, in one line
            blurb    what it teaches, two lines at most
-           can      what you will be able to DO at the end of it —
+           can      what you will be able to DO at the end of it:
                     the only promise a language course should make
            status   "live" | "soon"
            workbook { slug, days } when the stage has a practice book
@@ -67,7 +67,7 @@
    ============================================================ */
 
 /* ------------------------------------------------------------
-   STUFE 1 — the deck that exists, chapter by chapter.
+   STUFE 1: the deck that exists, chapter by chapter.
    ------------------------------------------------------------ */
 const STUFE_1_SECTIONS = [
   {
@@ -118,7 +118,7 @@ const STUFE_1_SECTIONS = [
         slug: "sein",
         bn: "sein: আমি হই",
         en: "sein, the hidden verb",
-        de: "sein — ich bin",
+        de: "sein, ich bin",
         icon: "person",
         minutes: 9,
         blurb:
@@ -128,7 +128,7 @@ const STUFE_1_SECTIONS = [
         slug: "haben",
         bn: "haben: আমার আছে",
         en: "haben, and what you lack",
-        de: "haben — ich habe",
+        de: "haben, ich habe",
         icon: "hand",
         minutes: 9,
         blurb:
@@ -261,13 +261,13 @@ const STUFE_1_SECTIONS = [
 ];
 
 /* ------------------------------------------------------------
-   THE LADDER — four Stufen.
+   THE LADDER, four Stufen.
 
    Stufe 1 is written. Stufen 2–4 are outlines: they are listed
    so a learner can see the whole road before starting one, and
    so the first day does not feel like a leap into fog. Their
    Teile carry status "soon" and get a proper "আসছে" page rather
-   than a 404 — a listed thing must always be a place you can go.
+   than a 404, a listed thing must always be a place you can go.
    ------------------------------------------------------------ */
 export const STUFEN = [
   {
@@ -326,7 +326,7 @@ export const STUFEN = [
           { slug: "perfekt", bn: "Perfekt: ich habe gemacht", en: "The perfect tense", de: "Das Perfekt", icon: "clock", minutes: 12, status: "soon",
             blurb: "কথ্য জার্মানে অতীত মানেই এটা। haben না sein, সেটাই একমাত্র কঠিন প্রশ্ন।" },
           { slug: "trennbare-verben", bn: "ভাগ হওয়া ক্রিয়া: aufstehen", en: "Separable verbs", de: "Trennbare Verben", icon: "gears", minutes: 10, status: "soon",
-            blurb: "'stehe … auf' — মাথাটা দুই নম্বরে, লেজটা বাক্যের শেষে।" },
+            blurb: "'stehe … auf'– মাথাটা দুই নম্বরে, লেজটা বাক্যের শেষে।" },
           { slug: "plural", bn: "বহুবচনের পাঁচ পথ", en: "Making plurals", de: "Der Plural", icon: "hat", minutes: 10, status: "soon",
             blurb: "-e, -er, -n, -s আর উমলাউট। সুখবর: সব বহুবচনেই die।" },
         ],
@@ -357,9 +357,9 @@ export const STUFEN = [
           { slug: "weil-dass", bn: "weil · dass: ক্রিয়া একদম শেষে", en: "weil & dass", de: "Nebensätze", icon: "bracket", minutes: 12, status: "soon",
             blurb: "কারণ বলতে গেলে জার্মান ক্রিয়াকে বাক্যের শেষে পাঠিয়ে দেয়।" },
           { slug: "wenn-als", bn: "wenn · als: যখন", en: "wenn & als", de: "Zeitsätze", icon: "clock", minutes: 10, status: "soon",
-            blurb: "একবারের 'যখন' আর বারবারের 'যখন' — জার্মানে দুটো আলাদা শব্দ।" },
+            blurb: "একবারের 'যখন' আর বারবারের 'যখন'– জার্মানে দুটো আলাদা শব্দ।" },
           { slug: "relativsatz", bn: "যে লোকটা…: Relativsatz", en: "Relative clauses", de: "Der Relativsatz", icon: "key", minutes: 12, status: "soon",
-            blurb: "der Mann, der … — টুপিটাই জোড়ার কাজ করে।" },
+            blurb: "der Mann, der …, টুপিটাই জোড়ার কাজ করে।" },
         ],
       },
       {
@@ -373,7 +373,7 @@ export const STUFEN = [
           { slug: "vergleich", bn: "তুলনা: gut · besser · am besten", en: "Comparatives", de: "Der Vergleich", icon: "arrow", minutes: 9, status: "soon",
             blurb: "ইংরেজির চেয়ে সহজ, কারণ ব্যতিক্রম কম।" },
           { slug: "futur", bn: "ভবিষ্যৎ, আর কেন প্রায়ই লাগে না", en: "The future tense", de: "Das Futur", icon: "map", minutes: 8, status: "soon",
-            blurb: "'কাল যাচ্ছি' বললেই চলে — werden লাগে কম।" },
+            blurb: "'কাল যাচ্ছি' বললেই চলে, werden লাগে কম।" },
         ],
       },
     ],
@@ -400,7 +400,7 @@ export const STUFEN = [
         de: "Höflichkeit",
         teile: [
           { slug: "konjunktiv", bn: "würde · könnte · hätte", en: "Konjunktiv II", de: "Der Konjunktiv II", icon: "heart", minutes: 12, status: "soon",
-            blurb: "'পারতেন কি' — অনুরোধ, কল্পনা আর ভদ্রতার রূপ।" },
+            blurb: "'পারতেন কি'– অনুরোধ, কল্পনা আর ভদ্রতার রূপ।" },
           { slug: "passiv", bn: "কর্মবাচ্য: werden", en: "The passive", de: "Das Passiv", icon: "gears", minutes: 10, status: "soon",
             blurb: "কে করেছে জানা না গেলে বা জরুরি না হলে।" },
         ],
@@ -412,7 +412,7 @@ export const STUFEN = [
         de: "Ausdrücken",
         teile: [
           { slug: "meinung", bn: "মত দেওয়া ও তর্ক করা", en: "Giving an opinion", de: "Die Meinung", icon: "mouth", minutes: 11, status: "soon",
-            blurb: "একমত, দ্বিমত, উদাহরণ, উপসংহার — কথা বলার কাঠামো।" },
+            blurb: "একমত, দ্বিমত, উদাহরণ, উপসংহার, কথা বলার কাঠামো।" },
           { slug: "brief", bn: "আনুষ্ঠানিক চিঠি ও ইমেইল", en: "Formal letters & email", de: "Der Brief", icon: "scroll", minutes: 10, status: "soon",
             blurb: "Sehr geehrte Damen und Herren থেকে Mit freundlichen Grüßen পর্যন্ত।" },
           { slug: "pruefung", bn: "পরীক্ষা: A1 থেকে B1", en: "Sitting the exams", de: "Die Prüfung", icon: "cap", minutes: 12, status: "soon",
@@ -432,7 +432,7 @@ export const SCHOOL = {
   bn: "জার্মান, বাংলায়",
   en: "German from Bangla",
   de: "Deutsch von Herzen",
-  tagline: "শব্দ মুখস্থ নয় — কাঠামো। চার স্তর, রোজ একটা পাতা।",
+  tagline: "শব্দ মুখস্থ নয়, কাঠামো। চার স্তর, রোজ একটা পাতা।",
 };
 
 /* ------------------------------------------------------------

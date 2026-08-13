@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================
-   build-lessons.mjs — writes the Learn area's pages.
+   build-lessons.mjs, writes the Learn area's pages.
 
        node aab/learn/build-lessons.mjs
 
@@ -10,8 +10,8 @@
    depends on it having been run.
 
    Why generate rather than hand-write:
-   every lesson page is the same shell — head, fonts, header,
-   footer, the modal reader markup — around a different body.
+   every lesson page is the same shell, head, fonts, header,
+   footer, the modal reader markup, around a different body.
    Forty hand-copied shells drift apart within a month, and the
    first thing to rot is the part nobody looks at (the meta tags
    and the breadcrumb hooks). One template can't drift.
@@ -21,14 +21,14 @@
      /learn/<stage>/<slug>.html   one page per lesson
 
    It never touches:
-     /learn/index.html            the hub — hand-written, because
+     /learn/index.html            the hub, hand-written, because
                                   the starter guide lives in it
      /learn/terms/*.html          the original eighteen. Their
                                   URLs and their text are exactly
                                   where they were.
 
    Lesson text comes from ./lessons/<stage>.js. A lesson with no
-   text there gets a proper "আসছে" page rather than a 404 — a
+   text there gets a proper "আসছে" page rather than a 404, a
    listed thing must always be a place you can go.
 
    ------------------------------------------------------------
@@ -36,14 +36,14 @@
 
    The committed pages and this template have drifted. Several
    lesson blurbs and titles were edited on the pages themselves
-   (mostly a comma tightened into a colon — "কমিশন, স্প্রেড আর
+   (mostly a comma tightened into a colon, "কমিশন, স্প্রেড আর
    ভুলের সময়: …"), and curriculum.js never caught up. Page titles
    drifted the same way: the pages join every part with " · ",
    including inside a lesson name, where this file uses ", ".
 
    So a run today rewrites about seventy pages, and most of that
    diff is the published wording being reverted to the older
-   version in curriculum.js — not what anyone running a generator
+   version in curriculum.js, not what anyone running a generator
    is trying to do.
 
    Reconcile it deliberately, in its own change: decide which
@@ -168,8 +168,8 @@ const FOOTER = `  <footer>
   <script type="module" src="/learn/learn.js"></script>`;
 
 /* `og` is a file name inside /og/, not a full URL. build-og.mjs
-   renders one share image per stage — stage-basics-2.png and
-   friends, all of them committed — and the published pages point
+   renders one share image per stage, stage-basics-2.png and
+   friends, all of them committed, and the published pages point
    at them. This generator used to hard-code /og/learn.png for
    every page, so running it silently replaced each per-stage
    image with the generic one. It is an argument now. */

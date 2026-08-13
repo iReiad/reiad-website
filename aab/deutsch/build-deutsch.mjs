@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================
-   build-deutsch.mjs — writes the German school's pages.
+   build-deutsch.mjs, writes the German school's pages.
 
        node aab/deutsch/build-deutsch.mjs
 
@@ -15,13 +15,13 @@
      /deutsch/stufe-1/arbeitsbuch.html  the thirty-day practice book
 
    It never touches:
-     /deutsch/index.html                the school hub — hand-
+     /deutsch/index.html                the school hub, hand-
                                         written, because the "how
                                         this works" section lives
                                         in it
 
    Teil text comes from ./content/<stufe>.js. A Teil with no text
-   there gets a proper "আসছে" page rather than a 404 — a listed
+   there gets a proper "আসছে" page rather than a 404, a listed
    thing must always be a place you can go.
 
    ------------------------------------------------------------
@@ -37,7 +37,7 @@
    So all thirty days are written into one page, in full, in
    order. With JavaScript on it becomes a day-at-a-time book with
    a tracker and boxes that remember what was typed. With
-   JavaScript off it is the printable workbook it came from —
+   JavaScript off it is the printable workbook it came from,
    which is exactly the fallback a paper exercise book deserves.
    ============================================================ */
 
@@ -73,7 +73,7 @@ const esc = (s) =>
 const bn = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
 
 /* ============================================================
-   the shared shell — identical to the Learn area's, so the two
+   the shared shell, identical to the Learn area's, so the two
    schools cannot drift apart visually
    ============================================================ */
 
@@ -144,7 +144,7 @@ const FOOTER = `  <footer>
 
 /* `og` is a file name inside /og/. build-og.mjs both renders the
    cards and repoints every page at the right one, so the value
-   here has to agree with its ASSIGN table — otherwise the two
+   here has to agree with its ASSIGN table, otherwise the two
    generators take turns overwriting each other. */
 function page({ title, description, canonical, body, og = "deutsch.png", extraScripts = "" }) {
   return `<!DOCTYPE html>
@@ -448,7 +448,7 @@ ${sagEs}
           </div>
           <button type="button" class="btn btn-ghost antwort-schalter" data-antwort="${d.n}"
                   aria-expanded="false">উত্তর দেখুন</button>
-          <p class="tag-hinweis">আগে নিজে চেষ্টা, তারপর মিলাও। ছাঁচ ঠিক থাকলে আলাদা বাক্যও সঠিক — ছাঁচটাই আসল।</p>
+          <p class="tag-hinweis">আগে নিজে চেষ্টা, তারপর মিলাও। ছাঁচ ঠিক থাকলে আলাদা বাক্যও সঠিক, ছাঁচটাই আসল।</p>
         </section>
 
         <section class="tag-teil herzen">
@@ -494,7 +494,7 @@ function arbeitsbuchPage(stufe) {
         <h1 class="bn-h">৩০ দিনের অনুশীলন খাতা</h1>
         <p class="lede"><span lang="de">Eine Seite pro Tag. Ein Muster pro Tag. Ein ehrlicher Satz pro Tag.</span><br>
         দিনে একটা পাতা। একটা ছাঁচ। নিজের জীবনের একটা সত্যি অনুচ্ছেদ।</p>
-        <p class="buch-warnung">এই খাতা পড়ার জন্য নয় — লেখার জন্য, আর জোরে বলার জন্য।
+        <p class="buch-warnung">এই খাতা পড়ার জন্য নয়, লেখার জন্য, আর জোরে বলার জন্য।
         খালি ঘরগুলো আপনার। ভরান। যা লেখেন সেটা শুধু আপনার এই ব্রাউজারেই জমা থাকে,
         কোথাও পাঠানো হয় না।</p>
 

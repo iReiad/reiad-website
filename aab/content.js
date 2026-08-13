@@ -1,12 +1,12 @@
 /* ============================================================
-   content.js — the site's content manifest.
+   content.js: the site's content manifest.
 
    This is the ONE list you edit when you publish something.
    The Insights page, the overlay menu, the Ctrl+K palette, the
    sitemap and the RSS feed all read from here.
 
    Publishing a new article (the whole workflow):
-     1. Write it in /studio.html — paste your text and photos.
+     1. Write it in /studio.html, paste your text and photos.
      2. Download the .html it gives you into /insights/.
      3. Studio also gives you a ready-made entry for this file:
         paste it at the TOP of the ARTICLES array below. Done.
@@ -17,7 +17,7 @@
      dek       one or two sentences of standfirst
      tag       small label above the headline
      topics    array of filter chips on the Insights page
-     date      ISO date, YYYY-MM-DD — sorted newest first
+     date      ISO date, YYYY-MM-DD, sorted newest first
      minutes   reading time; Studio counts it for you
      lang      "en" or "bn"
      status    "live" (default) or "soon" for a teaser card
@@ -78,7 +78,7 @@ export const ARTICLES = [
 /* ============================================================
    The Learn area.
 
-   The curriculum — every stage, section and lesson — lives in
+   The curriculum, every stage, section and lesson, lives in
    /learn/curriculum.js, which is the one file to edit when the
    Learn area changes. It is re-exported here so that the menu,
    the palette and build-meta.mjs have a single import as before.
@@ -185,13 +185,13 @@ export const TERMS = TERM_GROUPS.flatMap((g) =>
 );
 
 /* ============================================================
-   SKILLS — the second thing this site teaches.
+   SKILLS: the second thing this site teaches.
 
    German was the first non-finance school here, and it went into
    the header as its own link. That does not scale: the next four
    subjects would each want a link too, and a nav bar cannot hold
    eleven. So the header carries one word, "Skills", and this list
-   is what sits under it — in the dropdown, on /skills/, and in
+   is what sits under it, in the dropdown, on /skills/, and in
    the overlay menu.
 
    Everything about a school is described HERE, once. Add one
@@ -202,7 +202,7 @@ export const TERMS = TERM_GROUPS.flatMap((g) =>
      slug     stable id, used for the anchor on /skills/
      bn / en  the name, in both languages
      url      where it lives, for a school that has been built
-     icon     a key in /learn/icons.js — see that file's rules
+     icon     a key in /learn/icons.js, see that file's rules
      status   "live" or "soon"
      blurb    one Bangla sentence: what you would actually get
      note     what still has to be written, for a "soon" one
@@ -287,7 +287,7 @@ export const TOOLS = [
 ];
 
 /* ============================================================
-   Pages — the menu, the palette and the sitemap read this.
+   Pages: the menu, the palette and the sitemap read this.
    `private: true` keeps a page out of the sitemap and the menu.
    ============================================================ */
 export const PAGES = [
@@ -348,13 +348,13 @@ export const topics = () => {
 /** Everything the command palette can jump to.
 
     Every lesson in every stage is in here, including the ones
-    still marked "soon" — someone searching for "dissertation"
+    still marked "soon"– someone searching for "dissertation"
     should find the place it will be, not nothing. The hint names
-    the stage, so a result reads as "মূল্যায়ন — মাঝারি · ধাপ ১"
+    the stage, so a result reads as "মূল্যায়ন: মাঝারি · ধাপ ১"
     and the reader knows how deep they are about to go. */
 export const searchIndex = () => [
   /* `private` pages are out. The Article Studio was appearing in
-     public search results — an admin screen offered to every reader
+     public search results, an admin screen offered to every reader
      who typed a letter that happened to match it. `private` already
      kept it out of the menu and the sitemap; search was the one
      place that ignored the flag. */
@@ -390,7 +390,7 @@ export const searchIndex = () => [
   })),
 
   /* German. Both the four Stufen and every Teil inside them,
-     including the ones still marked "soon" — someone searching
+     including the ones still marked "soon"– someone searching
      for "Dativ" should find the place it will be, not nothing.
      The German name is in the title as well as the Bangla one,
      because a learner halfway through the course will reach for
@@ -431,7 +431,7 @@ export const SEARCH_GROUPS = [
   ["writing", "Writing"],
 ];
 
-/** "1 August 2026" — or "" when a piece has no date yet. */
+/** "1 August 2026"– or "" when a piece has no date yet. */
 export function formatDate(iso, lang = "en") {
   if (!iso) return "";
   const d = new Date(`${iso}T00:00:00Z`);

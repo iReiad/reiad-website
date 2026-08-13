@@ -1,5 +1,5 @@
 # ============================================================
-# wrangler.toml — Cloudflare Workers configuration.
+# wrangler.toml, Cloudflare Workers configuration.
 #
 # This site is a Worker with static assets. It used to be written
 # as a Pages project, and for a while it was deployed as neither:
@@ -48,7 +48,7 @@ not_found_handling = "404-page"
 # that is the wrong way round:
 #
 #   /api/*       nothing in aab/ answers these, so this changes no
-#                behaviour — it is here so the intent is on the page.
+#                behaviour, it is here so the intent is on the page.
 #   /insights/*  aab/insights/ holds the pieces written before the
 #                Studio existed. Serving those files first would mean
 #                an article published to D1 under the same slug never
@@ -72,7 +72,7 @@ run_worker_first = ["/api/*", "/insights/*", "/media/*", "/feed.xml", "/sitemap.
 # admin sessions all live here. One database, comfortably inside the
 # free tier for a long time.
 #
-# The ID is not a secret — it identifies a database, it does not open
+# The ID is not a secret: it identifies a database, it does not open
 # one. Deploying with it absent is safe: every dynamic feature checks
 # for the binding and falls back to the static behaviour without it.
 [[d1_databases]]
@@ -113,7 +113,7 @@ bucket_name = "reiad-media"
 # Every quarter hour, any article that came from Notion is checked
 # against its page and pulled in again if it changed. Nothing happens
 # without NOTION_TOKEN, and nothing happens to a page whose Status
-# column says it isn't ready — see functions/_lib/sync.js.
+# column says it isn't ready, see functions/_lib/sync.js.
 #
 # Cron triggers are free and are not billed as requests. Fifteen
 # minutes is a deliberate floor: Notion rate-limits at roughly three

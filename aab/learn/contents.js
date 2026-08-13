@@ -1,5 +1,5 @@
 /* ============================================================
-   contents.js — the live layer on /learn/contents.html.
+   contents.js: the live layer on /learn/contents.html.
 
    The page ships as a complete list in the HTML; this only adds
    the reader's own marks on top of it:
@@ -11,7 +11,7 @@
         just what has been written
 
    With scripts off you get the full index, unticked and
-   unfiltered — which is exactly what an index should be.
+   unfiltered, which is exactly what an index should be.
    ============================================================ */
 
 import { readSet, onProgress } from "/learn/progress.js";

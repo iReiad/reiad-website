@@ -1,5 +1,5 @@
 /* ============================================================
-   skills.js — the Skills index, made live.
+   skills.js: the Skills index, made live.
 
    The page already lists what is here in plain markup, which is
    what a search engine reads and what someone with JavaScript
@@ -9,7 +9,7 @@
 
    Everything comes from the SKILLS list in /content.js. Adding a
    school there puts it in the header dropdown, the overlay menu,
-   the search index and on this page at once — there is no second
+   the search index and on this page at once: there is no second
    list to keep in step, only the fallback <ul> in the markup.
 
    Progress is read from the school's own store. German is the

@@ -1,5 +1,5 @@
 /* ============================================================
-   teil.js — the one line of behaviour a Teil page needs.
+   teil.js: the one line of behaviour a Teil page needs.
 
    Opening a Teil marks it read and records it as the place to
    resume from. Everything else on the page is static HTML and
@@ -8,7 +8,7 @@
    it never does.
 
    The work happens in progress.js, which waits for the page to
-   actually be activated rather than merely prerendered — see the
+   actually be activated rather than merely prerendered, see the
    note there, and /activation.js for the full story.
    ============================================================ */
 

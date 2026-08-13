@@ -1,5 +1,5 @@
 -- ============================================================
--- schema.sql — the whole database.
+-- schema.sql: the whole database.
 --
 --   npx wrangler d1 execute reiad --remote --file=aab/schema.sql
 --
@@ -13,7 +13,7 @@
 --     Analytics are counters per path per day and nothing else.
 --   · Emails are stored only where the person typed one in and
 --     asked for a reply (questions, enquiries, subscribers).
---   · Article bodies are sanitised HTML — the same sanitiser the
+--   · Article bodies are sanitised HTML: the same sanitiser the
 --     Studio has always used, run again server-side on write.
 -- ============================================================
 
@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 
 -- Throttling for the public write endpoints. Keyed by a salted hash
--- of the caller, where the salt rotates daily — so it can slow an
+-- of the caller, where the salt rotates daily, so it can slow an
 -- abuser down without the table ever holding an IP address.
 CREATE TABLE IF NOT EXISTS throttle (
   bucket  TEXT PRIMARY KEY,

@@ -1,5 +1,5 @@
 /* ============================================================
-   /insights/<slug> — renders an article that lives in the
+   /insights/<slug>, renders an article that lives in the
    database, and gets out of the way for one that doesn't.
 
    Order of events:
@@ -55,7 +55,7 @@ function render(article, origin) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <title>${esc(article.title)} — Reiad's Library</title>
+  <title>${esc(article.title)}, Reiad's Library</title>
   <meta name="description" content="${esc(article.dek)}">
   <link rel="canonical" href="${origin}/insights/${article.slug}.html">
   <meta property="og:type" content="article">
@@ -79,7 +79,7 @@ function render(article, origin) {
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <link rel="alternate" type="application/rss+xml" title="Reiad's Library — Insights" href="/feed.xml">
+  <link rel="alternate" type="application/rss+xml" title="Reiad's Library, Insights" href="/feed.xml">
   <meta name="theme-color" content="#0B3D2E">
   <script type="application/ld+json">${jsonLd}</script>
 </head>
@@ -128,7 +128,7 @@ ${article.body}
 
       <div class="note">
         This piece is general education, not investment advice. Rules, rates and
-        fees change — confirm the current details with the relevant institution
+        fees change: confirm the current details with the relevant institution
         before acting on anything here.
       </div>
 
@@ -139,7 +139,7 @@ ${article.body}
         </a>
         <a href="/learn/index.html">
           <span class="mono">শেখার লাইব্রেরি</span>
-          <strong>Learn hub — বাংলায় →</strong>
+          <strong>Learn hub, বাংলায় →</strong>
         </a>
       </div>
     </article>

@@ -1,5 +1,5 @@
 /* ============================================================
-   progress.js — what you've read, and where you were.
+   progress.js, what you've read, and where you were.
 
    Stored in localStorage on the reader's own device. Nothing is
    sent anywhere, nothing needs an account, and clearing browser
@@ -10,7 +10,7 @@
      learn-read   ["share", "start/papers", "basics-2/sectors", …]
                   Lesson ids. Stage basics-1 uses the bare slug so
                   that ticks earned before the Learn area was
-                  restructured are still there — those eighteen
+                  restructured are still there, those eighteen
                   terms were the whole hub once, and someone who
                   read them all should not be told they've read
                   nothing.
@@ -46,7 +46,7 @@ function writeSet(set) {
   try {
     localStorage.setItem(READ_KEY, JSON.stringify([...set]));
   } catch {
-    /* private mode — the tick is a nicety, not a feature */
+    /* private mode: the tick is a nicety, not a feature */
   }
   announce();
 }
@@ -143,7 +143,7 @@ export function currentStage() {
 }
 
 /** Ladder state for a stage: done / now / next / locked-ish.
-    Nothing is ever actually locked — a reader may jump anywhere,
+    Nothing is ever actually locked, a reader may jump anywhere,
     and a stage they haven't earned simply says so. */
 export function stageState(stage) {
   const stats = stageStats(stage);
@@ -197,7 +197,7 @@ export function onProgress(fn) {
   addEventListener("storage", (e) => {
     if (e.key === READ_KEY || e.key === LAST_KEY) fn();
   });
-  /* Coming back via the bfcache — and ONLY then.
+  /* Coming back via the bfcache, and ONLY then.
 
      `pageshow` also fires on an ordinary first load, where it made
      the hub rebuild itself milliseconds after it had just been
@@ -211,7 +211,7 @@ export function onProgress(fn) {
 /* ------------------------------------------------------------
    the lesson page's side of the deal
 
-   Opening a lesson counts as reading it — the rule the eighteen
+   Opening a lesson counts as reading it: the rule the eighteen
    term pages have always used, now applied to every stage.
 
    Two shapes are accepted, because the original term pages are
@@ -222,12 +222,12 @@ export function onProgress(fn) {
                      IS their id (basics-1 ids are bare slugs, see
                      lessonId() in curriculum.js)
 
-   An unwritten lesson marked data-soon is not ticked off — you
+   An unwritten lesson marked data-soon is not ticked off, you
    have not read what has not been written.
 
    And it waits for activation. Hovering a link prerenders the
    page it points at, scripts and all, so without whenActivated
-   this ticked lessons off as the pointer swept across a list —
+   this ticked lessons off as the pointer swept across a list,
    see /activation.js for the full story.
    ------------------------------------------------------------ */
 export function recordVisit(root = document) {
@@ -246,7 +246,7 @@ export function recordVisit(root = document) {
       id,
       stage: stage || "basics-1",
       url: location.pathname,
-      bn: lessonTitle || document.title.split("—")[0].trim(),
+      bn: lessonTitle || document.title.split("–")[0].trim(),
     });
   });
   return id;

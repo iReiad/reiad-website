@@ -1,5 +1,5 @@
 /* ============================================================
-   stock.js — the page. All the DOM, none of the judgement.
+   stock.js: the page. All the DOM, none of the judgement.
 
    Every number displayed here comes out of stock.model.js and
    every word out of stock.i18n.js. This file's job is to put
@@ -10,8 +10,8 @@
 
    Static text carries data-i18n and is filled in on load and on
    every switch. Generated text asks t() for the same keys. The
-   whole page — including the numerals, which become Bengali
-   digits through Intl — re-renders on a switch, so there is no
+   whole page, including the numerals, which become Bengali
+   digits through Intl, re-renders on a switch, so there is no
    state that can be left behind in the other language.
 
    The choice is written to localStorage and read by an inline
@@ -60,8 +60,8 @@ function paintRange(rng) {
    ============================================================ */
 
 let lang = "en";
-/* Whether the language was CHOSEN — by a ?lang= param or by
-   clicking the switcher — as opposed to defaulting. Only a chosen
+/* Whether the language was CHOSEN, by a ?lang= param or by
+   clicking the switcher, as opposed to defaulting. Only a chosen
    language is written back into the URL: otherwise a reader who
    opens ?lang=en, edits an input and copies the link hands over a
    URL with no lang at all, which reopens in Bangla for anyone
@@ -76,7 +76,7 @@ let style = "balanced";
    THE INPUT SPEC
 
    One entry per field. `slider` turns it into a range plus a
-   number box that stay in sync — used for the assumptions you
+   number box that stay in sync, used for the assumptions you
    want to feel your way around (price, the benchmark rates)
    rather than the statement figures, which you copy off a
    report and type once.
@@ -152,7 +152,7 @@ const GROUPS = ["company", "income", "balance", "cash", "dividend", "prior", "ba
 const OPEN_BY_DEFAULT = new Set(["company", "income"]);
 
 /* ============================================================
-   URL STATE — an analysis you can send someone
+   URL STATE, an analysis you can send someone
    ============================================================ */
 
 function readUrl() {
@@ -173,7 +173,7 @@ function readUrl() {
     weights = { ...WEIGHT_PRESETS[style] };
   } else if (handSet) {
     /* A link carrying its own weights is not any of the four
-       presets, so none of them should show as chosen — the chip
+       presets, so none of them should show as chosen: the chip
        would be claiming weights the page is not using. */
     style = "custom";
   }
@@ -223,7 +223,7 @@ function applyLang(next, { save = true } = {}) {
 
 /* The breadcrumb is put in place by /crumbs.js at page load, in
    whatever language the document was in then. Rather than tear
-   it down and rebuild it — which would duplicate its JSON-LD —
+   it down and rebuild it, which would duplicate its JSON-LD,
    the three labels are swapped in place. */
 function localiseCrumbs() {
   const nav = $(".crumbs");
@@ -340,7 +340,7 @@ function fieldNode(f) {
 }
 
 /* Choosing an index has to move the index P/E, or the picker is a
-   control that looks live and is not — which is exactly what it
+   control that looks live and is not, which is exactly what it
    was: selecting DS30 changed nothing anywhere on the page. */
 function onBenchmarkChange() {
   const idx = INDICES[state.benchmark];
@@ -431,7 +431,7 @@ function buildWeights() {
 }
 
 /* ============================================================
-   DRAWING — six charts, no library
+   DRAWING, six charts, no library
    ============================================================ */
 
 /** The score dial: a 240° arc, filled to the score. */
@@ -467,7 +467,7 @@ function dial(score, tone) {
     <path d="${arc(START, START + SWEEP)}" class="dial-track"/>
     ${score === null ? "" : `<path d="${arc(START, end)}" class="dial-fill" data-tone="${tone}"/>`}
     ${ticks}
-    <text x="64" y="70" class="dial-value" data-tone="${tone}">${score === null ? "—" : fmtInt(score, lang)}</text>
+    <text x="64" y="70" class="dial-value" data-tone="${tone}">${score === null ? "–" : fmtInt(score, lang)}</text>
     <text x="64" y="88" class="dial-cap">${esc(t("verdict.outOf", lang))}</text>
   </svg>`;
 }
@@ -483,7 +483,7 @@ function bar(score, gradeName) {
 
     The first version labelled all five anchors on the track and
     they piled on top of each other the moment two landed close
-    together — which they usually do, because that is what a
+    together, which they usually do, because that is what a
     tight valuation range means. So only two things are labelled
     here, and they sit on opposite sides of the bar so they can
     never collide: the price above, the median below. The extremes
@@ -548,7 +548,7 @@ function rangeChart(d, r) {
     nowhere to land: divTax fed a divYieldNet that this file
     referenced exactly zero times, so the slider moved and nothing
     on the page moved with it. It also happens to be the number
-    that matters — the comparison against a sanchayapatra is only
+    that matters: the comparison against a sanchayapatra is only
     honest once the dividend has been taxed. */
 function yieldChart(d, r) {
   const rows = [
@@ -636,7 +636,7 @@ function render() {
   writeUrl();
 }
 
-/* The tone follows the VERDICT, not the raw score — a run capped
+/* The tone follows the VERDICT, not the raw score: a run capped
    down to "hold" must not still be painted green just because the
    composite reads 65. */
 function toneFor(a) {
@@ -674,8 +674,8 @@ function renderVerdict(a) {
      earned. */
   /* The headroom line describes the SCORE's own band. Once the
      cap has overridden that band the line contradicts the verdict
-     printed above it — "2.6 points lower → Hold" under a heading
-     that already reads Hold — so it comes off. */
+     printed above it, "2.6 points lower → Hold" under a heading
+     that already reads Hold, so it comes off. */
   const hr = $("#verdict-headroom");
   if (a.vetoed || a.capped || a.score === null
       || (a.edges.up === null && a.edges.down === null)) {
@@ -721,16 +721,16 @@ function renderTiles(a) {
        <small>${note}</small>
      </div>`);
 
-  tile("t.pe", r.eps > 0 ? `${fmtNum(r.pe, lang, 1)}×` : "—",
+  tile("t.pe", r.eps > 0 ? `${fmtNum(r.pe, lang, 1)}×` : "–",
     r.eps > 0 ? esc(t("t.vsSector", lang, { v: `${fmtNum(d.sectorPE, lang, 1)}×` }))
       : esc(lang === "bn" ? "মুনাফা নেই" : "no profit to divide by"),
     r.eps > 0 ? grade(bandOf("peRel", a)) : "na");
 
-  tile("t.pb", Number.isFinite(r.pb) ? `${fmtNum(r.pb, lang, 2)}×` : "—",
+  tile("t.pb", Number.isFinite(r.pb) ? `${fmtNum(r.pb, lang, 2)}×` : "–",
     esc(t("t.vsSector", lang, { v: `${fmtNum(d.sectorPB, lang, 2)}×` })),
     grade(bandOf("pbRel", a)));
 
-  tile("t.roe", Number.isFinite(r.roe) ? `${fmtNum(r.roe, lang, 1)}%` : "—",
+  tile("t.roe", Number.isFinite(r.roe) ? `${fmtNum(r.roe, lang, 1)}%` : "–",
     esc(t("t.vsSector", lang, { v: `${fmtNum(d.sectorROE, lang, 1)}%` })),
     grade(bandOf("roe", a)));
 
@@ -742,24 +742,24 @@ function renderTiles(a) {
   tile("t.mcap", fmtLakh(r.mcap, lang), esc(lang === "bn" ? "বাজারমূল্য" : "market value"));
 
   if (r.isFinancial) {
-    tile("m.npl", d.npl > 0 ? `${fmtNum(d.npl, lang, 1)}%` : "—",
+    tile("m.npl", d.npl > 0 ? `${fmtNum(d.npl, lang, 1)}%` : "–",
       esc(lang === "bn" ? "খেলাপি ঋণ" : "of the loan book"), grade(bandOf("npl", a)));
-    tile("m.car", d.car > 0 ? `${fmtNum(d.car, lang, 1)}%` : "—",
+    tile("m.car", d.car > 0 ? `${fmtNum(d.car, lang, 1)}%` : "–",
       esc(lang === "bn" ? "মূলধন পর্যাপ্ততা" : "capital adequacy"), grade(bandOf("car", a)));
   } else {
-    tile("t.netDebt", Number.isFinite(r.netDebtEbitda) ? `${fmtNum(r.netDebtEbitda, lang, 2)}×` : "—",
+    tile("t.netDebt", Number.isFinite(r.netDebtEbitda) ? `${fmtNum(r.netDebtEbitda, lang, 2)}×` : "–",
       esc(lang === "bn" ? "নিট ঋণ শোধে কত বছর" : "years of cash profit"),
       grade(bandOf("netDebtEbitda", a)));
-    tile("t.altman", Number.isFinite(r.altmanZ) ? fmtNum(r.altmanZ, lang, 2) : "—",
+    tile("t.altman", Number.isFinite(r.altmanZ) ? fmtNum(r.altmanZ, lang, 2) : "–",
       esc(lang === "bn" ? "৫.৮৫ এর ওপরে নিরাপদ" : "above 5.85 is safe"),
       grade(bandOf("altmanZ", a)));
   }
 
-  tile("t.fScore", r.fTested >= 5 ? fmtInt(r.fScore, lang) : "—",
+  tile("t.fScore", r.fTested >= 5 ? fmtInt(r.fScore, lang) : "–",
     esc(t("t.ofTested", lang, { v: fmtInt(r.fTested, lang) })), grade(bandOf("fScore", a)));
 
   tile("t.mos", Number.isFinite(a.fair.marginOfSafety)
-      ? `${fmtNum(a.fair.marginOfSafety, lang, 0)}%` : "—",
+      ? `${fmtNum(a.fair.marginOfSafety, lang, 0)}%` : "–",
     esc(lang === "bn" ? "মধ্যক অনুমানের তুলনায়" : "against the median anchor"),
     !Number.isFinite(a.fair.marginOfSafety) ? "na"
       : a.fair.marginOfSafety > 25 ? "strong"
@@ -828,7 +828,7 @@ function renderPillars(a) {
           ? esc(t("pillar.notCounted", lang))
           : `${fmtInt(weights[p], lang)}% · ${esc(t("pillar.gives", lang,
               { v: fmtNum(gives, lang, 1) }))}`}</span>
-        <span class="pillar-score" data-grade="${g}">${ps.score === null ? "—" : fmtInt(ps.score, lang)}</span>
+        <span class="pillar-score" data-grade="${g}">${ps.score === null ? "–" : fmtInt(ps.score, lang)}</span>
         ${bar(ps.score, g)}
       </summary>
       <p class="pillar-why">${esc(t(`pillar.${p}.why`, lang))}</p>
@@ -880,7 +880,7 @@ function renderFair(a) {
       <tfoot><tr class="is-total">
         <th>${esc(t("fv.median", lang))}</th>
         <td>${fmtTk(a.fair.mid, lang)}</td>
-        <td>${Number.isFinite(a.fair.marginOfSafety) ? `${fmtNum(a.fair.marginOfSafety, lang, 0)}%` : "—"}</td>
+        <td>${Number.isFinite(a.fair.marginOfSafety) ? `${fmtNum(a.fair.marginOfSafety, lang, 0)}%` : "–"}</td>
       </tr></tfoot>
     </table>` : "";
 }
@@ -926,7 +926,7 @@ function renderPiotroski(a) {
   const { r } = a;
   host.innerHTML = `
     <p class="fscore-head">
-      <b>${r.fTested >= 5 ? `${fmtInt(r.fScore, lang)} / ${fmtInt(r.fTested, lang)}` : "—"}</b>
+      <b>${r.fTested >= 5 ? `${fmtInt(r.fScore, lang)} / ${fmtInt(r.fTested, lang)}` : "–"}</b>
       <span>${esc(t("t.ofTested", lang, { v: fmtInt(r.fTested, lang) }))}</span>
     </p>
     <ul class="checks">${r.fChecks.map((c) => `
@@ -954,7 +954,7 @@ function renderScorecard(a) {
   const shares = new Map();
   {
     /* Each metric's share of the final score. Same decomposition
-       drags() uses, and it sums to 100% across the live rows —
+       drags() uses, and it sums to 100% across the live rows,
        which is the claim the table is making by printing it. */
     const wsum = PILLARS.reduce((s, p) =>
       s + (a.pillars[p]?.score !== null && weights[p] > 0 ? weights[p] : 0), 0);
@@ -969,9 +969,9 @@ function renderScorecard(a) {
   const rows = a.scored.map((s) => `<tr${s.na ? ' class="is-na"' : ""}>
     <th>${esc(t(`m.${s.id}`, lang))}</th>
     <td>${esc(t(`pillar.${s.pillar}`, lang))}</td>
-    <td>${s.na ? "—" : fmtValue(s.raw, s.fmt, lang)}</td>
+    <td>${s.na ? "–" : fmtValue(s.raw, s.fmt, lang)}</td>
     <td>${s.na ? esc(t("na.reason", lang)) : fmtInt(s.score, lang)}</td>
-    <td>${shares.has(s.id) ? `${fmtNum(shares.get(s.id) * 100, lang, 1)}%` : "—"}</td>
+    <td>${shares.has(s.id) ? `${fmtNum(shares.get(s.id) * 100, lang, 1)}%` : "–"}</td>
   </tr>`).join("");
 
   $("#scorecard").innerHTML = `
@@ -1110,7 +1110,7 @@ function init() {
       const was = b.textContent;
       b.textContent = t("a.copied", lang);
       setTimeout(() => { b.textContent = was; }, 1600);
-    } catch { /* clipboard blocked — the URL is in the bar anyway */ }
+    } catch { /* clipboard blocked: the URL is in the bar anyway */ }
   });
   $("#expand-all").addEventListener("click", (e) => {
     const b = e.currentTarget;

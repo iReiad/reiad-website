@@ -1,5 +1,5 @@
 /* ============================================================
-   /api/notion — write in Notion, publish here.
+   /api/notion, write in Notion, publish here.
 
    GET /api/notion/status              is this switched on?
    GET /api/notion/pages?q=&db=        admin: what can I import?
@@ -47,7 +47,7 @@ export async function onRequest(context) {
   const head = route[0] ?? "";
   const token = env.NOTION_TOKEN;
 
-  // "Is this available?" has to answer even when it isn't — that is
+  // "Is this available?" has to answer even when it isn't: that is
   // how the Studio decides whether to show the button at all.
   if (head === "status") {
     return methods(request, {
@@ -190,7 +190,7 @@ export async function onRequest(context) {
         }
         if (err.status === 403) {
           // Notion answers 403 when the token is valid but the
-          // integration lacks the capability being used — reading
+          // integration lacks the capability being used, reading
           // content, most often, which is off by default on an
           // integration created for something else.
           return fail("notion-forbidden", 403, {

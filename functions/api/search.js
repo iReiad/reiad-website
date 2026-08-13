@@ -1,5 +1,5 @@
 /* ============================================================
-   /api/search?q= — search that reads the articles themselves.
+   /api/search?q=, search that reads the articles themselves.
 
    The Ctrl+K palette searches titles from content.js, which is
    fast and works offline but can only find a piece if you already

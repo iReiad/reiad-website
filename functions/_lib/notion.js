@@ -1,5 +1,5 @@
 /* ============================================================
-   _lib/notion.js — turning a Notion page into this site's HTML.
+   _lib/notion.js, turning a Notion page into this site's HTML.
 
    Kept apart from the route that serves it for one reason: this is
    the intricate half and it is pure, so it can be tested without a
@@ -19,7 +19,7 @@ const VERSION = "2022-06-28";
    (50 on the free plan), and an import spends one per block page,
    one per nested list, and one per table. These caps stop a very
    long page from exhausting that mid-conversion and returning half
-   an article — quietly, which is the failure this whole change is
+   an article, quietly, which is the failure this whole change is
    about. Hitting them sets `truncated` so the Studio can say so. */
 export const MAX_BLOCK_FETCHES = 24;
 export const MAX_DEPTH = 3;
@@ -130,7 +130,7 @@ function tableHtml(rows, hasHeader) {
 
   const head = hasHeader && rows.length ? `<thead>${line(rows[0], "th")}</thead>` : "";
   const rest = (hasHeader ? rows.slice(1) : rows).map((r) => line(r, "td")).join("\n");
-  // Wide tables get their own scroller on a phone — the same wrapper
+  // Wide tables get their own scroller on a phone: the same wrapper
   // the Studio's paste sanitiser adds.
   return `<div class="table-scroll"><table>${head}<tbody>${rest}</tbody></table></div>`;
 }
@@ -366,7 +366,7 @@ export function readFields(properties = {}) {
 
   // Whatever the column actually says. "bn" was the only spelling
   // accepted at first, which quietly published every Bangla piece
-  // as English — the column usually says "Bangla".
+  // as English: the column usually says "Bangla".
   out.lang = /^(bn|bng|bangla|bengali|bangladesh|বাংলা)/i
     .test(String(out.lang || "").trim()) ? "bn" : "en";
   out.date = String(out.date || "").slice(0, 10);

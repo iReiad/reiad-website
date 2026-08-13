@@ -1,5 +1,5 @@
 /* ============================================================
-   /feed.xml and /sitemap.xml — the static files, plus the database.
+   /feed.xml and /sitemap.xml: the static files, plus the database.
 
    Both are generated at build time by aab/build-meta.mjs, which
    reads content.js. That is the right source for everything written
@@ -11,7 +11,7 @@
    was live and readable, and absent from the feed and the sitemap.
    Nothing pointed search engines at it and nobody subscribed ever
    saw it. The "get the index entry" button existed to paste it in by
-   hand — which cannot work for an article the Worker publishes,
+   hand, which cannot work for an article the Worker publishes,
    since the Worker cannot commit to the repository.
 
    So this takes the generated file as the base and merges the

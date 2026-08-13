@@ -1,5 +1,5 @@
 /* ============================================================
-   /api/auth/*  — setup, login, logout, me
+   /api/auth/*, setup, login, logout, me
 
    GET  /api/auth/params                 → { salt, iterations }
    POST /api/auth/setup   { salt, iterations, dk }   once, when nothing is set

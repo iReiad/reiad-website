@@ -1,5 +1,5 @@
 /* ============================================================
-   notion.test.mjs — the Notion → HTML conversion.
+   notion.test.mjs: the Notion → HTML conversion.
 
      node functions/_lib/notion.test.mjs
 
@@ -208,7 +208,7 @@ check("textOf joins the parts", textOf([rt("a"), rt("b")]), "ab");
 }
 
 /* ============================================================
-   3. Images — the expiring-URL problem
+   3. Images: the expiring-URL problem
    ============================================================ */
 
 {

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-css.mjs — catch a school's styles leaking into the
+   check-css.mjs, catch a school's styles leaking into the
    whole site.
 
        node aab/check-css.mjs
@@ -17,7 +17,7 @@
    silently restyles the whole site.
 
    Not hypothetical. The German school called one day of its
-   practice book `.tag` — Tag, German for day — and `.tag` is what
+   practice book `.tag`– Tag, German for day, and `.tag` is what
    this site has always called the small label above an article
    card. One rule:
 
@@ -30,16 +30,16 @@
 
    WHAT IT CHECKS
 
-   Every selector at the top level of a school's layer — the ones
+   Every selector at the top level of a school's layer, the ones
    that match anywhere, as opposed to nested `& .thing` rules,
-   which cannot escape their parent — must be anchored by at
+   which cannot escape their parent, must be anchored by at
    least one class that belongs to that school. "Belongs" means
    it appears in that school's markup and nowhere else.
 
-       .merke.warn                 ok — .merke is German-only
-       .deutsch-hero .lede         ok — .deutsch-hero is German-only
-       .buch-tag textarea          ok — .buch-tag is German-only
-       .tag                        FLAGGED — .tag is the whole
+       .merke.warn                 ok, .merke is German-only
+       .deutsch-hero .lede         ok, .deutsch-hero is German-only
+       .buch-tag textarea          ok, .buch-tag is German-only
+       .tag                        FLAGGED, .tag is the whole
                                    site's, so this rule is not
                                    about German at all
 
@@ -51,7 +51,7 @@
    at its own path has no such excuse: nothing under /deutsch/
    should be styling the home page.
 
-   Deliberately dumb — a regex over the stylesheet and a scan of
+   Deliberately dumb, a regex over the stylesheet and a scan of
    the markup, no CSS parser and no browser. It has to finish in
    a second, next to the other checks, or it will not get run.
    ============================================================ */
@@ -84,7 +84,7 @@ function layerBody(name) {
 }
 
 /** Selectors at the top level of a layer body, including inside a
-    top-level @media — those match just as widely. Nested rules are
+    top-level @media, those match just as widely. Nested rules are
     skipped: `& .foo` inside `.bar { … }` can only match in .bar. */
 function topLevelSelectors(body) {
   const clean = body.replace(/\/\*[\s\S]*?\*\//g, "");
@@ -125,7 +125,7 @@ const markup = new Map(
   files.filter((f) => f !== "check-css.mjs").map((f) => [f, readFileSync(join(ROOT, f), "utf8")])
 );
 
-/** Files using a class in a class attribute — not in prose or a
+/** Files using a class in a class attribute, not in prose or a
     selector string, which say nothing about what is on the page. */
 function usedIn(cls) {
   const re = new RegExp(`class(?:Name)?\\s*[=:]\\s*["'\`][^"'\`]*(?<![\\w-])${cls}(?![\\w-])`);
@@ -137,7 +137,7 @@ let failures = 0;
 for (const { layer, owns } of SCHOOLS) {
   const body = layerBody(layer);
   if (body === null) {
-    console.error(`no @layer ${layer} in styles.css — update SCHOOLS in this file`);
+    console.error(`no @layer ${layer} in styles.css, update SCHOOLS in this file`);
     failures++;
     continue;
   }
@@ -155,7 +155,7 @@ for (const { layer, owns } of SCHOOLS) {
     /* A selector is safe when something in it can only mean this
        school: the body class the school's pages carry, or a class
        used nowhere else. Anything else matches the rest of the
-       site — including a selector with no class at all, which is
+       site, including a selector with no class at all, which is
        how a bare `header { position: sticky }` came to pin the
        practice book's day header over the site's own. */
     if (sel.includes(`body.${layer}`)) continue;

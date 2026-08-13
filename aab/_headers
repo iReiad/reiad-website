@@ -1,5 +1,5 @@
 # ============================================================
-# _headers — Cloudflare Pages reads this file and sends these
+# _headers: Cloudflare Pages reads this file and sends these
 # headers with the matching responses. Local preview ignores it,
 # so anything here has to be verified on a deploy.
 # ============================================================

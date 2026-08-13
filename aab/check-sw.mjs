@@ -1,11 +1,11 @@
 /* ============================================================
-   check-sw.mjs — did a precached file change without a VERSION bump?
+   check-sw.mjs, did a precached file change without a VERSION bump?
 
    This exists because the same mistake has now been made twice.
    sw.js precaches the shell, and a precached file is answered from
    the cache that holds it; only a new VERSION empties that cache.
    Change app.js or styles.css without bumping VERSION and every
-   returning visitor keeps the old copy — silently, indefinitely,
+   returning visitor keeps the old copy, silently, indefinitely,
    and invisibly to whoever made the change, because their own
    browser has no service worker in the way during development.
 

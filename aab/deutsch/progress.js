@@ -1,5 +1,5 @@
 /* ============================================================
-   progress.js — what you've read, which days you've done, and
+   progress.js, what you've read, which days you've done, and
    where you were.
 
    The same deal as /learn/progress.js, and deliberately the same
@@ -19,7 +19,7 @@
 
      deutsch-days   ["stufe-1/tag-1", "stufe-1/tag-2", …]
                     Days of the practice book ticked off. A day
-                    is NOT ticked by opening it — you tick it
+                    is NOT ticked by opening it, you tick it
                     yourself, when you have actually spoken it
                     out loud. That is the one promise the book
                     makes, so the page cannot make it for you.
@@ -59,7 +59,7 @@ function saveSet(key, set) {
   try {
     localStorage.setItem(key, JSON.stringify([...set]));
   } catch {
-    /* private mode — the tick is a nicety, not a feature */
+    /* private mode: the tick is a nicety, not a feature */
   }
   announce();
 }
@@ -120,7 +120,7 @@ export function dayStats(stufe) {
     total,
     pct: Math.round((done / total) * 100),
     complete: done === total,
-    /* The first day not yet ticked — where "আজকের পাতা" points.
+    /* The first day not yet ticked, where "আজকের পাতা" points.
        When every day is done it points at the last one rather
        than at nothing, so the button always goes somewhere. */
     next: foundNext ? next : total,
@@ -208,7 +208,7 @@ export function currentStufe() {
   return (last && findStufe(last.stufe)) || STUFEN[STUFEN.length - 1];
 }
 
-/** Ladder state for a Stufe. Nothing is ever actually locked —
+/** Ladder state for a Stufe. Nothing is ever actually locked,
     a learner may jump anywhere, and a Stufe they haven't earned
     simply says so. */
 export function stufeState(stufe) {
@@ -251,7 +251,7 @@ export function onProgress(fn) {
   addEventListener("storage", (e) => {
     if ([READ_KEY, DAYS_KEY, LAST_KEY].includes(e.key)) fn();
   });
-  /* Coming back via the bfcache — and only then. On an ordinary
+  /* Coming back via the bfcache, and only then. On an ordinary
      first load the caller has already painted; a second build
      would detach the element the auto-scroll just aimed at. */
   addEventListener("pageshow", (e) => { if (e.persisted) fn(); });
@@ -260,7 +260,7 @@ export function onProgress(fn) {
 /* ------------------------------------------------------------
    the Teil page's side of the deal
 
-   Opening a Teil counts as reading it — the same rule the Learn
+   Opening a Teil counts as reading it: the same rule the Learn
    area uses. An unwritten Teil marked data-soon is not ticked
    off: you have not read what has not been written.
 
@@ -282,7 +282,7 @@ export function recordVisit(root = document) {
       id,
       stufe: stufe || "stufe-1",
       url: location.pathname,
-      bn: teilTitle || document.title.split("—")[0].trim(),
+      bn: teilTitle || document.title.split("–")[0].trim(),
     });
   });
   return id;

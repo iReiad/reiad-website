@@ -1,11 +1,11 @@
 /* ============================================================
-   engage.js — what a reader can do besides read.
+   engage.js, what a reader can do besides read.
 
    Attaches itself to any article page: reactions, and a
    moderated question box with the answered questions above it.
    Nothing is hard-coded per article and no page markup changes,
-   so every piece written from now on — and every one already
-   published — gets this for free.
+   so every piece written from now on, and every one already
+   published, gets this for free.
 
    If the backend isn't there, this adds nothing and says nothing.
    ============================================================ */
