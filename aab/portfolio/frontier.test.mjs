@@ -19,6 +19,12 @@
    relatives, exactly. The minimum-variance weights have to equal
    Σ⁻¹1 / (1'Σ⁻¹1) whenever that solution is interior. If any of
    those three drift, something upstream is broken.
+
+   The last section is a different kind of check: the fund as it
+   was actually built, run again from daily prices, against the
+   figures it reported at the time. Weights, portfolio beta, the
+   final value of the ten million, and every year's return and
+   volatility all have to come back.
    ============================================================ */
 
 import {
@@ -28,6 +34,7 @@ import {
   frontier, tangency, equalWeight, inverseVariance,
   backtest, underwater, performance, annualReturns,
   screen, SCREEN_DEFAULTS, capmExpected, run, toCsv,
+  AS_BUILT, asBuiltWeights, betaContribution, yearTable,
   COMPANIES, TICKERS, HELD, DATES_2015, PRICES_2015, DATES_OOS, PRICES_OOS,
   BENCHMARK_ANNUAL, CAPM, CHECKS, DEFAULTS, DRIVERS, TRADING_DAYS,
 } from "./frontier.model.js";
@@ -377,6 +384,90 @@ ok("and it slopes upwards", capmExpected(1.5) > capmExpected(0.5));
   ok("and every driver", DRIVERS.every((d) => csv.includes(d.label)));
   ok("and every calendar year of the benchmark",
     Object.keys(BENCHMARK_ANNUAL).every((y) => csv.includes(y)));
+}
+
+/* ---------- 13 · the fund as it was built ---------- */
+{
+  /* The weights the fund was actually run on came out of a
+     Solver run that minimised the sum of w²σ², holding the
+     ten weights to one. That objective has a closed form:
+     weight proportional to one over variance, no correlations
+     anywhere in it. Reproducing the shipped weights from the
+     covariance matrix is what says the Solver converged rather
+     than stopped somewhere near. */
+  const S = covariance(returnMatrix(PRICES_2015, HELD));
+  const iv = inverseVariance(S);
+  const built = asBuiltWeights(HELD);
+  ok("the as-built weights sum to one", Math.abs(sum(built) - 1) < 1e-9);
+  ok("and every one of them is positive", built.every((w) => w > 0));
+  ok("inverse-variance weighting reproduces the weights the fund was run on",
+    iv.every((w, i) => Math.abs(w - built[i]) < 1e-3));
+  ok("asBuiltWeights returns them in the order it was asked for",
+    HELD.every((t, i) => Math.abs(built[i] - AS_BUILT[t]) < 1e-12));
+  ok("and gives an unknown ticker no money",
+    asBuiltWeights([...HELD, "ZZZ"])[HELD.length] === 0);
+
+  /* Beta is a weighted average, so the contributions have to add
+     back to the portfolio figure, and a negative-beta holding has
+     to pull it down rather than up. */
+  const b = betaContribution(built, HELD);
+  close("the beta contributions add to the portfolio beta",
+    sum(b.rows.map((x) => x.contribution)), b.portfolio, 1e-12);
+  close("and the portfolio beta is the one the fund reported", b.portfolio, 0.5188, 0.002);
+  const neg = b.rows.filter((x) => x.beta < 0);
+  ok("the negative-beta holding contributes negatively", neg.every((x) => x.contribution < 0));
+  ok("and the portfolio beta sits below the simple average of its parts",
+    b.portfolio < mean(b.rows.map((x) => x.beta)) + 1e-9);
+
+  /* The five held years, against what the fund reported at the
+     time. Everything here is recomputed from daily prices. */
+  const r = run(DEFAULTS);
+  ok("the fund as built is what loads by default", DEFAULTS.strategy === "asbuilt");
+  ok("and it is run on constant weights, which is how it was reported",
+    DEFAULTS.mode === "rebalance");
+  const nav = r.holdout.chosen.nav;
+  close("ten million becomes the reported final value",
+    nav[nav.length - 1] * 10, 14.94, 0.05);
+  close("and the cumulative return matches the one reported",
+    r.holdout.chosen.performance.cumulative, 0.494, 0.002);
+
+  const years = yearTable(nav, DATES_OOS, b.portfolio);
+  ok("there are five held years", years.length === 5);
+  const reported = {
+    2016: [-0.0063, 0.1857], 2017: [0.2877, 0.0924], 2018: [-0.1243, 0.1356],
+    2019: [0.2553, 0.1556], 2020: [0.0617, 0.3064],
+  };
+  years.forEach((y) => {
+    const [ret, vol] = reported[y.year];
+    close(`${y.year} return matches the reported figure`, y.ret, ret, 5e-4);
+    close(`${y.year} volatility matches the reported figure`, y.vol, vol, 5e-4);
+    close(`${y.year} alpha is return less the CAPM expectation`, y.alpha,
+      y.ret - (y.riskFree + b.portfolio * (y.benchmark - y.riskFree)), 1e-12);
+    close(`${y.year} Sharpe divides excess return by total volatility`, y.sharpe,
+      (y.ret - y.riskFree) / y.vol, 1e-12);
+    close(`${y.year} Treynor divides the same excess by beta`, y.treynor,
+      (y.ret - y.riskFree) / b.portfolio, 1e-12);
+    ok(`${y.year} records whether the index was beaten`,
+      y.beatIndex === y.ret > y.benchmark);
+  });
+  ok("2017 and 2019 beat the index", years.filter((y) => y.beatIndex).length >= 3);
+  ok("2020 is the most volatile of the five",
+    years.every((y) => y.year === 2020 || y.vol < years.find((z) => z.year === 2020).vol));
+  close("the average held year beats the average index year",
+    mean(years.map((y) => y.ret)) - mean(years.map((y) => y.benchmark)), 0.0516, 0.002);
+
+  /* Beta is one number for the whole period, so Treynor ranks the
+     years on excess return alone. Sharpe also prices the path,
+     and 2017 was the calmest year of the five: it should stand
+     further clear of 2019 on Sharpe than it does on Treynor. */
+  const byTreynor = [...years].sort((a, z) => z.treynor - a.treynor).map((y) => y.year);
+  const byExcess = [...years].sort((a, z) => (z.ret - z.riskFree) - (a.ret - a.riskFree)).map((y) => y.year);
+  ok("Treynor ranks the years on excess return alone", byTreynor.join() === byExcess.join());
+  const y17 = years.find((y) => y.year === 2017);
+  const y19 = years.find((y) => y.year === 2019);
+  ok("2017 was the calmest of the five", years.every((y) => y.year === 2017 || y.vol > y17.vol));
+  ok("so Sharpe separates it from 2019 further than Treynor does",
+    y17.sharpe / y19.sharpe > y17.treynor / y19.treynor);
 }
 
 /* ---------- report ---------- */

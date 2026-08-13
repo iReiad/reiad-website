@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v40: the portfolio-construction page was rebuilt around the fund
+        as it was actually held, rather than around the optimised
+        alternatives. styles.css gained the security market line and
+        the negative-beta bar, and is precached, so a returning
+        reader would otherwise get the new charts with none of the
+        rules that colour them.
+
    v39: the portfolio-construction case study landed. content.js
         gained its entry, which is what puts it in the Ctrl+K
         index, and styles.css gained the frontier, the correlation
@@ -205,7 +212,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v39";
+const VERSION = "v40";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

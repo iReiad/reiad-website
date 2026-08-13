@@ -5574,3 +5574,12 @@ German for day, and .tag is what the site has always called
     #hindsight-chart .fin-chart { min-width: 620px; }
   }
 }
+
+@layer work {
+  /* The security market line, and the one holding whose beta is
+     negative: it earns its own colour because a negative
+     contribution reads as an error otherwise. */
+  .line-sml { stroke: var(--ink-soft); stroke-width: 1.4; stroke-dasharray: 4 3; }
+  .chart-stem { stroke: var(--ink-soft); stroke-width: 1; opacity: 0.4; }
+  .bar-negbeta { fill: var(--danger); opacity: 0.55; }
+}

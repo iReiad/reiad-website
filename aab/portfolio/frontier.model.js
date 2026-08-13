@@ -48,6 +48,26 @@
        with both rebalancing conventions, because the choice
        between them is a strategy decision worth several points
        of return and is usually left unstated.
+
+   6 · The fund as it was actually built and run, which is what
+       the page loads with. Its weights came from a Solver run
+       that minimised the sum of w²σ² subject to the weights
+       summing to one, and that objective has a closed form:
+       weight proportional to one over variance. inverseVariance
+       reproduces the shipped weights to within a rounding error,
+       which is the check that the Solver converged to the
+       optimum of its own objective rather than stopped near it.
+       The frontier and the three optimised alternatives stay,
+       because a reader is entitled to ask what else was on the
+       table, but the default is the fund that was held.
+
+   7 · The reporting a fund is judged on: portfolio beta as a
+       weighted average of the holdings' betas, each holding's
+       contribution to it, and year by year the return, the
+       index, alpha against the security market line, volatility,
+       Sharpe and Treynor. Sharpe and Treynor are both quoted
+       because a fund run at half the market's beta is a fund
+       where the two measures are answering different questions.
    ============================================================ */
 
 import {
@@ -297,14 +317,64 @@ export function tangency(mu, S, rf, opts = {}, precomputed = null) {
   return best;
 }
 
-/** Equal weight, the benchmark every optimisation has to beat. */
+/** Equal weight, the reference every allocation is measured against. */
 export const equalWeight = (n) => Array(n).fill(1 / n);
 
-/** Weights inversely proportional to variance: no correlations used. */
+/**
+ * The allocation the fund was built on: minimise the sum of the
+ * weighted variances,
+ *
+ *     minimise Σ wᵢ²σᵢ²   subject to   Σ wᵢ = 1
+ *
+ * which is a risk-based weighting rather than a return-seeking
+ * one. It asks for no view on expected returns at all, only for
+ * each holding's own volatility, and it hands the quiet names
+ * more of the fund and the noisy ones less.
+ *
+ * It also has a closed form. Setting the derivative of the
+ * Lagrangian to zero gives wᵢ ∝ 1/σᵢ², so the answer can be
+ * written down as well as solved, and the two agree here to four
+ * decimal places. That is worth stating because it means the
+ * Solver run behind the original workbook converged to the true
+ * optimum of the objective it was given rather than to a nearby
+ * point that merely looked settled.
+ */
 export function inverseVariance(S) {
   const inv = S.map((row, a) => 1 / row[a]);
   const total = sum(inv);
   return inv.map((v) => v / total);
+}
+
+/**
+ * The weights the fund actually held, as they came out of the
+ * optimisation at the end of 2015 and as they were carried,
+ * unchanged, for the five years that followed.
+ *
+ * They are kept here as the fixed vector that was used rather
+ * than recomputed on every page load, because these are the
+ * numbers the money was in. inverseVariance() above reproduces
+ * them from the same prices to within a hundredth of a
+ * percentage point, which frontier.test.mjs checks.
+ */
+export const AS_BUILT = {
+  BAG: 0.1761, CWK: 0.1533, FRAS: 0.0937, BOWL: 0.0853, IGG: 0.1669,
+  KLR: 0.1095, PAY: 0.0764, PLUS: 0.0136, ROR: 0.0802, TEP: 0.0450,
+};
+
+export const asBuiltWeights = (tickers) => {
+  const w = tickers.map((t) => AS_BUILT[t] ?? 0);
+  const total = sum(w);
+  return total > 0 ? w.map((x) => x / total) : equalWeight(tickers.length);
+};
+
+/** Portfolio beta, and what each holding contributes to it. */
+export function betaContribution(weights, tickers, companies = COMPANIES) {
+  const rows = tickers.map((t, i) => {
+    const c = companies.find((x) => x.ticker === t);
+    const beta = c ? c.beta : NaN;
+    return { ticker: t, weight: weights[i], beta, contribution: weights[i] * beta };
+  });
+  return { rows, portfolio: sum(rows.map((r) => r.contribution)) };
 }
 
 /* ------------------------------------------------------------
@@ -384,6 +454,40 @@ export function annualReturns(nav, dates) {
   });
 }
 
+/**
+ * The measures a fund is reported on, year by year: return
+ * against the index, the excess over what its market exposure
+ * alone would have earned, and the two risk-adjusted ratios.
+ *
+ *     α       = Rp − [rf + βp(Rm − rf)]
+ *     Sharpe  = (Rp − rf) / σp        risk as total volatility
+ *     Treynor = (Rp − rf) / βp        risk as market exposure only
+ *
+ * Sharpe divides by everything that moved; Treynor divides only
+ * by the part the market explains. For a fund built to run at a
+ * low beta the two say quite different things, which is the
+ * reason to quote both rather than pick one.
+ */
+export function yearTable(nav, dates, portfolioBeta, {
+  benchmark = BENCHMARK_ANNUAL, riskFree = RISK_FREE,
+} = {}) {
+  const years = annualReturns(nav, dates);
+  return years.map(({ year, ret }) => {
+    const idx = dates.map((d, i) => [d, i]).filter(([d]) => d.slice(0, 4) === String(year)).map(([, i]) => i);
+    const daily = idx.slice(1).map((i) => nav[i] / nav[i - 1] - 1);
+    const rf = riskFree[year] ?? riskFree[String(year)] ?? 0.005;
+    const rm = benchmark[year] ?? benchmark[String(year)];
+    const vol = annualiseVol(stdev(daily));
+    return {
+      year, ret, benchmark: rm, riskFree: rf, vol,
+      alpha: Number.isFinite(rm) ? ret - (rf + portfolioBeta * (rm - rf)) : NaN,
+      sharpe: (ret - rf) / vol,
+      treynor: portfolioBeta ? (ret - rf) / portfolioBeta : NaN,
+      beatIndex: Number.isFinite(rm) ? ret > rm : null,
+    };
+  });
+}
+
 /* ------------------------------------------------------------
    6 · The screen
    ------------------------------------------------------------ */
@@ -421,9 +525,16 @@ export const capmExpected = (beta, { riskFree, marketReturn } = CAPM) =>
    ------------------------------------------------------------ */
 export const DEFAULTS = {
   cap: 0.35,
-  shrinkage: 0.15,
-  strategy: "tangency",     // "tangency" | "minvar" | "equal" | "inverse" | "custom"
-  mode: "hold",             // "hold" | "rebalance"
+  shrinkage: 0,
+  /* The fund as it was built and held. The other four are
+     comparisons, offered because the frontier chart marks them
+     anyway and a reader is entitled to ask what the alternatives
+     would have done. */
+  strategy: "asbuilt",      // "asbuilt" | "minvar" | "tangency" | "equal"
+  /* Weights held constant, which is how the fund was run and
+     reported: the alternative, buying once and never trading, is
+     a different strategy and is offered as one. */
+  mode: "rebalance",        // "rebalance" | "hold"
   riskFree: 0.005,
   useAll: false,            // optimise over all thirteen candidates, or only the ten held
 };
@@ -455,12 +566,14 @@ export function run(a = DEFAULTS) {
   const eq = equalWeight(tickers.length);
   const iv = inverseVariance(S);
 
+  const built = asBuiltWeights(tickers);
   const chosen = {
+    asbuilt: built,
     minvar: mv,
     tangency: tan ? tan.weights : mv,
     equal: eq,
     inverse: iv,
-  }[a.strategy] ?? eq;
+  }[a.strategy] ?? built;
 
   const point = (w) => ({
     weights: w,
@@ -504,15 +617,18 @@ export function run(a = DEFAULTS) {
       tangency: point(tan ? tan.weights : mv),
       equal: point(eq),
       inverse: point(iv),
+      asbuilt: point(built),
       chosen: point(chosen),
     },
     weights: chosen,
     risk: riskContributions(chosen, S),
     holdout: {
       chosen: build(chosen),
+      asbuilt: build(built),
       equal: build(eq),
       minvar: build(mv),
     },
+    beta: betaContribution(chosen, tickers),
     benchmark: BENCHMARK_ANNUAL,
   };
 

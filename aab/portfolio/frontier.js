@@ -11,8 +11,8 @@
 
 import {
   COMPANIES, HELD, TICKERS, DATES_2015, DATES_OOS, BENCHMARK_ANNUAL, CHECKS,
-  DEFAULTS, DRIVERS, run, toCsv, screen, SCREEN_DEFAULTS,
-  annualiseReturn, annualiseVol, backtest, performance, PRICES_OOS, equalWeight,
+  DEFAULTS, DRIVERS, run, toCsv, screen, SCREEN_DEFAULTS, CAPM, capmExpected,
+  annualiseReturn, annualiseVol, PRICES_OOS, PRICES_2015, returnMatrix, yearTable,
 } from "/portfolio/frontier.model.js";
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -59,6 +59,7 @@ const state = { ...DEFAULTS };
 const edited = new Set();
 
 const STRATEGY_BLURB = {
+  asbuilt: "The fund as it was actually built: weights set so that each holding contributes the same amount of variance, which for a portfolio of ten mid-caps means the calmest names get the most money. It uses the volatilities and takes no view on returns.",
   tangency: "The highest Sharpe ratio available on the estimated frontier. It is also the point that leans hardest on the expected returns, which are the least reliable thing in the estimate.",
   minvar: "The lowest variance available under the constraints. It needs no view on returns at all, only the covariance matrix, which is the half of the estimate worth trusting.",
   equal: "The same amount in each. No estimation, no optimisation, and the benchmark that every clever method has to beat before it has earned its keep.",
@@ -69,7 +70,7 @@ function readUrl() {
   const q = new URLSearchParams(location.search);
   const s = q.get("s");
   if (s && STRATEGY_BLURB[s]) state.strategy = s;
-  if (q.get("mode") === "rebalance") state.mode = "rebalance";
+  if (q.get("mode") === "hold") state.mode = "hold";
   if (q.get("u") === "all") state.useAll = true;
   DRIVERS.forEach((d) => {
     const v = q.get(d.key);
@@ -470,7 +471,7 @@ function drawRisk(r) {
 }
 
 /* ------------------------------------------------------------
-   6 · drawdown, annual, hindsight, rebalancing
+   6 · drawdown, annual
    ------------------------------------------------------------ */
 function drawDrawdown(r) {
   const host = $("#dd-chart");
@@ -545,107 +546,244 @@ function drawAnnual(r) {
   host.replaceChildren(svg);
 }
 
-function drawHindsight(r) {
-  const host = $("#hindsight-chart");
+/* ------------------------------------------------------------
+   the security market line
+   ------------------------------------------------------------ */
+function drawSml() {
+  const host = $("#sml-chart");
   if (!host) return;
   const W = 760;
-  const H = 300;
-  const half = W / 2;
-  const pad = { t: 30, b: 36, l: 52, r: 18 };
-  const iw = half - pad.l - pad.r;
+  const H = 330;
+  const pad = { t: 20, r: 24, b: 40, l: 58 };
+  const iw = W - pad.l - pad.r;
   const ih = H - pad.t - pad.b;
 
-  const panels = [
-    { title: "estimated on 2015", front: r.frontier.efficient, chosen: r.points.chosen, equal: r.points.equal, x0: 0 },
-    { title: "what 2016 to 2020 offered", front: r.realised.frontier.efficient, chosen: r.realised.chosen, equal: r.realised.equal, x0: half },
-  ];
-  const allV = panels.flatMap((p) => [...p.front.map((q) => q.vol), p.chosen.vol, p.equal.vol]);
-  const allR = panels.flatMap((p) => [...p.front.map((q) => q.ret), p.chosen.ret, p.equal.ret]);
-  const xhi = Math.max(...allV) * 1.08;
-  const ylo = Math.min(...allR, 0) * 1.15;
-  const yhi = Math.max(...allR) * 1.12;
-
-  const svg = chart(W, H, "The estimated frontier against the frontier that was actually available");
-  panels.forEach((p) => {
-    const X = (v) => p.x0 + pad.l + (v / xhi) * iw;
-    const Y = (v) => pad.t + ih - ((v - ylo) / (yhi - ylo)) * ih;
-    svg.append(text(p.x0 + pad.l, pad.t - 12, p.title, "chart-label-sm", "start"));
-    for (let g = 0; g <= 4; g++) {
-      const v = ylo + ((yhi - ylo) * g) / 4;
-      svg.append(el("line", { x1: p.x0 + pad.l, x2: p.x0 + half - pad.r, y1: Y(v), y2: Y(v), class: "chart-grid" }));
-      if (p.x0 === 0) svg.append(text(pad.l - 6, Y(v) + 3, pc(v, 0), "chart-label", "end"));
-    }
-    svg.append(el("line", { x1: p.x0 + pad.l, x2: p.x0 + half - pad.r, y1: Y(0), y2: Y(0), class: "chart-zero-strong" }));
-    svg.append(path(p.front.map((q) => [X(q.vol), Y(q.ret)]), "line-frontier"));
-    svg.append(el("circle", { cx: X(p.equal.vol), cy: Y(p.equal.ret), r: 4.5, class: "dot-equal" }));
-    svg.append(el("circle", { cx: X(p.chosen.vol), cy: Y(p.chosen.ret), r: 6, class: "dot-chosen" }));
-    [0.1, 0.2, 0.3].forEach((v) => {
-      if (v < xhi) svg.append(text(X(v), H - 16, pc(v, 0), "chart-label"));
-    });
-    svg.append(text(p.x0 + pad.l + iw / 2, H - 2, "annualised volatility", "chart-label-sm"));
+  /* Required return comes off the line; realised return is the
+     2015 daily mean annualised, computed here from the same
+     matrix the covariance is built from, so the two halves of
+     the page cannot drift apart. */
+  const R = returnMatrix(PRICES_2015, TICKERS);
+  const realised = TICKERS.map((_, j) =>
+    annualiseReturn(R.reduce((acc, row) => acc + row[j], 0) / R.length));
+  const pts = TICKERS.map((t, j) => {
+    const c = COMPANIES.find((x) => x.ticker === t);
+    return {
+      ticker: t, beta: c.beta, required: capmExpected(c.beta),
+      realised: realised[j], held: HELD.includes(t),
+    };
   });
+
+  const blo = Math.min(...pts.map((p) => p.beta), 0) - 0.2;
+  const bhi = Math.max(...pts.map((p) => p.beta)) + 0.2;
+  const vals = [...pts.map((p) => p.realised), ...pts.map((p) => p.required),
+    capmExpected(blo), capmExpected(bhi)];
+  const ylo = Math.min(...vals) - 0.06;
+  const yhi = Math.max(...vals) + 0.06;
+  const X = (v) => pad.l + ((v - blo) / (bhi - blo)) * iw;
+  const Y = (v) => pad.t + ih - ((v - ylo) / (yhi - ylo)) * ih;
+
+  const svg = chart(W, H, "What the security market line asks of each candidate, against what 2015 delivered");
+  for (let g = 0; g <= 5; g++) {
+    const v = ylo + ((yhi - ylo) * g) / 5;
+    svg.append(el("line", { x1: pad.l, x2: W - pad.r, y1: Y(v), y2: Y(v), class: "chart-grid" }));
+    svg.append(text(pad.l - 6, Y(v) + 3, pc(v, 0), "chart-label", "end"));
+  }
+  svg.append(el("line", { x1: pad.l, x2: W - pad.r, y1: Y(0), y2: Y(0), class: "chart-zero-strong" }));
+  svg.append(el("line", {
+    x1: X(blo), y1: Y(capmExpected(blo)), x2: X(bhi), y2: Y(capmExpected(bhi)), class: "line-sml",
+  }));
+  svg.append(text(X(bhi) - 4, Y(capmExpected(bhi)) - 8, "required by CAPM", "chart-label-sm", "end"));
+
+  /* The gap is the point of the chart, so it is drawn rather
+     than left to the eye to measure. */
+  pts.forEach((p) => {
+    svg.append(el("line", {
+      x1: X(p.beta), x2: X(p.beta), y1: Y(p.required), y2: Y(p.realised), class: "chart-stem",
+    }));
+  });
+
+  /* Labels collide badly around beta 0.5, where six of the
+     thirteen sit. Place each one above its dot if that box is
+     free, otherwise below, otherwise further out. */
+  const taken = [];
+  const free = (x, y) => !taken.some((t) => Math.abs(t.x - x) < 26 && Math.abs(t.y - y) < 11);
+  pts.forEach((p) => {
+    const cx = X(p.beta);
+    const cy = Y(p.realised);
+    svg.append(el("circle", {
+      cx, cy, r: p.held ? 5 : 3.4, class: p.held ? "dot-chosen" : "dot-asset",
+    }));
+    const y = [cy - 10, cy + 15, cy - 22, cy + 27].find((c) => free(cx, c)) ?? cy - 10;
+    taken.push({ x: cx, y });
+    svg.append(text(cx, y, p.ticker, p.held ? "chart-tag-held" : "chart-tag-asset"));
+  });
+
+  [-0.5, 0, 0.5, 1].forEach((b) => {
+    if (b > blo && b < bhi) svg.append(text(X(b), H - 16, dp(b, 1), "chart-label"));
+  });
+  svg.append(text(pad.l + iw / 2, H - 3, "beta", "chart-label-sm"));
   host.replaceChildren(svg);
 
-  const note = $("#hindsight-note");
+  const label = $("#sml-label");
+  if (label) label.textContent = `risk-free ${pc(CAPM.riskFree, 2)} · market ${pc(CAPM.marketReturn, 1)}`;
+  const note = $("#sml-note");
   if (note) {
-    const gapVol = r.realised.chosen.vol - r.points.chosen.vol;
-    note.textContent = `The estimate said ${pc(r.points.chosen.vol)} volatility; the five years that `
-      + `followed delivered ${pc(r.realised.chosen.vol)}, ${gapVol > 0 ? "more" : "less"} by `
-      + `${pc(Math.abs(gapVol))}. On the right, the large dot is where the chosen weights actually `
-      + "landed and the curve is the best that was available with hindsight. The distance between "
-      + "them is the cost of estimating fifty-five numbers from a single year, and no amount of care "
-      + "in the optimisation closes it.";
+    const above = pts.filter((p) => p.realised > p.required);
+    const gap = Math.max(...pts.map((p) => Math.abs(p.realised - p.required)));
+    note.textContent = "The dashed line is what each beta has to earn. The dots are what 2015 actually "
+      + `paid, and the stem between them is the difference. ${above.length} of the ${pts.length} `
+      + `candidates cleared the line that year and the widest miss either way is ${pc(gap)}, which is `
+      + "far too large to read as mispricing: it is what one year of daily prices looks like when you "
+      + `ask it for an expected return. ${HELD.length} of these went into the fund, and only `
+      + `${pts.filter((p) => p.held && p.realised > p.required).length} of them had cleared the line in `
+      + "that year, which is a fair sign that the choosing was not done on this chart. One of them, KLR, "
+      + "has a negative beta, so the line asks it for less than cash and it drags the fund's whole "
+      + "market sensitivity down.";
   }
 }
 
-function drawRebalance(r) {
-  const host = $("#rebal-chart");
+/* ------------------------------------------------------------
+   composition: weights, and what each contributes to beta
+   ------------------------------------------------------------ */
+function drawWeightsChart(r) {
+  const host = $("#weights-chart");
   if (!host) return;
-  const testable = r.testable;
-  const w = r.tickers.map((t, i) => (testable.includes(t) ? r.weights[i] : 0));
-  const total = w.reduce((a, b) => a + b, 0);
-  const renorm = testable.map((t) => w[r.tickers.indexOf(t)] / (total || 1));
-  const hold = backtest(renorm, PRICES_OOS, testable, { mode: "hold" });
-  const rebal = backtest(renorm, PRICES_OOS, testable, { mode: "rebalance" });
-
-  const W = 760;
-  const H = 260;
-  const pad = { t: 16, r: 66, b: 30, l: 52 };
+  const W = 370;
+  const rowH = 22;
+  const H = r.tickers.length * rowH + 24;
+  const pad = { t: 12, r: 54, b: 8, l: 62 };
   const iw = W - pad.l - pad.r;
-  const ih = H - pad.t - pad.b;
-  const all = [...hold, ...rebal];
-  const lo = Math.min(...all) * 0.98;
-  const hi = Math.max(...all) * 1.02;
-  const X = (i) => pad.l + (i / (hold.length - 1)) * iw;
-  const Y = (v) => pad.t + ih - ((v - lo) / (hi - lo)) * ih;
+  const max = Math.max(...r.weights) * 1.05;
+  const svg = chart(W, H, "Weight of each holding");
+  r.tickers.forEach((t, i) => {
+    const y = pad.t + i * rowH;
+    svg.append(el("rect", {
+      x: pad.l, y: y + 3, width: Math.max(1, (r.weights[i] / max) * iw), height: rowH - 9,
+      class: "bar-weight",
+    }));
+    svg.append(text(pad.l - 8, y + rowH / 2 + 1, t, "chart-row-label", "end"));
+    svg.append(text(pad.l + (r.weights[i] / max) * iw + 6, y + rowH / 2 + 1,
+      pc(r.weights[i]), "chart-coef", "start"));
+  });
+  host.replaceChildren(svg);
+}
 
-  const svg = chart(W, H, "Buy and hold against rebalancing, same weights");
-  for (let g = 0; g <= 4; g++) {
-    const v = lo + ((hi - lo) * g) / 4;
-    svg.append(el("line", { x1: pad.l, x2: W - pad.r, y1: Y(v), y2: Y(v), class: "chart-grid" }));
-    svg.append(text(pad.l - 6, Y(v) + 3, `£${dp(v * 10, 1)}m`, "chart-label", "end"));
-  }
-  svg.append(path(hold.map((v, i) => [X(i), Y(v)]), "line-hold"));
-  svg.append(path(rebal.map((v, i) => [X(i), Y(v)]), "line-rebal"));
-  svg.append(text(W - pad.r + 4, Y(hold[hold.length - 1]) + 3, "buy and hold", "chart-label-sm", "start"));
-  svg.append(text(W - pad.r + 4, Y(rebal[rebal.length - 1]) + 3, "rebalanced", "chart-label-sm", "start"));
-  [2016, 2018, 2020].forEach((y) => {
-    const i = DATES_OOS.findIndex((d) => d.startsWith(String(y)));
-    if (i >= 0) svg.append(text(X(i), H - 8, String(y), "chart-label"));
+function drawBeta(r) {
+  const host = $("#beta-chart");
+  if (!host) return;
+  const rows = r.beta.rows;
+  const W = 370;
+  const rowH = 22;
+  const H = rows.length * rowH + 24;
+  const pad = { t: 12, r: 54, b: 8, l: 62 };
+  const iw = W - pad.l - pad.r;
+  const max = Math.max(...rows.map((x) => Math.abs(x.contribution))) * 1.1;
+  const X = (v) => pad.l + ((v + max) / (2 * max)) * iw;
+  const svg = chart(W, H, "Beta contribution of each holding");
+  svg.append(el("line", { x1: X(0), x2: X(0), y1: pad.t, y2: H - pad.b, class: "chart-zero-strong" }));
+  rows.forEach((x, i) => {
+    const y = pad.t + i * rowH;
+    svg.append(el("rect", {
+      x: Math.min(X(0), X(x.contribution)), y: y + 3,
+      width: Math.max(1, Math.abs(X(x.contribution) - X(0))), height: rowH - 9,
+      class: x.contribution < 0 ? "bar-negbeta" : "bar-risk",
+    }));
+    svg.append(text(pad.l - 8, y + rowH / 2 + 1, x.ticker, "chart-row-label", "end"));
+    svg.append(text(W - pad.r + 4, y + rowH / 2 + 1, dp(x.contribution), "chart-coef", "start"));
   });
   host.replaceChildren(svg);
 
-  const label = $("#rebal-label");
-  if (label) label.textContent = `${state.strategy === "equal" ? "equal weights" : "the chosen weights"}, both conventions`;
-  const note = $("#rebal-note");
+  const note = $("#beta-note");
   if (note) {
-    const gap = rebal[rebal.length - 1] - hold[hold.length - 1];
-    note.textContent = `The same weights end at £${dp(hold[hold.length - 1] * 10, 2)}m held and `
-      + `£${dp(rebal[rebal.length - 1] * 10, 2)}m rebalanced, a difference of `
-      + `${pc(Math.abs(gap / hold[hold.length - 1]))} of the final value. `
-      + "Individually these holdings are far more volatile than the portfolio is, and rebalancing "
-      + "harvests that gap; buy and hold lets the winners run instead. Neither is right, but "
-      + "reporting one while describing the other is how a backtest ends up meaning nothing.";
+    const neg = rows.filter((x) => x.beta < 0).map((x) => x.ticker);
+    note.textContent = `The contributions add to ${dp(r.beta.portfolio)}, so the fund carries about `
+      + `${Math.round(r.beta.portfolio * 100)}% of the market's sensitivity. `
+      + (neg.length
+        ? `${neg.join(" and ")} contributes negatively, which is what pulls the total below the average of its parts.`
+        : "No holding contributes negatively at these weights.");
+  }
+}
+
+/* ------------------------------------------------------------
+   the year table, and the two years worth reading
+   ------------------------------------------------------------ */
+function buildYearsTable(years, equalPerf) {
+  const host = $("#years-table");
+  if (!host) return;
+  const table = document.createElement("table");
+  table.className = "fin-table";
+  const thead = document.createElement("thead");
+  const hr = document.createElement("tr");
+  ["Year", "Portfolio", "FTSE 250", "Alpha", "Volatility", "Sharpe", "Treynor"].forEach((h, i) => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    if (i) th.className = "col-forecast";
+    hr.append(th);
+  });
+  thead.append(hr);
+  table.append(thead);
+
+  const tbody = document.createElement("tbody");
+  years.forEach((y) => {
+    const tr = document.createElement("tr");
+    const th = document.createElement("th");
+    th.scope = "row";
+    th.textContent = String(y.year);
+    tr.append(th);
+    tr.append(cell(signedPc(y.ret), y.ret < 0 ? "is-negative" : ""));
+    tr.append(cell(signedPc(y.benchmark)));
+    tr.append(cell(signedPc(y.alpha), y.alpha > 0 ? "is-positive" : "is-negative"));
+    tr.append(cell(pc(y.vol)));
+    tr.append(cell(dp(y.sharpe)));
+    tr.append(cell(dp(y.treynor)));
+    tbody.append(tr);
+  });
+  const m = (f) => years.reduce((a, y) => a + f(y), 0) / years.length;
+  const avg = document.createElement("tr");
+  avg.className = "is-total has-rule";
+  const th = document.createElement("th");
+  th.scope = "row";
+  th.textContent = "Average";
+  avg.append(th);
+  avg.append(cell(signedPc(m((y) => y.ret))));
+  avg.append(cell(signedPc(m((y) => y.benchmark ?? 0))));
+  avg.append(cell(signedPc(m((y) => y.alpha))));
+  avg.append(cell(pc(m((y) => y.vol))));
+  avg.append(cell(""));
+  avg.append(cell(""));
+  tbody.append(avg);
+  table.append(tbody);
+  host.replaceChildren(table);
+
+  const note = $("#years-note");
+  if (note) {
+    const beat = years.filter((y) => y.beatIndex).length;
+    note.textContent = `The fund beat the index in ${beat} of the ${years.length} years and averaged `
+      + `${pc(m((y) => y.ret))} against ${pc(m((y) => y.benchmark ?? 0))}. `
+      + `Weighting the same ten holdings equally would have returned ${pc(equalPerf.cumulative)} over the `
+      + "whole period, which is the comparison worth keeping in view: at ten holdings, which ten they are "
+      + "matters more than how they are weighted.";
+  }
+}
+
+function writeScenarios(years, r) {
+  const y2017 = years.find((y) => y.year === 2017);
+  const y2020 = years.find((y) => y.year === 2020);
+  const a = $("#scenario-2017");
+  if (a && y2017) {
+    a.textContent = `The mid-cap index rose ${pc(y2017.benchmark)} and the fund returned `
+      + `${pc(y2017.ret)}, at a beta of ${dp(r.beta.portfolio)}. Market exposure alone would have earned `
+      + `about ${pc(CAPM.riskFree + r.beta.portfolio * (y2017.benchmark - CAPM.riskFree))}, so most of the `
+      + `rest is stock selection: ${signedPc(y2017.alpha)} of alpha, at the lowest volatility of the five `
+      + `years, ${pc(y2017.vol)}, for a Sharpe of ${dp(y2017.sharpe)}.`;
+  }
+  const b = $("#scenario-2020");
+  if (b && y2020) {
+    b.textContent = `The index fell ${pc(Math.abs(y2020.benchmark))} across the year and the fund still `
+      + `returned ${signedPc(y2020.ret)}, but the path was violent: volatility reached ${pc(y2020.vol)}, `
+      + `twice any other year here, and the deepest drawdown of the whole period, `
+      + `${pc(r.holdout.chosen.performance.maxDrawdown)}, arrived inside a few weeks in February and March. `
+      + "Holding low-beta names did not prevent that, because in those weeks almost everything fell together.";
   }
 }
 
@@ -674,40 +812,42 @@ function render() {
   }
 
   const c = r.holdout.chosen.performance;
-  const e = r.holdout.equal.performance;
-  const gap = c.cumulative - e.cumulative;
+  const years = yearTable(r.holdout.chosen.nav, DATES_OOS, r.beta.portfolio);
+  const finalNav = r.holdout.chosen.nav[r.holdout.chosen.nav.length - 1] * 10;
+  const avg = years.reduce((a, y) => a + y.ret, 0) / years.length;
+  const avgBench = years.reduce((a, y) => a + (y.benchmark ?? 0), 0) / years.length;
+  const benchCum = years.reduce((a, y) => a * (1 + (y.benchmark ?? 0)), 1) - 1;
+  const beat = years.filter((y) => y.beatIndex).length;
 
   const verdict = $("#verdict");
   if (verdict) {
-    verdict.dataset.state = gap >= 0 ? "up" : "down";
-    $(".verdict-value", verdict).textContent = signedPc(gap);
-    $(".verdict-detail", verdict).textContent = gap >= 0
-      ? `The chosen weights returned ${pc(c.cumulative)} against ${pc(e.cumulative)} for equal weight, `
-        + `at ${pc(c.vol)} volatility against ${pc(e.vol)}. On this window the optimisation earned its keep.`
-      : `The chosen weights returned ${pc(c.cumulative)} against ${pc(e.cumulative)} for equal weight, `
-        + `at ${pc(c.vol)} volatility against ${pc(e.vol)}. Estimating a covariance matrix from one year `
-        + "and optimising against it did not beat putting the same amount in each, which is the most "
-        + "reliably reproduced result in the portfolio-choice literature and is worth meeting once in person.";
+    verdict.dataset.state = c.cumulative >= 0 ? "up" : "down";
+    $(".verdict-value", verdict).textContent = `\u00a3${dp(finalNav, 2)}m`;
+    $(".verdict-detail", verdict).textContent =
+      `\u00a310m put into these ten holdings at the start of 2016 and rebalanced back to the same `
+      + `weights finished at \u00a3${dp(finalNav, 2)}m, a cumulative ${signedPc(c.cumulative)} against `
+      + `${signedPc(benchCum)} for the FTSE 250 compounded over the same years. It beat `
+      + `the index in ${beat} of the ${years.length} years, at a beta of ${dp(r.beta.portfolio)}, so a little `
+      + "over half the market's sensitivity. The deepest hole along the way was "
+      + `${pc(c.maxDrawdown)}, in the spring of 2020.`;
   }
 
   const tiles = {
-    ret: pc(c.cumulative),
+    ret: signedPc(c.cumulative),
     cagr: pc(c.cagr),
-    vol: pc(c.vol),
+    beta: dp(r.beta.portfolio),
     sharpe: dp(c.sharpe),
     dd: pc(c.maxDrawdown),
-    concentration: pc(Math.max(...r.weights)),
+    vsindex: `${signedPc(avg)} v ${signedPc(avgBench)}`,
   };
   Object.entries(tiles).forEach(([k, v]) => {
     const node = $(`[data-tile="${k}"] .tile-value`);
     if (node) node.textContent = v;
   });
-  const expected = $("#vol-expected");
-  if (expected) expected.textContent = pc(r.points.chosen.vol);
   const ddTile = $('[data-tile="dd"]');
   if (ddTile) ddTile.dataset.tone = c.maxDrawdown < -0.35 ? "bad" : c.maxDrawdown < -0.25 ? "warn" : "good";
-  const volTile = $('[data-tile="vol"]');
-  if (volTile) volTile.dataset.tone = c.vol > r.points.chosen.vol * 1.15 ? "warn" : "good";
+  const vsTile = $('[data-tile="vsindex"]');
+  if (vsTile) vsTile.dataset.tone = avg > avgBench ? "good" : "warn";
 
   drawFrontier(r);
   drawNav(r);
@@ -718,8 +858,11 @@ function render() {
   drawRisk(r);
   drawDrawdown(r);
   drawAnnual(r);
-  drawHindsight(r);
-  drawRebalance(r);
+  drawSml();
+  drawWeightsChart(r);
+  drawBeta(r);
+  buildYearsTable(years, r.holdout.equal.performance);
+  writeScenarios(years, r);
 }
 
 /* ------------------------------------------------------------
@@ -729,7 +872,7 @@ function init() {
   if (!$("#fund")) return;
 
   const title = $("#fund-title");
-  if (title) title.textContent = "Ten FTSE 250 holdings, screened and optimised";
+  if (title) title.textContent = "The fund as it was built, reproduced from daily closes";
   const meta = $("#fund-meta");
   if (meta) {
     meta.textContent = `estimated on ${DATES_2015.length} trading days of 2015 · held through `
