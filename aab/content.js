@@ -117,11 +117,24 @@ import {
   dhapUrl, lessonUrl as darsUrl, totalDays as quranDays,
 } from "./quran/curriculum.js";
 
+/* The fourth school, and the same argument a fourth time:
+   nothing about phrasal verbs belongs in a file about Akkusativ
+   either. The aliases matter for the same reason as the Quranic
+   ones: /deutsch/ already exports a `workbookUrl`, and importing
+   this school's under that name would silently shadow it, which
+   is how the German practice books would have started pointing
+   at the English one. */
+import {
+  TERMS as ENGLISH_TERMS, SCHOOL as ENGLISH, allParts,
+  termUrl, partUrl, workbookUrl as englishBookUrl,
+} from "./english/curriculum.js";
+
 // re-exported, because `export … from` alone would not give this
 // file the local bindings that searchIndex() below needs
 export { STAGES, SCHOOLS, allLessons, stageLessons, stageUrl, lessonUrl, findStage };
 export { STUFEN, DEUTSCH, allTeile, stufeUrl, teilUrl, workbookUrl };
 export { DHAPS, QURAN, allDars, dhapUrl, darsUrl, quranDays };
+export { ENGLISH_TERMS, ENGLISH, allParts, termUrl, partUrl, englishBookUrl };
 
 export const TERM_GROUPS = [
   {
@@ -239,12 +252,12 @@ export const SKILLS = [
   },
   {
     slug: "english",
-    bn: "ইংরেজি",
-    en: "English for work",
+    bn: "মন থেকে ইংরেজি",
+    en: "English From The Heart",
+    url: "/english/index.html",
     icon: "signpost",
-    status: "soon",
-    blurb: "ইমেইল, ইন্টারভিউ আর অফিসের ইংরেজি: মুখস্থ নয়, ব্যবহারের ছাঁচ।",
-    note: "প্রথম স্তরের রূপরেখা তৈরি, লেখা বাকি।",
+    status: "live",
+    blurb: "দুই টার্মে ইংরেজি: শব্দের ক্রম থেকে দুই মিনিট টানা বলা পর্যন্ত, সাথে ৩০ দিনের খাতা।",
   },
   {
     slug: "cooking",
@@ -341,6 +354,20 @@ export const PAGES = [
     hint: "Workbook",
     group: "deutsch",
     blurb: `One page a day for ${s.workbook.days} days: a pattern, five models, eight of your own sentences, six translations, and one true paragraph.`,
+  })),
+  { title: "English: মন থেকে ইংরেজি", url: "/english/index.html",
+    hint: "Page", blurb: "English from Bangla in two terms, from word order to holding the floor for two minutes." },
+
+  /* One entry per practice book, built from the curriculum the
+     same way the German ones are, and for the same reason: the
+     day count belongs to the data, not to a line of markup that
+     was right on the day it was typed. */
+  ...ENGLISH_TERMS.filter((t) => englishBookUrl(t)).map((t) => ({
+    title: `${t.workbook.days} দিনের অনুশীলন খাতা · The ${t.workbook.days}-day workbook (${t.kicker})`,
+    url: englishBookUrl(t),
+    hint: "Workbook",
+    group: "english",
+    blurb: `One page a day for ${t.workbook.days} days: a pattern, five model lines, eight sentences of your own, six to translate, and one true paragraph.`,
   })),
   { title: "Tools & calculators", url: "/tools/index.html",
     hint: "Page", blurb: "Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing." },
@@ -447,6 +474,15 @@ export const COUNTS = {
       than declared. The course promises sixty on its own first
       slide, and build-quran.mjs refuses to write if it drifts. */
   quranDays: quranDays(),
+  /** Terms in the English ladder.
+
+      NOT `terms`: that key is already the A-Z glossary's, and
+      404.html prints it. Two different things called the same
+      word in one object is how a page ends up telling a reader
+      there are two entries in the glossary. */
+  englishTerms: ENGLISH_TERMS.length,
+  /** Parts of the English course actually written. */
+  englishParts: allParts().filter((p) => p.status === "live").length,
   /** Stufen that come with a practice book.
 
       Not the same as `stufen`, and that is the point: Stufe 4
@@ -496,7 +532,8 @@ export const searchIndex = () => [
     title: p.title, url: p.url, hint: p.hint,
     kind: p.group === "case" ? "case" : p.group === "tool" ? "tool"
       : p.group === "learn" ? "learn"
-      : p.group === "deutsch" || p.url.startsWith("/deutsch/") ? "deutsch" : "page",
+      : p.group === "deutsch" || p.url.startsWith("/deutsch/") ? "deutsch"
+      : p.group === "english" || p.url.startsWith("/english/") ? "english" : "page",
   })),
   ...liveArticles().map((a) => ({
     title: a.title,
@@ -560,12 +597,29 @@ export const searchIndex = () => [
     kind: "quran",
   })),
 
+  /* English. Both terms and every part inside them. The English
+     title rides beside the Bangla one because a learner halfway
+     through will reach for "present perfect" or "phrasal verbs"
+     long before they reach for "সেতু-কাল". */
+  ...ENGLISH_TERMS.map((t) => ({
+    title: `${t.kicker} · ${t.bn}: ${t.en}`,
+    url: termUrl(t),
+    hint: "Term",
+    kind: "english",
+  })),
+  ...allParts().map((p) => ({
+    title: `${p.bn} · ${p.en}`,
+    url: p.url,
+    hint: `${p.term.kicker} · ${p.label}`,
+    kind: "english",
+  })),
+
   /* The other schools. A skill still being written is in here on
-     purpose: someone typing "Quran" should be told where it will
-     be, not handed "No matches". Deutsch is skipped because it
-     already has a page entry and every Teil of its own above, and
-     so does Quranic Arabic now. */
-  ...SKILLS.filter((s) => !["deutsch", "quran"].includes(s.slug)).map((s) => ({
+     purpose: someone typing "রান্না" should be told where it will
+     be, not handed "No matches". The three schools that exist are
+     skipped because each already has a page entry and every
+     lesson of its own above. */
+  ...SKILLS.filter((s) => !["deutsch", "quran", "english"].includes(s.slug)).map((s) => ({
     title: `${s.bn}: ${s.en}`,
     url: skillUrl(s),
     hint: s.status === "soon" ? "Skill · আসছে" : "Skill",
@@ -581,6 +635,7 @@ export const SEARCH_GROUPS = [
   ["learn", "শেখার লাইব্রেরি · Learn"],
   ["deutsch", "জার্মান · Deutsch"],
   ["quran", "কুরআনের আরবি · Qur'anic Arabic"],
+  ["english", "ইংরেজি · English"],
   ["skill", "দক্ষতা · Skills"],
   ["writing", "Writing"],
 ];

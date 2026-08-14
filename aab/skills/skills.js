@@ -12,10 +12,11 @@
    the search index and on this page at once: there is no second
    list to keep in step, only the fallback <ul> in the markup.
 
-   Progress is read from the school's own store. German is the
-   only one with a store so far, so it is the only one that shows
-   a bar; the rest say what still has to be written instead of
-   showing an empty one, which would read as a broken feature
+   Progress is read from the school's own store. Three schools
+   have one now, and each keeps its own: finishing German must
+   never tell a reader they have finished English. A school with
+   no store yet says what still has to be written instead of
+   showing an empty bar, which would read as a broken feature
    rather than as an honest "not yet".
    ============================================================ */
 
@@ -25,6 +26,22 @@ import { tiltIn } from "/tilt.js";
 import {
   overallStats as deutschStats, getLast as deutschLast,
 } from "/deutsch/progress.js";
+import {
+  overallStats as quranStats, getLast as quranLast,
+} from "/quran/progress.js";
+import {
+  overallStats as englishStats, getLast as englishLast,
+} from "/english/progress.js";
+
+/* Each school, in the order the SKILLS list has them, with the
+   two things this page asks of a store: how far the reader got,
+   and where they were. A school appears here on the day it gets a
+   progress module, and nothing else on the page changes. */
+const STORES = {
+  deutsch: { stats: deutschStats, last: deutschLast },
+  quran: { stats: quranStats, last: quranLast },
+  english: { stats: englishStats, last: englishLast },
+};
 
 const bn = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
 
@@ -36,9 +53,10 @@ const el = (tag, props = {}, ...kids) => {
 
 /** What a school knows about itself, where it knows anything. */
 function progressFor(slug) {
-  if (slug !== "deutsch") return null;
+  const store = STORES[slug];
+  if (!store) return null;
   try {
-    const stats = deutschStats();
+    const stats = store.stats();
     if (!stats.live) return null;
     return { pct: stats.pct, done: stats.done, total: stats.live };
   } catch {
@@ -101,11 +119,25 @@ function buildResume() {
   const host = document.getElementById("resume");
   if (!host) return;
 
+  /* The most recently opened lesson, across every school that
+     keeps a store. With one school this was simply German's; with
+     three, offering German because it is first in the list would
+     send a reader who spent last night in the English course back
+     to a page they left in March. Every entry carries a `ts`, so
+     the newest one wins. */
   let last = null;
-  try { last = deutschLast(); } catch { /* private mode */ }
+  let slug = null;
+  for (const [id, store] of Object.entries(STORES)) {
+    let entry = null;
+    try { entry = store.last(); } catch { /* private mode */ }
+    if (entry?.url && (!last || (entry.ts ?? 0) > (last.ts ?? 0))) {
+      last = entry;
+      slug = id;
+    }
+  }
   if (!last?.url) { host.hidden = true; return; }
 
-  const school = SKILLS.find((s) => s.slug === "deutsch");
+  const school = SKILLS.find((s) => s.slug === slug);
   host.hidden = false;
   host.className = "resume";
   host.replaceChildren(
