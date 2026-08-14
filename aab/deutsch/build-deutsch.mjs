@@ -625,11 +625,14 @@ ${s.columns.map((c) => `          <label class="hut-spalte" data-hut="${esc(c.ke
 
       <section id="tracker" class="no-filter">
         <span class="section-label mono"><span lang="de">Dein ${total}-Tage-Tracker</span> · ${bn(total)} দিনের হিসাব</span>
-        <p class="measure">যে দিন সত্যিই বলেছেন ও লিখেছেন, সেই দিনটায় টিক দিন। ফাঁকা ঘর মানে
-        লজ্জা নয়, মানে: কাল আবার। টিক দেওয়ার বোতামটা প্রতিটা দিনের পাতার নিচে।</p>
-        <nav class="tracker" aria-label="দিন বেছে নিন">
+        <details class="faq tracker-details">
+          <summary>কোন দিনগুলো বাকি, দেখুন</summary>
+          <p class="measure">যে দিন সত্যিই বলেছেন ও লিখেছেন, সেই দিনটায় টিক দিন। ফাঁকা ঘর মানে
+          লজ্জা নয়, মানে: কাল আবার। টিক দেওয়ার বোতামটা প্রতিটা দিনের পাতার নিচে।</p>
+          <nav class="tracker" aria-label="দিন বেছে নিন">
 ${tracker}
-        </nav>
+          </nav>
+        </details>
       </section>
 
 ${schluessel}${sammlung}

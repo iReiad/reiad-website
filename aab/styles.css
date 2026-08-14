@@ -4405,9 +4405,31 @@ German for day, and .tag is what the site has always called
   }
 
   /* ---------- the thirty squares ---------- */
+  /* The tracker folds away, the same way the sound key on the same
+     page does, and for a reason that only appeared once the books
+     got longer: ninety squares is thirteen rows on a phone, which
+     pushed the book itself a screen and a half down the page.
+
+     Nothing is lost by folding it. How many days are done is in
+     the hero's bar, a few hundred pixels above, and which day is
+     next is on the button beside it. What the grid alone can tell
+     you is WHICH days are still empty, so that is what its summary
+     line offers rather than a count the page already gives twice.
+
+     The squares are smaller than they were, too. They hold two
+     Bangla digits and nothing else, and at 34px ten fit on a phone
+     row where seven did, which is nine rows for the longest book
+     rather than thirteen. */
+  .tracker-details {
+    & summary { font-family: var(--font-mono); font-size: 0.95rem; }
+    /* details.faq caps its children at the measure, which is right
+       for prose and wrong for a grid that wants the full width. */
+    & .tracker { max-width: none; }
+  }
+
   .tracker {
-    display: grid; gap: 6px; margin-top: 14px;
-    grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+    display: grid; gap: 5px; margin-top: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(34px, 1fr));
 
     & .tracker-tag {
       display: grid; place-items: center; text-decoration: none;
