@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v45: the practice book's day tracker folds away. At ninety days
+        it was thirteen rows of squares on a phone, which put the
+        book itself a screen and a half below the fold, and the
+        same wall was there at sixty and thirty. styles.css and the
+        Stufe 1 workbook are precached, so without the bump a
+        returning learner keeps the wall.
+
    v44: Stufen 2, 3 and 4 landed, so the German school went from
         fourteen written Teile to fifty-six, and from one practice
         book to three. curriculum.js, content.js, crumbs.js,
@@ -261,7 +268,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v44";
+const VERSION = "v45";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
