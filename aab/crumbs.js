@@ -32,6 +32,9 @@ import {
 import { PAGES, SITE, liveArticles } from "/content.js";
 
 const isBn = () => document.documentElement.lang === "bn";
+/* The German pages are lang="bn" throughout, so a crumb reading
+   "60 দিনের খাতা" next to Bangla prose reads as a glitch. */
+const bn = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
 const HOME = () => (isBn() ? "হোম" : "Home");
 const LEARN = () => (isBn() ? "শেখার লাইব্রেরি" : "Learn");
 const DEUTSCH = () => (isBn() ? "জার্মান" : "Deutsch");
@@ -111,7 +114,7 @@ function trailFor(path) {
         name: `${bookStufe.kicker} · ${bookStufe.bn}`,
         url: stufeUrl(bookStufe),
       });
-      return { crumbs, here: "৩০ দিনের খাতা" };
+      return { crumbs, here: `${bn(bookStufe.workbook.days)} দিনের খাতা` };
     }
 
     // a Teil

@@ -24,8 +24,8 @@ import {
   STUFEN, stufeTeile, stufeUrl, stufeMinutes, workbookUrl,
 } from "/deutsch/curriculum.js";
 import {
-  readSet, stufeStats, stufeState, dayStats, overallStats,
-  nextUp, resetAll, onProgress,
+  readSet, stufeStats, stufeState, dayStats, overallStats, allDayStats,
+  nextBook, nextUp, resetAll, onProgress,
 } from "/deutsch/progress.js";
 import { icon } from "/deutsch/icons.js";
 
@@ -164,8 +164,12 @@ function buildResume() {
   if (!host) return;
 
   const next = nextUp();
-  const stufe1 = STUFEN[0];
-  const days = dayStats(stufe1);
+  /* The book being skipped, which is not always Stufe 1's: a
+     learner on Stufe 2 has a sixty-day book of their own, and
+     being offered day 12 of a book they finished last month is
+     the card pointing backwards. */
+  const book = nextBook();
+  const days = book ? dayStats(book) : allDayStats();
 
   /* Nothing read and no day ticked: a first-time visitor should
      see a clean start, not an empty box telling them they have
@@ -176,7 +180,7 @@ function buildResume() {
      deutsch-last had gone, a half-cleared storage, a second
      device, a key that changed, was shown no way back in at all,
      with a ladder full of ticks right underneath saying otherwise. */
-  if (!readSet().size && !days.done) {
+  if (!readSet().size && !allDayStats().done) {
     host.hidden = true;
     return;
   }
@@ -194,14 +198,14 @@ function buildResume() {
      two percentages instead, which is what the sentence above
      always claimed it did. */
   const practiceBehind =
-    days.done < days.total && (!next || days.pct <= overallStats().pct);
+    book && days.done < days.total && (!next || days.pct <= overallStats().pct);
 
   const target = practiceBehind
     ? {
         label: "আজকের অনুশীলন",
         title: `দিন ${bn(days.next)}`,
-        where: `${stufe1.kicker} · ৩০ দিনের খাতা`,
-        url: `${workbookUrl(stufe1)}#tag-${days.next}`,
+        where: `${book.kicker} · ${bn(book.workbook.days)} দিনের খাতা`,
+        url: `${workbookUrl(book)}#tag-${days.next}`,
         art: "pen",
         pct: days.pct,
       }
@@ -214,17 +218,17 @@ function buildResume() {
           art: next.icon ?? next.stufe.icon,
           pct: stufeStats(next.stufe).pct,
         }
-      /* Read everything and done all thirty days. There is nothing
-         left to resume, so say so rather than pretending there is
-         one more thing, and send them back through the book,
-         which is the only honest next step until Stufe 2. */
+      /* Every Teil read and every day of every book ticked. There
+         is nothing left to resume, so say so rather than inventing
+         one more thing, and send them back through the last book
+         they were given. */
       : {
-          label: days.complete ? "Stufe ১ শেষ ✓" : "সব পাঠ পড়া শেষ",
-          title: "৩০ দিনের খাতা",
-          where: `${stufe1.kicker} · রোজকার অনুশীলন`,
-          url: workbookUrl(stufe1),
+          label: "সব পাঠ ও সব খাতা শেষ ✓",
+          title: "আরেকবার শুরু থেকে",
+          where: `${STUFEN[0].kicker} · রোজকার অনুশীলন`,
+          url: workbookUrl(STUFEN[0]),
           art: "pen",
-          pct: days.pct,
+          pct: 100,
         };
 
   host.hidden = false;
@@ -253,7 +257,7 @@ function paintProgress() {
   if (!line) return;
 
   const teile = overallStats();
-  const days = dayStats(STUFEN[0]);
+  const days = allDayStats();
 
   line.querySelector(".track i").style.width = `${teile.pct}%`;
   line.querySelector(".count").textContent =

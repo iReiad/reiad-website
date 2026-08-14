@@ -1,20 +1,25 @@
 /* ============================================================
    arbeitsbuch.js, turns the printed workbook into a daily one.
 
-   The page ships all thirty days as complete static HTML. With
-   JavaScript off it is exactly the book it came from: thirty
-   pages you scroll, with real <textarea>s you can type into and
-   a browser you can print from. Nothing below is required for
-   the page to be usable.
+   One file, three books: thirty days for Stufe 1, sixty for
+   Stufe 2, ninety for Stufe 3. Nothing here counts them. The day
+   list is read off the page, so a longer book is simply a longer
+   page and this file never learns how long.
+
+   The page ships every day as complete static HTML. With
+   JavaScript off it is exactly the book it came from: pages you
+   scroll, with real <textarea>s you can type into and a browser
+   you can print from. Nothing below is required for the page to
+   be usable.
 
    What this adds, in order of how much it matters:
 
-     1. ONE DAY AT A TIME. Thirty days on screen at once is a
-        wall; the book was always meant to be opened at today's
-        page. So the other twenty-nine are hidden and a small
-        nav walks between them, with an escape hatch that puts
-        them all back, because someone revising, searching with
-        Ctrl+F, or printing wants the whole book.
+     1. ONE DAY AT A TIME. A whole book on screen at once is a
+        wall; it was always meant to be opened at today's page.
+        So every other day is hidden and a small nav walks
+        between them, with an escape hatch that puts them all
+        back, because someone revising, searching with Ctrl+F,
+        or printing wants the whole book.
 
      2. WHAT YOU WROTE IS STILL THERE TOMORROW. Every box is
         keyed and kept in localStorage. This is the difference
@@ -39,10 +44,11 @@ import {
 } from "/deutsch/progress.js";
 
 /* Note what is NOT imported: arbeitsbuch.data.js. Every word of
-   all thirty days is already in the markup, that is what makes
-   the no-JavaScript fallback a real workbook, so pulling the
-   same 56 KB down a second time as a module would buy nothing
-   but a slower page. The day list below is read off the DOM. */
+   every day is already in the markup, that is what makes the
+   no-JavaScript fallback a real workbook, so pulling the same
+   text down a second time as a module would buy nothing but a
+   slower page. It would also now mean shipping all three books
+   to read one. The day list below is read off the DOM. */
 
 const bn = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
 
@@ -66,10 +72,38 @@ const book = document.getElementById("tage");
 const SCHRIFT_KEY = "deutsch-schrift";
 let writeTimer = null;
 
+/* Box keys are namespaced by Stufe: "stufe-2/tag-1-tausche-1".
+   The first book shipped before there was a second one and wrote
+   them bare, as "tag-1-tausche-1", which now means day 1 of every
+   book would open showing whatever was written on day 1 of Stufe
+   1. Everything bare in storage was written in Stufe 1, because
+   for as long as bare keys were written it was the only book, so
+   the rename is safe and needs no guesswork.
+
+   This runs once: after the rewrite there are no bare keys left
+   to match. It is deliberately not a version flag, because a
+   learner with two devices and one old backup would need it to
+   run again on the device that has not seen it yet. */
+function migrate(schrift) {
+  const bare = Object.keys(schrift).filter((k) => /^(tag-|huete-)/.test(k));
+  if (!bare.length) return schrift;
+  bare.forEach((k) => {
+    const moved = `stufe-1/${k}`;
+    /* Never overwrite: if this device has already written in the
+       namespaced box, that is the newer text and it wins. */
+    if (!(moved in schrift)) schrift[moved] = schrift[k];
+    delete schrift[k];
+  });
+  try {
+    localStorage.setItem(SCHRIFT_KEY, JSON.stringify(schrift));
+  } catch { /* private mode, or full: the text is still on screen */ }
+  return schrift;
+}
+
 function loadSchrift() {
   try {
     const raw = JSON.parse(localStorage.getItem(SCHRIFT_KEY) || "{}");
-    return raw && typeof raw === "object" ? raw : {};
+    return raw && typeof raw === "object" ? migrate(raw) : {};
   } catch {
     return {};
   }
@@ -274,7 +308,7 @@ function paintTracker() {
     bar.querySelector(".count").textContent = stats.done === 0
       ? `${bn(stats.total)} দিন, এখনো শুরু হয়নি`
       : stats.complete
-        ? `৩০ দিনই শেষ ✓, এবার Tag ৩১`
+        ? `${bn(stats.total)} দিনই শেষ ✓, এবার Tag ${bn(stats.total + 1)}`
         : `${bn(stats.done)}/${bn(stats.total)} দিন হয়েছে`;
     bar.dataset.state = stats.complete ? "done" : stats.done ? "going" : "new";
   }

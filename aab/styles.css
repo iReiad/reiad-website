@@ -4347,6 +4347,17 @@ German for day, and .tag is what the site has always called
   .hut-spalte[data-hut="die"] { border-top-color: var(--hut-die); & .hut-kopf { color: var(--hut-die); } }
   .hut-spalte[data-hut="das"] { border-top-color: var(--hut-das); & .hut-kopf { color: var(--hut-das); } }
 
+  /* Stufe 2 and 3 collect Partizip pairs and the three verb forms
+     rather than hats, so their columns take the site's own accent.
+     They deliberately do NOT borrow the three article colours:
+     those mean der, die and das everywhere else in this school,
+     and a green column headed "haben" would be teaching a gender
+     that does not exist. */
+  .hut-spalte:not([data-hut="der"], [data-hut="die"], [data-hut="das"]) {
+    border-top-color: var(--green);
+    & .hut-kopf { color: var(--green); }
+  }
+
   /* ---------- small grids: 30 verbs, 20 numbers ---------- */
   .verb-gitter, .zahl-gitter {
     display: grid; gap: 6px; margin-block: 18px 24px;

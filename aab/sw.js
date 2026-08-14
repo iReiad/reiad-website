@@ -31,6 +31,20 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v44: Stufen 2, 3 and 4 landed, so the German school went from
+        fourteen written Teile to fifty-six, and from one practice
+        book to three. curriculum.js, content.js, crumbs.js,
+        hub.js, progress.js, styles.css, the German hub and Stufe
+        1's own pages all changed, and every one of them is
+        precached. Without the bump a returning visitor holds a
+        shell whose ladder still says three stages are unwritten,
+        whose resume card only knows Stufe 1's thirty days, and
+        whose workbook script has not learned that the typed-in
+        boxes are namespaced per Stufe now, so day 1 of the new
+        books would open showing what was written on day 1 of the
+        old one. The two new books are deliberately NOT precached;
+        see the note on the list itself.
+
    v43: the menu lost the twelve links that opened pages saying
         আসছে, and its close button moved to where the button that
         opened it stands. The About page's research cards open a
@@ -247,7 +261,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v43";
+const VERSION = "v44";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -293,6 +307,15 @@ const PRECACHE = [
      practice book are precached too: the book is the page a
      learner opens every evening, and a bus with no signal is
      exactly where they open it.
+
+     Only Stufe 1's book, though, and that is a decision rather
+     than an oversight. There are three now, of thirty, sixty and
+     ninety days, and every day of every one of them ships as
+     static HTML: together they are about 1.8 MB. Precaching all
+     three would put a megabyte and a half on the very first visit
+     of a reader who may never open Stufe 2. The other two are
+     picked up by the runtime cache the first evening they are
+     opened, which is the evening before the bus.
      (Keep double quotes out of this comment: check-sw.mjs reads
      the list below by pulling quoted strings out of the block.) */
   "/deutsch/curriculum.js",
