@@ -2488,7 +2488,16 @@ it collapsed to the width of the word "Bangladesh". */
   }
 
   /* ---------- the case-study cards ---------- */
+  /* Three across, not the four that .grid-3's auto-fit reaches at
+     this page width. Six cards under the featured one divide into
+     two clean rows of three instead of a row of four and an
+     orphaned pair, and the wider column is what these paragraphs
+     need: at a quarter of the wrap they were breaking every four
+     words. */
   .work-grid { margin-top: var(--gap); }
+  @media (width >= 900px) {
+    .work-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
 
   /* .work-card is a flex column, so the copy needs to be one too:
      the `.more` link inside it is pushed down with margin-top:auto
@@ -2573,6 +2582,19 @@ it collapsed to the width of the word "Bangladesh". */
        not. */
     .work-lead .work-art { height: 100%; }
     .work-lead h3 { font-size: 1.35rem; }
+  }
+
+  /* ---------- everything that is not a case study ----------
+     Rows, not cards, and that is the whole point of it: the cards
+     above are the work you can open and drive, and this is the
+     work that lives somewhere else on the site. Same section, so
+     the reader does not have to go looking, different weight, so
+     the seven do not get diluted by four more boxes. */
+  .work-more { margin-top: var(--step); }
+  .work-more h2 { font-size: 1.25rem; }
+  .work-more > p {
+    color: var(--ink-soft); font-size: 0.95rem;
+    margin-block: 4px 18px; max-width: var(--measure);
   }
 
   /* ---------- the service cards ----------
@@ -5451,4 +5473,324 @@ German for day, and .tag is what the site has always called
      inside its own box rather than pushing the page sideways. */
   .method-steps { grid-template-columns: repeat(auto-fit, minmax(min(100%, 430px), 1fr)); }
   .formula.is-long { font-size: 0.74rem !important; }
+}
+
+@layer work {
+  /* ============================================================
+     The stress-testing case study.
+
+     Everything here is scoped to classes that page invents. The
+     one shared thing it borrows is the categorical palette
+     below, seven hues that have to stay apart from each other in
+     both themes and in a black and white print, because seven
+     lines on one chart is the most this site asks of a reader.
+
+     They are built from the site's own two hues plus five turns
+     around the wheel, at a lightness that holds against paper
+     and against the dark panel. Chroma stays low: these are
+     lines on a document, not a dashboard.
+     ============================================================ */
+  .model {
+    --seg-0: light-dark(oklch(41% 0.090 162), oklch(72% 0.115 162));
+    --seg-1: light-dark(oklch(52% 0.095  85), oklch(74% 0.095  85));
+    --seg-2: light-dark(oklch(48% 0.110 250), oklch(74% 0.105 250));
+    --seg-3: light-dark(oklch(50% 0.130  28), oklch(72% 0.125  28));
+    --seg-4: light-dark(oklch(46% 0.100 310), oklch(74% 0.100 310));
+    --seg-5: light-dark(oklch(44% 0.075 200), oklch(76% 0.080 200));
+    --seg-6: light-dark(oklch(38% 0.045 130), oklch(66% 0.050 130));
+  }
+
+  /* ---------- formulas keep their case ----------
+     .formula pairs with .mono, and .mono uppercases. On a line of
+     prose that is a design choice; in a formula it changes the
+     symbols. Greek lowercase has uppercase forms, so σ became Σ,
+     γ became Γ and, worst of all, ρ became Ρ, which is a capital
+     rho and reads as a Latin P. The correlation term in the Basel
+     formula was printed as "√P" on a page whose whole argument is
+     what ρ does. It also flattened MktRF and IVOL in the
+     dissertation's factor models, where the case is the notation.
+
+     Fixed here rather than by dropping .mono from the markup,
+     because every formula on the site wants the mono face and
+     none of them want the transform. Two selectors, because a
+     formula sitting inside a method card is also matched by
+     `.method-step > .mono`, which is two classes and would
+     otherwise win on specificity alone. */
+  .formula,
+  .formula.mono {
+    text-transform: none;
+    letter-spacing: 0.03em;
+  }
+
+  /* ---------- the scenario, as six small charts ---------- */
+  .macro-grid {
+    display: grid; gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  }
+  .macro-cell {
+    margin: 0; padding: 6px 8px 4px;
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    background: var(--paper-sunk);
+
+    & figcaption {
+      font-size: 0.64rem; color: var(--ink-soft);
+      letter-spacing: 0.02em; padding: 2px 2px 4px;
+    }
+  }
+  .chart-base-line { stroke: var(--hairline); stroke-width: 1; stroke-dasharray: 3 3; }
+  .line-macro { stroke: var(--green); stroke-width: 1.6; }
+  .dot-macro { fill: var(--gold); }
+  .chart-tag-worst { font-family: var(--font-mono); font-size: 9px; fill: var(--gold); }
+
+  /* ---------- the capital path ---------- */
+  .line-capital { stroke: var(--green); stroke-width: 2.2; }
+  .dot-capital { fill: var(--green); opacity: 0.75; }
+  .dot-trough { fill: var(--danger); }
+  .chart-req { stroke: var(--danger); stroke-width: 1.4; stroke-dasharray: 5 3; }
+  .chart-min { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0.7; }
+  .shortfall-band { fill: var(--danger); opacity: 0.16; }
+
+  /* ---------- the seven segments ---------- */
+  .line-seg { stroke-width: 1.8; fill: none; }
+  .line-seg[data-seg="0"] { stroke: var(--seg-0); }
+  .line-seg[data-seg="1"] { stroke: var(--seg-1); }
+  .line-seg[data-seg="2"] { stroke: var(--seg-2); }
+  .line-seg[data-seg="3"] { stroke: var(--seg-3); }
+  .line-seg[data-seg="4"] { stroke: var(--seg-4); }
+  .line-seg[data-seg="5"] { stroke: var(--seg-5); }
+  .line-seg[data-seg="6"] { stroke: var(--seg-6); }
+  .dot-seg[data-seg="0"] { fill: var(--seg-0); }
+  .dot-seg[data-seg="1"] { fill: var(--seg-1); }
+  .dot-seg[data-seg="2"] { fill: var(--seg-2); }
+  .dot-seg[data-seg="3"] { fill: var(--seg-3); }
+  .chart-seg-label {
+    font-family: var(--font-mono); font-size: 9.5px; fill: var(--ink-soft);
+  }
+  .chart-seg-label[data-seg="0"] { fill: var(--seg-0); }
+  .chart-seg-label[data-seg="1"] { fill: var(--seg-1); }
+  .chart-seg-label[data-seg="2"] { fill: var(--seg-2); }
+  .chart-seg-label[data-seg="3"] { fill: var(--seg-3); }
+  .chart-seg-label[data-seg="4"] { fill: var(--seg-4); }
+  .chart-seg-label[data-seg="5"] { fill: var(--seg-5); }
+  .chart-seg-label[data-seg="6"] { fill: var(--seg-6); }
+
+  /* ---------- vintage curves ----------
+     The projected half is the same colour and the same width,
+     dashed. A lighter projection would read as less important,
+     when what it actually is is less certain. */
+  .vintage-controls {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-block: 4px 12px;
+  }
+  .vintage-controls .chip[aria-pressed="true"] {
+    border-color: var(--green); color: var(--green); background: var(--green-soft);
+  }
+  .line-vintage { stroke-width: 1.8; fill: none; }
+  .line-vintage.is-projected { stroke-dasharray: 4 3; opacity: 0.9; }
+  .line-vintage[data-v="0"] { stroke: var(--seg-0); }
+  .line-vintage[data-v="1"] { stroke: var(--seg-1); }
+  .line-vintage[data-v="2"] { stroke: var(--seg-2); }
+  .line-vintage[data-v="3"] { stroke: var(--seg-3); }
+  .line-vintage[data-v="4"] { stroke: var(--seg-4); }
+  .line-vintage[data-v="5"] { stroke: var(--seg-5); }
+  .line-vintage[data-v="6"] { stroke: var(--seg-6); }
+  .chart-seg-label[data-v="0"] { fill: var(--seg-0); }
+  .chart-seg-label[data-v="1"] { fill: var(--seg-1); }
+  .chart-seg-label[data-v="2"] { fill: var(--seg-2); }
+  .chart-seg-label[data-v="3"] { fill: var(--seg-3); }
+  .chart-seg-label[data-v="4"] { fill: var(--seg-4); }
+  .chart-seg-label[data-v="5"] { fill: var(--seg-5); }
+  .chart-seg-label[data-v="6"] { fill: var(--seg-6); }
+
+  /* ---------- the two engines ---------- */
+  .line-merton { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-vintage-engine { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
+  .engine-gap { fill: var(--gold); opacity: 0.14; }
+  .key-merton { background: var(--green); }
+  .key-vintage { background: var(--gold); }
+
+  /* ---------- the double whammy ---------- */
+  .line-el { stroke: var(--danger); stroke-width: 2.2; fill: none; }
+  .line-lgd { stroke: var(--gold); stroke-width: 1.6; stroke-dasharray: 4 3; fill: none; }
+
+  /* ---------- IFRS 9 staging ---------- */
+  .area-stage1 { fill: var(--green); opacity: 0.18; }
+  .area-stage2 { fill: var(--gold); opacity: 0.38; }
+  .area-stage3 { fill: var(--danger); opacity: 0.42; }
+  .line-ecl { stroke: var(--ink); stroke-width: 1.8; fill: none; }
+  .key-stage1 { background: var(--green); opacity: 0.5; }
+  .key-stage2 { background: var(--gold); }
+  .key-stage3 { background: var(--danger); }
+
+  /* ---------- the severity axis ---------- */
+  .density-body { fill: var(--ink-soft); opacity: 0.14; }
+  .density-tail { fill: var(--danger); opacity: 0.28; }
+  .mark-scenario { stroke: var(--danger); stroke-width: 1.6; }
+  .mark-capital { stroke: var(--ink); stroke-width: 1.2; stroke-dasharray: 3 3; opacity: 0.7; }
+
+  /* ---------- attribution and tornado ---------- */
+  .attrib-bad { fill: var(--danger); opacity: 0.7; }
+  .attrib-good { fill: var(--green); opacity: 0.7; }
+  .attrib-total { fill: var(--ink-soft); opacity: 0.55; }
+  .bar-tornado { fill: var(--green); opacity: 0.6; }
+
+  /* ---------- the views that lag on purpose ----------
+     Seventy full runs of the model cannot happen between two
+     frames of a dragged slider, so they are scheduled. Saying
+     so with a dim is better than either freezing the page or
+     letting a stale grid look live. */
+  [data-stale] { opacity: 0.45; transition: opacity var(--fast) var(--ease); }
+
+  .csv-panel[data-over] { border-color: var(--green); background: var(--green-soft); }
+  .csv-status[data-state="good"] { color: var(--green); }
+  .csv-status[data-state="warn"] { color: var(--gold); }
+  .csv-status[data-state="bad"] { color: var(--danger); }
+
+  @media (width <= 620px) {
+    .macro-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); }
+  }
+}
+
+@layer work {
+  /* ============================================================
+     The probability-of-default case study.
+
+     Two models on one page, so the colour rule is simple and has
+     to hold everywhere: the scorecard is the site's green, the
+     boosted model is its gold, and nothing else on the page is
+     allowed to use either of them for anything other than those
+     two models. Outcomes are a separate axis again: a defaulted
+     applicant is red wherever one appears.
+     ============================================================ */
+  .chip-row {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-block: 4px 14px;
+
+    & .chip[aria-pressed="true"] {
+      border-color: var(--green); color: var(--green); background: var(--green-soft);
+    }
+  }
+
+  /* ---------- the two models ---------- */
+  .line-logit { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-gbm { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
+  .dot-logit { fill: var(--green); }
+  .dot-gbm { fill: var(--gold); }
+  .key-logit { background: var(--green); }
+  .key-gbm { background: var(--gold); }
+
+  /* ---------- outcomes ---------- */
+  .dot-good { fill: var(--green); opacity: 0.42; }
+  .dot-bad { fill: var(--danger); opacity: 0.72; }
+  .bar-good { fill: var(--green); opacity: 0.42; }
+  .bar-bad { fill: var(--danger); opacity: 0.62; }
+
+  /* ---------- the reference a curve is judged against ---------- */
+  .chart-diagonal { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.5; }
+
+  /* ---------- information value ---------- */
+  .bar-iv { fill: var(--green); opacity: 0.55; }
+  /* Protected characteristics are marked rather than hidden. The
+     page's argument is about what they are worth, so they have to
+     be visible and obviously different. */
+  .bar-iv-protected { fill: var(--gold); opacity: 0.6; }
+
+  /* ---------- learning curve ---------- */
+  .line-train { stroke: var(--ink-soft); stroke-width: 1.6; fill: none; }
+  .line-valid { stroke: var(--green); stroke-width: 2; fill: none; }
+  .key-train { background: var(--ink-soft); }
+  .key-valid { background: var(--green); }
+
+  /* ---------- calibration ---------- */
+  .line-uncal { stroke: var(--danger); stroke-width: 1.6; stroke-dasharray: 4 3; fill: none; }
+  .line-cal { stroke: var(--green); stroke-width: 2; fill: none; }
+  .dot-uncal { fill: var(--danger); }
+  .dot-cal { fill: var(--green); }
+
+  /* ---------- contributions to one decision ---------- */
+  .bar-better { fill: var(--green); opacity: 0.62; }
+  .bar-worse { fill: var(--danger); opacity: 0.62; }
+
+  /* ---------- approval rates ---------- */
+  .bar-approval { fill: var(--green); opacity: 0.5; }
+
+  /* ---------- the confusion matrix ----------
+     Four cells, and the two that are mistakes do not cost the
+     same, so they do not look the same either. */
+  #confusion {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-block: 6px 4px;
+  }
+  .conf-cell {
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    background: var(--paper-sunk); padding: 12px 14px;
+    display: grid; gap: 2px; align-content: start;
+
+    & strong { font-family: var(--font-mono); font-size: 1.3rem; }
+    & span { font-size: 0.78rem; color: var(--ink-soft); line-height: 1.35; }
+
+    &[data-tone="good"] { border-inline-start: 3px solid var(--green); }
+    &[data-tone="warn"] { border-inline-start: 3px solid var(--gold); }
+    &[data-tone="bad"] {
+      border-inline-start: 3px solid var(--danger);
+      background: color-mix(in oklab, var(--danger) 7%, var(--paper-sunk));
+    }
+  }
+
+  @media (width <= 620px) {
+    #confusion { grid-template-columns: 1fr; }
+  }
+}
+
+@layer work {
+  /* ============================================================
+     The portfolio-construction case study.
+
+     One colour rule, held everywhere: the portfolio being held is
+     the site's green, the equal-weight benchmark is its gold, and
+     the individual holdings are neutral dots that never compete
+     with either.
+     ============================================================ */
+  .line-frontier { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-chosen { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-equal { stroke: var(--gold); stroke-width: 1.8; stroke-dasharray: 5 3; fill: none; }
+  .line-hold { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-rebal { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
+  .key-chosen { background: var(--green); }
+  .key-equal { background: var(--gold); }
+  .key-bench { background: var(--ink-soft); }
+  .key-risk { background: var(--gold); }
+
+  .dot-asset { fill: var(--ink-soft); opacity: 0.55; }
+  .dot-named { fill: var(--gold); }
+  .dot-equal { fill: var(--gold); }
+  .dot-chosen { fill: var(--green); stroke: var(--paper); stroke-width: 1.5; }
+  .chart-tag-asset { font-family: var(--font-mono); font-size: 8.5px; fill: var(--ink-soft); }
+  .chart-tag-held { font-family: var(--font-mono); font-size: 9px; fill: var(--green); }
+
+  .bar-weight { fill: var(--green); opacity: 0.6; }
+  .bar-risk { fill: var(--gold); opacity: 0.65; }
+  .bar-chosen { fill: var(--green); opacity: 0.7; }
+  .bar-bench { fill: var(--ink-soft); opacity: 0.45; }
+
+  /* ---------- the correlation matrix ----------
+     One hue for positive, another for negative, and the opacity
+     carries the size. A rainbow scale would read as five
+     categories rather than one number. */
+  .corr-pos { fill: var(--green); opacity: calc(var(--v) * 0.85 + 0.05); }
+  .corr-neg { fill: var(--danger); opacity: calc(var(--v) * 0.85 + 0.05); }
+
+  /* A candidate that was screened in but not held. */
+  .fin-table tr.is-dropped { opacity: 0.55; }
+  .fin-table td.is-capped { color: var(--gold); font-weight: 500; }
+
+  @media (width <= 620px) {
+    #hindsight-chart .fin-chart { min-width: 620px; }
+  }
+}
+
+@layer work {
+  /* The security market line, and the one holding whose beta is
+     negative: it earns its own colour because a negative
+     contribution reads as an error otherwise. */
+  .line-sml { stroke: var(--ink-soft); stroke-width: 1.4; stroke-dasharray: 4 3; }
+  .chart-stem { stroke: var(--ink-soft); stroke-width: 1; opacity: 0.4; }
+  .bar-negbeta { fill: var(--danger); opacity: 0.55; }
 }
