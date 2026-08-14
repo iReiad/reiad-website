@@ -107,8 +107,10 @@ the bump, then run `node aab/check-sw.mjs --update`.
 Generated pages are generated. Edit the source, never the output:
 
 ```sh
-node aab/learn/build-lessons.mjs     # aab/learn/**  from curriculum + content
+node aab/learn/build-lessons.mjs     # aab/learn/**   from curriculum + content
 node aab/deutsch/build-deutsch.mjs   # aab/deutsch/** from content/ + data
+node aab/quran/build-quran.mjs       # aab/quran/**   from curriculum + content
+node aab/english/build-english.mjs   # aab/english/** from curriculum + content + workbook
 node aab/build-meta.mjs              # feed.xml, sitemap.xml, robots.txt
 ```
 
@@ -135,3 +137,27 @@ Check whether anything else is already in flight. Two open pull requests
 had added three case studies to the same files a redesign was rewriting;
 the redesign was branched off `main` and would have dropped all three on
 merge. Look at the open PRs, not just `main`.
+
+## Merging: do it, do not ask
+
+Finished work ships without a second conversation. Open the pull
+request, wait for the checks, and merge it as soon as they are green.
+Squash merge, so `main` keeps one commit per change with the pull
+request number on the end, the way every entry in the log already
+reads. There is no need to come back and ask whether it should go in:
+the decision that mattered was made when the work was asked for.
+
+This rule leans on the section above rather than replacing it, and the
+lean is the whole point. Merging without asking is only safe while
+every check still runs first:
+
+- all four checks in **Before deploying** pass,
+- anything that touched a precached file bumped `VERSION` in
+  `aab/sw.js` and re-ran `check-sw.mjs --update`,
+- generated pages were regenerated from their source, not edited,
+- and `grep -rn $'\u2014' aab/ functions/` comes back empty.
+
+A red check is a reason to fix it, or to say plainly what is broken
+and why it is not fixable here. It is never a reason to merge anyway,
+and "the user said merge automatically" does not turn a failing check
+into a passing one.

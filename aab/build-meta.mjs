@@ -26,6 +26,7 @@ const {
   STUFEN, allTeile, stufeUrl, workbookUrl,
   DHAPS, allDars, dhapUrl,
   ENGLISH_TERMS, allParts, termUrl,
+  liveCooking,
 } = await import(join(HERE, "content.js"));
 
 const esc = (s) =>
@@ -150,3 +151,4 @@ console.log(
 console.log(
   `(${ENGLISH_TERMS.length} English terms, ${parts.length} written part(s) of ${allParts().length})`
 );
+console.log(`(${liveCooking().length} kitchen piece(s))`);

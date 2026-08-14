@@ -31,6 +31,18 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v48: the kitchen landed at /cooking/, with its first piece.
+        Smaller than a school and still not optional: content.js
+        grew a COOKING array that the hub, the palette and the
+        sitemap read, styles.css grew a cooking layer, and
+        crumbs.js grew the trail. A returning visitor on the v47
+        shell would be served a cached content.js with no COOKING
+        in it, and /cooking/index.html would render its
+        no-JavaScript fallback while the console filled with
+        import errors. The index and its one piece are precached;
+        the piece is a single page and worth having offline,
+        which is where a recipe is usually read.
+
    v47: the English school landed, two terms over thirty parts,
         with a thirty-day practice book. Not optional, and for the
         same reason v46 was not: content.js now imports
@@ -294,7 +306,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v47";
+const VERSION = "v48";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -387,6 +399,12 @@ const PRECACHE = [
   "/english/icons.js",
   "/english/part.js",
   "/english/term.js",
+  /* The kitchen. Two pages and one module, so all of it is
+     precached: this is the part of the site most likely to be
+     opened in a kitchen with one bar of signal. */
+  "/cooking/index.html",
+  "/cooking/cooking.js",
+  "/cooking/onions.html",
   "/tools/index.html",
   "/tools/stock.html",
   "/tools/stock.js",

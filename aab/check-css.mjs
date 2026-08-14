@@ -67,6 +67,7 @@ const SCHOOLS = [
   { layer: "deutsch", owns: ["deutsch/"] },
   { layer: "quran", owns: ["quran/"] },
   { layer: "english", owns: ["english/"] },
+  { layer: "cooking", owns: ["cooking/"] },
 ];
 
 const css = readFileSync(join(ROOT, "styles.css"), "utf8");
