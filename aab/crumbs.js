@@ -32,6 +32,9 @@ import {
 import {
   DHAPS, dhapUrl, allLessons as allDars,
 } from "/quran/curriculum.js";
+import {
+  TERMS, termUrl, allParts, findTerm, workbookUrl as englishBookUrl,
+} from "/english/curriculum.js";
 import { PAGES, SITE, liveArticles } from "/content.js";
 
 const isBn = () => document.documentElement.lang === "bn";
@@ -42,6 +45,7 @@ const HOME = () => (isBn() ? "হোম" : "Home");
 const LEARN = () => (isBn() ? "শেখার লাইব্রেরি" : "Learn");
 const DEUTSCH = () => (isBn() ? "জার্মান" : "Deutsch");
 const QURAN = () => (isBn() ? "কুরআনের আরবি" : "Qur'anic Arabic");
+const ENGLISH = () => (isBn() ? "মন থেকে ইংরেজি" : "English From The Heart");
 const SKILLS = () => (isBn() ? "দক্ষতা" : "Skills");
 
 /** Normalise the URL Pages might serve us: /learn, /learn/ and
@@ -55,8 +59,9 @@ function normalise(path) {
       STAGES.some((s) => `/learn/${s.slug}` === p) ||
       STUFEN.some((s) => `/deutsch/${s.slug}` === p) ||
       DHAPS.some((d) => `/quran/${d.slug}` === p) ||
+      TERMS.some((t) => `/english/${t.slug}` === p) ||
       p === "/learn" || p === "/deutsch" || p === "/quran" ||
-      p === "/tools" || p === "/skills";
+      p === "/english" || p === "/tools" || p === "/skills";
     return isFolder ? `${p}/index.html` : `${p}.html`;
   }
   return p;
@@ -122,6 +127,43 @@ function trailFor(path) {
       return { crumbs, here: dars.bn };
     }
     return { crumbs, here: QURAN() };
+  }
+
+  /* ---------- the English school ----------
+     Same shape again: it sits under Skills, so a part is
+     Home > Skills > মন থেকে ইংরেজি > টার্ম ১ > the part. */
+  if (p.startsWith("/english/")) {
+    crumbs.push({ name: SKILLS(), url: "/skills/index.html" });
+    if (p === "/english/index.html") return { crumbs, here: ENGLISH() };
+
+    crumbs.push({ name: ENGLISH(), url: "/english/index.html" });
+
+    const termHere = TERMS.find((t) => p === termUrl(t));
+    if (termHere) return { crumbs, here: `${termHere.kicker} · ${termHere.bn}` };
+
+    // the practice book, which hangs off its term rather than off a part
+    const bookTerm = TERMS.find((t) => englishBookUrl(t) === p);
+    if (bookTerm) {
+      crumbs.push({
+        name: `${bookTerm.kicker} · ${bookTerm.bn}`,
+        url: termUrl(bookTerm),
+      });
+      return { crumbs, here: `${bn(bookTerm.workbook.days)} দিনের খাতা` };
+    }
+
+    const part = allParts().find((x) => x.url === p);
+    if (part) {
+      crumbs.push({
+        name: `${part.term.kicker} · ${part.term.bn}`,
+        url: termUrl(part.term),
+      });
+      return { crumbs, here: part.bn };
+    }
+
+    // anything else under /english/, still give it the school
+    const term = findTerm(p.split("/")[2]);
+    if (term) crumbs.push({ name: `${term.kicker} · ${term.bn}`, url: termUrl(term) });
+    return { crumbs, here: document.title.split("·")[0].trim() };
   }
 
   /* ---------- the German school ----------

@@ -25,6 +25,7 @@ const {
   SITE, PAGES, TOOLS, STAGES, allLessons, liveArticles,
   STUFEN, allTeile, stufeUrl, workbookUrl,
   DHAPS, allDars, dhapUrl,
+  ENGLISH_TERMS, allParts, termUrl,
 } = await import(join(HERE, "content.js"));
 
 const esc = (s) =>
@@ -84,6 +85,12 @@ const workbooks = STUFEN.filter((s) => s.workbook && s.status === "live")
    days are the whole of it. */
 const dars = allDars().filter((l) => l.status === "live");
 
+/* The English school, fourth time the same rule. Its practice
+   book is already a PAGES entry, built from the curriculum the
+   way the German ones are, so only the terms and their parts are
+   added here. */
+const parts = allParts().filter((p) => p.status === "live");
+
 const urls = [
   ...PAGES.filter((p) => !p.private).map((p) => ({ loc: p.url, priority: "0.8" })),
   ...articles.map((a) => ({ loc: `/insights/${a.slug}.html`, lastmod: a.date, priority: "0.9" })),
@@ -94,6 +101,8 @@ const urls = [
   ...teile.map((t) => ({ loc: t.url, priority: "0.7" })),
   ...DHAPS.map((d) => ({ loc: dhapUrl(d), priority: "0.8" })),
   ...dars.map((l) => ({ loc: l.url, priority: "0.7" })),
+  ...ENGLISH_TERMS.map((t) => ({ loc: termUrl(t), priority: "0.8" })),
+  ...parts.map((p) => ({ loc: p.url, priority: "0.7" })),
 ];
 urls[0].priority = "1.0";
 
@@ -137,4 +146,7 @@ console.log(
 );
 console.log(
   `(${DHAPS.length} Quran ধাপ, ${dars.length} written day page(s) of ${allDars().length})`
+);
+console.log(
+  `(${ENGLISH_TERMS.length} English terms, ${parts.length} written part(s) of ${allParts().length})`
 );

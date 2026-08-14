@@ -22,6 +22,7 @@ import { chromium } from "playwright";
 import { STAGES } from "./learn/curriculum.js";
 import { STUFEN } from "./deutsch/curriculum.js";
 import { DHAPS } from "./quran/curriculum.js";
+import { TERMS } from "./english/curriculum.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, "og");
@@ -149,6 +150,22 @@ const CARDS = [
     sub: (dh.blurb ?? "").slice(0, 150),
     bn: true,
   })),
+
+  /* The English school, the same arrangement a third time: a hub
+     card, one per term, and one for the practice book. */
+  { file: "english.png", eyebrow: "মন থেকে ইংরেজি · English From The Heart",
+    title: "মুখস্থ নয়। কাঠামো।",
+    sub: "দুই টার্ম · রোজ এক ঘণ্টা · অর্ধেকটা মুখে বলা", bn: true },
+  { file: "english-workbook.png", eyebrow: "The 30-day workbook · অনুশীলন",
+    title: "দিনে একটা পাতা।",
+    sub: "একটা কাঠামো · পাঁচটা নমুনা · নিজের আটটা বাক্য · একটা সত্যি অনুচ্ছেদ", bn: true },
+  ...TERMS.map((t) => ({
+    file: `english-${t.slug}.png`,
+    eyebrow: `${t.kicker} · ${t.en}`,
+    title: t.bn,
+    sub: (t.blurb ?? "").slice(0, 150),
+    bn: true,
+  })),
 ];
 
 /* ------------------------------------------------------------
@@ -203,6 +220,20 @@ const ASSIGN = [
     `quran-${dh.slug}.png`,
   ]),
   [/^quran\//, "quran.png"],
+  /* The English school. The workbook first, before the per-term
+     rule that would otherwise claim it, then the hub, then one
+     rule per term, then a catch-all. These have to agree with the
+     `og` values build-english.mjs writes. */
+  ...TERMS.filter((t) => t.workbook).map((t) => [
+    new RegExp(`^english\\/${t.slug}\\/${t.workbook.slug}\\.html$`),
+    "english-workbook.png",
+  ]),
+  [/^english\/index\.html$/, "english.png"],
+  ...TERMS.map((t) => [
+    new RegExp(`^english\\/${t.slug}\\/`),
+    `english-${t.slug}.png`,
+  ]),
+  [/^english\//, "english.png"],
   [/^insights/, "insights.png"],
   [/^about\.html$/, "about.png"],
   [/^contact\.html$/, "contact.png"],

@@ -66,6 +66,7 @@ const ROOT = dirname(fileURLToPath(import.meta.url));
 const SCHOOLS = [
   { layer: "deutsch", owns: ["deutsch/"] },
   { layer: "quran", owns: ["quran/"] },
+  { layer: "english", owns: ["english/"] },
 ];
 
 const css = readFileSync(join(ROOT, "styles.css"), "utf8");

@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, deutsch, quran, check, about, utilities;
+@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, deutsch, quran, english, check, about, utilities;
 
 /* ============================================================
    TOKENS
@@ -4791,6 +4791,386 @@ German for day, and .tag is what the site has always called
   @media print {
     body.quran .ayah { break-inside: avoid; }
     body.quran .tothyo, body.quran .mukhe { break-inside: avoid; }
+  }
+}
+
+/* ============================================================
+   THE ENGLISH SCHOOL, /english/
+
+   Everything under this layer is the fourth school's own. It
+   sits after `quran` for the same reason that one sits after
+   `deutsch`: a school may adjust the shared furniture on its own
+   pages, and it must lose to nothing but the utilities.
+
+   Every selector here is anchored on a class that only /english/
+   uses, or on body.english. check-css.mjs enforces that, and it
+   exists because the German school once called a workbook day
+   `.tag` and put a bordered box around every article label on
+   the site.
+
+   The one thing this school needs that the others do not: half
+   of every page is English INSIDE Bangla prose. The German
+   school has the same problem in one direction (a German word in
+   a Bangla sentence); here it is whole model sentences, tables
+   and sentence banks. So [lang="en"] takes the Latin face, and
+   the pattern box, the model-line list and the say-it-aloud box
+   are all built around that pairing.
+   ============================================================ */
+@layer english {
+
+  /* ---------- English inside Bangla prose ----------
+     The Bangla face has no Latin worth the name and its line
+     height is set for Bengali, so English set in it looks limp
+     next to the text explaining it. Every English string in this
+     school carries lang="en"; this is the rule that makes that
+     markup earn its keep.
+
+     Scoped to body.english rather than left as a bare attribute
+     selector: an article elsewhere on the site is full of
+     English and has no business being restyled by a school. */
+  body.english [lang="en"] {
+    font-family: var(--font-sans);
+    font-feature-settings: "kern" 1;
+  }
+  body.english :is(b, strong)[lang="en"] { font-weight: 600; }
+
+  /* ---------- the hub ---------- */
+  .english-hero .lede [lang="en"] { color: var(--gold); }
+
+  /* ---------- a term page ---------- */
+  .term-hero .term-can {
+    margin-top: 16px; color: var(--ink);
+    border-left: 3px solid var(--green); padding-left: 14px; max-width: 60ch;
+  }
+  /* The part number on a card. The deck numbers its parts and a
+     learner with the deck open should be able to match the two
+     without counting, which is the whole reason `n` is in the
+     curriculum at all. */
+  .lesson-card .part-num {
+    display: block; color: var(--gold); font-size: 0.68rem;
+    letter-spacing: 0.08em; margin-bottom: 6px;
+  }
+
+  .wb-cta {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 18px;
+    align-items: center; text-decoration: none; color: var(--ink);
+
+    & .wb-cta-art { color: var(--gold); }
+    & .wb-cta-art svg { width: 30px; height: 30px; }
+    & strong { display: block; font-size: 1.1rem; margin-bottom: 4px; }
+    & .wb-cta-text span { color: var(--ink-soft); font-size: 0.93rem; }
+    & .more { color: var(--green); white-space: nowrap; font-family: var(--font-mono);
+              font-size: 0.76rem; }
+  }
+  @media (width <= 640px) {
+    .wb-cta { grid-template-columns: auto 1fr; }
+    .wb-cta .more { grid-column: 2; }
+  }
+
+  /* ---------- the pattern box ----------
+     The single most important object in the course, and the one
+     thing every page and every workbook day opens with: the
+     shape, alone, before any explanation of it. It is
+     deliberately the loudest thing on the page. */
+  .shape {
+    border: 1px solid var(--green); border-radius: var(--radius);
+    background: var(--green-soft); padding: 20px 22px;
+    margin-block: 26px;
+
+    & .shape-label {
+      display: block; color: var(--green); font-size: 0.68rem;
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;
+    }
+    & .shape-line {
+      font-family: var(--font-sans); font-size: clamp(1.1rem, 3vw, 1.45rem);
+      font-weight: 500; color: var(--ink); margin-bottom: 10px; max-width: none;
+
+      & i { font-style: normal; color: var(--gold); letter-spacing: 0.05em; }
+      & b { font-weight: 600; }
+    }
+    & .shape-why, & .shape-tip { margin-bottom: 0; color: var(--ink-soft); font-size: 0.95rem; }
+    & .shape-eg {
+      margin-block: 10px; font-family: var(--font-sans); color: var(--ink);
+    }
+    & .shape-tip { margin-top: 10px; font-style: italic; }
+  }
+
+  /* ---------- an English line beside its meaning ----------
+     The workhorse of both terms. In Term One the right column is
+     the Bangla meaning; in Term Two it is often empty on purpose,
+     because that term stops handing over translations. An empty
+     span collapses and the line simply runs full width. */
+  .line-list {
+    display: grid; gap: 2px; margin-block: 14px 20px;
+
+    & .line {
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 6px 18px; margin: 0; padding: 7px 10px; max-width: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.97rem;
+    }
+    & .line:nth-child(odd) { background: var(--paper-sunk); }
+    & .line b { font-weight: 600; color: var(--ink); }
+    & .line span { color: var(--ink-soft); }
+    & .line span:empty { display: none; }
+  }
+  @media (width <= 560px) {
+    .line-list .line { grid-template-columns: 1fr; gap: 2px; }
+  }
+
+  /* ---------- the one line worth remembering ---------- */
+  .mone {
+    border-left: 3px solid var(--gold);
+    background: var(--paper-sunk);
+    padding: 14px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin-block: 22px; max-width: var(--measure); font-size: 0.96rem;
+
+    & p { margin: 0; max-width: none; }
+  }
+  .mone.warn { border-left-color: var(--danger); }
+
+  /* ---------- say it out loud ----------
+     Last on every page, always. The course's first rule is that
+     silent reading is worth nothing, so no page in this school
+     ends on something you only read. */
+  .bolo {
+    border: 1px solid var(--gold); border-radius: var(--radius);
+    background: var(--paper-sunk); padding: 16px 18px; margin-block: 26px;
+    max-width: var(--measure);
+
+    & .bolo-label {
+      display: block; font-family: var(--font-mono); color: var(--gold);
+      font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    & p { margin: 0; max-width: none; }
+  }
+
+  /* ---------- small grids: the 30 verbs, the 20 rebels ---------- */
+  .word-grid {
+    display: grid; gap: 6px; margin-block: 18px 24px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+
+    & > span {
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      padding: 8px 10px; background: var(--panel);
+      font-size: 0.9rem; color: var(--ink-soft);
+    }
+    & b { display: block; color: var(--ink); font-size: 0.98rem; }
+  }
+
+  /* ============================================================
+     THE PRACTICE BOOK
+     ============================================================ */
+
+  .wb-warning {
+    margin-top: 14px; max-width: var(--measure);
+    color: var(--ink-soft); font-size: 0.95rem;
+  }
+
+  .wb-progress {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    margin-block: 20px;
+
+    & .track {
+      flex: 1; min-width: 160px; max-width: 340px; height: 6px;
+      background: var(--hairline); border-radius: 999px; overflow: hidden;
+    }
+    & .track i {
+      display: block; height: 100%; width: 0; background: var(--green);
+      transition: width var(--slow) var(--ease);
+    }
+    & .count { color: var(--ink-soft); font-size: 0.78rem; }
+    &[data-state="done"] .track i { background: var(--gold); }
+  }
+
+  /* ---------- the thirty squares ----------
+     Folded away, the same way the sound key on the same page is.
+     How many days are done is in the hero's bar a few hundred
+     pixels above, and which day is next is on the button beside
+     it; what the grid alone can tell you is WHICH days are still
+     empty, so that is what its summary line offers. */
+  .wb-tracker-details {
+    & summary { font-family: var(--font-mono); font-size: 0.95rem; }
+    /* details.faq caps its children at the measure, which is right
+       for prose and wrong for a grid that wants the full width. */
+    & .wb-tracker { max-width: none; }
+  }
+
+  .wb-tracker {
+    display: grid; gap: 5px; margin-top: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(34px, 1fr));
+
+    & .wb-chip {
+      display: grid; place-items: center; text-decoration: none;
+      aspect-ratio: 1; border: 1px solid var(--hairline);
+      border-radius: var(--radius-sm); background: var(--panel);
+      color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.82rem;
+      transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
+    }
+    & .wb-chip:hover { border-color: var(--green); opacity: 1; }
+    & .wb-chip[data-done] {
+      background: var(--green-soft); border-color: var(--green); color: var(--green);
+    }
+    & .wb-chip[data-current] { outline: 2px solid var(--gold); outline-offset: 1px; }
+  }
+
+  /* ---------- the sounds Bangla does not have ---------- */
+  .wb-sounds {
+    display: grid; gap: 8px; margin-top: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+
+    & .wb-sound {
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      padding: 10px 12px; background: var(--panel); display: grid; gap: 3px;
+      font-size: 0.9rem;
+    }
+    & .wb-sound b { font-weight: 600; }
+    & .wb-sound [lang="en"] { color: var(--gold); }
+    & .wb-sound-how { color: var(--ink-soft); font-size: 0.86rem; }
+  }
+
+  /* ---------- the collection ---------- */
+  .wb-collect {
+    display: grid; gap: var(--gap); margin-top: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+
+    & .wb-collect-col {
+      border: 1px solid var(--hairline); border-top: 3px solid var(--green);
+      border-radius: var(--radius-sm); background: var(--panel);
+      padding: 14px 16px; display: grid;
+    }
+    & .wb-collect-head {
+      display: block; font-family: var(--font-mono); font-size: 0.95rem;
+      font-weight: 600; color: var(--green); margin-bottom: 10px;
+    }
+    & textarea {
+      width: 100%; resize: vertical; min-height: 120px;
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      background: var(--paper); color: var(--ink);
+      font-family: var(--font-sans); font-size: 0.95rem; line-height: 1.7;
+      padding: 10px 12px;
+    }
+    & textarea:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+  }
+
+  /* ---------- the day walker ---------- */
+  .wb-nav {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    margin-block: 16px 26px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--hairline);
+
+    & .push { margin-inline-start: auto; }
+    & .btn:disabled { opacity: 0.35; pointer-events: none; }
+  }
+  .wb-picker {
+    display: flex; align-items: center; gap: 8px;
+
+    & .mono { color: var(--ink-soft); font-size: 0.72rem; }
+    & select {
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      background: var(--panel); color: var(--ink);
+      font-family: var(--font-bn); font-size: 0.9rem; padding: 7px 10px;
+      max-width: min(58vw, 320px);
+    }
+    & select:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+  }
+
+  /* ---------- one day ---------- */
+  .wb-day {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); padding: clamp(18px, 3vw, 30px);
+    margin-bottom: var(--gap);
+  }
+  .wb-day-head {
+    border-bottom: 1px solid var(--hairline); padding-bottom: 14px; margin-bottom: 18px;
+
+    & .wb-day-num { color: var(--gold); font-size: 0.74rem; letter-spacing: 0.08em; }
+    & h2 { font-size: clamp(1.2rem, 3vw, 1.5rem); margin: 6px 0 4px; }
+    & .wb-day-bn { color: var(--ink-soft); margin: 0; }
+  }
+  .wb-day .shape { margin-top: 0; }
+
+  .wb-block {
+    margin-top: 26px;
+
+    & h3 {
+      font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--green); margin-bottom: 10px;
+    }
+  }
+  .wb-hint { color: var(--ink-soft); font-size: 0.86rem; margin-top: 10px; }
+
+  /* the eight boxes you fill in yourself */
+  .wb-fields {
+    display: grid; gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+  .wb-field, .wb-say-row {
+    display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start;
+  }
+  .wb-num { color: var(--gold); font-size: 0.78rem; padding-top: 9px; }
+
+  /* resize/overflow are deliberately the no-JavaScript values.
+     workbook.js sets overflow:hidden on the boxes it takes over
+     and grows them to fit instead; without it they stay ordinary
+     resizable, scrollable textareas, which is what a learner with
+     scripts off needs in order to read back what they wrote. */
+  .wb-day textarea[data-wb-write] {
+    width: 100%; resize: vertical; overflow: auto;
+    border: 0; border-bottom: 1px solid var(--hairline);
+    background: transparent; color: var(--ink);
+    font-family: var(--font-sans); font-size: 0.98rem; line-height: 1.8;
+    padding: 6px 2px;
+  }
+  .wb-day textarea[data-wb-write]:focus {
+    outline: none; border-bottom-color: var(--green);
+    background: var(--green-soft);
+  }
+  .wb-day textarea[data-wb-write]::placeholder { color: var(--ink-soft); opacity: 0.55; }
+
+  /* the six to translate, with the answer hidden until asked for */
+  .wb-say-list { display: grid; gap: 12px; }
+  .wb-say-q { grid-column: 2; font-size: 0.97rem; }
+  .wb-say-row textarea { grid-column: 2; }
+  .wb-say-a {
+    grid-column: 2; display: none;
+    color: var(--green); font-size: 0.93rem; padding-top: 2px;
+  }
+  .wb-day[data-answers] .wb-say-a { display: block; }
+  .wb-answer-toggle { margin-top: 14px; }
+
+  .wb-heart-task { margin-bottom: 2px; }
+  .wb-heart-en { color: var(--ink-soft); font-size: 0.76rem; margin-bottom: 10px; }
+  .wb-heart textarea[data-wb-write] {
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    padding: 10px 12px; min-height: 96px; resize: vertical; overflow: auto;
+  }
+
+  .wb-foot {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--hairline);
+
+    & .wb-foot-note { color: var(--ink-soft); font-size: 0.72rem; }
+  }
+  .wb-done[aria-pressed="true"] { color: var(--green); border-color: var(--green); }
+
+  /* Printing the book should give you the book, not one day of it
+     and a navigation bar. Every selector is under body.english,
+     including the ones that look English-only: .hero-actions is
+     not, and unscoped this block would hide the call-to-action
+     buttons on every page of the site whenever anyone printed
+     anything. That is not hypothetical; it happened next door. */
+  @media print {
+    body.english :is(.wb-nav, .wb-tracker, .wb-progress, .hero-actions) { display: none; }
+    body.english .wb-day { break-inside: avoid; border-color: #999; }
+    body.english .wb-day[hidden] { display: block !important; }
+    body.english .wb-say-a { display: none !important; }
+    body.english :is(.shape, .bolo, .mone) { break-inside: avoid; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wb-progress .track i { transition: none; }
   }
 }
 

@@ -31,6 +31,18 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v47: the English school landed, two terms over thirty parts,
+        with a thirty-day practice book. Not optional, and for the
+        same reason v46 was not: content.js now imports
+        /english/curriculum.js, and app.js and crumbs.js import
+        content.js, so a returning visitor holding the v46 shell
+        would be served a cached content.js whose new import
+        resolves to nothing, and the menu, the palette and the
+        breadcrumbs would die together. The school's own modules
+        are precached alongside it. styles.css gained the english
+        layer, crumbs.js gained the trail, and skills.js now reads
+        three schools' progress rather than German's alone.
+
    v46: the Quranic Arabic school landed, sixty days over three
         ধাপ. Not optional in the way a styling change is, and for
         the same reason v21 was not: content.js now imports
@@ -282,7 +294,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v46";
+const VERSION = "v47";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -360,6 +372,21 @@ const PRECACHE = [
   "/quran/icons.js",
   "/quran/dars.js",
   "/quran/dhap.js",
+  /* The English school, on exactly the same rule as the two
+     above. curriculum.js is an import of content.js, so the shell
+     is broken without it; the hub is the page the ladder lives
+     on; part.js is the script every one of the thirty part pages
+     loads. The part pages themselves and the workbook are left to
+     the runtime cache: the workbook alone is a third of a
+     megabyte of static days, and a reader who never opens it
+     should not pay for it on their first visit. */
+  "/english/curriculum.js",
+  "/english/index.html",
+  "/english/hub.js",
+  "/english/progress.js",
+  "/english/icons.js",
+  "/english/part.js",
+  "/english/term.js",
   "/tools/index.html",
   "/tools/stock.html",
   "/tools/stock.js",
