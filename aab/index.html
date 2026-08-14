@@ -197,7 +197,7 @@
         </p>
         <p class="lede" data-when="finance" lang="bn">
           বিও অ্যাকাউন্ট খোলা থেকে গবেষণা পর্যন্ত: শেয়ার, সঞ্চয়পত্র, মিউচুয়াল ফান্ড আর
-          ঝুঁকির হিসাব, সবটাই সহজ বাংলায়। সঙ্গে পাঁচটা ক্যালকুলেটর, যাতে হিসাবটা
+          ঝুঁকির হিসাব, সবটাই সহজ বাংলায়। সঙ্গে <span data-count="calculators">৫</span>টা ক্যালকুলেটর, যাতে হিসাবটা
           নিজেই করে দেখতে পারেন।
         </p>
         <p class="lede" data-when="skills" lang="bn">
@@ -346,8 +346,14 @@ which library, only exists for one of those
            page for everyone: only the order changes. -->
       <div class="bento" data-for="work">
 
-        <!-- Featured article (big cell) -->
-        <article class="cell cell-feature" data-for="learn">
+        <!-- Featured article (big cell)
+             Filled by home.js from the newest live article in
+             content.js, so publishing a piece features it. What is
+             written here is the fallback, and it is deliberately
+             the first article rather than a placeholder: a reader
+             with no JavaScript gets a real piece to read, not an
+             empty box. -->
+        <article class="cell cell-feature" data-for="learn" id="home-feature">
           <span class="tag mono">Featured · Explainer</span>
           <h2>How the Dhaka Stock Exchange actually works</h2>
           <p>What the DSEX index measures, how a BO account works, and the
@@ -373,15 +379,24 @@ which library, only exists for one of those
         <div class="cell cell-about" data-for="work">
           <span class="tag mono">About</span>
           <h3>Economics first, risk second, plain language always</h3>
-          <p>Economics in Chittagong, an MSc in Brighton, published research on
-             fund performance across 220 UK equity funds, and a habit of turning
+          <!-- "published research" it is not: it is a submitted MSc
+               dissertation, and the difference is one a reader in
+               finance will notice. The claim is now what the work
+               actually is, and the number is the one on the case
+               study itself. -->
+          <p>Economics in Chittagong, an MSc in Brighton, a dissertation on fund
+             performance across 220 UK equity funds, and a habit of turning
              jargon into sentences people actually use.</p>
           <a class="more" href="/about.html">More about me →</a>
         </div>
 
-        <!-- Latest market note -->
-        <div class="cell cell-note" data-for="learn" lang="bn">
-          <span class="tag mono">নতুন লেখা</span>
+        <!-- What is being written next.
+             home.js rotates this through the pieces marked "soon"
+             in content.js, so the card changes as the queue does
+             and cannot go on advertising something already
+             published. The one below is the fallback. -->
+        <div class="cell cell-note" data-for="learn" lang="bn" id="home-next">
+          <span class="tag mono">লেখা হচ্ছে</span>
           <h3 class="bn-h">সঞ্চয়পত্র বনাম ব্যাংক এফডিআর</h3>
           <p>কর বাদ দিলে কোনটায় টাকা বেশি খাটে? হিসাবটা শেখার লাইব্রেরিতে আসছে।</p>
           <a class="more" href="/insights.html">সব লেখা →</a>
@@ -421,19 +436,32 @@ which library, only exists for one of those
            reachable only from /portfolio.html, which is one click
            too far for the thing that does the persuading.
 
-           THREE, not five, and one line each. This list was the
-           longest single thing on the home page: five rows with a
-           three-line blurb apiece, in front of a reader who had
-           not yet decided to care. The last two, the dissertation
-           and the stock check, are one line below, on the page
-           that exists to hold all five. A home page argues; the
-           portfolio catalogues. -->
+           THREE, not all of them, and one line each. This list was
+           the longest single thing on the home page: five rows
+           with a three-line blurb apiece, in front of a reader who
+           had not yet decided to care. A home page argues; the
+           portfolio catalogues.
+
+           WHICH three is home.js's business, not this file's. The
+           rows below were typed here, and by the time three more
+           case studies existed this section still showed the same
+           three with a trailing line naming two of the four it had
+           left out. The markup is now the no-JavaScript fallback
+           and nothing more: home.js rebuilds the list from PAGES,
+           rotates which three lead on a daily cycle so the page
+           is not the same page every visit, and counts the rest
+           rather than naming some of them.
+
+           KEEP THE FALLBACK ROWS VALID anyway. They are what a
+           reader with no JavaScript gets, and check-content.mjs
+           will not let a case study go missing from the portfolio
+           page, which is where all of them always are. -->
       <section data-for="work">
         <span class="section-label mono">Open one and take it apart</span>
         <p class="measure section-intro">Every model runs in the browser. Change an
            assumption and watch the statements, the valuation or the charts move with
            it: no download, no sign-up.</p>
-        <div class="big-links">
+        <div class="big-links" id="home-cases">
           <a class="big-link" href="/portfolio/three-statement.html">
             <span class="num">01</span>
             <span class="t">Three-statement model: a listed manufacturer</span>
@@ -456,8 +484,8 @@ which library, only exists for one of those
               tails against a normal curve. Bring your own CSV.</span>
           </a>
         </div>
-        <p style="margin-top:16px"><a href="/portfolio.html">Also the MSc dissertation on
-           220 UK funds, and the stock-check framework →</a></p>
+        <p class="section-more"><a href="/portfolio.html" id="home-cases-rest">Every case
+           study, and how a project runs →</a></p>
       </section>
 
       <!-- ============ WHAT'S HERE: THE MONEY LIBRARY ============ -->
@@ -488,17 +516,17 @@ which library, only exists for one of those
             <span class="num">০১</span>
             <span class="t bn-h">শেখার লাইব্রেরি: একদম শুরু থেকে</span>
             <span class="go">→</span>
-            <span class="d">বিও অ্যাকাউন্ট খোলা থেকে গবেষণা পর্যন্ত আটটা ধাপ, ষাটের বেশি লেখা।</span>
+            <span class="d">বিও অ্যাকাউন্ট খোলা থেকে গবেষণা পর্যন্ত <span data-count="stages">৮</span>টা ধাপ, <span data-count="lessons">৬০</span>টা লেখা।</span>
           </a>
           <a class="big-link" href="/tools/stock.html">
             <span class="num">০২</span>
             <span class="t bn-h">শেয়ার যাচাই: কিনবেন, ধরে রাখবেন, নাকি বেচবেন?</span>
             <span class="go">→</span>
-            <span class="d">বার্ষিক প্রতিবেদনের সংখ্যা বসান, ছত্রিশটার বেশি রেশিও নিজেই হিসাব করে দেখাবে।</span>
+            <span class="d">বার্ষিক প্রতিবেদনের সংখ্যা বসান, <span data-count="ratios">৪৪</span>টা রেশিও নিজেই হিসাব করে দেখাবে।</span>
           </a>
           <a class="big-link" href="/tools/index.html">
             <span class="num">০৩</span>
-            <span class="t bn-h">ক্যালকুলেটর: যে পাঁচটা হিসাব আগে করা দরকার</span>
+            <span class="t bn-h">ক্যালকুলেটর: যে <span data-count="calculators">৫</span>টা হিসাব আগে করা দরকার</span>
             <span class="go">→</span>
             <span class="d">চক্রবৃদ্ধি, সঞ্চয়পত্র বনাম এফডিআর, মূল্যস্ফীতি, কিস্তি আর ঝুঁকির মাপ।</span>
           </a>
@@ -515,7 +543,7 @@ which library, only exists for one of those
             <span class="num">০১</span>
             <span class="t bn-h">জার্মান, বাংলায়: একদম শুরু থেকে</span>
             <span class="go">→</span>
-            <span class="d">চারটা স্তর, ধ্বনি থেকে শুরু: প্রথম দিনেই যেকোনো জার্মান শব্দ পড়তে পারবেন।</span>
+            <span class="d"><span data-count="stufen">৪</span>টা স্তর, ধ্বনি থেকে শুরু: প্রথম দিনেই যেকোনো জার্মান শব্দ পড়তে পারবেন।</span>
           </a>
           <a class="big-link" href="/deutsch/stufe-1/arbeitsbuch.html">
             <span class="num">০২</span>
@@ -537,7 +565,7 @@ which library, only exists for one of those
         <span class="section-label mono">Latest writing</span>
         <!-- rendered from the ARTICLES list in /content.js -->
         <div class="cards grid-2" id="article-cards" data-mode="live" data-limit="2"></div>
-        <p style="margin-top:16px"><a href="/insights.html">Everything I've written →</a></p>
+        <p class="section-more"><a href="/insights.html">Everything I've written →</a></p>
       </section>
 
       <!-- ============ WHY THIS EXISTS ============ -->
@@ -589,7 +617,7 @@ which library, only exists for one of those
       <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
       <p>Everything on this site is general education, not investment advice.
          Do your own research before putting money anywhere.</p>
-      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+      <p class="footer-mail"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
   </footer>
 

@@ -22,7 +22,7 @@
    when at least one of them does.
    ============================================================ */
 
-import { SKILLS } from "/content.js";
+import { SKILLS, PAGES, ARTICLES, liveArticles, COUNTS } from "/content.js";
 import { findStage, stageLessons } from "/learn/curriculum.js";
 import {
   getLast as learnLast, readSet as learnRead, nextUp as learnNext,
@@ -228,6 +228,136 @@ function paintNews(data) {
   return true;
 }
 
+/* ============================================================
+   4. THE PARTS OF THIS PAGE THAT DESCRIBE THE SITE
+
+   Three blocks of the home page were lists of things that exist
+   elsewhere, typed out by hand: the case studies, the featured
+   article and the piece being written next.
+
+   THE BUG THESE EXIST FOR
+
+   Three case studies were added to the site. The home page went
+   on showing the same three it had always shown, under a
+   trailing line that named two of the four it was leaving out,
+   because that line was a sentence in index.html and a sentence
+   does not know that files appeared beside it. The portfolio
+   page had the same fault at the same time, and between them
+   they made four finished pieces of work invisible to anyone who
+   did not already know the URLs.
+
+   So none of it is typed any more. Each block is rebuilt from
+   content.js, which is the file you edit when you publish
+   something, and the markup left behind in index.html is the
+   fallback a reader with no JavaScript gets.
+
+   ROTATION. The case studies and the "writing next" card show a
+   slice of a longer list, and which slice moves on a daily
+   cycle. That is not decoration: a home page that shows the same
+   three of seven forever is a home page where four pieces of
+   work are permanently second-class. Daily, not per-visit, so
+   that the page is stable while you are reading it and the
+   prerendered copy in the speculation cache is never a different
+   page from the one you land on.
+   ============================================================ */
+
+const DAY = 24 * 60 * 60 * 1000;
+
+/** `count` items from `items`, starting at a point that advances
+    once per `period`. Wraps, so the window is always full. */
+function window_(items, count, period = DAY) {
+  if (items.length <= count) return items;
+  const start = Math.floor(Date.now() / period) % items.length;
+  return Array.from({ length: count }, (_, i) => items[(start + i) % items.length]);
+}
+
+const caseStudies = () => PAGES.filter((p) => p.group === "case" && !p.private);
+
+/* ---------- the case studies you can open ---------- */
+function buildCases() {
+  const host = document.getElementById("home-cases");
+  if (!host) return;
+
+  const all = caseStudies();
+  if (!all.length) return;                 // nothing to say, keep the fallback
+  const shown = window_(all, 3);
+
+  host.replaceChildren(
+    ...shown.map((p, i) =>
+      el("a", { className: "big-link", href: p.url },
+        el("span", { className: "num", textContent: String(i + 1).padStart(2, "0") }),
+        el("span", { className: "t", textContent: p.short ?? p.title }),
+        el("span", { className: "go", textContent: "→" }),
+        el("span", { className: "d", textContent: p.blurb })
+      )
+    )
+  );
+
+  /* The line under the list counts what is not on it rather than
+     naming a couple of them, which is the version that went out
+     of date. */
+  const rest = all.length - shown.length;
+  const link = document.getElementById("home-cases-rest");
+  if (link && rest > 0) {
+    link.textContent = `${rest} more case ${rest === 1 ? "study" : "studies"}, and how a project runs →`;
+  }
+}
+
+/* ---------- the featured piece ---------- */
+function buildFeature() {
+  const host = document.getElementById("home-feature");
+  const latest = liveArticles()[0];
+  if (!host || !latest) return;            // nothing published, keep the fallback
+
+  host.replaceChildren(
+    el("span", { className: "tag mono", textContent: `Featured · ${latest.tag}` }),
+    el("h2", { textContent: latest.title, lang: latest.lang }),
+    el("p", { textContent: latest.dek, lang: latest.lang }),
+    el("a", {
+      className: "more", href: `/insights/${latest.slug}.html`,
+      textContent: "Read it →",
+    })
+  );
+  if (latest.lang === "bn") host.querySelector("h2")?.classList.add("bn-h");
+}
+
+/* ---------- what is being written next ---------- */
+function buildNext() {
+  const host = document.getElementById("home-next");
+  if (!host) return;
+
+  /* Bangla only, and that is the point of the card rather than a
+     limitation of it. This is the learner's half of the home
+     page, it is marked lang="bn", and it is set in the Bangla
+     serif: an English headline dropped into it would be a
+     English sentence in a Bangla card in a Bangla typeface,
+     which is exactly the thing this site exists to stop doing.
+     Everything queued in English is already on the Insights
+     page, one tap away, in the language it was written in. */
+  const soon = ARTICLES.filter((a) => a.status === "soon" && a.lang === "bn");
+  if (!soon.length) {
+    /* Nothing queued in Bangla. Rather than leave a card
+       advertising a piece that has since been published, or one
+       written in the other language, the slot becomes a plain
+       pointer at everything written so far. */
+    host.replaceChildren(
+      el("span", { className: "tag mono", textContent: "সব লেখা" }),
+      el("h3", { className: "bn-h", textContent: `${bn(COUNTS.articles)}টা লেখা প্রকাশিত` }),
+      el("p", { textContent: "নতুন লেখা এলে এখানেই আসবে।" }),
+      el("a", { className: "more", href: "/insights.html", textContent: "সব লেখা →" })
+    );
+    return;
+  }
+
+  const [next] = window_(soon, 1);
+  host.replaceChildren(
+    el("span", { className: "tag mono", textContent: "লেখা হচ্ছে" }),
+    el("h3", { className: "bn-h", textContent: next.title, lang: next.lang }),
+    el("p", { textContent: next.dek, lang: next.lang }),
+    el("a", { className: "more", href: "/insights.html", textContent: "সব লেখা →" })
+  );
+}
+
 /* ------------------------------------------------------------
    go
    ------------------------------------------------------------ */
@@ -270,6 +400,12 @@ function build() {
 }
 
 build();
+
+/* These three are not about the visitor, so they run for
+   everyone, first time or hundredth. */
+buildCases();
+buildFeature();
+buildNext();
 
 /* The news is the one part that can arrive over a wire, so it
    paints itself and re-reveals rather than holding the rest up.

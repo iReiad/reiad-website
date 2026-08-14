@@ -419,6 +419,17 @@
     & p { max-width: 60ch; }
   }
 
+  /* The address line under the disclaimer. It was an inline
+     margin-top on every page of the site: 150 copies of one
+     declaration, which is 150 places to edit and 149 chances to
+     miss one. Nothing about it was ever page-specific. */
+  .footer-mail { margin-top: 10px; }
+
+  /* The link line under a list: "everything I have written",
+     "every case study". Same story, an inline margin repeated
+     wherever a section ended in a pointer somewhere else. */
+  .section-more { margin-top: 16px; }
+
   /* ---------- RESPONSIVE ----------
      The header has to fit seven links and three buttons, seven
      since the German school arrived, which is the point at which
@@ -5198,6 +5209,20 @@ German for day, and .tag is what the site has always called
     position: absolute !important; width: 1px; height: 1px;
     padding: 0; margin: -1px; overflow: hidden;
     clip-path: inset(50%); white-space: nowrap;
+  }
+
+  /* The spam honeypot on the contact and subscribe forms: a field
+     a person never sees and a bot fills in anyway. It is NOT
+     .visually-hidden, which is for text a screen reader should
+     still read out; this one is hidden from everybody, and it is
+     `left: -100vw` rather than the old inline `left: -9999px` so
+     it cannot widen the page on a browser that counts it. Both
+     forms carried this as an inline style, written slightly
+     differently in each. */
+  .honeypot {
+    position: absolute !important;
+    left: -100vw; width: 1px; height: 1px;
+    opacity: 0; pointer-events: none;
   }
   .stack { display: flex; flex-direction: column; gap: 12px; }
   .row-flex { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <title>Portfolio &amp; Services · Reiad's Library</title>
-  <meta name="description" content="Freelance financial modeling, data analysis and finance writing by Rony Reiad. Seven case studies you can open and drive in the browser, plus Excel models, Python and R analysis, and writing in English or Bangla.">
+  <meta name="description" content="Freelance financial modeling, data analysis and finance writing by Rony Reiad. Case studies you can open and drive in the browser, plus Excel models, Python and R analysis, and writing in English or Bangla.">
   <link rel="canonical" href="https://reiad.co.uk/portfolio.html">
 
   <!-- Theme before first paint: no white flash for dark-mode readers.
@@ -35,7 +35,7 @@
   <link rel="alternate" type="application/rss+xml" title="Reiad's Library · Insights" href="/feed.xml">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Portfolio &amp; Services">
-  <meta property="og:description" content="Freelance financial modeling, data analysis and finance writing by Rony Reiad. Seven case studies you can open and drive in the browser.">
+  <meta property="og:description" content="Freelance financial modeling, data analysis and finance writing by Rony Reiad. Case studies you can open and drive in the browser.">
   <meta property="og:url" content="https://reiad.co.uk/portfolio.html">
   <meta property="og:image" content="https://reiad.co.uk/og/portfolio.png">
   <meta property="og:image:width" content="1200">
@@ -134,8 +134,8 @@
         <p class="lede">
           Freelance financial modeling, data analysis and finance writing. Every
           engagement starts with a short brief and ends with working files you
-          own, not screenshots. The seven case studies below are live: open one and
-          drag the assumptions about.
+          own, not screenshots. The case studies below are live: open one and drag
+          the assumptions about.
         </p>
         <div class="hero-actions">
           <a class="btn btn-solid" href="/contact.html">Start a project</a>
@@ -151,13 +151,20 @@
 
       <!-- ============ THE WORK, IN NUMBERS ============
            Every figure here is stated somewhere it can be checked:
-           the case-study count is the four cards below, the
-           fund-months and the six views are printed on the pages
-           they describe, and the business day is the promise made
-           in the process section and the FAQ. -->
+           the fund-months and the five-year hold are printed on the
+           pages they describe, and the business day is the promise
+           made in the process section and the FAQ.
+
+           The case-study count is NOT typed here. It said four while
+           seven existed, because it was written when four was true
+           and nothing made it look again. It is a [data-count] slot
+           now, filled by app.js from COUNTS in content.js, which
+           counts the cards rather than remembering them. The 7 in
+           the markup is only the no-JavaScript fallback. Add a case
+           study to PAGES and this number moves on its own. -->
       <div class="strip" aria-label="The work on this page, in numbers">
         <div>
-          <span class="n">7</span>
+          <span class="n" data-count="caseStudies">7</span>
           <span class="l">case studies you can open and drive in the browser</span>
         </div>
         <div>
@@ -193,7 +200,7 @@
       <section id="work">
         <span class="section-label mono">Selected work</span>
         <p class="section-intro measure">
-          Seven pieces, all interactive, all running their own arithmetic in your
+          Every piece here is interactive, running its own arithmetic in your
           browser. Nothing is a picture of a spreadsheet: change an input and
           every number downstream of it moves, which is the only honest way to
           show that a model works.
@@ -402,8 +409,9 @@
               <span class="num">01</span>
               <span class="t">The calculators</span>
               <span class="go">→</span>
-              <span class="d">Five calculators in the Tools hub, plus a stock check that
-                runs thirty-odd ratios across six pillars and shows its own
+              <span class="d"><span data-count="calculators">5</span> calculators in the
+                Tools hub, plus a stock check that runs <span data-count="ratios">44</span>
+                ratios across <span data-count="pillars">6</span> pillars and shows its own
                 arithmetic. Each one linkable, each one in English or Bangla.</span>
             </a>
             <a class="big-link" href="/insights.html">
@@ -661,7 +669,7 @@
           </details>
           <details class="faq">
             <summary>Can I see the code or the model first?</summary>
-            <p>You already can. The seven case studies above are the samples: open
+            <p>You already can. The case studies above are the samples: open
                one, drag the assumptions, download the CSV, read the notes on where
                each number came from. They run the same arithmetic a client build
                would, on companies and data small enough to publish. For work that
@@ -690,7 +698,7 @@
       <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
       <p>Everything on this site is general education, not investment advice.
          Do your own research before putting money anywhere.</p>
-      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+      <p class="footer-mail"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
   </footer>
 

@@ -21,7 +21,7 @@
 import {
   searchIndex, liveArticles, ARTICLES, formatDate, topics,
   PAGES, TOOLS, STAGES, STUFEN, stufeUrl, SITE, SEARCH_GROUPS,
-  SKILLS, skillUrl,
+  SKILLS, skillUrl, COUNTS,
 } from "/content.js";
 import { countView, getArticles } from "/api.js";
 import { initCrumbs } from "/crumbs.js";
@@ -742,6 +742,42 @@ function initHeaderHeight() {
 }
 
 /* ============================================================
+   3c. THE NUMBERS THE SITE SAYS ABOUT ITSELF
+
+   Every [data-count] on the page is filled from COUNTS in
+   content.js, which counts the data rather than remembering it.
+
+   THE BUG THIS EXISTS FOR
+
+   The portfolio page said "four case studies" while seven
+   existed. The stock check was described as thirty-eight ratios
+   on one page, thirty-odd on four others and "more than
+   thirty-six" in Bangla, for a model that scores forty-four.
+   Every one of those was correct on the day it was typed. A
+   number in a sentence is a copy of the data, and copies drift.
+
+   The number in the markup stays as the fallback, so a reader
+   with no JavaScript still gets a sentence with a number in it
+   rather than a gap, and check-content.mjs fails the build if
+   that fallback drifts too far from the truth.
+
+   Bangla digits inside a [lang="bn"] element, Latin everywhere
+   else: "৮টা ধাপ" in a Bangla sentence and "8 stages" in an
+   English one are the same fact, and a Bangla sentence with a
+   Latin numeral in the middle of it reads as a machine wrote it.
+   ============================================================ */
+const BN_DIGITS = "০১২৩৪৫৬৭৮৯";
+const toBangla = (n) => String(n).replace(/\d/g, (d) => BN_DIGITS[Number(d)]);
+
+function initCounts() {
+  for (const node of document.querySelectorAll("[data-count]")) {
+    const value = COUNTS[node.dataset.count];
+    if (value == null) continue;
+    node.textContent = node.closest('[lang="bn"]') ? toBangla(value) : String(value);
+  }
+}
+
+/* ============================================================
    4. SPECULATION RULES, prerender on hover, instant on click
    ============================================================ */
 function initSpeculation() {
@@ -988,6 +1024,7 @@ initMenu();
 initSkillsNav();
 initShortcuts();
 initKinetic();
+initCounts();
 initTilt();
 initSpeculation();
 initArticleCards();

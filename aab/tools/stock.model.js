@@ -7,7 +7,7 @@
 
    WHAT IT IS, AND WHAT IT ISN'T
 
-   It scores a company against thirty-odd ratios grouped into six
+   It scores a company against forty-odd ratios grouped into six
    pillars, weights the pillars by the kind of investor you say
    you are, applies a short list of vetoes that no score can
    argue with, and reports a verdict band.
