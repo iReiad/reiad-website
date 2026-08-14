@@ -31,6 +31,19 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v42: the site counts itself now. content.js gained COUNTS and
+        app.js the [data-count] filler that reads it, home.js
+        rebuilds the home page's case-study list, featured piece
+        and next-up card from the manifest, and styles.css turned
+        light mode very slightly sepia, moved the gold accent two
+        points darker to hold AA on it, fixed a grid that let the
+        three-statement tables scroll the whole page sideways on a
+        phone, and narrowed the menu columns so the case studies
+        stop landing below the fold. The webfont stylesheet stopped
+        blocking the first paint on every page at the same time.
+        Almost every precached file changed, and the markup is not
+        legible without the rules that go with it.
+
    v41: the portfolio page was rebuilt around the work rather than
         around the description of it, and it now carries all seven
         case studies rather than the four it was written against.
@@ -223,7 +236,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v41";
+const VERSION = "v42";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

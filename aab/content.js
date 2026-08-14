@@ -405,7 +405,15 @@ export const COUNTS = {
   calculators: TOOLS.length,
   /** Stages in the money ladder, starter to research. */
   stages: STAGES.length,
-  /** Lessons actually written, not the ones still marked "soon". */
+  /** Lessons actually written, not the ones still marked "soon".
+
+      This is 8 higher than the number of lesson FILES, and both
+      are right: the starter guide's steps are written lessons
+      that live as anchors on the Learn hub rather than as pages
+      of their own (`stage.inline`), so build-meta.mjs, which is
+      counting things to put in a sitemap, reports the smaller
+      number. A reader being told how much there is to read wants
+      this one. */
   lessons: allLessons().filter((l) => l.status === "live").length,
   /** Terms in the A-Z glossary. */
   terms: TERM_GROUPS.reduce((n, g) => n + g.terms.length, 0),

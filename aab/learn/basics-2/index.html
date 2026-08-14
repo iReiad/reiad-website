@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <title>ভিত্তি · ধাপ ২ · বাজারটা পড়তে শিখুন · শেখার লাইব্রেরি · Reiad's Library</title>
+  <title>ভিত্তি · ধাপ ২ · বাজারটা পড়তে শিখুন, শেখার লাইব্রেরি, Reiad's Library</title>
   <meta name="description" content="দাম কেন ওঠানামা করে, কখন কিনবেন-বেচবেন-ধরে রাখবেন, কোন খাত কী, কারা নিয়ন্ত্রণ করে, আর লাইভ অ্যাপে কী দেখবেন।">
   <link rel="canonical" href="https://reiad.co.uk/learn/basics-2/index.html">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="ভিত্তি · ধাপ ২ · বাজারটা পড়তে শিখুন · শেখার লাইব্রেরি · Reiad's Library">
+  <meta property="og:title" content="ভিত্তি · ধাপ ২ · বাজারটা পড়তে শিখুন, শেখার লাইব্রেরি, Reiad's Library">
   <meta property="og:description" content="দাম কেন ওঠানামা করে, কখন কিনবেন-বেচবেন-ধরে রাখবেন, কোন খাত কী, কারা নিয়ন্ত্রণ করে, আর লাইভ অ্যাপে কী দেখবেন।">
+  <meta property="og:url" content="https://reiad.co.uk/learn/basics-2/index.html">
+  <meta property="og:image" content="https://reiad.co.uk/og/stage-basics-2.png">
   <script>
     (function () {
       var d = document.documentElement;
@@ -23,7 +25,22 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <!-- The webfont stylesheet does not block the first paint.
+       It used to: a <link rel="stylesheet"> is render-blocking, so
+       until fonts.googleapis.com answered, this page painted
+       nothing at all. On the connection a reader in Dhaka
+       actually has, that is seconds of white screen for a page
+       whose text was ready immediately, and if the request never
+       answers it is seconds of white screen for nothing.
+
+       media="print" makes the browser fetch it at low priority
+       without applying it; onload promotes it the moment it
+       lands. The text is readable in the fallback face straight
+       away and swaps when the webfont arrives, which is what
+       display=swap in the URL was always asking for. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"
+        media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"></noscript>
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -31,7 +48,6 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <link rel="alternate" type="application/rss+xml" title="Reiad's Library · Insights" href="/feed.xml">
-  <meta property="og:image" content="https://reiad.co.uk/og/stage-basics-2.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
@@ -53,7 +69,7 @@
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep aria-current="page">Learn</a>
-        <a href="/skills/index.html" data-nav-skills>Skills</a>
+        <a href="/deutsch/index.html">Deutsch</a>
         <a href="/tools/index.html">Tools</a>
         <a href="/insights.html">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
@@ -156,7 +172,7 @@
            data-lesson-id="basics-2/cost-of-churn">
           <span class="lesson-card-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2l-1.9 4.6-4.7 1.9 1.9-4.6 4.7-1.9Z"/></svg></span>
           <h3 class="bn-h">বারবার কেনাবেচার দাম <span class="en-sub">What churning costs you</span></h3>
-          <p>কমিশন, স্প্রেড আর ভুলের সময়: ঘন ঘন হাত বদলালে যে তিনটা জায়গায় টাকা গলে।</p>
+          <p>কমিশন, স্প্রেড আর ভুলের সময়, ঘন ঘন হাত বদলালে যে তিনটা জায়গায় টাকা গলে।</p>
           <span class="lesson-card-foot mono">৬ মিনিট</span>
         </a>
         </div>
@@ -169,7 +185,7 @@
            data-lesson-id="basics-2/sectors">
           <span class="lesson-card-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2l-1.9 4.6-4.7 1.9 1.9-4.6 4.7-1.9Z"/></svg></span>
           <h3 class="bn-h">খাত চিনুন <span class="en-sub">Sectors explained</span></h3>
-          <p>ব্যাংক, বিমা, ওষুধ, বস্ত্র, সিমেন্ট, জ্বালানি, খাদ্য: কোন খাত কীসে ভালো করে, কীসে মার খায়।</p>
+          <p>ব্যাংক, বিমা, ওষুধ, বস্ত্র, সিমেন্ট, জ্বালানি, খাদ্য, কোন খাত কীসে ভালো করে, কীসে মার খায়।</p>
           <span class="lesson-card-foot mono">৯ মিনিট</span>
         </a>
         <a class="cell lesson-card" href="/learn/basics-2/share-categories.html"
@@ -210,14 +226,14 @@
            data-lesson-id="basics-2/exchanges-cdbl">
           <span class="lesson-card-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2l-1.9 4.6-4.7 1.9 1.9-4.6 4.7-1.9Z"/></svg></span>
           <h3 class="bn-h">ডিএসই, সিএসই আর সিডিবিএল <span class="en-sub">DSE, CSE &amp; CDBL</span></h3>
-          <p>কেনাবেচা হয় এক জায়গায়, শেয়ার জমা থাকে আরেক জায়গায়: কে কোন কাজটা করে।</p>
+          <p>কেনাবেচা হয় এক জায়গায়, শেয়ার জমা থাকে আরেক জায়গায়, কে কোন কাজটা করে।</p>
           <span class="lesson-card-foot mono">৬ মিনিট</span>
         </a>
         <a class="cell lesson-card" href="/learn/basics-2/bangladesh-bank.html"
            data-lesson-id="basics-2/bangladesh-bank">
           <span class="lesson-card-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2l-1.9 4.6-4.7 1.9 1.9-4.6 4.7-1.9Z"/></svg></span>
           <h3 class="bn-h">বাংলাদেশ ব্যাংক <span class="en-sub">Bangladesh Bank</span></h3>
-          <p>সুদের হার, টাকার জোগান আর ডলার: কেন্দ্রীয় ব্যাংকের সিদ্ধান্ত সবার আগে বাজারে লাগে।</p>
+          <p>সুদের হার, টাকার জোগান আর ডলার, কেন্দ্রীয় ব্যাংকের সিদ্ধান্ত সবার আগে বাজারে লাগে।</p>
           <span class="lesson-card-foot mono">৬ মিনিট</span>
         </a>
         <a class="cell lesson-card" href="/learn/basics-2/amcs-icb.html"
@@ -231,7 +247,7 @@
            data-lesson-id="basics-2/choosing-a-broker">
           <span class="lesson-card-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2l-1.9 4.6-4.7 1.9 1.9-4.6 4.7-1.9Z"/></svg></span>
           <h3 class="bn-h">ব্রোকারেজ হাউস বাছাই <span class="en-sub">Choosing a brokerage</span></h3>
-          <p>কমিশন, অ্যাপের মান, মার্জিন ঋণের চাপ: কোন জিনিসগুলো আসলে দেখা দরকার।</p>
+          <p>কমিশন, অ্যাপের মান, মার্জিন ঋণের চাপ, কোন জিনিসগুলো আসলে দেখা দরকার।</p>
           <span class="lesson-card-foot mono">৮ মিনিট</span>
         </a>
         </div>
@@ -244,7 +260,7 @@
            data-lesson-id="basics-2/reading-a-quote">
           <span class="lesson-card-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2l-1.9 4.6-4.7 1.9 1.9-4.6 4.7-1.9Z"/></svg></span>
           <h3 class="bn-h">একটা কোট পড়তে শিখুন <span class="en-sub">How to read a quote</span></h3>
-          <p>LTP, YCP, ভলিউম, সার্কিট: অ্যাপের ওই সংখ্যাগুলোর মানে এক এক করে।</p>
+          <p>LTP, YCP, ভলিউম, সার্কিট, অ্যাপের ওই সংখ্যাগুলোর মানে এক এক করে।</p>
           <span class="lesson-card-foot mono">৮ মিনিট</span>
         </a>
         <a class="cell lesson-card" href="/learn/basics-2/apps-and-sites.html"
@@ -288,7 +304,7 @@
     <div class="wrap">
       <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
       <p>এই সাইটের সবকিছু সাধারণ শিক্ষামূলক তথ্য: বিনিয়োগ পরামর্শ না। টাকা কোথাও রাখার আগে নিজে যাচাই করুন।</p>
-      <p class="footer-mail"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
   </footer>
 

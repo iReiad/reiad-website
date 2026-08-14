@@ -10,6 +10,7 @@
   <meta property="og:type" content="article">
   <meta property="og:title" content="৩০ দিনের অনুশীলন খাতা: Stufe 1, জার্মান বাংলায়, Reiad's Library">
   <meta property="og:description" content="দিনে একটা পাতা, একটা ছাঁচ, নিজের জীবনের একটা সত্যি অনুচ্ছেদ। জার্মান স্তর ১-এর ত্রিশ দিনের অনুশীলন খাতা, বাংলায়, উত্তরমালাসহ।">
+  <meta property="og:url" content="https://reiad.co.uk/deutsch/stufe-1/arbeitsbuch.html">
   <meta property="og:image" content="https://reiad.co.uk/og/deutsch-arbeitsbuch.png">
   <script>
     (function () {
@@ -24,7 +25,22 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <!-- The webfont stylesheet does not block the first paint.
+       It used to: a <link rel="stylesheet"> is render-blocking, so
+       until fonts.googleapis.com answered, this page painted
+       nothing at all. On the connection a reader in Dhaka
+       actually has, that is seconds of white screen for a page
+       whose text was ready immediately, and if the request never
+       answers it is seconds of white screen for nothing.
+
+       media="print" makes the browser fetch it at low priority
+       without applying it; onload promotes it the moment it
+       lands. The text is readable in the fallback face straight
+       away and swaps when the webfont arrives, which is what
+       display=swap in the URL was always asking for. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"
+        media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"></noscript>
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -53,7 +69,7 @@
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
-        <a href="/skills/index.html" data-nav-skills aria-current="true">Skills</a>
+        <a href="/deutsch/index.html" aria-current="page">Deutsch</a>
         <a href="/tools/index.html">Tools</a>
         <a href="/insights.html">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
@@ -1283,7 +1299,7 @@
           <span class="muster-label mono">Das Muster · ছাঁচ</span>
           <p class="muster-shape" lang="de">Ich habe Hunger. · Wir haben … · Ihr habt … · Sie haben …</p>
           <p class="muster-why">ইংরেজির 'I am hungry' ভুলে যাও, জার্মানে খিদে তোমার 'আছে': Ich habe Hunger!</p>
-          <p class="muster-beispiel" lang="de">Hunger (খিদে) · Durst (তেষ্টা) · Angst (ভয়): সব haben দিয়ে।</p>
+          <p class="muster-beispiel" lang="de">Hunger (খিদে) · Durst (তেষ্টা) · Angst (ভয়), সব haben দিয়ে।</p>
           <p class="muster-tipp">এটা জার্মান ভাবনার ধরন, মেনে নাও, অনুবাদ কোরো না।</p>
         </div>
 
@@ -1903,7 +1919,7 @@
           <span class="muster-label mono">Das Muster · ছাঁচ</span>
           <p class="muster-shape" lang="de">wir lernen · ihr lernt · sie/Sie lernen</p>
           <p class="muster-why">wir আর sie/Sie সবসময় অভিধানের পুরো রূপ। ihr-এ -t। মেশিন সম্পূর্ণ!</p>
-          <p class="muster-beispiel" lang="de">-e, -st, -t, -en, -t, -en: এই ছয় পোশাকে জার্মানের ৯০% ক্রিয়া চলে।</p>
+          <p class="muster-beispiel" lang="de">-e, -st, -t, -en, -t, -en, এই ছয় পোশাকে জার্মানের ৯০% ক্রিয়া চলে।</p>
           <p class="muster-tipp">তিনটা ক্রিয়া নিয়ে ছয় ঘরের ছক নিজে বানাও।</p>
         </div>
 
@@ -2057,7 +2073,7 @@
         <div class="muster">
           <span class="muster-label mono">Das Muster · ছাঁচ</span>
           <p class="muster-shape" lang="de">ich spreche → du sprichst, er spricht ich sehe → du siehst, er sieht</p>
-          <p class="muster-why">শুধু du আর er/sie/es-এর ঘরে চেহারা বদলায়। ich, wir, ihr, sie: সব স্বাভাবিক।</p>
+          <p class="muster-why">শুধু du আর er/sie/es-এর ঘরে চেহারা বদলায়। ich, wir, ihr, sie, সব স্বাভাবিক।</p>
           <p class="muster-beispiel" lang="de">essen → isst · lesen → liest · geben → gibt · helfen → hilft</p>
           <p class="muster-tipp">নিয়ম নয়, জোড়াটা গাও: ich spreche, du sprichst, দশবার।</p>
         </div>
@@ -2343,7 +2359,7 @@
         <section class="tag-teil herzen">
           <h3 class="mono"><span lang="de">Von Herzen</span> · নিজের মন থেকে</h3>
           <p class="herz-aufgabe">প্রতিটা দিয়ে নিজের একটা সত্যি বাক্য।</p>
-          <p class="herz-en mono">One true sentence each with schlafen, fahren, wissen. schlafen, fahren, wissen:</p>
+          <p class="herz-en mono">One true sentence each with schlafen, fahren, wissen. schlafen, fahren, wissen,</p>
           <textarea rows="4" data-schrift="tag-14-herzen"
                     aria-label="দিন ১৪, নিজের কথা"
                     placeholder="নিজের সত্যি জীবন নিয়ে লেখো…"></textarea>
@@ -2522,7 +2538,7 @@
         <div class="muster">
           <span class="muster-label mono">Das Muster · ছাঁচ</span>
           <p class="muster-shape" lang="de">সব বহুবচন = die: das Buch → die Bücher</p>
-          <p class="muster-why">যত শব্দ, তত টুপি: কিন্তু বহুবচনে সবাই die পরে। একটাই নিয়ম, শূন্য ব্যতিক্রম।</p>
+          <p class="muster-why">যত শব্দ, তত টুপি, কিন্তু বহুবচনে সবাই die পরে। একটাই নিয়ম, শূন্য ব্যতিক্রম।</p>
           <p class="muster-beispiel" lang="de">der Tisch · die Schule · das Wasser · die Zeit · der Tee</p>
           <p class="muster-tipp">প্রতিদিন ১০টা শব্দ টুপিসহ, খাতার শেষের 'Hut-Sammlung' পাতায় জমাও।</p>
         </div>
@@ -3117,7 +3133,7 @@
 
         <section class="tag-teil herzen">
           <h3 class="mono"><span lang="de">Von Herzen</span> · নিজের মন থেকে</h3>
-          <p class="herz-aufgabe">দুটো kein, দুটো nicht: সব নিজের সত্যি।</p>
+          <p class="herz-aufgabe">দুটো kein, দুটো nicht, সব নিজের সত্যি।</p>
           <p class="herz-en mono">Two kein-sentences + two nicht-sentences. True ones.</p>
           <textarea rows="4" data-schrift="tag-19-herzen"
                     aria-label="দিন ১৯, নিজের কথা"
@@ -4227,7 +4243,7 @@
         <div class="muster">
           <span class="muster-label mono">Das Muster · ছাঁচ</span>
           <p class="muster-shape" lang="de">21 = einundzwanzig (এক-আর-বিশ!) 35 = fünfunddreißig</p>
-          <p class="muster-why">ছোট সংখ্যা আগে, দশক পরে: ইংরেজির উল্টো। তিন দিনে অভ্যাস হয়ে যায়।</p>
+          <p class="muster-why">ছোট সংখ্যা আগে, দশক পরে, ইংরেজির উল্টো। তিন দিনে অভ্যাস হয়ে যায়।</p>
           <p class="muster-beispiel" lang="de">eins zwei drei vier fünf sechs sieben acht neun zehn, elf zwölf!</p>
           <p class="muster-tipp">১৬ = sechzehn (s-এর x নেই), ১৭ = siebzehn (sieben ছোট)।</p>
         </div>
@@ -4668,7 +4684,7 @@
         <section class="tag-teil herzen">
           <h3 class="mono"><span lang="de">Von Herzen</span> · নিজের মন থেকে</h3>
           <p class="herz-aufgabe">ক্যাফের দৃশ্যটা জোরে অভিনয় করো, দুই চরিত্রেই: অর্ডার, দাম, বিল, ধন্যবাদ।</p>
-          <p class="herz-en mono">Role-play the café aloud: both roles: order, price, pay, thank.</p>
+          <p class="herz-en mono">Role-play the café aloud, both roles: order, price, pay, thank.</p>
           <textarea rows="4" data-schrift="tag-29-herzen"
                     aria-label="দিন ২৯, নিজের কথা"
                     placeholder="নিজের সত্যি জীবন নিয়ে লেখো…"></textarea>
@@ -4860,7 +4876,7 @@
     <div class="wrap">
       <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
       <p>জার্মান অংশটা বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া। আপনার অগ্রগতি আপনার নিজের ব্রাউজারেই থাকে।</p>
-      <p class="footer-mail"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
   </footer>
 

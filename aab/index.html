@@ -64,7 +64,22 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&display=swap" rel="stylesheet">
+  <!-- The webfont stylesheet does not block the first paint.
+       It used to: a <link rel="stylesheet"> is render-blocking, so
+       until fonts.googleapis.com answered, this page painted
+       nothing at all. On the connection a reader in Dhaka
+       actually has, that is seconds of white screen for a page
+       whose text was ready immediately, and if the request never
+       answers it is seconds of white screen for nothing.
+
+       media="print" makes the browser fetch it at low priority
+       without applying it; onload promotes it the moment it
+       lands. The text is readable in the fallback face straight
+       away and swaps when the webfont arrives, which is what
+       display=swap in the URL was always asking for. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&display=swap"
+        media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&display=swap"></noscript>
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">

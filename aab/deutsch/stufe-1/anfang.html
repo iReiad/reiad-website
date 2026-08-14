@@ -10,6 +10,7 @@
   <meta property="og:type" content="article">
   <meta property="og:title" content="শুরুর আগে: চারটা উপহার, ছয়টা নিয়ম: Stufe 1, জার্মান বাংলায়, Reiad's Library">
   <meta property="og:description" content="জার্মান ইংরেজির চেয়ে ভদ্র, আর সেটা কেন। ছয়টা নিয়ম যার একটা একদম নতুন, আর একটা ছাঁচ যেটা দিয়ে আজই হাজারটা বাক্য বলা যায়।">
+  <meta property="og:url" content="https://reiad.co.uk/deutsch/stufe-1/anfang.html">
   <meta property="og:image" content="https://reiad.co.uk/og/deutsch-stufe-1.png">
   <script>
     (function () {
@@ -24,7 +25,22 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <!-- The webfont stylesheet does not block the first paint.
+       It used to: a <link rel="stylesheet"> is render-blocking, so
+       until fonts.googleapis.com answered, this page painted
+       nothing at all. On the connection a reader in Dhaka
+       actually has, that is seconds of white screen for a page
+       whose text was ready immediately, and if the request never
+       answers it is seconds of white screen for nothing.
+
+       media="print" makes the browser fetch it at low priority
+       without applying it; onload promotes it the moment it
+       lands. The text is readable in the fallback face straight
+       away and swaps when the webfont arrives, which is what
+       display=swap in the URL was always asking for. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"
+        media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"></noscript>
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -53,7 +69,7 @@
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
-        <a href="/skills/index.html" data-nav-skills aria-current="true">Skills</a>
+        <a href="/deutsch/index.html" aria-current="page">Deutsch</a>
         <a href="/tools/index.html">Tools</a>
         <a href="/insights.html">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
@@ -213,7 +229,7 @@
     <div class="wrap">
       <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
       <p>জার্মান অংশটা বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া। আপনার অগ্রগতি আপনার নিজের ব্রাউজারেই থাকে।</p>
-      <p class="footer-mail"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
   </footer>
 

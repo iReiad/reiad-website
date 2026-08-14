@@ -39,11 +39,33 @@
     --h-green: 162;
     --h-gold: 85;
 
+    /* The paper hue, and it is only the paper.
+
+       Light mode used to be a green-tinted white: the same 162
+       that the accents use, at a chroma low enough to read as
+       neutral. It was clean and it was cold, and a site that is
+       mostly long-form reading wants the opposite of cold. This
+       is the warm end of the same palette the gold accents come
+       from, kept at a chroma low enough that nothing looks
+       yellow: it should read as paper rather than as a colour,
+       and if you have to ask whether it is tinted, it is right.
+
+       DARK MODE DOES NOT USE THIS. A warm dark surface reads as
+       brown, and the dark theme is meant to be the same room
+       with the lights off, not a different room. Every dark
+       value below stays on --h-green.
+
+       Surfaces and hairlines only: --ink, --ink-soft and every
+       accent are untouched, so no contrast ratio moves by more
+       than a rounding error. The measured pairs are in the note
+       above --hairline. */
+    --h-paper: 84;
+
     /* --- surfaces --- */
-    --paper:        light-dark(oklch(98.6% 0.004 var(--h-green)), oklch(16.5% 0.012 var(--h-green)));
-    --paper-sunk:   light-dark(oklch(96.5% 0.006 var(--h-green)), oklch(14%   0.012 var(--h-green)));
-    --panel:        light-dark(oklch(100%  0     0            ), oklch(21%   0.014 var(--h-green)));
-    --panel-hover:  light-dark(oklch(98%   0.008 var(--h-green)), oklch(24%   0.016 var(--h-green)));
+    --paper:        light-dark(oklch(98.4% 0.008 var(--h-paper)), oklch(16.5% 0.012 var(--h-green)));
+    --paper-sunk:   light-dark(oklch(96.4% 0.011 var(--h-paper)), oklch(14%   0.012 var(--h-green)));
+    --panel:        light-dark(oklch(99.5% 0.004 var(--h-paper)), oklch(21%   0.014 var(--h-green)));
+    --panel-hover:  light-dark(oklch(98%   0.012 var(--h-paper)), oklch(24%   0.016 var(--h-green)));
 
     /* --- text --- */
     --ink:          light-dark(oklch(24%   0.012 var(--h-green)), oklch(93.5% 0.008 var(--h-green)));
@@ -53,11 +75,31 @@
     --green:        light-dark(oklch(41%   0.080 var(--h-green)), oklch(71%   0.110 var(--h-green)));
     --green-strong: light-dark(oklch(30%   0.060 var(--h-green)), oklch(30%   0.060 var(--h-green)));
     --green-soft:   light-dark(oklch(94.5% 0.015 var(--h-green)), oklch(23%   0.020 var(--h-green)));
-    --gold:         light-dark(oklch(56%   0.090 var(--h-gold)),  oklch(72%   0.090 var(--h-gold)));
+    /* 54%, not the 56% it was. The mono labels set in gold are
+       0.76rem, which is normal-size text as far as WCAG is
+       concerned, so they need 4.5:1. On the old green-tinted
+       paper they measured 4.50 exactly; the warm paper is a
+       shade darker and took them to 4.45, which is a fail. Two
+       points of lightness puts them back to 4.9 and is invisible
+       next to the gold that was there. Dark mode is untouched:
+       it measures 7.7 either way. */
+    --gold:         light-dark(oklch(54%   0.090 var(--h-gold)),  oklch(72%   0.090 var(--h-gold)));
     --danger:       light-dark(oklch(52%   0.150 28),             oklch(70%   0.140 28));
 
-    /* --- lines, glass, depth --- */
-    --hairline:     light-dark(oklch(88.5% 0.008 var(--h-green)), oklch(28%   0.015 var(--h-green)));
+    /* --- lines, glass, depth ---
+       Contrast on the warm paper, measured in a browser rather
+       than eyeballed. Light mode, ground in brackets:
+
+         heading   --ink on --panel        16.2:1
+         body      --ink-soft on --paper    7.7:1
+         links     --green on --panel       8.3:1
+         labels    --gold on --paper        4.9:1   (was 4.45,
+                   which is why --gold moved; see the note there)
+
+       Dark mode, for the record: 14.6, 7.8, 7.2, 7.7. Nothing in
+       dark mode was touched by the warm paper, and these are the
+       numbers to re-measure if any of it ever is. */
+    --hairline:     light-dark(oklch(88.5% 0.012 var(--h-paper)), oklch(28%   0.015 var(--h-green)));
     --glass-bg:     light-dark(oklch(100% 0 0 / 0.16), oklch(25% 0.02 var(--h-green) / 0.35));
     --glass-edge:   light-dark(oklch(100% 0 0 / 0.38), oklch(100% 0 0 / 0.16));
     --shadow:       light-dark(0 10px 30px oklch(30% 0.05 var(--h-green) / 0.09),
@@ -201,7 +243,14 @@
   /* body is a flex column (see the sticky-footer note above), so main
      takes the slack and footer stays put. */
   main { flex: 1 0 auto; }
-  body > footer { flex-shrink: 0; }
+  /* The footer is the same block on every page, so it is named
+     for the same reason the header is: a named element is carried
+     across a cross-document view transition instead of being
+     cross-faded out and back in. Without it, navigating from a
+     short page to a long one slides a green band up the screen
+     while the rest of the page fades, which is the one bit of
+     navigation that still looked like a page load. */
+  body > footer { flex-shrink: 0; view-transition-name: site-footer; }
 
   .wrap {
     max-width: 1080px;
@@ -1299,11 +1348,26 @@ it collapsed to the width of the word "Bangladesh". */
     padding: 1px 6px; background: var(--paper-sunk); color: var(--ink);
   }
 
+  /* Five columns, and they have to fit on a laptop.
+
+     They did not. At 230px minimum and a 40px gap, five columns
+     need about 1230px of content width, and a 1280px window
+     offers 1192 after the padding: the fifth column wrapped onto
+     a second row 876px down, below the fold, behind the menu's
+     own footer bar. The column that landed there was Case
+     studies, so on the most common laptop width the site's seven
+     case studies were in the menu and invisible in it, which is
+     the same bug as a portfolio page that lists four of seven,
+     wearing different clothes.
+
+     200px and a tighter gap fit five columns from 1180px up. The
+     narrower column costs nothing: every item in it is one line
+     of a title, and titles were already wrapping at 230. */
   .menu-grid {
     flex: 1; overflow-y: auto;
-    display: grid; gap: clamp(20px, 3vw, 40px);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
-    padding: clamp(24px, 4vw, 48px) clamp(20px, 4vw, 44px);
+    display: grid; gap: clamp(18px, 2.4vw, 32px);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    padding: clamp(24px, 4vw, 48px) clamp(20px, 3vw, 40px);
     align-content: start;
   }
 
@@ -3056,8 +3120,25 @@ it collapsed to the width of the word "Bangladesh". */
 
   .fin-table td.is-positive { color: var(--green); }
 
-  /* ---------- the statements ---------- */
-  .statements { display: grid; gap: var(--step); }
+  /* ---------- the statements ----------
+     minmax(0, 1fr) again, and for the third time in this file, so
+     it is worth stating as a rule: a grid track sized `auto` or
+     `1fr` will not shrink below the min-content width of what is
+     in it, and a financial table's min-content width is however
+     wide six columns of figures happen to be.
+
+     The three-statement model overflowed a 390px phone by 331px
+     because of it. Not the table, which is wrapped in a
+     .table-scroll that would have handled it perfectly well: the
+     GRID ITEM around the table refused to be narrower than the
+     table, so .table-scroll was 699px wide, had nothing to scroll,
+     and the whole page scrolled sideways instead. Every heading
+     and paragraph on the page went with it.
+
+     The zero floor lets the item shrink and hands the overflow
+     back to .table-scroll, which is the element built to take it.
+     Same fix as .model-body above; see the longer note there. */
+  .statements { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--step); }
   .statement h2 {
     font-size: 1.25rem; margin-bottom: 12px;
     padding-bottom: 10px; border-bottom: 1px solid var(--hairline);

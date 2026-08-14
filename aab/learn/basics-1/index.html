@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <title>ভিত্তি · ধাপ ১ · শব্দগুলো শিখুন · শেখার লাইব্রেরি · Reiad's Library</title>
-  <meta name="description" content="বাজারের আঠারোটা শব্দ, প্রতিটার আলাদা ছোট লেখা: বন্ধুকে বোঝানোর ভঙ্গিতে। একটার ভেতরে আরেকটার লিংক।">
+  <title>ভিত্তি · ধাপ ১ · শব্দগুলো শিখুন, শেখার লাইব্রেরি, Reiad's Library</title>
+  <meta name="description" content="বাজারের আঠারোটা শব্দ, প্রতিটার আলাদা ছোট লেখা, বন্ধুকে বোঝানোর ভঙ্গিতে। একটার ভেতরে আরেকটার লিংক।">
   <link rel="canonical" href="https://reiad.co.uk/learn/basics-1/index.html">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="ভিত্তি · ধাপ ১ · শব্দগুলো শিখুন · শেখার লাইব্রেরি · Reiad's Library">
-  <meta property="og:description" content="বাজারের আঠারোটা শব্দ, প্রতিটার আলাদা ছোট লেখা: বন্ধুকে বোঝানোর ভঙ্গিতে। একটার ভেতরে আরেকটার লিংক।">
+  <meta property="og:title" content="ভিত্তি · ধাপ ১ · শব্দগুলো শিখুন, শেখার লাইব্রেরি, Reiad's Library">
+  <meta property="og:description" content="বাজারের আঠারোটা শব্দ, প্রতিটার আলাদা ছোট লেখা, বন্ধুকে বোঝানোর ভঙ্গিতে। একটার ভেতরে আরেকটার লিংক।">
+  <meta property="og:url" content="https://reiad.co.uk/learn/basics-1/index.html">
+  <meta property="og:image" content="https://reiad.co.uk/og/stage-basics-1.png">
   <script>
     (function () {
       var d = document.documentElement;
@@ -23,7 +25,22 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <!-- The webfont stylesheet does not block the first paint.
+       It used to: a <link rel="stylesheet"> is render-blocking, so
+       until fonts.googleapis.com answered, this page painted
+       nothing at all. On the connection a reader in Dhaka
+       actually has, that is seconds of white screen for a page
+       whose text was ready immediately, and if the request never
+       answers it is seconds of white screen for nothing.
+
+       media="print" makes the browser fetch it at low priority
+       without applying it; onload promotes it the moment it
+       lands. The text is readable in the fallback face straight
+       away and swaps when the webfont arrives, which is what
+       display=swap in the URL was always asking for. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"
+        media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"></noscript>
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -31,7 +48,6 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <link rel="alternate" type="application/rss+xml" title="Reiad's Library · Insights" href="/feed.xml">
-  <meta property="og:image" content="https://reiad.co.uk/og/stage-basics-1.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
@@ -53,7 +69,7 @@
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep aria-current="page">Learn</a>
-        <a href="/skills/index.html" data-nav-skills>Skills</a>
+        <a href="/deutsch/index.html">Deutsch</a>
         <a href="/tools/index.html">Tools</a>
         <a href="/insights.html">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
@@ -71,7 +87,7 @@
       <div class="hero stage-hero" data-stage="basics-1">
         <span class="eyebrow mono">ভিত্তি · ধাপ ১ · Basics: Stage 1</span>
         <h1 class="bn-h"><svg class="art stage-art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5Z"/><path d="M4 19.5A1.5 1.5 0 0 1 5.5 21H19v-3"/><path d="M8 7.5h7"/><path d="M8 11h5"/></svg>শব্দগুলো শিখুন</h1>
-        <p class="lede">বাজারের আঠারোটা শব্দ, প্রতিটার আলাদা ছোট লেখা: বন্ধুকে বোঝানোর ভঙ্গিতে। একটার ভেতরে আরেকটার লিংক।</p>
+        <p class="lede">বাজারের আঠারোটা শব্দ, প্রতিটার আলাদা ছোট লেখা, বন্ধুকে বোঝানোর ভঙ্গিতে। একটার ভেতরে আরেকটার লিংক।</p>
         <dl class="stage-facts">
           <div><dt>কার জন্য</dt><dd>হাতেখড়ি শেষ, এখন কথাগুলোর মানে জানা দরকার</dd></div>
           <div><dt>কতগুলো লেখা</dt><dd>১৮টি</dd></div>
@@ -122,7 +138,7 @@
            data-lesson-id="broker">
           <span class="lesson-card-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5Z"/><path d="M4 19.5A1.5 1.5 0 0 1 5.5 21H19v-3"/><path d="M8 7.5h7"/><path d="M8 11h5"/></svg></span>
           <h3 class="bn-h">ব্রোকার <span class="en-sub">Broker</span></h3>
-          <p>আপনার আর শেয়ারবাজারের মাঝখানের লাইসেন্সধারী মধ্যস্থতাকারী: অর্ডার যায় এদের মাধ্যমে।</p>
+          <p>আপনার আর শেয়ারবাজারের মাঝখানের লাইসেন্সধারী মধ্যস্থতাকারী, অর্ডার যায় এদের মাধ্যমে।</p>
           <span class="lesson-card-foot mono">৩ মিনিট</span>
         </a>
         <a class="cell lesson-card" href="/learn/terms/ipo.html"
@@ -142,7 +158,7 @@
            data-lesson-id="mutual-fund">
           <span class="lesson-card-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5Z"/><path d="M4 19.5A1.5 1.5 0 0 1 5.5 21H19v-3"/><path d="M8 7.5h7"/><path d="M8 11h5"/></svg></span>
           <h3 class="bn-h">মিউচুয়াল ফান্ড <span class="en-sub">Mutual Fund</span></h3>
-          <p>অনেকের টাকা এক করে পেশাদার ম্যানেজারের হাতে বিনিয়োগ: ছোট টাকায় বড় পোর্টফোলিওর স্বাদ।</p>
+          <p>অনেকের টাকা এক করে পেশাদার ম্যানেজারের হাতে বিনিয়োগ, ছোট টাকায় বড় পোর্টফোলিওর স্বাদ।</p>
           <span class="lesson-card-foot mono">৩ মিনিট</span>
         </a>
         <a class="cell lesson-card" href="/learn/terms/sanchayapatra.html"
@@ -163,7 +179,7 @@
            data-lesson-id="fdr">
           <span class="lesson-card-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5Z"/><path d="M4 19.5A1.5 1.5 0 0 1 5.5 21H19v-3"/><path d="M8 7.5h7"/><path d="M8 11h5"/></svg></span>
           <h3 class="bn-h">এফডিআর <span class="en-sub">Fixed Deposit (FDR)</span></h3>
-          <p>ব্যাংকে নির্দিষ্ট মেয়াদে টাকা রেখে নির্দিষ্ট হারে মুনাফা: সহজ, পরিচিত, কিন্তু সীমিত।</p>
+          <p>ব্যাংকে নির্দিষ্ট মেয়াদে টাকা রেখে নির্দিষ্ট হারে মুনাফা, সহজ, পরিচিত, কিন্তু সীমিত।</p>
           <span class="lesson-card-foot mono">৩ মিনিট</span>
         </a>
         </div>
@@ -176,7 +192,7 @@
            data-lesson-id="dividend">
           <span class="lesson-card-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5Z"/><path d="M4 19.5A1.5 1.5 0 0 1 5.5 21H19v-3"/><path d="M8 7.5h7"/><path d="M8 11h5"/></svg></span>
           <h3 class="bn-h">ডিভিডেন্ড <span class="en-sub">Dividend</span></h3>
-          <p>কোম্পানির লাভ থেকে শেয়ারহোল্ডারদের দেওয়া ভাগ: নগদ টাকায় বা বোনাস শেয়ারে।</p>
+          <p>কোম্পানির লাভ থেকে শেয়ারহোল্ডারদের দেওয়া ভাগ, নগদ টাকায় বা বোনাস শেয়ারে।</p>
           <span class="lesson-card-foot mono">৩ মিনিট</span>
         </a>
         <a class="cell lesson-card" href="/learn/terms/eps.html"
@@ -261,7 +277,7 @@
     <div class="wrap">
       <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
       <p>এই সাইটের সবকিছু সাধারণ শিক্ষামূলক তথ্য: বিনিয়োগ পরামর্শ না। টাকা কোথাও রাখার আগে নিজে যাচাই করুন।</p>
-      <p class="footer-mail"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
   </footer>
 

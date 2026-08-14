@@ -46,7 +46,13 @@ function applyTheme(mode) {
     (mode === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", dark ? "#0E1512" : "#FBFBF7");
+    /* The light value is --paper, and it has to be kept in step
+       with it by hand: a <meta> cannot read a custom property.
+       It is the phone's address bar, so when it drifts, the
+       browser chrome is a slightly different white from the page
+       under it, which reads as a seam across the top of the
+       screen. */
+    ?.setAttribute("content", dark ? "#0E1512" : "#FCF9F4");
 }
 
 function currentTheme() {
@@ -233,7 +239,17 @@ function initPalette() {
     dialog.showModal();
   };
 
+  /* Every control that opens the palette, not just the one in the
+     header. The 404 page had a second "Search the site" button
+     carrying id="open-palette-2", which nothing in this file has
+     ever listened for: the one page a lost reader lands on offered
+     them a search button that did nothing at all when clicked.
+     A data attribute means the next page to want one cannot make
+     the same mistake. */
   document.getElementById("open-palette")?.addEventListener("click", open);
+  for (const node of document.querySelectorAll("[data-open-palette]")) {
+    node.addEventListener("click", open);
+  }
 
   addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
@@ -302,8 +318,14 @@ function buildMenu() {
      wall of text rather than a way to get somewhere. The blurbs
      still do their job on the pages that list these properly; a
      menu is for aiming, not for reading. */
+  /* `short` where a page has one, which in practice means the case
+     studies. Their full titles end ": interactive case study",
+     which is worth having in the Ctrl+K index, where someone may
+     well type "case study", and is four repetitions of the column
+     heading when the column is already called Case studies. Every
+     one of them wrapped to two lines because of it. */
   const pageLink = (p) => {
-    const a = el("a", { href: p.url }, el("strong", { textContent: p.title }));
+    const a = el("a", { href: p.url }, el("strong", { textContent: p.short ?? p.title }));
     if (p.url === here) a.setAttribute("aria-current", "page");
     return el("li", {}, a);
   };
@@ -330,6 +352,43 @@ function buildMenu() {
     ),
     el("div", { className: "menu-grid" },
       menuColumn("Pages", plainPages, pageLink),
+
+      /* Second, not last. This column was at the end of the grid,
+         which put it below the fold on a 1280px laptop the moment
+         the grid dropped to four columns: seven case studies,
+         present in the menu and invisible in it. It is also the
+         half of the site someone is paying for, so it now sits
+         where the eye lands after Pages, and the two long school
+         columns are last, where their length costs nothing. */
+      /* The case studies and the newest writing share a column.
+         Both are "things to look at" rather than places to go, and
+         splitting them into two near-empty columns left the menu
+         looking unbalanced, thirteen items beside two. */
+      el("div", { className: "menu-col" },
+        el("span", { className: "mono menu-col-title", textContent: "Case studies" }),
+        el("ul", { className: "menu-list" }, ...caseStudies.map(pageLink)),
+        el("span", {
+          className: "mono menu-col-title menu-col-title-second",
+          textContent: articles.length ? "Latest writing" : "Writing",
+        }),
+        el("ul", { className: "menu-list" },
+          ...(articles.length
+            ? articles
+            : [{ slug: "", title: "Nothing published yet", dek: "" }]
+          ).map((a) =>
+            el("li", {},
+              el("a", { href: a.slug ? `/insights/${a.slug}.html` : "/insights.html" },
+                el("strong", { textContent: a.title }),
+                el("small", {
+                  textContent: a.date
+                    ? `${formatDate(a.date, a.lang)} · ${a.minutes} min read`
+                    : a.dek,
+                })
+              )
+            )
+          )
+        )
+      ),
 
       el("div", { className: "menu-col" },
         el("span", { className: "mono menu-col-title", textContent: "Tools & calculators" }),
@@ -387,7 +446,7 @@ function buildMenu() {
          exists; the rest are named so that a reader can see what
          is coming without opening another page to find out. */
       el("div", { className: "menu-col" },
-        el("span", { className: "mono menu-col-title", textContent: "দক্ষতা · Skills" }),
+        el("span", { className: "mono menu-col-title", textContent: "জার্মান · Deutsch" }),
         el("ul", { className: "menu-list" },
           ...STUFEN.map((s) =>
             el("li", {},
@@ -404,7 +463,19 @@ function buildMenu() {
             el("li", { className: "menu-standout" },
               el("a", { href: p.url }, el("strong", { textContent: p.title }))
             )
-          ),
+          )
+        ),
+        /* The other schools under their own heading. As one
+           ten-item list under "Skills" it read as though Stufe 2
+           and রান্না were the same kind of thing, and the four
+           German stages at the top of it were the reason a reader
+           looking for cooking had to read past a language course
+           to find out it was not there yet. */
+        el("span", {
+          className: "mono menu-col-title menu-col-title-second",
+          textContent: "আরও দক্ষতা · More schools",
+        }),
+        el("ul", { className: "menu-list" },
           ...SKILLS.filter((s) => s.slug !== "deutsch").map((s) =>
             el("li", {},
               el("a", { href: skillUrl(s) },
@@ -418,35 +489,6 @@ function buildMenu() {
         )
       ),
 
-      /* The case studies and the newest writing share a column.
-         Both are "things to look at" rather than places to go, and
-         splitting them into two near-empty columns left the menu
-         looking unbalanced, thirteen items beside two. */
-      el("div", { className: "menu-col" },
-        el("span", { className: "mono menu-col-title", textContent: "Case studies" }),
-        el("ul", { className: "menu-list" }, ...caseStudies.map(pageLink)),
-        el("span", {
-          className: "mono menu-col-title menu-col-title-second",
-          textContent: articles.length ? "Latest writing" : "Writing",
-        }),
-        el("ul", { className: "menu-list" },
-          ...(articles.length
-            ? articles
-            : [{ slug: "", title: "Nothing published yet", dek: "" }]
-          ).map((a) =>
-            el("li", {},
-              el("a", { href: a.slug ? `/insights/${a.slug}.html` : "/insights.html" },
-                el("strong", { textContent: a.title }),
-                el("small", {
-                  textContent: a.date
-                    ? `${formatDate(a.date, a.lang)} · ${a.minutes} min read`
-                    : a.dek,
-                })
-              )
-            )
-          )
-        )
-      )
     ),
     el("div", { className: "menu-foot" },
       el("a", { className: "btn btn-solid", href: "/contact.html", textContent: "Get in touch" }),
