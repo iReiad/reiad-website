@@ -31,6 +31,17 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v43: the menu lost the twelve links that opened pages saying
+        আসছে, and its close button moved to where the button that
+        opened it stands. The About page's research cards open a
+        mini window into the case study each one became. Switching
+        audience reloads, because the home page picks its headline
+        before the CSS runs and a switch without a reload left the
+        two disagreeing. Navigation animates in a direction, cards
+        lean to a phone's tilt, and app.js publishes --header-inset
+        for the menu to line up with. app.js, styles.css,
+        content.js, tilt.js and news.js all changed together.
+
    v42: the site counts itself now. content.js gained COUNTS and
         app.js the [data-count] filler that reads it, home.js
         rebuilds the home page's case-study list, featured piece
@@ -236,7 +247,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v42";
+const VERSION = "v43";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -181,20 +181,27 @@ function buildDialog() {
   return d;
 }
 
-/** Grow the window out of the card it came from. */
-function flip(from) {
+/** Grow a window out of the card it came from.
+
+    Exported because the About page's research cards open the same
+    way, out of the card you clicked, and an animation that only
+    the news cards get would make the two feel like different
+    sites. `win` is the dialog, already open: the rectangles have
+    to be measured after showModal() or the window has no size to
+    animate from. */
+export function flip(win, from) {
   if (!from) return;
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (typeof dialog.animate !== "function") return;
+  if (typeof win.animate !== "function") return;
 
   const a = from.getBoundingClientRect();
-  const b = dialog.getBoundingClientRect();
+  const b = win.getBoundingClientRect();
   if (!b.width || !b.height) return;
 
   const dx = a.left + a.width / 2 - (b.left + b.width / 2);
   const dy = a.top + a.height / 2 - (b.top + b.height / 2);
 
-  dialog.animate(
+  win.animate(
     [
       {
         transform: `translate(${dx}px, ${dy}px) scale(${a.width / b.width}, ${a.height / b.height})`,
@@ -235,5 +242,5 @@ export function openNews(it, from) {
   out.textContent = it.source ? `Read it at ${it.source} →` : "Read it at the source →";
 
   dialog.showModal();
-  flip(from);
+  flip(dialog, from);
 }

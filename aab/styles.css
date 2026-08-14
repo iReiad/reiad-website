@@ -136,9 +136,37 @@
   :root[data-theme="dark"]  { color-scheme: dark; }
 
   /* Cross-document view transitions: navigating between pages of
-     the site cross-fades instead of flashing white. Ignored where
+     the site animates instead of flashing white. Ignored where
      unsupported. */
   @view-transition { navigation: auto; }
+
+  /* The default is a straight cross-fade of the whole document,
+     which is so quiet that most people never notice a transition
+     happened at all: the page simply appears, as it always did.
+
+     This gives it a direction. The page you are leaving lifts and
+     fades, the page you are arriving at comes up from just below,
+     and the two overlap. Small numbers on purpose, 8px and 12px:
+     the aim is that navigation feels continuous, not that it
+     announces itself, and anything bigger turns every link on the
+     site into a slideshow.
+
+     The header and footer are excluded automatically because they
+     carry their own view-transition-names, so they hold still
+     while the content moves under them, which is what makes the
+     whole thing read as one page rearranging rather than two
+     pages swapping.
+
+     Under prefers-reduced-motion the block above already turns
+     navigation transitions off entirely, so none of this runs. */
+  ::view-transition-old(root) {
+    animation: vt-leave 160ms var(--ease) both;
+  }
+  ::view-transition-new(root) {
+    animation: vt-arrive 260ms var(--ease) both;
+  }
+  @keyframes vt-leave  { to   { opacity: 0; translate: 0 -8px; } }
+  @keyframes vt-arrive { from { opacity: 0; translate: 0 12px; } }
 }
 
 /* ============================================================
@@ -1333,13 +1361,45 @@ it collapsed to the width of the word "Bangladesh". */
     &::backdrop { background: oklch(18% 0.02 var(--h-green) / 0.6); }
   }
 
+  /* The menu's three bands share the page's own left and right
+     margins, published as --header-inset by app.js. The menu is a
+     full-width overlay sitting on top of a 1080px layout, and
+     until they agreed on an edge, everything in it was a little
+     to the right of the thing it replaced. */
   .menu-bar, .menu-foot {
     display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    padding: 14px clamp(20px, 4vw, 44px);
+    padding-block: 14px;
+    padding-inline: var(--header-inset, clamp(20px, 4vw, 44px));
     border-bottom: 1px solid var(--hairline);
     background: var(--paper);
   }
   .menu-bar .mono { color: var(--ink-soft); }
+
+  /* The bar's right-hand cluster stands where the header's does.
+
+     The header ends with three buttons in a row, Menu, Search,
+     Theme, inside a .wrap whose padding matches this bar's. The
+     close button used to be pushed to the far right of the bar on
+     its own, which put it two button-widths to the RIGHT of the
+     Menu button that had just been clicked: press a button, and
+     the thing that undoes it appears somewhere else. Rebuilding
+     the same three-button cluster in the same order puts ✕ exactly
+     where Menu was, and gives the two buttons the modal had made
+     unreachable somewhere to live.
+
+     The gap is the header's, not this bar's, so the columns line
+     up rather than nearly lining up. */
+  .menu-bar-tools {
+    display: flex; align-items: center; gap: 18px;
+    margin-inline-start: auto;
+  }
+  @media (width <= 620px) {
+    .menu-bar-tools { gap: 8px; }
+    /* Same call the header makes at this width: the site is named,
+       what it is about can wait until there is room to say it. */
+    .menu-bar-tag { display: none; }
+    .menu-bar { flex-wrap: nowrap; }
+  }
   .menu-foot { border-bottom: 0; border-top: 1px solid var(--hairline); margin-top: auto; }
   .menu-hint { color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
   .menu-hint kbd, .shortcut-list kbd, .palette-foot kbd {
@@ -1367,7 +1427,8 @@ it collapsed to the width of the word "Bangladesh". */
     flex: 1; overflow-y: auto;
     display: grid; gap: clamp(18px, 2.4vw, 32px);
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-    padding: clamp(24px, 4vw, 48px) clamp(20px, 3vw, 40px);
+    padding-block: clamp(24px, 4vw, 48px);
+    padding-inline: var(--header-inset, clamp(20px, 3vw, 40px));
     align-content: start;
   }
 
@@ -5238,6 +5299,43 @@ German for day, and .tag is what the site has always called
   .res-tag {
     color: var(--gold); font-size: 0.62rem;
     letter-spacing: 0.1em; text-transform: uppercase;
+  }
+
+  /* A research card that opens. .res-live is added by about.js, so
+     a card only looks clickable once something is listening: a
+     pointer cursor over a card that does nothing is worse than no
+     cursor at all. The plain link inside is the no-JavaScript
+     path and is removed at the same moment this class arrives. */
+  .res-fallback { display: inline-block; margin-top: 12px; font-size: 0.86rem; }
+  .res-live {
+    cursor: pointer; text-align: start;
+    transition: border-color var(--fast) var(--ease),
+                transform var(--fast) var(--ease),
+                box-shadow var(--fast) var(--ease);
+
+    &::after {
+      content: "Read more →";
+      display: block; margin-top: 12px;
+      font-family: var(--font-mono); font-size: 0.68rem;
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--green);
+    }
+    &:hover, &:focus-visible {
+      border-color: var(--green);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lift);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .res-live:hover { transform: none; }
+  }
+
+  /* The window a research card opens into. It is the news window
+     with a different body: same frame, same bar, same way out, so
+     the two mini windows on this site are one thing to learn. */
+  .res-window-detail {
+    display: grid; gap: 12px;
+
+    & p { color: var(--ink-soft); font-size: 0.95rem; max-width: var(--measure); }
   }
 
   /* ---------- toolkit ---------- */

@@ -307,28 +307,92 @@
       <!-- ============ RESEARCH ============ -->
       <section>
         <span class="section-label mono">Research</span>
-        <div class="research">
-          <article class="res">
+        <!-- ============================================================
+             Each of these three became a case study you can open and
+             drive. For a while the cards did not say so: they
+             described the research in the past tense and led
+             nowhere, while the finished, interactive version of the
+             same work sat two clicks away in the portfolio.
+
+             So they open. A card is a button now, it opens the same
+             kind of mini window the market-pulse cards use on the
+             Insights page, growing out of the card you clicked, and
+             the window carries what the card had no room for plus a
+             way into the case study itself.
+
+             The `data-detail` paragraphs are the window's content
+             and stay in the markup rather than in about.js: they are
+             page copy, they should be in the page, and a reader with
+             no JavaScript gets a card that is simply a link to the
+             case study instead. See about.js.
+             ============================================================ -->
+        <div class="research" id="research">
+          <article class="res" data-case="/portfolio/dissertation.html"
+                   data-case-label="Open the dissertation case study">
             <span class="res-tag mono">Dissertation · 15,000 words</span>
             <h3>Do Islamic funds actually carry less risk?</h3>
             <p>Islamic against conventional UK funds on systematic risk, idiosyncratic
                risk and drawdowns, across the pre- and post-COVID periods. The
                interesting differences turned up in behaviour under stress rather than
                in headline average returns.</p>
+            <template data-detail>
+              <p>220 UK-domiciled equity funds, 19,577 fund-months, January 2018 to
+                 July 2025. Fama-French five factors plus Carhart momentum, with an
+                 Islamic dummy, run alongside the univariate tests on volatility,
+                 beta, idiosyncratic risk and drawdown.</p>
+              <p>The hypothesis failed: every univariate test returns p &gt; 0.21, and
+                 the Islamic dummy is positive but insignificant. The result worth
+                 publishing is the one underneath that. Three Shariah-compliant funds
+                 in the sample gave the drawdown comparison roughly a 7% chance of
+                 detecting the gap it was looking for, so the study could not have
+                 found a difference even if one existed.</p>
+              <p>The case study is the submitted document, made interactive: every
+                 table transcribed, every series lifted from the charts embedded in
+                 it, and the power calculation you can move yourself.</p>
+            </template>
+            <a class="res-fallback more" href="/portfolio/dissertation.html">Open the dissertation case study →</a>
           </article>
-          <article class="res">
+          <article class="res" data-case="/portfolio/frontier.html"
+                   data-case-label="Open the fund">
             <span class="res-tag mono">Python</span>
             <h3>An Islamic fund portfolio, built and tested</h3>
             <p>Portfolio construction in Python with performance compared against
                conventional benchmarks either side of COVID. Analysis and charts
                automated, so re-running it on new data is one command.</p>
+            <template data-detail>
+              <p>Ten FTSE 250 holdings chosen by a screen that runs before any price
+                 is looked at: leverage under a third of equity, sustainability away
+                 from the laggards, and returns on capital above the cost of it.</p>
+              <p>Weights set at the end of 2015 by minimising the variance each
+                 holding contributes, then held unchanged through the five years
+                 that followed, which is the only honest test of a construction
+                 method: it cannot know what happened next, because when the weights
+                 were chosen, nobody did.</p>
+              <p>The case study solves the efficient frontier and the optimised
+                 alternatives beside it, live, from the daily closes.</p>
+            </template>
+            <a class="res-fallback more" href="/portfolio/frontier.html">Open the fund →</a>
           </article>
-          <article class="res">
+          <article class="res" data-case="/portfolio/scorecard.html"
+                   data-case-label="Open the credit models">
             <span class="res-tag mono">Credit</span>
             <h3>A credit-risk case, worked as a bank would</h3>
             <p>Liquidity, leverage, profitability and repayment capacity assessed in
                order, ending in a recommendation that states what would have to change
                to reverse it.</p>
+            <template data-detail>
+              <p>The same discipline, taken from one borrower to a book of them. The
+                 probability-of-default case study fits a logistic scorecard against
+                 a gradient-boosted ensemble on a public dataset, in your browser,
+                 and follows it through cross-validation and calibration to the
+                 cut-off where the modelling stops and the lending decision starts.</p>
+              <p>Its companion takes a whole loan book through a recession: macro
+                 shocks driving default rates through a Merton model and a vintage
+                 hazard model at once, then IFRS 9 staging, provisions and the
+                 capital ratio, with the gap between the two engines left on the
+                 page because that gap is the model risk.</p>
+            </template>
+            <a class="res-fallback more" href="/portfolio/scorecard.html">Open the credit models →</a>
           </article>
         </div>
       </section>
@@ -414,7 +478,7 @@
             <ul>
               <li>CFA Level 1: November 2026 window</li>
               <li>Publishing the Bangla Learn hub, stage by stage</li>
-              <li>A public model library: three-statement, DCF, index analysis</li>
+              <li>A public library of models: every one open, editable and showing its arithmetic</li>
             </ul>
           </div>
           <div class="cell">
@@ -423,7 +487,7 @@
             <ul>
               <li>Analyst or management trainee: Bangladesh banking or Gulf finance</li>
               <li>CFA Level 2, continuing the charter path</li>
-              <li>Freelance modelling practice with repeat clients</li>
+              <li>Freelance modeling practice with repeat clients</li>
             </ul>
           </div>
           <div class="cell cell-aim">
@@ -462,14 +526,17 @@
           <details class="faq">
             <summary>What does the dissertation actually say?</summary>
             <p>It compared Islamic and conventional fund performance on systematic
-               risk and drawdowns across the pre- and post-COVID periods. A readable
-               summary is on the way to the Insights page. The short version: the
-               differences worth knowing about show up in how the two behave under
-               stress, not in headline average returns.</p>
+               risk and drawdowns across the pre- and post-COVID periods. The short
+               version: the differences worth knowing about show up in how the two
+               behave under stress, not in headline average returns, and the sample
+               of Shariah-compliant funds was too small to have proved otherwise.
+               The whole thing is on this site as an
+               <a href="/portfolio/dissertation.html">interactive case study</a>,
+               every table and series as submitted.</p>
           </details>
           <details class="faq">
             <summary>Is he available for work?</summary>
-            <p>Yes: financial modelling, data analysis and finance writing, freelance.
+            <p>Yes: financial modeling, data analysis and finance writing, freelance.
                <a href="/portfolio.html">The portfolio page</a> sets out what that
                covers and how a project runs, and
                <a href="/contact.html">the contact form</a> reaches him directly.</p>
