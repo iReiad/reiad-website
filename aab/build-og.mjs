@@ -21,6 +21,7 @@ import { globSync } from "node:fs";
 import { chromium } from "playwright";
 import { STAGES } from "./learn/curriculum.js";
 import { STUFEN } from "./deutsch/curriculum.js";
+import { DHAPS } from "./quran/curriculum.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, "og");
@@ -131,6 +132,23 @@ const CARDS = [
     sub: (st.blurb ?? "").slice(0, 150),
     bn: true,
   })),
+
+  /* The Quranic Arabic school, same arrangement again: a hub card
+     and one per ধাপ, so a shared day previews as the stage it
+     belongs to rather than as the site's generic card. The names
+     are written in Bangla only. Arabic would need a fourth webfont
+     in the renderer for four words, and the card is read by people
+     deciding whether to tap a link, not by people reading Arabic. */
+  { file: "quran.png", eyebrow: "কুরআনের আরবি · Qur'anic Arabic",
+    title: "যা পড়ছেন, তা বোঝার জন্য।",
+    sub: "ষাট দিন · রোজ আধ ঘণ্টা · কোনো লেখা নেই, শুধু পড়া আর বলা", bn: true },
+  ...DHAPS.map((dh) => ({
+    file: `quran-${dh.slug}.png`,
+    eyebrow: `${dh.kicker} · কুরআনের আরবি`,
+    title: dh.bn,
+    sub: (dh.blurb ?? "").slice(0, 150),
+    bn: true,
+  })),
 ];
 
 /* ------------------------------------------------------------
@@ -175,6 +193,16 @@ const ASSIGN = [
     `deutsch-${st.slug}.png`,
   ]),
   [/^deutsch\//, "deutsch.png"],
+  /* The Quran school. Same order as the German block above: the
+     hub first, then one rule per ধাপ, then a catch-all so a page
+     added under /quran/ later still previews as the school. These
+     have to agree with the `og` values build-quran.mjs writes. */
+  [/^quran\/index\.html$/, "quran.png"],
+  ...DHAPS.map((dh) => [
+    new RegExp(`^quran\\/${dh.slug}\\/`),
+    `quran-${dh.slug}.png`,
+  ]),
+  [/^quran\//, "quran.png"],
   [/^insights/, "insights.png"],
   [/^about\.html$/, "about.png"],
   [/^contact\.html$/, "contact.png"],

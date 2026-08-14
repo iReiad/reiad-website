@@ -69,7 +69,15 @@
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
-        <a href="/deutsch/index.html" aria-current="page">Deutsch</a>
+        <!-- Skills, not Deutsch. The header stopped carrying a
+             top-level Deutsch link when the schools moved under a
+             Skills dropdown, and this builder kept writing the old
+             one, so every generated German page has been shipping a
+             nav that disagrees with the rest of the site and, worse,
+             with no [data-nav-skills] for app.js to hang the
+             dropdown on. Exactly the drift the note in CLAUDE.md
+             warns about, found while adding a third school. -->
+        <a href="/skills/index.html" data-nav-skills aria-current="page">Skills</a>
         <a href="/tools/index.html">Tools</a>
         <a href="/insights.html">Insights</a>
         <a href="/portfolio.html">Portfolio</a>

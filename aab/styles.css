@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, deutsch, check, about, utilities;
+@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, deutsch, quran, check, about, utilities;
 
 /* ============================================================
    TOKENS
@@ -3874,6 +3874,58 @@ and an intro that needs them in step is an intro that breaks
   }
   .rung-time { color: var(--ink-soft); }
 
+  /* What a stage lets you DO, under its blurb. Written for the
+     German hub, then wanted by the Quran hub for the same reason:
+     on a course you do nightly, the only promise worth printing is
+     what you can do at the end of it. */
+  .rung-can {
+    margin: 10px 0 0; color: var(--ink);
+    border-left: 3px solid var(--gold); padding-left: 12px;
+    max-width: 62ch; font-size: 0.95rem;
+
+    & .mono { color: var(--gold); }
+  }
+
+  /* The static list the ladder replaces. It has to be a decent
+     list in its own right, with JavaScript off it IS the ladder. */
+  .leiter-fallback {
+    list-style: none; padding: 0; display: grid; gap: 10px;
+
+    & li {
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      padding: 14px 16px; background: var(--panel);
+      color: var(--ink-soft); font-size: 0.94rem;
+    }
+    & a { display: block; margin-bottom: 4px; }
+  }
+
+  /* ---------- the rest of a school's hub ----------
+     These three lived in @layer deutsch until the Quran school
+     wanted all four of them, at which point check-css.mjs was
+     right to call them German rules styling a page that is not
+     German. They are not German or Arabic; they are what a school
+     hub is made of, so they sit here with the ladder they belong
+     to and both schools read from one definition. A third school
+     should reuse them rather than invent a fourth grid.
+
+     "কীভাবে চলে": the four cells explaining the method. */
+  .wie-gitter {
+    display: grid; gap: var(--gap);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+
+    & .cell { padding: 20px 22px; }
+    & h3 { font-size: 1.05rem; margin-bottom: 8px; }
+    & p { color: var(--ink-soft); font-size: 0.94rem; margin: 0; }
+  }
+
+  /* the nightly routine, as a time column and what happens in it */
+  .stunde-liste {
+    list-style: none; padding: 0; margin: 18px 0 22px; display: grid; gap: 10px;
+
+    & li { display: grid; grid-template-columns: 62px 1fr; gap: 12px; align-items: baseline; }
+    & .mono { color: var(--gold); font-size: 0.72rem; }
+  }
+
   /* ---------- the door to the contents page, on the hub ---------- */
   .contents-cta {
     display: grid; gap: 6px 16px; align-items: center;
@@ -4177,15 +4229,6 @@ German for day, and .tag is what the site has always called
   /* ---------- the hub ---------- */
   .deutsch-hero .lede [lang="de"] { color: var(--gold); }
 
-  .wie-gitter {
-    display: grid; gap: var(--gap);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
-
-    & .cell { padding: 20px 22px; }
-    & h3 { font-size: 1.05rem; margin-bottom: 8px; }
-    & p { color: var(--ink-soft); font-size: 0.94rem; margin: 0; }
-  }
-
   .ein-regel {
     margin-top: var(--gap);
     border: 1px solid var(--gold); border-radius: var(--radius);
@@ -4193,34 +4236,6 @@ German for day, and .tag is what the site has always called
 
     & .mono { color: var(--gold); display: block; margin-bottom: 8px; }
     & p { margin: 0; max-width: var(--measure); }
-  }
-
-  /* The static list the ladder replaces. It has to be a decent
-     list in its own right, with JavaScript off it IS the ladder. */
-  .leiter-fallback {
-    list-style: none; padding: 0; display: grid; gap: 10px;
-
-    & li {
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-      padding: 14px 16px; background: var(--panel);
-      color: var(--ink-soft); font-size: 0.94rem;
-    }
-    & a { display: block; margin-bottom: 4px; }
-  }
-
-  .rung-can {
-    margin: 10px 0 0; color: var(--ink);
-    border-left: 3px solid var(--gold); padding-left: 12px;
-    max-width: 62ch; font-size: 0.95rem;
-
-    & .mono { color: var(--gold); }
-  }
-
-  .stunde-liste {
-    list-style: none; padding: 0; margin: 18px 0 22px; display: grid; gap: 10px;
-
-    & li { display: grid; grid-template-columns: 62px 1fr; gap: 12px; align-items: baseline; }
-    & .mono { color: var(--gold); font-size: 0.72rem; }
   }
 
   /* ---------- a Stufe page ---------- */
@@ -4594,6 +4609,188 @@ German for day, and .tag is what the site has always called
 
   @media (prefers-reduced-motion: reduce) {
     .buch-fortschritt .track i { transition: none; }
+  }
+}
+
+/* ============================================================
+   THE QURANIC ARABIC SCHOOL
+   /quran/ · body.quran
+
+   NAME EVERYTHING IN THIS LAYER SO IT COULD ONLY EVER MEAN THIS
+   SCHOOL, for the reason spelled out at the top of the deutsch
+   layer: a bare class here beats `components` on every page of
+   the site, not just this one. check-css.mjs enforces it.
+
+   ------------------------------------------------------------
+   THE PROBLEM THIS LAYER EXISTS FOR
+
+   Arabic. The other two schools set Bangla beside a Latin-script
+   language; those share a direction, a baseline and roughly a
+   size. Arabic shares none of them:
+
+     · it runs right to left, so any phrase with punctuation or a
+       number in it needs dir="rtl" or the punctuation lands at
+       the wrong end
+     · Naskh sits small and deep next to Bengali at the same
+       nominal size, so it is scaled up and given room to breathe
+     · the harakat sit ABOVE and BELOW the letters, so a normal
+       line-height clips them into the line above
+
+   Get the last one wrong and a fatha looks like it belongs to
+   the wrong word. That is not a layout bug, it is a misquotation,
+   which is the one kind of bug this school must not ship.
+   ============================================================ */
+@layer quran {
+
+  /* ---------- the Arabic face itself ----------
+
+     Family and leading only. Size is deliberately NOT set here:
+     an attribute selector under body.quran outspecifies a plain
+     class, so a font-size on this rule quietly beat every
+     component below it and set the Arabic in an <h1> at full
+     heading size. Each component sets its own size instead, and
+     the one blanket size below is scoped to running prose. */
+  body.quran [lang="ar"] {
+    font-family: "Noto Naskh Arabic", "Amiri", "Traditional Arabic", serif;
+    font-weight: 500;
+    line-height: 2;
+  }
+
+  /* Arabic sitting inside a Bangla sentence: a shade larger,
+     because Naskh has a small x-height beside Bengali and reads
+     a size down at the same nominal size. */
+  body.quran p [lang="ar"],
+  body.quran dd [lang="ar"],
+  body.quran li [lang="ar"] { font-size: 1.1em; }
+
+  /* The Arabic name of a lesson or a segment, riding next to the
+     Bangla one. Muted, because the Bangla is the title here and
+     the Arabic is what it is called. It wraps rather than runs
+     off: some of these are five words long. */
+  .ar-sub { color: var(--ink-soft); font-weight: 500; margin-inline-start: 6px; }
+  h1 .ar-sub, h2 .ar-sub, h3 .ar-sub { font-size: 0.62em; }
+  .section-label .ar-sub { font-size: 1em; margin-inline-start: 0; }
+
+  /* The day chip on a lesson card: "দিন ৫" or "দিন ৫–৬". */
+  .dars-day {
+    display: inline-block; margin-bottom: 6px;
+    font-size: 0.78rem; letter-spacing: 0.04em;
+    color: var(--green);
+  }
+
+  /* ---------- an ayah, set as an ayah ---------- */
+  .ayah {
+    margin: 22px 0 10px; padding: 18px 20px;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+    text-align: center;
+    /* The verse itself is the largest thing on the page, and the
+       line-height is generous so the harakat above and the kasra
+       below never touch the line next door. */
+    font-size: 1.5rem; line-height: 2.4;
+  }
+  .ayah-mane {
+    margin: 0 0 22px; text-align: center;
+    color: var(--ink-soft); font-size: 0.98rem; max-width: none;
+  }
+
+  /* ---------- Arabic word, Bangla meaning ---------- */
+  .shobdo-list {
+    display: grid; gap: 2px; margin-block: 16px 22px;
+    border-top: 1px solid var(--hairline);
+  }
+  .shobdo {
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 12px; align-items: baseline; margin: 0;
+    padding: 9px 2px; border-bottom: 1px solid var(--hairline);
+    max-width: none;
+
+    & > b { font-weight: 500; text-align: right; }
+    & > span { color: var(--ink-soft); font-size: 0.95rem; }
+  }
+
+  /* A loose grid of single words, for the days that are mostly
+     vocabulary: the ten prepositions, the fourteen nouns. */
+  .shobdo-gitter {
+    display: grid; gap: 8px; margin-block: 16px 22px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+
+    & > span {
+      display: grid; gap: 2px; padding: 10px 12px;
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      background: var(--panel); font-size: 0.92rem; color: var(--ink-soft);
+    }
+    & b { font-weight: 500; color: var(--ink); font-size: 1.15rem; }
+  }
+
+  /* ---------- word by word, right to left ---------- */
+  /* The whole strip runs rtl so the first word of the ayah is on
+     the right, where it is in the ayah. Reading it left to right
+     would teach the sentence backwards. */
+  .tafsil {
+    display: grid; gap: 8px; margin-block: 14px 22px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 130px), 1fr));
+    direction: rtl;
+
+    & > span {
+      display: grid; gap: 4px; justify-items: center; text-align: center;
+      padding: 10px 8px; border: 1px solid var(--hairline);
+      border-radius: var(--radius-sm); background: var(--panel);
+    }
+    & b { font-weight: 500; font-size: 1.25rem; }
+    /* the Bangla gloss under each word goes back to ltr */
+    & i {
+      direction: ltr; font-style: normal;
+      font-size: 0.84rem; color: var(--ink-soft);
+    }
+  }
+
+  /* ---------- the two panels every day ends with ---------- */
+
+  /* কুরআনি তথ্য: a fact about the Quran tied to the day's topic.
+     Gold, because it is the one thing on the page that is not a
+     rule to learn but a thing to enjoy. */
+  .tothyo {
+    margin-block: 22px; padding: 16px 18px;
+    border: 1px solid var(--hairline); border-left: 3px solid var(--gold);
+    border-radius: var(--radius-sm); background: var(--panel);
+    font-size: 0.98rem;
+
+    & .tothyo-label {
+      display: block; margin-bottom: 6px;
+      font-family: var(--font-mono); font-size: 0.76rem;
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold);
+    }
+    & p { margin: 0; max-width: none; }
+  }
+
+  /* মুখে বলো: the say-it-aloud drill. This course has nothing to
+     write, so this is the only instruction it ever gives, and it
+     gets the accent colour and the last word on the page. */
+  .mukhe {
+    margin-block: 20px; padding: 14px 18px;
+    border-radius: var(--radius-sm);
+    background: var(--green-soft); color: var(--ink);
+    display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline;
+
+    & .mukhe-label {
+      font-family: var(--font-mono); font-size: 0.76rem;
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--green);
+    }
+    & p { margin: 0; max-width: none; }
+  }
+
+  /* A letter or mark being pointed at inside running text, the
+     ة at the end of a word, the shadda in the middle of one. */
+  .chinho {
+    padding: 1px 5px; border-radius: 5px;
+    background: var(--green-soft); color: var(--green); font-weight: 700;
+  }
+
+  /* ---------- print ---------- */
+  @media print {
+    body.quran .ayah { break-inside: avoid; }
+    body.quran .tothyo, body.quran .mukhe { break-inside: avoid; }
   }
 }
 
