@@ -29,6 +29,9 @@ import {
 import {
   STUFEN, stufeUrl, allTeile, findStufe, workbookUrl,
 } from "/deutsch/curriculum.js";
+import {
+  DHAPS, dhapUrl, allLessons as allDars,
+} from "/quran/curriculum.js";
 import { PAGES, SITE, liveArticles } from "/content.js";
 
 const isBn = () => document.documentElement.lang === "bn";
@@ -38,6 +41,7 @@ const bn = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮�
 const HOME = () => (isBn() ? "হোম" : "Home");
 const LEARN = () => (isBn() ? "শেখার লাইব্রেরি" : "Learn");
 const DEUTSCH = () => (isBn() ? "জার্মান" : "Deutsch");
+const QURAN = () => (isBn() ? "কুরআনের আরবি" : "Qur'anic Arabic");
 const SKILLS = () => (isBn() ? "দক্ষতা" : "Skills");
 
 /** Normalise the URL Pages might serve us: /learn, /learn/ and
@@ -50,7 +54,9 @@ function normalise(path) {
     const isFolder =
       STAGES.some((s) => `/learn/${s.slug}` === p) ||
       STUFEN.some((s) => `/deutsch/${s.slug}` === p) ||
-      p === "/learn" || p === "/deutsch" || p === "/tools" || p === "/skills";
+      DHAPS.some((d) => `/quran/${d.slug}` === p) ||
+      p === "/learn" || p === "/deutsch" || p === "/quran" ||
+      p === "/tools" || p === "/skills";
     return isFolder ? `${p}/index.html` : `${p}.html`;
   }
   return p;
@@ -93,6 +99,30 @@ function trailFor(path) {
 
   /* ---------- the skills index ---------- */
   if (p === "/skills/index.html") return { crumbs, here: SKILLS() };
+
+  /* ---------- the Quranic Arabic school ----------
+     Same shape as the German trail below, and for the same
+     reason: it sits under Skills, so a day is
+     Home > Skills > কুরআনের আরবি > ধাপ ১ > the day. */
+  if (p.startsWith("/quran/")) {
+    crumbs.push({ name: SKILLS(), url: "/skills/index.html" });
+    if (p === "/quran/index.html") return { crumbs, here: QURAN() };
+
+    crumbs.push({ name: QURAN(), url: "/quran/index.html" });
+
+    const dhapHere = DHAPS.find((d) => p === dhapUrl(d));
+    if (dhapHere) return { crumbs, here: `${dhapHere.kicker} · ${dhapHere.bn}` };
+
+    const dars = allDars().find((l) => l.url === p);
+    if (dars) {
+      crumbs.push({
+        name: `${dars.dhap.kicker} · ${dars.dhap.bn}`,
+        url: dhapUrl(dars.dhap),
+      });
+      return { crumbs, here: dars.bn };
+    }
+    return { crumbs, here: QURAN() };
+  }
 
   /* ---------- the German school ----------
      German sits under Skills now, so the trail says so: a Teil is

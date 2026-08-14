@@ -24,6 +24,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const {
   SITE, PAGES, TOOLS, STAGES, allLessons, liveArticles,
   STUFEN, allTeile, stufeUrl, workbookUrl,
+  DHAPS, allDars, dhapUrl,
 } = await import(join(HERE, "content.js"));
 
 const esc = (s) =>
@@ -78,6 +79,11 @@ const teile = allTeile().filter((t) => t.status === "live");
 const workbooks = STUFEN.filter((s) => s.workbook && s.status === "live")
   .map((s) => workbookUrl(s));
 
+/* The Quranic Arabic school, third time the same rule. It has no
+   practice book: the day is the lesson, so a ধাপ index and its
+   days are the whole of it. */
+const dars = allDars().filter((l) => l.status === "live");
+
 const urls = [
   ...PAGES.filter((p) => !p.private).map((p) => ({ loc: p.url, priority: "0.8" })),
   ...articles.map((a) => ({ loc: `/insights/${a.slug}.html`, lastmod: a.date, priority: "0.9" })),
@@ -86,6 +92,8 @@ const urls = [
   ...STUFEN.map((s) => ({ loc: stufeUrl(s), priority: "0.8" })),
   ...workbooks.map((loc) => ({ loc, priority: "0.8" })),
   ...teile.map((t) => ({ loc: t.url, priority: "0.7" })),
+  ...DHAPS.map((d) => ({ loc: dhapUrl(d), priority: "0.8" })),
+  ...dars.map((l) => ({ loc: l.url, priority: "0.7" })),
 ];
 urls[0].priority = "1.0";
 
@@ -126,4 +134,7 @@ console.log(
 console.log(
   `(${STUFEN.length} German Stufen, ${teile.length} written Teil(e) of ${allTeile().length}, ` +
   `${workbooks.length} practice book(s))`
+);
+console.log(
+  `(${DHAPS.length} Quran ধাপ, ${dars.length} written day page(s) of ${allDars().length})`
 );

@@ -31,6 +31,20 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v46: the Quranic Arabic school landed, sixty days over three
+        ধাপ. Not optional in the way a styling change is, and for
+        the same reason v21 was not: content.js now imports
+        /quran/curriculum.js, and app.js and crumbs.js import
+        content.js, so a returning visitor holding the v45 shell
+        would be served a cached content.js whose new import
+        resolves to nothing, and the menu, the palette and the
+        breadcrumbs would die together. The school's own modules
+        are precached alongside it. styles.css gained the quran
+        layer and the Arabic typography, crumbs.js gained the
+        trail, and the German pages changed too: their header had
+        been writing a Deutsch link the rest of the site stopped
+        carrying when the schools moved under Skills.
+
    v45: the practice book's day tracker folds away. At ninety days
         it was thirteen rows of squares on a phone, which put the
         book itself a screen and a half below the fold, and the
@@ -268,7 +282,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v45";
+const VERSION = "v46";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -333,6 +347,19 @@ const PRECACHE = [
   "/deutsch/stufe-1/index.html",
   "/deutsch/stufe-1/arbeitsbuch.html",
   "/deutsch/arbeitsbuch.js",
+  /* The Quranic Arabic school, on exactly the German rule.
+     curriculum.js is an import of content.js, so the shell is
+     broken without it, and the hub is the page the ladder lives
+     on. The sixty day pages are not listed: the runtime cache
+     picks up the ones a reader actually opens, and dars.js is the
+     script every one of them loads, so it is worth having early. */
+  "/quran/curriculum.js",
+  "/quran/index.html",
+  "/quran/hub.js",
+  "/quran/progress.js",
+  "/quran/icons.js",
+  "/quran/dars.js",
+  "/quran/dhap.js",
   "/tools/index.html",
   "/tools/stock.html",
   "/tools/stock.js",

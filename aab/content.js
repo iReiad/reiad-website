@@ -107,10 +107,21 @@ import {
   STUFEN, SCHOOL as DEUTSCH, allTeile, stufeUrl, teilUrl, workbookUrl,
 } from "./deutsch/curriculum.js";
 
+/* The third school, and the same argument a third time: nothing
+   about ইদাফা belongs in a file about Akkusativ either. The
+   aliases are not decoration: /learn/ already exports a
+   `lessonUrl` and an `allLessons`, and importing this school's
+   under the same names would silently shadow them. */
+import {
+  DHAPS, SCHOOL as QURAN, allLessons as allDars,
+  dhapUrl, lessonUrl as darsUrl, totalDays as quranDays,
+} from "./quran/curriculum.js";
+
 // re-exported, because `export … from` alone would not give this
 // file the local bindings that searchIndex() below needs
 export { STAGES, SCHOOLS, allLessons, stageLessons, stageUrl, lessonUrl, findStage };
 export { STUFEN, DEUTSCH, allTeile, stufeUrl, teilUrl, workbookUrl };
+export { DHAPS, QURAN, allDars, dhapUrl, darsUrl, quranDays };
 
 export const TERM_GROUPS = [
   {
@@ -219,12 +230,12 @@ export const SKILLS = [
   },
   {
     slug: "quran",
-    bn: "কুরআন",
-    en: "Quran: reading and meaning",
+    bn: "কুরআনের আরবি",
+    en: "Qur'anic Arabic",
+    url: "/quran/index.html",
     icon: "scroll",
-    status: "soon",
-    blurb: "হরফ থেকে শুরু করে শুদ্ধ উচ্চারণ, তারপর শব্দ ধরে ধরে অর্থ।",
-    note: "বর্ণ ও উচ্চারণের অংশটা লেখা হচ্ছে।",
+    status: "live",
+    blurb: "তিন ধাপে ষাট দিন: শব্দ চেনা, বাক্য বোঝা, তারপর গোটা সূরা খুলে পড়া।",
   },
   {
     slug: "english",
@@ -430,6 +441,12 @@ export const COUNTS = {
   terms: TERM_GROUPS.reduce((n, g) => n + g.terms.length, 0),
   /** German Stufen. */
   stufen: STUFEN.length,
+  /** Steps in the Quranic Arabic ladder. */
+  dhaps: DHAPS.length,
+  /** Days that ladder covers, counted from the lessons rather
+      than declared. The course promises sixty on its own first
+      slide, and build-quran.mjs refuses to write if it drifts. */
+  quranDays: quranDays(),
   /** Stufen that come with a practice book.
 
       Not the same as `stufen`, and that is the point: Stufe 4
@@ -525,11 +542,30 @@ export const searchIndex = () => [
     kind: "deutsch",
   })),
 
+  /* Qur'anic Arabic. Three ধাপ and every day inside them. The
+     Arabic name rides in the title beside the Bangla for the
+     same reason the German one does: someone looking for
+     "Akkusativ" or "إضافة" is looking for the word they met in
+     the lesson, not for its translation. */
+  ...DHAPS.map((d) => ({
+    title: `${d.kicker} · ${d.bn}: ${d.ar}`,
+    url: dhapUrl(d),
+    hint: "ধাপ",
+    kind: "quran",
+  })),
+  ...allDars().map((l) => ({
+    title: `${l.bn} · ${l.ar}`,
+    url: l.url,
+    hint: `${l.dhap.kicker} · ${l.label}`,
+    kind: "quran",
+  })),
+
   /* The other schools. A skill still being written is in here on
      purpose: someone typing "Quran" should be told where it will
      be, not handed "No matches". Deutsch is skipped because it
-     already has a page entry and every Teil of its own above. */
-  ...SKILLS.filter((s) => s.slug !== "deutsch").map((s) => ({
+     already has a page entry and every Teil of its own above, and
+     so does Quranic Arabic now. */
+  ...SKILLS.filter((s) => !["deutsch", "quran"].includes(s.slug)).map((s) => ({
     title: `${s.bn}: ${s.en}`,
     url: skillUrl(s),
     hint: s.status === "soon" ? "Skill · আসছে" : "Skill",
@@ -544,6 +580,7 @@ export const SEARCH_GROUPS = [
   ["case", "Case studies"],
   ["learn", "শেখার লাইব্রেরি · Learn"],
   ["deutsch", "জার্মান · Deutsch"],
+  ["quran", "কুরআনের আরবি · Qur'anic Arabic"],
   ["skill", "দক্ষতা · Skills"],
   ["writing", "Writing"],
 ];
