@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, deutsch, quran, english, check, about, utilities;
+@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, deutsch, quran, english, cooking, check, about, utilities;
 
 /* ============================================================
    TOKENS
@@ -5171,6 +5171,142 @@ German for day, and .tag is what the site has always called
 
   @media (prefers-reduced-motion: reduce) {
     .wb-progress .track i { transition: none; }
+  }
+}
+
+/* ============================================================
+   THE KITCHEN, /cooking/
+
+   Not a school, so this layer is much smaller than the three
+   above it: the pieces are long reads and the site's `article`
+   layer already knows how to set one. What is here is the
+   furniture a kitchen piece needs and an ordinary article does
+   not: the box of quick answers at the top, the note that says
+   "and this is the bit everyone gets wrong", and the numbered
+   steps that are steps rather than a list of points.
+
+   Same rule as the schools, and check-css.mjs enforces it: every
+   selector is anchored on a class only /cooking/ uses, or on
+   body.cooking. Nothing under /cooking/ has any business styling
+   the home page.
+   ============================================================ */
+@layer cooking {
+
+  /* ---------- the box of quick answers ----------
+     Read before the piece, and read again instead of it when you
+     are standing over a hot pan and have thirty seconds. */
+  .ek-nojore {
+    border: 1px solid var(--gold); border-radius: var(--radius);
+    background: var(--paper-sunk); padding: 20px 22px;
+    margin-block: 28px; max-width: var(--measure);
+
+    & .ek-nojore-label {
+      display: block; color: var(--gold); font-size: 0.68rem;
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px;
+    }
+    & ul { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 8px; }
+    & li {
+      position: relative; padding-left: 20px; max-width: none;
+      font-size: 0.98rem;
+    }
+    /* A dot rather than a bullet: the list is five facts, not five
+       instructions, and a bullet reads as a step to be done. */
+    & li::before {
+      content: ""; position: absolute; left: 4px; top: 0.72em;
+      width: 6px; height: 6px; border-radius: 50%; background: var(--gold);
+    }
+  }
+
+  /* ---------- the note in the margin of the recipe ---------- */
+  .ranna-note {
+    border-left: 3px solid var(--green);
+    background: var(--panel);
+    padding: 16px 18px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin-block: 26px; max-width: var(--measure);
+
+    & .ranna-note-label {
+      display: block; color: var(--green); font-size: 0.68rem;
+      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;
+    }
+    & p { margin: 0; max-width: none; font-size: 0.97rem; }
+  }
+
+  /* ---------- steps that really are steps ---------- */
+  .dhap-list {
+    list-style: none; counter-reset: dhap; padding-left: 0;
+    margin-block: 20px 26px; display: grid; gap: 14px;
+
+    & li {
+      counter-increment: dhap; position: relative;
+      padding-left: 44px; max-width: var(--measure);
+    }
+    & li::before {
+      content: counter(dhap);
+      position: absolute; left: 0; top: 0.1em;
+      width: 30px; height: 30px; display: grid; place-items: center;
+      border: 1px solid var(--hairline); border-radius: 50%;
+      background: var(--panel); color: var(--green);
+      font-family: var(--font-mono); font-size: 0.82rem;
+    }
+  }
+
+  /* ---------- the allium family ---------- */
+  .attiyo {
+    margin-block: 20px 28px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+
+    & .cell { display: grid; gap: 6px; align-content: start; }
+    & h3 { font-size: 1.1rem; }
+    & p { margin: 0; font-size: 0.95rem; color: var(--ink-soft); max-width: none; }
+  }
+
+  /* ============================================================
+     THE INDEX
+     ============================================================ */
+
+  .kitchen-hero .lede { max-width: 62ch; }
+
+  .kitchen-card {
+    gap: 6px;
+
+    & .tag { margin-top: 2px; }
+    & h3 { font-size: 1.24rem; }
+    & p { margin-top: 4px; }
+  }
+  a.kitchen-card {
+    text-decoration: none; color: inherit;
+    transition: border-color var(--fast) var(--ease),
+                box-shadow var(--fast) var(--ease);
+
+    &:hover {
+      border-color: var(--green); box-shadow: var(--shadow-lift); opacity: 1;
+      & .more { color: var(--green); }
+    }
+  }
+  .kitchen-art { color: var(--gold); }
+  .kitchen-art .art { width: 30px; height: 30px; }
+  .kitchen-en {
+    color: var(--ink-soft); font-size: 0.66rem;
+    text-transform: none; letter-spacing: 0.04em;
+  }
+  .kitchen-meta {
+    display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline;
+    margin-top: auto; padding-top: 10px;
+    color: var(--ink-soft); font-size: 0.72rem;
+
+    & .more { margin-inline-start: auto; }
+  }
+  .kitchen-note { color: var(--gold); font-size: 0.85rem; }
+  .kitchen-fallback {
+    display: grid; gap: 10px; color: var(--ink-soft);
+    & b { color: var(--ink); }
+  }
+
+  /* A piece is printed to be propped against something greasy,
+     so the furniture that only makes sense on screen goes. */
+  @media print {
+    body.cooking :is(.read-progress, .prev-next, .hero-actions) { display: none; }
+    body.cooking :is(.ek-nojore, .ranna-note, .dhap-list li) { break-inside: avoid; }
   }
 }
 

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>রান্নাঘর: উপকরণ ধরে ধরে রান্না বোঝা, Reiad's Library</title>
+  <meta name="description" content="রেসিপি মুখস্থ নয়, রান্নাটা বোঝা। একেকটা উপকরণ নিয়ে পুরো একটা লেখা: কেন এভাবে কাটে, কেন এত সময় লাগে, আর কোন ধাপটা বাদ দিলে স্বাদ ফাঁকা লাগে।">
+  <link rel="canonical" href="https://reiad.co.uk/cooking/index.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="রান্নাঘর · Cooking">
+  <meta property="og:description" content="রেসিপি মুখস্থ নয়, রান্নাটা বোঝা। একেকটা উপকরণ নিয়ে পুরো একটা লেখা, বাংলায়।">
+  <meta property="og:url" content="https://reiad.co.uk/cooking/index.html">
+  <meta property="og:image" content="https://reiad.co.uk/og/cooking.png">
+  <script>
+    (function () {
+      var d = document.documentElement;
+      try {
+        var t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
+        var a = localStorage.getItem("audience");
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"
+        media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"></noscript>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="alternate" type="application/rss+xml" title="Reiad's Library · Insights" href="/feed.xml">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:site_name" content="Reiad's Library">
+  <meta name="theme-color" content="#0B3D2E">
+</head>
+<body class="cooking">
+  <a class="skip" href="#main">মূল লেখায় যান</a>
+  <header>
+    <div class="wrap header-inner">
+      <a class="site-name" href="/index.html">
+        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+        </svg>
+        Reiad's Library
+      </a>
+      <nav aria-label="Main">
+        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/skills/index.html" data-nav-skills aria-current="true">Skills</a>
+        <a href="/tools/index.html">Tools</a>
+        <a href="/insights.html">Insights</a>
+        <a href="/portfolio.html">Portfolio</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html" data-keep>Contact</a>
+      </nav>
+      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
+      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
+      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap">
+
+      <div class="hero kitchen-hero">
+        <span class="eyebrow mono">রান্নাঘর · <span lang="en">Cooking</span></span>
+        <h1 class="bn-h">রেসিপি নয়, রান্নাটা।</h1>
+        <p class="lede">রেসিপি বলে দেয় কী করতে হবে। কিন্তু কেন আঁচ কমাতে হয়, কেন ভিনেগার
+        একদম শেষে, কেন একই জিনিস কারো হাতে দশ মিনিটে আর কারো হাতে চল্লিশ মিনিটে হয়, সেটা
+        বলে না। এখানে একেকটা উপকরণ নিয়ে পুরো একটা লেখা থাকে, যাতে পড়ার পর রেসিপিটা আর
+        মুখস্থ করতে না হয়।</p>
+
+        <div class="hero-actions">
+          <a class="btn btn-solid" href="/cooking/onions.html">পেঁয়াজের লেখাটা পড়ুন →</a>
+          <a class="btn btn-ghost" href="/skills/index.html">আর কী কী আছে</a>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           THE PIECES
+           Built by cooking.js from the COOKING array in /content.js.
+           The list inside is the no-JavaScript fallback, not the
+           source: keep the two in step, and edit content.js first.
+           ============================================================ -->
+      <section id="lekha">
+        <span class="section-label mono">যা যা লেখা আছে · <span lang="en">The pieces</span></span>
+        <p class="measure ladder-intro">এখন পর্যন্ত
+        <span data-count="cooking">১</span>টি লেখা। ধাপে ধাপে কোর্স নয়, তাই ক্রম মেনে
+        পড়ার দরকার নেই: যেটা আজ রান্না করছেন, সেটাই আগে পড়ুন।</p>
+        <div class="cards grid-2" id="kitchen-list">
+          <ul class="kitchen-fallback">
+            <li><a href="/cooking/onions.html"><b>পেঁয়াজ নিয়ে যা যা জানা দরকার</b></a>
+              রং, কাটা আর রান্নার আসল কথা: তিন রঙের পার্থক্য, শিরা বরাবর কাটা, সোয়েট আর
+              সতে-র তফাত, ক্যারামেলাইজেশন, আর পেঁয়াজের আত্মীয়স্বজন। ১২ মিনিট পড়া।</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           HOW THESE ARE WRITTEN
+           ============================================================ -->
+      <section id="kivabe" class="no-filter">
+        <span class="section-label mono">কীভাবে লেখা · <span lang="en">How these are written</span></span>
+        <div class="wie-gitter">
+          <div class="cell">
+            <h3 class="bn-h">একটা করে উপকরণ</h3>
+            <p>পদ ধরে নয়, উপকরণ ধরে। একটা উপকরণ ভালোভাবে বুঝলে সেটা দিয়ে বানানো সব কটা পদই
+            সহজ হয়ে যায়, আর নতুন পদ দেখলেও ভয় লাগে না।</p>
+          </div>
+          <div class="cell">
+            <h3 class="bn-h">কেন, শুধু কীভাবে নয়</h3>
+            <p>তাপে কী ঘটছে, পানি কোথায় যাচ্ছে, মিষ্টি স্বাদটা কোথা থেকে আসছে। কারণটা জানা
+            থাকলে রেসিপির বাইরে গিয়েও ঠিক সিদ্ধান্ত নেওয়া যায়।</p>
+          </div>
+          <div class="cell">
+            <h3 class="bn-h">সময়ের সৎ হিসাব</h3>
+            <p>"একটু ক্যারামেলাইজ করে নিন" পাঁচ মিনিটের কাজ নয়। কোন ধাপে কতক্ষণ সত্যিই লাগে,
+            সেটা লেখা থাকে, যাতে রাত আটটায় শুরু করে হতাশ হতে না হয়।</p>
+          </div>
+          <div class="cell">
+            <h3 class="bn-h">কোনো ধাপ নেই, কোনো টিক নেই</h3>
+            <p>এটা কোর্স নয়। কিছু শেষ করার নেই, কোনো অগ্রগতির হিসাব রাখা হয় না। পড়ুন,
+            রান্না করুন, দরকার হলে ছয় মাস পরে আবার এসে পড়ুন।</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="note">রান্নাঘরের এই অংশটা ধীরে বাড়বে। পরের লেখাগুলো একই ধাঁচে: একটা
+      উপকরণ, তার আসল কথাগুলো, আর যতটা সম্ভব কম গালভরা শব্দ।</div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
+      <p>রান্নাঘরের লেখাগুলো বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া।</p>
+      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+    </div>
+  </footer>
+
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/cooking/cooking.js"></script>
+</body>
+</html>

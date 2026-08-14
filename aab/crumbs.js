@@ -35,7 +35,7 @@ import {
 import {
   TERMS, termUrl, allParts, findTerm, workbookUrl as englishBookUrl,
 } from "/english/curriculum.js";
-import { PAGES, SITE, liveArticles } from "/content.js";
+import { PAGES, SITE, liveArticles, COOKING, cookingUrl } from "/content.js";
 
 const isBn = () => document.documentElement.lang === "bn";
 /* The German pages are lang="bn" throughout, so a crumb reading
@@ -47,6 +47,7 @@ const DEUTSCH = () => (isBn() ? "জার্মান" : "Deutsch");
 const QURAN = () => (isBn() ? "কুরআনের আরবি" : "Qur'anic Arabic");
 const ENGLISH = () => (isBn() ? "মন থেকে ইংরেজি" : "English From The Heart");
 const SKILLS = () => (isBn() ? "দক্ষতা" : "Skills");
+const COOKING_NAME = () => (isBn() ? "রান্নাঘর" : "Cooking");
 
 /** Normalise the URL Pages might serve us: /learn, /learn/ and
     /learn/index.html are all the same place. */
@@ -61,7 +62,7 @@ function normalise(path) {
       DHAPS.some((d) => `/quran/${d.slug}` === p) ||
       TERMS.some((t) => `/english/${t.slug}` === p) ||
       p === "/learn" || p === "/deutsch" || p === "/quran" ||
-      p === "/english" || p === "/tools" || p === "/skills";
+      p === "/english" || p === "/cooking" || p === "/tools" || p === "/skills";
     return isFolder ? `${p}/index.html` : `${p}.html`;
   }
   return p;
@@ -127,6 +128,19 @@ function trailFor(path) {
       return { crumbs, here: dars.bn };
     }
     return { crumbs, here: QURAN() };
+  }
+
+  /* ---------- the kitchen ----------
+     Not a school, but it hangs off Skills the same way they do,
+     so a piece is Home > Skills > রান্নাঘর > the piece. */
+  if (p.startsWith("/cooking/")) {
+    crumbs.push({ name: SKILLS(), url: "/skills/index.html" });
+    if (p === "/cooking/index.html") return { crumbs, here: COOKING_NAME() };
+
+    crumbs.push({ name: COOKING_NAME(), url: "/cooking/index.html" });
+
+    const piece = COOKING.find((c) => cookingUrl(c) === p);
+    return { crumbs, here: piece?.bn ?? document.title.split("·")[0].trim() };
   }
 
   /* ---------- the English school ----------

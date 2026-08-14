@@ -263,10 +263,10 @@ export const SKILLS = [
     slug: "cooking",
     bn: "রান্না",
     en: "Cooking",
+    url: "/cooking/index.html",
     icon: "cart",
-    status: "soon",
-    blurb: "মাপ, তাপ আর সময়: রেসিপি মুখস্থ না করে রান্নাটা বোঝা।",
-    note: "প্রথম দশটা পদের তালিকা হচ্ছে।",
+    status: "live",
+    blurb: "মাপ, তাপ আর সময়: রেসিপি মুখস্থ না করে রান্নাটা বোঝা। ধাপে ধাপে কোর্স নয়, একেকটা উপকরণ নিয়ে পুরো একটা লেখা।",
   },
   {
     slug: "travel",
@@ -309,6 +309,55 @@ export const TOOLS = [
   { id: "position", bn: "ঝুঁকি ও পজিশন সাইজ", en: "Position sizing",
     blurb: "How many shares a rule about maximum loss actually allows you to buy." },
 ];
+
+/* ============================================================
+   COOKING: the kitchen writing, at /cooking/.
+
+   Deliberately NOT a school. German, Quranic Arabic and English
+   are ladders: stages, lessons, a progress store, a resume card.
+   Cooking is not learned that way, and pretending otherwise would
+   mean inventing a curriculum nobody asked for. What is useful
+   here is one long piece about one ingredient, written so that
+   after reading it you understand what you are doing rather than
+   which step comes fourteenth.
+
+   So this is a reading list, closer to Insights than to /learn/,
+   and it lives here for the same reason everything else does: the
+   hub page, the Ctrl+K palette and the sitemap all read this one
+   array. Adding a piece is one entry, and nothing else.
+
+   Fields:
+     slug     file name inside /cooking/ (no .html)
+     bn       the title, in Bangla
+     en       the same thing in English, for the palette and for
+              anyone searching in the other language
+     dek      one line of standfirst
+     tag      the small label above the headline
+     date     ISO date, newest first
+     minutes  reading time
+     status   "live" or "soon"
+     note     what is still being written, for a "soon" one
+   ============================================================ */
+export const COOKING = [
+  {
+    slug: "onions",
+    bn: "পেঁয়াজ নিয়ে যা যা জানা দরকার",
+    en: "Everything worth knowing about onions",
+    dek: "রং, কাটা আর রান্নার আসল কথা: কোন পেঁয়াজ কেন, শিরা বরাবর মানে কী, আর ক্যারামেলাইজড পেঁয়াজে সত্যিই কতক্ষণ লাগে।",
+    tag: "রান্নাঘর · উপকরণ",
+    date: "2026-08-14",
+    minutes: 12,
+    status: "live",
+  },
+];
+
+/** Cooking pieces that are actually written, newest first. */
+export const liveCooking = () =>
+  COOKING.filter((c) => c.status !== "soon")
+    .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+
+/** Where a piece lives. */
+export const cookingUrl = (c) => `/cooking/${c.slug}.html`;
 
 /* ============================================================
    Pages: the menu, the palette and the sitemap read this.
@@ -368,6 +417,19 @@ export const PAGES = [
     hint: "Workbook",
     group: "english",
     blurb: `One page a day for ${t.workbook.days} days: a pattern, five model lines, eight sentences of your own, six to translate, and one true paragraph.`,
+  })),
+  { title: "Cooking: রান্নাঘর", url: "/cooking/index.html",
+    hint: "Page", blurb: "Kitchen writing in Bangla: one ingredient at a time, explained rather than listed." },
+
+  /* One entry per piece, built from COOKING rather than typed,
+     so a new piece reaches the menu, the palette and the sitemap
+     by being written and nothing else. */
+  ...liveCooking().map((c) => ({
+    title: `${c.bn} · ${c.en}`,
+    url: cookingUrl(c),
+    hint: "Cooking",
+    group: "cooking",
+    blurb: c.dek,
   })),
   { title: "Tools & calculators", url: "/tools/index.html",
     hint: "Page", blurb: "Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing." },
@@ -491,6 +553,8 @@ export const COUNTS = {
   workbooks: STUFEN.filter((s) => s.workbook).length,
   /** Schools in the Skills hub, German included. */
   skills: SKILLS.length,
+  /** Kitchen pieces written, not counting the ones still coming. */
+  cooking: liveCooking().length,
   /** Pieces published on Insights. */
   articles: ARTICLES.filter((a) => a.status !== "soon").length,
   /** Scored ratios in the stock check. Asserted against METRICS. */
@@ -533,7 +597,8 @@ export const searchIndex = () => [
     kind: p.group === "case" ? "case" : p.group === "tool" ? "tool"
       : p.group === "learn" ? "learn"
       : p.group === "deutsch" || p.url.startsWith("/deutsch/") ? "deutsch"
-      : p.group === "english" || p.url.startsWith("/english/") ? "english" : "page",
+      : p.group === "english" || p.url.startsWith("/english/") ? "english"
+      : p.group === "cooking" || p.url.startsWith("/cooking/") ? "cooking" : "page",
   })),
   ...liveArticles().map((a) => ({
     title: a.title,
@@ -619,7 +684,7 @@ export const searchIndex = () => [
      be, not handed "No matches". The three schools that exist are
      skipped because each already has a page entry and every
      lesson of its own above. */
-  ...SKILLS.filter((s) => !["deutsch", "quran", "english"].includes(s.slug)).map((s) => ({
+  ...SKILLS.filter((s) => !["deutsch", "quran", "english", "cooking"].includes(s.slug)).map((s) => ({
     title: `${s.bn}: ${s.en}`,
     url: skillUrl(s),
     hint: s.status === "soon" ? "Skill · আসছে" : "Skill",
@@ -636,6 +701,7 @@ export const SEARCH_GROUPS = [
   ["deutsch", "জার্মান · Deutsch"],
   ["quran", "কুরআনের আরবি · Qur'anic Arabic"],
   ["english", "ইংরেজি · English"],
+  ["cooking", "রান্না · Cooking"],
   ["skill", "দক্ষতা · Skills"],
   ["writing", "Writing"],
 ];

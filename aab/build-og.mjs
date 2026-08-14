@@ -159,6 +159,12 @@ const CARDS = [
   { file: "english-workbook.png", eyebrow: "The 30-day workbook · অনুশীলন",
     title: "দিনে একটা পাতা।",
     sub: "একটা কাঠামো · পাঁচটা নমুনা · নিজের আটটা বাক্য · একটা সত্যি অনুচ্ছেদ", bn: true },
+  /* The kitchen. One card for the whole of it: the pieces differ
+     in ingredient, not in kind, and a card naming an onion would
+     be wrong on the next piece that lands. */
+  { file: "cooking.png", eyebrow: "রান্নাঘর · Cooking",
+    title: "রেসিপি নয়, রান্নাটা।",
+    sub: "একটা করে উপকরণ · কেন, শুধু কীভাবে নয় · সময়ের সৎ হিসাব", bn: true },
   ...TERMS.map((t) => ({
     file: `english-${t.slug}.png`,
     eyebrow: `${t.kicker} · ${t.en}`,
@@ -234,6 +240,7 @@ const ASSIGN = [
     `english-${t.slug}.png`,
   ]),
   [/^english\//, "english.png"],
+  [/^cooking\//, "cooking.png"],
   [/^insights/, "insights.png"],
   [/^about\.html$/, "about.png"],
   [/^contact\.html$/, "contact.png"],
