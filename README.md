@@ -335,6 +335,9 @@ node aab/check-routes.mjs           # catches redirect loops before deploying
 node aab/check-sw.mjs               # did a precached file change without a VERSION bump?
 node aab/check-css.mjs              # is a school's CSS styling the whole site?
 node aab/portfolio/dissertation.test.mjs   # 141 checks on the statistics engine
+node aab/portfolio/stress.test.mjs  # 168 checks on the credit stress-testing engine
+node aab/portfolio/scorecard.test.mjs   # 180 checks on the PD modelling pipeline
+node aab/portfolio/frontier.test.mjs    # 168 checks on the portfolio-construction engine
 node aab/learn/build-lessons.mjs    # regenerate the Learn pages
 node aab/deutsch/build-deutsch.mjs  # regenerate the German pages
 ```
@@ -465,8 +468,11 @@ which mode it's in.
 | `functions/_lib/sync.js` | The scheduled Notion pull, and the rules that stop it publishing something half-written |
 | `aab/build-meta.mjs` | Regenerates `feed.xml`, `sitemap.xml`, `robots.txt` |
 | `aab/build-og.mjs` | Re-renders the social share images in `og/` (needs Playwright) |
-| `aab/portfolio/` | The four case studies. Each is a page, a DOM-free engine (`*.model.js`) and its charts (`*.js`) |
+| `aab/portfolio/` | The seven case studies. Each is a page, a DOM-free engine (`*.model.js`) and its charts (`*.js`) |
 | `aab/portfolio/dissertation.*` | The MSc dissertation case study: transcribed tables and extracted series in `.data.js`, Welch/noncentral-t statistics in `.model.js`, and `.test.mjs` to check them |
+| `aab/portfolio/frontier.*` | The portfolio-construction case study: a ten-holding FTSE 250 fund built in 2015 and held to 2020, reproduced from daily prices. The covariance matrix, the efficient frontier, the optimised alternatives and the five held years are all solved in the browser. `.test.mjs` checks the optimiser against closed forms and the reproduction against the figures the fund reported |
+| `aab/portfolio/scorecard.*` | The probability-of-default case study: logistic regression and gradient boosting written out and fitted in the browser on the UCI German Credit data, with DeLong's test, calibration and cut-off economics. `scorecard.fetch.mjs` downloads and checksums the data; `.test.mjs` checks the engine against closed forms |
+| `aab/portfolio/stress.*` | The credit stress-testing case study: a synthetic bank book, macro scenarios, the Merton/Vasicek conditional PD and a vintage hazard model side by side, IFRS 9 staging and the capital walk. `.test.mjs` checks the engine against Basel's published risk weights |
 
 ## Keyboard
 

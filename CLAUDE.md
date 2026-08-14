@@ -48,6 +48,46 @@ out that something exists in their own language. Keep it plain: short
 sentences, everyday words, no transliterated jargon where a Bangla word
 exists.
 
+## Numbers and lists come from the data, never from a sentence
+
+**If a page says how many of something there are, it must count them.**
+Not remember them. `COUNTS` in `aab/content.js` derives every such number
+from the data the site already holds, and `app.js` fills any element
+carrying `data-count`:
+
+```html
+<span data-count="stages">৮</span>টা ধাপ
+<span data-count="caseStudies">7</span> case studies
+```
+
+Bangla digits are used automatically inside a `[lang="bn"]` element. The
+number left in the markup is the no-JavaScript fallback, so keep it
+roughly right; `check-content.mjs` fails the build if it drifts.
+
+The same rule covers lists. A list of things that exist elsewhere on the
+site (case studies, articles, tools) is built from `content.js` by
+`home.js` or `app.js`, and the markup in the page is a fallback, not the
+source. Adding a case study should require editing `content.js` and
+nothing else.
+
+This exists because it went wrong, twice in one file. The portfolio page
+listed four case studies while seven existed, and three finished pieces of
+work were reachable only by typing the URL. The home page listed three of
+the seven under a line naming two of the four it left out. The stock check
+was described as "thirty-eight ratios" on one page, "thirty-odd" on four
+others and "more than thirty-six" in Bangla, for a model that scores
+forty-four. Nobody typed a wrong number. Each was right on the day it was
+written, and then the thing it counted grew.
+
+Two counts (`ratios`, `pillars`) are typed into `COUNTS` because they
+belong to `tools/stock.model.js`, which `content.js` deliberately does not
+import. They are asserted against that model by the check below.
+
+A sentence that genuinely cannot hold a slot (a `<meta>` description, a
+blurb inside `content.js`) goes in the `CLAIMS` table in
+`check-content.mjs`, so the next data change fails a check rather than a
+reader.
+
 ## Before deploying
 
 Run the checks. They are fast and each one exists because something
@@ -57,6 +97,7 @@ shipped broken once:
 node aab/check-routes.mjs   # redirect loops, dead links, bad article slugs
 node aab/check-css.mjs      # a school's cascade layer styling the whole site
 node aab/check-sw.mjs       # a precached file changed without a VERSION bump
+node aab/check-content.mjs  # a page that has stopped counting the site correctly
 ```
 
 If a precached file changed, bump `VERSION` in `aab/sw.js`, add a line to
@@ -70,3 +111,27 @@ node aab/learn/build-lessons.mjs     # aab/learn/**  from curriculum + content
 node aab/deutsch/build-deutsch.mjs   # aab/deutsch/** from content/ + data
 node aab/build-meta.mjs              # feed.xml, sitemap.xml, robots.txt
 ```
+
+That includes the `<head>`. A change to canonical links, Open Graph tags
+or the webfont link has to go into `page()` inside both builders, or the
+two schools drift away from the rest of the site one deploy at a time.
+
+## Publishing a new case study
+
+The failure this list exists for is a finished case study that nobody can
+reach. In order:
+
+1. Write the page into `aab/portfolio/`.
+2. Add it to `PAGES` in `content.js` with `group: "case"`, plus `kind`
+   (`model`, `analysis` or `research`) and a `short` title. That one entry
+   puts it in the menu, the Ctrl+K palette, the sitemap, the home page
+   rotation and the portfolio count.
+3. Add its card to `portfolio.html`.
+4. `node aab/check-content.mjs` fails until steps 2 and 3 are both done.
+
+## Before opening a pull request
+
+Check whether anything else is already in flight. Two open pull requests
+had added three case studies to the same files a redesign was rewriting;
+the redesign was branched off `main` and would have dropped all three on
+merge. Look at the open PRs, not just `main`.

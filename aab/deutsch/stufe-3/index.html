@@ -10,6 +10,7 @@
   <meta property="og:type" content="article">
   <meta property="og:title" content="Stufe 3 · কারণ, তুলনা ও গল্প, জার্মান বাংলায়, Reiad's Library">
   <meta property="og:description" content="weil, dass, wenn দিয়ে বাক্য জোড়া দেওয়া, বিশেষণের লেজ, তুলনা, ভবিষ্যৎ, আর একটা গল্প শুরু থেকে শেষ পর্যন্ত বলা।">
+  <meta property="og:url" content="https://reiad.co.uk/deutsch/stufe-3/index.html">
   <meta property="og:image" content="https://reiad.co.uk/og/deutsch-stufe-3.png">
   <script>
     (function () {
@@ -24,7 +25,22 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <!-- The webfont stylesheet does not block the first paint.
+       It used to: a <link rel="stylesheet"> is render-blocking, so
+       until fonts.googleapis.com answered, this page painted
+       nothing at all. On the connection a reader in Dhaka
+       actually has, that is seconds of white screen for a page
+       whose text was ready immediately, and if the request never
+       answers it is seconds of white screen for nothing.
+
+       media="print" makes the browser fetch it at low priority
+       without applying it; onload promotes it the moment it
+       lands. The text is readable in the fallback face straight
+       away and swaps when the webfont arrives, which is what
+       display=swap in the URL was always asking for. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"
+        media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"></noscript>
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -53,7 +69,7 @@
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
-        <a href="/skills/index.html" data-nav-skills aria-current="true">Skills</a>
+        <a href="/deutsch/index.html" aria-current="page">Deutsch</a>
         <a href="/tools/index.html">Tools</a>
         <a href="/insights.html">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
@@ -110,7 +126,7 @@
            data-teil-id="stufe-3/relativsatz">
           <span class="lesson-card-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="12" r="4"/><path d="M12 12h9"/><path d="M17.5 12v3.5"/><path d="M20.5 12v2.5"/></svg></span>
           <h3 class="bn-h">যে লোকটা…: Relativsatz <span class="en-sub" lang="de">Der Relativsatz</span></h3>
-          <p>der Mann, der …: টুপিটাই জোড়ার কাজ করে।</p>
+          <p>der Mann, der …, টুপিটাই জোড়ার কাজ করে।</p>
           <span class="lesson-card-foot mono">আসছে</span>
         </a>
         </div>

@@ -289,6 +289,23 @@ export const TOOLS = [
 /* ============================================================
    Pages: the menu, the palette and the sitemap read this.
    `private: true` keeps a page out of the sitemap and the menu.
+
+   Two fields exist for the case studies, and only for them:
+
+     kind    "model", "analysis" or "research". The home page's
+             services cell links a live model beside each service
+             it names, and this is how it knows which case study
+             belongs beside which line.
+     short   a title for a list that already says what these are.
+             The full title ends ": interactive case study",
+             which reads as a stutter under a heading that says
+             "open one and take it apart".
+
+   Both are optional and both are read by home.js. They exist so
+   that a case study is described ONCE, here, rather than once
+   here and again inside index.html, which is how the home page
+   came to be listing three of seven with a trailing line naming
+   two of the four it had left out.
    ============================================================ */
 export const PAGES = [
   { title: "Home", url: "/index.html",
@@ -306,17 +323,37 @@ export const PAGES = [
   { title: "Tools & calculators", url: "/tools/index.html",
     hint: "Page", blurb: "Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing." },
   { title: "Stock check: buy, hold or sell", url: "/tools/stock.html",
-    hint: "Tool", group: "tool", blurb: "Thirty-odd ratios across six pillars, a verdict that shows its own arithmetic, in English or Bangla." },
+    hint: "Tool", group: "tool", blurb: "Forty-odd ratios across six pillars, a verdict that shows its own arithmetic, in English or Bangla." },
   { title: "Insights", url: "/insights.html",
     hint: "Page", blurb: "Longer pieces, plus an auto-updating pulse of market news." },
   { title: "Three-statement model: interactive case study", url: "/portfolio/three-statement.html",
-    hint: "Case study", group: "case", blurb: "A live financial model: edit the assumptions, watch all three statements move." },
+    hint: "Case study", group: "case", kind: "model",
+    short: "Three-statement model: a listed manufacturer",
+    blurb: "A live financial model: edit the assumptions, watch all three statements move." },
   { title: "DCF with sensitivity tables: interactive case study", url: "/portfolio/dcf.html",
-    hint: "Case study", group: "case", blurb: "A live discounted cash flow: build the WACC, switch terminal value method, read the grid." },
+    hint: "Case study", group: "case", kind: "model",
+    short: "DCF with two-way sensitivity tables",
+    blurb: "A live discounted cash flow: build the WACC, switch terminal value method, read the grid." },
   { title: "Index volatility & drawdowns: interactive case study", url: "/portfolio/dsex.html",
-    hint: "Case study", group: "case", blurb: "Rolling volatility, drawdowns, tail risk and holding periods, with CSV import." },
+    hint: "Case study", group: "case", kind: "analysis",
+    short: "Index volatility and drawdowns, in Python",
+    blurb: "Rolling volatility, drawdowns, tail risk and holding periods, with CSV import." },
+  { title: "Portfolio construction: a screened FTSE 250 fund", url: "/portfolio/frontier.html",
+    hint: "Case study", group: "case", kind: "analysis",
+    short: "A screened FTSE 250 fund, built and held",
+    blurb: "Ten FTSE 250 holdings past a Shariah and sustainability screen, weighted on 2015 and held to 2020, with the frontier and the optimised alternatives solved live alongside." },
+  { title: "Probability of default: scorecard vs gradient boosting", url: "/portfolio/scorecard.html",
+    hint: "Case study", group: "case", kind: "analysis",
+    short: "Probability of default: scorecard vs boosting",
+    blurb: "A live PD model on a public dataset: logistic regression against gradient boosting, cross-validated, calibrated, and priced." },
+  { title: "Portfolio stress testing: interactive case study", url: "/portfolio/stress.html",
+    hint: "Case study", group: "case", kind: "model",
+    short: "Portfolio stress testing: shocks to capital",
+    blurb: "A live credit stress test: macro shocks to default rates through a Merton model and a vintage one, then provisions and capital." },
   { title: "Islamic vs conventional funds: MSc dissertation", url: "/portfolio/dissertation.html",
-    hint: "Case study", group: "case", blurb: "220 UK funds, 19,577 fund-months, five-factor models, and what a sample of three could actually detect." },
+    hint: "Case study", group: "case", kind: "research",
+    short: "Islamic vs conventional funds: the research",
+    blurb: "220 UK funds, 19,577 fund-months, five-factor models, and what a sample of three could actually detect." },
   { title: "Portfolio & services", url: "/portfolio.html",
     hint: "Page", blurb: "Financial modeling, data analysis and finance writing." },
   { title: "About Rony", url: "/about.html",
@@ -328,6 +365,69 @@ export const PAGES = [
   { title: "Article Studio: publish a new piece", url: "/studio.html",
     hint: "Tool", blurb: "Paste an article and its photos, get a finished page.", private: true },
 ];
+
+/* ============================================================
+   COUNTS: every number this site says about itself.
+
+   WHY THIS EXISTS
+
+   A page said "four case studies" while seven existed, another
+   said "thirty-eight ratios" where a third said "thirty-odd" and
+   a fourth, in Bangla, said "more than thirty-six". All three
+   were describing the same file. Nobody wrote a wrong number:
+   each was right when it was typed, and then the thing it counted
+   grew.
+
+   A number typed into a sentence is a copy of the data, and every
+   copy drifts. So the sentence gets a slot instead:
+
+       <span data-count="stages">৮</span>টা ধাপ
+
+   app.js fills every [data-count] on the page from this object,
+   in Bangla digits inside a [lang="bn"] element and Latin ones
+   everywhere else. The number in the markup is the fallback for
+   a reader with no JavaScript, so it should be kept roughly
+   right, but it can no longer be the thing that goes stale
+   unnoticed: check-content.mjs fails the build when it disagrees
+   with the value here.
+
+   TWO OF THESE ARE TYPED, and deliberately. `ratios` and
+   `pillars` belong to /tools/stock.model.js, and importing that
+   whole model into content.js would pull a thousand lines of
+   scoring maths into every page on the site to print one number.
+   They are asserted against the model by check-content.mjs
+   instead, which is the same guarantee without the payload.
+   ============================================================ */
+export const COUNTS = {
+  /** Case studies you can open and drive. */
+  caseStudies: PAGES.filter((p) => p.group === "case" && !p.private).length,
+  /** Calculators on the Tools hub, not counting the stock check. */
+  calculators: TOOLS.length,
+  /** Stages in the money ladder, starter to research. */
+  stages: STAGES.length,
+  /** Lessons actually written, not the ones still marked "soon".
+
+      This is 8 higher than the number of lesson FILES, and both
+      are right: the starter guide's steps are written lessons
+      that live as anchors on the Learn hub rather than as pages
+      of their own (`stage.inline`), so build-meta.mjs, which is
+      counting things to put in a sitemap, reports the smaller
+      number. A reader being told how much there is to read wants
+      this one. */
+  lessons: allLessons().filter((l) => l.status === "live").length,
+  /** Terms in the A-Z glossary. */
+  terms: TERM_GROUPS.reduce((n, g) => n + g.terms.length, 0),
+  /** German Stufen. */
+  stufen: STUFEN.length,
+  /** Schools in the Skills hub, German included. */
+  skills: SKILLS.length,
+  /** Pieces published on Insights. */
+  articles: ARTICLES.filter((a) => a.status !== "soon").length,
+  /** Scored ratios in the stock check. Asserted against METRICS. */
+  ratios: 44,
+  /** The groups it sorts them into. Asserted against PILLARS. */
+  pillars: 6,
+};
 
 /** Live articles, newest first. */
 export const liveArticles = () =>

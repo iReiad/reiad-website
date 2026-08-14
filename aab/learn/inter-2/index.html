@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <title>মাঝারি · ধাপ ২ · গবেষণা ও অভিসন্দর্ভ · শেখার লাইব্রেরি · Reiad's Library</title>
+  <title>মাঝারি · ধাপ ২ · গবেষণা ও অভিসন্দর্ভ, শেখার লাইব্রেরি, Reiad's Library</title>
   <meta name="description" content="বিষয় বাছাই থেকে জমা দেওয়া, আর স্কলারলি আর্টিকেল পড়ে কাজে লাগানোর অভ্যাস।">
   <link rel="canonical" href="https://reiad.co.uk/learn/inter-2/index.html">
   <meta property="og:type" content="article">
-  <meta property="og:title" content="মাঝারি · ধাপ ২ · গবেষণা ও অভিসন্দর্ভ · শেখার লাইব্রেরি · Reiad's Library">
+  <meta property="og:title" content="মাঝারি · ধাপ ২ · গবেষণা ও অভিসন্দর্ভ, শেখার লাইব্রেরি, Reiad's Library">
   <meta property="og:description" content="বিষয় বাছাই থেকে জমা দেওয়া, আর স্কলারলি আর্টিকেল পড়ে কাজে লাগানোর অভ্যাস।">
+  <meta property="og:url" content="https://reiad.co.uk/learn/inter-2/index.html">
+  <meta property="og:image" content="https://reiad.co.uk/og/stage-inter-2.png">
   <script>
     (function () {
       var d = document.documentElement;
@@ -23,7 +25,22 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <!-- The webfont stylesheet does not block the first paint.
+       It used to: a <link rel="stylesheet"> is render-blocking, so
+       until fonts.googleapis.com answered, this page painted
+       nothing at all. On the connection a reader in Dhaka
+       actually has, that is seconds of white screen for a page
+       whose text was ready immediately, and if the request never
+       answers it is seconds of white screen for nothing.
+
+       media="print" makes the browser fetch it at low priority
+       without applying it; onload promotes it the moment it
+       lands. The text is readable in the fallback face straight
+       away and swaps when the webfont arrives, which is what
+       display=swap in the URL was always asking for. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"
+        media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"></noscript>
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -31,7 +48,6 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <link rel="alternate" type="application/rss+xml" title="Reiad's Library · Insights" href="/feed.xml">
-  <meta property="og:image" content="https://reiad.co.uk/og/stage-inter-2.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
@@ -53,7 +69,7 @@
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep aria-current="page">Learn</a>
-        <a href="/skills/index.html" data-nav-skills>Skills</a>
+        <a href="/deutsch/index.html">Deutsch</a>
         <a href="/tools/index.html">Tools</a>
         <a href="/insights.html">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
@@ -122,7 +138,7 @@
            data-lesson-id="inter-2/bd-data-for-research">
           <span class="lesson-card-art" aria-hidden="true"><svg class="art" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h11a1.5 1.5 0 0 1 1.5 1.5V19a2 2 0 0 1-2 2H7"/><path d="M6 3a2 2 0 0 0-2 2v1.5h2.5"/><path d="M7 21a2 2 0 0 0 2-2V6.5H6.5"/><path d="M11 9.5h4.5"/><path d="M11 13h4.5"/></svg></span>
           <h3 class="bn-h">বাংলাদেশের ডেটা নিয়ে কাজ <span class="en-sub">Working with Bangladeshi data</span></h3>
-          <p>ফাঁক, অসঙ্গতি আর হাতে তোলা সংখ্যা: বাস্তবে যা মোকাবিলা করতে হয়।</p>
+          <p>ফাঁক, অসঙ্গতি আর হাতে তোলা সংখ্যা, বাস্তবে যা মোকাবিলা করতে হয়।</p>
           <span class="lesson-card-foot mono">আসছে</span>
         </a>
         </div>

@@ -39,11 +39,33 @@
     --h-green: 162;
     --h-gold: 85;
 
+    /* The paper hue, and it is only the paper.
+
+       Light mode used to be a green-tinted white: the same 162
+       that the accents use, at a chroma low enough to read as
+       neutral. It was clean and it was cold, and a site that is
+       mostly long-form reading wants the opposite of cold. This
+       is the warm end of the same palette the gold accents come
+       from, kept at a chroma low enough that nothing looks
+       yellow: it should read as paper rather than as a colour,
+       and if you have to ask whether it is tinted, it is right.
+
+       DARK MODE DOES NOT USE THIS. A warm dark surface reads as
+       brown, and the dark theme is meant to be the same room
+       with the lights off, not a different room. Every dark
+       value below stays on --h-green.
+
+       Surfaces and hairlines only: --ink, --ink-soft and every
+       accent are untouched, so no contrast ratio moves by more
+       than a rounding error. The measured pairs are in the note
+       above --hairline. */
+    --h-paper: 84;
+
     /* --- surfaces --- */
-    --paper:        light-dark(oklch(98.6% 0.004 var(--h-green)), oklch(16.5% 0.012 var(--h-green)));
-    --paper-sunk:   light-dark(oklch(96.5% 0.006 var(--h-green)), oklch(14%   0.012 var(--h-green)));
-    --panel:        light-dark(oklch(100%  0     0            ), oklch(21%   0.014 var(--h-green)));
-    --panel-hover:  light-dark(oklch(98%   0.008 var(--h-green)), oklch(24%   0.016 var(--h-green)));
+    --paper:        light-dark(oklch(98.4% 0.008 var(--h-paper)), oklch(16.5% 0.012 var(--h-green)));
+    --paper-sunk:   light-dark(oklch(96.4% 0.011 var(--h-paper)), oklch(14%   0.012 var(--h-green)));
+    --panel:        light-dark(oklch(99.5% 0.004 var(--h-paper)), oklch(21%   0.014 var(--h-green)));
+    --panel-hover:  light-dark(oklch(98%   0.012 var(--h-paper)), oklch(24%   0.016 var(--h-green)));
 
     /* --- text --- */
     --ink:          light-dark(oklch(24%   0.012 var(--h-green)), oklch(93.5% 0.008 var(--h-green)));
@@ -53,11 +75,31 @@
     --green:        light-dark(oklch(41%   0.080 var(--h-green)), oklch(71%   0.110 var(--h-green)));
     --green-strong: light-dark(oklch(30%   0.060 var(--h-green)), oklch(30%   0.060 var(--h-green)));
     --green-soft:   light-dark(oklch(94.5% 0.015 var(--h-green)), oklch(23%   0.020 var(--h-green)));
-    --gold:         light-dark(oklch(56%   0.090 var(--h-gold)),  oklch(72%   0.090 var(--h-gold)));
+    /* 54%, not the 56% it was. The mono labels set in gold are
+       0.76rem, which is normal-size text as far as WCAG is
+       concerned, so they need 4.5:1. On the old green-tinted
+       paper they measured 4.50 exactly; the warm paper is a
+       shade darker and took them to 4.45, which is a fail. Two
+       points of lightness puts them back to 4.9 and is invisible
+       next to the gold that was there. Dark mode is untouched:
+       it measures 7.7 either way. */
+    --gold:         light-dark(oklch(54%   0.090 var(--h-gold)),  oklch(72%   0.090 var(--h-gold)));
     --danger:       light-dark(oklch(52%   0.150 28),             oklch(70%   0.140 28));
 
-    /* --- lines, glass, depth --- */
-    --hairline:     light-dark(oklch(88.5% 0.008 var(--h-green)), oklch(28%   0.015 var(--h-green)));
+    /* --- lines, glass, depth ---
+       Contrast on the warm paper, measured in a browser rather
+       than eyeballed. Light mode, ground in brackets:
+
+         heading   --ink on --panel        16.2:1
+         body      --ink-soft on --paper    7.7:1
+         links     --green on --panel       8.3:1
+         labels    --gold on --paper        4.9:1   (was 4.45,
+                   which is why --gold moved; see the note there)
+
+       Dark mode, for the record: 14.6, 7.8, 7.2, 7.7. Nothing in
+       dark mode was touched by the warm paper, and these are the
+       numbers to re-measure if any of it ever is. */
+    --hairline:     light-dark(oklch(88.5% 0.012 var(--h-paper)), oklch(28%   0.015 var(--h-green)));
     --glass-bg:     light-dark(oklch(100% 0 0 / 0.16), oklch(25% 0.02 var(--h-green) / 0.35));
     --glass-edge:   light-dark(oklch(100% 0 0 / 0.38), oklch(100% 0 0 / 0.16));
     --shadow:       light-dark(0 10px 30px oklch(30% 0.05 var(--h-green) / 0.09),
@@ -94,9 +136,37 @@
   :root[data-theme="dark"]  { color-scheme: dark; }
 
   /* Cross-document view transitions: navigating between pages of
-     the site cross-fades instead of flashing white. Ignored where
+     the site animates instead of flashing white. Ignored where
      unsupported. */
   @view-transition { navigation: auto; }
+
+  /* The default is a straight cross-fade of the whole document,
+     which is so quiet that most people never notice a transition
+     happened at all: the page simply appears, as it always did.
+
+     This gives it a direction. The page you are leaving lifts and
+     fades, the page you are arriving at comes up from just below,
+     and the two overlap. Small numbers on purpose, 8px and 12px:
+     the aim is that navigation feels continuous, not that it
+     announces itself, and anything bigger turns every link on the
+     site into a slideshow.
+
+     The header and footer are excluded automatically because they
+     carry their own view-transition-names, so they hold still
+     while the content moves under them, which is what makes the
+     whole thing read as one page rearranging rather than two
+     pages swapping.
+
+     Under prefers-reduced-motion the block above already turns
+     navigation transitions off entirely, so none of this runs. */
+  ::view-transition-old(root) {
+    animation: vt-leave 160ms var(--ease) both;
+  }
+  ::view-transition-new(root) {
+    animation: vt-arrive 260ms var(--ease) both;
+  }
+  @keyframes vt-leave  { to   { opacity: 0; translate: 0 -8px; } }
+  @keyframes vt-arrive { from { opacity: 0; translate: 0 12px; } }
 }
 
 /* ============================================================
@@ -201,7 +271,14 @@
   /* body is a flex column (see the sticky-footer note above), so main
      takes the slack and footer stays put. */
   main { flex: 1 0 auto; }
-  body > footer { flex-shrink: 0; }
+  /* The footer is the same block on every page, so it is named
+     for the same reason the header is: a named element is carried
+     across a cross-document view transition instead of being
+     cross-faded out and back in. Without it, navigating from a
+     short page to a long one slides a green band up the screen
+     while the rest of the page fades, which is the one bit of
+     navigation that still looked like a page load. */
+  body > footer { flex-shrink: 0; view-transition-name: site-footer; }
 
   .wrap {
     max-width: 1080px;
@@ -418,6 +495,17 @@
     & .mono { color: oklch(78% 0.03 var(--h-green)); display: block; margin-bottom: 12px; }
     & p { max-width: 60ch; }
   }
+
+  /* The address line under the disclaimer. It was an inline
+     margin-top on every page of the site: 150 copies of one
+     declaration, which is 150 places to edit and 149 chances to
+     miss one. Nothing about it was ever page-specific. */
+  .footer-mail { margin-top: 10px; }
+
+  /* The link line under a list: "everything I have written",
+     "every case study". Same story, an inline margin repeated
+     wherever a section ended in a pointer somewhere else. */
+  .section-more { margin-top: 16px; }
 
   /* ---------- RESPONSIVE ----------
      The header has to fit seven links and three buttons, seven
@@ -778,6 +866,23 @@
   .pill {
     border: 1px solid var(--hairline); border-radius: 20px;
     padding: 1px 9px; font-size: 0.68rem;
+  }
+
+  /* A row of rounded labels: a toolkit, a certificate list, a set
+     of tags. Sitewide rather than in the About layer where it
+     started, because the portfolio page lists the same toolkit
+     beside its credentials, and a component used on two pages that
+     lives inside one page's layer beats every rule those two pages
+     share. */
+  .chips {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-wrap: wrap; gap: 7px;
+
+    & li {
+      padding: 6px 12px; border-radius: 999px;
+      border: 1px solid var(--hairline); background: var(--panel);
+      font-size: 0.82rem; color: var(--ink);
+    }
   }
   .pill-bd     { color: var(--green); border-color: var(--green); }
   .pill-global { color: var(--gold);  border-color: var(--gold); }
@@ -1256,13 +1361,45 @@ it collapsed to the width of the word "Bangladesh". */
     &::backdrop { background: oklch(18% 0.02 var(--h-green) / 0.6); }
   }
 
+  /* The menu's three bands share the page's own left and right
+     margins, published as --header-inset by app.js. The menu is a
+     full-width overlay sitting on top of a 1080px layout, and
+     until they agreed on an edge, everything in it was a little
+     to the right of the thing it replaced. */
   .menu-bar, .menu-foot {
     display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    padding: 14px clamp(20px, 4vw, 44px);
+    padding-block: 14px;
+    padding-inline: var(--header-inset, clamp(20px, 4vw, 44px));
     border-bottom: 1px solid var(--hairline);
     background: var(--paper);
   }
   .menu-bar .mono { color: var(--ink-soft); }
+
+  /* The bar's right-hand cluster stands where the header's does.
+
+     The header ends with three buttons in a row, Menu, Search,
+     Theme, inside a .wrap whose padding matches this bar's. The
+     close button used to be pushed to the far right of the bar on
+     its own, which put it two button-widths to the RIGHT of the
+     Menu button that had just been clicked: press a button, and
+     the thing that undoes it appears somewhere else. Rebuilding
+     the same three-button cluster in the same order puts ✕ exactly
+     where Menu was, and gives the two buttons the modal had made
+     unreachable somewhere to live.
+
+     The gap is the header's, not this bar's, so the columns line
+     up rather than nearly lining up. */
+  .menu-bar-tools {
+    display: flex; align-items: center; gap: 18px;
+    margin-inline-start: auto;
+  }
+  @media (width <= 620px) {
+    .menu-bar-tools { gap: 8px; }
+    /* Same call the header makes at this width: the site is named,
+       what it is about can wait until there is room to say it. */
+    .menu-bar-tag { display: none; }
+    .menu-bar { flex-wrap: nowrap; }
+  }
   .menu-foot { border-bottom: 0; border-top: 1px solid var(--hairline); margin-top: auto; }
   .menu-hint { color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
   .menu-hint kbd, .shortcut-list kbd, .palette-foot kbd {
@@ -1271,11 +1408,27 @@ it collapsed to the width of the word "Bangladesh". */
     padding: 1px 6px; background: var(--paper-sunk); color: var(--ink);
   }
 
+  /* Five columns, and they have to fit on a laptop.
+
+     They did not. At 230px minimum and a 40px gap, five columns
+     need about 1230px of content width, and a 1280px window
+     offers 1192 after the padding: the fifth column wrapped onto
+     a second row 876px down, below the fold, behind the menu's
+     own footer bar. The column that landed there was Case
+     studies, so on the most common laptop width the site's seven
+     case studies were in the menu and invisible in it, which is
+     the same bug as a portfolio page that lists four of seven,
+     wearing different clothes.
+
+     200px and a tighter gap fit five columns from 1180px up. The
+     narrower column costs nothing: every item in it is one line
+     of a title, and titles were already wrapping at 230. */
   .menu-grid {
     flex: 1; overflow-y: auto;
-    display: grid; gap: clamp(20px, 3vw, 40px);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
-    padding: clamp(24px, 4vw, 48px) clamp(20px, 4vw, 44px);
+    display: grid; gap: clamp(18px, 2.4vw, 32px);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    padding-block: clamp(24px, 4vw, 48px);
+    padding-inline: var(--header-inset, clamp(20px, 3vw, 40px));
     align-content: start;
   }
 
@@ -2440,6 +2593,205 @@ it collapsed to the width of the word "Bangladesh". */
     &:hover::after { translate: 100% 0; }
   }
 
+  /* ============================================================
+     THE PORTFOLIO INDEX
+
+     The page that sends someone into the case studies above. It
+     lives in this layer rather than `components` because every
+     piece of it is about the portfolio and nothing else on the
+     site uses it, and because the card it decorates, .work-card,
+     is already here.
+     ============================================================ */
+
+  /* ---------- the terms row under the hero buttons ----------
+     Price basis, response time, ownership, NDA. The four things a
+     client scans for before deciding whether to write the email,
+     which used to be spread over three sections and an FAQ. Set
+     in mono at label size so it reads as a spec line rather than
+     as another sentence competing with the standfirst. */
+  .terms-row {
+    display: flex; flex-wrap: wrap; gap: 10px 22px;
+    list-style: none; margin: 26px 0 0; padding: 0;
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--ink-soft);
+
+    & li { display: flex; align-items: center; gap: 8px; }
+    & li::before {
+      content: "✓"; color: var(--green);
+      font-size: 0.8rem; line-height: 1;
+    }
+  }
+
+  /* ---------- the case-study cards ---------- */
+  /* Three across, not the four that .grid-3's auto-fit reaches at
+     this page width. Six cards under the featured one divide into
+     two clean rows of three instead of a row of four and an
+     orphaned pair, and the wider column is what these paragraphs
+     need: at a quarter of the wrap they were breaking every four
+     words. */
+  .work-grid { margin-top: var(--gap); }
+  @media (width >= 900px) {
+    .work-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  /* .work-card is a flex column, so the copy needs to be one too:
+     the `.more` link inside it is pushed down with margin-top:auto
+     and would have nothing to push against otherwise, leaving the
+     "Open the model" line floating under a short paragraph while
+     the card next to it has a long one. */
+  .work-copy { display: flex; flex-direction: column; gap: 12px; flex: 1; }
+
+  /* A small piece of chart art per card: bars for the
+     three-statement model, discounted cash flows and a terminal
+     block for the DCF, an index line with a drawdown band for the
+     volatility study, and two confidence intervals straddling zero
+     for the dissertation, which is its finding drawn rather than
+     described. Decorative and aria-hidden: the facts are in the
+     text under it, so a reader who never sees these loses nothing.
+
+     Everything is painted from theme tokens, so the art follows
+     light and dark like the rest of the page. */
+  .work-art {
+    width: 100%; height: auto; display: block;
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    background: var(--paper-sunk);
+    padding: 6px;
+    transition: border-color var(--fast) var(--ease);
+  }
+  a.work-card:hover .work-art, a.work-card:focus-visible .work-art {
+    border-color: color-mix(in oklab, var(--green) 45%, var(--hairline));
+  }
+  .wa-grid { stroke: var(--hairline); stroke-width: 1; }
+  .wa-zero { stroke: var(--gold); stroke-width: 1; stroke-dasharray: 4 3; }
+  .wa-bar { fill: var(--green); opacity: 0.3; }
+  .wa-bar-gold { fill: var(--gold); opacity: 0.4; }
+  .wa-line { fill: none; stroke: var(--green); stroke-width: 2; }
+  .wa-line-dash {
+    fill: none; stroke: var(--gold); stroke-width: 1.4; stroke-dasharray: 4 3;
+  }
+  .wa-fill { fill: var(--green); opacity: 0.12; }
+  .wa-band { fill: var(--danger); opacity: 0.12; }
+  .wa-ci { stroke: var(--green); stroke-width: 3; stroke-linecap: round; }
+  .wa-dot { fill: var(--gold); }
+  .wa-point { fill: var(--green); }
+
+  /* The checkable facts: horizon, sample size, number of views.
+     Kept short enough to stay one line each, because the point of
+     them is that the eye can take all three in without reading. */
+  .work-facts {
+    display: flex; flex-wrap: wrap; gap: 7px 16px;
+    list-style: none; margin: 0; padding: 12px 0 0;
+    border-top: 1px solid var(--hairline);
+    font-family: var(--font-mono); font-size: 0.66rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-soft);
+
+    & li { display: flex; align-items: center; gap: 7px; }
+    & li::before {
+      content: ""; flex-shrink: 0;
+      width: 5px; height: 5px; border-radius: 50%; background: var(--gold);
+    }
+  }
+
+  /* The lead card: the three-statement model, because the DCF is
+     built on top of it and reads better second. Wide enough for
+     the art to sit beside the copy instead of above it, which is
+     the whole difference between a featured card and a big one.
+     `a.work-card.work-lead` rather than `.work-lead`, so it beats
+     the flex-column rule on .work-card whatever order they end up
+     in. */
+  a.work-card.work-lead {
+    display: grid; grid-template-columns: minmax(0, 1fr);
+    gap: var(--gap);
+  }
+  @media (width >= 820px) {
+    a.work-card.work-lead {
+      grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+      gap: 30px; align-items: stretch;
+    }
+    /* The art panel runs the full height of the copy beside it and
+       the drawing centres itself inside that, rather than the
+       drawing keeping its own 240x72 box and leaving a band of card
+       above and below it. preserveAspectRatio is left at its
+       default for exactly this: the box stretches, the chart does
+       not. */
+    .work-lead .work-art { height: 100%; }
+    .work-lead h3 { font-size: 1.35rem; }
+  }
+
+  /* ---------- everything that is not a case study ----------
+     Rows, not cards, and that is the whole point of it: the cards
+     above are the work you can open and drive, and this is the
+     work that lives somewhere else on the site. Same section, so
+     the reader does not have to go looking, different weight, so
+     the seven do not get diluted by four more boxes. */
+  .work-more { margin-top: var(--step); }
+  .work-more h2 { font-size: 1.25rem; }
+  .work-more > p {
+    color: var(--ink-soft); font-size: 0.95rem;
+    margin-block: 4px 18px; max-width: var(--measure);
+  }
+
+  /* ---------- the service cards ----------
+     One card per service: what it is, then what lands in your
+     inbox at the end of it. The label above the checklist is in
+     the soft ink rather than the gold the .tag above uses, so the
+     card has one accent line and not two. */
+  .svc-card .checks { margin-top: 2px; }
+  .svc-k {
+    color: var(--ink-soft);
+    border-top: 1px solid var(--hairline);
+    padding-top: 14px; margin-top: 4px;
+  }
+
+  /* ---------- who does the work ----------
+     A services page with no named credentials is asking a stranger
+     to send commercial data to an email address on trust. The
+     detail is on the About page; this is the short version beside
+     the toolkit, which is the part a client reads to work out
+     whether their file format is going to be a problem. */
+  .cred {
+    display: grid; gap: 26px;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); padding: clamp(22px, 3.2vw, 34px);
+  }
+  @media (width >= 860px) {
+    .cred { grid-template-columns: minmax(0, 1fr) minmax(0, 290px); gap: 40px; }
+  }
+  .cred-main {
+    & h2 { font-size: clamp(1.3rem, 2.6vw, 1.7rem); margin-bottom: 14px; }
+    & p { color: var(--ink-soft); max-width: var(--measure); margin-bottom: 12px; }
+  }
+  .cred-links {
+    display: flex; flex-wrap: wrap; gap: 8px 22px;
+    font-family: var(--font-mono); font-size: 0.72rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    margin-top: 18px;
+
+    & a { text-decoration: none; }
+    & a::after { content: " →"; }
+  }
+  .cred-kit {
+    display: grid; gap: 18px; align-content: start;
+    padding-top: 4px;
+  }
+  @media (width >= 860px) {
+    .cred-kit {
+      border-inline-start: 1px solid var(--hairline);
+      padding-inline-start: 34px; padding-top: 0;
+    }
+  }
+  /* The chips sit on a panel here rather than on paper, so they
+     take the sunk surface: a chip the same colour as the card
+     behind it is a border with nothing inside. */
+  .cred-kit .chips li { background: var(--paper-sunk); }
+  .cred-group { display: grid; gap: 9px; }
+  .cred-k {
+    color: var(--gold); font-size: 0.62rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+
   /* ---------- the model page ---------- */
   .model-co {
     display: flex; gap: 14px; flex-wrap: wrap; align-items: baseline;
@@ -2829,8 +3181,25 @@ it collapsed to the width of the word "Bangladesh". */
 
   .fin-table td.is-positive { color: var(--green); }
 
-  /* ---------- the statements ---------- */
-  .statements { display: grid; gap: var(--step); }
+  /* ---------- the statements ----------
+     minmax(0, 1fr) again, and for the third time in this file, so
+     it is worth stating as a rule: a grid track sized `auto` or
+     `1fr` will not shrink below the min-content width of what is
+     in it, and a financial table's min-content width is however
+     wide six columns of figures happen to be.
+
+     The three-statement model overflowed a 390px phone by 331px
+     because of it. Not the table, which is wrapped in a
+     .table-scroll that would have handled it perfectly well: the
+     GRID ITEM around the table refused to be narrower than the
+     table, so .table-scroll was 699px wide, had nothing to scroll,
+     and the whole page scrolled sideways instead. Every heading
+     and paragraph on the page went with it.
+
+     The zero floor lets the item shrink and hands the overflow
+     back to .table-scroll, which is the element built to take it.
+     Same fix as .model-body above; see the longer note there. */
+  .statements { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--step); }
   .statement h2 {
     font-size: 1.25rem; margin-bottom: 12px;
     padding-bottom: 10px; border-bottom: 1px solid var(--hairline);
@@ -4932,6 +5301,43 @@ German for day, and .tag is what the site has always called
     letter-spacing: 0.1em; text-transform: uppercase;
   }
 
+  /* A research card that opens. .res-live is added by about.js, so
+     a card only looks clickable once something is listening: a
+     pointer cursor over a card that does nothing is worse than no
+     cursor at all. The plain link inside is the no-JavaScript
+     path and is removed at the same moment this class arrives. */
+  .res-fallback { display: inline-block; margin-top: 12px; font-size: 0.86rem; }
+  .res-live {
+    cursor: pointer; text-align: start;
+    transition: border-color var(--fast) var(--ease),
+                transform var(--fast) var(--ease),
+                box-shadow var(--fast) var(--ease);
+
+    &::after {
+      content: "Read more →";
+      display: block; margin-top: 12px;
+      font-family: var(--font-mono); font-size: 0.68rem;
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--green);
+    }
+    &:hover, &:focus-visible {
+      border-color: var(--green);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lift);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .res-live:hover { transform: none; }
+  }
+
+  /* The window a research card opens into. It is the news window
+     with a different body: same frame, same bar, same way out, so
+     the two mini windows on this site are one thing to learn. */
+  .res-window-detail {
+    display: grid; gap: 12px;
+
+    & p { color: var(--ink-soft); font-size: 0.95rem; max-width: var(--measure); }
+  }
+
   /* ---------- toolkit ---------- */
   .kit {
     display: grid; gap: 22px 40px;
@@ -4942,16 +5348,11 @@ German for day, and .tag is what the site has always called
     color: var(--gold); font-size: 0.62rem;
     letter-spacing: 0.1em; text-transform: uppercase;
   }
-  .chips {
-    list-style: none; margin: 0; padding: 0;
-    display: flex; flex-wrap: wrap; gap: 7px;
-
-    & li {
-      padding: 6px 12px; border-radius: 999px;
-      border: 1px solid var(--hairline); background: var(--panel);
-      font-size: 0.82rem; color: var(--ink);
-    }
-  }
+  /* .chips used to live here. It is now in `components`, because
+     the portfolio page lists the same toolkit beside its
+     credentials and a row of rounded labels is not an About-page
+     idea. Nothing else moved with it: .kit and .kit-group are the
+     About page's own two-column arrangement of those rows. */
   .kit-note { color: var(--ink-soft); font-size: 0.9rem; margin-top: 26px; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -4987,6 +5388,20 @@ German for day, and .tag is what the site has always called
     position: absolute !important; width: 1px; height: 1px;
     padding: 0; margin: -1px; overflow: hidden;
     clip-path: inset(50%); white-space: nowrap;
+  }
+
+  /* The spam honeypot on the contact and subscribe forms: a field
+     a person never sees and a bot fills in anyway. It is NOT
+     .visually-hidden, which is for text a screen reader should
+     still read out; this one is hidden from everybody, and it is
+     `left: -100vw` rather than the old inline `left: -9999px` so
+     it cannot widen the page on a browser that counts it. Both
+     forms carried this as an inline style, written slightly
+     differently in each. */
+  .honeypot {
+    position: absolute !important;
+    left: -100vw; width: 1px; height: 1px;
+    opacity: 0; pointer-events: none;
   }
   .stack { display: flex; flex-direction: column; gap: 12px; }
   .row-flex { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -5262,4 +5677,324 @@ German for day, and .tag is what the site has always called
      inside its own box rather than pushing the page sideways. */
   .method-steps { grid-template-columns: repeat(auto-fit, minmax(min(100%, 430px), 1fr)); }
   .formula.is-long { font-size: 0.74rem !important; }
+}
+
+@layer work {
+  /* ============================================================
+     The stress-testing case study.
+
+     Everything here is scoped to classes that page invents. The
+     one shared thing it borrows is the categorical palette
+     below, seven hues that have to stay apart from each other in
+     both themes and in a black and white print, because seven
+     lines on one chart is the most this site asks of a reader.
+
+     They are built from the site's own two hues plus five turns
+     around the wheel, at a lightness that holds against paper
+     and against the dark panel. Chroma stays low: these are
+     lines on a document, not a dashboard.
+     ============================================================ */
+  .model {
+    --seg-0: light-dark(oklch(41% 0.090 162), oklch(72% 0.115 162));
+    --seg-1: light-dark(oklch(52% 0.095  85), oklch(74% 0.095  85));
+    --seg-2: light-dark(oklch(48% 0.110 250), oklch(74% 0.105 250));
+    --seg-3: light-dark(oklch(50% 0.130  28), oklch(72% 0.125  28));
+    --seg-4: light-dark(oklch(46% 0.100 310), oklch(74% 0.100 310));
+    --seg-5: light-dark(oklch(44% 0.075 200), oklch(76% 0.080 200));
+    --seg-6: light-dark(oklch(38% 0.045 130), oklch(66% 0.050 130));
+  }
+
+  /* ---------- formulas keep their case ----------
+     .formula pairs with .mono, and .mono uppercases. On a line of
+     prose that is a design choice; in a formula it changes the
+     symbols. Greek lowercase has uppercase forms, so σ became Σ,
+     γ became Γ and, worst of all, ρ became Ρ, which is a capital
+     rho and reads as a Latin P. The correlation term in the Basel
+     formula was printed as "√P" on a page whose whole argument is
+     what ρ does. It also flattened MktRF and IVOL in the
+     dissertation's factor models, where the case is the notation.
+
+     Fixed here rather than by dropping .mono from the markup,
+     because every formula on the site wants the mono face and
+     none of them want the transform. Two selectors, because a
+     formula sitting inside a method card is also matched by
+     `.method-step > .mono`, which is two classes and would
+     otherwise win on specificity alone. */
+  .formula,
+  .formula.mono {
+    text-transform: none;
+    letter-spacing: 0.03em;
+  }
+
+  /* ---------- the scenario, as six small charts ---------- */
+  .macro-grid {
+    display: grid; gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  }
+  .macro-cell {
+    margin: 0; padding: 6px 8px 4px;
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    background: var(--paper-sunk);
+
+    & figcaption {
+      font-size: 0.64rem; color: var(--ink-soft);
+      letter-spacing: 0.02em; padding: 2px 2px 4px;
+    }
+  }
+  .chart-base-line { stroke: var(--hairline); stroke-width: 1; stroke-dasharray: 3 3; }
+  .line-macro { stroke: var(--green); stroke-width: 1.6; }
+  .dot-macro { fill: var(--gold); }
+  .chart-tag-worst { font-family: var(--font-mono); font-size: 9px; fill: var(--gold); }
+
+  /* ---------- the capital path ---------- */
+  .line-capital { stroke: var(--green); stroke-width: 2.2; }
+  .dot-capital { fill: var(--green); opacity: 0.75; }
+  .dot-trough { fill: var(--danger); }
+  .chart-req { stroke: var(--danger); stroke-width: 1.4; stroke-dasharray: 5 3; }
+  .chart-min { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0.7; }
+  .shortfall-band { fill: var(--danger); opacity: 0.16; }
+
+  /* ---------- the seven segments ---------- */
+  .line-seg { stroke-width: 1.8; fill: none; }
+  .line-seg[data-seg="0"] { stroke: var(--seg-0); }
+  .line-seg[data-seg="1"] { stroke: var(--seg-1); }
+  .line-seg[data-seg="2"] { stroke: var(--seg-2); }
+  .line-seg[data-seg="3"] { stroke: var(--seg-3); }
+  .line-seg[data-seg="4"] { stroke: var(--seg-4); }
+  .line-seg[data-seg="5"] { stroke: var(--seg-5); }
+  .line-seg[data-seg="6"] { stroke: var(--seg-6); }
+  .dot-seg[data-seg="0"] { fill: var(--seg-0); }
+  .dot-seg[data-seg="1"] { fill: var(--seg-1); }
+  .dot-seg[data-seg="2"] { fill: var(--seg-2); }
+  .dot-seg[data-seg="3"] { fill: var(--seg-3); }
+  .chart-seg-label {
+    font-family: var(--font-mono); font-size: 9.5px; fill: var(--ink-soft);
+  }
+  .chart-seg-label[data-seg="0"] { fill: var(--seg-0); }
+  .chart-seg-label[data-seg="1"] { fill: var(--seg-1); }
+  .chart-seg-label[data-seg="2"] { fill: var(--seg-2); }
+  .chart-seg-label[data-seg="3"] { fill: var(--seg-3); }
+  .chart-seg-label[data-seg="4"] { fill: var(--seg-4); }
+  .chart-seg-label[data-seg="5"] { fill: var(--seg-5); }
+  .chart-seg-label[data-seg="6"] { fill: var(--seg-6); }
+
+  /* ---------- vintage curves ----------
+     The projected half is the same colour and the same width,
+     dashed. A lighter projection would read as less important,
+     when what it actually is is less certain. */
+  .vintage-controls {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-block: 4px 12px;
+  }
+  .vintage-controls .chip[aria-pressed="true"] {
+    border-color: var(--green); color: var(--green); background: var(--green-soft);
+  }
+  .line-vintage { stroke-width: 1.8; fill: none; }
+  .line-vintage.is-projected { stroke-dasharray: 4 3; opacity: 0.9; }
+  .line-vintage[data-v="0"] { stroke: var(--seg-0); }
+  .line-vintage[data-v="1"] { stroke: var(--seg-1); }
+  .line-vintage[data-v="2"] { stroke: var(--seg-2); }
+  .line-vintage[data-v="3"] { stroke: var(--seg-3); }
+  .line-vintage[data-v="4"] { stroke: var(--seg-4); }
+  .line-vintage[data-v="5"] { stroke: var(--seg-5); }
+  .line-vintage[data-v="6"] { stroke: var(--seg-6); }
+  .chart-seg-label[data-v="0"] { fill: var(--seg-0); }
+  .chart-seg-label[data-v="1"] { fill: var(--seg-1); }
+  .chart-seg-label[data-v="2"] { fill: var(--seg-2); }
+  .chart-seg-label[data-v="3"] { fill: var(--seg-3); }
+  .chart-seg-label[data-v="4"] { fill: var(--seg-4); }
+  .chart-seg-label[data-v="5"] { fill: var(--seg-5); }
+  .chart-seg-label[data-v="6"] { fill: var(--seg-6); }
+
+  /* ---------- the two engines ---------- */
+  .line-merton { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-vintage-engine { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
+  .engine-gap { fill: var(--gold); opacity: 0.14; }
+  .key-merton { background: var(--green); }
+  .key-vintage { background: var(--gold); }
+
+  /* ---------- the double whammy ---------- */
+  .line-el { stroke: var(--danger); stroke-width: 2.2; fill: none; }
+  .line-lgd { stroke: var(--gold); stroke-width: 1.6; stroke-dasharray: 4 3; fill: none; }
+
+  /* ---------- IFRS 9 staging ---------- */
+  .area-stage1 { fill: var(--green); opacity: 0.18; }
+  .area-stage2 { fill: var(--gold); opacity: 0.38; }
+  .area-stage3 { fill: var(--danger); opacity: 0.42; }
+  .line-ecl { stroke: var(--ink); stroke-width: 1.8; fill: none; }
+  .key-stage1 { background: var(--green); opacity: 0.5; }
+  .key-stage2 { background: var(--gold); }
+  .key-stage3 { background: var(--danger); }
+
+  /* ---------- the severity axis ---------- */
+  .density-body { fill: var(--ink-soft); opacity: 0.14; }
+  .density-tail { fill: var(--danger); opacity: 0.28; }
+  .mark-scenario { stroke: var(--danger); stroke-width: 1.6; }
+  .mark-capital { stroke: var(--ink); stroke-width: 1.2; stroke-dasharray: 3 3; opacity: 0.7; }
+
+  /* ---------- attribution and tornado ---------- */
+  .attrib-bad { fill: var(--danger); opacity: 0.7; }
+  .attrib-good { fill: var(--green); opacity: 0.7; }
+  .attrib-total { fill: var(--ink-soft); opacity: 0.55; }
+  .bar-tornado { fill: var(--green); opacity: 0.6; }
+
+  /* ---------- the views that lag on purpose ----------
+     Seventy full runs of the model cannot happen between two
+     frames of a dragged slider, so they are scheduled. Saying
+     so with a dim is better than either freezing the page or
+     letting a stale grid look live. */
+  [data-stale] { opacity: 0.45; transition: opacity var(--fast) var(--ease); }
+
+  .csv-panel[data-over] { border-color: var(--green); background: var(--green-soft); }
+  .csv-status[data-state="good"] { color: var(--green); }
+  .csv-status[data-state="warn"] { color: var(--gold); }
+  .csv-status[data-state="bad"] { color: var(--danger); }
+
+  @media (width <= 620px) {
+    .macro-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); }
+  }
+}
+
+@layer work {
+  /* ============================================================
+     The probability-of-default case study.
+
+     Two models on one page, so the colour rule is simple and has
+     to hold everywhere: the scorecard is the site's green, the
+     boosted model is its gold, and nothing else on the page is
+     allowed to use either of them for anything other than those
+     two models. Outcomes are a separate axis again: a defaulted
+     applicant is red wherever one appears.
+     ============================================================ */
+  .chip-row {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-block: 4px 14px;
+
+    & .chip[aria-pressed="true"] {
+      border-color: var(--green); color: var(--green); background: var(--green-soft);
+    }
+  }
+
+  /* ---------- the two models ---------- */
+  .line-logit { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-gbm { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
+  .dot-logit { fill: var(--green); }
+  .dot-gbm { fill: var(--gold); }
+  .key-logit { background: var(--green); }
+  .key-gbm { background: var(--gold); }
+
+  /* ---------- outcomes ---------- */
+  .dot-good { fill: var(--green); opacity: 0.42; }
+  .dot-bad { fill: var(--danger); opacity: 0.72; }
+  .bar-good { fill: var(--green); opacity: 0.42; }
+  .bar-bad { fill: var(--danger); opacity: 0.62; }
+
+  /* ---------- the reference a curve is judged against ---------- */
+  .chart-diagonal { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.5; }
+
+  /* ---------- information value ---------- */
+  .bar-iv { fill: var(--green); opacity: 0.55; }
+  /* Protected characteristics are marked rather than hidden. The
+     page's argument is about what they are worth, so they have to
+     be visible and obviously different. */
+  .bar-iv-protected { fill: var(--gold); opacity: 0.6; }
+
+  /* ---------- learning curve ---------- */
+  .line-train { stroke: var(--ink-soft); stroke-width: 1.6; fill: none; }
+  .line-valid { stroke: var(--green); stroke-width: 2; fill: none; }
+  .key-train { background: var(--ink-soft); }
+  .key-valid { background: var(--green); }
+
+  /* ---------- calibration ---------- */
+  .line-uncal { stroke: var(--danger); stroke-width: 1.6; stroke-dasharray: 4 3; fill: none; }
+  .line-cal { stroke: var(--green); stroke-width: 2; fill: none; }
+  .dot-uncal { fill: var(--danger); }
+  .dot-cal { fill: var(--green); }
+
+  /* ---------- contributions to one decision ---------- */
+  .bar-better { fill: var(--green); opacity: 0.62; }
+  .bar-worse { fill: var(--danger); opacity: 0.62; }
+
+  /* ---------- approval rates ---------- */
+  .bar-approval { fill: var(--green); opacity: 0.5; }
+
+  /* ---------- the confusion matrix ----------
+     Four cells, and the two that are mistakes do not cost the
+     same, so they do not look the same either. */
+  #confusion {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-block: 6px 4px;
+  }
+  .conf-cell {
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    background: var(--paper-sunk); padding: 12px 14px;
+    display: grid; gap: 2px; align-content: start;
+
+    & strong { font-family: var(--font-mono); font-size: 1.3rem; }
+    & span { font-size: 0.78rem; color: var(--ink-soft); line-height: 1.35; }
+
+    &[data-tone="good"] { border-inline-start: 3px solid var(--green); }
+    &[data-tone="warn"] { border-inline-start: 3px solid var(--gold); }
+    &[data-tone="bad"] {
+      border-inline-start: 3px solid var(--danger);
+      background: color-mix(in oklab, var(--danger) 7%, var(--paper-sunk));
+    }
+  }
+
+  @media (width <= 620px) {
+    #confusion { grid-template-columns: 1fr; }
+  }
+}
+
+@layer work {
+  /* ============================================================
+     The portfolio-construction case study.
+
+     One colour rule, held everywhere: the portfolio being held is
+     the site's green, the equal-weight benchmark is its gold, and
+     the individual holdings are neutral dots that never compete
+     with either.
+     ============================================================ */
+  .line-frontier { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-chosen { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-equal { stroke: var(--gold); stroke-width: 1.8; stroke-dasharray: 5 3; fill: none; }
+  .line-hold { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-rebal { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
+  .key-chosen { background: var(--green); }
+  .key-equal { background: var(--gold); }
+  .key-bench { background: var(--ink-soft); }
+  .key-risk { background: var(--gold); }
+
+  .dot-asset { fill: var(--ink-soft); opacity: 0.55; }
+  .dot-named { fill: var(--gold); }
+  .dot-equal { fill: var(--gold); }
+  .dot-chosen { fill: var(--green); stroke: var(--paper); stroke-width: 1.5; }
+  .chart-tag-asset { font-family: var(--font-mono); font-size: 8.5px; fill: var(--ink-soft); }
+  .chart-tag-held { font-family: var(--font-mono); font-size: 9px; fill: var(--green); }
+
+  .bar-weight { fill: var(--green); opacity: 0.6; }
+  .bar-risk { fill: var(--gold); opacity: 0.65; }
+  .bar-chosen { fill: var(--green); opacity: 0.7; }
+  .bar-bench { fill: var(--ink-soft); opacity: 0.45; }
+
+  /* ---------- the correlation matrix ----------
+     One hue for positive, another for negative, and the opacity
+     carries the size. A rainbow scale would read as five
+     categories rather than one number. */
+  .corr-pos { fill: var(--green); opacity: calc(var(--v) * 0.85 + 0.05); }
+  .corr-neg { fill: var(--danger); opacity: calc(var(--v) * 0.85 + 0.05); }
+
+  /* A candidate that was screened in but not held. */
+  .fin-table tr.is-dropped { opacity: 0.55; }
+  .fin-table td.is-capped { color: var(--gold); font-weight: 500; }
+
+  @media (width <= 620px) {
+    #hindsight-chart .fin-chart { min-width: 620px; }
+  }
+}
+
+@layer work {
+  /* The security market line, and the one holding whose beta is
+     negative: it earns its own colour because a negative
+     contribution reads as an error otherwise. */
+  .line-sml { stroke: var(--ink-soft); stroke-width: 1.4; stroke-dasharray: 4 3; }
+  .chart-stem { stroke: var(--ink-soft); stroke-width: 1; opacity: 0.4; }
+  .bar-negbeta { fill: var(--danger); opacity: 0.55; }
 }

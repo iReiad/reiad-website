@@ -21,7 +21,7 @@
 import {
   searchIndex, liveArticles, ARTICLES, formatDate, topics,
   PAGES, TOOLS, STAGES, STUFEN, stufeUrl, SITE, SEARCH_GROUPS,
-  SKILLS, skillUrl,
+  SKILLS, skillUrl, COUNTS,
 } from "/content.js";
 import { countView, getArticles } from "/api.js";
 import { initCrumbs } from "/crumbs.js";
@@ -46,7 +46,13 @@ function applyTheme(mode) {
     (mode === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
   document
     .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", dark ? "#0E1512" : "#FBFBF7");
+    /* The light value is --paper, and it has to be kept in step
+       with it by hand: a <meta> cannot read a custom property.
+       It is the phone's address bar, so when it drifts, the
+       browser chrome is a slightly different white from the page
+       under it, which reads as a seam across the top of the
+       screen. */
+    ?.setAttribute("content", dark ? "#0E1512" : "#FCF9F4");
 }
 
 function currentTheme() {
@@ -233,7 +239,17 @@ function initPalette() {
     dialog.showModal();
   };
 
+  /* Every control that opens the palette, not just the one in the
+     header. The 404 page had a second "Search the site" button
+     carrying id="open-palette-2", which nothing in this file has
+     ever listened for: the one page a lost reader lands on offered
+     them a search button that did nothing at all when clicked.
+     A data attribute means the next page to want one cannot make
+     the same mistake. */
   document.getElementById("open-palette")?.addEventListener("click", open);
+  for (const node of document.querySelectorAll("[data-open-palette]")) {
+    node.addEventListener("click", open);
+  }
 
   addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
@@ -302,8 +318,14 @@ function buildMenu() {
      wall of text rather than a way to get somewhere. The blurbs
      still do their job on the pages that list these properly; a
      menu is for aiming, not for reading. */
+  /* `short` where a page has one, which in practice means the case
+     studies. Their full titles end ": interactive case study",
+     which is worth having in the Ctrl+K index, where someone may
+     well type "case study", and is four repetitions of the column
+     heading when the column is already called Case studies. Every
+     one of them wrapped to two lines because of it. */
   const pageLink = (p) => {
-    const a = el("a", { href: p.url }, el("strong", { textContent: p.title }));
+    const a = el("a", { href: p.url }, el("strong", { textContent: p.short ?? p.title }));
     if (p.url === here) a.setAttribute("aria-current", "page");
     return el("li", {}, a);
   };
@@ -315,113 +337,105 @@ function buildMenu() {
   const toolPages = visible.filter((p) => p.group === "tool");
   const deutschPages = visible.filter((p) => p.group === "deutsch");
 
-  const articles = liveArticles().slice(0, 3);
+  /* ============ WHAT THIS MENU LISTS ============
+
+     What is written. Not what is planned.
+
+     It used to list both, and the arithmetic of that was: four of
+     the eight Learn stages, three of the four German Stufen and
+     five of the six Skills schools are marked "soon", so twelve of
+     its forty-two links opened a page whose content is the word
+     আসছে. A menu where a quarter of the doors open onto a note
+     saying "coming" is a menu people stop opening.
+
+     Anything not yet written is one link to the hub that tracks
+     it, and those hubs are built to show what is ready and what is
+     not. That is their job and they are better at it than a list
+     of dead ends is.
+
+     The five calculator anchors went for a related reason: five
+     links to five positions on ONE page, in a menu whose own note
+     says it is for aiming rather than reading. The Tools page is
+     the aim; the anchors are for when you are already on it. */
+  const written = (xs) => xs.filter((x) => x.status !== "soon");
+  const someSoon = (xs) => xs.some((x) => x.status === "soon");
+
+  const liveStages = written(STAGES);
+  const liveStufen = written(STUFEN);
+  const otherSkills = SKILLS.filter((s) => s.slug !== "deutsch");
+
+  /** The one link that stands in for everything not yet written. */
+  const moreLink = (href, strong, small) =>
+    el("li", { className: "menu-standout" },
+      el("a", { href },
+        el("strong", { className: "bn-h", textContent: strong }),
+        el("small", { textContent: small })
+      )
+    );
+
+  const articles = liveArticles().slice(0, 2);
 
   const dialog = el("dialog", { id: "site-menu", className: "menu" });
   dialog.setAttribute("aria-label", "Site menu");
 
   dialog.append(
+    /* The bar mirrors the header's right-hand cluster, in the same
+       order and with the same gap, so the ✕ lands exactly where
+       the Menu button that opened it was standing. It used to be
+       pushed to the far right of the bar on its own, which put it
+       two button-widths further over: press a button, and the
+       thing that undoes it appears somewhere else.
+
+       Search and the theme toggle come with it because the header
+       is behind a modal and cannot be clicked, and closing the
+       menu to reach either of them is a journey the header never
+       asked of anyone. */
     el("div", { className: "menu-bar" },
-      el("span", { className: "mono", textContent: `${SITE.name} · ${SITE.tagline}` }),
-      el("button", {
-        className: "icon-btn push", id: "menu-close",
-        ariaLabel: "Close the menu", textContent: "✕ Esc",
-      })
+      /* The tagline is a separate span so it can be dropped on a
+         narrow screen. Kept whole, the two lines of it pushed the
+         button cluster onto a second row on a phone, which put the
+         ✕ half a screen below the Menu button that opened it. */
+      el("span", { className: "mono" },
+        SITE.name,
+        el("span", { className: "menu-bar-tag", textContent: ` · ${SITE.tagline}` })
+      ),
+      el("div", { className: "menu-bar-tools" },
+        el("button", {
+          className: "icon-btn", id: "menu-close", type: "button",
+          ariaLabel: "Close the menu", textContent: "✕ Esc",
+        }),
+        el("button", {
+          className: "icon-btn", type: "button",
+          ariaLabel: "Search the site (Ctrl+K)",
+          innerHTML: '⌕ <span class="kbd-hint">Ctrl K</span>',
+        }),
+        el("button", {
+          className: "icon-btn", type: "button",
+          ariaLabel: "Switch between light and dark mode", textContent: "◐",
+        })
+      )
     ),
     el("div", { className: "menu-grid" },
-      menuColumn("Pages", plainPages, pageLink),
-
+      /* Pages, with the stock check standing out under them: it is
+         a page rather than a calculator, and it was the one line
+         worth keeping out of a column of six. */
       el("div", { className: "menu-col" },
-        el("span", { className: "mono menu-col-title", textContent: "Tools & calculators" }),
+        el("span", { className: "mono menu-col-title", textContent: "Pages" }),
         el("ul", { className: "menu-list" },
-          ...TOOLS.map((t) =>
-            el("li", {},
-              el("a", { href: `/tools/index.html#${t.id}` },
-                el("strong", { textContent: t.en }),
-                el("small", { className: "bn-h", textContent: t.bn })
-              )
-            )
-          ),
-          // the advanced one has its own page, and is the reason
-          // anyone would open this column twice
+          ...plainPages.map(pageLink),
           ...toolPages.map((p) =>
             el("li", { className: "menu-standout" },
-              el("a", { href: p.url }, el("strong", { textContent: p.title }))
+              el("a", { href: p.url }, el("strong", { textContent: p.short ?? p.title }))
             )
           )
         )
       ),
 
-      // The whole ladder, in order, so the menu shows how deep the
-      // Learn area goes without anyone having to open it first.
-      el("div", { className: "menu-col" },
-        el("span", { className: "mono menu-col-title", textContent: "শেখার লাইব্রেরি · Learn" }),
-        el("ul", { className: "menu-list" },
-          ...STAGES.map((s) =>
-            el("li", {},
-              el("a", {
-                href: s.inline ? "/learn/index.html#starter" : `/learn/${s.slug}/index.html`,
-              },
-                el("strong", { className: "bn-h", textContent: `${s.kicker} · ${s.bn}` }),
-                el("small", {
-                  textContent: `${s.en}${s.status === "soon" ? " · আসছে" : ""}`,
-                })
-              )
-            )
-          ),
-          ...learnPages.map((p) =>
-            el("li", { className: "menu-standout" },
-              el("a", { href: p.url }, el("strong", { textContent: p.title }))
-            )
-          )
-        )
-      ),
-
-      /* The other schools get a column of their own rather than a
-         line inside the Learn one. Someone who came for German
-         is not browsing a finance site that happens to have
-         German in it, and four Stufe names take less room than
-         one line explaining where they are hiding.
-
-         German is opened out in full because it is the one that
-         exists; the rest are named so that a reader can see what
-         is coming without opening another page to find out. */
-      el("div", { className: "menu-col" },
-        el("span", { className: "mono menu-col-title", textContent: "দক্ষতা · Skills" }),
-        el("ul", { className: "menu-list" },
-          ...STUFEN.map((s) =>
-            el("li", {},
-              el("a", { href: stufeUrl(s) },
-                el("strong", { className: "bn-h", textContent: `${s.kicker} · ${s.bn}` }),
-                el("small", {
-                  lang: "de",
-                  textContent: `${s.de}${s.status === "soon" ? " · আসছে" : ""}`,
-                })
-              )
-            )
-          ),
-          ...deutschPages.map((p) =>
-            el("li", { className: "menu-standout" },
-              el("a", { href: p.url }, el("strong", { textContent: p.title }))
-            )
-          ),
-          ...SKILLS.filter((s) => s.slug !== "deutsch").map((s) =>
-            el("li", {},
-              el("a", { href: skillUrl(s) },
-                el("strong", { className: "bn-h", textContent: s.bn }),
-                el("small", {
-                  textContent: `${s.en}${s.status === "soon" ? " · আসছে" : ""}`,
-                })
-              )
-            )
-          )
-        )
-      ),
-
-      /* The case studies and the newest writing share a column.
-         Both are "things to look at" rather than places to go, and
-         splitting them into two near-empty columns left the menu
-         looking unbalanced, thirteen items beside two. */
+      /* Second, not last. This column was at the end of the grid,
+         which put it below the fold on a 1280px laptop the moment
+         the grid dropped to four columns: seven case studies,
+         present in the menu and invisible in it. It is also the
+         half of the site someone is paying for. */
       el("div", { className: "menu-col" },
         el("span", { className: "mono menu-col-title", textContent: "Case studies" }),
         el("ul", { className: "menu-list" }, ...caseStudies.map(pageLink)),
@@ -446,6 +460,55 @@ function buildMenu() {
             )
           )
         )
+      ),
+
+      // The ladder, as far as it is written.
+      el("div", { className: "menu-col" },
+        el("span", { className: "mono menu-col-title", textContent: "শেখার লাইব্রেরি · Learn" }),
+        el("ul", { className: "menu-list" },
+          ...liveStages.map((s) =>
+            el("li", {},
+              el("a", {
+                href: s.inline ? "/learn/index.html#starter" : `/learn/${s.slug}/index.html`,
+              },
+                el("strong", { className: "bn-h", textContent: `${s.kicker} · ${s.bn}` }),
+                el("small", { textContent: s.en })
+              )
+            )
+          ),
+          ...learnPages.map((p) =>
+            el("li", { className: "menu-standout" },
+              el("a", { href: p.url }, el("strong", { textContent: p.title }))
+            )
+          ),
+          ...(someSoon(STAGES)
+            ? [moreLink("/learn/index.html", "পরের ধাপগুলো",
+                `${STAGES.length - liveStages.length} more stages, in progress`)]
+            : [])
+        )
+      ),
+
+      // German as far as it is written, then the rest of the
+      // schools as one line rather than five coming-soon anchors.
+      el("div", { className: "menu-col" },
+        el("span", { className: "mono menu-col-title", textContent: "দক্ষতা · Skills" }),
+        el("ul", { className: "menu-list" },
+          ...liveStufen.map((s) =>
+            el("li", {},
+              el("a", { href: stufeUrl(s) },
+                el("strong", { className: "bn-h", textContent: `${s.kicker} · ${s.bn}` }),
+                el("small", { lang: "de", textContent: s.de })
+              )
+            )
+          ),
+          ...deutschPages.map((p) =>
+            el("li", { className: "menu-standout" },
+              el("a", { href: p.url }, el("strong", { textContent: p.title }))
+            )
+          ),
+          moreLink("/skills/index.html", "আরও দক্ষতা · More schools",
+            `${otherSkills.length} being written, plus the rest of German`)
+        )
       )
     ),
     el("div", { className: "menu-foot" },
@@ -458,7 +521,6 @@ function buildMenu() {
       )
     )
   );
-
   document.body.append(dialog);
   return dialog;
 }
@@ -480,6 +542,19 @@ function initMenu() {
   button.addEventListener("click", open);
   dialog.querySelector("#menu-close").addEventListener("click", () => dialog.close());
   dialog.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
+
+  /* The bar's other two buttons do what their twins in the header
+     do. Wired by position rather than by id, because the header
+     already owns those ids and two elements sharing one id is one
+     element as far as getElementById is concerned: the second
+     "Search the site" button on the 404 page was dead for exactly
+     that reason. */
+  const [, search, theme] = dialog.querySelectorAll(".menu-bar-tools .icon-btn");
+  search?.addEventListener("click", () => {
+    dialog.close();
+    document.getElementById("open-palette")?.click();
+  });
+  theme?.addEventListener("click", () => document.getElementById("theme-toggle")?.click());
 
   addEventListener("keydown", (e) => {
     if (e.key.toLowerCase() === "m" && !e.ctrlKey && !e.metaKey && !e.altKey
@@ -733,12 +808,68 @@ function initHeaderHeight() {
   const publish = () => {
     const h = Math.round(header.getBoundingClientRect().height);
     if (h > 0) root.style.setProperty("--header-h", `${h}px`);
+
+    /* --header-inset: how far the header's content starts from the
+       edge of the window. The header lives in a .wrap, so that is
+       the page's own left margin at this width, and because the
+       wrap is centred it is the right margin too.
+
+       The overlay menu uses it to line its bar, grid and footer up
+       with the page underneath. Without it the menu was a
+       full-width layout sitting on top of a 1080px one, and the
+       visible cost was the close button: the ✕ that undoes the
+       Menu button sat 90px to the right of it, because the two
+       were measured from different edges. Measured rather than
+       calculated, because the scrollbar takes a few pixels off the
+       viewport and only the browser knows how many. */
+    const wrap = header.querySelector(".wrap");
+    if (wrap) {
+      const left = Math.round(wrap.getBoundingClientRect().left)
+        + parseFloat(getComputedStyle(wrap).paddingInlineStart || 0);
+      if (left >= 0) root.style.setProperty("--header-inset", `${Math.round(left)}px`);
+    }
   };
   publish();
   // fonts reflow the bar; a resize changes which layout applies
   document.fonts?.ready.then(publish).catch(() => {});
   addEventListener("resize", publish, { passive: true });
   if (typeof ResizeObserver === "function") new ResizeObserver(publish).observe(header);
+}
+
+/* ============================================================
+   3c. THE NUMBERS THE SITE SAYS ABOUT ITSELF
+
+   Every [data-count] on the page is filled from COUNTS in
+   content.js, which counts the data rather than remembering it.
+
+   THE BUG THIS EXISTS FOR
+
+   The portfolio page said "four case studies" while seven
+   existed. The stock check was described as thirty-eight ratios
+   on one page, thirty-odd on four others and "more than
+   thirty-six" in Bangla, for a model that scores forty-four.
+   Every one of those was correct on the day it was typed. A
+   number in a sentence is a copy of the data, and copies drift.
+
+   The number in the markup stays as the fallback, so a reader
+   with no JavaScript still gets a sentence with a number in it
+   rather than a gap, and check-content.mjs fails the build if
+   that fallback drifts too far from the truth.
+
+   Bangla digits inside a [lang="bn"] element, Latin everywhere
+   else: "৮টা ধাপ" in a Bangla sentence and "8 stages" in an
+   English one are the same fact, and a Bangla sentence with a
+   Latin numeral in the middle of it reads as a machine wrote it.
+   ============================================================ */
+const BN_DIGITS = "০১২৩৪৫৬৭৮৯";
+const toBangla = (n) => String(n).replace(/\d/g, (d) => BN_DIGITS[Number(d)]);
+
+function initCounts() {
+  for (const node of document.querySelectorAll("[data-count]")) {
+    const value = COUNTS[node.dataset.count];
+    if (value == null) continue;
+    node.textContent = node.closest('[lang="bn"]') ? toBangla(value) : String(value);
+  }
 }
 
 /* ============================================================
@@ -988,6 +1119,7 @@ initMenu();
 initSkillsNav();
 initShortcuts();
 initKinetic();
+initCounts();
 initTilt();
 initSpeculation();
 initArticleCards();

@@ -33,8 +33,8 @@ export const STRINGS = {
     bn: "এই শেয়ারটা কিনবেন, ধরে রাখবেন, নাকি বেচবেন?",
   },
   "page.lede": {
-    en: "Type the numbers off the annual report and the price off your broker's app. Thirty-odd ratios, six pillars, and a verdict that shows every step of its own arithmetic, including the parts it cannot see.",
-    bn: "বার্ষিক প্রতিবেদন থেকে সংখ্যাগুলো আর ব্রোকারের অ্যাপ থেকে দামটা বসান। ত্রিশের বেশি রেশিও, ছয়টা স্তম্ভ, আর এমন একটা সিদ্ধান্ত যেটা নিজের প্রতিটা হিসাব দেখিয়ে দেয়, যা সে দেখতে পায় না, সেটাও বলে দেয়।",
+    en: "Type the numbers off the annual report and the price off your broker's app. Forty-odd ratios, six pillars, and a verdict that shows every step of its own arithmetic, including the parts it cannot see.",
+    bn: "বার্ষিক প্রতিবেদন থেকে সংখ্যাগুলো আর ব্রোকারের অ্যাপ থেকে দামটা বসান। চল্লিশের বেশি রেশিও, ছয়টা স্তম্ভ, আর এমন একটা সিদ্ধান্ত যেটা নিজের প্রতিটা হিসাব দেখিয়ে দেয়, যা সে দেখতে পায় না, সেটাও বলে দেয়।",
   },
   "page.langLabel": { en: "Language", bn: "ভাষা" },
 

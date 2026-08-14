@@ -27,7 +27,22 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap" rel="stylesheet">
+  <!-- The webfont stylesheet does not block the first paint.
+       It used to: a <link rel="stylesheet"> is render-blocking, so
+       until fonts.googleapis.com answered, this page painted
+       nothing at all. On the connection a reader in Dhaka
+       actually has, that is seconds of white screen for a page
+       whose text was ready immediately, and if the request never
+       answers it is seconds of white screen for nothing.
+
+       media="print" makes the browser fetch it at low priority
+       without applying it; onload promotes it the moment it
+       lands. The text is readable in the fallback face straight
+       away and swaps when the webfont arrives, which is what
+       display=swap in the URL was always asking for. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"
+        media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;600&display=swap"></noscript>
   <link rel="stylesheet" href="/styles.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -38,7 +53,8 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="দক্ষতা · Skills">
   <meta property="og:description" content="জার্মান, কুরআন, ইংরেজি, রান্না, ভ্রমণ আর রিভিউ, সবটাই বাংলায়।">
-  <meta property="og:image" content="https://reiad.co.uk/og/default.png">
+  <meta property="og:url" content="https://reiad.co.uk/skills/index.html">
+  <meta property="og:image" content="https://reiad.co.uk/og/skills.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
@@ -112,7 +128,7 @@
         <div class="skill-grid" id="skill-grid">
           <ul class="skill-fallback">
             <li><a href="/deutsch/index.html"><b>জার্মান · Deutsch</b></a>
-              চারটা স্তরে জার্মান, বাংলা দিয়ে বোঝানো, আর রোজ এক পাতার অনুশীলন খাতা।</li>
+              <span data-count="stufen">৪</span>টা স্তরে জার্মান, বাংলা দিয়ে বোঝানো, আর রোজ এক পাতার অনুশীলন খাতা।</li>
             <li><b>কুরআন · Quran</b>: হরফ থেকে শুরু করে শুদ্ধ উচ্চারণ, তারপর শব্দ ধরে ধরে অর্থ। আসছে।</li>
             <li><b>ইংরেজি · English for work</b>: ইমেইল, ইন্টারভিউ আর অফিসের ইংরেজি। আসছে।</li>
             <li><b>রান্না · Cooking</b>: মাপ, তাপ আর সময়: রেসিপি মুখস্থ না করে রান্নাটা বোঝা। আসছে।</li>
@@ -149,8 +165,9 @@
       <div class="band">
         <span class="mono">শেখার লাইব্রেরি</span>
         <h2 class="bn-h">টাকার অংশটা আলাদা, আর অনেক বড়</h2>
-        <p>বিও অ্যাকাউন্ট খোলা থেকে গবেষণা পর্যন্ত আটটা ধাপ, ষাটের বেশি লেখা,
-           সবটাই সহজ বাংলায়। সঙ্গে পাঁচটা ক্যালকুলেটর।</p>
+        <p>বিও অ্যাকাউন্ট খোলা থেকে গবেষণা পর্যন্ত <span data-count="stages">৮</span>টা ধাপ,
+           <span data-count="lessons">৬০</span>টা লেখা, সবটাই সহজ বাংলায়। সঙ্গে
+           <span data-count="calculators">৫</span>টা ক্যালকুলেটর।</p>
         <div class="hero-actions">
           <a class="btn btn-solid" href="/learn/index.html">শেখার লাইব্রেরি →</a>
           <a class="btn btn-ghost" href="/tools/index.html">ক্যালকুলেটর</a>
@@ -165,7 +182,7 @@
       <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
       <p>এখানকার সব লেখা সাধারণ শিক্ষার জন্য। আপনার অগ্রগতি আপনার নিজের ব্রাউজারেই থাকে,
          কোথাও পাঠানো হয় না।</p>
-      <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
+      <p class="footer-mail"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
   </footer>
 
