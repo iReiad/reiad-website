@@ -317,9 +317,20 @@ export const PAGES = [
   { title: "Skills: দক্ষতা", url: "/skills/index.html",
     hint: "Page", blurb: "Everything here that isn't money: German, Quran, English, cooking, travel, reviews." },
   { title: "Deutsch: জার্মান, বাংলায়", url: "/deutsch/index.html",
-    hint: "Page", blurb: "German from Bangla in four stages, with a thirty-day practice book for each." },
-  { title: "৩০ দিনের অনুশীলন খাতা · Das 30-Tage-Arbeitsbuch", url: "/deutsch/stufe-1/arbeitsbuch.html",
-    hint: "Workbook", group: "deutsch", blurb: "One page a day: a pattern, five models, eight of your own sentences, six translations, and one true paragraph." },
+    hint: "Page", blurb: "German from Bangla in four stages, with a daily practice book for the first three." },
+
+  /* One entry per practice book, built from the curriculum rather
+     than typed. There used to be exactly one of these, written out
+     by hand, because there used to be exactly one book. Stufe 2
+     and 3 then arrived with sixty and ninety days and the hand
+     written line would have gone on advertising thirty. */
+  ...STUFEN.filter((s) => workbookUrl(s)).map((s) => ({
+    title: `${s.workbook.days} দিনের অনুশীলন খাতা · Das ${s.workbook.days}-Tage-Arbeitsbuch (${s.kicker})`,
+    url: workbookUrl(s),
+    hint: "Workbook",
+    group: "deutsch",
+    blurb: `One page a day for ${s.workbook.days} days: a pattern, five models, eight of your own sentences, six translations, and one true paragraph.`,
+  })),
   { title: "Tools & calculators", url: "/tools/index.html",
     hint: "Page", blurb: "Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing." },
   { title: "Stock check: buy, hold or sell", url: "/tools/stock.html",
@@ -419,6 +430,12 @@ export const COUNTS = {
   terms: TERM_GROUPS.reduce((n, g) => n + g.terms.length, 0),
   /** German Stufen. */
   stufen: STUFEN.length,
+  /** Stufen that come with a practice book.
+
+      Not the same as `stufen`, and that is the point: Stufe 4
+      deliberately has none, because at B2 the daily page stops
+      being a form to fill in and becomes the news you read. */
+  workbooks: STUFEN.filter((s) => s.workbook).length,
   /** Schools in the Skills hub, German included. */
   skills: SKILLS.length,
   /** Pieces published on Insights. */

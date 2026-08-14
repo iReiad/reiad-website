@@ -25,6 +25,14 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/arbeitsbuch.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/arbeitsbuch.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/tools/index.html</loc>
     <priority>0.8</priority>
   </url>
@@ -346,6 +354,14 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/arbeitsbuch.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/arbeitsbuch.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/deutsch/stufe-1/anfang.html</loc>
     <priority>0.7</priority>
   </url>
@@ -399,6 +415,174 @@
   </url>
   <url>
     <loc>https://reiad.co.uk/deutsch/stufe-1/plan.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/akkusativ.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/possessiv.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/trennbare-verben.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/dativ.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/praepositionen.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/perfekt.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/nebensatz.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/komparativ.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/imperativ.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/wortstellung.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/erzaehlen.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/satzbank.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/sprechen.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-2/plan.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/praeteritum.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/adjektive.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/relativsatz.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/konjunktiv.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/irreal.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/futur.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/genitiv.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/konnektoren.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/wortbildung.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/register.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/diskutieren.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/anekdote.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/satzbank.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-3/plan.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/passiv.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/plusquamperfekt.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/haette.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/indirekte-rede.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/verben-praeposition.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/konnektoren.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/modalpartikeln.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/nominalstil.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/synonyme.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/diplomatie.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/eroerterung.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/textsorten.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/satzbank.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/deutsch/stufe-4/plan.html</loc>
     <priority>0.7</priority>
   </url>
 </urlset>

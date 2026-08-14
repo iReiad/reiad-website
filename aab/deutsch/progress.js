@@ -127,6 +127,33 @@ export function dayStats(stufe) {
   };
 }
 
+/** Every practice book added together, for the hub's one bar.
+
+    Three books now, of thirty, sixty and ninety days, and Stufe 4
+    has none. Showing only Stufe 1's thirty would tell a learner
+    halfway through Stufe 2 that they had finished the practice. */
+export function allDayStats() {
+  const books = STUFEN.filter((s) => s.workbook?.days);
+  const done = books.reduce((n, s) => n + dayStats(s).done, 0);
+  const total = books.reduce((n, s) => n + s.workbook.days, 0);
+  return {
+    done,
+    total,
+    pct: total ? Math.round((done / total) * 100) : 0,
+    complete: total > 0 && done === total,
+  };
+}
+
+/** The first book with days still to do, in ladder order.
+
+    This is the practice worth offering: the one quietly being
+    skipped. Null when every book is finished. */
+export function nextBook() {
+  return STUFEN.find(
+    (s) => s.workbook?.days && s.status === "live" && dayStats(s).done < s.workbook.days
+  ) ?? null;
+}
+
 /** Where the workbook was last left, so tomorrow opens tomorrow. */
 export function setLastDay(n) {
   try { localStorage.setItem(TAG_KEY, String(n)); } catch { /* ignore */ }

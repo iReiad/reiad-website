@@ -53,7 +53,30 @@ const {
   teilId, workbookUrl,
 } = await import(join(HERE, "curriculum.js"));
 const { icon } = await import(join(HERE, "icons.js"));
-const { DAYS } = await import(join(HERE, "arbeitsbuch.data.js"));
+const { bookFor, dayCount } = await import(join(HERE, "arbeitsbuch.data.js"));
+
+/* curriculum.js declares how many days a book has, because the
+   browser needs that number and must not download five thousand
+   lines of days to count them. Here, where both are in hand, the
+   declaration is checked against the data. A book that grows by a
+   day and a stage page that still says sixty is exactly the kind
+   of drift the rest of this site refuses to ship. */
+for (const stufe of STUFEN) {
+  const declared = stufe.workbook?.days ?? 0;
+  const actual = dayCount(stufe);
+  if (declared !== actual) {
+    console.error(
+      `\n${stufe.slug}: curriculum.js says the workbook has ${declared} day(s), ` +
+      `arbeitsbuch.data.js holds ${actual}.\n` +
+      "Fix whichever is wrong. Nothing was written.\n"
+    );
+    process.exit(1);
+  }
+  if (stufe.workbook && stufe.uebung) {
+    console.error(`\n${stufe.slug}: has both a workbook and a uebung line. Pick one.\n`);
+    process.exit(1);
+  }
+}
 
 /* Teil bodies, one module per Stufe. A Stufe with no file is
    entirely "coming soon" and that is a valid state. */
@@ -209,15 +232,24 @@ function prevNext(teile, index, stufe) {
       : "";
   /* The last Teil points at the practice book rather than at
      nothing: reading the course through and then being handed no
-     next step is how a learner quietly stops. */
+     next step is how a learner quietly stops.
+
+     The very last Teil of the last Stufe has no book to point at
+     and nothing after it, so it points back at the school. That
+     is not a filler link: someone who has just finished
+     fifty-six Teile should land somewhere that shows them the
+     whole road they walked, not on a page with one way out. */
   const tail = next
     ? cell(next, "পরের Teil →")
     : book
       ? `        <a href="${book}">
           <span class="mono">এবার অনুশীলন →</span>
-          <strong class="bn-h">৩০ দিনের খাতা</strong>
+          <strong class="bn-h">${bn(stufe.workbook.days)} দিনের খাতা</strong>
         </a>`
-      : "";
+      : `        <a href="/deutsch/index.html">
+          <span class="mono">শেষ Teil ✓</span>
+          <strong class="bn-h">চারটা স্তর একসাথে দেখুন</strong>
+        </a>`;
   const cells = [cell(prev, "← আগের Teil"), tail].filter(Boolean);
   if (!cells.length) return "";
   return `      <nav class="prev-next" aria-label="এই স্তরের অন্য পাঠ">
@@ -263,7 +295,7 @@ function teilPage(stufe, teile, index, bodies) {
 ${body || SOON_BODY}
         <p class="backlink">
           <a href="${stufeUrl(stufe)}">← ${esc(stufe.kicker)}-এর সব পাঠ</a>
-          ${workbookUrl(stufe) ? `<a class="backlink-alt" href="${workbookUrl(stufe)}">৩০ দিনের খাতা →</a>` : ""}
+          ${workbookUrl(stufe) ? `<a class="backlink-alt" href="${workbookUrl(stufe)}">${bn(stufe.workbook.days)} দিনের খাতা →</a>` : ""}
         </p>
       </article>
 ${prevNext(teile, index, stufe)}
@@ -328,7 +360,7 @@ ${cards}
         <a class="cell buch-cta" href="${book}" data-workbook="${esc(stufe.slug)}">
           <span class="buch-art" aria-hidden="true">${icon("pen")}</span>
           <span class="buch-text">
-            <strong class="bn-h">৩০ দিনের অনুশীলন খাতা</strong>
+            <strong class="bn-h">${bn(stufe.workbook.days)} দিনের অনুশীলন খাতা</strong>
             <span>দিনে একটা পাতা, একটা ছাঁচ, নিজের জীবনের একটা সত্যি অনুচ্ছেদ।
             যা লিখবেন সেটা আপনার নিজের ব্রাউজারেই জমা থাকবে।</span>
           </span>
@@ -337,7 +369,18 @@ ${cards}
       </section>
 
 `
-    : "";
+    /* A stage with no book says so where the book would have been.
+       Leaving the band out entirely reads as something missing,
+       and at this level the absence is the point: the practice has
+       moved off the page and into the week. */
+    : stufe.uebung
+      ? `      <section id="uebung" class="no-filter">
+        <span class="section-label mono">রোজকার অনুশীলন · <span lang="de">Jeden Tag</span></span>
+        <div class="note">${esc(stufe.uebung)}</div>
+      </section>
+
+`
+      : "";
 
   return page({
     title: `${stufe.kicker} · ${stufe.bn}, জার্মান বাংলায়, Reiad's Library`,
@@ -353,7 +396,11 @@ ${cards}
           <div><dt>কার জন্য</dt><dd>${esc(stufe.who)}</dd></div>
           <div><dt>কতগুলো পাঠ</dt><dd>${bn(total)}টি${live < total ? ` (${bn(live)}টি তৈরি)` : ""}</dd></div>
           <div><dt>মোট পড়ার সময়</dt><dd>প্রায় ${bn(minutes)} মিনিট</dd></div>
-          ${stufe.workbook ? `<div><dt>অনুশীলন</dt><dd>${bn(stufe.workbook.days)} দিন, রোজ একটা পাতা${book ? "" : " (আসছে)"}</dd></div>` : ""}
+          ${stufe.workbook
+            ? `<div><dt>অনুশীলন</dt><dd>${bn(stufe.workbook.days)} দিন, রোজ একটা পাতা${book ? "" : " (আসছে)"}</dd></div>`
+            : stufe.uebung
+              ? `<div><dt>অনুশীলন</dt><dd>${esc(stufe.uebung)}</dd></div>`
+              : ""}
         </dl>
         <p class="stufe-can">${esc(stufe.can)}</p>
         <div class="stage-progress" data-stufe-progress="${esc(stufe.slug)}">
@@ -387,23 +434,29 @@ ${[ladderCell(prev, "← আগের স্তর"), ladderCell(next, "পর�
    of this file for why this is one page and not thirty.
    ============================================================ */
 
-/* The sound key from the front of the book. It is here as well as
-   in Teil 2 on purpose: this is the page a learner has open while
-   stuck on a word, and sending them to another tab to look up
-   "does w sound like v again?" is how a practice session ends. */
-const LAUT_SCHLUESSEL = [
-  ["w → ভ", "Wasser (ভাসা)"], ["v → ফ", "Vater (ফাটা)"],
-  ["z → ৎস", "zehn (ৎসেন)"], ["s + স্বর → জ়", "sie (জ়ী)"],
-  ["ß / ss → স", "heißen (হাইসেন)"], ["sch → শ", "Schule (শূলে)"],
-  ["st- / sp- → শ্ট / শ্প", "Stadt (শ্টাট)"], ["j → ইয়", "ja (ইয়া)"],
-  ["ch (i/e-র পরে) → ইশ্", "ich · nicht"], ["ch (a/o/u-র পরে) → খ", "Buch (বুখ)"],
-  ["ei → আই", "nein (নাইন)"], ["ie → ঈ", "vier (ফীয়া)"],
-  ["au → আউ", "Haus (হাউস)"], ["eu / äu → অয়", "Deutsch (ডয়চ)"],
-  ["ä → এ্যা", "Mädchen (মেটশেন)"], ["ö → এ + ও-ঠোঁট", "schön (শ্যোন)"],
-  ["ü → ই + উ-ঠোঁট", "fünf (ফ্যুন্ফ)"], ["-er (শেষে) → আ", "Mutter (মুটা)"],
-];
+/* Day counts in words. The books are 30, 60 and 90 days, and a
+   heading reading "৬০টা দিন" where the last one read "ত্রিশটা দিন"
+   would be the page changing voice halfway up the ladder. Any
+   book length not listed falls back to the numeral, which reads
+   fine and is better than a missing word. */
+const BN_WORD = { 30: "ত্রিশ", 60: "ষাট", 90: "নব্বই", 120: "একশো বিশ" };
+const DE_WORD = { 30: "dreißig", 60: "sechzig", 90: "neunzig", 120: "hundertzwanzig" };
+const bnWord = (n) => BN_WORD[n] ?? bn(n);
+const deWord = (n) => DE_WORD[n] ?? String(n);
 
-function dayArticle(d, stufe) {
+/* Everything a learner types is kept under one key per box, and
+   those keys are namespaced by Stufe. Without the prefix, day 1
+   of Stufe 2 would open showing the eight sentences written on
+   day 1 of Stufe 1, because "tag-1-tausche-1" is not a name, it
+   is a collision waiting for a second book. arbeitsbuch.js
+   migrates the un-prefixed keys the first book shipped with. */
+const schriftKey = (stufe, name) => `${stufe.slug}/${name}`;
+
+/* Multi-line placeholders, the only way to get a line break into
+   an attribute without the markup fighting back. */
+const ph = (s) => esc(s).replace(/\n/g, "&#10;");
+
+function dayArticle(d, stufe, book) {
   const schau = d.schau
     .map((s) => `            <p class="satz"><b lang="de">${esc(s.de)}</b><span>${esc(s.bn)}</span></p>`)
     .join("\n");
@@ -411,7 +464,7 @@ function dayArticle(d, stufe) {
   const tausche = Array.from({ length: 8 }, (_, i) =>
     `            <label class="feld">
               <span class="feld-num mono">${bn(i + 1)}</span>
-              <textarea rows="2" data-schrift="tag-${d.n}-tausche-${i + 1}"
+              <textarea rows="2" data-schrift="${esc(schriftKey(stufe, `tag-${d.n}-tausche-${i + 1}`))}"
                         aria-label="দিন ${bn(d.n)}, নিজের বাক্য ${bn(i + 1)}"
                         placeholder="নিজের বাক্য…"></textarea>
             </label>`).join("\n");
@@ -421,7 +474,7 @@ function dayArticle(d, stufe) {
       `            <div class="sag-zeile">
               <span class="feld-num mono">${bn(i + 1)}</span>
               <span class="sag-frage">${esc(s.q)}</span>
-              <textarea rows="2" data-schrift="tag-${d.n}-sag-${i + 1}"
+              <textarea rows="2" data-schrift="${esc(schriftKey(stufe, `tag-${d.n}-sag-${i + 1}`))}"
                         aria-label="দিন ${bn(d.n)}, অনুবাদ ${bn(i + 1)}"
                         placeholder="আগে বলো, তারপর লেখো…"></textarea>
               <span class="sag-antwort" lang="de">${esc(s.a)}</span>
@@ -471,7 +524,7 @@ ${sagEs}
           <h3 class="mono"><span lang="de">Von Herzen</span> · নিজের মন থেকে</h3>
           <p class="herz-aufgabe">${esc(d.vonHerzen.bn)}</p>
           <p class="herz-en mono">${esc(d.vonHerzen.en)}</p>
-          <textarea rows="4" data-schrift="tag-${d.n}-herzen"
+          <textarea rows="4" data-schrift="${esc(schriftKey(stufe, `tag-${d.n}-herzen`))}"
                     aria-label="দিন ${bn(d.n)}, নিজের কথা"
                     placeholder="নিজের সত্যি জীবন নিয়ে লেখো…"></textarea>
         </section>
@@ -480,36 +533,81 @@ ${sagEs}
           <button type="button" class="btn btn-solid tag-fertig" data-fertig="${d.n}">
             আজকের পাতা শেষ ✓
           </button>
-          <span class="tag-fuss-note mono">সব জোরে বলেছি · গতকালের পাতা আগে পড়েছি</span>
+          <span class="tag-fuss-note mono">সব জোরে বলেছি · ${esc(book.fuss)}</span>
         </footer>
       </article>`;
 }
 
 function arbeitsbuchPage(stufe) {
   const url = workbookUrl(stufe);
-  const days = DAYS.map((d) => dayArticle(d, stufe)).join("\n\n");
+  const book = bookFor(stufe);
+  const total = book.days.length;
+  const days = book.days.map((d) => dayArticle(d, stufe, book)).join("\n\n");
 
-  const schluessel = LAUT_SCHLUESSEL
-    .map(([rule, ex]) =>
-      `          <div class="laut-paar"><b>${esc(rule)}</b><span lang="de">${esc(ex)}</span></div>`)
-    .join("\n");
-
-  const tracker = DAYS.map((d) =>
+  const tracker = book.days.map((d) =>
     `          <a class="tracker-tag" href="#tag-${d.n}" data-tracker="${d.n}">${bn(d.n)}</a>`)
     .join("\n");
 
+  /* Only Stufe 1's book carries the sound key. By Stufe 2 the
+     sounds are behind you, and a section repeating them would be
+     the book treating a reader as if they had not moved. */
+  const schluessel = book.schluessel
+    ? `      <section id="schluessel" class="no-filter">
+        <span class="section-label mono"><span lang="de">Der Schlüssel</span> · ধ্বনির চাবি</span>
+        <p class="measure">আটকে গেলে এখানে ফিরে আসুন। এই এক তালিকা মুখস্থ হলে যেকোনো
+        জার্মান শব্দ পড়তে পারবেন।</p>
+        <details class="faq laut-details">
+          <summary>ধ্বনির চাবি খুলুন</summary>
+          <div class="laut-gitter">
+${book.schluessel.map(([rule, ex]) =>
+    `            <div class="laut-paar"><b>${esc(rule)}</b><span lang="de">${esc(ex)}</span></div>`)
+      .join("\n")}
+          </div>
+          <p class="tag-hinweis">দুটো লম্বা-ছোট নিয়ম: স্বর + h বা জোড়া স্বর = লম্বা টান
+          (<span lang="de">wohnen</span>)। পরে জোড়া ব্যঞ্জন = ছোট স্বর (<span lang="de">kommen</span>)।</p>
+        </details>
+      </section>
+
+`
+    : "";
+
+  /* The collection page: hats in Stufe 1, Partizip pairs in
+     Stufe 2, three verb forms in Stufe 3. Same furniture either
+     way; the grid is auto-fit, so two columns and three both lay
+     out without being told how many there are. */
+  const s = book.sammlung;
+  const sammlung = `      <section id="sammlung" class="no-filter">
+        <span class="section-label mono"><span lang="de">${esc(s.de)}</span> · ${esc(s.bn)}</span>
+        <p class="measure">${esc(s.blurb)}</p>
+        <div class="hut-sammlung">
+${s.columns.map((c) => `          <label class="hut-spalte" data-hut="${esc(c.key)}">
+            <span class="hut-kopf" lang="de">${esc(c.head)}</span>
+            <textarea rows="8" data-schrift="${esc(schriftKey(stufe, `${s.key}-${c.key}`))}"
+                      aria-label="${esc(c.head)} তালিকা"
+                      placeholder="${ph(c.placeholder)}"></textarea>
+          </label>`).join("\n")}
+        </div>
+      </section>`;
+
+  /* Where the band at the end points. The next Stufe if there is
+     one, and there always is here, because no book sits on the
+     last rung: Stufe 4 has no workbook at all. */
+  const index = STUFEN.findIndex((x) => x.slug === stufe.slug);
+  const next = STUFEN[index + 1];
+
   return page({
-    title: `৩০ দিনের অনুশীলন খাতা: ${stufe.kicker}, জার্মান বাংলায়, Reiad's Library`,
+    title: `${bn(total)} দিনের অনুশীলন খাতা: ${stufe.kicker}, জার্মান বাংলায়, Reiad's Library`,
     description:
-      "দিনে একটা পাতা, একটা ছাঁচ, নিজের জীবনের একটা সত্যি অনুচ্ছেদ। জার্মান স্তর ১-এর ত্রিশ দিনের অনুশীলন খাতা, বাংলায়, উত্তরমালাসহ।",
+      `দিনে একটা পাতা, একটা ছাঁচ, নিজের জীবনের একটা সত্যি অনুচ্ছেদ। জার্মান ${stufe.kicker}-এর ` +
+      `${bnWord(total)} দিনের অনুশীলন খাতা, বাংলায়, উত্তরমালাসহ।`,
     canonical: url,
     og: "deutsch-arbeitsbuch.png",
     body: `
       <div class="hero buch-hero" data-buch="${esc(stufe.slug)}">
-        <span class="eyebrow mono"><span lang="de">Das 30-Tage-Arbeitsbuch</span> · ${esc(stufe.kicker)}</span>
-        <h1 class="bn-h">৩০ দিনের অনুশীলন খাতা</h1>
-        <p class="lede"><span lang="de">Eine Seite pro Tag. Ein Muster pro Tag. Ein ehrlicher Satz pro Tag.</span><br>
-        দিনে একটা পাতা। একটা ছাঁচ। নিজের জীবনের একটা সত্যি অনুচ্ছেদ।</p>
+        <span class="eyebrow mono"><span lang="de">Das ${total}-Tage-Arbeitsbuch</span> · ${esc(stufe.kicker)}</span>
+        <h1 class="bn-h">${bn(total)} দিনের অনুশীলন খাতা</h1>
+        <p class="lede"><span lang="de">${esc(book.lede.de)}</span><br>
+        ${esc(book.lede.bn)}</p>
         <p class="buch-warnung">এই খাতা পড়ার জন্য নয়, লেখার জন্য, আর জোরে বলার জন্য।
         খালি ঘরগুলো আপনার। ভরান। যা লেখেন সেটা শুধু আপনার এই ব্রাউজারেই জমা থাকে,
         কোথাও পাঠানো হয় না।</p>
@@ -526,7 +624,7 @@ function arbeitsbuchPage(stufe) {
       </div>
 
       <section id="tracker" class="no-filter">
-        <span class="section-label mono"><span lang="de">Dein 30-Tage-Tracker</span> · ৩০ দিনের হিসাব</span>
+        <span class="section-label mono"><span lang="de">Dein ${total}-Tage-Tracker</span> · ${bn(total)} দিনের হিসাব</span>
         <p class="measure">যে দিন সত্যিই বলেছেন ও লিখেছেন, সেই দিনটায় টিক দিন। ফাঁকা ঘর মানে
         লজ্জা নয়, মানে: কাল আবার। টিক দেওয়ার বোতামটা প্রতিটা দিনের পাতার নিচে।</p>
         <nav class="tracker" aria-label="দিন বেছে নিন">
@@ -534,68 +632,28 @@ ${tracker}
         </nav>
       </section>
 
-      <section id="schluessel" class="no-filter">
-        <span class="section-label mono"><span lang="de">Der Schlüssel</span> · ধ্বনির চাবি</span>
-        <p class="measure">আটকে গেলে এখানে ফিরে আসুন। এই এক তালিকা মুখস্থ হলে যেকোনো
-        জার্মান শব্দ পড়তে পারবেন।</p>
-        <details class="faq laut-details">
-          <summary>ধ্বনির চাবি খুলুন</summary>
-          <div class="laut-gitter">
-${schluessel}
-          </div>
-          <p class="tag-hinweis">দুটো লম্বা-ছোট নিয়ম: স্বর + h বা জোড়া স্বর = লম্বা টান
-          (<span lang="de">wohnen</span>)। পরে জোড়া ব্যঞ্জন = ছোট স্বর (<span lang="de">kommen</span>)।</p>
-        </details>
-      </section>
-
-      <section id="huete" class="no-filter">
-        <span class="section-label mono"><span lang="de">Die Hut-Sammlung</span> · টুপি-সংগ্রহ</span>
-        <p class="measure">নতুন বিশেষ্য পেলেই এখানে জমান, সঠিক কলামে, টুপিসহ।
-        সপ্তাহে একবার পুরোটা জোরে পড়ুন: টুপি আর শব্দ এক নিঃশ্বাসে।</p>
-        <div class="hut-sammlung">
-          <label class="hut-spalte" data-hut="der">
-            <span class="hut-kopf" lang="de">der</span>
-            <textarea rows="8" data-schrift="huete-der"
-                      aria-label="der শব্দের তালিকা"
-                      placeholder="der Vater&#10;der Tisch&#10;…"></textarea>
-          </label>
-          <label class="hut-spalte" data-hut="die">
-            <span class="hut-kopf" lang="de">die</span>
-            <textarea rows="8" data-schrift="huete-die"
-                      aria-label="die শব্দের তালিকা"
-                      placeholder="die Mutter&#10;die Tür&#10;…"></textarea>
-          </label>
-          <label class="hut-spalte" data-hut="das">
-            <span class="hut-kopf" lang="de">das</span>
-            <textarea rows="8" data-schrift="huete-das"
-                      aria-label="das শব্দের তালিকা"
-                      placeholder="das Kind&#10;das Buch&#10;…"></textarea>
-          </label>
-        </div>
-      </section>
+${schluessel}${sammlung}
 
       <section id="tage" class="buch">
-        <span class="section-label mono"><span lang="de">Die dreißig Tage</span> · ত্রিশটা দিন</span>
+        <span class="section-label mono"><span lang="de">Die ${deWord(total)} Tage</span> · ${bnWord(total)}টা দিন</span>
         <nav class="tag-nav" data-tag-nav hidden aria-label="দিন বদলান"></nav>
 
 ${days}
       </section>
 
       <div class="band">
-        <span class="mono"><span lang="de">Tag 31</span></span>
-        <h2>এই খাতায় ৩১তম দিন নেই</h2>
-        <p><span lang="de">Tag 31 ist der Tag, an dem die Gewohnheiten ohne das Buch laufen.</span>
-        ৩১তম দিন হলো সেই দিন, যেদিন অভ্যাসগুলো খাতা ছাড়াই হাঁটে: সারাদিন নিজের সাথে জার্মানে বলা,
-        রোজ রাতে দিনটা জার্মানে বলা, সপ্তাহে দশটা নতুন বিশেষ্য টুপিসহ, আর না বুঝলে চুপ না থেকে
-        <span lang="de">"Wie bitte? Langsam, bitte!"</span></p>
+        <span class="mono"><span lang="de">Tag ${total + 1}</span></span>
+        <h2>এই খাতায় ${bn(total + 1)}তম দিন নেই</h2>
+        <p><span lang="de">${esc(book.schluss.de)}</span>
+        ${esc(book.schluss.bn)}</p>
         <div class="hero-actions">
-          <a class="btn btn-solid" href="/deutsch/stufe-2/index.html">Stufe ২ দেখুন →</a>
+          ${next ? `<a class="btn btn-solid" href="${stufeUrl(next)}">${esc(next.kicker)} দেখুন →</a>` : ""}
           <a class="btn btn-ghost" href="${stufeUrl(stufe)}">পাঠগুলোয় ফিরুন</a>
         </div>
       </div>
 
-      <div class="note"><span lang="de">Sprich schlecht. Sprich heute.</span>
-      আজকের ভাঙা জার্মান কালকের নিখুঁত জার্মানের চেয়ে অনেক দামি।</div>
+      <div class="note"><span lang="de">${esc(book.motto.de)}</span>
+      ${esc(book.motto.bn)}</div>
 `,
     extraScripts: `\n  <script type="module" src="/deutsch/arbeitsbuch.js"></script>`,
   });
@@ -625,7 +683,7 @@ for (const stufe of STUFEN) {
     writeFileSync(join(dir, `${stufe.workbook.slug}.html`), arbeitsbuchPage(stufe));
     pages++;
     console.log(`${stufe.slug.padEnd(9)} ${teile.length} Teil page(s), ` +
-      `${stufeCount(stufe).live} written, + ${DAYS.length}-day workbook`);
+      `${stufeCount(stufe).live} written, + ${dayCount(stufe)}-day workbook`);
   } else {
     console.log(`${stufe.slug.padEnd(9)} ${teile.length} Teil page(s), ${stufeCount(stufe).live} written`);
   }

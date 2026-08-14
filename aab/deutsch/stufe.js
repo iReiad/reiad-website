@@ -81,7 +81,7 @@ function paintAll() {
     cta.textContent = days.done === 0
       ? "খাতা খুলুন →"
       : days.complete
-        ? `৩০ দিনই শেষ ✓`
+        ? `${bn(days.total)} দিনই শেষ ✓`
         : `দিন ${bn(days.next)} খুলুন → (${bn(days.done)}/${bn(days.total)})`;
   }
 }

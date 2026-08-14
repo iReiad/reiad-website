@@ -56,7 +56,13 @@
            can      what you will be able to DO at the end of it:
                     the only promise a language course should make
            status   "live" | "soon"
-           workbook { slug, days } when the stage has a practice book
+           workbook { slug, days } when the stage has a practice book.
+                    `days` is declared here rather than counted from
+                    arbeitsbuch.data.js because the browser needs it and
+                    must not pull five thousand lines of days down to
+                    count them. build-deutsch.mjs asserts the two agree.
+           uebung   what the daily practice is INSTEAD, for a stage with
+                    no book. Exactly one of workbook/uebung, never both
 
    teil    slug     file name (no .html)
            bn/en    the title, Bangla first
@@ -261,13 +267,553 @@ const STUFE_1_SECTIONS = [
 ];
 
 /* ------------------------------------------------------------
+   STUFE 2: cases, the spoken past, and the golden door.
+   ------------------------------------------------------------ */
+const STUFE_2_SECTIONS = [
+  {
+    id: "wen",
+    bn: "কে কাকে কী",
+    en: "Who does what to whom",
+    de: "Wer und Wen",
+    teile: [
+      {
+        slug: "akkusativ",
+        bn: "Akkusativ: শুধু নীল দল বদলায়",
+        en: "The accusative",
+        de: "Der Akkusativ",
+        icon: "arrow",
+        minutes: 10,
+        blurb:
+          "der হয়ে যায় den, ein হয় einen। die আর das অটল। এক দল, একটা কোট: এটাই পুরো নিয়ম।",
+      },
+      {
+        slug: "possessiv",
+        bn: "mein · dein · sein · ihr: মালিকানা",
+        en: "Possessives",
+        de: "Possessivartikel",
+        icon: "person",
+        minutes: 9,
+        blurb:
+          "মালিক ঠিক করে শব্দটা, জিনিসের টুপি ঠিক করে পোশাকটা। ein যেভাবে সাজে, এরাও ঠিক সেভাবে।",
+      },
+      {
+        slug: "trennbare-verben",
+        bn: "কাতাপল্ট-ক্রিয়া: stehe … auf",
+        en: "Separable verbs",
+        de: "Trennbare Verben",
+        icon: "gears",
+        minutes: 10,
+        blurb:
+          "aufstehen ভেঙে যায়: মাথা আসন-দুইয়ে, লেজ বাক্যের শেষে। আর modal এলে আবার জোড়া লেগে যায়।",
+      },
+    ],
+  },
+  {
+    id: "geben",
+    bn: "দেওয়া ও গতকাল",
+    en: "Giving, and yesterday",
+    de: "Geben und Gestern",
+    teile: [
+      {
+        slug: "dativ",
+        bn: "Dativ: কাকে দিলাম",
+        en: "The dative",
+        de: "Der Dativ",
+        icon: "hand",
+        minutes: 12,
+        blurb:
+          "mir gefällt মানে আমার ভালো লাগে। জার্মানের কঠিনতম কারকের ভিতরে বাংলার জন্য একটা উপহার লুকানো আছে।",
+      },
+      {
+        slug: "praepositionen",
+        bn: "আঠা-শব্দ ও তাদের কারক",
+        en: "Prepositions",
+        de: "Die Präpositionen",
+        icon: "map",
+        minutes: 12,
+        blurb:
+          "für-ohne-gegen-durch-um এক দল, mit-nach-aus-zu-von-bei-seit আরেক দল। সঙ্গে Wo বনাম Wohin।",
+      },
+      {
+        slug: "perfekt",
+        bn: "Perfekt: মুখের অতীত",
+        en: "The spoken past",
+        de: "Das Perfekt",
+        icon: "clock",
+        minutes: 13,
+        blurb:
+          "haben বা sein আসন-দুইয়ে, ge-শব্দ একদম শেষে। সেই পুরনো বন্ধনী, নতুন কাজে। সঙ্গে war আর hatte।",
+      },
+    ],
+  },
+  {
+    id: "denken",
+    bn: "কারণ, তুলনা, আদেশ",
+    en: "Reasons, comparisons, commands",
+    de: "Denken und Sagen",
+    teile: [
+      {
+        slug: "nebensatz",
+        bn: "weil · dass · wenn: সোনার দরজা",
+        en: "Sending the verb home",
+        de: "Der Nebensatz",
+        icon: "bracket",
+        minutes: 12,
+        blurb:
+          "কারণ বলতে গেলে ক্রিয়া বাক্যের শেষে চলে যায়, ঠিক বাংলার মতো। জার্মানদের কঠিনতম জিনিসটা তোমার জন্মগত।",
+      },
+      {
+        slug: "komparativ",
+        bn: "তুলনা: klein · kleiner · am kleinsten",
+        en: "Comparatives",
+        de: "Der Komparativ",
+        icon: "arrow",
+        minutes: 9,
+        blurb:
+          "বিশেষণ + er + als, আর চূড়ায় am -sten। সঙ্গে gern, lieber, am liebsten: রুচির পুরো মেশিন।",
+      },
+      {
+        slug: "imperativ",
+        bn: "বলো! করো! চলো!",
+        en: "The imperative",
+        de: "Der Imperativ",
+        icon: "mouth",
+        minutes: 8,
+        blurb:
+          "du ফেলে দাও, -st ফেলে দাও, bitte জুড়ে দাও। আর Lass uns …: বন্ধুত্বের ব্যাকরণ।",
+      },
+      {
+        slug: "wortstellung",
+        bn: "সময় আগে, জায়গা পরে",
+        en: "Time before place",
+        de: "Die Wortstellung",
+        icon: "engine",
+        minutes: 9,
+        blurb:
+          "ইংরেজি বলে I go home today, জার্মান ঠিক উল্টো। তিনটা ছোট মেশিন, যারা বাক্যকে জার্মান শোনায়।",
+      },
+    ],
+  },
+  {
+    id: "erzaehlen",
+    bn: "গল্প ও বাস্তব জীবন",
+    en: "Telling and living",
+    de: "Erzählen und Leben",
+    teile: [
+      {
+        slug: "erzaehlen",
+        bn: "গল্পের সুতো: zuerst, dann, danach",
+        en: "The story thread",
+        de: "Erzählen",
+        icon: "scroll",
+        minutes: 9,
+        blurb:
+          "পাঁচটা পুঁতি দিয়ে গতকালটা এক অনুচ্ছেদে গাঁথা। রোজ রাতের ছয় লাইন, যেটা এই স্তরের আসল ব্যায়াম।",
+      },
+      {
+        slug: "satzbank",
+        bn: "বাস্তবের জার্মান: দাওয়াত, ডাক্তার, বাজার, মত",
+        en: "The sentence bank",
+        de: "Das echte Leben II",
+        icon: "cup",
+        minutes: 10,
+        blurb:
+          "দাওয়াত দেওয়া ও ভদ্রভাবে ফেরানো, শরীর খারাপ বলা, জামা কেনা, আর নিজের মত জানানো: চারটা তালিকায়।",
+      },
+      {
+        slug: "sprechen",
+        bn: "টানা বলা: চার ধাপের উত্তর",
+        en: "The four-move answer",
+        de: "Länger sprechen",
+        icon: "play",
+        minutes: 9,
+        blurb:
+          "Also… weil… zum Beispiel… aber। চার ধাপে এক মিনিট টানা জার্মান, আর আটকে গেলে সারিয়ে নেওয়ার কিট।",
+      },
+      {
+        slug: "plan",
+        bn: "৬০ দিনের মানচিত্র ও সাত ভুল",
+        en: "The 60-day map",
+        de: "Der Plan",
+        icon: "map",
+        minutes: 9,
+        blurb:
+          "তিন সেতু, ষাট দিন। রোজকার এক ঘণ্টা কীভাবে ভাগ হবে, আর যে সাতটা ভুল সবাই করে তার ওষুধ।",
+      },
+    ],
+  },
+];
+
+/* ------------------------------------------------------------
+   STUFE 3: the written past, colour, and the grammar of dreams.
+   ------------------------------------------------------------ */
+const STUFE_3_SECTIONS = [
+  {
+    id: "erzaehlen",
+    bn: "রঙিন গল্প",
+    en: "Telling in colour",
+    de: "Erzählen",
+    teile: [
+      {
+        slug: "praeteritum",
+        bn: "Präteritum: বইয়ের অতীত",
+        en: "The story past",
+        de: "Das Präteritum",
+        icon: "scroll",
+        minutes: 11,
+        blurb:
+          "Es war einmal … মুখের অতীত তোমার আছে, এবার গল্পের অতীত। ষোলোটা ক্রিয়া জানলে যেকোনো কাহিনি বলা যায়।",
+      },
+      {
+        slug: "adjektive",
+        bn: "বিশেষণের লেজ: কে টুপি পরে",
+        en: "Adjective endings",
+        de: "Die Adjektivendungen",
+        icon: "hat",
+        minutes: 14,
+        blurb:
+          "der আছে মানে বিশেষণ শিথিল, ein অস্পষ্ট মানে বিশেষণ নিজেই টুপি পরে। আর ভুল লেজেও অর্থ নষ্ট হয় না।",
+      },
+      {
+        slug: "relativsatz",
+        bn: "যে লোকটা…: সম্বন্ধ-বাক্য",
+        en: "Relative clauses",
+        de: "Der Relativsatz",
+        icon: "key",
+        minutes: 12,
+        blurb:
+          "কমা, সম্বন্ধ-শব্দ, তারপর ক্রিয়া শেষে। দুই তথ্য এক বাক্যে, আর ছাঁচটা আবার বাংলারই।",
+      },
+    ],
+  },
+  {
+    id: "traeumen",
+    bn: "স্বপ্ন ও ভদ্রতা",
+    en: "Wishes and politeness",
+    de: "Träumen",
+    teile: [
+      {
+        slug: "konjunktiv",
+        bn: "würde · könnte · hätte · wäre",
+        en: "Konjunktiv II",
+        de: "Der Konjunktiv II",
+        icon: "heart",
+        minutes: 11,
+        blurb:
+          "নতুন কাল নয়, চেনা ক্রিয়ার নরম কোট। চারটা শব্দে ভদ্রতা আর স্বপ্ন, দুটোই।",
+      },
+      {
+        slug: "irreal",
+        bn: "যদি হতো, তাহলে করতাম",
+        en: "Unreal conditions",
+        de: "Wenn … dann …",
+        icon: "bracket",
+        minutes: 9,
+        blurb:
+          "wenn-অংশে hätte বা wäre, dann-অংশে würde বা könnte। দুই নরম কোট, এক সেতু।",
+      },
+      {
+        slug: "futur",
+        bn: "ভবিষ্যৎ, আর কেন প্রায়ই লাগে না",
+        en: "The future tense",
+        de: "Das Futur",
+        icon: "arrow",
+        minutes: 8,
+        blurb:
+          "werden আসন-দুইয়ে, ক্রিয়া শেষে: আবার সেই বন্ধনী। কিন্তু রোজকার কথায় morgen আর বর্তমানই যথেষ্ট।",
+      },
+      {
+        slug: "genitiv",
+        bn: "Genitiv: '-এর' কারক",
+        en: "The genitive",
+        de: "Der Genitiv",
+        icon: "person",
+        minutes: 9,
+        blurb:
+          "চতুর্থ ও শেষ কারক, আর সবচেয়ে সহজে এড়ানো যায় এমনটাই। পড়ার সময় চিনে নাও, বলার সময় von বলো।",
+      },
+    ],
+  },
+  {
+    id: "ueberzeugen",
+    bn: "বোঝানো ও পড়া",
+    en: "Persuading and reading",
+    de: "Überzeugen",
+    teile: [
+      {
+        slug: "konnektoren",
+        bn: "obwohl · trotzdem · damit",
+        en: "Grown-up connectors",
+        de: "Feine Konnektoren",
+        icon: "gears",
+        minutes: 10,
+        blurb:
+          "যদিও, তবুও, যাতে, তাই। সেই চেনা দুই পরিবার: কেউ ক্রিয়াকে শেষে পাঠায়, কেউ আসন-এক নেয়।",
+      },
+      {
+        slug: "wortbildung",
+        bn: "লম্বা শব্দ ভাঙা: জার্মান LEGO",
+        en: "Word building",
+        de: "Die Wortbildung",
+        icon: "engine",
+        minutes: 9,
+        blurb:
+          "Krankenhaus মানে অসুস্থ আর বাড়ি। কয়েকটা লেজ চিনলে হাজারটা শব্দ অভিধান ছাড়াই খুলে যায়।",
+      },
+      {
+        slug: "register",
+        bn: "du না Sie: ঘর বুঝে সুর",
+        en: "Register",
+        de: "Das Register",
+        icon: "cap",
+        minutes: 10,
+        blurb:
+          "বন্ধুর ভাষা আর দপ্তরের ভাষা এক নয়। সঙ্গে আনুষ্ঠানিক ইমেলের পাঁচটা নিরাপদ লাইন।",
+      },
+      {
+        slug: "diskutieren",
+        bn: "পাঁচ ধাপের তর্ক",
+        en: "Discussing",
+        de: "Diskutieren",
+        icon: "mouth",
+        minutes: 11,
+        blurb:
+          "মত, কারণ, মেনে নেওয়া, বিপরীত, উপসংহার। পরিণত চালটা হলো পাল্টা বলার আগে একটা পয়েন্ট স্বীকার করা।",
+      },
+    ],
+  },
+  {
+    id: "leben",
+    bn: "গল্প, জীবন, পরিকল্পনা",
+    en: "Stories, life, the plan",
+    de: "Das Leben",
+    teile: [
+      {
+        slug: "anekdote",
+        bn: "লম্বা গল্প: শুরু, মোড়, শেষ",
+        en: "The anecdote",
+        de: "Erzählen III",
+        icon: "play",
+        minutes: 9,
+        blurb:
+          "প্রতিটা ভালো গল্পে একটা plötzlich থাকে। শান্তভাবে দৃশ্য সাজাও, তারপর একটা চমক স্টিয়ারিং ঘুরিয়ে দিক।",
+      },
+      {
+        slug: "satzbank",
+        bn: "কাজ, বাসা, দপ্তর",
+        en: "The sentence bank",
+        de: "Das echte Leben III",
+        icon: "cup",
+        minutes: 10,
+        blurb:
+          "সাক্ষাৎকারে নিজেকে বলা, বাসা ভাড়া নেওয়া, আর সরকারি দপ্তরে কাগজপত্র সামলানো।",
+      },
+      {
+        slug: "plan",
+        bn: "৯০ দিনের মানচিত্র ও সাত ভুল",
+        en: "The 90-day map",
+        de: "Der Plan",
+        icon: "map",
+        minutes: 9,
+        blurb:
+          "তিন নদী, নব্বই দিন। সাবলীলতা তৈরি হয় না, জন্মায়। সঙ্গে ছায়া-নকল আর এই স্তরের সাত ভুল।",
+      },
+    ],
+  },
+];
+
+/* ------------------------------------------------------------
+   STUFE 4: precision, tone, and the world.
+   ------------------------------------------------------------ */
+const STUFE_4_SECTIONS = [
+  {
+    id: "zeit",
+    bn: "সময়ের সূক্ষ্মতা",
+    en: "Precision in time",
+    de: "Die Zeit",
+    teile: [
+      {
+        slug: "passiv",
+        bn: "Passiv: খবরের কণ্ঠ",
+        en: "The passive",
+        de: "Das Passiv",
+        icon: "gears",
+        minutes: 11,
+        blurb:
+          "কে করল নয়, কী হলো। werden আর Partizip, আর বাংলার 'করা হয়' ঠিক সেটাই বলে।",
+      },
+      {
+        slug: "plusquamperfekt",
+        bn: "অতীতের-অতীত",
+        en: "The past perfect",
+        de: "Das Plusquamperfekt",
+        icon: "clock",
+        minutes: 8,
+        blurb:
+          "hatte বা war + Partizip: যেটা আগে ঘটেছিল সেটা এক ধাপ পিছিয়ে বসে। প্রায়ই nachdem-এর সাথে।",
+      },
+      {
+        slug: "haette",
+        bn: "hätte gemacht: আক্ষেপ ও কল্পনা",
+        en: "The unlived yesterday",
+        de: "Konjunktiv der Vergangenheit",
+        icon: "heart",
+        minutes: 11,
+        blurb:
+          "'করা উচিত ছিল', 'প্রায় পড়েই যেতাম'। স্বপ্নের কোট এবার অতীতে, আর শেষে দুই মূল-রূপ পাশাপাশি।",
+      },
+      {
+        slug: "indirekte-rede",
+        bn: "অন্যের কথা বলা",
+        en: "Reported speech",
+        de: "Die indirekte Rede",
+        icon: "scroll",
+        minutes: 9,
+        blurb:
+          "Er sagte, er sei … খবরের কাগজের কণ্ঠ। সৎ কথা: এই রূপটা মূলত চিনতে হবে, বলতে নয়।",
+      },
+    ],
+  },
+  {
+    id: "logik",
+    bn: "যুক্তির জোড়া",
+    en: "The joints of logic",
+    de: "Die Logik",
+    teile: [
+      {
+        slug: "verben-praeposition",
+        bn: "ক্রিয়া ও আঠা-শব্দ, জোড়ায়",
+        en: "Verbs with prepositions",
+        de: "Verben mit Präposition",
+        icon: "key",
+        minutes: 10,
+        blurb:
+          "warten auf, denken an: যুক্তি নয়, জোড়া। সঙ্গে worauf আর darauf-এর ছোট্ট নিয়ম।",
+      },
+      {
+        slug: "konnektoren",
+        bn: "je … desto · indem · sodass",
+        en: "Fine connectors",
+        de: "Feine Konnektoren",
+        icon: "bracket",
+        minutes: 10,
+        blurb:
+          "যত বেশি, তত ভালো। প্রায় সবাই ক্রিয়াকে শেষে পাঠায়: সেই weil-পরিবার, শুধু আরও সূক্ষ্ম।",
+      },
+    ],
+  },
+  {
+    id: "ton",
+    bn: "সুর ও নির্ভুলতা",
+    en: "Tone and precision",
+    de: "Der Ton",
+    teile: [
+      {
+        slug: "modalpartikeln",
+        bn: "doch · mal · halt: হৃদয়ের ছোট শব্দ",
+        en: "Modal particles",
+        de: "Die Modalpartikeln",
+        icon: "heart",
+        minutes: 10,
+        blurb:
+          "এরা বিষয় বদলায় না, সুর বদলায়। বাংলার 'তো' আর 'একটু' যা করে। এটাই এই স্তরের হৃদয়।",
+      },
+      {
+        slug: "nominalstil",
+        bn: "ভারী বাক্য পড়া",
+        en: "Dense official German",
+        de: "Nominalstil und Attribute",
+        icon: "book",
+        minutes: 10,
+        blurb:
+          "das Lesen, beim Lernen, das gestern gebaute Haus। দপ্তরের ঘন বাক্য পিছন থেকে খোলার কৌশল।",
+      },
+      {
+        slug: "synonyme",
+        bn: "সঠিক শব্দ: প্রতিশব্দ ও বাগধারা",
+        en: "The exact word",
+        de: "Genau sagen",
+        icon: "cup",
+        minutes: 9,
+        blurb:
+          "'যাওয়া' মানেই gehen নয়: spazieren, wandern, schlendern। সঙ্গে কয়েকটা বাগধারা, একটা সংস্কৃতির উপহার।",
+      },
+      {
+        slug: "diplomatie",
+        bn: "নরম সুর: কূটনৈতিক জার্মান",
+        en: "Diplomatic German",
+        de: "Ton und Diplomatie",
+        icon: "hand",
+        minutes: 9,
+        blurb:
+          "একটা 'vielleicht' কড়া বাক্যের দরজাটা খোলা রাখে। ভদ্রভাবে দ্বিমত করা, সন্দেহ জানানো, জোর কমানো।",
+      },
+    ],
+  },
+  {
+    id: "welt",
+    bn: "পৃথিবী ও লেখা",
+    en: "The world, in writing",
+    de: "Die Welt",
+    teile: [
+      {
+        slug: "eroerterung",
+        bn: "বিমূর্ত তর্ক: ছয় ধাপ",
+        en: "Building an argument",
+        de: "Die Erörterung",
+        icon: "mouth",
+        minutes: 11,
+        blurb:
+          "ভূমিকা, যুক্তি, উদাহরণ, বিপরীত, ওজন, উপসংহার। এটা ঝগড়া নয়, একটা নির্মাণ।",
+      },
+      {
+        slug: "textsorten",
+        bn: "চার ধরনের লেখা",
+        en: "Four kinds of text",
+        de: "Die Textsorten",
+        icon: "book",
+        minutes: 10,
+        blurb:
+          "খবর, মতামত, আনুষ্ঠানিক চিঠি, সারাংশ। প্রতিটার নিজস্ব কণ্ঠ, আর নকল করে লেখাই শেখার পথ।",
+      },
+      {
+        slug: "satzbank",
+        bn: "সাক্ষাৎকার, সমাজ, অভিযোগ",
+        en: "The sentence bank",
+        de: "Das echte Leben IV",
+        icon: "person",
+        minutes: 10,
+        blurb:
+          "চাকরির সাক্ষাৎকারে আত্মবিশ্বাস, সমাজ নিয়ে ভারসাম্যের কথা, আর দৃঢ় কিন্তু ভদ্র অভিযোগ।",
+      },
+      {
+        slug: "plan",
+        bn: "১২০ দিনের মানচিত্র ও সাত ভুল",
+        en: "The 120-day map",
+        de: "Der Plan",
+        icon: "map",
+        minutes: 10,
+        blurb:
+          "চার ধাপ, একশো বিশ দিন। নিখুঁততা তাড়াহুড়োর নয়, ঘষামাজার। আর এই স্তরের সবচেয়ে সূক্ষ্ম ভুলটা।",
+      },
+    ],
+  },
+];
+
+/* ------------------------------------------------------------
    THE LADDER, four Stufen.
 
-   Stufe 1 is written. Stufen 2–4 are outlines: they are listed
-   so a learner can see the whole road before starting one, and
-   so the first day does not feel like a leap into fog. Their
-   Teile carry status "soon" and get a proper "আসছে" page rather
-   than a 404, a listed thing must always be a place you can go.
+   All four are written, and each is fourteen Teile: that is the
+   shape of the course, not a coincidence. What changes with the
+   level is the practice. Stufe 1 needs thirty days, Stufe 2
+   sixty, Stufe 3 ninety, because cases and the Perfekt and then
+   fluency each need more room to settle than the one before.
+
+   Stufe 4 declares no workbook at all. At B2 the daily page
+   stops being a form to fill in and becomes the news you read
+   and the argument you have, so it carries a `uebung` line
+   instead and the stage page says so rather than linking at a
+   book that was never written.
    ------------------------------------------------------------ */
 export const STUFEN = [
   {
@@ -290,136 +836,51 @@ export const STUFEN = [
   {
     slug: "stufe-2",
     kicker: "Stufe 2",
-    bn: "কারক ও অতীত",
-    en: "Cases and the past",
-    de: "Die Fälle",
+    bn: "সেতু গড়া",
+    en: "Building bridges",
+    de: "Brücken bauen",
     icon: "compass",
-    who: "স্তর ১ শেষ, এখন বাক্যের ভেতরে কে কী করছে সেটা ঠিকভাবে বলতে চান",
+    who: "স্তর ১-এর বাক্য বানানো হয়ে গেছে, এখন একটা গোটা চিন্তা বয়ে নিতে চান",
     blurb:
-      "den আর einen কেন আসে, dem আর der কোথা থেকে, আর কীভাবে গতকালের কথা বলতে হয়। স্তর ১-এ যেসব জিনিস 'তৈরি টুকরো' হিসেবে মুখস্থ করেছিলেন, এখানে সেগুলোর নিয়ম।",
-    can: "শেষে: কে কাকে কী দিল সেটা বলতে পারবেন, জায়গা ও দিক আলাদা করতে পারবেন, আর গতকাল কী করেছেন সেটা বলতে পারবেন।",
-    status: "soon",
-    workbook: { slug: "arbeitsbuch", days: 30 },
-    sections: [
-      {
-        id: "faelle",
-        bn: "চার কারক",
-        en: "The four cases",
-        de: "Die vier Fälle",
-        teile: [
-          { slug: "akkusativ", bn: "Akkusativ: den ও einen", en: "The accusative", de: "Der Akkusativ", icon: "arrow", minutes: 10, status: "soon",
-            blurb: "নীল দল বদলায়, বাকিরা বদলায় না। কর্ম হিসেবে বিশেষ্য কেমন দেখায়।" },
-          { slug: "dativ", bn: "Dativ: dem, der, den", en: "The dative", de: "Der Dativ", icon: "hand", minutes: 12, status: "soon",
-            blurb: "কাকে দিলাম, কার জন্য করলাম: তিন টুপিরই তৃতীয় চেহারা।" },
-          { slug: "praepositionen", bn: "পূর্বসর্গ: in, auf, mit, zu", en: "Prepositions", de: "Die Präpositionen", icon: "map", minutes: 12, status: "soon",
-            blurb: "কোন পূর্বসর্গ কোন কারক টানে, আর 'in der Küche' কেন der হলো।" },
-          { slug: "possessiv", bn: "mein · dein · sein: আমার, তোমার", en: "Possessives", de: "Possessivartikel", icon: "person", minutes: 9, status: "soon",
-            blurb: "kein-এর মতোই চলে, তাই একটা শিখলে আরেকটা বিনামূল্যে।" },
-        ],
-      },
-      {
-        id: "vergangenheit",
-        bn: "গতকালের কথা",
-        en: "Talking about yesterday",
-        de: "Die Vergangenheit",
-        teile: [
-          { slug: "perfekt", bn: "Perfekt: ich habe gemacht", en: "The perfect tense", de: "Das Perfekt", icon: "clock", minutes: 12, status: "soon",
-            blurb: "কথ্য জার্মানে অতীত মানেই এটা। haben না sein, সেটাই একমাত্র কঠিন প্রশ্ন।" },
-          { slug: "trennbare-verben", bn: "ভাগ হওয়া ক্রিয়া: aufstehen", en: "Separable verbs", de: "Trennbare Verben", icon: "gears", minutes: 10, status: "soon",
-            blurb: "'stehe … auf'– মাথাটা দুই নম্বরে, লেজটা বাক্যের শেষে।" },
-          { slug: "plural", bn: "বহুবচনের পাঁচ পথ", en: "Making plurals", de: "Der Plural", icon: "hat", minutes: 10, status: "soon",
-            blurb: "-e, -er, -n, -s আর উমলাউট। সুখবর: সব বহুবচনেই die।" },
-        ],
-      },
-    ],
+      "কে কাকে কী দিল, গতকাল কী হলো, আর কেন: den ও dem, Perfekt, আর weil। ফোঁটা ফোঁটা নয়, নদীর মতো জার্মান।",
+    can: "৬০ দিন পরে: গতকালের পুরো গল্পটা বলতে পারবেন, কারণ দিতে পারবেন, কে কাকে কী দিল বলতে পারবেন, আর এক মিনিট টানা কথা বলতে পারবেন।",
+    status: "live",
+    workbook: { slug: "arbeitsbuch", days: 60 },
+    sections: STUFE_2_SECTIONS,
   },
 
   {
     slug: "stufe-3",
     kicker: "Stufe 3",
-    bn: "কারণ, তুলনা ও গল্প",
-    en: "Reasons, comparisons, stories",
-    de: "Die Verbindung",
+    bn: "নদীটা খুঁজে পাওয়া",
+    en: "Finding the flow",
+    de: "Den Fluss finden",
     icon: "scroll",
-    who: "ছোট বাক্য হয়ে গেছে, এখন লম্বা কথা বলতে চান",
+    who: "ছোট বাক্য হয়ে গেছে, এখন স্টিয়ারিং ছেড়ে দিয়ে বলতে চান",
     blurb:
-      "weil, dass, wenn দিয়ে বাক্য জোড়া দেওয়া, বিশেষণের লেজ, তুলনা, ভবিষ্যৎ, আর একটা গল্প শুরু থেকে শেষ পর্যন্ত বলা।",
-    can: "শেষে: কেন কিছু করছেন সেটা ব্যাখ্যা করতে পারবেন, দুটো জিনিস তুলনা করতে পারবেন, আর একটা ঘটনা গুছিয়ে বলতে পারবেন।",
-    status: "soon",
-    workbook: { slug: "arbeitsbuch", days: 30 },
-    sections: [
-      {
-        id: "nebensatz",
-        bn: "বাক্য জোড়া দেওয়া",
-        en: "Joining sentences",
-        de: "Der Nebensatz",
-        teile: [
-          { slug: "weil-dass", bn: "weil · dass: ক্রিয়া একদম শেষে", en: "weil & dass", de: "Nebensätze", icon: "bracket", minutes: 12, status: "soon",
-            blurb: "কারণ বলতে গেলে জার্মান ক্রিয়াকে বাক্যের শেষে পাঠিয়ে দেয়।" },
-          { slug: "wenn-als", bn: "wenn · als: যখন", en: "wenn & als", de: "Zeitsätze", icon: "clock", minutes: 10, status: "soon",
-            blurb: "একবারের 'যখন' আর বারবারের 'যখন'– জার্মানে দুটো আলাদা শব্দ।" },
-          { slug: "relativsatz", bn: "যে লোকটা…: Relativsatz", en: "Relative clauses", de: "Der Relativsatz", icon: "key", minutes: 12, status: "soon",
-            blurb: "der Mann, der …, টুপিটাই জোড়ার কাজ করে।" },
-        ],
-      },
-      {
-        id: "beschreiben",
-        bn: "বর্ণনা ও তুলনা",
-        en: "Describing and comparing",
-        de: "Beschreiben",
-        teile: [
-          { slug: "adjektive", bn: "বিশেষণের লেজ", en: "Adjective endings", de: "Die Adjektive", icon: "hat", minutes: 14, status: "soon",
-            blurb: "ein guter Mann, der gute Mann: কেন লেজটা বদলায়, ছকে নয় কানে।" },
-          { slug: "vergleich", bn: "তুলনা: gut · besser · am besten", en: "Comparatives", de: "Der Vergleich", icon: "arrow", minutes: 9, status: "soon",
-            blurb: "ইংরেজির চেয়ে সহজ, কারণ ব্যতিক্রম কম।" },
-          { slug: "futur", bn: "ভবিষ্যৎ, আর কেন প্রায়ই লাগে না", en: "The future tense", de: "Das Futur", icon: "map", minutes: 8, status: "soon",
-            blurb: "'কাল যাচ্ছি' বললেই চলে, werden লাগে কম।" },
-        ],
-      },
-    ],
+      "বইয়ের অতীত, বিশেষণের লেজ, সম্বন্ধ-বাক্য, স্বপ্নের ব্যাকরণ, আর অনুবাদ ছাড়াই বলা। নতুন পাহাড় নয়, শেষ পালিশ।",
+    can: "৯০ দিন পরে: রঙিন গল্প বলতে পারবেন, ভদ্রভাবে অনুরোধ ও স্বপ্নের কথা বলতে পারবেন, তর্কে মেনে নিয়ে পাল্টা বলতে পারবেন, আর একটা আনুষ্ঠানিক ইমেল লিখতে পারবেন।",
+    status: "live",
+    workbook: { slug: "arbeitsbuch", days: 90 },
+    sections: STUFE_3_SECTIONS,
   },
 
   {
     slug: "stufe-4",
     kicker: "Stufe 4",
-    bn: "মুক্তভাবে বলা",
-    en: "Speaking freely",
-    de: "Frei sprechen",
+    bn: "সূক্ষ্ম সুর",
+    en: "The fine tones",
+    de: "Die feinen Töne",
     icon: "mouth",
-    who: "যিনি এখন মত দিতে, তর্ক করতে আর ভদ্রভাবে চিঠি লিখতে চান",
+    who: "সাবলীল হয়ে গেছে, এখন নিজেকে বলতে চান, নিখুঁতভাবে",
     blurb:
-      "Konjunktiv II দিয়ে ভদ্রতা ও কল্পনা, কর্মবাচ্য, মতামত ও তর্কের কাঠামো, আনুষ্ঠানিক চিঠি ও ইমেইল, আর পরীক্ষার প্রস্তুতি।",
-    can: "শেষে: নিজের মত যুক্তিসহ বলতে পারবেন, ভদ্রভাবে অনুরোধ ও অভিযোগ করতে পারবেন, আর একটা আনুষ্ঠানিক ইমেইল লিখতে পারবেন।",
-    status: "soon",
-    workbook: { slug: "arbeitsbuch", days: 30 },
-    sections: [
-      {
-        id: "hoeflich",
-        bn: "ভদ্রতা ও কল্পনা",
-        en: "Politeness and what-if",
-        de: "Höflichkeit",
-        teile: [
-          { slug: "konjunktiv", bn: "würde · könnte · hätte", en: "Konjunktiv II", de: "Der Konjunktiv II", icon: "heart", minutes: 12, status: "soon",
-            blurb: "'পারতেন কি'– অনুরোধ, কল্পনা আর ভদ্রতার রূপ।" },
-          { slug: "passiv", bn: "কর্মবাচ্য: werden", en: "The passive", de: "Das Passiv", icon: "gears", minutes: 10, status: "soon",
-            blurb: "কে করেছে জানা না গেলে বা জরুরি না হলে।" },
-        ],
-      },
-      {
-        id: "ausdruecken",
-        bn: "মত ও লেখা",
-        en: "Opinion and writing",
-        de: "Ausdrücken",
-        teile: [
-          { slug: "meinung", bn: "মত দেওয়া ও তর্ক করা", en: "Giving an opinion", de: "Die Meinung", icon: "mouth", minutes: 11, status: "soon",
-            blurb: "একমত, দ্বিমত, উদাহরণ, উপসংহার, কথা বলার কাঠামো।" },
-          { slug: "brief", bn: "আনুষ্ঠানিক চিঠি ও ইমেইল", en: "Formal letters & email", de: "Der Brief", icon: "scroll", minutes: 10, status: "soon",
-            blurb: "Sehr geehrte Damen und Herren থেকে Mit freundlichen Grüßen পর্যন্ত।" },
-          { slug: "pruefung", bn: "পরীক্ষা: A1 থেকে B1", en: "Sitting the exams", de: "Die Prüfung", icon: "cap", minutes: 12, status: "soon",
-            blurb: "Goethe ও telc পরীক্ষায় আসলে কী দেখা হয়, আর কীভাবে প্রস্তুতি নেবেন।" },
-        ],
-      },
-    ],
+      "খবরের কণ্ঠ, অতীতের-অতীত, আক্ষেপ, আর সেই ছোট শব্দগুলো যারা সুর বহন করে। নতুন দেয়াল নয়, শেষ ঘষামাজা।",
+    can: "শেষে: বিমূর্ত বিষয়ে গুছিয়ে তর্ক করতে পারবেন, ভদ্রভাবে দ্বিমত করতে পারবেন, আনুষ্ঠানিক চিঠি ও অভিযোগ লিখতে পারবেন, আর জার্মান খবর পড়তে পারবেন।",
+    status: "live",
+    /* No workbook, on purpose. See the note above the ladder. */
+    uebung:
+      "রোজ আসল খবর, একটা বই, একটা সিরিজ, একটা বন্ধুত্ব: এই স্তরে অনুশীলন খাতা নয়, জীবন।",
+    sections: STUFE_4_SECTIONS,
   },
 ];
 

@@ -118,7 +118,10 @@ const CARDS = [
   { file: "deutsch.png", eyebrow: "জার্মান · Deutsch von Herzen",
     title: "মন থেকে জার্মান।",
     sub: "শব্দ মুখস্থ নয়, কাঠামো · চারটা স্তর · রোজ একটা পাতার অনুশীলন", bn: true },
-  { file: "deutsch-arbeitsbuch.png", eyebrow: "Das 30-Tage-Arbeitsbuch · অনুশীলন",
+  /* One card for all three practice books. They differ in length,
+     not in kind, and a card naming a day count would be wrong on
+     two of the three pages that use it. */
+  { file: "deutsch-arbeitsbuch.png", eyebrow: "Das Arbeitsbuch · অনুশীলন",
     title: "দিনে একটা পাতা।",
     sub: "একটা ছাঁচ · পাঁচটা নমুনা · নিজের আটটা বাক্য · একটা সত্যি অনুচ্ছেদ", bn: true },
   ...STUFEN.map((st) => ({
@@ -157,7 +160,15 @@ const ASSIGN = [
   ]),
   [/^learn\//, "learn.png"],
   [/^skills\//, "skills.png"],
-  [/^deutsch\/stufe-1\/arbeitsbuch\.html$/, "deutsch-arbeitsbuch.png"],
+  /* Every practice book, before the per-Stufe rule below, which
+     would otherwise claim them for their Stufe's card. This has
+     to agree with the `og` that build-deutsch.mjs writes into the
+     workbook pages, or the two generators take turns overwriting
+     each other's tags. */
+  ...STUFEN.filter((st) => st.workbook).map((st) => [
+    new RegExp(`^deutsch\\/${st.slug}\\/${st.workbook.slug}\\.html$`),
+    "deutsch-arbeitsbuch.png",
+  ]),
   [/^deutsch\/index\.html$/, "deutsch.png"],
   ...STUFEN.map((st) => [
     new RegExp(`^deutsch\\/${st.slug}\\/`),
