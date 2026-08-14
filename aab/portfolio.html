@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <title>Portfolio &amp; Services · Reiad's Library</title>
-  <meta name="description" content="Freelance financial modeling, data analysis and finance writing by Rony Reiad, Excel models, Python/R analysis, English and Bangla content.">
+  <meta name="description" content="Freelance financial modeling, data analysis and finance writing by Rony Reiad. Four case studies you can open and drive in the browser, plus Excel models, Python and R analysis, and writing in English or Bangla.">
+  <link rel="canonical" href="https://reiad.co.uk/portfolio.html">
 
   <!-- Theme before first paint: no white flash for dark-mode readers.
        No stored choice means "follow the OS", which the CSS handles
@@ -34,7 +35,8 @@
   <link rel="alternate" type="application/rss+xml" title="Reiad's Library · Insights" href="/feed.xml">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Portfolio &amp; Services">
-  <meta property="og:description" content="Freelance financial modeling, data analysis and finance writing by Rony Reiad, Excel models, Python/R analysis, English and Bangla content.">
+  <meta property="og:description" content="Freelance financial modeling, data analysis and finance writing by Rony Reiad. Four case studies you can open and drive in the browser.">
+  <meta property="og:url" content="https://reiad.co.uk/portfolio.html">
   <meta property="og:image" content="https://reiad.co.uk/og/portfolio.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -42,13 +44,55 @@
   <meta property="og:site_name" content="Reiad's Library">
   <meta property="og:locale" content="en_GB">
   <meta name="theme-color" content="#0B3D2E">
+
+  <!-- Structured data: the home page describes the site, this
+       describes the practice. Only things stated on the page itself
+       are in here, so the markup and the rendered page cannot
+       disagree with each other. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "name": "Rony Reiad: financial modeling, data analysis and finance writing",
+    "url": "https://reiad.co.uk/portfolio.html",
+    "image": "https://reiad.co.uk/og/portfolio.png",
+    "email": "i@reiad.co.uk",
+    "priceRange": "Fixed price per project, quoted after a brief",
+    "availableLanguage": ["en", "bn"],
+    "areaServed": "Worldwide",
+    "provider": {
+      "@type": "Person",
+      "name": "Rony Reiad",
+      "url": "https://reiad.co.uk/about.html",
+      "jobTitle": "Financial modeling and analysis",
+      "alumniOf": [
+        { "@type": "CollegeOrUniversity", "name": "University of Brighton" },
+        { "@type": "CollegeOrUniversity", "name": "University of Chittagong" }
+      ],
+      "knowsLanguage": ["en", "bn"],
+      "sameAs": ["https://www.linkedin.com/in/reiad"]
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Services",
+      "itemListElement": [
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Financial modeling",
+          "description": "Three-statement models, DCF and comparable-company valuations, budgets and scenario models in Excel." } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Data analysis",
+          "description": "Cleaning, analysis and visualisation of financial and business data in Python, R or Excel." } },
+        { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Finance writing",
+          "description": "Explainers, market write-ups and research summaries in English or everyday Bangla." } }
+      ]
+    }
+  }
+  </script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to the main content</a>
 
   <header>
     <div class="wrap header-inner">
-      <a class="site-name" href="index.html">
+      <a class="site-name" href="/index.html">
     <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
       <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
       <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
@@ -75,120 +119,215 @@
   <main id="main">
     <div class="wrap">
 
+      <!-- ============================================================
+           HERO
+
+           The terms row under the buttons is the part a client
+           actually scans for. Price basis, response time, ownership
+           and NDA are the four questions that decide whether the
+           email gets written, and they were previously spread over
+           three sections and an FAQ near the bottom of the page.
+           ============================================================ -->
       <div class="hero">
-        <span class="eyebrow mono">Portfolio &amp; services</span>
+        <span class="eyebrow mono">Portfolio &amp; services · Rony Reiad</span>
         <h1>Models, analysis and writing: shown, not told.</h1>
         <p class="lede">
-          I take on freelance projects in three areas. Every engagement starts with
-          a short brief and ends with working files you own, not screenshots.
+          Freelance financial modeling, data analysis and finance writing. Every
+          engagement starts with a short brief and ends with working files you
+          own, not screenshots. The four case studies below are live: open one and
+          drag the assumptions about.
         </p>
         <div class="hero-actions">
-          <a class="btn btn-solid" href="contact.html">Start a project</a>
+          <a class="btn btn-solid" href="/contact.html">Start a project</a>
+          <a class="btn btn-ghost" href="#work">See the work</a>
+        </div>
+        <ul class="terms-row" aria-label="Terms, in brief">
+          <li>Fixed price per project</li>
+          <li>Quote within one business day</li>
+          <li>You own the files</li>
+          <li>NDA on request</li>
+        </ul>
+      </div>
+
+      <!-- ============ THE WORK, IN NUMBERS ============
+           Every figure here is stated somewhere it can be checked:
+           the case-study count is the four cards below, the
+           fund-months and the six views are printed on the pages
+           they describe, and the business day is the promise made
+           in the process section and the FAQ. -->
+      <div class="strip" aria-label="The work on this page, in numbers">
+        <div>
+          <span class="n">4</span>
+          <span class="l">case studies you can open and drive in the browser</span>
+        </div>
+        <div>
+          <span class="n">19,577</span>
+          <span class="l">fund-months behind the dissertation's regressions</span>
+        </div>
+        <div>
+          <span class="n">6</span>
+          <span class="l">linked views over one price series in the index analysis</span>
+        </div>
+        <div>
+          <span class="n">1 day</span>
+          <span class="l">from brief to scope, delivery date and a fixed price</span>
         </div>
       </div>
 
-      <section>
-        <span class="section-label mono">What I do</span>
-        <div class="rows">
-          <div class="row">
-            <span class="k mono">Financial modeling</span>
-            <span class="v">Three-statement models, DCF and comparable-company
-              valuations, budgets and scenario models, built in Excel with a clean
-              assumptions tab so you can change the inputs yourself.</span>
-          </div>
-          <div class="row">
-            <span class="k mono">Data analysis</span>
-            <span class="v">Cleaning, analyzing and visualizing financial or business
-              data in Python, R or Excel. Dashboards and summary decks that answer
-              a specific question.</span>
-          </div>
-          <div class="row">
-            <span class="k mono">Finance writing</span>
-            <span class="v">Explainers, market write-ups, research summaries and
-              educational content. Accurate, sourced, in English or everyday Bangla.</span>
-          </div>
-        </div>
-      </section>
+      <!-- ============================================================
+           SELECTED WORK
 
-      <section>
+           This section used to sit third, under two lists describing
+           the services. It is the reason someone is on the page, so
+           it comes first now, and each card carries the facts that
+           make it checkable: the forecast horizon, the sample size,
+           the number of views. The lead card is the three-statement
+           model because the DCF is built on top of it, so it is the
+           one to read first.
+
+           These are real and finished. If a fifth lands, copy the
+           card markup, keep the four facts honest, and add it to
+           PAGES in content.js so the menu and the search palette
+           pick it up too.
+           ============================================================ -->
+      <section id="work">
         <span class="section-label mono">Selected work</span>
-        <!-- These four cards are placeholders (dashed borders). Replace
-             each with a real sample as it's finished: swap the <em> text
-             for a description and link the file, e.g.
-             <a class="more" href="files/model.xlsx">Download the model →</a>
-             (put downloadable files in a /files folder in the repo). -->
-        <div class="grid-2">
-          <a class="cell sample-card work-card" href="/portfolio/three-statement.html">
-            <span class="tag mono">Financial model · Interactive</span>
+        <p class="section-intro measure">
+          Four pieces, all interactive, all running their own arithmetic in your
+          browser. Nothing is a picture of a spreadsheet: change an input and
+          every number downstream of it moves, which is the only honest way to
+          show that a model works.
+        </p>
+
+        <a class="cell work-card work-lead" href="/portfolio/three-statement.html">
+          <svg class="work-art" viewBox="0 0 240 72" aria-hidden="true">
+            <line class="wa-grid" x1="10" y1="62" x2="230" y2="62"/>
+            <rect class="wa-bar" x="18" y="40" width="26" height="22" rx="2"/>
+            <rect class="wa-bar" x="56" y="34" width="26" height="28" rx="2"/>
+            <rect class="wa-bar" x="94" y="27" width="26" height="35" rx="2"/>
+            <rect class="wa-bar" x="132" y="21" width="26" height="41" rx="2"/>
+            <rect class="wa-bar" x="170" y="13" width="26" height="49" rx="2"/>
+            <path class="wa-line" d="M31,49 L69,43 L107,34 L145,30 L183,19"/>
+            <circle class="wa-dot" cx="183" cy="19" r="3.5"/>
+          </svg>
+          <div class="work-copy">
+            <span class="tag mono">Featured · Financial model</span>
             <h3>Three-statement model: DSE-listed manufacturer</h3>
             <p>Linked income statement, balance sheet and cash flow, with a
-              scenario switch and a live balance check. Drag any assumption and
-              all three statements move, in the browser, no download needed.</p>
+              scenario switch and a balance check that is computed rather than
+              asserted: if the model were wrong, it would say so. Drag any
+              assumption and all three statements, the charts and the credit
+              metrics move with it.</p>
+            <ul class="work-facts">
+              <li>FY24A to FY29E</li>
+              <li>Three scenarios</li>
+              <li>Live balance check</li>
+              <li>CSV export</li>
+            </ul>
             <span class="more">Open the model →</span>
+          </div>
+        </a>
+
+        <div class="grid-3 work-grid">
+          <a class="cell work-card" href="/portfolio/dcf.html">
+            <svg class="work-art" viewBox="0 0 240 72" aria-hidden="true">
+              <line class="wa-grid" x1="10" y1="62" x2="230" y2="62"/>
+              <rect class="wa-bar" x="18" y="31" width="22" height="31" rx="2"/>
+              <rect class="wa-bar" x="48" y="35" width="22" height="27" rx="2"/>
+              <rect class="wa-bar" x="78" y="39" width="22" height="23" rx="2"/>
+              <rect class="wa-bar" x="108" y="43" width="22" height="19" rx="2"/>
+              <rect class="wa-bar" x="138" y="46" width="22" height="16" rx="2"/>
+              <rect class="wa-bar-gold" x="176" y="17" width="42" height="45" rx="2"/>
+              <path class="wa-line-dash" d="M29,27 L149,42"/>
+            </svg>
+            <div class="work-copy">
+              <span class="tag mono">Valuation · Interactive</span>
+              <h3>DCF with sensitivity tables</h3>
+              <p>WACC built up from its parts, two terminal value methods that
+                quote each other back, and a two-way grid on WACC and terminal
+                growth where every cell is a full revaluation and clicking one
+                adopts it.</p>
+              <ul class="work-facts">
+                <li>WACC built up, not typed in</li>
+                <li>Two terminal methods</li>
+                <li>Fed by the model above</li>
+              </ul>
+              <span class="more">Open the valuation →</span>
+            </div>
           </a>
-          <a class="cell sample-card work-card" href="/portfolio/dcf.html">
-            <span class="tag mono">Valuation · Interactive</span>
-            <h3>DCF with sensitivity tables</h3>
-            <p>WACC built up from its parts, two terminal value methods that
-              cross-check each other, and a two-way sensitivity grid on WACC and
-              terminal growth where every cell is a full revaluation.</p>
-            <span class="more">Open the valuation →</span>
+
+          <a class="cell work-card" href="/portfolio/dsex.html">
+            <svg class="work-art" viewBox="0 0 240 72" aria-hidden="true">
+              <rect class="wa-band" x="100" y="10" width="62" height="52"/>
+              <path class="wa-fill" d="M10,54 L44,45 L78,51 L112,33 L146,47 L180,28 L214,33 L230,17 L230,62 L10,62 Z"/>
+              <path class="wa-line" d="M10,54 L44,45 L78,51 L112,33 L146,47 L180,28 L214,33 L230,17"/>
+              <line class="wa-grid" x1="10" y1="62" x2="230" y2="62"/>
+            </svg>
+            <div class="work-copy">
+              <span class="tag mono">Data analysis · Interactive</span>
+              <h3>Index returns: volatility and drawdowns</h3>
+              <p>Rolling volatility, drawdown episodes with their recovery times,
+                fat-tail diagnostics against a normal curve, and what actually
+                happened to someone who held for a day, a year or five.</p>
+              <ul class="work-facts">
+                <li>Six linked views</li>
+                <li>Your CSV, parsed in the browser</li>
+                <li>Demo series marked as simulated</li>
+              </ul>
+              <span class="more">Open the analysis →</span>
+            </div>
           </a>
-          <a class="cell sample-card work-card" href="/portfolio/dsex.html">
-            <span class="tag mono">Data analysis · Interactive</span>
-            <h3>Index returns: volatility &amp; drawdowns</h3>
-            <p>Rolling volatility, drawdown episodes with recovery times, fat-tail
-              diagnostics and holding-period outcomes, six linked views. Drop in
-              a CSV of real prices and the whole page recomputes.</p>
-            <span class="more">Open the analysis →</span>
-          </a>
-          <a class="cell sample-card work-card" href="/portfolio/dissertation.html">
-            <span class="tag mono">Empirical research · Interactive</span>
-            <h3>Islamic vs conventional funds: an MSc dissertation</h3>
-            <p>220 UK equity funds, 19,577 fund-months, five-factor and Carhart
-              models, drawdown and idiosyncratic risk. The hypothesis failed,
-              and the power analysis shows why a sample of three could never
-              have tested it. Every table and series is the submitted one.</p>
-            <span class="more">Read the research →</span>
+
+          <a class="cell work-card" href="/portfolio/dissertation.html">
+            <svg class="work-art" viewBox="0 0 240 72" aria-hidden="true">
+              <line class="wa-zero" x1="120" y1="8" x2="120" y2="64"/>
+              <line class="wa-ci" x1="52" y1="27" x2="198" y2="27"/>
+              <circle class="wa-point" cx="142" cy="27" r="4"/>
+              <line class="wa-ci" x1="74" y1="50" x2="178" y2="50"/>
+              <circle class="wa-point" cx="108" cy="50" r="4"/>
+            </svg>
+            <div class="work-copy">
+              <span class="tag mono">Empirical research · Interactive</span>
+              <h3>Islamic vs conventional funds: an MSc dissertation</h3>
+              <p>The hypothesis was that Shariah-compliant funds carry less risk.
+                It failed, and the power analysis then showed why a sample of
+                three could never have tested it. Every table and series on the
+                page is the submitted one.</p>
+              <ul class="work-facts">
+                <li>220 UK equity funds</li>
+                <li>19,577 fund-months</li>
+                <li>Five-factor and Carhart</li>
+              </ul>
+              <span class="more">Read the research →</span>
+            </div>
           </a>
         </div>
       </section>
 
-      <section>
-        <span class="section-label mono">How it works</span>
-        <div class="rows">
-          <div class="row">
-            <span class="k mono">1 · Brief</span>
-            <span class="v">Send what you need with any files or examples, through
-              the <a href="/contact.html">contact form</a> or
-              <a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a>.</span>
-          </div>
-          <div class="row">
-            <span class="k mono">2 · Quote</span>
-            <span class="v">I reply within one business day with scope, delivery date
-              and a fixed price. No surprises mid-project.</span>
-          </div>
-          <div class="row">
-            <span class="k mono">3 · Delivery</span>
-            <span class="v">You get the working files (model, code, or draft) plus
-              one round of revisions included.</span>
-          </div>
-        </div>
-        <p style="margin-top:26px">
-          Prefer platform protection? I also take projects through Fiverr and
-          Upwork; <a href="/contact.html">get in touch</a> and I'll share the
-          current profile links.
+      <!-- ============================================================
+           SERVICES
+
+           One section, not two. This page used to describe the three
+           services near the top and then describe the same three
+           again further down under "what you actually receive",
+           which read as padding and made the page feel longer than
+           its content. The description and the deliverables belong
+           in the same card.
+           ============================================================ -->
+      <section id="services">
+        <span class="section-label mono">What I do</span>
+        <p class="section-intro measure">
+          Three services, one standard across them: the working file is the
+          deliverable, the assumptions are visible, and nothing arrives locked.
         </p>
-      </section>
-
-
-      <!-- ============ WHAT YOU GET ============ -->
-      <section>
-        <span class="section-label mono">What you actually receive</span>
         <div class="grid-3">
-          <div class="cell">
+          <div class="cell svc-card">
             <span class="tag mono">Financial modeling</span>
             <h3>A model you can edit</h3>
+            <p>Three-statement models, DCF and comparable-company valuations,
+              budgets and scenario models, built in Excel with a clean
+              assumptions tab so you can change the inputs yourself.</p>
+            <span class="svc-k mono">What you receive</span>
             <ul class="checks">
               <li>One assumptions tab, colour-coded: blue inputs, black formulas, nothing hard-coded</li>
               <li>Three linked statements that balance, with the check row visible</li>
@@ -198,9 +337,13 @@
               <li>A walkthrough call, so the model outlives the engagement</li>
             </ul>
           </div>
-          <div class="cell">
+          <div class="cell svc-card">
             <span class="tag mono">Data analysis</span>
             <h3>An answer, plus the working</h3>
+            <p>Cleaning, analyzing and visualizing financial or business data in
+              Python, R or Excel. Dashboards and summary decks that answer a
+              specific question rather than displaying everything at once.</p>
+            <span class="svc-k mono">What you receive</span>
             <ul class="checks">
               <li>The question stated precisely before any code is written</li>
               <li>Cleaning steps documented: what was dropped, and why</li>
@@ -210,9 +353,13 @@
               <li>Raw outputs handed over, not just the pretty version</li>
             </ul>
           </div>
-          <div class="cell">
+          <div class="cell svc-card">
             <span class="tag mono">Finance writing</span>
             <h3>Copy that survives an expert reader</h3>
+            <p>Explainers, market write-ups, research summaries and educational
+              content. Accurate, sourced, and written in English or in everyday
+              Bangla rather than textbook Bangla.</p>
+            <span class="svc-k mono">What you receive</span>
             <ul class="checks">
               <li>English or Bangla, in your house style</li>
               <li>Every factual claim sourced, with links in the draft</li>
@@ -221,6 +368,97 @@
               <li>Two revision rounds included as standard</li>
               <li>Compliance-safe phrasing where a regulator might read it</li>
             </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ HOW IT WORKS ============ -->
+      <section>
+        <span class="section-label mono">How it works</span>
+        <div class="path">
+          <div class="cell">
+            <span class="tag mono">Step one</span>
+            <h3>The brief</h3>
+            <p>Send what you need with any files or examples, through the
+              <a href="/contact.html">contact form</a> or straight to
+              <a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a>. A paragraph and a
+              spreadsheet is enough to start.</p>
+          </div>
+          <div class="cell">
+            <span class="tag mono">Step two</span>
+            <h3>The quote</h3>
+            <p>A reply within one business day with scope, a delivery date and a
+              fixed price. The price does not move unless the scope does, so the
+              estimate is my problem rather than yours.</p>
+          </div>
+          <div class="cell">
+            <span class="tag mono">Step three</span>
+            <h3>Delivery</h3>
+            <p>The working files (model, code or draft), a walkthrough of how they
+              fit together, and one round of revisions included. Ownership
+              transfers on final payment.</p>
+          </div>
+        </div>
+        <p class="note">
+          Prefer the protection of a platform? I also take projects through Fiverr
+          and Upwork. <a href="/contact.html">Get in touch</a> and I will share the
+          current profile links.
+        </p>
+      </section>
+
+      <!-- ============================================================
+           WHO IS DOING THE WORK
+
+           New, and the largest gap this page had. A services page
+           with no named credentials asks a stranger to send
+           commercial data to an email address on trust. The detail
+           lives on the About page; this is the short version, with
+           the route there.
+           ============================================================ -->
+      <section id="who">
+        <span class="section-label mono">Who does the work</span>
+        <div class="cred">
+          <div class="cred-main">
+            <h2>One person, start to finish, and I answer my own email.</h2>
+            <p>
+              I am Rony Reiad. Economics at the University of Chittagong, then an
+              MSc in Finance and Risk Management at the University of Brighton,
+              finishing with an Upper Merit, and CFA Level 1 in the November 2026
+              window. No agency, no account manager, no handoff to someone you
+              have not spoken to.
+            </p>
+            <p>
+              Everything on this site is my own build: the case studies above, the
+              calculators in the Tools hub, and a Bangla learning library that
+              exists because financial education in Bangladesh usually fails
+              people at the language step rather than the maths step. It is the
+              closest thing to a work sample a first email can offer.
+            </p>
+            <p class="cred-links">
+              <a href="/about.html">The full background</a>
+              <a href="https://www.linkedin.com/in/reiad" rel="noopener">LinkedIn</a>
+              <a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a>
+            </p>
+          </div>
+          <div class="cred-kit">
+            <div class="cred-group">
+              <span class="cred-k mono">Modeling</span>
+              <ul class="chips">
+                <li>Excel</li><li>Three-statement</li><li>DCF</li><li>Credit analysis</li>
+              </ul>
+            </div>
+            <div class="cred-group">
+              <span class="cred-k mono">Analysis</span>
+              <ul class="chips">
+                <li>Python</li><li>R</li><li>Stata</li><li>SPSS</li><li>EViews</li>
+              </ul>
+            </div>
+            <div class="cred-group">
+              <span class="cred-k mono">Data</span>
+              <ul class="chips">
+                <li>Bloomberg Terminal</li><li>DSE filings</li><li>Time-series</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -294,9 +532,12 @@
           </details>
           <details class="faq">
             <summary>Can I see the code or the model first?</summary>
-            <p>Sample work is going up on this page as it's built: models with the
-               assumptions visible, analyses with the notebooks attached. Until then,
-               ask and I'll walk you through a redacted example on a call.</p>
+            <p>You already can. The four case studies above are the samples: open
+               one, drag the assumptions, download the CSV, read the notes on where
+               each number came from. They run the same arithmetic a client build
+               would, on companies and data small enough to publish. For work that
+               sits under an NDA, ask and I'll walk you through a redacted example
+               on a call.</p>
           </details>
         </div>
       </section>

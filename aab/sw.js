@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v37: the portfolio page was rebuilt around the work rather than
+        around the description of it, and styles.css gained the
+        components that page is set in: the terms row, the card art
+        and facts, the featured case-study card, and the credentials
+        panel. .chips moved out of the About layer into components
+        at the same time, since two pages list a toolkit now. The
+        markup is useless without those rules, so the stylesheet has
+        to arrive with it rather than one deploy behind.
+
    v36: the em dash is gone from the whole site. 1,420 of them became
         commas, colons or en dashes, in page copy, in Bangla lesson
         text, in the strings scripts write into the DOM and in the
@@ -183,7 +192,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v36";
+const VERSION = "v37";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
