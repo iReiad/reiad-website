@@ -21,6 +21,9 @@ import { api, uploadMedia, notion } from "/api.js";
 import {
   liveArticles, SECTIONS, findSection, pieceUrl, livePieces,
 } from "/content.js";
+import {
+  SHARE_W, SHARE_H, shareCardBlob, coverFromDocument, cardSlug, cardShape,
+} from "/share-card.js";
 
 /* ============================================================
    Elements
@@ -56,6 +59,12 @@ const nowLine = $("#now-line");
 const current = {
   draftId: null,
   slug: null,
+  /* The section the piece is published in, which is not always the
+     one the picker is showing: changing the picker on an open piece
+     is a request to move it, and until it is saved the live URL is
+     still the old one. "View" and the line under the toolbar have to
+     say where it actually is. */
+  section: null,
   notionPageId: null,
 };
 
@@ -166,11 +175,14 @@ function renderTopics() {
     });
     chip.append(
       Object.assign(document.createElement("span"), { textContent: t }),
+      /* ariaLabel, not "aria-label": Object.assign sets properties,
+         and a property by that name is just a property. The chip
+         read as "✕" to a screen reader for as long as it existed. */
       Object.assign(document.createElement("button"), {
         type: "button",
         className: "topic-x",
         title: `Remove ${t}`,
-        "aria-label": `Remove ${t}`,
+        ariaLabel: `Remove the topic ${t}`,
         textContent: "✕",
         onclick: () => { topics.splice(i, 1); renderTopics(); onEdit(); },
       })
@@ -236,9 +248,15 @@ function wireTopics() {
     if (input.value.trim() && addTopics(input.value)) input.value = "";
   });
 
-  // Picking from the datalist fires input, not keydown.
-  input.addEventListener("input", () => {
-    if (knownTopics().includes(input.value) && addTopics(input.value)) input.value = "";
+  /* Picking from the datalist fires input, not keydown, and the
+     browser says so: a click on a suggestion is an
+     insertReplacementText, ordinary typing is an insertText. Without
+     that test the field committed a chip the moment what was typed
+     happened to match an existing topic, so typing "Visas" turned
+     into a chip at "Visa" and left the writer holding an "s". */
+  input.addEventListener("input", (e) => {
+    const picked = !e.inputType || e.inputType === "insertReplacementText";
+    if (picked && input.value.trim() && addTopics(input.value)) input.value = "";
   });
 
   $("#topic-field")?.addEventListener("click", (e) => {
@@ -281,11 +299,25 @@ const ATTRS = {
    tool that writes to it, and every callout imported from Notion
    arrived flattened. */
 const KEEP_CLASSES = new Set([
-  "wide", "duo", "table-scroll", "term", "note", "ex", "lead-photo",
+  /* photos: how big, what shape, and which part to keep */
+  "wide", "full", "duo", "lead-photo",
+  "frame-wide", "frame-square", "frame-tall", "focus-top", "focus-bottom",
+  /* the blocks a long read is made of */
+  "at-a-glance", "at-a-glance-label", "side-note", "side-note-label",
+  "step-list", "checklist", "figures", "fig",
+  "table-scroll", "term", "note", "ex",
 ]);
 
+/* Which tags may carry one of those classes. The server's
+   allowlist says the same thing in its own shape; a class kept
+   here on a tag the server strips it from is a block that looks
+   right in the editor and arrives plain. */
+const CLASS_CARRIERS = new Set(["DIV", "P", "UL", "OL", "FIGURE", "A"]);
+
 const keptClasses = (node) =>
-  [...(node.classList ?? [])].filter((c) => KEEP_CLASSES.has(c));
+  CLASS_CARRIERS.has(node.tagName)
+    ? [...(node.classList ?? [])].filter((c) => KEEP_CLASSES.has(c))
+    : [];
 
 /** Turn arbitrary HTML into the small set of tags the site styles. */
 export function sanitize(html) {
@@ -643,10 +675,74 @@ function blockOf(node) {
   return el && el !== editor ? el : null;
 }
 
-/** Insert a block and put the caret where the writing goes.
-    `data-fill` marks that spot; it never survives sanitize(). */
+/** Put the caret after the top-level block it is sitting in.
+
+    A block is a thing beside other things, never a thing inside
+    one. Without this, inserting a checklist while the caret was in
+    the first line of a numbered list nested one list inside the
+    other, and the browser threw the class away merging them: the
+    block simply did not appear. It also means that asking for a
+    note halfway through a paragraph puts the note after the
+    paragraph rather than splitting it in two. */
+const BLOCK_SEL = "p,h2,h3,ul,ol,blockquote,figure,hr,table,"
+  + "div.note,div.ex,div.at-a-glance,div.side-note,div.figures,div.table-scroll";
+
+/** The outermost block the node sits in.
+
+    Not blockOf(): that one answers "which child of the editor",
+    which is a different question and a wrong one here, because a
+    contenteditable quietly wraps things in bare <div>s of its own
+    as you type and the answer becomes "all of it". This walks up
+    to the outermost thing that is actually one of the article's
+    blocks, so the first line of a list inside a glance box gives
+    the glance box, and a stray wrapper gives nothing. */
+function outerBlock(node) {
+  let el = node?.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+  let found = null;
+  while (el && el !== editor) {
+    if (el.matches?.(BLOCK_SEL)) found = el;
+    el = el.parentElement;
+  }
+  return found;
+}
+
+/** Insert a block beside the one the caret is in, and put the
+    caret where the writing goes. `data-fill` marks that spot; it
+    never survives sanitize().
+
+    This builds the nodes and places them itself rather than going
+    through execCommand, which is the one place in this file where
+    that is worth doing. execCommand normalises what it inserts
+    against what is already there, and its idea of normal is not
+    ours: a checklist inserted next to a numbered list had its
+    items folded into that list and its class dropped, so the block
+    silently did not appear. The cost is that this insertion is not
+    on the browser's undo stack; the block is one Backspace from
+    gone either way. */
 function insertBlockHtml(html) {
-  insertHtmlAtCaret(html);
+  editor.focus();
+  const fragment = document.createRange().createContextualFragment(html);
+  const added = [...fragment.children];
+  const sel = getSelection();
+  const here = sel?.rangeCount ? outerBlock(sel.getRangeAt(0).startContainer) : null;
+
+  if (!here) {
+    editor.append(fragment);
+  } else if (here.tagName === "P" && !here.textContent.trim()) {
+    // An empty paragraph is where the caret waits, not content.
+    here.replaceWith(fragment);
+  } else {
+    here.after(fragment);
+  }
+
+  /* Somewhere to carry on typing, once, rather than a blank line
+     per block for as long as you keep adding them. */
+  const tail = added[added.length - 1];
+  const next = tail?.nextElementSibling;
+  if (tail && !(next?.tagName === "P" && !next.textContent.trim())) {
+    tail.after(Object.assign(document.createElement("p"), { innerHTML: "<br>" }));
+  }
+
   const target = editor.querySelector("[data-fill]");
   if (target) {
     target.removeAttribute("data-fill");
@@ -662,22 +758,82 @@ const TABLE_SKELETON =
   + "<th data-fill>Column</th><th>Column</th><th>Column</th></tr></thead><tbody>"
   + "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>"
   + "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>"
-  + "</tbody></table></div><p><br></p>";
+  + "</tbody></table></div>";
 
+/* The labels inside a block are written in the language the piece
+   is in, because they are copy, not chrome: a Bangla piece with an
+   English "At a glance" over its Bangla facts is a piece with an
+   English word in it. Every one of them is selected on insert, so
+   the first thing you type replaces it. */
+const WORDS = {
+  en: {
+    glance: "At a glance", glanceItem: "The first thing worth knowing.",
+    note: "Worth knowing", noteBody: "The bit people get wrong.",
+    step: "The first step.", check: "The first thing to take.",
+    figure: "What it costs", flag: "Something worth flagging.",
+    example: "A worked example.",
+  },
+  bn: {
+    glance: "এক নজরে", glanceItem: "প্রথম যেটা জানা দরকার।",
+    note: "খেয়াল রাখুন", noteBody: "যেখানে বেশিরভাগ ভুলটা হয়।",
+    step: "প্রথম ধাপ।", check: "প্রথম যেটা সঙ্গে নেবেন।",
+    figure: "কত খরচ", flag: "যেটা মনে রাখা দরকার।",
+    example: "একটা উদাহরণ।",
+  },
+};
+
+/** The words for the language the piece is being written in. */
+const words = () => WORDS[fields.lang?.value === "bn" ? "bn" : "en"];
+
+/* The blocks a long read is made of, as one list.
+   `label` is what the slash menu and the toolbar show, `hint` is
+   the line under it, and `html` is what lands at the caret with
+   `data-fill` marking where the writing starts.
+
+   These exist because the travel piece needed all five and none of
+   them could be made from inside the Studio: they were typed as raw
+   HTML into the file by hand, which is exactly the thing this tool
+   is for not doing. */
 const BLOCKS = [
   { label: "Heading", hint: "Section heading", run: () => exec("formatBlock", "h2") },
   { label: "Sub-heading", hint: "Under a heading", run: () => exec("formatBlock", "h3") },
   { label: "Bullet list", hint: "Unordered", run: () => exec("insertUnorderedList") },
   { label: "Numbered list", hint: "Ordered", run: () => exec("insertOrderedList") },
   { label: "Quote", hint: "Pulled out, green rule", run: () => exec("formatBlock", "blockquote") },
-  { label: "Note", hint: "Gold-edged aside",
-    run: () => insertBlockHtml('<div class="note" data-fill>Something worth flagging.</div><p><br></p>') },
-  { label: "Example", hint: "Tinted worked example",
-    run: () => insertBlockHtml('<div class="ex" data-fill>A worked example.</div><p><br></p>') },
+
+  /* ---- the five from the travel piece ---- */
+  { label: "At a glance", hint: "Gold box of quick answers", key: "at-a-glance",
+    html: () => `<div class="at-a-glance"><p class="at-a-glance-label">${words().glance}</p>`
+      + `<ul><li data-fill>${words().glanceItem}</li><li>…</li><li>…</li></ul></div>` },
+  { label: "Key point", hint: "Note at the end of a part", key: "side-note",
+    html: () => `<div class="side-note"><p class="side-note-label">${words().note}</p>`
+      + `<p data-fill>${words().noteBody}</p></div>` },
+  { label: "Steps", hint: "Numbered, in circles", key: "step-list",
+    html: () => `<ol class="step-list"><li data-fill>${words().step}</li><li>…</li><li>…</li></ol>` },
+  { label: "Checklist", hint: "Ticks, order doesn't matter", key: "checklist",
+    html: () => `<ul class="checklist"><li data-fill>${words().check}</li><li>…</li><li>…</li></ul>` },
+  { label: "Key figures", hint: "The two or three numbers", key: "figures",
+    html: () => `<div class="figures">`
+      + `<div class="fig"><strong data-fill>৳0</strong>${words().figure}</div>`
+      + `<div class="fig"><strong>0</strong>…</div>`
+      + `<div class="fig"><strong>0</strong>…</div></div>` },
+
+  { label: "Note", hint: "Gold-edged aside", key: "note",
+    html: () => `<div class="note" data-fill>${words().flag}</div>` },
+  { label: "Example", hint: "Tinted worked example", key: "ex",
+    html: () => `<div class="ex" data-fill>${words().example}</div>` },
   { label: "Table", hint: "Scrolls on a phone", run: () => insertBlockHtml(TABLE_SKELETON) },
-  { label: "Divider", hint: "Horizontal rule", run: () => insertBlockHtml("<hr><p><br></p>") },
+  { label: "Divider", hint: "Horizontal rule", run: () => insertBlockHtml("<hr>") },
   { label: "Photo", hint: "Resized and re-encoded", run: () => $("#photo-input").click() },
 ];
+
+/** Every block can be run the same way, whether it brought a
+    function or a piece of markup. */
+const runBlock = (block) => (block.run ? block.run() : insertBlockHtml(block.html()));
+
+/** The toolbar's block buttons name a block by its class; this is
+    how markup in studio.html and the list above stay one list. */
+const blockByKey = (key) => BLOCKS.find((b) => b.key === key);
 
 /* ---------- markdown, for the shapes people type anyway ---------- */
 
@@ -687,7 +843,7 @@ const INPUT_RULES = [
   { re: /^[-*+]$/, run: () => exec("insertUnorderedList") },
   { re: /^1[.)]$/, run: () => exec("insertOrderedList") },
   { re: /^>$/, run: () => exec("formatBlock", "blockquote") },
-  { re: /^---$/, run: () => insertBlockHtml("<hr><p><br></p>") },
+  { re: /^---$/, run: () => insertBlockHtml("<hr>") },
 ];
 
 editor.addEventListener("input", (e) => {
@@ -796,6 +952,15 @@ function caretRect() {
   return blockOf(sel.getRangeAt(0).startContainer)?.getBoundingClientRect() ?? null;
 }
 
+/* The toolbar's Blocks row. Same list as the slash menu, for the
+   writer who would rather see the options than remember them. */
+document.querySelectorAll("[data-block]").forEach((btn) => {
+  const block = blockByKey(btn.dataset.block);
+  if (!block) return;
+  btn.title = `${block.label}: ${block.hint}`;
+  btn.addEventListener("click", () => { editor.focus(); runBlock(block); });
+});
+
 function runSlash(index) {
   const item = slashShown[index];
   if (!item || !slash) return;
@@ -811,7 +976,7 @@ function runSlash(index) {
   }
   closeSlash();
   editor.focus();
-  item.run();
+  runBlock(item);
   onEdit();
 }
 
@@ -879,34 +1044,93 @@ function hideFigBar() {
   figBar.hidden = true;
 }
 
+/* The three decisions a photo needs, as three sets of classes.
+   Each set is exclusive: picking one clears the others, so a
+   figure can never be both square and 16:9 and the markup never
+   accumulates the history of what you tried. */
+const FIG_SIZES = [
+  ["", "Normal", "As wide as the text"],
+  ["wide", "Wide", "Wider than the text"],
+  ["full", "Full", "Edge to edge"],
+];
+const FIG_FRAMES = [
+  ["", "As shot", "Whatever shape it came in"],
+  ["frame-wide", "16:9", "Cropped wide"],
+  ["frame-square", "Square", "Cropped square"],
+  ["frame-tall", "4:5", "Cropped tall"],
+];
+const FIG_FOCUS = [
+  ["", "Centre", "Keep the middle"],
+  ["focus-top", "Top", "Keep the top"],
+  ["focus-bottom", "Bottom", "Keep the bottom"],
+];
+
+/** Set one class out of a set, or none of them. */
+function setFromSet(figure, set, wanted) {
+  set.forEach(([cls]) => { if (cls) figure.classList.remove(cls); });
+  if (wanted) figure.classList.add(wanted);
+}
+
+const chosenFrom = (figure, set) =>
+  set.find(([cls]) => cls && figure.classList.contains(cls))?.[0] ?? "";
+
 function showFigBar(img) {
   activeFigure = img;
   const figure = img.closest("figure");
 
-  const chip = (label, pressed, onClick) => {
+  const chip = (label, pressed, onClick, title) => {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "chip";
     b.textContent = label;
+    if (title) b.title = title;
     if (pressed !== null) b.setAttribute("aria-pressed", String(pressed));
     b.addEventListener("mousedown", (e) => { e.preventDefault(); onClick(); });
     return b;
   };
 
-  const toggle = (cls) => {
-    if (!figure) return;
-    figure.classList.toggle(cls);
-    onEdit();
-    showFigBar(img);
+  /** One labelled row of mutually exclusive chips. */
+  const group = (name, set) => {
+    if (!figure) return null;
+    const chosen = chosenFrom(figure, set);
+    const row = document.createElement("span");
+    row.className = "fig-group";
+    row.append(
+      Object.assign(document.createElement("span"), { className: "mono", textContent: name }),
+      ...set.map(([cls, label, hint]) =>
+        chip(label, cls === chosen, () => {
+          setFromSet(figure, set, cls);
+          onEdit();
+          showFigBar(img);
+        }, hint))
+    );
+    return row;
   };
 
+  const lead = !!figure?.classList.contains("lead-photo");
+
   figBar.replaceChildren(
-    chip(img.getAttribute("alt")?.trim() ? "Alt text ✓" : "Alt text", null, () => {
+    group("Size", FIG_SIZES),
+    group("Shape", FIG_FRAMES),
+    /* Which part to keep. It only does anything once the photo is
+       being cropped, either by a frame here or by the 1200x630
+       share card, so it says so rather than sitting there inert. */
+    group("Keep", FIG_FOCUS),
+    chip(img.getAttribute("alt")?.trim() ? "Alt ✓" : "Alt", null, () => {
       const alt = prompt("Describe the photo for a screen reader:", img.getAttribute("alt") ?? "");
       if (alt !== null) { img.setAttribute("alt", alt.trim()); onEdit(); showFigBar(img); }
-    }),
-    figure ? chip("Wide", figure.classList.contains("wide"), () => toggle("wide")) : null,
-    figure ? chip("Lead", figure.classList.contains("lead-photo"), () => toggle("lead-photo")) : null,
+    }, "What a screen reader says instead of showing it"),
+    figure ? chip(lead ? "Lead ✓" : "Lead", lead, () => {
+      /* One lead photo per piece: it is the one the share card is
+         made from, and two of them is a question with no answer. */
+      if (!lead) {
+        editor.querySelectorAll("figure.lead-photo")
+          .forEach((f) => f.classList.remove("lead-photo"));
+      }
+      figure.classList.toggle("lead-photo", !lead);
+      onEdit();
+      showFigBar(img);
+    }, "Use this one for the social share card") : null,
     chip("Remove", null, () => {
       if (!confirm("Remove this photo?")) return;
       (figure ?? img).remove();
@@ -916,8 +1140,14 @@ function showFigBar(img) {
   );
 
   const rect = img.getBoundingClientRect();
-  figBar.style.left = `${Math.max(8, rect.left)}px`;
-  figBar.style.top = `${Math.max(8, rect.top - 42)}px`;
+  /* Above the photo if there is room, below it if the photo starts
+     at the top of the pane. The bar grew from four chips to twelve
+     and can no longer assume it fits in the left half either. */
+  const width = figBar.offsetWidth || 420;
+  figBar.style.left = `${Math.max(8, Math.min(rect.left, innerWidth - width - 8))}px`;
+  figBar.style.top = rect.top > 60
+    ? `${rect.top - 44}px`
+    : `${Math.min(rect.bottom + 8, innerHeight - 52)}px`;
   figBar.hidden = false;
 }
 
@@ -1079,6 +1309,8 @@ const FONTS =
 function buildPage(m) {
   const look = styleFor(m);
   const url = urlFor(m);
+  const share = socialCoverURL(coverFor(m), m);
+  const shape = cardShape(share);
   const dateLabel = new Intl.DateTimeFormat(m.lang === "bn" ? "bn-BD" : "en-GB", {
     day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
   }).format(new Date(`${m.date}T00:00:00Z`));
@@ -1092,7 +1324,7 @@ function buildPage(m) {
     inLanguage: m.lang,
     author: { "@type": "Person", name: "Rony Reiad", url: "https://reiad.co.uk/about.html" },
     mainEntityOfPage: `https://reiad.co.uk${url}`,
-    image: socialCoverURL(coverFor(m), m),
+    image: share,
   }).replace(/</g, "\\u003c");
 
   return `<!DOCTYPE html>
@@ -1108,11 +1340,14 @@ function buildPage(m) {
   <meta property="og:title" content="${escapeHtml(m.title)}">
   <meta property="og:description" content="${escapeHtml(m.dek)}">
   <meta property="og:url" content="https://reiad.co.uk${url}">
-  <meta property="og:image" content="${escapeHtml(socialCoverURL(coverFor(m), m))}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
+  <meta property="og:image" content="${escapeHtml(share)}">${shape.sized ? `
+  <meta property="og:image:width" content="${SHARE_W}">
+  <meta property="og:image:height" content="${SHARE_H}">` : ""}
+  <meta property="og:image:type" content="${shape.type}">
   <meta property="og:site_name" content="Reiad's Library">
+  <meta property="og:locale" content="${m.lang === "bn" ? "bn_BD" : "en_GB"}">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="${escapeHtml(share)}">
 
   <!-- Set the theme before first paint, so dark-mode readers
        never see a white flash. -->
@@ -1154,7 +1389,8 @@ function buildPage(m) {
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
-        <a href="/skills/index.html" data-nav-skills>Skills</a>
+        <a href="/skills/index.html" data-nav-skills${m.section === "insights" ? "" : ' aria-current="true"'}>Skills</a>
+        <a href="/tools/index.html">Tools</a>
         <a href="/insights.html"${m.section === "insights" ? ' aria-current="page"' : ""}>Insights</a>
         <a href="/portfolio.html">Portfolio</a>
         <a href="/about.html">About</a>
@@ -1263,14 +1499,22 @@ const dateLabelFor = (m) =>
     day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
   }).format(new Date(`${m.date}T00:00:00Z`));
 
-/** The image a social card would use. The lead photo if one is
-    marked, otherwise the first photo, otherwise the site's default.
-    Data URLs are fine here: this is a preview, and the same picture
-    becomes a /media path on publish. */
+/** The image a social card would use, and which part of it to
+    keep: the lead photo if one is marked, otherwise the first
+    photo, otherwise the section's default card. Data URLs are fine
+    here: this is a preview, and the same picture becomes a /media
+    path on publish. */
 function coverFor(m) {
   const doc = new DOMParser().parseFromString(m.body, "text/html");
-  return coverFromDocument(doc, m);
+  return withDefault(coverFromDocument(doc), m);
 }
+
+/** A piece with no picture of its own falls back to the card its
+    section has. Which section that is is a Studio question, which
+    is why share-card.js does not answer it. */
+const withDefault = (pick, m) => (pick.own
+  ? pick
+  : { ...pick, src: styleFor(m ?? { section: "insights" }).og, focus: "centre" });
 
 /** A social crawler must fetch an ordinary public URL. The Studio can
     display a data URL while the writer is editing, but it cannot put
@@ -1278,17 +1522,11 @@ function coverFor(m) {
     The ZIP route rewrites the selected image to /insights/photos/ just
     before download; the publish route has already rewritten it to
     /media/. Both are safe to put on an absolute public URL. */
-function socialCoverURL(src, m) {
+function socialCoverURL(pick, m) {
+  const src = typeof pick === "string" ? pick : pick?.src;
   return /^\/(?:media|insights\/photos)\/[A-Za-z0-9._/-]+$/.test(src ?? "")
     ? `https://reiad.co.uk${src}`
     : `https://reiad.co.uk${styleFor(m ?? { section: "insights" }).og}`;
-}
-
-function coverFromDocument(doc, m) {
-  const lead = doc.querySelector("figure.lead-photo img, img.lead-photo");
-  const first = doc.querySelector("img");
-  return lead?.getAttribute("src") || first?.getAttribute("src")
-    || styleFor(m ?? { section: "insights" }).og;
 }
 
 /** Only a path this site serves can be stored as the cover; a data
@@ -1330,6 +1568,8 @@ const CARD_VIEW = (m) => {
 /* WhatsApp, LinkedIn, X and Slack all draw roughly this: the image,
    the domain, the title, the description. The truncation lengths are
    the conservative end of what they show. */
+const FOCUS_POSITION = { top: "50% 0", bottom: "50% 100%", centre: "50% 50%" };
+
 const SHARE_VIEW = (m) => {
   const cover = coverFor(m);
   const clip = (s, n) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
@@ -1337,7 +1577,8 @@ const SHARE_VIEW = (m) => {
     <div class="preview-frame">
       <span class="mono preview-caption">What a pasted link looks like</span>
       <div class="share-card">
-        <div class="share-image"><img src="${escapeHtml(cover)}" alt=""></div>
+        <div class="share-image"><img src="${escapeHtml(cover.src)}" alt=""
+          style="object-position:${FOCUS_POSITION[cover.focus]}"></div>
         <div class="share-text">
           <span class="mono share-host">reiad.co.uk</span>
           <strong>${escapeHtml(clip(m.title, 60))}</strong>
@@ -1351,9 +1592,16 @@ const SHARE_VIEW = (m) => {
         <li>${m.dek.length > 160
           ? `The standfirst is ${m.dek.length} characters and will be cut around 160.`
           : `Standfirst fits: ${m.dek.length} of about 160 characters.`}</li>
-        <li>${cover === styleFor(m).og
-          ? "No photo in the piece, so the site's default image is used. Mark a photo as Lead to use it here."
-          : "Uses the lead photo from the article."}</li>
+        <li>${cover.own
+          ? `Drawn from the ${cover.lead ? "lead photo" : "first photo, since none is marked Lead"}, `
+            + `cropped to 1200×630 keeping the ${cover.focus}. `
+            + "Click a photo in the editor to change which one, or which part."
+          : "No photo in the piece, so the section's own card is used. "
+            + "Add a photo and mark it Lead to put it here."}</li>
+        <li>${cover.own
+          ? "The card is drawn and uploaded as a JPEG when you publish: "
+            + "WhatsApp, Facebook and LinkedIn will not read the WebP the article itself uses."
+          : "Every section has its own card, so a piece without a photo still looks like itself."}</li>
       </ul>
     </div>`;
 };
@@ -1510,6 +1758,7 @@ function blankEditor() {
   if (box) box.value = "";
   paintSectionPicker();
   current.slug = null;
+  current.section = null;
   current.notionPageId = null;
   onEdit();
   refreshNow();
@@ -1597,6 +1846,14 @@ function preflight(m) {
   if (!fields.tag.value.trim()) add("warn", "No label, so it'll publish as \"Note\".");
 
   const doc = new DOMParser().parseFromString(m.body, "text/html");
+
+  /* Which photo becomes the card, said before it is published
+     rather than discovered afterwards on somebody's phone. */
+  const pick = withDefault(coverFromDocument(doc), m);
+  if (pick.own && !pick.lead) {
+    add("info", "No photo is marked Lead, so the first one becomes the share card. "
+      + "Click a photo to choose another, or which part of it to keep.");
+  }
 
   const noAlt = [...doc.querySelectorAll("img")].filter((i) => !i.getAttribute("alt")?.trim());
   if (noAlt.length) {
@@ -1817,6 +2074,7 @@ async function openFile(entry) {
 
   current.draftId = newDraftId();
   current.slug = null;          // not in the database yet, so publishing is a first publish
+  current.section = null;
   current.notionPageId = null;
 
   editor.innerHTML = body;
@@ -1846,6 +2104,7 @@ async function openArticle(slug) {
 
   current.draftId = newDraftId();
   current.slug = article.slug;
+  current.section = findSection(article.section).id;
   current.notionPageId = article.notion_page_id ?? null;
 
   editor.innerHTML = article.body ?? "";
@@ -1879,7 +2138,11 @@ $("#btn-open").addEventListener("click", showOpen);
 $("#open-close").addEventListener("click", () => openSheet.close());
 
 $("#btn-view").addEventListener("click", () => {
-  if (current.slug) open(pieceUrl(currentSection(), current.slug), "_blank", "noopener");
+  // Where it is, not where it is going: the picker may already be
+  // showing the section this piece is about to be moved to.
+  if (current.slug) {
+    open(pieceUrl(findSection(current.section), current.slug), "_blank", "noopener");
+  }
 });
 
 /* ============================================================
@@ -2024,11 +2287,13 @@ async function externalisePhotos(m) {
     files.push({ name, data: new Uint8Array(await blob.arrayBuffer()) });
     img.setAttribute("src", `/insights/${name}`);
   }
-  // buildPage deliberately uses the default while the selected picture
-  // is still a data URL. Now that ZIP export has given it a public path,
-  // update the same og:image tag that social platforms will fetch.
+  /* buildPage deliberately uses the default while the selected
+     picture is still a data URL. Now that ZIP export has given it a
+     public path, update the same og:image tag that social platforms
+     will fetch. `m` has to be passed: without it a travel piece
+     exported this way fell back to the Insights card. */
   doc.querySelector('meta[property="og:image"]')?.setAttribute(
-    "content", socialCoverURL(coverFromDocument(doc))
+    "content", socialCoverURL(withDefault(coverFromDocument(doc), m), m)
   );
   return { html: `<!DOCTYPE html>\n${doc.documentElement.outerHTML}\n`, files };
 }
@@ -2170,6 +2435,7 @@ function saveDraft() {
       id: current.draftId,
       savedAt: Date.now(),
       slug: current.slug,
+      section: current.section,
       notionPageId: current.notionPageId,
       topics: [...topics],
       html: editor.innerHTML,
@@ -2202,6 +2468,7 @@ async function listDrafts() {
 function loadDraft(draft) {
   current.draftId = draft.id ?? newDraftId();
   current.slug = draft.slug ?? null;
+  current.section = draft.section ?? null;
   current.notionPageId = draft.notionPageId ?? null;
 
   editor.innerHTML = draft.html ?? "";
@@ -2241,8 +2508,16 @@ async function restoreDraft() {
 function refreshNow() {
   if (!nowLine) return;
   const bits = [];
-  if (current.slug) bits.push(`editing ${pieceUrl(currentSection(), current.slug)}`);
-  else bits.push(`new piece for ${currentSection().en}`);
+  if (current.slug) {
+    const live = findSection(current.section);
+    const going = currentSection();
+    bits.push(`editing ${pieceUrl(live, current.slug)}`);
+    // Say it plainly, because publishing will change the address and
+    // the old one stops answering the moment it does.
+    if (going.id !== live.id) bits.push(`moving to ${pieceUrl(going, current.slug)}`);
+  } else {
+    bits.push(`new piece for ${currentSection().en}`);
+  }
   if (current.notionPageId) bits.push("linked to Notion");
   nowLine.textContent = bits.join(" · ");
 
@@ -2399,9 +2674,27 @@ async function send(status, button, label) {
         + "They're still in the article, but embedded.");
     }
 
+    /* ---- then the share card ----
+       Drawn from the photo the writer marked, at the size and in
+       the format the social scrapers actually accept. Failing to
+       draw one is not a failure to publish: the section's own card
+       is a perfectly good fallback, and the piece is the point. */
+    const m = meta();
+    const pick = coverFor(m);
+    let card = "";
+    if (pick.own && storableCover(pick.src)) {
+      button.textContent = "Drawing the share card…";
+      try {
+        const stored = await uploadMedia(await shareCardBlob(pick), cardSlug(slug));
+        card = storableCover(stored?.url ?? "");
+      } catch (err) {
+        console.warn("share card failed", err);
+        toast("Couldn't draw the share card, so the section's own is used.");
+      }
+    }
+
     /* ---- then the article ---- */
     button.textContent = status === "live" ? "Publishing…" : "Saving…";
-    const m = meta();
 
     const payload = {
       slug, title: m.title, dek: m.dek, tag: m.tag,
@@ -2412,9 +2705,11 @@ async function send(status, button, label) {
       topics: m.topics,
       section: m.section,
       lang: m.lang, body: m.body, status, published_at: m.date,
-      // Photos are on /media by this point, so the lead one can be
-      // the article's own social image instead of the site default.
-      cover: storableCover(coverFor(m)),
+      /* The card if one was drawn, the photo itself if it was not.
+         The photo is a WebP and several scrapers will not read one,
+         but it is still better than nothing and the server knows
+         how to describe it. */
+      cover: card || storableCover(pick.src),
       notion_page_id: current.notionPageId ?? undefined,
       // Editing something already opened from the database is the
       // one case where replacing it is exactly the intent.
@@ -2438,6 +2733,7 @@ async function send(status, button, label) {
 
     if (result?.ok) {
       current.slug = slug;
+      current.section = m.section;
       await refreshSlugs();
       refreshNow();
       toast(status === "live"

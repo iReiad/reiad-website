@@ -24,9 +24,10 @@
    here, and everything can be moved back.
    ============================================================ */
 
-import { api } from "/api.js";
+import { api, uploadMedia } from "/api.js";
 import { toast, copyText } from "/app.js";
 import { SECTIONS, findSection, pieceUrl } from "/content.js";
+import { shareCardBlob, coverFromHTML, cardSlug, isDrawnCard } from "/share-card.js";
 
 const el = (tag, props = {}, ...kids) => {
   const node = Object.assign(document.createElement(tag), props);
@@ -58,14 +59,38 @@ const markSeen = () => {
 const button = (label, onClick, className = "chip") =>
   el("button", { className, type: "button", textContent: label, onclick: onClick });
 
-function searchBox(placeholder, onInput) {
+/* ---------- searching, without the box eating what you typed ----------
+
+   THE BUG THIS SHAPE EXISTS FOR
+
+   Every panel here redraws itself by replacing its whole contents,
+   and the search box is part of those contents. So a quarter of a
+   second after the first letter, the box the letter was typed into
+   was thrown away and a fresh, empty, unfocused one took its place.
+   Searching worked exactly one character at a time, and it looked
+   like the page was fighting the keyboard, which it was.
+
+   The box is handed its current value on every draw, and `paint`
+   below puts the caret back if that is where it was. */
+function searchBox(placeholder, onInput, value = "") {
   let timer;
-  const input = el("input", { type: "search", placeholder, className: "desk-search" });
+  const input = el("input", { type: "search", placeholder, className: "desk-search", value });
   input.addEventListener("input", () => {
     clearTimeout(timer);
     timer = setTimeout(() => onInput(input.value.trim()), 250);
   });
   return input;
+}
+
+/** Replace a panel's contents, keeping the caret where it was. */
+function paint(host, ...nodes) {
+  const typing = document.activeElement?.classList?.contains("desk-search");
+  host.replaceChildren(...nodes);
+  if (!typing) return;
+  const box = host.querySelector(".desk-search");
+  if (!box) return;
+  box.focus();
+  box.setSelectionRange(box.value.length, box.value.length);
 }
 
 /** A row of filters that shows how many are behind each one. */
@@ -157,7 +182,7 @@ async function renderQueue(host) {
     );
   };
 
-  host.replaceChildren(
+  paint(host,
     filterRow(QUESTION_FILTERS, status, counts, (key) => {
       questionState.status = key;
       redraw();
@@ -165,7 +190,7 @@ async function renderQueue(host) {
     searchBox("Search questions, names, articles", (value) => {
       questionState.q = value;
       redraw();
-    }),
+    }, q),
     el("p", { className: "admin-count mono", textContent:
       rows.length
         ? `${rows.length} ${status === "all" ? "in total" : status}`
@@ -229,9 +254,9 @@ async function renderEnquiries(host) {
     );
   };
 
-  host.replaceChildren(
+  paint(host,
     filterRow(ENQUIRY_FILTERS, status, counts, (key) => { enquiryState.status = key; redraw(); }),
-    searchBox("Search names, addresses, messages", (value) => { enquiryState.q = value; redraw(); }),
+    searchBox("Search names, addresses, messages", (value) => { enquiryState.q = value; redraw(); }, q),
     el("p", { className: "admin-count mono", textContent:
       rows.length ? `${rows.length} shown` : "Nothing here." }),
     ...rows.map(card)
@@ -253,7 +278,7 @@ async function renderSubscribers(host) {
   const rows = all.filter((s) => !needle || s.email.toLowerCase().includes(needle));
   const page = rows.slice(0, subscriberState.shown);
 
-  host.replaceChildren(
+  paint(host,
     el("div", { className: "stat-row" },
       el("div", { className: "stat stat-lead" },
         el("span", { className: "k", textContent: "Confirmed" }),
@@ -269,7 +294,7 @@ async function renderSubscribers(host) {
       subscriberState.q = value;
       subscriberState.shown = 50;
       renderSubscribers(host);
-    }),
+    }, subscriberState.q),
     el("div", { className: "row-flex", style: "margin:16px 0" },
       el("a", { className: "btn btn-ghost", href: "/api/subscribers/export",
                 textContent: "Download CSV" })
@@ -381,6 +406,47 @@ const articleState = { q: "", section: "all" };
 const SECTION_FILTERS = [["all", "Everywhere"],
   ...SECTIONS.map((sec) => [sec.id, sec.id === "insights" ? sec.en : sec.bn])];
 
+/** What a pasted link will show, when that is worth saying.
+
+    Nothing for the two good cases: a card the Studio drew (a JPEG),
+    or no cover at all, which falls back to the section's own card.
+    A raw photo is worth flagging, because every photo on this site
+    is a WebP and the scrapers behind WhatsApp, Facebook and
+    LinkedIn will not read one: those pieces show the fallback until
+    they are published again, which is what draws the card. */
+const coverWarning = (article) =>
+  article.cover && !isDrawnCard(article.cover) ? "photo, not a card" : null;
+
+/** Draw the missing card, here, without opening the editor.
+
+    The piece is already published and its photos are already on
+    /media: everything the card needs is a fetch away, so making
+    someone reopen the piece and publish it again to fix a picture
+    would be busywork with a chance of changing something else. */
+async function drawCard(article, onDone) {
+  const full = (await api(`articles/${encodeURIComponent(article.slug)}`))?.article;
+  const pick = coverFromHTML(full?.body ?? "");
+  if (!pick.own || !/^\/media\//.test(pick.src)) {
+    toast("No hosted photo in that piece, so the section's card is the right one.");
+    return;
+  }
+
+  toast("Drawing the card…");
+  try {
+    const stored = await uploadMedia(await shareCardBlob(pick), cardSlug(article.slug));
+    if (!stored?.url) throw new Error("upload-failed");
+    const res = await api(`articles/${encodeURIComponent(article.slug)}`, {
+      method: "PATCH", body: { cover: stored.url },
+    });
+    if (!res?.ok) throw new Error(res?.reason ?? "save-failed");
+    toast(`Card drawn from the ${pick.lead ? "lead" : "first"} photo.`);
+    onDone();
+  } catch (err) {
+    console.warn("share card failed", err);
+    toast("Couldn't draw the card.");
+  }
+}
+
 /** Move a piece to another section.
 
     This is the one control on this page that changes a URL. The
@@ -452,7 +518,7 @@ async function renderArticles(host) {
     return { ...acc, [id]: (acc[id] ?? 0) + 1, all: (acc.all ?? 0) + 1 };
   }, {});
 
-  host.replaceChildren(
+  paint(host,
     filterRow(SECTION_FILTERS, articleState.section, counts, (key) => {
       articleState.section = key;
       redraw();
@@ -460,7 +526,7 @@ async function renderArticles(host) {
     searchBox("Search titles, file names and topics", (value) => {
       articleState.q = value;
       redraw();
-    }),
+    }, articleState.q),
     el("p", { className: "admin-count mono", textContent:
       all.length ? `${rows.length} of ${all.length} in the database`
                  : "Nothing published through the Studio yet." }),
@@ -474,6 +540,14 @@ async function renderArticles(host) {
             el("span", { className: `pill section-pill section-${sec.id}`,
                          textContent: sec.id === "insights" ? sec.en : sec.bn }),
             el("span", { className: "pill", textContent: a.status }),
+            coverWarning(a)
+              ? el("span", {
+                  className: "pill pill-warn",
+                  textContent: coverWarning(a),
+                  title: "Its social card is the photo itself, in a format "
+                    + "WhatsApp, Facebook and LinkedIn will not read. Draw card fixes it.",
+                })
+              : null,
             (a.topics ?? []).length
               ? el("span", { className: "line-topics" },
                   ...a.topics.slice(0, 3).map((t) =>
@@ -491,6 +565,7 @@ async function renderArticles(host) {
               redraw();
             }),
             button("History", () => showHistory(a, redraw)),
+            coverWarning(a) ? button("Draw card", () => drawCard(a, redraw)) : null,
             button("Copy link",
               () => copyText(`${location.origin}${pieceUrl(sec, a.slug)}`, "Link copied")),
             button("Delete", async () => {

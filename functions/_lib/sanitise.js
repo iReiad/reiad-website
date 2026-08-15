@@ -13,8 +13,15 @@
    explicitly permitted is dropped, tags and attributes alike.
    ============================================================ */
 
+/* `class` is allowed on most of these because the article blocks
+   the Studio inserts are built out of ordinary tags with a class
+   on them: a box of quick answers is a <div> holding a <p> label
+   and a <ul>, and the steps are an <ol>. The class is the whole
+   difference between that and a bare list, and it survives only
+   what ALLOWED_CLASSES below permits. */
 const ALLOWED = {
-  p: [], h2: [], h3: [], ul: [], ol: [], li: [], blockquote: [],
+  p: ["class"], h2: [], h3: [], ul: ["class"], ol: ["class"], li: [],
+  blockquote: [],
   strong: [], em: [], br: [], hr: [], code: [], sup: [], sub: [],
   figure: ["class"], figcaption: [], div: ["class"],
   table: [], thead: [], tbody: [], tr: [], th: ["colspan", "rowspan"],
@@ -24,9 +31,20 @@ const ALLOWED = {
 };
 
 /* Only these class names survive: they're the ones the stylesheet
-   knows about. Anything else is styling smuggled in from outside. */
+   knows about. Anything else is styling smuggled in from outside.
+
+   This list is the twin of KEEP_CLASSES in aab/studio.js. When the
+   two disagreed the browser's was the stricter one, and the result
+   was a server that supported callouts nothing could produce. Add
+   to one, add to the other. */
 const ALLOWED_CLASSES = new Set([
-  "wide", "duo", "table-scroll", "term", "note", "ex", "lead-photo",
+  /* photos: how big, what shape, and which part to keep */
+  "wide", "full", "duo", "lead-photo",
+  "frame-wide", "frame-square", "frame-tall", "focus-top", "focus-bottom",
+  /* the blocks a long read is made of */
+  "at-a-glance", "at-a-glance-label", "side-note", "side-note-label",
+  "step-list", "checklist", "figures", "fig",
+  "table-scroll", "term", "note", "ex",
 ]);
 
 const SAFE_URL = /^(https?:\/\/|mailto:|\/|#)/i;

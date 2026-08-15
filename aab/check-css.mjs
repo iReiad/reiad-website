@@ -185,9 +185,102 @@ for (const { layer, owns } of SCHOOLS) {
   }
 }
 
+/* ============================================================
+   THE ARTICLE VOCABULARY
+
+   The Studio can put a small set of blocks into any piece: a box
+   of quick answers, a note in the margin, numbered steps, a
+   checklist, a row of figures, and the four ways of sizing a
+   photo. They are plain HTML with a class on it, and that class
+   has to survive two sanitisers and mean one thing everywhere.
+
+   Three ways that goes wrong, all of them quietly:
+
+     1. The two allowlists drift. The browser's is the stricter
+        one, so the server ends up supporting a block that nothing
+        can produce, and every callout imported from Notion
+        arrives flattened.
+     2. A class is allowed through but styled nowhere, so the
+        block ships as a bare list.
+     3. A class is already taken. `.glance` was written for this
+        and collided with the About page's own `.glance`, which is
+        a grid: the box of quick answers came out as two columns
+        with the label in one of them, in the editor and on the
+        page. Later layers win everywhere, not only on their own
+        pages, which is the same bug this whole file exists for.
+   ============================================================ */
+
+const classList = (file, name) => {
+  const src = readFileSync(join(ROOT, file), "utf8");
+  const block = src.match(new RegExp(`${name}\\s*=\\s*new Set\\(\\[([\\s\\S]*?)\\]\\)`));
+  if (!block) {
+    console.error(`no ${name} in ${file}: this check cannot see the vocabulary any more`);
+    failures++;
+    return [];
+  }
+  return [...block[1].matchAll(/"([a-z][\w-]*)"/g)].map((m) => m[1]);
+};
+
+const studioClasses = classList("studio.js", "KEEP_CLASSES");
+const serverClasses = classList("../functions/_lib/sanitise.js", "ALLOWED_CLASSES");
+
+if (studioClasses.length && serverClasses.length) {
+  const only = (a, b) => a.filter((c) => !b.includes(c));
+  for (const [side, missing] of [
+    ["the server strips what the Studio keeps", only(studioClasses, serverClasses)],
+    ["the Studio strips what the server keeps", only(serverClasses, studioClasses)],
+  ]) {
+    if (!missing.length) continue;
+    failures++;
+    console.error(`\nthe two sanitisers disagree, ${side}: ${missing.join(", ")}`);
+    console.error("        KEEP_CLASSES in aab/studio.js and ALLOWED_CLASSES in");
+    console.error("        functions/_lib/sanitise.js are one list written twice.");
+  }
+}
+
+/** Every layer that gives a class a rule of its own: `.cls { … }`
+    on its own, which is the shape that says "this is what this
+    class is", as opposed to `.cls .child` or `.other.cls`. */
+function definedIn(cls) {
+  const layers = [];
+  for (const name of [...css.matchAll(/@layer ([a-z]+) \{/g)].map((m) => m[1])) {
+    const body = layerBody(name);
+    if (!body) continue;
+    const bare = topLevelSelectors(body)
+      .flatMap((sel) => sel.split(",").map((s) => s.trim()))
+      .some((sel) => sel === `.${cls}`);
+    if (bare && !layers.includes(name)) layers.push(name);
+  }
+  return layers;
+}
+
+for (const cls of new Set([...studioClasses, ...serverClasses])) {
+  const layers = definedIn(cls);
+  if (!layers.length) {
+    // Some are modifiers on a selector that names the tag as well,
+    // like figure.wide, so a bare rule is not required, only some
+    // rule.
+    if (new RegExp(`\\.${cls}[\\s,{:.)]`).test(css)) continue;
+    failures++;
+    console.error(`\n.${cls} is allowed into an article and styled nowhere in styles.css.`);
+    continue;
+  }
+  if (layers.length > 1) {
+    failures++;
+    console.error(`\n.${cls} is defined in two layers: ${layers.join(" and ")}.`);
+    console.error(
+      "        Whichever comes last in the layer statement wins, everywhere,\n"
+      + "        including inside an article that only meant the other one.\n"
+      + "        Rename one of them."
+    );
+  }
+}
+
 console.log(
   failures
-    ? `\n${failures} rule(s) leak out of their school: fix before deploying.`
-    : `${SCHOOLS.length} school layer(s) checked, nothing leaks into the rest of the site.`
+    ? `\n${failures} problem(s) in the stylesheet: fix before deploying.`
+    : `${SCHOOLS.length} school layer(s) checked, nothing leaks into the rest of the site.\n`
+      + `${new Set(studioClasses).size} article block classes, agreed by both sanitisers `
+      + `and defined once each.`
 );
 process.exit(failures ? 1 : 0);

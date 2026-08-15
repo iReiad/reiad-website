@@ -88,6 +88,38 @@ blurb inside `content.js`) goes in the `CLAIMS` table in
 `check-content.mjs`, so the next data change fails a check rather than a
 reader.
 
+## The blocks an article is made of
+
+A piece can hold a box of quick answers, a note in the margin, numbered
+steps, a checklist, a row of key figures, a note, a worked example and a
+scrolling table. Each one is plain HTML with a class on it, and that class
+has to be in three places or it does not survive the trip:
+
+1. a rule in `@layer article` in `aab/styles.css`,
+2. `KEEP_CLASSES` in `aab/studio.js`, the browser's sanitiser,
+3. `ALLOWED_CLASSES` in `functions/_lib/sanitise.js`, the server's.
+
+`check-css.mjs` fails if the two allowlists disagree, if a class is allowed
+into an article and styled nowhere, or if two cascade layers both define
+one. The last of those is not hypothetical twice over: `.glance` was
+already the About page's, `.steps` already the Learn hub's, and a later
+layer wins on every page, not only its own.
+
+The same three-place rule covers the photo classes: `wide`, `full`,
+`frame-wide`, `frame-square`, `frame-tall`, `focus-top`, `focus-bottom`,
+`lead-photo`.
+
+## Share cards
+
+The picture a pasted link shows is drawn, not borrowed. `aab/share-card.js`
+makes a 1200×630 JPEG from the piece's lead photo, cropped around the part
+the writer marked, and that is what `cover` holds and `og:image` points at.
+It is a JPEG because the scrapers behind WhatsApp, Facebook and LinkedIn
+will not read the WebP every photo here is stored as: pointing them at the
+photo itself is how a piece with a picture ends up sharing as the default
+card. The desk flags any piece whose cover is still a raw photo and can
+draw the missing card in place.
+
 ## Before deploying
 
 Run the checks. They are fast and each one exists because something
@@ -95,7 +127,8 @@ shipped broken once:
 
 ```sh
 node aab/check-routes.mjs   # redirect loops, dead links, bad article slugs
-node aab/check-css.mjs      # a school's cascade layer styling the whole site
+node aab/check-css.mjs      # a school's layer styling the whole site, and a
+                            # block class that means two things at once
 node aab/check-sw.mjs       # a precached file changed without a VERSION bump
 node aab/check-content.mjs  # a page that has stopped counting the site correctly
 ```
