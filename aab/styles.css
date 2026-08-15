@@ -1891,9 +1891,17 @@ it collapsed to the width of the word "Bangladesh". */
   }
   .term-article .backlink { margin-top: 30px; }
 
-  /* ---------- photos ---------- */
+  /* ---------- photos ----------
+
+     A photo lines up with the words. The article shell holds the
+     text to a measure inside a 1080px wrap, and a figure with no
+     width of its own took the whole 1080: the page read as a
+     column of text with pictures sticking out of both sides of it.
+     Breaking the measure is now something a photo has to be asked
+     to do, with .wide or .full, rather than the default. */
   figure {
     margin-block: 30px;
+    max-width: var(--measure);
 
     & img {
       /* height: auto matters more than it looks. Every photo the
@@ -1914,8 +1922,11 @@ it collapsed to the width of the word "Bangladesh". */
     }
   }
   /* a photo allowed to break the measure and go full-bleed-ish */
+  /* The two ways of asking a photo to leave the column. Both
+     have to restate max-width: the figure is held to the measure
+     now, and a width without it is a width the max-width caps. */
   figure.wide {
-    width: min(100vw - 44px, 1080px);
+    width: min(100vw - 44px, 1080px); max-width: none;
     margin-inline: calc(50% - min(50vw - 22px, 540px));
   }
   figure.duo {
@@ -1940,7 +1951,8 @@ it collapsed to the width of the word "Bangladesh". */
      value the Studio uses when it draws the 1200x630 share card,
      so what a reader sees and what WhatsApp shows agree. */
   figure.full {
-    width: 100vw; margin-inline: calc(50% - 50vw); margin-block: 34px;
+    width: 100vw; max-width: none;
+    margin-inline: calc(50% - 50vw); margin-block: 34px;
 
     & img { border-radius: 0; border-inline: 0; }
     & figcaption { margin-inline: auto; max-width: var(--measure); padding-inline: 22px; }
@@ -2011,7 +2023,19 @@ it collapsed to the width of the word "Bangladesh". */
     align-items: start;
     padding-bottom: 30px;
   }
-  @media (width <= 900px) { .studio-grid { grid-template-columns: 1fr; } }
+  /* minmax(0, 1fr), not 1fr, and on a phone it is the difference
+     between a page and a mess. A grid item's automatic minimum is
+     its min-content width, so a single `1fr` column cannot be
+     narrower than the widest unbreakable thing inside it: the row
+     of writing tools held the whole editor pane at 418px inside a
+     390px phone, and every pane, bar and field went with it. */
+  @media (width <= 900px) {
+    .studio-grid { grid-template-columns: minmax(0, 1fr); }
+    /* Two sticky panes stacked one above the other means the
+       preview parks itself over the publish buttons. In one column
+       the panes are simply sections of a page. */
+    .studio-pane { position: static; }
+  }
 
   .studio-pane {
     background: var(--panel);
@@ -2279,9 +2303,11 @@ it collapsed to the width of the word "Bangladesh". */
   }
 
   /* ---------- the desk ---------- */
+  /* Two across on a phone rather than four down it: the tiles are a
+     glance at what is waiting, and a glance should not be a scroll. */
   .desk-tiles {
     display: grid; gap: 12px;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
   }
   .desk-tile {
     display: flex; flex-direction: column; gap: 6px;
@@ -2382,6 +2408,35 @@ it collapsed to the width of the word "Bangladesh". */
      bar is flat and a floating one reads as floating. */
   .studio-tools[data-stuck] { box-shadow: 0 10px 24px -18px oklch(0% 0 0 / 0.55); }
 
+  /* ---------- fifteen buttons on a 390px screen ----------
+
+     Wrapped, they were five rows deep: a third of a phone, pinned
+     under the header, over the article they are for. One row that
+     scrolls sideways keeps the tools where they belong and the
+     writing visible. The groups stay in their order, so the swipe
+     is predictable: text, emphasis, lists, insert, blocks.
+
+     Nothing is hidden by this. Everything in the bar is also in
+     the slash menu, which is one keystroke and no swiping. */
+  @media (width <= 700px) {
+    .studio-tools {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      /* The last group should reach the edge, not stop a padding
+         short of it, or it reads as the end of the row. */
+      padding-inline: 14px 0;
+
+      &::-webkit-scrollbar { display: none; }
+      & > * { flex: none; }
+      /* A hint you cannot see the end of does not help. */
+      & .tool-hint { display: none; }
+      /* Enough of a gap after the last chip to show the row ended. */
+      &::after { content: ""; flex: none; width: 14px; }
+    }
+  }
+
   .tool-group {
     display: inline-flex; gap: 4px; align-items: center;
     padding-inline-end: 8px;
@@ -2458,6 +2513,39 @@ it collapsed to the width of the word "Bangladesh". */
 
     & > label { font-size: 0.86rem; color: var(--ink-soft); }
   }
+  /* What the site already calls things. A datalist alone was not
+     enough: it only opens once you have typed a letter that
+     happens to match, which is no help at all when the point is to
+     use the word already in use rather than invent a fourth
+     spelling of it. */
+  .topic-suggest {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 8px;
+    margin-top: 2px;
+
+    & > .mono {
+      color: var(--ink-soft); font-size: 0.62rem;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    & .chip { font-size: 0.72rem; padding: 3px 9px; }
+  }
+  /* Its own class rather than the site's .chip-row, which is
+     defined again in a later layer: a later layer wins whatever the
+     specificity, so `flex-wrap: nowrap` here would have been
+     overruled by a rule about a different row entirely. */
+  .topic-known {
+    display: flex; flex-wrap: wrap; gap: 6px; min-width: 0;
+  }
+  /* Ten of them wrapped is three rows of chips between the field
+     and the file name, on the screen with the least room for it. */
+  @media (width <= 700px) {
+    .topic-known {
+      flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+
+      &::-webkit-scrollbar { display: none; }
+      & > * { flex: none; }
+    }
+  }
+
   .topic-field {
     display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
     padding: 7px 8px;
@@ -2553,6 +2641,39 @@ it collapsed to the width of the word "Bangladesh". */
   @media (width <= 720px) {
     .article-line .line-facts { grid-column: 1; justify-self: start; }
     .article-line .move-field { margin-inline-start: 0; }
+  }
+  /* A piece that is a committed file cannot be published, moved or
+     deleted from here, and saying so quietly is better than eight
+     buttons that would need explaining. */
+  .article-line.is-file .article-title { font-style: italic; }
+
+  /* ---------- the rest of the actions ----------
+     A real <details>, so it opens with the keyboard, closes with
+     Escape in every browser that has caught up, and needs no
+     script beyond closing its neighbours. */
+  .more-menu {
+    position: relative;
+
+    & > summary {
+      list-style: none; cursor: pointer;
+      &::-webkit-details-marker { display: none; }
+      &::after { content: " ▾"; opacity: 0.6; }
+    }
+    &[open] > summary::after { content: " ▴"; }
+
+    & .more-body {
+      position: absolute; z-index: 6; inset-inline-end: 0; top: calc(100% + 6px);
+      width: max-content; max-width: min(320px, 78vw);
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+      padding: 10px;
+      background: var(--panel);
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-lift);
+    }
+    & .more-note {
+      flex: 1 1 100%; margin: 0 0 2px; font-size: 0.8rem; max-width: none;
+    }
+    & .move-field { flex: 1 1 100%; margin-inline-start: 0; }
   }
 
   .section-pill {

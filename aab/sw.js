@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v51: the Studio and the desk on a phone. A single-column grid
+        track floors at its widest child, so the row of writing
+        tools held the whole editor pane at 418px inside a 390px
+        screen and every field went with it; the tools are one
+        sideways-scrolling row now, and a photo in an article lines
+        up with the words instead of running past both sides of
+        them. styles.css is precached and none of it is legible
+        without the new rules.
+
    v50: the blocks a long read is made of moved out of the reading
         sections and into the article layer, so the Studio can put
         one in any piece. Two of them were renamed on the way, .glance
@@ -326,7 +335,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v50";
+const VERSION = "v51";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
