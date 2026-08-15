@@ -131,6 +131,7 @@ node aab/check-css.mjs      # a school's layer styling the whole site, and a
                             # block class that means two things at once
 node aab/check-sw.mjs       # a precached file changed without a VERSION bump
 node aab/check-content.mjs  # a page that has stopped counting the site correctly
+node aab/check-csp.mjs      # code calling a host the browser is not allowed to reach
 ```
 
 If a precached file changed, bump `VERSION` in `aab/sw.js`, add a line to

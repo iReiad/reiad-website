@@ -154,7 +154,7 @@ leaving a mess.
 
 1. **No URL ever breaks.** Not one. `check-routes.mjs` runs before
    every merge, and anything that moves gets a redirect.
-2. **Every stage ships green.** All four checks pass, the em dash
+2. **Every stage ships green.** All five checks pass, the em dash
    grep is empty, `VERSION` is bumped if a precached file changed.
 3. **Every stage is revertible on its own.** No stage may depend on
    the next one having landed.
@@ -589,6 +589,23 @@ published row goes live the moment Publish is pressed. That is the
 point of the Studio and it is also a real loss. Not solved by this
 plan; worth deciding later whether the desk should grow a "changed
 since last published" view.
+
+**I11. The site refused to talk to Supabase, 15 August 2026.** The
+magic link came back "Failed to fetch" from the live site, with the
+auth API healthy, CORS correct and no request ever arriving.
+`connect-src` in `aab/_headers` lists the hosts this site's
+JavaScript may talk to, and Supabase was not on it, so the browser
+blocked every request before it left. Google sign-in still worked,
+because a redirect is a navigation rather than a fetch, which made
+it look like an outage somewhere else entirely.
+
+Fixed by adding the host. The lasting part is `check-csp.mjs`,
+which fails if browser code names a host the policy does not allow,
+or if the list of deliberate exceptions grows an entry that matches
+nothing. It catches the original bug on a clean checkout, which was
+the test. **The lesson: a policy this repository sets on itself can
+break a feature in a way that looks like somebody else's fault, so
+it needs a check like everything else here.**
 
 **I10. Sign-in worked and looked broken, 15 August 2026.** The
 first live Google sign-in created the account, wrote the session
