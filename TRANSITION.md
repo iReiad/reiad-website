@@ -303,7 +303,7 @@ that builds an article page.
 ---
 
 ### Stage 5 · Accounts, and nothing else changes
-**Status: not started.** Size: two or three sittings.
+**Status: done, 15 August 2026.** Took one sitting.
 
 Sign in, sign out, and a name in the corner. No feature depends on
 it yet, which is exactly why it is a good first step: it can be
@@ -330,6 +330,22 @@ account. Every page reads exactly as it does now for someone who
 never signs in. **Done when:** signing in on a phone and a laptop
 gives the same account. **Rollback:** hide the header item; the
 tables sit there costing nothing.
+
+**What actually happened.** The one decision worth recording is
+that there is no Supabase client library in here. The official one
+is around forty kilobytes and would need a CDN or a bundler, and
+this site has neither; what it does for us is three POSTs and a
+redirect, which is what `aab/account.js` is. If refresh rotation or
+MFA ever grows teeth, that is the moment to reconsider, and the
+whole surface to replace is six exported functions.
+
+Two smaller ones. The tokens come back in the URL fragment rather
+than the query string, because a fragment is never sent to a server
+and so cannot end up in a log; `account.js` takes it out of the
+address bar immediately, so a screenshot of the page does not carry
+a working session. And the button is appended to the header at
+runtime, the way the menu and search buttons already are, rather
+than by editing the header in fifty files and three generators.
 
 ---
 
@@ -495,7 +511,7 @@ should.
 | 2 | Backup out of the database | not started |
 | 3 | The file pieces move in | not started |
 | 4 | The Studio stops writing files | not started |
-| 5 | Accounts, and nothing else changes | not started |
+| 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
 | 6 | Progress follows the account | not started |
 | 7 | Comments, moderated, grown from Questions | not started |
 | 8 | The schools' content into the database | not started |
@@ -641,6 +657,12 @@ merged all at once. Every stage here ships to production on its own.
 Everything else on this list can be done from here. These cannot,
 and each one blocks the stage it sits under.
 
+**Done, 15 August 2026:** the Google OAuth client and the site URL
+were set up in the browser. The first real sign-in is what confirms
+them; until somebody signs in on `reiad.co.uk` neither has been
+proved, and the two ways they usually fail are listed with the log
+entry below.
+
 **Before Stage 5 (accounts):**
 
 1. **A Google OAuth client.** In the Google Cloud console: create an
@@ -676,6 +698,38 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-15 · Stage 5 done, readers can sign in
+`aab/account.js` talks to Supabase Auth over plain fetch, with no
+client library, and `aab/signin.js` puts one button in the header
+that says "Sign in" until somebody does and shows their initial
+after. The migration in `supabase/migrations/` creates `profiles`
+with row-level security on from the first line and a trigger that
+gives every new reader a profile row, so the first thing a new
+account meets is not a comment box that cannot say who they are.
+
+Nothing else changed. No page requires an account, no reading page
+loads a byte more than it did unless the reader clicks the button,
+and `signin.js` is imported lazily and its failure is caught, so a
+Supabase outage is a header without a button.
+
+Verified in a browser against a stubbed Supabase: signed out the
+button says "Sign in"; the magic link posts to `/auth/v1/otp` with
+the right `redirect_to`; the Google round trip lands back with
+tokens in the fragment, stores the session, cleans the address bar
+and turns the button into an initial; it survives a reload; signing
+out clears the device.
+
+**What is not proved yet, and how it will fail if it is wrong.**
+The live sign-in. Two things are worth knowing before trying it:
+if Google says "Access blocked: this app is not verified", the
+OAuth consent screen was never published, and publishing it fixes
+it without any review from Google for plain email and profile
+scopes. If the magic link arrives and lands on `localhost`, the
+site URL in Supabase did not save.
+
+Next: Stage 6, progress that follows the account, which is the
+first thing an account is actually for.
 
 ### 2026-08-15 · Stage 1 done, and the plan grew from two moves to four
 Reader accounts, progress that follows a person, moderated comments

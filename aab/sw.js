@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v53: readers can sign in. app.js loads /signin.js, which loads
+        /account.js, and both are precached so the button survives
+        offline. styles.css gained the header button and the panel.
+        Nothing on the site requires an account and nothing changes
+        for a reader who never signs in, which is why this bump is
+        about a cached app.js finding its new import rather than
+        about anything a reader would notice.
+
    v52: one list of pieces. app.js, reads.js and the two card hosts
         now ask /pieces.js what has been written, and it merges the
         database with content.js, so a piece published through the
@@ -343,7 +351,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v52";
+const VERSION = "v53";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -366,6 +374,12 @@ const PRECACHE = [
      import resolves to nothing: the menu, the palette and every
      list of writing die together on the first offline visit. */
   "/pieces.js",
+  /* Reader accounts. app.js imports signin.js lazily and catches a
+     failure, so an offline visit without these is a page with no
+     sign-in button rather than a broken one, but the button is
+     cheap to keep. */
+  "/signin.js",
+  "/account.js",
   "/crumbs.js",
   "/audience.js",
   "/activation.js",

@@ -1,0 +1,16 @@
+# Supabase project configuration.
+#
+# The GitHub integration reads this file and the migrations beside
+# it, and applies anything new when a pull request merges. That is
+# the whole point: the database has the same history as the code,
+# and a schema change is something you can read in a diff rather
+# than something somebody typed into a dashboard once.
+#
+# Nothing secret belongs in here. The project ref is public, and so
+# is the publishable key the site uses; the service role key lives
+# in the dashboard and never leaves it.
+
+project_id = "wvjarqnnmkkuxyrndtya"
+
+[db]
+major_version = 17
