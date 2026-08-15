@@ -31,6 +31,16 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v50: the blocks a long read is made of moved out of the reading
+        sections and into the article layer, so the Studio can put
+        one in any piece. Two of them were renamed on the way, .glance
+        to .at-a-glance and .dhap-list to .step-list, because .glance
+        was already the About page's and .steps already the Learn
+        hub's, and a later layer wins everywhere. styles.css and both
+        Bangla pieces changed together: a cached v49 styles.css would
+        draw the renamed boxes as unstyled lists, and a cached v49
+        page would ask for classes the new stylesheet no longer has.
+
    v49: the travel desk landed at /travel/, the kitchen and it now
         share one module and one cascade layer, and the Studio
         learned where things go. content.js grew SECTIONS, which
@@ -316,7 +326,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v49";
+const VERSION = "v50";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

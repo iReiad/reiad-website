@@ -1753,6 +1753,138 @@ it collapsed to the width of the word "Bangladesh". */
   /* tables get their own scroller on narrow screens */
   .table-scroll { overflow-x: auto; }
 
+  /* ============================================================
+     THE BLOCKS A LONG READ IS MADE OF
+
+     These started life in the travel piece, inside the layer the
+     two Bangla sections share, which meant the Studio could not
+     offer them to anything else: an Insights piece that wanted a
+     box of quick answers had to invent its own. They are article
+     furniture, not section furniture, so they live here with the
+     rest of the article shell and every piece on the site can use
+     one.
+
+     All five are plain HTML with a class the sanitisers know
+     about, on both sides of the wire: nothing here needs script,
+     and a piece that loses its stylesheet still reads as a list,
+     a heading and a paragraph.
+     ============================================================ */
+
+  /* ---------- the box of quick answers ----------
+     Read before the piece, and read again instead of it when you
+     are standing over a hot pan, or in a queue with thirty
+     seconds and a form in your hand. */
+  .at-a-glance {
+    border: 1px solid var(--gold); border-radius: var(--radius);
+    background: var(--paper-sunk); padding: 20px 22px;
+    margin-block: 28px; max-width: var(--measure);
+
+    & .at-a-glance-label {
+      display: block; margin-bottom: 12px;
+      font-family: var(--font-mono); color: var(--gold);
+      font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    & ul { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 8px; }
+    & li {
+      position: relative; padding-left: 20px; max-width: none;
+      margin-bottom: 0; font-size: 0.98rem;
+    }
+    /* A dot rather than a bullet: the list is five facts, not five
+       instructions, and a bullet reads as a step to be done. */
+    & li::before {
+      content: ""; position: absolute; left: 4px; top: 0.72em;
+      width: 6px; height: 6px; border-radius: 50%; background: var(--gold);
+    }
+  }
+
+  /* ---------- the note in the margin ----------
+     The thing everyone gets wrong, at the end of the part that
+     explains it. */
+  .side-note {
+    border-left: 3px solid var(--green);
+    background: var(--panel);
+    padding: 16px 18px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin-block: 26px; max-width: var(--measure);
+
+    & .side-note-label {
+      display: block; margin-bottom: 8px;
+      font-family: var(--font-mono); color: var(--green);
+      font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    & p { margin: 0; max-width: none; font-size: 0.97rem; }
+    & p + p { margin-top: 10px; }
+  }
+
+  /* A mono face, tracked out and set in capitals, is a Latin
+     habit. Bangla has no capitals, and letter-spacing pulls a
+     conjunct apart, so the two labels keep their own face. */
+  html[lang="bn"] :is(.at-a-glance-label, .side-note-label) {
+    font-family: var(--font-bn); letter-spacing: 0; text-transform: none;
+    font-size: 0.8rem;
+  }
+
+  /* ---------- steps that really are steps ---------- */
+  .step-list {
+    list-style: none; counter-reset: step; padding-left: 0;
+    margin-block: 20px 26px; display: grid; gap: 14px;
+
+    & li {
+      counter-increment: step; position: relative;
+      padding-left: 44px; margin-bottom: 0; max-width: var(--measure);
+    }
+    & li::before {
+      content: counter(step);
+      position: absolute; left: 0; top: 0.1em;
+      width: 30px; height: 30px; display: grid; place-items: center;
+      border: 1px solid var(--hairline); border-radius: 50%;
+      background: var(--panel); color: var(--green);
+      font-family: var(--font-mono); font-size: 0.82rem;
+    }
+  }
+
+  /* ---------- what to take with you ----------
+     A checklist is not a numbered list with the numbers taken off:
+     the order does not matter, and every line is something you
+     either have or have not got. */
+  .checklist {
+    list-style: none; padding-left: 0;
+    margin-block: 20px 26px; display: grid; gap: 10px;
+
+    & li {
+      position: relative; padding-left: 30px; margin-bottom: 0;
+      max-width: var(--measure);
+    }
+    & li::before {
+      content: "✓";
+      position: absolute; left: 0; top: 0.05em;
+      width: 20px; height: 20px; display: grid; place-items: center;
+      border: 1px solid var(--green); border-radius: 5px;
+      color: var(--green); font-size: 0.7rem; line-height: 1;
+    }
+  }
+
+  /* ---------- the two or three numbers that matter ----------
+     A fee, a waiting time, a validity. They are the first thing
+     anyone looks for and the last thing a paragraph is good at
+     holding. */
+  .figures {
+    display: grid; gap: 12px; margin-block: 24px 28px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+    max-width: var(--measure);
+
+    & .fig {
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      background: var(--panel); padding: 14px 16px;
+      display: grid; gap: 4px; align-content: start;
+      color: var(--ink-soft); font-size: 0.82rem;
+    }
+    & .fig strong {
+      display: block; color: var(--ink);
+      font-family: var(--font-serif); font-weight: 500;
+      font-size: 1.3rem; line-height: 1.2;
+    }
+  }
+
   .term-article .one-liner {
     margin: 16px 0 26px; font-size: 1.12rem; color: var(--ink-soft);
     border-left: 3px solid var(--gold); padding-left: 14px; max-width: 60ch;
@@ -1764,7 +1896,14 @@ it collapsed to the width of the word "Bangladesh". */
     margin-block: 30px;
 
     & img {
-      width: 100%; border-radius: 12px;
+      /* height: auto matters more than it looks. Every photo the
+         Studio inserts carries width and height attributes, and an
+         HTML height attribute is a presentational hint that wins
+         over nothing at all: with width:100% and no height rule,
+         a 600x900 photo was drawn 100% wide and exactly 900px
+         tall, which is a stretched photo on every article that has
+         one. It also lets aspect-ratio below do the cropping. */
+      width: 100%; height: auto; border-radius: 12px;
       border: 1px solid var(--hairline);
       background: var(--paper-sunk);
     }
@@ -1786,6 +1925,43 @@ it collapsed to the width of the word "Bangladesh". */
     & figcaption { grid-column: 1 / -1; }
   }
   .lead-photo { margin-block: 26px 34px; }
+
+  /* ---------- how big, and which part ----------
+     A photo arrives whatever shape the camera made it, and until
+     now the page took that shape as an instruction: a portrait
+     snap of a form filled the screen and pushed the next
+     paragraph off it. Three small decisions fix that, and all
+     three are a class on the <figure> so they survive both
+     sanitisers and are legible in the exported file.
+
+     `full` goes edge to edge. `frame-*` crops to a shape the page
+     can plan around. `focus-*` says which part of the photo to
+     keep when the crop has to throw some away, and is the same
+     value the Studio uses when it draws the 1200x630 share card,
+     so what a reader sees and what WhatsApp shows agree. */
+  figure.full {
+    width: 100vw; margin-inline: calc(50% - 50vw); margin-block: 34px;
+
+    & img { border-radius: 0; border-inline: 0; }
+    & figcaption { margin-inline: auto; max-width: var(--measure); padding-inline: 22px; }
+  }
+  figure:is(.frame-wide, .frame-square, .frame-tall) img {
+    object-fit: cover; object-position: 50% 50%;
+  }
+  figure.frame-wide img { aspect-ratio: 16 / 9; }
+  figure.frame-square img { aspect-ratio: 1 / 1; }
+  figure.frame-tall img { aspect-ratio: 4 / 5; }
+  figure.focus-top img { object-position: 50% 0; }
+  figure.focus-bottom img { object-position: 50% 100%; }
+
+  /* A piece is printed to be propped against something greasy, or
+     carried into a visa office. None of these blocks reads as
+     anything if it is split across the fold. */
+  @media print {
+    .article :is(.at-a-glance, .side-note, .step-list li, .checklist li, .fig, figure) {
+      break-inside: avoid;
+    }
+  }
 
   /* ---------- reading progress bar (scroll-driven, no JS) ---------- */
   @supports (animation-timeline: scroll()) {
@@ -1905,7 +2081,7 @@ it collapsed to the width of the word "Bangladesh". */
       margin-block: 16px; color: var(--ink-soft);
     }
     & img {
-      display: block; max-width: 100%; border-radius: 10px;
+      display: block; max-width: 100%; height: auto; border-radius: 10px;
       border: 1px solid var(--hairline); margin-block: 14px;
     }
     & figure { margin-block: 18px; }
@@ -2059,8 +2235,47 @@ it collapsed to the width of the word "Bangladesh". */
     &[aria-selected="true"] { background: var(--green-soft); color: var(--green); }
   }
 
+  /* A photo set to break the measure breaks it on the article
+     page, where the measure is a column in a window. In here the
+     window is not the column: `width: min(100vw - 44px, 1080px)`
+     measured the whole browser, and a wide photo shot straight out
+     of both panes and over the fields beside them. Inside the
+     Studio they are as wide as the pane, and full-bleed reaches
+     the pane's own edges, which is what those two settings mean
+     here. */
+  :is(.paste-area, #preview) figure.wide {
+    width: 100%; margin-inline: 0;
+  }
+  :is(.paste-area, #preview) figure.full {
+    width: calc(100% + 40px); margin-inline: -20px;
+
+    & img { border-radius: 0; }
+    & figcaption { padding-inline: 20px; }
+  }
+
+  /* The photo bar. Four chips became twelve when a photo grew a
+     size, a shape and a part to keep, so they are grouped and the
+     groups are separated by a rule rather than by hoping. */
   .fig-bar {
-    display: flex; gap: 6px; padding: 6px;
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 6px; padding: 6px;
+    max-width: min(94vw, 640px);
+
+    & .chip[aria-pressed="true"] {
+      border-color: var(--green); color: var(--green);
+      background: var(--green-soft);
+    }
+  }
+  .fig-group {
+    display: flex; align-items: center; gap: 5px;
+    padding-right: 8px; margin-right: 2px;
+    border-right: 1px solid var(--hairline);
+
+    & > .mono {
+      color: var(--ink-soft); font-size: 0.6rem;
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    &:empty { border-right: 0; padding-right: 0; margin-right: 0; }
   }
 
   /* ---------- the desk ---------- */
@@ -2097,6 +2312,12 @@ it collapsed to the width of the word "Bangladesh". */
     &:focus { outline: 2px solid var(--green); outline-offset: 1px; }
   }
   .pill-new { border-color: var(--gold); color: var(--gold); }
+  /* Not an error, and not nothing: something that will look wrong
+     to a reader until it is published again. */
+  .pill-warn {
+    border-color: var(--gold); color: var(--gold);
+    background: color-mix(in oklch, var(--gold) 12%, transparent);
+  }
 
   /* ---------- pre-flight ---------- */
   .preflight {
@@ -5449,63 +5670,13 @@ German for day, and .tag is what the site has always called
    ============================================================ */
 @layer reads {
 
-  /* ---------- the box of quick answers ----------
-     Read before the piece, and read again instead of it when you
-     are standing over a hot pan and have thirty seconds. */
-  .ek-nojore {
-    border: 1px solid var(--gold); border-radius: var(--radius);
-    background: var(--paper-sunk); padding: 20px 22px;
-    margin-block: 28px; max-width: var(--measure);
-
-    & .ek-nojore-label {
-      display: block; color: var(--gold); font-size: 0.68rem;
-      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px;
-    }
-    & ul { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 8px; }
-    & li {
-      position: relative; padding-left: 20px; max-width: none;
-      font-size: 0.98rem;
-    }
-    /* A dot rather than a bullet: the list is five facts, not five
-       instructions, and a bullet reads as a step to be done. */
-    & li::before {
-      content: ""; position: absolute; left: 4px; top: 0.72em;
-      width: 6px; height: 6px; border-radius: 50%; background: var(--gold);
-    }
-  }
-
-  /* ---------- the note in the margin of the recipe ---------- */
-  .side-note {
-    border-left: 3px solid var(--green);
-    background: var(--panel);
-    padding: 16px 18px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    margin-block: 26px; max-width: var(--measure);
-
-    & .side-note-label {
-      display: block; color: var(--green); font-size: 0.68rem;
-      letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;
-    }
-    & p { margin: 0; max-width: none; font-size: 0.97rem; }
-  }
-
-  /* ---------- steps that really are steps ---------- */
-  .dhap-list {
-    list-style: none; counter-reset: dhap; padding-left: 0;
-    margin-block: 20px 26px; display: grid; gap: 14px;
-
-    & li {
-      counter-increment: dhap; position: relative;
-      padding-left: 44px; max-width: var(--measure);
-    }
-    & li::before {
-      content: counter(dhap);
-      position: absolute; left: 0; top: 0.1em;
-      width: 30px; height: 30px; display: grid; place-items: center;
-      border: 1px solid var(--hairline); border-radius: 50%;
-      background: var(--panel); color: var(--green);
-      font-family: var(--font-mono); font-size: 0.82rem;
-    }
-  }
+  /* The box of quick answers, the note in the margin and the
+     numbered steps used to be defined here. They are in @layer
+     article now, next to the rest of the article shell, because
+     they turned out not to be about these two sections at all:
+     an Insights piece wants a box of quick answers just as much
+     as a visa piece does, and the Studio can only offer a block
+     that every section can style. */
 
   /* ---------- the allium family ---------- */
   .attiyo {
@@ -5564,7 +5735,6 @@ German for day, and .tag is what the site has always called
      sense on screen goes. */
   @media print {
     body.read :is(.read-progress, .prev-next, .hero-actions) { display: none; }
-    body.read :is(.ek-nojore, .side-note, .dhap-list li) { break-inside: avoid; }
   }
 }
 
@@ -5703,7 +5873,12 @@ German for day, and .tag is what the site has always called
   }
   .chart-card > h2 { font-size: 1.2rem; margin-bottom: 6px; }
   .statement-note.is-warn { color: var(--gold); }
-  .table-scroll { overflow-x: auto; margin-top: 14px; }
+  /* The stock check's two tables sit right under a heading and
+     want a little air. Anchored on their own ids rather than
+     restating .table-scroll: that class belongs to the article
+     layer, and a rule here beats it on every page of the site,
+     including inside articles that never asked for the margin. */
+  #fair-table, #scorecard { margin-top: 14px; }
 
   /* ---------- pillar accordions ---------- */
   .pillar {

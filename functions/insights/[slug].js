@@ -74,6 +74,28 @@ const LOOK = {
 
 const lookFor = (section) => LOOK[section] ?? LOOK.insights;
 
+/* What to say about the share image. Twinned with cardShape() in
+   aab/studio.js.
+
+   A social scraper is not a browser: it decides whether to show a
+   card at all from these three tags, and several of them refuse a
+   WebP outright. The Studio draws a JPEG at 1200x630 on publish for
+   exactly that reason, and this describes whatever it stored, so a
+   piece published before that existed still gets an honest tag
+   rather than a confident wrong one. Dimensions are declared only
+   for the two kinds of image known to be 1200x630: a section's own
+   card, and one the Studio drew. */
+const IMAGE_TYPES = {
+  png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
+  webp: "image/webp", avif: "image/avif", gif: "image/gif",
+};
+
+const cardShape = (url) => ({
+  type: IMAGE_TYPES[String(url ?? "").split(".").pop().toLowerCase()] ?? "image/png",
+  sized: /^\/og\/[a-z0-9-]+\.png$/.test(url ?? "")
+    || /^\/media\/[a-z0-9-]*-card\/[0-9a-f]+\.jpg$/.test(url ?? ""),
+});
+
 const esc = (s) =>
   String(s ?? "").replace(/[&<>\"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -94,6 +116,7 @@ function render(article, origin) {
   )?.[1];
   const first = article.body?.match(/<img\b[^>]*\bsrc="(\/media\/[A-Za-z0-9._/-]+)"/i)?.[1];
   const cover = article.cover || lead || first || look.og;
+  const shape = cardShape(cover);
   const date = new Intl.DateTimeFormat(article.lang === "bn" ? "bn-BD" : "en-GB", {
     day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
   }).format(new Date(`${article.published_at || "2026-01-01"}T00:00:00Z`));
@@ -107,7 +130,11 @@ function render(article, origin) {
     dateModified: article.updated_at,
     inLanguage: article.lang,
     author: { "@type": "Person", name: "Rony Reiad", url: `${origin}/about.html` },
-    mainEntityOfPage: `${origin}/insights/${article.slug}.html`,
+    /* The piece's own address. This said /insights/ whatever the
+       section was, which pointed a kitchen piece's structured data
+       at a URL that answers 404. */
+    mainEntityOfPage: url,
+    image: `${origin}${cover}`,
   }).replace(/</g, "\\u003c");
 
   return `<!DOCTYPE html>
@@ -123,8 +150,14 @@ function render(article, origin) {
   <meta property="og:title" content="${esc(article.title)}">
   <meta property="og:description" content="${esc(article.dek)}">
   <meta property="og:url" content="${url}">
-  <meta property="og:image" content="${origin}${cover}">
+  <meta property="og:image" content="${origin}${cover}">${shape.sized ? `
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">` : ""}
+  <meta property="og:image:type" content="${shape.type}">
+  <meta property="og:site_name" content="Reiad's Library">
+  <meta property="og:locale" content="${article.lang === "bn" ? "bn_BD" : "en_GB"}">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="${origin}${cover}">
   <script>
     (function () {
       var saved = localStorage.getItem("theme");
@@ -161,9 +194,11 @@ function render(article, origin) {
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
-        <a href="/skills/index.html" data-nav-skills>Skills</a>
+        <a href="/skills/index.html" data-nav-skills${
+          look === LOOK.insights ? "" : ' aria-current="true"'}>Skills</a>
         <a href="/tools/index.html">Tools</a>
-        <a href="/insights.html" aria-current="page">Insights</a>
+        <a href="/insights.html"${
+          look === LOOK.insights ? ' aria-current="page"' : ""}>Insights</a>
         <a href="/portfolio.html">Portfolio</a>
         <a href="/about.html">About</a>
         <a href="/contact.html" data-keep>Contact</a>

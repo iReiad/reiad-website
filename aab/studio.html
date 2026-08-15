@@ -206,6 +206,16 @@
               <button class="chip" data-cmd="link" title="Add a link (Ctrl+K)">Link</button>
               <button class="chip" id="add-photo" title="Add a photo">＋ Photo</button>
             </span>
+            <!-- The blocks a long read is made of. Each button names
+                 a block by its class and studio.js finds the rest in
+                 BLOCKS, so the list of blocks stays in one file. -->
+            <span class="tool-group" role="group" aria-label="Blocks">
+              <button class="chip" data-block="at-a-glance">At a glance</button>
+              <button class="chip" data-block="side-note">Key point</button>
+              <button class="chip" data-block="step-list">Steps</button>
+              <button class="chip" data-block="checklist">Checklist</button>
+              <button class="chip" data-block="figures">Figures</button>
+            </span>
             <span class="tool-hint mono">Type <kbd>/</kbd> for everything else</span>
             <input type="file" id="photo-input" accept="image/*" multiple hidden>
           </div>
@@ -218,7 +228,8 @@ Type / for headings, lists, note boxes, tables and photos. Markdown works
 too: ## for a heading, - for a bullet, &gt; for a quote, --- for a divider.
 
 Photos: paste a screenshot, drag an image file in, or use ＋ Photo above.
-Click a photo to set its alt text or make it wide.
+Click a photo for its size, its shape, which part of it to keep, and the alt
+text. The one marked Lead becomes the share card.
 
 Ctrl+K links · Ctrl+S saves the draft · Ctrl+Enter publishes.
 
