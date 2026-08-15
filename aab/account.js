@@ -71,19 +71,68 @@ function write(next) {
   document.dispatchEvent(new CustomEvent("account:changed", { detail: next }));
 }
 
+/**
+ * Read the name and email out of the access token.
+ *
+ * THIS IS NOT VERIFICATION, and the difference matters. A JWT is a
+ * signed statement, and checking that signature is the server's
+ * job: our Worker will do it against Supabase's public keys before
+ * it trusts a single byte. This only reads a token that Supabase
+ * handed to this browser seconds ago, to put a name in a corner.
+ * Nothing is authorised on the strength of it.
+ *
+ * It exists because the alternative was asking the network who you
+ * are before the header could say. On a good connection that is a
+ * blink. On a phone in Dhaka, behind a service worker precaching
+ * sixty files, it was thirty-one seconds of a page that looked
+ * like the sign-in had failed. It had not.
+ */
+function readToken(access) {
+  try {
+    const payload = access.split(".")[1];
+    const json = decodeURIComponent(
+      atob(payload.replace(/-/g, "+").replace(/_/g, "/"))
+        .split("")
+        .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, "0")}`)
+        .join("")
+    );
+    const claims = JSON.parse(json);
+    if (!claims.sub) return null;
+    return {
+      user: {
+        id: claims.sub,
+        email: claims.email ?? "",
+        name: claims.user_metadata?.full_name
+          ?? claims.user_metadata?.name
+          ?? (claims.email ?? "").split("@")[0],
+      },
+      // The token's own expiry, which is the truth, rather than the
+      // expires_in we were told beside it.
+      expires_at: claims.exp ? claims.exp * 1000 : null,
+    };
+  } catch {
+    return null;      // not a JWT we can read: fall back to asking
+  }
+}
+
 /** What Supabase hands back, in the shape we keep it. */
-const shape = (data) => ({
-  access_token: data.access_token,
-  refresh_token: data.refresh_token,
-  expires_at: Date.now() + (Number(data.expires_in) || 3600) * 1000,
-  user: {
-    id: data.user?.id,
-    email: data.user?.email,
-    name: data.user?.user_metadata?.full_name
-      ?? data.user?.user_metadata?.name
-      ?? (data.user?.email ?? "").split("@")[0],
-  },
-});
+const shape = (data) => {
+  const read = readToken(data.access_token);
+  return {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    expires_at: read?.expires_at ?? Date.now() + (Number(data.expires_in) || 3600) * 1000,
+    user: data.user
+      ? {
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.user_metadata?.full_name
+            ?? data.user.user_metadata?.name
+            ?? (data.user.email ?? "").split("@")[0],
+        }
+      : read?.user ?? null,
+  };
+};
 
 async function post(path, body, token) {
   const res = await fetch(`${AUTH}/${path}`, {
@@ -113,19 +162,37 @@ async function post(path, body, token) {
  * It is taken out of the address bar immediately, so a copied link
  * or a screenshot does not carry a working session in it.
  */
-function collectFromHash() {
-  if (!location.hash.includes("access_token=")) return false;
+/** Whatever went wrong on the way back, kept for the panel to
+    show. Silently doing nothing is the one response to a failed
+    sign-in that leaves somebody clicking the same button again. */
+export let arrivalError = null;
 
-  const params = new URLSearchParams(location.hash.slice(1));
+function collectFromHash() {
+  const hash = location.hash.slice(1);
+  if (!hash) return false;
+  const params = new URLSearchParams(hash);
+
+  const failed = params.get("error") || params.get("error_code");
+  if (failed) {
+    arrivalError = params.get("error_description")?.replace(/\+/g, " ")
+      || "That sign-in did not go through.";
+    history.replaceState(null, "", location.pathname + location.search);
+    return false;
+  }
+
   const access = params.get("access_token");
   const refresh = params.get("refresh_token");
   if (!access || !refresh) return false;
 
+  /* The token says who this is, so the header can be right on the
+     first frame rather than after a round trip. */
+  const read = readToken(access);
   write({
     access_token: access,
     refresh_token: refresh,
-    expires_at: Date.now() + (Number(params.get("expires_in")) || 3600) * 1000,
-    user: null,           // filled in by the /user call below
+    expires_at: read?.expires_at
+      ?? Date.now() + (Number(params.get("expires_in")) || 3600) * 1000,
+    user: read?.user ?? null,
   });
   history.replaceState(null, "", location.pathname + location.search);
   return true;
@@ -214,8 +281,23 @@ export async function signOut() {
 
 /** Called once by app.js. Picks up a redirect if this page is one,
     and fills in who the reader is if a session survived. */
-export async function initAccount() {
-  const arrived = collectFromHash();
-  if (session && (!session.user || arrived)) await refreshUser();
+/**
+ * Called once by signin.js. Synchronous on purpose: it picks up a
+ * redirect, reads who the reader is out of the token, and returns.
+ * Anything that needs the network happens after, in the background,
+ * and tells the page through the account:changed event.
+ *
+ * This used to await the /user call, which meant the header could
+ * not say who you were until Supabase answered. Behind a service
+ * worker precaching sixty files that was half a minute of looking
+ * signed out while being signed in.
+ */
+export function initAccount() {
+  collectFromHash();
+
+  // Only when the token could not be read, which should not happen,
+  // and as a quiet refresh of the name Google gave us.
+  if (session && !session.user) refreshUser();
+
   return current();
 }

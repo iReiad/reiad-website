@@ -1145,10 +1145,15 @@ initTilt();
 initSpeculation();
 initArticleCards();
 markLessonRead();
+
+/* Reader accounts, before the service worker rather than after it.
+   This import used to be the last line of the file, which put it
+   behind a service worker installing and precaching sixty files:
+   somebody returning from Google waited half a minute to stop
+   looking signed out. It still blocks nothing and its failure is
+   still caught, because signing in is optional and a page must not
+   depend on it. */
+import("/signin.js").then((m) => m.initSignIn()).catch(() => {});
+
 initDynamic();
 initServiceWorker();
-
-/* Reader accounts. Loaded on its own, after everything a reader can
-   see, and never awaited by any of it: signing in is optional and
-   the page must not wait to find out whether anyone did. */
-import("/signin.js").then((m) => m.initSignIn()).catch(() => {});

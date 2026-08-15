@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v54: signing in stopped making people wait for it. The header
+        now reads the name out of the access token instead of
+        asking Supabase who you are, and the import that starts all
+        this moved ahead of the service worker's own registration:
+        behind a shell precaching sixty files, returning from Google
+        left the header saying "Sign in" for half a minute while the
+        reader was, in fact, signed in. app.js, account.js and
+        signin.js all changed.
+
    v53: readers can sign in. app.js loads /signin.js, which loads
         /account.js, and both are precached so the button survives
         offline. styles.css gained the header button and the panel.
@@ -351,7 +360,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v53";
+const VERSION = "v54";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

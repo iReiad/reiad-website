@@ -590,6 +590,28 @@ point of the Studio and it is also a real loss. Not solved by this
 plan; worth deciding later whether the desk should grow a "changed
 since last published" view.
 
+**I10. Sign-in worked and looked broken, 15 August 2026.** The
+first live Google sign-in created the account, wrote the session
+and came back to the site, and the header went on saying "Sign in"
+for thirty-one seconds. Two causes, both mine, both now fixed:
+`initSignIn()` was imported on the last line of `app.js`, behind
+the service worker registering and precaching sixty-one files, and
+even once it ran it asked `/auth/v1/user` who the reader was before
+it would paint a name.
+
+The header now reads the name out of the access token, which is a
+signed statement the browser already holds, so it is right on the
+first frame with no network at all. The import moved ahead of the
+service worker. **The lesson worth keeping: anything a reader looks
+at immediately after an action must not wait on a round trip, and
+"it works, just slowly" is indistinguishable from "it is broken"
+to the person looking at it.**
+
+A third thing came out of the same hour: a sign-in that comes back
+refused put nothing on the screen at all, because the code only
+looked for tokens in the fragment and ignored an `error` in it.
+The panel now opens and says what the provider said.
+
 **I9. `aab/insights/dsex.html` is an orphan.** It has no entry in
 `ARTICLES`, nothing on the site links to it, and its own canonical
 link points at `/learn/terms/dsex.html`. It is a leftover from when
@@ -698,6 +720,22 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-15 · Stage 5 fixed on first contact with a real reader
+The first live sign-in worked and looked like it had failed. The
+Supabase logs told the story exactly: `/callback` at 13:29:49, then
+`/user` at 13:30:20 returning 200. Thirty-one seconds of a header
+saying "Sign in" to somebody who was already signed in. Written up
+as I10; the short version is that identity now comes out of the
+token rather than out of a round trip, and the sign-in import no
+longer queues behind the service worker precaching the site.
+
+Also confirmed that day: the Supabase GitHub integration does apply
+migrations on merge. The `profiles` table and its trigger were
+there, and the first Google account got its profile row without
+anybody running anything by hand. The "Supabase Preview" check
+reporting "skipped" on the pull request is about preview branches,
+which are off, and is not a sign that migrations were not applied.
 
 ### 2026-08-15 · Stage 5 done, readers can sign in
 `aab/account.js` talks to Supabase Auth over plain fetch, with no
