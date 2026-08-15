@@ -399,17 +399,22 @@ function buildMenu() {
   dialog.setAttribute("aria-label", "Site menu");
 
   dialog.append(
-    /* The bar mirrors the header's right-hand cluster, in the same
-       order and with the same gap, so the ✕ lands exactly where
-       the Menu button that opened it was standing. It used to be
-       pushed to the far right of the bar on its own, which put it
-       two button-widths further over: press a button, and the
-       thing that undoes it appears somewhere else.
+    /* The bar stands in for the header's right-hand cluster while
+       the menu is open, because the header is behind a modal and
+       cannot be clicked, and closing the menu to reach search is a
+       journey the header never asked of anyone.
 
-       Search and the theme toggle come with it because the header
-       is behind a modal and cannot be clicked, and closing the
-       menu to reach either of them is a journey the header never
-       asked of anyone. */
+       It used to line up by imitation: the same buttons in the same
+       order with the same gap, and the ✕ would therefore land where
+       Menu had been. That held until the header grew a fourth
+       button for accounts, and then the whole cluster was one
+       button-width out. Twice now, alignment by imitation has
+       drifted the moment the thing being imitated changed.
+
+       So it is measured instead. alignTools() reads where each
+       header button actually is and puts its counterpart exactly
+       there, which means the ✕ is not near the Menu button, it is
+       on it: press Menu, and the same square becomes the way out. */
     el("div", { className: "menu-bar" },
       /* The tagline is a separate span so it can be dropped on a
          narrow screen. Kept whole, the two lines of it pushed the
@@ -421,16 +426,20 @@ function buildMenu() {
       ),
       el("div", { className: "menu-bar-tools" },
         el("button", {
-          className: "icon-btn", id: "menu-close", type: "button",
-          ariaLabel: "Close the menu", textContent: "✕ Esc",
+          className: "icon-btn menu-tool", id: "menu-close", type: "button",
+          ariaLabel: "Close the menu", /* A plain burger: the `body:has(dialog.menu[open])` rule in
+             styles.css already crosses it, which is the same rule
+             that crosses the header's own, so the two agree without
+             a second definition. */
+          innerHTML: '<span class="burger" aria-hidden="true"></span>Close',
         }),
         el("button", {
-          className: "icon-btn", type: "button",
+          className: "icon-btn menu-tool", id: "menu-search", type: "button",
           ariaLabel: "Search the site (Ctrl+K)",
           innerHTML: '⌕ <span class="kbd-hint">Ctrl K</span>',
         }),
         el("button", {
-          className: "icon-btn", type: "button",
+          className: "icon-btn menu-tool", id: "menu-theme", type: "button",
           ariaLabel: "Switch between light and dark mode", textContent: "◐",
         })
       )
@@ -546,9 +555,51 @@ function buildMenu() {
   return dialog;
 }
 
+/* Put each of the menu's tool buttons exactly where the header
+   button it stands in for is standing, so the cluster does not
+   move when the menu opens. Measured rather than imitated: the
+   header can grow a button without this drifting, which is the
+   failure it was written after. */
+function alignTools(dialog) {
+  const pairs = [
+    ["#menu-close", "#open-menu"],
+    ["#menu-search", "#open-palette"],
+    ["#menu-theme", "#theme-toggle"],
+  ];
+
+  for (const [inMenu, inHeader] of pairs) {
+    const tool = dialog.querySelector(inMenu);
+    const twin = document.querySelector(inHeader);
+    if (!tool) continue;
+
+    // A page without that header button gets no stand-in for it.
+    if (!twin) { tool.hidden = true; continue; }
+
+    const at = twin.getBoundingClientRect();
+    if (!at.width) { tool.hidden = true; continue; }
+
+    tool.hidden = false;
+    tool.style.position = "fixed";
+    tool.style.left = `${Math.round(at.left)}px`;
+    tool.style.top = `${Math.round(at.top)}px`;
+    tool.style.minWidth = `${Math.round(at.width)}px`;
+    tool.style.height = `${Math.round(at.height)}px`;
+  }
+}
+
 function initMenu() {
   const dialog = buildMenu();
-  const open = () => !dialog.open && dialog.showModal();
+
+  const open = () => {
+    if (dialog.open) return;
+    dialog.showModal();
+    /* After showModal, not before: a dialog that is not open has no
+       layout, and neither do the buttons inside it. */
+    alignTools(dialog);
+  };
+
+  // The header moves when the window does, so the stand-ins follow.
+  addEventListener("resize", () => { if (dialog.open) alignTools(dialog); });
 
   // The button lives in the header of every page; if a page predates
   // it, put one next to the search button rather than losing the menu.
@@ -570,7 +621,8 @@ function initMenu() {
      element as far as getElementById is concerned: the second
      "Search the site" button on the 404 page was dead for exactly
      that reason. */
-  const [, search, theme] = dialog.querySelectorAll(".menu-bar-tools .icon-btn");
+  const search = dialog.querySelector("#menu-search");
+  const theme = dialog.querySelector("#menu-theme");
   search?.addEventListener("click", () => {
     dialog.close();
     document.getElementById("open-palette")?.click();

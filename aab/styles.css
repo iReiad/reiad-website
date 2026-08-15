@@ -1470,6 +1470,12 @@ it collapsed to the width of the word "Bangladesh". */
     display: flex; align-items: center; gap: 18px;
     margin-inline-start: auto;
   }
+  /* Each one is placed over the header button it stands in for, by
+     alignTools() in app.js, so the cluster does not appear to move
+     when the menu opens. The z-index is above the menu's own
+     content; the dialog is modal, so nothing else can reach them. */
+  .menu-tool { z-index: 2; justify-content: center; }
+
   @media (width <= 620px) {
     .menu-bar-tools { gap: 8px; }
     /* Same call the header makes at this width: the site is named,
