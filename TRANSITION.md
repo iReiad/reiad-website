@@ -350,7 +350,7 @@ than by editing the header in fifty files and three generators.
 ---
 
 ### Stage 6 · Progress follows the account
-**Status: not started.** Size: two sittings.
+**Status: done, 15 August 2026.** Took one sitting.
 
 Three schools already track progress, in `localStorage`, per
 browser. It is the feature that most obviously wants an account:
@@ -368,6 +368,30 @@ who have each read half a course.
 **Done when:** ticking a lesson on a phone shows it ticked on a
 laptop, and signing out leaves the local progress alone.
 **Rollback:** stop syncing; `localStorage` is still the source.
+
+**What actually happened.** None of the four progress modules was
+touched. They each already announce their changes on the window and
+each already keeps its state in a known localStorage key, so
+`aab/sync.js` carries those keys and nothing else. That is the
+whole reason this took one sitting rather than four.
+
+The merge rules matter more than the plumbing, and "last write
+wins" is wrong for every one of them:
+
+| What | Rule | Why |
+| --- | --- | --- |
+| a set of ids | union | a tick only goes from off to on |
+| a bookmark | the newer `ts` | it already carries one |
+| a day counter | the higher number | you do not un-reach day eleven |
+
+The one exception is deliberate erasure: a set emptied on this
+device more recently than the account was touched replaces the
+account copy instead of merging with it, or "forget my progress"
+would quietly undo itself on the next page.
+
+`/account.html` came with it, which is Stage 5 finally having
+something to show: the name beside your comments, what the account
+actually keeps counted rather than described, and two ways out.
 
 ---
 
@@ -512,7 +536,7 @@ should.
 | 3 | The file pieces move in | not started |
 | 4 | The Studio stops writing files | not started |
 | 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
-| 6 | Progress follows the account | not started |
+| 6 | Progress follows the account | done, 15 Aug 2026 |
 | 7 | Comments, moderated, grown from Questions | not started |
 | 8 | The schools' content into the database | not started |
 | 9 | React in the Studio and the desk | not started |
@@ -737,6 +761,34 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-15 · Stage 6 done, and the account has a page
+Progress follows the account now. `aab/sync.js` carries the twelve
+localStorage keys the four schools already write, merging rather
+than overwriting: sets union, bookmarks take the newer timestamp,
+day counters take the higher number. Nothing about the four
+progress modules changed, because each one already announces its
+own changes and each already stores its state under a known key.
+
+`/account.html` is the page Stage 5 was missing: the display name,
+what the account keeps counted rather than described, sign out, and
+"forget my progress" which empties the account and leaves the
+device alone.
+
+Verified against two devices holding different progress: the union
+was correct, the higher day won, the newer bookmark won, and only
+the keys that actually differed were pushed.
+
+One mistake worth recording, because it nearly shipped: an edit to
+`account.js` was applied with a `str.replace` whose anchor no
+longer matched, so it silently did nothing and the account page
+imported a function that did not exist. The browser test caught it
+in seconds. Every scripted edit in this repository asserts that its
+anchor matched exactly once; that one did not, and that is the only
+reason it got as far as it did.
+
+Next: the home page, which still opens with who I am rather than
+with what a returning reader was doing.
 
 ### 2026-08-15 · Stage 5 fixed on first contact with a real reader
 The first live sign-in worked and looked like it had failed. The

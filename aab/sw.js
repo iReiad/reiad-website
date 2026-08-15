@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v56: progress follows the account. sync.js copies the keys the
+        four schools already write up to Supabase and back, merging
+        rather than overwriting, and /account.html is the page that
+        says what is kept and lets a name be changed. signin.js
+        imports sync.js at the top, so a v55 shell would have a
+        sign-in button that never loads.
+
    v55: the menu's close button is placed on top of the Menu button
         that opened it, measured rather than imitated. The old bar
         lined up by holding the same three buttons in the same
@@ -366,7 +373,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v55";
+const VERSION = "v56";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -395,6 +402,11 @@ const PRECACHE = [
      cheap to keep. */
   "/signin.js",
   "/account.js",
+  /* signin.js imports sync.js at the top, so a shell without it is
+     a shell whose sign-in button never loads. */
+  "/sync.js",
+  "/account.html",
+  "/account-page.js",
   "/crumbs.js",
   "/audience.js",
   "/activation.js",
