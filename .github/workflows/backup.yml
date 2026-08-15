@@ -1,0 +1,124 @@
+# ============================================================
+# The nightly article backup.
+#
+# Until the Studio existed, this repository WAS the backup: every
+# article was a file in git with its whole history. Now that a
+# piece can live only in D1, this puts it back, once a night, in a
+# file nobody edits by hand.
+#
+# It needs no secret. GITHUB_TOKEN is issued to the run by Actions
+# itself, and the endpoint it reads is public because live article
+# bodies are already served to anyone who asks for their URL. That
+# is the whole reason the split in functions/_lib/backup.js exists:
+# drafts, reader questions, subscriber emails and the admin hash
+# never come near this file, because this repository is public.
+#
+# The private half of the backup is a nightly snapshot into R2,
+# written by the Worker's own cron. See wrangler.toml.
+#
+# To restore:
+#   node scripts/restore.mjs content/articles.backup.json > restore.sql
+#   npx wrangler d1 execute reiad --remote --file=restore.sql
+# ============================================================
+
+name: Nightly article backup
+
+on:
+  schedule:
+    # 02:41 UTC, which is 08:41 in Dhaka. Not on the hour, because
+    # every cron in the world fires on the hour and GitHub's
+    # scheduler is slowest then.
+    - cron: "41 2 * * *"
+  # So it can be proved to work without waiting until tomorrow.
+  workflow_dispatch:
+
+# The only permission it needs, and nothing else.
+permissions:
+  contents: write
+
+concurrency:
+  group: article-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch the live articles
+        run: |
+          mkdir -p content
+          curl --fail --silent --show-error --location \
+               --max-time 60 --retry 3 --retry-delay 10 \
+               -o content/articles.backup.raw.json \
+               https://reiad.co.uk/api/backup/articles
+
+      # Four things have to be true before this replaces a good
+      # backup with a bad one. A backup job that cheerfully commits
+      # an error page is worse than no backup job, because it looks
+      # like it is working.
+      - name: Check it before trusting it
+        run: |
+          node --input-type=module -e '
+            import { readFileSync, writeFileSync, existsSync } from "node:fs";
+
+            const raw = readFileSync("content/articles.backup.raw.json", "utf8");
+            const data = JSON.parse(raw);
+
+            if (data.format !== 1) throw new Error(`format ${data.format}`);
+            if (data.kind !== "articles") throw new Error(`kind ${data.kind}`);
+            if (!Array.isArray(data.articles)) throw new Error("no articles array");
+
+            const bad = data.articles.filter((a) => a.status !== "live");
+            if (bad.length) throw new Error(`${bad.length} non-live row(s) in a public backup`);
+
+            if (raw.length > 1_000_000) throw new Error(`${raw.length} bytes, over the megabyte`);
+
+            // A backup that has lost most of what it had yesterday is
+            // far more likely to be a broken endpoint than a real
+            // deletion, so it stops and asks rather than committing.
+            const path = "content/articles.backup.json";
+            if (existsSync(path)) {
+              const was = JSON.parse(readFileSync(path, "utf8")).articles?.length ?? 0;
+              if (was >= 4 && data.articles.length < was / 2) {
+                throw new Error(`${data.articles.length} articles, was ${was}: refusing`);
+              }
+            }
+
+            // Written with a trailing newline and stable key order so
+            // that an unchanged database produces an identical file
+            // and therefore no commit.
+            writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`);
+            console.log(`${data.articles.length} article(s), ${raw.length} bytes`);
+          '
+          rm -f content/articles.backup.raw.json
+
+      # `taken_at` changes every night whether or not anything else
+      # did, so the diff is checked with that line ignored. Otherwise
+      # this commits 365 times a year to say nothing happened.
+      - name: Commit, if anything actually changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet -- content/articles.backup.json; then
+            echo "no change"; exit 0
+          fi
+
+          CHANGED=$(git diff -U0 -- content/articles.backup.json \
+                    | grep -E '^[+-]' | grep -vE '^(\+\+\+|---)' \
+                    | grep -vE '"taken_at"' | wc -l)
+
+          if [ "$CHANGED" -eq 0 ]; then
+            echo "only the timestamp moved"
+            git checkout -- content/articles.backup.json
+            exit 0
+          fi
+
+          git add content/articles.backup.json
+          git commit -m "Nightly article backup
+
+          $(node -p 'JSON.parse(require("fs").readFileSync("content/articles.backup.json","utf8")).articles.length') live article(s).
+          Written by .github/workflows/backup.yml. Do not edit by hand."
+          git push

@@ -44,10 +44,12 @@ import { onRequest as search } from "./functions/api/search.js";
 import { onRequestGet as news } from "./functions/api/news.js";
 import { onRequest as media } from "./functions/api/media/[[key]].js";
 import { onRequest as notion } from "./functions/api/notion/[[route]].js";
+import { onRequest as backup } from "./functions/api/backup/[[route]].js";
 import { onRequest as insight } from "./functions/insights/[slug].js";
 import { onRequest as feeds } from "./functions/feeds/[kind].js";
 import { db } from "./functions/_lib/db.js";
 import { syncFromNotion } from "./functions/_lib/sync.js";
+import { writeSnapshot } from "./functions/_lib/backup.js";
 
 /** prefix → handler, and the name of the catch-all parameter it
     expects (null where the route takes none). */
@@ -62,7 +64,19 @@ const API_ROUTES = [
   ["/api/news", news, null],
   ["/api/media", media, "key"],
   ["/api/notion", notion, "route"],
+  ["/api/backup", backup, "route"],
 ];
+
+/* The Cron schedules, as strings, because `event.cron` hands back
+   the exact text from wrangler.toml and there is no binding that
+   names them. They are here rather than inline in scheduled() so
+   that scripts/check-crons.mjs can compare these two against that
+   file and fail the build when they drift. Drift here is silent:
+   the job simply stops running, and nothing anywhere says so. */
+export const CRON = {
+  notion: "*/15 * * * *",
+  backup: "17 3 * * *",
+};
 
 /** Photos published through the Studio. Served by the same handler
     that stores them, so there is one place that knows the key
@@ -134,22 +148,52 @@ export default {
     }
   },
 
-  /* ---- the Cron trigger ----
+  /* ---- the Cron triggers ----
 
-     Notion is where the writing happens; this is what makes an edit
-     there show up here without anyone pressing anything. It only
-     touches articles that were already imported and published, and
-     only when the Notion page says it is ready, see _lib/sync.js
-     for why "as you type" is neither possible nor desirable.
+     Two schedules, told apart by `event.cron`, which is the exact
+     string from wrangler.toml. Matching on the string rather than
+     on the time is what stops a change to one schedule silently
+     firing the other job: change the cron in wrangler.toml and
+     this stops matching, loudly, on the next run.
+
+     Every quarter hour   Notion is where the writing happens, and
+                    this is what makes an edit there show up here
+                    without anyone pressing anything. It only
+                    touches articles that were already imported and
+                    published, and only when the Notion page says
+                    it is ready. See _lib/sync.js for why "as you
+                    type" is neither possible nor desirable.
+
+     Nightly at 03:17     The snapshot into R2. Seventeen past
+                    rather than on the hour because every cron in
+                    the world fires on the hour.
+
+     (The quarter-hour schedule is not written out here in cron
+     syntax, because the first two characters of it would close
+     this comment. That is not a hypothetical: it did, and the
+     Worker stopped parsing. The strings themselves are in
+     wrangler.toml and in the comparison below, which are the two
+     places they have to agree.)
 
      A throw here would be an unhandled rejection in a context with
-     nobody to report it to, so the whole pass is caught and logged;
-     the next run tries again. */
+     nobody to report it to, so each pass is caught and logged; the
+     next run tries again. */
   async scheduled(event, env, ctx) {
     ctx.waitUntil((async () => {
+      const d1 = await db(env);
+      if (!d1) return;
+
+      if (event.cron === CRON.backup) {
+        try {
+          const report = await writeSnapshot(env, d1);
+          console.log("backup", JSON.stringify(report));
+        } catch (err) {
+          console.error("backup failed", err?.stack ?? err);
+        }
+        return;
+      }
+
       try {
-        const d1 = await db(env);
-        if (!d1) return;
         const report = await syncFromNotion(env, d1, { origin: env.SITE_ORIGIN });
         if (report?.updated?.length || report?.failed?.length) {
           console.log("notion sync", JSON.stringify(report));
