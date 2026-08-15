@@ -3037,6 +3037,17 @@ it collapsed to the width of the word "Bangladesh". */
     }
   }
 
+  /* The one chip on the desk that finishes a migration rather than
+     opening a thing. It is the same chip, drawn as though it were
+     already pressed, because there are only ever a handful of these
+     and they should be the thing your eye lands on in the list. */
+  .chip-move {
+    border-color: var(--gold); color: var(--gold);
+    background: color-mix(in oklab, var(--gold) 10%, transparent);
+
+    &:hover { border-color: var(--gold); color: var(--ink); }
+  }
+
   /* How many things are waiting behind a tab, so it doesn't take a
      click to find out. */
   .tab-count {

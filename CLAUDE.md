@@ -133,12 +133,19 @@ node aab/check-sw.mjs       # a precached file changed without a VERSION bump
 node aab/check-content.mjs  # a page that has stopped counting the site correctly
 node aab/check-csp.mjs      # code calling a host the browser is not allowed to reach
 node scripts/check-crons.mjs # a scheduled job the Worker is no longer listening for
+node scripts/check-pieces.mjs # a written piece nothing on the site links to
 ```
+
+`check-pieces.mjs --live` also asks the database and prints where every
+piece actually lives, which is the one question `TRANSITION.md` Stage 3
+turns on.
 
 And when anything under `functions/` or `scripts/` changed:
 
 ```sh
 node scripts/restore.test.mjs      # a backup that would not restore
+node scripts/snapshot.test.mjs     # a nightly snapshot that leaks, or that throws
+                                   # at 03:17 where nobody is watching
 node functions/_lib/notion.test.mjs
 ```
 
@@ -149,7 +156,14 @@ the bump, then run `node aab/check-sw.mjs --update`.
 ## Backups
 
 The database has two, and the split between them is about who can read
-the result, not about size. **This repository is public.**
+the result, not about size.
+
+The repository is private as of 15 August 2026, and **that changes
+nothing about what may go in git.** Visibility is one click and
+retroactive in neither direction: going private unpublishes nothing
+already fetched or forked, and going public later publishes the whole
+history at once. A rule that holds only while a checkbox holds is not a
+rule.
 
 `content/articles.backup.json` is committed nightly by
 `.github/workflows/backup.yml` and holds **live articles only**. Every

@@ -299,22 +299,54 @@ nothing says so.
 ---
 
 ### Stage 3 · The file pieces move into the database
-**Status: not started.** Size: one sitting, plus two weeks of
+**Status: one piece left.** Size: one sitting, plus two weeks of
 watching.
+
+Surveyed properly on 15 August 2026, and it is far smaller than
+this stage assumed. `node scripts/check-pieces.mjs --live` prints
+the state of every piece across both stores:
+
+| Piece | Where it lives |
+| --- | --- |
+| `insights/article-2026-08-12-aaoifi-intro` | database |
+| `insights/article-quran-2026-08-10` | database |
+| `insights/tiny-experiments` | database |
+| `cooking/onions` | both, row wins |
+| `travel/uk-visit-visa` | both, row wins |
+| `insights/dse-basics` | **file only** |
+| `insights/dsex` | a 1.6KB redirect stub, not an article |
+
+So the migration is one piece, `dse-basics`, and two files that are
+already shadowed by a row and can be deleted a fortnight after
+those rows went live.
+
+`insights/dsex.html` is not a piece at all: it is a stub left
+behind when the term moved to `/learn/terms/dsex`, and
+`_redirects` sends both of its URLs there. `check-pieces.mjs`
+knows the difference, which is why it does not flag it.
+
+**What needs a human:** publishing `dse-basics` writes to the
+database, which needs the admin session. One click, from the desk
+or at `/studio.html?file=insights:dse-basics`, then Publish. The
+desk's own action on a committed file now reads **Import** rather
+than Edit and is drawn in gold, because "Edit" on the last
+file-only piece on the site does not tell anyone that pressing it
+finishes a migration.
 
 The Studio can already read a committed page back into the editor
 (`?file=<section>:<slug>`), which is exactly the importer this
 needs.
 
 - Open each live piece in the Studio and publish it.
-  The row takes over the URL the moment it saves.
+  The row takes over the URL the moment it saves. **One left.**
 - Check each URL, its share card, its hub card, its feed entry and
   its sitemap line.
 - Leave the files in place. They are now dead code that happens to
   be a fallback.
 - Two weeks later, delete the files and their `content.js` entries
   in one commit, and drop the article lists from `content.js`
-  entirely if Stage 1 has made them unused.
+  entirely if Stage 1 has made them unused. `check-pieces.mjs`
+  lists exactly which files those are.
 
 **Done when:** `SELECT COUNT(*) FROM articles WHERE status='live'`
 matches what the hubs show, and `aab/insights/`, `aab/cooking/` and
@@ -577,7 +609,7 @@ should.
 | 0 | Inventory and this document | done, Aug 2026 |
 | 1 | Every list reads the database | done, 15 Aug 2026 |
 | 2 | Backup out of the database | done, 15 Aug 2026 |
-| 3 | The file pieces move in | not started |
+| 3 | The file pieces move in | one piece left, 15 Aug 2026 |
 | 4 | The Studio stops writing files | not started |
 | 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
 | 6 | Progress follows the account | done, 15 Aug 2026 |
@@ -805,6 +837,46 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-15 · Stage 3 surveyed, and it is one piece
+Nobody could say where the site's writing actually lived. Not from
+this file, not from `content.js`, and not from the desk: finding
+out meant fetching five URLs by hand and comparing them to a
+directory listing, which is how a stage gets called done from a
+feeling.
+
+`scripts/check-pieces.mjs` answers it. Offline it is a gate: every
+`.html` in a section directory has to be listed in `content.js`,
+redirected in `_redirects`, or the template, because a file that is
+none of those is reachable only by typing its URL and updated
+never. That is the failure in CLAUDE.md about lists coming from the
+data, and it has happened here twice. With `--live` it adds the
+database half and prints what is left.
+
+The answer: five pieces in the database, two of them also still
+files, one piece file-only (`dse-basics`), and one thing that
+looked like a piece and is not. `insights/dsex.html` is a 1.6KB
+stub left behind when that term moved to `/learn/terms/dsex`;
+`_redirects` has sent both its URLs there for months. The check
+knows the difference, so it does not flag it and nobody has to
+remember why it is there.
+
+So Stage 3 is one click, and it is a click I cannot make:
+publishing writes to the database and needs the admin session.
+What I could do was make the click findable. The desk's action on
+a committed file said "Edit", which is true and useless: pressing
+it on the last file-only piece on the site finishes a migration,
+and nothing said so. It says **Import** now, in gold, and the
+count line above the list says how many are left to import rather
+than only how many exist.
+
+The two shadowed files (`cooking/onions.html`,
+`travel/uk-visit-visa.html`) stay where they are. Rule 4 of this
+document says the fallback stays until the new path has been live
+a fortnight, and the check lists them so that fortnight does not
+have to be remembered.
+
+Next: the click, then Stage 4.
 
 ### 2026-08-15 · Stage 2 done, and the plan had a hole in it
 The database has a backup that is not the database.

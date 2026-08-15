@@ -570,10 +570,16 @@ async function renderArticles(host) {
       articleState.q = value;
       redraw();
     }, articleState.q),
+    /* Counted, never remembered, and it names what is left rather
+       than only what there is: "2 written as files" is a fact and
+       "2 still to import" is the same fact with the next action in
+       it. TRANSITION.md, Stage 3. */
     el("p", { className: "admin-count mono", textContent:
       `${rows.length}${rows.length === all.length ? "" : ` of ${all.length}`} piece`
-      + `${all.length === 1 ? "" : "s"} · ${stored.length} in the database, `
-      + `${all.length - stored.length} written as files` }),
+      + `${all.length === 1 ? "" : "s"} · ${stored.length} in the database`
+      + (all.length - stored.length
+        ? `, ${all.length - stored.length} still to import`
+        : ", every piece imported") }),
     el("div", { className: "admin-table" }, ...rows.map((a) => articleRow(a, redraw)))
   );
 }
@@ -614,13 +620,23 @@ function articleRow(a, redraw) {
   );
 
   /* Editing a file piece means reading the page back into the
-     Studio, which is a different door from editing a row. */
+     Studio, which is a different door from editing a row.
+
+     It also says something different, because it IS something
+     different: publishing from that door is the piece moving into
+     the database and is the whole of Stage 3 in TRANSITION.md. A
+     button marked "Edit" on the last file-only piece on the site
+     does not tell anyone that pressing it finishes a migration. */
   const edit = el("a", {
-    className: "chip",
+    className: a.file ? "chip chip-move" : "chip",
     href: a.file
       ? `/studio.html?file=${encodeURIComponent(`${sec.id}:${a.slug}`)}`
       : `/studio.html?edit=${encodeURIComponent(a.slug)}`,
-    textContent: "Edit",
+    textContent: a.file ? "Import" : "Edit",
+    title: a.file
+      ? "Read this committed file into the Studio. Publishing it there "
+        + "creates the database row that takes over its URL."
+      : "",
   });
 
   const more = el("details", { className: "more-menu" },

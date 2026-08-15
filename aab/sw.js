@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v60: the desk names the migration it has been quietly offering.
+        The primary action on a committed file says Import rather
+        than Edit, because publishing from that door is the piece
+        moving into the database, and the count line says how many
+        are left to import rather than only how many exist.
+        desk.js and styles.css both changed.
+
    v59: an account can be set up rather than just held. The account
         page asks three things, each of which changes something the
         reader can point at, and arrives with the answers already
@@ -402,7 +409,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v59";
+const VERSION = "v60";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
