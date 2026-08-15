@@ -234,23 +234,67 @@ request. Two things were not in the plan:
 ---
 
 ### Stage 2 · The database gets a backup that is not the database
-**Status: not started.** Size: one sitting.
+**Status: done, 15 August 2026.** Size: one sitting.
 
 Today the repository is the backup: every article is a file in git,
 with history. The moment D1 is the source of truth, that stops being
 true, and `article_versions` does not count, because it lives in the
 same database.
 
-- A Routine, nightly, that reads every row and writes
-  `content/articles.backup.json` into the repository through the
-  GitHub API. Bodies included. It is a machine-written file and
-  nobody edits it.
-- A restore path, written down and tested once: a script that reads
-  that file back into D1.
+This shipped in a different shape from the one planned here, for
+one reason that was not noticed when the plan was written: **the
+repository is public.** So "reads every row and writes it into the
+repository" would have committed drafts, reader questions,
+subscriber email addresses and the admin password hash to a public
+git history, where deleting them does not delete them.
 
-**Done when:** the backup file exists, is under a megabyte, and a
-restore into a scratch database has been run once and produced the
-same rows. **Rollback:** delete the Routine.
+What landed instead is two backups, split by who can read the
+result:
+
+- **`content/articles.backup.json`, committed nightly by
+  `.github/workflows/backup.yml`.** Live articles only, and only
+  the columns already served at a public URL, so the file publishes
+  nothing that was not published. It needs no secret: Actions
+  issues its own `GITHUB_TOKEN`, and the endpoint it reads
+  (`GET /api/backup/articles`) is public precisely because its
+  contents are. The workflow refuses to commit a file that is the
+  wrong format, holds a non-live row, is over a megabyte, or has
+  lost more than half the articles it had yesterday.
+- **A nightly R2 snapshot of every table worth keeping**, written
+  by the Worker's own cron at 03:17, kept a fortnight. This is
+  where drafts, questions, subscribers, enquiries and settings
+  live. Same provider as the database, which is a weaker guarantee
+  than off-provider and is written down as one: it protects against
+  a bad query, a dropped table or a bad deploy, not against losing
+  the Cloudflare account.
+
+`sessions` and `throttle` are in neither, by name rather than by
+omission, so that adding a table by copying a line cannot pick one
+of them up.
+
+The restore path is `scripts/restore.mjs`, which reads a backup and
+writes SQL to stdout and does nothing else: no credential, no
+connection, nothing it can delete on its own. Upsert by default, so
+restoring over a live database brings the backed-up rows back and
+leaves anything newer alone; `--replace` empties each table first
+and says so on stderr before it does.
+
+**Done:** `scripts/restore.test.mjs` builds a real SQLite database
+with this site's schema, fills it, backs it up, restores it into an
+empty one and compares every row. Twenty-six checks, including the
+ones that matter most: no draft, no reader email, no password hash
+and no Notion page id in the public backup; an apostrophe, a
+backslash, a newline and Bangla in one body surviving the round
+trip; and a restore over a database that has moved on keeping the
+newer row.
+
+`scripts/check-crons.mjs` is new and exists because the two cron
+strings live in two files that have to be identical, with nothing
+to enforce it. When they drift the job simply stops running and
+nothing says so.
+
+**Rollback:** delete the workflow file and the second entry in
+`crons`.
 
 ---
 
@@ -532,7 +576,7 @@ should.
 | --- | --- | --- |
 | 0 | Inventory and this document | done, Aug 2026 |
 | 1 | Every list reads the database | done, 15 Aug 2026 |
-| 2 | Backup out of the database | not started |
+| 2 | Backup out of the database | done, 15 Aug 2026 |
 | 3 | The file pieces move in | not started |
 | 4 | The Studio stops writing files | not started |
 | 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
@@ -761,6 +805,48 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-15 · Stage 2 done, and the plan had a hole in it
+The database has a backup that is not the database.
+
+The hole: this stage was planned as "a nightly Routine writes every
+row into the repository", and **the repository is public**. Written
+as planned, the first run would have committed drafts, readers'
+names and email addresses, subscriber tokens and the admin password
+hash into a public git history, where deleting a file does not
+delete it. Nothing had shipped, so nothing leaked, but the plan
+said to do it.
+
+So the backup is split by who can read it rather than by what is
+convenient. `content/articles.backup.json` gets live articles and
+only the columns already served at a public URL. Everything else
+goes to R2. The reasoning is at the top of
+`functions/_lib/backup.js`, at length, because the next person to
+add a table to that list will read that file and not this one.
+
+Two smaller decisions worth keeping:
+
+The public endpoint needs no credential, which is what makes the
+whole thing need no human setup: GitHub Actions issues its own
+token, and `GET /api/backup/articles` returns what a crawler could
+already read. The `WHERE status = 'live'` clause is the only thing
+standing between that and a leak, and it is tested by name.
+
+The restore script writes SQL to stdout and stops. It holds no
+credential and cannot delete anything by itself. Running it is a
+separate, visible step, and the default is upsert, so a restore
+over a live database cannot lose a row written since the backup
+unless you ask for `--replace`, which says what it is about to do
+first.
+
+Two bugs found before they shipped. `*/15` inside a block comment
+closes the comment, so the first draft of `worker.js` did not
+parse. And the two cron strings live in two files with nothing
+making them agree, which fails silently by simply never running the
+job, so `scripts/check-crons.mjs` now fails the build on drift; it
+was tested by breaking it.
+
+Next: Stage 3, the file pieces move into the database.
 
 ### 2026-08-15 · An account can be set up, and the home page listens to it
 Three things landed together, and they are one thing really: an

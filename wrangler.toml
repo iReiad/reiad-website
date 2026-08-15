@@ -118,8 +118,19 @@ bucket_name = "reiad-media"
 # Cron triggers are free and are not billed as requests. Fifteen
 # minutes is a deliberate floor: Notion rate-limits at roughly three
 # requests a second, and a sync costs several per article.
+#
+# ---------- the nightly backup ----------
+# The second schedule writes a snapshot of every table worth keeping
+# into R2, under backups/. It is the private half of the backup; the
+# public half is live articles committed to this repository nightly
+# by .github/workflows/backup.yml. The split is about who can read
+# the result, and the reasoning is in functions/_lib/backup.js.
+#
+# worker.js tells the two apart by matching event.cron against these
+# exact strings, so changing one here without changing it there
+# stops that job running rather than running the wrong one.
 [triggers]
-crons = ["*/15 * * * *"]
+crons = ["*/15 * * * *", "17 3 * * *"]
 
 # ---------- Workers AI (optional) ----------
 # functions/api/news.js uses an `AI` binding to translate headlines

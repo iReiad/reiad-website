@@ -132,11 +132,45 @@ node aab/check-css.mjs      # a school's layer styling the whole site, and a
 node aab/check-sw.mjs       # a precached file changed without a VERSION bump
 node aab/check-content.mjs  # a page that has stopped counting the site correctly
 node aab/check-csp.mjs      # code calling a host the browser is not allowed to reach
+node scripts/check-crons.mjs # a scheduled job the Worker is no longer listening for
+```
+
+And when anything under `functions/` or `scripts/` changed:
+
+```sh
+node scripts/restore.test.mjs      # a backup that would not restore
+node functions/_lib/notion.test.mjs
 ```
 
 If a precached file changed, bump `VERSION` in `aab/sw.js`, add a line to
 the changelog at the top of that file saying what changed and why it needs
 the bump, then run `node aab/check-sw.mjs --update`.
+
+## Backups
+
+The database has two, and the split between them is about who can read
+the result, not about size. **This repository is public.**
+
+`content/articles.backup.json` is committed nightly by
+`.github/workflows/backup.yml` and holds **live articles only**. Every
+byte of it is already served at a public URL. Drafts, reader questions,
+subscriber emails, the admin password hash and any identifier of a
+system outside this site are deliberately absent, and
+`functions/_lib/backup.js` says why at length. Do not widen that
+`SELECT` without reading it.
+
+Everything else goes nightly into R2 under `backups/`, written by the
+Worker's own cron, kept a fortnight. Not public, same provider as the
+thing it is backing up, which is a weaker guarantee and is written down
+as one.
+
+To restore, read the SQL before you run it:
+
+```sh
+node scripts/restore.mjs content/articles.backup.json > restore.sql
+npx wrangler d1 execute reiad --local  --file=restore.sql   # practise
+npx wrangler d1 execute reiad --remote --file=restore.sql
+```
 
 Generated pages are generated. Edit the source, never the output:
 
