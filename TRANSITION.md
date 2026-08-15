@@ -150,6 +150,104 @@ leaving a mess.
 
 ---
 
+## 2b. What moves, and what deliberately does not
+
+The question this section answers: **"it's not just the articles, all
+the lessons in learn or skills need porting too, right? And what about
+tools and projects?"**
+
+Partly. And for two of the four, the answer is a clear no, which is
+worth writing down before anyone spends a month doing it.
+
+### The rule
+
+> **If it changes because you wrote something, it belongs in a
+> database. If it changes because somebody changed the code, it belongs
+> in the repository, with its tests.**
+
+The seam in section 1 decides *which* database. This one decides
+whether a thing should be in one at all. They are different questions
+and conflating them is how a project ends up storing JavaScript in
+Postgres.
+
+### The four bodies of content, judged against it
+
+| | What it is | Where it goes | Why |
+| --- | --- | --- | --- |
+| **Articles** | prose you write | **D1** | Already moving. Stages 1 to 4. |
+| **Curricula** | prose you write, in a fixed structure | **D1, later** | Stage 8. Real, but the payoff is small and the work is not. |
+| **Calculators** | code | **stays in the repo** | It is a program. See below. |
+| **Case studies** | code plus fixed research data | **stays in the repo** | Same, and more so. |
+
+### Why the calculators do not move
+
+`aab/tools/stock.model.js` scores forty-four ratios. `compounding`,
+`emi`, `inflation`, `position` and `sanchayapatra` are pure functions
+over a handful of inputs.
+
+None of that is content. A database can hold the *numbers a program
+uses*; it cannot hold the program, and the only way to make it look
+like it can is to store code and evaluate it, which turns every write
+to that table into remote code execution on this site. There is no
+version of that which is safe enough to be worth the convenience.
+
+What could reasonably move later, and is not urgent:
+
+- **thresholds and weights**, so the stock model can be retuned without
+  a deploy. This is a real want. It is also the one that changes the
+  answers the tool gives, so it needs the model's tests to run against
+  the stored values before they take effect, and that machinery is
+  larger than the problem.
+- **saved calculations**, per reader. That is a person's, so by section
+  1 it is Supabase, not D1. It needs accounts, which now exist.
+
+### Why the case studies do not move
+
+`dissertation`, `stress`, `scorecard` and `frontier` are `.model.js`
+files with `.data.js` beside them, and **1,931 lines of tests pinning
+their numbers**. The data is transcribed tables from a finished
+dissertation and extracted series that do not change. Moving them into
+a database would take numbers that are currently verified on every
+commit and put them somewhere no test can see, in exchange for the
+ability to edit figures that must not be edited.
+
+These are the strongest argument in the repository for leaving
+something alone. They are portfolio pieces: their whole value is that
+the numbers are right and provably unchanged.
+
+### Why the curricula are worth moving, but not yet
+
+Four `curriculum.js` files, about 153 KB, driving 251 generated pages.
+The data already drives the pages: a build step reads the curriculum
+and writes the HTML, so the structure is not the problem.
+
+What moving them buys is one thing: **editing a lesson without a
+deploy.** That is worth a lot for an article, which is written once and
+corrected often, and much less for a curriculum, which is designed once
+and then mostly stays put.
+
+What it costs is a schema that has to hold stages, sections, lessons,
+workbook days and two languages, plus the build step rewritten to read
+from D1, plus a fallback for when it cannot. That is not free, and
+nothing a reader does is blocked by not having it.
+
+So Stage 8 stays where it is in the order: after comments, and after
+React has been proven somewhere that does not matter.
+
+### The safety rule that applies to all of it
+
+**Nothing on this list moves without the page still rendering when the
+database is unavailable.** For articles that is already true: the
+committed file answers when there is no row. Any move of a curriculum
+has to keep the same property, which in practice means the build step
+keeps emitting static pages and the database becomes the *source* for
+that build rather than a thing a reader waits on.
+
+A reader on a bad connection in Dhaka must never be the person who
+finds out the database is down.
+
+---
+
 ## 3. Rules for every stage
 
 1. **No URL ever breaks.** Not one. `check-routes.mjs` runs before
@@ -299,8 +397,15 @@ nothing says so.
 ---
 
 ### Stage 3 · The file pieces move into the database
-**Status: one piece left.** Size: one sitting, plus two weeks of
-watching.
+**Status: every piece is now a row (15 August 2026).** The files
+stay until 29 August, per rule 4. Size: one sitting, plus two weeks
+of watching.
+
+`dse-basics` was published through the Studio at 19:33 on 15 August,
+which was the last one. `node scripts/check-pieces.mjs --live` now
+reports every listed piece as having a database row, and lists the
+three files that are shadowed by one and can be deleted after the
+fortnight.
 
 Surveyed properly on 15 August 2026, and it is far smaller than
 this stage assumed. `node scripts/check-pieces.mjs --live` prints
@@ -609,7 +714,7 @@ should.
 | 0 | Inventory and this document | done, Aug 2026 |
 | 1 | Every list reads the database | done, 15 Aug 2026 |
 | 2 | Backup out of the database | done, 15 Aug 2026 |
-| 3 | The file pieces move in | one piece left, 15 Aug 2026 |
+| 3 | The file pieces move in | rows done 15 Aug 2026, files stay a fortnight |
 | 4 | The Studio stops writing files | not started |
 | 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
 | 6 | Progress follows the account | done, 15 Aug 2026 |
@@ -837,6 +942,57 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-15 · Three reader-reported bugs, and what is NOT moving
+Three things were reported and none of them was found by reading
+code. All three are recorded here because each is a class of bug
+this project will meet again.
+
+**Photos never reached R2, and one CSP token was why.** Reading a
+pasted photo back out of the editor was `fetch()` on a `data:` URL,
+which is governed by `connect-src`, not by `img-src`. The policy
+allowed `data:` under `img-src`, so photos displayed perfectly, and
+every upload was refused before it left the browser. The failure was
+caught, counted and swallowed by the designed fallback, so the
+symptoms appeared three removes away: an empty bucket, an empty
+`cover` on every article, and every shared link showing the site's
+default card.
+
+It reproduces only under the real policy, and a local
+`python -m http.server` sends none, which is why it survived every
+test. `aab/studio-publish.test.mjs` now serves `aab/` with the CSP
+read out of `_headers` and drives a real publish through a real
+browser. This is the second CSP bug on this site in a week; both
+were silent, both were a missing token, and both cost more to find
+than to fix.
+
+**Resetting progress did nothing while signed in.** Every school's
+`resetAll()` removes its key rather than emptying it, and the guard
+in `reconcile()` only recognised `[]`. So `undefined` fell through
+to the union and the account's copy came straight back.
+
+**Signing in took whatever the browser happened to hold.** The first
+sync between a device and an account was a merge, like every sync
+after it. That is right for two of your own devices and wrong for a
+borrowed phone or a new account, and it could not be undone. It
+asks now, once, and only when both sides hold something.
+
+Writing that fix produced two more bugs of the same shape, both
+caught by the test before shipping: "use my account's" cleared the
+device and then cleared the *account* to match it, because an empty
+key with a fresh clock entry is exactly how a deliberate reset
+looks; and once that was fixed it did it again, because announcing
+the change ran the schools' own listeners, which call `touch()`,
+which rewrote the clock entries the fix had just deleted.
+
+**And section 2b is new**, because the question "do the lessons and
+tools need porting too?" had no answer in this document. The short
+version: articles yes, curricula eventually, and the calculators and
+case studies **never**. They are code with 1,931 lines of tests
+pinning their numbers, and a database can hold the numbers a program
+uses but not the program.
+
+Next: Stage 7, comments.
 
 ### 2026-08-15 · Stage 3 surveyed, and it is one piece
 Nobody could say where the site's writing actually lived. Not from
