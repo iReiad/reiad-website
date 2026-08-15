@@ -1,10 +1,10 @@
 {
-  "version": "v56",
+  "version": "v57",
   "hashes": {
-    "/": "1cf91e5ba36f10c0",
-    "/index.html": "1cf91e5ba36f10c0",
+    "/": "0210b228b586a0d1",
+    "/index.html": "0210b228b586a0d1",
     "/offline.html": "d7ca74c5f33fa1b4",
-    "/styles.css": "72b9656c4f5eaaa4",
+    "/styles.css": "34c4a318ce557390",
     "/app.js": "3b5f75e629dba25a",
     "/content.js": "139fd4ff7c3561f5",
     "/api.js": "d3fc7e10cc7f18c1",
@@ -19,7 +19,7 @@
     "/activation.js": "03c4658affe16472",
     "/recent.js": "355649cff18a3e9f",
     "/tilt.js": "13960291f3b1a0d7",
-    "/home.js": "3ad778b6c4953f93",
+    "/home.js": "49a708cb83f25ada",
     "/news.js": "15aeb0a218a1bc28",
     "/skills/index.html": "8ac301a7029278d9",
     "/skills/skills.js": "0ceb38d9ef3b4d97",

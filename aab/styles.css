@@ -646,6 +646,26 @@
       }
     }
   }
+  /* The line under the band's heading, for a reader whose progress
+     is one cleared browser from gone. */
+  .welcome-note {
+    margin: -4px 0 14px; font-size: 0.88rem; color: var(--ink-soft);
+    max-width: var(--measure);
+  }
+  /* A button that reads as a link, for the one word inside a
+     sentence that does something. */
+  .link-btn {
+    border: 0; padding: 0; background: none; cursor: pointer;
+    font: inherit; color: var(--green);
+    text-decoration: underline; text-underline-offset: 3px;
+
+    &:hover { text-decoration-style: solid; opacity: 0.85; }
+  }
+  /* The band, when it has been moved above the hero. It is the
+     first thing on the page then, so it carries the top padding
+     the hero would have had. */
+  .welcome-back[data-first] { padding-top: 34px; }
+
   .account-exits {
     display: grid; gap: var(--gap); margin-top: 6px;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));

@@ -33,7 +33,18 @@ import {
   getLast as deutschLast, overallStats as deutschStats,
   readSet as deutschRead, nextUp as deutschNext,
 } from "/deutsch/progress.js";
+import { findDhap, dhapLessons } from "/quran/curriculum.js";
+import {
+  getLast as quranLast, doneSet as quranDone, nextUp as quranNext,
+  overallStats as quranStats,
+} from "/quran/progress.js";
+import { findTerm, termParts } from "/english/curriculum.js";
+import {
+  getLast as englishLast, readSet as englishRead, nextUp as englishNext,
+  overallStats as englishStats,
+} from "/english/progress.js";
 import { readRecent } from "/recent.js";
+import { current } from "/account.js";
 import { icon } from "/learn/icons.js";
 import { el, cached, loadNews, newsCard, openNews, relTime } from "/news.js";
 import { tiltIn } from "/tilt.js";
@@ -112,6 +123,61 @@ function deutschResume() {
   };
 }
 
+/* Two more of the same, so the band knows every school rather than
+   the two that existed when it was written. A learner three ধাপ
+   into the Qur'an school was being offered German. */
+function quranResume() {
+  let last;
+  try { last = quranLast(); } catch { return null; }
+  if (!last?.url) return null;
+
+  const dhap = findDhap(last.dhap);
+  const done = quranDone();
+  const inDhap = dhap
+    ? dhapLessons(dhap).find((d) => d.status === "live" && !done.has(d.id))
+    : null;
+  const target = inDhap ?? quranNext() ?? { url: last.url, bn: last.bn };
+
+  let stats = { pct: 0 };
+  try { stats = quranStats(); } catch { /* ignore */ }
+
+  return {
+    ts: last.ts ?? 0,
+    icon: SKILLS.find((sk) => sk.slug === "quran")?.icon ?? "book",
+    where: "কুরআনের আরবি · Qur'anic Arabic",
+    title: target.bn || last.bn || "পরের দিন",
+    url: target.url,
+    pct: stats.pct,
+    cta: "চালিয়ে যান →",
+  };
+}
+
+function englishResume() {
+  let last;
+  try { last = englishLast(); } catch { return null; }
+  if (!last?.url) return null;
+
+  const term = findTerm(last.term);
+  const read = englishRead();
+  const inTerm = term
+    ? termParts(term).find((p) => p.status === "live" && !read.has(p.id))
+    : null;
+  const target = inTerm ?? englishNext() ?? { url: last.url, bn: last.bn };
+
+  let stats = { pct: 0 };
+  try { stats = englishStats(); } catch { /* ignore */ }
+
+  return {
+    ts: last.ts ?? 0,
+    icon: SKILLS.find((sk) => sk.slug === "english")?.icon ?? "book",
+    where: "মন থেকে ইংরেজি · English",
+    title: target.bn || last.bn || "পরের পার্ট",
+    url: target.url,
+    pct: stats.pct,
+    cta: "চালিয়ে যান →",
+  };
+}
+
 function continueCard(r) {
   return el("a", { className: "wb-card", href: r.url },
     el("span", { className: "wb-art", innerHTML: icon(r.icon) }),
@@ -129,9 +195,12 @@ function buildContinue() {
   const host = document.getElementById("wb-continue");
   if (!host) return false;
 
-  const cards = [learnResume(), deutschResume()]
+  /* Every school, newest first, and at most three: a band offering
+     four things to continue is a menu, not a nudge. */
+  const cards = [learnResume(), deutschResume(), quranResume(), englishResume()]
     .filter(Boolean)
-    .sort((a, b) => b.ts - a.ts);
+    .sort((a, b) => b.ts - a.ts)
+    .slice(0, 3);
 
   if (!cards.length) { host.hidden = true; return false; }
   host.hidden = false;
@@ -382,8 +451,78 @@ function relabel(hasContinue, hasRecent) {
       : "Since you were last here";
 }
 
+/* ------------------------------------------------------------
+   Whose page is this?
+
+   The home page opens by explaining who I am and what the site is
+   for, which is exactly right for somebody who has never been
+   here. For somebody who is nine lessons into the ladder it is a
+   page about a stranger, sitting on top of the one thing they came
+   back for.
+
+   So the band moves above the hero when there is something in it.
+   Not a different page and not a redirect: the same page, in the
+   order that suits whoever is reading it. A first visit is
+   untouched, because on a first visit the band is empty and stays
+   where it was.
+   ------------------------------------------------------------ */
+function putReaderFirst() {
+  const hero = document.querySelector("main .hero");
+  if (!hero || !section || section.hidden) return;
+  if (hero.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_PRECEDING) return;
+  hero.before(section);
+  section.dataset.first = "true";
+}
+
+/** A name, when there is one, and an offer when there is not.
+
+    Somebody with progress on this device and no account is one
+    cleared browser away from losing it, and has no idea. This is
+    the only place the site says so, once, next to the thing at
+    risk. */
+function greet(hasContinue) {
+  const label = document.getElementById("welcome-label");
+  const note = document.getElementById("welcome-note");
+  if (!label) return;
+
+  const who = current();
+  if (who?.name) {
+    label.textContent = hasContinue
+      ? `Welcome back, ${who.name.split(" ")[0]}`
+      : `Hello, ${who.name.split(" ")[0]}`;
+  }
+
+  if (!note) return;
+  if (who) {
+    note.hidden = true;
+    return;
+  }
+  // Only worth saying to somebody who has something to lose.
+  note.hidden = !hasContinue;
+  note.replaceChildren(
+    "Your place is saved on this device only. ",
+    el("button", {
+      className: "link-btn", type: "button", textContent: "Sign in",
+      onclick: () => document.querySelector(".account-btn")?.click(),
+    }),
+    " to carry it to your phone."
+  );
+}
+
+/* A tick that arrives from another device changes what "pick up
+   where you left off" should say, so the band is rebuilt when the
+   sync reports it moved something. */
+let wired = false;
+function watchForSync() {
+  if (wired) return;
+  wired = true;
+  document.addEventListener("sync:done", () => build());
+  document.addEventListener("account:changed", () => build());
+}
+
 function build() {
   if (!section) return;
+  watchForSync();
 
   const hasContinue = buildContinue();
 
@@ -397,6 +536,8 @@ function build() {
 
   relabel(hasContinue, hasRecent);
   reveal();
+  putReaderFirst();
+  greet(hasContinue);
 }
 
 build();

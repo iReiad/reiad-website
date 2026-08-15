@@ -31,6 +31,16 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v57: the home page reads the reader before it reads the site. The
+        band that says where you were now asks all four schools
+        rather than the two that existed when it was written, sits
+        above the hero the moment it has anything in it, greets a
+        signed-in reader by name, and tells a signed-out one that
+        their place is on this device only. home.js, index.html and
+        styles.css all changed, and a v56 shell would keep serving
+        the version that offered German to somebody three ধাপ into
+        the Qur'an school.
+
    v56: progress follows the account. sync.js copies the keys the
         four schools already write up to Supabase and back, merging
         rather than overwriting, and /account.html is the page that
@@ -373,7 +383,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v56";
+const VERSION = "v57";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
