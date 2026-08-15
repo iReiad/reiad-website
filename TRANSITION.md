@@ -762,6 +762,67 @@ is the closest Supabase region to Dhaka.
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
 
+### 2026-08-15 · An account can be set up, and the home page listens to it
+Three things landed together, and they are one thing really: an
+account that knows nothing about the person holding it can only
+hold their progress, and holding progress was already done.
+
+`/account.html` now asks three questions, once, the first time
+somebody lands on it after signing in. A name, which courses they
+are here for, and how often they mean to practise. It is the same
+form afterwards, relabelled as settings, because two forms would
+have been two save handlers and two places for the wording of a
+course name to drift.
+
+Every answer arrives filled in from what the device already knows:
+a reader who has read three English parts finds English ticked and
+told, in words, that it is ticked because they have already started
+it. The setup card is there to confirm what the site knows and to
+catch the one thing it cannot know, which is what they are about to
+start.
+
+Each question had to earn its place, and the rule was that it must
+change something the reader can point at afterwards:
+
+- the name appears beside anything they write,
+- the courses are offered first by the home page's band, and a
+  followed course with nothing read yet is offered as a way in,
+- the pace is what the last seven days are counted against.
+
+There is no birthday, no country and no "how did you hear about
+us", because nothing on this site would do anything with them.
+
+`aab/streak.js` is new and small: the four courses record WHAT has
+been read and none of them records WHEN, and "how am I doing" turns
+out to be a question about days. It keeps one list of dates, adds
+today when any course announces progress, and rides the same sync
+as everything else as a union, so a phone and a laptop give the
+true set of days rather than whichever synced last. There is no
+flame and no "don't lose your streak": this site has no
+notifications and is not getting any.
+
+`COURSES` in `content.js` is the fourth list of the same four ids
+collapsed into one. It had been written out by hand in the home
+page's band, in `sync.js`, in the account page's counts and in the
+setup options.
+
+The profile is remembered on the device, in `reiad-profile`, and
+that is not an optimisation. The home page's band is the first
+thing on the page, and a page that decides its own running order a
+second after it loads is worse than one that guessed. So the
+remembered copy answers immediately and Postgres corrects it.
+
+Two things the browser test caught that reading would not have. A
+course followed but not bookmarked was being offered as "start"
+even when the device had read a third of it, because a bookmark and
+a read-set are two different keys and they come apart; the word on
+the button is decided by the course's own progress now. And the
+page said "1 parts read".
+
+Next: Stage 7, comments. Stages 2 to 4 are still not started and
+are still the right things to leave: they move where the writing
+lives, and nothing a reader does depends on that yet.
+
 ### 2026-08-15 · Stage 6 done, and the account has a page
 Progress follows the account now. `aab/sync.js` carries the twelve
 localStorage keys the four schools already write, merging rather

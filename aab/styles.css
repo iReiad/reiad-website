@@ -655,14 +655,30 @@
   .signin-close { margin-top: 2px; }
 
   /* ---------- the account page ---------- */
-  .account-form {
-    display: grid; gap: 8px; max-width: 420px;
-    grid-template-columns: 1fr auto; align-items: end;
+  /* The settings form, which is also the setup card: three
+     fieldsets down the page, each one a question with its reason
+     underneath it. Fieldsets rather than divs because they are
+     genuinely groups of controls, and a legend is the one label a
+     screen reader reads before every box inside it. */
+  .account-panel {
+    display: grid; gap: 26px; margin-top: 6px;
+    max-width: 560px;
 
-    & label { grid-column: 1 / -1; font-size: 0.84rem; color: var(--ink-soft); }
-    & input {
+    & fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; }
+    & legend {
+      padding: 0; font-family: var(--font-serif); font-size: 1.08rem;
+      color: var(--ink);
+    }
+    /* The reason the question is being asked. It sits under the
+       legend rather than beside it: a question and its reason on
+       one line is a line nobody finishes reading. */
+    & .field-note {
+      margin: -4px 0 2px; font-size: 0.87rem; color: var(--ink-soft);
+      max-width: var(--measure);
+    }
+    & input[type="text"] {
       padding: 10px 12px; font-size: 0.95rem; font-family: var(--font-sans);
-      color: var(--ink); background: var(--paper);
+      color: var(--ink); background: var(--paper); max-width: 340px;
       border: 1px solid var(--hairline); border-radius: var(--radius-sm);
 
       &:focus {
@@ -670,6 +686,56 @@
         box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
       }
     }
+  }
+
+  /* A tickable row: the whole thing is the label, so the target is
+     the card and not the 13px box in the corner of it. That is the
+     difference between a form that works on a phone and one that
+     does not. */
+  .choice {
+    display: grid; grid-template-columns: auto 1fr; gap: 12px;
+    align-items: start; cursor: pointer;
+    padding: 12px 14px;
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    background: var(--paper);
+    transition: border-color var(--fast) var(--ease),
+                background var(--fast) var(--ease);
+
+    &:hover { border-color: color-mix(in oklab, var(--green) 40%, var(--hairline)); }
+
+    & input { margin-top: 3px; accent-color: var(--green); width: 16px; height: 16px; }
+    & strong { display: block; font-weight: 500; font-size: 0.98rem; }
+    & small { display: block; color: var(--ink-soft); font-size: 0.85rem; margin-top: 2px; }
+
+    /* Ticked is a state worth seeing from across the form, not a
+       13px mark you have to go and look for. */
+    &:has(input:checked) {
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+    &:has(input:focus-visible) {
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 25%, transparent);
+    }
+  }
+  .choice-grid {
+    display: grid; gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  }
+  .choice-row {
+    display: grid; gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  }
+  .account-actions {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+
+  /* The last seven days, stated and not decorated. See the note in
+     account-page.js: this line never turns red and never counts
+     down to anything. */
+  .account-week {
+    margin: 0 0 14px; max-width: var(--measure);
+    font-size: 0.92rem; color: var(--ink);
+    border-inline-start: 2px solid var(--green); padding-inline-start: 12px;
   }
   /* The line under the band's heading, for a reader whose progress
      is one cleared browser from gone. */

@@ -55,6 +55,11 @@ const KEYS = {
   "english-day": ["highest", "english:progress"],
   "quran-done": ["union", "quran:progress"],
   "quran-last": ["newest", "quran:progress"],
+
+  /* Which days this person turned up, from streak.js. A union for
+     the obvious reason: a phone on the bus and a laptop at a desk
+     are the same Tuesday, and either one alone under-counts. */
+  "days-active": ["union", "streak:changed"],
 };
 
 /* When each key was last written on this device. Kept so an empty
