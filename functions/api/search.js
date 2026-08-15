@@ -15,6 +15,12 @@ import { all, db } from "../_lib/db.js";
 import { methods, notConfigured, ok, str } from "../_lib/http.js";
 import { textOf } from "../_lib/sanitise.js";
 
+/* Where each section is served, the same table feeds/[kind].js
+   keeps. A result has to point at the piece's own mount: this used
+   to be a template literal with /insights/ in it, whatever the
+   piece's section was. */
+const MOUNTS = { insights: "/insights/", cooking: "/cooking/", travel: "/travel/" };
+
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 export async function onRequest(context) {
@@ -28,7 +34,7 @@ export async function onRequest(context) {
 
       const like = `%${q.replace(/[%_]/g, "")}%`;
       const rows = await all(d1,
-        `SELECT slug, title, dek, tag, body, published_at
+        `SELECT slug, title, dek, tag, section, body, published_at
          FROM articles
          WHERE status = 'live' AND (title LIKE ? OR dek LIKE ? OR body LIKE ?)
          ORDER BY
@@ -51,7 +57,9 @@ export async function onRequest(context) {
           title: row.title,
           dek: row.dek,
           tag: row.tag,
-          url: `/insights/${row.slug}.html`,
+          // Its own mount. A kitchen piece answered here with an
+          // /insights/ address, which is a search result that 404s.
+          url: `${MOUNTS[row.section] ?? "/insights/"}${row.slug}.html`,
           snippet: (at > 70 ? "…" : "") + snippet + (snippet.length >= 195 ? "…" : ""),
         };
       });

@@ -26,6 +26,7 @@
    ============================================================ */
 
 import { findSection, pieceUrl, formatDate } from "/content.js";
+import { piecesIn } from "/pieces.js";
 import { icon } from "/learn/icons.js";
 import { tiltIn } from "/tilt.js";
 
@@ -83,20 +84,35 @@ function pieceCard(piece, section) {
   return card;
 }
 
-function build() {
+async function build() {
   const host = document.getElementById("piece-list");
   if (!host) return;
   const section = findSection(host.dataset.section);
 
-  /* Newest first, and the ones still being written last, so the
-     page opens on something you can actually read. */
-  const order = [...section.pieces()].sort((a, b) => {
-    const soon = (x) => (x.status === "soon" ? 1 : 0);
-    return soon(a) - soon(b) || (b.date || "").localeCompare(a.date || "");
-  });
+  /* Everything in this section, from the database as well as from
+     content.js. Reading only content.js is how a piece published
+     through the Studio into the kitchen ended up readable at its
+     own address and missing from the kitchen's index.
+
+     The ones still being written are the manifest's alone: a piece
+     that does not exist yet cannot have a row. */
+  const live = await piecesIn(section.id);
+  const soon = section.pieces().filter((p) => p.status === "soon");
+  const order = [...live, ...soon];
 
   host.replaceChildren(...order.map((p) => pieceCard(p, section)));
   tiltIn(host);
+
+  /* The number in the sentence above the list counts the cards
+     under it. It used to come from COUNTS, which counts
+     content.js, so the hub could say one number and show another
+     the moment a piece existed only in the database. */
+  const slot = document.querySelector(`[data-count="${section.id}"]`);
+  if (slot) {
+    slot.textContent = slot.closest('[lang="bn"]') || document.documentElement.lang === "bn"
+      ? bn(live.length)
+      : String(live.length);
+  }
 }
 
 build();
