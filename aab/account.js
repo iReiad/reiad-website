@@ -281,6 +281,59 @@ export async function signOut() {
 
 /** Called once by app.js. Picks up a redirect if this page is one,
     and fills in who the reader is if a session survived. */
+/* ============================================================
+   The profile row
+
+   The one thing this site stores about a person beyond what
+   Supabase needs to sign them in: the name shown beside anything
+   they write. Row-level security means these two calls can only
+   ever read and write the caller's own row, whatever this file
+   asks for.
+   ============================================================ */
+
+const REST = `${SUPABASE_URL}/rest/v1`;
+
+async function restHeaders() {
+  const access = await token();
+  if (!access) return null;
+  return {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${access}`,
+    "Content-Type": "application/json",
+  };
+}
+
+export async function getProfile() {
+  const head = await restHeaders();
+  if (!head) return null;
+  try {
+    const res = await fetch(`${REST}/profiles?select=display_name&limit=1`, { headers: head });
+    if (!res.ok) throw new Error(String(res.status));
+    const [row] = await res.json();
+    return row ?? null;
+  } catch (err) {
+    console.warn("profile read failed", err);
+    return null;
+  }
+}
+
+export async function setDisplayName(name) {
+  const head = await restHeaders();
+  const who = current();
+  if (!head || !who) throw new Error("Not signed in.");
+
+  const res = await fetch(`${REST}/profiles?id=eq.${encodeURIComponent(who.id)}`, {
+    method: "PATCH",
+    headers: { ...head, Prefer: "return=minimal" },
+    body: JSON.stringify({ display_name: name }),
+  });
+  if (!res.ok) throw new Error(`Could not save that (${res.status}).`);
+
+  // The header shows this name, so it changes now, not on reload.
+  write({ ...session, user: { ...session.user, name } });
+  return true;
+}
+
 /**
  * Called once by signin.js. Synchronous on purpose: it picks up a
  * redirect, reads who the reader is out of the token, and returns.

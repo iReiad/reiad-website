@@ -17,6 +17,7 @@
 import {
   initAccount, current, sendLink, signInWithGoogle, signOut, arrivalError,
 } from "/account.js";
+import { startSync } from "/sync.js";
 
 const el = (tag, props = {}, ...kids) => {
   const node = Object.assign(document.createElement(tag), props);
@@ -125,6 +126,9 @@ function buildAccountPanel(user) {
     el("span", { className: "mono signin-kicker", textContent: "Signed in" }),
     el("h2", { textContent: user.name || "Reader" }),
     user.email ? el("p", { className: "signin-why", textContent: user.email }) : null,
+    el("a", {
+      className: "btn btn-solid", href: "/account.html", textContent: "Your account",
+    }),
     el("button", {
       className: "btn btn-ghost", type: "button", textContent: "Sign out",
       onclick: async () => { await signOut(); dialog.close(); },
@@ -182,6 +186,11 @@ export async function initSignIn() {
      this device and returns. Nothing here waits on a network. */
   initAccount();
   paintButton(button);
+
+  /* And if somebody is signed in, their progress catches up with
+     them. Signed out this returns immediately and makes no
+     request. */
+  startSync();
 
   /* Landing back from a provider with something to say deserves the
      panel opened, not a silent page. It is shown whichever face the

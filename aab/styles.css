@@ -629,6 +629,33 @@
   }
   .signin-close { margin-top: 2px; }
 
+  /* ---------- the account page ---------- */
+  .account-form {
+    display: grid; gap: 8px; max-width: 420px;
+    grid-template-columns: 1fr auto; align-items: end;
+
+    & label { grid-column: 1 / -1; font-size: 0.84rem; color: var(--ink-soft); }
+    & input {
+      padding: 10px 12px; font-size: 0.95rem; font-family: var(--font-sans);
+      color: var(--ink); background: var(--paper);
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+
+      &:focus {
+        outline: 0; border-color: var(--green);
+        box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+      }
+    }
+  }
+  .account-exits {
+    display: grid; gap: var(--gap); margin-top: 6px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+
+    & .cell { display: grid; gap: 8px; align-content: start; }
+    & h3 { font-size: 1.05rem; }
+    & p { font-size: 0.9rem; color: var(--ink-soft); margin: 0; }
+    & .btn { justify-self: start; }
+  }
+
   /* ---------- HERO ---------- */
   .hero {
     position: relative;
