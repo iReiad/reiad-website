@@ -44,10 +44,9 @@ const fields = {
   date: $("#f-date"),
   lang: $("#f-lang"),
   /* Where the piece is going. Everything downstream reads it:
-     the page the builder writes, the list the index entry is
-     pasted into, the URL the toast prints, and the row the desk
-     shows it in. Adding a section is an entry in SECTIONS, not an
-     edit here. */
+     the URL it is published at, the hub it appears on, the toast
+     that names it, and the row the desk shows it in. Adding a
+     section is an entry in SECTIONS, not an edit here. */
   section: $("#f-section"),
 };
 const meterBar = $("#meter-bar");
@@ -153,8 +152,7 @@ const currentSection = () => findSection(fields.section?.value);
 
    Topics are their own field now: chips you add with Enter or a
    comma and remove with Backspace or a click. They are stored as an
-   array, sent as an array, and printed into the index entry as an
-   array. */
+   array and sent as an array. */
 let topics = [];
 
 const topicChips = () => $("#topic-chips");

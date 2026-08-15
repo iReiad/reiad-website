@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <title>Article Studio · Reiad's Library</title>
-  <meta name="description" content="Paste an article and its photos, preview it in the site's own styles, and download a finished page ready to publish.">
+  <meta name="description" content="Paste an article and its photos, preview it in the site's own styles, and publish it to the site.">
   <meta name="robots" content="noindex, nofollow">
 
   <script>
@@ -126,8 +126,8 @@
 
           <div class="studio-fields">
             <!-- Where it goes, first, because it changes the shape of
-                 everything under it: the URL, the note at the foot of
-                 the page, and the list the index entry is pasted into.
+                 everything under it: the URL, the note at the foot
+                 of the page, and which hub the piece appears on.
                  Built from SECTIONS by studio.js, so a fourth section
                  appears here without this file being touched. -->
             <fieldset class="seg-field" id="section-field">
@@ -341,11 +341,10 @@ everything else Word smuggles in gets thrown away."></div>
           leaves a link in the article, so the piece itself stays a few
           kilobytes and the same photo used twice is stored once.
           <br><br>
-          <strong>Downloading</strong> embeds them in the page instead, so one
-          file is the whole article. That's simplest, but the page grows: if
-          the meter goes gold or red, use the <em>.zip</em>, which gives you
-          the page plus a <code>photos/</code> folder already wired up. Unzip
-          both into <code>insights/</code>.
+          <strong>Until you publish</strong> they stay embedded in the
+          editor, which is why the weight meter climbs as you paste. It
+          measures the article against the 1 MB the database accepts, and
+          publishing is what brings it back down.
         </div>
       </section>
 
