@@ -31,6 +31,28 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v62: three things a reader reported. Resetting progress while
+        signed in did nothing, because every school's resetAll()
+        removes its key rather than emptying it and the guard in
+        sync.js only recognised an empty array, so the account's
+        copy came straight back. Signing in on a second browser
+        silently pushed that browser's progress into the account
+        for ever; it asks now, once, and only when both sides hold
+        something. first-sync.js is new and sync.js loads it
+        lazily, so a v61 shell would reach a module it does not
+        have at the one moment it matters.
+
+   v61: photos reach R2 at last, and links share the piece's own
+        picture. Reading a pasted photo back out of the editor was
+        a fetch of a data: URL, which is governed by connect-src
+        and not by img-src: the policy allowed data: under img-src,
+        so photos DISPLAYED, and every attempt to upload one was
+        blocked before it left the browser. R2 stayed empty, every
+        cover stayed empty, every shared link showed the default
+        card. photo.js is new and shared by studio.js and desk.js,
+        both of which changed, and the desk can now repair a piece
+        that was published while this was broken.
+
    v60: the desk names the migration it has been quietly offering.
         The primary action on a committed file says Import rather
         than Edit, because publishing from that door is the piece
@@ -409,7 +431,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v60";
+const VERSION = "v62";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -447,6 +469,13 @@ const PRECACHE = [
      above: a shell without it is an app.js whose import 404s, and
      that takes the menu and the palette with it. */
   "/streak.js",
+  /* studio.js and desk.js both import this, and a shell without it
+     is an editor that cannot save a photo. */
+  "/photo.js",
+  /* sync.js imports this lazily, at the one moment it is needed:
+     the first time a device meets an account that already has
+     progress. Offline is exactly when that import must not 404. */
+  "/first-sync.js",
   "/crumbs.js",
   "/audience.js",
   "/activation.js",

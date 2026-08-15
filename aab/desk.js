@@ -28,6 +28,7 @@ import { api, uploadMedia } from "/api.js";
 import { toast, copyText } from "/app.js";
 import { SECTIONS, findSection, pieceUrl, livePieces } from "/content.js";
 import { shareCardBlob, coverFromHTML, cardSlug, isDrawnCard } from "/share-card.js";
+import { hostPhotosIn, isHosted } from "/photo.js";
 
 const el = (tag, props = {}, ...kids) => {
   const node = Object.assign(document.createElement(tag), props);
@@ -450,8 +451,15 @@ const byDate = (a, b) =>
     is a WebP and the scrapers behind WhatsApp, Facebook and
     LinkedIn will not read one: those pieces show the fallback until
     they are published again, which is what draws the card. */
-const coverWarning = (article) =>
-  article.cover && !isDrawnCard(article.cover) ? "photo, not a card" : null;
+const coverWarning = (article) => {
+  /* A photo still embedded in the body is the worse of the two and
+     is checked first: it means the piece has a picture, no card at
+     all, and nothing of it in R2. Every link shared from it shows
+     the site's default card. `embedded` is computed by the API. */
+  if (article.embedded) return "photo not hosted";
+  if (article.cover && !isDrawnCard(article.cover)) return "photo, not a card";
+  return null;
+};
 
 /** Draw the missing card, here, without opening the editor.
 
@@ -460,22 +468,51 @@ const coverWarning = (article) =>
     someone reopen the piece and publish it again to fix a picture
     would be busywork with a chance of changing something else. */
 async function drawCard(article, onDone) {
-  const full = (await api(`articles/${encodeURIComponent(article.slug)}`))?.article;
-  const pick = coverFromHTML(full?.body ?? "");
-  if (!pick.own || !/^\/media\//.test(pick.src)) {
-    toast("No hosted photo in that piece, so the section's card is the right one.");
+  const slug = encodeURIComponent(article.slug);
+  const full = (await api(`articles/${slug}`))?.article;
+  let body = full?.body ?? "";
+  let pick = coverFromHTML(body);
+
+  if (!pick.own) {
+    toast("No photo in that piece, so the section's card is the right one.");
     return;
+  }
+
+  /* The photo may still be sitting in the body as a data: URL,
+     because for a while every attempt to move one out to R2 was
+     blocked by connect-src before it left the browser. See the note
+     at the top of photo.js. Those pieces are repaired here rather
+     than by making somebody reopen each one in the editor and
+     publish it again. */
+  let rehosted = 0;
+  if (!isHosted(pick.src)) {
+    toast("Moving the photos to /media first…");
+    const hosted = await hostPhotosIn(body, article.slug, uploadMedia);
+    if (!hosted.uploaded) {
+      toast("Those photos wouldn't upload, so the card can't be drawn yet.");
+      return;
+    }
+    body = hosted.html;
+    rehosted = hosted.uploaded;
+    pick = coverFromHTML(body);
+    if (!isHosted(pick.src)) { toast("Still no hosted photo to draw from."); return; }
   }
 
   toast("Drawing the card…");
   try {
     const stored = await uploadMedia(await shareCardBlob(pick), cardSlug(article.slug));
     if (!stored?.url) throw new Error("upload-failed");
-    const res = await api(`articles/${encodeURIComponent(article.slug)}`, {
-      method: "PATCH", body: { cover: stored.url },
-    });
+
+    /* The body goes back only when it actually changed. A PATCH
+       that rewrites a body it did not touch is a version snapshot
+       nobody asked for. */
+    const patch = rehosted ? { cover: stored.url, body } : { cover: stored.url };
+    const res = await api(`articles/${slug}`, { method: "PATCH", body: patch });
     if (!res?.ok) throw new Error(res?.reason ?? "save-failed");
-    toast(`Card drawn from the ${pick.lead ? "lead" : "first"} photo.`);
+
+    toast(rehosted
+      ? `${rehosted} photo${rehosted === 1 ? "" : "s"} moved to /media, card drawn.`
+      : `Card drawn from the ${pick.lead ? "lead" : "first"} photo.`);
     onDone();
   } catch (err) {
     console.warn("share card failed", err);
@@ -607,8 +644,12 @@ function articleRow(a, redraw) {
       ? el("span", {
           className: "pill pill-warn",
           textContent: coverWarning(a),
-          title: "Its social card is the photo itself, in a format "
-            + "WhatsApp, Facebook and LinkedIn will not read. Draw card fixes it.",
+          title: coverWarning(a) === "photo not hosted"
+            ? "Its photo is still inside the article body rather than in "
+              + "R2, so it has no social card at all and shares as the "
+              + "site default. Draw card moves the photo out and draws one."
+            : "Its social card is the photo itself, in a format "
+              + "WhatsApp, Facebook and LinkedIn will not read. Draw card fixes it.",
         })
       : null,
     (a.topics ?? []).length

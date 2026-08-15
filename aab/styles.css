@@ -660,6 +660,42 @@
      underneath it. Fieldsets rather than divs because they are
      genuinely groups of controls, and a legend is the one label a
      screen reader reads before every box inside it. */
+  /* The one question signing in is allowed to ask. See first-sync.js:
+     it appears only when this browser and the account both hold
+     progress, which is the only case where merging silently could
+     lose something somebody would miss. */
+  .first-sync {
+    width: min(520px, calc(100vw - 32px));
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel); color: var(--ink);
+    padding: 0; box-shadow: var(--shadow-lift);
+
+    &::backdrop { background: oklch(12% 0.02 var(--h-green) / 0.55); }
+  }
+  .first-sync-body { padding: 24px; display: grid; gap: 12px; }
+  .first-sync-body h2 { font-size: 1.25rem; margin: 0; }
+  .first-sync-body p { margin: 0; font-size: 0.92rem; color: var(--ink-soft); }
+  .first-sync-choices { display: grid; gap: 10px; margin-top: 4px; }
+
+  /* Each answer says what it COSTS, not what it does, so the whole
+     row is the target and the consequence is the second line. */
+  .first-sync-choice {
+    display: grid; gap: 3px; text-align: start; cursor: pointer;
+    padding: 12px 14px; font: inherit;
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    background: var(--paper); color: var(--ink);
+    transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
+
+    &:hover { border-color: var(--green); background: var(--green-soft); }
+    &:focus-visible {
+      outline: 0; border-color: var(--green);
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 25%, transparent);
+    }
+    & strong { font-weight: 500; font-size: 0.98rem; }
+    & small { color: var(--ink-soft); font-size: 0.84rem; }
+  }
+  .first-sync-note { font-size: 0.82rem !important; opacity: 0.85; }
+
   .account-panel {
     display: grid; gap: 26px; margin-top: 6px;
     max-width: 560px;
