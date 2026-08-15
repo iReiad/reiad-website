@@ -148,9 +148,6 @@
             </label>
 
             <div class="field-row">
-              <label>Label: the small line above the headline
-                <input type="text" id="f-tag" placeholder="Explainer · Equities">
-              </label>
               <label>Date
                 <input type="date" id="f-date">
               </label>
@@ -162,19 +159,29 @@
               </label>
             </div>
 
-            <!-- Topics, plural and on purpose. A piece about visa
-                 paperwork is about travel AND about money, and one
-                 label cannot say that. Enter or a comma keeps one;
-                 Backspace on an empty box takes the last one back. -->
+            <!-- Topics ARE the label. There used to be two fields: a
+                 label, which is the small line above the headline, and
+                 a list of topics, which is what the piece is about.
+                 They were the same thing typed twice, and they drifted:
+                 a piece labelled "Explainer · Equities" and tagged
+                 "Visas, Paperwork" is a piece whose card says one thing
+                 and whose index says another. One field now, and the
+                 line above the headline is what it holds. -->
             <div class="topic-block">
-              <label for="f-topics">Topics: as many as it is really about, up to six</label>
+              <label for="f-topics">Topics: what it is about, and the line above the headline</label>
               <div class="topic-field" id="topic-field" data-count="0">
                 <span class="topic-chips" id="topic-chips"></span>
                 <input type="text" id="f-topics" list="topic-options" spellcheck="false"
                        placeholder="Add a topic, then Enter" aria-describedby="topic-hint">
               </div>
               <datalist id="topic-options"></datalist>
-              <span class="field-hint" id="topic-hint">Enter or a comma keeps one. Backspace takes the last one back.</span>
+              <!-- What the site already calls things, so the fourth
+                   spelling of one topic never gets invented. -->
+              <div class="topic-suggest" id="topic-suggest" hidden>
+                <span class="mono">Already in use</span>
+                <span class="topic-known" id="topic-known"></span>
+              </div>
+              <span class="field-hint" id="topic-hint">Enter or a comma keeps one, up to six. Backspace takes the last one back. The first three become the line above the headline.</span>
             </div>
 
             <label>File name: leave blank and I'll make one from the headline

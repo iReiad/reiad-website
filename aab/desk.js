@@ -26,7 +26,7 @@
 
 import { api, uploadMedia } from "/api.js";
 import { toast, copyText } from "/app.js";
-import { SECTIONS, findSection, pieceUrl } from "/content.js";
+import { SECTIONS, findSection, pieceUrl, livePieces } from "/content.js";
 import { shareCardBlob, coverFromHTML, cardSlug, isDrawnCard } from "/share-card.js";
 
 const el = (tag, props = {}, ...kids) => {
@@ -406,6 +406,42 @@ const articleState = { q: "", section: "all" };
 const SECTION_FILTERS = [["all", "Everywhere"],
   ...SECTIONS.map((sec) => [sec.id, sec.id === "insights" ? sec.en : sec.bn])];
 
+/* ---------- everything that is published, not everything in D1 ----------
+
+   THE GAP THIS FILLS
+
+   This panel is called Published and listed the database. Most of
+   what is published on this site is not in the database: the case
+   studies, the older insights, the piece about onions and the one
+   about visas are committed files, written before the Studio or
+   written straight into the repository. On a phone, where the
+   database happened to hold two rows, the desk looked like a site
+   with two articles on it.
+
+   They are listed from content.js, which is the same manifest the
+   menu, the palette and the sitemap read, so this list is the site
+   rather than a copy of part of it. A file piece cannot be
+   published, moved or deleted from here, because there is no row
+   to change: it can be opened in the Studio, and publishing it
+   from there takes over its URL and gives it every other action. */
+const filePieces = () =>
+  SECTIONS.flatMap((sec) =>
+    livePieces(sec).map((piece) => ({
+      slug: piece.slug,
+      title: piece.title,
+      tag: piece.tag,
+      topics: piece.topics ?? [],
+      status: "live",
+      section: sec.id,
+      lang: piece.lang ?? sec.lang,
+      updated_at: piece.date ? `${piece.date}T00:00:00Z` : null,
+      file: true,
+    })));
+
+/** Newest first, whichever kind of thing it is. */
+const byDate = (a, b) =>
+  String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? ""));
+
 /** What a pasted link will show, when that is worth saying.
 
     Nothing for the two good cases: a card the Studio drew (a JPEG),
@@ -500,7 +536,14 @@ function moveControl(article, onDone) {
 }
 
 async function renderArticles(host) {
-  const all = (await api("articles?all=1"))?.articles ?? [];
+  const stored = (await api("articles?all=1"))?.articles ?? [];
+  const known = new Set(stored.map((a) => a.slug));
+
+  /* The database first, then everything published as a file that
+     the database has not taken over. A piece exists once. */
+  const all = [...stored, ...filePieces().filter((p) => !known.has(p.slug))]
+    .sort(byDate);
+
   const needle = articleState.q.toLowerCase();
   const rows = all
     .filter((a) => articleState.section === "all"
@@ -528,55 +571,98 @@ async function renderArticles(host) {
       redraw();
     }, articleState.q),
     el("p", { className: "admin-count mono", textContent:
-      all.length ? `${rows.length} of ${all.length} in the database`
-                 : "Nothing published through the Studio yet." }),
-    el("div", { className: "admin-table" },
-      ...rows.map((a) => {
-        const sec = findSection(a.section);
-        return el("div", { className: `admin-line article-line status-${a.status}` },
-          el("a", { className: "article-title", href: pieceUrl(sec, a.slug),
-                    textContent: a.title }),
-          el("span", { className: "line-facts" },
-            el("span", { className: `pill section-pill section-${sec.id}`,
-                         textContent: sec.id === "insights" ? sec.en : sec.bn }),
-            el("span", { className: "pill", textContent: a.status }),
-            coverWarning(a)
-              ? el("span", {
-                  className: "pill pill-warn",
-                  textContent: coverWarning(a),
-                  title: "Its social card is the photo itself, in a format "
-                    + "WhatsApp, Facebook and LinkedIn will not read. Draw card fixes it.",
-                })
-              : null,
-            (a.topics ?? []).length
-              ? el("span", { className: "line-topics" },
-                  ...a.topics.slice(0, 3).map((t) =>
-                    el("span", { className: "topic-tag mono", textContent: t })))
-              : null,
-            el("span", { className: "mono muted", textContent: when(a.updated_at) })
-          ),
-          el("span", { className: "line-actions" },
-            // Straight back into the editor with it loaded.
-            el("a", { className: "chip", href: `/studio.html?edit=${encodeURIComponent(a.slug)}`,
-                      textContent: "Edit" }),
-            button(a.status === "live" ? "Unpublish" : "Publish", async () => {
-              await api(`articles/${a.slug}`, { method: "PATCH",
-                body: { status: a.status === "live" ? "draft" : "live" } });
-              redraw();
-            }),
-            button("History", () => showHistory(a, redraw)),
-            coverWarning(a) ? button("Draw card", () => drawCard(a, redraw)) : null,
-            button("Copy link",
-              () => copyText(`${location.origin}${pieceUrl(sec, a.slug)}`, "Link copied")),
-            button("Delete", async () => {
-              if (!confirm(`Delete "${a.title}" from the database? This cannot be undone.`)) return;
-              const res = await api(`articles/${a.slug}`, { method: "DELETE" });
-              if (res?.ok) { toast("Deleted"); redraw(); } else toast("That didn't delete");
-            }),
-            moveControl(a, redraw)
-          )
-        );
-      })
+      `${rows.length}${rows.length === all.length ? "" : ` of ${all.length}`} piece`
+      + `${all.length === 1 ? "" : "s"} · ${stored.length} in the database, `
+      + `${all.length - stored.length} written as files` }),
+    el("div", { className: "admin-table" }, ...rows.map((a) => articleRow(a, redraw)))
+  );
+}
+
+/** One piece, as a row: what it is, then what you can do with it.
+
+    Two actions are in the open, because they are the two anyone
+    actually wants: edit it, and open it. The other six sit behind
+    More, which is a <details>, which means it is a real disclosure
+    with real keyboard behaviour and no script. On a phone the row
+    was three wrapped lines of buttons per article and the list
+    stopped being readable somewhere around the fourth piece. */
+function articleRow(a, redraw) {
+  const sec = findSection(a.section);
+  const url = pieceUrl(sec, a.slug);
+
+  const facts = el("span", { className: "line-facts" },
+    el("span", { className: `pill section-pill section-${sec.id}`,
+                 textContent: sec.id === "insights" ? sec.en : sec.bn }),
+    el("span", { className: "pill", textContent: a.file ? "file" : a.status,
+                 title: a.file
+                   ? "Written as a file in the repository, not through the Studio."
+                   : "" }),
+    coverWarning(a)
+      ? el("span", {
+          className: "pill pill-warn",
+          textContent: coverWarning(a),
+          title: "Its social card is the photo itself, in a format "
+            + "WhatsApp, Facebook and LinkedIn will not read. Draw card fixes it.",
+        })
+      : null,
+    (a.topics ?? []).length
+      ? el("span", { className: "line-topics" },
+          ...a.topics.slice(0, 3).map((t) =>
+            el("span", { className: "topic-tag mono", textContent: t })))
+      : null,
+    el("span", { className: "mono muted", textContent: when(a.updated_at) })
+  );
+
+  /* Editing a file piece means reading the page back into the
+     Studio, which is a different door from editing a row. */
+  const edit = el("a", {
+    className: "chip",
+    href: a.file
+      ? `/studio.html?file=${encodeURIComponent(`${sec.id}:${a.slug}`)}`
+      : `/studio.html?edit=${encodeURIComponent(a.slug)}`,
+    textContent: "Edit",
+  });
+
+  const more = el("details", { className: "more-menu" },
+    el("summary", { className: "chip", textContent: "More" }),
+    el("div", { className: "more-body" },
+      a.file
+        ? el("p", { className: "muted more-note", textContent:
+            "This one is a committed file. Open it in the Studio and publish it "
+            + "to take over its URL; until then there is no row to change." })
+        : null,
+      a.file ? null : button(a.status === "live" ? "Unpublish" : "Publish", async () => {
+        await api(`articles/${a.slug}`, { method: "PATCH",
+          body: { status: a.status === "live" ? "draft" : "live" } });
+        redraw();
+      }),
+      a.file ? null : button("History", () => showHistory(a, redraw)),
+      coverWarning(a) ? button("Draw card", () => drawCard(a, redraw)) : null,
+      button("Copy link", () => copyText(`${location.origin}${url}`, "Link copied")),
+      a.file ? null : button("Delete", async () => {
+        if (!confirm(`Delete "${a.title}" from the database? This cannot be undone.`)) return;
+        const res = await api(`articles/${a.slug}`, { method: "DELETE" });
+        if (res?.ok) { toast("Deleted"); redraw(); } else toast("That didn't delete");
+      }),
+      a.file ? null : moveControl(a, redraw)
+    )
+  );
+
+  // One open at a time, so the panel below never opens under another.
+  more.addEventListener("toggle", () => {
+    if (!more.open) return;
+    more.closest(".admin-table")?.querySelectorAll("details.more-menu[open]")
+      .forEach((d) => { if (d !== more) d.open = false; });
+  });
+
+  return el("div", { className: `admin-line article-line status-${a.status}${a.file ? " is-file" : ""}` },
+    el("a", { className: "article-title", href: url, textContent: a.title }),
+    facts,
+    el("span", { className: "line-actions" },
+      edit,
+      el("a", { className: "chip", href: url, target: "_blank", rel: "noopener",
+                textContent: "View" }),
+      more
     )
   );
 }

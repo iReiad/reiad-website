@@ -35,7 +35,6 @@ const preview = $("#preview");
 const fields = {
   title: $("#f-title"),
   dek: $("#f-dek"),
-  tag: $("#f-tag"),
   slug: $("#f-slug"),
   date: $("#f-date"),
   lang: $("#f-lang"),
@@ -156,14 +155,54 @@ let topics = [];
 const topicChips = () => $("#topic-chips");
 const topicInput = () => $("#f-topics");
 
+/** The topics inside a label. The older pieces carry their label as
+    one string with middle dots in it, which is exactly the list this
+    field holds, written the old way. */
+const topicsFromTag = (tag) =>
+  String(tag ?? "").split(/[·•|,]/).map((t) => t.trim()).filter(Boolean);
+
 /** Every topic already in use anywhere on the site, so the field
     suggests the vocabulary that exists rather than inviting a
-    fourth spelling of the same word. */
+    fourth spelling of the same word.
+
+    Both sources count: the pieces in content.js and whatever is in
+    the database, and in both cases the label counts as topics,
+    because that is what a label has always been here. */
 function knownTopics() {
-  const seen = new Set();
-  SECTIONS.forEach((sec) =>
-    sec.pieces().forEach((p) => (p.topics ?? []).forEach((t) => seen.add(t))));
-  return [...seen].sort((a, b) => a.localeCompare(b));
+  const seen = new Map();      // lower case → the spelling to offer
+  const add = (t) => {
+    const key = String(t).trim().toLowerCase();
+    if (key && !seen.has(key)) seen.set(key, String(t).trim());
+  };
+  SECTIONS.forEach((sec) => sec.pieces().forEach((p) => {
+    (p.topics ?? []).forEach(add);
+    if (!p.topics?.length) topicsFromTag(p.tag).forEach(add);
+  }));
+  takenSlugs.forEach((a) => {
+    (a.topics ?? []).forEach(add);
+    if (!a.topics?.length) topicsFromTag(a.tag).forEach(add);
+  });
+  return [...seen.values()].sort((a, b) => a.localeCompare(b));
+}
+
+/** The ones worth showing as buttons: what this piece has not got
+    already, most useful first, and few enough to read at a glance. */
+function renderTopicSuggestions() {
+  const host = $("#topic-known");
+  const box = $("#topic-suggest");
+  if (!host || !box) return;
+
+  const have = new Set(topics.map((t) => t.toLowerCase()));
+  const offer = knownTopics().filter((t) => !have.has(t.toLowerCase())).slice(0, 10);
+  box.hidden = !offer.length || topics.length >= 6;
+
+  host.replaceChildren(...offer.map((t) =>
+    Object.assign(document.createElement("button"), {
+      type: "button",
+      className: "chip",
+      textContent: t,
+      onclick: () => { addTopics(t); topicInput()?.focus(); },
+    })));
 }
 
 function renderTopics() {
@@ -191,6 +230,7 @@ function renderTopics() {
   }));
   const field = $("#topic-field");
   if (field) field.dataset.count = String(topics.length);
+  renderTopicSuggestions();
 }
 
 /** Add whatever is typed, split on commas so a paste of
@@ -215,15 +255,22 @@ function setTopics(list) {
   renderTopics();
 }
 
+/** The datalist behind the box. Redrawn whenever the vocabulary
+    grows, which is after the database has answered as well as at
+    boot: at boot it only knows what content.js holds. */
+function paintTopicOptions() {
+  const suggestions = $("#topic-options");
+  if (!suggestions) return;
+  suggestions.replaceChildren(...knownTopics().map((t) =>
+    Object.assign(document.createElement("option"), { value: t })));
+  renderTopicSuggestions();
+}
+
 function wireTopics() {
   const input = topicInput();
   if (!input) return;
 
-  const suggestions = $("#topic-options");
-  if (suggestions) {
-    suggestions.replaceChildren(...knownTopics().map((t) =>
-      Object.assign(document.createElement("option"), { value: t })));
-  }
+  paintTopicOptions();
 
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === "," || e.key === "Tab") {
@@ -1240,7 +1287,9 @@ function meta() {
   return {
     title,
     dek: fields.dek.value.trim(),
-    tag: fields.tag.value.trim() || "Note",
+    /* The line above the headline, made of the topics rather than
+       typed a second time. Three is what fits on a card. */
+    tag: topics.slice(0, 3).join(" · ") || (lang === "bn" ? "লেখা" : "Note"),
     // Slugified even when typed by hand. It used to be taken raw, so
     // "German Alphabets" stayed "German Alphabets" here and in the
     // index-entry block, while the server quietly stored
@@ -1816,6 +1865,7 @@ async function refreshSlugs() {
   if (!dynamic) return;
   const rows = (await api("articles?all=1"))?.articles ?? [];
   takenSlugs = new Map(rows.map((a) => [a.slug, a]));
+  paintTopicOptions();
 }
 
 function preflight(m) {
@@ -1843,7 +1893,10 @@ function preflight(m) {
   else if (m.dek.length > DEK_LIMIT) {
     add("warn", `The standfirst is ${m.dek.length} characters; search results cut off around ${DEK_LIMIT}.`);
   }
-  if (!fields.tag.value.trim()) add("warn", "No label, so it'll publish as \"Note\".");
+  if (!topics.length) {
+    add("warn", "No topics, so the line above the headline will read "
+      + `"${m.tag}" and the piece will not be filed under anything.`);
+  }
 
   const doc = new DOMParser().parseFromString(m.body, "text/html");
 
@@ -1989,21 +2042,25 @@ async function showOpen() {
     nodes.push(line);
   }
 
-  /* The pieces that are still committed files. Anything already
-     taken over by a database row is listed below instead, so the
-     same article never appears twice. */
+  /* The pieces that are still committed files, from every section
+     rather than from Insights alone: the kitchen and the travel
+     desk are written as files too, and leaving them out of this
+     list meant the only way to edit one was to open the file.
+     Anything already taken over by a database row is listed below
+     instead, so the same article never appears twice. */
   const inDatabase = new Set(articles.map((a) => a.slug));
-  const files = liveArticles().filter((a) => !inDatabase.has(a.slug));
+  const files = filePieces().filter((a) => !inDatabase.has(a.slug));
 
   if (files.length) {
-    nodes.push(sectionLabel("Written as files, before the Studio"));
+    nodes.push(sectionLabel("Written as files, in the repository"));
     for (const entry of files) {
       const line = document.createElement("div");
       line.className = "admin-line";
       line.append(
         Object.assign(document.createElement("span"), { textContent: entry.title }),
         Object.assign(document.createElement("span"), {
-          className: "mono muted", textContent: entry.date ?? "",
+          className: "mono muted",
+          textContent: `${findSection(entry.section).en} · ${entry.date ?? ""}`,
         }),
         rowButton("Edit", () => openFile(entry))
       );
@@ -2036,15 +2093,21 @@ async function showOpen() {
 
 /* ---------- articles that are still files ----------
 
-   The pieces written before the Studio existed are committed HTML in
-   aab/insights/. They are not in the database, so Open… could not
-   see them and there was no way to change a word of one without
-   editing the file by hand.
+   The pieces written before the Studio existed are committed HTML,
+   in aab/insights/, aab/cooking/ and aab/travel/. They are not in
+   the database, so Open… could not see them and there was no way to
+   change a word of one without editing the file by hand.
 
    Reading the file back is enough, because worker.js already prefers
-   a D1 row over a file for /insights/*: publishing what comes out of
-   here takes over that URL, and the file stays where it is as the
-   fallback if the row is ever removed. */
+   a D1 row over a file at every one of those mounts: publishing what
+   comes out of here takes over that URL, and the file stays where it
+   is as the fallback if the row is ever removed. */
+
+/** Every piece the site has as a file, in every section, with the
+    section it belongs to attached. The desk lists the same set. */
+const filePieces = () =>
+  SECTIONS.flatMap((sec) =>
+    livePieces(sec).map((piece) => ({ ...piece, section: sec.id })));
 
 /** The article body, with the furniture every page repeats stripped. */
 function bodyFromPage(html) {
@@ -2066,7 +2129,11 @@ function bodyFromPage(html) {
 }
 
 async function openFile(entry) {
-  const res = await fetch(`/insights/${entry.slug}.html`, { credentials: "same-origin" });
+  /* At its own mount, not at /insights/. Reading a kitchen piece
+     from /insights/ is a 404, which is why editing one from here
+     used to report that the file could not be read. */
+  const section = findSection(entry.section);
+  const res = await fetch(pieceUrl(section, entry.slug), { credentials: "same-origin" });
   if (!res.ok) { toast("Couldn't read that file."); return; }
 
   const body = bodyFromPage(await res.text());
@@ -2080,13 +2147,12 @@ async function openFile(entry) {
   editor.innerHTML = body;
   fields.title.value = entry.title ?? "";
   fields.dek.value = entry.dek ?? "";
-  fields.tag.value = entry.tag ?? "";
   fields.slug.value = entry.slug ?? "";
   fields.date.value = (entry.date ?? "").slice(0, 10) || new Date().toISOString().slice(0, 10);
-  fields.lang.value = entry.lang === "bn" ? "bn" : "en";
-  fields.section.value = "insights";     // it came out of /insights/
+  fields.lang.value = entry.lang === "bn" ? "bn" : (section.lang === "bn" ? "bn" : "en");
+  fields.section.value = section.id;     // wherever the file lives
   paintSectionPicker();
-  setTopics(entry.topics ?? []);
+  setTopics(entry.topics?.length ? entry.topics : topicsFromTag(entry.tag));
 
   openSheet.close();
   onEdit();
@@ -2110,14 +2176,13 @@ async function openArticle(slug) {
   editor.innerHTML = article.body ?? "";
   fields.title.value = article.title ?? "";
   fields.dek.value = article.dek ?? "";
-  fields.tag.value = article.tag ?? "";
   fields.slug.value = article.slug ?? "";
   fields.date.value = (article.published_at ?? "").slice(0, 10)
     || new Date().toISOString().slice(0, 10);
   fields.lang.value = article.lang === "bn" ? "bn" : "en";
   fields.section.value = findSection(article.section).id;
   paintSectionPicker();
-  setTopics(article.topics ?? []);
+  setTopics(article.topics?.length ? article.topics : topicsFromTag(article.tag));
 
   openSheet.close();
   onEdit();
@@ -2243,7 +2308,7 @@ async function importNotion(pageId, { silent = false } = {}) {
   editor.innerHTML = page.body || "";
   if (page.title) fields.title.value = page.title;
   if (page.dek) fields.dek.value = page.dek;
-  if (page.tag) fields.tag.value = page.tag;
+  if (page.tag) setTopics(topicsFromTag(page.tag));
   if (page.date) fields.date.value = page.date;
   if (page.lang) fields.lang.value = page.lang;
   if (page.slug && !silent) fields.slug.value = page.slug;
@@ -2479,7 +2544,10 @@ function loadDraft(draft) {
      and Insights is where it would have gone. */
   if (!draft.fields?.section) fields.section.value = "insights";
   paintSectionPicker();
-  setTopics(draft.topics ?? []);
+  /* And one written before the label became the topics has its
+     label sitting in a field that no longer exists. It is the same
+     list, so read it back rather than losing it. */
+  setTopics(draft.topics?.length ? draft.topics : topicsFromTag(draft.fields?.tag));
   draftLine.textContent = draft.savedAt
     ? `Draft from ${new Date(draft.savedAt).toLocaleString()}`
     : "";
@@ -2571,10 +2639,20 @@ function watchTools() {
   wireTopics();
   renderTopics();
   watchTools();
-  await restoreDraft();
+
+  /* A URL that names a piece is an instruction, and restoring the
+     last draft over the top of it is not carrying it out. The two
+     used to race: whichever of the draft store and the fetch
+     answered second won, so the desk's Edit link opened the right
+     piece about half the time. */
+  if (!askedFor().wanted) await restoreDraft();
   applyView();
   renderPreview();
   refreshNow();
+
+  // A file piece can be opened without a server; a database one
+  // waits for enableDynamic() to say there is one.
+  if (askedFor().file) openFromQuery();
 })();
 
 
@@ -2621,14 +2699,31 @@ export function enableDynamic() {
   openFromQuery();
 }
 
-/** The desk's Edit links land here as ?edit=<slug>. */
+/** What the URL is asking for, if anything. */
+function askedFor() {
+  const query = new URLSearchParams(location.search);
+  const slug = query.get("edit");
+  const file = query.get("file");
+  return { slug, file, wanted: slug || file };
+}
+
+/** The desk's Edit links land here: ?edit=<slug> for a piece in the
+    database, ?file=<section>:<slug> for one that is still a file. */
 function openFromQuery() {
-  const slug = new URLSearchParams(location.search).get("edit");
-  if (!slug) return;
+  const { slug, file } = askedFor();
+  if (!slug && !file) return;
+
   // Drop it from the URL so a reload doesn't discard whatever has
   // been typed since by loading the article over the top of it.
   history.replaceState(null, "", location.pathname);
-  openArticle(slug);
+
+  if (slug) { openArticle(slug); return; }
+
+  const [section, fileSlug] = String(file).split(":");
+  const entry = filePieces()
+    .find((p) => p.slug === fileSlug && p.section === findSection(section).id);
+  if (entry) openFile(entry);
+  else toast("That piece isn't in content.js, so there is nothing to open.");
 }
 
 /**
