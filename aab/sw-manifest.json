@@ -1,13 +1,14 @@
 {
-  "version": "v51",
+  "version": "v52",
   "hashes": {
-    "/": "e45b08f85a110fa1",
-    "/index.html": "e45b08f85a110fa1",
+    "/": "1cf91e5ba36f10c0",
+    "/index.html": "1cf91e5ba36f10c0",
     "/offline.html": "d7ca74c5f33fa1b4",
     "/styles.css": "e1d87514371b88b4",
-    "/app.js": "b81df6c469ff7afe",
+    "/app.js": "242672a9a8f0b788",
     "/content.js": "139fd4ff7c3561f5",
     "/api.js": "d3fc7e10cc7f18c1",
+    "/pieces.js": "eb28830d57246c38",
     "/crumbs.js": "5e62bddaa131b3c7",
     "/audience.js": "7a94e8c19c91da1e",
     "/activation.js": "03c4658affe16472",
@@ -51,13 +52,13 @@
     "/cooking/onions.html": "1a75e93054478dff",
     "/travel/index.html": "e8270bc7ffc0d920",
     "/travel/uk-visit-visa.html": "93a80386febb9734",
-    "/reads.js": "7641b499c9aac1ea",
+    "/reads.js": "cbbdf816a3925999",
     "/tools/index.html": "050919a066e6f28a",
     "/tools/stock.html": "7475522c8994f4b0",
     "/tools/stock.js": "cb0484c49f953ae2",
     "/tools/stock.model.js": "039a045e95fbd777",
     "/tools/stock.i18n.js": "d04aa0302144fe17",
-    "/insights.html": "c00b88c907a35bc4",
+    "/insights.html": "5ca234fced83e224",
     "/favicon.ico": "296539578a1f25f8"
   }
 }

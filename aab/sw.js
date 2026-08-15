@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v52: one list of pieces. app.js, reads.js and the two card hosts
+        now ask /pieces.js what has been written, and it merges the
+        database with content.js, so a piece published through the
+        Studio appears on its own hub, in the menu, in the palette
+        and in the count. app.js imports the new module, so a v51
+        shell would serve a cached app.js whose import resolves to
+        nothing and lose the menu and the palette at once.
+
    v51: the Studio and the desk on a phone. A single-column grid
         track floors at its widest child, so the row of writing
         tools held the whole editor pane at 418px inside a 390px
@@ -335,7 +343,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v51";
+const VERSION = "v52";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -354,6 +362,10 @@ const PRECACHE = [
   "/app.js",
   "/content.js",
   "/api.js",
+  /* app.js imports this, so a shell without it is an app.js whose
+     import resolves to nothing: the menu, the palette and every
+     list of writing die together on the first offline visit. */
+  "/pieces.js",
   "/crumbs.js",
   "/audience.js",
   "/activation.js",

@@ -23,7 +23,8 @@ import {
   PAGES, TOOLS, STAGES, STUFEN, stufeUrl, SITE, SEARCH_GROUPS,
   SKILLS, skillUrl, COUNTS,
 } from "/content.js";
-import { countView, getArticles } from "/api.js";
+import { countView } from "/api.js";
+import { allPieces, piecesIn, filePieces, pieceHref } from "/pieces.js";
 import { initCrumbs } from "/crumbs.js";
 import { initAudience, audienceBoost } from "/audience.js";
 import { recordVisit } from "/learn/progress.js";
@@ -94,12 +95,15 @@ function initTheme() {
    is exactly the index it always was. */
 let INDEX = searchIndex();
 
-export function addToSearchIndex(articles) {
+export function addToSearchIndex(pieces) {
   const known = new Set(INDEX.map((i) => i.url));
-  const extra = articles
-    .map((a) => ({
-      title: a.title,
-      url: `/insights/${a.slug}.html`,
+  const extra = pieces
+    .map((piece) => ({
+      title: piece.title,
+      // Its own mount. This said /insights/ whatever the section
+      // was, so the palette offered a kitchen piece at an address
+      // that answers 404.
+      url: pieceHref(piece),
       hint: "Article",
       kind: "writing",
     }))
@@ -373,7 +377,23 @@ function buildMenu() {
       )
     );
 
-  const articles = liveArticles().slice(0, 2);
+  /* What content.js knows, drawn now, because the menu is built
+     synchronously. The database is asked afterwards and the two
+     entries are redrawn if it answers with something newer. */
+  const articles = filePieces().slice(0, 2);
+
+  /** One entry under "Latest writing". */
+  const writingLink = (a) =>
+    el("li", {},
+      el("a", { href: a.slug ? pieceHref(a) : "/insights.html" },
+        el("strong", { textContent: a.title }),
+        el("small", {
+          textContent: a.date
+            ? `${formatDate(a.date, a.lang)} · ${a.minutes} min read`
+            : a.dek,
+        })
+      )
+    );
 
   const dialog = el("dialog", { id: "site-menu", className: "menu" });
   dialog.setAttribute("aria-label", "Site menu");
@@ -443,22 +463,11 @@ function buildMenu() {
           className: "mono menu-col-title menu-col-title-second",
           textContent: articles.length ? "Latest writing" : "Writing",
         }),
-        el("ul", { className: "menu-list" },
+        el("ul", { className: "menu-list", id: "menu-writing" },
           ...(articles.length
             ? articles
             : [{ slug: "", title: "Nothing published yet", dek: "" }]
-          ).map((a) =>
-            el("li", {},
-              el("a", { href: a.slug ? `/insights/${a.slug}.html` : "/insights.html" },
-                el("strong", { textContent: a.title }),
-                el("small", {
-                  textContent: a.date
-                    ? `${formatDate(a.date, a.lang)} · ${a.minutes} min read`
-                    : a.dek,
-                })
-              )
-            )
-          )
+          ).map(writingLink)
         )
       ),
 
@@ -521,6 +530,18 @@ function buildMenu() {
       )
     )
   );
+
+  /* And now the database, which the menu could not wait for: it is
+     built synchronously so that pressing M always opens something.
+     If the database holds anything newer, the two entries under
+     "Latest writing" are redrawn from it. If it holds nothing, or
+     never answers, what is already on screen stays. */
+  allPieces().then((pieces) => {
+    const host = dialog.querySelector("#menu-writing");
+    if (!host || !pieces.length) return;
+    host.replaceChildren(...pieces.slice(0, 2).map(writingLink));
+  });
+
   document.body.append(dialog);
   return dialog;
 }
@@ -563,6 +584,7 @@ function initMenu() {
       dialog.open ? dialog.close() : open();
     }
   });
+
 }
 
 const isTyping = (node) =>
@@ -912,12 +934,11 @@ async function initArticleCards() {
 
   const limit = Number(host.dataset.limit) || Infinity;
 
-  // The database is the source of truth when it exists; content.js is
-  // the fallback, so the page is identical either way.
-  const fromApi = await getArticles();
-  const source = fromApi?.length
-    ? fromApi.map((a) => ({ ...a, status: "live" }))
-    : liveArticles();
+  /* One list, whichever store each piece came from, and only the
+     section this page is about: the merged list used to be every
+     live row in the database, so a kitchen piece appeared on the
+     Insights index. */
+  const source = await piecesIn(host.dataset.section ?? "insights");
   const live = source.slice(0, limit);
   // the home page shows what exists; the Insights index also teases what's coming
   const soon = host.dataset.mode === "live" ? [] : ARTICLES.filter((a) => a.status === "soon");
@@ -928,7 +949,7 @@ async function initArticleCards() {
     el.className = "cell sample-card" + (a.status === "soon" ? " placeholder" : "");
     el.dataset.topics = (a.topics ?? []).join("|");
     if (a.status !== "soon") {
-      el.href = `/insights/${a.slug}.html`;
+      el.href = pieceHref(a);
       el.style.textDecoration = "none";
       el.style.color = "inherit";
     }
@@ -1099,8 +1120,8 @@ function initDynamic() {
 
   // Every page, not just the ones showing cards: Ctrl+K works
   // everywhere, so the index has to be complete everywhere.
-  getArticles().then((articles) => {
-    if (articles?.length) addToSearchIndex(articles);
+  allPieces().then((pieces) => {
+    if (pieces?.length) addToSearchIndex(pieces);
   });
   // Reactions and reader questions attach themselves to article pages,
   // so no article file has to know they exist.
