@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, deutsch, quran, english, cooking, check, about, utilities;
+@layer tokens, base, layout, components, menu, tools, article, studio, work, learn, deutsch, quran, english, reads, check, about, utilities;
 
 /* ============================================================
    TOKENS
@@ -1296,6 +1296,24 @@ it collapsed to the width of the word "Bangladesh". */
   /* ---------- portfolio bits ---------- */
   .sample-card .tag { color: var(--gold); }
   .sample-card h3 { font-size: 1.18rem; }
+  /* ---------- topic chips ----------
+     A piece can be about several things, and three surfaces now say
+     so: the card on a section index, the card preview in the Studio,
+     and the row on the desk. One definition, because three would
+     become three slightly different chips within a month.
+
+     Plainly labels, not links: there is no filtered view to send
+     anyone to yet, and a chip that looks like a link and goes
+     nowhere is worse than no chip. */
+  .topic-tags {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+  }
+  .topic-tag {
+    border: 1px solid var(--hairline); border-radius: 999px;
+    padding: 2px 9px; font-size: 0.66rem; color: var(--ink-soft);
+    background: var(--paper-sunk); white-space: nowrap;
+  }
+
   .placeholder { border-style: dashed; }
   .placeholder p em { color: var(--ink-soft); font-style: normal; }
 
@@ -1827,7 +1845,12 @@ it collapsed to the width of the word "Bangladesh". */
     overflow: clip;
     position: sticky; top: 76px;
   }
-  .studio-pane.editor { position: static; }
+  /* The editor pane deliberately does NOT clip its children. An
+     ancestor with overflow:clip becomes the scrollport a sticky
+     child sticks inside, and that pane never scrolls, so the
+     writing tools would simply never stick. The paste area rounds
+     its own bottom corners instead. */
+  .studio-pane.editor { position: static; overflow: visible; }
 
   .pane-bar {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
@@ -1861,6 +1884,7 @@ it collapsed to the width of the word "Bangladesh". */
   /* the paste surface */
   .paste-area {
     min-height: 320px;
+    border-radius: 0 0 var(--radius) var(--radius);
     padding: 18px 20px;
     border-top: 1px solid var(--hairline);
     outline: 0;
@@ -2104,6 +2128,234 @@ it collapsed to the width of the word "Bangladesh". */
     & li[data-level="error"] .mono { color: var(--danger); }
     & li[data-level="warn"]  .mono { color: var(--gold); }
     & li[data-level="info"]  .mono { color: var(--ink-soft); opacity: 0.8; }
+  }
+
+  /* ============================================================
+     THE WRITING TOOLS THAT FOLLOW THE WRITER
+
+     The formatting bar used to sit at the top of the editor and
+     stay there, which is fine for a note and useless for a
+     two-thousand-word piece: by the third screen the buttons were
+     a long scroll away, so they stopped being used at all and
+     everything got typed as plain paragraphs.
+
+     It sticks under the site header now, for exactly as long as
+     the editor is on screen. Nothing else changes: the same
+     buttons, the same order, grouped so the eye can find one
+     without reading all ten.
+     ============================================================ */
+  .studio-tools {
+    position: sticky;
+    top: calc(var(--header-h, 66px) - 1px);
+    z-index: 4;
+    gap: 8px;
+    /* The bar sits over text as it scrolls past, so it needs a
+       ground of its own rather than the pane's. */
+    background: color-mix(in oklab, var(--paper-sunk) 92%, transparent);
+    backdrop-filter: blur(10px) saturate(1.3);
+    -webkit-backdrop-filter: blur(10px) saturate(1.3);
+    border-top: 1px solid var(--hairline);
+    transition: box-shadow var(--fast) var(--ease);
+  }
+  /* A shadow only once it has actually lifted off, so a stationary
+     bar is flat and a floating one reads as floating. */
+  .studio-tools[data-stuck] { box-shadow: 0 10px 24px -18px oklch(0% 0 0 / 0.55); }
+
+  .tool-group {
+    display: inline-flex; gap: 4px; align-items: center;
+    padding-inline-end: 8px;
+    border-inline-end: 1px solid var(--hairline);
+
+    &:last-of-type { border-inline-end: 0; padding-inline-end: 0; }
+  }
+  .tool-hint {
+    margin-inline-start: auto; color: var(--ink-soft);
+    font-size: 0.66rem; letter-spacing: 0.04em;
+
+    & kbd {
+      font-family: var(--font-mono); font-size: 0.9em;
+      border: 1px solid var(--hairline); border-radius: 4px;
+      padding: 0 4px; background: var(--panel);
+    }
+  }
+  @media (width <= 620px) { .tool-hint { display: none; } }
+
+  /* ============================================================
+     SEGMENTED CONTROLS
+
+     Three chips in a row with a border round the set, the way a
+     choice between a small number of things should look: all the
+     options visible, the current one obvious, one tap to change.
+     Used for the destination, the preview mode and the preview
+     width, which were three different-looking rows of buttons
+     doing the same job.
+     ============================================================ */
+  .seg {
+    display: inline-flex; gap: 2px; padding: 3px;
+    background: var(--paper-sunk);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+
+    & .chip {
+      border: 0; background: transparent; border-radius: 999px;
+      padding: 5px 12px; font-size: 0.68rem;
+      transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+    }
+    & .chip:hover { background: color-mix(in oklab, var(--panel) 70%, transparent); opacity: 1; }
+    & .chip[aria-pressed="true"], & .chip[data-on] {
+      background: var(--panel); color: var(--ink);
+      box-shadow: 0 1px 2px oklch(0% 0 0 / 0.12);
+    }
+    & .chip:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; }
+  }
+
+  /* The destination, which is the first decision and so the first
+     thing on the page. */
+  .seg-field {
+    border: 0; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 6px;
+
+    & legend { padding: 0; font-size: 0.86rem; color: var(--ink-soft); }
+    & .seg { align-self: flex-start; max-width: 100%; flex-wrap: wrap; }
+  }
+  .field-hint {
+    font-family: var(--font-mono); font-size: 0.66rem; color: var(--ink-soft);
+    overflow-wrap: anywhere;
+  }
+
+  /* ============================================================
+     TOPICS
+
+     A field that behaves the way every tag field a writer has met
+     behaves: type, Enter, a chip appears; Backspace on an empty
+     box takes the last one back. The chips live inside the field's
+     own border so the whole thing reads as one control rather than
+     as a list that happens to sit above an input.
+     ============================================================ */
+  .topic-block {
+    display: flex; flex-direction: column; gap: 5px;
+
+    & > label { font-size: 0.86rem; color: var(--ink-soft); }
+  }
+  .topic-field {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    padding: 7px 8px;
+    background: var(--paper);
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    cursor: text;
+    transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+
+    &:focus-within {
+      border-color: var(--green);
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+    }
+    & input {
+      flex: 1; min-width: 12ch;
+      border: 0; outline: 0; padding: 3px 4px;
+      background: transparent; color: var(--ink);
+      font-family: var(--font-sans); font-size: 0.95rem;
+    }
+  }
+  .topic-chips { display: contents; }
+  .topic-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 4px 3px 10px;
+    border-radius: 999px;
+    background: var(--green-soft); color: var(--green);
+    font-size: 0.78rem;
+
+    & .topic-x {
+      border: 0; background: transparent; cursor: pointer;
+      color: inherit; opacity: 0.6; font-size: 0.7rem;
+      padding: 2px 5px; border-radius: 999px; line-height: 1;
+    }
+    & .topic-x:hover { opacity: 1; background: color-mix(in oklab, var(--green) 18%, transparent); }
+  }
+  /* Six is the cap. Saying so only when it is reached keeps the
+     field quiet the rest of the time. */
+  .topic-field[data-count="6"] input::placeholder { color: var(--gold); }
+
+  /* ============================================================
+     THE LIBRARY BAR
+
+     Deliberately NOT sticky, though it was for an afternoon. Two
+     bars pinned under the header is 120px of a laptop screen spent
+     on furniture, and they landed on top of each other: the one
+     that has to be reachable mid-sentence is the writing tools, so
+     that is the one that sticks and this one stays where it is.
+     ============================================================ */
+  .studio-bar {
+    padding-bottom: 16px;
+    row-gap: 10px;
+  }
+  .bar-group {
+    display: inline-flex; gap: 6px; align-items: center;
+
+    &:empty { display: none; }
+  }
+  .publish-row { align-items: center; gap: 10px; }
+
+  /* ============================================================
+     THE DESK'S ARTICLE ROWS
+
+     A row used to be seven controls in a line with the title
+     competing with the last of them. It is a grid now: what it is
+     on the left, where it lives in the middle, what you can do to
+     it on the right, wrapping to two lines on a narrow screen
+     rather than to seven.
+     ============================================================ */
+  .article-line {
+    display: grid; gap: 8px 14px; align-items: center;
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    & .article-title {
+      font-family: var(--font-sans); font-size: 1rem;
+      overflow-wrap: anywhere; grid-column: 1;
+    }
+    /* Everything that describes the piece sits in one group on the
+       right of the title, so the eye reads title, then facts, rather
+       than four columns of different widths per row. */
+    & .line-facts {
+      grid-column: 2; justify-self: end;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    }
+    & .line-topics { display: flex; gap: 4px; flex-wrap: wrap; margin: 0; }
+    & .line-actions {
+      grid-column: 1 / -1;
+      display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+      padding-top: 2px;
+    }
+    & .move-field { margin-inline-start: auto; }
+    &.status-draft .article-title { color: var(--ink-soft); }
+    &.status-draft .pill { border-style: dashed; }
+  }
+  @media (width <= 720px) {
+    .article-line .line-facts { grid-column: 1; justify-self: start; }
+    .article-line .move-field { margin-inline-start: 0; }
+  }
+
+  .section-pill {
+    border-color: color-mix(in oklab, var(--green) 40%, var(--hairline));
+    color: var(--green);
+  }
+  .section-pill.section-cooking { color: var(--gold);
+    border-color: color-mix(in oklab, var(--gold) 45%, var(--hairline)); }
+  .section-pill.section-travel { color: var(--ink);
+    border-color: var(--hairline); }
+
+  .move-field {
+    display: inline-flex; align-items: center; gap: 6px;
+
+    & .mono { font-size: 0.62rem; color: var(--ink-soft); text-transform: uppercase;
+              letter-spacing: 0.06em; }
+    & select {
+      padding: 5px 8px; font-size: 0.78rem;
+      font-family: var(--font-sans);
+      color: var(--ink); background: var(--panel);
+      border: 1px solid var(--hairline); border-radius: 999px;
+    }
+    & select:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+    & select:disabled { opacity: 0.5; }
   }
 
   /* ---------- the Open and Notion sheets ---------- */
@@ -5175,22 +5427,27 @@ German for day, and .tag is what the site has always called
 }
 
 /* ============================================================
-   THE KITCHEN, /cooking/
+   THE READING SECTIONS, /cooking/ and /travel/
 
-   Not a school, so this layer is much smaller than the three
-   above it: the pieces are long reads and the site's `article`
-   layer already knows how to set one. What is here is the
-   furniture a kitchen piece needs and an ordinary article does
-   not: the box of quick answers at the top, the note that says
-   "and this is the bit everyone gets wrong", and the numbered
-   steps that are steps rather than a list of points.
+   Neither is a school, so this layer is much smaller than the
+   three above it: the pieces are long reads and the site's
+   `article` layer already knows how to set one. What is here is
+   the furniture a piece needs and an ordinary article does not:
+   the box of quick answers at the top, the note that says "and
+   this is the bit everyone gets wrong", and the numbered steps
+   that are steps rather than a list of points.
+
+   ONE LAYER FOR BOTH SECTIONS, on purpose. A kitchen piece and a
+   visa piece want the same three objects, and the second copy of
+   a stylesheet is where the two start looking like two different
+   sites. Both bodies carry class="read" as well as their own
+   section name, which is what the print block below hangs off.
 
    Same rule as the schools, and check-css.mjs enforces it: every
-   selector is anchored on a class only /cooking/ uses, or on
-   body.cooking. Nothing under /cooking/ has any business styling
-   the home page.
+   selector is anchored on a class only these two folders use.
+   Nothing here has any business styling the home page.
    ============================================================ */
-@layer cooking {
+@layer reads {
 
   /* ---------- the box of quick answers ----------
      Read before the piece, and read again instead of it when you
@@ -5218,13 +5475,13 @@ German for day, and .tag is what the site has always called
   }
 
   /* ---------- the note in the margin of the recipe ---------- */
-  .ranna-note {
+  .side-note {
     border-left: 3px solid var(--green);
     background: var(--panel);
     padding: 16px 18px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     margin-block: 26px; max-width: var(--measure);
 
-    & .ranna-note-label {
+    & .side-note-label {
       display: block; color: var(--green); font-size: 0.68rem;
       letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;
     }
@@ -5261,19 +5518,19 @@ German for day, and .tag is what the site has always called
   }
 
   /* ============================================================
-     THE INDEX
+     THE INDEX OF A SECTION
      ============================================================ */
 
-  .kitchen-hero .lede { max-width: 62ch; }
+  .read-hero .lede { max-width: 62ch; }
 
-  .kitchen-card {
+  .read-card {
     gap: 6px;
 
     & .tag { margin-top: 2px; }
     & h3 { font-size: 1.24rem; }
     & p { margin-top: 4px; }
   }
-  a.kitchen-card {
+  a.read-card {
     text-decoration: none; color: inherit;
     transition: border-color var(--fast) var(--ease),
                 box-shadow var(--fast) var(--ease);
@@ -5283,30 +5540,31 @@ German for day, and .tag is what the site has always called
       & .more { color: var(--green); }
     }
   }
-  .kitchen-art { color: var(--gold); }
-  .kitchen-art .art { width: 30px; height: 30px; }
-  .kitchen-en {
+  .read-art { color: var(--gold); }
+  .read-art .art { width: 30px; height: 30px; }
+  .read-en {
     color: var(--ink-soft); font-size: 0.66rem;
     text-transform: none; letter-spacing: 0.04em;
   }
-  .kitchen-meta {
+  .read-meta {
     display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline;
     margin-top: auto; padding-top: 10px;
     color: var(--ink-soft); font-size: 0.72rem;
 
     & .more { margin-inline-start: auto; }
   }
-  .kitchen-note { color: var(--gold); font-size: 0.85rem; }
-  .kitchen-fallback {
+  .read-note { color: var(--gold); font-size: 0.85rem; }
+  .read-fallback {
     display: grid; gap: 10px; color: var(--ink-soft);
     & b { color: var(--ink); }
   }
 
-  /* A piece is printed to be propped against something greasy,
-     so the furniture that only makes sense on screen goes. */
+  /* A piece is printed to be propped against something greasy, or
+     carried into a visa office, so the furniture that only makes
+     sense on screen goes. */
   @media print {
-    body.cooking :is(.read-progress, .prev-next, .hero-actions) { display: none; }
-    body.cooking :is(.ek-nojore, .ranna-note, .dhap-list li) { break-inside: avoid; }
+    body.read :is(.read-progress, .prev-next, .hero-actions) { display: none; }
+    body.read :is(.ek-nojore, .side-note, .dhap-list li) { break-inside: avoid; }
   }
 }
 

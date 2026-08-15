@@ -1,6 +1,13 @@
 /* ============================================================
-   /insights/<slug>, renders an article that lives in the
+   /<section>/<slug>, renders an article that lives in the
    database, and gets out of the way for one that doesn't.
+
+   The file still lives under functions/insights/ because that is
+   where it started and worker.js imports it by path, but it now
+   answers for every reading section: /insights/, /cooking/ and
+   /travel/. Which one a piece belongs to is a column on the row,
+   and a request at the wrong mount falls through rather than
+   serving the same piece at two URLs.
 
    Order of events:
      1. Is there a row for this slug, and is it live?  → render it
@@ -15,6 +22,58 @@
 
 import { db, one } from "../_lib/db.js";
 
+/* What changes about a rendered piece when it is not an Insights
+   piece. This table is the twin of PAGE_STYLE in aab/studio.js:
+   the Studio writes standalone files with the same five
+   differences, and a piece published to the database renders the
+   same page as one downloaded as a file. Change one, change both.
+
+   `note` is the line at the foot. Insights carries a financial
+   disclaimer because it is about money; a piece about onions
+   carrying one would be comic. */
+const LOOK = {
+  insights: {
+    mount: "/insights/",
+    bodyClass: "",
+    og: "/og/insights.png",
+    minutes: (n) => `${n} min read`,
+    skip: "Skip to the article",
+    note: "This piece is general education, not investment advice. Rules, rates and "
+      + "fees change: confirm the current details with the relevant institution "
+      + "before acting on anything here.",
+    back: { url: "/insights.html", kicker: "All insights", label: "Back to the index →" },
+    side: { url: "/learn/index.html", kicker: "শেখার লাইব্রেরি", label: "Learn hub, বাংলায় →" },
+    footer: "Everything on this site is general education, not investment advice. "
+      + "Do your own research before putting money anywhere.",
+  },
+  cooking: {
+    mount: "/cooking/",
+    bodyClass: "cooking read",
+    og: "/og/cooking.png",
+    minutes: (n) => `${n} মিনিট পড়া`,
+    skip: "মূল লেখায় যান",
+    note: "রান্নাঘরের লেখাগুলো রেসিপি নয়, বোঝার জন্য। নিজের রান্নাঘর, নিজের চুলা আর নিজের "
+      + "স্বাদ অনুযায়ী মাপ আর সময় একটু এদিক-ওদিক হবেই।",
+    back: { url: "/cooking/index.html", kicker: "রান্নাঘর", label: "সব লেখা এক জায়গায় →" },
+    side: { url: "/skills/index.html", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
+    footer: "রান্নাঘরের লেখাগুলো বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া।",
+  },
+  travel: {
+    mount: "/travel/",
+    bodyClass: "travel read",
+    og: "/og/travel.png",
+    minutes: (n) => `${n} মিনিট পড়া`,
+    skip: "মূল লেখায় যান",
+    note: "এই লেখাটা সাধারণ তথ্য, আইনি পরামর্শ নয়। ভিসার নিয়ম আর ফি বদলায়, তাই আবেদনের "
+      + "আগে অফিসিয়াল গাইডেন্স একবার দেখে নিন।",
+    back: { url: "/travel/index.html", kicker: "ভ্রমণ", label: "সব লেখা এক জায়গায় →" },
+    side: { url: "/skills/index.html", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
+    footer: "ভ্রমণের লেখাগুলো বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া।",
+  },
+};
+
+const lookFor = (section) => LOOK[section] ?? LOOK.insights;
+
 const esc = (s) =>
   String(s ?? "").replace(/[&<>\"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -23,6 +82,8 @@ const FONTS =
   "https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Seri[...]";
 
 function render(article, origin) {
+  const look = lookFor(article.section);
+  const url = `${origin}${look.mount}${article.slug}.html`;
   /* Articles published before `cover` was added have an empty database
      column even when their body already contains a hosted photo. Recover
      the lead (or first) /media image here so a re-save is not required
@@ -32,7 +93,7 @@ function render(article, origin) {
     /<figure\b[^>]*class="[^"]*\blead-photo\b[^"]*"[^>]*>[\s\S]*?<img\b[^>]*\bsrc="(\/media\/[A-Za-z0-9._/-]+)"/i
   )?.[1];
   const first = article.body?.match(/<img\b[^>]*\bsrc="(\/media\/[A-Za-z0-9._/-]+)"/i)?.[1];
-  const cover = article.cover || lead || first || "/og/insights.png";
+  const cover = article.cover || lead || first || look.og;
   const date = new Intl.DateTimeFormat(article.lang === "bn" ? "bn-BD" : "en-GB", {
     day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
   }).format(new Date(`${article.published_at || "2026-01-01"}T00:00:00Z`));
@@ -57,11 +118,11 @@ function render(article, origin) {
   <meta name="color-scheme" content="light dark">
   <title>${esc(article.title)}, Reiad's Library</title>
   <meta name="description" content="${esc(article.dek)}">
-  <link rel="canonical" href="${origin}/insights/${article.slug}.html">
+  <link rel="canonical" href="${url}">
   <meta property="og:type" content="article">
   <meta property="og:title" content="${esc(article.title)}">
   <meta property="og:description" content="${esc(article.dek)}">
-  <meta property="og:url" content="${origin}/insights/${article.slug}.html">
+  <meta property="og:url" content="${url}">
   <meta property="og:image" content="${origin}${cover}">
   <meta name="twitter:card" content="summary_large_image">
   <script>
@@ -83,8 +144,8 @@ function render(article, origin) {
   <meta name="theme-color" content="#0B3D2E">
   <script type="application/ld+json">${jsonLd}</script>
 </head>
-<body>
-  <a class="skip" href="#main">Skip to the article</a>
+<body${look.bodyClass ? ` class="${look.bodyClass}"` : ""}>
+  <a class="skip" href="#main">${look.skip}</a>
   <div class="read-progress" aria-hidden="true"></div>
 
   <header>
@@ -121,25 +182,21 @@ function render(article, origin) {
       <p class="byline mono">
         <span>Rony Reiad</span><span class="dot"></span>
         <time datetime="${esc(article.published_at)}">${date}</time><span class="dot"></span>
-        <span>${article.minutes} min read</span>
+        <span>${look.minutes(article.minutes)}</span>
       </p>
 
 ${article.body}
 
-      <div class="note">
-        This piece is general education, not investment advice. Rules, rates and
-        fees change: confirm the current details with the relevant institution
-        before acting on anything here.
-      </div>
+      <div class="note">${esc(look.note)}</div>
 
       <div class="prev-next">
-        <a href="/insights.html">
-          <span class="mono">All insights</span>
-          <strong>Back to the index →</strong>
+        <a href="${look.back.url}">
+          <span class="mono">${esc(look.back.kicker)}</span>
+          <strong>${esc(look.back.label)}</strong>
         </a>
-        <a href="/learn/index.html">
-          <span class="mono">শেখার লাইব্রেরি</span>
-          <strong>Learn hub, বাংলায় →</strong>
+        <a href="${look.side.url}">
+          <span class="mono">${esc(look.side.kicker)}</span>
+          <strong>${esc(look.side.label)}</strong>
         </a>
       </div>
     </article>
@@ -148,8 +205,7 @@ ${article.body}
   <footer>
     <div class="wrap">
       <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
-      <p>Everything on this site is general education, not investment advice.
-         Do your own research before putting money anywhere.</p>
+      <p>${esc(look.footer)}</p>
       <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
   </footer>
@@ -163,6 +219,10 @@ ${article.body}
 
 export async function onRequest(context) {
   const slug = String(context.params.slug ?? "").replace(/\.html$/, "");
+  /* Which mount the request came in on. worker.js passes it; a Pages
+     deployment of this folder would only ever serve /insights/, and
+     that is the right default for it. */
+  const asked = LOOK[context.params.section] ? context.params.section : "insights";
 
   // Anything that isn't a plausible slug is not ours to answer.
   if (!/^[a-z0-9-]{1,80}$/i.test(slug)) return context.next();
@@ -173,6 +233,13 @@ export async function onRequest(context) {
   const article = await one(d1,
     `SELECT * FROM articles WHERE slug = ? AND status = 'live'`, slug);
   if (!article) return context.next();      // static file, or a genuine 404
+
+  /* A piece answers at its own section's mount and nowhere else.
+     Without this, moving a piece from Insights to the kitchen would
+     leave it live at both URLs, which is two pages of identical text
+     competing with each other in search results, and a link someone
+     already shared quietly becoming the wrong one. */
+  if ((article.section || "insights") !== asked) return context.next();
 
   const origin = context.env.SITE_ORIGIN || new URL(context.request.url).origin;
   return new Response(render(article, origin), {

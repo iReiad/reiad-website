@@ -67,7 +67,13 @@ const SCHOOLS = [
   { layer: "deutsch", owns: ["deutsch/"] },
   { layer: "quran", owns: ["quran/"] },
   { layer: "english", owns: ["english/"] },
-  { layer: "cooking", owns: ["cooking/"] },
+  /* One layer, two folders and a module: the kitchen and the travel
+     desk hold the same shape of thing and share their furniture,
+     and reads.js is the file that draws both index pages. `owns`
+     has always been a list; this is the first time it needed to be,
+     and the first time a single file rather than a folder belonged
+     to a layer. */
+  { layer: "reads", owns: ["cooking/", "travel/", "reads.js"] },
 ];
 
 const css = readFileSync(join(ROOT, "styles.css"), "utf8");

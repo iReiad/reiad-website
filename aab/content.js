@@ -272,10 +272,10 @@ export const SKILLS = [
     slug: "travel",
     bn: "ভ্রমণ",
     en: "Travel",
+    url: "/travel/index.html",
     icon: "compass",
-    status: "soon",
-    blurb: "ভিসা, টিকিট, বাজেট আর ব্যাগ: প্রথমবার দেশের বাইরে যাওয়ার পুরো ধাপ।",
-    note: "ভিসার কাগজপত্রের অংশটা আগে আসবে।",
+    status: "live",
+    blurb: "ভিসা, কাগজপত্র আর প্রথমবার দেশের বাইরে যাওয়ার পুরো ধাপ। কোর্স নয়, একেকটা বিষয় নিয়ে পুরো একটা লেখা।",
   },
   {
     slug: "reviews",
@@ -311,53 +311,134 @@ export const TOOLS = [
 ];
 
 /* ============================================================
-   COOKING: the kitchen writing, at /cooking/.
+   THE READING SECTIONS: Insights, the kitchen, and travel.
 
-   Deliberately NOT a school. German, Quranic Arabic and English
-   are ladders: stages, lessons, a progress store, a resume card.
-   Cooking is not learned that way, and pretending otherwise would
-   mean inventing a curriculum nobody asked for. What is useful
-   here is one long piece about one ingredient, written so that
-   after reading it you understand what you are doing rather than
-   which step comes fourteenth.
+   Three places on this site hold PIECES rather than lessons:
+   /insights/ in English about money, /cooking/ and /travel/ in
+   Bangla about everything else. They are deliberately NOT schools.
+   German, Quranic Arabic and English are ladders: stages, lessons,
+   a progress store, a resume card. A piece about onions is not a
+   rung, and inventing a curriculum for it would mean shipping
+   furniture nobody asked for.
 
-   So this is a reading list, closer to Insights than to /learn/,
-   and it lives here for the same reason everything else does: the
-   hub page, the Ctrl+K palette and the sitemap all read this one
-   array. Adding a piece is one entry, and nothing else.
+   All three hold the SAME SHAPE of thing, so they are described
+   once, here, and everything else reads SECTIONS rather than
+   knowing the three names: the hub pages, the Ctrl+K palette, the
+   sitemap, the Studio's destination picker, and the desk's "move
+   it somewhere else" control. Adding a fourth section is an entry
+   in SECTIONS and a hub page, and nothing in the Studio or the
+   desk has to be edited at all.
 
-   Fields:
-     slug     file name inside /cooking/ (no .html)
-     bn       the title, in Bangla
-     en       the same thing in English, for the palette and for
-              anyone searching in the other language
-     dek      one line of standfirst
+   A piece:
+     slug     file name inside the section's folder (no .html)
+     title    the headline, in whatever language it is written in
+     en       the English title of a Bangla piece, for the palette
+              and for anyone searching in the other language
+     dek      one or two sentences of standfirst
      tag      the small label above the headline
+     topics   the chips it can be filtered by. Several, on purpose:
+              a piece about visa paperwork is about travel AND
+              about money, and one label cannot say that
      date     ISO date, newest first
      minutes  reading time
+     lang     "en" or "bn"
      status   "live" or "soon"
      note     what is still being written, for a "soon" one
    ============================================================ */
+
 export const COOKING = [
   {
     slug: "onions",
-    bn: "পেঁয়াজ নিয়ে যা যা জানা দরকার",
+    title: "পেঁয়াজ নিয়ে যা যা জানা দরকার",
     en: "Everything worth knowing about onions",
     dek: "রং, কাটা আর রান্নার আসল কথা: কোন পেঁয়াজ কেন, শিরা বরাবর মানে কী, আর ক্যারামেলাইজড পেঁয়াজে সত্যিই কতক্ষণ লাগে।",
     tag: "রান্নাঘর · উপকরণ",
+    topics: ["উপকরণ", "কৌশল", "মৌলিক"],
     date: "2026-08-14",
     minutes: 12,
+    lang: "bn",
     status: "live",
   },
 ];
 
-/** Cooking pieces that are actually written, newest first. */
-export const liveCooking = () =>
-  COOKING.filter((c) => c.status !== "soon")
+export const TRAVEL = [
+  {
+    slug: "uk-visit-visa",
+    title: "যুক্তরাজ্যের ভিজিট ভিসা নিশ্চিত করার আসল কৌশল",
+    en: "What actually gets a UK visit visa approved",
+    dek: "চারটা ডকুমেন্টেই বেশিরভাগ সিদ্ধান্ত হয়ে যায়: ব্যাংক স্টেটমেন্ট, চাকরি বা ব্যবসার প্রমাণ, ইনকামের প্রতিফলন আর কান্ট্রি টাই। আর রিফিউজ হলে কী করার আছে।",
+    tag: "ভ্রমণ · ভিসা",
+    topics: ["ভিসা", "কাগজপত্র", "যুক্তরাজ্য"],
+    date: "2026-08-14",
+    minutes: 9,
+    lang: "bn",
+    status: "live",
+  },
+];
+
+/* The sections themselves. `pieces` is a function rather than the
+   array, because ARTICLES is declared at the top of this file and
+   these two are declared just above: a direct reference would be
+   fine here and would break the day someone moves one of them. */
+export const SECTIONS = [
+  {
+    id: "insights",
+    en: "Insights",
+    bn: "ইনসাইটস",
+    mount: "/insights/",
+    hub: "/insights.html",
+    /* The name of the array in THIS file. The Studio prints it into
+       the index entry it hands you, so the paste has somewhere to
+       go without you having to know which list is which. */
+    list: "ARTICLES",
+    lang: "en",
+    blurb: "Longer pieces on money, markets and Bangladesh.",
+    pieces: () => ARTICLES,
+  },
+  {
+    id: "cooking",
+    en: "Cooking",
+    bn: "রান্নাঘর",
+    mount: "/cooking/",
+    hub: "/cooking/index.html",
+    list: "COOKING",
+    lang: "bn",
+    blurb: "রেসিপি নয়, রান্নাটা: একেকটা উপকরণ নিয়ে পুরো একটা লেখা।",
+    pieces: () => COOKING,
+  },
+  {
+    id: "travel",
+    en: "Travel",
+    bn: "ভ্রমণ",
+    mount: "/travel/",
+    hub: "/travel/index.html",
+    list: "TRAVEL",
+    lang: "bn",
+    blurb: "ভিসা, কাগজপত্র আর প্রথমবার দেশের বাইরে যাওয়ার পুরো ধাপ।",
+    pieces: () => TRAVEL,
+  },
+];
+
+/** A section by id, falling back to Insights rather than to
+    undefined: an unknown id comes from an old draft or a hand-typed
+    URL, and the honest answer is the default section, not a crash. */
+export const findSection = (id) =>
+  SECTIONS.find((s) => s.id === id) ?? SECTIONS[0];
+
+/** Where a piece lives, whichever section it is in. */
+export const pieceUrl = (section, slug) =>
+  `${findSection(section?.id ?? section).mount}${slug}.html`;
+
+/** The written pieces of a section, newest first. */
+export const livePieces = (section) =>
+  findSection(section?.id ?? section).pieces()
+    .filter((p) => p.status !== "soon")
     .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
 
-/** Where a piece lives. */
-export const cookingUrl = (c) => `/cooking/${c.slug}.html`;
+/** The two Bangla reading sections, which share a hub layout, a
+    cascade layer and a page shape. Insights is the odd one out: it
+    is in English, it has its own filtering page and its own feed. */
+export const READS = SECTIONS.filter((s) => s.id !== "insights");
 
 /* ============================================================
    Pages: the menu, the palette and the sitemap read this.
@@ -420,17 +501,20 @@ export const PAGES = [
   })),
   { title: "Cooking: রান্নাঘর", url: "/cooking/index.html",
     hint: "Page", blurb: "Kitchen writing in Bangla: one ingredient at a time, explained rather than listed." },
+  { title: "Travel: ভ্রমণ", url: "/travel/index.html",
+    hint: "Page", blurb: "Visas, paperwork and the whole route out, in Bangla." },
 
-  /* One entry per piece, built from COOKING rather than typed,
-     so a new piece reaches the menu, the palette and the sitemap
-     by being written and nothing else. */
-  ...liveCooking().map((c) => ({
-    title: `${c.bn} · ${c.en}`,
-    url: cookingUrl(c),
-    hint: "Cooking",
-    group: "cooking",
-    blurb: c.dek,
-  })),
+  /* One entry per piece in both Bangla sections, built from
+     SECTIONS rather than typed, so a new piece reaches the menu,
+     the palette and the sitemap by being written and nothing else. */
+  ...READS.flatMap((section) =>
+    livePieces(section).map((p) => ({
+      title: `${p.title} · ${p.en ?? section.en}`,
+      url: pieceUrl(section, p.slug),
+      hint: section.en,
+      group: section.id,
+      blurb: p.dek,
+    }))),
   { title: "Tools & calculators", url: "/tools/index.html",
     hint: "Page", blurb: "Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing." },
   { title: "Stock check: buy, hold or sell", url: "/tools/stock.html",
@@ -554,7 +638,9 @@ export const COUNTS = {
   /** Schools in the Skills hub, German included. */
   skills: SKILLS.length,
   /** Kitchen pieces written, not counting the ones still coming. */
-  cooking: liveCooking().length,
+  cooking: livePieces("cooking").length,
+  /** Travel pieces written. */
+  travel: livePieces("travel").length,
   /** Pieces published on Insights. */
   articles: ARTICLES.filter((a) => a.status !== "soon").length,
   /** Scored ratios in the stock check. Asserted against METRICS. */
@@ -598,7 +684,8 @@ export const searchIndex = () => [
       : p.group === "learn" ? "learn"
       : p.group === "deutsch" || p.url.startsWith("/deutsch/") ? "deutsch"
       : p.group === "english" || p.url.startsWith("/english/") ? "english"
-      : p.group === "cooking" || p.url.startsWith("/cooking/") ? "cooking" : "page",
+      : p.group === "cooking" || p.url.startsWith("/cooking/") ? "cooking"
+      : p.group === "travel" || p.url.startsWith("/travel/") ? "travel" : "page",
   })),
   ...liveArticles().map((a) => ({
     title: a.title,
@@ -684,7 +771,7 @@ export const searchIndex = () => [
      be, not handed "No matches". The three schools that exist are
      skipped because each already has a page entry and every
      lesson of its own above. */
-  ...SKILLS.filter((s) => !["deutsch", "quran", "english", "cooking"].includes(s.slug)).map((s) => ({
+  ...SKILLS.filter((s) => !["deutsch", "quran", "english", "cooking", "travel"].includes(s.slug)).map((s) => ({
     title: `${s.bn}: ${s.en}`,
     url: skillUrl(s),
     hint: s.status === "soon" ? "Skill · আসছে" : "Skill",
@@ -702,6 +789,7 @@ export const SEARCH_GROUPS = [
   ["quran", "কুরআনের আরবি · Qur'anic Arabic"],
   ["english", "ইংরেজি · English"],
   ["cooking", "রান্না · Cooking"],
+  ["travel", "ভ্রমণ · Travel"],
   ["skill", "দক্ষতা · Skills"],
   ["writing", "Writing"],
 ];

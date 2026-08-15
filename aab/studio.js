@@ -18,7 +18,9 @@
 import { toast, copyText, download } from "/app.js";
 import { lock } from "/auth.js";
 import { api, uploadMedia, notion } from "/api.js";
-import { liveArticles } from "/content.js";
+import {
+  liveArticles, SECTIONS, findSection, pieceUrl, livePieces,
+} from "/content.js";
 
 /* ============================================================
    Elements
@@ -34,6 +36,12 @@ const fields = {
   slug: $("#f-slug"),
   date: $("#f-date"),
   lang: $("#f-lang"),
+  /* Where the piece is going. Everything downstream reads it:
+     the page the builder writes, the list the index entry is
+     pasted into, the URL the toast prints, and the row the desk
+     shows it in. Adding a section is an entry in SECTIONS, not an
+     edit here. */
+  section: $("#f-section"),
 };
 const meterBar = $("#meter-bar");
 const meterText = $("#meter-text");
@@ -54,6 +62,190 @@ const current = {
 /* Set by enableDynamic(); everything server-shaped checks it first
    so the Studio still runs as a pure export tool without a backend. */
 let dynamic = false;
+
+/* ============================================================
+   0. WHERE IT IS GOING, AND WHAT IT IS ABOUT
+
+   Two small pieces of state that used not to exist. The Studio
+   was written when there was one place to publish to and one
+   label per piece; there are now three sections and pieces that
+   are honestly about several things at once.
+   ============================================================ */
+
+/** Where a piece is going, as a segmented control over a hidden
+    <select>. Both are filled from SECTIONS, so the list of places to
+    publish to lives in exactly one file.
+
+    The select is the real field: drafts, meta() and the page builder
+    all read fields.section.value and none of them has to know that a
+    row of buttons is driving it. The buttons exist because choosing
+    between three places is a decision you make constantly, and a
+    dropdown makes you click twice to see what the options even are. */
+function buildSectionPicker() {
+  const select = fields.section;
+  const seg = $("#f-section-seg");
+  if (!select) return;
+
+  select.replaceChildren(...SECTIONS.map((sec) =>
+    Object.assign(document.createElement("option"), {
+      value: sec.id,
+      textContent: sec.id === "insights" ? sec.en : `${sec.bn} · ${sec.en}`,
+    })));
+
+  if (!seg) return;
+  seg.replaceChildren(...SECTIONS.map((sec) => {
+    const b = Object.assign(document.createElement("button"), {
+      type: "button",
+      className: "chip",
+      textContent: sec.id === "insights" ? sec.en : sec.bn,
+      title: `${sec.en}: ${sec.mount}`,
+    });
+    b.dataset.section = sec.id;
+    b.setAttribute("role", "radio");
+    b.addEventListener("click", () => {
+      select.value = sec.id;
+      paintSectionPicker();
+      onEdit();
+      refreshNow();
+    });
+    return b;
+  }));
+  paintSectionPicker();
+}
+
+/** Keep the buttons and the hint agreeing with the select, wherever
+    the change came from: a click, a restored draft, or an article
+    opened out of the database. */
+function paintSectionPicker() {
+  const sec = currentSection();
+  $("#f-section-seg")?.querySelectorAll("[data-section]").forEach((b) => {
+    const on = b.dataset.section === sec.id;
+    b.setAttribute("aria-checked", String(on));
+    b.toggleAttribute("data-on", on);
+  });
+  const hint = $("#section-hint");
+  if (hint) hint.textContent = `${sec.mount}<file>.html · ${sec.blurb}`;
+}
+
+/** The section currently chosen, as the whole object. */
+const currentSection = () => findSection(fields.section?.value);
+
+/* ---------- topics ----------
+
+   A piece can be about more than one thing, and until now it could
+   not say so: the publish path split the single label on its middle
+   dot and called the halves topics, which meant "Explainer ·
+   Equities" quietly became the topics "Explainer" and "Equities",
+   one of which is not a topic at all.
+
+   Topics are their own field now: chips you add with Enter or a
+   comma and remove with Backspace or a click. They are stored as an
+   array, sent as an array, and printed into the index entry as an
+   array. */
+let topics = [];
+
+const topicChips = () => $("#topic-chips");
+const topicInput = () => $("#f-topics");
+
+/** Every topic already in use anywhere on the site, so the field
+    suggests the vocabulary that exists rather than inviting a
+    fourth spelling of the same word. */
+function knownTopics() {
+  const seen = new Set();
+  SECTIONS.forEach((sec) =>
+    sec.pieces().forEach((p) => (p.topics ?? []).forEach((t) => seen.add(t))));
+  return [...seen].sort((a, b) => a.localeCompare(b));
+}
+
+function renderTopics() {
+  const host = topicChips();
+  if (!host) return;
+  host.replaceChildren(...topics.map((t, i) => {
+    const chip = Object.assign(document.createElement("span"), {
+      className: "topic-chip",
+    });
+    chip.append(
+      Object.assign(document.createElement("span"), { textContent: t }),
+      Object.assign(document.createElement("button"), {
+        type: "button",
+        className: "topic-x",
+        title: `Remove ${t}`,
+        "aria-label": `Remove ${t}`,
+        textContent: "✕",
+        onclick: () => { topics.splice(i, 1); renderTopics(); onEdit(); },
+      })
+    );
+    return chip;
+  }));
+  const field = $("#topic-field");
+  if (field) field.dataset.count = String(topics.length);
+}
+
+/** Add whatever is typed, split on commas so a paste of
+    "Visas, Paperwork" becomes two chips rather than one long one. */
+function addTopics(text) {
+  const wanted = String(text).split(/[,،|]/).map((t) => t.trim()).filter(Boolean);
+  let added = false;
+  wanted.forEach((t) => {
+    // Case-insensitive, because "Visas" and "visas" are one topic
+    // and two chips is how a filter list ends up with both.
+    if (topics.some((x) => x.toLowerCase() === t.toLowerCase())) return;
+    if (topics.length >= 6) return;
+    topics.push(t);
+    added = true;
+  });
+  if (added) { renderTopics(); onEdit(); }
+  return added;
+}
+
+function setTopics(list) {
+  topics = [...new Set((list ?? []).map((t) => String(t).trim()).filter(Boolean))].slice(0, 6);
+  renderTopics();
+}
+
+function wireTopics() {
+  const input = topicInput();
+  if (!input) return;
+
+  const suggestions = $("#topic-options");
+  if (suggestions) {
+    suggestions.replaceChildren(...knownTopics().map((t) =>
+      Object.assign(document.createElement("option"), { value: t })));
+  }
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === "," || e.key === "Tab") {
+      if (!input.value.trim()) return;          // Tab still tabs when empty
+      e.preventDefault();
+      if (addTopics(input.value)) input.value = "";
+      else toast(topics.length >= 6 ? "Six topics is plenty." : "Already there.");
+      return;
+    }
+    /* Backspace on an empty box takes the last chip, the way every
+       tag field a writer has ever used behaves. */
+    if (e.key === "Backspace" && !input.value && topics.length) {
+      topics.pop();
+      renderTopics();
+      onEdit();
+    }
+  });
+
+  // Losing focus commits what is typed: nobody expects a half-typed
+  // topic to vanish because they clicked the preview.
+  input.addEventListener("blur", () => {
+    if (input.value.trim() && addTopics(input.value)) input.value = "";
+  });
+
+  // Picking from the datalist fires input, not keydown.
+  input.addEventListener("input", () => {
+    if (knownTopics().includes(input.value) && addTopics(input.value)) input.value = "";
+  });
+
+  $("#topic-field")?.addEventListener("click", (e) => {
+    if (e.target.closest(".topic-x")) return;
+    input.focus();
+  });
+}
 
 /* ============================================================
    1. SANITISER: the pasted-HTML gauntlet
@@ -827,16 +1019,66 @@ function meta() {
     slug: slugify(fields.slug.value.trim() || title),
     date: fields.date.value || new Date().toISOString().slice(0, 10),
     lang,
+    section: currentSection().id,
+    topics: [...topics],
     body,
     ...stats,
   };
 }
+
+/* What changes about the finished page when it is going somewhere
+   other than Insights. The three sections share a shell and differ
+   in five small ways, so they are described once here rather than
+   with a conditional at each of the five places.
+
+   `note` is the line at the foot of a piece. Insights carries a
+   financial disclaimer because it is about money; a piece about
+   onions carrying one would be comic, and a piece about visas needs
+   a different disclaimer entirely, not the same one. */
+const PAGE_STYLE = {
+  insights: {
+    bodyClass: "",
+    og: "/og/insights.png",
+    back: { url: "/insights.html", kicker: "All insights", label: "Back to the index →" },
+    side: { url: "/learn/index.html", kicker: "শেখার লাইব্রেরি", label: "Learn hub: বাংলায় →" },
+    note: "This piece is general education, not investment advice. Rules, rates and "
+      + "fees change, confirm the current details with the relevant institution "
+      + "before acting on anything here.",
+    footer: "Everything on this site is general education, not investment advice. "
+      + "Do your own research before putting money anywhere.",
+  },
+  cooking: {
+    bodyClass: "cooking read",
+    og: "/og/cooking.png",
+    back: { url: "/cooking/index.html", kicker: "রান্নাঘর", label: "সব লেখা এক জায়গায় →" },
+    side: { url: "/skills/index.html", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
+    note: "রান্নাঘরের লেখাগুলো রেসিপি নয়, বোঝার জন্য। নিজের রান্নাঘর, নিজের চুলা আর নিজের "
+      + "স্বাদ অনুযায়ী মাপ আর সময় একটু এদিক-ওদিক হবেই।",
+    footer: "রান্নাঘরের লেখাগুলো বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া।",
+  },
+  travel: {
+    bodyClass: "travel read",
+    og: "/og/travel.png",
+    back: { url: "/travel/index.html", kicker: "ভ্রমণ", label: "সব লেখা এক জায়গায় →" },
+    side: { url: "/skills/index.html", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
+    note: "এই লেখাটা সাধারণ তথ্য, আইনি পরামর্শ নয়। ভিসার নিয়ম আর ফি বদলায়, তাই আবেদনের "
+      + "আগে অফিসিয়াল গাইডেন্স একবার দেখে নিন।",
+    footer: "ভ্রমণের লেখাগুলো বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া।",
+  },
+};
+
+const styleFor = (m) => PAGE_STYLE[m.section] ?? PAGE_STYLE.insights;
+
+/** The public URL a piece will have, in whichever section. */
+const urlFor = (m) => pieceUrl(findSection(m.section), m.slug);
 
 const FONTS =
   "https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Serif+Bengali:wght@500;600&display=swap";
 
 /** The finished, standalone page: same chrome as every other page. */
 function buildPage(m) {
+  const look = styleFor(m);
+  const url = urlFor(m);
   const dateLabel = new Intl.DateTimeFormat(m.lang === "bn" ? "bn-BD" : "en-GB", {
     day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
   }).format(new Date(`${m.date}T00:00:00Z`));
@@ -849,8 +1091,8 @@ function buildPage(m) {
     datePublished: m.date,
     inLanguage: m.lang,
     author: { "@type": "Person", name: "Rony Reiad", url: "https://reiad.co.uk/about.html" },
-    mainEntityOfPage: `https://reiad.co.uk/insights/${m.slug}.html`,
-    image: socialCoverURL(coverFor(m)),
+    mainEntityOfPage: `https://reiad.co.uk${url}`,
+    image: socialCoverURL(coverFor(m), m),
   }).replace(/</g, "\\u003c");
 
   return `<!DOCTYPE html>
@@ -860,13 +1102,13 @@ function buildPage(m) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(m.title)} · Reiad's Library</title>
   <meta name="description" content="${escapeHtml(m.dek)}">
-  <link rel="canonical" href="https://reiad.co.uk/insights/${m.slug}.html">
+  <link rel="canonical" href="https://reiad.co.uk${url}">
 
   <meta property="og:type" content="article">
   <meta property="og:title" content="${escapeHtml(m.title)}">
   <meta property="og:description" content="${escapeHtml(m.dek)}">
-  <meta property="og:url" content="https://reiad.co.uk/insights/${m.slug}.html">
-  <meta property="og:image" content="${escapeHtml(socialCoverURL(coverFor(m)))}">
+  <meta property="og:url" content="https://reiad.co.uk${url}">
+  <meta property="og:image" content="${escapeHtml(socialCoverURL(coverFor(m), m))}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:site_name" content="Reiad's Library">
@@ -895,8 +1137,8 @@ function buildPage(m) {
   <meta name="theme-color" content="#0B3D2E">
   <script type="application/ld+json">${jsonLd}</script>
 </head>
-<body>
-  <a class="skip" href="#main">Skip to the article</a>
+<body${look.bodyClass ? ` class="${look.bodyClass}"` : ""}>
+  <a class="skip" href="#main">${m.lang === "bn" ? "মূল লেখায় যান" : "Skip to the article"}</a>
   <div class="read-progress" aria-hidden="true"></div>
 
   <header>
@@ -913,7 +1155,7 @@ function buildPage(m) {
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep>Learn</a>
         <a href="/skills/index.html" data-nav-skills>Skills</a>
-        <a href="/insights.html" aria-current="page">Insights</a>
+        <a href="/insights.html"${m.section === "insights" ? ' aria-current="page"' : ""}>Insights</a>
         <a href="/portfolio.html">Portfolio</a>
         <a href="/about.html">About</a>
         <a href="/contact.html" data-keep>Contact</a>
@@ -932,25 +1174,21 @@ function buildPage(m) {
       <p class="byline mono">
         <span>Rony Reiad</span><span class="dot"></span>
         <time datetime="${m.date}">${dateLabel}</time><span class="dot"></span>
-        <span>${m.minutes} min read</span>
+        <span>${m.minutes}${m.lang === "bn" ? " মিনিট পড়া" : " min read"}</span>
       </p>
 
 ${indent(m.body, 6)}
 
-      <div class="note">
-        This piece is general education, not investment advice. Rules, rates and
-        fees change, confirm the current details with the relevant institution
-        before acting on anything here.
-      </div>
+      <div class="note">${escapeHtml(look.note)}</div>
 
       <div class="prev-next">
-        <a href="/insights.html">
-          <span class="mono">All insights</span>
-          <strong>Back to the index →</strong>
+        <a href="${look.back.url}">
+          <span class="mono">${escapeHtml(look.back.kicker)}</span>
+          <strong>${escapeHtml(look.back.label)}</strong>
         </a>
-        <a href="/learn/index.html">
-          <span class="mono">শেখার লাইব্রেরি</span>
-          <strong>Learn hub: বাংলায় →</strong>
+        <a href="${look.side.url}">
+          <span class="mono">${escapeHtml(look.side.kicker)}</span>
+          <strong>${escapeHtml(look.side.label)}</strong>
         </a>
       </div>
 
@@ -960,8 +1198,7 @@ ${indent(m.body, 6)}
   <footer>
     <div class="wrap">
       <span class="mono">Reiad's Library · Finance &amp; Bangladesh markets</span>
-      <p>Everything on this site is general education, not investment advice.
-         Do your own research before putting money anywhere.</p>
+      <p>${escapeHtml(look.footer)}</p>
       <p style="margin-top:10px"><a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a></p>
     </div>
   </footer>
@@ -977,13 +1214,21 @@ function indent(html, spaces) {
   return html.split("\n").map((l) => (l.trim() ? pad + l : l)).join("\n");
 }
 
-/** The one line to paste into content.js */
+/** The entry to paste into content.js, for whichever list the
+    piece is going into. The list is named in the sheet's title, so
+    the paste has somewhere to go without anyone having to remember
+    which array is which. `topics` is written out even when empty:
+    an empty array in the file is an invitation to fill it, and a
+    missing key is a thing nobody adds later. */
 function indexEntry(m) {
+  const en = m.section !== "insights" && m.lang === "bn";
   return `  {
     slug: ${JSON.stringify(m.slug)},
-    title: ${JSON.stringify(m.title)},
+    title: ${JSON.stringify(m.title)},${en ? `
+    en: "",` : ""}
     dek: ${JSON.stringify(m.dek)},
     tag: ${JSON.stringify(m.tag)},
+    topics: ${JSON.stringify(m.topics)},
     date: ${JSON.stringify(m.date)},
     minutes: ${m.minutes},
     lang: ${JSON.stringify(m.lang)},
@@ -1024,7 +1269,7 @@ const dateLabelFor = (m) =>
     becomes a /media path on publish. */
 function coverFor(m) {
   const doc = new DOMParser().parseFromString(m.body, "text/html");
-  return coverFromDocument(doc);
+  return coverFromDocument(doc, m);
 }
 
 /** A social crawler must fetch an ordinary public URL. The Studio can
@@ -1033,16 +1278,17 @@ function coverFor(m) {
     The ZIP route rewrites the selected image to /insights/photos/ just
     before download; the publish route has already rewritten it to
     /media/. Both are safe to put on an absolute public URL. */
-function socialCoverURL(src) {
+function socialCoverURL(src, m) {
   return /^\/(?:media|insights\/photos)\/[A-Za-z0-9._/-]+$/.test(src ?? "")
     ? `https://reiad.co.uk${src}`
-    : "https://reiad.co.uk/og/insights.png";
+    : `https://reiad.co.uk${styleFor(m ?? { section: "insights" }).og}`;
 }
 
-function coverFromDocument(doc) {
+function coverFromDocument(doc, m) {
   const lead = doc.querySelector("figure.lead-photo img, img.lead-photo");
   const first = doc.querySelector("img");
-  return lead?.getAttribute("src") || first?.getAttribute("src") || "/og/insights.png";
+  return lead?.getAttribute("src") || first?.getAttribute("src")
+    || styleFor(m ?? { section: "insights" }).og;
 }
 
 /** Only a path this site serves can be stored as the cover; a data
@@ -1062,18 +1308,24 @@ const ARTICLE_VIEW = (m) => `
 
 /* The same markup app.js builds for /insights.html, so what shows
    here is the card, not an impression of one. */
-const CARD_VIEW = (m) => `
+const CARD_VIEW = (m) => {
+  const sec = findSection(m.section);
+  return `
     <div class="preview-frame">
-      <span class="mono preview-caption">How it looks on the Insights page and the home page</span>
+      <span class="mono preview-caption">How it looks on ${escapeHtml(sec.id === "insights"
+        ? "the Insights page and the home page" : `${sec.bn}, at ${sec.hub}`)}</span>
       <div class="cards">
         <div class="cell sample-card">
           <span class="tag mono">${escapeHtml(m.tag)}</span>
           <h3>${escapeHtml(m.title)}</h3>
           <p>${escapeHtml(m.dek) || "<em>No standfirst yet, so the card has nothing under the headline.</em>"}</p>
+          ${m.topics.length ? `<span class="topic-tags">${m.topics
+            .map((t) => `<span class="topic-tag mono">${escapeHtml(t)}</span>`).join("")}</span>` : ""}
           <span class="more">${dateLabelFor(m)} · ${m.minutes} min read  →</span>
         </div>
       </div>
     </div>`;
+};
 
 /* WhatsApp, LinkedIn, X and Slack all draw roughly this: the image,
    the domain, the title, the description. The truncation lengths are
@@ -1099,7 +1351,7 @@ const SHARE_VIEW = (m) => {
         <li>${m.dek.length > 160
           ? `The standfirst is ${m.dek.length} characters and will be cut around 160.`
           : `Standfirst fits: ${m.dek.length} of about 160 characters.`}</li>
-        <li>${cover === "/og/insights.png"
+        <li>${cover === styleFor(m).og
           ? "No photo in the piece, so the site's default image is used. Mark a photo as Lead to use it here."
           : "Uses the lead photo from the article."}</li>
       </ul>
@@ -1209,7 +1461,7 @@ $("#btn-html").addEventListener("click", () => {
   const m = meta();
   if (!guard(m)) return;
   download(`${m.slug}.html`, buildPage(m));
-  toast(`Saved ${m.slug}.html: drop it in /insights/`);
+  toast(`Saved ${m.slug}.html: drop it in ${findSection(m.section).mount}`);
 });
 
 $("#btn-zip").addEventListener("click", async () => {
@@ -1233,8 +1485,9 @@ $("#btn-copy-html").addEventListener("click", () => {
 $("#btn-entry").addEventListener("click", () => {
   const m = meta();
   const entry = indexEntry(m);
+  const list = findSection(m.section).list;
   $("#sheet-body").textContent = entry;
-  $("#sheet-title").textContent = "Paste this at the top of the ARTICLES list in content.js";
+  $("#sheet-title").textContent = `Paste this at the top of the ${list} list in content.js`;
   $("#sheet").showModal();
   $("#sheet-copy").onclick = () => copyText(entry, "Index entry copied");
 });
@@ -1252,6 +1505,10 @@ function blankEditor() {
     if (el.type === "date") el.value = new Date().toISOString().slice(0, 10);
     else if (el.tagName !== "SELECT") el.value = "";
   });
+  setTopics([]);
+  const box = topicInput();
+  if (box) box.value = "";
+  paintSectionPicker();
   current.slug = null;
   current.notionPageId = null;
   onEdit();
@@ -1569,6 +1826,9 @@ async function openFile(entry) {
   fields.slug.value = entry.slug ?? "";
   fields.date.value = (entry.date ?? "").slice(0, 10) || new Date().toISOString().slice(0, 10);
   fields.lang.value = entry.lang === "bn" ? "bn" : "en";
+  fields.section.value = "insights";     // it came out of /insights/
+  paintSectionPicker();
+  setTopics(entry.topics ?? []);
 
   openSheet.close();
   onEdit();
@@ -1596,6 +1856,9 @@ async function openArticle(slug) {
   fields.date.value = (article.published_at ?? "").slice(0, 10)
     || new Date().toISOString().slice(0, 10);
   fields.lang.value = article.lang === "bn" ? "bn" : "en";
+  fields.section.value = findSection(article.section).id;
+  paintSectionPicker();
+  setTopics(article.topics ?? []);
 
   openSheet.close();
   onEdit();
@@ -1603,11 +1866,20 @@ async function openArticle(slug) {
   toast(`Editing "${article.title}". Publishing updates it in place.`);
 }
 
+/* Changing the destination changes the preview, the URL in the bar
+   and the note at the foot of the page, so it redraws like any
+   other field. */
+fields.section?.addEventListener("change", () => {
+  paintSectionPicker();
+  onEdit();
+  refreshNow();
+});
+
 $("#btn-open").addEventListener("click", showOpen);
 $("#open-close").addEventListener("click", () => openSheet.close());
 
 $("#btn-view").addEventListener("click", () => {
-  if (current.slug) open(`/insights/${current.slug}.html`, "_blank", "noopener");
+  if (current.slug) open(pieceUrl(currentSection(), current.slug), "_blank", "noopener");
 });
 
 /* ============================================================
@@ -1899,6 +2171,7 @@ function saveDraft() {
       savedAt: Date.now(),
       slug: current.slug,
       notionPageId: current.notionPageId,
+      topics: [...topics],
       html: editor.innerHTML,
       fields: Object.fromEntries(
         Object.entries(fields).map(([k, el]) => [k, el.value])
@@ -1935,6 +2208,11 @@ function loadDraft(draft) {
   Object.entries(draft.fields ?? {}).forEach(([k, v]) => {
     if (fields[k]) fields[k].value = v ?? "";
   });
+  /* A draft written before sections existed has no section field,
+     and Insights is where it would have gone. */
+  if (!draft.fields?.section) fields.section.value = "insights";
+  paintSectionPicker();
+  setTopics(draft.topics ?? []);
   draftLine.textContent = draft.savedAt
     ? `Draft from ${new Date(draft.savedAt).toLocaleString()}`
     : "";
@@ -1963,8 +2241,8 @@ async function restoreDraft() {
 function refreshNow() {
   if (!nowLine) return;
   const bits = [];
-  if (current.slug) bits.push(`editing /insights/${current.slug}.html`);
-  else bits.push("new article");
+  if (current.slug) bits.push(`editing ${pieceUrl(currentSection(), current.slug)}`);
+  else bits.push(`new piece for ${currentSection().en}`);
   if (current.notionPageId) bits.push("linked to Notion");
   nowLine.textContent = bits.join(" · ");
 
@@ -1972,6 +2250,38 @@ function refreshNow() {
   if (resync) resync.hidden = !(dynamic && current.notionPageId);
   const view = $("#btn-view");
   if (view) view.hidden = !(dynamic && current.slug);
+}
+
+/* The writing tools stick under the site header while the editor
+   scrolls past. All this adds is the shadow: a bar that has
+   actually lifted off the pane gets one, a bar sitting where it
+   was drawn does not, which is the difference between "floating"
+   and "just some buttons".
+
+   A one-pixel sentinel above the bar is watched rather than the
+   bar itself: an element with `position: sticky` never stops
+   intersecting, so it cannot report its own state. */
+function watchTools() {
+  const bar = $("#tool-bar");
+  if (!bar || !("IntersectionObserver" in window)) return;
+
+  const sentinel = document.createElement("div");
+  sentinel.style.cssText = "height:1px;margin-bottom:-1px";
+  sentinel.setAttribute("aria-hidden", "true");
+  bar.before(sentinel);
+
+  /* Not simply "is it off screen": the sentinel is below the fold
+     before anyone scrolls at all, and treating that as stuck put
+     a shadow under a bar sitting exactly where it was drawn. It is
+     stuck only when the sentinel has gone ABOVE the line. */
+  new IntersectionObserver(
+    ([entry]) => bar.toggleAttribute(
+      "data-stuck",
+      entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0)
+    ),
+    { rootMargin: `-${Math.round(parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--header-h")) || 66)}px 0px 0px 0px` }
+  ).observe(sentinel);
 }
 
 /* ============================================================
@@ -1982,6 +2292,10 @@ function refreshNow() {
   // open; enableDynamic() closes it when there is a better one.
   $("#file-tools").open = true;
   fields.date.value = new Date().toISOString().slice(0, 10);
+  buildSectionPicker();
+  wireTopics();
+  renderTopics();
+  watchTools();
   await restoreDraft();
   applyView();
   renderPreview();
@@ -2091,7 +2405,12 @@ async function send(status, button, label) {
 
     const payload = {
       slug, title: m.title, dek: m.dek, tag: m.tag,
-      topics: m.tag.split("·").map((t) => t.trim()).filter(Boolean),
+      /* Topics are their own field now. They used to be the label
+         split on its middle dot, which turned "Explainer · Equities"
+         into the topics "Explainer" and "Equities", and there is no
+         such topic as Explainer. */
+      topics: m.topics,
+      section: m.section,
       lang: m.lang, body: m.body, status, published_at: m.date,
       // Photos are on /media by this point, so the lead one can be
       // the article's own social image instead of the site default.
@@ -2122,7 +2441,7 @@ async function send(status, button, label) {
       await refreshSlugs();
       refreshNow();
       toast(status === "live"
-        ? `Published: /insights/${slug}.html`
+        ? `Published: ${urlFor(m)}`
         : `Saved as a draft. It isn't public until you publish it.`);
     } else if (result?.reason === "body-too-large") {
       toast(`Still too big at ${Math.round((result.size ?? 0) / 1024)} KB. `

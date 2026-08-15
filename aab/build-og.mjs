@@ -165,6 +165,12 @@ const CARDS = [
   { file: "cooking.png", eyebrow: "রান্নাঘর · Cooking",
     title: "রেসিপি নয়, রান্নাটা।",
     sub: "একটা করে উপকরণ · কেন, শুধু কীভাবে নয় · সময়ের সৎ হিসাব", bn: true },
+  /* The travel desk, on the same reasoning as the kitchen above:
+     one card for the section, because a card naming one visa would
+     be wrong on the next piece. */
+  { file: "travel.png", eyebrow: "ভ্রমণ · Travel",
+    title: "কাগজপত্র আগে, উত্তেজনা পরে।",
+    sub: "একটা করে যাত্রা · কী কী লাগে · কত সময় আর কত খরচ", bn: true },
   ...TERMS.map((t) => ({
     file: `english-${t.slug}.png`,
     eyebrow: `${t.kicker} · ${t.en}`,
@@ -241,6 +247,7 @@ const ASSIGN = [
   ]),
   [/^english\//, "english.png"],
   [/^cooking\//, "cooking.png"],
+  [/^travel\//, "travel.png"],
   [/^insights/, "insights.png"],
   [/^about\.html$/, "about.png"],
   [/^contact\.html$/, "contact.png"],
