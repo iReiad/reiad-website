@@ -14,7 +14,9 @@
    TRANSITION.md, Stage 5.
    ============================================================ */
 
-import { initAccount, current, sendLink, signInWithGoogle, signOut } from "/account.js";
+import {
+  initAccount, current, sendLink, signInWithGoogle, signOut, arrivalError,
+} from "/account.js";
 
 const el = (tag, props = {}, ...kids) => {
   const node = Object.assign(document.createElement(tag), props);
@@ -27,16 +29,30 @@ const initial = (name) => (name ?? "?").trim().charAt(0).toUpperCase() || "?";
 
 let dialog;
 
+/* One note, whichever face the panel is showing. It carries the
+   "check your email" line and anything a provider came back
+   complaining about, and it used to live inside the signed-out
+   form: signing in while already signed in put the account panel
+   over the top of it and the complaint was never seen. */
+const note = document.createElement("p");
+note.className = "signin-note";
+note.id = "signin-note";
+
+function say(text, state) {
+  note.textContent = text ?? "";
+  if (state) note.dataset.state = state;
+  else delete note.dataset.state;
+}
+
 /* ============================================================
    The panel
    ============================================================ */
 
-function buildDialog() {
+function buildDialog(body) {
   const email = el("input", {
     type: "email", id: "signin-email", required: true,
     placeholder: "you@example.com", autocomplete: "email",
   });
-  const note = el("p", { className: "signin-note", id: "signin-note" });
 
   const form = el("form", { className: "signin-form", noValidate: true },
     el("label", { htmlFor: "signin-email", textContent: "Your email" }),
@@ -48,8 +64,7 @@ function buildDialog() {
     e.preventDefault();
     const address = email.value.trim();
     if (!address || !address.includes("@")) {
-      note.textContent = "That does not look like an email address.";
-      note.dataset.state = "warn";
+      say("That does not look like an email address.", "warn");
       return;
     }
     const button = form.querySelector("button");
@@ -57,13 +72,11 @@ function buildDialog() {
     button.textContent = "Sending…";
     try {
       await sendLink(address);
-      note.dataset.state = "ok";
-      note.textContent = `Sent. Open the link in the email, on this device or any other. `
-        + "It signs you in and expires after an hour.";
+      say("Sent. Open the link in the email, on this device or any other. "
+        + "It signs you in and expires after an hour.", "ok");
       form.hidden = true;
     } catch (err) {
-      note.dataset.state = "warn";
-      note.textContent = err.message || "Could not send that. Try again in a minute.";
+      say(err.message || "Could not send that. Try again in a minute.", "warn");
     } finally {
       button.disabled = false;
       button.textContent = "Email me a link";
@@ -75,6 +88,13 @@ function buildDialog() {
     textContent: "Continue with Google",
     onclick: () => signInWithGoogle(),
   });
+
+  if (body) {
+    const shell = el("dialog", { className: "signin", id: "signin-sheet" }, body);
+    body.append(note);
+    document.body.append(shell);
+    return shell;
+  }
 
   dialog = el("dialog", { className: "signin", id: "signin-sheet" },
     el("div", { className: "signin-body" },
@@ -117,14 +137,13 @@ function buildAccountPanel(user) {
 }
 
 function openPanel() {
-  dialog ??= buildDialog();
   const user = current();
-  if (user) dialog.replaceChildren(buildAccountPanel(user));
-  else if (!dialog.querySelector(".signin-form")) {
-    // Coming back from a signed-in state: rebuild the form.
-    dialog.remove();
-    dialog = buildDialog();
-  }
+
+  /* Rebuilt each time rather than toggled: the two faces share
+     nothing but the note, and a panel that remembers the last
+     person who was signed in is a bug waiting to be filed. */
+  if (dialog) dialog.remove();
+  dialog = user ? buildDialog(buildAccountPanel(user)) : buildDialog();
   dialog.showModal();
 }
 
@@ -159,6 +178,17 @@ export async function initSignIn() {
   /* Last, and deliberately not awaited by anything above: a reader
      who never signs in must not wait on a network call to see a
      header. */
-  await initAccount();
+  /* Synchronous: it reads the session out of the URL or out of
+     this device and returns. Nothing here waits on a network. */
+  initAccount();
   paintButton(button);
+
+  /* Landing back from a provider with something to say deserves the
+     panel opened, not a silent page. It is shown whichever face the
+     panel wears, because a failed sign-in while already signed in
+     is still worth reading. */
+  if (arrivalError) {
+    say(arrivalError, "warn");
+    openPanel();
+  }
 }
