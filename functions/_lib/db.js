@@ -50,6 +50,36 @@ const MIGRATIONS = [
      saved_at TEXT NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS idx_versions_slug
      ON article_versions (slug, saved_at DESC)`,
+  /* Comments. Grown from the questions queue rather than beside it:
+     same moderation, same desk, an author attached.
+
+     THE AUTHOR IS TWO COLUMNS ON PURPOSE. `author_id` is the
+     Supabase user id, written only after the Worker has verified
+     the signature on the reader's token (see _lib/reader.js).
+     `author_name` is a COPY of the display name as it was when the
+     comment was posted.
+
+     Copying it is not denormalisation for speed. It is the seam in
+     TRANSITION.md section 1: D1 holds what a signed-out reader
+     needs to render the page, Supabase holds who people are, and
+     the two never join in a query. A thread has to render for a
+     stranger with Supabase unreachable, and it does, because every
+     name it needs is already here.
+
+     `body` is TEXT and stays text. A comment is never HTML: there
+     is no sanitiser to get wrong if nothing is ever parsed. */
+  `CREATE TABLE IF NOT EXISTS comments (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     slug TEXT NOT NULL, section TEXT NOT NULL DEFAULT 'insights',
+     parent_id INTEGER,
+     author_id TEXT NOT NULL, author_name TEXT NOT NULL DEFAULT '',
+     body TEXT NOT NULL,
+     status TEXT NOT NULL DEFAULT 'pending',
+     created_at TEXT NOT NULL, approved_at TEXT)`,
+  `CREATE INDEX IF NOT EXISTS idx_comments_thread
+     ON comments (slug, status, created_at)`,
+  `CREATE INDEX IF NOT EXISTS idx_comments_queue
+     ON comments (status, created_at DESC)`,
   `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS throttle (
      bucket TEXT PRIMARY KEY, count INTEGER NOT NULL DEFAULT 0, resets TEXT NOT NULL)`,

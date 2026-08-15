@@ -814,11 +814,80 @@ async function renderOverview(host, go) {
 }
 
 /* ============================================================
+   Comments
+
+   The same queue as questions, with an author attached. Nothing a
+   reader writes appears anywhere until it is approved here, which
+   is the decision recorded in TRANSITION.md Stage 7 and the reason
+   this panel exists at all.
+
+   Bodies are drawn with textContent, exactly as the article page
+   draws them. A comment is text from the column to the screen and
+   is never parsed, here least of all: this page is signed in as an
+   administrator, so it is the worst possible place to start
+   trusting somebody else's markup.
+   ============================================================ */
+
+const commentState = { status: "pending" };
+
+async function renderComments(host) {
+  const data = await api(`comments?status=${encodeURIComponent(commentState.status)}`);
+  const rows = data?.comments ?? [];
+  const redraw = () => renderComments(host);
+
+  const act = async (item, next) => {
+    const res = await api(`comments/${item.id}`, { method: "PATCH", body: { status: next } });
+    if (res?.ok) { toast(next === "live" ? "Approved" : `Moved to ${next}`); redraw(); }
+    else toast("That didn't save");
+  };
+
+  const remove = async (item) => {
+    if (!confirm("Delete permanently? Binning keeps it and hides it.")) return;
+    const res = await api(`comments/${item.id}`, { method: "DELETE" });
+    if (res?.ok) { toast("Deleted"); redraw(); } else toast("That didn't delete");
+  };
+
+  const card = (item) => el("div", { className: "admin-line comment-line" },
+    el("span", { className: "line-facts" },
+      el("span", { className: "pill", textContent: item.author_name || "Reader" }),
+      el("a", { className: "mono", href: `/${item.section}/${item.slug}.html`,
+                target: "_blank", rel: "noopener", textContent: `${item.section}/${item.slug}` }),
+      item.parent_id ? el("span", { className: "pill", textContent: "reply" }) : null,
+      el("span", { className: "mono muted", textContent: when(item.created_at) })
+    ),
+    // textContent. See the note above this function.
+    el("p", { className: "comment-body", textContent: item.body }),
+    el("span", { className: "line-actions" },
+      item.status !== "live" ? button("Approve", () => act(item, "live"), "chip chip-move") : null,
+      item.status !== "binned" ? button("Bin", () => act(item, "binned")) : null,
+      item.status === "live" ? button("Hide again", () => act(item, "pending")) : null,
+      button("Delete", () => remove(item))
+    )
+  );
+
+  paint(host,
+    filterRow(
+      [["pending", "Waiting"], ["live", "Approved"], ["binned", "Binned"]],
+      commentState.status, {},
+      (key) => { commentState.status = key; redraw(); }
+    ),
+    el("p", { className: "admin-count mono", textContent:
+      `${rows.length} comment${rows.length === 1 ? "" : "s"}` }),
+    rows.length
+      ? el("div", { className: "admin-table" }, ...rows.map(card))
+      : empty(commentState.status === "pending"
+        ? "Nothing waiting. Everything readers have written has been dealt with."
+        : "Nothing here.")
+  );
+}
+
+/* ============================================================
    Mount
    ============================================================ */
 
 const PANELS = {
   queue: { label: "Questions", render: renderQueue },
+  comments: { label: "Comments", render: renderComments },
   enquiries: { label: "Enquiries", render: renderEnquiries },
   subscribers: { label: "Subscribers", render: renderSubscribers },
   stats: { label: "What's read", render: renderStats },

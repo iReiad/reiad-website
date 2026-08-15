@@ -134,3 +134,34 @@ CREATE TABLE IF NOT EXISTS throttle (
   count   INTEGER NOT NULL DEFAULT 0,
   resets  TEXT NOT NULL
 );
+
+-- Comments, moderated exactly like questions and with an author
+-- attached. TRANSITION.md, Stage 7.
+--
+-- `author_id` is a Supabase user id, written only after the Worker
+-- has verified the signature on the reader's access token; see
+-- functions/_lib/reader.js. `author_name` is a COPY of the display
+-- name at the time of writing, which is the seam in TRANSITION.md
+-- section 1 doing its job: D1 holds what a signed-out reader needs
+-- to render the page, Supabase holds who people are, and the two
+-- never join. A thread renders for a stranger with Supabase down.
+--
+-- `body` is text and stays text. A comment is never HTML, so there
+-- is no sanitiser here to get wrong.
+CREATE TABLE IF NOT EXISTS comments (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug        TEXT NOT NULL,
+  section     TEXT NOT NULL DEFAULT 'insights',
+  parent_id   INTEGER,
+  author_id   TEXT NOT NULL,
+  author_name TEXT NOT NULL DEFAULT '',
+  body        TEXT NOT NULL,
+  status      TEXT NOT NULL DEFAULT 'pending',
+  created_at  TEXT NOT NULL,
+  approved_at TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_comments_thread
+  ON comments (slug, status, created_at);
+CREATE INDEX IF NOT EXISTS idx_comments_queue
+  ON comments (status, created_at DESC);

@@ -235,6 +235,14 @@ ${article.body}
         </a>
       </div>
     </article>
+
+    <!-- The thread. Empty in the markup and filled by comments.js,
+         which is loaded lazily and allowed to fail: a piece with a
+         broken thread reads perfectly and has no thread, which is
+         rule 8 in TRANSITION.md. Approved comments are readable by
+         anybody; signing in is only needed to add one. -->
+    <section class="wrap wrap-narrow comments" id="comments"
+             data-slug="${esc(article.slug)}" data-section="${esc(article.section)}"></section>
   </main>
 
   <footer>
@@ -248,6 +256,19 @@ ${article.body}
   <!-- Read-aloud script: served from the static assets -->
   <script src="/read-aloud.js" defer></script>
   <script type="module" src="/app.js"></script>
+  <script type="module">
+    /* Lazy, and caught. Nothing about reading this piece depends on
+       the thread loading, or on there being a database at all. */
+    const host = document.getElementById("comments");
+    if (host) {
+      import("/comments.js")
+        .then((m) => m.mountComments(host, {
+          slug: host.dataset.slug,
+          section: host.dataset.section,
+        }))
+        .catch(() => {});
+    }
+  </script>
 </body>
 </html>`;
 }

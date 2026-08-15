@@ -145,3 +145,19 @@ crons = ["*/15 * * * *", "17 3 * * *"]
 
 [vars]
 SITE_ORIGIN = "https://reiad.co.uk"
+
+# Where reader accounts live. The Worker needs it to fetch the public
+# keys it verifies a reader's access token against, see
+# functions/_lib/reader.js.
+#
+# This is a URL, not a secret: it is already in aab/account.js, which
+# every browser downloads. The thing that must never appear here is
+# the service role key, and it does not exist anywhere in this
+# repository.
+#
+# Older Supabase projects sign tokens with HS256 rather than ES256,
+# and those need the project's JWT secret to verify. This one does
+# not, and if that ever changes the secret goes in as a secret:
+#   npx wrangler secret put SUPABASE_JWT_SECRET
+# Without it, an HS256 token is refused rather than believed.
+SUPABASE_URL = "https://wvjarqnnmkkuxyrndtya.supabase.co"
