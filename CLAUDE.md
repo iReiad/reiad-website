@@ -164,6 +164,19 @@ reach. In order:
 3. Add its card to `portfolio.html`.
 4. `node aab/check-content.mjs` fails until steps 2 and 3 are both done.
 
+## Where an article lives, and where it is going
+
+Both places, for now: a committed HTML file plus an entry in
+`content.js`, or a row in D1 written by the Studio. The row wins at
+the URL and the file is the fallback. Which lists can see which is
+uneven, and the plan for closing that, moving the writing into the
+database and then moving the site onto React and Next.js one route
+at a time, is in `TRANSITION.md`.
+
+That file is a log as well as a plan. Anything that lands against a
+stage in it gets its status changed and a dated entry at the
+bottom, in the same commit as the work.
+
 ## Before opening a pull request
 
 Check whether anything else is already in flight. Two open pull requests
