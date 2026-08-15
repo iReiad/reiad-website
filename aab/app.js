@@ -1147,3 +1147,8 @@ initArticleCards();
 markLessonRead();
 initDynamic();
 initServiceWorker();
+
+/* Reader accounts. Loaded on its own, after everything a reader can
+   see, and never awaited by any of it: signing in is optional and
+   the page must not wait to find out whether anyone did. */
+import("/signin.js").then((m) => m.initSignIn()).catch(() => {});
