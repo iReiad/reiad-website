@@ -211,7 +211,21 @@ node aab/deutsch/build-deutsch.mjs   # aab/deutsch/** from content/ + data
 node aab/quran/build-quran.mjs       # aab/quran/**   from curriculum + content
 node aab/english/build-english.mjs   # aab/english/** from curriculum + content + workbook
 node aab/build-meta.mjs              # feed.xml, sitemap.xml, robots.txt
+
+cd app && npm run build             # aab/desk/**  from app/src/** (React)
 ```
+
+`app/` is the React workspace: Vite, React and TypeScript, building to
+`aab/desk/`. **Its output is committed**, for the same reason every
+generated page here is: the site deploys by uploading `aab/`, with no
+build step in CI, and adding one would mean a build command in a
+dashboard that cannot be seen from the repository. So the rule is the
+rule: edit `app/src/**`, run the build, commit both.
+
+The stylesheet is not part of it. `aab/styles.css` stays the design
+system and React renders the same class names into the same `@layer`
+rules. No CSS-in-JS, no Tailwind, no second design system: a port that
+also redesigns the page cannot be judged.
 
 That includes the `<head>`. A change to canonical links, Open Graph tags
 or the webfont link has to go into `page()` inside both builders, or the

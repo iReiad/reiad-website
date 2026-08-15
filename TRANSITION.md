@@ -692,7 +692,37 @@ byte-identical to what the files produced.
 ---
 
 ### Stage 9 · React, where nobody can see it
-**Status: not started.** Size: a week, spread out.
+**Status: the desk is up at `/desk/`, 15 August 2026.** The Studio
+is not started. Size: a week, spread out.
+
+The toolchain exists and is proved: `app/` is Vite plus React plus
+TypeScript, building to `aab/desk/`, and the result runs under the
+site's real Content-Security-Policy with no CSP violations, no
+page errors, and the site's own stylesheet applying unchanged.
+
+**The output is committed**, and that is a decision worth
+recording rather than apologising for. This site deploys by
+uploading `aab/`; there is no build step in CI, and the build
+command lives in a Cloudflare dashboard that cannot be seen from
+the repository. Committing the bundle needs none of that, is one
+`git revert` from gone, and is exactly what this repository
+already does with `aab/learn/**` and the other three schools. The
+rule is unchanged: edit the source, run the build, commit both.
+
+Three things the port bought immediately, none of them visual:
+
+- **The API's shapes are written down.** `app/src/api.ts` names
+  what a comment, a question and an article actually are. Before
+  this they were known only by reading SQL in `functions/`, and
+  each desk panel rediscovered them by hand.
+- **A stale reply cannot paint.** `useRows` knows whether the
+  request it is finishing is still the current one. The old desk
+  had the same pattern written four times and got this wrong in
+  all four: a slow answer for one filter could overwrite a fast
+  answer for another.
+- **A half-typed answer survives a redraw.** The questions panel
+  keeps it in component state; the old one kept it in a
+  `<textarea>` the panel owned and lost it on any repaint.
 
 The first React in this repository should be somewhere a mistake
 costs nothing: no reader, no search engine, no share card. That is
@@ -714,10 +744,15 @@ for.
 - The old `studio.html` stays at its URL until the new one has done
   a real publish. Then it is deleted.
 
+Still to do: the Studio, and the desk's remaining panels
+(enquiries, subscribers, what's read, and the Published panel's
+write actions, which stay on the old desk until the Studio moves
+because they are where a port going wrong costs something).
+
 **Done when:** a piece can be written, given photos, previewed,
 pre-flighted and published from the React Studio, and the old files
 are gone. **Rollback:** the old page is one revert away for as long
-as it exists.
+as it exists, and `/desk.html` is untouched.
 
 ---
 
@@ -780,7 +815,7 @@ should.
 | 6 | Progress follows the account | done, 15 Aug 2026 |
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
 | 8 | The schools' content into the database | not started |
-| 9 | React in the Studio and the desk | not started |
+| 9 | React in the Studio and the desk | desk started, 15 Aug 2026 |
 | 10 | Next.js takes the article route | not started |
 | 11 | The rest, one route at a time | not started |
 
@@ -1002,6 +1037,44 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-15 · Stage 9 begun: React is on the site, at /desk/
+The first React in this repository, on the page where a mistake
+costs least: private, `noindex`, no reader, no share card.
+
+The decision that took the longest was not React. It was that this
+site has **no build step at all** and no `package.json`, deploys by
+uploading `aab/`, and has its build command in a Cloudflare
+dashboard that cannot be seen or changed from the repository. So a
+bundler that must run in CI would have meant asking for a
+configuration change nobody could verify from here.
+
+Committing the output solves it and is not a compromise: every
+school on this site is already generated and committed, and
+CLAUDE.md's rule for them is exactly the rule for this one. It also
+keeps the whole stage one `git revert` from gone.
+
+Proved rather than assumed: the built page runs under the real CSP
+with **no violations and no page errors**, the site's own
+`styles.css` applies to it unchanged, and it looks like the rest of
+the site because it renders the same class names. `/app.js`,
+`/api.js` and `/auth.js` are left external and imported at runtime,
+so the desk shares one copy of the site's furniture rather than
+carrying a second.
+
+The auth gate was deliberately **not** ported. It is the thing
+keeping this page private, it already works, and Stage 9 is a UI
+port. React mounts after `requireOwner()` resolves.
+
+`check-csp.mjs` needed a change and it is the interesting kind: it
+found `https://react.dev` inside the bundle, which React puts in
+its error messages and never fetches. Skipping the bundle would
+have lost the guarantee, so it walks `app/src` instead. The check
+now reads the source a fetch would be written in rather than the
+library it ends up beside.
+
+Next: the Studio, which is the part of this stage that is actually
+hard.
 
 ### 2026-08-15 · Stage 7 done, and the piece that was not in the plan
 Comments. Signed in to write, nothing visible until approved,
