@@ -26,6 +26,7 @@
 
 import { api } from "/api.js";
 import { toast, copyText } from "/app.js";
+import { SECTIONS, findSection, pieceUrl } from "/content.js";
 
 const el = (tag, props = {}, ...kids) => {
   const node = Object.assign(document.createElement(tag), props);
@@ -327,7 +328,7 @@ async function renderStats(host) {
   // A path is not a headline. Joining the two makes the list legible
   // without the database ever having to know about it.
   const titles = new Map(
-    (articles?.articles ?? []).map((a) => [`/insights/${a.slug}.html`, a.title])
+    (articles?.articles ?? []).map((a) => [pieceUrl(findSection(a.section), a.slug), a.title])
   );
   const name = (path) => titles.get(path) ?? titles.get(`${path}.html`) ?? path;
 
@@ -375,44 +376,132 @@ async function renderStats(host) {
    Published
    ============================================================ */
 
-const articleState = { q: "" };
+const articleState = { q: "", section: "all" };
+
+const SECTION_FILTERS = [["all", "Everywhere"],
+  ...SECTIONS.map((sec) => [sec.id, sec.id === "insights" ? sec.en : sec.bn])];
+
+/** Move a piece to another section.
+
+    This is the one control on this page that changes a URL. The
+    server refuses to serve a piece at a mount that is not its own,
+    so the move is complete the moment it saves: the old URL stops
+    answering and the new one starts. That is also why it asks first
+    when the piece is live, and does not when it is a draft. */
+function moveControl(article, onDone) {
+  const wrap = el("label", { className: "move-field" },
+    el("span", { className: "mono", textContent: "Move to" }));
+
+  const select = el("select", { className: "move-select" });
+  select.append(...SECTIONS.map((sec) =>
+    Object.assign(document.createElement("option"), {
+      value: sec.id,
+      textContent: sec.id === "insights" ? sec.en : `${sec.bn} · ${sec.en}`,
+      selected: sec.id === findSection(article.section).id,
+    })));
+
+  select.addEventListener("change", async () => {
+    const from = findSection(article.section);
+    const to = findSection(select.value);
+    if (to.id === from.id) return;
+
+    if (article.status === "live") {
+      const ok = confirm(
+        `Move "${article.title}" from ${from.en} to ${to.en}?\n\n`
+        + `It is live, so its address changes from ${pieceUrl(from, article.slug)} `
+        + `to ${pieceUrl(to, article.slug)}. Any link already shared will stop working.`
+      );
+      if (!ok) { select.value = from.id; return; }
+    }
+
+    select.disabled = true;
+    const res = await api(`articles/${article.slug}`, {
+      method: "PATCH", body: { section: to.id },
+    });
+    select.disabled = false;
+
+    if (res?.ok) {
+      toast(`Moved to ${to.en}: ${pieceUrl(to, article.slug)}`);
+      onDone();
+    } else {
+      select.value = from.id;
+      toast("That didn't move.");
+    }
+  });
+
+  wrap.append(select);
+  return wrap;
+}
 
 async function renderArticles(host) {
   const all = (await api("articles?all=1"))?.articles ?? [];
   const needle = articleState.q.toLowerCase();
-  const rows = all.filter((a) => !needle
-    || `${a.title} ${a.slug} ${a.tag}`.toLowerCase().includes(needle));
+  const rows = all
+    .filter((a) => articleState.section === "all"
+      || findSection(a.section).id === articleState.section)
+    .filter((a) => !needle
+      || `${a.title} ${a.slug} ${a.tag} ${(a.topics ?? []).join(" ")}`
+          .toLowerCase().includes(needle));
 
   const redraw = () => renderArticles(host);
 
+  /* How many are in each section, so the filter says what is behind
+     it rather than making you click to find out. */
+  const counts = all.reduce((acc, a) => {
+    const id = findSection(a.section).id;
+    return { ...acc, [id]: (acc[id] ?? 0) + 1, all: (acc.all ?? 0) + 1 };
+  }, {});
+
   host.replaceChildren(
-    searchBox("Search titles and file names", (value) => { articleState.q = value; redraw(); }),
+    filterRow(SECTION_FILTERS, articleState.section, counts, (key) => {
+      articleState.section = key;
+      redraw();
+    }),
+    searchBox("Search titles, file names and topics", (value) => {
+      articleState.q = value;
+      redraw();
+    }),
     el("p", { className: "admin-count mono", textContent:
       all.length ? `${rows.length} of ${all.length} in the database`
                  : "Nothing published through the Studio yet." }),
     el("div", { className: "admin-table" },
-      ...rows.map((a) =>
-        el("div", { className: "admin-line" },
-          el("a", { href: `/insights/${a.slug}.html`, textContent: a.title }),
-          el("span", { className: "mono", textContent: a.status }),
-          el("span", { className: "mono muted", textContent: when(a.updated_at) }),
-          // Straight back into the editor with it loaded.
-          el("a", { className: "chip", href: `/studio.html?edit=${encodeURIComponent(a.slug)}`,
-                    textContent: "Edit" }),
-          button(a.status === "live" ? "Unpublish" : "Publish", async () => {
-            await api(`articles/${a.slug}`, { method: "PATCH",
-              body: { status: a.status === "live" ? "draft" : "live" } });
-            redraw();
-          }),
-          button("History", () => showHistory(a, redraw)),
-          button("Copy link",
-            () => copyText(`${location.origin}/insights/${a.slug}.html`, "Link copied")),
-          button("Delete", async () => {
-            if (!confirm(`Delete "${a.title}" from the database? This cannot be undone.`)) return;
-            const res = await api(`articles/${a.slug}`, { method: "DELETE" });
-            if (res?.ok) { toast("Deleted"); redraw(); } else toast("That didn't delete");
-          })
-        ))
+      ...rows.map((a) => {
+        const sec = findSection(a.section);
+        return el("div", { className: `admin-line article-line status-${a.status}` },
+          el("a", { className: "article-title", href: pieceUrl(sec, a.slug),
+                    textContent: a.title }),
+          el("span", { className: "line-facts" },
+            el("span", { className: `pill section-pill section-${sec.id}`,
+                         textContent: sec.id === "insights" ? sec.en : sec.bn }),
+            el("span", { className: "pill", textContent: a.status }),
+            (a.topics ?? []).length
+              ? el("span", { className: "line-topics" },
+                  ...a.topics.slice(0, 3).map((t) =>
+                    el("span", { className: "topic-tag mono", textContent: t })))
+              : null,
+            el("span", { className: "mono muted", textContent: when(a.updated_at) })
+          ),
+          el("span", { className: "line-actions" },
+            // Straight back into the editor with it loaded.
+            el("a", { className: "chip", href: `/studio.html?edit=${encodeURIComponent(a.slug)}`,
+                      textContent: "Edit" }),
+            button(a.status === "live" ? "Unpublish" : "Publish", async () => {
+              await api(`articles/${a.slug}`, { method: "PATCH",
+                body: { status: a.status === "live" ? "draft" : "live" } });
+              redraw();
+            }),
+            button("History", () => showHistory(a, redraw)),
+            button("Copy link",
+              () => copyText(`${location.origin}${pieceUrl(sec, a.slug)}`, "Link copied")),
+            button("Delete", async () => {
+              if (!confirm(`Delete "${a.title}" from the database? This cannot be undone.`)) return;
+              const res = await api(`articles/${a.slug}`, { method: "DELETE" });
+              if (res?.ok) { toast("Deleted"); redraw(); } else toast("That didn't delete");
+            }),
+            moveControl(a, redraw)
+          )
+        );
+      })
     )
   );
 }

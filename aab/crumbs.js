@@ -35,7 +35,7 @@ import {
 import {
   TERMS, termUrl, allParts, findTerm, workbookUrl as englishBookUrl,
 } from "/english/curriculum.js";
-import { PAGES, SITE, liveArticles, COOKING, cookingUrl } from "/content.js";
+import { PAGES, SITE, liveArticles, READS, pieceUrl } from "/content.js";
 
 const isBn = () => document.documentElement.lang === "bn";
 /* The German pages are lang="bn" throughout, so a crumb reading
@@ -47,7 +47,7 @@ const DEUTSCH = () => (isBn() ? "জার্মান" : "Deutsch");
 const QURAN = () => (isBn() ? "কুরআনের আরবি" : "Qur'anic Arabic");
 const ENGLISH = () => (isBn() ? "মন থেকে ইংরেজি" : "English From The Heart");
 const SKILLS = () => (isBn() ? "দক্ষতা" : "Skills");
-const COOKING_NAME = () => (isBn() ? "রান্নাঘর" : "Cooking");
+const sectionName = (section) => (isBn() ? section.bn : section.en);
 
 /** Normalise the URL Pages might serve us: /learn, /learn/ and
     /learn/index.html are all the same place. */
@@ -62,7 +62,8 @@ function normalise(path) {
       DHAPS.some((d) => `/quran/${d.slug}` === p) ||
       TERMS.some((t) => `/english/${t.slug}` === p) ||
       p === "/learn" || p === "/deutsch" || p === "/quran" ||
-      p === "/english" || p === "/cooking" || p === "/tools" || p === "/skills";
+      p === "/english" || p === "/cooking" || p === "/travel" ||
+      p === "/tools" || p === "/skills";
     return isFolder ? `${p}/index.html` : `${p}.html`;
   }
   return p;
@@ -130,17 +131,20 @@ function trailFor(path) {
     return { crumbs, here: QURAN() };
   }
 
-  /* ---------- the kitchen ----------
-     Not a school, but it hangs off Skills the same way they do,
-     so a piece is Home > Skills > রান্নাঘর > the piece. */
-  if (p.startsWith("/cooking/")) {
+  /* ---------- the reading sections ----------
+     The kitchen and the travel desk are not schools, but they hang
+     off Skills the same way the schools do, so a piece is
+     Home > Skills > রান্নাঘর > the piece. One branch covers both,
+     and covers the next one without being edited. */
+  const read = READS.find((section) => p.startsWith(section.mount));
+  if (read) {
     crumbs.push({ name: SKILLS(), url: "/skills/index.html" });
-    if (p === "/cooking/index.html") return { crumbs, here: COOKING_NAME() };
+    if (p === read.hub) return { crumbs, here: sectionName(read) };
 
-    crumbs.push({ name: COOKING_NAME(), url: "/cooking/index.html" });
+    crumbs.push({ name: sectionName(read), url: read.hub });
 
-    const piece = COOKING.find((c) => cookingUrl(c) === p);
-    return { crumbs, here: piece?.bn ?? document.title.split("·")[0].trim() };
+    const piece = read.pieces().find((x) => pieceUrl(read, x.slug) === p);
+    return { crumbs, here: piece?.title ?? document.title.split("·")[0].trim() };
   }
 
   /* ---------- the English school ----------

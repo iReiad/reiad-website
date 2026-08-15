@@ -22,8 +22,18 @@ import { requireAdmin, readSession } from "../../_lib/auth.js";
 import { sanitiseHTML, readingMinutes } from "../../_lib/sanitise.js";
 
 const PUBLIC_COLUMNS =
-  `slug, title, dek, tag, topics, lang, minutes, status, cover,
+  `slug, title, dek, tag, topics, lang, minutes, status, section, cover,
    published_at, updated_at, notion_page_id, notion_synced_at`;
+
+/* Where a piece lives. The Studio offers these three and the desk
+   moves pieces between them; anything else is a typo or an older
+   client, and Insights is where a piece went before sections
+   existed. Kept as a list rather than a free string because it
+   becomes a URL prefix, and a URL prefix from a request body is
+   how you end up serving /etc/passwd.html. */
+const SECTIONS = ["insights", "cooking", "travel"];
+const safeSection = (value) =>
+  SECTIONS.includes(String(value ?? "")) ? String(value) : "insights";
 
 /* D1 caps a single value at 2 MB. A body is measured in bytes rather
    than characters because Bangla costs three of them per character,
@@ -185,13 +195,14 @@ export async function onRequest(context) {
 
       await run(d1,
         `INSERT INTO articles
-           (slug, title, dek, tag, topics, lang, body, minutes, status, cover,
+           (slug, title, dek, tag, topics, lang, body, minutes, status, section, cover,
             published_at, created_at, updated_at, notion_page_id, notion_synced_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(slug) DO UPDATE SET
            title = excluded.title, dek = excluded.dek, tag = excluded.tag,
            topics = excluded.topics, lang = excluded.lang, body = excluded.body,
            minutes = excluded.minutes, status = excluded.status,
+           section = excluded.section,
            cover = excluded.cover,
            published_at = COALESCE(articles.published_at, excluded.published_at),
            updated_at = excluded.updated_at,
@@ -204,6 +215,7 @@ export async function onRequest(context) {
         clean,
         readingMinutes(clean),
         status,
+        safeSection(input.section),
         safeCover(input.cover),
         status === "live" ? (str(input.published_at, 10) || today()) : null,
         now, now,
@@ -234,8 +246,8 @@ export async function onRequest(context) {
 
       await run(d1,
         `UPDATE articles
-            SET title = ?, dek = ?, tag = ?, topics = ?, lang = ?, cover = ?,
-                status = ?, published_at = ?, updated_at = ?
+            SET title = ?, dek = ?, tag = ?, topics = ?, lang = ?, section = ?,
+                cover = ?, status = ?, published_at = ?, updated_at = ?
           WHERE slug = ?`,
         pick("title", str(input.title, 300) || existing.title),
         pick("dek", str(input.dek, 600)),
@@ -243,6 +255,11 @@ export async function onRequest(context) {
         pick("topics", (Array.isArray(input.topics) ? input.topics : [])
           .map((t) => str(t, 40)).filter(Boolean).join("|")),
         pick("lang", input.lang === "bn" ? "bn" : "en"),
+        /* Moving a piece between sections is a PATCH with one key in
+           it, sent by the desk. It changes the URL the piece is
+           served at, which is why the old one has to stop answering:
+           see the section check in functions/insights/[slug].js. */
+        pick("section", safeSection(input.section)),
         pick("cover", safeCover(input.cover)),
         status,
         status === "live" ? (existing.published_at ?? today()) : existing.published_at,

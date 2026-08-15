@@ -41,7 +41,7 @@
   <meta property="og:site_name" content="Reiad's Library">
   <meta name="theme-color" content="#0B3D2E">
 </head>
-<body class="cooking">
+<body class="cooking read">
   <a class="skip" href="#main">মূল লেখায় যান</a>
   <header>
     <div class="wrap header-inner">
@@ -72,7 +72,7 @@
   <main id="main">
     <div class="wrap">
 
-      <div class="hero kitchen-hero">
+      <div class="hero read-hero">
         <span class="eyebrow mono">রান্নাঘর · <span lang="en">Cooking</span></span>
         <h1 class="bn-h">রেসিপি নয়, রান্নাটা।</h1>
         <p class="lede">রেসিপি বলে দেয় কী করতে হবে। কিন্তু কেন আঁচ কমাতে হয়, কেন ভিনেগার
@@ -88,7 +88,7 @@
 
       <!-- ============================================================
            THE PIECES
-           Built by cooking.js from the COOKING array in /content.js.
+           Built by /reads.js from the COOKING array in /content.js.
            The list inside is the no-JavaScript fallback, not the
            source: keep the two in step, and edit content.js first.
            ============================================================ -->
@@ -97,8 +97,8 @@
         <p class="measure ladder-intro">এখন পর্যন্ত
         <span data-count="cooking">১</span>টি লেখা। ধাপে ধাপে কোর্স নয়, তাই ক্রম মেনে
         পড়ার দরকার নেই: যেটা আজ রান্না করছেন, সেটাই আগে পড়ুন।</p>
-        <div class="cards grid-2" id="kitchen-list">
-          <ul class="kitchen-fallback">
+        <div class="cards grid-2" id="piece-list" data-section="cooking">
+          <ul class="read-fallback">
             <li><a href="/cooking/onions.html"><b>পেঁয়াজ নিয়ে যা যা জানা দরকার</b></a>
               রং, কাটা আর রান্নার আসল কথা: তিন রঙের পার্থক্য, শিরা বরাবর কাটা, সোয়েট আর
               সতে-র তফাত, ক্যারামেলাইজেশন, আর পেঁয়াজের আত্মীয়স্বজন। ১২ মিনিট পড়া।</li>
@@ -150,6 +150,6 @@
   </footer>
 
   <script type="module" src="/app.js"></script>
-  <script type="module" src="/cooking/cooking.js"></script>
+  <script type="module" src="/reads.js"></script>
 </body>
 </html>

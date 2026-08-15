@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS articles (
   body         TEXT NOT NULL DEFAULT '',      -- sanitised HTML
   minutes      INTEGER NOT NULL DEFAULT 1,
   status       TEXT NOT NULL DEFAULT 'draft', -- draft | live
+  section      TEXT NOT NULL DEFAULT 'insights', -- insights | cooking | travel
   published_at TEXT,                          -- ISO date, set when it goes live
   created_at   TEXT NOT NULL,
   updated_at   TEXT NOT NULL,

@@ -26,15 +26,26 @@ const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[c]));
 
-/** Slugs the generated file already lists, so nothing appears twice. */
+/* Where a piece is served from, by section. The same three mounts
+   the Studio publishes to and worker.js routes; a row with an
+   unknown section is served from /insights/, which is where every
+   row lived before sections existed. */
+const MOUNTS = { insights: "/insights/", cooking: "/cooking/", travel: "/travel/" };
+const mountOf = (a) => MOUNTS[a?.section] ?? MOUNTS.insights;
+const urlOf = (a, origin) => `${origin}${mountOf(a)}${a.slug}.html`;
+
+/** Slugs the generated file already lists, so nothing appears twice.
+    Any of the three mounts, because a piece written by hand in
+    /cooking/ is in the committed sitemap under that path. */
 function existingSlugs(xml) {
   const found = new Set();
-  for (const m of xml.matchAll(/\/insights\/([a-z0-9-]+)\.html/gi)) found.add(m[1].toLowerCase());
+  const re = /\/(?:insights|cooking|travel)\/([a-z0-9-]+)\.html/gi;
+  for (const m of xml.matchAll(re)) found.add(m[1].toLowerCase());
   return found;
 }
 
 const rssItem = (a, origin) => {
-  const url = `${origin}/insights/${a.slug}.html`;
+  const url = urlOf(a, origin);
   return `
     <item>
       <title>${esc(a.title)}</title>
@@ -47,7 +58,7 @@ const rssItem = (a, origin) => {
 
 const sitemapEntry = (a, origin) => `
   <url>
-    <loc>${origin}/insights/${a.slug}.html</loc>
+    <loc>${urlOf(a, origin)}</loc>
     <lastmod>${String(a.updated_at ?? a.published_at ?? "").slice(0, 10)}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

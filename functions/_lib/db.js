@@ -64,6 +64,7 @@ const MIGRATIONS = [
    every request after the first. */
 const ADDITIONS = [
   `ALTER TABLE articles ADD COLUMN cover TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE articles ADD COLUMN section TEXT NOT NULL DEFAULT 'insights'`,
   `ALTER TABLE articles ADD COLUMN notion_page_id TEXT`,
   `ALTER TABLE articles ADD COLUMN notion_synced_at TEXT`,
 ];

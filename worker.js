@@ -70,9 +70,11 @@ const API_ROUTES = [
     every article that has a picture in it. */
 const MEDIA = /^\/media\/(.+)$/;
 
-/** Published articles live in D1; the files in aab/insights/ are the
-    ones written before the Studio existed. Both answer here. */
-const ARTICLE = /^\/insights\/([a-z0-9-]+)(?:\.html)?$/i;
+/** Published articles live in D1; the files in aab/insights/,
+    aab/cooking/ and aab/travel/ are the ones written by hand. Both
+    answer here, and the section decides which mount a database piece
+    is served at: the handler falls through when they disagree. */
+const ARTICLE = /^\/(insights|cooking|travel)\/([a-z0-9-]+)(?:\.html)?$/i;
 
 export default {
   async fetch(request, env, ctx) {
@@ -109,7 +111,12 @@ export default {
       }
 
       const article = path.match(ARTICLE);
-      if (article) return await insight(context({ slug: article[1] }));
+      if (article) {
+        return await insight(context({
+          section: article[1].toLowerCase(),
+          slug: article[2],
+        }));
+      }
 
       return await env.ASSETS.fetch(request);
     } catch (err) {

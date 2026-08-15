@@ -96,13 +96,19 @@
 
       <!-- ============ LIBRARY BAR ============
            What you're working on, and how to get at everything else.
+           It follows the page down: on a long article the way back to
+           Open, New and the desk should not be a scroll away.
            The Notion button stays hidden until the server says the
            integration is actually configured. -->
       <div class="studio-bar">
-        <button class="btn btn-ghost" id="btn-new">＋ New</button>
-        <button class="btn btn-ghost" id="btn-open">Open…</button>
-        <button class="btn btn-ghost" id="btn-notion" hidden>Import from Notion</button>
-        <button class="btn btn-ghost" id="btn-resync" hidden>Re-sync from Notion</button>
+        <span class="bar-group">
+          <button class="btn btn-ghost" id="btn-new">＋ New</button>
+          <button class="btn btn-ghost" id="btn-open">Open…</button>
+        </span>
+        <span class="bar-group" id="notion-group">
+          <button class="btn btn-ghost" id="btn-notion" hidden>Import from Notion</button>
+          <button class="btn btn-ghost" id="btn-resync" hidden>Re-sync from Notion</button>
+        </span>
         <!-- Everything the site collected now has its own room. The
              count is here so you don't have to go and look. -->
         <a class="btn btn-ghost" id="btn-desk" href="/desk.html" hidden>The desk →</a>
@@ -119,14 +125,30 @@
           </div>
 
           <div class="studio-fields">
+            <!-- Where it goes, first, because it changes the shape of
+                 everything under it: the URL, the note at the foot of
+                 the page, and the list the index entry is pasted into.
+                 Built from SECTIONS by studio.js, so a fourth section
+                 appears here without this file being touched. -->
+            <fieldset class="seg-field" id="section-field">
+              <legend>Where it goes</legend>
+              <div class="seg" id="f-section-seg" role="radiogroup" aria-label="Where it goes"></div>
+              <!-- The real field. The segmented control writes to it,
+                   so drafts, meta() and the page builder all carry on
+                   reading one ordinary <select>. -->
+              <select id="f-section" hidden></select>
+              <span class="field-hint" id="section-hint"></span>
+            </fieldset>
+
             <label>Headline
               <input type="text" id="f-title" placeholder="How the Dhaka Stock Exchange actually works">
             </label>
             <label>Standfirst: one or two sentences under the headline
               <textarea id="f-dek" rows="2" placeholder="What the DSEX index measures, how a BO account works, and the questions to ask first."></textarea>
             </label>
+
             <div class="field-row">
-              <label>Label
+              <label>Label: the small line above the headline
                 <input type="text" id="f-tag" placeholder="Explainer · Equities">
               </label>
               <label>Date
@@ -139,22 +161,52 @@
                 </select>
               </label>
             </div>
+
+            <!-- Topics, plural and on purpose. A piece about visa
+                 paperwork is about travel AND about money, and one
+                 label cannot say that. Enter or a comma keeps one;
+                 Backspace on an empty box takes the last one back. -->
+            <div class="topic-block">
+              <label for="f-topics">Topics: as many as it is really about, up to six</label>
+              <div class="topic-field" id="topic-field" data-count="0">
+                <span class="topic-chips" id="topic-chips"></span>
+                <input type="text" id="f-topics" list="topic-options" spellcheck="false"
+                       placeholder="Add a topic, then Enter" aria-describedby="topic-hint">
+              </div>
+              <datalist id="topic-options"></datalist>
+              <span class="field-hint" id="topic-hint">Enter or a comma keeps one. Backspace takes the last one back.</span>
+            </div>
+
             <label>File name: leave blank and I'll make one from the headline
               <input type="text" id="f-slug" placeholder="dse-basics" spellcheck="false">
             </label>
           </div>
 
-          <div class="pane-bar">
-            <button class="chip" data-cmd="formatBlock" data-value="p" title="Paragraph">¶</button>
-            <button class="chip" data-cmd="formatBlock" data-value="h2" title="Heading">H2</button>
-            <button class="chip" data-cmd="formatBlock" data-value="h3" title="Sub-heading">H3</button>
-            <button class="chip" data-cmd="bold" title="Bold"><b>B</b></button>
-            <button class="chip" data-cmd="italic" title="Italic"><i>I</i></button>
-            <button class="chip" data-cmd="insertUnorderedList" title="Bullet list">• List</button>
-            <button class="chip" data-cmd="insertOrderedList" title="Numbered list">1. List</button>
-            <button class="chip" data-cmd="formatBlock" data-value="blockquote" title="Quote">" Quote</button>
-            <button class="chip" data-cmd="link" title="Add a link">Link</button>
-            <button class="chip" id="add-photo" title="Add a photo">＋ Photo</button>
+          <!-- The writing tools. `studio-tools` makes this stick to
+               the top of the window while the article scrolls under
+               it: on a two-thousand-word piece the formatting buttons
+               used to be a long scroll back up, which is how people
+               end up not using them. -->
+          <div class="pane-bar studio-tools" id="tool-bar">
+            <span class="tool-group" role="group" aria-label="Text style">
+              <button class="chip" data-cmd="formatBlock" data-value="p" title="Paragraph">¶</button>
+              <button class="chip" data-cmd="formatBlock" data-value="h2" title="Heading">H2</button>
+              <button class="chip" data-cmd="formatBlock" data-value="h3" title="Sub-heading">H3</button>
+            </span>
+            <span class="tool-group" role="group" aria-label="Emphasis">
+              <button class="chip" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+              <button class="chip" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+            </span>
+            <span class="tool-group" role="group" aria-label="Lists and quotes">
+              <button class="chip" data-cmd="insertUnorderedList" title="Bullet list">• List</button>
+              <button class="chip" data-cmd="insertOrderedList" title="Numbered list">1. List</button>
+              <button class="chip" data-cmd="formatBlock" data-value="blockquote" title="Quote">" Quote</button>
+            </span>
+            <span class="tool-group" role="group" aria-label="Insert">
+              <button class="chip" data-cmd="link" title="Add a link (Ctrl+K)">Link</button>
+              <button class="chip" id="add-photo" title="Add a photo">＋ Photo</button>
+            </span>
+            <span class="tool-hint mono">Type <kbd>/</kbd> for everything else</span>
             <input type="file" id="photo-input" accept="image/*" multiple hidden>
           </div>
 
@@ -169,6 +221,9 @@ Photos: paste a screenshot, drag an image file in, or use ＋ Photo above.
 Click a photo to set its alt text or make it wide.
 
 Ctrl+K links · Ctrl+S saves the draft · Ctrl+Enter publishes.
+
+Where it goes is at the top: Insights, the kitchen or travel. Change it any
+time, the preview and the finished page follow.
 
 Headings, bold, links and lists survive the paste, fonts, colours and
 everything else Word smuggles in gets thrown away."></div>
@@ -187,12 +242,12 @@ everything else Word smuggles in gets thrown away."></div>
                that has to earn the click on the Insights page, and the
                thing that appears when someone pastes the link. -->
           <div class="pane-bar preview-controls">
-            <div class="chip-row" role="group" aria-label="What to preview">
+            <div class="chip-row seg" role="group" aria-label="What to preview">
               <button class="chip" data-view="article" aria-pressed="true">Article</button>
               <button class="chip" data-view="card" aria-pressed="false">Card</button>
               <button class="chip" data-view="share" aria-pressed="false">Share</button>
             </div>
-            <div class="chip-row" role="group" aria-label="Preview width">
+            <div class="chip-row seg" role="group" aria-label="Preview width">
               <button class="chip" data-width="phone" aria-pressed="false">Phone</button>
               <button class="chip" data-width="tablet" aria-pressed="false">Tablet</button>
               <button class="chip" data-width="full" aria-pressed="true">Full</button>
@@ -223,7 +278,7 @@ everything else Word smuggles in gets thrown away."></div>
           <ul id="preflight-list"></ul>
         </div>
 
-        <div class="row-flex">
+        <div class="row-flex publish-row">
           <button class="btn btn-solid" id="btn-publish" hidden>Publish to the site</button>
           <button class="btn btn-ghost" id="btn-save-draft" hidden>Save draft to the site</button>
           <button class="btn btn-ghost" id="btn-view" hidden>View it</button>

@@ -31,6 +31,16 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v49: the travel desk landed at /travel/, the kitchen and it now
+        share one module and one cascade layer, and the Studio
+        learned where things go. content.js grew SECTIONS, which
+        content.js, crumbs.js, reads.js, studio.js and desk.js all
+        read, so a returning visitor on the v48 shell would be
+        served a cached content.js with no SECTIONS in it and lose
+        the menu, the palette and both index pages at once.
+        /cooking/cooking.js is gone, replaced by /reads.js, which
+        is precached in its place along with both travel pages.
+
    v48: the kitchen landed at /cooking/, with its first piece.
         Smaller than a school and still not optional: content.js
         grew a COOKING array that the hub, the palette and the
@@ -306,7 +316,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v48";
+const VERSION = "v49";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -403,8 +413,10 @@ const PRECACHE = [
      precached: this is the part of the site most likely to be
      opened in a kitchen with one bar of signal. */
   "/cooking/index.html",
-  "/cooking/cooking.js",
   "/cooking/onions.html",
+  "/travel/index.html",
+  "/travel/uk-visit-visa.html",
+  "/reads.js",
   "/tools/index.html",
   "/tools/stock.html",
   "/tools/stock.js",
