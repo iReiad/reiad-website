@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v55: the menu's close button is placed on top of the Menu button
+        that opened it, measured rather than imitated. The old bar
+        lined up by holding the same three buttons in the same
+        order, which stopped being true the moment the header grew
+        a fourth for accounts. app.js and styles.css both changed.
+
    v54: signing in stopped making people wait for it. The header
         now reads the name out of the access token instead of
         asking Supabase who you are, and the import that starts all
@@ -360,7 +366,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v54";
+const VERSION = "v55";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
