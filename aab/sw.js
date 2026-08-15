@@ -31,6 +31,18 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v64: the money ladder could not be reset, and now can. app.js
+        runs recordVisit() from /learn/progress.js on every page of
+        the site, and its selector claimed any article carrying a
+        data-lesson-id. The Qur'an school's lessons and the English
+        school's parts carry one too, so ninety pages of other
+        schools marked themselves as money ladder lessons: the
+        ladder's percentages counted them, and clearing it on the
+        hub was undone by opening any Arabic or English lesson.
+        readSet() also drops foreign ids it already holds, so a
+        polluted device heals itself, which is a change to a
+        precached module every reader has.
+
    v63: Stage 4. The Studio no longer offers to publish as files:
         "Download the page", the .zip export and "Get the index
         entry" described a workflow that ended when the last piece
@@ -442,7 +454,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v63";
+const VERSION = "v64";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

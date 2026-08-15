@@ -33,10 +33,39 @@ const LAST_KEY = "learn-last";
    read / write
    ------------------------------------------------------------ */
 
+/* Every id this school could legitimately hold. The eighteen
+   glossary terms are already in here: stage basics-1 gives them
+   bare slugs as ids, which is the same decision recorded at the top
+   of this file. Built once. */
+let ownIds = null;
+const knownIds = () => (ownIds ??= new Set(allLessons().map((l) => l.id)));
+
 export function readSet() {
   try {
     const raw = JSON.parse(localStorage.getItem(READ_KEY) || "[]");
-    return new Set(Array.isArray(raw) ? raw : []);
+    if (!Array.isArray(raw)) return new Set();
+
+    /* Anything that is not this school's is dropped on the way out.
+
+       For a while `recordVisit` claimed every page carrying a
+       `data-lesson-id`, which is 90 pages of Qur'anic Arabic and
+       English as well as this school's own. Those ids are in real
+       readers' storage and in their accounts now, inflating this
+       ladder's percentages and making it impossible to reset.
+
+       Filtering on read rather than migrating on write is
+       deliberate: it needs no version flag, it cannot half-run, and
+       it fixes a device that has not been opened for a month the
+       first time it is. The set is only rewritten when something
+       was actually dropped, so it costs one comparison otherwise. */
+    const known = knownIds();
+    const mine = raw.filter((id) => known.has(id));
+    if (mine.length !== raw.length) {
+      try {
+        localStorage.setItem(READ_KEY, JSON.stringify(mine));
+      } catch { /* private mode: the filter still applies in memory */ }
+    }
+    return new Set(mine);
   } catch {
     return new Set();
   }
@@ -86,7 +115,17 @@ export function setLast(entry) {
 export function getLast() {
   try {
     const v = JSON.parse(localStorage.getItem(LAST_KEY) || "null");
-    return v && v.id ? v : null;
+    if (!v?.id) return null;
+
+    /* And the bookmark gets the same treatment as the set, for the
+       same reason: while recordVisit was claiming other schools'
+       pages, this could be pointing at an Arabic lesson, which the
+       home page would then offer under "the money ladder". */
+    if (!knownIds().has(v.id)) {
+      try { localStorage.removeItem(LAST_KEY); } catch { /* ignore */ }
+      return null;
+    }
+    return v;
   } catch {
     return null;
   }
@@ -231,8 +270,28 @@ export function onProgress(fn) {
    see /activation.js for the full story.
    ------------------------------------------------------------ */
 export function recordVisit(root = document) {
+  /* `[data-stage]` IS THE POINT, and leaving it out was a real bug.
+
+     app.js calls this on every page of the site, so the selector is
+     the only thing deciding which pages belong to this school. It
+     used to be `article[data-lesson-id]`, and the Qur'an school's
+     lessons (59 pages) and the English school's parts (31) carry
+     `data-lesson-id` too, with `data-dhap` and `data-term` beside
+     it. So every one of them marked itself as a money-ladder
+     lesson: `dhap-1/tin-prokar` sat in `learn-read`, the ladder's
+     percentages counted pages from other schools, and the bookmark
+     could point the home page's "money ladder" card at an Arabic
+     lesson.
+
+     Worst of all, it made this school impossible to reset. Clear it
+     on the hub, open any Qur'an or English lesson, and one was back
+     in the set. No number of presses could win, because the reset
+     and the thing undoing it were on different pages.
+
+     Only /learn/ writes `data-stage`, and only /learn/terms/ writes
+     `data-slug`; German uses `data-teil-id` and never matched. */
   const article = root.querySelector(
-    "article[data-lesson-id], article.term-article[data-slug]"
+    "article[data-lesson-id][data-stage], article.term-article[data-slug]"
   );
   if (!article) return null;
 
@@ -244,6 +303,11 @@ export function recordVisit(root = document) {
     markRead(id);
     setLast({
       id,
+      /* A term page has no stage, and the ladder's own starter
+         stage is the honest home for it. This default used to
+         cover for the selector above letting other schools in,
+         which is how a Qur'an lesson ended up bookmarked as
+         "basics-1". */
       stage: stage || "basics-1",
       url: location.pathname,
       bn: lessonTitle || document.title.split("–")[0].trim(),
