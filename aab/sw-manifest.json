@@ -1,5 +1,5 @@
 {
-  "version": "v60",
+  "version": "v61",
   "hashes": {
     "/": "0210b228b586a0d1",
     "/index.html": "0210b228b586a0d1",
@@ -15,6 +15,7 @@
     "/account.html": "3f4e94a1631655c0",
     "/account-page.js": "d93ced3fc795d8da",
     "/streak.js": "c18e99eaadb86471",
+    "/photo.js": "f928f2b85c71bc82",
     "/crumbs.js": "5e62bddaa131b3c7",
     "/audience.js": "7a94e8c19c91da1e",
     "/activation.js": "03c4658affe16472",

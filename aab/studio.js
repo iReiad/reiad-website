@@ -24,6 +24,11 @@ import {
 import {
   SHARE_W, SHARE_H, shareCardBlob, coverFromDocument, cardSlug, cardShape,
 } from "/share-card.js";
+/* Photo handling is shared with the desk, which repairs pieces
+   published while the data: URL read-back was blocked. The long
+   note at the top of photo.js is worth reading before touching
+   any of it. */
+import { encodeImage, hostPhotosIn, isHosted, isOffSite } from "/photo.js";
 
 /* ============================================================
    Elements
@@ -481,31 +486,10 @@ function escapeHtml(s) {
    2. PHOTOS (resize, re-encode, embed
    ============================================================ */
 
-const MAX_EDGE = 1600;      // px on the long side) plenty for a blog
-const QUALITY = 0.82;
 
 /** File/Blob → a downscaled WebP blob, stripped of EXIF.
     The single place that decides what a photo on this site weighs:
     both the editor and the /media uploader come through here. */
-async function encodeImage(source) {
-  const bitmap = await createImageBitmap(source);
-  const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
-  const w = Math.round(bitmap.width * scale);
-  const h = Math.round(bitmap.height * scale);
-
-  const canvas = new OffscreenCanvas(w, h);
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(bitmap, 0, 0, w, h);
-  bitmap.close();
-
-  let blob = await canvas.convertToBlob({ type: "image/webp", quality: QUALITY });
-  // Safari used to hand back a PNG here; JPEG is the safer second choice.
-  if (blob.type !== "image/webp") {
-    blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.85 });
-  }
-  return { blob, width: w, height: h };
-}
-
 /** The same thing as a data URL, for the editor's own preview. */
 async function processImage(file) {
   const { blob, width, height } = await encodeImage(file);
@@ -552,63 +536,6 @@ async function insertImages(files) {
    the editor: leaving the data URLs in place would mean re-uploading
    the same photos on the next save, and would keep the draft in
    IndexedDB megabytes larger than it needs to be. */
-
-const ALREADY_HOSTED = /^\/media\//;
-
-/** Is this photo on somebody else's server? */
-const isOffSite = (src) => /^https?:\/\//i.test(src ?? "");
-
-/**
- * A URL the browser is actually allowed to read the bytes of.
- *
- * A data: URL and our own Notion proxy are same-origin and fine. A
- * cross-origin one is not: fetching it to resize is blocked by CORS,
- * which used to mean the upload failed and the article silently kept
- * an image hotlinked to a server we don't control. Those go through
- * /api/media/fetch, which hands the bytes back same-origin.
- */
-const fetchableSrc = (src) =>
-  isOffSite(src) ? `/api/media/fetch?u=${encodeURIComponent(src)}` : src;
-
-async function hostPhotos(html, slug, onProgress) {
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const pending = [...doc.querySelectorAll("img")].filter((img) => {
-    const src = img.getAttribute("src") ?? "";
-    return src && !ALREADY_HOSTED.test(src);
-  });
-
-  if (!pending.length) return { html, uploaded: 0, failed: 0 };
-
-  let uploaded = 0;
-  let failed = 0;
-
-  for (const [i, img] of pending.entries()) {
-    onProgress?.(i + 1, pending.length);
-    try {
-      const res = await fetch(fetchableSrc(img.getAttribute("src")),
-        { credentials: "same-origin" });
-      if (!res.ok) throw new Error(String(res.status));
-
-      const { blob, width, height } = await encodeImage(await res.blob());
-      const stored = await uploadMedia(blob, slug);
-      if (!stored?.url) throw new Error(stored?.reason ?? "upload-failed");
-
-      img.setAttribute("src", stored.url);
-      img.setAttribute("width", String(width));
-      img.setAttribute("height", String(height));
-      img.setAttribute("loading", "lazy");
-      img.setAttribute("decoding", "async");
-      uploaded++;
-    } catch (err) {
-      // Leave the photo where it is and report it. A failed upload
-      // must not quietly drop a picture out of the article.
-      console.warn("photo upload failed", err);
-      failed++;
-    }
-  }
-
-  return { html: doc.body.innerHTML, uploaded, failed };
-}
 
 /* ============================================================
    3. EDITOR
@@ -1926,7 +1853,7 @@ function preflight(m) {
   }
 
   const unhosted = [...doc.querySelectorAll("img")]
-    .filter((i) => !ALREADY_HOSTED.test(i.getAttribute("src") ?? ""));
+    .filter((i) => !isHosted(i.getAttribute("src") ?? ""));
   const offSite = unhosted.filter((i) => isOffSite(i.getAttribute("src")));
 
   if (unhosted.length && dynamic) {
@@ -2753,7 +2680,7 @@ async function send(status, button, label) {
   try {
     /* ---- photos first ---- */
     button.textContent = "Uploading photos…";
-    const hosted = await hostPhotos(first.body, slug, (done, total) => {
+    const hosted = await hostPhotosIn(first.body, slug, uploadMedia, (done, total) => {
       button.textContent = `Uploading photo ${done} of ${total}…`;
     });
 

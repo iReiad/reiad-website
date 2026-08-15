@@ -21,9 +21,19 @@ import {
 import { requireAdmin, readSession } from "../../_lib/auth.js";
 import { sanitiseHTML, readingMinutes } from "../../_lib/sanitise.js";
 
+/* `embedded` is computed rather than stored: it says whether the
+   body still carries a photo as a data: URL instead of a /media
+   path. The desk needs it to offer the repair, and it must not be
+   a column, because the answer changes every time the body does.
+
+   It exists at all because for a while no photo could reach R2:
+   reading a data: URL back is governed by connect-src, and the
+   policy allowed data: under img-src only, so every upload was
+   blocked before it left the browser. See aab/photo.js. */
 const PUBLIC_COLUMNS =
   `slug, title, dek, tag, topics, lang, minutes, status, section, cover,
-   published_at, updated_at, notion_page_id, notion_synced_at`;
+   published_at, updated_at, notion_page_id, notion_synced_at,
+   (instr(body, 'data:image') > 0) AS embedded`;
 
 /* Where a piece lives. The Studio offers these three and the desk
    moves pieces between them; anything else is a typo or an older

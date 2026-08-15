@@ -120,6 +120,16 @@ photo itself is how a piece with a picture ends up sharing as the default
 card. The desk flags any piece whose cover is still a raw photo and can
 draw the missing card in place.
 
+**A photo is read out of the editor by decoding, never by fetching.**
+`fetch()` on a `data:` URL is governed by `connect-src`, not `img-src`,
+and this site's policy allows `data:` under `img-src` only. So a pasted
+photo displays perfectly and every attempt to upload one was blocked
+before it left the browser, silently, for weeks: R2 stayed empty, every
+`cover` stayed empty, and every shared link showed the default card.
+`aab/photo.js` decodes instead, and `aab/studio-publish.test.mjs` drives
+a real publish under the policy read out of `_headers` and fails if that
+regresses. Do not "simplify" it back to a fetch.
+
 ## Before deploying
 
 Run the checks. They are fast and each one exists because something
@@ -146,6 +156,8 @@ And when anything under `functions/` or `scripts/` changed:
 node scripts/restore.test.mjs      # a backup that would not restore
 node scripts/snapshot.test.mjs     # a nightly snapshot that leaks, or that throws
                                    # at 03:17 where nobody is watching
+node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the
+                                   # real CSP (needs Playwright, skips without)
 node functions/_lib/notion.test.mjs
 ```
 
