@@ -462,7 +462,7 @@ deploy.
 ---
 
 ### Stage 4 · The Studio stops offering to write files
-**Status: not started.** Size: one sitting.
+**Status: done, 15 August 2026.** Size: one sitting.
 
 Once Stage 3 is done, "Download the page", "Download .zip" and "Get
 the index entry" describe a workflow that no longer exists. They
@@ -470,16 +470,45 @@ are also the last thing keeping the page builder in `studio.js`,
 which is a second renderer for articles and has drifted from the
 server's twice already.
 
-- Fold the file tools away behind a "there is no database" branch,
-  where they belong: the Studio should still work as an export tool
-  if D1 is ever unavailable.
-- Delete `buildPage()` from `studio.js` once nothing calls it, and
-  with it one of the two places that decide what an article page
-  looks like.
+The two bullets this stage was written with pulled against each
+other: keeping the export tools as a no-database fallback means
+keeping `buildPage()`, and keeping `buildPage()` means keeping the
+second renderer, which was the actual problem.
 
-**Done when:** publishing is the only path a signed-in writer sees,
-and the renderer in `functions/insights/[slug].js` is the only place
-that builds an article page.
+It resolves once you notice the fallback had already been built
+twice over, by other stages:
+
+- **Drafts are in IndexedDB.** Nothing a writer types is lost when
+  the database is unreachable, with or without a download button.
+- **Stage 2 is the portability story.** Every live article's body
+  is committed nightly to `content/articles.backup.json`, and
+  `scripts/restore.mjs` turns it back into SQL. That is a far
+  better answer to "get my writing out" than a button that
+  rebuilds one page.
+
+So the tools went, and `buildPage()`, `indexEntry()`, the ZIP
+writer and `externalisePhotos()` went with them: **309 lines of
+`studio.js`**, and the second renderer with it.
+
+What replaced them is one honest sentence. With no database the
+Studio says so, and says the draft is safe on this device, rather
+than showing an editor with no way out.
+
+Two things fixed on the way, both found by the deletions:
+
+- The **page-weight meter** measured a whole rendered page against
+  2 MB. What the server actually caps is the *body*, at 1 MB. It
+  was the wrong number against the wrong limit, and read
+  comfortably while the real cap was already in sight.
+- `socialCoverURL()` still accepted `/insights/photos/`, a path
+  only the ZIP export ever wrote and nothing has ever served. It
+  could only have produced an `og:image` pointing at a 404.
+
+**Done:** publishing is the only path a signed-in writer sees, and
+`functions/insights/[slug].js` is the only place that builds an
+article page. `aab/studio.test.mjs` asserts the absence of all five
+removed controls and of `buildPage` itself, so they cannot come
+back quietly.
 
 ---
 
@@ -715,7 +744,7 @@ should.
 | 1 | Every list reads the database | done, 15 Aug 2026 |
 | 2 | Backup out of the database | done, 15 Aug 2026 |
 | 3 | The file pieces move in | rows done 15 Aug 2026, files stay a fortnight |
-| 4 | The Studio stops writing files | not started |
+| 4 | The Studio stops writing files | done, 15 Aug 2026 |
 | 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
 | 6 | Progress follows the account | done, 15 Aug 2026 |
 | 7 | Comments, moderated, grown from Questions | not started |
@@ -942,6 +971,43 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-15 · Stage 4 done, and a test suite that had stopped testing
+The Studio no longer offers to publish as files. `buildPage()`, the
+ZIP writer, `indexEntry()` and `externalisePhotos()` are gone, and
+309 lines of `studio.js` with them. The second renderer for an
+article, which had drifted from the server's twice, no longer
+exists.
+
+The stage as written pulled against itself: keep the export tools
+as a no-database fallback and you keep `buildPage()`, which is the
+thing the stage exists to delete. It resolves once you notice the
+fallback was already built twice by other stages. Drafts live in
+IndexedDB, so nothing is lost when the database is unreachable, and
+Stage 2 commits every live body to git nightly with a tested
+restore path, which is a much better answer to "get my writing out"
+than a button that rebuilds one page. **Stage 2 is what made Stage
+4 safe.**
+
+**And the bigger find: `aab/studio.test.mjs` had been failing for
+weeks and nobody knew.** Sixty-seven checks that never ran to the
+end. Three separate stale selectors, each left behind by an earlier
+change: `#f-tag` became `#f-topics` when multi-tagging landed, the
+pre-flight warning stopped saying "label" at the same time, and the
+photo toolbar's chip was shortened from "Alt text" to "Alt" in the
+redesign. Every one of them a test asserting against a UI that had
+moved on.
+
+That is almost certainly part of why the photo bug survived: the
+suite that would have exercised a publish was dying two hundred
+lines earlier. It runs again, at 70 checks, and it now asserts the
+absence of everything Stage 4 removed.
+
+Worth keeping as a rule: a test suite nobody runs is not neutral,
+it is a false sense of cover. All three browser suites take
+`CHROMIUM_PATH` now, so they run anywhere.
+
+Next: Stage 7, comments.
 
 ### 2026-08-15 · Three reader-reported bugs, and what is NOT moving
 Three things were reported and none of them was found by reading

@@ -308,23 +308,19 @@ everything else Word smuggles in gets thrown away."></div>
              commit them. It is the whole story without a database,
              and a fallback with one, so it folds away rather than
              sitting next to the button you actually use. -->
-        <details class="file-tools" id="file-tools">
-          <summary>Publish as files instead</summary>
-          <p class="measure">
-            For when the database isn't there, or you want the piece in the
-            repository rather than in D1. The index entry is the part that
-            makes it appear on the Insights page, in Ctrl+K and in the feed,
-            publishing to the database does all of that on its own.
-          </p>
-          <div class="row-flex">
-            <button class="btn btn-solid" id="btn-html">Download the page</button>
-            <button class="btn btn-ghost" id="btn-zip">Download .zip (page + photo files)</button>
-            <button class="btn btn-ghost" id="btn-entry">Get the index entry</button>
-            <button class="btn btn-ghost" id="btn-copy-html">Copy the HTML</button>
-          </div>
-        </details>
 
-        <ol class="studio-steps measure" id="steps-dynamic" hidden>
+        <!-- Publishing to the database is the only route out of the
+             Studio now: the file tools it used to offer described a
+             workflow that no longer exists (TRANSITION.md, Stage 4).
+             So the one case worth saying out loud is the one where
+             that route is unavailable. -->
+        <p class="note measure" id="no-database" hidden>
+          <strong>No database.</strong> This editor cannot publish
+          without one. Anything you type is kept on this device and
+          will still be here when the connection is back.
+        </p>
+
+        <ol class="studio-steps measure" id="steps-dynamic">
           <li>Press <strong>Publish to the site</strong>. Photos are uploaded to
               <code>/media</code> first, so the article itself stays small and the
               same photo pasted twice is only stored once.</li>
@@ -335,15 +331,6 @@ everything else Word smuggles in gets thrown away."></div>
               <a href="/desk.html">the desk</a> unpublishes with one click.</li>
         </ol>
 
-        <ol class="studio-steps measure" id="steps-static">
-          <li>Download the page: you get <code>your-slug.html</code>.</li>
-          <li>Put that file in the <code>insights/</code> folder of the site.</li>
-          <li>Click <strong>Get the index entry</strong>, copy it, and paste it at
-              the top of the <code>ARTICLES</code> list in <code>content.js</code>.
-              That's what puts the card on the Insights page and the article in
-              Ctrl+K search.</li>
-          <li>Commit and push. That's the whole publish.</li>
-        </ol>
 
         <div class="note measure">
           <strong>Photos.</strong> Every one is resized to 1600px on its long
@@ -374,14 +361,6 @@ everything else Word smuggles in gets thrown away."></div>
     </div>
   </footer>
 
-  <dialog class="sheet" id="sheet" aria-labelledby="sheet-title">
-    <div class="pane-bar">
-      <span class="mono" id="sheet-title">Index entry</span>
-      <button class="icon-btn" id="sheet-copy">Copy</button>
-      <button class="icon-btn" id="sheet-close" aria-label="Close">✕</button>
-    </div>
-    <div class="sheet-body"><pre id="sheet-body"></pre></div>
-  </dialog>
 
   <!-- Everything you could be working on: drafts held on this device,
        and articles already in the database. -->
@@ -416,6 +395,7 @@ everything else Word smuggles in gets thrown away."></div>
     const studio = await import("/studio.js");
     // A server session unlocks one-click publishing and the desk.
     if (session?.server) studio.enableDynamic();
+    else document.getElementById("no-database").hidden = false;
   </script>
 </body>
 </html>

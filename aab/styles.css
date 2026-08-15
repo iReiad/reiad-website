@@ -3013,24 +3013,6 @@ it collapsed to the width of the word "Bangladesh". */
 
   /* The file-publishing route, folded away when the database makes
      it unnecessary. */
-  .file-tools {
-    margin-top: 18px;
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius);
-    padding: 12px 16px;
-    background: var(--paper-sunk);
-
-    & > summary {
-      cursor: pointer;
-      font-family: var(--font-mono); font-size: 0.7rem;
-      letter-spacing: 0.05em; text-transform: uppercase;
-      color: var(--ink-soft);
-    }
-    & > summary:hover { color: var(--green); }
-    & p {
-      margin-block: 12px; font-size: 0.9rem; color: var(--ink-soft);
-    }
-  }
 
   .studio-steps {
     counter-reset: step;

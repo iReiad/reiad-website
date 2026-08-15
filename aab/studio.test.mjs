@@ -91,7 +91,11 @@ const check = (name, condition, detail = "") => {
   failures.push(name + (detail ? `\n    ${detail}` : ""));
 };
 
-const browser = await chromium.launch();
+/* CHROMIUM_PATH lets this run against a browser Playwright did not
+   download itself, which is how it runs in CI and in a container. */
+const browser = await chromium.launch({
+  executablePath: process.env.CHROMIUM_PATH || undefined,
+});
 const page = await browser.newPage({ viewport: { width: 1400, height: 1000 } });
 
 const pageErrors = [];
@@ -133,7 +137,9 @@ check("pre-flight appears once writing starts", await page.locator("#preflight")
 {
   const issues = await page.locator("#preflight-list li").allTextContents();
   check("it wants a standfirst", issues.some((t) => /standfirst/i.test(t)));
-  check("it wants a label", issues.some((t) => /label/i.test(t)));
+  /* "label" was the old single-tag field. Pre-flight asks for topics
+     now, and has since multi-tagging landed. */
+  check("it wants topics", issues.some((t) => /topics/i.test(t)));
 }
 check("the preview renders the headline",
   (await page.locator("#preview h1").textContent()).includes("Dhaka Stock Exchange"));
@@ -241,8 +247,11 @@ await page.evaluate((src) => {
 await page.click("#editor img");
 await page.waitForTimeout(300);
 check("clicking a photo opens its toolbar", await page.locator(".fig-bar").isVisible());
+/* The chip is labelled "Alt", not "Alt text". It was shortened when
+   the photo toolbar was redrawn and this test was not updated, so it
+   had been failing on a selector rather than on the behaviour. */
 check("the toolbar offers alt text",
-  (await page.locator(".fig-bar .chip").allTextContents()).some((c) => c.startsWith("Alt text")));
+  (await page.locator(".fig-bar .chip").allTextContents()).some((c) => c.startsWith("Alt")));
 
 await page.locator('.fig-bar .chip:has-text("Wide")').click();
 await page.waitForTimeout(300);
@@ -250,7 +259,7 @@ check("Wide sets the class", /<figure class="wide">/.test(await html()), await h
 check("and it survives sanitize()", /<figure class="wide">/.test(await published()));
 
 page.once("dialog", (d) => d.accept("A chart of DSEX returns"));
-await page.locator('.fig-bar .chip:has-text("Alt text")').click();
+await page.locator('.fig-bar .chip:has-text("Alt")').click();
 await page.waitForTimeout(400);
 check("alt text reaches the image",
   (await html()).includes('alt="A chart of DSEX returns"'), await html());
@@ -288,7 +297,10 @@ await page.click("#open-close");
 await page.evaluate(() => { document.querySelector("#editor").innerHTML = "<p>Body text.</p>"; });
 await page.fill("#f-title", "How the Dhaka Stock Exchange actually works");
 await page.fill("#f-dek", "What the DSEX index measures, and the questions to ask first.");
-await page.fill("#f-tag", "Explainer · Equities");
+/* There is no single `tag` field any more: it became `topics` when
+   the Studio learned real multi-tagging, and this line had been
+   filling an element that does not exist. */
+await page.fill("#f-topics", "Equities");
 await page.waitForTimeout(600);
 
 check("the article view is the default",
@@ -397,21 +409,21 @@ check("a typed file name is tidied into a usable slug",
   (await page.inputValue("#f-slug")) === "german-alphabets",
   await page.inputValue("#f-slug"));
 
-// Without a database this is already open, so set it rather than
-// toggling, a click here would close it.
-check("the file-publishing tools are open without a database",
-  await page.evaluate(() => document.querySelector("#file-tools").open));
-await page.evaluate(() => { document.querySelector("#file-tools").open = true; });
-await page.waitForTimeout(200);
-await page.click("#btn-entry");
-await page.waitForTimeout(400);
-{
-  const entry = await page.locator("#sheet-body").textContent();
-  check("and the index entry quotes the tidied one",
-    entry.includes('"german-alphabets"'), entry.slice(0, 140));
-  check("never the raw text", !entry.includes("German Alphabets"));
+/* TRANSITION.md, Stage 4: publishing to the database is the only
+   route out of the Studio. The file tools that used to sit here
+   described a workflow that no longer exists, and they were the last
+   thing keeping a SECOND article renderer alive in studio.js, which
+   had drifted from the server's twice. Asserting their absence is
+   what stops them coming back. */
+for (const gone of ["#file-tools", "#btn-html", "#btn-zip", "#btn-entry", "#btn-copy-html"]) {
+  check(`the file-publishing route is gone: ${gone}`,
+    (await page.locator(gone).count()) === 0);
 }
-await page.click("#sheet-close");
+check("and so is the page builder behind it",
+  await page.evaluate(async () => {
+    const m = await import("/studio.js");
+    return m.buildPage === undefined;
+  }));
 
 /* ---------- 8. photos hosted somewhere else ----------
    A paste from Google Docs is cross-origin: the browser cannot fetch
