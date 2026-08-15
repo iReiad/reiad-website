@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v65: Stage 7, comments. Signed in to write, and nothing appears
+        until it is approved from the desk. comments.js is new and
+        the article renderer loads it lazily; styles.css and
+        desk.js both changed. The Worker verifies the reader's
+        Supabase token against the project's public keys before it
+        believes a single claim, because without that the author of
+        a comment is whatever the poster typed.
+
    v64: the money ladder could not be reset, and now can. app.js
         runs recordVisit() from /learn/progress.js on every page of
         the site, and its selector claimed any article carrying a
@@ -454,7 +462,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v64";
+const VERSION = "v65";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -499,6 +507,9 @@ const PRECACHE = [
      the first time a device meets an account that already has
      progress. Offline is exactly when that import must not 404. */
   "/first-sync.js",
+  /* Loaded lazily by an article page. Precached so a thread still
+     draws for somebody reading offline. */
+  "/comments.js",
   "/crumbs.js",
   "/audience.js",
   "/activation.js",

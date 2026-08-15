@@ -154,6 +154,8 @@ And when anything under `functions/` or `scripts/` changed:
 
 ```sh
 node scripts/restore.test.mjs      # a backup that would not restore
+node scripts/reader.test.mjs       # somebody posting as somebody else
+node scripts/comments.test.mjs     # a comment appearing without approval
 node scripts/snapshot.test.mjs     # a nightly snapshot that leaks, or that throws
                                    # at 03:17 where nobody is watching
 node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the

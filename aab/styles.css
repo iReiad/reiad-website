@@ -660,6 +660,69 @@
      underneath it. Fieldsets rather than divs because they are
      genuinely groups of controls, and a legend is the one label a
      screen reader reads before every box inside it. */
+  /* ---------- comments ----------
+     A thread under a piece. Every comment here has been read and
+     approved, which is why it can look calm: there is no voting,
+     no sorting, no "controversial", and nothing that rewards
+     posting more. See TRANSITION.md, Stage 7. */
+  .comments {
+    margin-block: 48px 0;
+    padding-top: 28px;
+    border-top: 1px solid var(--hairline);
+
+    &:empty { display: none; }
+  }
+  .comment-title { font-size: 1.3rem; margin: 0 0 18px; }
+
+  .comment-list { list-style: none; margin: 0 0 20px; padding: 0; display: grid; gap: 20px; }
+  .comment-empty { font-size: 0.92rem; }
+
+  .comment { display: grid; gap: 6px; }
+  .comment-who { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .comment-who strong { font-weight: 500; font-size: 0.95rem; }
+
+  /* The whole avatar. A letter in a circle needs no upload, no
+     third-party gravatar request and no moderation of its own. */
+  .comment-mark {
+    display: grid; place-items: center;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--green-soft); color: var(--green);
+    font-family: var(--font-mono); font-size: 0.72rem;
+  }
+  .comment-when { font-size: 0.72rem; color: var(--ink-soft); }
+
+  .comment-body {
+    margin: 0; max-width: var(--measure);
+    /* A comment is text and arrives as text, so newlines in it are
+       the only formatting there is, and they are worth keeping. */
+    white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  .comment-reply { font-size: 0.82rem; justify-self: start; }
+
+  .comment-replies {
+    list-style: none; margin: 10px 0 0; padding: 0 0 0 16px;
+    display: grid; gap: 16px;
+    border-inline-start: 2px solid var(--hairline);
+  }
+
+  .comment-invite { font-size: 0.92rem; color: var(--ink-soft); max-width: var(--measure); }
+
+  .comment-form { display: grid; gap: 10px; max-width: var(--measure); }
+  .comment-box {
+    width: 100%; padding: 12px; font: inherit; font-size: 0.95rem;
+    color: var(--ink); background: var(--paper); resize: vertical;
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+
+    &:focus {
+      outline: 0; border-color: var(--green);
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+    }
+  }
+  .comment-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .comment-rule { font-size: 0.72rem; color: var(--ink-soft); }
+  .comment-replying { margin: 0; font-size: 0.85rem; color: var(--ink-soft); }
+  .comment-note { max-width: var(--measure); }
+
   /* The one question signing in is allowed to ask. See first-sync.js:
      it appears only when this browser and the account both hold
      progress, which is the only case where merging silently could

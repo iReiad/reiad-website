@@ -606,7 +606,32 @@ actually keeps counted rather than described, and two ways out.
 ---
 
 ### Stage 7 · Comments, moderated, grown from Questions
-**Status: not started.** Size: three or four sittings.
+**Status: done, 15 August 2026.** Size: three or four sittings.
+
+The piece that was not in the plan and turned out to be the
+foundation: **`functions/_lib/reader.js`, which verifies the
+reader's Supabase token on the server.** `aab/account.js` reads a
+token to put a name in a header and says in capitals that this is
+not verification. This is the other half. Without it `author_id`
+is whatever the poster typed, and a comment system where anyone
+can post as anyone is worse than no comment system.
+
+It checks the signature against the project's published keys
+(ES256, which is what this project signs with), refuses `alg:
+none`, refuses a token from another issuer, refuses an unknown
+key id rather than trying every key, and takes the algorithm from
+the key rather than from the token's own header. Twenty-one
+checks in `scripts/reader.test.mjs`, most of them attacks, all
+against real WebCrypto with real signatures.
+
+The comment itself lives in **D1, not Supabase**, which is the
+seam in section 1 doing its job: a thread has to render for a
+signed-out stranger with Supabase unreachable. `author_name` is
+copied into the row at the time of writing so that it can.
+
+A comment is text, never HTML: stored as text, returned as text,
+written with `textContent`. There is no sanitiser in the path to
+get wrong.
 
 The Questions system is already a moderated queue with a desk panel
 and per-article threads. Comments are the same shape with an author
@@ -624,10 +649,16 @@ system beside it.
 - Everything already asked and answered keeps working and keeps its
   place under its article.
 
-**Done when:** a signed-in reader can comment, it appears for
-nobody until approved from the desk, and the existing questions are
-still there. **Rollback:** stop accepting new comments; the old
-queue is untouched.
+**Done:** a signed-in reader can comment; it appears for nobody
+until approved from the desk's new Comments panel; the questions
+queue beside it is untouched. `scripts/comments.test.mjs` proves
+the two rules that matter against real SQLite and real signatures:
+naming somebody else in the request body does not change who the
+author is, and `status: "live"` in the body does not publish
+anything.
+
+**Rollback:** stop accepting new comments; the old queue is
+untouched.
 
 ---
 
@@ -747,7 +778,7 @@ should.
 | 4 | The Studio stops writing files | done, 15 Aug 2026 |
 | 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
 | 6 | Progress follows the account | done, 15 Aug 2026 |
-| 7 | Comments, moderated, grown from Questions | not started |
+| 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
 | 8 | The schools' content into the database | not started |
 | 9 | React in the Studio and the desk | not started |
 | 10 | Next.js takes the article route | not started |
@@ -971,6 +1002,48 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-15 · Stage 7 done, and the piece that was not in the plan
+Comments. Signed in to write, nothing visible until approved,
+one level of replies, moderated from the desk beside the questions
+queue it grew from.
+
+The plan described the queue and the UI and said nothing about the
+part that turned out to be the foundation: **the server has to
+prove who the reader is.** The browser sends a Supabase access
+token, and a JWT's payload is readable by anyone who can read a
+URL, so an endpoint that trusts `sub` without checking the
+signature is an endpoint where anybody posts as anybody by typing
+a different id into a string. There is no partial version of that.
+
+`functions/_lib/reader.js` verifies against the project's
+published keys. The interesting part is what it refuses: `alg:
+none`, a signature from the wrong key, a payload swapped under a
+good signature, an expired token, one from another issuer, an
+unknown key id (refused rather than tried against every key), and
+an HS256 token when no secret is configured. The algorithm comes
+from the KEY, never from the token's own header, which is the
+other half of that family of attacks. Twenty-one checks, real
+WebCrypto throughout, because a stubbed signature check tests
+nothing.
+
+Two design notes worth keeping:
+
+**The comment lives in D1, not Supabase**, even though it belongs
+to a person, because a signed-out stranger has to be able to read
+the thread with Supabase unreachable. `author_name` is copied into
+the row at the time of writing so the page never needs to join
+across the seam. That is section 1's rule working exactly as
+written.
+
+**A comment is text and never HTML.** Stored as text, returned as
+text, drawn with `textContent` on both the article page and the
+desk. Every injection bug this site has had came from parsing
+something, and this parses nothing, so there is no sanitiser here
+to get wrong later.
+
+Next: Stage 8, the schools' content into the database, which
+section 2b argues is real but low-priority.
 
 ### 2026-08-15 · Stage 4 done, and a test suite that had stopped testing
 The Studio no longer offers to publish as files. `buildPage()`, the
