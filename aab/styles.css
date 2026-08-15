@@ -194,6 +194,16 @@
     scroll-padding-top: calc(var(--header-h, 5rem) + 0.9rem);
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+
+    /* Here as well as on body, because this is the element the
+       viewport scrollbar actually belongs to: body's overflow
+       propagates up to it, so locking scrolling on body takes the
+       scrollbar off THIS box, and without a reserved gutter the
+       page gets 15px wider at that moment. The header's button
+       cluster is centred inside a 1080px wrap, so half of those
+       15px land on the Menu button: press it and it slides 8px
+       out from under the finger that pressed it. */
+    scrollbar-gutter: stable;
   }
 
   body {
@@ -210,8 +220,14 @@
     flex-direction: column;
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
-    /* Stop the sticky header jumping when a modal locks scrolling */
-    scrollbar-gutter: stable;
+    /* The gutter that stops the header jumping when something locks
+       scrolling is on <html>, not here. It was here, and here it is
+       worse than useless: body is not a scroll container while the
+       page scrolls normally, so the property does nothing, and the
+       moment scrolling is locked with overflow:hidden it becomes
+       one and starts reserving a SECOND gutter inside the one
+       <html> already reserved. The page narrows by 15px at exactly
+       the moment it was meant to stay still. */
   }
 
   h1, h2, h3 {
@@ -525,6 +541,15 @@
     .header-inner { gap: 8px; padding-block: 11px; }
     .site-name { font-size: 1.06rem; }
     #open-palette { padding-inline: 9px; }
+
+    /* Never let the account button wrap. It is the last thing in
+       the row, so the two lines it broke into took the row's
+       height with them and pushed the whole header taller.
+
+       The rest of what this row does on a narrow screen is in
+       @layer menu, because @layer components comes after this one
+       and would otherwise win. */
+    .account-btn { white-space: nowrap; }
   }
 }
 
@@ -1459,16 +1484,88 @@ it collapsed to the width of the word "Bangladesh". */
   body:has(dialog.menu[open]) .burger::before { transform: translateY(3.75px) rotate(45deg); box-shadow: none; }
   body:has(dialog.menu[open]) .burger::after { transform: translateY(-3.75px) rotate(-45deg); }
 
+  /* "Menu" and "Close" in the same grid cell, so the button is the
+     width of the longer of the two whichever one is showing. See
+     the note in app.js: a button that resizes when it is pressed
+     slides away from the finger that pressed it, and this cluster
+     sits at the right-hand end of the header, so all of that
+     15px lands on the button itself. */
+  .menu-word {
+    display: inline-grid; justify-items: center; align-items: center;
+
+    & > span {
+      grid-area: 1 / 1;
+      transition: opacity var(--fast) var(--ease);
+    }
+  }
+  .menu-word-open { opacity: 0; }
+  body[data-menu="open"] {
+    & .menu-word-shut { opacity: 0; }
+    & .menu-word-open { opacity: 1; }
+  }
+
+  /* ---------- the header's row, on a phone ----------
+
+     These belong to the menu rather than to the header's own
+     block because this layer comes after @layer components, and
+     a narrow-screen rule that loses to a full-width one is worse
+     than no rule: it looks written and does nothing. */
+  @media (width <= 620px) {
+    /* The word goes, the drawing stays. Five things share a 390px
+       row, name, menu, search, theme and the account, and the last
+       of them was being pushed off the right-hand edge: "Sign in"
+       broke onto two lines and the second was off the screen.
+       Three lines and a cross are understood without the caption,
+       and the button still says which it is to a screen reader
+       through its aria-label. */
+    .menu-word { display: none; }
+    #open-menu { padding-inline: 10px; }
+
+    /* A phone has no Ctrl key. The line offering two of them was
+       taking a row of the menu's foot to advertise something the
+       reader cannot do. */
+    .menu-hint { display: none; }
+  }
+
+  /* Under about 340px, which is the oldest phones still in use,
+     even that is not enough room. The mark keeps the identity and
+     keeps linking home; the name it sits next to is the one thing
+     in the row that nothing depends on. */
+  @media (width <= 340px) {
+    .site-name { font-size: 0; gap: 0; }
+    .site-mark { font-size: 1rem; }
+  }
+
   /* NOTE: `display` belongs on [open] ONLY. Setting it on the bare
      dialog overrides the UA stylesheet's display:none for the closed
      state, and a closed-but-laid-out 100dvh dialog drops a full screen
      of invisible dead space under the footer of every page. */
+
+  /* The menu is opened with show(), not showModal(), so that the
+     header stays on top of it and stays clickable. Three things
+     follow from that and all three are here rather than in the
+     script:
+
+       position   a non-modal dialog is position: absolute and would
+                  scroll away with the page. Fixed, so it does not.
+       top        it starts below the header instead of under it.
+                  --header-h is measured by app.js.
+       z-index    under the header's 50, over everything else.
+
+     There is no ::backdrop on a non-modal dialog. It does not need
+     one: it covers the whole page below the header already, and the
+     part it does not cover is the part that has to stay visible. */
   dialog.menu {
+    position: fixed;
+    inset: var(--header-h, 66px) 0 0 0;
     width: 100vw; max-width: 100vw;
-    height: 100dvh; max-height: 100dvh;
+    height: auto; max-height: none;
     margin: 0; padding: 0; border: 0;
+    z-index: 40;
     background: var(--paper); color: var(--ink);
-    overscroll-behavior: contain;
+    /* The grid inside scrolls, not this. Both scrolling gives the
+       footer nothing to sit against. */
+    overflow: hidden; overscroll-behavior: contain;
 
     opacity: 0; translate: 0 -12px;
     transition: opacity var(--slow) var(--ease),
@@ -1481,56 +1578,31 @@ it collapsed to the width of the word "Bangladesh". */
       opacity: 1; translate: 0 0;
     }
     @starting-style { &[open] { opacity: 0; translate: 0 -12px; } }
-
-    &::backdrop { background: oklch(18% 0.02 var(--h-green) / 0.6); }
   }
 
-  /* The menu's three bands share the page's own left and right
-     margins, published as --header-inset by app.js. The menu is a
+  /* showModal() used to stop the page behind from scrolling. It is
+     not modal any more, so the lock is set here off the attribute
+     app.js writes when it opens. */
+  body[data-menu="open"] { overflow: hidden; }
+
+  /* The menu's bands share the page's own left and right margins,
+     published as --header-inset by app.js. The menu is a
      full-width overlay sitting on top of a 1080px layout, and
      until they agreed on an edge, everything in it was a little
-     to the right of the thing it replaced. */
-  .menu-bar, .menu-foot {
+     to the right of the thing it replaced.
+
+     There used to be a second band above the grid holding a copy
+     of the header's buttons, because a modal menu covered the real
+     ones. The menu is no longer modal and the real header is no
+     longer covered, so the copy is gone, along with the two
+     alignment passes that kept it standing in the right place. */
+  .menu-foot {
     display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
     padding-block: 14px;
     padding-inline: var(--header-inset, clamp(20px, 4vw, 44px));
-    border-bottom: 1px solid var(--hairline);
     background: var(--paper);
   }
-  .menu-bar .mono { color: var(--ink-soft); }
-
-  /* The bar's right-hand cluster stands where the header's does.
-
-     The header ends with three buttons in a row, Menu, Search,
-     Theme, inside a .wrap whose padding matches this bar's. The
-     close button used to be pushed to the far right of the bar on
-     its own, which put it two button-widths to the RIGHT of the
-     Menu button that had just been clicked: press a button, and
-     the thing that undoes it appears somewhere else. Rebuilding
-     the same three-button cluster in the same order puts ✕ exactly
-     where Menu was, and gives the two buttons the modal had made
-     unreachable somewhere to live.
-
-     The gap is the header's, not this bar's, so the columns line
-     up rather than nearly lining up. */
-  .menu-bar-tools {
-    display: flex; align-items: center; gap: 18px;
-    margin-inline-start: auto;
-  }
-  /* Each one is placed over the header button it stands in for, by
-     alignTools() in app.js, so the cluster does not appear to move
-     when the menu opens. The z-index is above the menu's own
-     content; the dialog is modal, so nothing else can reach them. */
-  .menu-tool { z-index: 2; justify-content: center; }
-
-  @media (width <= 620px) {
-    .menu-bar-tools { gap: 8px; }
-    /* Same call the header makes at this width: the site is named,
-       what it is about can wait until there is room to say it. */
-    .menu-bar-tag { display: none; }
-    .menu-bar { flex-wrap: nowrap; }
-  }
-  .menu-foot { border-bottom: 0; border-top: 1px solid var(--hairline); margin-top: auto; }
+  .menu-foot { border-top: 1px solid var(--hairline); margin-top: auto; }
   .menu-hint { color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
   .menu-hint kbd, .shortcut-list kbd, .palette-foot kbd {
     font-family: var(--font-mono); font-size: 0.68rem;
@@ -1560,6 +1632,10 @@ it collapsed to the width of the word "Bangladesh". */
     padding-block: clamp(24px, 4vw, 48px);
     padding-inline: var(--header-inset, clamp(20px, 3vw, 40px));
     align-content: start;
+
+    /* It is only focusable so that opening the menu has somewhere
+       to land that is not a link. Nobody needs to see that. */
+    &:focus, &:focus-visible { outline: none; }
   }
 
   .menu-col-title-second { margin-top: 26px; display: block; }

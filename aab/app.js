@@ -292,10 +292,34 @@ function initPalette() {
 
 /* ============================================================
    2b. THE MENU
-   A full-screen <dialog> built at runtime, so every page gets
-   the same menu without carrying its markup, including the
-   pages nobody has touched in a year. showModal() handles the
-   focus trap, the backdrop and Escape for free.
+   A <dialog> built at runtime, so every page gets the same menu
+   without carrying its markup, including the pages nobody has
+   touched in a year.
+
+   IT IS NOT MODAL, AND THAT IS THE WHOLE DESIGN
+
+   It was modal, and a modal covers the header. So the menu grew
+   a bar along its top holding a copy of the header's buttons: a
+   ✕, a search button and a theme button, none of which did
+   anything the real ones did not already do. Keeping that copy
+   standing where the original stood took a measuring pass on
+   open and again on resize, and it went wrong twice anyway,
+   first when the header grew a fourth button and again after
+   that. The fix each time was a better way of imitating the
+   header.
+
+   The header does not need imitating. It needs to stay
+   clickable. So the menu opens under it and stops short of it:
+   the real search and theme buttons are exactly where they
+   were, still working, and the real Menu button turns into the
+   close button, because the burger already draws itself as a ✕
+   while the menu is open. One button, two states, nothing
+   measured and nothing to drift.
+
+   What showModal() was doing for free has to be done by hand,
+   and it is, below: Escape closes, the page behind is made
+   inert and stops scrolling, and focus moves in and comes back
+   out to the button that opened it.
    ============================================================ */
 
 const el = (tag, props = {}, ...kids) => {
@@ -399,52 +423,10 @@ function buildMenu() {
   dialog.setAttribute("aria-label", "Site menu");
 
   dialog.append(
-    /* The bar stands in for the header's right-hand cluster while
-       the menu is open, because the header is behind a modal and
-       cannot be clicked, and closing the menu to reach search is a
-       journey the header never asked of anyone.
-
-       It used to line up by imitation: the same buttons in the same
-       order with the same gap, and the ✕ would therefore land where
-       Menu had been. That held until the header grew a fourth
-       button for accounts, and then the whole cluster was one
-       button-width out. Twice now, alignment by imitation has
-       drifted the moment the thing being imitated changed.
-
-       So it is measured instead. alignTools() reads where each
-       header button actually is and puts its counterpart exactly
-       there, which means the ✕ is not near the Menu button, it is
-       on it: press Menu, and the same square becomes the way out. */
-    el("div", { className: "menu-bar" },
-      /* The tagline is a separate span so it can be dropped on a
-         narrow screen. Kept whole, the two lines of it pushed the
-         button cluster onto a second row on a phone, which put the
-         ✕ half a screen below the Menu button that opened it. */
-      el("span", { className: "mono" },
-        SITE.name,
-        el("span", { className: "menu-bar-tag", textContent: ` · ${SITE.tagline}` })
-      ),
-      el("div", { className: "menu-bar-tools" },
-        el("button", {
-          className: "icon-btn menu-tool", id: "menu-close", type: "button",
-          ariaLabel: "Close the menu", /* A plain burger: the `body:has(dialog.menu[open])` rule in
-             styles.css already crosses it, which is the same rule
-             that crosses the header's own, so the two agree without
-             a second definition. */
-          innerHTML: '<span class="burger" aria-hidden="true"></span>Close',
-        }),
-        el("button", {
-          className: "icon-btn menu-tool", id: "menu-search", type: "button",
-          ariaLabel: "Search the site (Ctrl+K)",
-          innerHTML: '⌕ <span class="kbd-hint">Ctrl K</span>',
-        }),
-        el("button", {
-          className: "icon-btn menu-tool", id: "menu-theme", type: "button",
-          ariaLabel: "Switch between light and dark mode", textContent: "◐",
-        })
-      )
-    ),
-    el("div", { className: "menu-grid" },
+    /* tabindex so open() has somewhere to put focus that is not a
+       link. A non-modal dialog focuses its first focusable child,
+       and the first child here is "Home". */
+    el("div", { className: "menu-grid", tabIndex: -1 },
       /* Pages, with the stock check standing out under them: it is
          a page rather than a calculator, and it was the one line
          worth keeping out of a column of six. */
@@ -555,51 +537,43 @@ function buildMenu() {
   return dialog;
 }
 
-/* Put each of the menu's tool buttons exactly where the header
-   button it stands in for is standing, so the cluster does not
-   move when the menu opens. Measured rather than imitated: the
-   header can grow a button without this drifting, which is the
-   failure it was written after. */
-function alignTools(dialog) {
-  const pairs = [
-    ["#menu-close", "#open-menu"],
-    ["#menu-search", "#open-palette"],
-    ["#menu-theme", "#theme-toggle"],
-  ];
-
-  for (const [inMenu, inHeader] of pairs) {
-    const tool = dialog.querySelector(inMenu);
-    const twin = document.querySelector(inHeader);
-    if (!tool) continue;
-
-    // A page without that header button gets no stand-in for it.
-    if (!twin) { tool.hidden = true; continue; }
-
-    const at = twin.getBoundingClientRect();
-    if (!at.width) { tool.hidden = true; continue; }
-
-    tool.hidden = false;
-    tool.style.position = "fixed";
-    tool.style.left = `${Math.round(at.left)}px`;
-    tool.style.top = `${Math.round(at.top)}px`;
-    tool.style.minWidth = `${Math.round(at.width)}px`;
-    tool.style.height = `${Math.round(at.height)}px`;
-  }
-}
+/* Everything on the page except the header, which is the part
+   that has to stay usable while the menu is over the rest of it. */
+const behindTheMenu = () =>
+  [...document.body.children].filter((node) =>
+    node.tagName !== "HEADER" && node.tagName !== "DIALOG"
+    && node.tagName !== "SCRIPT" && node.tagName !== "STYLE");
 
 function initMenu() {
   const dialog = buildMenu();
 
+  /* A non-modal dialog does not take the page out of the tab order
+     the way showModal() does, so it is done here. `inert` is one
+     attribute and it does the lot: not focusable, not clickable,
+     not read out. */
+  const setAside = (yes) =>
+    behindTheMenu().forEach((node) => { node.inert = yes; });
+
   const open = () => {
     if (dialog.open) return;
-    dialog.showModal();
-    /* After showModal, not before: a dialog that is not open has no
-       layout, and neither do the buttons inside it. */
-    alignTools(dialog);
+    dialog.show();
+    setAside(true);
+    document.body.dataset.menu = "open";
+    /* Into the menu, not onto its first link: landing on "Home"
+       reads as having pressed something. */
+    dialog.querySelector(".menu-grid")?.focus?.();
   };
 
-  // The header moves when the window does, so the stand-ins follow.
-  addEventListener("resize", () => { if (dialog.open) alignTools(dialog); });
+  const close = () => {
+    if (!dialog.open) return;
+    dialog.close();
+    setAside(false);
+    delete document.body.dataset.menu;
+    // Back to the button that opened it, which is now Menu again.
+    button.focus({ preventScroll: true });
+  };
+
+  const toggle = () => (dialog.open ? close() : open());
 
   // The button lives in the header of every page; if a page predates
   // it, put one next to the search button rather than losing the menu.
@@ -611,32 +585,62 @@ function initMenu() {
     });
     document.getElementById("open-palette")?.before(button);
   }
-  button.addEventListener("click", open);
-  dialog.querySelector("#menu-close").addEventListener("click", () => dialog.close());
-  dialog.addEventListener("click", (e) => { if (e.target === dialog) dialog.close(); });
 
-  /* The bar's other two buttons do what their twins in the header
-     do. Wired by position rather than by id, because the header
-     already owns those ids and two elements sharing one id is one
-     element as far as getElementById is concerned: the second
-     "Search the site" button on the 404 page was dead for exactly
-     that reason. */
-  const search = dialog.querySelector("#menu-search");
-  const theme = dialog.querySelector("#menu-theme");
-  search?.addEventListener("click", () => {
-    dialog.close();
-    document.getElementById("open-palette")?.click();
+  /* The one button, in its two states. The burger draws itself as
+     a ✕ from CSS; the word beside it has to change too, because a
+     cross that still says "Menu" is worse than either on its own.
+
+     Both words go in, stacked one on the other, and CSS shows one
+     at a time. Swapping the text of a single node instead makes
+     the button 15px narrower when it says Menu than when it says
+     Close, and since the cluster is pushed to the right-hand end
+     of the header, that 15px moves the button itself: press it,
+     and it slides out from under the finger that pressed it. A
+     grid with both words in one cell is as wide as the longer of
+     them, always, in any font, at any size. */
+  button.setAttribute("aria-expanded", "false");
+  button.setAttribute("aria-controls", "site-menu");
+  const word = [...button.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+  if (word) {
+    word.replaceWith(el("span", { className: "menu-word", ariaHidden: "true" },
+      el("span", { className: "menu-word-shut", textContent: "Menu" }),
+      el("span", { className: "menu-word-open", textContent: "Close" })
+    ));
+  }
+
+  const paintButton = () => {
+    const shown = dialog.open;
+    button.setAttribute("aria-expanded", String(shown));
+    button.setAttribute("aria-label", shown ? "Close the menu" : "Open the menu");
+  };
+  dialog.addEventListener("close", paintButton);
+  button.addEventListener("click", () => { toggle(); paintButton(); });
+
+  /* Escape came free with showModal() and does not with show().
+     Only when the menu is the frontmost thing: the palette is a
+     modal above it and closes itself. */
+  addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && dialog.open && !document.querySelector("dialog[open]:modal")) {
+      e.preventDefault();
+      close();
+      paintButton();
+    }
   });
-  theme?.addEventListener("click", () => document.getElementById("theme-toggle")?.click());
+
+  /* Following a link out of the menu leaves it open behind the new
+     page on a back-navigation restore, so it is shut on the way. */
+  dialog.addEventListener("click", (e) => {
+    if (e.target.closest("a")) { close(); paintButton(); }
+  });
 
   addEventListener("keydown", (e) => {
     if (e.key.toLowerCase() === "m" && !e.ctrlKey && !e.metaKey && !e.altKey
         && !isTyping(e.target)) {
       e.preventDefault();
-      dialog.open ? dialog.close() : open();
+      toggle();
+      paintButton();
     }
   });
-
 }
 
 const isTyping = (node) =>
