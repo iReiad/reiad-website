@@ -41,7 +41,6 @@ const NOT_FETCHED = {
   "https://reiad.co.uk": "canonical links, og:url and JSON-LD, never fetched",
   "https://schema.org": "the JSON-LD vocabulary, an identifier and not an address",
   "https://fonts.googleapis.com": "a stylesheet link, covered by style-src",
-  "https://fonts.gstatic.com": "the font files, covered by font-src",
   "https://www.linkedin.com": "a link in the footer",
   "https://www.tbsnews.net": "a source credited in an article",
   "https://www.bbc.co.uk": "a source credited in an article",

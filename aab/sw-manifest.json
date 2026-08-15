@@ -1,10 +1,10 @@
 {
-  "version": "v62",
+  "version": "v63",
   "hashes": {
     "/": "0210b228b586a0d1",
     "/index.html": "0210b228b586a0d1",
     "/offline.html": "d7ca74c5f33fa1b4",
-    "/styles.css": "db6c8089d97f50f8",
+    "/styles.css": "feb9ecadd2323326",
     "/app.js": "909d7d5c74e29ff7",
     "/content.js": "cffce5b156c8a65b",
     "/api.js": "d3fc7e10cc7f18c1",

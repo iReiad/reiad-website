@@ -31,6 +31,17 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v63: Stage 4. The Studio no longer offers to publish as files:
+        "Download the page", the .zip export and "Get the index
+        entry" described a workflow that ended when the last piece
+        moved into the database, and they were the last thing
+        keeping buildPage() alive, which was a SECOND renderer for
+        an article and had drifted from the server's twice. 309
+        lines of studio.js are gone with them, and the page-weight
+        meter now measures the body against the 1 MB the server
+        actually enforces rather than a whole rendered page against
+        an imaginary 2 MB. studio.html and styles.css changed too.
+
    v62: three things a reader reported. Resetting progress while
         signed in did nothing, because every school's resetAll()
         removes its key rather than emptying it and the guard in
@@ -431,7 +442,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v62";
+const VERSION = "v63";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
