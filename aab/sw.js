@@ -31,6 +31,16 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v58: the menu stopped being modal. It opens under the header
+        instead of over it, so the real search, theme and account
+        buttons stay where they are and stay clickable, and the
+        real Menu button becomes the close button. The bar of
+        copies it used to carry, and the two measuring passes that
+        kept those copies standing in the right place, are gone.
+        app.js and styles.css both changed and they have to change
+        together: a v57 app.js would call showModal() into a
+        stylesheet that no longer gives the dialog a backdrop.
+
    v57: the home page reads the reader before it reads the site. The
         band that says where you were now asks all four schools
         rather than the two that existed when it was written, sits
@@ -383,7 +393,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v57";
+const VERSION = "v58";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
