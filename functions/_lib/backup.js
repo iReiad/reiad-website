@@ -12,16 +12,24 @@
    between them is not about size or convenience. It is about who
    can read them.
 
-   ---- THE REPOSITORY IS PUBLIC ----
+   ---- WHAT GOES IN GIT, AND WHY THAT DOES NOT RELAX ----
 
-   github.com/iReiad/reiad-website is a public repository. Anything
-   committed to it is readable by anyone, for ever, including after
-   it is deleted, because git keeps history and GitHub keeps forks.
+   This repository was public when the split below was designed,
+   and it was made private on 15 August 2026. The rule did not
+   change with it, and that is deliberate.
 
-   That makes exactly one of these tables safe to commit: live
-   articles. Every byte of a live article is already served to
-   anyone who asks for its URL, so a copy in git publishes nothing
-   that was not published.
+   Repository visibility is one setting, one click, reversible by
+   anyone with admin, and retroactive in neither direction: making
+   a repository private does not unpublish a single byte that was
+   already fetched, forked or cached, and making it public later
+   publishes the entire history at once, including every commit
+   made while it was private. A rule that holds only while a
+   checkbox holds is not a rule.
+
+   So git gets exactly one of these tables: live articles. Every
+   byte of a live article is already served to anyone who asks for
+   its URL, so a copy in git publishes nothing that was not
+   published, whatever the setting says today or in five years.
 
    Everything else in this database is somebody's, and none of it
    goes anywhere near git:

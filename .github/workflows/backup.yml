@@ -8,10 +8,12 @@
 #
 # It needs no secret. GITHUB_TOKEN is issued to the run by Actions
 # itself, and the endpoint it reads is public because live article
-# bodies are already served to anyone who asks for their URL. That
-# is the whole reason the split in functions/_lib/backup.js exists:
-# drafts, reader questions, subscriber emails and the admin hash
-# never come near this file, because this repository is public.
+# bodies are already served to anyone who asks for their URL.
+#
+# Drafts, reader questions, subscriber emails and the admin password
+# hash never come near this file. The repository is private as of
+# 15 August 2026 and that changes nothing: see the note in
+# functions/_lib/backup.js for why the rule does not relax.
 #
 # The private half of the backup is a nightly snapshot into R2,
 # written by the Worker's own cron. See wrangler.toml.
@@ -44,7 +46,7 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Fetch the live articles
         run: |
@@ -97,28 +99,47 @@ jobs:
       # `taken_at` changes every night whether or not anything else
       # did, so the diff is checked with that line ignored. Otherwise
       # this commits 365 times a year to say nothing happened.
+      #
+      # The first run is handled on its own, and that is not
+      # defensive tidiness: `git diff` only looks at tracked files,
+      # so on the run that CREATES this file it reports no change and
+      # a naive early exit means the backup never gets committed at
+      # all. That is exactly what the first run of this workflow did.
       - name: Commit, if anything actually changed
+        env:
+          FILE: content/articles.backup.json
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          if git diff --quiet -- content/articles.backup.json; then
-            echo "no change"; exit 0
+          COUNT=$(node -p "JSON.parse(require('fs').readFileSync('$FILE','utf8')).articles.length")
+
+          commit_it () {
+            git add "$FILE"
+            git commit -m "Nightly article backup: ${COUNT} live article(s)
+
+          Written by .github/workflows/backup.yml. Do not edit by hand.
+          To restore: node scripts/restore.mjs $FILE > restore.sql"
+            git push
+          }
+
+          # No copy in HEAD yet: this is the first backup there has
+          # ever been, so there is nothing to compare it against.
+          if ! git cat-file -e "HEAD:$FILE" 2>/dev/null; then
+            echo "first backup: ${COUNT} article(s)"
+            commit_it
+            exit 0
           fi
 
-          CHANGED=$(git diff -U0 -- content/articles.backup.json \
+          CHANGED=$(git diff -U0 HEAD -- "$FILE" \
                     | grep -E '^[+-]' | grep -vE '^(\+\+\+|---)' \
                     | grep -vE '"taken_at"' | wc -l)
 
           if [ "$CHANGED" -eq 0 ]; then
             echo "only the timestamp moved"
-            git checkout -- content/articles.backup.json
+            git checkout -- "$FILE"
             exit 0
           fi
 
-          git add content/articles.backup.json
-          git commit -m "Nightly article backup
-
-          $(node -p 'JSON.parse(require("fs").readFileSync("content/articles.backup.json","utf8")).articles.length') live article(s).
-          Written by .github/workflows/backup.yml. Do not edit by hand."
-          git push
+          echo "${CHANGED} changed line(s), ${COUNT} article(s)"
+          commit_it
