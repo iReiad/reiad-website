@@ -158,6 +158,8 @@ node scripts/snapshot.test.mjs     # a nightly snapshot that leaks, or that thro
                                    # at 03:17 where nobody is watching
 node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the
                                    # real CSP (needs Playwright, skips without)
+node aab/sync.test.mjs             # resetting, and meeting an account for the
+                                   # first time (needs a server on :8899)
 node functions/_lib/notion.test.mjs
 ```
 

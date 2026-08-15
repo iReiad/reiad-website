@@ -88,6 +88,16 @@ const write = (key, value) => {
   }
 };
 
+/** Take a key away, as the schools' own reset does. */
+const forget = (key) => {
+  try {
+    localStorage.removeItem(key);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const clock = () => read(CLOCK) ?? {};
 const touch = (keys) => {
   const now = Date.now();
@@ -129,13 +139,31 @@ const highest = (mine, theirs) => {
  * two rules that cannot merge, and for the erasure case below.
  */
 function reconcile(rule, mine, theirs, mineAt, theirsAt) {
+  /* CLEARED HERE, MORE RECENTLY THAN THE ACCOUNT WAS TOUCHED.
+     That is somebody pressing "reset", not an empty first visit,
+     and the difference is `mineAt`: a device that never had the
+     key has no clock entry, so mineAt is 0 and this never fires.
+
+     `mine === undefined` has to count as cleared, and that is the
+     bug this comment exists for. Every school's resetAll() does
+     `localStorage.removeItem(key)` rather than writing an empty
+     array, so after a reset `mine` is undefined, not []. The guard
+     tested only for [], so the union ran, the account's copy came
+     straight back, and the answer to "reset my progress" while
+     signed in was that nothing happened. */
+  const cleared = mine === undefined
+    || (Array.isArray(mine) && mine.length === 0);
+
   if (rule === "union") {
-    // Emptied here, and more recently than the account: that is
-    // somebody clearing their progress, not an empty first visit.
-    if (Array.isArray(mine) && mine.length === 0 && mineAt > theirsAt) return [];
+    if (cleared && mineAt > theirsAt) return [];
     return union(mine, theirs);
   }
-  if (rule === "highest") return highest(mine, theirs);
+  if (rule === "highest") {
+    if (cleared && mineAt > theirsAt) return "";
+    return highest(mine, theirs);
+  }
+  // A bookmark, cleared here on purpose, stays cleared.
+  if (cleared && mineAt > theirsAt) return null;
   return newest(mine, theirs, mineAt, theirsAt);
 }
 
@@ -174,6 +202,102 @@ async function sendRows(head, rows) {
 }
 
 /* ============================================================
+   Meeting an account for the first time on this device
+
+   Every sync after the first is a merge, and a merge is right:
+   two devices holding two versions of the same key is the normal
+   case, and neither copy is wrong.
+
+   The FIRST one is a different question, and answering it as a
+   merge was wrong. Signing in on a browser that already had
+   progress silently pushed that progress into the account, for
+   ever, with nothing said and no way to tell it apart afterwards.
+   That is fine when it was you reading as a guest on your own
+   laptop. It is not fine on a borrowed phone, on a browser you
+   were testing with, or on a new account that should start new,
+   and those are exactly the cases where it cannot be undone.
+
+   So the first contact between a device and an account is a
+   question rather than an assumption, asked once, and only when
+   there is genuinely something to lose: this device has progress
+   AND the account already has its own. Anything else needs no
+   question, because nothing can be lost by merging with nothing.
+
+   The answer is remembered per account id, so signing out and
+   back in does not ask again, and a second account on the same
+   browser is its own first contact.
+   ============================================================ */
+
+const SEEN = "sync-accounts";
+
+const seenAccounts = () => {
+  const list = read(SEEN);
+  return Array.isArray(list) ? list : [];
+};
+
+const rememberAccount = (id) => {
+  const list = seenAccounts();
+  if (!list.includes(id)) write(SEEN, [...list, id]);
+};
+
+/** Does this device hold progress of its own? */
+function deviceHasProgress() {
+  return Object.keys(KEYS).some((key) => {
+    if (key === "days-active") return false;   // a by-product, not a decision
+    const value = read(key);
+    if (Array.isArray(value)) return value.length > 0;
+    return value !== undefined && value !== null && value !== "";
+  });
+}
+
+/**
+ * Take this device's progress off, so the account's is adopted.
+ *
+ * THE CLOCK IS CLEARED TOO, and that is the whole subtlety. An
+ * empty key with a RECENT clock entry means "somebody pressed
+ * reset", and reconcile() propagates that to the account, which is
+ * correct for a reset and catastrophic here: answering "use my
+ * account's" would clear the device and then clear the account to
+ * match it, losing exactly what the reader asked to keep. Removing
+ * the clock entry says the opposite thing, "this device has never
+ * had an opinion about this key", so the account's copy wins the
+ * merge that follows.
+ */
+function adoptAccount() {
+  const map = clock();
+  for (const key of Object.keys(KEYS)) {
+    forget(key);
+    delete map[key];
+  }
+  write(CLOCK, map);
+
+  /* AND IT DOES NOT ANNOUNCE. Telling the schools here would be
+     the obvious courtesy and is a loop: each school's listener in
+     startSync() calls touch(), which writes the clock entries this
+     function just deleted, so the very next pass reads an empty
+     key with a fresh timestamp, decides it was a deliberate reset
+     and clears the account to match. Answering "use my account's"
+     would empty the account instead of adopting it.
+
+     Nothing is lost by staying quiet. The merge immediately after
+     this writes the account's values in and announces exactly the
+     schools whose keys actually changed. */
+}
+
+/**
+ * Ask, once, what should happen to what is already on this device.
+ *
+ * Returns "merge", "account" or "device". A reader who dismisses
+ * the question gets "account", which is the answer that changes
+ * nothing about the account: the cautious default belongs on the
+ * side of the shared thing, not the local one.
+ */
+async function askFirstContact(counts) {
+  const { openChoice } = await import("/first-sync.js");
+  return openChoice(counts);
+}
+
+/* ============================================================
    The whole job
    ============================================================ */
 
@@ -196,7 +320,35 @@ export function sync() {
       const head = await headers();
       if (!head) return false;
 
-      const theirs = await fetchRows(head);
+      let theirs = await fetchRows(head);
+
+      /* First contact, and only when something could be lost. See
+         the long note above: everything after this is a merge, and
+         a merge is right; the first one is a question. */
+      const who = current()?.id;
+      if (who && !seenAccounts().includes(who)) {
+        const accountHas = [...theirs.keys()].some((k) => k !== "days-active");
+        if (accountHas && deviceHasProgress()) {
+          const answer = await askFirstContact({
+            account: theirs.size,
+            device: Object.keys(KEYS).filter((k) => read(k) !== undefined).length,
+          });
+          if (answer === "device") {
+            /* Keep this browser's, so the account is replaced. The
+               push below does it: every key is written from here. */
+            const now = Date.now();
+            const map = clock();
+            Object.keys(KEYS).forEach((k) => { map[k] = now; });
+            write(CLOCK, map);
+            theirs = new Map();
+          } else if (answer !== "merge") {
+            // "account": this device starts from what the account has.
+            adoptAccount();
+          }
+        }
+        rememberAccount(who);
+      }
+
       const times = clock();
       const changedSchools = new Set();
       const toPush = [];
@@ -219,7 +371,11 @@ export function sync() {
         const mergedJson = JSON.stringify(merged ?? null);
 
         if (mergedJson !== mineJson && merged !== undefined) {
-          if (write(key, merged)) changedSchools.add(event);
+          /* A cleared bookmark is removed rather than written as
+             the string "null", so the school reads it back as
+             absent, which is what it was before it was ever set. */
+          const stored = merged === null ? forget(key) : write(key, merged);
+          if (stored) changedSchools.add(event);
         }
         if (mergedJson !== JSON.stringify(theirValue ?? null)) {
           toPush.push({ key, value: merged ?? null });
