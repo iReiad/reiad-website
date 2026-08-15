@@ -30,6 +30,7 @@ import { initAudience, audienceBoost } from "/audience.js";
 import { recordVisit } from "/learn/progress.js";
 import { recordPage } from "/recent.js";
 import { initTilt, tiltIn } from "/tilt.js";
+import { initStreak } from "/streak.js";
 
 /* ============================================================
    1. THEME
@@ -1201,6 +1202,7 @@ initTilt();
 initSpeculation();
 initArticleCards();
 markLessonRead();
+initStreak();
 
 /* Reader accounts, before the service worker rather than after it.
    This import used to be the last line of the file, which put it

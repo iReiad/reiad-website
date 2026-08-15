@@ -234,6 +234,7 @@ export const TERMS = TERM_GROUPS.flatMap((g) =>
 export const SKILLS = [
   {
     slug: "deutsch",
+    course: true,
     bn: "জার্মান",
     en: "Deutsch · German",
     url: "/deutsch/index.html",
@@ -243,6 +244,7 @@ export const SKILLS = [
   },
   {
     slug: "quran",
+    course: true,
     bn: "কুরআনের আরবি",
     en: "Qur'anic Arabic",
     url: "/quran/index.html",
@@ -252,6 +254,7 @@ export const SKILLS = [
   },
   {
     slug: "english",
+    course: true,
     bn: "মন থেকে ইংরেজি",
     en: "English From The Heart",
     url: "/english/index.html",
@@ -290,6 +293,47 @@ export const SKILLS = [
 
 /** The schools that actually exist, for anything that links out. */
 export const liveSkills = () => SKILLS.filter((s) => s.status === "live");
+
+/* ============================================================
+   The courses, as opposed to everything else here.
+
+   A course is a ladder: it has stages, it keeps what you have
+   read, and it can tell you what comes next. The money ladder at
+   /learn/ is one, and so are the three schools carrying
+   `course: true` above. The kitchen and the travel desk are not:
+   they hold pieces, and a piece has no next.
+
+   The distinction already existed in four places (which schools
+   the home page's band asks, which keys sync.js carries, which
+   rows the account page counts, and which options a reader is
+   offered when they set up an account), and in all four it was
+   the same four ids written out by hand. This is that list, once.
+
+   `id` is the same word the progress store and sync.js use as a
+   key prefix, deliberately: `learn-read`, `deutsch-days`,
+   `english-last`, `quran-done`. One name for one course, from
+   localStorage through to the `following` column in Postgres.
+   ============================================================ */
+export const COURSES = [
+  {
+    id: "learn",
+    bn: "টাকা ও বিনিয়োগ",
+    en: "The money ladder",
+    url: "/learn/index.html",
+    icon: "seed",
+    blurb: "শেয়ার, সঞ্চয়পত্র, ঝুঁকি: একদম শুরু থেকে।",
+  },
+  ...SKILLS.filter((s) => s.course).map((s) => ({
+    id: s.slug,
+    bn: s.bn,
+    en: s.en,
+    url: s.url,
+    icon: s.icon,
+    blurb: s.blurb,
+  })),
+];
+
+export const findCourse = (id) => COURSES.find((c) => c.id === id) ?? null;
 
 /** Where a skill points: its own school, or its slot on /skills/. */
 export const skillUrl = (s) => s.url || `/skills/index.html#${s.slug}`;

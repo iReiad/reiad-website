@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v59: an account can be set up rather than just held. The account
+        page asks three things, each of which changes something the
+        reader can point at, and arrives with the answers already
+        filled in from what this device knows. streak.js is new and
+        app.js imports it eagerly, so a v58 shell would serve a
+        cached app.js whose import 404s and lose the menu and the
+        palette with it. content.js grew COURSES, which home.js and
+        account-page.js both read.
+
    v58: the menu stopped being modal. It opens under the header
         instead of over it, so the real search, theme and account
         buttons stay where they are and stay clickable, and the
@@ -393,7 +402,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v58";
+const VERSION = "v59";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -427,6 +436,10 @@ const PRECACHE = [
   "/sync.js",
   "/account.html",
   "/account-page.js",
+  /* app.js imports this one EAGERLY, at the top, unlike the three
+     above: a shell without it is an app.js whose import 404s, and
+     that takes the menu and the palette with it. */
+  "/streak.js",
   "/crumbs.js",
   "/audience.js",
   "/activation.js",

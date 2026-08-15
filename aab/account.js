@@ -275,6 +275,9 @@ export async function refreshUser() {
 export async function signOut() {
   const access = session?.access_token;
   write(null);
+  // The remembered profile belongs to the session, and goes with it.
+  cacheProfile(null);
+  document.dispatchEvent(new CustomEvent("profile:changed", { detail: null }));
   if (!access) return;
   try { await post("logout", {}, access); } catch { /* already gone */ }
 }
@@ -303,21 +306,71 @@ async function restHeaders() {
   };
 }
 
-export async function getProfile() {
-  const head = await restHeaders();
-  if (!head) return null;
+/* Every column the site reads. Named rather than `*`, so that a
+   column added to the table for some other reason does not start
+   arriving in the browser without anyone deciding it should. */
+const PROFILE_FIELDS = "display_name,following,pace,setup_at";
+
+/* The last profile seen, kept on this device.
+
+   The home page needs to know which courses somebody follows
+   BEFORE it draws anything, and a home page must not wait on a
+   wire. Waiting on this one would be worse than most: the band it
+   decides is the first thing on the page, so the whole page would
+   visibly rearrange itself a second after it loaded.
+
+   So the answer is remembered, and the copy in Postgres is what
+   corrects it. Nothing here is private in a way the session next
+   to it is not: it is a name, three or four course ids, and a
+   word for how often. It goes when the session goes. */
+const PROFILE_STORE = "reiad-profile";
+
+/** What this device last knew, without asking anyone. */
+export function cachedProfile() {
   try {
-    const res = await fetch(`${REST}/profiles?select=display_name&limit=1`, { headers: head });
-    if (!res.ok) throw new Error(String(res.status));
-    const [row] = await res.json();
-    return row ?? null;
-  } catch (err) {
-    console.warn("profile read failed", err);
+    const raw = localStorage.getItem(PROFILE_STORE);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
     return null;
   }
 }
 
-export async function setDisplayName(name) {
+function cacheProfile(row) {
+  try {
+    if (row) localStorage.setItem(PROFILE_STORE, JSON.stringify(row));
+    else localStorage.removeItem(PROFILE_STORE);
+  } catch { /* private mode: everything still works, just slower */ }
+}
+
+export async function getProfile() {
+  const head = await restHeaders();
+  if (!head) return null;
+  try {
+    const res = await fetch(`${REST}/profiles?select=${PROFILE_FIELDS}&limit=1`, { headers: head });
+    if (!res.ok) throw new Error(String(res.status));
+    const [row] = await res.json();
+    if (row) {
+      cacheProfile(row);
+      document.dispatchEvent(new CustomEvent("profile:changed", { detail: row }));
+    }
+    return row ?? null;
+  } catch (err) {
+    console.warn("profile read failed", err);
+    return cachedProfile();
+  }
+}
+
+/**
+ * Write some of the profile. Takes the same column names the row
+ * came back with, and writes only the ones it was given.
+ *
+ * The row filter is `id=eq.<me>` even though the policy already
+ * makes it impossible to touch anyone else's: without a filter,
+ * PostgREST would send an UPDATE across the whole table, and the
+ * only thing standing between that and everybody's profile would
+ * be the policy. Two locks on a door that is never meant to open.
+ */
+export async function saveProfile(patch) {
   const head = await restHeaders();
   const who = current();
   if (!head || !who) throw new Error("Not signed in.");
@@ -325,14 +378,22 @@ export async function setDisplayName(name) {
   const res = await fetch(`${REST}/profiles?id=eq.${encodeURIComponent(who.id)}`, {
     method: "PATCH",
     headers: { ...head, Prefer: "return=minimal" },
-    body: JSON.stringify({ display_name: name }),
+    body: JSON.stringify(patch),
   });
   if (!res.ok) throw new Error(`Could not save that (${res.status}).`);
 
-  // The header shows this name, so it changes now, not on reload.
-  write({ ...session, user: { ...session.user, name } });
+  /* The header shows the name, so a change to it lands now rather
+     than on the next page load. */
+  if (typeof patch.display_name === "string") {
+    write({ ...session, user: { ...session.user, name: patch.display_name } });
+  }
+  const next = { ...(cachedProfile() ?? {}), ...patch };
+  cacheProfile(next);
+  document.dispatchEvent(new CustomEvent("profile:changed", { detail: next }));
   return true;
 }
+
+export const setDisplayName = (name) => saveProfile({ display_name: name });
 
 /**
  * Called once by signin.js. Synchronous on purpose: it picks up a

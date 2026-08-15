@@ -104,17 +104,56 @@
           <p class="lede" id="account-email"></p>
         </div>
 
-        <!-- ============ YOUR NAME ============ -->
-        <section>
-          <span class="section-label mono">Your name</span>
-          <p class="measure">This is what appears beside anything you write.
-          Nothing else about you is shown to anyone.</p>
-          <form class="account-form" id="name-form">
-            <label for="account-name">Display name</label>
-            <input type="text" id="account-name" maxlength="40" autocomplete="name">
-            <button class="btn btn-solid" type="submit">Save</button>
+        <!-- ============ SETTINGS, AND SETUP ============
+
+             One form, two framings. The first time somebody lands
+             here after signing in, the label and the paragraph
+             above it ask the three questions as setup and there is
+             a "not now" beside Save. Once answered, the same three
+             fields are settings and the label says so.
+
+             They are one form because they were nearly two, and
+             two would have been two sets of markup, two save
+             handlers and two places for the wording of a course
+             name to drift. account-page.js swaps four strings. -->
+        <section id="account-settings">
+          <span class="section-label mono" id="settings-label">Your settings</span>
+          <p class="measure" id="settings-intro">Three things, none of them
+          required. You can change any of them whenever you like.</p>
+
+          <form class="account-panel" id="settings-form">
+            <fieldset>
+              <legend>Your name</legend>
+              <p class="field-note">What appears beside anything you write.
+              Nothing else about you is shown to anyone.</p>
+              <input type="text" id="account-name" maxlength="40" autocomplete="name"
+                     placeholder="Your name">
+            </fieldset>
+
+            <fieldset>
+              <legend>What are you here to learn?</legend>
+              <p class="field-note">The home page offers these first when you
+              come back, and a course you pick here shows up even before you
+              have opened it.</p>
+              <!-- Built from COURSES in content.js. Ticked already
+                   for anything this device has progress in. -->
+              <div class="choice-grid" id="account-courses"></div>
+            </fieldset>
+
+            <fieldset>
+              <legend>How often do you want to practise?</legend>
+              <p class="field-note">Only so this page can tell you how the
+              last week went. Nothing is sent to you: there are no
+              notifications on this site and there will not be any.</p>
+              <div class="choice-row" id="account-pace"></div>
+            </fieldset>
+
+            <div class="account-actions">
+              <button class="btn btn-solid" type="submit">Save</button>
+              <button class="btn btn-ghost" type="button" id="settings-skip" hidden>Not now</button>
+              <span class="signin-note" id="settings-note"></span>
+            </div>
           </form>
-          <p class="signin-note" id="name-note"></p>
         </section>
 
         <!-- ============ WHAT IS KEPT ============ -->
@@ -123,6 +162,7 @@
           <p class="measure">Only what is listed here, and only because it is
           useful to you. There is no analytics profile behind it: what you read
           is not shown to anybody, including me.</p>
+          <p class="account-week" id="account-week" hidden></p>
           <div class="cards grid-2" id="account-kept"></div>
           <p class="tool-note" id="account-synced"></p>
         </section>
@@ -140,7 +180,7 @@
             <div class="cell">
               <h3>Forget my progress</h3>
               <p>Removes what this account has saved. What is on this device
-              stays until you clear it in each school.</p>
+              stays until you clear it in each course.</p>
               <button class="btn btn-ghost" id="account-forget">Forget it</button>
             </div>
           </div>

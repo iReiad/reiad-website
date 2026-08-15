@@ -22,7 +22,7 @@
    when at least one of them does.
    ============================================================ */
 
-import { SKILLS, PAGES, ARTICLES, liveArticles, COUNTS } from "/content.js";
+import { SKILLS, PAGES, ARTICLES, liveArticles, COUNTS, findCourse } from "/content.js";
 import { findStage, stageLessons } from "/learn/curriculum.js";
 import {
   getLast as learnLast, readSet as learnRead, nextUp as learnNext,
@@ -44,7 +44,7 @@ import {
   overallStats as englishStats,
 } from "/english/progress.js";
 import { readRecent } from "/recent.js";
-import { current } from "/account.js";
+import { current, cachedProfile } from "/account.js";
 import { icon } from "/learn/icons.js";
 import { el, cached, loadNews, newsCard, openNews, relTime } from "/news.js";
 import { tiltIn } from "/tilt.js";
@@ -191,15 +191,116 @@ function continueCard(r) {
   );
 }
 
-function buildContinue() {
+/**
+ * Which courses this reader said they were here for.
+ *
+ * Read off this device, never fetched. The profile is remembered
+ * by account.js precisely so that this can be answered before the
+ * page paints: the band it decides is the first thing on the
+ * page, and a page that rearranges itself a second after loading
+ * is worse than one that guessed. Signed out, or on a device that
+ * has not seen the account yet, the answer is "none", and the
+ * band falls back to ordering by when things last happened.
+ */
+const following = () => {
+  const said = cachedProfile()?.following;
+  return Array.isArray(said) ? said : [];
+};
+
+/* The four courses, by the id they are known by everywhere else:
+   in localStorage, in sync.js, and in the `following` column. */
+const RESUME = {
+  learn: learnResume,
+  deutsch: deutschResume,
+  quran: quranResume,
+  english: englishResume,
+};
+
+const FIRST_LESSON = {
+  learn: learnNext,
+  deutsch: deutschNext,
+  quran: quranNext,
+  english: englishNext,
+};
+
+const STATS = {
+  learn: learnStats,
+  deutsch: deutschStats,
+  quran: quranStats,
+  english: englishStats,
+};
+
+/**
+ * A card for a course somebody said they were here for, when that
+ * course has no bookmark to resume from. `nextUp()` is the first
+ * lesson they have not read, which on an untouched course is
+ * lesson one and on a half-read one is the right place anyway.
+ *
+ * This is the whole reason the question is asked on the account
+ * page. A band that can only react to what has been read has
+ * nothing at all to say to somebody who decided this morning to
+ * start German, which is the moment they most needed a way in.
+ *
+ * The word on the button is decided by the course's own progress
+ * rather than by the missing bookmark. Those come apart more
+ * often than you would think: a bookmark is one key and the read
+ * set is another, and somebody whose first sync brought back the
+ * ticks from an old phone has read eleven lessons here and been
+ * nowhere. Telling them to "start" a course they are a third of
+ * the way through is the site failing to recognise them.
+ */
+function starterCard(id) {
+  const course = findCourse(id);
+  const next = FIRST_LESSON[id]?.();
+  if (!course || !next?.url) return null;
+
+  let pct = 0;
+  try { pct = STATS[id]?.()?.pct ?? 0; } catch { /* a course with no store yet */ }
+
+  return {
+    id,
+    ts: 0,                          // never beats a real bookmark
+    icon: course.icon ?? "seed",
+    where: `${course.bn} · ${course.en}`,
+    title: next.bn || next.label || course.en,
+    url: next.url,
+    pct,
+    cta: pct > 0 ? "চালিয়ে যান →" : "শুরু করুন →",
+  };
+}
+
+/**
+ * The band's cards.
+ *
+ * Order: what they said they are here for, then how recently they
+ * were there. Followed first matters because the two are not the
+ * same question. Somebody doing German every morning and dipping
+ * into the money ladder once a fortnight should be offered German
+ * first on the morning after the fortnightly dip, and by recency
+ * alone they would not be.
+ *
+ * At most three: a band offering four things to continue is a
+ * menu, not a nudge.
+ */
+function buildContinue(following = []) {
   const host = document.getElementById("wb-continue");
   if (!host) return false;
 
-  /* Every school, newest first, and at most three: a band offering
-     four things to continue is a menu, not a nudge. */
-  const cards = [learnResume(), deutschResume(), quranResume(), englishResume()]
-    .filter(Boolean)
-    .sort((a, b) => b.ts - a.ts)
+  const going = Object.entries(RESUME)
+    .map(([id, resume]) => { const card = resume(); return card && { ...card, id }; })
+    .filter(Boolean);
+
+  const already = new Set(going.map((c) => c.id));
+  const waiting = following
+    .filter((id) => !already.has(id))
+    .map(starterCard)
+    .filter(Boolean);
+
+  const followed = new Set(following);
+  const cards = [...going, ...waiting]
+    .sort((a, b) =>
+      (followed.has(b.id) ? 1 : 0) - (followed.has(a.id) ? 1 : 0)
+      || b.ts - a.ts)
     .slice(0, 3);
 
   if (!cards.length) { host.hidden = true; return false; }
@@ -518,13 +619,16 @@ function watchForSync() {
   wired = true;
   document.addEventListener("sync:done", () => build());
   document.addEventListener("account:changed", () => build());
+  /* Ticking a course on the account page changes what this band
+     should offer, and the account page is one click away. */
+  document.addEventListener("profile:changed", () => build());
 }
 
 function build() {
   if (!section) return;
   watchForSync();
 
-  const hasContinue = buildContinue();
+  const hasContinue = buildContinue(following());
 
   // Don't offer in the sidebar what the big card already offers.
   const offered = new Set(

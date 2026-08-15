@@ -16,6 +16,7 @@
 
 import {
   initAccount, current, sendLink, signInWithGoogle, signOut, arrivalError,
+  getProfile, cachedProfile,
 } from "/account.js";
 import { startSync } from "/sync.js";
 
@@ -191,6 +192,14 @@ export async function initSignIn() {
      them. Signed out this returns immediately and makes no
      request. */
   startSync();
+
+  /* The profile is remembered on this device so the home page can
+     read it without waiting, and it is refreshed here rather than
+     on every page: `following` and `pace` change on one page, and
+     asking Postgres for them on every article would be a request
+     per page view to learn something that changes twice a year.
+     A device that has never seen this account gets it now. */
+  if (current() && !cachedProfile()) getProfile().catch(() => {});
 
   /* Landing back from a provider with something to say deserves the
      panel opened, not a silent page. It is shown whichever face the
