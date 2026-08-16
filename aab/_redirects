@@ -59,6 +59,9 @@
 /account               /account.html         301
 /skills                /skills/index.html    301
 /skills/               /skills/index.html    301
+/tools                 /tools/index.html     301
+/tools/                /tools/index.html     301
+/tools/stock           /tools/stock.html     301
 /contact               /contact.html         301
 /insights              /insights.html        301
 /cooking               /cooking/index.html   301

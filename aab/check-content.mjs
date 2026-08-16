@@ -196,8 +196,13 @@ const CLAIMS = [
   { file: "content.js", text: "Forty-odd ratios across six pillars", key: "ratios", approx: true },
   { file: "content.js", text: "eight stages deep", key: "stages", word: "eight" },
   { file: "content.js", text: "German from Bangla in four stages", key: "stufen", word: "four" },
-  { file: "tools/stock.html", text: "forty-odd ratios across six pillars", key: "ratios", approx: true },
-  { file: "tools/stock.html", text: "Forty-odd ratios across six pillars", key: "ratios", approx: true },
+  /* The stock check's page is a Next.js route as of Stage 11.4,
+     and the two sentences are the same two sentences. A claim
+     follows its words rather than its file. */
+  { file: "../next/app/(site)/tools/stock.html/page.tsx",
+    text: "forty-odd ratios across six pillars", key: "ratios", approx: true },
+  { file: "../next/app/(site)/tools/stock.html/page.tsx",
+    text: "Forty-odd ratios across six pillars", key: "ratios", approx: true },
   { file: "tools/stock.i18n.js", text: "Forty-odd ratios, six pillars", key: "ratios", approx: true },
   { file: "tools/stock.model.js", text: "forty-odd ratios grouped into six", key: "ratios", approx: true },
 ];

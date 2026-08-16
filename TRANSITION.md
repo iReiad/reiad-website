@@ -1340,9 +1340,10 @@ has been looked at once, after a week of real traffic.
 ---
 
 ### Stage 11 · Every remaining route, until no page is a file
-**Status: 11.1, 11.2 and 11.8 done, 11.5 all but the home page,
-16 August 2026. 266 files left, and none of them is a piece of
-writing.** Size: months, at whatever pace suits.
+**Status: 11.1, 11.2, 11.4 and 11.8 done, 11.5 all but the home
+page, 16 August 2026. 264 files left. Every hand-written page
+except the home page and the portfolio is now a route.** Size:
+months, at whatever pace suits.
 
 Stage 10 moved one route and proved the machinery: an allowlist in
 `worker.js`, a service binding, a fallback for anything the second
@@ -1503,14 +1504,29 @@ commit exactly as now. What moves is the page around the numbers,
 not the numbers. *Deletes* 8 files. *Needs* the chart and table
 markup lifted into components without touching a class name.
 
-**11.4 The tools.** `/tools/` and the calculators. This is the
-first place a `"use client"` is correct rather than a mistake: a
-calculator is an input, a number and a recalculation, which is the
-thing React is for, and it is the opposite of the reading page
-Stage 10 argued about. The models stay modules. *Deletes* 2 files.
-*Needs* a decision on whether the stock check's forty-four ratios
-render on the server first, and `COUNTS` in `content.js` still
-counting them.
+**11.4 The tools. The pages moved, 16 August 2026; the
+calculators have not.** `/tools/index.html` and
+`/tools/stock.html` are Next.js routes and both files are in
+`archive/`. *Deleted* 2 files.
+
+**And the `"use client"` this step was written for is not in
+them**, which is worth being exact about rather than quietly
+skipping. A calculator is an input, a number and a
+recalculation, and that really is what React is for. What stops
+it today is not taste: `/tools/tools.js` and the thousand lines
+of scoring maths in `/tools/stock.model.js` are served out of
+`aab/`, Turbopack will not resolve above `next/`, and the model
+is the file `check-content.mjs` asserts `COUNTS.ratios` against
+and that a test suite pins number by number. Making those
+components means moving the models into `shared/` first, and
+that is its own change with its own way of going wrong.
+
+So the pages are server components and the arithmetic is the
+same code at the same address, loaded the same way. What the
+step bought is two files and one shell instead of two. The
+rewrite is written down here rather than in a comment nobody
+reads, and it needs `shared/` to grow a `tools/` directory
+before it can start.
 
 **11.5 The remaining hand-written pages. 16 August 2026:
 `/about`, `/contact`, `/skills` and `/account` are routes, and
@@ -1754,7 +1770,7 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | 11.1, 11.2, 11.8 done, 11.5 all but the home page, 16 Aug 2026, 266 files to go |
+| 11 | Every remaining route, until no page is a file | 11.1, 11.2, 11.4, 11.8 done, 11.5 all but the home page, 16 Aug 2026, 264 files to go |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
 

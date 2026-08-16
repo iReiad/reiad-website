@@ -162,6 +162,7 @@ export const NEXT_ROUTES = [
      from the asset router in the same commit. */
   /^\/(about|contact|account)\.html$/i,
   /^\/skills\/index\.html$/i,
+  /^\/tools\/(index|stock)\.html$/i,
   /^\/_next\//,
 ];
 

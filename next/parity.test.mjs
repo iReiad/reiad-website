@@ -505,20 +505,25 @@ const says = (name, want, got) => ok(name, decode(got) === want,
    with its own title and its own canonical link: the mistake this
    catches is a page whose route exists and whose head was copied
    from the one beside it. */
-for (const [path, title, current] of [
-  ["/about.html", "About · Reiad's Library", "about"],
-  ["/contact.html", "Contact · Reiad's Library", "contact"],
-  ["/skills/index.html", "দক্ষতা · Skills · Reiad's Library", "skills"],
+/* `nav` is the address the header marks, which is not always the
+   page's own: the stock check is under Tools and marks the Tools
+   link, exactly as the page it replaced did. */
+for (const [path, title, nav] of [
+  ["/about.html", "About · Reiad's Library", "/about.html"],
+  ["/contact.html", "Contact · Reiad's Library", "/contact.html"],
+  ["/skills/index.html", "দক্ষতা · Skills · Reiad's Library", "/skills/index.html"],
+  ["/tools/index.html", "Tools & calculators · Reiad's Library", "/tools/index.html"],
+  ["/tools/stock.html", "Stock check · buy, hold or sell · Reiad's Library", "/tools/index.html"],
 ]) {
   const page = await hub(path);
   ok(`${path} answers`, page.status === 200, `status ${page.status}`);
   says(`${path} states its own title`, title, tagText(page.html, "title"));
   says(`${path} states its own canonical link`, `https://reiad.co.uk${path}`,
     attr(page.html, /<link rel="canonical" href="([^"]+)"/));
-  ok(`${path} marks its own nav link`,
-    new RegExp(`<a href="${path}"[^>]*aria-current="page"`).test(page.html)
-    || new RegExp(`aria-current="page"[^>]*href="${path}"`).test(page.html),
-    `nothing carries aria-current="page" for ${current}`);
+  ok(`${path} marks ${nav} in the header`,
+    new RegExp(`<a href="${nav}"[^>]*aria-current="page"`).test(page.html)
+    || new RegExp(`aria-current="page"[^>]*href="${nav}"`).test(page.html),
+    `nothing in the nav carries aria-current="page" for ${nav}`);
 }
 
 /* The account page marks no nav link, because it is in no nav,

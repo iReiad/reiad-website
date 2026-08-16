@@ -1,5 +1,5 @@
 {
-  "version": "v75",
+  "version": "v76",
   "hashes": {
     "/": "0210b228b586a0d1",
     "/index.html": "0210b228b586a0d1",
@@ -55,8 +55,6 @@
     "/english/icons.js": "4f7f49b1b72c56d1",
     "/english/part.js": "c62f3c202be0ccde",
     "/english/term.js": "e9af15c1e57e24ce",
-    "/tools/index.html": "050919a066e6f28a",
-    "/tools/stock.html": "7475522c8994f4b0",
     "/tools/stock.js": "cb0484c49f953ae2",
     "/tools/stock.model.js": "039a045e95fbd777",
     "/tools/stock.i18n.js": "d04aa0302144fe17",

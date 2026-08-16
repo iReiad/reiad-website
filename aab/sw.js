@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v76: TRANSITION.md Stage 11.4. The tools index and the stock
+        check are Next.js routes, so both leave the precache list.
+        Their scripts do not: /tools/stock.js, stock.model.js and
+        stock.i18n.js are still precached, because the page is
+        what a Worker now builds and the arithmetic behind it is
+        still a file, unchanged, at the same address. A reader
+        who has opened the stock check once keeps the maths
+        offline and needs the network for the page around it.
+
    v75: TRANSITION.md Stage 11.5 again. /account.html and
         /skills/index.html are Next.js routes now, so they leave
         the precache list: a page a Worker builds is cached the
@@ -573,7 +582,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v75";
+const VERSION = "v76";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -693,8 +702,6 @@ const PRECACHE = [
   "/english/icons.js",
   "/english/part.js",
   "/english/term.js",
-  "/tools/index.html",
-  "/tools/stock.html",
   "/tools/stock.js",
   "/tools/stock.model.js",
   "/tools/stock.i18n.js",
