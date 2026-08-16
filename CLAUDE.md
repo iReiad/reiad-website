@@ -186,6 +186,9 @@ node aab/sync.test.mjs             # resetting, and meeting an account for the
                                    # first time (needs a server on :8899)
 node aab/studio.test.mjs           # the editor, end to end (70 checks)
 node functions/_lib/notion.test.mjs
+node scripts/schools.test.mjs        # a curriculum that lost a field, a lesson
+                                     # body that changed, or a ladder that came
+                                     # back in the wrong order (30 checks)
 ```
 
 And when anything under `app/src/` changed, after rebuilding:

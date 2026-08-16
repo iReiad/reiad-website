@@ -709,8 +709,37 @@ untouched.
 ---
 
 ### Stage 8 · The schools' content into the database
-**Status: not started.** Size: weeks. The largest thing on this
-list.
+**Status: steps 1 and 2 done, 16 August 2026. Step 3 next.** Size:
+weeks. The largest thing on this list.
+
+The schema is in `aab/schema.sql` and in `functions/_lib/db.js`,
+three tables; `scripts/import-schools.mjs` reads the four
+curricula and their prose and writes the rows as SQL; and
+`scripts/schools.test.mjs` proves the round trip against real
+SQLite, 30 checks, field by field: **17 stages, 61 sections, 233
+lessons, 178 of them written, every body byte-identical.**
+
+Nothing reads those rows. That is deliberate and it is step 3.
+
+**Two things the round trip caught, both of which would have been
+silent.** The first importer assumed every school called a lesson
+a `lesson`, and two of them do not: `/deutsch/` says `teile` and
+`/english/` says `parts`, each in the vocabulary of the thing it
+teaches. It imported 17 stages, 61 sections and **zero lessons**
+for those two without complaining, and a check that counted what
+it found would have agreed with it. The second was the query:
+ordering lessons by their stage's slug puts the money school's
+ladder in alphabetical order, which is advanced, basics-1, ...,
+start. Three schools have slugs that happen to sort correctly. A
+reader of the fourth would have met the pages in the wrong order.
+
+To load them:
+
+```sh
+node scripts/import-schools.mjs > schools.sql
+npx wrangler d1 execute reiad --local  --file=schools.sql   # practise
+npx wrangler d1 execute reiad --remote --file=schools.sql
+```
 
 Four curricula in JavaScript files, 246 pages generated from them,
 and a builder each. The goal is that a lesson can be corrected
@@ -1456,7 +1485,7 @@ repository is.
 | 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
 | 6 | Progress follows the account | done, 15 Aug 2026 |
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
-| 8 | The schools' content into the database | not started |
+| 8 | The schools' content into the database | schema and importer done 16 Aug 2026, nothing reads them yet |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | not started, 281 files to go |
@@ -1715,6 +1744,49 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Stage 8 begins: the four curricula are rows now
+Asked which to build next and told: the schools. Steps 1 and 2 of
+Stage 8 are done and step 3 is deliberately not.
+
+**Three tables, one importer, one test.** `school_stages`,
+`school_sections` and `school_lessons`, in `aab/schema.sql` and in
+the self-applying migrations in `functions/_lib/db.js`.
+`scripts/import-schools.mjs` reads all four curricula and their
+prose and writes the rows as SQL. `scripts/schools.test.mjs` runs
+that SQL against real SQLite through `node:sqlite`, reads it back
+and compares it to the files field by field: 17 stages, 61
+sections, 233 lessons, 178 of them written, every body identical
+as a string.
+
+**Nothing reads the rows.** The files are still the source of
+truth and the builders still read them, so today this changes
+nothing a reader could see. That order is the point: the
+dangerous version of this migration is the one where the schema,
+the importer and the readers all land together and the first
+person to notice a lost paragraph is somebody reading a lesson.
+
+**Why there is a `meta` column.** The four schools are genuinely
+different and were written that way deliberately. `/learn/` has
+stages and sections, `/deutsch/` has Stufen and Teile and a thirty
+day Arbeitsbuch, `/quran/` makes the day itself the lesson and
+carries Arabic beside every Bangla line, `/english/` has terms and
+parts. Flattening that into one wide table would have lost fields
+or invented forty. So the columns are what every school has and
+what a query actually needs, `meta` is that school's own fields as
+JSON, and the round trip is what makes a JSON column safe rather
+than lazy.
+
+**Two silent failures, caught by comparing values rather than
+counting rows.** The first importer assumed every school called a
+lesson a `lesson`. Two do not: `teile` in German, `parts` in
+English. It imported both of those schools with zero lessons and
+said nothing, and a check that counted what it found would have
+passed. Then the read query: ordering lessons by their stage's
+slug sorts the money school's ladder alphabetically, which is
+advanced, basics-1, ..., start. The other three schools have slugs
+that happen to sort correctly, so it would have looked right three
+times out of four. Both are now checks.
 
 ### 2026-08-16 · The old Studio and desk are archived, and the plan grows two stages
 Four questions arrived together: are the shells Next yet, why are
