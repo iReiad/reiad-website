@@ -169,6 +169,8 @@ node scripts/check-headers.mjs # a page a Worker built, served with no CSP
 node scripts/check-schools.mjs # a ladder the browser and the builders disagree about
 node scripts/check-schools-built.mjs # a school page edited by hand, or a snapshot
                                      # refreshed and the schools never rebuilt
+node scripts/check-next.mjs # a copy inside next/ that has drifted from the
+                            # thing it was copied from
 ```
 
 `check-pieces.mjs --live` also asks the database and prints where every
@@ -216,9 +218,18 @@ And when anything under `next/` or `shared/` changed, after
 
 ```sh
 node next/parity.test.mjs          # the Next.js route saying something the
-                                   # Worker's own renderer does not
-                                   # (49 checks, needs the build, skips without)
+                                   # Worker's own renderer does not, and a
+                                   # reading hub that has stopped agreeing with
+                                   # the database
+                                   # (68 checks, needs the build, skips without)
 ```
+
+It really does run in a container, as of 16 August 2026, and the
+reason it looked as though it did not is worth knowing: it gave up
+on any line matching `Error: `, and `wrangler dev` prints exactly
+that, harmlessly, wherever there is no outbound network. It then
+started forty seconds later. A skip now says which of the three
+ways it failed to start happened, and a skip is never silent.
 
 ## After deploying
 
@@ -243,10 +254,12 @@ written, pushed and asked real questions while `NEXT_ROUTES` in
 bot's comment on the pull request.
 
 It exists because `next/parity.test.mjs` is the better test and
-does not run everywhere: it needs `wrangler dev` on workerd, which
-hangs with no output in some containers. Reach for the parity test
-first; reach for this when that is not available, or to catch a
-deployed regression the local test cannot see.
+does not run everywhere: it needs `wrangler dev` on workerd, and
+somewhere without it this is the only thing holding a route to
+anything. Reach for the parity test first; reach for this when
+that is not available, and always to catch a deployed regression
+a local test cannot see, because it asks the live site and the
+live database rather than a fixture.
 
 It runs itself on every push, in `.github/workflows/live-check.yml`,
 because the two things it is really watching are settings on a

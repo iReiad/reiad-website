@@ -66,12 +66,27 @@ export function render(article, origin) {
   <meta property="og:locale" content="${locale}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="${image}">
+  <!-- Both preferences, before the first paint, because both move
+       the page: the theme, or a dark-mode reader gets a white
+       flash, and the audience, which reorders the header's nav for
+       somebody who has said they are here for work. Every
+       hand-written page on this site restores both; a page
+       rendered from the database restored only the first, so the
+       nav reordered itself after load on exactly the pieces that
+       came out of the Studio. -->
   <script>
     (function () {
-      var saved = localStorage.getItem("theme");
-      if (saved === "dark" || saved === "light") {
-        document.documentElement.setAttribute("data-theme", saved);
-      }
+      var root = document.documentElement;
+      try {
+        var theme = localStorage.getItem("theme");
+        if (theme === "dark" || theme === "light") {
+          root.setAttribute("data-theme", theme);
+        }
+        var audience = localStorage.getItem("audience");
+        if (audience === "learn" || audience === "work") {
+          root.setAttribute("data-audience", audience);
+        }
+      } catch (e) {}
     })();
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">

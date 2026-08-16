@@ -71,6 +71,16 @@ export const getArticle = cache(
     from the same variable the Worker reads, so a preview
     deployment does not advertise itself as reiad.co.uk. */
 export function siteOrigin(): string {
-  const { env } = getCloudflareContext();
-  return (env as { SITE_ORIGIN?: string }).SITE_ORIGIN || "https://reiad.co.uk";
+  try {
+    const { env } = getCloudflareContext();
+    return (env as { SITE_ORIGIN?: string }).SITE_ORIGIN || "https://reiad.co.uk";
+  } catch {
+    /* There is no Cloudflare context outside the Worker, and the
+       one place that happens is a plain `next start`, which is how
+       the routing itself gets checked without workerd. A head tag
+       falling back to the site's own address is the right answer
+       there and is what the variable says anyway; a throw would
+       take the whole page down to save a string. */
+    return "https://reiad.co.uk";
+  }
 }
