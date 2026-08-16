@@ -57,7 +57,22 @@ function applyTheme(mode) {
     ?.setAttribute("content", dark ? "#0E1512" : "#FCF9F4");
 }
 
+/* The stored choice first, the attribute second.
+
+   The attribute is written before the first paint by the boot
+   script at the top of every page and is the quicker of the two
+   to read, but it is the one that can go missing. A page rendered
+   by the Next.js Worker hydrates, and React restoring an element
+   to the way it rendered it takes an attribute a script added
+   with it. Reading the DOM then answered "system", which is not
+   what anybody chose, and the line below applies it: a reader who
+   had asked for light, on a laptop set to dark, watched the page
+   go dark a moment after it loaded, every time. */
 function currentTheme() {
+  try {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored === "dark" || stored === "light" || stored === "system") return stored;
+  } catch { /* private mode: fall back to what the page says */ }
   return root.getAttribute("data-theme") ?? "system";
 }
 

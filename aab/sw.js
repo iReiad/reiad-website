@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v81: Three fixes a reader can see. /styles.css locks scrolling
+        on the root rather than on body, so the sticky header stays
+        put while the menu is open instead of scrolling away with
+        the one button that closes it. /app.js reads the theme a
+        reader chose out of storage rather than off the element,
+        which is what stopped a page turning itself dark a moment
+        after it loaded.
+
    v80: TRANSITION.md Stage 13. /photo.js is built from
         aab/src/photo.ts now. Same code, reindented by tsc, and a
         precached file that changed its bytes needs a bump even
@@ -652,7 +660,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v80";
+const VERSION = "v81";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

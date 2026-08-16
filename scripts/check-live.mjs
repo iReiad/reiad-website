@@ -45,8 +45,18 @@ const origin = (args[args.indexOf("--origin") + 1] || "").startsWith("http")
 /* A piece that is a row in D1 and nothing else, so the only thing
    that can answer for it is a renderer reading the database. It is
    named rather than discovered because a check that picks its own
-   subject can pick one that makes it pass. */
-const DB_PIECE = "/insights/tiny-experiments.html";
+   subject can pick one that makes it pass.
+
+   The SLUG is named. The mount it hangs under is looked up, and
+   that is the one thing here a writer can change without touching
+   this repository: this piece moved from `/insights/` to
+   `/travel/` from the Studio, and the check went red on a site
+   that was working perfectly. It asked for the address the piece
+   used to have, got exactly the 404 a piece asked for at the wrong
+   mount is meant to get, and reported the article route as broken
+   and the service binding as missing. A check that names a fact
+   the writing surface owns will keep doing that. */
+const DB_SLUG = "tiny-experiments";
 
 /* A piece at a mount other than /insights/, which is a row in D1
    and has not been a file since Stage 11.2. Named for the same
@@ -89,6 +99,22 @@ const ask = (url, init = {}) =>
 const get = (path, init = {}) =>
   ask(`${origin}${path}`, { redirect: "manual", ...init });
 
+/* The sitemap, read once and used twice: here, to find that piece
+   at whatever mount it hangs under today, and in section 7 to ask
+   every piece it advertises whether it answers. */
+const advertised = [...new Set(
+  (await (await get("/sitemap.xml")).text()).match(/<loc>([^<]+)<\/loc>/g) ?? [])]
+  .map((tag) => tag.replace(/<\/?loc>/g, ""))
+  /* A piece, not a hub: `/cooking/index.html` is at the same depth
+     and is the kitchen's front page. */
+  .filter((url) => /\/(insights|cooking|travel)\/[^/]+$/.test(url))
+  .filter((url) => !/\/index\.html$/.test(url));
+
+const found = advertised.find((url) => url.endsWith(`/${DB_SLUG}.html`));
+ok(`the sitemap advertises ${DB_SLUG}`, Boolean(found),
+  "the piece this check is written around is not in the sitemap at any mount");
+const DB_PIECE = (found ?? `${origin}/insights/${DB_SLUG}.html`).replace(origin, "");
+
 /* ---------- 1. the article route, and who renders it ---------- */
 
 const article = await get(DB_PIECE);
@@ -106,8 +132,21 @@ ok("the piece is rendered by the Next.js Worker",
   chunks.length > 0,
   "no /_next/static script on the page, so the service binding is not in effect");
 
+/* Named, rather than written out as a `<script>` tag, which is
+   what a page rendered by the App Router does now: a module that
+   runs before React has hydrated is a module whose work the
+   hydration undoes, so a route names what it will load in a
+   preload link and loads it once hydration is over. See
+   `next/components/scripts.tsx`. Either spelling counts, because
+   the question here is whether the page loads the site's own
+   scripts at all, not which tag says so. */
+const loads = (src) =>
+  new RegExp(`<script[^>]*src="${src}"`).test(html)
+  || new RegExp(`<link[^>]*rel="(?:modulepreload|preload)"[^>]*href="${src}"`).test(html)
+  || new RegExp(`<link[^>]*href="${src}"[^>]*rel="(?:modulepreload|preload)"`).test(html);
+
 ok("the site's own scripts are still loaded",
-  /<script[^>]*src="\/app\.js"/.test(html) && /read-aloud\.js/.test(html));
+  loads("\\/app\\.js") && loads("\\/read-aloud\\.js"));
 ok("the comment thread is on the page", /id="comments"/.test(html));
 ok("the canonical link is the piece's own address",
   html.includes(`<link rel="canonical" href="${origin}${DB_PIECE}"`)
@@ -246,13 +285,7 @@ for (const [path, what] of [
    row whose address 404s is the exact failure Stage 3 and Stage 10
    are both walking towards, so it is asked of the live site. */
 {
-  const xml = await (await get("/sitemap.xml")).text();
-  const urls = [...new Set(xml.match(/<loc>([^<]+)<\/loc>/g) ?? [])]
-    .map((tag) => tag.replace(/<\/?loc>/g, ""))
-    /* A piece, not a hub: `/cooking/index.html` is at the same
-       depth and is the kitchen's front page. */
-    .filter((url) => /\/(insights|cooking|travel)\/[^/]+$/.test(url))
-    .filter((url) => !/\/index\.html$/.test(url));
+  const urls = advertised;
 
   const bad = [];
   console.log(`  pieces in the sitemap: ${urls.length}`);
