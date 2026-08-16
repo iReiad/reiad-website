@@ -41,6 +41,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SCHOOLS } from "./import-schools.mjs";
 import { WITHIN, stagesOf } from "../shared/schools.js";
+import { d1FromSnapshot } from "./schools-snapshot.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const AAB = join(ROOT, "aab");
@@ -96,7 +97,24 @@ async function d1Over(path) {
 }
 
 async function fromSqlite(id, path) {
-  const d1 = await d1Over(path);
+  return fromD1(id, await d1Over(path), "database");
+}
+
+/** The snapshot, which is what a builder uses when nobody has
+    said otherwise.
+
+    `content/schools.backup.json` is an export of the same three
+    tables, and it is read by loading it into an in-memory
+    database and going through `shared/schools.js` exactly as the
+    live one does. So there is one implementation of "what is a
+    ladder", and a build from the file runs the same code as a
+    build from D1. The note at the top of `schools-snapshot.mjs`
+    says why the file exists at all. */
+async function fromSnapshot(id) {
+  return fromD1(id, await d1FromSnapshot(id), "snapshot");
+}
+
+async function fromD1(id, d1, from) {
   const stages = await stagesOf(d1, id);
   const within = WITHIN[id];
 
@@ -122,22 +140,34 @@ async function fromSqlite(id, path) {
   }
 
   d1.handle.close();
-  return { stages, bodies, within, from: "database" };
+  return { stages, bodies, within, from };
 }
 
 /* ---------- the switch ---------- */
 
 /** Where this build's curriculum comes from.
 
-    `sqlite` wins if given. Otherwise the environment is asked, so
-    a builder can be pointed at a database without editing it:
+    Three sources, and the default has moved. TRANSITION.md Stage
+    8 step 4: the prose is edited in the database now, so the
+    files can no longer be what a build reads, or a lesson written
+    in the Studio would never reach a page.
 
-      SCHOOL_DB=/tmp/schools.db node aab/quran/build-quran.mjs
+      (nothing)              content/schools.backup.json
+      SCHOOL_DB=/tmp/x.db    that SQLite copy of D1
+      SCHOOL_FILES=1         the curriculum files
 
-    and with neither, the files, which is what every existing
-    invocation does and must keep doing. */
-export async function sourceFor(id, { sqlite = process.env.SCHOOL_DB } = {}) {
-  return sqlite ? fromSqlite(id, sqlite) : fromFiles(id);
+    `SCHOOL_FILES` exists for `schools-build.test.mjs`, which has
+    to build both ways to compare them. It is not a way to
+    publish: the files are a copy nothing writes to any more, and
+    a build from them would quietly undo whatever was last saved
+    in the Studio. */
+export async function sourceFor(id, {
+  sqlite = process.env.SCHOOL_DB,
+  files = process.env.SCHOOL_FILES,
+} = {}) {
+  if (sqlite) return fromSqlite(id, sqlite);
+  if (files) return fromFiles(id);
+  return fromSnapshot(id);
 }
 
-export { fromFiles, fromSqlite, d1Over };
+export { fromFiles, fromSqlite, fromSnapshot, d1Over };

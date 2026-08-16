@@ -63,7 +63,42 @@ export interface Stage {
   slug: string;
   bn: string;
   status: string;
+  /** The money school's starter guide: its steps are anchors on
+      `/learn/` itself rather than pages of their own. */
+  inline?: boolean;
+  /** A stage whose pages were published somewhere else first and
+      kept those URLs. `basics-1` is `/learn/terms/`. */
+  base?: string;
   [extra: string]: unknown;
+}
+
+/** Whether a stage's prose lives somewhere other than these rows,
+    and where.
+
+    THE BUG THIS EXISTS FOR
+
+    The money school reads 34 written out of 89 and the first
+    stage looked entirely unwritten, which is true of the rows and
+    false about the site: `start`'s eight steps are anchors on the
+    hub page and `basics-1`'s eighteen were published at
+    `/learn/terms/` and kept those URLs. `build-lessons.mjs` skips
+    both stages by name (`if (stage.inline || stage.base)`), so
+    their rows have empty bodies because nothing has ever put text
+    in them and nothing ever reads it.
+
+    Without this the editor offers to write 26 lessons whose text
+    the builder will not look at: type a paragraph, press Save, and
+    it goes into a row that no page is built from. That is the
+    "finished work nobody can reach" failure, arrived at from the
+    other end. */
+export function elsewhere(stage: Stage): { what: string; where: string } | null {
+  if (stage.inline) {
+    return { what: "on the hub page itself, as anchors rather than pages", where: "/learn/" };
+  }
+  if (stage.base) {
+    return { what: "published at their own URLs first, and they kept them", where: stage.base };
+  }
+  return null;
 }
 
 /** A lesson, as a picker sees it: no body. A ladder page names 89

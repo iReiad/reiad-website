@@ -136,7 +136,12 @@ for (const school of READY) {
   let filesOut = "";
   let dbOut = "";
   try {
-    filesOut = run({ SCHOOL_OUT: fromFiles, SCHOOL_DB: "" });
+    /* SCHOOL_FILES, explicitly. The default source is the
+       snapshot as of Stage 8 step 4, so "no environment" no
+       longer means "the files" and this comparison would
+       otherwise be the snapshot against the database, which is a
+       weaker claim: both are exports of the same rows. */
+    filesOut = run({ SCHOOL_OUT: fromFiles, SCHOOL_DB: "", SCHOOL_FILES: "1" });
     dbOut = run({ SCHOOL_OUT: fromDb, SCHOOL_DB: dbPath });
   } catch (err) {
     ok("the builder runs both ways", false,

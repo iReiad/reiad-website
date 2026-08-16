@@ -39,7 +39,7 @@ import { toast } from "../site.ts";
 import { Editor } from "./Editor.tsx";
 import { Chip, Empty, Loading } from "../bits.tsx";
 import {
-  SCHOOLS, allCounts, ladder, lessonsOf, readLesson, saveLesson, lessonUrl,
+  SCHOOLS, allCounts, elsewhere, ladder, lessonsOf, readLesson, saveLesson, lessonUrl,
   type Counts, type FullLesson, type Lesson, type SchoolId, type Stage,
 } from "./lessons.ts";
 
@@ -85,6 +85,14 @@ export function Lessons() {
     [rev, saved, open]
   );
 
+  /* The stage the picker is on, as an object rather than a slug,
+     because what the list does next depends on its flags. */
+  const onStage = useMemo(
+    () => stages.find((s) => s.slug === stage) ?? null,
+    [stages, stage]
+  );
+  const away = onStage ? elsewhere(onStage) : null;
+
   /* ---------- loading ---------- */
 
   useEffect(() => { void allCounts().then(setCounts); }, []);
@@ -113,6 +121,11 @@ export function Lessons() {
   /* ---------- opening one ---------- */
 
   const openLesson = useCallback(async (slug: string) => {
+    /* Nothing in this stage is editable here, so do not open one.
+       The list does not offer the buttons either; this is the
+       second lock, because a URL can ask directly. */
+    if (away) { toast("This stage's text does not live in these rows."); return; }
+
     if (dirty && !confirm(
       "This lesson has changes that are not saved. Open another one anyway?"
     )) return;
@@ -127,7 +140,7 @@ export function Lessons() {
     setSaved(got.body ?? "");
     handle.current?.setHtml(got.body ?? "");
     bumped();
-  }, [school, stage, dirty, bumped]);
+  }, [school, stage, dirty, bumped, away]);
 
   /* The lesson the URL named, once its stage has loaded. Runs at
      most once: after that the picker is in charge. */
@@ -312,10 +325,13 @@ export function Lessons() {
                   <Chip
                     key={s.slug}
                     pressed={s.slug === stage}
-                    title={s.status === "live" ? s.slug : `${s.slug}, status: ${s.status}`}
+                    title={elsewhere(s)
+                      ? `${s.slug}, written at ${elsewhere(s)?.where}`
+                      : s.status === "live" ? s.slug : `${s.slug}, status: ${s.status}`}
                     onClick={() => setStage(s.slug)}
                   >
                     {s.bn || s.slug}
+                    {elsewhere(s) ? <span className="tab-count">elsewhere</span> : null}
                   </Chip>
                 ))}
               </div>
@@ -326,7 +342,19 @@ export function Lessons() {
                   this list wanted and it already belongs to the
                   Learn hub, which is exactly the collision
                   check-css.mjs exists to catch. */}
-              {lessons.length ? (
+              {/* A stage whose prose is not in these rows says so
+                  rather than showing 18 lessons marked unwritten,
+                  which is true of the rows and false about the
+                  site. See `elsewhere()` for the whole story. */}
+              {away ? (
+                <Empty>
+                  These {lessons.length} are not written here. They live{" "}
+                  {away.what}, at{" "}
+                  <a href={away.where} target="_blank" rel="noreferrer">{away.where}</a>.
+                  {" "}The builder skips this stage, so text saved into these rows
+                  would not reach a page.
+                </Empty>
+              ) : lessons.length ? (
                 <div className="stack">
                   {lessons.map((l) => {
                     const isOpen = open?.slug === l.slug && open?.stage === stage;

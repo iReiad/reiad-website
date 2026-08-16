@@ -709,9 +709,9 @@ untouched.
 ---
 
 ### Stage 8 · The schools' content into the database
-**Status: the import has run, and the lessons are editable, 16
-August 2026. What is left of step 4 is retiring the prose files.**
-Size: weeks. The largest thing on this list.
+**Status: the rows are the source, 16 August 2026. What is left
+of step 4 is moving the prose files to `archive/`.** Size: weeks.
+The largest thing on this list.
 
 **The rows are live.** The import was run from a terminal, inside
 the repository, and the database now holds what the files hold:
@@ -1585,7 +1585,7 @@ repository is.
 | 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
 | 6 | Progress follows the account | done, 15 Aug 2026 |
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
-| 8 | The schools' content into the database | imported and editable 16 Aug 2026, prose files still to retire |
+| 8 | The schools' content into the database | the rows are the source 16 Aug 2026, prose files still to move |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | not started, 281 files to go |
@@ -1842,6 +1842,79 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · The builders read the rows, and the money school explained itself
+
+The prose the four schools are built from comes out of the
+database now, through `content/schools.backup.json`. All 229 pages
+rebuilt from it are byte-identical to the committed ones, which is
+the only claim worth making here.
+
+**Why an export and not the database.** A builder is a generator
+somebody runs on a laptop, and the note at the top of
+`school-source.mjs` has said since step 3 that it has to work with
+no network and no Worker. A build needing credentials is a build
+the person who made the change cannot run, and one CI cannot do
+without being handed a token that reads the database. So the rows
+go through a committed file, which is the same answer
+`content/articles.backup.json` already is, safe on the same
+grounds: every byte of it is already served at a public URL.
+
+It also closes a gap that retiring the files would otherwise open.
+The prose is in git today, in those `content/<stage>.js` files.
+Archive them with nothing in their place and the schools' text
+lives in D1 and a fortnight of R2 and nowhere else.
+
+**No timestamp in it, on purpose.** `articles.backup.json` carries
+`taken_at` because it is a backup and nothing reads it. This is a
+build input. A time in it would change the file on every refresh
+whether or not a word had moved, and the one question worth asking
+of it in git would be answered by noise.
+
+**And one file reads through the other.** The snapshot is loaded
+into an in-memory SQLite and read back through
+`shared/schools.js`, exactly as the live database is, so there is
+one implementation of what a ladder is rather than a second one
+that agrees until it does not.
+
+**Two files now describe the same four schools**, and they are
+read by different people: `curriculum.js` by the browser, forty
+files deep, and the snapshot by the builders.
+`scripts/check-schools.mjs` compares them on the things a reader
+would notice, which lessons exist in what order in which section,
+and says nothing about titles or prose because those belong to the
+Studio now. It was checked by removing a lesson from the snapshot
+and watching it fail with the slug it lost. 250 ladder entries.
+
+**The money school, which was reported as showing every lesson
+unwritten.** It was right about the rows and wrong about the site,
+and the fix was in what the Studio says rather than in the data.
+`start` is `inline`: its eight steps are anchors on `/learn/`
+itself. `basics-1` has a `base` of `/learn/terms/`: its eighteen
+were published there first and kept those URLs.
+`build-lessons.mjs` skips both stages by name, so those 26 rows
+have empty bodies because nothing has ever put text in them and
+nothing would ever read it.
+
+Which means the lesson editor was offering to write 26 lessons
+whose text the builder does not look at. Type a paragraph, press
+Save, and it lands in a row no page is built from. That is the
+same "finished work nobody can reach" failure the publishing
+checklist exists for, reached from the other end, and it is the
+kind that only shows up when somebody who knows the site looks at
+the screen. The picker names where those stages are really written
+and offers no editor, and `openLesson` refuses them a second time
+because a URL can ask directly.
+
+The count in the corner is honest now rather than merely accurate:
+34 of 89 written was always true, and useless without knowing that
+26 of the other 55 are written somewhere else.
+
+Next: `aab/*/content/*.js` and `aab/learn/lessons/*.js` to
+`archive/`. The rule is that nothing serves it and nothing imports
+it, and two things still import them, `schools-build.test.mjs` and
+`check-schools.mjs`, both through `readSchool()`. Repointing those
+at `archive/` is the step, and it is small.
 
 ### 2026-08-16 · The import ran, and a lesson can be written without a terminal
 
