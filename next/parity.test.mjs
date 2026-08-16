@@ -497,6 +497,78 @@ const says = (name, want, got) => ok(name, decode(got) === want,
     nowhere.status === 404, `status ${nowhere.status}`);
 }
 
+/* ---------- the hand-written pages ----------
+
+   Stage 11.5. Prose, ported markup for markup, so there is
+   nothing to compare against a database and nothing the Worker
+   renders. What is worth holding is that each address answers,
+   with its own title and its own canonical link: the mistake this
+   catches is a page whose route exists and whose head was copied
+   from the one beside it. */
+/* `nav` is the address the header marks, which is not always the
+   page's own: the stock check is under Tools and marks the Tools
+   link, exactly as the page it replaced did. */
+for (const [path, title, nav] of [
+  ["/about.html", "About · Reiad's Library", "/about.html"],
+  ["/contact.html", "Contact · Reiad's Library", "/contact.html"],
+  ["/skills/index.html", "দক্ষতা · Skills · Reiad's Library", "/skills/index.html"],
+  ["/tools/index.html", "Tools & calculators · Reiad's Library", "/tools/index.html"],
+  ["/tools/stock.html", "Stock check · buy, hold or sell · Reiad's Library", "/tools/index.html"],
+  /* The home page marks nothing: it is not in the nav. */
+  ["/", "Reiad's Library · Finance & Bangladesh Markets", null],
+  ["/portfolio.html", "Portfolio & Services · Reiad's Library", "/portfolio.html"],
+  ["/portfolio/dcf.html",
+    "DCF with sensitivity tables · DSE-listed manufacturer · Reiad's Library",
+    "/portfolio.html"],
+  ["/portfolio/dissertation.html",
+    "Islamic vs conventional funds in the UK · MSc dissertation · Reiad's Library",
+    "/portfolio.html"],
+]) {
+  const page = await hub(path);
+  ok(`${path} answers`, page.status === 200, `status ${page.status}`);
+  says(`${path} states its own title`, title, tagText(page.html, "title"));
+  says(`${path} states its own canonical link`, `https://reiad.co.uk${path}`,
+    attr(page.html, /<link rel="canonical" href="([^"]+)"/));
+  if (nav) {
+    ok(`${path} marks ${nav} in the header`,
+      new RegExp(`<a href="${nav}"[^>]*aria-current="page"`).test(page.html)
+      || new RegExp(`aria-current="page"[^>]*href="${nav}"`).test(page.html),
+      `nothing in the nav carries aria-current="page" for ${nav}`);
+  } else {
+    ok(`${path} marks nothing in the nav, because it is not in it`,
+      !/<nav[\s\S]*?aria-current="page"[\s\S]*?<\/nav>/.test(page.html));
+  }
+}
+
+/* Every case study is reachable from the portfolio index, and the
+   index is the only thing that says so. A card pointing at a page
+   that does not answer, or a page nothing links, is the failure
+   `check-content.mjs` watches from the other side; this is the
+   half that can only be seen once the pages are being served. */
+{
+  const index = await hub("/portfolio.html");
+  const cards = [...index.html.matchAll(/href="(\/portfolio\/[a-z-]+\.html)"/g)]
+    .map((m) => m[1]);
+  const studies = [...new Set(cards)];
+  ok("the portfolio index links seven case studies", studies.length === 7,
+    `${studies.length}: ${studies.join(", ")}`);
+
+  for (const study of studies) {
+    const page = await hub(study);
+    ok(`  ${study} answers`, page.status === 200, `status ${page.status}`);
+  }
+}
+
+/* The account page marks no nav link, because it is in no nav,
+   and it is the one page here that must not be indexed. */
+{
+  const account = await hub("/account.html");
+  ok("/account.html answers", account.status === 200, `status ${account.status}`);
+  ok("and tells search engines to leave it alone",
+    /<meta name="robots" content="noindex/.test(account.html),
+    "no robots tag: this page is somebody's name and their progress");
+}
+
 /* ---- the headers a static page would have had ---- */
 
 for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
@@ -513,8 +585,8 @@ if (failures.length) {
   for (const f of failures) console.log(`  ✗ ${f}`);
   process.exit(1);
 }
-console.log("The article says everything the Worker's does, and each hub\n"
-  + "says what the database gave it.\n");
+console.log("The article says everything the Worker's does, each hub says what\n"
+  + "the database gave it, and every page answers at its own address.\n");
 
 /* Said out loud, because falling off the end is not the same
    thing here. `wrangler dev` starts workerd as a child of its

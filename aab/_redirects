@@ -31,6 +31,14 @@
 /work                 /portfolio            301
 /services.html        /portfolio            301
 /services             /portfolio            301
+# The colophon described a site with no framework, no build step and
+# no dependencies, and every one of those sentences stopped being
+# true during the transition (TRANSITION.md, stages 9 to 11). It was
+# a page about how the site was built, so it went rather than being
+# rewritten into a page about how it used to be built. /about answers
+# the question it was answering.
+/colophon.html        /about                301
+/colophon             /about                301
 /insights/dsex.html   /learn/terms/dsex     301
 /insights/dsex        /learn/terms/dsex     301
 
@@ -47,6 +55,21 @@
 # bounce. `check-routes.mjs` reads that list and models it, so if the
 # entry in wrangler.toml is ever removed, these six lines become the
 # loop it has always been able to catch.
+/about                 /about.html           301
+/account               /account.html         301
+/skills                /skills/index.html    301
+/skills/               /skills/index.html    301
+/tools                 /tools/index.html     301
+/tools/                /tools/index.html     301
+/tools/stock           /tools/stock.html     301
+/portfolio             /portfolio.html       301
+# The home page answers at "/", which is what its canonical link
+# has always said and what the asset router used to send
+# /index.html to. Every school page's site-name link still says
+# /index.html, so this is the rule that keeps them one hop away
+# rather than broken.
+/index.html            /                     301
+/contact               /contact.html         301
 /insights              /insights.html        301
 /cooking               /cooking/index.html   301
 /cooking/              /cooking/index.html   301

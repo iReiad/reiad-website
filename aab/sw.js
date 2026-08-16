@@ -31,6 +31,58 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v77: TRANSITION.md Stage 11.5, finished. The home page and the
+        eight portfolio pages are Next.js routes, so "/" and
+        "/index.html" leave the precache list: they are the shell
+        this list was named after, and a page a Worker builds
+        cannot be precached at install.
+
+        This is the one bump in the stage worth arguing with. A
+        reader who opens the site offline now gets the offline
+        page rather than the home page, where before they got a
+        home page whose live parts were empty. The schools, which
+        are what an offline reader is actually there for, are
+        untouched and still precached in full, and the home page
+        was never the thing being read on a train.
+
+   v76: TRANSITION.md Stage 11.4. The tools index and the stock
+        check are Next.js routes, so both leave the precache list.
+        Their scripts do not: /tools/stock.js, stock.model.js and
+        stock.i18n.js are still precached, because the page is
+        what a Worker now builds and the arithmetic behind it is
+        still a file, unchanged, at the same address. A reader
+        who has opened the stock check once keeps the maths
+        offline and needs the network for the page around it.
+
+   v75: TRANSITION.md Stage 11.5 again. /account.html and
+        /skills/index.html are Next.js routes now, so they leave
+        the precache list: a page a Worker builds is cached the
+        first time it is fetched rather than at install. The
+        skills hub is the one worth thinking about, because it is
+        the door to four schools and a reader offline on it now
+        gets the offline page rather than a stale ladder. Its
+        schools' own hubs are still precached and still the thing
+        a returning learner opens.
+
+   v74: TRANSITION.md Stage 11.5, and the colophon is gone. Both
+        precached files that changed are small: content.js lost
+        the colophon's PAGES entry, so a returning reader on the
+        v73 shell would have it in the menu and the Ctrl+K palette
+        pointing at a 301; and audience.js listed /colophon among
+        the pages that mean somebody is here for work.
+
+        The colophon went rather than being ported. It was a page
+        about how this site is built, and its own copy said "0
+        build steps", "0 runtime dependencies, npm packages or
+        frameworks" and "no framework, no templating, no
+        generator". Every one of those stopped being true during
+        stages 9 to 11. /about answers the question it was
+        answering, and _redirects sends both of its addresses
+        there.
+
+        about.html and contact.html are Next.js routes now and are
+        not in this list: neither ever was.
+
    v73: TRANSITION.md Stage 11.2. The last two article files leave
         the precache list: /cooking/onions.html and
         /travel/uk-visit-visa.html are rows, rendered by the
@@ -544,7 +596,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v73";
+const VERSION = "v77";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -556,8 +608,6 @@ const RUNTIME = `runtime-${VERSION}`;
    precached: there are seventy of them, and the runtime cache
    picks up the ones a reader actually opens. */
 const PRECACHE = [
-  "/",
-  "/index.html",
   "/offline.html",
   "/styles.css",
   "/app.js",
@@ -576,7 +626,6 @@ const PRECACHE = [
   /* signin.js imports sync.js at the top, so a shell without it is
      a shell whose sign-in button never loads. */
   "/sync.js",
-  "/account.html",
   "/account-page.js",
   /* app.js imports this one EAGERLY, at the top, unlike the three
      above: a shell without it is an app.js whose import 404s, and
@@ -603,7 +652,6 @@ const PRECACHE = [
   "/tilt.js",
   "/home.js",
   "/news.js",
-  "/skills/index.html",
   "/skills/skills.js",
   "/learn/index.html",
   "/learn/learn.js",
@@ -666,8 +714,6 @@ const PRECACHE = [
   "/english/icons.js",
   "/english/part.js",
   "/english/term.js",
-  "/tools/index.html",
-  "/tools/stock.html",
   "/tools/stock.js",
   "/tools/stock.model.js",
   "/tools/stock.i18n.js",

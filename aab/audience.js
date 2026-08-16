@@ -238,7 +238,7 @@ function initSwitcher() {
    sorts above the one they didn't.
    ------------------------------------------------------------ */
 const WORK_HINTS = new Set(["Page", "Article"]);
-const WORK_URLS = ["/portfolio", "/about", "/contact", "/colophon"];
+const WORK_URLS = ["/portfolio", "/about", "/contact"];
 const SKILL_URLS = ["/skills", "/deutsch"];
 
 export function audienceBoost(item) {

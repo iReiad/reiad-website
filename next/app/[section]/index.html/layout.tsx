@@ -38,7 +38,7 @@ export default async function ReadHubLayout({
       bodyClass={look.bodyClass}
       skip={look.skip}
       footer={look.footer}
-      current="skills"
+      current="in-skills"
     >
       {children}
     </SiteShell>

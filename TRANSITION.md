@@ -1340,9 +1340,9 @@ has been looked at once, after a week of real traffic.
 ---
 
 ### Stage 11 · Every remaining route, until no page is a file
-**Status: 11.1, 11.2 and 11.8 done, 16 August 2026. 271 files
-left, and none of them is a piece of writing.** Size: months, at
-whatever pace suits.
+**Status: everything but 11.6 and 11.7 done, 16 August 2026. 255
+files left, 251 of them the schools. No hand-written page of this
+site is a file.** Size: months, at whatever pace suits.
 
 Stage 10 moved one route and proved the machinery: an allowlist in
 `worker.js`, a service binding, a fallback for anything the second
@@ -1495,28 +1495,98 @@ Two more of the same, found by emptying it:
   the page, which is server-rendered, right for every piece, and
   needs no list at all.
 
-**11.3 The portfolio and the seven case studies.** The most
-component-shaped pages on the site, and the ones where the rule
-above earns its keep: every `.model.js` and `.data.js` stays where
-it is, imported by the route, with its tests running on every
-commit exactly as now. What moves is the page around the numbers,
-not the numbers. *Deletes* 8 files. *Needs* the chart and table
-markup lifted into components without touching a class name.
+**11.3 The portfolio and the seven case studies. Done, 16 August
+2026.** *Deleted* 8 files. Every `.model.js`, `.data.js` and
+`.test.mjs` is exactly where it was in `aab/portfolio/`, loaded
+by the same script at the same address, with 1,931 lines of tests
+running on every commit. What moved is the page around the
+numbers.
 
-**11.4 The tools.** `/tools/` and the calculators. This is the
-first place a `"use client"` is correct rather than a mistake: a
-calculator is an input, a number and a recalculation, which is the
-thing React is for, and it is the opposite of the reading page
-Stage 10 argued about. The models stay modules. *Deletes* 2 files.
-*Needs* a decision on whether the stock check's forty-four ratios
-render on the server first, and `COUNTS` in `content.js` still
-counting them.
+**One thing the port would have broken silently.** React reads
+`value` on an input as "this is controlled", and a controlled
+input with no `onChange` is one a reader cannot type in or drag.
+Twenty-seven of them across these pages are sliders and number
+boxes driven by the page's own script, so every one is
+`defaultValue` now. Converted the other way they would have
+rendered perfectly and refused to move, on the pages whose entire
+point is that you can move them.
 
-**11.5 The remaining hand-written pages.** The home page,
-`/about`, `/contact`, `/colophon`, `/account`, `/skills`.
-*Deletes* 6 files. *Needs* the home page's rotation and the
-palette to keep reading `content.js`, which by then is structure
-only.
+**And one that would have failed the build rather than the
+page**, which is the better kind: three inline styles set a CSS
+custom property, and React's `CSSProperties` has no index
+signature for `--pct`. They carry a cast.
+
+**11.4 The tools. The pages moved, 16 August 2026; the
+calculators have not.** `/tools/index.html` and
+`/tools/stock.html` are Next.js routes and both files are in
+`archive/`. *Deleted* 2 files.
+
+**And the `"use client"` this step was written for is not in
+them**, which is worth being exact about rather than quietly
+skipping. A calculator is an input, a number and a
+recalculation, and that really is what React is for. What stops
+it today is not taste: `/tools/tools.js` and the thousand lines
+of scoring maths in `/tools/stock.model.js` are served out of
+`aab/`, Turbopack will not resolve above `next/`, and the model
+is the file `check-content.mjs` asserts `COUNTS.ratios` against
+and that a test suite pins number by number. Making those
+components means moving the models into `shared/` first, and
+that is its own change with its own way of going wrong.
+
+So the pages are server components and the arithmetic is the
+same code at the same address, loaded the same way. What the
+step bought is two files and one shell instead of two. The
+rewrite is written down here rather than in a comment nobody
+reads, and it needs `shared/` to grow a `tools/` directory
+before it can start.
+
+**11.5 The remaining hand-written pages. Done, 16 August 2026.**
+`/about`, `/contact`, `/skills`, `/account` and the home page are
+routes; `/colophon` is gone. *Deleted* 6 files.
+
+**The home page answers at `/`.** That is what its canonical link
+has always said and what the asset router used to send
+`/index.html` to; `_redirects` does that job now, and the 251
+generated school pages still say `/index.html` in their site-name
+link and take the hop until Stage 11.7 rewrites them. The shell's
+own link says `/`.
+
+**Everything on it still runs in the browser, and should.** The
+rotation, the resume card, the four schools' progress and the
+news are facts about the person reading rather than about the
+site: what somebody has finished is in their own browser, and a
+home page server-rendered with their progress in it is a page
+this site would cache wrong. *Needs* the home page's rotation and the
+palette to keep reading `content.js`, which is structure only as
+of Stage 11.2.
+
+**The colophon was not ported.** It described how this site is
+built, and its own copy said "0 build steps", "0 runtime
+dependencies, npm packages or frameworks" and "no framework, no
+templating, no generator". Stages 9 to 11 falsified all three. A
+page about how a thing is built cannot be ported into the thing
+that falsified it, and rewriting it would have made it a page
+about how the site used to be built, which is what `archive/` is
+for. `_redirects` sends both of its addresses to `/about`, whose
+own "How was this site built?" answer now says what is actually
+happening and points at the repository.
+
+**The words are the page's, unchanged.** A port that also
+rewrites the copy cannot be judged against what it replaced,
+which is the rule at the top of Stage 9 applied to prose rather
+than to CSS. The markup was converted mechanically rather than
+retyped, and `about.js` still fills the four tally numbers in the
+browser: they are counted from the four `curriculum.js` modules,
+which are served out of `aab/` and cannot be imported above
+`next/`. Stage 11.7 is what takes that wall down.
+
+**What the shell learned.** `SiteHeader` marks any of the seven
+nav links rather than two, with `aria-current="page"` for the
+page itself and `"true"` for a page inside that section, which is
+what the hand-written pages already carried. `siteLayout()` in
+`next/components/page.tsx` makes a page's layout two lines, since
+a layout never sees its page's props and each address therefore
+needs its own.
 
 **11.6 The desk and the Studio.** Two React apps today, built by
 Vite into `aab/desk/` and `aab/studio/` behind a hand-written HTML
@@ -1724,7 +1794,7 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | 11.1, 11.2, 11.8 done 16 Aug 2026, 271 files to go |
+| 11 | Every remaining route, until no page is a file | all but 11.6 and 11.7 done, 16 Aug 2026, 255 files to go, 251 of them the schools |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
 

@@ -38,7 +38,7 @@ export default async function ArticleLayout({
       bodyClass={look.bodyClass}
       skip={look.skip}
       footer={look.footer}
-      current={article.section === "insights" ? "insights" : "skills"}
+      current={article.section === "insights" ? "insights" : "in-skills"}
       beforeMain={<div className="read-progress" aria-hidden="true" />}
       scripts={<script src="/read-aloud.js" defer />}
     >

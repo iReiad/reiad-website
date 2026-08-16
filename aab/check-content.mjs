@@ -87,17 +87,25 @@ const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
    1. Every case study is in the manifest and on the page
    ------------------------------------------------------------ */
 
-/* A case study is an .html file in /portfolio/. The directory also
-   holds the modules and test files each one is built from, and
-   those are not pages. */
-const caseFiles = readdirSync(join(ROOT, "portfolio"))
+/* A case study is a route under /portfolio/, which since Stage
+   11.3 means a directory in the Next.js app rather than a file in
+   `aab/portfolio/`. That directory is still there and still holds
+   the modules and the tests each study is computed from; what it
+   no longer holds is a page.
+
+   The two failures this section exists for are unchanged, and so
+   is the answer: a case study nobody can reach, either because
+   `content.js` has never heard of it or because the portfolio
+   page does not link it. */
+const NEXT_PAGES = "../next/app/(site)";
+const caseFiles = readdirSync(join(ROOT, NEXT_PAGES, "portfolio"))
   .filter((f) => f.endsWith(".html"))
   .map((f) => `/portfolio/${f}`);
 
 const listed = new Set(
   PAGES.filter((p) => p.group === "case").map((p) => p.url)
 );
-const portfolioHtml = read("portfolio.html");
+const portfolioHtml = read(`${NEXT_PAGES}/portfolio.html/page.tsx`);
 
 for (const url of caseFiles) {
   if (!listed.has(url)) {
@@ -108,8 +116,8 @@ for (const url of caseFiles) {
   }
   if (!portfolioHtml.includes(`href="${url}"`)) {
     fail(`unlinked  ${url}`,
-      "portfolio.html does not link this case study, so the only way to",
-      "reach it is to already know the URL. Add a card for it.");
+      "the portfolio route does not link this case study, so the only way",
+      "to reach it is to already know the URL. Add a card for it.");
   }
 }
 
@@ -196,8 +204,13 @@ const CLAIMS = [
   { file: "content.js", text: "Forty-odd ratios across six pillars", key: "ratios", approx: true },
   { file: "content.js", text: "eight stages deep", key: "stages", word: "eight" },
   { file: "content.js", text: "German from Bangla in four stages", key: "stufen", word: "four" },
-  { file: "tools/stock.html", text: "forty-odd ratios across six pillars", key: "ratios", approx: true },
-  { file: "tools/stock.html", text: "Forty-odd ratios across six pillars", key: "ratios", approx: true },
+  /* The stock check's page is a Next.js route as of Stage 11.4,
+     and the two sentences are the same two sentences. A claim
+     follows its words rather than its file. */
+  { file: "../next/app/(site)/tools/stock.html/page.tsx",
+    text: "forty-odd ratios across six pillars", key: "ratios", approx: true },
+  { file: "../next/app/(site)/tools/stock.html/page.tsx",
+    text: "Forty-odd ratios across six pillars", key: "ratios", approx: true },
   { file: "tools/stock.i18n.js", text: "Forty-odd ratios, six pillars", key: "ratios", approx: true },
   { file: "tools/stock.model.js", text: "forty-odd ratios grouped into six", key: "ratios", approx: true },
 ];
