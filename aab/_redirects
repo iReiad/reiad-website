@@ -27,6 +27,10 @@
 # at the top of this file is about exactly that loop.
 /studio.html          /studio/index.html    301
 /desk.html            /desk/index.html      301
+/studio               /studio/index.html    301
+/studio/              /studio/index.html    301
+/desk                 /desk/index.html      301
+/desk/                /desk/index.html      301
 /work.html            /portfolio            301
 /work                 /portfolio            301
 /services.html        /portfolio            301

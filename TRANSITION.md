@@ -1,5 +1,30 @@
 # Where the writing lives, and where it is going
 
+## Immediately next
+
+Kept at the top because this file is long and the answer to "what
+now" should not be a search. One item, replaced when it lands.
+
+> **Stage 11.7: the four schools.** 251 of the 253 HTML files
+> left in `aab/` are school pages, and they are the last pages of
+> this site that are files. The lessons are already rows (Stage
+> 8) and `shared/schools.js` already reads them, so the route has
+> a source; what it does not have is the four `curriculum.js`
+> modules, which forty files import out of `aab/`. Those move to
+> `shared/` in the same commit as the pages that read them, which
+> is the rule under Stage 11. It is the largest deletion in the
+> project and the only one that can take offline reading with it,
+> so `sw.js` decides what it precaches instead before anything is
+> archived.
+>
+> After it: Stage 13 (the surviving modules to TypeScript, which
+> needs the decision below about a build step for `aab/`), then
+> Stage 14 (Tailwind), then Stage 12 (the backend, which runs
+> alongside anything).
+>
+> Not next, and deliberately: the calculators and the case-study
+> models. Left where they are, at their own request.
+
 A working document, not a proposal. It answers one question that
 came up in August 2026 (do articles go to the database, or to
 GitHub?), sets out the four moves that follow from the answer, and
@@ -1340,9 +1365,9 @@ has been looked at once, after a week of real traffic.
 ---
 
 ### Stage 11 · Every remaining route, until no page is a file
-**Status: everything but 11.6 and 11.7 done, 16 August 2026. 255
-files left, 251 of them the schools. No hand-written page of this
-site is a file.** Size: months, at whatever pace suits.
+**Status: everything but 11.7 done, 16 August 2026. 253 files
+left, 251 of them the schools. No hand-written page of this site
+is a file.** Size: months, at whatever pace suits.
 
 Stage 10 moved one route and proved the machinery: an allowlist in
 `worker.js`, a service binding, a fallback for anything the second
@@ -1588,9 +1613,10 @@ what the hand-written pages already carried. `siteLayout()` in
 a layout never sees its page's props and each address therefore
 needs its own.
 
-**11.6 The desk and the Studio.** Two React apps today, built by
-Vite into `aab/desk/` and `aab/studio/` behind a hand-written HTML
-shell each. Under Next they are routes in the same app: one build
+**11.6 The desk and the Studio. The shells moved, 16 August 2026;
+the second build stays.** Two React apps built by Vite into
+`aab/desk/` and `aab/studio/`, behind a hand-written HTML shell
+each. Under Next they are routes in the same app: one build
 instead of three, and `vite.config.ts`'s list of externals stops
 being a thing that can drift. *Deletes* the two shells and the
 second build. The two pages these replaced are already gone: they
@@ -1618,10 +1644,38 @@ bundles import `/content.js`, `/api.js`, `/auth.js`,
 externals out of `aab/`, deliberately, so that there is one copy
 of each. A route in `next/` cannot import any of them.
 
-Half of this step is safe on its own and half is not, so neither
-was done: a route answering `/desk/index.html` while Vite keeps
-writing a file at the same address is two answers to one URL, and
-that is the thing this whole stage exists to end.
+**The safe half is done.** `vite.config.ts` takes a `.tsx` entry
+through `rollupOptions.input`, so the build emits `app.js` and no
+page at all; the two shells are routes; and the four HTML files
+(the two outputs and the two sources they were built from) are in
+`archive/shells/`. The second build stays, and stays until the
+site modules those bundles import can be reached from `next/`.
+
+**And running the two browser tests found what Stage 11.2 had
+left behind**, which is the whole argument for having written
+them. Both drove pages that no longer exist, and once they were
+pointed at a stub shell they failed on something real: the desk
+and the Studio were still offering to import pieces written as
+committed files. There are none.
+
+- The desk's Published panel listed them beside the rows, marked
+  them "file", and offered **Import** rather than Edit, with a
+  count ending "2 still to import".
+- The Studio's Open sheet had a third list, "Written as files, in
+  the repository", and an `?file=<section>:<slug>` address that
+  read a committed page back out of its own HTML into the editor.
+  That is how the last pieces were moved into the database, and it
+  went with them.
+- The Studio's topic vocabulary was read from `content.js` as
+  well as from the database. With the arrays empty that half
+  offered nothing, so it is the database's alone, and with no
+  database there is now no vocabulary to suggest, which is honest
+  rather than a loss.
+
+Three checks in `app/desk.test.mjs` and a whole section of
+`app/studio.test.mjs` described that feature. They describe its
+absence now, which is the thing worth checking: 75 and 78 checks,
+both green.
 
 **11.7 The four schools.** 251 of the 283 files: learn 91,
 deutsch 64, quran 62, english 34. The builders stop writing HTML
@@ -1739,6 +1793,58 @@ The more pages stop being files, the more of the site depends on
 `check-headers.mjs` catching the two lists drifting apart. The day
 the last file goes, `_headers` covers nothing that matters and
 that is the day to be most careful about it.
+
+---
+
+### Stage 14 · One way of writing a style, and it is Tailwind
+**Status: decided 16 August 2026, not started.** Size: weeks.
+Runs after Stage 11.7 and not before it.
+
+**The decision, and what it overturns.** Every stage above says
+the same thing in the same words: `styles.css` stays the design
+system, React renders the same class names into the same
+`@layer` rules, no CSS-in-JS, no Tailwind, no second design
+system. That rule was right for what it was protecting: a port
+that also restyles the page cannot be judged, because a
+difference on screen tells you nothing about which of the two
+changes caused it. It was never an argument that the stylesheet
+is the best thing to write styles in.
+
+Stage 11 is what ends it. Once no page is a file, every class
+name on this site is rendered by a component, and the thing the
+rule was protecting has happened.
+
+**What it costs, said before it starts rather than discovered.**
+
+- **6,000 lines and nine cascade layers.** `tokens`, `base`,
+  `layout`, `components`, `menu`, `tools`, `article`, the four
+  school layers and the reads layer. The layers are not
+  decoration: `check-css.mjs` exists because a school's layer
+  once styled the whole site, and because `.glance` and `.steps`
+  each meant two things at once. Tailwind has its own answer to
+  both (`@layer` is in it, and a utility cannot collide), but the
+  check that watches ours is written against ours and would be
+  replaced rather than kept.
+- **The three-place rule.** A block class an article can carry
+  has to be in the stylesheet, in `editor.js`'s allowlist and in
+  `sanitise.js`'s. Article bodies are HTML in a database, written
+  by a person, and a database full of `class="prose-lg"` is not
+  something Tailwind's compiler can see: whatever happens to the
+  rest of the site, the article layer stays a stylesheet, and
+  that is a real and permanent exception rather than a temporary
+  one.
+- **The schools.** 251 generated pages carry the class names.
+  Rebuilding them all with new ones is a `--update` on the
+  builders and a very large diff, which is exactly why this waits
+  for 11.7: after it, those pages are a route and there is
+  nothing to rebuild.
+- **A build step for CSS**, which the site has never had. That is
+  the same decision Stage 13 needs for `aab/**.js`, and taking it
+  once for both is cheaper than taking it twice.
+
+**So the order is: 11.7, then this.** Anything else means
+converting the styling of pages that are about to stop existing,
+which is the mistake Stage 13's own rule already names.
 
 ---
 
@@ -1876,9 +1982,10 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | all but 11.6 and 11.7 done, 16 Aug 2026, 255 files to go, 251 of them the schools |
+| 11 | Every remaining route, until no page is a file | all but 11.7 done, 16 Aug 2026, 253 files to go, 251 of them the schools |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
+| 14 | One way of writing a style, and it is Tailwind | decided 16 Aug 2026, waits for 11.7 |
 
 ---
 
@@ -2130,6 +2237,54 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · The two private shells, and what the browser tests found under them
+
+Stage 11.6's safe half. `vite.config.ts` takes a `.tsx` entry
+now, so it emits `app.js` and no page; the desk's and the
+Studio's shells are Next.js routes; and four HTML files are in
+`archive/shells/`, the two outputs and the two sources they were
+built from. **253 HTML files left**, 251 of them the schools.
+
+The second build stays. Both bundles import `/content.js`,
+`/api.js`, `/auth.js`, `/editor.js`, `/share-card.js` and
+`/photo.js` out of `aab/` as runtime externals so there is one
+copy of each, and a route in `next/` cannot import any of them
+until they move. `editor.js` is the one where a second copy costs
+most: two sanitisers that disagree is the bug the three-place
+rule exists for.
+
+**The browser tests earned their keep.** Pointing them at a stub
+shell was the small part. What they then found was that both
+admin pages still offered a door to something that no longer
+exists: pieces written as committed files.
+
+- The desk listed them beside the rows, marked them "file", and
+  offered **Import** rather than Edit, under a count that ended
+  "2 still to import".
+- The Studio's Open sheet had a third list, "Written as files, in
+  the repository", and an `?file=<section>:<slug>` address that
+  read a committed page back out of its own HTML into the editor.
+  That is how the last pieces were moved into the database in the
+  first place.
+- The Studio's topic vocabulary was read from `content.js` as
+  well as from the database, so with the arrays empty half of it
+  offered nothing. It is the database's alone now, and with no
+  database there is no vocabulary to suggest, which is honest.
+
+None of that was visible on either page, because both are behind
+an auth gate and neither is looked at by a check. A feature that
+quietly stops meaning anything is exactly what these two files
+were written to catch, and this is the first time they have
+caught one.
+
+**And two things were written down rather than done.** The top of
+this file now says what is immediately next, because it is long
+enough that the answer to "what now" should not be a search. And
+Tailwind is decided and staged: Stage 14, after 11.7, with what
+it costs written out, including the one permanent exception,
+which is that an article body is HTML in a database and no
+compiler can see the class names in it.
 
 ### 2026-08-16 · Sixteen pages, and the wall the rest of Stage 11 is behind
 

@@ -56,6 +56,31 @@ if (!chromium) {
   process.exit(0);
 }
 
+/* ---------- the shell the bundle mounts into ----------
+
+   `/desk/index.html` and `/studio/index.html` are Next.js routes
+   as of TRANSITION.md Stage 11.6, so there is no file at either
+   address for this server to hand back. That is the right place
+   for them and the wrong thing to drag into a browser test: the
+   subject here is the bundle, and starting a Next server to get a
+   header and a footer would make a test of the panels depend on
+   a renderer that has its own test.
+
+   So the server answers those two addresses with the two things
+   the bundle actually needs, the stylesheet and the element it
+   mounts into, and nothing else. Everything this file checks is
+   inside that element. */
+const SHELLS = {
+  "/desk/index.html": ["desk-root", "/desk/app.js"],
+  "/studio/index.html": ["studio-root", "/studio/app.js"],
+};
+
+const shellFor = ([root, bundle]) =>
+  `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">`
+  + `<link rel="stylesheet" href="/styles.css">`
+  + `<script type="module" crossorigin src="${bundle}"></script></head>`
+  + `<body><main id="main"><div class="wrap" id="${root}" hidden></div></main></body></html>`;
+
 /* ---------- a static server, so there's nothing to start ---------- */
 
 const TYPES = {
@@ -68,6 +93,11 @@ const TYPES = {
 const server = createServer(async (req, res) => {
   try {
     const path = decodeURIComponent(new URL(req.url, "http://x").pathname);
+    if (SHELLS[path]) {
+      res.writeHead(200, { "Content-Type": TYPES[".html"] });
+      res.end(shellFor(SHELLS[path]));
+      return;
+    }
     const file = normalize(join(ROOT, path === "/" ? "/index.html" : path));
     if (!file.startsWith(ROOT)) { res.writeHead(403).end(); return; }
     const data = await readFile(file);
@@ -200,9 +230,27 @@ const check = (name, condition, detail = "") => {
   failures.push(name + (detail ? `\n    ${detail}` : ""));
 };
 
-const browser = await chromium.launch({
-  executablePath: process.env.CHROMIUM_PATH || undefined,
-});
+/* A browser, or a clean skip.
+
+   `playwright` is a devDependency here, so `npm i` gets the
+   library; it does not get the browser, and it refuses to launch
+   one it did not download itself unless it is told where one is.
+   A machine with Chromium already on it says so through
+   CHROMIUM_PATH. Anything else skips with the reason, because a
+   test that cannot start is not a test that failed. */
+let browser;
+try {
+  browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_PATH || undefined,
+  });
+} catch (err) {
+  console.log("No browser to drive, so the browser checks are skipped.");
+  console.log(`  ${String(err.message ?? err).split("\n")[0]}`);
+  console.log("  npx playwright install chromium"
+    + "   (or: CHROMIUM_PATH=/path/to/chrome node app/desk.test.mjs)");
+  server.close();
+  process.exit(0);
+}
 
 /* The service worker would serve its own precached copies of the
    site's modules, which is the wrong thing to test and a very
@@ -431,13 +479,17 @@ check("and the page says what it does not know",
 await open("Published");
 {
   const count = await page.locator(".article-line").count();
-  check("committed files are listed alongside the rows", count > 3, `${count} pieces`);
-  check("a file piece is marked as one",
-    await page.locator(".article-line.is-file").count() > 0);
-  check("a file piece offers Import, not Edit",
-    await page.locator(".article-line.is-file .chip-move").first().textContent() === "Import");
-  check("the count says how many are still to import",
-    /still to import/.test(await page.locator(".admin-count").textContent()),
+  check("every published row is listed", count > 0, `${count} pieces`);
+  /* Three checks stood here until Stage 11.2, all about pieces
+     written as committed files: that they were listed beside the
+     rows, marked as files, and offered Import rather than Edit.
+     There are none, there cannot be again, and the panel no longer
+     has the branch. What replaced them is the check below, that
+     nothing offers that door any more. */
+  check("nothing offers to import a file, because there are none",
+    await page.locator(".article-line.is-file, .chip-move").count() === 0);
+  check("the count says how many pieces there are",
+    /piece/.test(await page.locator(".admin-count").textContent()),
     await page.locator(".admin-count").textContent());
   check("a piece with no hosted photo is flagged",
     await page.locator(".pill-warn").count() === 1);

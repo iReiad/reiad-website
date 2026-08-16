@@ -204,13 +204,17 @@ node scripts/schools-api.test.mjs    # a school readable by anyone, writable by
                                      # check-schools-built.mjs replaced it.
 ```
 
-And when anything under `app/src/` changed, after rebuilding:
+And when anything under `app/src/` changed, after rebuilding.
+`playwright` is a devDependency of `app/`, and it does not bring
+a browser with it: point `CHROMIUM_PATH` at one, or run
+`npx playwright install chromium`. Without either, both files say
+so and skip, which is not a pass:
 
 ```sh
 node app/desk.test.mjs             # a panel that renders and is not finished
-                                   # (76 checks, needs Playwright, skips without)
+                                   # (75 checks, needs Playwright and a browser)
 node app/studio.test.mjs           # the React Studio's chrome, end to end
-                                   # (86 checks, needs Playwright, skips without)
+                                   # (78 checks, needs Playwright and a browser)
 ```
 
 And when anything under `next/` or `shared/` changed, after
