@@ -433,9 +433,21 @@ ok("the section's own footer line",
 
 /* ---- what a reader loads ---- */
 
-ok("the site's own script is loaded",
-  /<script[^>]*src="\/app\.js"/.test(fromNext));
-ok("read-aloud too", /<script[^>]*src="\/read-aloud\.js"/.test(fromNext));
+/* Named, rather than written out as a `<script>` tag. A module
+   the page runs before React has hydrated is a module whose work
+   React then undoes, so a route names what it is going to load in
+   a preload link and loads it once the hydration is over. See
+   `components/scripts.tsx`, which is the whole story, and
+   `interactive.test.mjs`, which is what holds it in a browser.
+   Either spelling counts here: the question is whether the page
+   loads the module, not which tag says so. */
+const loads = (html, src) =>
+  new RegExp(`<script[^>]*src="${src}"`).test(html)
+  || new RegExp(`<link[^>]*rel="(?:modulepreload|preload)"[^>]*href="${src}"`).test(html)
+  || new RegExp(`<link[^>]*href="${src}"[^>]*rel="(?:modulepreload|preload)"`).test(html);
+
+ok("the site's own script is loaded", loads(fromNext, "\\/app\\.js"));
+ok("read-aloud too", loads(fromNext, "\\/read-aloud\\.js"));
 /* ---- the cost, which was measured and then accepted ----
 
    The App Router ships its own runtime and router to every page,
@@ -696,9 +708,16 @@ for (const [path, title, nav] of [
      `/learn/stage.js` on top, so "the script" is two of them
      there and one everywhere else. Order is not compared because
      the builder puts the shared one first and a React shell puts
-     it last, and both are module scripts. */
+     it last, and both are module scripts.
+
+     Nor is the tag. The Worker's own renderer writes a `<script>`
+     tag and the route names the same file in a `modulepreload`
+     link, because a module that runs before React has hydrated is
+     a module whose work React undoes: `components/scripts.tsx`
+     says why at length. What both sides have to agree on is WHICH
+     modules the page loads. */
   const schoolScripts = (html) => [...html.matchAll(
-    /<script type="module" src="(\/(?:learn|deutsch|quran|english)\/[a-z-]+\.js)"/g)]
+    /(?:<script type="module" src|<link rel="modulepreload" href)="(\/(?:learn|deutsch|quran|english)\/[a-z-]+\.js)"/g)]
     .map((m) => m[1]).sort().join(" ");
 
   /* Text, with the tags taken out and the whitespace flattened.

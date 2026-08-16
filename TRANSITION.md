@@ -2607,6 +2607,52 @@ is the closest Supabase region to Dhaka.
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
 
+### 2026-08-16 · Every calculator on the site was blank, and the port was the reason
+
+The compounding tool computed ৳41.63 lakh about fifty milliseconds
+after load, wrote it into the page, and then the number went back
+to being a dash. Every stat on `/tools/index.html`, the whole
+verdict on `/tools/stock.html`, and the charts and driver panels on
+five of the seven case studies: all of them showing the empty
+markup a reader is meant to see for an instant, on pages whose
+modules were running perfectly.
+
+A `<script type="module">` in the body is deferred, so it runs when
+the document has been parsed and BEFORE React hydrates. Hydration
+is React adopting the server's HTML as its own, and by then a tool
+script has written text React did not render and appended children
+React does not know about. React's answer to a mismatch is to make
+the DOM match what it rendered: it puts the placeholder back and
+removes the children. The console says `Minified React error #418`
+and nothing else.
+
+None of it was visible to any check here, and that is the part
+worth remembering rather than the fix. `parity.test.mjs` reads
+HTML, and the HTML was right. `check-routes`, `check-content` and
+`check-css` read files, and the files were right. The module was
+right. The only thing that could tell a page that works from a page
+that renders is a browser, which is the argument `app/desk.test.mjs`
+already makes for the desk, made a second time by a whole feature
+of the site being off for a day.
+
+`next/components/scripts.tsx` holds the fix: the module is fetched
+as early as it ever was, by a `modulepreload` link in the server's
+HTML, and it is executed from an effect, which React runs after
+hydration has finished. `next/interactive.test.mjs` is the check,
+twenty-eight of them in a real browser against the built pages, and
+it fails on twelve if the tags go back.
+
+The home page had its own share of the same break, found while
+testing this one. Its boot script is the one page's that also picks
+WHICH of the four introductions the reader sees, and the port kept
+the theme half and dropped the picking; the headline swap beside it
+was written as `<script>{js}</script>` in JSX, which React ships as
+an empty tag. So every reader got all four introductions and all
+three sets of buttons at once, which is precisely what the comment
+above that script says it exists to prevent. Both are back, and the
+CSS that hides three of the four is rendered rather than injected,
+for the same hydration reason.
+
 ### 2026-08-16 · The main Worker had not deployed since Stage 11.1, and nothing said so
 
 Every push from `ca82ab0` onwards built nothing. Thirteen commits,

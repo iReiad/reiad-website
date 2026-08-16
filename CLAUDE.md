@@ -241,6 +241,10 @@ node next/parity.test.mjs          # the Next.js route saying something the
                                    # reading hub that has stopped agreeing with
                                    # the database
                                    # (114 checks, needs the build, skips without)
+node next/interactive.test.mjs     # a calculator that renders and computes
+                                   # nothing, because hydration undid it
+                                   # (28 checks, needs `npx next build` and a
+                                   # browser, skips without)
 ```
 
 It really does run in a container, as of 16 August 2026, and the
@@ -500,6 +504,39 @@ called done.
 That includes the `<head>`. A change to canonical links, Open Graph tags
 or the webfont link has to go into `page()` inside both builders, or the
 two schools drift away from the rest of the site one deploy at a time.
+
+## A page rendered by Next loads its modules through one component
+
+**Never write `<script type="module" src="...">` into a Next route.**
+`next/components/scripts.tsx` is how a page loads one, and the reason
+is not tidiness. A module script in the body is deferred, so it runs
+after the document is parsed and BEFORE React hydrates; hydration is
+React adopting the server's HTML, and it undoes anything the module
+wrote into it. The module runs, the page goes back to how it shipped,
+and the console says `Minified React error #418`.
+
+That is not a hypothetical either. Every calculator on this site was
+blank for a day: the compounding tool computed the right number, wrote
+it in, and had it replaced with the placeholder dash, and the same
+happened to the stock check's verdict and to five of the seven case
+studies. Nothing here could see it, because every other check reads
+HTML and the HTML was correct.
+
+The same rule catches two smaller shapes of it:
+
+- An inline script written as `<script>{js}</script>` in JSX ships as
+  an empty tag. React drops the children of a `<script>`. Use
+  `dangerouslySetInnerHTML`, which for this one tag is the ordinary
+  way and not a shortcut.
+- A `<style>` or any other node a script adds to the document before
+  hydration is a node React removes. Render it instead.
+
+An element a pre-paint inline script deliberately rewrites, the home
+page's headline being the only one, carries `suppressHydrationWarning`
+so React leaves it alone.
+
+`next/interactive.test.mjs` drives the built pages in a real browser
+and fails if any of this comes back.
 
 ## Publishing a new case study
 

@@ -1,8 +1,9 @@
 import { siteLayout } from "../../../../components/page";
+import { SiteScripts } from "../../../../components/scripts";
 
 export default siteLayout({
   current: "portfolio",
   skip: "Skip to the model",
   skipTo: "#model",
-  scripts: <script type="module" src="/portfolio/three-statement.js" />,
+  scripts: <SiteScripts srcs={["/portfolio/three-statement.js"]} />,
 });

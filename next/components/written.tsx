@@ -20,6 +20,7 @@
 
 import type { Metadata } from "next";
 import type { SchoolHub } from "../lib/school-hubs";
+import { SiteScripts } from "./scripts";
 
 /** The head, stated exactly as the committed page states it.
 
@@ -63,9 +64,7 @@ export function writtenPage(page: SchoolHub | undefined) {
       <main id="main">
         <div className="wrap" dangerouslySetInnerHTML={{ __html: page.body }} />
       </main>
-      {page.scripts.map((src) => (
-        <script key={src} type="module" src={src} />
-      ))}
+      <SiteScripts srcs={page.scripts} />
     </>
   );
 }

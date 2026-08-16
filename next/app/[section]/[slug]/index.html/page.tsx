@@ -32,6 +32,7 @@ import { stageUrl } from "@reiad/shared/schools";
 import { getStage } from "../../../../lib/school";
 import { siteOrigin } from "../../../../lib/article";
 import { schoolIcon } from "../../../../lib/school-icons";
+import { SiteScripts } from "../../../../components/scripts";
 
 type Params = Promise<{ section: string; slug: string }>;
 
@@ -222,7 +223,7 @@ export default async function StagePage({ params }: { params: Params }) {
 
         </div>
       </main>
-      <script type="module" src={shape.script} />
+      <SiteScripts srcs={[shape.script]} />
     </>
   );
 }

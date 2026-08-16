@@ -1,8 +1,9 @@
 import { siteLayout } from "../../../../components/page";
+import { SiteScripts } from "../../../../components/scripts";
 
 export default siteLayout({
   current: "portfolio",
   skip: "Skip to the models",
   skipTo: "#pd",
-  scripts: <script type="module" src="/portfolio/scorecard.js" />,
+  scripts: <SiteScripts srcs={["/portfolio/scorecard.js"]} />,
 });

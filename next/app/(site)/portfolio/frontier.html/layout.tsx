@@ -1,8 +1,9 @@
 import { siteLayout } from "../../../../components/page";
+import { SiteScripts } from "../../../../components/scripts";
 
 export default siteLayout({
   current: "portfolio",
   skip: "Skip to the portfolio",
   skipTo: "#fund",
-  scripts: <script type="module" src="/portfolio/frontier.js" />,
+  scripts: <SiteScripts srcs={["/portfolio/frontier.js"]} />,
 });
