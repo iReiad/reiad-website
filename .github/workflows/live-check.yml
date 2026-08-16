@@ -1,0 +1,52 @@
+# ============================================================
+# The live smoke test.
+#
+# `scripts/check-live.mjs` asks the deployed site the handful of
+# questions that cannot be answered from a file: whether the NEXT
+# service binding is really in effect, whether the second Worker's
+# own JavaScript is really being served, and whether the pieces
+# that fall through to the asset router still do.
+#
+# It runs here rather than locally because it needs to reach
+# reiad.co.uk, and because a red tick on a commit is harder to
+# ignore than a check nobody remembered to run. It needs no
+# secret: every URL it asks for is one a reader can ask for.
+#
+# On every push, because the questions it asks are about the
+# deployed site rather than about the commit, and the moment
+# somebody is pushing is the moment they want to know. A failure
+# here does not mean the push broke something; it means the site
+# is not doing what the repository says, which is worth a red
+# tick either way.
+# ============================================================
+
+name: Live site check
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    # It asks a couple of dozen URLs and each one has its own
+    # deadline, so this is generous. It is here because the first
+    # version had neither and sat on a runner for six minutes
+    # waiting on a request nothing was going to answer.
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Ask the live site
+        run: node scripts/check-live.mjs

@@ -176,6 +176,31 @@ node app/studio.test.mjs           # the React Studio's chrome, end to end
                                    # (86 checks, needs Playwright, skips without)
 ```
 
+And when anything under `next/` or `shared/` changed, after
+`cd next && npx opennextjs-cloudflare build`:
+
+```sh
+node next/parity.test.mjs          # the Next.js route saying something the
+                                   # Worker's own renderer does not
+                                   # (49 checks, needs the build, skips without)
+```
+
+## After deploying
+
+One check describes what is live rather than what is committed, so
+it belongs after the upload and not before it:
+
+```sh
+node scripts/check-live.mjs        # the service binding, the second Worker's
+                                   # own scripts, and the pieces that fall
+                                   # through to a file
+```
+
+It runs itself on every push, in `.github/workflows/live-check.yml`,
+because the two things it is really watching are settings on a
+deployed Worker rather than lines in this repository, and an article
+renders perfectly with both of them broken.
+
 If a precached file changed, bump `VERSION` in `aab/sw.js`, add a line to
 the changelog at the top of that file saying what changed and why it needs
 the bump, then run `node aab/check-sw.mjs --update`.
