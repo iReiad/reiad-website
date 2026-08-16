@@ -17,6 +17,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 interface Result<T> {
   rows: T[];
+  /* Everything else the endpoint sent. Three of these panels want
+     a second thing out of the same reply, and all three want it
+     from the same request rather than a second one: the questions
+     queue wants its per-status counts, the subscribers list wants
+     its totals, and both of those are computed by the database in
+     the query that fetched the rows. */
+  extra: Record<string, unknown> | null;
   loading: boolean;
   failed: boolean;
   reload: () => void;
@@ -28,6 +35,7 @@ export function useRows<T>(
   deps: unknown[]
 ): Result<T> {
   const [rows, setRows] = useState<T[]>([]);
+  const [extra, setExtra] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
   const [nonce, setNonce] = useState(0);
@@ -45,8 +53,9 @@ export function useRows<T>(
     load()
       .then((reply) => {
         if (mine !== run.current) return;
-        if (!reply?.ok) { setFailed(true); setRows([]); return; }
+        if (!reply?.ok) { setFailed(true); setRows([]); setExtra(null); return; }
         setRows(pick(reply as Record<string, unknown>));
+        setExtra(reply as Record<string, unknown>);
       })
       .catch(() => { if (mine === run.current) setFailed(true); })
       .finally(() => { if (mine === run.current) setLoading(false); });
@@ -57,5 +66,5 @@ export function useRows<T>(
   }, [...deps, nonce]);
 
   const reload = useCallback(() => setNonce((n) => n + 1), []);
-  return { rows, loading, failed, reload };
+  return { rows, extra, loading, failed, reload };
 }

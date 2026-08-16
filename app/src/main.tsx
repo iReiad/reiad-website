@@ -15,7 +15,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Desk } from "./Desk.tsx";
 
-// @ts-expect-error - /auth.js is untyped JavaScript served by the site
 import { requireOwner } from "/auth.js";
 
 /* The site's own script: header, menu, palette, theme, sign-in.
@@ -23,7 +22,6 @@ import { requireOwner } from "/auth.js";
    this site rather than an island that has to reimplement the
    furniture. Left external by vite.config.ts, so this stays a
    runtime import of the file the rest of the site already uses. */
-// @ts-expect-error - side-effect import of the site's own script
 import "/app.js";
 
 const root = document.getElementById("desk-root");

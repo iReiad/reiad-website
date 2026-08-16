@@ -11,60 +11,90 @@
    the screen, and this page is signed in as an administrator,
    which makes it the worst possible place to start parsing
    somebody else's markup.
+
+   Comments are rows rather than cards, unlike questions. That is
+   not an inconsistency: a question is answered here, so it needs a
+   text box and the room to use one, and a comment is only ever
+   approved, hidden or binned.
    ============================================================ */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Comment, Status } from "./api.ts";
 import { listComments, setCommentStatus, deleteComment } from "./api.ts";
 import { useRows } from "./useRows.ts";
-import { Broken, Count, Empty, Filters, Loading, when } from "./bits.tsx";
+import { isNew } from "./seen.ts";
+import { toast } from "./site.ts";
+import {
+  Broken, Chip, Count, Empty, Filters, Loading, Pill, SearchBox, when,
+} from "./bits.tsx";
 
-const FILTERS: [Status, string][] = [
+const FILTERS = [
   ["pending", "Waiting"],
   ["live", "Approved"],
   ["binned", "Binned"],
-];
+] as const;
 
-export function Comments({ onToast }: { onToast: (text: string) => void }) {
+export function Comments() {
   const [status, setStatus] = useState<Status>("pending");
+  const [q, setQ] = useState("");
+
   const { rows, loading, failed, reload } = useRows<Comment>(
     () => listComments(status),
     (reply) => (reply.comments as Comment[]) ?? [],
     [status]
   );
 
+  /* Searched here rather than at the endpoint, which is the
+     opposite of what the questions queue does and is right for the
+     same reason: the comments endpoint returns one status at a
+     time and never more than a screenful or two, so a round trip
+     per keystroke would buy nothing. */
+  const shown = useMemo(() => {
+    const needle = q.toLowerCase();
+    if (!needle) return rows;
+    return rows.filter((c) =>
+      `${c.author_name} ${c.body} ${c.section}/${c.slug}`.toLowerCase().includes(needle));
+  }, [rows, q]);
+
   const move = async (item: Comment, next: Status) => {
     const res = await setCommentStatus(item.id, next);
-    if (res?.ok) { onToast(next === "live" ? "Approved" : `Moved to ${next}`); reload(); }
-    else onToast("That did not save");
+    if (res?.ok) { toast(next === "live" ? "Approved" : `Moved to ${next}`); reload(); }
+    else toast("That did not save");
   };
 
   const remove = async (item: Comment) => {
     if (!confirm("Delete permanently? Binning keeps it and hides it.")) return;
     const res = await deleteComment(item.id);
-    if (res?.ok) { onToast("Deleted"); reload(); } else onToast("That did not delete");
+    if (res?.ok) { toast("Deleted"); reload(); } else toast("That did not delete");
   };
 
   return (
     <>
       <Filters options={FILTERS} active={status} onPick={setStatus} />
+      <SearchBox placeholder="Search comments, names, articles" onSearch={setQ} />
 
       {loading ? <Loading /> : failed ? <Broken what="comments" /> : (
         <>
-          <Count>{rows.length} comment{rows.length === 1 ? "" : "s"}</Count>
+          <Count>
+            {shown.length === rows.length
+              ? `${rows.length} comment${rows.length === 1 ? "" : "s"}`
+              : `${shown.length} of ${rows.length}`}
+          </Count>
 
-          {rows.length === 0 ? (
+          {shown.length === 0 ? (
             <Empty>
-              {status === "pending"
-                ? "Nothing waiting. Everything readers have written has been dealt with."
-                : "Nothing here."}
+              {q ? "Nothing matches that."
+                : status === "pending"
+                  ? "Nothing waiting. Everything readers have written has been dealt with."
+                  : "Nothing here."}
             </Empty>
           ) : (
             <div className="admin-table">
-              {rows.map((c) => (
-                <div className="admin-line comment-line" key={c.id}>
+              {shown.map((c) => (
+                <div className={`admin-line comment-line status-${c.status}`} key={c.id}>
                   <span className="line-facts">
-                    <span className="pill">{c.author_name || "Reader"}</span>
+                    {isNew(c.created_at) ? <Pill tone="new">new</Pill> : null}
+                    <Pill>{c.author_name || "Reader"}</Pill>
                     <a
                       className="mono"
                       href={`/${c.section}/${c.slug}.html`}
@@ -73,28 +103,21 @@ export function Comments({ onToast }: { onToast: (text: string) => void }) {
                     >
                       {c.section}/{c.slug}
                     </a>
-                    {c.parent_id ? <span className="pill">reply</span> : null}
+                    {c.parent_id ? <Pill>reply</Pill> : null}
                     <span className="mono muted">{when(c.created_at)}</span>
                   </span>
 
-                  {/* A string child. React escapes it; nothing here parses it. */}
+                  {/* A string child. See the note above this file. */}
                   <p className="comment-body">{c.body}</p>
 
                   <span className="line-actions">
-                    {c.status !== "live" && (
-                      <button type="button" className="chip chip-move"
-                              onClick={() => move(c, "live")}>Approve</button>
-                    )}
-                    {c.status !== "binned" && (
-                      <button type="button" className="chip"
-                              onClick={() => move(c, "binned")}>Bin</button>
-                    )}
-                    {c.status === "live" && (
-                      <button type="button" className="chip"
-                              onClick={() => move(c, "pending")}>Hide again</button>
-                    )}
-                    <button type="button" className="chip"
-                            onClick={() => remove(c)}>Delete</button>
+                    {c.status !== "live"
+                      ? <Chip tone="move" onClick={() => move(c, "live")}>Approve</Chip> : null}
+                    {c.status !== "binned"
+                      ? <Chip onClick={() => move(c, "binned")}>Bin</Chip> : null}
+                    {c.status === "live"
+                      ? <Chip onClick={() => move(c, "pending")}>Hide again</Chip> : null}
+                    <Chip onClick={() => remove(c)}>Delete</Chip>
                   </span>
                 </div>
               ))}

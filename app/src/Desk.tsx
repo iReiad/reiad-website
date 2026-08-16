@@ -1,20 +1,35 @@
 /* ============================================================
-   Desk.tsx: the tabs, and what is behind them.
+   Desk.tsx: the six panels, and what is waiting behind them.
 
-   The panel a reader is looking at is kept in the URL hash, which
-   the old desk did too and for the same reason: reloading the page
-   after approving something should not send you back to the first
-   tab.
+   Which panel you are looking at is kept in the URL hash, which
+   the old desk did too and for the same reason: reloading after
+   approving something should not send you back to the first tab,
+   and a bookmark should be able to land on the queue.
+
+   The tabs are real tabs. `aria-selected` rather than
+   `aria-pressed`, each one naming the panel it controls, a roving
+   tabindex, and the arrow, Home and End keys the role implies.
+   That was right in the old desk and is the sort of thing a port
+   loses quietly.
    ============================================================ */
 
 import { useEffect, useState } from "react";
 import { Comments } from "./Comments.tsx";
 import { Questions } from "./Questions.tsx";
+import { Enquiries } from "./Enquiries.tsx";
+import { Subscribers } from "./Subscribers.tsx";
+import { Stats } from "./Stats.tsx";
 import { Published } from "./Published.tsx";
+import { Overview, type Waiting } from "./Overview.tsx";
+import { markSeen } from "./seen.ts";
+import { listQuestions, listEnquiries, listSubscribers, readStats } from "./api.ts";
 
 const PANELS = {
   queue: { label: "Questions", render: Questions },
   comments: { label: "Comments", render: Comments },
+  enquiries: { label: "Enquiries", render: Enquiries },
+  subscribers: { label: "Subscribers", render: Subscribers },
+  stats: { label: "What's read", render: Stats },
   articles: { label: "Published", render: Published },
 } as const;
 
@@ -26,17 +41,9 @@ const fromHash = (): Key => {
   return KEYS.includes(k) ? k : "queue";
 };
 
-/** One line, gone after a moment. The site's own toast lives in
-    app.js and is not importable as a module here, so this is the
-    same idea rendered by the component that raised it. */
-function Toast({ text }: { text: string | null }) {
-  if (!text) return null;
-  return <p className="admin-count mono" role="status" aria-live="polite">{text}</p>;
-}
-
 export function Desk() {
   const [panel, setPanel] = useState<Key>(fromHash);
-  const [toast, setToast] = useState<string | null>(null);
+  const [waiting, setWaiting] = useState<Waiting | null>(null);
 
   useEffect(() => {
     const onHash = () => setPanel(fromHash());
@@ -44,26 +51,64 @@ export function Desk() {
     return () => removeEventListener("hashchange", onHash);
   }, []);
 
+  /* Whatever was new this visit stops being new on the next one.
+     On pagehide rather than on unload, because unload does not
+     fire on a phone: closing the tab from the app switcher is the
+     normal way to leave this page and never fired it once. */
   useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 2600);
-    return () => clearTimeout(t);
-  }, [toast]);
+    addEventListener("pagehide", markSeen);
+    return () => removeEventListener("pagehide", markSeen);
+  }, []);
+
+  /* One round of counting, for the tiles and the tab badges both.
+     Four requests, and they are the same four the panels behind
+     them would each make on their own, so this is the cost of the
+     overview rather than a duplicate of it. */
+  useEffect(() => {
+    let live = true;
+    Promise.all([
+      listQuestions("pending"),
+      listEnquiries(),
+      listSubscribers(),
+      readStats(30),
+    ]).then(([q, e, s, v]) => {
+      if (!live) return;
+      setWaiting({
+        questions: q?.ok ? q.questions.length : 0,
+        enquiries: e?.ok ? e.enquiries.filter((row) => row.status === "new").length : 0,
+        subscribers: s?.ok ? Number(s.counts?.confirmed ?? 0) : 0,
+        views: v?.ok ? Number(v.total ?? 0) : 0,
+      });
+    });
+    return () => { live = false; };
+  }, []);
 
   const show = (key: Key) => {
     setPanel(key);
-    history.replaceState(null, "", `#${key}`);
+    if (location.hash.slice(1) !== key) history.replaceState(null, "", `#${key}`);
   };
 
-  /* Real tabs: the roving tabindex and arrow keys the role implies,
-     which the old desk got right and is worth not losing. */
   const onKey = (e: React.KeyboardEvent) => {
     const i = KEYS.indexOf(panel);
-    if (e.key === "ArrowRight") show(KEYS[(i + 1) % KEYS.length]);
-    else if (e.key === "ArrowLeft") show(KEYS[(i - 1 + KEYS.length) % KEYS.length]);
-    else return;
+    const next =
+      e.key === "ArrowRight" ? (i + 1) % KEYS.length
+      : e.key === "ArrowLeft" ? (i - 1 + KEYS.length) % KEYS.length
+      : e.key === "Home" ? 0
+      : e.key === "End" ? KEYS.length - 1
+      : -1;
+    if (next < 0) return;
     e.preventDefault();
+    show(KEYS[next]);
+    document.getElementById(`desk-tab-${KEYS[next]}`)?.focus();
   };
+
+  /* Only the two that mean a person is waiting for a reply, and
+     only when the number is not zero. A badge reading nought is a
+     worse thing than no badge. */
+  const badge = (key: Key) =>
+    key === "queue" ? waiting?.questions
+    : key === "enquiries" ? waiting?.enquiries
+    : 0;
 
   const Panel = PANELS[panel].render;
 
@@ -80,22 +125,36 @@ export function Desk() {
 
       <div className="studio-bar">
         <a className="btn btn-ghost" href="/studio.html">← The Studio</a>
+        {/* Both ways round while there are two of them. The old
+            page is one click away rather than one revert away,
+            which is the difference between a rollback plan and a
+            rollback. */}
+        <a className="btn btn-ghost" href="/desk.html">The old desk</a>
         <span className="studio-now">React · Stage 9</span>
       </div>
 
+      <Overview waiting={waiting} go={(key) => show(key as Key)} />
+
+      {/* The tabs and the panel share one <section>, which is the
+          shape the old desk had and is not cosmetic. `section` in
+          the base layer carries this site's vertical rhythm:
+          `padding-block: var(--step) 6px`, 68px of it. Making the
+          panel its own section rather than the pair of them put
+          those 68px BETWEEN the tab strip and the filters, so the
+          panel looked detached from the tab that opened it. */}
+      <section style={{ marginTop: "26px" }}>
       <div
         className="chip-row"
         role="tablist"
         aria-label="What the site collected"
         onKeyDown={onKey}
-        style={{ marginTop: "26px" }}
       >
         {KEYS.map((key) => (
           <button
             key={key}
             type="button"
             role="tab"
-            id={`tab-${key}`}
+            id={`desk-tab-${key}`}
             aria-selected={String(key === panel) as "true" | "false"}
             aria-controls="desk-panel"
             tabIndex={key === panel ? 0 : -1}
@@ -103,27 +162,32 @@ export function Desk() {
             onClick={() => show(key)}
           >
             {PANELS[key].label}
+            {badge(key) ? <span className="tab-count">{badge(key)}</span> : null}
           </button>
         ))}
       </div>
 
-      <section
+      <div
         className="admin-panel"
         id="desk-panel"
         role="tabpanel"
-        aria-labelledby={`tab-${panel}`}
+        aria-labelledby={`desk-tab-${panel}`}
         tabIndex={0}
-        style={{ marginTop: "18px" }}
       >
-        <Panel onToast={setToast} />
+        {/* Keyed on the panel, so switching tabs unmounts the old
+            one rather than handing its state to the new one. Two
+            panels here hold typed text, and a half-written answer
+            reappearing inside a private note would be a real
+            mistake, not a cosmetic one. */}
+        <Panel key={panel} />
+      </div>
       </section>
 
-      <Toast text={toast} />
-
       <div className="note measure" style={{ marginTop: "30px" }}>
-        <strong>Nothing here is a one-way door.</strong> Binning or archiving
-        only moves something: it can go back to waiting at any time. Only
-        <em> Delete</em> removes anything, and it asks first.
+        <strong>Nothing here is a one-way door.</strong> Archiving, binning or
+        marking something as spam only moves it: <em>Everything</em> shows all of
+        it, and anything can go back to waiting. Only <em>Delete</em> removes
+        something, and it asks first.
       </div>
     </>
   );

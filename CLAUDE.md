@@ -166,6 +166,13 @@ node aab/studio.test.mjs           # the editor, end to end (70 checks)
 node functions/_lib/notion.test.mjs
 ```
 
+And when anything under `app/src/` changed, after rebuilding:
+
+```sh
+node app/desk.test.mjs             # a panel that renders and is not finished
+                                   # (75 checks, needs Playwright, skips without)
+```
+
 If a precached file changed, bump `VERSION` in `aab/sw.js`, add a line to
 the changelog at the top of that file saying what changed and why it needs
 the bump, then run `node aab/check-sw.mjs --update`.
@@ -226,6 +233,26 @@ The stylesheet is not part of it. `aab/styles.css` stays the design
 system and React renders the same class names into the same `@layer`
 rules. No CSS-in-JS, no Tailwind, no second design system: a port that
 also redesigns the page cannot be judged.
+
+Neither are the site's own modules. `/app.js`, `/api.js`, `/auth.js`,
+`/content.js`, `/share-card.js` and `/photo.js` are left external by
+`vite.config.ts` and imported at runtime, so the desk shares one copy
+of each with every other page instead of carrying a second that can
+drift. They are plain JavaScript, so each one is described by a
+declaration in `app/src/types/` that `tsconfig.json` maps the runtime
+path to. Do not answer an untyped import with a `@ts-expect-error`:
+that silences the complaint without describing anything, and it
+silences the next complaint too.
+
+**A port is finished when it does what the thing it replaced did, not
+when it renders.** Those two look identical from the outside, which is
+how the first React desk shipped as three thin panels missing the
+search boxes, the filter counts and most of the actions. So the list of
+what the old page did is written down as a test:
+`app/desk.test.mjs` drives the built page in a browser against routed
+API fixtures, and every check in it is a feature `aab/desk.js` had.
+Anything ported out of `aab/*.js` gets the same treatment before it is
+called done.
 
 That includes the `<head>`. A change to canonical links, Open Graph tags
 or the webfont link has to go into `page()` inside both builders, or the
