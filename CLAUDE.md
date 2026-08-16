@@ -184,11 +184,13 @@ node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the
                                    # real CSP (needs Playwright, skips without)
 node aab/sync.test.mjs             # resetting, and meeting an account for the
                                    # first time (needs a server on :8899)
-node aab/studio.test.mjs           # the editor, end to end (70 checks)
+node aab/studio.test.mjs           # the editor, end to end (68 checks)
 node functions/_lib/notion.test.mjs
 node scripts/schools.test.mjs        # a curriculum that lost a field, a lesson
                                      # body that changed, or a ladder that came
                                      # back in the wrong order (30 checks)
+node scripts/schools-api.test.mjs    # a school readable by anyone, writable by
+                                     # somebody else, or half-written (24 checks)
 ```
 
 And when anything under `app/src/` changed, after rebuilding:
