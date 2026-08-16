@@ -677,6 +677,18 @@ for (const [path, title, nav] of [
     new RegExp(`<${tag}[^>]*class="[^"]*\\b${cls}\\b[^"]*"[^>]*>([\\s\\S]*?)</${tag}>`, "i")
   )?.[1] ?? null;
 
+  /* Every school script the page loads, sorted.
+
+     Not the first one: the money school writes `/learn/learn.js`
+     into every page of the school and its ladder pages add
+     `/learn/stage.js` on top, so "the script" is two of them
+     there and one everywhere else. Order is not compared because
+     the builder puts the shared one first and a React shell puts
+     it last, and both are module scripts. */
+  const schoolScripts = (html) => [...html.matchAll(
+    /<script type="module" src="(\/(?:learn|deutsch|quran|english)\/[a-z-]+\.js)"/g)]
+    .map((m) => m[1]).sort().join(" ");
+
   /* Text, with the tags taken out and the whitespace flattened.
      Indentation is the one difference that is guaranteed and
      means nothing: the builders write a page a person can read
@@ -751,8 +763,7 @@ for (const [path, title, nav] of [
         (h) => attr(h, new RegExp(`${name}="([^"]*)"`)));
     }
 
-    same("the school's own script",
-      (h) => attr(h, /<script type="module" src="(\/(?:learn|deutsch|quran|english)\/[a-z-]+\.js)"/));
+    same("the scripts the page loads", schoolScripts);
     same("the body class", (h) => attr(h, /<body class="([^"]*)"/));
 
     /* And the prose itself, byte for byte, because that is the
@@ -766,6 +777,92 @@ for (const [path, title, nav] of [
     ok(`${path}: the prose is the row's, unchanged`,
       stored !== "" && now.includes(stored.trim()),
       "the stored body is not in the page, character for character");
+  }
+
+  /* ---- a stage's contents page, which is the other half ----
+
+     Stage 11.7 step 2. Seventeen of the 251, and the page a
+     reader navigates a school by. Every number on it is counted
+     from the lessons rather than declared, which is the rule at
+     the top of CLAUDE.md, so the facts list is compared word for
+     word: a route that counted differently from the builder would
+     be a page telling a reader there are fourteen lessons where
+     the ladder shows thirteen. */
+  for (const [path, file, note] of [
+    ["/learn/basics-2/index.html", "learn/basics-2/index.html",
+      "a stage of the money school"],
+    ["/deutsch/stufe-1/index.html", "deutsch/stufe-1/index.html",
+      "a Stufe, with a practice book above the cards"],
+    ["/quran/dhap-1/index.html", "quran/dhap-1/index.html",
+      "a dhap, counted in days"],
+    ["/english/term-1/index.html", "english/term-1/index.html",
+      "a term, with a book and a nightly range"],
+  ]) {
+    const page = await hub(path);
+    ok(`${path} answers (${note})`, page.status === 200, `status ${page.status}`);
+    if (page.status !== 200) continue;
+
+    const was = committed(file);
+    const now = page.html;
+    const same = (what, extract) => {
+      const a = decode(extract(was));
+      const b = decode(extract(now));
+      ok(`${path}: ${what}`, a === b,
+        `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(b)}`);
+    };
+
+    same("the title", (h) => tagText(h, "title"));
+    same("the description", (h) => meta(h, "description", "name"));
+    same("the canonical link", (h) => attr(h, /<link rel="canonical" href="([^"]+)"/));
+    same("og:image", (h) => meta(h, "og:image"));
+
+    same("the eyebrow", (h) => words(byClass(h, "span", "eyebrow")));
+    same("the heading", (h) => words(tagText(h, "h1")));
+    same("the lede", (h) => words(byClass(h, "p", "lede")));
+
+    /* The facts, which is where a school says how big it is.
+       Every one of these numbers is counted. */
+    same("what the stage says about itself",
+      (h) => words(byClass(h, "dl", "stage-facts")));
+
+    /* Every card, in order, with its address. A ladder that has
+       lost a rung or reordered two is the failure this whole
+       stage exists to avoid. */
+    same("every lesson card, in order", (h) => {
+      const cards = [...h.matchAll(/class="cell lesson-card[^"]*"\s+href="([^"]+)"/g)]
+        .map((m) => m[1]);
+      /* The builders write href before the class on some cards
+         and after it on others, so both orders are collected. */
+      const other = [...h.matchAll(/href="([^"]+)"\s+[^>]*class="cell lesson-card/g)]
+        .map((m) => m[1]);
+      return [...cards, ...other].join(" ");
+    });
+
+    same("the progress bar's key",
+      (h) => attr(h, /data-(?:stage|stufe|dhap|term)-progress="([^"]*)"/));
+    same("where the continue button starts",
+      (h) => attr(h, /data-(?:stage|stufe|dhap|term)-continue="[^"]*"[^>]*>|href="([^"]+)"[^>]*data-(?:stage|stufe|dhap|term)-continue/));
+    same("the prev/next pair", (h) => words(byClass(h, "nav", "prev-next")));
+    same("where the prev/next pair points", (h) => {
+      const inside = byClass(h, "nav", "prev-next");
+      return inside === null ? null
+        : [...inside.matchAll(/href="([^"]+)"/g)].map((m) => m[1]).join(" ");
+    });
+    same("the scripts the page loads", schoolScripts);
+    same("the body class", (h) => attr(h, /<body class="([^"]*)"/));
+  }
+
+  /* The practice book's band, which only two schools have and
+     which sits above the cards rather than under them. */
+  {
+    const stufe = await hub("/deutsch/stufe-1/index.html");
+    ok("a Stufe with a book links it above the cards",
+      stufe.html.indexOf("buch-cta") > 0
+      && stufe.html.indexOf("buch-cta") < stufe.html.indexOf("lesson-card"),
+      "the practice book is not above the lesson cards");
+    const dhap = await hub("/quran/dhap-1/index.html");
+    ok("and a school with no book draws no band at all",
+      !dhap.html.includes("buch-cta") && !dhap.html.includes("wb-cta"));
   }
 
   /* ---- the eighteen originals, which are a different thing ----

@@ -86,10 +86,25 @@ function SchoolShell({ school, children }: { school: string; children: ReactNode
       current={look.current}
       footer={look.footer}
       skip="মূল লেখায় যান"
+      /* Only the script every page of the school loads. The one
+         a particular KIND of page loads is not here and cannot
+         be: a lesson loads `/quran/dars.js` and its stage's
+         ladder loads `/quran/dhap.js`, and a layout two segments
+         up cannot tell which of the two it is wrapping. Each page
+         renders its own, which puts it between the main content
+         and the footer rather than after it: both are module
+         scripts, so the position changes nothing and the
+         alternative is a shell that guesses.
+
+         The money school is the one with a shell script, and it
+         is not a tidier arrangement: `page()` in
+         `build-lessons.mjs` writes `/learn/learn.js` into all
+         ninety-one of its pages, and its ladder pages add
+         `/learn/stage.js` on top. */
       scripts={
         <>
           {school === "learn" ? <ModalReader /> : null}
-          {look.script ? <script type="module" src={look.script} /> : null}
+          {look.shellScript ? <script type="module" src={look.shellScript} /> : null}
         </>
       }
     >
