@@ -18,6 +18,7 @@
 
 import type { ReactNode } from "react";
 import { FONTS, LOOK } from "@reiad/shared/look";
+import { SiteScripts } from "./scripts";
 
 /* Before the first paint, and therefore inline and blocking.
 
@@ -193,9 +194,15 @@ export function SiteShell({
             loads them from. Next's own runtime is loaded alongside
             them by the framework, which is a cost Stage 10 measured
             and accepted rather than one it avoided: see the note at
-            the top of app/[section]/[slug]/page.tsx. */}
+            the top of app/[section]/[slug]/page.tsx.
+
+            Through `SiteScripts` rather than as `<script>` tags,
+            and never as `<script>` tags again: a module that runs
+            before React has hydrated has its work undone by the
+            hydration. `components/scripts.tsx` is the whole story
+            and is worth reading before adding one. */}
         {scripts}
-        <script type="module" src="/app.js" />
+        <SiteScripts srcs={["/app.js"]} />
       </body>
     </html>
   );

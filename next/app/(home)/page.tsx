@@ -27,6 +27,21 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../lib/pageMeta";
 
+/* Swap the headline before the browser has painted it. Inline and
+   adjacent to the heading on purpose: it runs the moment that
+   heading is parsed, it ships inside the document so it can never
+   be a version behind it, and with no script at all the heading in
+   the markup is already the right one for someone who has just
+   arrived. `data-hl` is set by the boot script in this page's
+   layout, one line above the whole document. */
+const SWAP = `(function(){`
+  + `var h=document.currentScript.previousElementSibling;`
+  + `var pick=document.documentElement.getAttribute("data-hl");`
+  + `var next=pick&&h.dataset["hl"+pick[0].toUpperCase()+pick.slice(1)];`
+  + `if(!next)return;`
+  + `h.textContent=next;`
+  + `if(pick==="finance"||pick==="skills"){h.classList.add("bn-h");h.lang="bn"}})()`;
+
 const LD = "{\"@context\": \"https://schema.org\", \"@type\": \"WebSite\", \"name\": \"Reiad's Library\", \"url\": \"https://reiad.co.uk/\", \"description\": \"Plain-Bangla investment education, financial tools, and finance analysis.\", \"inLanguage\": [\"en\", \"bn\"], \"author\": {\"@type\": \"Person\", \"name\": \"Rony Reiad\", \"url\": \"https://reiad.co.uk/about.html\"}}";
 
 export const metadata: Metadata = pageMeta({
@@ -84,28 +99,20 @@ export default function HomePage() {
              The learner's two are Bangla, because the learning half
              of this site is Bangla: the person it is written for
              should not have to read English to be told it exists. */}
-            <h1 id="kinetic" className="home-h1" data-hl-finance="টাকার ভাষা, আমাদের ভাষায়।" data-hl-skills="যা শিখতে চান, নিজের ভাষায়।" data-hl-work="Financial models you can open, edit and trust.">Bangladesh's markets, explained in the language we speak.
+            {/* `suppressHydrationWarning`, because the script below
+                rewrites this heading before React gets to it and the
+                whole point is that it happens before the first paint.
+                Without it React finds text it did not render, calls
+                that a mismatch and puts the English headline back,
+                which is this page's share of the break the tools and
+                the case studies had. */}
+            <h1 id="kinetic" className="home-h1" suppressHydrationWarning data-hl-finance="টাকার ভাষা, আমাদের ভাষায়।" data-hl-skills="যা শিখতে চান, নিজের ভাষায়।" data-hl-work="Financial models you can open, edit and trust.">Bangladesh's markets, explained in the language we speak.
             </h1>
-            <script>
-              /* Swap it before the browser has painted it. Inline and
-             adjacent on purpose: this runs the moment the headline
-             above is parsed, it ships inside the document so it can
-             never be a version behind it, and with no script at all
-             the headline in the markup is already the right one for
-             someone who has just arrived. */
-          (function () {"{"}
-            var h = document.currentScript.previousElementSibling;
-            var pick = document.documentElement.getAttribute("data-hl");
-            var next = pick && h.dataset["hl" + pick[0].toUpperCase() + pick.slice(1)];
-            if (!next) return;
-            h.textContent = next;
-            if (pick === "finance" || pick === "skills") {"{"}
-              h.classList.add("bn-h");
-              h.lang = "bn";
-            {"}"}
-          {"}"})();
-        
-            </script>
+            {/* Through `dangerouslySetInnerHTML`, which for an inline
+                script is not a style: React drops the children of a
+                `<script>` tag written as JSX, so this shipped as
+                `<script></script>` and swapped nothing at all. */}
+            <script dangerouslySetInnerHTML={{ __html: SWAP }} />
             <p className="lede" data-when="open">
               Two libraries in plain Bangla, one for money and one for everything
           else worth learning, plus financial modeling and analysis for clients

@@ -35,6 +35,7 @@ import { notFound } from "next/navigation";
 import { lookFor } from "@reiad/shared/look";
 import { isSchool } from "@reiad/shared/schools";
 import { SiteShell } from "../../../components/shell";
+import { SiteScripts } from "../../../components/scripts";
 import { getArticle } from "../../../lib/article";
 import { LOOKS } from "../../../lib/school";
 
@@ -61,7 +62,7 @@ export default async function ReadingLayout({
       footer={look.footer}
       current={article.section === "insights" ? "insights" : "in-skills"}
       beforeMain={<div className="read-progress" aria-hidden="true" />}
-      scripts={<script src="/read-aloud.js" defer />}
+      scripts={<SiteScripts srcs={[{ src: "/read-aloud.js", classic: true }]} />}
     >
       {children}
     </SiteShell>
@@ -109,7 +110,7 @@ export function SchoolShell({ school, children }: { school: string; children: Re
       scripts={
         <>
           {school === "learn" ? <ModalReader /> : null}
-          {look.shellScript ? <script type="module" src={look.shellScript} /> : null}
+          {look.shellScript ? <SiteScripts srcs={[look.shellScript]} /> : null}
         </>
       }
     >

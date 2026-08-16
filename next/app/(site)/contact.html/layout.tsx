@@ -1,6 +1,7 @@
 import { siteLayout } from "../../../components/page";
+import { SiteScripts } from "../../../components/scripts";
 
 export default siteLayout({
   current: "contact",
-  scripts: <script type="module" src="/contact-form.js" />,
+  scripts: <SiteScripts srcs={["/contact-form.js"]} />,
 });

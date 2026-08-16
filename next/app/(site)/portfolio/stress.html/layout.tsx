@@ -1,8 +1,9 @@
 import { siteLayout } from "../../../../components/page";
+import { SiteScripts } from "../../../../components/scripts";
 
 export default siteLayout({
   current: "portfolio",
   skip: "Skip to the stress test",
   skipTo: "#stress",
-  scripts: <script type="module" src="/portfolio/stress.js" />,
+  scripts: <SiteScripts srcs={["/portfolio/stress.js"]} />,
 });

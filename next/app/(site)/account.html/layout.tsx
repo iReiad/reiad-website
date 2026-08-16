@@ -1,5 +1,6 @@
 import { siteLayout } from "../../../components/page";
+import { SiteScripts } from "../../../components/scripts";
 
 export default siteLayout({
-  scripts: <script type="module" src="/account-page.js" />,
+  scripts: <SiteScripts srcs={["/account-page.js"]} />,
 });

@@ -1,8 +1,9 @@
 import { siteLayout } from "../../../../components/page";
+import { SiteScripts } from "../../../../components/scripts";
 
 export default siteLayout({
   current: "portfolio",
   skip: "Skip to the valuation",
   skipTo: "#dcf",
-  scripts: <script type="module" src="/portfolio/dcf.js" />,
+  scripts: <SiteScripts srcs={["/portfolio/dcf.js"]} />,
 });

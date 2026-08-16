@@ -38,6 +38,7 @@ import { stageUrl } from "@reiad/shared/schools";
 import { getLesson } from "../../../../lib/school";
 import { siteOrigin } from "../../../../lib/article";
 import { schoolIcon } from "../../../../lib/school-icons";
+import { SiteScripts } from "../../../../components/scripts";
 
 type Params = Promise<{ section: string; slug: string; lesson: string }>;
 
@@ -171,7 +172,7 @@ export default async function LessonPage({ params }: { params: Params }) {
           than by the shell, because the ladder page beside this
           one loads a different one and the shell cannot tell them
           apart. */}
-      {look.script ? <script type="module" src={look.script} /> : null}
+      {look.script ? <SiteScripts srcs={[look.script]} /> : null}
     </>
   );
 }

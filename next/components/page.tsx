@@ -26,6 +26,7 @@ type Options = {
   skipTo?: string;
   footer?: string;
   footerName?: string;
+  beforeMain?: ReactNode;
   scripts?: ReactNode;
 };
 
