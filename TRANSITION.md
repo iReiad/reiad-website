@@ -1599,6 +1599,30 @@ open item and not this step. *Needs* `app/desk.test.mjs` and `app/studio.test.mj
 repointed at the new addresses, because those two files are the
 written-down list of what the old pages did.
 
+**Two things found on 16 August, before starting it, that are the
+reason it did not start.**
+
+**The shells are not hand-written any more.** `aab/desk/index.html`
+and `aab/studio/index.html` are Vite's output: its `root` is
+`app/src`, so `app/src/index.html` is the entry it builds them
+from. Archiving them the way every other page in this stage was
+archived would work until the next `npm run build`, which would
+put them straight back. Doing this step means `vite.config.ts`
+takes a `.tsx` entry through `rollupOptions.input` and stops
+emitting HTML at all, and `app/src/index.html` is archived with
+the two outputs.
+
+**And the apps themselves are blocked on the wall below.** Both
+bundles import `/content.js`, `/api.js`, `/auth.js`,
+`/editor.js`, `/share-card.js` and `/photo.js` as runtime
+externals out of `aab/`, deliberately, so that there is one copy
+of each. A route in `next/` cannot import any of them.
+
+Half of this step is safe on its own and half is not, so neither
+was done: a route answering `/desk/index.html` while Vite keeps
+writing a file at the same address is two answers to one URL, and
+that is the thing this whole stage exists to end.
+
 **11.7 The four schools.** 251 of the 283 files: learn 91,
 deutsch 64, quran 62, english 34. The builders stop writing HTML
 and become the thing that seeds the database Stage 8 creates; the
@@ -1632,6 +1656,64 @@ The first two are asked for by something that is not a route:
 they stay files or become Next routes with a copy the service
 worker keeps is a real decision and not a leftover, and it gets
 written here when it is taken.
+
+#### Moving a module into `next/`'s reach: the order, and one measurement
+
+The remaining work is not hard and it is not blocked. It is: move
+the file, fix the imports, rebuild, run the checks. What follows
+is only the two things worth knowing before doing it sixteen
+times.
+
+**The configuration fixes do not work, so do not spend an
+afternoon on them.** `next/` cannot import above its own
+directory, and the obvious ways round that look like they should
+work:
+
+Tried on 16 August 2026, against a route importing
+`aab/tools/stock.model.js`:
+
+| What | What happened |
+| --- | --- |
+| a relative import, `../../../../aab/tools/stock.model.js` | `Module not found` |
+| `turbopack.root` set to the repository root, with `outputFileTracingRoot` pinned to `next/` so the two stop moving together | `Module not found`, unchanged |
+| `turbopack.resolveAlias` to an absolute path | resolved as `./` + the path, so it looked for `./home/user/...` |
+| the same alias to a root-relative path | the alias never matched |
+
+**So the module moves instead of the configuration.**
+`@reiad/shared` is a `file:` dependency, npm copies it into
+`node_modules` because `next/.npmrc` says `install-links=true`,
+and `node_modules` is inside the root. A file in `shared/` is
+reachable from `next/`, from the Worker and from a node script,
+which is where anything more than one runtime needs belongs
+anyway. Moving one there is a `git mv` and an import line.
+
+**The only thing that makes it more than that** is that a module
+cannot sit in two places without something keeping the two in
+step, and this repository has been bitten by exactly that twice.
+So a module and the code that imports it move in the same commit:
+the browser stops needing it at the moment the component starts
+needing it, and there is never a copy.
+
+**The order, cheapest first**, which is the only thing about this
+that needs deciding in advance:
+
+1. **The five simple calculators.** Their maths is inside
+   `aab/tools/tools.js` itself: there is no model file to move at
+   all, so this one moves on its own and is where the first
+   `"use client"` on this site belongs.
+2. **The stock check.** `stock.model.js` and `stock.i18n.js` move
+   to `shared/tools/` in the same commit as the UI that reads
+   them. `check-content.mjs` asserts `COUNTS.ratios` against that
+   model and the tests pin it number by number, so both follow it
+   by relative path, which node has never had a problem with.
+3. **The schools, Stage 11.7.** The four `curriculum.js` modules
+   are imported by forty files. That is the largest of the four
+   and it is what also unblocks the About page's tally and the
+   drawings copied into `next/components/cards.tsx`.
+4. **The desk and the Studio, Stage 11.6.** Six site modules,
+   and the one where the copy that must not be duplicated is
+   `editor.js`: two sanitisers that disagree is the bug the
+   three-place rule in `CLAUDE.md` already exists for.
 
 #### The three things that can go wrong across all of it
 
@@ -2048,6 +2130,57 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Sixteen pages, and the wall the rest of Stage 11 is behind
+
+11.3, 11.4 and 11.5 landed in one sitting. **255 HTML files left
+in `aab/`, from 271 this morning and 283 when this stage was
+written. 251 of them are the schools**, and the other four are
+the two React shells, the 404 and the offline page. No
+hand-written page of this site is a file.
+
+The colophon went rather than moving. Every claim in it was
+falsified by the three stages before this one, and a page about
+how a thing is built cannot be ported into the thing that
+falsified it.
+
+**Three things the port would have got wrong**, and the order
+they were caught in is the argument for the checks:
+
+- **React reads `value` on an input as "this is controlled"**,
+  and a controlled input with no `onChange` cannot be typed in or
+  dragged. Twenty-seven of them across the case studies are
+  sliders and number boxes driven by the pages' own scripts.
+  Converted the other way they would have rendered perfectly and
+  refused to move, on the pages whose whole point is that you can
+  move them. Caught by reading the diff, not by a check, which is
+  the one worth remembering.
+- **A CSS custom property in an inline style** fails the type
+  check rather than the page: `CSSProperties` has no index
+  signature for `--pct`. The better kind of failure.
+- **The stock check marks Tools in the nav, not itself.** The
+  parity test's assertion assumed a page marks its own address,
+  and a page that sits inside a section does not.
+
+**And one measurement worth not repeating.** Four things left in
+this stage need a module that lives in `aab/` to be reachable
+from `next/`: the calculators, the schools, the desk and Studio
+bundles, and the two small borrowings (the About page's tally,
+and the drawings copied into a component). Three configuration
+fixes for that were tried and none works; the table is under
+Stage 11. The answer is not configuration, it is `git mv`: a file
+in `shared/` is reachable from all three runtimes, and the only
+rule is that the module and the code importing it move in the
+same commit, so there is never a second copy of anything.
+
+**11.6 was started and backed out** on the strength of the second
+half of that. Its two shells are not hand-written any more: Vite
+builds them from `app/src/index.html`, so archiving them lasts
+until the next `npm run build`. Doing that step means Vite stops
+emitting HTML, and a route answering `/desk/index.html` while
+Vite still writes a file there is two answers to one URL, which
+is the thing this stage exists to end. Half of it was safe and
+half was not, so neither shipped.
 
 ### 2026-08-16 · No page of writing on this site is a file any more
 
