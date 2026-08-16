@@ -1,12 +1,12 @@
 {
-  "version": "v73",
+  "version": "v74",
   "hashes": {
     "/": "0210b228b586a0d1",
     "/index.html": "0210b228b586a0d1",
     "/offline.html": "d7ca74c5f33fa1b4",
     "/styles.css": "6b0de5f7fdc0b419",
     "/app.js": "7a63d35ed752a717",
-    "/content.js": "123c712eb83fc581",
+    "/content.js": "be0f9848627e63e0",
     "/api.js": "d3fc7e10cc7f18c1",
     "/pieces.js": "eb28830d57246c38",
     "/signin.js": "b76aa930a765f300",
@@ -19,7 +19,7 @@
     "/first-sync.js": "27b259136c10a641",
     "/comments.js": "eaed77eeed1bbcd0",
     "/crumbs.js": "0f90c217e3d554a1",
-    "/audience.js": "7a94e8c19c91da1e",
+    "/audience.js": "6e75e5503ba4122e",
     "/activation.js": "03c4658affe16472",
     "/recent.js": "355649cff18a3e9f",
     "/tilt.js": "13960291f3b1a0d7",

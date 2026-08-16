@@ -155,6 +155,12 @@ export const NEXT_ROUTES = [
   ARTICLE,
   /^\/insights\.html$/i,
   /^\/(cooking|travel)\/index\.html$/i,
+  /* The hand-written pages, one at a time, Stage 11.5. Each one
+     is here the moment its route exists, which is the same
+     moment its file leaves aab/: there is no window in which
+     both answer, because run_worker_first takes the address away
+     from the asset router in the same commit. */
+  /^\/(about|contact)\.html$/i,
   /^\/_next\//,
 ];
 

@@ -497,6 +497,29 @@ const says = (name, want, got) => ok(name, decode(got) === want,
     nowhere.status === 404, `status ${nowhere.status}`);
 }
 
+/* ---------- the hand-written pages ----------
+
+   Stage 11.5. Prose, ported markup for markup, so there is
+   nothing to compare against a database and nothing the Worker
+   renders. What is worth holding is that each address answers,
+   with its own title and its own canonical link: the mistake this
+   catches is a page whose route exists and whose head was copied
+   from the one beside it. */
+for (const [path, title, current] of [
+  ["/about.html", "About · Reiad's Library", "about"],
+  ["/contact.html", "Contact · Reiad's Library", "contact"],
+]) {
+  const page = await hub(path);
+  ok(`${path} answers`, page.status === 200, `status ${page.status}`);
+  says(`${path} states its own title`, title, tagText(page.html, "title"));
+  says(`${path} states its own canonical link`, `https://reiad.co.uk${path}`,
+    attr(page.html, /<link rel="canonical" href="([^"]+)"/));
+  ok(`${path} marks its own nav link`,
+    new RegExp(`<a href="${path}"[^>]*aria-current="page"`).test(page.html)
+    || new RegExp(`aria-current="page"[^>]*href="${path}"`).test(page.html),
+    `nothing carries aria-current="page" for ${current}`);
+}
+
 /* ---- the headers a static page would have had ---- */
 
 for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
@@ -513,8 +536,8 @@ if (failures.length) {
   for (const f of failures) console.log(`  ✗ ${f}`);
   process.exit(1);
 }
-console.log("The article says everything the Worker's does, and each hub\n"
-  + "says what the database gave it.\n");
+console.log("The article says everything the Worker's does, each hub says what\n"
+  + "the database gave it, and every page answers at its own address.\n");
 
 /* Said out loud, because falling off the end is not the same
    thing here. `wrangler dev` starts workerd as a child of its

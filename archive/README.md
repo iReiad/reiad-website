@@ -40,6 +40,8 @@ what anybody is served.
 | `work.html`, `services.html` | `_redirects`, which forwards both to `/portfolio` | 16 August 2026 |
 | `insights.html`, `cooking-index.html`, `travel-index.html`, `reads.js` | Next.js routes, rendered from D1 | 16 August 2026 |
 | `pieces/*.html` | rows in D1, rendered by the Next.js article route | 16 August 2026 |
+| `about.html`, `contact.html` | Next.js routes at the same addresses | 16 August 2026 |
+| `colophon.html` | nothing: `_redirects` sends it to `/about` | 16 August 2026 |
 
 `work.html` and `services.html` were early placeholders that still
 carried template text ("[Your Name]", "hello@yourdomain.com"), kept
@@ -67,6 +69,18 @@ the file used to render from a fetch after paint. The two Bangla
 files are here under flattened names because two `index.html` in
 one directory is one file: what they were is in the table above
 and in the git history either way.
+
+`colophon.html` is the one page here that was not replaced. It
+described how this site is built, and its own copy said "0 build
+steps", "0 runtime dependencies, npm packages or frameworks" and
+"no framework, no templating, no generator". Stages 9 to 11 made
+every one of those false: there is a build, there are packages,
+and the pages are React components on Next.js. A page about how
+something is built cannot be ported into the thing that
+falsified it, and rewriting it would have made it a page about
+how the site used to be built, which is what this directory is
+for. `/about` answers the question it was answering, and both of
+its addresses redirect there.
 
 `pieces/` is every piece of writing this site ever kept as a
 file: `dse-basics`, `onions` and `uk-visit-visa`, the `dsex` stub

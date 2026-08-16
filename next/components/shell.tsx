@@ -17,7 +17,7 @@
    ============================================================ */
 
 import type { ReactNode } from "react";
-import { FONTS } from "@reiad/shared/look";
+import { FONTS, LOOK } from "@reiad/shared/look";
 
 /* Before the first paint, and therefore inline and blocking.
 
@@ -42,13 +42,17 @@ const BOOT = `(function(){var d=document.documentElement;try{`
 
 /** Which nav item is marked as where you are.
 
-    "insights" marks the Insights link as the current page. Every
-    Bangla reading section is reached through Skills, so those mark
-    Skills instead, and with `aria-current="true"` rather than
-    `"page"`: the reader is inside that section, not on the page the
-    link points at. Both spellings are what the hand-written pages
-    already carry. */
-export type Current = "insights" | "skills";
+    A page marks its own link with `aria-current="page"`. A page
+    that sits INSIDE a section marks that section's link with
+    `aria-current="true"` instead: the reader is in there, not on
+    the page the link points at. Every Bangla reading section is
+    reached through Skills, so a piece in the kitchen marks Skills
+    that way. Both spellings are what the hand-written pages
+    already carried, and `null` is for a page in the nav at all,
+    like the account. */
+export type Current =
+  | "learn" | "skills" | "tools" | "insights" | "portfolio" | "about" | "contact"
+  | "in-skills" | null;
 
 export function SiteHead() {
   return (
@@ -70,6 +74,11 @@ export function SiteHead() {
 }
 
 export function SiteHeader({ current }: { current: Current }) {
+  /* "page" for the page itself, "true" for a page inside the
+     section that link points at. Written once rather than at each
+     of the seven links. */
+  const mark = (key: Current) => (current === key ? "page" : undefined);
+
   return (
     <header>
       <div className="wrap header-inner">
@@ -83,15 +92,14 @@ export function SiteHeader({ current }: { current: Current }) {
           Reiad&apos;s Library
         </a>
         <nav aria-label="Main">
-          <a href="/learn/index.html" data-keep>Learn</a>
+          <a href="/learn/index.html" data-keep aria-current={mark("learn")}>Learn</a>
           <a href="/skills/index.html" data-nav-skills
-             aria-current={current === "skills" ? "true" : undefined}>Skills</a>
-          <a href="/tools/index.html">Tools</a>
-          <a href="/insights.html"
-             aria-current={current === "insights" ? "page" : undefined}>Insights</a>
-          <a href="/portfolio.html">Portfolio</a>
-          <a href="/about.html">About</a>
-          <a href="/contact.html" data-keep>Contact</a>
+             aria-current={current === "in-skills" ? "true" : mark("skills")}>Skills</a>
+          <a href="/tools/index.html" aria-current={mark("tools")}>Tools</a>
+          <a href="/insights.html" aria-current={mark("insights")}>Insights</a>
+          <a href="/portfolio.html" aria-current={mark("portfolio")}>Portfolio</a>
+          <a href="/about.html" aria-current={mark("about")}>About</a>
+          <a href="/contact.html" data-keep aria-current={mark("contact")}>Contact</a>
         </nav>
         <button className="icon-btn" id="open-menu" aria-label="Open the menu">
           <span className="burger" aria-hidden="true" />Menu
@@ -130,13 +138,18 @@ export function SiteFooter({ note }: { note: string }) {
  * the tilt are on every page of this site.
  */
 export function SiteShell({
-  lang, bodyClass, skip, footer, current, beforeMain, scripts, children,
+  lang = "en",
+  bodyClass,
+  skip = "Skip to the main content",
+  footer = LOOK.insights.footer,
+  current = null,
+  beforeMain, scripts, children,
 }: {
-  lang: string;
+  lang?: string;
   bodyClass?: string;
-  skip: string;
-  footer: string;
-  current: Current;
+  skip?: string;
+  footer?: string;
+  current?: Current;
   beforeMain?: ReactNode;
   scripts?: ReactNode;
   children: ReactNode;

@@ -221,7 +221,7 @@ node next/parity.test.mjs          # the Next.js route saying something the
                                    # Worker's own renderer does not, and a
                                    # reading hub that has stopped agreeing with
                                    # the database
-                                   # (68 checks, needs the build, skips without)
+                                   # (76 checks, needs the build, skips without)
 ```
 
 It really does run in a container, as of 16 August 2026, and the

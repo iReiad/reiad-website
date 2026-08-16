@@ -1340,9 +1340,9 @@ has been looked at once, after a week of real traffic.
 ---
 
 ### Stage 11 · Every remaining route, until no page is a file
-**Status: 11.1, 11.2 and 11.8 done, 16 August 2026. 271 files
-left, and none of them is a piece of writing.** Size: months, at
-whatever pace suits.
+**Status: 11.1, 11.2 and 11.8 done, 11.5 begun, 16 August 2026.
+268 files left, and none of them is a piece of writing.** Size:
+months, at whatever pace suits.
 
 Stage 10 moved one route and proved the machinery: an allowlist in
 `worker.js`, a service binding, a fallback for anything the second
@@ -1512,11 +1512,40 @@ Stage 10 argued about. The models stay modules. *Deletes* 2 files.
 render on the server first, and `COUNTS` in `content.js` still
 counting them.
 
-**11.5 The remaining hand-written pages.** The home page,
-`/about`, `/contact`, `/colophon`, `/account`, `/skills`.
-*Deletes* 6 files. *Needs* the home page's rotation and the
-palette to keep reading `content.js`, which by then is structure
-only.
+**11.5 The remaining hand-written pages. Begun 16 August 2026:
+`/about` and `/contact` are routes, `/colophon` is gone.** The
+home page, `/account` and `/skills` are what is left. *Deletes* 6
+files, 3 of them done. *Needs* the home page's rotation and the
+palette to keep reading `content.js`, which is structure only as
+of Stage 11.2.
+
+**The colophon was not ported.** It described how this site is
+built, and its own copy said "0 build steps", "0 runtime
+dependencies, npm packages or frameworks" and "no framework, no
+templating, no generator". Stages 9 to 11 falsified all three. A
+page about how a thing is built cannot be ported into the thing
+that falsified it, and rewriting it would have made it a page
+about how the site used to be built, which is what `archive/` is
+for. `_redirects` sends both of its addresses to `/about`, whose
+own "How was this site built?" answer now says what is actually
+happening and points at the repository.
+
+**The words are the page's, unchanged.** A port that also
+rewrites the copy cannot be judged against what it replaced,
+which is the rule at the top of Stage 9 applied to prose rather
+than to CSS. The markup was converted mechanically rather than
+retyped, and `about.js` still fills the four tally numbers in the
+browser: they are counted from the four `curriculum.js` modules,
+which are served out of `aab/` and cannot be imported above
+`next/`. Stage 11.7 is what takes that wall down.
+
+**What the shell learned.** `SiteHeader` marks any of the seven
+nav links rather than two, with `aria-current="page"` for the
+page itself and `"true"` for a page inside that section, which is
+what the hand-written pages already carried. `siteLayout()` in
+`next/components/page.tsx` makes a page's layout two lines, since
+a layout never sees its page's props and each address therefore
+needs its own.
 
 **11.6 The desk and the Studio.** Two React apps today, built by
 Vite into `aab/desk/` and `aab/studio/` behind a hand-written HTML
@@ -1724,7 +1753,7 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | 11.1, 11.2, 11.8 done 16 Aug 2026, 271 files to go |
+| 11 | Every remaining route, until no page is a file | 11.1, 11.2, 11.8 done and 11.5 begun 16 Aug 2026, 268 files to go |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
 

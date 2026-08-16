@@ -31,6 +31,25 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v74: TRANSITION.md Stage 11.5, and the colophon is gone. Both
+        precached files that changed are small: content.js lost
+        the colophon's PAGES entry, so a returning reader on the
+        v73 shell would have it in the menu and the Ctrl+K palette
+        pointing at a 301; and audience.js listed /colophon among
+        the pages that mean somebody is here for work.
+
+        The colophon went rather than being ported. It was a page
+        about how this site is built, and its own copy said "0
+        build steps", "0 runtime dependencies, npm packages or
+        frameworks" and "no framework, no templating, no
+        generator". Every one of those stopped being true during
+        stages 9 to 11. /about answers the question it was
+        answering, and _redirects sends both of its addresses
+        there.
+
+        about.html and contact.html are Next.js routes now and are
+        not in this list: neither ever was.
+
    v73: TRANSITION.md Stage 11.2. The last two article files leave
         the precache list: /cooking/onions.html and
         /travel/uk-visit-visa.html are rows, rendered by the
@@ -544,7 +563,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v73";
+const VERSION = "v74";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
