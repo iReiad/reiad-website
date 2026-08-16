@@ -9,3 +9,11 @@ node_modules/
 # every build, and says nothing about the source. The React app's
 # real output is aab/desk/, which IS committed and on purpose.
 app/tsconfig.tsbuildinfo
+
+# The Next.js workspace's build output and its copy of shared/.
+# `.open-next/` is a Worker bundle that only the deploy needs, and
+# unlike aab/desk/ it is not something the site serves as a file.
+next/.next/
+next/.open-next/
+next/next-env.d.ts
+next/tsconfig.tsbuildinfo

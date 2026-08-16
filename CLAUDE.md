@@ -144,6 +144,7 @@ node aab/check-content.mjs  # a page that has stopped counting the site correctl
 node aab/check-csp.mjs      # code calling a host the browser is not allowed to reach
 node scripts/check-crons.mjs # a scheduled job the Worker is no longer listening for
 node scripts/check-pieces.mjs # a written piece nothing on the site links to
+node scripts/check-headers.mjs # a page a Worker built, served with no CSP
 ```
 
 `check-pieces.mjs --live` also asks the database and prints where every
@@ -249,6 +250,32 @@ declaration in `app/src/types/` that `tsconfig.json` maps the runtime
 path to. Do not answer an untyped import with a `@ts-expect-error`:
 that silences the complaint without describing anything, and it
 silences the next complaint too.
+
+## What more than one runtime has to agree on
+
+`shared/` is for anything the Worker, the browser and the Next.js
+route must all say the same way. Two files today: `look.js`, the
+per-section table and the head facts every article page states, and
+`headers.js`, the security headers a response has to carry when it
+was not served as a static file.
+
+It is an npm package (`@reiad/shared`) because `next/` cannot import
+by relative path out of its own directory: Turbopack refuses to
+resolve above its root, and moving the root moves Next's file-tracing
+root with it, which breaks the OpenNext build. `next/.npmrc` sets
+`install-links=true` so npm copies it in rather than symlinking, for
+the same reason. `shared/README.md` says all of this again where
+somebody editing it will see it. The Worker imports the files
+directly; esbuild has no such restriction.
+
+**A response a Worker builds is not a static asset**, so `aab/_headers`
+does not apply to it. Every article rendered from the database was
+served with no Content-Security-Policy, no HSTS and no
+`X-Frame-Options` for as long as that route existed, beside
+file-based articles that had all three, and the page renders the
+same either way. Anything that returns HTML from a Worker goes
+through `htmlResponse()` in `shared/headers.js`, and
+`check-headers.mjs` fails if that list and `_headers` drift.
 
 ## The writing surface is one module
 

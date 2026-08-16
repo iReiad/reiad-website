@@ -93,6 +93,13 @@ const walk = (dir, skip = new Set()) => {
 
 walk(ROOT, GENERATED);
 walk(join(ROOT, "..", "app", "src"));
+/* Not `functions/` or `shared/`, on purpose. This check is about
+   what a BROWSER is allowed to reach: a Content-Security-Policy
+   governs the page, not the Worker that built it, and the Worker
+   talks to Notion and to R2 without a browser being involved at
+   all. Adding them would report every one of those as a violation
+   of a policy that does not apply to them, and `shared/headers.js`
+   would report itself, because the policy is what it contains. */
 
 const wanted = new Map();      // origin → the files that name it
 for (const path of jsFiles) {
