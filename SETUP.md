@@ -39,24 +39,41 @@ that has drifted.
 
 ---
 
-## Build settings
+## How it deploys
 
-**Workers & Pages → `reiad-website` → Settings → Build**
+**A push to `main` runs `.github/workflows/deploy.yml`**, which runs the
+checks, dry runs the deploy and then uploads `worker.js` and `aab/`. That is
+the whole of it, and it is in the repository rather than in a dashboard on
+purpose: see the section below on the day this Worker stopped deploying and
+nothing said so.
 
-| Field | Value |
-| --- | --- |
-| Deploy command | `npx wrangler deploy` |
-| Build command | *(empty: there is no build step)* |
+By hand, from a clone, the same upload:
 
-`npm run deploy` runs the same thing, and is in `package.json` for the one
-reason that a dashboard field is easy to fill in with it out of habit: the
-`next/` workspace has such a script, this one did not, and a build set to
-`npm run deploy` here failed with `Missing script: "deploy"` while the
-repository looked fine.
+```sh
+npx wrangler deploy
+```
 
-If there is a separate **non-production branch deploy command**, the same
-command works there, or `npx wrangler versions upload` if you want branch
-builds to upload without going live.
+`npm run deploy` runs exactly that. It is in `package.json` because the
+`next/` workspace has such a script and this one did not, so a build command
+filled in with the familiar one failed on `Missing script: "deploy"` while
+the repository looked fine.
+
+### Workers Builds is off for this Worker, deliberately
+
+**Workers & Pages → `reiad-website` → Settings → Build** must have no
+repository connected. If both it and the workflow are live, both deploy on
+every push and whichever finishes second wins, which is a race decided by
+how busy a build queue is.
+
+`reiad-next` keeps its Workers Build and should keep it. It has a real
+build step, OpenNext, and it gives every push a branch preview URL with the
+real database binding, which is what `check-preview.mjs` reads and what
+Stage 11 verified routes against before anything forwarded a reader to
+them.
+
+If you ever want the dashboard back instead, the settings that work are
+deploy command `npx wrangler deploy`, build command empty, root directory
+`/`, and the workflow deleted in the same change.
 
 ### When the build fails and the site looks fine
 
@@ -86,9 +103,42 @@ Everything the real deploy validates, uploading nothing.
 
 ### The API token
 
-The build's token needs **Account → Workers Scripts → Edit**. It does *not*
-need Cloudflare Pages permissions, and if you added those while chasing the
-`pages deploy` errors, they can come back off.
+One token does both jobs this repository asks Cloudflare for, and it is the
+repository secret `CLOUDFLARE_API_TOKEN`:
+
+```
+My Profile → API Tokens → Create Token → Custom token
+Permissions:  Account → Workers Scripts → Edit    (deploy.yml)
+              Account → D1 → Edit                 (import-schools.yml)
+Account Resources: this account, and nothing else
+```
+
+then **Settings → Secrets and variables → Actions → New repository secret**.
+
+Editing an existing token's permissions does not change its value, so
+adding the Workers Scripts line to the token the import already uses leaves
+the GitHub secret alone.
+
+That is the whole of what it can do: upload a Worker to this account and
+write this one database. It cannot read R2, it cannot read a secret already
+set on the Worker, and it is revocable from the page it was made on. It
+does *not* need Cloudflare Pages permissions, and if you added those while
+chasing the `pages deploy` errors, they can come back off.
+
+**The D1 and R2 bindings need no permission of their own.** They are
+declared in `wrangler.toml` by id and by name and the upload attaches them.
+
+**And the thing that is not obvious.** A token scoped this narrowly cannot
+list the account it belongs to, and wrangler asks for that list before it
+does anything:
+
+```
+Failed to automatically retrieve account IDs for the logged in user
+```
+
+The answer is `account_id` in `wrangler.toml`, which has been there since
+the import hit the same wall. Widening the token to make that error go away
+would be the wrong fix.
 
 ---
 

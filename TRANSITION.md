@@ -2607,6 +2607,45 @@ is the closest Supabase region to Dhaka.
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
 
+### 2026-08-16 · The deploy is a file in the repository now
+
+The other half of the outage above. Fixing the config got the
+Worker deploying again; this is about why nobody knew it had
+stopped.
+
+`.github/workflows/deploy.yml` runs on a push to `main`: the
+twelve offline checks, the three `--check` builders, a dry run and
+then `wrangler deploy`, and `check-live.mjs` afterwards against
+what was actually uploaded. Workers Builds is disconnected from
+`reiad-website` in the same change, because two things deploying
+from one push is a race decided by how busy a build queue is.
+
+**Why it is worth moving at all**, given the dashboard build was
+working the day before. Two reasons, and the first is the only one
+that really matters. A failure has to be visible on the commit
+that caused it. The overlap error was a thirty-second fix and it
+cost most of a day, entirely because the only place it was written
+down was a build log in a dashboard nobody had open, while the
+site stayed up serving its last good upload. A red tick on the
+commit is a different kind of thing. The second reason is smaller:
+the build settings were four fields invisible from a clone, and
+while they were wrong the repository looked perfect.
+
+**What it does not move.** `reiad-next` keeps its own Workers
+Build and should. It has a real build step, and it gives every
+push a branch preview URL with the real database binding, which is
+what `check-preview.mjs` reads and what every Stage 11 route was
+verified against before anything forwarded a reader to it. It also
+deployed happily right through the outage, which is the clearest
+evidence that the fault was never the connection to git.
+
+**The token is the one that already existed.** `import-schools.yml`
+has used `CLOUDFLARE_API_TOKEN` since Stage 8, scoped to D1 Edit
+and nothing else. It gains Account → Workers Scripts → Edit and
+keeps everything else, including the `account_id` in
+`wrangler.toml` that a token this narrow needs because it cannot
+list its own account.
+
 ### 2026-08-16 · The main Worker had not deployed since Stage 11.1, and nothing said so
 
 Every push from `ca82ab0` onwards built nothing. Thirteen commits,
