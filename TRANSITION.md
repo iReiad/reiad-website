@@ -5,17 +5,18 @@
 Kept at the top because this file is long and the answer to "what
 now" should not be a search. One item, replaced when it lands.
 
-> **Stage 11.7: the four schools.** 251 of the 253 HTML files
-> left in `aab/` are school pages, and they are the last pages of
-> this site that are files. The lessons are already rows (Stage
-> 8) and `shared/schools.js` already reads them, so the route has
-> a source; what it does not have is the four `curriculum.js`
-> modules, which forty files import out of `aab/`. Those move to
-> `shared/` in the same commit as the pages that read them, which
-> is the rule under Stage 11. It is the largest deletion in the
-> project and the only one that can take offline reading with it,
-> so `sw.js` decides what it precaches instead before anything is
-> archived.
+> **Stage 11.7: the four schools, step 2 of 3.** The lesson
+> route exists and renders all four schools from their rows,
+> checked against the committed pages fact by fact (step 1,
+> below). Nothing is forwarded to it yet: `NEXT_ROUTES` still
+> says nothing about the schools, so all 251 files answer.
+>
+> Step 2 is the **stage contents pages and the four hubs**, which
+> are the other 21 of the 251 and the half a reader navigates by.
+> Step 3 turns `NEXT_ROUTES` on, archives the 251, applies the
+> offline decision now written down under Stage 11.7, and moves
+> what is left of the four `curriculum.js` modules to `shared/`
+> in the same commit as the last page that imports them.
 >
 > After it: Stage 13 (the surviving modules to TypeScript, which
 > needs the decision below about a build step for `aab/`), then
@@ -1685,6 +1686,146 @@ the project and the one that has to go last, because it is the
 only one that can take offline reading with it. *Deletes* 251
 files. *Needs* Stage 8, and the offline answer below.
 
+**Step 1 landed, 16 August 2026, and deletes nothing.** The
+lesson route renders all four schools out of D1 at
+`next/app/[section]/[slug]/[lesson]/`, and `NEXT_ROUTES` does not
+list a single school address, so every one of the 251 files still
+answers. What is new is that there is now something to compare
+them against, and 14 checks per school in `next/parity.test.mjs`
+do the comparing: the title, the description, the canonical link,
+five Open Graph tags, the eyebrow, the heading, the blurb, the
+meta line, both backlinks and where they point, the prev/next
+pair and where it points, seven progress attributes, the school's
+own script, the body class, and the prose byte for byte against
+the row it came from.
+
+Three things about that route are worth writing down, because
+each was a decision rather than a detail.
+
+**The folder is `[section]/[slug]/[lesson]` and not
+`[school]/[stage]/[lesson]`.** App Router refuses two different
+dynamic names at one level of a tree, and `/insights/<slug>`
+already claims the first two. Naming them honestly would fail the
+whole build with "You cannot use different slug names for the
+same dynamic path", so the two routes share the names and this
+one reads them as the school and the stage. Nothing below the
+folder calls a school a section.
+
+**The four pages are one component with a table beside it.**
+Compare `lessonPage()` in `build-lessons.mjs` with `teilPage()`,
+`partPage()` and the Quran school's `lessonPage()`: the same
+article, and four differences, all of them wording except one.
+Those are in `LOOKS` in `next/lib/school.ts` rather than branched
+on in the component, because four templates that say the same
+thing in four files is the drift `build-lessons.mjs` was written
+to stop happening between forty hand-copied pages, one level up.
+
+**Two special cases in the money school are not guessable from
+the data and are now written in `shared/schools.js`.** Its
+`basics-1` answers at `/learn/terms/`, because those eighteen
+term pages were published there for a year before that school had
+a builder; and it files their progress under a bare slug for the
+same reason, so a key built from the address would lose every
+tick anybody has. The starter guide is `inline`: its eight steps
+are anchors in a hand-written hub and have never had pages, so
+the route 404s them rather than inventing eight addresses with no
+prose behind them. Both are checked by `check-schools.mjs`, which
+now computes every lesson's URL, id and label through
+`shared/schools.js` and through the school's own `curriculum.js`
+and fails on any pair that disagree: 233 lessons, both ways.
+
+**And 103 drawings are copied into `next/`, generated.** A lesson
+puts a mark in its heading and the four sets of them are browser
+modules under `aab/<school>/icons.js`, which `next/` cannot
+import for the reason `shared/` exists.
+`scripts/build-school-icons.mjs` writes them into
+`next/lib/school-icons.ts` and `check-next.mjs` regenerates and
+compares, which is the arrangement every generated page here
+already has. Promoting four icon sets to `shared/` to draw a
+heading would be the larger mistake while forty files in `aab/`
+still import them; when the school pages go, they move properly
+and both the generator and the copy go with them.
+
+**One decision step 1 found and did not take: the eighteen
+originals.** `/learn/terms/*.html` is not a generated page and
+never has been. `build-lessons.mjs` says so at the top and steps
+around them: they were written by hand before the money school
+had a builder, and they carry their own title format, their own
+eyebrow, one backlink to the library rather than two to a stage,
+and no prev/next pair at all. The ladder names them, `basics-1`
+holds them, and their rows are in D1 since Stage 8, so the route
+renders them exactly like every other lesson.
+
+That is a change to those eighteen pages rather than a port of
+them, and it is a defensible one: it would give the site's oldest
+Bangla writing the ladder, the neighbours and the progress ticks
+every newer lesson has. It is still a change, and it belongs to
+step 2 rather than being made by accident in step 1. Until then
+`next/parity.test.mjs` holds them to the two things a wrong
+answer would actually cost a reader: the address, and the key
+their progress is filed under, which is the bare slug and not
+`basics-1/<slug>`.
+
+#### The offline answer, taken before anything is archived
+
+Stage 11.7 cannot start deleting until this is decided, because a
+service worker is the one part of this site that keeps working
+when nothing else does, and the schools are what it is for.
+Decided 16 August 2026.
+
+**The 251 lesson pages need no answer, because they never had
+one.** They are not in `PRECACHE` and never have been: HTML is
+network first with the cache as its fallback, and a reader gets a
+lesson back offline if and only if they have opened it before. A
+page a Worker renders is cached on first fetch exactly as a file
+was. Nothing about that changes.
+
+**Seven school pages are precached, and those are the ones that
+matter.** `/learn/index.html`, `/learn/contents.html`,
+`/deutsch/index.html`, `/deutsch/stufe-1/index.html`,
+`/deutsch/stufe-1/arbeitsbuch.html`, `/quran/index.html` and
+`/english/index.html`. A hub is the ladder, and the ladder is how
+a reader finds their place; the practice book is the page a
+learner opens every evening, on the bus, which is the case the
+whole list was written for.
+
+**They stay, as addresses rather than as files**, and the thing
+that has to change to allow it is a check rather than a browser.
+`cache.addAll()` performs real network fetches at install and
+does not care what answered them, so precaching a route works.
+What does not work is `check-sw.mjs`, which resolves every entry
+in `PRECACHE` to a file under `aab/`, hashes it, and fails if one
+changed without a `VERSION` bump. So `PRECACHE` grows a second
+list of entries that are rendered rather than stored, and the
+check hashes the first list and asserts only that the second is a
+route `NEXT_ROUTES` actually forwards.
+
+Losing the hash for those seven is not a hole being punched in
+the check. A rendered page changes when a row changes, and no
+`VERSION` could ever have tracked that; the network-first
+strategy is what handles a stale HTML copy, and it handles these
+identically. The hash was always about scripts and stylesheets,
+which are still files and still hashed.
+
+**One thing to fix in the same commit.** `install` calls
+`cache.addAll(PRECACHE)` under a `.catch(() => {})` whose comment
+says one missing file should not stop the worker installing.
+`addAll` is atomic: one failure rejects the lot and nothing is
+cached at all, so that comment describes what was wanted rather
+than what happens. It matters more once seven entries depend on a
+Worker being up than it did when all of them were files sitting
+beside the request, so the loop becomes `Promise.allSettled` over
+individual `cache.add()` calls, and one page that will not fetch
+costs that page rather than the whole shell.
+
+**What stays a file and is not part of this.** The four
+`curriculum.js`, `hub.js`, `progress.js` and `icons.js` modules
+and the per-page scripts. `content.js` imports `curriculum.js`,
+`app.js` imports `content.js`, so a shell without it is a shell
+whose imports 404, which takes the menu and the palette with it
+on every page of the site. They move when the last page that
+imports them goes, and not before.
+
 **11.8 What is left, and why.** The steps above account for 279
 of the 283. The other four are `404.html`, `offline.html`,
 `work.html` and `services.html`.
@@ -1982,7 +2123,7 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | all but 11.7 done, 16 Aug 2026, 253 files to go, 251 of them the schools |
+| 11 | Every remaining route, until no page is a file | all but 11.7 done, 16 Aug 2026; 11.7 step 1 landed, the lesson route reads the rows and nothing is forwarded to it yet |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
 | 14 | One way of writing a style, and it is Tailwind | decided 16 Aug 2026, waits for 11.7 |
@@ -2237,6 +2378,69 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Stage 11.7 step 1: a lesson is a route, and nothing is forwarded to it
+
+The four schools' lesson pages render out of D1 at
+`next/app/[section]/[slug]/[lesson]/`. **No file was deleted and
+`NEXT_ROUTES` was not touched**, so all 251 committed pages still
+answer and the route is reachable only on the branch preview.
+That is deliberate: it is the arrangement `check-preview.mjs`
+exists for, and it is what makes the next step a deletion rather
+than a rewrite.
+
+**What it took, beyond the component.** Three things had to move
+before a route could render a lesson at all.
+
+The ladder's arithmetic went into `shared/schools.js`:
+`lessonUrl`, `lessonId`, `lessonLabel`, `stageBase`, `stageUrl`,
+`workbookUrl` and `laddered()`, which is the one function that
+`stageLessons`, `stufeTeile`, `dhapLessons` and `termParts` are
+four spellings of. The four `curriculum.js` modules still hold
+their versions because forty files in `aab/` import them, so
+`check-schools.mjs` now computes every lesson's address,
+progress id and label both ways and fails on any pair that
+disagree. 233 lessons, and it caught two real differences while
+it was being written: the money school's starter guide addresses
+its lessons as anchors in a hub rather than as pages, and its
+`basics-1` files progress under a bare slug because those
+eighteen terms did so for a year before the stage existed.
+Neither is guessable from the shape of the data, and a route that
+guessed would have lost every tick anybody has.
+
+The 103 school drawings are generated into
+`next/lib/school-icons.ts` by `scripts/build-school-icons.mjs`,
+and `check-next.mjs` regenerates and compares.
+
+**The bug worth writing down, because it was invisible.** The
+lesson route returned 404 while rendering perfectly. The route
+matched, the query ran, the article came back complete in the
+payload, and the answer was still this site's 404 page.
+`app/[section]/[slug]/layout.tsx` is the root layout for that
+whole branch, and it read the article row for `/quran/dhap-1`,
+found none and called `notFound()` before anything below it drew.
+A layout in the lesson's own folder could not have fixed it: it
+nests inside that one, so a lesson would have had two `<html>`
+elements even if the 404 had not come first. The two shells live
+in one file now and `isSchool()` picks between them, which works
+because a section is insights, cooking or travel and a school is
+never one of those.
+
+An hour went into that, and most of it went into instrumenting
+the wrong layer. The thing that found it was reading the RSC
+payload of the 404 response, where the fully rendered lesson was
+sitting next to `NEXT_HTTP_ERROR_FALLBACK;404` from a slot one
+level up.
+
+**And the offline answer is taken**, written up under Stage 11.7:
+the seven precached school pages stay precached as addresses
+rather than as files, `check-sw.mjs` hashes what is still a file
+and only asserts the rest is a route, and `install` stops using
+`cache.addAll`, which is atomic and has been quietly promising
+the opposite in a comment for 77 versions.
+
+Next: step 2, the stage contents pages and the four hubs, which
+are the other 21 of the 251.
 
 ### 2026-08-16 · The two private shells, and what the browser tests found under them
 

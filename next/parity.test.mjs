@@ -20,6 +20,13 @@
    the database instead: the cards, their addresses, the count
    above them, and the draft that must appear on none of them.
 
+   And since Stage 11.7 it drives a lesson of each of the four
+   schools. Those DO have a twin, and it is not a renderer: it is
+   the committed page a builder wrote from the same row, so the
+   comparison is against the file, fact by fact, with the prose
+   held byte for byte. It is the one route here whose replacement
+   can be checked against the thing it replaces.
+
    ---- "byte-identical", and what that had to become ----
 
    TRANSITION.md's Stage 10 says the share card, the structured
@@ -39,7 +46,7 @@
    ============================================================ */
 
 import { spawn, execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -135,6 +142,81 @@ d1(`CREATE TABLE IF NOT EXISTS articles (
 for (const article of [ARTICLE, KITCHEN, DESK, DRAFT]) {
   d1(`INSERT OR REPLACE INTO articles (${columns.join(", ")}) VALUES (${row(article)})`);
 }
+
+/* ---------- and the schools, out of the real snapshot ----------
+
+   TRANSITION.md Stage 11.7. Unlike the articles above, these are
+   NOT invented: the lesson route has to render what the committed
+   page renders, and the committed page was built from
+   `content/schools.backup.json`. Seeding anything else would
+   compare the route against a fixture rather than against the
+   thing it is replacing.
+
+   Four stages rather than seventeen, one per school, because the
+   whole export is a megabyte of prose and `wrangler d1 execute`
+   takes it one statement at a time. The four are chosen to cover
+   the four shapes: the money school's terms answer at an address
+   that is not their stage's, the German and English schools end a
+   stage by pointing at a practice book, and the Quranic Arabic
+   school labels its lessons by day and puts Arabic under the
+   title. */
+const { readSnapshot } = await import("../scripts/schools-snapshot.mjs");
+const snapshot = readSnapshot();
+
+/* `basics-2` is the money school's first GENERATED stage and is
+   what its lesson page is compared against. `basics-1` is the
+   eighteen original terms at /learn/terms/, which the builder has
+   never written and which are compared for less: see the block
+   below that asks them only what a wrong answer would cost. The
+   other three are the first written stage of each language
+   school. */
+const SEEDED = ["basics-1", "basics-2", "stufe-1", "dhap-1", "term-1"];
+
+d1(`CREATE TABLE IF NOT EXISTS school_stages (
+      school TEXT, slug TEXT, position INTEGER, title TEXT, status TEXT, meta TEXT,
+      PRIMARY KEY (school, slug))`);
+d1(`CREATE TABLE IF NOT EXISTS school_sections (
+      school TEXT, stage TEXT, ident TEXT, position INTEGER, title TEXT, meta TEXT,
+      PRIMARY KEY (school, stage, ident))`);
+d1(`CREATE TABLE IF NOT EXISTS school_lessons (
+      school TEXT, stage TEXT, slug TEXT, section TEXT, position INTEGER,
+      title TEXT, minutes INTEGER, status TEXT, meta TEXT, body TEXT,
+      PRIMARY KEY (school, stage, slug))`);
+
+const q = (v) => (v === null || v === undefined
+  ? "NULL"
+  : typeof v === "number" ? String(v) : `'${String(v).replace(/'/g, "''")}'`);
+const insert = (table, cols, r) =>
+  `INSERT OR REPLACE INTO ${table} (${cols.join(", ")}) `
+  + `VALUES (${cols.map((c) => q(r[c])).join(", ")});`;
+
+/* Every stage of every school, because a ladder needs its
+   neighbours: the last lesson of a stage points at the next one,
+   and a stage list with holes in it points at the wrong place.
+   The prose is what is limited to the four.
+
+   Written to one file and executed once, rather than a statement
+   at a time. `wrangler d1 execute --command` is a whole node
+   process per call and these are seventy rows: the first version
+   of this spent four minutes seeding a test that then took forty
+   seconds to run. */
+const statements = [
+  ...snapshot.stages.map((r) =>
+    insert("school_stages", ["school", "slug", "position", "title", "status", "meta"], r)),
+  ...snapshot.sections.filter((x) => SEEDED.includes(x.stage)).map((r) =>
+    insert("school_sections", ["school", "stage", "ident", "position", "title", "meta"], r)),
+  ...snapshot.lessons.filter((x) => SEEDED.includes(x.stage)).map((r) =>
+    insert("school_lessons",
+      ["school", "stage", "slug", "section", "position", "title", "minutes",
+       "status", "meta", "body"], r)),
+];
+
+const seedFile = join(state, "schools.sql");
+writeFileSync(seedFile, `${statements.join("\n")}\n`);
+execFileSync("npx",
+  ["wrangler", "d1", "execute", "reiad", "--local", "--persist-to", state,
+   "--file", seedFile],
+  { cwd: here, stdio: "pipe" });
 
 /* ---------- the Worker on workerd ---------- */
 
@@ -569,6 +651,171 @@ for (const [path, title, nav] of [
     "no robots tag: this page is somebody's name and their progress");
 }
 
+/* ---------- the four schools ----------
+
+   Stage 11.7. This is the one route in this file with a real
+   twin: 251 committed pages, generated from the same rows the
+   route now reads. So the comparison is against the page itself,
+   fact by fact, and against the prose byte for byte.
+
+   Byte-identical HTML is not the bar and cannot be, for the
+   reason the note at the top of this file gives: React decides
+   attribute order and self-closing, not the author. What is held
+   is everything a reader or a scraper would notice, plus the two
+   things a school page carries that an article does not: the
+   data attributes its progress script reads, and the script
+   itself. A page that renders beautifully and files a reader's
+   ticks under a key nothing reads has lost their progress. */
+{
+  const { readFileSync } = await import("node:fs");
+  const committed = (rel) => readFileSync(join(here, "..", "aab", rel), "utf8");
+
+  /* The inside of a tag, by class, whichever order its attributes
+     are in. The builders write `class="x"` first and React does
+     not promise to. */
+  const byClass = (html, tag, cls) => html.match(
+    new RegExp(`<${tag}[^>]*class="[^"]*\\b${cls}\\b[^"]*"[^>]*>([\\s\\S]*?)</${tag}>`, "i")
+  )?.[1] ?? null;
+
+  /* Text, with the tags taken out and the whitespace flattened.
+     Indentation is the one difference that is guaranteed and
+     means nothing: the builders write a page a person can read
+     and React writes one it does not occur to it to indent. */
+  const words = (html) => (html === null ? null : decode(
+    html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()));
+
+  /* One lesson per school, and each is the shape that school is
+     the only one to have. */
+  for (const [path, file, note] of [
+    ["/learn/basics-2/supply-demand.html", "learn/basics-2/supply-demand.html",
+      "a lesson of the money school"],
+    ["/deutsch/stufe-1/anfang.html", "deutsch/stufe-1/anfang.html",
+      "a Teil, with German under the title"],
+    ["/quran/dhap-1/tin-prokar.html", "quran/dhap-1/tin-prokar.html",
+      "a day, labelled and with Arabic under the title"],
+    ["/english/term-1/word-order.html", "english/term-1/word-order.html",
+      "a part, numbered"],
+  ]) {
+    const page = await hub(path);
+    ok(`${path} answers (${note})`, page.status === 200, `status ${page.status}`);
+    if (page.status !== 200) continue;
+
+    const was = committed(file);
+    const now = page.html;
+    /* Labelled for what the two sides actually are. `check()`
+       says "worker" and "next", which is the right pair for an
+       article and a wrong one here: the thing on the other side
+       of this comparison is a committed file. */
+    const same = (what, extract) => {
+      const a = decode(extract(was));
+      const b = decode(extract(now));
+      ok(`${path}: ${what}`, a === b,
+        `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(b)}`);
+    };
+
+    same("the title", (h) => tagText(h, "title"));
+    same("the description", (h) => meta(h, "description", "name"));
+    same("the canonical link", (h) => attr(h, /<link rel="canonical" href="([^"]+)"/));
+    for (const key of ["og:type", "og:title", "og:description", "og:url", "og:image"]) {
+      same(key, (h) => meta(h, key));
+    }
+    same("the language", (h) => attr(h, /<html lang="([^"]+)"/));
+
+    /* The eyebrow, the heading, the blurb and the meta line: the
+       four things above the prose, and the only four a reader
+       reads before deciding whether they are in the right place. */
+    same("the eyebrow", (h) => words(byClass(h, "span", "eyebrow")));
+    same("the heading", (h) => words(tagText(h, "h1")));
+    same("the one-liner", (h) => words(byClass(h, "p", "one-liner")));
+    same("the meta line", (h) => words(byClass(h, "p", "lesson-meta")));
+    same("the backlinks", (h) => words(byClass(h, "p", "backlink")));
+    same("the prev/next pair", (h) => words(byClass(h, "nav", "prev-next")));
+
+    /* Where the backlinks and the prev/next pair actually point,
+       which `words()` throws away and is the half that breaks. */
+    const links = (h, cls) => {
+      const inside = byClass(h, cls === "prev-next" ? "nav" : "p", cls);
+      return inside === null
+        ? null
+        : [...inside.matchAll(/href="([^"]+)"/g)].map((m) => m[1]).join(" ");
+    };
+    same("where the backlinks point", (h) => links(h, "backlink"));
+    same("where the prev/next pair points", (h) => links(h, "prev-next"));
+
+    /* The progress attributes, by name and by value. Three
+       schools call them three things and every one of those names
+       is already a key in somebody's browser. */
+    for (const name of ["data-lesson-id", "data-teil-id", "data-part-id",
+                        "data-stage", "data-stufe", "data-dhap", "data-term"]) {
+      same(`the ${name} attribute`,
+        (h) => attr(h, new RegExp(`${name}="([^"]*)"`)));
+    }
+
+    same("the school's own script",
+      (h) => attr(h, /<script type="module" src="(\/(?:learn|deutsch|quran|english)\/[a-z-]+\.js)"/));
+    same("the body class", (h) => attr(h, /<body class="([^"]*)"/));
+
+    /* And the prose itself, byte for byte, because that is the
+       thing the database holds and the thing a rebuild was
+       supposed to be carrying. Compared as the row has it rather
+       than as either page indents it. */
+    const stage = path.split("/")[2] === "terms" ? "basics-1" : path.split("/")[2];
+    const slug = path.split("/").pop().replace(/\.html$/, "");
+    const stored = snapshot.lessons.find(
+      (l) => l.stage === stage && l.slug === slug)?.body ?? "";
+    ok(`${path}: the prose is the row's, unchanged`,
+      stored !== "" && now.includes(stored.trim()),
+      "the stored body is not in the page, character for character");
+  }
+
+  /* ---- the eighteen originals, which are a different thing ----
+
+     `/learn/terms/*.html` is not a generated page and never has
+     been: `build-lessons.mjs` says so at the top and steps around
+     them. They were written by hand before the money school had a
+     builder, and they carry their own title, their own eyebrow,
+     one backlink to the library rather than two to a stage, and no
+     prev/next pair at all. The ladder names them, `basics-1` holds
+     them, and the rows are in D1, so the route renders them like
+     every other lesson.
+
+     That is a CHANGE to those eighteen pages rather than a port of
+     them, and comparing the two fact by fact would only be
+     measuring a decision that has not been taken yet. TRANSITION.md
+     Stage 11.7 step 2 is where it gets taken. What is worth holding
+     now is the part where a wrong answer costs a reader something:
+     the address, and the key their ticks are filed under. */
+  {
+    const page = await hub("/learn/terms/share.html");
+    ok("a term of basics-1 answers at /learn/terms/, not at its stage's folder",
+      page.status === 200, `status ${page.status}`);
+    says("and says that address is its own",
+      "https://reiad.co.uk/learn/terms/share.html",
+      attr(page.html, /<link rel="canonical" href="([^"]+)"/));
+    /* The one that silently loses a year of somebody's progress.
+       Every other lesson on the site files a tick under
+       `<stage>/<slug>`; these eighteen file it under the slug
+       alone, because they did so before `basics-1` existed. */
+    says("and files progress under the bare slug, as it always has",
+      "share", attr(page.html, /data-lesson-id="([^"]*)"/));
+  }
+
+  /* A lesson the ladder does not have is handed back to the asset
+     router, which is what keeps all 251 committed pages answering
+     while NEXT_ROUTES says nothing about the schools. */
+  const nothing = await hub("/learn/terms/not-a-lesson.html");
+  ok("a slug the ladder does not name falls through",
+    nothing.status === 404, `status ${nothing.status}`);
+
+  /* The starter guide is `inline`: its eight steps are accordion
+     sections of a hand-written hub, and they have never had pages.
+     A route that invented one would be advertising eight
+     addresses that have no prose behind them. */
+  const inline = await hub("/learn/start/first-buy.html");
+  ok("and so does a step of the starter guide, which has no page",
+    inline.status === 404, `status ${inline.status}`);
+}
+
 /* ---- the headers a static page would have had ---- */
 
 for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
@@ -586,7 +833,8 @@ if (failures.length) {
   process.exit(1);
 }
 console.log("The article says everything the Worker's does, each hub says what\n"
-  + "the database gave it, and every page answers at its own address.\n");
+  + "the database gave it, each school lesson says what its committed page\n"
+  + "says, and every page answers at its own address.\n");
 
 /* Said out loud, because falling off the end is not the same
    thing here. `wrangler dev` starts workerd as a child of its

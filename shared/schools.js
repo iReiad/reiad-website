@@ -191,3 +191,139 @@ export async function countsOf(d1, school) {
   ).bind(school).first();
   return { total: row?.total ?? 0, written: row?.written ?? 0 };
 }
+
+/* ============================================================
+   the ladder's arithmetic
+
+   ---- why these are here and not left in curriculum.js ----
+
+   Every one of them is already a pure function of the object it
+   is handed. `lessonUrl(school, stage, lesson)` reads three
+   slugs; `dayLabel(lesson)` reads two numbers. The four
+   `curriculum.js` modules each hold their own spelling of the
+   same handful, closed over nothing except the school they
+   belong to, which is why `scripts/school-source.mjs` can already
+   hand a builder a ladder read out of D1 and let the file's own
+   helpers decorate it.
+
+   TRANSITION.md Stage 11.7 needs the same arithmetic somewhere a
+   Next.js route can reach, and `next/` cannot import out of its
+   own directory. So it is written once, here, beside the reader
+   that produces the objects it works on.
+
+   ---- the copy, and what watches it ----
+
+   The four modules still hold their versions, because forty files
+   in `aab/` import them and those files are the browser's. That
+   is a second copy and this repository has been bitten by exactly
+   that twice, so it is checked rather than trusted:
+   `scripts/check-schools.mjs` computes every lesson's URL, id and
+   label both ways and fails if one pair disagrees. When the
+   school pages stop being files, the modules go and this stays.
+   ============================================================ */
+
+/** Where a stage's lesson pages are written.
+
+    Almost always the stage's own folder. `basics-1` in the money
+    school is the exception and it is a deliberate one: its
+    eighteen term pages were published at `/learn/terms/` for a
+    year before that school had a builder, and a URL somebody has
+    shared does not move because the generator that writes it
+    changed. The `base` in its meta is what says so. */
+export const stageBase = (school, stage) =>
+  stage.base ?? `/${school}/${stage.slug}/`;
+
+/** A stage's contents page. */
+export const stageUrl = (school, stage) =>
+  `/${school}/${stage.slug}/index.html`;
+
+/** A lesson's page.
+
+    An `inline` stage has no pages: its lessons are sections of a
+    hand-written hub and their addresses are anchors in it. One
+    stage is like that, the money school's starter guide, and the
+    reason is the sanitiser rather than the builder: its eight
+    steps carry a layout of classes that no article allowlist
+    holds. `CLAUDE.md` says why at length. */
+export const lessonUrl = (school, stage, lesson) =>
+  stage.inline
+    ? `/${school}/index.html#step-${lesson.slug}`
+    : `${stageBase(school, stage)}${lesson.slug}.html`;
+
+/** Progress is stored per lesson under a stable id.
+
+    The id is the stage's slug and the lesson's, except for the
+    money school's `basics-1`, where it is the lesson's alone.
+    That is not a tidier scheme, it is the eighteen original term
+    pages: they were published at `/learn/terms/` and their
+    progress was filed under a bare slug for a year before the
+    stage that now holds them existed. Changing the key would not
+    move anybody's ticks, it would lose them. */
+export const lessonId = (stage, lesson) =>
+  stage.slug === "basics-1" ? lesson.slug : `${stage.slug}/${lesson.slug}`;
+
+/** Bangla numerals, for pages that are Bangla throughout. */
+export const bnNum = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
+
+/** How many days a lesson covers. Most cover one, and only the
+    Quranic Arabic school has any that cover more: a lesson with
+    no day number at all belongs to a school that does not count
+    in days, and one day is the honest answer for it rather than
+    the NaN that arithmetic on `undefined` gives. */
+export const lessonDays = (lesson) =>
+  lesson.from == null ? 1 : (lesson.to ?? lesson.from) - lesson.from + 1;
+
+/** The short label above a lesson's reading time, for the two
+    schools that number their lessons, and nothing for the two
+    that do not.
+
+    The en dash in a day range is deliberate and allowed: a number
+    range is the one thing the house rule on dashes keeps it for. */
+export const lessonLabel = (school, lesson) => {
+  if (school === "quran") {
+    return lesson.to
+      ? `দিন ${bnNum(lesson.from)}–${bnNum(lesson.to)}`
+      : `দিন ${bnNum(lesson.from)}`;
+  }
+  if (school === "english") return `পর্ব ${bnNum(lesson.n)}`;
+  return "";
+};
+
+/** A stage's practice book, or null.
+
+    Null for a German Stufe still marked "soon" even though it
+    declares a workbook: the declaration is the plan, the page is
+    the thing, and letting this name a page nobody has generated
+    is how a course advertises a 404. The English school has no
+    such state and its terms are checked for the book alone. */
+export const workbookUrl = (school, stage) => {
+  if (!stage?.workbook) return null;
+  if (school === "deutsch" && stage.status !== "live") return null;
+  if (school !== "deutsch" && school !== "english") return null;
+  return `/${school}/${stage.slug}/${stage.workbook.slug}.html`;
+};
+
+/** One stage's lessons, flattened out of its sections, in page
+    order, each carrying the things a page states about it: which
+    section it came from, its id, its URL, its label and how many
+    days it covers.
+
+    This is `dhapLessons()`, `stageLessons()`, `stufeTeile()` and
+    `termParts()`, which are four spellings of one function. The
+    key the lessons sit under is the school's own, which is the
+    detail the note at the top of this file exists for. */
+export const laddered = (school, stage) => {
+  const within = WITHIN[school] ?? "lessons";
+  return (stage.sections ?? []).flatMap((section) =>
+    (section[within] ?? []).map((lesson) => ({
+      ...lesson,
+      stage,
+      section,
+      id: lessonId(stage, lesson),
+      url: lessonUrl(school, stage, lesson),
+      label: lessonLabel(school, lesson),
+      days: lessonDays(lesson),
+      status: lesson.status ?? "live",
+    }))
+  );
+};
