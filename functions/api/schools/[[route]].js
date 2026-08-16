@@ -50,7 +50,9 @@
 import { db } from "../../_lib/db.js";
 import { body, fail, methods, notConfigured, ok, nowISO } from "../../_lib/http.js";
 import { requireAdmin } from "../../_lib/auth.js";
-import { isSchool, stagesOf, lessonOf, lessonsOf, countsOf } from "../../../shared/schools.js";
+import {
+  isSchool, stagesOf, lessonOf, lessonsOf, countsOf, SCHOOL_IDS,
+} from "../../../shared/schools.js";
 import { sanitiseHTML } from "../../_lib/sanitise.js";
 
 export async function onRequest(context) {
@@ -69,7 +71,9 @@ export async function onRequest(context) {
            top of CLAUDE.md and the reason four pages once
            disagreed about the same figure. */
         const counts = {};
-        for (const id of ["learn", "deutsch", "quran", "english"]) {
+        /* The four, from the one place that names them. This was
+           written out here as well until Stage 12 step 1. */
+        for (const id of SCHOOL_IDS) {
           counts[id] = await countsOf(d1, id);
         }
         return ok({ schools: counts });

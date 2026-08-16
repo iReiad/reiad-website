@@ -2010,8 +2010,8 @@ which is the mistake Stage 13's own rule already names.
 ---
 
 ### Stage 12 · The backend, typed and in one shape
-**Status: not started.** Size: weeks. Runs alongside Stage 11
-rather than after it.
+**Status: step 1 done, 16 August 2026.** Size: weeks. Ran
+alongside Stage 11 and continues after it.
 
 Twenty-two files under `functions/`, 1,842 lines, all plain
 JavaScript, each one a Pages Functions handler that `worker.js`
@@ -2041,11 +2041,27 @@ error, or who is asking, and every handler re-derives all four.
 types with the pages that call it, in `shared/` where the Worker,
 the browser and Next can all reach them. In order:
 
-1. **The types first, and only the types.** `Article`,
-  `Comment`, `Question`, `Subscriber`, `Enquiry`, each one written
-  once and imported everywhere, including by the handlers that
-  still return `any` today. Nothing moves; things start being
-  described.
+1. **The types first, and only the types.** **Done, 16 August
+  2026.** `shared/rows.js` and `rows.d.ts` describe all fourteen
+  tables and 99 columns, and hold the status vocabularies as
+  values that the type unions are derived from, so a state added
+  to one is added to the other by construction.
+
+  `scripts/check-rows.mjs` is what makes that a description
+  rather than a hope. It compares every interface against
+  `aab/schema.sql` column by column, and it found three the first
+  time it ran: the three school tables carry an `updated_at` that
+  nothing described. It also forbids a handler keeping its own
+  copy of a vocabulary, and it found two more: the enquiry kinds
+  and the four school ids, each written out beside an import of
+  the file that already held them.
+
+  The comment states are worth remembering. The first draft of
+  `rows.js` said `approved` and `spam`, which are the words
+  anybody would pick fresh. The column holds `pending`, `live`
+  and `binned`. A description of a database is not an opportunity
+  to improve it, and the check caught that by reading the handler
+  rather than the schema.
 2. **One request pipeline.** Parse, validate, authorise, handle,
   respond, with a single error shape and a single place that
   decides what a 400 looks like. The handlers become the middle
@@ -2144,7 +2160,7 @@ repository is.
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | **done, 16 Aug 2026**. 6 HTML files left in aab/, from 283: 404, offline and the four practice books |
-| 12 | The backend, typed and in one shape | not started |
+| 12 | The backend, typed and in one shape | step 1 done, 16 Aug 2026: every row described, and checked against the schema |
 | 13 | The last JavaScript | not started |
 | 14 | One way of writing a style, and it is Tailwind | decided 16 Aug 2026, unblocked by 11.7 the same day |
 
@@ -2398,6 +2414,43 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Stage 12 step 1: one description of every row
+
+`shared/rows.js` and `rows.d.ts`: fourteen tables, 99 columns,
+seven status vocabularies. Nothing moved and no handler changed
+shape; five of them stopped keeping their own copy of a list.
+
+**The check found more than the types did.** `check-rows.mjs`
+compares each interface against `aab/schema.sql` and each
+vocabulary against the handlers, and it failed three times on the
+way in, every one a real thing:
+
+- the three school tables carry an `updated_at` that nothing
+  described, so anything reading it was untyped without saying so;
+- `functions/api/enquiries/[[id]].js` wrote out the four enquiry
+  kinds beside an import of the file that already held them;
+- `functions/api/schools/[[route]].js` wrote out the four school
+  ids beside an import of `shared/schools.js`, which exports them.
+
+And the comment states are the entry worth keeping. The first
+draft of `rows.js` said `approved` and `spam`, which is what those
+words would be if anybody had chosen them fresh. The column holds
+`pending`, `live` and `binned`. A description of a database is not
+an opportunity to improve it, and what caught it was reading the
+handler rather than the schema.
+
+The check's third section flipped during the work, which is worth
+saying because it looks like a mistake in the diff. It began by
+comparing each handler's inline list against `rows.js`, which is
+the right question while there are two copies. Once the handlers
+imported the vocabulary there was nothing to compare, so it now
+asserts the opposite: nothing under `functions/` may write out a
+list `rows.js` already holds.
+
+Next: step 2, one request pipeline, so that the comments handler
+and the questions handler stop disagreeing about what a bad
+request looks like.
 
 ### 2026-08-16 · Stage 11.7 step 3, and Stage 11: no page of writing is a file
 

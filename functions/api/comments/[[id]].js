@@ -39,6 +39,7 @@ import {
 import { requireAdmin } from "../../_lib/auth.js";
 import { throttle } from "../../_lib/auth.js";
 import { readerFrom } from "../../_lib/reader.js";
+import { SECTIONS, COMMENT_STATUS, allowed } from "../../../shared/rows.js";
 
 /* Never `author_id`. The site shows a name, not an identifier, and
    a reader's Supabase id is not the public's business. */
@@ -49,9 +50,11 @@ const MAX_BODY = 4000;
 const MIN_BODY = 2;
 
 /* Where a piece can live, so a thread cannot be attached to a made
-   up mount. The same list the articles endpoint keeps. */
-const SECTIONS = ["insights", "cooking", "travel"];
-const safeSection = (v) => (SECTIONS.includes(String(v ?? "")) ? String(v) : "insights");
+   up mount. TRANSITION.md Stage 12, step 1: this used to be a
+   second copy of the list in the articles endpoint, under a
+   comment saying so, which is how a copy gets kept until it is
+   not. */
+const safeSection = (v) => (allowed(SECTIONS, v) ? String(v) : "insights");
 
 const safeSlug = (v) => {
   const s = str(v, 120).toLowerCase();
@@ -168,8 +171,7 @@ export async function onRequest(context) {
       if (!id) return fail("id-required");
 
       const input = await body(request);
-      const status = ["pending", "live", "binned"].includes(input.status)
-        ? input.status : null;
+      const status = allowed(COMMENT_STATUS, input.status) ? input.status : null;
       if (!status) return fail("bad-status");
 
       await run(d1,
