@@ -1,9 +1,22 @@
 /* ============================================================
    import-schools.mjs: the four curricula, as SQL.
 
-     node scripts/import-schools.mjs > schools.sql
+     node scripts/import-schools.mjs --out schools.sql
      npx wrangler d1 execute reiad --local  --file=schools.sql
      npx wrangler d1 execute reiad --remote --file=schools.sql
+
+   ---- use --out, not a `>` redirect ----
+
+   `node scripts/import-schools.mjs > schools.sql` looks like the
+   same thing and has one bad property: the shell creates the file
+   BEFORE node runs. Run it from the wrong directory and node
+   exits with "Cannot find module", the shell has already left an
+   empty `schools.sql` behind, and `wrangler d1 execute --file`
+   then imports it perfectly: "Processed 0 queries", a success
+   table, and a database nobody touched. That happened twice.
+
+   With `--out` the file is written by this script, after the work
+   is done, or not at all.
 
    TRANSITION.md Stage 8, step 2. It reads the files that are the
    source of truth today and writes the rows that will be the
@@ -41,9 +54,9 @@
    reader.
    ============================================================ */
 
-import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { existsSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const AAB = join(ROOT, "aab");
@@ -291,12 +304,23 @@ export function toSql(all, now) {
 
 /* ---------- run ---------- */
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+/* `pathToFileURL` rather than `file://${argv[1]}`, because a path
+   with a space or an accent in it percent-encodes in one and not
+   the other, and the difference is this whole script silently not
+   running. */
+if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const all = await readAll();
   const written = all.lessons.filter((l) => l.body).length;
   const sql = toSql(all, new Date().toISOString());
 
-  process.stdout.write(sql);
+  const flag = process.argv.indexOf("--out");
+  const out = flag === -1 ? null : process.argv[flag + 1];
+
+  if (out) {
+    writeFileSync(resolve(out), sql);
+  } else {
+    process.stdout.write(sql);
+  }
 
   console.error(
     `\n${all.stages.length} stage(s), ${all.sections.length} section(s), `
@@ -315,5 +339,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
      reports success. If the two numbers do not match, nothing
      was written, whatever the tick says. */
   const count = sql.split("\n").filter((line) => line.trim() && !line.startsWith("--")).length;
+  if (out) {
+    console.error(`\n  written: ${resolve(out)}`);
+    console.error(`  ${(sql.length / 1024).toFixed(0)} KB, ${count} queries.`);
+  }
   console.error(`\n  wrangler should report ${count} queries. A 0 means it read none of them.\n`);
 }
