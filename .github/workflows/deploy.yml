@@ -98,6 +98,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: npm
+
+      # The root package.json is not a dependency of the site: nothing
+      # in it is shipped, and the deploy is an upload rather than a
+      # build. It is here for the two `--check` steps below, and the
+      # first run of this workflow is why that is worth a step of its
+      # own rather than a line in a comment.
+      #
+      # `build-modules.mjs` shells out to `npx tsc`. With no
+      # node_modules, npx does not fail: it goes to the registry, and
+      # `tsc` there is not TypeScript. The run died inside
+      # `tsc@2.0.4`, a package nothing in this repository has ever
+      # asked for, having installed it first. That is the exact hole
+      # the root package.json was added to close, and leaving the
+      # install out reopened it in a new place.
+      - name: Install the build tools
+        run: npm ci
 
       # Said before anything runs, because the failure it prevents
       # is a job that gets all the way to the upload and then dies
