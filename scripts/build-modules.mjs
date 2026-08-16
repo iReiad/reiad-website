@@ -43,7 +43,7 @@ const SRC = join(ROOT, "aab", "src");
     Listed rather than globbed, so that adding one is a line
     somebody wrote and the check below knows what to compare
     without guessing. */
-export const MODULES = ["share-card"];
+export const MODULES = ["share-card", "api"];
 
 /** Compile into a temporary directory and read the results back.
 

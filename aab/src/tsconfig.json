@@ -8,6 +8,12 @@
     "would fight all three. So no bundling and no renaming, one",
     "file in and one file out, which is what tsc alone does.",
     "",
+    "A module here imports its neighbours by the path the browser",
+    "fetches them from, /activation.js and not ../activation.js,",
+    "because that is what ends up in the emitted file. paths below",
+    "is the compile-time claim about each such path, and it empties",
+    "as those modules move.",
+    "",
     "declaration: true is the point of the exercise. app/src/types/",
     "holds hand-written .d.ts files describing these modules, and",
     "Stage 13 is done when that directory is empty because the",
@@ -27,7 +33,10 @@
     "outDir": "..",
     "rootDir": ".",
     "verbatimModuleSyntax": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "/activation.js": ["./types/activation.d.ts"]
+    }
   },
   "include": ["*.ts"],
   "//exclude": [

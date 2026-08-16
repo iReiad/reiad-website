@@ -31,6 +31,20 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v79: TRANSITION.md Stage 13. /api.js is built from
+        aab/src/api.ts now rather than written by hand, and tsc
+        reindents what it emits, so the file is byte-different and
+        line-for-line the same code. Checked rather than assumed:
+        the two are identical once whitespace and comments are
+        taken out.
+
+        A bump for a file whose behaviour did not change is still
+        a bump. A precached file is answered from the cache that
+        holds it, and only a new VERSION empties that cache; a
+        reader carrying the old bytes would carry them for ever,
+        and the next real change to this file would then be
+        invisible to them too.
+
    v78: TRANSITION.md Stage 11.7. The four schools are Next.js
         routes and 247 committed pages have left aab/, six of them
         precached: both learn pages, the German hub and its first
@@ -626,7 +640,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v78";
+const VERSION = "v79";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -2154,15 +2154,17 @@ is still there.
 ---
 
 ### Stage 13 · The last JavaScript
-**Status: started, 16 August 2026. One module of eight moved.**
+**Status: started, 16 August 2026. Two modules of eight moved.**
 Size: continuous, and mostly a by-product. The build-step
 decision it was waiting on is in section 7: the arrangement
 `app/` already has, which means this stage needed no new one.
 
-`aab/src/share-card.ts` is the first, and it was chosen for being
-the smallest thing with a real surface rather than the most
-useful: 118 lines, six exports, and the lowest blast radius of
-the eight. `node scripts/build-modules.mjs` writes
+`aab/src/share-card.ts` is the first, chosen for being the
+smallest thing with a real surface rather than the most useful:
+118 lines, six exports, and the lowest blast radius of the eight.
+`aab/src/api.ts` is the second, and it is the one with the most
+callers: nineteen exports that every page of the site reaches
+through. `node scripts/build-modules.mjs` writes
 `aab/share-card.js` and its declaration, and `--check` fails if
 either is edited in its built form.
 
@@ -2180,9 +2182,17 @@ rather than leaving a reviewer to work out.
 The declaration is emitted rather than hand-written, and the
 generated one is already better than the file it replaced:
 `app/src/types/share-card.d.ts` never described `cardShape`,
-`SHARE_W`, `SHARE_H` or the `Focus` union at all, because a
+`SHARE_W`, `SHARE_H` or the `Focus` union at all, and
+`api.d.ts` described two of nineteen exports, because a
 hand-written description only holds what somebody remembered to
 put in it.
+
+**And a module in `aab/src/` imports its neighbours by the path
+the browser fetches them from**, `/activation.js` rather than
+`../activation.js`, because that is what has to end up in the
+emitted file. `aab/src/types/` is the compile-time claim about
+each such path, and it empties as those modules move, exactly as
+`app/src/types/` does from the other side.
 
 And `aab/src/tsconfig.json` needs `"exclude": []` said out loud.
 `tsc` excludes `outDir` and `declarationDir` by default, both of
@@ -2250,7 +2260,7 @@ repository is.
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | **done, 16 Aug 2026**. 6 HTML files left in aab/, from 283: 404, offline and the four practice books |
 | 12 | The backend, typed and in one shape | steps 1, 2 and half of 4 done, 16 Aug 2026: rows described, one place decides a bad request, and the browser cannot name a route that is gone |
-| 13 | The last JavaScript | started 16 Aug 2026: 1 of 8 modules moved, the arrangement proved |
+| 13 | The last JavaScript | started 16 Aug 2026: 2 of 8 modules moved, the arrangement proved |
 | 14 | One way of writing a style, and it is Tailwind | decided 16 Aug 2026, unblocked by 11.7 the same day |
 
 ---
@@ -2581,7 +2591,14 @@ writing, because `--check` must be able to compare without
 writing: a check that fixed what it was asked to find would
 always pass.
 
-Seven modules left, and `sw.js` is deliberately not one of them.
+`aab/src/api.ts` followed the same day: nineteen exports every
+page reaches through, and a hand-written declaration that
+described two of them. Same comparison, same result. `/api.js` is
+precached, so `sw.js` went to v79 for a file whose behaviour did
+not change, because a precached file is answered from the cache
+that holds it and only a new VERSION empties that cache.
+
+Six modules left, and `sw.js` is deliberately not one of them.
 
 ### 2026-08-16 · The build step for `aab/`, decided
 
