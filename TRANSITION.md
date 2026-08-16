@@ -778,8 +778,8 @@ as it exists, and `/desk.html` is untouched.
 ---
 
 ### Stage 10 · Next.js takes one public route
-**Status: on, and serving, with eight worksteps left. 16 August
-2026.** The second Worker is deployed, the service binding is in
+**Status: on, and serving, with seven worksteps left of the eight
+below. 16 August 2026.** The second Worker is deployed, the service binding is in
 place, and an article at `/insights/<slug>.html` is rendered by
 Next on the live site. That is not inferred from the
 configuration: `scripts/check-live.mjs` asks reiad.co.uk and gets
@@ -1070,14 +1070,15 @@ site. *Done when* a workflow runs the offline checks on every
 push, and the parity test when anything under `next/` or
 `shared/` changes.
 
-**10.4 The house checklist does not mention either Stage 10
-test.** `CLAUDE.md`'s **Before deploying** list names eight
-checks and its second list names nine tests, and
-`next/parity.test.mjs` is in neither. `scripts/check-live.mjs` is
-new and belongs in neither: it describes what is deployed, so it
-needs a heading that says after rather than before. *Done when*
-both are written down where somebody about to deploy will read
-them.
+**10.4 The house checklist did not mention either Stage 10 test.
+Done, 16 August 2026.** `CLAUDE.md`'s **Before deploying** list
+named eight checks and its second list nine tests, and
+`next/parity.test.mjs`, the 49 checks that exist to catch exactly
+this stage regressing, was in neither. It has its own block now,
+under the condition that should trigger it: anything under `next/`
+or `shared/` changing. `scripts/check-live.mjs` belonged in
+neither, because it describes what is deployed rather than what is
+committed, so it has a heading of its own that says after.
 
 **10.5 The second Worker answers at its own address.**
 `next/wrangler.jsonc` does not set `workers_dev`, and the default
@@ -1157,7 +1158,7 @@ should.
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
 | 8 | The schools' content into the database | not started |
 | 9 | React in the Studio and the desk | both done 16 Aug 2026, old pages still up |
-| 10 | Next.js takes the article route | on and serving 16 Aug 2026, eight worksteps open |
+| 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | The rest, one route at a time | not started |
 
 ---
@@ -1378,6 +1379,60 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Stage 10 is on, and audited against the live site
+The second Worker was deployed and the service binding added, both
+by hand, and this is the first audit of the stage that asked the
+site rather than the plan. `reiad-next` at 07:41 UTC, the front
+Worker at 07:39 with `[[services]]` in `wrangler.toml`. The
+deployed code was read back out of both to be sure the account is
+running what this repository holds, and it is: `NEXT_ROUTES` and
+`goesToNext()` in one, `IS_ASSET` and the `.html` strip in the
+other.
+
+**It works, and the part that could not be proved from here is
+proved now.** `/insights/<slug>.html` comes back rendered by Next,
+with the six security headers, the one minute cache line, the
+canonical link, the drawn share card and the comment thread on it,
+and one of its `/_next/static/chunks/*.js` comes back as
+JavaScript rather than as this site's 404 page. That last one is
+the wrapper in `next/worker-entry.js` doing its job, and it is the
+thing the stage note said `wrangler dev` cannot show, because it
+does not serve assets for an auxiliary worker. The way through was
+to ask from somewhere that can reach the site: 25 checks in
+`scripts/check-live.mjs`, run by `live-check.yml` on every push.
+`dsex` still reaches its 301, an unknown slug is still a 404, the
+kitchen is still the Worker's, and all seven pieces in the sitemap
+answer 200.
+
+**Then the audit found eight things, and the first one is a test
+article on the public site.** `insights/test-react-article`,
+titled "Test Article", body "It's a test", published at 04:40 that
+morning while the React Studio was being driven, and `live`. Every
+list that reads the database has it, and tomorrow's backup commit
+would have written it into `content/articles.backup.json`. Nothing
+in this repository could have caught it: the pages that count
+themselves count what is there, and a real row that should not
+exist is not a counting problem.
+
+**And the repository is now wrong about the four file pieces.**
+`dse-basics`, `onions` and `uk-visit-visa` all became rows on 15
+August, so the only piece `fromNext()` catches today is `dsex`.
+The fallback is still the right shape and stays; the long comment
+in `worker.js`, the named list in the parity test and the prose
+under **The three that would have broken on switch-on** all
+describe a world that moved on under them. That is the same class
+of mistake as the counts in `CLAUDE.md`: right on the day it was
+written, and nothing rechecks it.
+
+The rest, with what each is done when, is under **Still to do** in
+the stage. Two are worth naming here: nothing in CI runs the
+checks this repository leans on when it merges without asking, and
+the second Worker also answers on its own `workers.dev` address,
+which is a second public copy of every article. One is fixed
+already: `CLAUDE.md` never mentioned `next/parity.test.mjs` at
+all, and now names it, plus the new live check under a heading
+that says after deploying rather than before.
 
 ### 2026-08-16 · Auditing Stage 10 against its own plan, line by line
 Asked whether every item had really been done, and three had not.

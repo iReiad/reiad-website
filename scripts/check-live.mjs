@@ -205,7 +205,10 @@ for (const [path, what] of [
   const xml = await (await get("/sitemap.xml")).text();
   const urls = [...new Set(xml.match(/<loc>([^<]+)<\/loc>/g) ?? [])]
     .map((tag) => tag.replace(/<\/?loc>/g, ""))
-    .filter((url) => /\/(insights|cooking|travel)\/[^/]+$/.test(url));
+    /* A piece, not a hub: `/cooking/index.html` is at the same
+       depth and is the kitchen's front page. */
+    .filter((url) => /\/(insights|cooking|travel)\/[^/]+$/.test(url))
+    .filter((url) => !/\/index\.html$/.test(url));
 
   const bad = [];
   console.log(`  pieces in the sitemap: ${urls.length}`);
