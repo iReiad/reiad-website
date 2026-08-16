@@ -31,6 +31,16 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v75: TRANSITION.md Stage 11.5 again. /account.html and
+        /skills/index.html are Next.js routes now, so they leave
+        the precache list: a page a Worker builds is cached the
+        first time it is fetched rather than at install. The
+        skills hub is the one worth thinking about, because it is
+        the door to four schools and a reader offline on it now
+        gets the offline page rather than a stale ladder. Its
+        schools' own hubs are still precached and still the thing
+        a returning learner opens.
+
    v74: TRANSITION.md Stage 11.5, and the colophon is gone. Both
         precached files that changed are small: content.js lost
         the colophon's PAGES entry, so a returning reader on the
@@ -563,7 +573,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v74";
+const VERSION = "v75";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -595,7 +605,6 @@ const PRECACHE = [
   /* signin.js imports sync.js at the top, so a shell without it is
      a shell whose sign-in button never loads. */
   "/sync.js",
-  "/account.html",
   "/account-page.js",
   /* app.js imports this one EAGERLY, at the top, unlike the three
      above: a shell without it is an app.js whose import 404s, and
@@ -622,7 +631,6 @@ const PRECACHE = [
   "/tilt.js",
   "/home.js",
   "/news.js",
-  "/skills/index.html",
   "/skills/skills.js",
   "/learn/index.html",
   "/learn/learn.js",

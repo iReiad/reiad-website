@@ -42,6 +42,7 @@ what anybody is served.
 | `pieces/*.html` | rows in D1, rendered by the Next.js article route | 16 August 2026 |
 | `about.html`, `contact.html` | Next.js routes at the same addresses | 16 August 2026 |
 | `colophon.html` | nothing: `_redirects` sends it to `/about` | 16 August 2026 |
+| `skills-index.html`, `account.html` | Next.js routes at the same addresses | 16 August 2026 |
 
 `work.html` and `services.html` were early placeholders that still
 carried template text ("[Your Name]", "hello@yourdomain.com"), kept

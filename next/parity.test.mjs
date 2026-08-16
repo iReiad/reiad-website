@@ -508,6 +508,7 @@ const says = (name, want, got) => ok(name, decode(got) === want,
 for (const [path, title, current] of [
   ["/about.html", "About · Reiad's Library", "about"],
   ["/contact.html", "Contact · Reiad's Library", "contact"],
+  ["/skills/index.html", "দক্ষতা · Skills · Reiad's Library", "skills"],
 ]) {
   const page = await hub(path);
   ok(`${path} answers`, page.status === 200, `status ${page.status}`);
@@ -518,6 +519,16 @@ for (const [path, title, current] of [
     new RegExp(`<a href="${path}"[^>]*aria-current="page"`).test(page.html)
     || new RegExp(`aria-current="page"[^>]*href="${path}"`).test(page.html),
     `nothing carries aria-current="page" for ${current}`);
+}
+
+/* The account page marks no nav link, because it is in no nav,
+   and it is the one page here that must not be indexed. */
+{
+  const account = await hub("/account.html");
+  ok("/account.html answers", account.status === 200, `status ${account.status}`);
+  ok("and tells search engines to leave it alone",
+    /<meta name="robots" content="noindex/.test(account.html),
+    "no robots tag: this page is somebody's name and their progress");
 }
 
 /* ---- the headers a static page would have had ---- */

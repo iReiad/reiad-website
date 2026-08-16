@@ -102,7 +102,7 @@ not_found_handling = "404-page"
 #                through to the assets exactly as before.
 run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/*", "/_next/*",
   "/feed.xml", "/sitemap.xml", "/insights.html", "/cooking/index.html", "/travel/index.html",
-  "/about.html", "/contact.html"]
+  "/about.html", "/contact.html", "/account.html", "/skills/index.html"]
 
 # ---------- D1: the database everything dynamic runs on ----------
 # Articles, reader questions, subscribers, enquiries, view counts and

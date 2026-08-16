@@ -56,6 +56,9 @@
 # entry in wrangler.toml is ever removed, these six lines become the
 # loop it has always been able to catch.
 /about                 /about.html           301
+/account               /account.html         301
+/skills                /skills/index.html    301
+/skills/               /skills/index.html    301
 /contact               /contact.html         301
 /insights              /insights.html        301
 /cooking               /cooking/index.html   301

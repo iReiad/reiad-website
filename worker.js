@@ -160,7 +160,8 @@ export const NEXT_ROUTES = [
      moment its file leaves aab/: there is no window in which
      both answer, because run_worker_first takes the address away
      from the asset router in the same commit. */
-  /^\/(about|contact)\.html$/i,
+  /^\/(about|contact|account)\.html$/i,
+  /^\/skills\/index\.html$/i,
   /^\/_next\//,
 ];
 

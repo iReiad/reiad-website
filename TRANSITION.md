@@ -1340,9 +1340,9 @@ has been looked at once, after a week of real traffic.
 ---
 
 ### Stage 11 · Every remaining route, until no page is a file
-**Status: 11.1, 11.2 and 11.8 done, 11.5 begun, 16 August 2026.
-268 files left, and none of them is a piece of writing.** Size:
-months, at whatever pace suits.
+**Status: 11.1, 11.2 and 11.8 done, 11.5 all but the home page,
+16 August 2026. 266 files left, and none of them is a piece of
+writing.** Size: months, at whatever pace suits.
 
 Stage 10 moved one route and proved the machinery: an allowlist in
 `worker.js`, a service binding, a fallback for anything the second
@@ -1512,10 +1512,11 @@ Stage 10 argued about. The models stay modules. *Deletes* 2 files.
 render on the server first, and `COUNTS` in `content.js` still
 counting them.
 
-**11.5 The remaining hand-written pages. Begun 16 August 2026:
-`/about` and `/contact` are routes, `/colophon` is gone.** The
-home page, `/account` and `/skills` are what is left. *Deletes* 6
-files, 3 of them done. *Needs* the home page's rotation and the
+**11.5 The remaining hand-written pages. 16 August 2026:
+`/about`, `/contact`, `/skills` and `/account` are routes, and
+`/colophon` is gone.** The home page is what is left, and it is
+the hardest of the six: four schools' progress, a rotation, a
+resume card and the news. *Deletes* 6 files, 5 of them done. *Needs* the home page's rotation and the
 palette to keep reading `content.js`, which is structure only as
 of Stage 11.2.
 
@@ -1753,7 +1754,7 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | 11.1, 11.2, 11.8 done and 11.5 begun 16 Aug 2026, 268 files to go |
+| 11 | Every remaining route, until no page is a file | 11.1, 11.2, 11.8 done, 11.5 all but the home page, 16 Aug 2026, 266 files to go |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
 
