@@ -66,10 +66,23 @@ if (!PREVIEW) {
 /* Every route the Next Worker owns or is being given. A path is
    listed here the moment its route is written, which is before
    `NEXT_ROUTES` in worker.js forwards anything to it: that gap is
-   the whole point of this file. */
+   the whole point of this file.
+
+   `section` marks a hub, and it changes what can be compared. A
+   hub's head is the same question as an article's and is asked
+   the same way. Its list is not: the page it is being compared
+   against builds its cards in the browser, after a fetch, so
+   there is nothing in the live HTML to diff them against. What
+   the preview is held to instead is the database itself, through
+   the public `/api/articles`: every live piece in that section
+   has a card, at its own address, and there are no others. That
+   is the stronger of the two checks anyway. */
 const ROUTES = [
   { path: "/insights/dse-basics", what: "an article, switched on" },
   { path: "/insights/tiny-experiments", what: "another article" },
+  { path: "/insights.html", what: "the Insights hub", section: "insights" },
+  { path: "/cooking/index.html", what: "the kitchen", section: "cooking" },
+  { path: "/travel/index.html", what: "the travel desk", section: "travel" },
 ];
 
 /* fetch has no timeout of its own, and a check that hangs is
@@ -97,10 +110,39 @@ const okay = (name, cond, detail = "") => {
   console.log(`  FAIL ${name}${detail ? `\n       ${detail}` : ""}`);
 };
 
-const attr = (html, re) => (html.match(re) ?? [])[1] ?? null;
+/* Entities decoded before anything is compared, because the two
+   sides escape differently and both are correct. React writes an
+   apostrophe as `&#x27;`, a hand-written page writes it as
+   itself, and "Reiad's Library" would otherwise fail against
+   "Reiad&#x27;s Library" on every hub in this list. */
+const ENTITIES = {
+  "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"',
+  "&#x27;": "'", "&#39;": "'", "&apos;": "'", "&#x2F;": "/",
+};
+const text = (value) => value === null || value === undefined ? value
+  : String(value).replace(/&(?:amp|lt|gt|quot|apos|#x27|#39|#x2F);/g, (e) => ENTITIES[e]);
+
+const attr = (html, re) => text((html.match(re) ?? [])[1] ?? null);
 const meta = (html, key) =>
   attr(html, new RegExp(`<meta[^>]*property="${key}"[^>]*content="([^"]*)"`))
   ?? attr(html, new RegExp(`<meta[^>]*content="([^"]*)"[^>]*property="${key}"`));
+
+/** Every live piece in a section, straight from the database, by
+    way of the endpoint the site's own pages read. Asked of the
+    live site rather than the preview: the preview is the thing
+    being checked, and a page marking its own homework is the
+    failure this repository has written up twice. */
+async function livePieces(section) {
+  const stop = AbortSignal.timeout(15000);
+  const res = await fetch(`${LIVE}/api/articles`, { signal: stop });
+  const body = await res.json();
+  /* `{ ok, articles }`, and only the live ones without `?all=1`,
+     which needs the admin session this script does not have and
+     should not want. */
+  return (body?.articles ?? [])
+    .filter((row) => (row.status ?? "live") === "live")
+    .filter((row) => (row.section || "insights") === section);
+}
 
 console.log(`\npreview: ${PREVIEW}\nagainst: ${LIVE}\n`);
 
@@ -116,7 +158,25 @@ for (const route of ROUTES) {
   if (live.error) { okay("the live site answers", false, live.error); continue; }
 
   check("the same status", pre.status, live.status);
-  if (pre.status !== 200 || live.status !== 200) { console.log(); continue; }
+
+  /* And 200, which is a separate question from agreement.
+
+     THE FALSE PASS THIS CLOSES. This used to compare the two
+     statuses and then quietly `continue` on anything that was not
+     200, so two sides answering the same wrong thing printed one
+     tick and skipped every real check. Run from a sandbox whose
+     egress proxy answers 403 to everything, it compared nothing
+     at all across five routes and finished with "the preview
+     renders what the live site renders". A check that agrees with
+     itself is the failure this repository has written up twice,
+     and this is the third. */
+  if (pre.status !== 200 || live.status !== 200) {
+    okay(`and both answer 200, rather than ${pre.status}`, false,
+      "nothing below was compared. Two sides agreeing on a 404, or on a\n"
+      + "       403 from something in the way, is not the same as agreeing.");
+    console.log();
+    continue;
+  }
 
   check("the same title",
     attr(pre.html, /<title>([^<]*)<\/title>/),
@@ -131,6 +191,33 @@ for (const route of ROUTES) {
   for (const key of ["og:type", "og:title", "og:description", "og:url",
                      "og:site_name", "og:image", "og:image:width", "og:image:height"]) {
     check(`the same ${key}`, meta(pre.html, key), meta(live.html, key));
+  }
+
+  /* A hub, held to the database rather than to the page it
+     replaces: that page has an empty box in its HTML and fills it
+     from /api/articles after it has painted. */
+  if (route.section) {
+    const pieces = await livePieces(route.section);
+    const cards = (pre.html.match(/class="cell (?:read-card|sample-card)"/g) ?? []).length;
+
+    okay(`the preview lists ${pieces.length} piece(s), which is what the`
+      + " database has", cards === pieces.length, `${cards} card(s) rendered`);
+
+    for (const piece of pieces) {
+      const url = `/${route.section}/${piece.slug}.html`;
+      okay(`  ${piece.slug} has a card, at ${url}`,
+        pre.html.includes(`href="${url}"`));
+    }
+
+    /* Server-rendered or it has not moved. The whole gain of this
+       step is a hub that says what is on it before any JavaScript
+       runs, and a page that renders an empty grid and fills it in
+       afterwards passes every other check on this list. */
+    okay("the list is in the HTML rather than fetched",
+      cards > 0 || pieces.length === 0);
+
+    console.log();
+    continue;
   }
 
   /* The prose itself, as a string. This is the half that has to

@@ -226,35 +226,13 @@
 
   <script type="module" src="/app.js"></script>
   <script type="module" src="/pulse.js"></script>
-  <script type="module">
-    /* Confirmed opt-in: the address is stored as pending until the
-       link is clicked, and every mail carries a one-click unsubscribe. */
-    import { backendReady, subscribe } from "/api.js";
-    const form = document.getElementById("subscribe-form");
-    const msg = document.getElementById("sub-msg");
-    if (await backendReady()) {
-      form.hidden = false;
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const data = Object.fromEntries(new FormData(form));
-        msg.textContent = "Signing you up…";
-        msg.className = "gate-msg mono";
-        const result = await subscribe({ ...data, source: "insights" });
-        if (result?.already) {
-          msg.textContent = "You're already on the list.";
-          msg.className = "gate-msg mono ok";
-        } else if (result?.ok) {
-          form.hidden = true;
-          msg.innerHTML = result.confirmUrl
-            ? `Almost: <a href="${result.confirmUrl}">confirm your address</a> to finish.`
-            : "Check your email to confirm.";
-          msg.className = "gate-msg mono ok";
-        } else {
-          msg.textContent = "That didn't work, the RSS feed always does.";
-          msg.className = "gate-msg mono err";
-        }
-      });
-    }
-  </script>
+  <!-- The subscribe box, and the topic chips when they arrive in
+       the HTML rather than being built here. Both used to be an
+       inline module at this spot; they are a file so that this
+       page and the Next.js route that replaces it (TRANSITION.md
+       Stage 11.1) run the same lines rather than two copies of
+       them. /hub.js finds what it finds and leaves the rest
+       alone, so this page still builds its own chips. -->
+  <script type="module" src="/hub.js"></script>
 </body>
 </html>

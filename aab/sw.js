@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v70: /insights.html changed, and it is precached. The subscribe
+        box it carried as an inline module is a file now,
+        /hub.js, so that this page and the Next.js route that
+        replaces it (TRANSITION.md Stage 11.1) run the same lines
+        rather than two copies of them. A returning reader holding
+        the v69 page would keep the inline copy, which still
+        works; the reason for the bump is that the day the two
+        stop agreeing is the day one of them is being edited.
+
    v69: /learn/contents.html changed, and it is precached. The
         money school's builder was emitting a nav that linked to
         Deutsch where the whole rest of the site links to Skills,
@@ -498,7 +507,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v69";
+const VERSION = "v70";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

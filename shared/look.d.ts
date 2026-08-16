@@ -6,6 +6,8 @@
 
 export interface Look {
   mount: string;
+  /** The section's own index page, as a path. */
+  hub: string;
   bodyClass: string;
   og: string;
   minutes: (n: number) => string;
@@ -26,6 +28,9 @@ export interface Article {
   tag: string;
   body: string;
   cover: string;
+  /** Pipe-separated in the column. `/api/articles` splits it on the
+      way out; anything reading the row itself gets the raw string. */
+  topics: string;
   minutes: number;
   status: string;
   published_at: string;

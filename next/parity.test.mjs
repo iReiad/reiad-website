@@ -10,10 +10,15 @@
    is not there.
 
    It starts the built Worker on workerd through `wrangler dev`,
-   with a local D1 seeded with one article, asks it for that
+   with a local D1 seeded with a handful of rows, asks it for an
    article, and compares what comes back against what
    `functions/insights/[slug].js` would have produced for the same
    row. No network, no deploy, no Cloudflare account.
+
+   Since Stage 11.1 it also drives the three reading hubs, which
+   have no Worker-side twin to be compared against and are held to
+   the database instead: the cards, their addresses, the count
+   above them, and the draft that must appear on none of them.
 
    ---- "byte-identical", and what that had to become ----
 
@@ -63,7 +68,12 @@ const ARTICLE = {
   title: 'How the "DSEX" actually works & why it matters',
   dek: "What the index measures, how a BO account works, and the questions to ask first.",
   tag: "Equities · Beginner",
-  topics: JSON.stringify(["Equities", "Beginner"]),
+  /* Pipe-separated, which is what the column actually holds:
+     `/api/articles` splits on it and so does the hub route. This
+     said `JSON.stringify([...])` for as long as nothing read the
+     field, and a fixture in a format the site does not use tests
+     the fixture. */
+  topics: "Equities|Beginner",
   body: '<p>The DSEX is a free-float weighted index.</p>\n'
     + '<figure class="lead-photo"><img src="/media/dse/9f2a1c.webp" alt="The board" '
     + 'width="1600" height="900" loading="lazy" decoding="async"></figure>\n'
@@ -85,46 +95,105 @@ const d1 = (sql) => execFileSync(
   { cwd: here, stdio: "pipe" },
 );
 
+/* Three more rows, for the hubs. One piece in each Bangla
+   section, so that the card, its address and the count above it
+   are drawn from something; and one draft, which is the row that
+   must not appear anywhere.
+
+   Slugs nothing will ever be called, on the same reasoning as
+   `rate-cycle` above: a fixture that collides with a real piece
+   tests the fixture. */
+const KITCHEN = {
+  ...ARTICLE,
+  slug: "parity-kitchen", section: "cooking", lang: "bn",
+  title: "পেঁয়াজ কাটার আসল নিয়ম", dek: "শিরা বরাবর কাটলে কী বদলায়।",
+  tag: "রান্নাঘর · উপকরণ", topics: "উপকরণ|কৌশল", minutes: 12,
+  cover: "", published_at: "2026-07-02",
+};
+const DESK = {
+  ...ARTICLE,
+  slug: "parity-travel", section: "travel", lang: "bn",
+  title: "ভিসার কাগজপত্র", dek: "কোন কাগজে সবচেয়ে বেশি নজর পড়ে।",
+  tag: "ভ্রমণ · ভিসা", topics: "ভিসা", minutes: 9,
+  cover: "", published_at: "2026-07-03",
+};
+const DRAFT = {
+  ...ARTICLE,
+  slug: "parity-draft", section: "insights", status: "draft",
+  title: "Not published yet", published_at: "",
+};
+
 const columns = Object.keys(ARTICLE);
-const values = columns
-  .map((c) => (typeof ARTICLE[c] === "number" ? ARTICLE[c] : `'${String(ARTICLE[c]).replace(/'/g, "''")}'`))
+const row = (article) => columns
+  .map((c) => (typeof article[c] === "number" ? article[c] : `'${String(article[c]).replace(/'/g, "''")}'`))
   .join(", ");
 
 d1(`CREATE TABLE IF NOT EXISTS articles (
       slug TEXT PRIMARY KEY, section TEXT, lang TEXT, title TEXT, dek TEXT, tag TEXT,
       topics TEXT, body TEXT, cover TEXT, minutes INTEGER, status TEXT,
       published_at TEXT, updated_at TEXT)`);
-d1(`INSERT OR REPLACE INTO articles (${columns.join(", ")}) VALUES (${values})`);
+for (const article of [ARTICLE, KITCHEN, DESK, DRAFT]) {
+  d1(`INSERT OR REPLACE INTO articles (${columns.join(", ")}) VALUES (${row(article)})`);
+}
 
 /* ---------- the Worker on workerd ---------- */
 
+/* Its own process group, so that stopping it stops all of it.
+   `wrangler dev` runs workerd as a child of its own, and a
+   SIGTERM to wrangler alone leaves that grandchild holding the
+   port: the next run of this test then dies on "Address already
+   in use", which reads like a broken test and is a leftover. */
 const dev = spawn(
   "npx",
   ["wrangler", "dev", "--local", "--port", String(PORT), "--persist-to", state],
-  { cwd: here, stdio: ["ignore", "pipe", "pipe"] },
+  { cwd: here, stdio: ["ignore", "pipe", "pipe"], detached: true },
 );
 
 let log = "";
 dev.stdout.on("data", (d) => { log += d; });
 dev.stderr.on("data", (d) => { log += d; });
 
+let gone = null;
+dev.on("exit", (code, signal) => { gone = code ?? signal ?? "gone"; });
+
 const stop = () => {
-  dev.kill("SIGTERM");
+  try { process.kill(-dev.pid, "SIGTERM"); } catch { dev.kill("SIGTERM"); }
   try { rmSync(state, { recursive: true, force: true }); } catch { /* fine */ }
 };
 process.on("exit", stop);
 
+/* Ready, or one of three ways of not being ready, told apart.
+
+   THE BUG THIS SHAPE FIXES, and it is worse than the one it
+   replaces because it was quiet. The old loop gave up on any line
+   matching `Error: `, and `wrangler dev` prints exactly that,
+   harmlessly, wherever there is no outbound network: it cannot
+   fetch the `Request.cf` object, says so with a stack, and then
+   starts perfectly forty seconds later. So in the container this
+   stage is being written in, and in any sandbox like it, this
+   test printed "did not start", exited 0, and looked from the
+   outside exactly like 49 passing checks.
+
+   A real failure is the process being gone, or wrangler's own
+   `[ERROR]` marker, which it brackets and a thrown stack does
+   not. Everything else is waited out. */
 const ready = async () => {
-  for (let i = 0; i < 90; i++) {
-    if (/Ready on http/.test(log)) return true;
-    if (/\[ERROR\]|error while|Error: /i.test(log)) return false;
+  for (let i = 0; i < 180; i++) {
+    if (/Ready on http/.test(log)) return "ready";
+    if (gone !== null) return `wrangler dev exited (${gone})`;
+    if (/\[ERROR\]/.test(log)) return "wrangler dev reported an error";
     await new Promise((r) => setTimeout(r, 500));
   }
-  return false;
+  return "wrangler dev never said it was ready, after 90 seconds";
 };
 
-if (!await ready()) {
-  console.log("wrangler dev did not start, so the parity check is skipped.\n");
+const start = await ready();
+if (start !== "ready") {
+  console.log(`SKIPPED: ${start}, so nothing was compared.\n`);
+  console.log("This test is optional, and a skip is not a pass. If it skips\n"
+    + "everywhere, the routes it covers have no offline check at all:\n"
+    + "scripts/check-preview.mjs asks the same questions of a deployed\n"
+    + "branch preview instead.\n");
   console.log(log.split("\n").slice(-15).join("\n"));
   stop();
   process.exit(0);
@@ -344,6 +413,86 @@ const CHUNK_BUDGET = 8;
     wrongMount.status === 404, `status ${wrongMount.status}`);
 }
 
+/* ---------- the three reading hubs ----------
+
+   TRANSITION.md Stage 11.1. There is nothing on the Worker's side
+   to compare these against: the hub it replaces is a committed
+   HTML file with an empty grid in it, filled in the browser after
+   a fetch, so a diff of the two would be a diff of one page
+   against a hole. What can be checked, and is the thing that
+   matters, is the hub against the database it was handed: every
+   live piece of that section has a card at its own address, the
+   number in the sentence is the number of cards, a draft is
+   nowhere, and a piece does not appear on another section's
+   index. All of it in the HTML, before any JavaScript runs.
+
+   `scripts/check-preview.mjs` asks the same questions of a
+   deployed branch preview, for the environments where this file
+   cannot run. */
+
+const hub = async (path) => {
+  const answer = await fetch(`http://127.0.0.1:${PORT}${path}`);
+  return { status: answer.status, html: await answer.text() };
+};
+
+/* `check()` above reports its two sides as "worker" and "next",
+   which is the right pair for an article and a wrong one here:
+   there is no worker side. Same comparison, honest labels. */
+const says = (name, want, got) => ok(name, decode(got) === want,
+  `wanted ${JSON.stringify(want)}\n      got    ${JSON.stringify(got)}`);
+
+{
+  const insights = await hub("/insights.html");
+  ok("the Insights hub answers at /insights.html", insights.status === 200,
+    `status ${insights.status}`);
+  says("its title", "Insights · Reiad's Library", tagText(insights.html, "title"));
+  says("its canonical link", "https://reiad.co.uk/insights.html",
+    attr(insights.html, /<link rel="canonical" href="([^"]+)"/));
+
+  ok("the live piece has a card, at its own address",
+    insights.html.includes(`href="/insights/${ARTICLE.slug}.html"`));
+  ok("the draft has none", !insights.html.includes(DRAFT.slug));
+  ok("and neither has the kitchen's piece", !insights.html.includes(KITCHEN.slug));
+
+  /* The chips are counted from the cards, so "Everything · 1" is
+     the same claim as "one card was drawn". A hub that says one
+     number and shows another is the failure CLAUDE.md opens
+     with. */
+  ok("the topic chips are in the HTML, counted from the cards",
+    insights.html.includes("Everything") && insights.html.includes("Equities"));
+  ok("and the pieces promised but not written are teasers",
+    insights.html.includes("cell sample-card placeholder"));
+}
+
+{
+  const kitchen = await hub("/cooking/index.html");
+  ok("the kitchen answers at /cooking/index.html", kitchen.status === 200,
+    `status ${kitchen.status}`);
+  says("its title", "রান্নাঘর: উপকরণ ধরে ধরে রান্না বোঝা, Reiad's Library",
+    tagText(kitchen.html, "title"));
+  says("its canonical link", "https://reiad.co.uk/cooking/index.html",
+    attr(kitchen.html, /<link rel="canonical" href="([^"]+)"/));
+  says("the page is in Bangla", "bn", attr(kitchen.html, /<html lang="([^"]+)"/));
+
+  ok("its piece has a card", kitchen.html.includes(`href="/cooking/${KITCHEN.slug}.html"`));
+  ok("the count above the list is the number of cards, in Bangla digits",
+    kitchen.html.includes("এখন পর্যন্ত ১টি লেখা"));
+  ok("nothing from another section is on it", !kitchen.html.includes(ARTICLE.slug));
+
+  const desk = await hub("/travel/index.html");
+  ok("the travel desk answers too", desk.status === 200, `status ${desk.status}`);
+  ok("with its own piece", desk.html.includes(`href="/travel/${DESK.slug}.html"`));
+  ok("and its own share card",
+    meta(desk.html, "og:image") === "https://reiad.co.uk/og/travel.png");
+
+  /* An address this site has never produced. The hub lives at
+     /insights.html, one segment up, and `[section]/index.html`
+     must not answer for a section that has no hub there. */
+  const nowhere = await hub("/insights/index.html");
+  ok("and /insights/index.html is handed back to the asset router",
+    nowhere.status === 404, `status ${nowhere.status}`);
+}
+
 /* ---- the headers a static page would have had ---- */
 
 for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
@@ -360,4 +509,14 @@ if (failures.length) {
   for (const f of failures) console.log(`  ✗ ${f}`);
   process.exit(1);
 }
-console.log("The Next.js route says everything the Worker's does.\n");
+console.log("The article says everything the Worker's does, and each hub\n"
+  + "says what the database gave it.\n");
+
+/* Said out loud, because falling off the end is not the same
+   thing here. `wrangler dev` starts workerd as a child of its
+   own, and SIGTERM to the one this test spawned does not always
+   take the grandchild with it: the pipes stay open, the event
+   loop stays awake, and a run that has printed its result sits
+   there until something kills it. Which is a hung job in CI, on
+   a green test. */
+process.exit(0);

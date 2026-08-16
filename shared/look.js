@@ -25,9 +25,22 @@
    test can all read it.
    ============================================================ */
 
+/* Where a section's own index lives, written once because four
+   things say it: the "back to the index" link under every piece,
+   the hub route's canonical link, its Open Graph URL, and the
+   allowlist in worker.js. They were the same string typed twice
+   in this file already, which is one typo away from a piece whose
+   back link goes somewhere the hub is not. */
+const HUB = {
+  insights: "/insights.html",
+  cooking: "/cooking/index.html",
+  travel: "/travel/index.html",
+};
+
 export const LOOK = {
   insights: {
     mount: "/insights/",
+    hub: HUB.insights,
     bodyClass: "",
     og: "/og/insights.png",
     minutes: (n) => `${n} min read`,
@@ -35,32 +48,34 @@ export const LOOK = {
     note: "This piece is general education, not investment advice. Rules, rates and "
       + "fees change: confirm the current details with the relevant institution "
       + "before acting on anything here.",
-    back: { url: "/insights.html", kicker: "All insights", label: "Back to the index →" },
+    back: { url: HUB.insights, kicker: "All insights", label: "Back to the index →" },
     side: { url: "/learn/index.html", kicker: "শেখার লাইব্রেরি", label: "Learn hub, বাংলায় →" },
     footer: "Everything on this site is general education, not investment advice. "
       + "Do your own research before putting money anywhere.",
   },
   cooking: {
     mount: "/cooking/",
+    hub: HUB.cooking,
     bodyClass: "cooking read",
     og: "/og/cooking.png",
     minutes: (n) => `${n} মিনিট পড়া`,
     skip: "মূল লেখায় যান",
     note: "রান্নাঘরের লেখাগুলো রেসিপি নয়, বোঝার জন্য। নিজের রান্নাঘর, নিজের চুলা আর নিজের "
       + "স্বাদ অনুযায়ী মাপ আর সময় একটু এদিক-ওদিক হবেই।",
-    back: { url: "/cooking/index.html", kicker: "রান্নাঘর", label: "সব লেখা এক জায়গায় →" },
+    back: { url: HUB.cooking, kicker: "রান্নাঘর", label: "সব লেখা এক জায়গায় →" },
     side: { url: "/skills/index.html", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
     footer: "রান্নাঘরের লেখাগুলো বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া।",
   },
   travel: {
     mount: "/travel/",
+    hub: HUB.travel,
     bodyClass: "travel read",
     og: "/og/travel.png",
     minutes: (n) => `${n} মিনিট পড়া`,
     skip: "মূল লেখায় যান",
     note: "এই লেখাটা সাধারণ তথ্য, আইনি পরামর্শ নয়। ভিসার নিয়ম আর ফি বদলায়, তাই আবেদনের "
       + "আগে অফিসিয়াল গাইডেন্স একবার দেখে নিন।",
-    back: { url: "/travel/index.html", kicker: "ভ্রমণ", label: "সব লেখা এক জায়গায় →" },
+    back: { url: HUB.travel, kicker: "ভ্রমণ", label: "সব লেখা এক জায়গায় →" },
     side: { url: "/skills/index.html", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
     footer: "ভ্রমণের লেখাগুলো বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া।",
   },

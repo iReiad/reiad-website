@@ -1,5 +1,5 @@
 {
-  "version": "v69",
+  "version": "v70",
   "hashes": {
     "/": "0210b228b586a0d1",
     "/index.html": "0210b228b586a0d1",
@@ -67,7 +67,7 @@
     "/tools/stock.js": "cb0484c49f953ae2",
     "/tools/stock.model.js": "039a045e95fbd777",
     "/tools/stock.i18n.js": "d04aa0302144fe17",
-    "/insights.html": "1af5e3cacc4a7d7c",
+    "/insights.html": "22c1b11913979ef0",
     "/favicon.ico": "296539578a1f25f8"
   }
 }

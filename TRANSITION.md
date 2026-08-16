@@ -1303,15 +1303,29 @@ matter, transferred bytes and blocking time, are the ones a reader
 in Dhaka actually pays. *Done when* the live numbers sit beside
 the local ones in that table, marked as which is which.
 
-**10.7 The parity test can skip for the wrong reason.** Its
-readiness loop treats any log line matching `Error: ` as a failed
-start, and `wrangler dev` prints exactly that, harmlessly, in a
-sandbox with no outbound network: it cannot fetch the `Request.cf`
-object and says so with a stack. The test then prints "wrangler
-dev did not start, so the parity check is skipped" and exits 0.
-Optional is fine; indistinguishable from passing is not. *Done
-when* the detector matches only real startup failures, and the
-skip line says which of the two happened.
+**10.7 The parity test could skip for the wrong reason. Done, 16
+August 2026.** Its readiness loop treated any log line matching
+`Error: ` as a failed start, and `wrangler dev` prints exactly
+that, harmlessly, in a sandbox with no outbound network: it cannot
+fetch the `Request.cf` object and says so with a stack, and then
+starts perfectly forty seconds later. The test printed "wrangler
+dev did not start" and exited 0, which from the outside is
+indistinguishable from 49 passing checks. It has been doing that
+in every container this transition has been worked in, which is
+why Stage 11 was written around not having it.
+
+A real failure is now one of three things, told apart and named
+in the skip line: the process gone, wrangler's own `[ERROR]`
+marker (which it brackets, and a thrown stack does not), or
+ninety seconds of silence. Two things came out of switching it
+on. It hung after printing its result, because `wrangler dev`
+starts workerd as a child of its own and a SIGTERM to wrangler
+does not take the grandchild with it: the pipes stay open and the
+process never exits, which in CI is a hung job on a green test.
+It runs in its own process group now and says `process.exit(0)`
+out loud. And the leftover workerd held port 8787, so the *next*
+run died on "Address already in use", which reads like a broken
+test and is a broken cleanup.
 
 **10.8 An article view is two Worker invocations now, and nothing
 priced that.** The front Worker runs, matches the allowlist and
@@ -1325,8 +1339,9 @@ has been looked at once, after a week of real traffic.
 ---
 
 ### Stage 11 · Every remaining route, until no page is a file
-**Status: 11.8 begun, 16 August 2026. 279 files left.** Size:
-months, at whatever pace suits.
+**Status: 11.8 done and 11.1 written but forwarding nobody, 16
+August 2026. 279 files left.** Size: months, at whatever pace
+suits.
 
 Stage 10 moved one route and proved the machinery: an allowlist in
 `worker.js`, a service binding, a fallback for anything the second
@@ -1354,11 +1369,52 @@ being wrong costs a reading page for a few minutes; a step near
 the bottom being wrong costs the schools, offline, or the ability
 to publish.
 
-**11.1 The three reading hubs.** `/insights.html`, `/cooking/` and
-`/travel/`. Three lists of the same shape, already reading the
-database through the API, and the reason they are first is that
-they are one component pretending to be three pages. *Deletes* 3
-files. *Needs* nothing that does not exist.
+**11.1 The three reading hubs. Written, and switched on for
+nobody, 16 August 2026.** `/insights.html`, `/cooking/index.html`
+and `/travel/index.html`. Three lists of the same shape, and the
+reason they are first is that they are one component pretending
+to be three pages: the two Bangla ones share `ReadHub` and differ
+only by a table of words, and Insights is written out because it
+carries the market pulse and the subscribe box.
+
+The routes exist and answer, and `NEXT_ROUTES` in `worker.js`
+still forwards nobody to them. That is the order Stage 10 used
+and the gap `check-preview.mjs` exists for.
+
+**What the port actually changes, and it is not the look.** The
+cards are rendered on the server, out of D1, and the number in
+the sentence above them counts the cards under it. Both hubs
+carried a hand-written list in the markup as the no-JavaScript
+fallback and a `data-count` slot holding a typed number, which
+are the two failures `CLAUDE.md` opens with, kept in step by
+somebody remembering. There is nothing left to keep in step.
+
+**Three things found while writing it**, all recorded in the log
+entry for the day:
+
+- **`/cooking/` is the address a reader actually has**, not
+  `/cooking/index.html`. Cloudflare's asset router redirects the
+  `.html` form to the pretty one, so every canonical link on this
+  site points at a URL that 301s. Once these paths are in
+  `run_worker_first` the asset router never sees them, the
+  canonical address answers 200, and the pretty forms need a
+  redirect of their own in `_redirects` pointing the other way.
+  Next answers `/cooking/index.html` and not `/cooking`.
+- **The Insights hub's three "coming soon" teasers are not
+  rows**, and cannot be: no body, no date, no address. They are
+  in `next/lib/hub.ts` and still in `content.js` for as long as
+  `insights.html` is being served, and `scripts/check-next.mjs`
+  fails if the two lists stop agreeing.
+- **The subscribe box was an inline module** at the bottom of
+  `insights.html`. It is `aab/hub.js` now, loaded by both pages,
+  because two copies of a form that writes to the database is the
+  one kind of duplication this repository has already been bitten
+  by.
+
+*Still to do:* the three paths join `NEXT_ROUTES` and
+`run_worker_first`, `_redirects` gains the pretty forms, and two
+weeks later the three files go to `archive/` with their entries
+in the precache list. *Deletes* 3 files, when that happens.
 
 **11.2 The other two article mounts.** `/cooking/<slug>` and
 `/travel/<slug>` join `/insights/<slug>` in `NEXT_ROUTES`, which
@@ -1597,7 +1653,7 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | 11.8 begun 16 Aug 2026, 279 files to go |
+| 11 | Every remaining route, until no page is a file | 11.1 written, not switched on, 16 Aug 2026, 279 files to go |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
 
@@ -1851,6 +1907,114 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · The three reading hubs are routes, and the parity test was never actually broken
+
+Stage 11.1 is written. `/insights.html`, `/cooking/index.html`
+and `/travel/index.html` render from Next.js, out of D1, and
+`NEXT_ROUTES` forwards nobody to them yet.
+
+**The safety net turned out to be there all along.** The last two
+entries were written around `next/parity.test.mjs` not running in
+this container, and it runs. Its readiness loop gave up on any
+log line matching `Error: `, and `wrangler dev` prints exactly
+that, harmlessly, where there is no outbound network: it cannot
+fetch the `Request.cf` object, says so with a stack, and starts
+forty seconds later. So the test printed "wrangler dev did not
+start", exited 0, and looked from the outside exactly like 49
+passing checks. Two stages were planned around a skip.
+
+It is 68 checks now, and the new ones are the hubs. There is
+nothing on the Worker's side to compare a hub against, so they
+are held to the database instead: a seeded row in each section
+has a card at its own address, a draft appears on none of them, a
+kitchen piece is not on the Insights index, and the count above
+each list is the number of cards below it, in Bangla digits. All
+of it in the HTML, before any JavaScript runs, which is the whole
+gain of the step.
+
+Switching it on found two more things in the test itself. It hung
+after printing its result, because SIGTERM to `wrangler dev` does
+not take workerd with it and the open pipes keep node alive: a
+hung job in CI, on a green test. And the surviving workerd held
+port 8787, so the next run died on "Address already in use". Its
+own process group, and an explicit exit.
+
+**What the port changes for a reader.** Nothing to look at: the
+same class names into the same stylesheet, which is the rule at
+the top of Stage 9. What changes is that the list is in the page.
+Both hubs used to ship an empty grid, a hand-written fallback
+list inside it and a `data-count` slot holding a typed number,
+filled in the browser after a fetch. The fallback list and the
+typed number are the two failures `CLAUDE.md` opens with, kept
+true by somebody remembering, and there is now one list and one
+number, both counted from the query.
+
+**Three things worth writing down.**
+
+**`/cooking/` is the address, and `/cooking/index.html` is what
+every link on this site says.** Cloudflare's asset router
+redirects the second to the first, which means the canonical link
+on that page points at a URL that 301s, and has for as long as
+the page has existed. Once the path is in `run_worker_first` the
+asset router never sees it and the canonical address answers 200,
+which makes the site self-consistent for the first time; the
+pretty forms then need a redirect of their own, pointing the
+other way. Next answers `/cooking/index.html` and 404s
+`/cooking`, and until the files are archived a 404 from Next
+means the file is served, so nothing breaks in between.
+
+**The two Bangla hubs are one component.** `ReadHub` plus a table
+of words in `next/lib/hub.ts`. They were two files and had
+already drifted; `aab/reads.js` exists because the cards inside
+them drifted twice.
+
+**Two copies were made deliberately, and both are checked.** The
+three drawings a reading card uses are copied out of
+`aab/learn/icons.js`, because Turbopack will not resolve above
+`next/` and promoting an icon set to a shared package to render
+three of them is the larger mistake. And the "coming soon"
+teasers are in `next/lib/hub.ts` as well as in `content.js`,
+because they cannot be rows: no body, no date, no address.
+`scripts/check-next.mjs` renders each icon out of the original
+and fails if it is not in the copy character for character, and
+compares the two teaser lists.
+
+The subscribe box was not copied. It was an inline module at the
+bottom of `insights.html` and it is `aab/hub.js` now, loaded by
+both pages, because two copies of a form that writes to the
+database is the duplication this repository has already been
+bitten by.
+
+**And one small thing fixed on the way.** A page rendered from
+the database restored the reader's theme before first paint and
+not their audience, so the header's nav reordered itself after
+load on exactly the pieces that came out of the Studio. Every
+hand-written page on this site restores both. Both renderers do
+now.
+
+**And the preview check was doing the same thing.** Run against
+the branch preview from this container, `check-preview.mjs`
+printed one tick per route and "the preview renders what the live
+site renders, on 5 route(s)". It had compared nothing: the egress
+proxy here answers 403 to both hosts, the two sides agreed on
+403, and the script compared the statuses and then quietly
+skipped everything below on anything that was not 200. Two sides
+answering the same wrong thing is not agreement. It says so now,
+loudly, per route.
+
+That makes three in one day, which is the actual lesson: every
+one of these was a check that could only report success. The
+parity test could not fail in a sandbox, the preview check could
+not fail behind a proxy, and both said the same reassuring
+sentence at the end.
+
+**What is left of 11.1:** the three paths join `NEXT_ROUTES` and
+`run_worker_first`, `_redirects` gains the pretty forms, and two
+weeks after that the three files go to `archive/` along with
+their entries in the precache list. That is three commits, in
+that order, and the middle one is the only one a reader can
+notice.
 
 ### 2026-08-16 · Stage 11 gets its safety net back, from the deployed side
 
