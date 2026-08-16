@@ -2685,6 +2685,16 @@ verified against before anything forwarded a reader to it. It also
 deployed happily right through the outage, which is the clearest
 evidence that the fault was never the connection to git.
 
+**What the first run caught, which was this workflow itself.**
+The two `--check` builders run `npx tsc` and the Tailwind CLI, and
+the job had no `npm ci` in it. With no `node_modules`, npx does not
+fail: it goes to the registry, and `tsc` there is not TypeScript.
+The run died inside `tsc@2.0.4`, a package nothing here has ever
+asked for, having installed it first. That is the exact hole the
+root `package.json` was added to close, reopened in a new place by
+leaving the install out. It runs `npm ci` now, which is the whole
+of what those two steps need.
+
 **The token is the one that already existed.** `import-schools.yml`
 has used `CLOUDFLARE_API_TOKEN` since Stage 8, scoped to D1 Edit
 and nothing else. It gains Account → Workers Scripts → Edit and
