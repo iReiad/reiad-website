@@ -31,6 +31,27 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v79: TRANSITION.md Stage 13 and Stage 14. /api.js is built
+        from aab/src/api.ts now, and /tailwind.css joins the
+        precache list: a second stylesheet, built from
+        aab/src/styles/, holding the theme tokens and whichever
+        utilities a component actually uses. Nothing uses one yet,
+        which is why it is 1.7 KB gzipped.
+
+   v79 (Stage 13): /api.js is built from
+        aab/src/api.ts now rather than written by hand, and tsc
+        reindents what it emits, so the file is byte-different and
+        line-for-line the same code. Checked rather than assumed:
+        the two are identical once whitespace and comments are
+        taken out.
+
+        A bump for a file whose behaviour did not change is still
+        a bump. A precached file is answered from the cache that
+        holds it, and only a new VERSION empties that cache; a
+        reader carrying the old bytes would carry them for ever,
+        and the next real change to this file would then be
+        invisible to them too.
+
    v78: TRANSITION.md Stage 11.7. The four schools are Next.js
         routes and 247 committed pages have left aab/, six of them
         precached: both learn pages, the German hub and its first
@@ -626,7 +647,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v78";
+const VERSION = "v79";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -640,6 +661,12 @@ const RUNTIME = `runtime-${VERSION}`;
 const PRECACHE = [
   "/offline.html",
   "/styles.css",
+  /* The second stylesheet, TRANSITION.md Stage 14. Small (about
+     1.7 KB gzipped against 72 for styles.css) and precached
+     beside it for the same reason: a page that comes back offline
+     with one of its two stylesheets missing is a page that looks
+     broken rather than plain. */
+  "/tailwind.css",
   "/app.js",
   "/content.js",
   "/api.js",

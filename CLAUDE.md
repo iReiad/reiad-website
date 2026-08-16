@@ -173,6 +173,10 @@ node scripts/check-rows.mjs # a description of the database that has stopped
 node scripts/check-api.mjs  # the browser asking for an endpoint the Worker
                             # stopped routing, which breaks nothing and
                             # quietly switches a feature off
+node scripts/build-modules.mjs --check # a served module edited in its built
+                                       # form rather than in aab/src/
+node scripts/build-styles.mjs --check  # /tailwind.css edited by hand, or built
+                                       # from a source that changed
 node scripts/build-school-icons.mjs --check   # a school drawing next/ copied
 node scripts/build-school-hubs.mjs --check    # a school page next/ copied
 node scripts/check-next.mjs # a copy inside next/ that has drifted from the
@@ -407,6 +411,8 @@ Generated pages are generated. Edit the source, never the output:
 ```sh
 node aab/deutsch/build-deutsch.mjs   # the three German practice books
 node aab/english/build-english.mjs   # the English practice book
+node scripts/build-modules.mjs       # aab/share-card.js and aab/api.js from aab/src/
+node scripts/build-styles.mjs        # aab/tailwind.css from aab/src/styles/
 node scripts/build-school-icons.mjs  # next/lib/school-icons.ts from aab/*/icons.js
 node scripts/build-school-hubs.mjs   # next/lib/school-hubs.ts from the four hubs
 node aab/build-meta.mjs              # feed.xml, sitemap.xml, robots.txt

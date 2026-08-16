@@ -1,0 +1,96 @@
+/* ============================================================
+   tailwind.css: the source of /tailwind.css.
+
+   TRANSITION.md Stage 14, step 1. Nothing on this site uses a
+   Tailwind class yet. This is the arrangement, set up and proved
+   to change nothing, so that the first component to convert is a
+   change to one component rather than a change to how the site
+   is styled.
+
+   ---- where its utilities sit in the cascade ----
+
+   `aab/styles.css` declares the layer order in one line, and that
+   line is the one that counts: the first `@layer` statement a
+   browser sees fixes the order, and `styles.css` is loaded before
+   this file on every page. So `tw` is declared there, immediately
+   before `article`, and not here. It is the one placement that
+   satisfies both constraints Stage 14 wrote down before it
+   started:
+
+     · a utility beats `components` and everything under it, so
+       a converted component can actually restyle itself, and
+     · a utility does NOT beat `article`, which is permanent.
+
+   The second is the important one and it is not a preference. An
+   article's body is HTML in a database, written by a person
+   through the Studio, and the classes it may carry are policed in
+   three places: the stylesheet, `editor.js`'s allowlist and
+   `sanitise.js`'s. Tailwind's compiler cannot see a database, so
+   a utility that outranked the article layer would be a rule
+   nothing in this repository knows about winning over prose
+   nobody can re-scan. The article layer stays a stylesheet and
+   stays above the utilities, for good.
+
+   The four school layers, `reads`, `check` and `about` sit above
+   `article` and therefore above `tw` as well. That is the
+   existing order and this does not disturb it: a school's own
+   layer has always been allowed to win, and `check-css.mjs` is
+   what stops it winning outside the school.
+
+   ---- and the theme comes from the tokens that exist ----
+
+   `@theme` below names the site's own custom properties rather
+   than Tailwind's palette. `bg-panel` has to mean what
+   `var(--panel)` means, in both themes, or the first converted
+   component is a redesign wearing a port's clothes, which is
+   exactly what the rule Stage 14 overturns was protecting
+   against.
+   ============================================================ */
+
+@import "tailwindcss/theme.css" layer(base);
+@import "tailwindcss/utilities.css" layer(tw);
+
+/* ---- what is scanned, said explicitly ----
+
+   Tailwind decides for itself where to look when nothing says
+   otherwise, and from this file that means the repository. It
+   found `.collapse` on the first run: not a class anybody had
+   written, but the word sitting in English prose in a comment,
+   which is a candidate as far as a scanner is concerned. A
+   stylesheet that grows a rule because a comment used a word is
+   the kind of thing noticed six months later by its side effects.
+
+   So the sources are named. They are the places a class name on
+   this site is written now that no page is a file, plus the
+   site's own modules, some of which build DOM.
+
+   `aab/` itself is not scanned as a whole, and that is deliberate
+   rather than an oversight: it holds this file's own output, and
+   a scanner that read its own output would keep whatever it
+   emitted last. */
+@source "../../../next/app";
+@source "../../../next/components";
+@source "../../../app/src";
+@source "../../*.js";
+
+/* The site's own tokens, as Tailwind's. Every one of these is a
+   custom property `styles.css` already defines and already
+   swaps for dark mode, so a utility built from it follows the
+   theme without knowing there is one. */
+@theme {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-panel: var(--panel);
+  --color-hairline: var(--hairline);
+  --color-green: var(--green);
+  --radius-card: var(--radius);
+}
+
+/* Preflight is deliberately absent.
+
+   Tailwind's reset would fight `@layer base` in `styles.css`,
+   which is this site's own reset and is six thousand lines of
+   design decisions downstream of it. Importing
+   `tailwindcss/preflight.css` is a one line change if it is ever
+   wanted, and wanting it would mean deleting the base layer
+   first rather than stacking two resets. */

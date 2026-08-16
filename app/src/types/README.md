@@ -1,5 +1,17 @@
 # The site's own modules, described
 
+**This directory is emptying, on purpose.** TRANSITION.md Stage 13:
+a module that moves to `aab/src/` as TypeScript emits its own
+declaration here, and the hand-written one is deleted in the same
+commit. `share-card.d.ts` is generated as of 16 August 2026 and
+says so at the top of the file it came from; the rest are still
+hand-written and still describe plain JavaScript. This directory
+is done when it holds only this README.
+
+**Do not edit a generated one.** `node scripts/build-modules.mjs`
+writes it and `--check` fails if what is committed differs.
+
+
 Six of this site's modules are shared with every other page and are
 not part of this app: `/auth.js` guards the door, `/app.js` draws the
 furniture, `/api.js` does the fetching, `/content.js` is the manifest

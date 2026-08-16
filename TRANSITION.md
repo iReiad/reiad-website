@@ -1961,8 +1961,55 @@ that is the day to be most careful about it.
 ---
 
 ### Stage 14 · One way of writing a style, and it is Tailwind
-**Status: decided 16 August 2026, not started.** Size: weeks.
-Runs after Stage 11.7 and not before it.
+**Status: the arrangement is in, 16 August 2026. Nothing is
+converted.** Size: weeks. Ran after Stage 11.7, as planned.
+
+**Step 1: Tailwind builds, and changes nothing.**
+`aab/src/styles/tailwind.css` is the source,
+`scripts/build-styles.mjs` writes `aab/tailwind.css`, the output
+is committed and `--check` compares, which is the arrangement
+section 7 settled for the whole repository. `SiteShell` loads it
+after `styles.css`, and 1.7 KB gzipped against 72 is the cost of
+having it there before anything uses it.
+
+**Where its utilities sit, and why it is not negotiable.**
+`styles.css` declares the layer order in one line and that line
+is the one that counts, because the first `@layer` statement a
+browser sees fixes the order and `styles.css` is loaded first. So
+`tw` is declared there, between `tools` and `article`. A utility
+therefore beats `components` and everything under it, and does
+**not** beat `article`.
+
+The second half of that is the permanent exception this stage
+already knew about, now enforced by cascade rather than by
+intention: an article's body is HTML in a database, written by a
+person, and Tailwind's compiler cannot see a database. A utility
+that outranked the article layer would be a rule nothing in this
+repository knows about winning over prose nobody can re-scan.
+
+**And one property of Tailwind worth writing down before it
+surprises somebody.** Its scanner is word-based: it reads source
+files and treats anything that looks like a class name as one. On
+the first run it emitted `.collapse`, which nobody had written.
+It came from the word sitting in an English sentence in a comment
+and from `caret.collapse(true)` in `editor.js`. Naming the
+sources narrowed it; it did not and cannot eliminate it, because
+the comments in this repository are long English prose on
+purpose. A few stray utilities in a layer below `article` is the
+standing cost, and it is smaller than the alternative of writing
+shorter comments.
+
+The theme is the site's own: `@theme` maps `--color-panel` to
+`var(--panel)` and so on, so a utility follows the dark mode
+`styles.css` already swaps without knowing there is one. If it
+did not, the first converted component would be a redesign
+wearing a port's clothes, which is the thing the rule this stage
+overturns was protecting against.
+
+**What is next, and it is the long part.** Converting components,
+one at a time, each one a diff a person can judge. Nothing has
+been converted, deliberately: an arrangement that changes nothing
+can be reviewed for what it is.
 
 **The decision, and what it overturns.** Every stage above says
 the same thing in the same words: `styles.css` stays the design
@@ -2154,10 +2201,50 @@ is still there.
 ---
 
 ### Stage 13 · The last JavaScript
-**Status: unblocked, 16 August 2026, not started.** Size:
-continuous, and mostly a by-product. The build-step decision it
-was waiting on is in section 7: the arrangement `app/` already
-has, which means this stage needs no new one.
+**Status: started, 16 August 2026. Two modules of eight moved.**
+Size: continuous, and mostly a by-product. The build-step
+decision it was waiting on is in section 7: the arrangement
+`app/` already has, which means this stage needed no new one.
+
+`aab/src/share-card.ts` is the first, chosen for being the
+smallest thing with a real surface rather than the most useful:
+118 lines, six exports, and the lowest blast radius of the eight.
+`aab/src/api.ts` is the second, and it is the one with the most
+callers: nineteen exports that every page of the site reaches
+through. `node scripts/build-modules.mjs` writes
+`aab/share-card.js` and its declaration, and `--check` fails if
+either is edited in its built form.
+
+**Three things it settled that the plan could not.**
+
+`tsc` and not esbuild. esbuild was tried first because it
+preserves formatting where `tsc` reindents, and it strips every
+comment: `legalComments` keeps only `/*!` blocks, and there is no
+option for the rest. The comments in these modules are most of
+their value, so the reindentation is the cost that gets paid.
+**A first conversion therefore has a large diff and almost none
+of it is a change**, which is worth saying in the pull request
+rather than leaving a reviewer to work out.
+
+The declaration is emitted rather than hand-written, and the
+generated one is already better than the file it replaced:
+`app/src/types/share-card.d.ts` never described `cardShape`,
+`SHARE_W`, `SHARE_H` or the `Focus` union at all, and
+`api.d.ts` described two of nineteen exports, because a
+hand-written description only holds what somebody remembered to
+put in it.
+
+**And a module in `aab/src/` imports its neighbours by the path
+the browser fetches them from**, `/activation.js` rather than
+`../activation.js`, because that is what has to end up in the
+emitted file. `aab/src/types/` is the compile-time claim about
+each such path, and it empties as those modules move, exactly as
+`app/src/types/` does from the other side.
+
+And `aab/src/tsconfig.json` needs `"exclude": []` said out loud.
+`tsc` excludes `outDir` and `declarationDir` by default, both of
+which contain this directory, so the default leaves nothing to
+compile and reports it as TS18003.
 
 The language mix is the honest measure of how far this has got.
 On 16 August 2026 GitHub reads this repository as 61% HTML, 33%
@@ -2220,8 +2307,8 @@ repository is.
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | **done, 16 Aug 2026**. 6 HTML files left in aab/, from 283: 404, offline and the four practice books |
 | 12 | The backend, typed and in one shape | steps 1, 2 and half of 4 done, 16 Aug 2026: rows described, one place decides a bad request, and the browser cannot name a route that is gone |
-| 13 | The last JavaScript | unblocked 16 Aug 2026: the build step is decided, not started |
-| 14 | One way of writing a style, and it is Tailwind | decided 16 Aug 2026, unblocked by 11.7 the same day |
+| 13 | The last JavaScript | started 16 Aug 2026: 2 of 8 modules moved, the arrangement proved |
+| 14 | One way of writing a style, and it is Tailwind | the arrangement is in, 16 Aug 2026; nothing converted yet |
 
 ---
 
@@ -2518,6 +2605,83 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Stage 14: Tailwind builds, and changes nothing
+
+`aab/src/styles/tailwind.css` in, `aab/tailwind.css` out, built
+by `scripts/build-styles.mjs`, committed, compared by `--check`,
+and loaded by `SiteShell` after `styles.css`. **Nothing is
+converted, deliberately**: an arrangement that changes nothing can
+be reviewed for what it is.
+
+The one decision that is not negotiable is where the utilities
+sit. `styles.css` declares the layer order in a single line, and
+that line is the one the browser obeys, because the first
+`@layer` statement fixes the order and `styles.css` loads first.
+`tw` goes between `tools` and `article`: a utility beats
+`components` and everything under it, and does not beat
+`article`. That second half is the permanent exception this stage
+already knew about, now enforced by the cascade rather than by
+intention. An article's body is HTML in a database and Tailwind's
+compiler cannot see a database.
+
+**A property worth knowing before it surprises somebody.**
+Tailwind's scanner is word-based. The first run emitted
+`.collapse`, which nobody had written: it came from the word in
+an English sentence in a comment, and from `caret.collapse(true)`
+in `editor.js`. Naming the sources narrowed it and cannot
+eliminate it, because the comments here are long English prose on
+purpose. A few stray utilities in a layer below `article` is the
+standing cost.
+
+**And a root `package.json`, which this repository did not have.**
+Not for Tailwind's sake: `scripts/build-modules.mjs` had been
+running `tsc` since this morning without anything declaring it,
+which worked on a laptop that happened to have TypeScript and
+would have failed on one that did not. Three real workspaces
+remain what they were; this one holds the tools that build
+committed artefacts and ships nothing.
+
+### 2026-08-16 · Stage 13 starts: one module of eight is TypeScript
+
+`aab/src/share-card.ts`, built to `aab/share-card.js` by
+`scripts/build-modules.mjs`, output committed, `--check` failing
+if either is edited in its built form. Chosen for being the
+smallest thing with a real surface and the lowest blast radius,
+not for being the most useful.
+
+**esbuild was tried first and rejected.** It preserves formatting
+where `tsc` reindents to four spaces, which would have made the
+first conversion a near-empty diff. It also strips every comment:
+`legalComments` keeps `/*!` blocks and there is no option for the
+rest. The comments in these modules are most of their value, so
+the reindentation is the cost that gets paid, and a first
+conversion has a large diff of which almost nothing is a change.
+
+**The generated declaration is already better than the one it
+replaced.** The hand-written `share-card.d.ts` described five of
+the module's exports and never mentioned `cardShape`, `SHARE_W`,
+`SHARE_H`, or the fact that `focus` is one of three words rather
+than any string. A hand-written description holds what somebody
+remembered to put in it; an emitted one holds what is there.
+
+Two smaller things worth keeping. `aab/src/tsconfig.json` needs
+`"exclude": []` written out, because `tsc` excludes `outDir` and
+`declarationDir` by default and both contain the source
+directory, so the default compiles nothing and says TS18003. And
+the builder compiles into a temporary directory even when
+writing, because `--check` must be able to compare without
+writing: a check that fixed what it was asked to find would
+always pass.
+
+`aab/src/api.ts` followed the same day: nineteen exports every
+page reaches through, and a hand-written declaration that
+described two of them. Same comparison, same result. `/api.js` is
+precached, so `sw.js` went to v79 for a file whose behaviour did
+not change, because a precached file is answered from the cache
+that holds it and only a new VERSION empties that cache.
+
+Six modules left, and `sw.js` is deliberately not one of them.
 
 ### 2026-08-16 · The build step for `aab/`, decided
 
