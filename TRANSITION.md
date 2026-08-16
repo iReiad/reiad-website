@@ -1325,7 +1325,8 @@ has been looked at once, after a week of real traffic.
 ---
 
 ### Stage 11 · Every remaining route, until no page is a file
-**Status: not started.** Size: months, at whatever pace suits.
+**Status: 11.8 begun, 16 August 2026. 279 files left.** Size:
+months, at whatever pace suits.
 
 Stage 10 moved one route and proved the machinery: an allowlist in
 `worker.js`, a service binding, a fallback for anything the second
@@ -1413,11 +1414,20 @@ files. *Needs* Stage 8, and the offline answer below.
 of the 283. The other four are `404.html`, `offline.html`,
 `work.html` and `services.html`.
 
-The last two are already dead and nobody has noticed: `_redirects`
-sends `/work.html` and `/services.html` to `/portfolio` before the
-asset router is consulted, so the files have been unreachable
-since that rule was written. They can go at any point, and the
-only reason to wait is to check nothing else reaches them first.
+The last two are **gone, 16 August 2026**. They were dead and
+nobody had noticed: `_redirects` sends `/work.html` and
+`/services.html` to `/portfolio` before the asset router is
+consulted, so the files had been unreachable since that rule was
+written, and the `<meta http-equiv="refresh">` inside each of them
+had not run for a reader in months.
+
+The only thing that needed doing first was the check that nothing
+else reached them, and "unreachable" is a claim about a deployed
+site rather than about a repository, so it was asked of the
+deployed one: all four addresses, `/work.html`, `/work`,
+`/services.html` and `/services`, answered 301 to `/portfolio` on
+reiad.co.uk. Nothing links to them, and they appear in no `PAGES`
+entry, no sitemap and no precache list. Both are in `archive/`.
 
 The first two are asked for by something that is not a route:
 `not_found_handling` in `wrangler.toml` names `404.html`, and
@@ -1587,7 +1597,7 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | not started, 281 files to go |
+| 11 | Every remaining route, until no page is a file | 11.8 begun 16 Aug 2026, 279 files to go |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
 
@@ -1841,6 +1851,36 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Stage 11 starts at the safe end: two dead files leave
+
+`work.html` and `services.html` are in `archive/`. **279 HTML
+files left in `aab/`**, from 281.
+
+They were early placeholders that still carried template text
+("[Your Name]", "hello@yourdomain.com"), kept afterwards as HTML
+forwards to `portfolio.html` so old links would not break. They
+stopped doing that job a while ago without anybody noticing:
+`_redirects` forwards all four of their addresses to `/portfolio`
+with a 301, and that rule is consulted before the asset router, so
+the files themselves were never served.
+
+**Checked against the deployed site rather than the repository**,
+because that is what "unreachable" is a claim about. All four
+addresses answered 301 to `/portfolio` on reiad.co.uk. Nothing
+links to them; they are in no `PAGES` entry, no sitemap, no
+precache list.
+
+**Why this step and not 11.1.** The order in this stage is by
+risk, and this is the least of it: two files nothing can reach.
+The steps above it move public reading routes onto Next.js, and
+the thing that makes those safe is `next/parity.test.mjs`, which
+holds the new renderer to what the old one said. That test does
+not run in the environment this work is being done in: it starts
+the built Worker under `wrangler dev` on workerd, and that hangs
+with no output. Moving a reading route without it would be
+shipping a renderer nobody had compared to anything, which is the
+one thing Stage 10 was arranged to avoid.
 
 ### 2026-08-16 · The original eighteen come into the database, and a nav that had been wrong for months
 
