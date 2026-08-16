@@ -48,9 +48,10 @@ const origin = (args[args.indexOf("--origin") + 1] || "").startsWith("http")
    subject can pick one that makes it pass. */
 const DB_PIECE = "/insights/tiny-experiments.html";
 
-/* A piece at a mount the allowlist deliberately leaves alone. The
-   plan says exactly one mount goes to Next, so this one proving it
-   is still the Worker's is half of what "exactly one" means. */
+/* A piece at a mount other than /insights/, which is a row in D1
+   and has not been a file since Stage 11.2. Named for the same
+   reason DB_PIECE is: a check that picks its own subject can pick
+   one that makes it pass. */
 const WORKER_PIECE = "/cooking/onions.html";
 
 let passed = 0;
@@ -185,34 +186,55 @@ ok("a piece Next does not have falls through to the asset router",
 const missing = await get("/insights/not-a-piece-here.html");
 same("an unknown slug is a 404, not a 500", 404, missing.status);
 
-/* ---------- 5. the allowlist is one mount wide ----------
+/* ---------- 5. all three mounts, not one ----------
+
+   This asked the opposite question until Stage 11.2, and the
+   change is the stage rather than a correction. Stage 10 forwarded
+   exactly one mount to Next, so a kitchen piece proving it was
+   still the Worker's was half of what "exactly one" meant. Stage
+   11.2 forwarded all three, and the same assertion then failed on
+   the first deploy that carried it, saying the allowlist had grown
+   past a plan that had already been superseded.
+
+   What is worth asking now is that a piece away from /insights/
+   really does render from its own mount, because that is the half
+   of Stage 11.2 nothing offline can see.
 
    Followed rather than asked for once, and the difference is the
-   whole reason this check reads oddly. `/insights/<slug>.html` is
-   answered directly, because that prefix is in `run_worker_first`
-   and the Worker decides before the asset router sees it. Nothing
-   else is: Cloudflare's asset router answers `/cooking/onions.html`
-   with a 307 to the extensionless form, which is its own
-   behaviour and has been true since long before Stage 10. So the
-   question here is where the path ends up, not what the first hop
-   says. */
+   reason this reads oddly. Cloudflare's asset router answers
+   `/cooking/onions.html` with a 307 to the extensionless form,
+   which is its own behaviour and has been true since long before
+   Stage 10, so the question is where the path ends up rather than
+   what the first hop says. */
 const kitchen = await ask(`${origin}${WORKER_PIECE}`);
-same("a piece in the kitchen still answers", 200, kitchen.status);
+same("a piece in the kitchen answers", 200, kitchen.status);
 const kitchenHtml = await kitchen.text();
-ok("and is not routed through Next",
-  !/\/_next\/static\//.test(kitchenHtml),
-  "the allowlist has grown past the one mount Stage 10 names");
+ok("and it is the piece, not an empty shell",
+  /<article|<h1/i.test(kitchenHtml),
+  "200 with no article in it");
 
 /* ---------- 6. the rest of the site is where it was ---------- */
 
 for (const [path, what] of [
   ["/", "the home page"],
-  ["/insights", "the Insights index"],
   ["/feed.xml", "the feed"],
   ["/sitemap.xml", "the sitemap"],
 ]) {
   const res = await get(path);
   same(`${what} answers 200`, 200, res.status);
+}
+
+/* `/insights` is asked for separately because it is the one of
+   these that is deliberately a redirect. `_redirects` has sent it
+   to `/insights.html` since Stage 11.1, where the Next route
+   renders the hub; before that the file was an asset and the
+   extensionless form was served directly, which is why this used
+   to sit in the list above and started failing on the first deploy
+   that carried Stage 11.1. Followed, so what is asserted is that a
+   reader typing the short address arrives at the hub. */
+{
+  const index = await ask(`${origin}/insights`);
+  same("the Insights index answers, after its redirect", 200, index.status);
 }
 
 /* ---------- 7. every piece the site advertises can be read ----------

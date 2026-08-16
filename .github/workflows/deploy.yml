@@ -1,0 +1,187 @@
+# ============================================================
+# The deploy.
+#
+# A push to main uploads worker.js and aab/ to the `reiad-website`
+# Worker. It is here rather than in the Cloudflare dashboard for
+# one reason, and it is a reason with a date on it.
+#
+# On 16 August 2026 this Worker stopped deploying and nothing said
+# so. Thirteen commits, about four hours, all of Stages 11.1 to 14
+# sat in the repository while the live Worker carried on serving
+# the upload it had made at 12:24 UTC. Nothing looked wrong: a
+# Worker that fails to deploy is a Worker still answering every
+# request with its last good version, so the site stayed up, the
+# live check stayed green, and the only place the failure was
+# written down was a build log in a dashboard nobody had open.
+#
+# The cause was one line of wrangler.toml, and it was fixable in
+# thirty seconds once seen. Seeing it was the whole problem. A
+# workflow leaves a red tick on the commit that broke it.
+#
+# The second reason is smaller and still real: the build settings
+# that ran before this were four fields in a dashboard, invisible
+# from a clone. When they were wrong, the repository looked
+# perfect. This file can be read.
+#
+# ---- what it needs ----
+#
+# The repository secret CLOUDFLARE_API_TOKEN, which already exists
+# for import-schools.yml, with one permission added to it:
+#
+#   My Profile → API Tokens → the existing token → Edit
+#   Permissions: Account → Workers Scripts → Edit      (this file)
+#               Account → D1 → Edit                    (the import)
+#   Account Resources: this account, and nothing else
+#
+# Editing a token's permissions does not change its value, so the
+# GitHub secret is untouched by that. Adding Workers Scripts → Edit
+# lets it upload a Worker to this account and still nothing else:
+# it cannot read R2, cannot read a secret already set on the
+# Worker, and is revocable from the page it was made on.
+#
+# The D1 and R2 bindings need no permission of their own. They are
+# declared in wrangler.toml by id and by name, and the upload
+# attaches them.
+#
+# ---- and the thing that is not obvious ----
+#
+# A token scoped that narrowly cannot list the account it belongs
+# to, and wrangler asks for that list before it does anything:
+#
+#   Failed to automatically retrieve account IDs for the logged in user
+#
+# The answer is `account_id` in wrangler.toml, which has been there
+# since the import hit the same wall. Widening the token to make
+# that error go away would be the wrong fix.
+#
+# ---- one dashboard step, once ----
+#
+# Workers Builds must be disconnected from this Worker, or both
+# deploy on every push and the later one wins at random:
+#
+#   Workers & Pages → reiad-website → Settings → Build →
+#   disconnect the repository
+#
+# `reiad-next` keeps its own Workers Build. It has a real build
+# step (OpenNext), it needs the branch previews that check-preview.mjs
+# reads, and it was deploying happily throughout the outage above.
+# ============================================================
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # So a deploy can be re-run without an empty commit, which is the
+  # thing anybody wants at the moment a deploy has gone wrong.
+  workflow_dispatch:
+
+# It reads the repository and talks to Cloudflare. It writes
+# nothing back to git.
+permissions:
+  contents: read
+
+# Two pushes in a minute must not upload out of order and leave the
+# older one live. Not cancel-in-progress: an upload that has begun
+# is left to finish rather than killed halfway.
+concurrency:
+  group: deploy-reiad-website
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      # The root package.json is not a dependency of the site: nothing
+      # in it is shipped, and the deploy is an upload rather than a
+      # build. It is here for the two `--check` steps below, and the
+      # first run of this workflow is why that is worth a step of its
+      # own rather than a line in a comment.
+      #
+      # `build-modules.mjs` shells out to `npx tsc`. With no
+      # node_modules, npx does not fail: it goes to the registry, and
+      # `tsc` there is not TypeScript. The run died inside
+      # `tsc@2.0.4`, a package nothing in this repository has ever
+      # asked for, having installed it first. That is the exact hole
+      # the root package.json was added to close, and leaving the
+      # install out reopened it in a new place.
+      - name: Install the build tools
+        run: npm ci
+
+      # Said before anything runs, because the failure it prevents
+      # is a job that gets all the way to the upload and then dies
+      # on an authentication error that reads like a Cloudflare
+      # outage.
+      - name: Check the token is there
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is not set. See the note at the"
+            echo "::error::top of this file for which permissions it needs."
+            exit 1
+          fi
+
+      # The checks that do not need a network, a browser or a
+      # database, run before the upload rather than after it. Every
+      # one of them exists because something shipped broken once,
+      # and the whole argument for deploying from CI is that a
+      # failure is visible on the commit that caused it.
+      #
+      # check-routes.mjs is the one that would have caught the
+      # outage this file was written for: it runs the same
+      # run_worker_first overlap test wrangler runs, and wrangler
+      # runs it before it reads a line of worker.js.
+      - name: Run the checks
+        run: |
+          node aab/check-routes.mjs
+          node aab/check-css.mjs
+          node aab/check-sw.mjs
+          node aab/check-content.mjs
+          node aab/check-csp.mjs
+          node scripts/check-crons.mjs
+          node scripts/check-pieces.mjs
+          node scripts/check-headers.mjs
+          node scripts/check-schools.mjs
+          node scripts/check-rows.mjs
+          node scripts/check-api.mjs
+          node scripts/check-next.mjs
+
+      # Generated files are committed here, so a build is not run:
+      # what matters is that what was committed still matches its
+      # source. An edit to a built file rather than to aab/src/ is
+      # a change that survives until the next build silently
+      # reverts it.
+      - name: Check the generated files match their sources
+        run: |
+          node scripts/build-modules.mjs --check
+          node scripts/build-styles.mjs --check
+          node scripts/build-school-icons.mjs --check
+
+      # Everything the real deploy validates, uploading nothing. It
+      # is a second or two, and it turns a failed deploy into a
+      # failed step with the same error message in it.
+      - name: Dry run
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@4 deploy --dry-run
+
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@4 deploy
+
+      # live-check.yml asks the same questions on every push to
+      # every branch, but it races this job when the push is to
+      # main: it can read the site before the upload has landed and
+      # report on the previous version. Asking again here, after
+      # the upload, is the run whose answer is about what was just
+      # deployed.
+      - name: Ask the live site
+        run: node scripts/check-live.mjs

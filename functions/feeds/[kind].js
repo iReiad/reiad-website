@@ -85,8 +85,24 @@ export async function onRequest(context) {
 
   let rows;
   try {
+    /* `section` is not optional, and leaving it out is how both
+       Bangla pieces came to be advertised at an address that 404s.
+       `mountOf` falls back to /insights/ for a row whose section it
+       cannot see, and a row selected without the column looks
+       exactly like a row that has no section: the kitchen piece
+       went into the sitemap as /insights/onions.html and the travel
+       piece as /insights/uk-visit-visa.html, while they are served
+       at /cooking/ and /travel/.
+
+       It was latent for as long as those two were committed files.
+       `existingSlugs()` found them in the generated sitemap and
+       dropped them from the merge, so the wrong URL was never
+       built. Stage 11.2 deleted the files, the rows started being
+       merged, and the fallback started firing: the first deploy
+       after that put two dead URLs in front of every crawler that
+       reads this. */
     rows = await all(d1,
-      `SELECT slug, title, dek, published_at, updated_at
+      `SELECT slug, title, dek, section, published_at, updated_at
          FROM articles
         WHERE status = 'live' AND published_at IS NOT NULL
         ORDER BY published_at DESC`);
