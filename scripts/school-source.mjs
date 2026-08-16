@@ -36,37 +36,8 @@
    runs unchanged with a real D1 handle.
    ============================================================ */
 
-import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { SCHOOLS } from "./import-schools.mjs";
 import { WITHIN, stagesOf } from "../shared/schools.js";
 import { d1FromSnapshot } from "./schools-snapshot.mjs";
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const AAB = join(ROOT, "aab");
-
-const schoolBy = (id) => {
-  const school = SCHOOLS.find((s) => s.id === id);
-  if (!school) throw new Error(`no such school: ${id}`);
-  return school;
-};
-
-/* ---------- the files, which are still the source of truth ---------- */
-
-async function fromFiles(id) {
-  const school = schoolBy(id);
-  const module = await import(join(AAB, school.dir, "curriculum.js"));
-  const stages = school.stages(module);
-
-  const bodies = {};
-  for (const stage of stages) {
-    const file = school.bodies(stage);
-    bodies[stage.slug] = existsSync(file) ? (await import(file)).default ?? {} : {};
-  }
-
-  return { stages, bodies, from: "files" };
-}
 
 /* ---------- the database ---------- */
 
@@ -154,20 +125,15 @@ async function fromD1(id, d1, from) {
 
       (nothing)              content/schools.backup.json
       SCHOOL_DB=/tmp/x.db    that SQLite copy of D1
-      SCHOOL_FILES=1         the curriculum files
 
-    `SCHOOL_FILES` exists for `schools-build.test.mjs`, which has
-    to build both ways to compare them. It is not a way to
-    publish: the files are a copy nothing writes to any more, and
-    a build from them would quietly undo whatever was last saved
-    in the Studio. */
-export async function sourceFor(id, {
-  sqlite = process.env.SCHOOL_DB,
-  files = process.env.SCHOOL_FILES,
-} = {}) {
-  if (sqlite) return fromSqlite(id, sqlite);
-  if (files) return fromFiles(id);
-  return fromSnapshot(id);
+    There is no longer a third one. `SCHOOL_FILES` built from the
+    `content/<stage>.js` modules, and those are in
+    `archive/schools/` now: a build from them would have undone
+    whatever was last saved in the Studio, which is the whole
+    reason they stopped being the source. Its only caller was
+    `schools-build.test.mjs`, archived beside them. */
+export async function sourceFor(id, { sqlite = process.env.SCHOOL_DB } = {}) {
+  return sqlite ? fromSqlite(id, sqlite) : fromSnapshot(id);
 }
 
-export { fromFiles, fromSqlite, fromSnapshot, d1Over };
+export { fromSqlite, fromSnapshot, d1Over };

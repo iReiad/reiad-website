@@ -1,4 +1,35 @@
 /* ============================================================
+   ARCHIVED, 16 August 2026. TRANSITION.md Stage 8, step 4.
+   Replaced by `scripts/check-schools-built.mjs`.
+
+   This was the acceptance test for moving the schools' prose into
+   D1, and it passed: 229 pages, byte-identical, built from the
+   curriculum files and from the database and compared.
+
+   It is here rather than in `scripts/` because it had an expiry
+   date built into it and the date has arrived. It compares the
+   database against the FILES, and the files are now a frozen copy
+   of what the database held on the day it was filled. The first
+   lesson edited at `/studio/?lessons` makes them differ on
+   purpose, and this test then fails for the best possible reason,
+   which is the worst possible kind of failing test: one that is
+   right, and that everybody learns to ignore.
+
+   What replaced it asks the question that does not expire. It
+   rebuilds every school from `content/schools.backup.json` and
+   compares against the pages committed in `aab/`, so it has no
+   opinion about where the prose came from, only about whether
+   what is committed is what the current data produces.
+
+   Kept readable because the thing it proved is the thing the
+   whole stage rests on, and somebody checking that claim in six
+   months should be able to read the check that made it rather
+   than take the log entry's word for it. It will not run as it
+   stands: `SCHOOL_FILES` and `sourceFor`'s file branch went with
+   it.
+   ============================================================ */
+
+/* ============================================================
    schools-build.test.mjs: do the pages come out the same from the
    database as they do from the files?
 

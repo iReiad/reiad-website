@@ -709,9 +709,8 @@ untouched.
 ---
 
 ### Stage 8 · The schools' content into the database
-**Status: the rows are the source, 16 August 2026. What is left
-of step 4 is moving the prose files to `archive/`.** Size: weeks.
-The largest thing on this list.
+**Status: done, 16 August 2026.** Size: weeks. The largest thing
+on this list.
 
 **The rows are live.** The import was run from a terminal, inside
 the repository, and the database now holds what the files hold:
@@ -1585,7 +1584,7 @@ repository is.
 | 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
 | 6 | Progress follows the account | done, 15 Aug 2026 |
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
-| 8 | The schools' content into the database | the rows are the source 16 Aug 2026, prose files still to move |
+| 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | not started, 281 files to go |
@@ -1842,6 +1841,60 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Stage 8 is done: the prose files leave the site
+
+`aab/<school>/content/<stage>.js` and `aab/learn/lessons/*.js` are
+in `archive/schools/`. Eleven modules, and they were not only
+unused: they were being uploaded with the site and served at
+addresses like `/quran/content/dhap-1.js`, which nothing had asked
+for in months.
+
+**What made them safe to move** was the two checks that landed
+before them rather than the date arriving. `check-schools.mjs`
+says the ladder in those files still matches the ladder in the
+snapshot; `check-schools-built.mjs` says the committed pages are
+what the snapshot builds. Between them, moving the files out
+cannot change a page without something saying so.
+
+**`schools-build.test.mjs` went with them**, and that is the part
+worth arguing rather than announcing. It was the acceptance test
+for this whole stage and it passed: 229 pages, built from the
+files and from the database, byte-identical. But it compares the
+database against the FILES, and step 4 is exactly the point where
+those two are supposed to diverge. The first lesson edited at
+`/studio/?lessons` makes it fail while being completely right,
+which is the worst kind of failing test: the kind everybody learns
+to ignore. It is readable in `archive/` with a header saying what
+it proved and why it stopped being the right question.
+
+**And `archive/README.md` had to be corrected rather than
+followed.** It said "nothing in here is imported, either", and
+`schools.test.mjs` imports the archived prose to prove the rows
+still say what those files said. The rule that actually matters is
+narrower than the sentence was: nothing the SITE ships may import
+it, and a file in here must not be able to change what anybody is
+served. A test reading both sides is the whole reason things are
+kept readable instead of deleted, so the README now says that
+instead.
+
+Three things fell out as dead once the files moved:
+`sourceFor()`'s `SCHOOL_FILES` branch, `fromFiles()` in
+`school-source.mjs`, and four now-unused imports in it. A source
+switch with two arms rather than three, and the remaining pair are
+the snapshot and a SQLite copy of D1.
+
+**Also: the import workflow's account ID.** `account_id` is in
+`wrangler.toml` now. A token scoped to D1 Edit and nothing else
+cannot list the account it belongs to, and wrangler asks for that
+list before doing anything, which is what stopped the first real
+run after it had correctly built a 314 query file. The alternative
+was a second repository secret, and the note at the top of that
+workflow promises one thing to set up. Nothing about the token
+changes; widening it to make the error go away would have been the
+wrong fix.
+
+Next is Stage 11, and the schools' pages are part of it.
 
 ### 2026-08-16 · The check that outlives the migration
 

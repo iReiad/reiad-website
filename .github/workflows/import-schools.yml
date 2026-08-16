@@ -30,6 +30,19 @@
 # is revocable from the same page it was made on. Without it this
 # workflow stops before it touches anything and says why.
 #
+# ---- and the one thing it needed and nobody had written down ----
+#
+# A token scoped that narrowly cannot list the account it belongs
+# to, and wrangler asks for that list before it does anything. The
+# first real run of this workflow built the file perfectly, 314
+# queries, and then stopped on:
+#
+#   Failed to automatically retrieve account IDs for the logged in user
+#
+# The answer is `account_id` in wrangler.toml, which is there now.
+# Nothing about the token needs to change, and widening it to make
+# the error go away would be the wrong fix.
+#
 # ---- and one thing it deliberately does not do ----
 #
 # It does not run on a push, or on a schedule, or on anything

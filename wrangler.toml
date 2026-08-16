@@ -25,6 +25,23 @@
 
 name = "reiad-website"
 main = "worker.js"
+
+# The account these resources live in.
+#
+# Not a secret and not a credential: it is the identifier in every
+# dashboard URL, it authenticates nothing on its own, and the
+# `database_id` below is the same class of thing and has been
+# committed since the database was made. It is here because
+# wrangler otherwise has to ASK which account it is in, and an API
+# token scoped to "D1 Edit and nothing else" is not allowed to
+# answer that. The import workflow failed on exactly that:
+#
+#   Failed to automatically retrieve account IDs for the logged in user
+#
+# The alternative was a second repository secret, which would have
+# meant the workflow needed two things set up instead of one, and
+# the note at the top of import-schools.yml promises one.
+account_id = "e9b49e82786518eac2e7addec016d028"
 compatibility_date = "2026-08-01"
 compatibility_flags = ["nodejs_compat"]
 

@@ -10,10 +10,24 @@ site the moment the next deploy runs. `_redirects` sends the old
 addresses to the new ones, so a bookmark or an old link still
 lands somewhere sensible rather than on the 404 page.
 
-**Nothing in here is imported, either.** If a module in `aab/`
-still needed one of these files, the file would not be in here;
-that is the test for whether something is ready to be archived,
-and it is worth applying literally rather than generously.
+**Nothing in `aab/` imports any of it, either.** If a module the
+site ships still needed one of these files, the file would not be
+in here; that is the test for whether something is ready to be
+archived, and it is worth applying literally rather than
+generously.
+
+**A test may, and two do.** That is not a loophole in the rule
+above, it is the point of keeping any of this readable. The reason
+an archived thing is kept rather than deleted is so that whoever
+has to check the replacement really does what it replaced can read
+both, and a check that reads both is the most useful form that
+takes. `scripts/schools.test.mjs` reads the archived lesson prose
+and proves the rows in the database still say what those files
+said. Nothing about that reaches a reader, a page or a deploy.
+
+The line worth holding is the one about the site, not the one
+about the word "import": a file in here must not be able to change
+what anybody is served.
 
 ## What is here, and what replaced it
 
@@ -21,6 +35,28 @@ and it is worth applying literally rather than generously.
 | --- | --- | --- |
 | `studio.html`, `studio.js` | `aab/studio/`, built from `app/src/studio/**` | 16 August 2026 |
 | `desk.html`, `desk.js` | `aab/desk/`, built from `app/src/**` | 16 August 2026 |
+| `schools/<school>/*.js` | `content/schools.backup.json`, exported from D1 | 16 August 2026 |
+| `schools-build.test.mjs` | `scripts/check-schools-built.mjs` | 16 August 2026 |
+
+`schools/` is the four schools' lesson prose: eleven modules that
+were `aab/<school>/content/<stage>.js` and `aab/learn/lessons/*.js`.
+They were the source a builder read until the prose moved into D1,
+and they were also being uploaded and served at addresses like
+`/quran/content/dhap-1.js`, which nothing had asked for in months.
+A lesson is written at `/studio/?lessons` now and reaches a page
+through `content/schools.backup.json`. `scripts/check-schools.mjs`
+fails if the ladder in those archived files ever stops matching
+the ladder in the snapshot.
+
+`schools-build.test.mjs` proved the migration: 229 pages, built
+from those files and from the database, byte-identical. It is in
+here because it had an expiry date built into it. It compares the
+database against the files, and the first lesson edited in the
+Studio makes them differ on purpose, so the test would start
+failing while being entirely right, which is the kind of failing
+test everybody learns to ignore.
+`scripts/check-schools-built.mjs` asks the question that does not
+expire: are the committed pages the ones the current data builds?
 
 `studio.js` was 2,464 lines of imperative DOM work and it carried
 the writing surface inside it. That part did not go into the
