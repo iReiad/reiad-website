@@ -31,6 +31,21 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v73: TRANSITION.md Stage 11.2. The last two article files leave
+        the precache list: /cooking/onions.html and
+        /travel/uk-visit-visa.html are rows, rendered by the
+        Next.js Worker at the same addresses, and a page a Worker
+        builds cannot be precached at install. app.js, home.js,
+        crumbs.js and content.js all changed with them and all
+        four are precached. The one a returning reader would
+        notice: home.js used to say how many pieces had been
+        published by counting an array in content.js, and that
+        array is empty now, so a v72 shell would draw a home page
+        saying nothing has been written. styles.css lost
+        `.attiyo` with them, the grid inside the onions piece: it
+        is not in either sanitiser's allowlist, so it has not
+        survived a publish since that piece became a row.
+
    v72: styles.css lost three rules with Stage 11.1, and it is
         precached. `.read-en`, `.read-note` and `.read-fallback`
         were the English sub-title on a Bangla card, the note on a
@@ -529,7 +544,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v72";
+const VERSION = "v73";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -651,13 +666,6 @@ const PRECACHE = [
   "/english/icons.js",
   "/english/part.js",
   "/english/term.js",
-  /* The kitchen and the travel desk. Their index pages are
-     rendered by a Worker as of Stage 11.1 and cannot be
-     precached; the pieces themselves are single pages, worth
-     having offline, and a kitchen is where a recipe is read with
-     one bar of signal. */
-  "/cooking/onions.html",
-  "/travel/uk-visit-visa.html",
   "/tools/index.html",
   "/tools/stock.html",
   "/tools/stock.js",

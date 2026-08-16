@@ -31,49 +31,32 @@ export const SITE = {
   linkedin: "https://www.linkedin.com/in/reiad",
 };
 
-export const ARTICLES = [
-  {
-    slug: "dse-basics",
-    title: "How the Dhaka Stock Exchange actually works",
-    dek: "What the DSEX index measures, how a BO account works, and the questions to ask before buying your first share.",
-    tag: "Explainer · Equities",
-    topics: ["Equities", "Beginner"],
-    date: "2026-07-01",
-    minutes: 5,
-    lang: "en",
-    status: "live",
-  },
-  {
-    slug: "sanchayapatra-vs-fdr",
-    title: "Sanchayapatra vs. bank FDR: where does a saver's taka work harder?",
-    dek: "Rates, tax at source, purchase limits and early-encashment rules, compared properly.",
-    tag: "Comparison · Savings",
-    topics: ["Savings", "Beginner"],
-    date: "",
-    lang: "en",
-    status: "soon",
-  },
-  {
-    slug: "closed-end-discount",
-    title: "Why do Bangladesh's closed-end funds trade below NAV?",
-    dek: "The discount puzzle, and what it says about fees and trust.",
-    tag: "Analysis · Funds",
-    topics: ["Funds"],
-    date: "",
-    lang: "en",
-    status: "soon",
-  },
-  {
-    slug: "islamic-funds-risk",
-    title: "Islamic funds and risk: what my dissertation found",
-    dek: "A readable summary of the research: systematic risk, drawdowns, and the pre/post-COVID comparison.",
-    tag: "Research · Funds",
-    topics: ["Funds", "Research"],
-    date: "",
-    lang: "en",
-    status: "soon",
-  },
-];
+/* ---------- the three reading sections ----------
+
+   Empty, and that is the finished state rather than a gap.
+
+   A piece of writing on this site is a row in D1, written in the
+   Studio, rendered by the Next.js route at its own address, and
+   listed on its hub by a query. These three arrays were the other
+   half of that: a manifest entry beside a committed HTML file,
+   which is how every piece worked before the Studio existed and
+   how none of them has worked since 15 August 2026. The files
+   went to `archive/` with Stage 11.2 and the entries went with
+   them, because a manifest entry pointing at a file that is not
+   there is a card and a search result pointing at a 404, which is
+   the exact bug `pieces.js` was written to end.
+
+   They are still exported, and `SECTIONS` still names them, for
+   two reasons. `pieces.js` merges them with the database and
+   would need a shape either way. And a section is a real thing
+   with a mount, a language and a hub whether or not anything is
+   written in it; `content.js` describes the site's structure, and
+   that is the part of this file that was never about articles.
+
+   Nothing needs adding here to publish. That is the point.
+   ============================================================ */
+
+export const ARTICLES = [];
 
 /* ============================================================
    The Learn area.
@@ -390,35 +373,9 @@ export const TOOLS = [
      note     what is still being written, for a "soon" one
    ============================================================ */
 
-export const COOKING = [
-  {
-    slug: "onions",
-    title: "পেঁয়াজ নিয়ে যা যা জানা দরকার",
-    en: "Everything worth knowing about onions",
-    dek: "রং, কাটা আর রান্নার আসল কথা: কোন পেঁয়াজ কেন, শিরা বরাবর মানে কী, আর ক্যারামেলাইজড পেঁয়াজে সত্যিই কতক্ষণ লাগে।",
-    tag: "রান্নাঘর · উপকরণ",
-    topics: ["উপকরণ", "কৌশল", "মৌলিক"],
-    date: "2026-08-14",
-    minutes: 12,
-    lang: "bn",
-    status: "live",
-  },
-];
+export const COOKING = [];
 
-export const TRAVEL = [
-  {
-    slug: "uk-visit-visa",
-    title: "যুক্তরাজ্যের ভিজিট ভিসা নিশ্চিত করার আসল কৌশল",
-    en: "What actually gets a UK visit visa approved",
-    dek: "চারটা ডকুমেন্টেই বেশিরভাগ সিদ্ধান্ত হয়ে যায়: ব্যাংক স্টেটমেন্ট, চাকরি বা ব্যবসার প্রমাণ, ইনকামের প্রতিফলন আর কান্ট্রি টাই। আর রিফিউজ হলে কী করার আছে।",
-    tag: "ভ্রমণ · ভিসা",
-    topics: ["ভিসা", "কাগজপত্র", "যুক্তরাজ্য"],
-    date: "2026-08-14",
-    minutes: 9,
-    lang: "bn",
-    status: "live",
-  },
-];
+export const TRAVEL = [];
 
 /* The sections themselves. `pieces` is a function rather than the
    array, because ARTICLES is declared at the top of this file and
@@ -681,12 +638,17 @@ export const COUNTS = {
   workbooks: STUFEN.filter((s) => s.workbook).length,
   /** Schools in the Skills hub, German included. */
   skills: SKILLS.length,
-  /** Kitchen pieces written, not counting the ones still coming. */
-  cooking: livePieces("cooking").length,
-  /** Travel pieces written. */
-  travel: livePieces("travel").length,
-  /** Pieces published on Insights. */
-  articles: ARTICLES.filter((a) => a.status !== "soon").length,
+  /* No count of pieces here, deliberately, since Stage 11.2.
+
+     There were three: `articles`, `cooking` and `travel`, each
+     counting an array in this file. Those arrays are empty now
+     and a piece is a row, so every one of them would have
+     answered 0 while the site had five. A number that counts the
+     wrong thing is worse than no number, and this whole table
+     exists because that went wrong twice.
+
+     Anything that needs the real count asks `pieces.js`, which
+     asks the database, and prints what it drew. */
   /** Scored ratios in the stock check. Asserted against METRICS. */
   ratios: 44,
   /** The groups it sorts them into. Asserted against PILLARS. */

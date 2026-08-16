@@ -22,7 +22,8 @@
    when at least one of them does.
    ============================================================ */
 
-import { SKILLS, PAGES, ARTICLES, liveArticles, COUNTS, findCourse } from "/content.js";
+import { SKILLS, PAGES, COUNTS, findCourse } from "/content.js";
+import { allPieces, pieceHref } from "/pieces.js";
 import { findStage, stageLessons } from "/learn/curriculum.js";
 import {
   getLast as learnLast, readSet as learnRead, nextUp as learnNext,
@@ -473,18 +474,28 @@ function buildCases() {
   }
 }
 
-/* ---------- the featured piece ---------- */
-function buildFeature() {
+/* ---------- the featured piece ----------
+
+   The newest piece the site has, from the database, not from a
+   list in content.js: that list is empty as of Stage 11.2 and
+   this card would have quietly stopped drawing. The address comes
+   from `pieceHref()` for the older reason, which is that this
+   line built `/insights/<slug>.html` whatever section the piece
+   was in, so the day a kitchen piece was the newest one the front
+   page led with a link to a 404. */
+async function buildFeature() {
   const host = document.getElementById("home-feature");
-  const latest = liveArticles()[0];
-  if (!host || !latest) return;            // nothing published, keep the fallback
+  if (!host) return;
+
+  const [latest] = await allPieces();
+  if (!latest) return;                     // nothing published, keep the fallback
 
   host.replaceChildren(
     el("span", { className: "tag mono", textContent: `Featured · ${latest.tag}` }),
     el("h2", { textContent: latest.title, lang: latest.lang }),
     el("p", { textContent: latest.dek, lang: latest.lang }),
     el("a", {
-      className: "more", href: `/insights/${latest.slug}.html`,
+      className: "more", href: pieceHref(latest),
       textContent: "Read it →",
     })
   );
@@ -492,38 +503,29 @@ function buildFeature() {
 }
 
 /* ---------- what is being written next ---------- */
-function buildNext() {
+async function buildNext() {
   const host = document.getElementById("home-next");
   if (!host) return;
 
-  /* Bangla only, and that is the point of the card rather than a
-     limitation of it. This is the learner's half of the home
-     page, it is marked lang="bn", and it is set in the Bangla
-     serif: an English headline dropped into it would be a
-     English sentence in a Bangla card in a Bangla typeface,
-     which is exactly the thing this site exists to stop doing.
-     Everything queued in English is already on the Insights
-     page, one tap away, in the language it was written in. */
-  const soon = ARTICLES.filter((a) => a.status === "soon" && a.lang === "bn");
-  if (!soon.length) {
-    /* Nothing queued in Bangla. Rather than leave a card
-       advertising a piece that has since been published, or one
-       written in the other language, the slot becomes a plain
-       pointer at everything written so far. */
-    host.replaceChildren(
-      el("span", { className: "tag mono", textContent: "সব লেখা" }),
-      el("h3", { className: "bn-h", textContent: `${bn(COUNTS.articles)}টা লেখা প্রকাশিত` }),
-      el("p", { textContent: "নতুন লেখা এলে এখানেই আসবে।" }),
-      el("a", { className: "more", href: "/insights.html", textContent: "সব লেখা →" })
-    );
-    return;
-  }
+  /* It counts what the site has, and it says so in Bangla.
 
-  const [next] = window_(soon, 1);
+     This card used to tease the next Bangla piece, from the
+     entries marked "soon" in content.js, and fall back to a count
+     when there were none. There have been none for a long time,
+     and as of Stage 11.2 there cannot be any: the teasers are the
+     Insights hub's, in `next/lib/hub.ts`, and they are in
+     English. So the fallback is the card.
+
+     The number is the one thing that has to be right, and it used
+     to come from `COUNTS.articles`, which counted an array in
+     content.js rather than the site. Now it counts the pieces
+     that exist. */
+  const written = (await allPieces()).length;
+
   host.replaceChildren(
-    el("span", { className: "tag mono", textContent: "লেখা হচ্ছে" }),
-    el("h3", { className: "bn-h", textContent: next.title, lang: next.lang }),
-    el("p", { textContent: next.dek, lang: next.lang }),
+    el("span", { className: "tag mono", textContent: "সব লেখা" }),
+    el("h3", { className: "bn-h", textContent: `${bn(written)}টা লেখা প্রকাশিত` }),
+    el("p", { textContent: "নতুন লেখা এলে এখানেই আসবে।" }),
     el("a", { className: "more", href: "/insights.html", textContent: "সব লেখা →" })
   );
 }

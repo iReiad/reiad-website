@@ -39,6 +39,7 @@ what anybody is served.
 | `schools-build.test.mjs` | `scripts/check-schools-built.mjs` | 16 August 2026 |
 | `work.html`, `services.html` | `_redirects`, which forwards both to `/portfolio` | 16 August 2026 |
 | `insights.html`, `cooking-index.html`, `travel-index.html`, `reads.js` | Next.js routes, rendered from D1 | 16 August 2026 |
+| `pieces/*.html` | rows in D1, rendered by the Next.js article route | 16 August 2026 |
 
 `work.html` and `services.html` were early placeholders that still
 carried template text ("[Your Name]", "hello@yourdomain.com"), kept
@@ -66,6 +67,16 @@ the file used to render from a fetch after paint. The two Bangla
 files are here under flattened names because two `index.html` in
 one directory is one file: what they were is in the table above
 and in the git history either way.
+
+`pieces/` is every piece of writing this site ever kept as a
+file: `dse-basics`, `onions` and `uk-visit-visa`, the `dsex` stub
+and the `_template.html` the Studio was written against. All three
+pieces were published into D1 on 15 August and the rows have
+answered their URLs ever since, so the files were a fallback
+nothing reached. `dsex` is not a piece at all: `_redirects` sends
+both of its addresses to `/learn/terms/dsex`, and has since before
+this. Their entries in `content.js` went in the same commit, which
+is what Stage 3 asked for. TRANSITION.md Stage 11.2.
 
 `reads.js` drew the cards on both of those pages and has nothing
 left to draw. `.read-en`, `.read-note` and `.read-fallback` went

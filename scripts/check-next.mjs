@@ -17,24 +17,20 @@
       larger mistake, so `next/components/cards.tsx` holds the
       three as strings, exactly as `icon()` writes them.
 
-   2. THE TEASERS on the Insights hub, the pieces that have been
-      promised and not written. They are in the ARTICLES list in
-      `aab/content.js`, where `aab/app.js` reads them for the
-      hand-written `insights.html`, and in `next/lib/hub.ts`,
-      where the route that replaces that page reads them. Two
-      pages showing different "coming soon" cards is a small lie
-      told twice.
-
-      This half goes when `insights.html` is archived and the
-      route is the only thing drawing them. The first half does
-      not go: it is about two runtimes, not about a transition.
+   There was a second copy here until Stage 11.2: the "coming
+   soon" teasers on the Insights hub lived in both `content.js`
+   and `next/lib/hub.ts` while both pages existed. The
+   hand-written page is in `archive/` and the arrays in
+   `content.js` are empty, so `next/lib/hub.ts` is the only place
+   those three sentences are written and there is nothing left to
+   compare. The drawings stay: they are about two runtimes rather
+   than about a transition, and they do not go away.
    ============================================================ */
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { icon } from "../aab/learn/icons.js";
-import { ARTICLES } from "../aab/content.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
@@ -66,40 +62,8 @@ for (const name of ["cart", "book", "compass"]) {
   }
 }
 
-/* ------------------------------------------------------------
-   2. The pieces promised and not written
-   ------------------------------------------------------------ */
-
-const hub = read("next/lib/hub.ts");
-const soonHere = ARTICLES.filter((a) => a.status === "soon");
-
-/* Counted rather than assumed: an entry added to one list and not
-   the other is exactly the drift being watched for, and it shows
-   up as a count before it shows up as a missing sentence.
-
-   Counted inside the SOON array rather than across the file,
-   because the head of each hub carries a `title:` of its own and
-   a count that includes those agrees with nothing. */
-const soonBlock = hub.match(/export const SOON = \[([\s\S]*?)\n\];/)?.[1] ?? "";
-const soonThere = (soonBlock.match(/^\s*title:/gm) ?? []).length;
-if (soonThere !== soonHere.length) {
-  fail(`content.js promises ${soonHere.length} unwritten pieces and`
-    + ` next/lib/hub.ts has ${soonThere} teaser cards.`,
-    "SOON in next/lib/hub.ts is what the rendered Insights hub draws;",
-    "the ARTICLES entries marked soon are what insights.html draws.");
-}
-
-for (const piece of soonHere) {
-  for (const [field, text] of [["title", piece.title], ["dek", piece.dek]]) {
-    if (!hub.includes(text)) {
-      fail(`the ${field} of the "${piece.slug}" teaser is not in next/lib/hub.ts.`,
-        JSON.stringify(text));
-    }
-  }
-}
-
 console.log(failures
   ? `\n${failures} copy(ies) in next/ have drifted from the original.\n`
-  : "next/ holds 3 drawings and "
-    + `${soonHere.length} teasers, and each one still matches its original.\n`);
+  : "next/ holds 3 drawings copied out of aab/, and each one still\n"
+    + "matches what icons.js draws.\n");
 process.exit(failures ? 1 : 0);

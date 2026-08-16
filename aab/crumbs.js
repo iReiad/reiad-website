@@ -35,7 +35,7 @@ import {
 import {
   TERMS, termUrl, allParts, findTerm, workbookUrl as englishBookUrl,
 } from "/english/curriculum.js";
-import { PAGES, SITE, liveArticles, READS, pieceUrl } from "/content.js";
+import { PAGES, SITE, READS } from "/content.js";
 
 const isBn = () => document.documentElement.lang === "bn";
 /* The German pages are lang="bn" throughout, so a crumb reading
@@ -51,6 +51,23 @@ const sectionName = (section) => (isBn() ? section.bn : section.en);
 
 /** Normalise the URL Pages might serve us: /learn, /learn/ and
     /learn/index.html are all the same place. */
+/** The title of the piece being read.
+
+    Off the page itself, rather than out of a list. It used to be
+    looked up in the arrays in content.js, and those are empty as
+    of Stage 11.2: a piece is a row, and the trail cannot wait on
+    a query to draw itself. The heading is the piece's title, it
+    is server-rendered before this file runs, and it is right for
+    every piece whatever store it came from.
+
+    The fallback under it split the document title on a character
+    this site does not use, so it returned the whole title
+    including ", Reiad's Library". Whatever is in the heading beats
+    that on every page that has one. */
+const pieceTitle = () =>
+  document.querySelector("main h1")?.textContent?.trim()
+  || document.title.split(",")[0].trim();
+
 function normalise(path) {
   let p = path.replace(/\/+$/, "");
   if (!p) return "/index.html";
@@ -143,8 +160,7 @@ function trailFor(path) {
 
     crumbs.push({ name: sectionName(read), url: read.hub });
 
-    const piece = read.pieces().find((x) => pieceUrl(read, x.slug) === p);
-    return { crumbs, here: piece?.title ?? document.title.split("·")[0].trim() };
+    return { crumbs, here: pieceTitle() };
   }
 
   /* ---------- the English school ----------
@@ -239,9 +255,7 @@ function trailFor(path) {
   /* ---------- insights ---------- */
   if (p.startsWith("/insights/")) {
     crumbs.push({ name: "Insights", url: "/insights.html" });
-    const slug = p.replace("/insights/", "").replace(".html", "");
-    const article = liveArticles().find((a) => a.slug === slug);
-    return { crumbs, here: article?.title ?? document.title.split("\u2014")[0].trim() };
+    return { crumbs, here: pieceTitle() };
   }
 
   /* ---------- everything else, from PAGES ---------- */

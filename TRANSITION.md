@@ -443,9 +443,10 @@ nothing says so.
 ---
 
 ### Stage 3 · The file pieces move into the database
-**Status: every piece is now a row (15 August 2026).** The files
-stay until 29 August, per rule 4. Size: one sitting, plus two weeks
-of watching.
+**Status: done, 16 August 2026.** Every piece became a row on 15
+August; the files and their `content.js` entries went with Stage
+11.2 the next day, ahead of the fortnight rule 4 asks for, by
+request. Size: one sitting, plus a day.
 
 `dse-basics` was published through the Studio at 19:33 on 15 August,
 which was the last one. `node scripts/check-pieces.mjs --live` now
@@ -1339,8 +1340,9 @@ has been looked at once, after a week of real traffic.
 ---
 
 ### Stage 11 · Every remaining route, until no page is a file
-**Status: 11.8 done, 11.1 done and serving, 16 August 2026. 276
-files left.** Size: months, at whatever pace suits.
+**Status: 11.1, 11.2 and 11.8 done, 16 August 2026. 271 files
+left, and none of them is a piece of writing.** Size: months, at
+whatever pace suits.
 
 Stage 10 moved one route and proved the machinery: an allowlist in
 `worker.js`, a service binding, a fallback for anything the second
@@ -1448,13 +1450,50 @@ page is a file:
   Bangla card, the note on a placeholder, and the no-JavaScript
   list inside the two hub pages. All three are gone.
 
-**11.2 The other two article mounts.** `/cooking/<slug>` and
-`/travel/<slug>` join `/insights/<slug>` in `NEXT_ROUTES`, which
-is the entry Stage 10 deliberately did not make. *Deletes* what is
-left of `aab/insights/`, `aab/cooking/` and `aab/travel/`, which
-is the last of the file pieces. *Needs* Stage 3 to have finished
-retiring them, and workstep 10.2 to have said out loud which ones
-are still files.
+**11.2 The other two article mounts. Done, 16 August 2026.**
+`/cooking/<slug>` and `/travel/<slug>` joined `/insights/<slug>`
+in `NEXT_ROUTES`, which is now the `ARTICLE` regex itself rather
+than a copy of a third of it. `aab/insights/`, `aab/cooking/` and
+`aab/travel/` are gone: five files to `archive/pieces/`, and the
+three directories with them. **271 HTML files left**, and there is
+no piece of writing on this site that is a file.
+
+This also closes workstep 10.2, which asked for the repository to
+stop saying four pieces were files when three of them were rows.
+None of them is a file now, so the sentences that described that
+state have been rewritten in place: the long comment in
+`worker.js`, the fallback contract in `next/parity.test.mjs` and
+the prose above.
+
+**The fallback stays and means something else.** A 404 from the
+Next Worker used to mean "serve the committed file". There is no
+file, and it still has two jobs: `_redirects` holds a 301 for
+`/insights/dsex`, a term that moved to `/learn/terms/`, and that
+rule only ever fires because the route declines the slug; and
+anything else gets this site's own 404 page rather than a
+framework one.
+
+**`content.js` stopped being a list of articles**, which is Move
+A finally landing. `ARTICLES`, `COOKING` and `TRAVEL` are empty
+arrays with a paragraph saying why, and `COUNTS` lost the three
+keys that counted them. That was not cosmetic: `COUNTS.articles`
+was on the home page, in Bangla, as the number of pieces
+published, and it counted the array rather than the site. It said
+one while the site had five, and would have said none the moment
+the array emptied. It counts what the database returns now.
+
+Two more of the same, found by emptying it:
+
+- `buildFeature()` on the home page took the newest piece from
+  that array and built its link as `/insights/<slug>.html`
+  whatever section it was in. It asks `pieces.js` and uses
+  `pieceHref()` now, which is bug I1 in this document, in the last
+  place that still had it.
+- `crumbs.js` looked a piece's title up in the same arrays to put
+  it in the trail, and fell back to splitting the document title
+  on a character this site does not use. It reads the heading off
+  the page, which is server-rendered, right for every piece, and
+  needs no list at all.
 
 **11.3 The portfolio and the seven case studies.** The most
 component-shaped pages on the site, and the ones where the rule
@@ -1677,7 +1716,7 @@ repository is.
 | 0 | Inventory and this document | done, Aug 2026 |
 | 1 | Every list reads the database | done, 15 Aug 2026 |
 | 2 | Backup out of the database | done, 15 Aug 2026 |
-| 3 | The file pieces move in | rows done 15 Aug 2026, files stay a fortnight |
+| 3 | The file pieces move in | done, files gone with 11.2 on 16 Aug 2026 |
 | 4 | The Studio stops writing files | done, 15 Aug 2026 |
 | 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
 | 6 | Progress follows the account | done, 15 Aug 2026 |
@@ -1685,7 +1724,7 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | 11.1 serving 16 Aug 2026, 276 files to go |
+| 11 | Every remaining route, until no page is a file | 11.1, 11.2, 11.8 done 16 Aug 2026, 271 files to go |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
 
@@ -1939,6 +1978,70 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · No page of writing on this site is a file any more
+
+Stage 11.1 switched on and Stage 11.2 done in the same sitting,
+and with them Stage 3, which had been waiting out a fortnight
+that was cut short deliberately.
+
+**What is served by what, now.** The three hubs and all three
+article mounts are rendered by the Next.js Worker, out of D1.
+`aab/insights/`, `aab/cooking/` and `aab/travel/` do not exist.
+**271 HTML files left in `aab/`**, from 279 this morning, and
+every one of the eight that went was either a piece of writing or
+an index of pieces.
+
+**The canonical links stopped lying.** Every URL on this site ends
+in `.html` and every canonical link says so, and Cloudflare's
+asset router has been 301ing those addresses to their pretty forms
+for as long as the site has existed: the canonical link pointed at
+a redirect. Listing the three hubs in `run_worker_first` takes them
+away from that router, so the canonical address answers 200, and
+`_redirects` now sends the five pretty forms to it instead of the
+other way round.
+
+**Three checks assumed a page is a file, and each was right to
+fail.** This is the real cost of the transition and it is worth
+naming: half the checks in this repository were written when a URL
+and a file were the same thing.
+
+- `check-routes.mjs` models the asset router. It reads
+  `run_worker_first` out of `wrangler.toml` and `NEXT_ROUTES` out
+  of `worker.js` now, and a path resolves when both are true.
+  Which catches the mistake this arrangement invites: a route
+  added to the allowlist and not to `run_worker_first` is a Worker
+  that never runs.
+- `check-content.mjs` failed three `PAGES` entries for having no
+  file. A file, or a Worker route.
+- `check-css.mjs` reported every rule in the `reads` layer as
+  styling nothing, because the markup carrying those classes is a
+  component now. It reads `next/app` and `next/components` too,
+  and `className=` was already in its regex. Then it found four
+  rules that really do style nothing anywhere: `.read-en`,
+  `.read-note`, `.read-fallback` and `.attiyo`. All four are gone.
+
+**Emptying `content.js` found three live bugs**, which is the
+argument for doing it rather than leaving the arrays sitting there:
+
+- The home page said, in Bangla, how many pieces had been
+  published, and counted the array in `content.js` rather than the
+  site. It said one while five were live.
+- `buildFeature()` took the newest piece from that array and built
+  its link as `/insights/<slug>.html` whatever section it was in.
+  That is bug I1 in this document, in the last place still holding
+  it.
+- `crumbs.js` looked a piece's title up in the same arrays, and
+  fell back to splitting the document title on a character this
+  site does not use. It reads the heading off the page now.
+
+**And rule 4 was skipped, knowingly.** The fortnight of watching
+before a fallback is deleted did not happen for either step. What
+stands in its place is the parity test, which drives all three
+hubs and the article route against a seeded database on every run,
+and the fact that the rows themselves are backed up nightly to two
+places. The files were the fallback; the backup is the fallback
+now, and it is a better one.
 
 ### 2026-08-16 · The three reading hubs are routes, and the parity test was never actually broken
 

@@ -66,11 +66,12 @@ not_found_handling = "404-page"
 #
 #   /api/*       nothing in aab/ answers these, so this changes no
 #                behaviour, it is here so the intent is on the page.
-#   /insights/*  aab/insights/ holds the pieces written before the
-#                Studio existed. Serving those files first would mean
+#   /insights/*  every piece is a row and the three mounts are
+#   /cooking/*   rendered by the Next.js Worker as of Stage 11.2.
+#   /travel/*    These were listed before that for the older reason,
+#                which was that serving a committed file first meant
 #                an article published to D1 under the same slug never
-#                got a look in, so the Worker decides and falls back
-#                to the file itself.
+#                got a look in. Both reasons want the same line.
 #   /media/*     photos live in R2, and nothing in aab/ matches. That
 #                is precisely the problem: with not_found_handling
 #                set, the asset router answers an unmatched path with
@@ -99,8 +100,8 @@ not_found_handling = "404-page"
 #                the 404 page. Listing it costs nothing while the
 #                binding is absent, because worker.js then falls
 #                through to the assets exactly as before.
-run_worker_first = ["/api/*", "/insights/*", "/media/*", "/_next/*", "/feed.xml", "/sitemap.xml",
-  "/insights.html", "/cooking/index.html", "/travel/index.html"]
+run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/*", "/_next/*",
+  "/feed.xml", "/sitemap.xml", "/insights.html", "/cooking/index.html", "/travel/index.html"]
 
 # ---------- D1: the database everything dynamic runs on ----------
 # Articles, reader questions, subscribers, enquiries, view counts and

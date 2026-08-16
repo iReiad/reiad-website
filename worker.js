@@ -147,7 +147,12 @@ export const ARTICLE = /^\/(insights|cooking|travel)\/([a-z0-9-]+)(?:\.html)?$/i
    Without it the asset router answers first and this is never
    reached. */
 export const NEXT_ROUTES = [
-  /^\/insights\/([a-z0-9-]+)(?:\.html)?$/i,
+  /* All three mounts as of Stage 11.2, which is the same regex
+     ARTICLE is: the Next route reads the section out of the URL
+     and answers whichever of the three the row belongs to, and
+     the parity test holds it to refusing a piece asked for at the
+     wrong one. */
+  ARTICLE,
   /^\/insights\.html$/i,
   /^\/(cooking|travel)\/index\.html$/i,
   /^\/_next\//,
@@ -157,25 +162,28 @@ export const NEXT_ROUTES = [
 const goesToNext = (path, env) =>
   Boolean(env.NEXT) && NEXT_ROUTES.some((re) => re.test(path));
 
-/** Ask the Next.js Worker, and fall back to a file if it has none.
+/** Ask the Next.js Worker, and answer from the assets if it
+    declines.
 
-    THE BUG THIS SHAPE EXISTS FOR, BEFORE IT HAPPENED
+    A 404 from there means what `context.next()` means here. The
+    Next.js Worker is a different Worker with no ASSETS binding of
+    its own, so 404 is the only way it can say "not mine", and
+    this is what turns that into the fall-through it means.
 
-    Four articles on this site are still committed HTML rather than
-    database rows: the two in aab/insights/, the one about onions
-    and the one about visas. Today they are served by the asset
-    router because `functions/insights/[slug].js` calls
-    `context.next()` when D1 has no row.
+    THE BUG THIS SHAPE EXISTED FOR. Four articles were committed
+    HTML rather than rows when this was written, served by the
+    asset router because the Worker's own renderer declined a slug
+    with no row. Forwarding a whole prefix to a Worker that can
+    only 404 would have taken all four off the site the moment the
+    service binding was added: every link, every share, every
+    search result.
 
-    The Next.js Worker cannot do that. It is a different Worker with
-    no ASSETS binding of its own, so all it can say is 404, and
-    forwarding a whole prefix to it would have taken those four
-    pieces off the site the moment the service binding was added.
-    Every link to them, every share, every search result.
-
-    So a 404 from there means the same thing `context.next()` means
-    here, and is answered the same way. Anything else is the piece
-    itself and goes straight back. */
+    None of them is a file any more (Stage 11.2), and this shape
+    is still what two things rest on. `_redirects` holds a 301 for
+    `/insights/dsex`, a term that moved to `/learn/terms/`, and
+    that rule fires only because the route declines the slug. And
+    a slug nobody has written gets this site's own 404 page rather
+    than a framework one. */
 async function fromNext(request, env) {
   const answer = await env.NEXT.fetch(request);
   if (answer.status !== 404) return answer;

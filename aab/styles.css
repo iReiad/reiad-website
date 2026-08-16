@@ -6167,16 +6167,6 @@ German for day, and .tag is what the site has always called
      as a visa piece does, and the Studio can only offer a block
      that every section can style. */
 
-  /* ---------- the allium family ---------- */
-  .attiyo {
-    margin-block: 20px 28px;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-
-    & .cell { display: grid; gap: 6px; align-content: start; }
-    & h3 { font-size: 1.1rem; }
-    & p { margin: 0; font-size: 0.95rem; color: var(--ink-soft); max-width: none; }
-  }
-
   /* ============================================================
      THE INDEX OF A SECTION
      ============================================================ */

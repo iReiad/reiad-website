@@ -384,24 +384,28 @@ const CHUNK_BUDGET = 8;
 
 /* ---- the contract worker.js falls back on ----
 
-   Four articles on this site are still committed HTML files.
-   `worker.js` forwards the whole article prefix here, so the only
-   way those keep working is that a slug with no row answers 404
-   and the front Worker serves the file instead. If this route ever
-   answers something else for a piece it does not have, those four
-   go off the site the day the service binding is added. */
+   A slug this route has no row for must answer 404, because that
+   is the only thing `fromNext()` in worker.js can read as "not
+   mine". It used to mean "serve the committed file", and there
+   are no committed pieces left as of Stage 11.2; it still means
+   two things that matter. `_redirects` holds a 301 for
+   `/insights/dsex`, a term that moved to `/learn/terms/`, and it
+   only ever fires because this route declines the slug. And
+   anything else gets the site's own 404 page rather than a
+   framework one. */
 {
   const missing = await fetch(`http://127.0.0.1:${PORT}/insights/not-a-piece-here.html`);
-  ok("a slug with no row answers 404, so the file can still win",
+  ok("a slug with no row answers 404, so the front Worker can answer",
     missing.status === 404, `status ${missing.status}`);
 
-  /* The pieces that are still committed files go through this path
-     on every request once the binding lands. Named, because these
-     are the ones a mistake here takes off the site, and a name in
-     a test is harder to lose than a category. */
-  for (const stillAFile of ["dse-basics", "dsex"]) {
-    const answer = await fetch(`http://127.0.0.1:${PORT}/insights/${stillAFile}.html`);
-    ok(`${stillAFile} is handed back for the asset router to serve`,
+  /* Named rather than described, because a name in a test is
+     harder to lose than a category. `dsex` is the sharper of the
+     two: it is a redirect rule that fires only if this route
+     declines, so a route that started answering it would take a
+     301 off the site silently. */
+  for (const declined of ["dsex", "dse-basics"]) {
+    const answer = await fetch(`http://127.0.0.1:${PORT}/insights/${declined}.html`);
+    ok(`${declined} is handed back to the front Worker`,
       answer.status === 404, `status ${answer.status}`);
   }
 
