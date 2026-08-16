@@ -743,8 +743,17 @@ reader of the fourth would have met the pages in the wrong order.
 
 To load them:
 
-From inside the repository, and `--out` rather than a `>`
-redirect:
+**From a browser, which is the way that has not failed:** GitHub,
+Actions, "Import the schools into D1", Run workflow. It builds the
+file, refuses to hand wrangler anything that looks empty, imports
+it, and then asks the database what is in it, so the run itself
+says whether it worked rather than only that it finished. It needs
+one repository secret, `CLOUDFLARE_API_TOKEN`, scoped to D1 Edit
+and nothing else; the note at the top of
+`.github/workflows/import-schools.yml` says where to make it.
+
+**Or from a terminal**, inside the repository, and `--out` rather
+than a `>` redirect:
 
 ```sh
 node scripts/import-schools.mjs --out schools.sql
@@ -1853,6 +1862,16 @@ script prints the number of queries the file holds so that the
 number wrangler prints has something to disagree with, and it
 takes `--out` now so that the file is written by the thing that
 knows whether the work succeeded.
+
+**And the import moved into a workflow**,
+`.github/workflows/import-schools.yml`, run from a browser by
+whoever wants it. Not because typing is hard: because every one of
+the three ways this went wrong was a way a person can be standing
+somewhere unexpected, and a job that checks out the repository
+itself is never standing anywhere. It refuses to hand wrangler a
+file with fewer than 200 statements in it, and the last thing it
+does is count the rows and print them, so the run says whether it
+worked rather than only that it finished.
 
 ### 2026-08-16 · The import wrote nothing, successfully
 The first real run of the schools import uploaded 914 KB and

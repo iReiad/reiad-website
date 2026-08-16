@@ -1,0 +1,117 @@
+# ============================================================
+# Import the four curricula into D1, from a browser.
+#
+# TRANSITION.md Stage 8. The import is two commands in a terminal
+# and it has now failed twice for reasons that had nothing to do
+# with the SQL: run from the wrong folder, an empty file left
+# behind by a shell redirect, and a wrangler that imported that
+# empty file and called it a success. None of that can happen
+# here, because nobody types anything.
+#
+#   GitHub → Actions → "Import the schools into D1" → Run workflow
+#
+# It runs the generator, refuses to continue if the file is not
+# the size it should be, and prints the row counts afterwards so
+# the run itself says whether it worked.
+#
+# ---- the one thing it needs ----
+#
+# A Cloudflare API token, stored as the repository secret
+# CLOUDFLARE_API_TOKEN. Make it in the Cloudflare dashboard:
+#
+#   My Profile → API Tokens → Create Token → Custom token
+#   Permissions: Account → D1 → Edit
+#   Account Resources: this account, and nothing else
+#
+# then paste it into GitHub under
+#   Settings → Secrets and variables → Actions → New repository secret
+#
+# That token can write this one database and nothing else, and it
+# is revocable from the same page it was made on. Without it this
+# workflow stops before it touches anything and says why.
+#
+# ---- and one thing it deliberately does not do ----
+#
+# It does not run on a push, or on a schedule, or on anything
+# except somebody asking for it. Filling this table replaces every
+# row in it, and a job that can do that must never be able to
+# start on its own.
+# ============================================================
+
+name: Import the schools into D1
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which database"
+        required: true
+        default: remote
+        type: choice
+        options: [remote, local]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: import-schools
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check the token is there
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is not set. See the note at the"
+            echo "::error::top of .github/workflows/import-schools.yml for how"
+            echo "::error::to make one. Nothing was changed."
+            exit 1
+          fi
+
+      - name: Build the SQL
+        run: node scripts/import-schools.mjs --out schools.sql
+
+      # The failure this whole file exists for: an empty file that
+      # imports perfectly and writes nothing. 314 statements is
+      # what the generator prints; anything under 200 means it did
+      # not do its job and wrangler must not be handed the result.
+      - name: Refuse to import an empty file
+        run: |
+          queries=$(grep -c '^\(INSERT\|DELETE\)' schools.sql || true)
+          size=$(wc -c < schools.sql)
+          echo "schools.sql: $size bytes, $queries queries"
+          if [ "$queries" -lt 200 ]; then
+            echo "::error::Only $queries queries in the file. Expected around 314."
+            echo "::error::Nothing was imported."
+            exit 1
+          fi
+
+      - name: Import
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npx --yes wrangler@4 d1 execute reiad \
+            --${{ inputs.target }} --file=schools.sql --yes
+
+      # What the run is actually for. A tick on a job that wrote
+      # nothing is the thing that wasted two attempts, so the last
+      # thing it does is ask the database what is in it.
+      - name: Say what is in there now
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          npx --yes wrangler@4 d1 execute reiad --${{ inputs.target }} --json \
+            --command "SELECT
+                 (SELECT COUNT(*) FROM school_stages)   AS stages,
+                 (SELECT COUNT(*) FROM school_sections) AS sections,
+                 (SELECT COUNT(*) FROM school_lessons)  AS lessons,
+                 (SELECT COUNT(*) FROM school_lessons WHERE body <> '') AS written"
