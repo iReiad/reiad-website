@@ -149,9 +149,18 @@ ok("a piece Next does not have falls through to the asset router",
 const missing = await get("/insights/not-a-piece-here.html");
 same("an unknown slug is a 404, not a 500", 404, missing.status);
 
-/* ---------- 5. the allowlist is one mount wide ---------- */
+/* ---------- 5. the allowlist is one mount wide ----------
 
-const kitchen = await get(WORKER_PIECE);
+   Followed rather than asked for once, and the difference is the
+   whole reason this check reads oddly. `/insights/<slug>.html` is
+   answered directly, because that prefix is in `run_worker_first`
+   and the Worker decides before the asset router sees it. Nothing
+   else is: Cloudflare's asset router answers `/cooking/onions.html`
+   with a 307 to the extensionless form, which is its own
+   behaviour and has been true since long before Stage 10. So the
+   question here is where the path ends up, not what the first hop
+   says. */
+const kitchen = await fetch(`${origin}${WORKER_PIECE}`);
 same("a piece in the kitchen still answers", 200, kitchen.status);
 const kitchenHtml = await kitchen.text();
 ok("and is not routed through Next",
@@ -162,12 +171,37 @@ ok("and is not routed through Next",
 
 for (const [path, what] of [
   ["/", "the home page"],
-  ["/insights.html", "the Insights index"],
+  ["/insights", "the Insights index"],
   ["/feed.xml", "the feed"],
   ["/sitemap.xml", "the sitemap"],
 ]) {
   const res = await get(path);
   same(`${what} answers 200`, 200, res.status);
+}
+
+/* ---------- 7. every piece the site advertises can be read ----------
+
+   `check-routes.mjs` does this offline and cannot see the half
+   that matters here: a piece that exists only as a row in D1 is in
+   the sitemap because the Worker merges it in, and nothing in the
+   repository knows whether its URL actually answers. A published
+   row whose address 404s is the exact failure Stage 3 and Stage 10
+   are both walking towards, so it is asked of the live site. */
+{
+  const xml = await (await get("/sitemap.xml")).text();
+  const urls = [...new Set(xml.match(/<loc>([^<]+)<\/loc>/g) ?? [])]
+    .map((tag) => tag.replace(/<\/?loc>/g, ""))
+    .filter((url) => /\/(insights|cooking|travel)\/[^/]+$/.test(url));
+
+  const bad = [];
+  for (const url of urls) {
+    const res = await fetch(url, { headers: { "Cache-Control": "no-cache" } });
+    if (!res.ok) bad.push(`${url} answered ${res.status}`);
+  }
+  ok(`all ${urls.length} piece(s) in the sitemap answer`,
+    bad.length === 0, bad.join("; "));
+  console.log(`  pieces in the sitemap: ${urls.length}`);
+  for (const url of urls) console.log(`    ${url.replace(origin, "")}`);
 }
 
 /* ---------- done ---------- */
