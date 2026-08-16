@@ -37,10 +37,16 @@ const ROOT = dirname(fileURLToPath(import.meta.url));
    server, where no page policy applies. The Studio never calls
    Notion directly for exactly that reason. If it ever starts, this
    check will say so. */
+/* `https://fonts.googleapis.com` was here until 16 August 2026, when
+   `studio.js` and `desk.js` were archived and took the last mention
+   of it in any scanned file with them. The webfont link lives in
+   HTML shells and in `shared/look.js` now, and this check reads
+   neither: it is about what a browser is allowed to *fetch*, and a
+   stylesheet link is style-src's business. It comes back the day a
+   script names it again, which is the point of the list. */
 const NOT_FETCHED = {
   "https://reiad.co.uk": "canonical links, og:url and JSON-LD, never fetched",
   "https://schema.org": "the JSON-LD vocabulary, an identifier and not an address",
-  "https://fonts.googleapis.com": "a stylesheet link, covered by style-src",
   "https://www.linkedin.com": "a link in the footer",
   "https://www.tbsnews.net": "a source credited in an article",
   "https://www.bbc.co.uk": "a source credited in an article",

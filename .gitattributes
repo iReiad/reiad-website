@@ -1,0 +1,59 @@
+# ============================================================
+# .gitattributes: which files are written and which are output.
+#
+# GitHub counts every committed byte when it draws the language
+# bar, and this repository commits its build output on purpose:
+# the site deploys by uploading `aab/`, with no build step in CI,
+# so a generated page has to be in git to be on the site. See
+# CLAUDE.md. The result is a bar that reads 61% HTML, 33%
+# JavaScript, and it is measuring the compiler's output rather
+# than anything anybody wrote.
+#
+# The entries below say which files are generated and which are
+# kept for reference. That is what the attributes are for, and it
+# is true of every path listed: each one has a source elsewhere in
+# this repository and a command in CLAUDE.md that rebuilds it.
+#
+# It changes what the bar reports. It does not change what the
+# repository is, and no line here is a substitute for the
+# transition itself: TRANSITION.md Stage 11 deletes the 251
+# generated HTML pages by moving what is in them into a database
+# and a React route, and that is the change that actually moves
+# the number.
+#
+# `linguist-generated` also collapses these files in a diff, which
+# is right for all of them: reviewing a 228 KB bundle is not
+# reviewing anything. Read the source and the build command.
+# ============================================================
+
+# ---------- the React builds ----------
+# Vite's output, from app/src/**. `npm run build` in app/.
+aab/desk/app.js       linguist-generated=true
+aab/studio/app.js     linguist-generated=true
+
+# ---------- the four schools ----------
+# 251 pages, written by the builders in each directory from a
+# curriculum and the content files beside it.
+aab/learn/**          linguist-generated=true
+aab/deutsch/**        linguist-generated=true
+aab/quran/**          linguist-generated=true
+aab/english/**        linguist-generated=true
+
+# ---------- the feed, the sitemap, the robots file ----------
+# node aab/build-meta.mjs
+aab/feed.xml          linguist-generated=true
+aab/sitemap.xml       linguist-generated=true
+aab/robots.txt        linguist-generated=true
+aab/sw-manifest.json  linguist-generated=true
+
+# ---------- the share cards ----------
+# node aab/build-og.mjs
+aab/og/**             linguist-generated=true
+
+# ---------- the nightly backup ----------
+# .github/workflows/backup.yml writes this, nobody edits it.
+content/articles.backup.json linguist-generated=true
+
+# ---------- what the site used to be ----------
+# Not deployed and not imported. See archive/README.md.
+archive/**            linguist-vendored=true

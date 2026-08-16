@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v66: the old Studio and the old desk were archived. studio.html,
+        studio.js, desk.html and desk.js are in archive/ and are
+        not deployed; _redirects sends their two URLs to /studio/
+        and /desk/. app.js changed, because its prerender rules
+        named the old page, and insights.html changed with it. A
+        returning reader holding a v65 app.js would be told to
+        prerender a URL that is now a redirect.
+
    v65: Stage 7, comments. Signed in to write, and nothing appears
         until it is approved from the desk. comments.js is new and
         the article renderer loads it lazily; styles.css and
@@ -462,7 +470,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v65";
+const VERSION = "v66";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

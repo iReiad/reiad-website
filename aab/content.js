@@ -6,7 +6,7 @@
    sitemap and the RSS feed all read from here.
 
    Publishing a new article (the whole workflow):
-     1. Write it in /studio.html, paste your text and photos.
+     1. Write it in /studio/, paste your text and photos.
      2. Download the .html it gives you into /insights/.
      3. Studio also gives you a ready-made entry for this file:
         paste it at the TOP of the ARTICLES array below. Done.
@@ -601,7 +601,7 @@ export const PAGES = [
     hint: "Page", blurb: "For recruiters, clients and readers." },
   { title: "Colophon: how this site is built", url: "/colophon.html",
     hint: "Page", blurb: "Every technical decision behind the site, written down." },
-  { title: "Article Studio: publish a new piece", url: "/studio.html",
+  { title: "Article Studio: publish a new piece", url: "/studio/index.html",
     hint: "Tool", blurb: "Paste an article and its photos, get a finished page.", private: true },
 ];
 

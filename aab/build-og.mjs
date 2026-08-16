@@ -366,9 +366,12 @@ const files = globSync("**/*.html", { cwd: HERE })
 
 /* Pages that are nobody's business to share. The list matches
    the Disallow block in robots.txt, desk.html was in one and not
-   the other, so a run quietly gave the admin desk a share card. */
+   the other, so a run quietly gave the admin desk a share card.
+   The two old pages were archived on 16 August 2026 and their
+   replacements are directories, so the names changed with them. */
 const PRIVATE = new Set([
-  "studio.html", "desk.html", "offline.html", "insights/_template.html",
+  "studio/index.html", "desk/index.html", "offline.html",
+  "insights/_template.html",
 ]);
 
 const esc = (t) => t.replace(/&/g, "&amp;").replace(/"/g, "&quot;")

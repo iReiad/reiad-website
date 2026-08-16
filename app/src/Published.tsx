@@ -290,8 +290,8 @@ function Row({
         <a
           className={a.file ? "chip chip-move" : "chip"}
           href={a.file
-            ? `/studio.html?file=${encodeURIComponent(`${sec.id}:${a.slug}`)}`
-            : `/studio.html?edit=${encodeURIComponent(a.slug)}`}
+            ? `/studio/index.html?file=${encodeURIComponent(`${sec.id}:${a.slug}`)}`
+            : `/studio/index.html?edit=${encodeURIComponent(a.slug)}`}
           title={a.file
             ? "Read this committed file into the Studio. Publishing it there "
               + "creates the database row that takes over its URL."

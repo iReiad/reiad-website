@@ -142,7 +142,7 @@ in the same process as the Worker, and a reading page must not wait
 on a round trip to another provider to render.
 
 **Supabase holds who a reader is and what they did.** Users,
-sessions, progress, comments, and later the curricula. It is
+sessions, progress and comments. It is
 Postgres with real auth attached: magic links, Google, sessions,
 row-level security. Writing that by hand in a Worker is a month of
 work and a permanent security liability.
@@ -716,9 +716,27 @@ Four curricula in JavaScript files, 246 pages generated from them,
 and a builder each. The goal is that a lesson can be corrected
 without a rebuild, and that the Studio can edit one.
 
+**Which database, since the document said both.** Section 2 had
+the curricula going to Supabase, section 2b's table had them going
+to D1, and step 1 below said Supabase. Asked directly on 16 August
+2026 and answered by the rule the document already has: *if a
+signed-out reader needs it to render the page, it goes in D1; if
+it belongs to a person, it goes in Supabase.* A lesson is read by
+people who have never signed in, on the connection they have in
+Dhaka, so it is **D1**, at the edge, beside the articles. What a
+reader *did* with a lesson stays in Supabase: progress, and later
+scores. The two never join in a query, which is the same shape
+every other page here already has.
+
+The cost of the other answer, priced rather than asserted: a
+lesson page rendered from Supabase waits on a round trip from the
+edge to Mumbai before it can send a byte, on the page a beginner
+is most likely to open on a bad connection. That is the one thing
+section 2's own rule was written to prevent.
+
 Done in this order, because each step is safe on its own:
 
-1. Tables in Supabase that hold what a `curriculum.js` holds:
+1. Tables in D1 that hold what a `curriculum.js` holds:
    course, unit, lesson, and the blocks inside a lesson.
 2. An importer that reads the existing files and writes the rows.
    Run it, compare the output, change nothing else. The files stay
@@ -738,10 +756,20 @@ byte-identical to what the files produced.
 ---
 
 ### Stage 9 · React, where nobody can see it
-**Status: both are up, 16 August 2026.** The desk at `/desk/`, all
-six panels; the Studio at `/studio/`, everything the old page did.
-The two old pages stay at their URLs until the new ones have done
-real work. Size: a week, spread out.
+**Status: done, 16 August 2026.** The desk at `/desk/`, all six
+panels; the Studio at `/studio/`, everything the old page did. The
+two old pages are in `archive/` as of the same day, out of the
+deploy, with `_redirects` sending their URLs to the new ones.
+Size: a week, spread out.
+
+**What let them be archived**, rather than the date arriving: the
+React Studio was driven through a real publish under the site's
+own Content-Security-Policy, and a pasted photo reached R2 and
+came back as a drawn share card. That is
+`aab/studio-publish.test.mjs`, the test written for the bug where
+none of that happened and nothing said so. Doing the same thing
+the old page did, in the way that failed before, is what "used in
+anger" was standing in for.
 
 The toolchain exists and is proved: `app/` is Vite plus React plus
 TypeScript, building to `aab/desk/`, and the result runs under the
@@ -1179,9 +1207,18 @@ move, repeated, with the allowlist growing one entry at a time.
 
 **Done when `find aab -name '*.html' | wc -l` returns 0**, or
 returns only files whose reason for existing is written down here
-and is not "we have not got to it". The count today is 283. Each
-step below says what it deletes, and the step is not finished
-while its files are still in the repository.
+and is not "we have not got to it". It was 283 when this was
+written and it is 281: `studio.html` and `desk.html` went to
+`archive/` with Stage 9's last open item. Each step below says
+what it deletes, and the step is not finished while its files are
+still in the repository.
+
+**A file leaves `aab/` for `archive/`, it is not deleted.** The
+directory is out of the deploy and out of every import, which is
+the whole of what "gone from the site" means here, and it keeps
+the thing the replacement was measured against. `archive/README.md`
+has the rule: something is archived when nothing serves it and
+nothing imports it, and never before.
 
 **The order is by risk, not by appetite.** A step near the top
 being wrong costs a reading page for a few minutes; a step near
@@ -1229,9 +1266,10 @@ only.
 Vite into `aab/desk/` and `aab/studio/` behind a hand-written HTML
 shell each. Under Next they are routes in the same app: one build
 instead of three, and `vite.config.ts`'s list of externals stops
-being a thing that can drift. *Deletes* 4 files, the two old pages
-Stage 9 is already waiting to remove and the two shells, and the
-second build with them. *Needs* `app/desk.test.mjs` and `app/studio.test.mjs`
+being a thing that can drift. *Deletes* the two shells and the
+second build. The two pages these replaced are already gone: they
+went to `archive/` on 16 August 2026, which was Stage 9's last
+open item and not this step. *Needs* `app/desk.test.mjs` and `app/studio.test.mjs`
 repointed at the new addresses, because those two files are the
 written-down list of what the old pages did.
 
@@ -1287,6 +1325,125 @@ that is the day to be most careful about it.
 
 ---
 
+### Stage 12 · The backend, typed and in one shape
+**Status: not started.** Size: weeks. Runs alongside Stage 11
+rather than after it.
+
+Twenty-two files under `functions/`, 1,842 lines, all plain
+JavaScript, each one a Pages Functions handler that `worker.js`
+now rebuilds a fake context for. They work. What they are not is
+one thing: there is no shared idea of a request, a response, an
+error, or who is asking, and every handler re-derives all four.
+
+**What is actually wrong, before anything is moved.**
+
+- **Nothing is typed.** A row read out of D1 is `any` on the way
+  out and stays `any` all the way to the page. `shared/look.js`
+  has an `Article` type that only the Next route benefits from,
+  and the Worker's own handlers cannot see it.
+- **The context is a reconstruction.** `worker.js` builds
+  `{ request, env, params, next, waitUntil }` by hand because the
+  handlers were written for Pages Functions, a thing this site no
+  longer deploys as. That shim is the only reason they run.
+- **Validation is per handler.** Each one reads its own body,
+  checks its own fields and writes its own error shape. The
+  comments handler and the questions handler are the same handler
+  with different nouns, and they disagree about what a bad request
+  looks like.
+- **`api.js` in the browser knows every path by string.** A route
+  renamed on the server is caught by a reader, not by a check.
+
+**Where it goes.** One typed API, in TypeScript, sharing its
+types with the pages that call it, in `shared/` where the Worker,
+the browser and Next can all reach them. In order:
+
+1. **The types first, and only the types.** `Article`,
+  `Comment`, `Question`, `Subscriber`, `Enquiry`, each one written
+  once and imported everywhere, including by the handlers that
+  still return `any` today. Nothing moves; things start being
+  described.
+2. **One request pipeline.** Parse, validate, authorise, handle,
+  respond, with a single error shape and a single place that
+  decides what a 400 looks like. The handlers become the middle
+  of that sandwich rather than the whole of it.
+3. **The handlers become route handlers.** A Next.js route handler
+  under `next/app/api/**` is the same function with the shim
+  removed, and it is where this ends up for anything the site's
+  own pages call. The order follows Stage 11: an API moves when
+  the page that calls it moves, so the two halves are never a
+  version apart.
+4. **`api.js` stops knowing strings.** One typed client, generated
+  from or checked against the same definitions, so a renamed route
+  is a build error.
+
+**What stays a separate Worker, and why.** Not everything belongs
+in the app. `market-pulse` is a scheduled job that talks to an
+exchange and answers one question; the nightly backup and the
+Notion sync are crons that must run whether or not anybody is
+reading. Those are services, and a service that has its own
+schedule, its own failure mode and its own rate limit is better
+off with its own deployment. The test for splitting one out is
+that it has a reason of its own to fail, and not that it feels
+tidier.
+
+**Done when:** no handler under `functions/` is untyped, one
+pipeline decides what a bad request looks like, `api.js` cannot
+name a route that does not exist, and the shim in `worker.js` has
+nothing left to shim.
+
+**Rollback:** each handler moves on its own, and the one before it
+is still there.
+
+---
+
+### Stage 13 · The last JavaScript
+**Status: not started.** Size: continuous, and mostly a
+by-product.
+
+The language mix is the honest measure of how far this has got.
+On 16 August 2026 GitHub reads this repository as 61% HTML, 33%
+JavaScript, 3% CSS and 2% TypeScript. Two thirds of that is the
+compiler's output rather than anybody's writing: 251 generated
+school pages and two Vite bundles. `.gitattributes` now says which
+files those are, so the bar measures the source, and that is a
+labelling fix and not progress. The progress is below.
+
+**What actually moves the number, in the order it happens.**
+
+1. **Stage 11 deletes HTML.** 281 files, each one moving into a
+   route and a database row. This is the whole of the first bar.
+2. **Stage 12 types the backend.** 22 files, 1,842 lines, from
+   `.js` to `.ts`.
+3. **The browser modules convert as their pages move.** This is
+   the part with a rule attached, because getting it wrong wastes
+   weeks: **a module that Stage 11 is going to delete is not
+   converted.** It is rewritten as a component when its route
+   moves, and converting it first would be paying for the same
+   file twice.
+
+**What survives Stage 11 and therefore has to be converted
+properly**, rather than deleted: `editor.js`, `api.js`,
+`content.js`, `auth.js`, `share-card.js`, `photo.js`, `sw.js` and
+what is left of `app.js`. They are the site's own modules, they
+are already imported by the React apps through hand-written
+declarations in `app/src/types/`, and those declarations are the
+list of what to convert. A declaration file is a description of
+something untyped; deleting the description by typing the thing
+is the point.
+
+**One that does not convert, and it is deliberate.** `sw.js` is
+served to the browser as a service worker at a fixed path and is
+not built by anything. It becomes TypeScript only if the site
+grows a build step that emits it at that same path, and adding a
+build step to make a language bar move is the wrong reason.
+
+**Done when:** the modules above are `.ts`, `app/src/types/` is
+empty because nothing needs describing from outside, and the bar
+reads mostly TypeScript because that is mostly what the
+repository is.
+
+---
+
 ## 5. Status board
 
 | Stage | What | Status |
@@ -1300,9 +1457,11 @@ that is the day to be most careful about it.
 | 6 | Progress follows the account | done, 15 Aug 2026 |
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
 | 8 | The schools' content into the database | not started |
-| 9 | React in the Studio and the desk | both done 16 Aug 2026, old pages still up |
+| 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | not started, 283 files to go |
+| 11 | Every remaining route, until no page is a file | not started, 281 files to go |
+| 12 | The backend, typed and in one shape | not started |
+| 13 | The last JavaScript | not started |
 
 ---
 
@@ -1414,6 +1573,40 @@ refused put nothing on the screen at all, because the code only
 looked for tokens in the fragment and ignored an `error` in it.
 The panel now opens and says what the provider said.
 
+**I12. Two Workers nobody in this repository knows about, and one
+of them can write to the live database.** Asked to check the
+connections on 16 August 2026, and the account holds five Workers:
+`reiad-website`, `reiad-next` and `market-pulse`, which are all
+accounted for, plus **`reiad-web`** and **`reiad-api`**, both
+deployed on 14 August and mentioned nowhere in this repository.
+
+Their code was read back to identify them. `reiad-api` is a bundle
+of this site's own `functions/api/**` from that day, including
+`functions/_lib/db.js` and its `MIGRATIONS`, so it is a second
+copy of the API running two-day-old code, with whatever bindings
+it was deployed with. `reiad-web` is an OpenNext bundle, an
+earlier attempt at what `reiad-next` is now. Both are from the
+window `wrangler.toml` describes at the top of itself, when the
+live Worker was built from a `worker.js` that only existed on
+somebody's laptop.
+
+A stale copy of an API is not harmless the way a stale copy of a
+page is. If `reiad-api` still has the `DB` binding it was deployed
+with, it is a write path into the production database, running
+code that predates the reader-identity work in Stage 5 and the
+comment moderation in Stage 7, reachable at its own `workers.dev`
+address by anybody who guesses the name. Nothing in this
+repository would notice, because as far as this repository is
+concerned it does not exist.
+
+**What to do:** confirm what bindings each one holds, then delete
+both, in the dashboard or with `npx wrangler delete --name
+reiad-api` and the same for `reiad-web`. It is a human step for
+the same reason Stage 10's two were: deleting a Worker needs
+credentials this repository does not have. It goes with workstep
+10.5, which is the same question asked of the Workers that are
+supposed to be there.
+
 **I9. `aab/insights/dsex.html` is an orphan.** It has no entry in
 `ARTICLES`, nothing on the site links to it, and its own canonical
 link points at `/learn/terms/dsex.html`. It is a leftover from when
@@ -1522,6 +1715,75 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · The old Studio and desk are archived, and the plan grows two stages
+Four questions arrived together: are the shells Next yet, why are
+the old admin pages still there, which database do the schools go
+in, and why does GitHub still read this repository as HTML and
+JavaScript. They have one answer between them, which is that the
+transition had been adding things without removing any.
+
+**`studio.html`, `studio.js`, `desk.html` and `desk.js` are in
+`archive/`.** Out of `aab/`, so out of the deploy; `_redirects`
+sends both URLs to the React pages. The directory is not a
+graveyard: `archive/README.md` says what replaced each file, and
+the rule for putting something in it is that nothing serves it and
+nothing imports it.
+
+**What made that safe was running the test the bug was written
+for.** `aab/studio-publish.test.mjs` drives a real publish under
+the site's own Content-Security-Policy, and it now drives the
+React Studio: a pasted photo reached R2, came back as a
+`/media/...` path, and a 1200x630 JPEG card was drawn and
+uploaded beside it. That is the exact path that was silently
+broken for weeks, so doing it once through the new page is worth
+more than the date on the calendar that Stage 9 was waiting for.
+
+**And the editor kept its net.** `aab/studio.test.mjs` was 70
+checks against the old page, and `app/studio.test.mjs` says in its
+own header that it does not repeat them. Archiving the page those
+70 checks were hosted on would have quietly deleted the only
+coverage `aab/editor.js` has, and editor.js is the one part of
+this site that cannot be checked by reading it. So the file was
+repointed at `/studio/` instead: 68 checks pass there, and the two
+that did not follow were chrome rather than editor, and are
+already asserted in `app/studio.test.mjs`.
+
+**The schools go in D1, and the document had said both.** Section
+2 sent the curricula to Supabase, section 2b's table sent them to
+D1, and Stage 8 step 1 said Supabase. Settled by the rule the
+document already had: a lesson is read by people who have never
+signed in, so it is D1, at the edge, beside the articles. Progress
+stays in Supabase because it belongs to a person. The alternative
+costs a round trip to Mumbai before a beginner's lesson page can
+send its first byte.
+
+**Two new stages, from two questions.** Stage 12 is the backend:
+22 files and 1,842 lines under `functions/`, none of them typed,
+each re-deriving its own idea of a request, running on a Pages
+Functions context that `worker.js` rebuilds by hand for a thing
+this site no longer deploys as. Stage 13 is the JavaScript itself,
+with the rule that stops it wasting weeks: a module Stage 11 is
+going to delete does not get converted, it gets rewritten as a
+component when its route moves.
+
+**The language bar, honestly.** It read 61% HTML and 33%
+JavaScript. Most of that is output: 251 generated school pages and
+two Vite bundles, all committed on purpose because this site
+deploys without a build step. `.gitattributes` now marks them
+generated, and the archive vendored, so the bar measures what
+somebody wrote. That is labelling, not progress, and it is written
+down as labelling. The progress is Stage 11 deleting the files.
+
+**Connections, checked while there.** D1 answers and holds seven
+live articles. Supabase is `ACTIVE_HEALTHY` in `ap-south-1` with
+`profiles` and `progress`, RLS on both, two real profiles and
+eight rows of progress, which means readers have actually signed
+in and the writes are landing. R2 answers, and the live check now
+fetches the share card it finds on the page rather than trusting
+the tag. What is not fine is in the issues list as I12: two
+Workers from 14 August that nothing here mentions, one of them a
+stale copy of this site's own API.
 
 ### 2026-08-16 · The transition is a full one, and the HTML goes
 Asked directly, and worth writing at the top of the plan rather

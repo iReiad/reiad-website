@@ -161,7 +161,7 @@ await ctx.route("**/api/**", (route) => {
 console.log("a photo, from the editor to /media, under the real policy");
 console.log(`  (connect-src: ${CSP.match(/connect-src[^;]*/)?.[0].slice(0, 76)}…)`);
 
-await page.goto(`${origin}/studio.html`, { waitUntil: "domcontentloaded" });
+await page.goto(`${origin}/studio/index.html`, { waitUntil: "domcontentloaded" });
 await page.waitForTimeout(1200);
 
 // A WebP the browser encodes itself, so the fixture is certainly valid.
