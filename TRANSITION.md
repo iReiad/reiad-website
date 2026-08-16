@@ -1843,6 +1843,55 @@ is the closest Supabase region to Dhaka.
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
 
+### 2026-08-16 · The check that outlives the migration
+
+`scripts/check-schools-built.mjs` rebuilds all four schools from
+the snapshot into a temporary directory and compares every page
+against the one committed in `aab/`. **229 pages, all of them what
+the snapshot builds.**
+
+**Why this rather than the test that already exists.**
+`schools-build.test.mjs` builds each school from the curriculum
+files and from the database and compares the two. That was the
+acceptance test for moving the prose into D1 and it did its job,
+but it compares the database against a copy of what the database
+held on the day it was filled. Step 4 is the point where those two
+diverge on purpose: the first lesson edited at `/studio/?lessons`
+makes the files wrong, and that test then fails for the best
+reason there is. It has an expiry date, and the thing it is
+guarding does not.
+
+This one has no opinion about where the prose came from or what it
+says. It asks whether what is committed is what the current data
+produces, and that question stays useful for as long as the pages
+are generated. Two failures it catches, both of which have
+happened to generated files in this repository: a page edited by
+hand, which survives until the next build silently reverts it, and
+a snapshot refreshed without a rebuild, which is the state where
+the database, the file and the site all say different things.
+
+Checked both ways round before it was trusted: a paragraph added
+to `quran/dhap-1/al.html` came back as a diff naming line 148 with
+both versions of it, and a deleted lesson page came back as one
+that would be written and is not committed.
+
+**Two things it deliberately does not do.** It ignores the
+school's own top-level folder, because that holds the hub and its
+hand-written neighbours beside the page or two a builder writes
+there, so "committed and not built" is the normal state of it. And
+it only looks for stale pages inside folders the build actually
+wrote into, because a school's directory holds `curriculum.js`,
+`hub.js`, `progress.js` and the builder itself next to the pages,
+and reporting all of those as missing from the build is true and
+useless. A stale lesson page, which is the thing worth catching,
+is always inside a stage.
+
+Next is still the same: `aab/*/content/*.js` and
+`aab/learn/lessons/*.js` to `archive/`. What was in the way is
+smaller now. The remaining importer of them is
+`schools-build.test.mjs`, and the argument for retiring that test
+along with the files is written above.
+
 ### 2026-08-16 · The builders read the rows, and the money school explained itself
 
 The prose the four schools are built from comes out of the
