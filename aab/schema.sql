@@ -165,3 +165,80 @@ CREATE INDEX IF NOT EXISTS idx_comments_thread
   ON comments (slug, status, created_at);
 CREATE INDEX IF NOT EXISTS idx_comments_queue
   ON comments (status, created_at DESC);
+
+-- ============================================================
+-- The schools: four curricula, 251 generated pages, one shape.
+--
+-- TRANSITION.md Stage 8. The goal is that a lesson can be
+-- corrected without a rebuild and edited from the Studio, and the
+-- reason these are in D1 rather than in Supabase is the rule in
+-- section 1 of that document: a lesson is read by people who have
+-- never signed in, so it renders at the edge. What a reader DID
+-- with a lesson is a person's, and stays in Supabase.
+--
+-- ---- why there is a `meta` column, and what is not in it ----
+--
+-- The four schools are genuinely different and were written that
+-- way on purpose. /learn/ has stages and sections; /deutsch/ has
+-- Stufen, Teile and a 30 day Arbeitsbuch; /quran/ makes the day
+-- itself the lesson and carries Arabic beside every Bangla line;
+-- /english/ has terms and parts and its own workbook. Flattening
+-- that into one wide table of nullable columns would either lose
+-- fields or invent forty of them.
+--
+-- So the columns are what every school has and what anything
+-- actually queries on, and `meta` is that school's own fields as
+-- JSON, round-tripped exactly. `scripts/schools.test.mjs` fails
+-- if a single field goes missing on the way in or out, which is
+-- the guarantee that makes a JSON column safe rather than lazy.
+--
+-- What is deliberately NOT in `meta`: anything that decides a URL
+-- or a layout. That is code, it lives in `curriculum.js` and the
+-- builders, and section 2b of TRANSITION.md is about exactly this
+-- line.
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS school_stages (
+  school     TEXT NOT NULL,          -- learn, deutsch, quran, english
+  slug       TEXT NOT NULL,          -- stufe-1, dhap-2, term-1, basics-3
+  position   INTEGER NOT NULL,       -- ladder order, as the file has it
+  title      TEXT NOT NULL DEFAULT '',
+  status     TEXT NOT NULL DEFAULT 'live',
+  meta       TEXT NOT NULL DEFAULT '{}',
+  updated_at TEXT NOT NULL,
+  PRIMARY KEY (school, slug)
+);
+
+CREATE TABLE IF NOT EXISTS school_sections (
+  school     TEXT NOT NULL,
+  stage      TEXT NOT NULL,
+  ident      TEXT NOT NULL,          -- the section's own id in the file
+  position   INTEGER NOT NULL,
+  title      TEXT NOT NULL DEFAULT '',
+  meta       TEXT NOT NULL DEFAULT '{}',
+  updated_at TEXT NOT NULL,
+  PRIMARY KEY (school, stage, ident)
+);
+
+-- `body` is the lesson's HTML, the thing content/<stage>.js holds
+-- today. It is written by the same sanitiser an article goes
+-- through when it comes from the Studio, and it is empty for a
+-- lesson that has not been written yet: the builders already draw
+-- a "coming soon" page for those and must keep doing so.
+CREATE TABLE IF NOT EXISTS school_lessons (
+  school     TEXT NOT NULL,
+  stage      TEXT NOT NULL,
+  slug       TEXT NOT NULL,
+  section    TEXT NOT NULL DEFAULT '',
+  position   INTEGER NOT NULL,
+  title      TEXT NOT NULL DEFAULT '',
+  minutes    INTEGER NOT NULL DEFAULT 0,
+  status     TEXT NOT NULL DEFAULT 'live',
+  meta       TEXT NOT NULL DEFAULT '{}',
+  body       TEXT NOT NULL DEFAULT '',
+  updated_at TEXT NOT NULL,
+  PRIMARY KEY (school, stage, slug)
+);
+
+CREATE INDEX IF NOT EXISTS idx_school_lessons_order
+  ON school_lessons (school, stage, position);

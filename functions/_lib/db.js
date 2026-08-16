@@ -81,6 +81,31 @@ const MIGRATIONS = [
   `CREATE INDEX IF NOT EXISTS idx_comments_queue
      ON comments (status, created_at DESC)`,
   `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`,
+  /* The four schools, TRANSITION.md Stage 8. Structure and prose
+     both, because half of a lesson in a database and half in a
+     file is two sources for whether a lesson exists. The `meta`
+     column holds each school's own fields as JSON, and
+     scripts/schools.test.mjs fails if one goes missing: the long
+     version of that reasoning is in aab/schema.sql. */
+  `CREATE TABLE IF NOT EXISTS school_stages (
+     school TEXT NOT NULL, slug TEXT NOT NULL, position INTEGER NOT NULL,
+     title TEXT NOT NULL DEFAULT '', status TEXT NOT NULL DEFAULT 'live',
+     meta TEXT NOT NULL DEFAULT '{}', updated_at TEXT NOT NULL,
+     PRIMARY KEY (school, slug))`,
+  `CREATE TABLE IF NOT EXISTS school_sections (
+     school TEXT NOT NULL, stage TEXT NOT NULL, ident TEXT NOT NULL,
+     position INTEGER NOT NULL, title TEXT NOT NULL DEFAULT '',
+     meta TEXT NOT NULL DEFAULT '{}', updated_at TEXT NOT NULL,
+     PRIMARY KEY (school, stage, ident))`,
+  `CREATE TABLE IF NOT EXISTS school_lessons (
+     school TEXT NOT NULL, stage TEXT NOT NULL, slug TEXT NOT NULL,
+     section TEXT NOT NULL DEFAULT '', position INTEGER NOT NULL,
+     title TEXT NOT NULL DEFAULT '', minutes INTEGER NOT NULL DEFAULT 0,
+     status TEXT NOT NULL DEFAULT 'live', meta TEXT NOT NULL DEFAULT '{}',
+     body TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL,
+     PRIMARY KEY (school, stage, slug))`,
+  `CREATE INDEX IF NOT EXISTS idx_school_lessons_order
+     ON school_lessons (school, stage, position)`,
   `CREATE TABLE IF NOT EXISTS throttle (
      bucket TEXT PRIMARY KEY, count INTEGER NOT NULL DEFAULT 0, resets TEXT NOT NULL)`,
 ];
