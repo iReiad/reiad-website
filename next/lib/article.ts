@@ -20,9 +20,30 @@ import { isSection, type Article } from "@reiad/shared/look";
 /** Anything that is not a plausible slug is not ours to answer. */
 const PLAUSIBLE = /^[a-z0-9-]{1,80}$/i;
 
+/* Every URL on this site ends in `.html`: `pieceUrl()` in
+   content.js builds `/insights/<slug>.html`, and that is what the
+   canonical link says, what the sitemap lists, what every internal
+   link points at and what anybody has ever shared.
+
+   THE BUG THIS ORDER FIXES
+
+   The suffix used to be stripped after the guard rather than
+   before it, so `dse-basics.html` failed `PLAUSIBLE` on the dot,
+   answered 404, and every article published through the Studio
+   would have 404ed at its own address the moment the service
+   binding was added. The extensionless form worked, which is why
+   the first version of the parity test did not catch it: it asked
+   for the one form nothing on this site uses. */
+const bareSlug = (slug: string) => decodeURIComponent(slug).replace(/\.html$/i, "");
+
 export const getArticle = cache(
   async (section: string, slug: string): Promise<Article | null> => {
-    if (!isSection(section) || !PLAUSIBLE.test(slug)) return null;
+    /* Lowercased, because the Worker's own route does
+       (`article[1].toLowerCase()`) and a piece must not answer
+       differently depending on how somebody typed the URL. */
+    const mount = String(section).toLowerCase();
+    const wanted = bareSlug(slug);
+    if (!isSection(mount) || !PLAUSIBLE.test(wanted)) return null;
 
     const { env } = getCloudflareContext();
     const db = (env as { DB?: D1Database }).DB;
@@ -30,7 +51,7 @@ export const getArticle = cache(
 
     const row = await db
       .prepare("SELECT * FROM articles WHERE slug = ? AND status = 'live'")
-      .bind(slug.replace(/\.html$/, ""))
+      .bind(wanted)
       .first<Article>();
 
     if (!row) return null;
@@ -40,7 +61,7 @@ export const getArticle = cache(
        would leave it live at both URLs: two pages of identical text
        competing with each other in search results, and a link
        somebody already shared quietly becoming the wrong one. */
-    if ((row.section || "insights") !== section) return null;
+    if ((row.section || "insights") !== mount) return null;
 
     return row;
   }

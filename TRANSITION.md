@@ -778,11 +778,14 @@ as it exists, and `/desk.html` is untouched.
 ---
 
 ### Stage 10 · Next.js takes one public route
-**Status: finished in the repository, waiting on two dashboard
-steps. 16 August 2026.** The route exists, renders, agrees with
-the Worker on every fact it states, and the allowlist is filled.
-It stays off until the service binding exists, and turns on by
-itself when it does. Size: done, bar the two steps in section 8.
+**Status: finished in the repository, waiting on the service
+binding. 16 August 2026.** The route exists, renders, agrees with
+the Worker on every fact it states, and the allowlist holds
+`/insights/<slug>` and nothing else, as the plan says. It stays
+off until the binding exists and turns on by itself when it does.
+Lighthouse moved, which the "done when" below did not allow for;
+the number and the reasoning are there. Size: done, bar the steps
+in section 8.
 
 - Next.js App Router, deployed to Cloudflare Workers through
   `@opennextjs/cloudflare`, in the same repository, behind the same
@@ -803,6 +806,32 @@ itself when it does. Size: done, bar the two steps in section 8.
 its structured data and its canonical link are byte-identical to
 what the Worker produced, and Lighthouse has not moved.
 **Rollback:** remove the path from the allowlist. One line.
+
+**Three of those four are met. Lighthouse moved.** Measured on 16
+August 2026, both renderers serving the same row from the same
+local database, with Next's scripts actually being served:
+
+| | the Worker | Next |
+| --- | --- | --- |
+| Performance | 74 | **64** |
+| Total blocking time | 44 ms | **182 ms** |
+| Largest contentful paint | 2817 ms | **3671 ms** |
+| Transferred | 218 KB | **356 KB** |
+| of which script | 134 KB | **270 KB** |
+| Accessibility / Best practices / SEO | 96 / 96 / 100 | 96 / 96 / 100 |
+
+That is the accepted 170 KB, priced in the units the acceptance
+criterion was written in: ten Lighthouse points and four times the
+blocking time. It does not reopen the decision, which was taken
+knowing the bundle size. It says what the bundle size buys, and it
+is recorded rather than smoothed over so the next person does not
+have to rediscover it.
+
+One measurement was wrong first, and how it was wrong is worth
+keeping. The first run scored Next at **87**, better than the
+Worker, because it was measuring a page whose six scripts were all
+answering 404: none of them was downloaded, parsed or executed. A
+performance score taken from a broken page flatters it.
 
 ---
 
@@ -894,7 +923,7 @@ What that costs, said plainly rather than waved through:
   grows. Accepted is not unwatched: the number that gets worse
   quietly is the one a dependency drags up six months from now.
 
-#### The one that would have broken on switch-on
+#### The three that would have broken on switch-on
 
 Four articles are still committed HTML rather than rows:
 `dse-basics`, `dsex`, `onions`, `uk-visit-visa`. Today
@@ -908,7 +937,51 @@ four pieces off the site the moment the service binding was added:
 every link, every share, every search result. `fromNext()` in
 `worker.js` treats a 404 from there as exactly what `context.next()`
 means here, and falls back to the file. The parity test holds Next
-to that contract from the other side.
+to that contract from the other side, naming `dse-basics` and
+`dsex` rather than describing the category. `dsex` is the sharper
+case: it carries a 301 to `/learn/terms/dsex` in `_redirects` that
+only fires if Next declines it.
+
+**And every article would have 404ed at its own address.** Every
+URL on this site ends in `.html`: `pieceUrl()` builds
+`/insights/<slug>.html`, and that is the canonical link, the
+sitemap entry, every internal link and everything anybody has
+shared. The slug guard in `next/lib/article.ts` ran before the
+suffix was stripped, and a dot is not in `[a-z0-9-]`, so every one
+of them answered 404. The extensionless form worked, which is the
+only reason the first parity test passed: it asked for the one
+shape this site never produces. The test now asks for the real
+address, the bare one, and a shouty-cased section, because
+`worker.js` forwards all three.
+
+**And Next's own JavaScript would have 404ed.** `.open-next/assets`
+holds the scripts a rendered page asks for under `/_next/static/`,
+and nothing in `aab/` matches that path, so the asset router
+answered every one with `404.html`: six requests per view, 7.5 KB
+of the 404 page each. The article still read, because it is
+server-rendered and complete, so the only symptoms were a console
+full of errors and a React that never hydrated. Neither shows on a
+page of prose. The first interactive route in Stage 11 would have
+been the thing that broke, a long way from the cause.
+
+The obvious fix is to forward `/_next/*` over the service binding
+too, and it does not work on its own: OpenNext's generated worker
+never touches its ASSETS binding, because it assumes Cloudflare's
+asset router runs in front of it, and **a service binding calls a
+Worker's fetch handler and skips everything in front of it**.
+`next/worker-entry.js` wraps the generated worker and answers
+`/_next/static/` from ASSETS itself, so the Worker behaves the same
+whichever way it is reached.
+
+That wrapper is proved by running the same code as a primary
+Worker, where the identical `env.ASSETS.fetch()` returns the file.
+`wrangler dev` does not serve assets for an *auxiliary* worker, so
+the combined local run still answers 500 for those paths, and that
+is a limitation of the dev server rather than of the arrangement.
+It is the one thing in this stage that cannot be proved from here,
+which makes it the first thing to check after switching on: open
+one `/_next/static/chunks/*.js` URL and see JavaScript rather than
+a page.
 
 #### And two things a human has to do
 
@@ -1192,6 +1265,52 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Auditing Stage 10 against its own plan, line by line
+Asked whether every item had really been done, and three had not.
+
+**The allowlist was wider than the plan.** It said "exactly one
+entry: /insights/<slug>" and it held the ARTICLE regex, which is
+all three reading mounts. Every piece in the kitchen and on the
+travel desk is a committed file, so those two mounts were a Worker
+hop in front of pieces the database has never heard of. Narrowed
+to the one the plan names.
+
+**Lighthouse had never been run**, and it is half the acceptance
+criterion. It moved: 74 to 64, blocking time 44 ms to 182 ms. The
+table is under the stage. The first run said 87, better than the
+Worker, because every one of Next's scripts was answering 404 and
+none of them was being parsed. A performance score from a broken
+page flatters it, which is worth remembering the next time a
+number comes back better than expected.
+
+**And the static twin clause was never met.** The plan wanted the
+article route reading entirely from D1 with no file left before it
+moved. Four files remain, and `fromNext()` works around that
+rather than satisfying it. Written down here rather than quietly
+treated as done: Stage 3 owns those files, and its own note says
+they stay a fortnight.
+
+Two more things came out of the audit, and both would have broken
+the site the day the binding was added.
+
+**Every article would have 404ed at its own address.** Every URL
+on this site ends in `.html`, and the slug guard ran before the
+suffix was stripped. The extensionless form worked, which is why
+the parity test passed: it asked for the one shape the site never
+produces. A test that asks for a URL nothing links to is not a
+test of the URL.
+
+**And every one of Next's own scripts would have 404ed.** They
+live under `/_next/static/`, nothing in `aab/` matches, so the
+asset router answered each with the 404 page. Forwarding that
+prefix over the service binding does not fix it, because OpenNext's
+worker never touches its ASSETS binding and a service binding
+skips the asset router in front of a Worker.
+`next/worker-entry.js` wraps the generated worker and serves those
+paths itself.
+
+The parity test is 49 checks now, up from 42.
 
 ### 2026-08-16 · The 170 KB was measured, and taken
 Stage 10's plan forbade client JavaScript on a reading page. The

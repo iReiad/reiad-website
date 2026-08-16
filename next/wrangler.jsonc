@@ -18,7 +18,12 @@
   // ============================================================
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "reiad-next",
-  "main": ".open-next/worker.js",
+  // Not .open-next/worker.js directly: worker-entry.js wraps it so
+  // that /_next/static/ is served from ASSETS by this Worker's own
+  // code. A service binding calls a Worker's fetch handler and
+  // skips the asset router in front of it, and OpenNext's output
+  // assumes that router. The long note is in worker-entry.js.
+  "main": "worker-entry.js",
   "compatibility_date": "2026-08-01",
   // nodejs_compat is required by OpenNext, and global_fetch_strictly_public
   // stops the Worker resolving its own hostname internally, which is how a

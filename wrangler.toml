@@ -65,7 +65,16 @@ not_found_handling = "404-page"
 #                piece published from the Studio is actually
 #                findable. Assets would otherwise win and the merge
 #                would never run.
-run_worker_first = ["/api/*", "/insights/*", "/media/*", "/feed.xml", "/sitemap.xml"]
+#   /_next/*     the Next.js Worker's own JavaScript, once the NEXT
+#                service binding exists. Nothing in aab/ matches, so
+#                with not_found_handling set the asset router would
+#                answer every one of them with 404.html and the
+#                Worker would never be called: an article rendered
+#                by Next asked for six scripts and got six copies of
+#                the 404 page. Listing it costs nothing while the
+#                binding is absent, because worker.js then falls
+#                through to the assets exactly as before.
+run_worker_first = ["/api/*", "/insights/*", "/media/*", "/_next/*", "/feed.xml", "/sitemap.xml"]
 
 # ---------- D1: the database everything dynamic runs on ----------
 # Articles, reader questions, subscribers, enquiries, view counts and
