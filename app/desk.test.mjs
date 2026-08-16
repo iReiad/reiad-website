@@ -259,7 +259,10 @@ const open = async (label) => { await tab(label).click(); await page.waitForTime
 check("the gate let the desk through", await page.locator("#desk-root").isVisible());
 check("all six panels have a tab", await page.locator('[role="tab"]').count() === 6,
   `saw ${await page.locator('[role="tab"]').count()}`);
-check("the Studio is one click away", await page.locator('a[href="/studio.html"]').count() > 0);
+/* `/studio/index.html` since 16 August 2026: the old page is in
+   archive/ and this link is the one that has to keep working. */
+check("the Studio is one click away",
+  await page.locator('a[href="/studio/index.html"]').count() > 0);
 check("the panel is a real tabpanel",
   await page.locator('#desk-panel[role="tabpanel"]').count() === 1);
 check("the selected tab says so",

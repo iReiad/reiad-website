@@ -967,7 +967,8 @@ function initSpeculation() {
         where: {
           and: [
             { href_matches: "/*" },
-            { not: { href_matches: "/studio.html" } },
+            { not: { href_matches: "/studio/*" } },
+            { not: { href_matches: "/desk/*" } },
             /* a.term opens in the modal reader and never navigates,
                so prerendering its target is a whole page built for
                nothing. learn.js prefetches those instead, which is

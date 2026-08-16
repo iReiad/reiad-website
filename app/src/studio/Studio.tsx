@@ -435,11 +435,9 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
           <button className="btn btn-ghost" type="button" id="btn-open"
                   onClick={() => setSheet("open")}>Open…</button>
         </span>
-        {/* Both ways round while there are two of them. The old
-            page is one click away rather than one revert away,
-            which is the difference between a rollback plan and a
-            rollback. */}
-        <a className="btn btn-ghost" href="/studio.html">The old Studio</a>
+        {/* The link to the old Studio is gone with the page:
+            `studio.html` and `studio.js` are in `archive/` as of
+            16 August 2026 and are not deployed. */}
         <span className="bar-group" id="notion-group">
           {hasNotion ? (
             <button className="btn btn-ghost" type="button" id="btn-notion"

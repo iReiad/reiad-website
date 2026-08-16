@@ -124,13 +124,13 @@ export function Desk() {
       </div>
 
       <div className="studio-bar">
-        <a className="btn btn-ghost" href="/studio.html">← The Studio</a>
-        {/* Both ways round while there are two of them. The old
-            page is one click away rather than one revert away,
-            which is the difference between a rollback plan and a
-            rollback. */}
-        <a className="btn btn-ghost" href="/desk.html">The old desk</a>
-        <span className="studio-now">React · Stage 9</span>
+        <a className="btn btn-ghost" href="/studio/index.html">← The Studio</a>
+        {/* There is no link back to the old desk any more, because
+            there is no old desk: `desk.html` and `desk.js` are in
+            `archive/` as of 16 August 2026 and are not deployed.
+            The rollback is a revert now rather than a click, which
+            is the point at which a port stops being a trial. */}
+        <span className="studio-now">React</span>
       </div>
 
       <Overview waiting={waiting} go={(key) => show(key as Key)} />

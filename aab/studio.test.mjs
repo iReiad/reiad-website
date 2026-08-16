@@ -1,7 +1,18 @@
 /* ============================================================
-   studio.test.mjs: the Studio, driven in a real browser.
+   studio.test.mjs: the writing surface, driven in a real browser.
 
      node aab/studio.test.mjs
+
+   It drove `/studio.html` until 16 August 2026, when that page was
+   archived. It now drives `/studio/`, the React Studio, and the
+   reason it survived the archiving rather than going with the page
+   is that these 70 checks were never really about the page: they
+   are about `aab/editor.js`, the contenteditable both Studios
+   import, and that module is very much still here. Pointing them
+   at the surviving Studio keeps the net under the one part of this
+   site that cannot be checked by reading it. Deleting them along
+   with the page it happened to be hosted on would have quietly
+   removed it.
 
    OPTIONAL, like build-og.mjs: it needs Playwright, and nothing
    about building or deploying the site depends on it.
@@ -104,13 +115,17 @@ page.on("pageerror", (e) => pageErrors.push(e.message));
 // The static gate stores this on unlock; setting it skips the lock
 // screen without pretending the gate itself is being tested.
 await page.addInitScript(() => sessionStorage.setItem("studio-unlocked-local", "1"));
-await page.goto(`http://127.0.0.1:${PORT}/studio.html`, { waitUntil: "domcontentloaded" });
+await page.goto(`http://127.0.0.1:${PORT}/studio/index.html`, { waitUntil: "domcontentloaded" });
 await page.waitForTimeout(1200);
 
 const html = () => page.evaluate(() => document.querySelector("#editor").innerHTML);
-/** What the Studio would actually publish, after its own sanitiser. */
+/** What the Studio would actually publish, after its own sanitiser.
+
+    Out of `/editor.js`, which is where `sanitize()` lives now. It
+    used to be imported from `/studio.js`, and that both was and
+    looked like the same thing while there was only one Studio. */
 const published = () => page.evaluate(async () =>
-  (await import("/studio.js")).sanitize(document.querySelector("#editor").innerHTML));
+  (await import("/editor.js")).sanitize(document.querySelector("#editor").innerHTML));
 
 const empty = async () => {
   await page.evaluate(() => { document.querySelector("#editor").innerHTML = ""; });
@@ -283,11 +298,17 @@ await page.click("#btn-open");
 await page.waitForTimeout(400);
 // One draft could be in progress at a time before these were keyed
 // by id; starting a second destroyed the first.
+/* The sheet is a `<dialog class="sheet">` rather than the old
+   page's `#open-body`, and it closes from the bar rather than
+   from an `#open-close` button. Same sheet, same contents, and
+   the selectors are the one thing about these checks that really
+   did belong to the page they were written against. */
 check("both drafts are listed, not just the latest",
-  (await page.locator("#open-body .admin-line").count()) >= 2);
+  (await page.locator("dialog.sheet[open] .admin-line").count()) >= 2);
 check("no database section without a backend",
-  !(await page.locator("#open-body").textContent()).includes("Published through the Studio"));
-await page.click("#open-close");
+  !(await page.locator("dialog.sheet[open] .sheet-body").textContent())
+    .includes("Published through the Studio"));
+await page.locator("dialog.sheet[open] .pane-bar .icon-btn").click();
 
 /* ---------- 6. the preview ----------
    Most readers meet the card on the Insights page, or the box a
@@ -366,13 +387,13 @@ await page.click('[data-view="article"]');
 await page.click("#btn-open");
 await page.waitForTimeout(600);
 {
-  const text = await page.locator("#open-body").textContent();
+  const text = await page.locator("dialog.sheet[open] .sheet-body").textContent();
   check("Open lists the file-based articles", text.includes("Written as files"), text.slice(0, 200));
 }
 /* Drafts offer Open and Delete; only a file-based article offers
    Edit, because without a backend there are no database rows here.
    Matching on a title would find the draft an earlier step left. */
-const fileRow = page.locator("#open-body .admin-line")
+const fileRow = page.locator("dialog.sheet[open] .admin-line")
   .filter({ has: page.getByRole("button", { name: "Edit", exact: true }) }).first();
 const haveFileRow = (await fileRow.count()) > 0;
 check("a file-based article is listed with an Edit button", haveFileRow);
@@ -390,7 +411,7 @@ if (haveFileRow) {
     !/general education, not investment advice/i.test(body));
   check("or the back-to-index links", !body.includes("prev-next"));
 } else {
-  await page.click("#open-close");
+  await page.locator("dialog.sheet[open] .pane-bar .icon-btn").click();
 }
 
 /* ---------- 7b. the file name ----------
@@ -421,7 +442,12 @@ for (const gone of ["#file-tools", "#btn-html", "#btn-zip", "#btn-entry", "#btn-
 }
 check("and so is the page builder behind it",
   await page.evaluate(async () => {
-    const m = await import("/studio.js");
+    /* `buildPage()` was `studio.js`'s own article renderer, the
+       second one, and it drifted from the server's twice. The file
+       that held it is in `archive/` now and is not served at all;
+       what this asserts is that it did not follow the editor into
+       the module both Studios share. */
+    const m = await import("/editor.js");
     return m.buildPage === undefined;
   }));
 
@@ -452,15 +478,24 @@ await page.waitForTimeout(700);
    it degrades honestly rather than rendering an empty page that
    looks broken. */
 
-check("the Studio points at the desk", await page.locator("#btn-desk").count() > 0);
-check("and no longer embeds the dashboard",
-  (await page.locator("#dashboard-section").count()) === 0);
+/* The link to the desk is not checked here any more. It only
+   appears when there is a database, this file runs the Studio
+   without one, and `app/studio.test.mjs` checks it in its dynamic
+   pass: that it is there, that it carries the waiting count, and
+   that it points at `/desk/`. Two files asserting the same thing
+   is how one of them ends up asserting it wrongly. */
 
-await page.goto(`http://127.0.0.1:${PORT}/desk.html`, { waitUntil: "domcontentloaded" });
+await page.goto(`http://127.0.0.1:${PORT}/desk/index.html`, { waitUntil: "domcontentloaded" });
 await page.waitForTimeout(1200);
+/* The React desk renders into `#desk-root`, where the old page
+   rendered into `#desk`. What is being checked is the same thing
+   and it is the only thing worth checking statically here: that a
+   page whose every panel reads the database says so when there is
+   no database, rather than rendering empty and looking broken. */
 check("the desk says so when there's no database",
-  (await page.locator("#desk").textContent()).includes("isn't connected"),
-  await page.locator("#desk").textContent());
+  /database may not be reachable|isn't connected/
+    .test(await page.locator("#desk-root").textContent()),
+  await page.locator("#desk-root").textContent());
 check("the desk keeps itself out of search engines",
   (await page.getAttribute('meta[name="robots"]', "content") ?? "").includes("noindex"));
 

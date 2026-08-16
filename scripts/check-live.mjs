@@ -153,6 +153,28 @@ if (chunks.length) {
     "the asset router answered with 404.html");
 }
 
+/* ---------- 3b. the photo the card points at ----------
+
+   The share card is drawn from the piece's lead photo, uploaded to
+   R2, and pointed at by `og:image`. Every part of that was broken
+   once, silently, for weeks: the upload was blocked by the policy,
+   R2 stayed empty, and the tag pointed at nothing. A tag with a
+   plausible URL in it is exactly what that failure looked like, so
+   the URL is fetched rather than read. */
+{
+  const card = html.match(/og:image[^>]*content="([^"]+)"/)?.[1]
+    ?? html.match(/content="([^"]+)"[^>]*og:image/)?.[1];
+  if (card) {
+    const res = await ask(card.startsWith("http") ? card : `${origin}${card}`);
+    same("the share card is really there", 200, res.status);
+    ok("and it is an image",
+      /^image\//.test(res.headers.get("Content-Type") || ""),
+      res.headers.get("Content-Type") || "none");
+  } else {
+    ok("the page names a share card", false, "no og:image on the page");
+  }
+}
+
 /* ---------- 4. the fallback, which four pieces depend on ---------- */
 
 const stray = await get("/insights/dsex.html");

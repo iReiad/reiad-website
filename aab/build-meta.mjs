@@ -123,8 +123,8 @@ User-agent: *
 Allow: /
 
 # The publishing tool and what it collected are mine, not content.
-Disallow: /studio.html
-Disallow: /desk.html
+Disallow: /studio/
+Disallow: /desk/
 Disallow: /insights/_template.html
 
 Sitemap: ${SITE.origin}/sitemap.xml

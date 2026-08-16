@@ -1,12 +1,12 @@
 {
-  "version": "v65",
+  "version": "v66",
   "hashes": {
     "/": "0210b228b586a0d1",
     "/index.html": "0210b228b586a0d1",
     "/offline.html": "d7ca74c5f33fa1b4",
     "/styles.css": "aadeb17838a74331",
-    "/app.js": "909d7d5c74e29ff7",
-    "/content.js": "cffce5b156c8a65b",
+    "/app.js": "9cd0c3d463d74bb4",
+    "/content.js": "49bc094045834f30",
     "/api.js": "d3fc7e10cc7f18c1",
     "/pieces.js": "eb28830d57246c38",
     "/signin.js": "b76aa930a765f300",
@@ -67,7 +67,7 @@
     "/tools/stock.js": "cb0484c49f953ae2",
     "/tools/stock.model.js": "039a045e95fbd777",
     "/tools/stock.i18n.js": "d04aa0302144fe17",
-    "/insights.html": "5ca234fced83e224",
+    "/insights.html": "1af5e3cacc4a7d7c",
     "/favicon.ico": "296539578a1f25f8"
   }
 }

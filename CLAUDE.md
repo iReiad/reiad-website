@@ -130,6 +130,27 @@ before it left the browser, silently, for weeks: R2 stayed empty, every
 a real publish under the policy read out of `_headers` and fails if that
 regresses. Do not "simplify" it back to a fetch.
 
+## Archiving a page, rather than deleting it
+
+A page that has been replaced goes to `archive/`, not to the bin.
+It leaves `aab/`, which is the whole of what taking it off the
+site means, and it stays readable by whoever has to check that its
+replacement really does what it did.
+
+Two conditions, both literal: **nothing serves it and nothing
+imports it.** So before the move, follow every reference: a
+`PAGES` entry in `content.js`, the prerender rules in `app.js`,
+the `Disallow` block `build-meta.mjs` writes, the `PRIVATE` set in
+`build-og.mjs`, any test that drives the page, and any link in
+`app/src/**`. Add a line to `_redirects` for the old URL. If a
+test was the only thing checking a module the page happened to
+host, repoint the test rather than losing it: `aab/studio.test.mjs`
+is 68 checks of `aab/editor.js` and it survived `studio.html` by
+being pointed at `/studio/`.
+
+`archive/README.md` has the reasoning and the table of what
+replaced what.
+
 ## Before deploying
 
 Run the checks. They are fast and each one exists because something
