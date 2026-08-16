@@ -741,6 +741,55 @@ npx wrangler d1 execute reiad --local  --file=schools.sql   # practise
 npx wrangler d1 execute reiad --remote --file=schools.sql
 ```
 
+#### Step 3 has a fork in it, and it is worth choosing deliberately
+
+"The builders read from the database instead of the files" was
+written as though it were one line in four files. It is not, and
+the reason is worth knowing before anybody starts.
+
+**`curriculum.js` is not a data file. It is a module whose
+helpers close over its own array.** `totalDays()` in the Quran
+school reduces over the module-level `DHAPS`; `stageLessons()`,
+`dhapCount()`, `lessonUrl()` and their equivalents in the other
+three do the same. **Forty files import from one of the four
+curricula**, and not only the builders: `content.js` builds the
+palette from them, `crumbs.js` the breadcrumb trail, `home.js` the
+front page, `build-meta.mjs` the sitemap, `sw.js` the precache
+list, and each school's `hub.js` and `progress.js` its own ladder.
+Handing a builder a different array does not reach any of them.
+
+Three ways through, and they are not equally good:
+
+1. **`curriculum.js` sources its own array.** It keeps every
+   export it has, and where the array comes from becomes its
+   business: rows when a database is reachable, the file when it
+   is not. Every one of the forty consumers is untouched and the
+   fallback is the file that is there today. The cost is that a
+   module which is currently a constant becomes a module that can
+   be asked a question, and the browser-side consumers cannot ask
+   it synchronously.
+2. **Generate `curriculum.js` from the database.** A codegen step,
+   byte-identical by construction, and it makes the whole thing
+   safe and boring. It also gives up the point of the exercise: a
+   lesson still cannot be corrected without a rebuild and a
+   deploy.
+3. **Skip the intermediate and let the Next route read the rows**
+   (Stage 11.7), leaving the builders on the files until the route
+   replaces them. Fewest moving parts overall, and the largest
+   single step, so the thing that goes wrong goes wrong across 251
+   pages at once.
+
+**The recommendation is 1, with 3 following it**, because 1 is the
+only one that delivers what Stage 8 is for and it keeps the file
+as a fallback the whole time. The asynchrony is real and is
+confined to the browser consumers, which read a hub rather than a
+lesson body and can keep reading the file until Stage 11.7 takes
+their pages too.
+
+Whichever is chosen, the test is already written and does not
+change: build the pages both ways and diff them. Byte-identical or
+it did not happen.
+
 Four curricula in JavaScript files, 246 pages generated from them,
 and a builder each. The goal is that a lesson can be corrected
 without a rebuild, and that the Studio can edit one.
