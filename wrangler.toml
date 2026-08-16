@@ -100,8 +100,24 @@ not_found_handling = "404-page"
 #                the 404 page. Listing it costs nothing while the
 #                binding is absent, because worker.js then falls
 #                through to the assets exactly as before.
+#
+# Nothing here may be covered by anything else here. Wrangler refuses
+# a list holding a rule another rule already matches, and it refuses
+# it at parse time, before it looks at the Worker or the assets: the
+# whole deploy stops with "Invalid routes in run_worker_first". That
+# is not a warning about a redundant line, it is the deploy failing,
+# and it is what took this Worker off the air for the whole of Stage
+# 11. Six entries had grown a broader neighbour beside them,
+# /cooking/index.html under /cooking/* and four school patterns under
+# their own suffixless form, so every push from 16 August onwards
+# built nothing while the site carried on serving the last good
+# upload. `check-routes.mjs` now runs the same overlap test the
+# deploy does, so the next one fails on a laptop instead.
 run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/*", "/_next/*",
-  "/feed.xml", "/sitemap.xml", "/insights.html", "/cooking/index.html", "/travel/index.html",
+  "/feed.xml", "/sitemap.xml", "/insights.html",
+  # /cooking/index.html and /travel/index.html are not listed: the two
+  # mount prefixes above already carry them, and naming them as well
+  # is the overlap wrangler rejects.
   "/about.html", "/contact.html", "/account.html", "/skills/index.html",
   "/tools/index.html", "/tools/stock.html", "/portfolio.html", "/portfolio/*", "/",
   "/desk/index.html", "/studio/index.html",
@@ -122,9 +138,10 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   # before.
   "/learn/index.html", "/deutsch/index.html", "/quran/index.html", "/english/index.html",
   "/learn/contents.html",
-  "/learn/*/*.html", "/deutsch/*/*.html", "/quran/*/*.html", "/english/*/*.html",
-  # And the suffixless form of the same address, which nothing links
-  # and the asset router used to answer out of html_handling.
+  # One pattern per school, not two. The suffixless form already
+  # matches the .html one, so listing both is the overlap above: a
+  # star matches a dot as readily as anything else, and /learn/*/*
+  # covers /learn/stage/lesson.html as well as /learn/stage/lesson.
   "/learn/*/*", "/deutsch/*/*", "/quran/*/*", "/english/*/*"]
 
 # ---------- D1: the database everything dynamic runs on ----------
