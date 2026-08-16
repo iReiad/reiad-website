@@ -166,6 +166,7 @@ node aab/check-csp.mjs      # code calling a host the browser is not allowed to 
 node scripts/check-crons.mjs # a scheduled job the Worker is no longer listening for
 node scripts/check-pieces.mjs # a written piece nothing on the site links to
 node scripts/check-headers.mjs # a page a Worker built, served with no CSP
+node scripts/check-schools.mjs # a ladder the browser and the builders disagree about
 ```
 
 `check-pieces.mjs --live` also asks the database and prints where every
@@ -267,13 +268,53 @@ npx wrangler d1 execute reiad --local  --file=restore.sql   # practise
 npx wrangler d1 execute reiad --remote --file=restore.sql
 ```
 
+## Where a lesson's words live
+
+In D1, and in one committed export of it. Not in
+`aab/<school>/content/<stage>.js` any more, whatever those files
+still say.
+
+A lesson is written at `/studio/?lessons`, which saves one row
+through `PUT /api/schools/<school>/<stage>/<lesson>`. Getting that
+onto the site is two steps, and neither happens on its own:
+
+```sh
+npx wrangler d1 export reiad --remote --output schools.db
+node scripts/export-schools.mjs --db schools.db   # content/schools.backup.json
+node aab/quran/build-quran.mjs                    # and the other three
+```
+
+**Why there is a file in the middle at all.** A builder is a
+generator somebody runs on a laptop and it has to work with no
+network and no credentials, so it cannot read D1. The export is
+the same answer `content/articles.backup.json` already is to the
+same question, and it is safe on the same grounds: every byte of
+it is already served at a public URL. It carries no timestamp,
+deliberately, so that identical content is identical bytes and
+the git log answers "did the prose change" rather than "was this
+refreshed".
+
+**The ladder is still `curriculum.js`,** and still read by the
+browser: forty files import from one of the four, and Stage 11.7
+is what replaces them. So two files describe the same four
+schools, and `check-schools.mjs` fails if they stop agreeing about
+which lessons exist, in what order, in which section. Titles and
+prose are not compared: those are the Studio's now.
+
+**Two of the money school's stages are not editable there and
+should not be.** `start` is `inline` (its steps are anchors on
+`/learn/` itself) and `basics-1` has a `base` of `/learn/terms/`.
+`build-lessons.mjs` skips both, so their 26 rows have empty bodies
+for ever and text saved into them would reach no page. The Studio
+says so instead of offering an editor.
+
 Generated pages are generated. Edit the source, never the output:
 
 ```sh
-node aab/learn/build-lessons.mjs     # aab/learn/**   from curriculum + content
-node aab/deutsch/build-deutsch.mjs   # aab/deutsch/** from content/ + data
-node aab/quran/build-quran.mjs       # aab/quran/**   from curriculum + content
-node aab/english/build-english.mjs   # aab/english/** from curriculum + content + workbook
+node aab/learn/build-lessons.mjs     # aab/learn/**   from the schools snapshot
+node aab/deutsch/build-deutsch.mjs   # aab/deutsch/** from the schools snapshot
+node aab/quran/build-quran.mjs       # aab/quran/**   from the schools snapshot
+node aab/english/build-english.mjs   # aab/english/** from the snapshot + workbook
 node aab/build-meta.mjs              # feed.xml, sitemap.xml, robots.txt
 
 cd app && npm run build             # aab/desk/**   from app/src/** (React)
