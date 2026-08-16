@@ -1032,8 +1032,8 @@ Found by auditing the switched-on stage against the live site on
 16 August 2026, rather than against the plan. The order is by what
 a reader would notice first.
 
-**10.1 A test article is live on the public site.** `insights/
-test-react-article`, titled "Test Article", body "It's a test",
+**10.1 A test article is live on the public site.** The row
+`insights/test-react-article`, titled "Test Article", body "It's a test",
 published at 04:40 UTC on 16 August while the React Studio was
 being driven. It is a `live` row, so every list that reads the
 database has it: the sitemap, the feed, the Insights hub, the home
@@ -1061,7 +1061,7 @@ deleted the file or said why it stays.
 
 **10.3 Nothing runs the checks.** The only workflow this
 repository had was the nightly backup. The eight `check-*.mjs`,
-the seven server tests and `next/parity.test.mjs`, 49 checks that
+the eight server tests and `next/parity.test.mjs`, 49 checks that
 exist precisely to catch a Stage 10 regression, are all run by
 hand, and `Merging: do it, do not ask` in `CLAUDE.md` leans its
 whole weight on them having been run. `live-check.yml` is the
@@ -1072,7 +1072,7 @@ push, and the parity test when anything under `next/` or
 
 **10.4 The house checklist did not mention either Stage 10 test.
 Done, 16 August 2026.** `CLAUDE.md`'s **Before deploying** list
-named eight checks and its second list nine tests, and
+named eight checks and its second list eight tests, and
 `next/parity.test.mjs`, the 49 checks that exist to catch exactly
 this stage regressing, was in neither. It has its own block now,
 under the condition that should trigger it: anything under `next/`
