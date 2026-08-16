@@ -191,6 +191,8 @@ node scripts/schools.test.mjs        # a curriculum that lost a field, a lesson
                                      # back in the wrong order (30 checks)
 node scripts/schools-api.test.mjs    # a school readable by anyone, writable by
                                      # somebody else, or half-written (24 checks)
+node scripts/schools-build.test.mjs  # a page built from the database that is not
+                                     # the page the files built (229 pages)
 ```
 
 And when anything under `app/src/` changed, after rebuilding:

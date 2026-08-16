@@ -1,5 +1,5 @@
 {
-  "version": "v66",
+  "version": "v67",
   "hashes": {
     "/": "0210b228b586a0d1",
     "/index.html": "0210b228b586a0d1",
@@ -43,7 +43,7 @@
     "/deutsch/stufe-1/index.html": "a9de2438a96abd20",
     "/deutsch/stufe-1/arbeitsbuch.html": "23557216801c36e1",
     "/deutsch/arbeitsbuch.js": "f58ebe4d061a1571",
-    "/quran/curriculum.js": "dc479925f2976879",
+    "/quran/curriculum.js": "cca1ad7cfb62f799",
     "/quran/index.html": "ff676348c7567bc5",
     "/quran/hub.js": "f4bd0f4ddfd51c2e",
     "/quran/progress.js": "13d860650d698701",

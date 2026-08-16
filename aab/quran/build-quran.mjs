@@ -51,30 +51,47 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const AAB = join(HERE, "..");
 
 const {
-  DHAPS, SCHOOL, dhapLessons, dhapUrl, dhapMinutes, dhapCount, dhapDays,
+  SCHOOL, dhapLessons, dhapUrl, dhapMinutes, dhapCount, dhapDays,
   totalDays, lessonId,
 } = await import(join(HERE, "curriculum.js"));
 const { icon } = await import(join(HERE, "icons.js"));
+
+/* ---------- where the ladder and the text come from ----------
+
+   TRANSITION.md Stage 8, step 3. By default, from `curriculum.js`
+   and `content/<dhap>.js`, which is what every existing
+   invocation does and what the committed pages were built from.
+
+   With `SCHOOL_DB` set, from the rows in that SQLite file
+   instead, which is how the two are run against each other:
+   `scripts/schools-build.test.mjs` builds both ways into two
+   temporary directories and diffs every page. The database is
+   only allowed to become the source of these pages when that diff
+   is empty.
+
+   `SCHOOL_OUT` moves where the pages are written, so that test
+   never touches `aab/`. Neither variable is set in normal use. */
+const { sourceFor } = await import(join(HERE, "../../scripts/school-source.mjs"));
+const source = await sourceFor("quran");
+const DHAPS = source.stages;
+const OUT = process.env.SCHOOL_OUT || AAB;
 
 /* The course promises sixty days on its own first slide, and the
    stage pages add up to whatever the lessons actually cover. If
    those two ever disagree, the promise is the thing that would
    quietly become a lie, so fail here instead. */
-if (totalDays() !== 60) {
+if (totalDays(DHAPS) !== 60) {
   console.error(
-    `\nThe lessons now cover ${totalDays()} days, but this course is sold as sixty.\n` +
+    `\nThe lessons now cover ${totalDays(DHAPS)} days, but this course is sold as sixty.\n` +
     "Either the days are wrong or the promise is. Nothing was written.\n"
   );
   process.exit(1);
 }
 
-/* Lesson bodies, one module per ধাপ. A ধাপ with no file is
-   entirely "coming soon" and that is a valid state. */
-async function bodiesFor(dhap) {
-  const file = join(HERE, "content", `${dhap.slug}.js`);
-  if (!existsSync(file)) return {};
-  return (await import(file)).default ?? {};
-}
+/* Lesson bodies, one set per ধাপ, from whichever source was
+   chosen above. A ধাপ with none is entirely "coming soon" and
+   that is a valid state, not a failure. */
+const bodiesFor = async (dhap) => source.bodies[dhap.slug] ?? {};
 
 const esc = (s) =>
   String(s).replace(/[&<>"]/g, (c) =>
@@ -409,7 +426,7 @@ let pages = 0;
 
 for (const dhap of DHAPS) {
   const lessons = dhapLessons(dhap);
-  const dir = join(AAB, "quran", dhap.slug);
+  const dir = join(OUT, "quran", dhap.slug);
   mkdirSync(dir, { recursive: true });
 
   writeFileSync(join(dir, "index.html"), dhapIndexPage(dhap, lessons));
@@ -426,6 +443,6 @@ for (const dhap of DHAPS) {
 }
 
 console.log(
-  `\n${pages} page(s) written for ${SCHOOL.en}, ${totalDays()} days in all. ` +
+  `\n${pages} page(s) written for ${SCHOOL.en}, ${totalDays(DHAPS)} days in all. ` +
   `Now run: node aab/build-meta.mjs && node aab/check-routes.mjs`
 );

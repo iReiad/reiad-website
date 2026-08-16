@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v67: TRANSITION.md Stage 8. The Quran school's curriculum.js is
+        precached and it changed: allLessons(), totalDays(),
+        findDhap() and findByPath() take the ladder as an argument
+        now, defaulting to this file's own, so a builder can hand
+        them one read from the database. No caller passes one yet
+        and no page reads differently, but a returning reader
+        holding the v66 copy would be holding a module the next
+        one is expected to be able to replace.
+
    v66: the old Studio and the old desk were archived. studio.html,
         studio.js, desk.html and desk.js are in archive/ and are
         not deployed; _redirects sends their two URLs to /studio/
@@ -470,7 +479,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v66";
+const VERSION = "v67";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

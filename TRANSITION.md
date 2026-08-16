@@ -709,9 +709,14 @@ untouched.
 ---
 
 ### Stage 8 · The schools' content into the database
-**Status: the rows exist and the site can read them, 16 August
-2026. The builders still read the files.** Size: weeks. The
-largest thing on this list.
+**Status: steps 1 to 3 done, 16 August 2026. Step 4 is what is
+left.** Size: weeks. The largest thing on this list.
+
+All four builders can read the database, and every one of the 229
+pages they write comes out byte-identical either way: quran 61,
+deutsch 63, english 33, learn 72.
+`scripts/schools-build.test.mjs` is that diff, and it is the whole
+acceptance test for this stage.
 
 The schema is in `aab/schema.sql` and in `functions/_lib/db.js`,
 three tables; `scripts/import-schools.mjs` reads the four
@@ -788,11 +793,39 @@ read it. That is the same arrangement as every other part of this
 transition: the file is the fallback until the route that replaces
 it exists.
 
-**What is left of step 3**, now that the reading side is real: the
-builders take their stages from `/api/schools` rather than from
-the module, and the 251 pages come out byte-identical. That test
-does not change and is the whole acceptance: build both ways,
-diff, byte-identical or it did not happen.
+**Step 3 is done, and the diff is empty.** Every builder takes its
+ladder and its prose from `scripts/school-source.mjs`, which reads
+the files by default and the database when `SCHOOL_DB` names one.
+`scripts/schools-build.test.mjs` imports the four curricula into a
+temporary SQLite database with the real schema, runs each builder
+twice into two temporary directories, and compares every file:
+**229 pages, byte-identical, all four schools.**
+
+Three small things made that possible and are worth knowing:
+
+- **Nearly every helper in a `curriculum.js` was already pure.**
+  `dhapLessons(dhap)` reads what it is handed; so do
+  `stufeTeile`, `termParts` and `stageLessons`. Only
+  `allLessons()`, `totalDays()`, `findDhap()` and `findByPath()`
+  closed over the module's own array, and they take it as an
+  argument now, defaulting to the module's. No existing caller can
+  tell.
+- **A builder gets a D1 interface over `node:sqlite`**, so
+  `shared/schools.js` is the same code in the builder, the Worker
+  and the Next route. A generator has to work with no network and
+  no Worker, and this is how it does.
+- **An unwritten lesson is left out of the bodies map** rather
+  than written in as an empty string. A missing key is what
+  `content/<stage>.js` means by "not written yet" and it is what
+  makes the builders draw an "আসছে" page. An empty string would
+  have produced a page with an empty article in it, and that is
+  exactly the class of difference this diff exists to catch.
+
+**What is left is step 4:** the rows become the source, the files
+are retired to `archive/`, and the Studio grows a lesson editor.
+That waits on the import having actually been run against the live
+database, because the day the files stop being the source is the
+day the rows have to be there.
 
 ---
 
@@ -1497,7 +1530,7 @@ repository is.
 | 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
 | 6 | Progress follows the account | done, 15 Aug 2026 |
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
-| 8 | The schools' content into the database | tables, importer and API done 16 Aug 2026, builders still on the files |
+| 8 | The schools' content into the database | steps 1 to 3 done 16 Aug 2026, 229 pages byte-identical from D1 |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | not started, 281 files to go |
@@ -1756,6 +1789,48 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Step 3 is done: 229 pages, built from the database, identical
+All four builders can read the rows, and every page they write
+comes out byte-identical to the page the files write: quran 61,
+deutsch 63, english 33, learn 72.
+
+**The test is the deliverable.**
+`scripts/schools-build.test.mjs` imports the four curricula into a
+temporary SQLite database with the real schema, runs each builder
+twice into two temporary directories, once from the files and once
+from the database, and compares every file as a string. Nothing
+touches `aab/`, and the run that fails prints the first differing
+line of the first differing page, because "23 pages differ" tells
+you nothing about what to fix.
+
+This is the only kind of check worth having here. A ladder that
+comes back in the wrong order still renders a page. A lesson whose
+`blurb` was dropped still renders a page. A ধাপ whose Arabic title
+went missing renders in Bangla, correctly, with one line gone.
+None of those is an error and all of them are a diff.
+
+**What made it small.** Nearly every helper in a `curriculum.js`
+was already a pure function of what it is handed:
+`dhapLessons(dhap)` reads `dhap.sections`, and `stufeTeile`,
+`termParts` and `stageLessons` do the same. Only four closed over
+the module's own array, and those take it as an argument now with
+the module's as the default, which no existing caller can see.
+
+**And one detail that would have failed the diff on every school.**
+A lesson nobody has written yet is a missing key in
+`content/<stage>.js`, not an empty string, and that is what makes
+a builder draw an "আসছে" page. The row for it has an empty body,
+so the database reader leaves it out of the bodies map rather than
+handing back `""`. The other way round produces a page with an
+empty article in it: a real page, a valid build, and the wrong
+site.
+
+**What is left is step 4**, and it is gated on something outside
+this repository: the files stop being the source and go to
+`archive/` only once the import has actually been run against the
+live database. The tables are there and empty. One command fills
+them.
 
 ### 2026-08-16 · The schools have a database door, and the fork is closed
 Told plainly that a fork written into a plan is not an answer, so

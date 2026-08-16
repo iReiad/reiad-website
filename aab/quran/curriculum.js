@@ -895,8 +895,15 @@ export const dhapLessons = (dhap) =>
     }))
   );
 
-/** Flat list of every lesson in the school. */
-export const allLessons = () => DHAPS.flatMap(dhapLessons);
+/** Flat list of every lesson in the school.
+
+    Takes the ladder as an argument, defaulting to this file's own.
+    Every other helper here is already a pure function of what it
+    is handed, and these three were the only ones that closed over
+    the module's array. TRANSITION.md Stage 8 needs a builder to be
+    able to pass in a ladder read from the database; no existing
+    caller can tell the difference. */
+export const allLessons = (stages = DHAPS) => stages.flatMap(dhapLessons);
 
 /** How many days a ধাপ covers, counted from its lessons rather
     than declared, so a lesson that grows to cover two days moves
@@ -905,7 +912,8 @@ export const dhapDays = (dhap) =>
   dhapLessons(dhap).reduce((n, l) => n + l.days, 0);
 
 /** Every day in the school. The course promises sixty. */
-export const totalDays = () => DHAPS.reduce((n, d) => n + dhapDays(d), 0);
+export const totalDays = (stages = DHAPS) =>
+  stages.reduce((n, d) => n + dhapDays(d), 0);
 
 /** How many lessons a ধাপ has, and how many are written. */
 export const dhapCount = (dhap) => {
@@ -918,8 +926,9 @@ export const dhapMinutes = (dhap) =>
   dhapLessons(dhap).reduce((sum, l) => sum + (l.minutes ?? 0), 0);
 
 /** Find a ধাপ by slug. */
-export const findDhap = (slug) => DHAPS.find((d) => d.slug === slug);
+export const findDhap = (slug, stages = DHAPS) =>
+  stages.find((d) => d.slug === slug);
 
 /** Find a lesson (and its ধাপ) from a URL path. */
-export const findByPath = (path) =>
-  allLessons().find((l) => l.url === path || l.url === `${path}.html`);
+export const findByPath = (path, stages = DHAPS) =>
+  allLessons(stages).find((l) => l.url === path || l.url === `${path}.html`);
