@@ -778,11 +778,11 @@ as it exists, and `/desk.html` is untouched.
 ---
 
 ### Stage 10 · Next.js takes one public route
-**Status: built and proved locally, not switched on. 16 August
-2026.** The route exists, renders, and agrees with the Worker on
-every fact it states; the allowlist that would send readers to it
-is empty, and two things have to happen before it can be filled.
-Size: the rest of it is a day, plus a decision.
+**Status: finished in the repository, waiting on two dashboard
+steps. 16 August 2026.** The route exists, renders, agrees with
+the Worker on every fact it states, and the allowlist is filled.
+It stays off until the service binding exists, and turns on by
+itself when it does. Size: done, bar the two steps in section 8.
 
 - Next.js App Router, deployed to Cloudflare Workers through
   `@opennextjs/cloudflare`, in the same repository, behind the same
@@ -791,9 +791,12 @@ Size: the rest of it is a day, plus a decision.
   allowlist. The allowlist starts with exactly one entry:
   `/insights/<slug>`, the article route, which by then reads
   entirely from D1 and has no static twin left.
-- Server components only, no client JavaScript on a reading page,
-  because that is the current bar and dropping below it is not
-  acceptable.
+- Server components only. ~~No client JavaScript on a reading
+  page, because that is the current bar and dropping below it is
+  not acceptable.~~ **Amended 16 August 2026, after measuring it:
+  see the decision below.** There is no "use client" in the app and
+  there should never be one on a reading page, but the App Router
+  ships its own runtime regardless and that has been accepted.
 - `styles.css` is imported whole. It stays one file.
 
 **Done when:** an article renders through Next.js, its share card,
@@ -849,31 +852,63 @@ which is the only reason it was ever going to be found: nothing
 about the page looks broken unless you know what it should look
 like.
 
-#### The thing that is not settled
+#### The decision, and what it cost
 
-**The App Router ships its own JavaScript to a reading page, and
-there is no supported way to stop it.** Seven chunks, a React
+**The App Router ships its own JavaScript to a reading page and
+there is no supported way to stop it.** Six chunks, a React
 runtime and a router, hydrating a tree with no interactivity in
-it. The bullet above says that is not acceptable and it was
-written before anybody had measured it.
+it. The bullet above forbade that, and it was written before
+anybody had measured it. Measured:
 
-Three ways out, and this is a decision rather than a detail:
+| | raw | gzipped |
+| --- | --- | --- |
+| A reading page before (`app.js`, `content.js`, `read-aloud.js`) | 94 KB | 31 KB |
+| What Next adds | 566 KB | 170 KB |
 
-1. **Accept it.** The page is fully rendered on the server and
-   readable with the JavaScript blocked; the cost is transfer and
-   parse, not correctness. It is still a real regression against a
-   page that today ships only `/app.js`.
-2. **Use the Pages Router for reading pages.** `unstable_runtimeJS:
-   false` is a supported per-page switch there and removes all of
-   it. It means two routers in one app, and the App Router for
-   everything interactive later.
-3. **Do not move the reading pages at all.** They are the pages
-   that gain least from React: no state, no interactivity, one
-   template. Stage 11's list already puts the schools last for
-   this reason, and the article route may belong beside them.
+Three ways out were put up: accept it; use the Pages Router for
+reading pages, where `unstable_runtimeJS: false` removes all of
+it; or leave the reading pages on the Worker, since a page of
+prose gains least from React.
 
-Nothing is switched on until this is answered, which is why
-`NEXT_ROUTES` in `worker.js` is an empty array.
+**Taken, 16 August 2026: accept it.** The site is going to grow a
+lot, and being on Next.js is worth more than the kilobytes. The
+alternative that reached zero was two routers in one app, with the
+public half of the site resting on a flag that has carried an
+`unstable_` prefix for years and a router the framework has
+stopped investing in. That is a worse bet over the life of this
+site than 170 KB.
+
+What that costs, said plainly rather than waved through:
+
+- Every reader downloads and parses about 170 KB that does nothing
+  on an article. On the connection a reader in Dhaka actually has,
+  that is real.
+- It does not block the first paint and it is not a correctness
+  problem: the page is complete HTML before any of it runs, and
+  the parity test checks that the article is readable with none of
+  it executed.
+- The service worker caches it stale-while-revalidate like every
+  other same-origin asset, and Next's chunk names are
+  content-hashed, so a returning reader pays it once.
+- `next/parity.test.mjs` holds it as a budget and fails if it
+  grows. Accepted is not unwatched: the number that gets worse
+  quietly is the one a dependency drags up six months from now.
+
+#### The one that would have broken on switch-on
+
+Four articles are still committed HTML rather than rows:
+`dse-basics`, `dsex`, `onions`, `uk-visit-visa`. Today
+`functions/insights/[slug].js` calls `context.next()` when D1 has
+no row and the asset router serves the file.
+
+The Next.js Worker cannot do that. It is a different Worker with no
+ASSETS binding of its own, so all it can say is 404, and
+forwarding the whole article prefix to it would have taken those
+four pieces off the site the moment the service binding was added:
+every link, every share, every search result. `fromNext()` in
+`worker.js` treats a 404 from there as exactly what `context.next()`
+means here, and falls back to the file. The parity test holds Next
+to that contract from the other side.
 
 #### And two things a human has to do
 
@@ -893,9 +928,10 @@ Nothing is switched on until this is answered, which is why
    ```
 
    Until both are true, `goesToNext()` in `worker.js` is false for
-   every path and the site behaves exactly as it does today. That
-   is deliberate: this stage can be merged without changing what
-   any reader sees.
+   every path and the site behaves exactly as it does today. The
+   allowlist is already filled, so the route turns on by itself the
+   moment the binding lands, and the rollback is deleting the
+   binding or emptying `NEXT_ROUTES`.
 
 ---
 
@@ -935,7 +971,7 @@ should.
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
 | 8 | The schools' content into the database | not started |
 | 9 | React in the Studio and the desk | both done 16 Aug 2026, old pages still up |
-| 10 | Next.js takes the article route | built 16 Aug 2026, not switched on |
+| 10 | Next.js takes the article route | done 16 Aug 2026, waiting on the service binding |
 | 11 | The rest, one route at a time | not started |
 
 ---
@@ -1156,6 +1192,39 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · The 170 KB was measured, and taken
+Stage 10's plan forbade client JavaScript on a reading page. The
+App Router ships 170 KB gzipped of runtime and router to every
+page whatever the tree contains, and there is no switch. Measured
+against the 31 KB the site's own scripts weigh, put up with three
+ways out, and decided: accept it, because the site is going to
+grow a lot and one framework is worth more than the kilobytes. The
+alternative that reached zero rested the public half of the site
+on an `unstable_` flag in a router the framework has stopped
+investing in.
+
+The cost is written down under the stage rather than smoothed
+over, and the parity test holds it as a budget, so the number that
+gets worse quietly is caught rather than discovered.
+
+**And a bug that had not happened yet.** Filling the allowlist
+meant `worker.js` forwarding the whole article prefix to a Worker
+that has no ASSETS binding, so all it can answer for a piece it
+does not have is 404. Four articles on this site are still
+committed HTML: `dse-basics`, `dsex`, `onions`, `uk-visit-visa`.
+They would have gone off the site the moment the service binding
+was added, with every link to them, and nothing in the repository
+would have said so. `fromNext()` treats a 404 from there as what
+`context.next()` means here, and the parity test holds the Next
+route to answering 404 both for an unknown slug and for a piece
+asked for at the wrong mount.
+
+The allowlist is filled now. `env.NEXT` does not exist yet, so
+nothing is forwarded and the site is unchanged; the route turns on
+by itself when the binding lands.
+
+Next: the two dashboard steps in section 8, then Stage 11.
 
 ### 2026-08-16 · Stage 10 is built, and it found two live bugs
 The Next.js route exists, renders an article from D1, and agrees

@@ -33,6 +33,18 @@ export default {
   reactStrictMode: true,
 } satisfies NextConfig;
 
+/* There is no setting here that reduces what a reading page ships.
+
+   The App Router sends its runtime and router to every page,
+   whatever the tree contains, and none of `optimizePackageImports`,
+   `modularizeImports` or anything else touches it: they trim what
+   YOUR code pulls in, and this route's own code is a few kilobytes
+   already. The 170 KB is the framework. The only lever that ever
+   existed is `unstable_runtimeJS: false`, which is Pages Router
+   only. Stage 10 in TRANSITION.md records why that trade was taken
+   the way it was, so the next person to go looking finds the
+   answer instead of the search. */
+
 /* The security headers are NOT set here.
 
    `headers()` in this file is the documented place for them and

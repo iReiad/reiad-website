@@ -1,12 +1,18 @@
 /* ============================================================
    The article itself.
 
-   A server component, and only a server component. The reading
-   page carries no JavaScript of Next's own, which is what
-   TRANSITION.md means by "server components only": the current
-   page ships the site's `/app.js` and nothing else, and a port
-   that added a hydration bundle to a page of prose would be a
-   regression however tidy the code looked.
+   A server component, and only a server component: there is no
+   "use client" anywhere in this app and there should not be one on
+   a reading page.
+
+   That is not the same as shipping no JavaScript, and it is worth
+   being exact about the difference because the plan originally
+   asked for the second thing. The App Router sends its runtime and
+   router to every page whatever the tree contains, about 170 KB
+   gzipped, and there is no supported way to stop it. That cost was
+   measured and accepted; see Stage 10 in TRANSITION.md. What being
+   server-only buys is that none of the cost grows with this file,
+   and that the page is complete before any of it runs.
 
    ---- the body, and why it is set as HTML ----
 
