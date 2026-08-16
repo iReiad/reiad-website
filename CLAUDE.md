@@ -229,7 +229,24 @@ it belongs after the upload and not before it:
 node scripts/check-live.mjs        # the service binding, the second Worker's
                                    # own scripts, and the pieces that fall
                                    # through to a file
+node scripts/check-preview.mjs --preview <branch-preview-url>
+                                   # does the Next Worker's branch preview
+                                   # render what the live site renders
 ```
+
+`check-preview.mjs` is how a Stage 11 route gets verified before
+anything forwards a reader to it. The two Workers deploy
+separately and Cloudflare gives `reiad-next` a branch preview URL
+on every push, with the real database binding, so a route can be
+written, pushed and asked real questions while `NEXT_ROUTES` in
+`worker.js` still sends nobody there. The URL is in the Cloudflare
+bot's comment on the pull request.
+
+It exists because `next/parity.test.mjs` is the better test and
+does not run everywhere: it needs `wrangler dev` on workerd, which
+hangs with no output in some containers. Reach for the parity test
+first; reach for this when that is not available, or to catch a
+deployed regression the local test cannot see.
 
 It runs itself on every push, in `.github/workflows/live-check.yml`,
 because the two things it is really watching are settings on a
