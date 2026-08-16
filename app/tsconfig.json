@@ -26,7 +26,8 @@
       "/api.js": ["./src/types/api.d.ts"],
       "/content.js": ["./src/types/content.d.ts"],
       "/share-card.js": ["./src/types/share-card.d.ts"],
-      "/photo.js": ["./src/types/photo.d.ts"]
+      "/photo.js": ["./src/types/photo.d.ts"],
+      "/editor.js": ["./src/types/editor.d.ts"]
     }
   },
   "include": ["src"]

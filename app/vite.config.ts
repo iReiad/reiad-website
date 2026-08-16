@@ -33,6 +33,17 @@
                                   'self'. Everything ships from
                                   this origin; nothing is fetched
                                   from a CDN, ever.
+
+   ---- two pages, two builds ----
+
+   The desk and the Studio are separate pages that share modules,
+   not one app with two routes, and they build separately because
+   of the first constraint above: one file each, at a stable path,
+   so `sw.js` and the two HTML shells keep naming something real.
+   Rollup will not inline dynamic imports for more than one input
+   at a time, which is the same constraint stated by the bundler.
+
+   `npm run build` runs both. TARGET picks one.
    ============================================================ */
 
 import { defineConfig } from "vite";
@@ -42,12 +53,27 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
+/* Where each page's source lives, and where the site serves it
+   from. Adding a third page is a line here. */
+const TARGETS = {
+  desk: { root: "src", out: "aab/desk", base: "/desk/" },
+  studio: { root: "src/studio", out: "aab/studio", base: "/studio/" },
+} as const;
+
+const which = (process.env.TARGET ?? "desk") as keyof typeof TARGETS;
+const target = TARGETS[which];
+if (!target) throw new Error(`TARGET must be one of ${Object.keys(TARGETS).join(", ")}`);
+
 export default defineConfig({
   plugins: [react()],
-  root: resolve(here, "src"),
-  base: "/desk/",
+  root: resolve(here, target.root),
+  base: target.base,
   build: {
-    outDir: resolve(here, "../aab/desk"),
+    /* Resolved from the workspace root, not from `root`: Vite
+       resolves a relative outDir against the project root, which
+       is `src/studio` for one of these two and would put the
+       Studio's build inside app/. */
+    outDir: resolve(here, "..", target.out),
     emptyOutDir: true,
     /* Minified, after trying it the other way.
 
@@ -64,22 +90,27 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       /* The site's own modules are NOT bundled. `/app.js`,
-         `/api.js`, `/auth.js`, `/content.js`, `/share-card.js` and
-         `/photo.js` are served by this site at those exact paths,
-         are shared with every other page, and are already in the
-         service worker's precache list. Copying them into this
-         bundle would ship two of each and let the two drift.
+         `/api.js`, `/auth.js`, `/content.js`, `/share-card.js`,
+         `/photo.js` and `/editor.js` are served by this site at
+         those exact paths, are shared with every other page, and
+         several are already in the service worker's precache list.
+         Copying them into this bundle would ship two of each and
+         let the two drift.
 
          `/content.js` is the one that would hurt most: it is the
          manifest the menu, the palette, the sitemap and the
          portfolio count all read, and a second copy of it inside
          a committed bundle is a second answer to "what is on this
          site" that nothing would ever check against the first.
+         `/editor.js` is the one that would hurt soonest: the old
+         Studio and this one have to sanitise identically or a
+         piece means different things depending on which page it
+         was written in.
 
          Left external, the built file keeps `import { api } from
          "/api.js"` and the browser resolves it at runtime, which
          is how every other module on this site already works. */
-      external: [/^\/(app|api|auth|content|share-card|photo)\.js$/],
+      external: [/^\/(app|api|auth|content|share-card|photo|editor)\.js$/],
       output: {
         entryFileNames: "app.js",
         assetFileNames: "app.[ext]",

@@ -28,7 +28,19 @@ import {
    published while the data: URL read-back was blocked. The long
    note at the top of photo.js is worth reading before touching
    any of it. */
-import { encodeImage, hostPhotosIn, isHosted, isOffSite } from "/photo.js";
+import { hostPhotosIn, isHosted, isOffSite } from "/photo.js";
+/* The writing surface itself, which the React Studio at /studio/
+   shares. A contenteditable with a sanitiser, a slash menu,
+   markdown rules and a figure toolbar is the last thing on this
+   site that should exist twice; the long note at the top of
+   editor.js says what belongs in it and what does not. */
+import {
+  createEditor, sanitize, escapeHtml, slugify, readingStats, dropUntouchedCaptions,
+} from "/editor.js";
+
+/* Re-exported because it was exported from here first, and both
+   browser tests reach for it at this path. */
+export { sanitize };
 
 /* ============================================================
    Elements
@@ -74,6 +86,22 @@ const current = {
 /* Set by enableDynamic(); everything server-shaped checks it first
    so the Studio still runs as a pure export tool without a backend. */
 let dynamic = false;
+
+/* The writing surface. Everything that touches the caret, the
+   selection or the pasted HTML is in here; this file keeps the
+   fields, the preview, the pre-flight panel and the publish. */
+const ed = createEditor({
+  root: editor,
+  onChange: () => onEdit(),
+  lang: () => fields.lang?.value,
+  toast,
+  pickPhoto: () => $("#photo-input").click(),
+  onSave: () => { saveDraft(); toast("Draft saved on this device."); },
+  onPublish: () => {
+    const publish = $("#btn-publish");
+    if (publish && !publish.hidden && !publish.disabled) publish.click();
+  },
+});
 
 /* ============================================================
    0. WHERE IT IS GOING, AND WHAT IT IS ABOUT
@@ -315,214 +343,6 @@ function wireTopics() {
   });
 }
 
-/* ============================================================
-   1. SANITISER: the pasted-HTML gauntlet
-   ============================================================ */
-
-const KEEP = new Set([
-  "P", "H2", "H3", "UL", "OL", "LI", "BLOCKQUOTE", "STRONG", "EM", "A", "BR",
-  "FIGURE", "FIGCAPTION", "IMG", "HR", "CODE", "TABLE", "THEAD", "TBODY",
-  "TR", "TH", "TD", "SUP", "SUB",
-]);
-
-/* Word/Docs/Notion synonyms → the tag we actually want */
-const RENAME = {
-  H1: "H2", H4: "H3", H5: "H3", H6: "H3",
-  B: "STRONG", I: "EM", U: "EM", MARK: "EM",
-  DIV: "P", SECTION: "P", ARTICLE: "P", SPAN: "P", FONT: "P", PRE: "P",
-};
-
-const ATTRS = {
-  A: ["href", "title"],
-  IMG: ["src", "alt", "width", "height"],
-  TD: ["colspan", "rowspan"],
-  TH: ["colspan", "rowspan"],
-};
-
-/* The class names the stylesheet actually knows about: the same list
-   _lib/sanitise.js enforces server-side.
-
-   Without this the two sanitisers disagreed, and the browser's was
-   the stricter one: a <div class="note"> became a plain paragraph and
-   figure.wide lost its class on the way out of the editor. Which
-   meant the server's support for these was unreachable from the one
-   tool that writes to it, and every callout imported from Notion
-   arrived flattened. */
-const KEEP_CLASSES = new Set([
-  /* photos: how big, what shape, and which part to keep */
-  "wide", "full", "duo", "lead-photo",
-  "frame-wide", "frame-square", "frame-tall", "focus-top", "focus-bottom",
-  /* the blocks a long read is made of */
-  "at-a-glance", "at-a-glance-label", "side-note", "side-note-label",
-  "step-list", "checklist", "figures", "fig",
-  "table-scroll", "term", "note", "ex",
-]);
-
-/* Which tags may carry one of those classes. The server's
-   allowlist says the same thing in its own shape; a class kept
-   here on a tag the server strips it from is a block that looks
-   right in the editor and arrives plain. */
-const CLASS_CARRIERS = new Set(["DIV", "P", "UL", "OL", "FIGURE", "A"]);
-
-const keptClasses = (node) =>
-  CLASS_CARRIERS.has(node.tagName)
-    ? [...(node.classList ?? [])].filter((c) => KEEP_CLASSES.has(c))
-    : [];
-
-/** Turn arbitrary HTML into the small set of tags the site styles. */
-export function sanitize(html) {
-  const doc = new DOMParser().parseFromString(`<body>${html}</body>`, "text/html");
-
-  doc.body.querySelectorAll("script, style, meta, link, iframe, object, embed, form, input, button")
-    .forEach((n) => n.remove());
-
-  const walk = (node) => {
-    [...node.children].forEach(walk);
-
-    let tag = node.tagName;
-    const classes = keptClasses(node);
-
-    // A div is stray markup from whatever produced the paste, unless
-    // it carries one of the site's own class names: then it is a
-    // note box or a worked example and belongs in the article.
-    const structural = tag === "DIV" && classes.length > 0;
-
-    if (!KEEP.has(tag) && !structural && RENAME[tag]) {
-      // An inline wrapper (span/font) around text should just dissolve,
-      // and a DIV that only holds block content shouldn't become a <p>.
-      const hasBlock = [...node.children].some((c) =>
-        /^(P|H2|H3|UL|OL|BLOCKQUOTE|FIGURE|TABLE|HR)$/.test(c.tagName)
-      );
-      if (hasBlock || /^(SPAN|FONT)$/.test(tag)) {
-        node.replaceWith(...node.childNodes);
-        return;
-      }
-      const el = doc.createElement(RENAME[tag]);
-      el.append(...node.childNodes);
-      node.replaceWith(el);
-      node = el;
-      tag = el.tagName;
-    } else if (!KEEP.has(tag) && !structural) {
-      node.replaceWith(...node.childNodes);
-      return;
-    }
-
-    // scrub attributes down to the allowlist
-    const allowed = ATTRS[tag] ?? [];
-    [...node.attributes].forEach((a) => {
-      if (!allowed.includes(a.name.toLowerCase())) node.removeAttribute(a.name);
-    });
-
-    // …then put back the classes the site defines, which the scrub
-    // above has just removed along with everything else.
-    if (classes.length) node.setAttribute("class", classes.join(" "));
-
-    // no javascript: or other exotic URL schemes
-    for (const attr of ["href", "src"]) {
-      const v = node.getAttribute?.(attr);
-      if (!v) continue;
-      const safe = /^(https?:|mailto:|data:image\/|\/|#|\.)/i.test(v.trim());
-      if (!safe) node.removeAttribute(attr);
-    }
-    if (tag === "A") {
-      // an anchor whose href we just dropped is no longer a link
-      if (!node.getAttribute("href")) { node.replaceWith(...node.childNodes); return; }
-      node.setAttribute("rel", "noopener");
-    }
-
-    // drop empties left behind by the stripping above
-    if (!node.textContent.trim() && !node.querySelector("img, hr, br")
-        && /^(P|H2|H3|LI|BLOCKQUOTE|FIGCAPTION)$/.test(tag)) {
-      node.remove();
-    }
-  };
-
-  [...doc.body.children].forEach(walk);
-
-  // bare text at the top level becomes a paragraph
-  [...doc.body.childNodes].forEach((n) => {
-    if (n.nodeType === Node.TEXT_NODE && n.textContent.trim()) {
-      const p = doc.createElement("p");
-      p.textContent = n.textContent.trim();
-      n.replaceWith(p);
-    }
-  });
-
-  // whitespace between blocks is the pasting app's indentation, not content
-  [...doc.body.childNodes].forEach((n) => {
-    if (n.nodeType === Node.TEXT_NODE && !n.textContent.trim()) n.remove();
-  });
-
-  // wide tables need their own scroller on a phone
-  doc.body.querySelectorAll(":scope > table").forEach((t) => {
-    const box = doc.createElement("div");
-    box.className = "table-scroll";
-    t.replaceWith(box);
-    box.append(t);
-  });
-
-  // one block per line, so the exported file reads like hand-written HTML
-  return [...doc.body.children].map((el) => el.outerHTML).join("\n").trim();
-}
-
-/** Plain text → paragraphs, keeping blank-line breaks. */
-function textToHtml(text) {
-  return text
-    .split(/\n{2,}/)
-    .map((block) => block.trim())
-    .filter(Boolean)
-    .map((block) => `<p>${escapeHtml(block).replace(/\n/g, "<br>")}</p>`)
-    .join("\n");
-}
-
-function escapeHtml(s) {
-  return s.replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-}
-
-/* ============================================================
-   2. PHOTOS (resize, re-encode, embed
-   ============================================================ */
-
-
-/** File/Blob → a downscaled WebP blob, stripped of EXIF.
-    The single place that decides what a photo on this site weighs:
-    both the editor and the /media uploader come through here. */
-/** The same thing as a data URL, for the editor's own preview. */
-async function processImage(file) {
-  const { blob, width, height } = await encodeImage(file);
-  return { url: await blobToDataURL(blob), width, height, type: blob.type };
-}
-
-function blobToDataURL(blob) {
-  return new Promise((resolve, reject) => {
-    const fr = new FileReader();
-    fr.onload = () => resolve(fr.result);
-    fr.onerror = reject;
-    fr.readAsDataURL(blob);
-  });
-}
-
-/** Build the <figure> we insert into the editor. */
-function figureHtml({ url, width, height }, alt = "") {
-  return `<figure><img src="${url}" alt="${escapeHtml(alt)}" width="${width}" height="${height}" loading="lazy" decoding="async"><figcaption>Caption: click to edit, or delete this line</figcaption></figure><p><br></p>`;
-}
-
-async function insertImages(files) {
-  const images = [...files].filter((f) => f.type.startsWith("image/"));
-  if (!images.length) return;
-  toast(images.length === 1 ? "Processing photo…" : `Processing ${images.length} photos…`);
-  for (const file of images) {
-    try {
-      const img = await processImage(file);
-      insertHtmlAtCaret(figureHtml(img, file.name.replace(/\.[a-z0-9]+$/i, "")));
-    } catch {
-      toast("That photo couldn't be read, try a JPG or PNG.");
-    }
-  }
-  onEdit();
-}
-
 /* ---------- moving photos out of the article and into /media ----------
 
    A photo can arrive three ways: pasted (a data: URL), imported from
@@ -539,674 +359,41 @@ async function insertImages(files) {
    3. EDITOR
    ============================================================ */
 
-/* execCommand is deprecated but still the only API that inserts at the
-   caret AND keeps the browser's native undo stack intact; its
-   replacement isn't shipping anywhere yet. Range insertion is the
-   fallback for engines that have dropped it. */
-function insertHtmlAtCaret(html) {
-  editor.focus();
-  if (document.queryCommandSupported?.("insertHTML")) {
-    document.execCommand("insertHTML", false, html);
-    return;
-  }
-  const sel = getSelection();
-  const range = sel.rangeCount ? sel.getRangeAt(0) : null;
-  const frag = document.createRange().createContextualFragment(html);
-  if (range && editor.contains(range.commonAncestorContainer)) {
-    range.deleteContents();
-    range.insertNode(frag);
-  } else {
-    editor.append(frag);
-  }
-}
+/* ---------- the writing tools ----------
 
-editor.addEventListener("paste", (e) => {
-  const cd = e.clipboardData;
-  if (!cd) return;
-  e.preventDefault();
-
-  if (cd.files?.length) {           // a screenshot or a photo
-    insertImages(cd.files);
-    return;
-  }
-  const html = cd.getData("text/html");
-  const text = cd.getData("text/plain");
-  insertHtmlAtCaret(html ? sanitize(html) : textToHtml(text));
-  onEdit();
-});
-
-// drag photos straight onto the page
-["dragenter", "dragover"].forEach((ev) =>
-  editor.addEventListener(ev, (e) => {
-    if (!e.dataTransfer?.types.includes("Files")) return;
-    e.preventDefault();
-    editor.classList.add("drop-target");
-  })
-);
-["dragleave", "drop"].forEach((ev) =>
-  editor.addEventListener(ev, () => editor.classList.remove("drop-target"))
-);
-editor.addEventListener("drop", (e) => {
-  if (!e.dataTransfer?.files.length) return;
-  e.preventDefault();
-  insertImages(e.dataTransfer.files);
-});
-
-// caption fields shouldn't inherit the caption text when you type
-editor.addEventListener("focusin", (e) => {
-  const cap = e.target.closest?.("figcaption");
-  if (cap && cap.textContent.startsWith("Caption: click to edit")) {
-    getSelection().selectAllChildren(cap);
-  }
-});
-
-editor.addEventListener("input", onEdit);
-
-/* ---------- formatting toolbar ---------- */
+   The buttons are this page's markup; what they do is the
+   editor's. `data-cmd` is a browser formatting command, `data-block`
+   names one of the blocks a long read is made of, and the list of
+   those lives in editor.js beside the code that inserts them. */
 document.querySelectorAll("[data-cmd]").forEach((btn) => {
   btn.addEventListener("click", () => {
     const { cmd, value } = btn.dataset;
-    editor.focus();
-    if (cmd === "link") {
-      const url = prompt("Link to which URL?", "https://");
-      if (url) document.execCommand("createLink", false, url);
-    } else {
-      document.execCommand(cmd, false, value ?? null);
-    }
-    onEdit();
+    if (cmd === "link") ed.link();
+    else ed.command(cmd, value ?? null);
   });
+});
+
+document.querySelectorAll("[data-block]").forEach((btn) => {
+  const block = ed.byKey(btn.dataset.block);
+  if (!block) return;
+  btn.title = `${block.label}: ${block.hint}`;
+  btn.addEventListener("click", () => { ed.focus(); ed.run(block); });
 });
 
 $("#add-photo").addEventListener("click", () => $("#photo-input").click());
 $("#photo-input").addEventListener("change", (e) => {
-  insertImages(e.target.files);
+  ed.insertImages(e.target.files);
   e.target.value = "";
-});
-
-/* ============================================================
-   3b. BLOCKS AT THE CARET
-
-   The site's article vocabulary is small and specific, a note box,
-   a worked example, a wide figure, a table that scrolls on a phone,
-   and until now the only way to get one was to write the HTML by
-   hand and paste it in. These put the whole set a slash away, and
-   the markdown rules cover the shapes people type out of habit.
-   ============================================================ */
-
-/** The top-level block the caret is in.
-
-    An empty editor has no blocks at all, the first characters typed
-    land in a bare text node parented to the editor itself, so that
-    case returns the editor. Without it the markdown rules did nothing
-    until the article already had a paragraph in it, which is to say
-    they did nothing on the first line of every new piece. */
-function blockOf(node) {
-  let el = node?.nodeType === Node.TEXT_NODE ? node.parentNode : node;
-  if (el === editor) return editor;
-  while (el && el !== editor && el.parentNode !== editor) el = el.parentNode;
-  return el && el !== editor ? el : null;
-}
-
-/** Put the caret after the top-level block it is sitting in.
-
-    A block is a thing beside other things, never a thing inside
-    one. Without this, inserting a checklist while the caret was in
-    the first line of a numbered list nested one list inside the
-    other, and the browser threw the class away merging them: the
-    block simply did not appear. It also means that asking for a
-    note halfway through a paragraph puts the note after the
-    paragraph rather than splitting it in two. */
-const BLOCK_SEL = "p,h2,h3,ul,ol,blockquote,figure,hr,table,"
-  + "div.note,div.ex,div.at-a-glance,div.side-note,div.figures,div.table-scroll";
-
-/** The outermost block the node sits in.
-
-    Not blockOf(): that one answers "which child of the editor",
-    which is a different question and a wrong one here, because a
-    contenteditable quietly wraps things in bare <div>s of its own
-    as you type and the answer becomes "all of it". This walks up
-    to the outermost thing that is actually one of the article's
-    blocks, so the first line of a list inside a glance box gives
-    the glance box, and a stray wrapper gives nothing. */
-function outerBlock(node) {
-  let el = node?.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-  let found = null;
-  while (el && el !== editor) {
-    if (el.matches?.(BLOCK_SEL)) found = el;
-    el = el.parentElement;
-  }
-  return found;
-}
-
-/** Insert a block beside the one the caret is in, and put the
-    caret where the writing goes. `data-fill` marks that spot; it
-    never survives sanitize().
-
-    This builds the nodes and places them itself rather than going
-    through execCommand, which is the one place in this file where
-    that is worth doing. execCommand normalises what it inserts
-    against what is already there, and its idea of normal is not
-    ours: a checklist inserted next to a numbered list had its
-    items folded into that list and its class dropped, so the block
-    silently did not appear. The cost is that this insertion is not
-    on the browser's undo stack; the block is one Backspace from
-    gone either way. */
-function insertBlockHtml(html) {
-  editor.focus();
-  const fragment = document.createRange().createContextualFragment(html);
-  const added = [...fragment.children];
-  const sel = getSelection();
-  const here = sel?.rangeCount ? outerBlock(sel.getRangeAt(0).startContainer) : null;
-
-  if (!here) {
-    editor.append(fragment);
-  } else if (here.tagName === "P" && !here.textContent.trim()) {
-    // An empty paragraph is where the caret waits, not content.
-    here.replaceWith(fragment);
-  } else {
-    here.after(fragment);
-  }
-
-  /* Somewhere to carry on typing, once, rather than a blank line
-     per block for as long as you keep adding them. */
-  const tail = added[added.length - 1];
-  const next = tail?.nextElementSibling;
-  if (tail && !(next?.tagName === "P" && !next.textContent.trim())) {
-    tail.after(Object.assign(document.createElement("p"), { innerHTML: "<br>" }));
-  }
-
-  const target = editor.querySelector("[data-fill]");
-  if (target) {
-    target.removeAttribute("data-fill");
-    getSelection().selectAllChildren(target);
-  }
-  onEdit();
-}
-
-const exec = (cmd, value = null) => document.execCommand(cmd, false, value);
-
-const TABLE_SKELETON =
-  '<div class="table-scroll"><table><thead><tr>'
-  + "<th data-fill>Column</th><th>Column</th><th>Column</th></tr></thead><tbody>"
-  + "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>"
-  + "<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>"
-  + "</tbody></table></div>";
-
-/* The labels inside a block are written in the language the piece
-   is in, because they are copy, not chrome: a Bangla piece with an
-   English "At a glance" over its Bangla facts is a piece with an
-   English word in it. Every one of them is selected on insert, so
-   the first thing you type replaces it. */
-const WORDS = {
-  en: {
-    glance: "At a glance", glanceItem: "The first thing worth knowing.",
-    note: "Worth knowing", noteBody: "The bit people get wrong.",
-    step: "The first step.", check: "The first thing to take.",
-    figure: "What it costs", flag: "Something worth flagging.",
-    example: "A worked example.",
-  },
-  bn: {
-    glance: "এক নজরে", glanceItem: "প্রথম যেটা জানা দরকার।",
-    note: "খেয়াল রাখুন", noteBody: "যেখানে বেশিরভাগ ভুলটা হয়।",
-    step: "প্রথম ধাপ।", check: "প্রথম যেটা সঙ্গে নেবেন।",
-    figure: "কত খরচ", flag: "যেটা মনে রাখা দরকার।",
-    example: "একটা উদাহরণ।",
-  },
-};
-
-/** The words for the language the piece is being written in. */
-const words = () => WORDS[fields.lang?.value === "bn" ? "bn" : "en"];
-
-/* The blocks a long read is made of, as one list.
-   `label` is what the slash menu and the toolbar show, `hint` is
-   the line under it, and `html` is what lands at the caret with
-   `data-fill` marking where the writing starts.
-
-   These exist because the travel piece needed all five and none of
-   them could be made from inside the Studio: they were typed as raw
-   HTML into the file by hand, which is exactly the thing this tool
-   is for not doing. */
-const BLOCKS = [
-  { label: "Heading", hint: "Section heading", run: () => exec("formatBlock", "h2") },
-  { label: "Sub-heading", hint: "Under a heading", run: () => exec("formatBlock", "h3") },
-  { label: "Bullet list", hint: "Unordered", run: () => exec("insertUnorderedList") },
-  { label: "Numbered list", hint: "Ordered", run: () => exec("insertOrderedList") },
-  { label: "Quote", hint: "Pulled out, green rule", run: () => exec("formatBlock", "blockquote") },
-
-  /* ---- the five from the travel piece ---- */
-  { label: "At a glance", hint: "Gold box of quick answers", key: "at-a-glance",
-    html: () => `<div class="at-a-glance"><p class="at-a-glance-label">${words().glance}</p>`
-      + `<ul><li data-fill>${words().glanceItem}</li><li>…</li><li>…</li></ul></div>` },
-  { label: "Key point", hint: "Note at the end of a part", key: "side-note",
-    html: () => `<div class="side-note"><p class="side-note-label">${words().note}</p>`
-      + `<p data-fill>${words().noteBody}</p></div>` },
-  { label: "Steps", hint: "Numbered, in circles", key: "step-list",
-    html: () => `<ol class="step-list"><li data-fill>${words().step}</li><li>…</li><li>…</li></ol>` },
-  { label: "Checklist", hint: "Ticks, order doesn't matter", key: "checklist",
-    html: () => `<ul class="checklist"><li data-fill>${words().check}</li><li>…</li><li>…</li></ul>` },
-  { label: "Key figures", hint: "The two or three numbers", key: "figures",
-    html: () => `<div class="figures">`
-      + `<div class="fig"><strong data-fill>৳0</strong>${words().figure}</div>`
-      + `<div class="fig"><strong>0</strong>…</div>`
-      + `<div class="fig"><strong>0</strong>…</div></div>` },
-
-  { label: "Note", hint: "Gold-edged aside", key: "note",
-    html: () => `<div class="note" data-fill>${words().flag}</div>` },
-  { label: "Example", hint: "Tinted worked example", key: "ex",
-    html: () => `<div class="ex" data-fill>${words().example}</div>` },
-  { label: "Table", hint: "Scrolls on a phone", run: () => insertBlockHtml(TABLE_SKELETON) },
-  { label: "Divider", hint: "Horizontal rule", run: () => insertBlockHtml("<hr>") },
-  { label: "Photo", hint: "Resized and re-encoded", run: () => $("#photo-input").click() },
-];
-
-/** Every block can be run the same way, whether it brought a
-    function or a piece of markup. */
-const runBlock = (block) => (block.run ? block.run() : insertBlockHtml(block.html()));
-
-/** The toolbar's block buttons name a block by its class; this is
-    how markup in studio.html and the list above stay one list. */
-const blockByKey = (key) => BLOCKS.find((b) => b.key === key);
-
-/* ---------- markdown, for the shapes people type anyway ---------- */
-
-const INPUT_RULES = [
-  { re: /^#{1,2}$/, run: () => exec("formatBlock", "h2") },
-  { re: /^#{3,6}$/, run: () => exec("formatBlock", "h3") },
-  { re: /^[-*+]$/, run: () => exec("insertUnorderedList") },
-  { re: /^1[.)]$/, run: () => exec("insertOrderedList") },
-  { re: /^>$/, run: () => exec("formatBlock", "blockquote") },
-  { re: /^---$/, run: () => insertBlockHtml("<hr>") },
-];
-
-editor.addEventListener("input", (e) => {
-  if (e.inputType !== "insertText" || e.data !== " ") return;
-
-  const sel = getSelection();
-  if (!sel.rangeCount) return;
-  const range = sel.getRangeAt(0);
-  const node = range.startContainer;
-  if (node.nodeType !== Node.TEXT_NODE) return;
-
-  // The marker, without the space that just triggered this.
-  const marker = node.textContent.slice(0, range.startOffset - 1);
-  if (!blockOf(node)) return;
-
-  // Only at the very start of a block: "1." mid-sentence is a
-  // sentence, not a list. A <br> in front is the empty paragraph the
-  // browser leaves behind, not content.
-  const prev = node.previousSibling;
-  const atStart = range.startOffset - marker.length - 1 === 0
-    && (!prev || prev.nodeName === "BR");
-  if (!atStart) return;
-
-  const rule = INPUT_RULES.find((r) => r.re.test(marker));
-  if (!rule) return;
-
-  const kill = document.createRange();
-  kill.setStart(node, range.startOffset - marker.length - 1);
-  kill.setEnd(node, range.startOffset);
-  kill.deleteContents();
-
-  /* formatBlock needs a block to replace, and bare text in an empty
-     editor has none: it silently does nothing, which is why "##"
-     worked on the second line and not the first. The list commands
-     build their own container, so they never noticed. */
-  if (node.parentNode === editor) {
-    const p = document.createElement("p");
-    node.replaceWith(p);
-    p.append(node);
-    const caret = document.createRange();
-    caret.setStart(node, 0);
-    caret.collapse(true);
-    const selection = getSelection();
-    selection.removeAllRanges();
-    selection.addRange(caret);
-  }
-
-  rule.run();
-  onEdit();
-});
-
-/* ---------- the slash menu ---------- */
-
-let slash = null;          // { node, offset } where the "/" was typed
-const slashMenu = Object.assign(document.createElement("div"), { className: "slash-menu" });
-slashMenu.hidden = true;
-slashMenu.setAttribute("role", "listbox");
-slashMenu.setAttribute("aria-label", "Insert a block");
-document.body.append(slashMenu);
-
-let slashIndex = 0;
-let slashShown = [];
-
-function closeSlash() {
-  slash = null;
-  slashMenu.hidden = true;
-  slashMenu.replaceChildren();
-}
-
-function drawSlash(query) {
-  slashShown = BLOCKS.filter((b) => b.label.toLowerCase().includes(query.toLowerCase()));
-  if (!slashShown.length) { closeSlash(); return; }
-  slashIndex = Math.min(slashIndex, slashShown.length - 1);
-
-  slashMenu.replaceChildren(...slashShown.map((item, i) => {
-    const row = document.createElement("button");
-    row.type = "button";
-    row.className = "slash-item";
-    row.setAttribute("role", "option");
-    row.setAttribute("aria-selected", String(i === slashIndex));
-    row.append(
-      Object.assign(document.createElement("span"), { textContent: item.label }),
-      Object.assign(document.createElement("span"), { className: "mono", textContent: item.hint })
-    );
-    // mousedown, not click: click would land after the editor has
-    // already lost the selection the block is about to be inserted at.
-    row.addEventListener("mousedown", (e) => { e.preventDefault(); runSlash(i); });
-    return row;
-  }));
-
-  const rect = caretRect();
-  if (rect) {
-    slashMenu.style.left = `${Math.min(rect.left, innerWidth - 280)}px`;
-    slashMenu.style.top = `${rect.bottom + 6}px`;
-  }
-  slashMenu.hidden = false;
-}
-
-function caretRect() {
-  const sel = getSelection();
-  if (!sel.rangeCount) return null;
-  const rect = sel.getRangeAt(0).getBoundingClientRect();
-  // A collapsed caret in an empty block measures 0×0, so fall back to
-  // the block itself.
-  if (rect.width || rect.height || rect.top) return rect;
-  return blockOf(sel.getRangeAt(0).startContainer)?.getBoundingClientRect() ?? null;
-}
-
-/* The toolbar's Blocks row. Same list as the slash menu, for the
-   writer who would rather see the options than remember them. */
-document.querySelectorAll("[data-block]").forEach((btn) => {
-  const block = blockByKey(btn.dataset.block);
-  if (!block) return;
-  btn.title = `${block.label}: ${block.hint}`;
-  btn.addEventListener("click", () => { editor.focus(); runBlock(block); });
-});
-
-function runSlash(index) {
-  const item = slashShown[index];
-  if (!item || !slash) return;
-
-  // Delete the "/" and whatever was typed after it.
-  const sel = getSelection();
-  const caret = sel.rangeCount ? sel.getRangeAt(0) : null;
-  if (caret && caret.startContainer === slash.node) {
-    const kill = document.createRange();
-    kill.setStart(slash.node, slash.offset);
-    kill.setEnd(caret.startContainer, caret.startOffset);
-    kill.deleteContents();
-  }
-  closeSlash();
-  editor.focus();
-  runBlock(item);
-  onEdit();
-}
-
-editor.addEventListener("input", (e) => {
-  if (e.inputType === "insertText" && e.data === "/") {
-    const sel = getSelection();
-    const range = sel.rangeCount ? sel.getRangeAt(0) : null;
-    if (range?.startContainer.nodeType === Node.TEXT_NODE) {
-      const text = range.startContainer.textContent;
-      const before = text[range.startOffset - 2];
-      // Only where a new word starts, so a URL doesn't open the menu.
-      if (before === undefined || /\s/.test(before)) {
-        slash = { node: range.startContainer, offset: range.startOffset - 1 };
-        slashIndex = 0;
-        drawSlash("");
-        return;
-      }
-    }
-  }
-
-  if (!slash) return;
-
-  // Keep the query in step with what's been typed since the slash.
-  const sel = getSelection();
-  const range = sel.rangeCount ? sel.getRangeAt(0) : null;
-  if (!range || range.startContainer !== slash.node || range.startOffset <= slash.offset) {
-    closeSlash();
-    return;
-  }
-  const query = slash.node.textContent.slice(slash.offset + 1, range.startOffset);
-  if (/\s/.test(query)) { closeSlash(); return; }
-  drawSlash(query);
-});
-
-editor.addEventListener("keydown", (e) => {
-  if (!slash || slashMenu.hidden) return;
-  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-    e.preventDefault();
-    slashIndex = (slashIndex + (e.key === "ArrowDown" ? 1 : -1) + slashShown.length) % slashShown.length;
-    drawSlash(slash.node.textContent.slice(slash.offset + 1, getSelection().getRangeAt(0).startOffset));
-  } else if (e.key === "Enter" || e.key === "Tab") {
-    e.preventDefault();
-    runSlash(slashIndex);
-  } else if (e.key === "Escape") {
-    e.preventDefault();
-    closeSlash();
-  }
-});
-
-editor.addEventListener("blur", () => setTimeout(closeSlash, 120));
-
-/* ---------- the figure toolbar ----------
-   Alt text had no way in at all: it was set once from the file name
-   and never editable, which is why pre-flight could warn about it
-   and offer nothing to do about it. */
-
-const figBar = Object.assign(document.createElement("div"), { className: "fig-bar" });
-figBar.hidden = true;
-document.body.append(figBar);
-
-let activeFigure = null;
-
-function hideFigBar() {
-  activeFigure = null;
-  figBar.hidden = true;
-}
-
-/* The three decisions a photo needs, as three sets of classes.
-   Each set is exclusive: picking one clears the others, so a
-   figure can never be both square and 16:9 and the markup never
-   accumulates the history of what you tried. */
-const FIG_SIZES = [
-  ["", "Normal", "As wide as the text"],
-  ["wide", "Wide", "Wider than the text"],
-  ["full", "Full", "Edge to edge"],
-];
-const FIG_FRAMES = [
-  ["", "As shot", "Whatever shape it came in"],
-  ["frame-wide", "16:9", "Cropped wide"],
-  ["frame-square", "Square", "Cropped square"],
-  ["frame-tall", "4:5", "Cropped tall"],
-];
-const FIG_FOCUS = [
-  ["", "Centre", "Keep the middle"],
-  ["focus-top", "Top", "Keep the top"],
-  ["focus-bottom", "Bottom", "Keep the bottom"],
-];
-
-/** Set one class out of a set, or none of them. */
-function setFromSet(figure, set, wanted) {
-  set.forEach(([cls]) => { if (cls) figure.classList.remove(cls); });
-  if (wanted) figure.classList.add(wanted);
-}
-
-const chosenFrom = (figure, set) =>
-  set.find(([cls]) => cls && figure.classList.contains(cls))?.[0] ?? "";
-
-function showFigBar(img) {
-  activeFigure = img;
-  const figure = img.closest("figure");
-
-  const chip = (label, pressed, onClick, title) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "chip";
-    b.textContent = label;
-    if (title) b.title = title;
-    if (pressed !== null) b.setAttribute("aria-pressed", String(pressed));
-    b.addEventListener("mousedown", (e) => { e.preventDefault(); onClick(); });
-    return b;
-  };
-
-  /** One labelled row of mutually exclusive chips. */
-  const group = (name, set) => {
-    if (!figure) return null;
-    const chosen = chosenFrom(figure, set);
-    const row = document.createElement("span");
-    row.className = "fig-group";
-    row.append(
-      Object.assign(document.createElement("span"), { className: "mono", textContent: name }),
-      ...set.map(([cls, label, hint]) =>
-        chip(label, cls === chosen, () => {
-          setFromSet(figure, set, cls);
-          onEdit();
-          showFigBar(img);
-        }, hint))
-    );
-    return row;
-  };
-
-  const lead = !!figure?.classList.contains("lead-photo");
-
-  figBar.replaceChildren(
-    group("Size", FIG_SIZES),
-    group("Shape", FIG_FRAMES),
-    /* Which part to keep. It only does anything once the photo is
-       being cropped, either by a frame here or by the 1200x630
-       share card, so it says so rather than sitting there inert. */
-    group("Keep", FIG_FOCUS),
-    chip(img.getAttribute("alt")?.trim() ? "Alt ✓" : "Alt", null, () => {
-      const alt = prompt("Describe the photo for a screen reader:", img.getAttribute("alt") ?? "");
-      if (alt !== null) { img.setAttribute("alt", alt.trim()); onEdit(); showFigBar(img); }
-    }, "What a screen reader says instead of showing it"),
-    figure ? chip(lead ? "Lead ✓" : "Lead", lead, () => {
-      /* One lead photo per piece: it is the one the share card is
-         made from, and two of them is a question with no answer. */
-      if (!lead) {
-        editor.querySelectorAll("figure.lead-photo")
-          .forEach((f) => f.classList.remove("lead-photo"));
-      }
-      figure.classList.toggle("lead-photo", !lead);
-      onEdit();
-      showFigBar(img);
-    }, "Use this one for the social share card") : null,
-    chip("Remove", null, () => {
-      if (!confirm("Remove this photo?")) return;
-      (figure ?? img).remove();
-      hideFigBar();
-      onEdit();
-    })
-  );
-
-  const rect = img.getBoundingClientRect();
-  /* Above the photo if there is room, below it if the photo starts
-     at the top of the pane. The bar grew from four chips to twelve
-     and can no longer assume it fits in the left half either. */
-  const width = figBar.offsetWidth || 420;
-  figBar.style.left = `${Math.max(8, Math.min(rect.left, innerWidth - width - 8))}px`;
-  figBar.style.top = rect.top > 60
-    ? `${rect.top - 44}px`
-    : `${Math.min(rect.bottom + 8, innerHeight - 52)}px`;
-  figBar.hidden = false;
-}
-
-editor.addEventListener("click", (e) => {
-  const img = e.target.closest?.("img");
-  if (img) showFigBar(img);
-  else hideFigBar();
-});
-addEventListener("scroll", () => { if (activeFigure) showFigBar(activeFigure); }, { passive: true });
-
-/* ---------- keyboard ---------- */
-
-editor.addEventListener("keydown", (e) => {
-  const mod = e.ctrlKey || e.metaKey;
-  if (!mod) return;
-  const key = e.key.toLowerCase();
-
-  if (key === "k") {
-    // The site binds Ctrl+K to search, on window. Inside the editor a
-    // link is the more useful thing, so this stops it bubbling there.
-    e.preventDefault();
-    e.stopPropagation();
-    const url = prompt("Link to which URL?", "https://");
-    if (url) exec("createLink", url);
-    onEdit();
-    return;
-  }
-
-  if (key === "s") {
-    e.preventDefault();
-    saveDraft();
-    toast("Draft saved on this device.");
-    return;
-  }
-
-  if (key === "enter") {
-    e.preventDefault();
-    const publish = $("#btn-publish");
-    if (publish && !publish.hidden && !publish.disabled) publish.click();
-  }
 });
 
 /* ============================================================
    4. BUILDING THE ARTICLE
    ============================================================ */
 
-function slugify(s) {
-  const words = s
-    .toLowerCase()
-    .replace(/['’]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .split("-")
-    .filter(Boolean);
-
-  // stop at ~40 characters, but never mid-word
-  let slug = "";
-  for (const w of words) {
-    if (slug && (slug + "-" + w).length > 40) break;
-    slug = slug ? `${slug}-${w}` : w;
-  }
-  return slug || `article-${new Date().toISOString().slice(0, 10)}`;
-}
-
-function readingStats(html) {
-  const text = new DOMParser()
-    .parseFromString(html, "text/html").body.textContent || "";
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  const photos = (html.match(/<img\b/gi) || []).length;
-  return { words, photos, minutes: Math.max(1, Math.round(words / 200)) };
-}
-
-const CAPTION_HINT = "Caption: click to edit";
-
-/** Captions the writer never touched shouldn't ship. */
-function dropUntouchedCaptions(html) {
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  doc.querySelectorAll("figcaption").forEach((c) => {
-    if (c.textContent.trim().startsWith(CAPTION_HINT)) c.remove();
-  });
-  return doc.body.innerHTML;
-}
-
 function meta() {
   const title = fields.title.value.trim() || "Untitled article";
   const lang = fields.lang.value;
-  const body = dropUntouchedCaptions(sanitize(editor.innerHTML));
+  const body = dropUntouchedCaptions(sanitize(ed.html()));
   const stats = readingStats(body);
   return {
     title,
@@ -1526,7 +713,7 @@ $("#btn-lock").addEventListener("click", () => {
 
 /** Empty the editor and forget what it was tied to. */
 function blankEditor() {
-  editor.replaceChildren();
+  ed.clear();
   Object.values(fields).forEach((el) => {
     if (el.type === "date") el.value = new Date().toISOString().slice(0, 10);
     else if (el.tagName !== "SELECT") el.value = "";
@@ -1563,7 +750,7 @@ $("#btn-clear").addEventListener("click", async () => {
 function guard(m) {
   if (!m.body.trim()) {
     toast("Paste the article text first.");
-    editor.focus();
+    ed.focus();
     return false;
   }
   if (!fields.title.value.trim()) {
@@ -1873,7 +1060,7 @@ async function openFile(entry) {
   current.section = null;
   current.notionPageId = null;
 
-  editor.innerHTML = body;
+  ed.setHtml(body);
   fields.title.value = entry.title ?? "";
   fields.dek.value = entry.dek ?? "";
   fields.slug.value = entry.slug ?? "";
@@ -1902,7 +1089,7 @@ async function openArticle(slug) {
   current.section = findSection(article.section).id;
   current.notionPageId = article.notion_page_id ?? null;
 
-  editor.innerHTML = article.body ?? "";
+  ed.setHtml(article.body ?? "");
   fields.title.value = article.title ?? "";
   fields.dek.value = article.dek ?? "";
   fields.slug.value = article.slug ?? "";
@@ -2034,7 +1221,7 @@ async function importNotion(pageId, { silent = false } = {}) {
   if (!silent) current.draftId = newDraftId();
   current.notionPageId = page.id;
 
-  editor.innerHTML = page.body || "";
+  ed.setHtml(page.body || "");
   if (page.title) fields.title.value = page.title;
   if (page.dek) fields.dek.value = page.dek;
   if (page.tag) setTopics(topicsFromTag(page.tag));
@@ -2119,7 +1306,7 @@ function saveDraft() {
       section: current.section,
       notionPageId: current.notionPageId,
       topics: [...topics],
-      html: editor.innerHTML,
+      html: ed.html(),
       fields: Object.fromEntries(
         Object.entries(fields).map(([k, el]) => [k, el.value])
       ),
@@ -2152,7 +1339,7 @@ function loadDraft(draft) {
   current.section = draft.section ?? null;
   current.notionPageId = draft.notionPageId ?? null;
 
-  editor.innerHTML = draft.html ?? "";
+  ed.setHtml(draft.html ?? "");
   Object.entries(draft.fields ?? {}).forEach(([k, v]) => {
     if (fields[k]) fields[k].value = v ?? "";
   });
@@ -2370,7 +1557,7 @@ async function send(status, button, label) {
       // Write the rewritten body back so the next save doesn't
       // re-upload the same photos, and the draft stops carrying
       // megabytes of base64 around with it.
-      editor.innerHTML = hosted.html;
+      ed.setHtml(hosted.html);
       onEdit();
     }
     if (hosted.failed) {

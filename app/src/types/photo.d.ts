@@ -11,6 +11,10 @@
 
 export function isHosted(src: string): boolean;
 
+/** True for an http(s) URL on somebody else's server. Those are
+    the photos that would rot if the copy to /media failed. */
+export function isOffSite(src: string): boolean;
+
 /** Every photo in `html` uploaded, and the html rewritten to point
     at where they landed. `uploaded` is how many actually moved: a
     zero means nothing reached R2 and the caller should stop. */
@@ -18,4 +22,5 @@ export function hostPhotosIn(
   html: string,
   slug: string,
   upload: (blob: Blob, slug: string) => Promise<{ url?: string } | null>,
-): Promise<{ html: string; uploaded: number }>;
+  onProgress?: (done: number, total: number) => void,
+): Promise<{ html: string; uploaded: number; failed: number }>;

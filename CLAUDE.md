@@ -96,7 +96,7 @@ scrolling table. Each one is plain HTML with a class on it, and that class
 has to be in three places or it does not survive the trip:
 
 1. a rule in `@layer article` in `aab/styles.css`,
-2. `KEEP_CLASSES` in `aab/studio.js`, the browser's sanitiser,
+2. `KEEP_CLASSES` in `aab/editor.js`, the browser's sanitiser,
 3. `ALLOWED_CLASSES` in `functions/_lib/sanitise.js`, the server's.
 
 `check-css.mjs` fails if the two allowlists disagree, if a class is allowed
@@ -170,7 +170,9 @@ And when anything under `app/src/` changed, after rebuilding:
 
 ```sh
 node app/desk.test.mjs             # a panel that renders and is not finished
-                                   # (75 checks, needs Playwright, skips without)
+                                   # (76 checks, needs Playwright, skips without)
+node app/studio.test.mjs           # the React Studio's chrome, end to end
+                                   # (86 checks, needs Playwright, skips without)
 ```
 
 If a precached file changed, bump `VERSION` in `aab/sw.js`, add a line to
@@ -219,11 +221,15 @@ node aab/quran/build-quran.mjs       # aab/quran/**   from curriculum + content
 node aab/english/build-english.mjs   # aab/english/** from curriculum + content + workbook
 node aab/build-meta.mjs              # feed.xml, sitemap.xml, robots.txt
 
-cd app && npm run build             # aab/desk/**  from app/src/** (React)
+cd app && npm run build             # aab/desk/**   from app/src/** (React)
+                                    # aab/studio/** from app/src/studio/**
 ```
 
 `app/` is the React workspace: Vite, React and TypeScript, building to
-`aab/desk/`. **Its output is committed**, for the same reason every
+`aab/desk/` and `aab/studio/`. Two pages, two builds, one file each at a
+stable path, because `sw.js` and the HTML shells name real paths and a
+hashed chunk would fight them. `npm run build` runs both; `TARGET` picks
+one. **Its output is committed**, for the same reason every
 generated page here is: the site deploys by uploading `aab/`, with no
 build step in CI, and adding one would mean a build command in a
 dashboard that cannot be seen from the repository. So the rule is the
@@ -235,14 +241,29 @@ rules. No CSS-in-JS, no Tailwind, no second design system: a port that
 also redesigns the page cannot be judged.
 
 Neither are the site's own modules. `/app.js`, `/api.js`, `/auth.js`,
-`/content.js`, `/share-card.js` and `/photo.js` are left external by
-`vite.config.ts` and imported at runtime, so the desk shares one copy
+`/content.js`, `/share-card.js`, `/photo.js` and `/editor.js` are left
+external by `vite.config.ts` and imported at runtime, so the desk shares one copy
 of each with every other page instead of carrying a second that can
 drift. They are plain JavaScript, so each one is described by a
 declaration in `app/src/types/` that `tsconfig.json` maps the runtime
 path to. Do not answer an untyped import with a `@ts-expect-error`:
 that silences the complaint without describing anything, and it
 silences the next complaint too.
+
+## The writing surface is one module
+
+`aab/editor.js` is the contenteditable: the sanitiser, the block list,
+the markdown input rules, the slash menu, the figure toolbar and the
+caret work under all of it. Both Studios import it, `createEditor({
+root, onChange, lang, toast, pickPhoto })`, and the root element is
+handed in rather than looked up so importing it does not import a page.
+
+**Do not copy any of it into a component.** A `contenteditable` is a
+piece of the DOM the browser and the writer are both editing behind
+React's back; rendering it from state replaces the node the caret is in
+on every keystroke. React owns the chrome around it and nothing inside
+it. Two sanitisers that disagree is the bug the three-place rule above
+already exists for, and a second copy of this file is how you get one.
 
 **A port is finished when it does what the thing it replaced did, not
 when it renders.** Those two look identical from the outside, which is
