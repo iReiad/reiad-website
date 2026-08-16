@@ -2201,7 +2201,8 @@ is still there.
 ---
 
 ### Stage 13 · The last JavaScript
-**Status: started, 16 August 2026. Two modules of eight moved.**
+**Status: started, 16 August 2026. Three modules of eight moved,
+and the fourth found a dependency between stages.**
 Size: continuous, and mostly a by-product. The build-step
 decision it was waiting on is in section 7: the arrangement
 `app/` already has, which means this stage needed no new one.
@@ -2307,7 +2308,7 @@ repository is.
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | **done, 16 Aug 2026**. 6 HTML files left in aab/, from 283: 404, offline and the four practice books |
 | 12 | The backend, typed and in one shape | steps 1, 2 and half of 4 done, 16 Aug 2026: rows described, one place decides a bad request, and the browser cannot name a route that is gone |
-| 13 | The last JavaScript | started 16 Aug 2026: 2 of 8 modules moved, the arrangement proved |
+| 13 | The last JavaScript | started 16 Aug 2026: 3 of 8 moved; auth.js waits for Stage 12 step 4 |
 | 14 | One way of writing a style, and it is Tailwind | the arrangement is in, 16 Aug 2026; nothing converted yet |
 
 ---
@@ -2606,6 +2607,30 @@ is the closest Supabase region to Dhaka.
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
 
+### 2026-08-16 · Stage 13: photo.js, and a dependency between two stages
+
+`aab/src/photo.ts`, third of eight, emitted identical to the file
+it replaces. One line nearly was not: strict mode objects to
+`photoBytes(img.getAttribute("src"))`, the obvious answer is
+`?? ""`, and it would have been the only line in the file the
+compiler added to it. The filter six lines above holds only
+images whose `src` is a non-empty string, so a non-null assertion
+says the same thing and erases.
+
+**`auth.js` is next by size and is blocked.** Typing it means
+typing what `auth.params()`, `auth.setup()` and `auth.login()`
+hand back, and every one of those is `unknown` today for the
+reason at the top of `api.ts`: `api()` cannot know what an
+endpoint answers, and typing it `any` would let every named call
+lie. So the choice is a dozen assertions about reply shapes that
+nothing checks, in the front door of the Studio and the desk, or
+the typed client Stage 12 step 4 is for. The second is right and
+the first is how a gate acquires a quiet hole.
+
+That is a real dependency between two stages that neither had
+written down, and it is written down now. The modules without one
+go first.
+
 ### 2026-08-16 · Stage 14: Tailwind builds, and changes nothing
 
 `aab/src/styles/tailwind.css` in, `aab/tailwind.css` out, built
@@ -2681,7 +2706,23 @@ precached, so `sw.js` went to v79 for a file whose behaviour did
 not change, because a precached file is answered from the cache
 that holds it and only a new VERSION empties that cache.
 
-Six modules left, and `sw.js` is deliberately not one of them.
+**`auth.js` is next by size and is blocked, which was worth
+finding out.** It is 216 lines of gate, and typing it means
+typing what `auth.params()`, `auth.setup()` and `auth.login()`
+hand back: `p.scheme`, `p.salt`, `p.iterations`, `result.reason`.
+Every one of those is `unknown` today, and deliberately so, for
+the reason written at the top of `api.ts`: `api()` cannot know
+what an endpoint answers, and typing it `any` would let every
+named call lie.
+
+So converting `auth.js` means either a dozen assertions about
+reply shapes that nothing checks, in the front door of the Studio
+and the desk, or the typed client that Stage 12 step 4 is for.
+The second is the right one and the first is how a gate acquires
+a quiet hole. **`auth.js` waits for Stage 12 step 4**, and the
+modules with no such dependency go first.
+
+Five modules left, and `sw.js` is deliberately not one of them.
 
 ### 2026-08-16 · The build step for `aab/`, decided
 
