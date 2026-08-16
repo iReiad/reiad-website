@@ -31,6 +31,20 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v77: TRANSITION.md Stage 11.5, finished. The home page and the
+        eight portfolio pages are Next.js routes, so "/" and
+        "/index.html" leave the precache list: they are the shell
+        this list was named after, and a page a Worker builds
+        cannot be precached at install.
+
+        This is the one bump in the stage worth arguing with. A
+        reader who opens the site offline now gets the offline
+        page rather than the home page, where before they got a
+        home page whose live parts were empty. The schools, which
+        are what an offline reader is actually there for, are
+        untouched and still precached in full, and the home page
+        was never the thing being read on a train.
+
    v76: TRANSITION.md Stage 11.4. The tools index and the stock
         check are Next.js routes, so both leave the precache list.
         Their scripts do not: /tools/stock.js, stock.model.js and
@@ -582,7 +596,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v76";
+const VERSION = "v77";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -594,8 +608,6 @@ const RUNTIME = `runtime-${VERSION}`;
    precached: there are seventy of them, and the runtime cache
    picks up the ones a reader actually opens. */
 const PRECACHE = [
-  "/",
-  "/index.html",
   "/offline.html",
   "/styles.css",
   "/app.js",

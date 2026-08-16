@@ -63,6 +63,12 @@
 /tools/                /tools/index.html     301
 /tools/stock           /tools/stock.html     301
 /portfolio             /portfolio.html       301
+# The home page answers at "/", which is what its canonical link
+# has always said and what the asset router used to send
+# /index.html to. Every school page's site-name link still says
+# /index.html, so this is the rule that keeps them one hop away
+# rather than broken.
+/index.html            /                     301
 /contact               /contact.html         301
 /insights              /insights.html        301
 /cooking               /cooking/index.html   301

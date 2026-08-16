@@ -514,6 +514,8 @@ for (const [path, title, nav] of [
   ["/skills/index.html", "দক্ষতা · Skills · Reiad's Library", "/skills/index.html"],
   ["/tools/index.html", "Tools & calculators · Reiad's Library", "/tools/index.html"],
   ["/tools/stock.html", "Stock check · buy, hold or sell · Reiad's Library", "/tools/index.html"],
+  /* The home page marks nothing: it is not in the nav. */
+  ["/", "Reiad's Library · Finance & Bangladesh Markets", null],
   ["/portfolio.html", "Portfolio & Services · Reiad's Library", "/portfolio.html"],
   ["/portfolio/dcf.html",
     "DCF with sensitivity tables · DSE-listed manufacturer · Reiad's Library",
@@ -527,10 +529,15 @@ for (const [path, title, nav] of [
   says(`${path} states its own title`, title, tagText(page.html, "title"));
   says(`${path} states its own canonical link`, `https://reiad.co.uk${path}`,
     attr(page.html, /<link rel="canonical" href="([^"]+)"/));
-  ok(`${path} marks ${nav} in the header`,
-    new RegExp(`<a href="${nav}"[^>]*aria-current="page"`).test(page.html)
-    || new RegExp(`aria-current="page"[^>]*href="${nav}"`).test(page.html),
-    `nothing in the nav carries aria-current="page" for ${nav}`);
+  if (nav) {
+    ok(`${path} marks ${nav} in the header`,
+      new RegExp(`<a href="${nav}"[^>]*aria-current="page"`).test(page.html)
+      || new RegExp(`aria-current="page"[^>]*href="${nav}"`).test(page.html),
+      `nothing in the nav carries aria-current="page" for ${nav}`);
+  } else {
+    ok(`${path} marks nothing in the nav, because it is not in it`,
+      !/<nav[\s\S]*?aria-current="page"[\s\S]*?<\/nav>/.test(page.html));
+  }
 }
 
 /* Every case study is reachable from the portfolio index, and the

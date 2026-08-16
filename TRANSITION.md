@@ -1340,10 +1340,9 @@ has been looked at once, after a week of real traffic.
 ---
 
 ### Stage 11 · Every remaining route, until no page is a file
-**Status: 11.1, 11.2, 11.3, 11.4 and 11.8 done, 11.5 all but the
-home page, 16 August 2026. 256 files left, and 251 of them are
-the schools. The home page is the last hand-written page.** Size:
-months, at whatever pace suits.
+**Status: everything but 11.6 and 11.7 done, 16 August 2026. 255
+files left, 251 of them the schools. No hand-written page of this
+site is a file.** Size: months, at whatever pace suits.
 
 Stage 10 moved one route and proved the machinery: an allowlist in
 `worker.js`, a service binding, a fallback for anything the second
@@ -1541,11 +1540,23 @@ rewrite is written down here rather than in a comment nobody
 reads, and it needs `shared/` to grow a `tools/` directory
 before it can start.
 
-**11.5 The remaining hand-written pages. 16 August 2026:
-`/about`, `/contact`, `/skills` and `/account` are routes, and
-`/colophon` is gone.** The home page is what is left, and it is
-the hardest of the six: four schools' progress, a rotation, a
-resume card and the news. *Deletes* 6 files, 5 of them done. *Needs* the home page's rotation and the
+**11.5 The remaining hand-written pages. Done, 16 August 2026.**
+`/about`, `/contact`, `/skills`, `/account` and the home page are
+routes; `/colophon` is gone. *Deleted* 6 files.
+
+**The home page answers at `/`.** That is what its canonical link
+has always said and what the asset router used to send
+`/index.html` to; `_redirects` does that job now, and the 251
+generated school pages still say `/index.html` in their site-name
+link and take the hop until Stage 11.7 rewrites them. The shell's
+own link says `/`.
+
+**Everything on it still runs in the browser, and should.** The
+rotation, the resume card, the four schools' progress and the
+news are facts about the person reading rather than about the
+site: what somebody has finished is in their own browser, and a
+home page server-rendered with their progress in it is a page
+this site would cache wrong. *Needs* the home page's rotation and the
 palette to keep reading `content.js`, which is structure only as
 of Stage 11.2.
 
@@ -1783,7 +1794,7 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | all but 11.6 and 11.7 done, 16 Aug 2026, 256 files to go, 251 of them the schools |
+| 11 | Every remaining route, until no page is a file | all but 11.6 and 11.7 done, 16 Aug 2026, 255 files to go, 251 of them the schools |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
 

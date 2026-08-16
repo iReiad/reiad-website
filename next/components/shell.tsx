@@ -82,7 +82,11 @@ export function SiteHeader({ current }: { current: Current }) {
   return (
     <header>
       <div className="wrap header-inner">
-        <a className="site-name" href="/index.html">
+        {/* "/" rather than "/index.html" as of Stage 11.5: the home
+            page answers there, and the old spelling is a 301. The
+            schools' 251 generated pages still say the old one and
+            take that hop until Stage 11.7 rewrites them. */}
+        <a className="site-name" href="/">
           <svg className="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
             <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor" />
             <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor" />

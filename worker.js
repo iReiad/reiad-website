@@ -165,6 +165,10 @@ export const NEXT_ROUTES = [
   /^\/tools\/(index|stock)\.html$/i,
   /^\/portfolio\.html$/i,
   /^\/portfolio\/[a-z-]+\.html$/i,
+  /* The home page, at the address its canonical link has always
+     named. `/index.html` is not here: it 301s to this one, which
+     is what the asset router did for it before. */
+  /^\/$/,
   /^\/_next\//,
 ];
 

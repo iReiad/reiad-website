@@ -463,7 +463,11 @@ export const READS = SECTIONS.filter((s) => s.id !== "insights");
    two of the four it had left out.
    ============================================================ */
 export const PAGES = [
-  { title: "Home", url: "/index.html",
+  /* "/" rather than "/index.html" as of Stage 11.5. That is what
+     the canonical link has always said, and it is now the address
+     that answers: the file it used to name is a Next.js route and
+     `_redirects` sends the old spelling here. */
+  { title: "Home", url: "/",
     hint: "Page", blurb: "The short version of everything here." },
   { title: "Learn hub: শেখার লাইব্রেরি", url: "/learn/index.html",
     hint: "Page", blurb: "Start-to-research investing course in plain Bangla, eight stages deep." },

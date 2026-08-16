@@ -45,6 +45,7 @@ what anybody is served.
 | `skills-index.html`, `account.html` | Next.js routes at the same addresses | 16 August 2026 |
 | `tools-index.html`, `tools-stock.html` | Next.js routes at the same addresses | 16 August 2026 |
 | `portfolio.html`, `portfolio/*.html` | Next.js routes at the same addresses | 16 August 2026 |
+| `index.html` | a Next.js route at `/`, which its canonical link always named | 16 August 2026 |
 
 `work.html` and `services.html` were early placeholders that still
 carried template text ("[Your Name]", "hello@yourdomain.com"), kept
