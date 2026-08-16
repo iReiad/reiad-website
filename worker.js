@@ -105,8 +105,48 @@ const ARTICLE = /^\/(insights|cooking|travel)\/([a-z0-9-]+)(?:\.html)?$/i;
    file can be deployed before the second Worker exists and change
    nothing at all: `env.NEXT` is undefined, every path is answered
    exactly as it is today, and the route turns on by itself the
-   moment the binding is added. */
-const NEXT_ROUTES = [ARTICLE];
+   moment the binding is added.
+
+   ---- why one section and not all three ----
+
+   The plan says "exactly one entry: /insights/<slug>", and it is
+   worth taking literally rather than generously. The first version
+   of this line forwarded the ARTICLE regex, which is all three
+   reading mounts, on the grounds that the Next route handles them
+   identically and the parity test proves it. That is true and it
+   is still the wrong first move: every piece in the kitchen and on
+   the travel desk is a committed file today, so forwarding those
+   two mounts would put a Worker hop in front of pieces the
+   database has never heard of, for no gain and with a new way to
+   fail.
+
+   Stage 11 adds the other two, when there is a reason to.
+
+   ---- and /_next/, which is not a page ----
+
+   The second entry is not a route anybody visits. It is where the
+   Next.js Worker keeps its own JavaScript, and it has to be
+   forwarded or the pages that ask for it get this site's 404 page
+   back instead.
+
+   That is not hypothetical: with only the article route forwarded,
+   an article rendered by Next asked for six scripts under
+   /_next/static/ and received six copies of aab/404.html, 404 and
+   `text/html`, about 45 KB of waste per page view. The article
+   still read, because it is server-rendered and the HTML is
+   complete, which is exactly why nobody would have noticed: the
+   only symptom is a console full of errors and a React that never
+   hydrates, and neither of those shows on a page of prose. The
+   first interactive route added in Stage 11 would have been the
+   thing that broke, a long way from the cause.
+
+   `run_worker_first` in wrangler.toml has the matching entry.
+   Without it the asset router answers first and this is never
+   reached. */
+const NEXT_ROUTES = [
+  /^\/insights\/([a-z0-9-]+)(?:\.html)?$/i,
+  /^\/_next\//,
+];
 
 /** Is this a path the Next.js Worker owns, and is it reachable? */
 const goesToNext = (path, env) =>

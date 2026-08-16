@@ -51,7 +51,13 @@ if (!existsSync(join(here, ".open-next/worker.js"))) {
 /* ---------- the article both renderers are given ---------- */
 
 const ARTICLE = {
-  slug: "dse-basics",
+  /* Not the slug of anything real. `dse-basics` was the obvious
+     choice and is wrong: it is one of the pieces still committed
+     as a file, so seeding it into D1 made the check below that
+     those pieces fall through to the asset router pass for the
+     wrong reason. A fixture that collides with real data tests
+     the fixture. */
+  slug: "rate-cycle",
   section: "insights",
   lang: "en",
   title: 'How the "DSEX" actually works & why it matters',
@@ -62,7 +68,7 @@ const ARTICLE = {
     + '<figure class="lead-photo"><img src="/media/dse/9f2a1c.webp" alt="The board" '
     + 'width="1600" height="900" loading="lazy" decoding="async"></figure>\n'
     + '<div class="note">Worth knowing: the cap is applied after the float.</div>',
-  cover: "/media/dse-basics-card/9f2a1c.jpg",
+  cover: "/media/rate-cycle-card/9f2a1c.jpg",
   minutes: 9,
   status: "live",
   published_at: "2026-07-01",
@@ -132,7 +138,14 @@ const ORIGIN = "https://reiad.co.uk";
 const { render } = await import("../functions/insights/[slug].js");
 const { SECURITY_HEADERS } = await import("../shared/headers.js");
 
-const res = await fetch(`http://127.0.0.1:${PORT}/insights/${ARTICLE.slug}`);
+/* Asked for at the address the piece actually has.
+
+   `pieceUrl()` in content.js builds `/insights/<slug>.html`, and
+   that is the canonical link, the sitemap entry, every internal
+   link and everything anybody has shared. The first version of
+   this test asked for the extensionless form, which nothing on
+   this site uses, and passed while every real URL answered 404. */
+const res = await fetch(`http://127.0.0.1:${PORT}/insights/${ARTICLE.slug}.html`);
 const fromNext = await res.text();
 const fromWorker = render(ARTICLE, ORIGIN);
 
@@ -178,7 +191,25 @@ const meta = (html, key, attr = "property") => {
 const tagText = (html, tag) => html.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "i"))?.[1] ?? null;
 const attr = (html, re) => html.match(re)?.[1] ?? null;
 
-ok("the route answered 200", res.status === 200, `status ${res.status}`);
+ok("the route answers at the address the piece actually has",
+  res.status === 200, `status ${res.status} for /insights/${ARTICLE.slug}.html`);
+
+/* Every shape worker.js will forward, because the allowlist regex
+   makes the suffix optional and is case-insensitive. */
+{
+  const bare = await fetch(`http://127.0.0.1:${PORT}/insights/${ARTICLE.slug}`);
+  ok("and without the suffix too", bare.status === 200, `status ${bare.status}`);
+  const bareHtml = await bare.text();
+  check("with the same canonical link either way",
+    attr(fromNext, /<link rel="canonical" href="([^"]+)"/),
+    attr(bareHtml, /<link rel="canonical" href="([^"]+)"/));
+
+  /* And the section however it was typed, because the Worker's own
+     route lowercases it before deciding. */
+  const shouty = await fetch(`http://127.0.0.1:${PORT}/Insights/${ARTICLE.slug}.html`);
+  ok("and whatever case the section was typed in",
+    shouty.status === 200, `status ${shouty.status}`);
+}
 
 /* ---- the three the plan names ---- */
 
@@ -291,9 +322,19 @@ const CHUNK_BUDGET = 8;
    answers something else for a piece it does not have, those four
    go off the site the day the service binding is added. */
 {
-  const missing = await fetch(`http://127.0.0.1:${PORT}/insights/not-a-piece-here`);
+  const missing = await fetch(`http://127.0.0.1:${PORT}/insights/not-a-piece-here.html`);
   ok("a slug with no row answers 404, so the file can still win",
     missing.status === 404, `status ${missing.status}`);
+
+  /* The pieces that are still committed files go through this path
+     on every request once the binding lands. Named, because these
+     are the ones a mistake here takes off the site, and a name in
+     a test is harder to lose than a category. */
+  for (const stillAFile of ["dse-basics", "dsex"]) {
+    const answer = await fetch(`http://127.0.0.1:${PORT}/insights/${stillAFile}.html`);
+    ok(`${stillAFile} is handed back for the asset router to serve`,
+      answer.status === 404, `status ${answer.status}`);
+  }
 
   /* And a piece answering at the wrong mount is the same case:
      moving one from Insights to the kitchen must not leave it live
