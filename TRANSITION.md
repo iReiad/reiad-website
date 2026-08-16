@@ -12,10 +12,13 @@ now" should not be a search. One item, replaced when it lands.
 > books, which are the same for every reader and are in no
 > database. It held 283 in the morning.
 >
-> Stage 13 is the surviving modules to TypeScript and needs the
-> decision below about a build step for `aab/`. Then Stage 14
-> (Tailwind), which was waiting for exactly this. Stage 12 (the
-> backend) runs alongside either.
+> Stage 13 is the surviving modules to TypeScript. The build-step
+> decision it was waiting on is taken (section 7, 16 August 2026):
+> the arrangement `app/` already has, source in `src/`, output
+> committed at the path it is served from, and a check comparing
+> the two. Then Stage 14 (Tailwind), which was waiting for the
+> same answer. Stage 12 (the backend) runs alongside either, and
+> its steps 1, 2 and half of 4 are done.
 >
 > Not next, and deliberately: the calculators and the case-study
 > models. Left where they are, at their own request.
@@ -2151,8 +2154,10 @@ is still there.
 ---
 
 ### Stage 13 · The last JavaScript
-**Status: not started.** Size: continuous, and mostly a
-by-product.
+**Status: unblocked, 16 August 2026, not started.** Size:
+continuous, and mostly a by-product. The build-step decision it
+was waiting on is in section 7: the arrangement `app/` already
+has, which means this stage needs no new one.
 
 The language mix is the honest measure of how far this has got.
 On 16 August 2026 GitHub reads this repository as 61% HTML, 33%
@@ -2215,7 +2220,7 @@ repository is.
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | **done, 16 Aug 2026**. 6 HTML files left in aab/, from 283: 404, offline and the four practice books |
 | 12 | The backend, typed and in one shape | steps 1, 2 and half of 4 done, 16 Aug 2026: rows described, one place decides a bad request, and the browser cannot name a route that is gone |
-| 13 | The last JavaScript | not started |
+| 13 | The last JavaScript | unblocked 16 Aug 2026: the build step is decided, not started |
 | 14 | One way of writing a style, and it is Tailwind | decided 16 Aug 2026, unblocked by 11.7 the same day |
 
 ---
@@ -2382,6 +2387,51 @@ change.
 private, has no SEO surface, and is the code that would benefit
 most. A reading page is the opposite on all three counts.
 
+**A build step for `aab/`, and it is the one `app/` already has.
+Decided 16 August 2026.** Stage 13 needs an answer to "how does a
+TypeScript module get served at `/content.js`" and Stage 14 needs
+the same answer for CSS, and the answer is not a new arrangement:
+it is the arrangement that has been in this repository since
+Stage 9, applied to more files.
+
+`app/` is Vite, React and TypeScript, and **its output is
+committed**. That is not laziness. The site deploys by uploading
+`aab/`; there is no build step in CI, and adding one would mean a
+build command in a dashboard that cannot be seen from the
+repository, which is the failure mode this whole document is
+written against. So the rule is: edit the source, run the build,
+commit both, and a check compares the two.
+
+What that means concretely for the surviving browser modules:
+
+- **Source moves to `src/`**, output stays at the exact path it is
+  served from. `/content.js` is imported by name in HTML this
+  site does not fully control any more (the schools' pages are
+  routes now, but `app.js` is loaded by every one of them), so
+  the path is fixed and a hashed chunk would fight it. That is
+  the same constraint `vite.config.ts` already answers for the
+  desk and the Studio.
+- **The site's own modules stay external.** `/app.js`,
+  `/api.js`, `/content.js` and the rest are imported at runtime
+  by both React apps precisely so there is one copy. That does
+  not change; they get types, not a bundler.
+- **`sw.js` does not convert**, and the reason in Stage 13 stands
+  and is now the only remaining exception rather than a
+  placeholder: it is served at a fixed path as a service worker
+  and is not built by anything.
+- **A check compares source and output**, exactly as
+  `check-schools-built.mjs` did for the schools until there were
+  no pages left, and as `check-next.mjs` does for the copies
+  inside `next/`. A committed artefact nobody checks is the
+  failure this repository has written up more times than any
+  other.
+
+**What was turned down.** Building in CI, because the build
+command would live in a dashboard. Serving TypeScript directly,
+because no browser does. And a bundler for the site's own modules,
+because bundling them is what would create the second copy the
+externals were arranged to avoid.
+
 **Not Tailwind, not CSS-in-JS, not a component library.**
 `styles.css` is one file with an explicit layer order and a check
 that guards it. Introducing a second styling system alongside it
@@ -2468,6 +2518,26 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · The build step for `aab/`, decided
+
+Stage 13 has been waiting on one question since it was written:
+how does a TypeScript module get served at `/content.js` on a site
+that deploys by uploading a directory? Stage 14 waits on the same
+question for CSS.
+
+The answer is not a new arrangement. It is the one `app/` has had
+since Stage 9: source in `src/`, build on a laptop, **output
+committed**, at the exact path it is served from, with a check
+comparing the two. Written up in section 7 with what was turned
+down: building in CI, because the build command would then live in
+a dashboard that cannot be seen from this repository, which is the
+failure mode this whole document is written against.
+
+Nothing was built today. A decision that unblocks two stages and
+costs no code is worth taking on its own, and taking it while the
+reasons are fresh is better than taking it in six months from the
+same evidence.
 
 ### 2026-08-16 · Stage 12 step 4, the half of it that is a check
 
