@@ -167,6 +167,9 @@ node scripts/check-crons.mjs # a scheduled job the Worker is no longer listening
 node scripts/check-pieces.mjs # a written piece nothing on the site links to
 node scripts/check-headers.mjs # a page a Worker built, served with no CSP
 node scripts/check-schools.mjs # a ladder the browser and the builders disagree about
+node scripts/check-rows.mjs # a description of the database that has stopped
+                            # being true, or a handler keeping its own copy
+                            # of a vocabulary
 node scripts/build-school-icons.mjs --check   # a school drawing next/ copied
 node scripts/build-school-hubs.mjs --check    # a school page next/ copied
 node scripts/check-next.mjs # a copy inside next/ that has drifted from the

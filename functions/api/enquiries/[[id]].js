@@ -15,8 +15,10 @@
 import { all, db, one, run } from "../../_lib/db.js";
 import { body, fail, isEmail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.js";
 import { requireAdmin, throttle } from "../../_lib/auth.js";
+import { ENQUIRY_KIND, ENQUIRY_STATUS, allowed } from "../../../shared/rows.js";
 
-const KINDS = ["hiring", "project", "reader", "general"];
+/* TRANSITION.md Stage 12, step 1: the list is shared/rows.js now. */
+const KINDS = ENQUIRY_KIND;
 
 export async function onRequest(context) {
   const { request, params } = context;
@@ -68,7 +70,7 @@ export async function onRequest(context) {
 
       const input = await body(request);
       await run(d1, `UPDATE enquiries SET status = ?, notes = ? WHERE id = ?`,
-        ["new", "replied", "closed"].includes(input.status) ? input.status : existing.status,
+        allowed(ENQUIRY_STATUS, input.status) ? input.status : existing.status,
         input.notes === undefined ? existing.notes : str(input.notes, 4000),
         id);
       return ok({ enquiry: await one(d1, `SELECT * FROM enquiries WHERE id = ?`, id) });

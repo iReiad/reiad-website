@@ -15,6 +15,7 @@ import { all, db, one, run } from "../../_lib/db.js";
 import { body, fail, isEmail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.js";
 import { requireAdmin } from "../../_lib/auth.js";
 import { throttle } from "../../_lib/auth.js";
+import { QUESTION_STATUS, allowed } from "../../../shared/rows.js";
 
 const PUBLIC = `id, slug, name, body, answer, created_at, answered_at`;
 
@@ -119,7 +120,7 @@ export async function onRequest(context) {
       const existing = await one(d1, `SELECT * FROM questions WHERE id = ?`, id);
       if (!existing) return fail("not-found", 404);
 
-      const status = ["pending", "published", "spam", "archived"].includes(input.status)
+      const status = allowed(QUESTION_STATUS, input.status)
         ? input.status : existing.status;
       const answer = input.answer === undefined
         ? existing.answer : str(input.answer, 8000);

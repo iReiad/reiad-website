@@ -1,0 +1,212 @@
+#!/usr/bin/env node
+/* ============================================================
+   check-rows.mjs: does `shared/rows.js` still describe this
+   database, and do the handlers still agree with it?
+
+       node scripts/check-rows.mjs
+
+   TRANSITION.md Stage 12, step 1. `shared/rows.js` is the one
+   description of what a row of this database is, and a
+   description is worth exactly what checks it. Two ways it can
+   quietly stop being true, and this is both of them:
+
+   1. **A column is added, renamed or dropped in `schema.sql`**
+      and the interface in `rows.d.ts` still says what used to be
+      there. Nothing fails: a row is `any` on the way out of D1
+      today, and a type that lies is worse than no type, because
+      it is believed.
+
+   2. **A handler keeps its own copy of a vocabulary.** Four of
+      them did, which is why `rows.js` exists: the comment states
+      are `pending`, `live` and `binned`, and the first draft of
+      `rows.js` said `approved` and `spam`, which are what those
+      words would be if anybody had chosen them fresh and are not
+      what the column holds. That was caught by comparing the two.
+      The handlers import the vocabulary now, so the question
+      flipped: nothing under `functions/` may write out a list
+      `shared/rows.js` already holds.
+
+   ---- what it deliberately does not do ----
+
+   It does not parse TypeScript. It reads the interfaces as text
+   and compares the property names against the columns in
+   `aab/schema.sql`, which is enough to catch a column that moved
+   and cheap enough to run beside the other checks. Types are
+   checked by `tsc` in `next/`, and that is a different question:
+   `tsc` proves the code agrees with the description, this proves
+   the description agrees with the database.
+   ============================================================ */
+
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
+
+let failures = 0;
+const fail = (line, ...detail) => {
+  failures += 1;
+  console.error(`FAIL  ${line}`);
+  detail.forEach((d) => console.error(`      ${d}`));
+};
+
+/* ------------------------------------------------------------
+   1. Every table has a description, and every description has a
+      table
+   ------------------------------------------------------------ */
+
+const schema = read("aab/schema.sql");
+const { TABLES, ...vocab } = await import("../shared/rows.js");
+
+/** The columns of one table, in the order the schema declares
+    them. Deliberately dumb: the block between the parentheses,
+    split on commas that are not inside brackets, first word of
+    each line that is not a constraint. */
+function columnsOf(table) {
+  const re = new RegExp(`CREATE TABLE IF NOT EXISTS ${table} \\(([\\s\\S]*?)\\n\\);`, "i");
+  const block = schema.match(re)?.[1];
+  if (!block) return null;
+  return block
+    .split("\n")
+    .map((line) => line.replace(/--.*$/, "").trim())
+    .filter(Boolean)
+    .map((line) => line.split(/\s+/)[0])
+    .filter((word) => /^[a-z_]+$/.test(word) && !["primary", "foreign", "unique", "check"].includes(word));
+}
+
+const inSchema = [...schema.matchAll(/CREATE TABLE IF NOT EXISTS (\w+)/g)].map((m) => m[1]);
+
+for (const table of inSchema) {
+  if (!(table in TABLES)) {
+    fail(`aab/schema.sql has a table shared/rows.js does not describe: ${table}`,
+      "Add it to TABLES, with one sentence on what it is for.");
+  }
+}
+for (const table of Object.keys(TABLES)) {
+  if (!inSchema.includes(table)) {
+    fail(`shared/rows.js describes a table that is not in aab/schema.sql: ${table}`);
+  }
+}
+
+/* ------------------------------------------------------------
+   2. Every interface names the columns its table has
+   ------------------------------------------------------------ */
+
+const types = read("shared/rows.d.ts");
+
+/** The property names of one interface, as written. */
+function propsOf(name) {
+  const block = types.match(new RegExp(`export interface ${name} \\{([\\s\\S]*?)\\n\\}`))?.[1];
+  if (block === undefined) return null;
+  return [...block.matchAll(/^\s{2}(\w+)\??:/gm)].map((m) => m[1]);
+}
+
+/* Which interface describes which table. Written out rather than
+   guessed from the name, because `articles` is `ArticleRow` and
+   `article_versions` is `ArticleVersionRow` and a rule that
+   turned one into the other would turn the other into something
+   else. */
+const DESCRIBES = {
+  articles: "ArticleRow",
+  article_versions: "ArticleVersionRow",
+  questions: "QuestionRow",
+  comments: "CommentRow",
+  subscribers: "SubscriberRow",
+  enquiries: "EnquiryRow",
+  views: "ViewRow",
+  reactions: "ReactionRow",
+  sessions: "SessionRow",
+  settings: "SettingRow",
+  throttle: "ThrottleRow",
+  school_stages: "SchoolStageRow",
+  school_sections: "SchoolSectionRow",
+  school_lessons: "SchoolLessonRow",
+};
+
+let described = 0;
+
+for (const [table, iface] of Object.entries(DESCRIBES)) {
+  const columns = columnsOf(table);
+  const props = propsOf(iface);
+  if (!columns) { fail(`no CREATE TABLE for ${table} in aab/schema.sql`); continue; }
+  if (!props) { fail(`no interface ${iface} in shared/rows.d.ts`); continue; }
+
+  for (const column of columns) {
+    if (!props.includes(column)) {
+      fail(`${iface} does not describe ${table}.${column}`,
+        `The schema has it and the interface does not, so anything reading`,
+        `that column is untyped without saying so.`);
+    }
+  }
+  for (const prop of props) {
+    if (!columns.includes(prop)) {
+      fail(`${iface} describes ${table}.${prop}, which the schema does not have`,
+        "A description of a column that is not there is believed and is wrong.");
+    }
+  }
+  described += columns.length;
+}
+
+/* ------------------------------------------------------------
+   3. No handler keeps its own copy of a vocabulary
+   ------------------------------------------------------------ */
+
+/* This section used to do the opposite. Every handler had its own
+   inline array of allowed values, so the check compared the two
+   and reported a difference: that is how the comment states in
+   `rows.js` came to be `live` and `binned` rather than the
+   tidier words somebody would pick fresh.
+
+   The arrays are gone, the handlers import the vocabulary, and
+   the question worth asking flipped with them. A second copy that
+   agrees today is the thing that drifts, and the four that were
+   here are the reason this file exists at all. So: nothing under
+   `functions/` may write out a list that `shared/rows.js`
+   already holds.
+
+   Deliberately a text search rather than anything cleverer. A
+   handler that builds the same list some other way will not be
+   caught, and a handler that pastes it back in will be, which is
+   the way it actually happens. */
+
+const HANDLERS = [
+  "functions/api/articles/[[slug]].js",
+  "functions/api/comments/[[id]].js",
+  "functions/api/questions/[[id]].js",
+  "functions/api/enquiries/[[id]].js",
+  "functions/api/subscribers/[[route]].js",
+  "functions/api/schools/[[route]].js",
+];
+
+let scanned = 0;
+
+for (const file of HANDLERS) {
+  const src = read(file);
+  scanned += 1;
+
+  for (const [name, values] of Object.entries(vocab)) {
+    if (!Array.isArray(values) || values.length < 2) continue;
+
+    /* The list as a handler would paste it, in either quote
+       style, allowing for whitespace between the entries. */
+    const pattern = new RegExp(
+      `\\[\\s*["']${values.map((v) => v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join(`["']\\s*,\\s*["']`)}["']\\s*\\]`
+    );
+
+    if (pattern.test(src)) {
+      fail(`${file} writes out ${name} instead of importing it`,
+        `shared/rows.js holds ${JSON.stringify(values)}.`,
+        "Two copies that agree today are two copies, which is what",
+        "this file exists to stop:",
+        `  import { ${name}, allowed } from "<...>/shared/rows.js";`);
+    }
+  }
+}
+
+console.log(failures
+  ? `\n${failures} problem(s): shared/rows.js does not describe this database.\n`
+  : `rows: ${Object.keys(DESCRIBES).length} tables described, ${described} columns\n`
+    + `      matched against aab/schema.sql, and ${scanned} handlers holding\n`
+    + "      no second copy of a vocabulary.\n");
+process.exit(failures ? 1 : 0);

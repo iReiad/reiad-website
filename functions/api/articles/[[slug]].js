@@ -20,6 +20,7 @@ import {
 } from "../../_lib/http.js";
 import { requireAdmin, readSession } from "../../_lib/auth.js";
 import { sanitiseHTML, readingMinutes } from "../../_lib/sanitise.js";
+import { SECTIONS, allowed } from "../../../shared/rows.js";
 
 /* `embedded` is computed rather than stored: it says whether the
    body still carries a photo as a data: URL instead of a /media
@@ -41,9 +42,12 @@ const PUBLIC_COLUMNS =
    existed. Kept as a list rather than a free string because it
    becomes a URL prefix, and a URL prefix from a request body is
    how you end up serving /etc/passwd.html. */
-const SECTIONS = ["insights", "cooking", "travel"];
+/* TRANSITION.md Stage 12, step 1: the list is `shared/rows.js`
+   now. It was written out here and again in the comments handler,
+   and a mount added to one and not the other is a thread that can
+   be attached to a section no article can be published into. */
 const safeSection = (value) =>
-  SECTIONS.includes(String(value ?? "")) ? String(value) : "insights";
+  allowed(SECTIONS, value) ? String(value) : "insights";
 
 /* D1 caps a single value at 2 MB. A body is measured in bytes rather
    than characters because Bangla costs three of them per character,
