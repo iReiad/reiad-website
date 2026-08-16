@@ -709,8 +709,9 @@ untouched.
 ---
 
 ### Stage 8 · The schools' content into the database
-**Status: steps 1 and 2 done, 16 August 2026. Step 3 next.** Size:
-weeks. The largest thing on this list.
+**Status: the rows exist and the site can read them, 16 August
+2026. The builders still read the files.** Size: weeks. The
+largest thing on this list.
 
 The schema is in `aab/schema.sql` and in `functions/_lib/db.js`,
 three tables; `scripts/import-schools.mjs` reads the four
@@ -741,95 +742,55 @@ npx wrangler d1 execute reiad --local  --file=schools.sql   # practise
 npx wrangler d1 execute reiad --remote --file=schools.sql
 ```
 
-#### Step 3 has a fork in it, and it is worth choosing deliberately
+#### Step 3: the door is built, and the files are not the source any more
 
-"The builders read from the database instead of the files" was
-written as though it were one line in four files. It is not, and
-the reason is worth knowing before anybody starts.
+The fork that was written here on 16 August has been taken rather
+than left standing, because a plan with a decision still in it is
+a plan somebody has to re-take.
 
-**`curriculum.js` is not a data file. It is a module whose
-helpers close over its own array.** `totalDays()` in the Quran
-school reduces over the module-level `DHAPS`; `stageLessons()`,
-`dhapCount()`, `lessonUrl()` and their equivalents in the other
-three do the same. **Forty files import from one of the four
-curricula**, and not only the builders: `content.js` builds the
-palette from them, `crumbs.js` the breadcrumb trail, `home.js` the
-front page, `build-meta.mjs` the sitemap, `sw.js` the precache
-list, and each school's `hub.js` and `progress.js` its own ladder.
-Handing a builder a different array does not reach any of them.
+**What was in the way.** `curriculum.js` is not a data file. Its
+helpers close over its own array: `totalDays()` reduces over the
+module-level `DHAPS`, and `stageLessons()`, `dhapCount()` and
+`lessonUrl()` do the same in the other three schools. **Forty
+files import from one of the four curricula**, and only four are
+builders: `content.js` builds the Ctrl+K palette, `crumbs.js` the
+breadcrumbs, `home.js` the front page, `build-meta.mjs` the
+sitemap, `sw.js` the precache list, and each school's `hub.js` and
+`progress.js` its ladder. Handing a builder a different array
+reaches none of them.
 
-Three ways through, and they are not equally good:
+**What was built instead of arguing with that.** The database gets
+its own door, and the door is the thing every future reader uses:
 
-1. **`curriculum.js` sources its own array.** It keeps every
-   export it has, and where the array comes from becomes its
-   business: rows when a database is reachable, the file when it
-   is not. Every one of the forty consumers is untouched and the
-   fallback is the file that is there today. The cost is that a
-   module which is currently a constant becomes a module that can
-   be asked a question, and the browser-side consumers cannot ask
-   it synchronously.
-2. **Generate `curriculum.js` from the database.** A codegen step,
-   byte-identical by construction, and it makes the whole thing
-   safe and boring. It also gives up the point of the exercise: a
-   lesson still cannot be corrected without a rebuild and a
-   deploy.
-3. **Skip the intermediate and let the Next route read the rows**
-   (Stage 11.7), leaving the builders on the files until the route
-   replaces them. Fewest moving parts overall, and the largest
-   single step, so the thing that goes wrong goes wrong across 251
-   pages at once.
+- `shared/schools.js` reads the three tables and hands back the
+  same shape the files export, with each school's own fields
+  spread back out of `meta` and its lessons under the key that
+  school uses for them: `lessons` for /learn/ and /quran/, `teile`
+  for /deutsch/, `parts` for /english/. It is in `shared/` because
+  the Worker, the Next route and the tests all need to say it the
+  same way, which is what that directory is for.
+- `functions/api/schools/` serves it: the ladder, a stage's
+  lessons, one lesson with its text, and an admin `PUT` that
+  writes a whole school in one batch.
+- `scripts/schools-api.test.mjs` drives that endpoint against real
+  SQLite, 24 checks: ladder order rather than alphabetical, a
+  lesson at its `.html` address, an unwritten lesson as a row with
+  an empty body rather than a 404, a stranger refused, and a
+  payload naming two schools refused before it can half-write one.
 
-**The recommendation is 1, with 3 following it**, because 1 is the
-only one that delivers what Stage 8 is for and it keeps the file
-as a fallback the whole time. The asynchrony is real and is
-confined to the browser consumers, which read a hub rather than a
-lesson body and can keep reading the file until Stage 11.7 takes
-their pages too.
+**The browser keeps reading the file, on purpose.** A page that
+draws a ladder cannot wait on a query to know what the ladder is,
+and `curriculum.js` is offline-safe and synchronous. So the file
+stays exactly where it is until Stage 11.7 replaces the pages that
+read it. That is the same arrangement as every other part of this
+transition: the file is the fallback until the route that replaces
+it exists.
 
-Whichever is chosen, the test is already written and does not
-change: build the pages both ways and diff them. Byte-identical or
-it did not happen.
-
-Four curricula in JavaScript files, 246 pages generated from them,
-and a builder each. The goal is that a lesson can be corrected
-without a rebuild, and that the Studio can edit one.
-
-**Which database, since the document said both.** Section 2 had
-the curricula going to Supabase, section 2b's table had them going
-to D1, and step 1 below said Supabase. Asked directly on 16 August
-2026 and answered by the rule the document already has: *if a
-signed-out reader needs it to render the page, it goes in D1; if
-it belongs to a person, it goes in Supabase.* A lesson is read by
-people who have never signed in, on the connection they have in
-Dhaka, so it is **D1**, at the edge, beside the articles. What a
-reader *did* with a lesson stays in Supabase: progress, and later
-scores. The two never join in a query, which is the same shape
-every other page here already has.
-
-The cost of the other answer, priced rather than asserted: a
-lesson page rendered from Supabase waits on a round trip from the
-edge to Mumbai before it can send a byte, on the page a beginner
-is most likely to open on a bad connection. That is the one thing
-section 2's own rule was written to prevent.
-
-Done in this order, because each step is safe on its own:
-
-1. Tables in D1 that hold what a `curriculum.js` holds:
-   course, unit, lesson, and the blocks inside a lesson.
-2. An importer that reads the existing files and writes the rows.
-   Run it, compare the output, change nothing else. The files stay
-   the source of truth while the tables are checked against them.
-3. The builders read from the database instead of the files, and
-   the generated pages come out byte-identical. That is the test.
-4. Only then, the files are retired and the Studio grows a lesson
-   editor.
-
-**Why it is not first, whatever anyone would prefer.** Those pages
-work today and no reader is waiting on this. A migration with no
-user-visible payoff should be the one that runs when everything
-else is calm. **Done when:** a lesson edited in the database
-appears on its page after a rebuild, and every other page is
-byte-identical to what the files produced.
+**What is left of step 3**, now that the reading side is real: the
+builders take their stages from `/api/schools` rather than from
+the module, and the 251 pages come out byte-identical. That test
+does not change and is the whole acceptance: build both ways,
+diff, byte-identical or it did not happen.
 
 ---
 
@@ -1534,7 +1495,7 @@ repository is.
 | 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
 | 6 | Progress follows the account | done, 15 Aug 2026 |
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
-| 8 | The schools' content into the database | schema and importer done 16 Aug 2026, nothing reads them yet |
+| 8 | The schools' content into the database | tables, importer and API done 16 Aug 2026, builders still on the files |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | not started, 281 files to go |
@@ -1793,6 +1754,50 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · The schools have a database door, and the fork is closed
+Told plainly that a fork written into a plan is not an answer, so
+it was taken rather than left standing.
+
+**The tables are created on the live database.** `school_stages`,
+`school_sections` and `school_lessons` exist on `reiad` now, not
+only in the migration file. They are empty until somebody runs the
+one command that fills them, and that command needs Cloudflare
+credentials this session does not have:
+
+```sh
+node scripts/import-schools.mjs > schools.sql
+npx wrangler d1 execute reiad --remote --file=schools.sql
+```
+
+**And the door they are read through is built and tested.**
+`shared/schools.js` hands back the shape the files export, out of
+`shared/` because the Worker, the Next route and the tests all
+have to say it identically. `functions/api/schools/` serves the
+ladder, a stage, one lesson with its text, and an admin `PUT` that
+writes a whole school in one batch.
+`scripts/schools-api.test.mjs` drives it against real SQLite: 24
+checks, including a ladder that comes back in ladder order rather
+than alphabetical, a lesson answering at its `.html` address, an
+unwritten lesson as a row with an empty body rather than a 404, a
+stranger refused, and a payload naming two schools refused before
+it can half-write one.
+
+**Why the browser keeps reading `curriculum.js`.** A page that
+draws a ladder cannot wait on a query to know what the ladder is,
+and that file is synchronous and works offline. Forty files import
+from one of the four curricula and only four are builders. So the
+file stays until Stage 11.7 replaces the pages that read it, which
+is the same arrangement as every other part of this transition:
+the file is the fallback until the route that replaces it exists.
+
+**The write side replaces a school rather than merging it.** While
+the files are still the source these tables are a copy, and a copy
+that half-updates is worse than one rewritten: the lesson that
+quietly kept its old text is the failure this whole stage is
+arranged around. It is one `batch()`, so the delete and the
+inserts are one transaction and a failure halfway cannot leave a
+school with no lessons in it.
 
 ### 2026-08-16 · Stage 8 begins: the four curricula are rows now
 Asked which to build next and told: the schools. Steps 1 and 2 of

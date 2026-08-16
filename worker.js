@@ -46,6 +46,7 @@ import { onRequest as media } from "./functions/api/media/[[key]].js";
 import { onRequest as notion } from "./functions/api/notion/[[route]].js";
 import { onRequest as backup } from "./functions/api/backup/[[route]].js";
 import { onRequest as comments } from "./functions/api/comments/[[id]].js";
+import { onRequest as schools } from "./functions/api/schools/[[route]].js";
 import { onRequest as insight } from "./functions/insights/[slug].js";
 import { onRequest as feeds } from "./functions/feeds/[kind].js";
 import { db } from "./functions/_lib/db.js";
@@ -67,6 +68,7 @@ const API_ROUTES = [
   ["/api/notion", notion, "route"],
   ["/api/backup", backup, "route"],
   ["/api/comments", comments, "id"],
+  ["/api/schools", schools, "route"],
 ];
 
 /* The Cron schedules, as strings, because `event.cron` hands back

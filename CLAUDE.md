@@ -189,6 +189,8 @@ node functions/_lib/notion.test.mjs
 node scripts/schools.test.mjs        # a curriculum that lost a field, a lesson
                                      # body that changed, or a ladder that came
                                      # back in the wrong order (30 checks)
+node scripts/schools-api.test.mjs    # a school readable by anyone, writable by
+                                     # somebody else, or half-written (24 checks)
 ```
 
 And when anything under `app/src/` changed, after rebuilding:
