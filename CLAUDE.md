@@ -229,7 +229,24 @@ it belongs after the upload and not before it:
 node scripts/check-live.mjs        # the service binding, the second Worker's
                                    # own scripts, and the pieces that fall
                                    # through to a file
+node scripts/check-preview.mjs --preview <branch-preview-url>
+                                   # does the Next Worker's branch preview
+                                   # render what the live site renders
 ```
+
+`check-preview.mjs` is how a Stage 11 route gets verified before
+anything forwards a reader to it. The two Workers deploy
+separately and Cloudflare gives `reiad-next` a branch preview URL
+on every push, with the real database binding, so a route can be
+written, pushed and asked real questions while `NEXT_ROUTES` in
+`worker.js` still sends nobody there. The URL is in the Cloudflare
+bot's comment on the pull request.
+
+It exists because `next/parity.test.mjs` is the better test and
+does not run everywhere: it needs `wrangler dev` on workerd, which
+hangs with no output in some containers. Reach for the parity test
+first; reach for this when that is not available, or to catch a
+deployed regression the local test cannot see.
 
 It runs itself on every push, in `.github/workflows/live-check.yml`,
 because the two things it is really watching are settings on a
@@ -326,12 +343,21 @@ before this school had a builder, and their URLs do not move. They
 are written from the rows like everything else; the builder just
 writes them to that address.
 
-**One stage really is not editable, and should not be.** `start`
-is `inline`: its eight steps are accordion sections of the
-hand-written hub at `/learn/`, not pages, and nothing generates
-them. Its eight rows have empty bodies for ever and text saved
-into them would reach no page, so the Studio says where they
-actually live instead of offering an editor.
+**One stage really is not editable, and the reason is the
+sanitiser rather than the builder.** `start` is `inline`: its
+eight steps are accordion sections of the hand-written hub at
+`/learn/`. They are also not article prose. Each carries a
+two-column "what you do / what others do" split, a risk badge and
+a call-to-action, using the classes `split`, `do`, `others`,
+`warn`, `bn-h` and `btn`, none of which is in the article
+allowlist. Put one through `sanitiseHTML()` and `term` and `ex`
+survive while the rest go: the layout collapses into a run of
+paragraphs.
+
+Widening the allowlist would not fix it. Those classes belong to
+the starter guide's own layer, and `check-css.mjs` fails a class
+two layers both define. So the eight rows keep empty bodies and
+the Studio says where the text actually lives.
 
 Generated pages are generated. Edit the source, never the output:
 

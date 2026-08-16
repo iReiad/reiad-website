@@ -1852,6 +1852,87 @@ is the closest Supabase region to Dhaka.
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
 
+### 2026-08-16 · Stage 11 gets its safety net back, from the deployed side
+
+The reason 11.1 had not started was that
+`next/parity.test.mjs` does not run in the container this work is
+being done in: `wrangler dev` hangs with no output, `--local`
+included, three attempts. Moving a public reading route without
+it would be shipping a renderer nobody had compared to anything.
+
+**The way round it was already there and nobody had used it.** The
+two Workers deploy separately, and Cloudflare gives `reiad-next` a
+branch preview URL on every push. That preview has the real D1
+binding. So a route can be written, pushed, and asked real
+questions while `NEXT_ROUTES` in `worker.js` still forwards nobody
+to it, which is the order Stage 10 used anyway: "the Next.js route
+exists" was one change and "Stage 10 switched on" was the next.
+
+Confirmed before building anything on it: the branch preview
+renders `/insights/dse-basics` with the same title as
+reiad.co.uk, byte for byte in the article itself.
+
+`scripts/check-preview.mjs` is that comparison, written down. It
+asks the same questions `parity.test.mjs` asks, one tag at a time,
+because attribute order is the renderer's business: title,
+canonical, eight `og:` tags, and the article HTML as a string. 24
+checks across two articles today, and a route joins the list the
+moment it is written rather than when it is switched on. That gap
+is the whole point of the file.
+
+**Checked that it can fail**, because a check that only agrees
+with itself is the failure this repository has written up twice.
+Pointed at `/insights/dsex`, which is a committed file with no
+database row, it reports 404 from the preview against 200 from the
+live site. That is not a bug in either: it is exactly the fallback
+`worker.js` documents, where a 404 from the Next Worker means what
+`context.next()` means and the asset router answers. Stage 11.2
+turns on that fallback for two more mounts, and this is now the
+thing that will watch it.
+
+What this does not change: the parity test is still the better
+one, offline and hermetic and comparing against the Worker's own
+template rather than against production. This is what to use when
+it cannot run, and to catch a deployed regression it cannot see.
+
+### 2026-08-16 · The starter guide stays where it is, and the reason is the sanitiser
+
+The last eight rows of the money school will keep empty bodies, on
+purpose. This closes the question the previous entry left open.
+
+**The steps are not article prose.** Each one is a bespoke layout:
+a two-column "what you do / what others do" split, a risk badge, a
+call-to-action button, Bangla sub-headings. That markup carries
+`split`, `do`, `others`, `warn`, `bn-h` and `btn`, and none of
+them is in the allowlist `functions/_lib/sanitise.js` enforces on
+everything written through the Studio.
+
+Measured rather than argued: one step body through
+`sanitiseHTML()` keeps `term` and `ex` and loses `bn-h`, `split`,
+`do` and `others`. The two-column layout collapses into a run of
+paragraphs, and it does so silently, on save, which is the worst
+possible moment.
+
+**Widening the allowlist is not the fix.** Those classes belong to
+the starter guide's own layer, and `check-css.mjs` fails a class
+that two layers both define. They would also be offered inside
+every article, where they mean nothing.
+
+So the eight steps stay in the hand-written hub and the Studio
+says where they are. The blurb question that was open with them is
+moot: nothing generates that markup, so nothing has to choose
+between the hub's wording and `curriculum.js`'s.
+
+**And one stale warning removed.** The top of
+`build-lessons.mjs` carried a block headed BEFORE YOU RUN THIS: IT
+WILL REWRITE MORE THAN YOU EXPECT, describing seventy pages of
+drift between the committed pages and the template. That drift is
+gone and `check-schools-built.mjs` is what says so, on 247 pages.
+A warning telling the next person not to run a generator has a
+real cost once it stops being true, so it now says what is
+actually the case, including the one piece of drift that is left:
+the hub's step blurbs, which this file does not write.
+
 ### 2026-08-16 · Stage 11 starts at the safe end: two dead files leave
 
 `work.html` and `services.html` are in `archive/`. **279 HTML

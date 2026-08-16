@@ -32,24 +32,26 @@
    listed thing must always be a place you can go.
 
    ------------------------------------------------------------
-   BEFORE YOU RUN THIS: IT WILL REWRITE MORE THAN YOU EXPECT
+   RUNNING THIS IS SAFE NOW, AND IT DID NOT USED TO BE
 
-   The committed pages and this template have drifted. Several
-   lesson blurbs and titles were edited on the pages themselves
-   (mostly a comma tightened into a colon, "কমিশন, স্প্রেড আর
-   ভুলের সময়: …"), and curriculum.js never caught up. Page titles
-   drifted the same way: the pages join every part with " · ",
-   including inside a lesson name, where this file uses ", ".
+   This block used to warn that a run rewrote about seventy pages,
+   because the committed pages and this template had drifted:
+   blurbs and titles were edited on the pages themselves and
+   curriculum.js never caught up, so a build reverted published
+   wording to an older version of it.
 
-   So a run today rewrites about seventy pages, and most of that
-   diff is the published wording being reverted to the older
-   version in curriculum.js, not what anyone running a generator
-   is trying to do.
+   That is over. `scripts/check-schools-built.mjs` rebuilds all
+   four schools and compares every page against the one committed
+   in `aab/`, and it passes on 247 pages. A run of this file
+   changes nothing unless the data changed, which is the whole
+   point of a generator and is now checked rather than hoped for.
 
-   Reconcile it deliberately, in its own change: decide which
-   wording is right, put it in curriculum.js, run this once, and
-   read the diff. Until then, `git diff` after every run and keep
-   only the lines you meant.
+   One piece of drift is left and this file cannot fix it: the
+   eight starter steps on `/learn/index.html` carry blurbs that
+   were tightened on the page, and curriculum.js still has the
+   longer originals. The hub is hand-written and nothing here
+   writes it, so the two disagree without anything breaking. It is
+   written up in TRANSITION.md rather than left as a surprise.
    ------------------------------------------------------------
    ============================================================ */
 
