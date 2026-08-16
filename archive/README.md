@@ -37,6 +37,23 @@ what anybody is served.
 | `desk.html`, `desk.js` | `aab/desk/`, built from `app/src/**` | 16 August 2026 |
 | `schools/<school>/*.js` | `content/schools.backup.json`, exported from D1 | 16 August 2026 |
 | `schools-build.test.mjs` | `scripts/check-schools-built.mjs` | 16 August 2026 |
+| `work.html`, `services.html` | `_redirects`, which forwards both to `/portfolio` | 16 August 2026 |
+
+`work.html` and `services.html` were early placeholders that still
+carried template text ("[Your Name]", "hello@yourdomain.com"), kept
+afterwards as HTML forwards to `portfolio.html` so old links and
+search results would not break. They stopped doing that job a while
+ago without anybody noticing: `_redirects` sends `/work.html`,
+`/work`, `/services.html` and `/services` to `/portfolio` with a
+301, and that rule is consulted BEFORE the asset router, so the
+files themselves have been unreachable ever since. Their
+`<meta http-equiv="refresh">` has not run for a reader in months.
+
+Checked before moving them, because "unreachable" is a claim about
+a deployed site rather than about a repository: all four URLs were
+asked for on reiad.co.uk and all four answered 301 to
+`/portfolio`. Nothing links to them, and they are in no `PAGES`
+entry, no sitemap, and no precache list. TRANSITION.md Stage 11.8.
 
 `schools/` is the four schools' lesson prose: eleven modules that
 were `aab/<school>/content/<stage>.js` and `aab/learn/lessons/*.js`.
