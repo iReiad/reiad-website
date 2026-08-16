@@ -48,9 +48,41 @@ that has drifted.
 | Deploy command | `npx wrangler deploy` |
 | Build command | *(empty: there is no build step)* |
 
+`npm run deploy` runs the same thing, and is in `package.json` for the one
+reason that a dashboard field is easy to fill in with it out of habit: the
+`next/` workspace has such a script, this one did not, and a build set to
+`npm run deploy` here failed with `Missing script: "deploy"` while the
+repository looked fine.
+
 If there is a separate **non-production branch deploy command**, the same
 command works there, or `npx wrangler versions upload` if you want branch
 builds to upload without going live.
+
+### When the build fails and the site looks fine
+
+A Worker that fails to deploy keeps serving its last good upload, so
+nothing on reiad.co.uk changes colour when the build stops working. That is
+worth saying out loud because it happened for a whole day: from 16 August
+the deploy stopped at the first thing wrangler reads.
+
+```
+✘ [ERROR] Invalid routes in `run_worker_first`:
+    '/cooking/index.html': rule '/cooking/*' makes it redundant
+```
+
+**No pattern in `run_worker_first` may be covered by another pattern in
+it.** Wrangler checks that before it reads `worker.js` or looks at `aab/`,
+and it stops rather than warning. `node aab/check-routes.mjs` runs the same
+test now, so it fails on a laptop instead of in a build log nobody opens.
+
+The quickest way to tell a broken build from a broken site, without the
+dashboard:
+
+```sh
+npx wrangler deploy --dry-run
+```
+
+Everything the real deploy validates, uploading nothing.
 
 ### The API token
 

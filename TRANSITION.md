@@ -2607,6 +2607,57 @@ is the closest Supabase region to Dhaka.
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
 
+### 2026-08-16 · The main Worker had not deployed since Stage 11.1, and nothing said so
+
+Every push from `ca82ab0` onwards built nothing. Thirteen commits,
+about four hours, and the whole of Stages 11.1 to 14 sat in the
+repository while `reiad-website` carried on serving the upload it
+made at 12:24 UTC. The site never broke, which is exactly why it
+took a day to notice: a Worker that fails to deploy is a Worker
+still answering every request with its last good version.
+
+The cause is one line of `wrangler.toml` and it is not a bug in
+this repository's code. **No pattern in `run_worker_first` may be
+covered by another pattern in it**, and wrangler enforces that at
+parse time, before it reads `worker.js` or looks at `aab/`:
+
+```
+✘ [ERROR] Invalid routes in `run_worker_first`:
+    '/cooking/index.html': rule '/cooking/*' makes it redundant
+```
+
+Six entries had grown a broader neighbour beside them as Stage 11
+went on. `/cooking/index.html` and `/travel/index.html` arrived in
+11.1 and were covered by the `/cooking/*` and `/travel/*` mounts
+added beside them in 11.2. The four `*/*.html` school patterns
+arrived in 11.7 next to their own suffixless form, and a `*`
+matches a dot as readily as anything else, so `/learn/*/*` already
+covered `/learn/*/*.html`. All six are gone and the routing is
+unchanged: wrangler's complaint was that they said nothing new.
+
+`reiad-next` was never affected. It has its own config and its own
+build, which is why the article routes kept moving while the
+Worker in front of them did not, and why the live check stayed
+green throughout: every question it asks is answered by the second
+Worker or by an asset.
+
+**Two things now catch it earlier.** `check-routes.mjs` runs the
+same overlap test the deploy does, so an overlapping list fails on
+a laptop rather than in a build log nobody opens. And that check
+found the older half of its own fault while being written: the
+file read `run_worker_first` out of `wrangler.toml` with a regular
+expression that took quoted strings from the comments as well, so
+the longest comment in that block, the one naming the pattern
+deliberately left out, had been read as a rule. This file believed
+the Worker answered everything under `/learn/`. It never did.
+
+`SETUP.md` gains the dry run, which is the quickest way to tell a
+broken build from a broken site without opening the dashboard:
+
+```sh
+npx wrangler deploy --dry-run
+```
+
 ### 2026-08-16 · Stage 13: photo.js, and a dependency between two stages
 
 `aab/src/photo.ts`, third of eight, emitted identical to the file

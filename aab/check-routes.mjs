@@ -42,11 +42,20 @@ const MAX_HOPS = 10;
 /* ---------- what a Worker answers ---------- */
 
 /* The patterns in `run_worker_first`, straight out of wrangler.toml.
-   A `*` there matches any number of characters, including slashes. */
+   A `*` there matches any number of characters, including slashes.
+
+   The comment lines inside that array are stripped first, and they
+   have to be. They quote patterns in prose, and the longest of them
+   says which pattern is deliberately absent: "/learn/*". Reading
+   the block without stripping them picked that up as a rule, so
+   this file believed the Worker answered every path under /learn/
+   when wrangler had been told no such thing. */
 const WORKER_FIRST = (
   readFileSync(join(ROOT, "../wrangler.toml"), "utf8")
     .match(/run_worker_first\s*=\s*\[([\s\S]*?)\]/)?.[1] ?? ""
-).match(/"([^"]+)"/g)?.map((quoted) => quoted.slice(1, -1)) ?? [];
+)
+  .replace(/^\s*#.*$/gm, "")
+  .match(/"([^"]+)"/g)?.map((quoted) => quoted.slice(1, -1)) ?? [];
 
 const globs = (pattern, path) =>
   new RegExp(`^${pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`)
@@ -140,6 +149,35 @@ for (const page of pages) {
 }
 
 let failures = 0;
+
+/* No pattern in `run_worker_first` may be covered by another one.
+
+   This is not tidiness. Wrangler rejects an overlapping list at
+   parse time, before it reads the Worker or looks at aab/, and the
+   deploy stops:
+
+     Invalid routes in `run_worker_first`:
+       '/cooking/index.html': rule '/cooking/*' makes it redundant
+
+   Nothing about that is visible from the site, because a Worker
+   that fails to deploy is a Worker still serving its last good
+   upload. Six overlapping entries arrived across Stage 11 and the
+   live Worker sat on a version from before Stage 11.1 for the rest
+   of the day, still answering every request, while thirteen pushes
+   built nothing.
+
+   The test below is the one wrangler runs: a rule covers another
+   when it matches it and is not the same string. `globs` already
+   reads a `*` the way the asset router does. */
+for (const pattern of WORKER_FIRST) {
+  const covering = WORKER_FIRST.find(
+    (other) => other !== pattern && globs(other, pattern),
+  );
+  if (!covering) continue;
+  failures++;
+  console.error(`overlapping-rule  ${pattern}   (covered by ${covering})`);
+  console.error("        wrangler refuses this list and the deploy stops before it starts");
+}
 
 /* An article's slug becomes a URL, and only some strings can.
    worker.js matches /insights/([a-z0-9-]+) and static assets are no
