@@ -36,6 +36,11 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    # It asks a couple of dozen URLs and each one has its own
+    # deadline, so this is generous. It is here because the first
+    # version had neither and sat on a runner for six minutes
+    # waiting on a request nothing was going to answer.
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
 

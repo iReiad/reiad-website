@@ -66,13 +66,27 @@ const same = (name, expected, actual) =>
 
 /** Every response is asked for without the cache, because a check
     reading Cloudflare's copy of yesterday's deploy is worse than
-    no check: it is a green tick for the wrong build. */
-const get = (path, init = {}) =>
-  fetch(`${origin}${path}`, {
-    redirect: "manual",
+    no check: it is a green tick for the wrong build.
+
+    And every one of them is given a deadline. `fetch` has no
+    timeout of its own: a request that is answered slowly, or not
+    at all, leaves this script waiting for as long as the runner
+    will let it, and a check that hangs is worse than one that
+    fails because nobody reads a job that never finishes. Fifteen
+    seconds is far longer than any page here takes and far shorter
+    than anybody's patience. */
+const ask = (url, init = {}) =>
+  fetch(url, {
+    signal: AbortSignal.timeout(15_000),
     headers: { "Cache-Control": "no-cache", ...(init.headers || {}) },
     ...init,
   });
+
+/** The same, at a path on the site, and without following what
+    comes back: several of the checks below are about which
+    redirect is served, and a followed redirect hides it. */
+const get = (path, init = {}) =>
+  ask(`${origin}${path}`, { redirect: "manual", ...init });
 
 /* ---------- 1. the article route, and who renders it ---------- */
 
@@ -160,7 +174,7 @@ same("an unknown slug is a 404, not a 500", 404, missing.status);
    behaviour and has been true since long before Stage 10. So the
    question here is where the path ends up, not what the first hop
    says. */
-const kitchen = await fetch(`${origin}${WORKER_PIECE}`);
+const kitchen = await ask(`${origin}${WORKER_PIECE}`);
 same("a piece in the kitchen still answers", 200, kitchen.status);
 const kitchenHtml = await kitchen.text();
 ok("and is not routed through Next",
@@ -194,14 +208,23 @@ for (const [path, what] of [
     .filter((url) => /\/(insights|cooking|travel)\/[^/]+$/.test(url));
 
   const bad = [];
+  console.log(`  pieces in the sitemap: ${urls.length}`);
   for (const url of urls) {
-    const res = await fetch(url, { headers: { "Cache-Control": "no-cache" } });
-    if (!res.ok) bad.push(`${url} answered ${res.status}`);
+    /* Asked for one at a time and printed as it goes, because the
+       useful thing when this fails is which piece, and a loop that
+       prints nothing until the end tells you only that something
+       did not answer. */
+    let status;
+    try {
+      status = (await ask(url)).status;
+    } catch (err) {
+      status = err?.name === "TimeoutError" ? "no answer in 15s" : `failed: ${err}`;
+    }
+    console.log(`    ${String(status).padEnd(16)} ${url.replace(origin, "")}`);
+    if (status !== 200) bad.push(`${url.replace(origin, "")} answered ${status}`);
   }
   ok(`all ${urls.length} piece(s) in the sitemap answer`,
     bad.length === 0, bad.join("; "));
-  console.log(`  pieces in the sitemap: ${urls.length}`);
-  for (const url of urls) console.log(`    ${url.replace(origin, "")}`);
 }
 
 /* ---------- done ---------- */

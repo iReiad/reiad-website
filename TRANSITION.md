@@ -778,14 +778,22 @@ as it exists, and `/desk.html` is untouched.
 ---
 
 ### Stage 10 · Next.js takes one public route
-**Status: finished in the repository, waiting on the service
-binding. 16 August 2026.** The route exists, renders, agrees with
-the Worker on every fact it states, and the allowlist holds
-`/insights/<slug>` and nothing else, as the plan says. It stays
-off until the binding exists and turns on by itself when it does.
-Lighthouse moved, which the "done when" below did not allow for;
-the number and the reasoning are there. Size: done, bar the steps
-in section 8.
+**Status: on, and serving, with eight worksteps left. 16 August
+2026.** The second Worker is deployed, the service binding is in
+place, and an article at `/insights/<slug>.html` is rendered by
+Next on the live site. That is not inferred from the
+configuration: `scripts/check-live.mjs` asks reiad.co.uk and gets
+back a page carrying Next's own chunks, the six security headers,
+the canonical link, the drawn share card and the comment thread,
+and one of those chunks comes back as JavaScript rather than as
+this site's 404 page. The last of those is the one thing the note
+below says cannot be proved from here, and it is proved now, from
+CI, which can reach the site.
+
+Lighthouse moved, which the "done when" did not allow for; the
+number and the reasoning are below. The worksteps that remain are
+under **Still to do**, and one of them is a test article live on
+the public site.
 
 - Next.js App Router, deployed to Cloudflare Workers through
   `@opennextjs/cloudflare`, in the same repository, behind the same
@@ -983,7 +991,19 @@ which makes it the first thing to check after switching on: open
 one `/_next/static/chunks/*.js` URL and see JavaScript rather than
 a page.
 
-#### And two things a human has to do
+#### And two things a human had to do, both done 16 August 2026
+
+Both landed the same afternoon: `reiad-next` was deployed at
+07:41 UTC, the front Worker at 07:39 UTC with the binding in it,
+and the live check above is what says the pair actually works
+rather than merely existing. The deployed code was read back out
+of both Workers to be sure the account is running what this
+repository holds: the front one carries `NEXT_ROUTES` and
+`goesToNext()`, the second one carries `IS_ASSET` from
+`worker-entry.js` and the `.html` strip in `article.ts`.
+
+They are kept below because the next person setting this up from
+an empty account has to do them again, in this order.
 
 1. **Create the second Worker.** `next/wrangler.jsonc` deploys as
    `reiad-next`, with its own build (`npm run deploy` in `next/`).
@@ -1005,6 +1025,99 @@ a page.
    allowlist is already filled, so the route turns on by itself the
    moment the binding lands, and the rollback is deleting the
    binding or emptying `NEXT_ROUTES`.
+
+#### Still to do
+
+Found by auditing the switched-on stage against the live site on
+16 August 2026, rather than against the plan. The order is by what
+a reader would notice first.
+
+**10.1 A test article is live on the public site.** `insights/
+test-react-article`, titled "Test Article", body "It's a test",
+published at 04:40 UTC on 16 August while the React Studio was
+being driven. It is a `live` row, so every list that reads the
+database has it: the sitemap, the feed, the Insights hub, the home
+page rotation and the Ctrl+K palette. It is also what the next
+nightly `backup.yml` run will commit into
+`content/articles.backup.json`, which is the file that is meant to
+be restorable. Set the row to `draft` or delete it from the desk's
+Published panel. *Done when* the sitemap no longer lists it and
+`scripts/check-live.mjs` counts one piece fewer.
+
+**10.2 The repository still says four pieces are files, and three
+of them are rows.** `dse-basics`, `onions` and `uk-visit-visa` were
+all written into D1 on 15 August, so the only piece
+`fromNext()` actually catches today is `dsex`, which is a redirect
+stub `_redirects` covers anyway. The fallback is the right shape
+and stays; what is wrong is everything that describes it. The long
+comment in `worker.js`, the named list in `next/parity.test.mjs`,
+and the prose under **The three that would have broken on
+switch-on** all name four pieces that no longer exist in that
+state. `aab/insights/dse-basics.html` is now a twin nobody is
+served: the row says three minutes where the file says five, and a
+reader gets the row. *Done when* `node scripts/check-pieces.mjs
+--live` and those three descriptions agree, and Stage 3 has either
+deleted the file or said why it stays.
+
+**10.3 Nothing runs the checks.** The only workflow this
+repository had was the nightly backup. The eight `check-*.mjs`,
+the seven server tests and `next/parity.test.mjs`, 49 checks that
+exist precisely to catch a Stage 10 regression, are all run by
+hand, and `Merging: do it, do not ask` in `CLAUDE.md` leans its
+whole weight on them having been run. `live-check.yml` is the
+first CI that is not the backup, and it only asks the deployed
+site. *Done when* a workflow runs the offline checks on every
+push, and the parity test when anything under `next/` or
+`shared/` changes.
+
+**10.4 The house checklist does not mention either Stage 10
+test.** `CLAUDE.md`'s **Before deploying** list names eight
+checks and its second list names nine tests, and
+`next/parity.test.mjs` is in neither. `scripts/check-live.mjs` is
+new and belongs in neither: it describes what is deployed, so it
+needs a heading that says after rather than before. *Done when*
+both are written down where somebody about to deploy will read
+them.
+
+**10.5 The second Worker answers at its own address.**
+`next/wrangler.jsonc` does not set `workers_dev`, and the default
+is on, so `reiad-next` is also reachable at
+`reiad-next.<subdomain>.workers.dev`, where it renders the same
+articles with a canonical link pointing at reiad.co.uk, no
+`/media/` photos (it has no R2 binding, and that path is the front
+Worker's) and none of `_redirects`. Two addresses for one piece is
+the thing `getArticle()` already refuses across two mounts, and it
+is worth refusing here too. The front Worker has the same setting
+and the same issue, which predates this stage. *Done when*
+`workers_dev` and `preview_urls` are off in both configurations
+and neither hostname answers.
+
+**10.6 Lighthouse was measured on a local pair, never on the live
+one.** The table under this stage came from two local runs against
+a local database, which was the only thing possible at the time.
+The live pair can be measured now, and the two numbers that
+matter, transferred bytes and blocking time, are the ones a reader
+in Dhaka actually pays. *Done when* the live numbers sit beside
+the local ones in that table, marked as which is which.
+
+**10.7 The parity test can skip for the wrong reason.** Its
+readiness loop treats any log line matching `Error: ` as a failed
+start, and `wrangler dev` prints exactly that, harmlessly, in a
+sandbox with no outbound network: it cannot fetch the `Request.cf`
+object and says so with a stack. The test then prints "wrangler
+dev did not start, so the parity check is skipped" and exits 0.
+Optional is fine; indistinguishable from passing is not. *Done
+when* the detector matches only real startup failures, and the
+skip line says which of the two happened.
+
+**10.8 An article view is two Worker invocations now, and nothing
+priced that.** The front Worker runs, matches the allowlist and
+calls the second one over the binding. It never leaves Cloudflare
+and it is not a network hop, but it is two billable invocations
+where there was one, on the most-read kind of page on the site.
+Not a bug and not urgent: written down so that the first surprising
+invoice has an explanation waiting for it. *Done when* the number
+has been looked at once, after a week of real traffic.
 
 ---
 
@@ -1044,7 +1157,7 @@ should.
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
 | 8 | The schools' content into the database | not started |
 | 9 | React in the Studio and the desk | both done 16 Aug 2026, old pages still up |
-| 10 | Next.js takes the article route | done 16 Aug 2026, waiting on the service binding |
+| 10 | Next.js takes the article route | on and serving 16 Aug 2026, eight worksteps open |
 | 11 | The rest, one route at a time | not started |
 
 ---
