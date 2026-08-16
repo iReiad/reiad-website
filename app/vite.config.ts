@@ -64,16 +64,22 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       /* The site's own modules are NOT bundled. `/app.js`,
-         `/api.js` and `/auth.js` are served by this site at those
-         exact paths, are shared with every other page, and are
-         already in the service worker's precache list. Copying
-         them into this bundle would ship two of each and let the
-         two drift.
+         `/api.js`, `/auth.js`, `/content.js`, `/share-card.js` and
+         `/photo.js` are served by this site at those exact paths,
+         are shared with every other page, and are already in the
+         service worker's precache list. Copying them into this
+         bundle would ship two of each and let the two drift.
+
+         `/content.js` is the one that would hurt most: it is the
+         manifest the menu, the palette, the sitemap and the
+         portfolio count all read, and a second copy of it inside
+         a committed bundle is a second answer to "what is on this
+         site" that nothing would ever check against the first.
 
          Left external, the built file keeps `import { api } from
          "/api.js"` and the browser resolves it at runtime, which
          is how every other module on this site already works. */
-      external: [/^\/(app|api|auth)\.js$/],
+      external: [/^\/(app|api|auth|content|share-card|photo)\.js$/],
       output: {
         entryFileNames: "app.js",
         assetFileNames: "app.[ext]",

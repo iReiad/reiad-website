@@ -692,8 +692,9 @@ byte-identical to what the files produced.
 ---
 
 ### Stage 9 · React, where nobody can see it
-**Status: the desk is up at `/desk/`, 15 August 2026.** The Studio
-is not started. Size: a week, spread out.
+**Status: the desk is finished at `/desk/`, 16 August 2026.** All
+six panels, at parity with `desk.js` and past it. The Studio is not
+started. Size: a week, spread out.
 
 The toolchain exists and is proved: `app/` is Vite plus React plus
 TypeScript, building to `aab/desk/`, and the result runs under the
@@ -709,7 +710,7 @@ the repository. Committing the bundle needs none of that, is one
 already does with `aab/learn/**` and the other three schools. The
 rule is unchanged: edit the source, run the build, commit both.
 
-Three things the port bought immediately, none of them visual:
+Five things the port bought, none of them visual:
 
 - **The API's shapes are written down.** `app/src/api.ts` names
   what a comment, a question and an article actually are. Before
@@ -723,6 +724,17 @@ Three things the port bought immediately, none of them visual:
 - **A half-typed answer survives a redraw.** The questions panel
   keeps it in component state; the old one kept it in a
   `<textarea>` the panel owned and lost it on any repaint.
+- **The site's own modules are described, not silenced.**
+  `app/src/types/` declares `/content.js`, `/share-card.js`,
+  `/photo.js` and the rest, and `tsconfig.json` maps the runtime
+  path to the declaration. The first version put a
+  `@ts-expect-error` above each import, which suppresses the
+  complaint without describing anything: `pieceUrl(slug, section)`,
+  arguments the wrong way round, would have compiled.
+- **The desk has a browser test.** `app/desk.test.mjs`, 75 checks,
+  every one of them a thing `desk.js` did. See the log entry for
+  16 August: it is the only reason the second half of this stage
+  can be called finished rather than assumed to be.
 
 The first React in this repository should be somewhere a mistake
 costs nothing: no reader, no search engine, no share card. That is
@@ -744,10 +756,16 @@ for.
 - The old `studio.html` stays at its URL until the new one has done
   a real publish. Then it is deleted.
 
-Still to do: the Studio, and the desk's remaining panels
-(enquiries, subscribers, what's read, and the Published panel's
-write actions, which stay on the old desk until the Studio moves
-because they are where a port going wrong costs something).
+Still to do: the Studio. The desk is done, including the panels
+that were held back the first time round (enquiries, subscribers,
+what's read) and the Published panel's write actions, which were
+held back on the grounds that they are where a port going wrong
+costs something. That reasoning did not survive contact with the
+result: a Published panel that could not draw a share card was not
+a safer half of a panel, it was a page that sent you to the old
+desk to finish the job. Drawing a card, moving a piece, restoring
+a version and deleting a row are all here, and the browser test
+drives every one of them.
 
 **Done when:** a piece can be written, given photos, previewed,
 pre-flighted and published from the React Studio, and the old files
@@ -815,7 +833,7 @@ should.
 | 6 | Progress follows the account | done, 15 Aug 2026 |
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
 | 8 | The schools' content into the database | not started |
-| 9 | React in the Studio and the desk | desk started, 15 Aug 2026 |
+| 9 | React in the Studio and the desk | desk done 16 Aug 2026, Studio not started |
 | 10 | Next.js takes the article route | not started |
 | 11 | The rest, one route at a time | not started |
 
@@ -1037,6 +1055,65 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · The React desk is finished, and it was shipped half-done
+Six panels, at parity with `desk.js` and past it in four places.
+The entry below this one called the desk "up at /desk/" after
+three panels. It was up. It was not a desk.
+
+**What was actually wrong.** The three panels that existed were
+drawn with `admin-line`, the compact row class the article list
+uses, rather than `admin-row` with its `admin-meta` header, its
+`admin-q` serif body and its `btn btn-solid` actions. Questions had
+lost the search box, the per-status counts, the "new" pill and
+three of its five actions. There were no tiles, no tab badges, and
+half the panels were missing outright. Every one of those is a
+class name or a control that already existed in `styles.css` and
+in `desk.js`, so none of it was hard. It was skipped, and then
+described as a stage in progress rather than as a page that had
+been made worse.
+
+The lesson is not "port more carefully". It is that a port is the
+one kind of change where **"it renders" and "it is finished" look
+identical from the outside**, and the only way to tell them apart
+is a list of what the old thing did.
+
+**So there is one now.** `app/desk.test.mjs`, 75 checks, driving
+the built page in a real browser against fixtures, with the API
+routed rather than mocked. Every check is a feature `desk.js` had:
+the mailto on an asker's address, the anonymous asker named as one,
+"Everything" reaching an archived question, the filters carrying
+their counts, the tiles that go gold only when somebody is waiting,
+the CSV link, the sparkline, the file pieces listed beside the
+rows, the warning pill on a piece with no share card, the History
+dialog opening as a modal. It caught three real bugs while being
+written, one of them mine and two of them design:
+
+- opening a second More panel closed both, because closing the
+  first fires its own toggle event a moment later and a naive
+  handler answers that by clearing the slug just set,
+- an open More panel had no way to close except finding its
+  summary again, so Escape and a click outside now close it,
+- and the fixture for a drawn share card was the wrong shape,
+  which the panel correctly flagged. A card is
+  `/media/<slug>-card/<hash>.jpg`; anything else is a photo.
+
+**Four things it now does that the old desk did not.** Most read
+names a path instead of printing it, by asking `searchIndex()`
+first and the database second, so a tool or a lesson at the top of
+the table reads as a title rather than as a server log. Comments
+are searchable. Enquiries say how many are behind every filter,
+not just the one you are looking at. And switching tabs unmounts
+the panel you left, so a half-written answer cannot reappear
+inside somebody's private note.
+
+**Nothing new was styled.** Every class rendered here already
+existed. That was the constraint at the top of this stage and it
+held: the diff to `styles.css` is empty.
+
+Next: the Studio, which is the part of this stage that is actually
+hard, and which now has a worked example of what "finished" has to
+mean before it starts.
 
 ### 2026-08-15 · Stage 9 begun: React is on the site, at /desk/
 The first React in this repository, on the page where a mistake

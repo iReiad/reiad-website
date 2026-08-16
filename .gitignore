@@ -4,3 +4,8 @@
 .wrangler/
 node_modules/
 .dev.vars
+
+# TypeScript's incremental build cache. Per-machine, rewritten on
+# every build, and says nothing about the source. The React app's
+# real output is aab/desk/, which IS committed and on purpose.
+app/tsconfig.tsbuildinfo
