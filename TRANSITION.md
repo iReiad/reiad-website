@@ -2109,6 +2109,27 @@ the browser and Next can all reach them. In order:
   from or checked against the same definitions, so a renamed route
   is a build error.
 
+  **The check half is done, 16 August 2026.**
+  `scripts/check-api.mjs` reads `API_ROUTES` out of `worker.js`
+  and every call site out of `aab/**` and `app/src/**`, and fails
+  in both directions: a mount the browser asks for that nothing
+  routes, and a mount routed that nothing asks for. Proved by
+  renaming `/api/signals` to `/api/pulses` and watching it fail
+  twice.
+
+  It also found the thing worth knowing before the typed client
+  is written: **there are two calling conventions, not one.**
+  `aab/comments.js` uses `fetch("/api/comments")` directly rather
+  than `api()`, and it is right to: a thread wants the status code
+  and the error body, and `api()` deliberately flattens both into
+  `null` so that every other caller can have a static fallback.
+  The typed client has to keep both shapes, or it will make the
+  comments thread worse in order to make a bar go green.
+
+  The mount is all this checks, deliberately. What comes after it
+  belongs to the handler, and a check that knew those paths would
+  be a second copy of every handler.
+
 **What stays a separate Worker, and why.** Not everything belongs
 in the app. `market-pulse` is a scheduled job that talks to an
 exchange and answers one question; the nightly backup and the
@@ -2193,7 +2214,7 @@ repository is.
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | **done, 16 Aug 2026**. 6 HTML files left in aab/, from 283: 404, offline and the four practice books |
-| 12 | The backend, typed and in one shape | steps 1 and 2 done, 16 Aug 2026: every row described, and one place decides what a bad request is |
+| 12 | The backend, typed and in one shape | steps 1, 2 and half of 4 done, 16 Aug 2026: rows described, one place decides a bad request, and the browser cannot name a route that is gone |
 | 13 | The last JavaScript | not started |
 | 14 | One way of writing a style, and it is Tailwind | decided 16 Aug 2026, unblocked by 11.7 the same day |
 
@@ -2447,6 +2468,36 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Stage 12 step 4, the half of it that is a check
+
+`scripts/check-api.mjs`. `aab/api.js` knows every endpoint by
+string and `worker.js` decides what those strings mean by a table
+of prefixes, and nothing connected the two. Rename a mount and
+every call in `api.js` returns `null`, which is by design: the
+page does not break, it quietly stops doing the thing. That is
+the worst shape a bug can have here, and Stage 1 was three
+instances of the same shape.
+
+It fails in both directions and was proved by renaming
+`/api/signals` to `/api/pulses`: the browser asking for something
+nothing routes, and something routed that nothing asks for.
+
+**And it found what needed knowing before a typed client is
+written.** There are two calling conventions, not one.
+`aab/comments.js` calls `fetch("/api/comments")` directly rather
+than going through `api()`, and it is right to: a thread wants
+the status code and the error body, and `api()` deliberately
+flattens both into `null` so that every other caller can have a
+static fallback. A typed client that assumed one convention would
+make the comments thread worse in order to make a bar go green.
+
+Writing the check turned up its own blind spots twice, both worth
+keeping: `api()` is called as `api<T>(...)` in the Studio, with
+the generic between the name and the bracket, and `search` is
+called with a query rather than a slash after the mount. A check
+that could not see either would have reported two live endpoints
+as dead.
 
 ### 2026-08-16 · Stage 12 step 2: what a bad request looks like, decided once
 

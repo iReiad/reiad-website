@@ -170,6 +170,9 @@ node scripts/check-schools.mjs # a ladder the browser and the builders disagree 
 node scripts/check-rows.mjs # a description of the database that has stopped
                             # being true, or a handler keeping its own copy
                             # of a vocabulary
+node scripts/check-api.mjs  # the browser asking for an endpoint the Worker
+                            # stopped routing, which breaks nothing and
+                            # quietly switches a feature off
 node scripts/build-school-icons.mjs --check   # a school drawing next/ copied
 node scripts/build-school-hubs.mjs --check    # a school page next/ copied
 node scripts/check-next.mjs # a copy inside next/ that has drifted from the
