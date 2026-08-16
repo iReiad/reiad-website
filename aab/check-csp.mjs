@@ -68,16 +68,17 @@ const jsFiles = [];
 
 /* Generated bundles are skipped, and their SOURCE is read instead.
 
-   `aab/desk/app.js` is Vite's output: two hundred kilobytes of
-   React with this app's few hundred lines inside it. Scanning it
-   finds `https://react.dev`, which React puts in its error
-   messages and never fetches, and it would find a new false alarm
-   on every upgrade of somebody else's library.
+   `aab/desk/app.js` and `aab/studio/app.js` are Vite's output:
+   two hundred kilobytes of React each, with this app's few
+   hundred lines inside them. Scanning one finds
+   `https://react.dev`, which React puts in its error messages and
+   never fetches, and it would find a new false alarm on every
+   upgrade of somebody else's library.
 
    Skipping it would lose the guarantee, so `app/src` is walked
    instead. That is where a fetch this site is responsible for
    would actually be written, and it is a hundredth of the size. */
-const GENERATED = new Set(["desk"]);
+const GENERATED = new Set(["desk", "studio"]);
 
 const walk = (dir, skip = new Set()) => {
   for (const name of readdirSync(dir)) {

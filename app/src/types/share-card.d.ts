@@ -20,6 +20,11 @@ export interface Cover {
 }
 
 export function shareCardBlob(cover: Cover): Promise<Blob>;
+
+/** The cover a parsed article implies: the photo marked `lead-photo`
+    if there is one, otherwise the first, and which part of it to
+    keep. `own` is false when the piece has no photo at all. */
+export function coverFromDocument(doc: Document): Cover;
 export function coverFromHTML(html: string): Cover;
 
 /** Where a piece's drawn card lives in R2, derived from its slug. */

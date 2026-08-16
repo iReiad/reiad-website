@@ -692,9 +692,10 @@ byte-identical to what the files produced.
 ---
 
 ### Stage 9 · React, where nobody can see it
-**Status: the desk is finished at `/desk/`, 16 August 2026.** All
-six panels, at parity with `desk.js` and past it. The Studio is not
-started. Size: a week, spread out.
+**Status: both are up, 16 August 2026.** The desk at `/desk/`, all
+six panels; the Studio at `/studio/`, everything the old page did.
+The two old pages stay at their URLs until the new ones have done
+real work. Size: a week, spread out.
 
 The toolchain exists and is proved: `app/` is Vite plus React plus
 TypeScript, building to `aab/desk/`, and the result runs under the
@@ -756,7 +757,9 @@ for.
 - The old `studio.html` stays at its URL until the new one has done
   a real publish. Then it is deleted.
 
-Still to do: the Studio. The desk is done, including the panels
+Still to do: nothing in this stage but deleting the two old pages,
+once the new ones have been used in anger. The desk is done,
+including the panels
 that were held back the first time round (enquiries, subscribers,
 what's read) and the Published panel's write actions, which were
 held back on the grounds that they are where a port going wrong
@@ -833,7 +836,7 @@ should.
 | 6 | Progress follows the account | done, 15 Aug 2026 |
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
 | 8 | The schools' content into the database | not started |
-| 9 | React in the Studio and the desk | desk done 16 Aug 2026, Studio not started |
+| 9 | React in the Studio and the desk | both done 16 Aug 2026, old pages still up |
 | 10 | Next.js takes the article route | not started |
 | 11 | The rest, one route at a time | not started |
 
@@ -1055,6 +1058,56 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · The Studio, in React, and the editor became a module
+The hard half of Stage 9. `aab/studio.js` was 2,464 lines: a
+contenteditable with a sanitiser, a slash menu, markdown rules and
+a figure toolbar, plus the fields, the preview, the meters, the
+pre-flight panel, the sheets, the drafts and the publish.
+
+**The decision that made it tractable was not a React one.** Those
+two halves are different kinds of thing. The second is a function
+of state and is exactly what a component tree is for. The first is
+a piece of the DOM that the browser and the writer are both
+editing behind React's back, and rendering it from state means
+replacing the node the caret is sitting in on every keystroke.
+
+So the writing surface came out first, into `aab/editor.js`, and
+both Studios import it. That is a refactor of a working file with
+five known bugs written into its comments, which is the sort of
+thing that goes wrong quietly, so it went in as its own commit
+with `aab/studio.test.mjs` green at all 70 checks and the publish
+test driving a real photo to R2 under the real CSP. The seam is
+the root element: `studio.js` reached for `#editor` at module
+scope, so importing any part of it imported a page.
+
+What React owns now: the fields, the segmented section picker, the
+topic chips, the three previews, the weight meter, pre-flight, the
+Open and Notion sheets, the drafts in IndexedDB and the publish.
+What it does not own: one `<div contenteditable>`, rendered once,
+empty, and handed to `createEditor()`.
+
+**One thing is better rather than the same.** The old file
+recomputed `meta()` at eleven call sites and had to remember to;
+here it is a `useMemo` of the fields, the topics and a counter
+that says the body moved, and the preview, the meters, the
+pre-flight panel and the publish payload are all functions of it.
+The counter is the only unusual thing in the file and it is the
+honest way to say "something React does not own has changed".
+
+`app/studio.test.mjs`, 86 checks, in two passes: without a
+database, where the Studio has always run as a local editor and
+says so, and with one, where publishing, the desk count, the
+Notion button and the slug-collision block appear. It caught three
+things: the topic box keeps what was typed when a topic is refused
+(deliberate, and it means Backspace is editing text rather than
+reaching the chips), a fixture keyed on the path alone answered
+`articles` for `articles?all=1` and made four real features look
+missing, and Vite resolves a relative `outDir` against the project
+root, which put the Studio's build inside `app/`.
+
+Next: Stage 10, which is the first public route, and the first
+place any of this can be seen by a reader.
 
 ### 2026-08-16 · The React desk is finished, and it was shipped half-done
 Six panels, at parity with `desk.js` and past it in four places.

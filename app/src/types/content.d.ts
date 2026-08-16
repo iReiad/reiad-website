@@ -12,7 +12,17 @@ export interface Section {
   id: string;
   en: string;
   bn: string;
+  /** The URL prefix its pieces are served at, with both slashes. */
+  mount: string;
+  /** The page that lists them. */
+  hub: string;
+  /** The name of the array in content.js that holds them. */
+  list: string;
   lang: string;
+  /** One line saying what goes here, shown under the picker. */
+  blurb: string;
+  /** The pieces in this section, as content.js has them. */
+  pieces: () => FilePiece[];
 }
 
 /** A piece written as a committed file rather than a database row. */
