@@ -12,10 +12,13 @@ now" should not be a search. One item, replaced when it lands.
 > books, which are the same for every reader and are in no
 > database. It held 283 in the morning.
 >
-> Stage 13 is the surviving modules to TypeScript and needs the
-> decision below about a build step for `aab/`. Then Stage 14
-> (Tailwind), which was waiting for exactly this. Stage 12 (the
-> backend) runs alongside either.
+> Stage 13 is the surviving modules to TypeScript. The build-step
+> decision it was waiting on is taken (section 7, 16 August 2026):
+> the arrangement `app/` already has, source in `src/`, output
+> committed at the path it is served from, and a check comparing
+> the two. Then Stage 14 (Tailwind), which was waiting for the
+> same answer. Stage 12 (the backend) runs alongside either, and
+> its steps 1, 2 and half of 4 are done.
 >
 > Not next, and deliberately: the calculators and the case-study
 > models. Left where they are, at their own request.
@@ -2010,7 +2013,7 @@ which is the mistake Stage 13's own rule already names.
 ---
 
 ### Stage 12 · The backend, typed and in one shape
-**Status: step 1 done, 16 August 2026.** Size: weeks. Ran
+**Status: steps 1 and 2 done, 16 August 2026.** Size: weeks. Ran
 alongside Stage 11 and continues after it.
 
 Twenty-two files under `functions/`, 1,842 lines, all plain
@@ -2062,10 +2065,43 @@ the browser and Next can all reach them. In order:
   and `binned`. A description of a database is not an opportunity
   to improve it, and the check caught that by reading the handler
   rather than the schema.
-2. **One request pipeline.** Parse, validate, authorise, handle,
-  respond, with a single error shape and a single place that
-  decides what a 400 looks like. The handlers become the middle
-  of that sandwich rather than the whole of it.
+2. **One request pipeline.** **Step 2 done, 16 August 2026**,
+  and it turned out to be half the job the plan described,
+  because the other half was already there.
+
+  The error SHAPE has been one thing since the beginning:
+  `_lib/http.js` writes `{ ok: false, reason }` and all
+  twenty-three endpoints use it. What was never one thing is the
+  RULES. `functions/_lib/input.js` is a declaration read once per
+  request, and the three write endpoints read it now:
+
+      const got = await read(request, {
+        slug: { slug: true, required: "slug-required" },
+        body: { text: true, min: 2, max: 4000, short: "empty" },
+      });
+      if (got.bad) return got.bad;
+
+  **The reason strings were deliberately not tidied.** They are
+  an API contract: `aab/api.js` and both React apps read `reason`
+  and some of them switch on it, so renaming `empty` to
+  `too-short` to make one file read better would be changing an
+  interface to improve a comment. Each declaration names the
+  reason its endpoint already answers with. The three minimums
+  (2, 10 and 10) are named constants beside their reasons now,
+  visibly three decisions rather than one that drifted.
+
+  `scripts/input.test.mjs` is 36 checks over the module, because
+  a rule that stops rejecting is a hole in three endpoints at
+  once and none of them would fail visibly. It pins the one
+  ordering decision in the file: the cap is applied before the
+  minimum, so a 5000 character body capped at 4000 passes and is
+  stored truncated, rather than passing by luck.
+
+  What is still per handler and should be: authorisation, the
+  throttle, and any rule only one endpoint has. The honeypot on
+  the enquiries endpoint runs before anything can fail, so a bot
+  gets the same cheerful answer as a person and learns nothing
+  from a validation error.
 3. **The handlers become route handlers.** A Next.js route handler
   under `next/app/api/**` is the same function with the shim
   removed, and it is where this ends up for anything the site's
@@ -2075,6 +2111,27 @@ the browser and Next can all reach them. In order:
 4. **`api.js` stops knowing strings.** One typed client, generated
   from or checked against the same definitions, so a renamed route
   is a build error.
+
+  **The check half is done, 16 August 2026.**
+  `scripts/check-api.mjs` reads `API_ROUTES` out of `worker.js`
+  and every call site out of `aab/**` and `app/src/**`, and fails
+  in both directions: a mount the browser asks for that nothing
+  routes, and a mount routed that nothing asks for. Proved by
+  renaming `/api/signals` to `/api/pulses` and watching it fail
+  twice.
+
+  It also found the thing worth knowing before the typed client
+  is written: **there are two calling conventions, not one.**
+  `aab/comments.js` uses `fetch("/api/comments")` directly rather
+  than `api()`, and it is right to: a thread wants the status code
+  and the error body, and `api()` deliberately flattens both into
+  `null` so that every other caller can have a static fallback.
+  The typed client has to keep both shapes, or it will make the
+  comments thread worse in order to make a bar go green.
+
+  The mount is all this checks, deliberately. What comes after it
+  belongs to the handler, and a check that knew those paths would
+  be a second copy of every handler.
 
 **What stays a separate Worker, and why.** Not everything belongs
 in the app. `market-pulse` is a scheduled job that talks to an
@@ -2097,8 +2154,10 @@ is still there.
 ---
 
 ### Stage 13 · The last JavaScript
-**Status: not started.** Size: continuous, and mostly a
-by-product.
+**Status: unblocked, 16 August 2026, not started.** Size:
+continuous, and mostly a by-product. The build-step decision it
+was waiting on is in section 7: the arrangement `app/` already
+has, which means this stage needs no new one.
 
 The language mix is the honest measure of how far this has got.
 On 16 August 2026 GitHub reads this repository as 61% HTML, 33%
@@ -2160,8 +2219,8 @@ repository is.
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | **done, 16 Aug 2026**. 6 HTML files left in aab/, from 283: 404, offline and the four practice books |
-| 12 | The backend, typed and in one shape | step 1 done, 16 Aug 2026: every row described, and checked against the schema |
-| 13 | The last JavaScript | not started |
+| 12 | The backend, typed and in one shape | steps 1, 2 and half of 4 done, 16 Aug 2026: rows described, one place decides a bad request, and the browser cannot name a route that is gone |
+| 13 | The last JavaScript | unblocked 16 Aug 2026: the build step is decided, not started |
 | 14 | One way of writing a style, and it is Tailwind | decided 16 Aug 2026, unblocked by 11.7 the same day |
 
 ---
@@ -2328,6 +2387,51 @@ change.
 private, has no SEO surface, and is the code that would benefit
 most. A reading page is the opposite on all three counts.
 
+**A build step for `aab/`, and it is the one `app/` already has.
+Decided 16 August 2026.** Stage 13 needs an answer to "how does a
+TypeScript module get served at `/content.js`" and Stage 14 needs
+the same answer for CSS, and the answer is not a new arrangement:
+it is the arrangement that has been in this repository since
+Stage 9, applied to more files.
+
+`app/` is Vite, React and TypeScript, and **its output is
+committed**. That is not laziness. The site deploys by uploading
+`aab/`; there is no build step in CI, and adding one would mean a
+build command in a dashboard that cannot be seen from the
+repository, which is the failure mode this whole document is
+written against. So the rule is: edit the source, run the build,
+commit both, and a check compares the two.
+
+What that means concretely for the surviving browser modules:
+
+- **Source moves to `src/`**, output stays at the exact path it is
+  served from. `/content.js` is imported by name in HTML this
+  site does not fully control any more (the schools' pages are
+  routes now, but `app.js` is loaded by every one of them), so
+  the path is fixed and a hashed chunk would fight it. That is
+  the same constraint `vite.config.ts` already answers for the
+  desk and the Studio.
+- **The site's own modules stay external.** `/app.js`,
+  `/api.js`, `/content.js` and the rest are imported at runtime
+  by both React apps precisely so there is one copy. That does
+  not change; they get types, not a bundler.
+- **`sw.js` does not convert**, and the reason in Stage 13 stands
+  and is now the only remaining exception rather than a
+  placeholder: it is served at a fixed path as a service worker
+  and is not built by anything.
+- **A check compares source and output**, exactly as
+  `check-schools-built.mjs` did for the schools until there were
+  no pages left, and as `check-next.mjs` does for the copies
+  inside `next/`. A committed artefact nobody checks is the
+  failure this repository has written up more times than any
+  other.
+
+**What was turned down.** Building in CI, because the build
+command would live in a dashboard. Serving TypeScript directly,
+because no browser does. And a bundler for the site's own modules,
+because bundling them is what would create the second copy the
+externals were arranged to avoid.
+
 **Not Tailwind, not CSS-in-JS, not a component library.**
 `styles.css` is one file with an explicit layer order and a check
 that guards it. Introducing a second styling system alongside it
@@ -2414,6 +2518,94 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · The build step for `aab/`, decided
+
+Stage 13 has been waiting on one question since it was written:
+how does a TypeScript module get served at `/content.js` on a site
+that deploys by uploading a directory? Stage 14 waits on the same
+question for CSS.
+
+The answer is not a new arrangement. It is the one `app/` has had
+since Stage 9: source in `src/`, build on a laptop, **output
+committed**, at the exact path it is served from, with a check
+comparing the two. Written up in section 7 with what was turned
+down: building in CI, because the build command would then live in
+a dashboard that cannot be seen from this repository, which is the
+failure mode this whole document is written against.
+
+Nothing was built today. A decision that unblocks two stages and
+costs no code is worth taking on its own, and taking it while the
+reasons are fresh is better than taking it in six months from the
+same evidence.
+
+### 2026-08-16 · Stage 12 step 4, the half of it that is a check
+
+`scripts/check-api.mjs`. `aab/api.js` knows every endpoint by
+string and `worker.js` decides what those strings mean by a table
+of prefixes, and nothing connected the two. Rename a mount and
+every call in `api.js` returns `null`, which is by design: the
+page does not break, it quietly stops doing the thing. That is
+the worst shape a bug can have here, and Stage 1 was three
+instances of the same shape.
+
+It fails in both directions and was proved by renaming
+`/api/signals` to `/api/pulses`: the browser asking for something
+nothing routes, and something routed that nothing asks for.
+
+**And it found what needed knowing before a typed client is
+written.** There are two calling conventions, not one.
+`aab/comments.js` calls `fetch("/api/comments")` directly rather
+than going through `api()`, and it is right to: a thread wants
+the status code and the error body, and `api()` deliberately
+flattens both into `null` so that every other caller can have a
+static fallback. A typed client that assumed one convention would
+make the comments thread worse in order to make a bar go green.
+
+Writing the check turned up its own blind spots twice, both worth
+keeping: `api()` is called as `api<T>(...)` in the Studio, with
+the generic between the name and the bracket, and `search` is
+called with a query rather than a slash after the mount. A check
+that could not see either would have reported two live endpoints
+as dead.
+
+### 2026-08-16 · Stage 12 step 2: what a bad request looks like, decided once
+
+`functions/_lib/input.js`, and the three write endpoints read it.
+Half of what the plan described was already there: the error
+shape has been `{ ok: false, reason }` from `_lib/http.js` since
+the beginning. What was never one thing is the rules.
+
+The clearest case is the one the plan names. A comment shorter
+than its minimum answered `empty`; a question shorter than its
+minimum answered `too-short`; an enquiry too, and the minimums
+were 2, 10 and 10. Three numbers and two words for one idea, in
+three files that are otherwise the same handler with different
+nouns.
+
+**The reason strings were not tidied, on purpose.** They are an
+API contract: `aab/api.js` and both React apps read `reason` and
+some switch on it, so renaming `empty` to `too-short` to make a
+new file read better would be changing an interface to improve a
+comment. Each declaration names the reason its endpoint already
+returns. The three minimums are named constants beside their
+reasons, which makes them visibly three decisions rather than one
+that drifted.
+
+Two duplicates went with it: `safeSlug`, written out identically
+in the comments and articles endpoints, and `Number(x) || 0` as
+an id test, which six endpoints used and which says yes to 3.7
+and to -1.
+
+`scripts/input.test.mjs` is 36 checks, because a rule that stops
+rejecting is a hole in three endpoints at once and none of them
+would fail visibly. It pins the one ordering decision in the
+file: the cap is applied before the minimum, so a 5000 character
+body capped at 4000 passes and is stored truncated rather than
+passing by luck.
+
+Next: step 3, the handlers as Next.js route handlers, which
+follows Stage 11's order rather than its own.
 
 ### 2026-08-16 · Stage 12 step 1: one description of every row
 

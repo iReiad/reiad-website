@@ -13,12 +13,20 @@
    ============================================================ */
 
 import { all, db, one, run } from "../../_lib/db.js";
-import { body, fail, isEmail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.js";
+import { body, fail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.js";
 import { requireAdmin, throttle } from "../../_lib/auth.js";
 import { ENQUIRY_KIND, ENQUIRY_STATUS, allowed } from "../../../shared/rows.js";
+import { read } from "../../_lib/input.js";
 
 /* TRANSITION.md Stage 12, step 1: the list is shared/rows.js now. */
 const KINDS = ENQUIRY_KIND;
+
+/* Ten characters, which is what this endpoint has always asked
+   for. The comments endpoint asks for two and the questions
+   endpoint for ten, and the three numbers being visible beside
+   each other is the point of Stage 12 step 2 rather than a thing
+   it was going to unify. */
+const MIN_MESSAGE = 10;
 
 export async function onRequest(context) {
   const { request, params } = context;
@@ -31,20 +39,30 @@ export async function onRequest(context) {
     POST: async () => {
       if (await throttle(context, "enquiry", 6, 60)) return fail("too-many", 429);
 
-      const input = await body(request);
-      if (str(input.website, 100)) return ok({ received: true });   // honeypot
+      /* The honeypot first, and before anything can fail: a bot
+         that filled the hidden field gets the same cheerful
+         answer as a person, and learns nothing from a validation
+         error it could have used to try again. */
+      const early = await read(request, { website: { text: true, max: 100 } });
+      if (early.bad) return early.bad;
+      if (early.value.website) return ok({ received: true });
 
-      const email = str(input.email, 200);
-      const message = str(input.message, 8000);
-      if (!isEmail(email)) return fail("bad-email");
-      if (message.length < 10) return fail("too-short");
+      /* TRANSITION.md Stage 12, step 2. Same declaration as the
+         other two write endpoints, this one's own minimum, and
+         the reasons this endpoint has always answered with. */
+      const got = await read(request, {
+        email: { email: true, required: "bad-email", invalid: "bad-email" },
+        message: { text: true, min: MIN_MESSAGE, max: 8000, short: "too-short" },
+        name: { text: true, max: 120 },
+        kind: { oneOf: KINDS },
+      });
+      if (got.bad) return got.bad;
+      const { email, message, name, kind } = got.value;
 
       await run(d1,
         `INSERT INTO enquiries (name, email, kind, message, status, created_at)
          VALUES (?, ?, ?, ?, 'new', ?)`,
-        str(input.name, 120), email,
-        KINDS.includes(input.kind) ? input.kind : "general",
-        message, nowISO());
+        name, email, kind || "general", message, nowISO());
 
       return ok({ received: true });
     },

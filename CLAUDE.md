@@ -170,6 +170,9 @@ node scripts/check-schools.mjs # a ladder the browser and the builders disagree 
 node scripts/check-rows.mjs # a description of the database that has stopped
                             # being true, or a handler keeping its own copy
                             # of a vocabulary
+node scripts/check-api.mjs  # the browser asking for an endpoint the Worker
+                            # stopped routing, which breaks nothing and
+                            # quietly switches a feature off
 node scripts/build-school-icons.mjs --check   # a school drawing next/ copied
 node scripts/build-school-hubs.mjs --check    # a school page next/ copied
 node scripts/check-next.mjs # a copy inside next/ that has drifted from the
@@ -186,6 +189,8 @@ And when anything under `functions/` or `scripts/` changed:
 node scripts/restore.test.mjs      # a backup that would not restore
 node scripts/reader.test.mjs       # somebody posting as somebody else
 node scripts/comments.test.mjs     # a comment appearing without approval
+node scripts/input.test.mjs        # a rule that stopped rejecting, in the one
+                                   # place three endpoints read (36 checks)
 node scripts/snapshot.test.mjs     # a nightly snapshot that leaks, or that throws
                                    # at 03:17 where nobody is watching
 node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the

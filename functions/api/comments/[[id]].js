@@ -40,6 +40,7 @@ import { requireAdmin } from "../../_lib/auth.js";
 import { throttle } from "../../_lib/auth.js";
 import { readerFrom } from "../../_lib/reader.js";
 import { SECTIONS, COMMENT_STATUS, allowed } from "../../../shared/rows.js";
+import { read, safeSlug } from "../../_lib/input.js";
 
 /* Never `author_id`. The site shows a name, not an identifier, and
    a reader's Supabase id is not the public's business. */
@@ -56,10 +57,10 @@ const MIN_BODY = 2;
    not. */
 const safeSection = (v) => (allowed(SECTIONS, v) ? String(v) : "insights");
 
-const safeSlug = (v) => {
-  const s = str(v, 120).toLowerCase();
-  return /^[a-z0-9-]+$/.test(s) ? s : "";
-};
+/* `safeSlug` is imported from _lib/input.js as of Stage 12 step
+   2. It was written out here and in the articles endpoint, and
+   both said the same thing: lower case, and nothing in it that
+   could become a path segment somewhere else. */
 
 export async function onRequest(context) {
   const { request, params, env } = context;
@@ -126,12 +127,18 @@ export async function onRequest(context) {
          the questions endpoint uses two files away. */
       if (await throttle(context, "comment", 10, 60)) return fail("too-many", 429);
 
-      const input = await body(request);
-      const slug = safeSlug(input.slug);
-      if (!slug) return fail("slug-required");
-
-      const text = str(input.body, MAX_BODY);
-      if (text.length < MIN_BODY) return fail("empty");
+      /* TRANSITION.md Stage 12, step 2. The three checks below
+         were three checks in three files with three different
+         minimums; the declaration is what they are now, and the
+         reasons are the ones this endpoint has always answered
+         with, because a browser reads them. */
+      const got = await read(request, {
+        slug: { slug: true, required: "slug-required" },
+        body: { text: true, min: MIN_BODY, max: MAX_BODY, short: "empty" },
+      });
+      if (got.bad) return got.bad;
+      const { slug, body: text } = got.value;
+      const input = got.input;
 
       /* A reply has to point at a real, live comment on the SAME
          piece, or "one level of replies" is a suggestion rather
