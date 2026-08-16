@@ -56,7 +56,7 @@
    a second, next to the other checks, or it will not get run.
    ============================================================ */
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -67,13 +67,13 @@ const SCHOOLS = [
   { layer: "deutsch", owns: ["deutsch/"] },
   { layer: "quran", owns: ["quran/"] },
   { layer: "english", owns: ["english/"] },
-  /* One layer, two folders and a module: the kitchen and the travel
-     desk hold the same shape of thing and share their furniture,
-     and reads.js is the file that draws both index pages. `owns`
-     has always been a list; this is the first time it needed to be,
-     and the first time a single file rather than a folder belonged
-     to a layer. */
-  { layer: "reads", owns: ["cooking/", "travel/", "reads.js"] },
+  /* One layer and two folders. It owned `reads.js` too until
+     Stage 11.1, which is when both index pages became Next.js
+     routes and that module stopped having anything to draw. Most
+     of what this layer styles is rendered by `next/components/`
+     now, which this check cannot see; what it still catches is the
+     reads layer leaking into the rest of the site. */
+  { layer: "reads", owns: ["cooking/", "travel/", "../next/"] },
 ];
 
 const css = readFileSync(join(ROOT, "styles.css"), "utf8");
@@ -119,16 +119,27 @@ function topLevelSelectors(body) {
 
 /* every file that can carry a class name */
 const files = [];
-(function walk(dir) {
+function walk(dir) {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) {
       if (!["og", "node_modules"].includes(entry)) walk(full);
-    } else if (/\.(html|js|mjs)$/.test(entry)) {
+    } else if (/\.(html|js|mjs|tsx)$/.test(entry)) {
       files.push(relative(ROOT, full));
     }
   }
-})(ROOT);
+}
+walk(ROOT);
+
+/* And the Next.js app, which is not in `aab/` and renders into
+   these same layers. Since Stage 11.1 the markup carrying
+   `.read-card` and `.read-hero` is a component rather than a
+   page, and a check that could not see it reported every rule in
+   the reads layer as styling nothing at all: which is a leak, as
+   far as this file can tell, and is not. */
+for (const outside of ["../next/app", "../next/components"]) {
+  if (existsSync(join(ROOT, outside))) walk(join(ROOT, outside));
+}
 
 const markup = new Map(
   files.filter((f) => f !== "check-css.mjs").map((f) => [f, readFileSync(join(ROOT, f), "utf8")])

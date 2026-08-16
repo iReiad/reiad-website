@@ -19,15 +19,48 @@
      1. _redirects rules, in file order, first match wins
      2. otherwise /foo.html is 308-redirected to /foo
      3. /foo serves foo.html, /dir serves dir/index.html
+
+   And one step in front of all three, since Stage 11: a path in
+   `run_worker_first` never reaches the asset router at all. It is
+   answered by a Worker, and whether a file exists at that address
+   is not a question anybody asks. Both halves are read out of the
+   real files rather than typed here, so this catches the mistake
+   that shape of routing invites: a route added to `NEXT_ROUTES`
+   and not to `run_worker_first`, where the asset router answers
+   first and the Worker is never called.
    ============================================================ */
 
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { liveArticles } from "./content.js";
+import { NEXT_ROUTES, ARTICLE } from "../worker.js";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const MAX_HOPS = 10;
+
+/* ---------- what a Worker answers ---------- */
+
+/* The patterns in `run_worker_first`, straight out of wrangler.toml.
+   A `*` there matches any number of characters, including slashes. */
+const WORKER_FIRST = (
+  readFileSync(join(ROOT, "../wrangler.toml"), "utf8")
+    .match(/run_worker_first\s*=\s*\[([\s\S]*?)\]/)?.[1] ?? ""
+).match(/"([^"]+)"/g)?.map((quoted) => quoted.slice(1, -1)) ?? [];
+
+const globs = (pattern, path) =>
+  new RegExp(`^${pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`)
+    .test(path);
+
+/** Does a Worker answer this, whatever is or is not in `aab/`?
+
+    Both halves have to be true, and that is the point. A path in
+    the allowlist that the asset router still gets to first is
+    answered by a file; a path the Worker would claim that is not
+    in `run_worker_first` never reaches it. */
+const workerAnswers = (path) =>
+  WORKER_FIRST.some((pattern) => globs(pattern, path))
+  && (ARTICLE.test(path) || NEXT_ROUTES.some((route) => route.test(path)));
 
 /* ---------- the rules ---------- */
 
@@ -43,6 +76,13 @@ const rules = readFileSync(join(ROOT, "_redirects"), "utf8")
 function step(path) {
   const rule = rules.find((r) => r.from === path);
   if (rule) return { redirect: rule.to, why: `_redirects` };
+
+  /* After the redirect rules rather than before them, which is
+     what the site actually does: `/insights/dsex.html` is a
+     Worker path AND carries a 301, and the 301 is what fires,
+     because the handler declines a slug with no row and the asset
+     router is what answers next. */
+  if (workerAnswers(path)) return { file: "(a Worker renders this)" };
 
   if (path.endsWith(".html")) {
     const stripped = path.replace(/(\/index)?\.html$/, "") || "/";

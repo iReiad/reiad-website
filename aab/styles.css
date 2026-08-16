@@ -6167,16 +6167,6 @@ German for day, and .tag is what the site has always called
      as a visa piece does, and the Studio can only offer a block
      that every section can style. */
 
-  /* ---------- the allium family ---------- */
-  .attiyo {
-    margin-block: 20px 28px;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-
-    & .cell { display: grid; gap: 6px; align-content: start; }
-    & h3 { font-size: 1.1rem; }
-    & p { margin: 0; font-size: 0.95rem; color: var(--ink-soft); max-width: none; }
-  }
-
   /* ============================================================
      THE INDEX OF A SECTION
      ============================================================ */
@@ -6202,21 +6192,12 @@ German for day, and .tag is what the site has always called
   }
   .read-art { color: var(--gold); }
   .read-art .art { width: 30px; height: 30px; }
-  .read-en {
-    color: var(--ink-soft); font-size: 0.66rem;
-    text-transform: none; letter-spacing: 0.04em;
-  }
   .read-meta {
     display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline;
     margin-top: auto; padding-top: 10px;
     color: var(--ink-soft); font-size: 0.72rem;
 
     & .more { margin-inline-start: auto; }
-  }
-  .read-note { color: var(--gold); font-size: 0.85rem; }
-  .read-fallback {
-    display: grid; gap: 10px; color: var(--ink-soft);
-    & b { color: var(--ink); }
   }
 
   /* A piece is printed to be propped against something greasy, or

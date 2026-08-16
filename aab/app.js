@@ -19,7 +19,7 @@
    ============================================================ */
 
 import {
-  searchIndex, liveArticles, ARTICLES, formatDate, topics,
+  searchIndex, formatDate,
   PAGES, TOOLS, STAGES, STUFEN, stufeUrl, SITE, SEARCH_GROUPS,
   SKILLS, skillUrl, COUNTS,
 } from "/content.js";
@@ -996,100 +996,55 @@ async function initArticleCards() {
      section this page is about: the merged list used to be every
      live row in the database, so a kitchen piece appeared on the
      Insights index. */
-  const source = await piecesIn(host.dataset.section ?? "insights");
-  const live = source.slice(0, limit);
-  // the home page shows what exists; the Insights index also teases what's coming
-  const soon = host.dataset.mode === "live" ? [] : ARTICLES.filter((a) => a.status === "soon");
-  const liveSlugs = new Set(live.map((a) => a.slug));
+  /* Every card here is a published piece. The teasers for the
+     ones still being written were the Insights index's, and that
+     page is a Next.js route as of Stage 11.1: it renders its own,
+     from `next/lib/hub.ts`, on the server. What is left is the
+     home page's two-card strip, which only ever showed what
+     exists. */
+  const live = (await piecesIn(host.dataset.section ?? "insights")).slice(0, limit);
 
   const card = (a) => {
-    const el = document.createElement(a.status === "soon" ? "div" : "a");
-    el.className = "cell sample-card" + (a.status === "soon" ? " placeholder" : "");
+    const el = document.createElement("a");
+    el.className = "cell sample-card";
     el.dataset.topics = (a.topics ?? []).join("|");
-    if (a.status !== "soon") {
-      el.href = pieceHref(a);
-      el.style.textDecoration = "none";
-      el.style.color = "inherit";
-    }
+    el.href = pieceHref(a);
+    el.style.textDecoration = "none";
+    el.style.color = "inherit";
 
     const tag = document.createElement("span");
     tag.className = "tag mono";
-    tag.textContent = a.status === "soon" ? "Coming soon" : a.tag;
+    tag.textContent = a.tag;
 
     const h = document.createElement("h3");
     h.textContent = a.title;
 
     const p = document.createElement("p");
-    if (a.status === "soon") {
-      const em = document.createElement("em");
-      em.textContent = a.dek;
-      p.append(em);
-    } else {
-      p.textContent = a.dek;
-    }
+    p.textContent = a.dek;
 
-    el.append(tag, h, p);
+    const foot = document.createElement("span");
+    foot.className = "more";
+    const bits = [formatDate(a.date, a.lang), a.minutes ? `${a.minutes} min read` : ""]
+      .filter(Boolean)
+      .join(" · ");
+    foot.textContent = bits ? `${bits}  →` : "Read →";
 
-    if (a.status !== "soon") {
-      const foot = document.createElement("span");
-      foot.className = "more";
-      const bits = [formatDate(a.date, a.lang), a.minutes ? `${a.minutes} min read` : ""]
-        .filter(Boolean)
-        .join(" · ");
-      foot.textContent = bits ? `${bits}  →` : "Read →";
-      el.append(foot);
-    }
+    el.append(tag, h, p, foot);
     return el;
   };
 
-  host.replaceChildren(
-    ...live.map(card),
-    ...soon.filter((a) => !liveSlugs.has(a.slug)).map(card)
-  );
+  host.replaceChildren(...live.map(card));
   tiltIn(host);   // these arrive after initTilt has already run
-  initTopicFilter(host, live);
 }
 
-/** Chips that show/hide the cards by topic, built from what exists. */
-function initTopicFilter(host, live = []) {
-  const row = document.getElementById("topic-filter");
-  if (!row) return;
+/* The topic chips are not here any more.
 
-  // Chips come from whatever is actually on the page right now.
-  const counts = new Map();
-  live.forEach((a) => (a.topics ?? []).forEach((t) =>
-    counts.set(t, (counts.get(t) ?? 0) + 1)));
-  const all = counts.size
-    ? [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-        .map(([name, count]) => ({ name, count }))
-    : topics();
-  const chip = (label, count, value) => {
-    const b = document.createElement("button");
-    b.className = "chip";
-    b.type = "button";
-    b.textContent = count === undefined ? label : `${label} · ${count}`;
-    b.dataset.topic = value;
-    b.setAttribute("aria-pressed", value === "" ? "true" : "false");
-    return b;
-  };
-
-  row.replaceChildren(
-    chip("Everything", live.length || liveArticles().length, ""),
-    ...all.map((t) => chip(t.name, t.count, t.name))
-  );
-
-  row.addEventListener("click", (e) => {
-    const button = e.target.closest("[data-topic]");
-    if (!button) return;
-    const topic = button.dataset.topic;
-    row.querySelectorAll("[data-topic]").forEach((b) =>
-      b.setAttribute("aria-pressed", String(b === button))
-    );
-    host.querySelectorAll("[data-topics]").forEach((c) => {
-      c.hidden = topic !== "" && !c.dataset.topics.split("|").includes(topic);
-    });
-  });
-}
+   They belonged to the Insights index, which is a Next.js route
+   as of Stage 11.1: the chips arrive in the HTML, counted from
+   the cards on the server, and `/hub.js` binds the one listener
+   they need. This built them in the browser, from a list, after a
+   fetch, which is a row of nothing for a reader with no
+   JavaScript and for every crawler that runs none. */
 
 /* ============================================================
    Small shared helpers (the Studio imports these)
