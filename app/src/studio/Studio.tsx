@@ -434,6 +434,14 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
           }}>＋ New</button>
           <button className="btn btn-ghost" type="button" id="btn-open"
                   onClick={() => setSheet("open")}>Open…</button>
+          {/* The other writing surface. A lesson is prose in the
+              same editor and is reached from here rather than from
+              the desk, because this page is where writing happens
+              and a tool nobody can find is the failure the
+              publishing checklist in CLAUDE.md is about. */}
+          <a className="btn btn-ghost" id="btn-lessons" href="/studio/?lessons">
+            The schools…
+          </a>
         </span>
         {/* The link to the old Studio is gone with the page:
             `studio.html` and `studio.js` are in `archive/` as of

@@ -709,8 +709,22 @@ untouched.
 ---
 
 ### Stage 8 · The schools' content into the database
-**Status: steps 1 to 3 done, 16 August 2026. Step 4 is what is
-left.** Size: weeks. The largest thing on this list.
+**Status: the import has run, and the lessons are editable, 16
+August 2026. What is left of step 4 is retiring the prose files.**
+Size: weeks. The largest thing on this list.
+
+**The rows are live.** The import was run from a terminal, inside
+the repository, and the database now holds what the files hold:
+17 stages, 61 sections, 233 lessons, 178 of them written. That was
+checked against the files rather than counted on its own, which is
+the distinction the two failed runs were about: every lesson's
+body length, title, minutes, position, section and status agrees,
+school by school and stage by stage.
+
+**And a lesson can be edited without a terminal.** `PUT
+/api/schools/<school>/<stage>/<lesson>` writes one lesson's prose
+through the same sanitiser an article goes through, and
+`/studio/?lessons` is the surface that calls it.
 
 All four builders can read the database, and every one of the 229
 pages they write comes out byte-identical either way: quran 61,
@@ -1571,7 +1585,7 @@ repository is.
 | 5 | Accounts, and nothing else changes | done, 15 Aug 2026 |
 | 6 | Progress follows the account | done, 15 Aug 2026 |
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
-| 8 | The schools' content into the database | steps 1 to 3 done 16 Aug 2026, 229 pages byte-identical from D1 |
+| 8 | The schools' content into the database | imported and editable 16 Aug 2026, prose files still to retire |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | not started, 281 files to go |
@@ -1828,6 +1842,98 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · The import ran, and a lesson can be written without a terminal
+
+The third attempt worked. It was run from a terminal, inside the
+repository, with `--out`, and the database holds the curricula:
+**17 stages, 61 sections, 233 lessons, 178 written.**
+
+**Checked against the files rather than counted.** "Processed 0
+queries" and a success table is what the first two runs printed,
+so a row count agreeing with itself proves nothing here. Every
+lesson's body length, title length, meta length, minutes, position
+and section name was summed per stage on both sides and compared:
+17 stages, every field identical. The four schools' prose comes to
+221,427, 108,913, 57,929 and 85,944 characters and the database
+agrees on all four.
+
+**The GitHub workflow still does not work, and it is one value
+away.** It built the file correctly, 1,816,561 bytes and 314
+queries, and the guard passed. Then wrangler stopped:
+
+```
+✘ Failed to automatically retrieve account IDs for the logged in user.
+   ... add an `account_id` in your Wrangler configuration, or set
+   CLOUDFLARE_ACCOUNT_ID
+```
+
+A token scoped to D1 Edit and nothing else, which is what the note
+at the top of that workflow tells you to make, cannot list the
+account it belongs to. `wrangler.toml` has a `database_id` and no
+`account_id`, so wrangler has nothing to fall back on. Left as an
+issue rather than guessed at, because the fix is a choice between
+committing the account ID and adding a second repository secret,
+and that is not a decision to take on somebody's behalf.
+
+**What was built on top of it.** Step 4 said the rows become the
+source, the files are retired and the Studio grows a lesson
+editor, and the order matters more than it looks: the prose files
+cannot go to `archive/` until there is some way to change a lesson
+without them. So the editor came first.
+
+- `PUT /api/schools/<school>/<stage>/<lesson>` writes one lesson.
+  It is a separate route from the whole-school PUT rather than a
+  special case of it. That one replaces a ladder, and saving a
+  paragraph through it would mean sending 89 rows back to change
+  one.
+- **It updates and never inserts.** Which lessons exist, what
+  order they come in and which section they sit in are
+  `curriculum.js` and the builders that read it. A slug that is
+  not already a row is a 404, because a lesson invented at the
+  editor is a lesson no page links to, which is the failure the
+  publishing checklist in CLAUDE.md is about.
+- The body goes through `sanitiseHTML()`, the same one an article
+  goes through. `aab/schema.sql` already said it would where the
+  column is defined, and a second sanitiser is the bug the
+  three-place rule exists to prevent.
+- An empty body stays meaningful. It is what 55 of the 233 rows
+  are, and it is what makes a builder draw an আসছে page, so
+  emptying a lesson is a save rather than an error.
+- `lessonsOf()` returns `written` now, computed by the database.
+  A picker wants to know which lessons have prose and sending the
+  prose to answer that is most of a megabyte for the money school.
+
+**The surface is `/studio/?lessons`**, reached from a button in
+the Article Studio, and it is not a second Studio. An article has
+a headline, a dek, a section, topics, a share card and a
+pre-flight panel; a lesson has a ladder that decides all of that
+for it. So it edits one thing, the prose, and the picker beside it
+is read-only. It is not a second editor either: `Editor.tsx`
+wraps `createEditor()` and this imports that, so the
+contenteditable is still rendered once and React still never
+touches its contents.
+
+One thing that is worth saying out loud in the interface, and is:
+saving writes the row, and the page a reader gets is still the
+committed HTML until the school is rebuilt. A writer who thinks
+Save published is a writer who will not run the builder.
+
+**And a desk bug that had nothing to do with any of this.** The
+More menu on a published row hung off the More button's right edge
+and grew leftward. The buttons in that row are left-aligned, so on
+a narrow window Publish, Delete and the Move to picker sat past
+the left border of the page, with no way to scroll to them,
+because a page does not scroll left of its own origin. It hangs
+off the actions row now and grows from that row's start edge, so
+both of its edges stay inside the row at every width. `sw.js` is
+v68 because `styles.css` is precached.
+
+Next: retiring `aab/*/content/*.js` and `aab/learn/lessons/*.js`
+to `archive/`, which needs the builders to read the database by
+default. That is a real decision and not a rename: a builder has
+to work with no network, and today the rows reach it through
+`SCHOOL_DB` naming a local SQLite file.
 
 ### 2026-08-16 · The import wrote nothing twice, and the second diagnosis was the right one
 The schools import ran again and reported "Processed 0 queries"

@@ -5,7 +5,10 @@
    GET  /api/schools/<school>/<stage>             its lessons
    GET  /api/schools/<school>/<stage>/<lesson>    one lesson, with
                                                   its text
-   PUT  /api/schools                              admin: write rows
+   PUT  /api/schools                              admin: write a
+                                                  whole school
+   PUT  /api/schools/<school>/<stage>/<lesson>    admin: write one
+                                                  lesson's prose
 
    TRANSITION.md Stage 8. The rows exist and this is the door they
    are read through. Nothing on the site reads it yet: the pages
@@ -29,12 +32,26 @@
    that half-updates is worse than one that is rewritten: the
    lesson that quietly kept its old text is the failure this
    whole stage is arranged around.
+
+   ---- and why one lesson is a different route ----
+
+   The whole-school PUT replaces a ladder. Saving a paragraph
+   through it would mean sending every lesson of that school back,
+   most of a megabyte for the money school, and any bug in the
+   round trip would rewrite 89 rows instead of one.
+
+   So the lesson editor has its own address, and it can only
+   UPDATE. The ladder is `curriculum.js` and the builders that
+   read it; the prose is these rows. A slug that is not already a
+   row is a 404 rather than an insert, because a lesson invented
+   at the editor is a lesson no page links to.
    ============================================================ */
 
 import { db } from "../../_lib/db.js";
 import { body, fail, methods, notConfigured, ok, nowISO } from "../../_lib/http.js";
 import { requireAdmin } from "../../_lib/auth.js";
 import { isSchool, stagesOf, lessonOf, lessonsOf, countsOf } from "../../../shared/schools.js";
+import { sanitiseHTML } from "../../_lib/sanitise.js";
 
 export async function onRequest(context) {
   const { request, params } = context;
@@ -78,6 +95,66 @@ export async function onRequest(context) {
     PUT: async () => {
       const admin = await requireAdmin(context);
       if (admin) return admin;
+
+      /* One lesson, which is what the Studio's lesson editor
+         saves. It is a separate path from the whole-school write
+         below rather than a special case of it, because the two
+         are answering different questions. The whole-school write
+         is the importer's door: it replaces a ladder. This one
+         changes the prose of a lesson that already exists, and
+         must not be able to change anything else.
+
+         So it UPDATEs and never inserts. Which lessons exist,
+         what order they come in and which section they sit in are
+         decided by `curriculum.js` and the builders that read it,
+         and a lesson invented here would be a row no page links
+         to: a written lesson nobody can reach, which is the
+         failure the publishing checklist in CLAUDE.md exists for.
+         A slug that is not already there is a 404, not an insert. */
+      if (lesson) {
+        if (!isSchool(school)) return fail("no-such-school", 404);
+
+        const patch = await body(request);
+        const slug = String(lesson).replace(/\.html$/i, "");
+
+        const existing = await d1.prepare(
+          `SELECT * FROM school_lessons
+            WHERE school = ? AND stage = ? AND slug = ?`
+        ).bind(school, String(stage), slug).first();
+        if (!existing) return fail("no-such-lesson", 404);
+
+        /* The same sanitiser an article goes through. A lesson
+           body is the same kind of HTML written in the same
+           editor, and `aab/schema.sql` says so where the column
+           is defined. Two sanitisers that disagree is the bug the
+           three-place rule in CLAUDE.md exists for. */
+        const html = patch.body === undefined
+          ? existing.body
+          : sanitiseHTML(String(patch.body));
+
+        /* An empty body is not a failure and is not a deletion.
+           It is what "nobody has written this yet" looks like,
+           and it is what makes the builders draw an আসছে page.
+           Emptying a lesson has to stay possible. */
+        await d1.prepare(
+          `UPDATE school_lessons
+              SET body = ?, title = ?, minutes = ?, status = ?, updated_at = ?
+            WHERE school = ? AND stage = ? AND slug = ?`
+        ).bind(
+          html,
+          patch.title === undefined ? existing.title : String(patch.title),
+          patch.minutes === undefined ? existing.minutes : Number(patch.minutes) || 0,
+          patch.status === undefined ? existing.status : String(patch.status),
+          nowISO(), school, String(stage), slug
+        ).run();
+
+        return ok({ lesson: await lessonOf(d1, school, stage, slug) });
+      }
+
+      /* Anything shorter than a lesson is a school or a stage,
+         and neither is writable one at a time: changing a ladder
+         means changing rows this endpoint deletes wholesale. */
+      if (school) return fail("write-the-whole-school", 400);
 
       const payload = await body(request);
       const stages = Array.isArray(payload?.stages) ? payload.stages : [];

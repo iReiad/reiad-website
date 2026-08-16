@@ -188,9 +188,10 @@ node aab/studio.test.mjs           # the editor, end to end (68 checks)
 node functions/_lib/notion.test.mjs
 node scripts/schools.test.mjs        # a curriculum that lost a field, a lesson
                                      # body that changed, or a ladder that came
-                                     # back in the wrong order (30 checks)
+                                     # back in the wrong order (32 checks)
 node scripts/schools-api.test.mjs    # a school readable by anyone, writable by
-                                     # somebody else, or half-written (24 checks)
+                                     # somebody else, half-written, or a lesson
+                                     # edited into existence (43 checks)
 node scripts/schools-build.test.mjs  # a page built from the database that is not
                                      # the page the files built (229 pages)
 ```
