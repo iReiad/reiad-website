@@ -1,0 +1,29 @@
+{
+  "name": "reiad-website",
+  "private": true,
+  "type": "module",
+  "//": [
+    "The repository's own build tools, and nothing else.",
+    "",
+    "This site has no build step in CI and is not an npm project:",
+    "it deploys by uploading aab/. There are three other",
+    "package.json files here and each one is a real workspace,",
+    "app/ for the React builds, next/ for the Next.js Worker, and",
+    "shared/ for the package both import.",
+    "",
+    "This one exists because scripts/ builds committed artefacts",
+    "and was reaching for tools it had never declared.",
+    "build-modules.mjs runs tsc and build-styles.mjs runs the",
+    "Tailwind CLI; both worked on a laptop that happened to have",
+    "them and would have failed on one that did not, which is the",
+    "kind of thing that is discovered by somebody else.",
+    "",
+    "Nothing here is shipped. No dependency below is imported by",
+    "any file the browser or either Worker loads."
+  ],
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3"
+  }
+}

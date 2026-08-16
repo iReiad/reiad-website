@@ -2,7 +2,8 @@
   "version": "v79",
   "hashes": {
     "/offline.html": "d7ca74c5f33fa1b4",
-    "/styles.css": "4db49c00f99bbee8",
+    "/styles.css": "71a1a01e60de76d9",
+    "/tailwind.css": "46e4e139a56be439",
     "/app.js": "7a63d35ed752a717",
     "/content.js": "4f042a5a291355de",
     "/api.js": "247b6ec828858226",

@@ -31,7 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
-   v79: TRANSITION.md Stage 13. /api.js is built from
+   v79: TRANSITION.md Stage 13 and Stage 14. /api.js is built
+        from aab/src/api.ts now, and /tailwind.css joins the
+        precache list: a second stylesheet, built from
+        aab/src/styles/, holding the theme tokens and whichever
+        utilities a component actually uses. Nothing uses one yet,
+        which is why it is 1.7 KB gzipped.
+
+   v79 (Stage 13): /api.js is built from
         aab/src/api.ts now rather than written by hand, and tsc
         reindents what it emits, so the file is byte-different and
         line-for-line the same code. Checked rather than assumed:
@@ -654,6 +661,12 @@ const RUNTIME = `runtime-${VERSION}`;
 const PRECACHE = [
   "/offline.html",
   "/styles.css",
+  /* The second stylesheet, TRANSITION.md Stage 14. Small (about
+     1.7 KB gzipped against 72 for styles.css) and precached
+     beside it for the same reason: a page that comes back offline
+     with one of its two stylesheets missing is a page that looks
+     broken rather than plain. */
+  "/tailwind.css",
   "/app.js",
   "/content.js",
   "/api.js",
