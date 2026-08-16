@@ -170,3 +170,7 @@ SITE_ORIGIN = "https://reiad.co.uk"
 #   npx wrangler secret put SUPABASE_JWT_SECRET
 # Without it, an HS256 token is refused rather than believed.
 SUPABASE_URL = "https://wvjarqnnmkkuxyrndtya.supabase.co"
+
+[[services]]
+binding = "NEXT"
+service = "reiad-next"
