@@ -667,8 +667,20 @@ for (const [path, title, nav] of [
    itself. A page that renders beautifully and files a reader's
    ticks under a key nothing reads has lost their progress. */
 {
+  /* The pages these are compared against are in
+     `archive/schools-pages/` as of Stage 11.7 step 3, not in
+     `aab/`. That is the point of the comparison rather than a
+     problem with it: the archive is where a replaced page goes so
+     that whoever has to check the replacement really does what it
+     did can still read it, which is exactly what these checks are
+     doing. `archive/README.md` says so.
+
+     When the archive is eventually pruned these lose their other
+     side, and the honest thing then is to delete them rather than
+     to weaken them into checks of nothing. */
   const { readFileSync } = await import("node:fs");
-  const committed = (rel) => readFileSync(join(here, "..", "aab", rel), "utf8");
+  const committed = (rel) =>
+    readFileSync(join(here, "..", "archive", "schools-pages", rel), "utf8");
 
   /* The inside of a tag, by class, whichever order its attributes
      are in. The builders write `class="x"` first and React does
@@ -897,6 +909,65 @@ for (const [path, title, nav] of [
       "share", attr(page.html, /data-lesson-id="([^"]*)"/));
   }
 
+  /* ---- the five hand-written pages ----
+
+     Stage 11.7 step 3. Four hubs and the money school's full
+     index, and none of them is generated: they are prose, copied
+     verbatim into `lib/school-hubs.ts` rather than rewritten as
+     JSX, for the reason `scripts/build-school-hubs.mjs` gives at
+     length. `check-next.mjs` holds the copy to the original, so
+     what is worth checking here is the part that is NOT copied:
+     the head Next writes, the shell around the writing, and the
+     scripts that make the ladder live. */
+  for (const [path, file] of [
+    ["/learn/index.html", "learn/index.html"],
+    ["/deutsch/index.html", "deutsch/index.html"],
+    ["/quran/index.html", "quran/index.html"],
+    ["/english/index.html", "english/index.html"],
+    ["/learn/contents.html", "learn/contents.html"],
+  ]) {
+    const page = await hub(path);
+    ok(`${path} answers`, page.status === 200, `status ${page.status}`);
+    if (page.status !== 200) continue;
+
+    const was = committed(file);
+    const now = page.html;
+    const same = (what, extract) => {
+      const a = decode(extract(was));
+      const b = decode(extract(now));
+      ok(`${path}: ${what}`, a === b,
+        `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(b)}`);
+    };
+
+    same("the title", (h) => tagText(h, "title"));
+    same("the description", (h) => meta(h, "description", "name"));
+    same("the canonical link", (h) => attr(h, /<link rel="canonical" href="([^"]+)"/));
+    same("og:image", (h) => meta(h, "og:image"));
+    same("og:type", (h) => meta(h, "og:type"));
+    same("the language", (h) => attr(h, /<html lang="([^"]+)"/));
+    same("the body class", (h) => attr(h, /<body class="([^"]*)"/));
+    same("the scripts the page loads", schoolScripts);
+
+    /* The writing itself, whole. Not a sample of it: this is the
+       one comparison in this file that can be exact, because the
+       body is the same string on both sides by construction, and
+       an inexact check here would be checking nothing. */
+    const body = (h) => h.match(
+      /<main id="main">\s*<div class="wrap"[^>]*>([\s\S]*)<\/div>\s*<\/main>/)?.[1]
+      ?.replace(/^\s+|\s+$/g, "") ?? null;
+    ok(`${path}: the writing is the page's, character for character`,
+      body(was) !== null && body(was) === body(now),
+      "the body differs from the committed page");
+
+    /* The ladder's fallback list survives, which is the half a
+       reader with no JavaScript gets and the half a search engine
+       reads. */
+    ok(`${path}: the no-JavaScript ladder is in the HTML`,
+      /class="(?:leiter-fallback|ladder|stufe-liste|contents-stage)/.test(now)
+      || path.endsWith("contents.html"),
+      "no ladder fallback in the served page");
+  }
+
   /* A lesson the ladder does not have is handed back to the asset
      router, which is what keeps all 251 committed pages answering
      while NEXT_ROUTES says nothing about the schools. */
@@ -930,8 +1001,8 @@ if (failures.length) {
   process.exit(1);
 }
 console.log("The article says everything the Worker's does, each hub says what\n"
-  + "the database gave it, each school lesson says what its committed page\n"
-  + "says, and every page answers at its own address.\n");
+  + "the database gave it, each school page says what the page it replaced\n"
+  + "said, and every address answers.\n");
 
 /* Said out loud, because falling off the end is not the same
    thing here. `wrangler dev` starts workerd as a child of its

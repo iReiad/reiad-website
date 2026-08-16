@@ -723,30 +723,27 @@ ${days}
    go
    ============================================================ */
 
+/* Only the practice books. See the note in
+   `aab/deutsch/build-deutsch.mjs`, which says the same thing
+   about the same change: a term's ladder and its part pages are
+   a Next.js route now, and writing them here as well would put a
+   file back at an address a Worker already answers.
+
+   The book stays a file: thirty days written out in full, the
+   same for every reader, none of it in the database, and
+   `workbook.data.js` beside this file is where it lives. */
 let pages = 0;
 
 for (const term of TERMS) {
-  const parts = termParts(term);
+  if (!workbookUrl(term)) {
+    console.log(`${term.slug.padEnd(7)} no practice book`);
+    continue;
+  }
   const dir = join(OUT, "english", term.slug);
   mkdirSync(dir, { recursive: true });
-
-  writeFileSync(join(dir, "index.html"), termIndexPage(term, parts));
+  writeFileSync(join(dir, `${term.workbook.slug}.html`), workbookPage(term));
   pages++;
-
-  const bodies = await bodiesFor(term);
-  parts.forEach((part, i) => {
-    writeFileSync(join(dir, `${part.slug}.html`), partPage(term, parts, i, bodies));
-    pages++;
-  });
-
-  if (workbookUrl(term)) {
-    writeFileSync(join(dir, `${term.workbook.slug}.html`), workbookPage(term));
-    pages++;
-    console.log(`${term.slug.padEnd(7)} ${parts.length} part page(s), ` +
-      `${termCount(term).live} written, + ${dayCount(term)}-day workbook`);
-  } else {
-    console.log(`${term.slug.padEnd(7)} ${parts.length} part page(s), ${termCount(term).live} written`);
-  }
+  console.log(`${term.slug.padEnd(7)} ${dayCount(term)}-day workbook`);
 }
 
 console.log(

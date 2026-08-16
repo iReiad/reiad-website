@@ -5633,8 +5633,18 @@ German for day, and .tag is what the site has always called
   h1 .ar-sub, h2 .ar-sub, h3 .ar-sub { font-size: 0.62em; }
   .section-label .ar-sub { font-size: 1em; margin-inline-start: 0; }
 
-  /* The day chip on a lesson card: "দিন ৫" or "দিন ৫–৬". */
-  .dars-day {
+  /* The day chip on a lesson card: "দিন ৫" or "দিন ৫–৬".
+
+     Anchored on the body class, which the bare selector was not
+     and did not need to be while this school's ladder was a
+     generated page under /quran/. TRANSITION.md Stage 11.7 made
+     it a route, and the component that draws a lesson card is one
+     component for all four schools: `check-css.mjs` decides which
+     school a class belongs to by where its markup lives, and the
+     markup for this one now lives in a file shared with three
+     schools that must never get this rule. The anchor says out
+     loud what the folder used to say silently. */
+  body.quran .dars-day {
     display: inline-block; margin-bottom: 6px;
     font-size: 0.78rem; letter-spacing: 0.04em;
     color: var(--green);

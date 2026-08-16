@@ -31,6 +31,36 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v78: TRANSITION.md Stage 11.7. The four schools are Next.js
+        routes and 247 committed pages have left aab/, six of them
+        precached: both learn pages, the German hub and its first
+        Stufe ladder, the Quranic Arabic hub and the English hub.
+
+        They do NOT leave the shell, and that is the whole of the
+        offline decision this stage had to take. A hub is the
+        ladder and the ladder is how a reader finds their place;
+        cache.addAll() performs real network fetches at install
+        and does not care whether a Worker or a file answered
+        them. So the six move to RENDERED below, which is
+        precached exactly like PRECACHE and is not hashed, for the
+        one reason a hash could never have covered: a rendered
+        page changes when a row changes, and no VERSION could
+        track that. Network-first is what handles a stale HTML
+        copy and it handles these identically.
+
+        The practice books stay files and stay in PRECACHE.
+        Stufe 1s book is the page a learner opens every evening,
+        on the bus, which is the case this whole list was written
+        for.
+
+        And install stops using cache.addAll. The comment under it
+        has said for seventy-seven versions that one missing file
+        should not stop the worker installing, and addAll is
+        atomic: one failure rejected the lot and cached nothing.
+        That mattered less when every entry was a file sitting
+        beside the request than it does now that six depend on a
+        Worker being up.
+
    v77: TRANSITION.md Stage 11.5, finished. The home page and the
         eight portfolio pages are Next.js routes, so "/" and
         "/index.html" leave the precache list: they are the shell
@@ -596,7 +626,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v77";
+const VERSION = "v78";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -653,13 +683,11 @@ const PRECACHE = [
   "/home.js",
   "/news.js",
   "/skills/skills.js",
-  "/learn/index.html",
   "/learn/learn.js",
   "/learn/hub.js",
   "/learn/curriculum.js",
   "/learn/progress.js",
   "/learn/icons.js",
-  "/learn/contents.html",
   "/learn/contents.js",
   /* The German school. curriculum.js is not a nicety here: it is
      an import of content.js, which is an import of app.js and
@@ -679,11 +707,9 @@ const PRECACHE = [
      (Keep double quotes out of this comment: check-sw.mjs reads
      the list below by pulling quoted strings out of the block.) */
   "/deutsch/curriculum.js",
-  "/deutsch/index.html",
   "/deutsch/hub.js",
   "/deutsch/progress.js",
   "/deutsch/icons.js",
-  "/deutsch/stufe-1/index.html",
   "/deutsch/stufe-1/arbeitsbuch.html",
   "/deutsch/arbeitsbuch.js",
   /* The Quranic Arabic school, on exactly the German rule.
@@ -693,7 +719,6 @@ const PRECACHE = [
      picks up the ones a reader actually opens, and dars.js is the
      script every one of them loads, so it is worth having early. */
   "/quran/curriculum.js",
-  "/quran/index.html",
   "/quran/hub.js",
   "/quran/progress.js",
   "/quran/icons.js",
@@ -708,7 +733,6 @@ const PRECACHE = [
      megabyte of static days, and a reader who never opens it
      should not pay for it on their first visit. */
   "/english/curriculum.js",
-  "/english/index.html",
   "/english/hub.js",
   "/english/progress.js",
   "/english/icons.js",
@@ -720,11 +744,49 @@ const PRECACHE = [
   "/favicon.ico",
 ];
 
+/* Addresses rather than files, precached the same way.
+
+   TRANSITION.md Stage 11.7. Every one of these is a page a Worker
+   builds out of the database, so there is nothing in aab/ to hash
+   and check-sw.mjs does not try: it checks that each one is a
+   route worker.js actually forwards, which is the failure that
+   would matter here (an address in this list that nothing serves
+   is an install that fetches a 404 and caches it).
+
+   Why they are precached at all, when the home page stopped being
+   at v77: these are the schools, and the schools are what an
+   offline reader is there for. A hub is the ladder and the ladder
+   is how somebody finds their place on a train. The 233 lesson
+   pages are not here and never were: the runtime cache picks up
+   the ones a reader actually opens, which is the same arrangement
+   they had as files. */
+const RENDERED = [
+  "/learn/index.html",
+  "/learn/contents.html",
+  "/deutsch/index.html",
+  "/deutsch/stufe-1/index.html",
+  "/quran/index.html",
+  "/english/index.html",
+];
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(SHELL)
-      .then((cache) => cache.addAll(PRECACHE))
-      // one missing file shouldn't stop the whole worker installing
+      /* One at a time, and one failure costs that entry rather
+         than the shell.
+
+         This was cache.addAll() for seventy-seven versions, under
+         a comment saying a missing file should not stop the
+         worker installing. addAll is atomic: it rejects on the
+         first failure and caches NOTHING, so the comment
+         described what was wanted and the opposite happened. It
+         mattered little while every entry was a file sitting
+         beside the request; six of them are pages a Worker builds
+         now, and one slow deploy would have emptied the whole
+         offline shell. */
+      .then((cache) => Promise.allSettled(
+        [...PRECACHE, ...RENDERED].map((url) => cache.add(url))
+      ))
       .catch(() => {})
       .then(() => self.skipWaiting())
   );

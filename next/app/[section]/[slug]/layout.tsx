@@ -70,13 +70,18 @@ export default async function ReadingLayout({
 
 /** The shell a school's pages carry.
 
+    Exported, because the school's front page answers one segment
+    up at `[section]/index.html` and needs the same one. A second
+    copy of it is how a school ends up with two footers that
+    disagree.
+
     Everything here is a fact about the school rather than about
     the lesson, which is why it can be decided one segment above
     the lesson: the language, the stylesheet layer the body class
     turns on, which nav link is marked, the footer note and the
     school's own script. `LOOKS` in `lib/school.ts` holds all
     five, beside the wording the page itself uses. */
-function SchoolShell({ school, children }: { school: string; children: ReactNode }) {
+export function SchoolShell({ school, children }: { school: string; children: ReactNode }) {
   const look = LOOKS[school];
 
   return (

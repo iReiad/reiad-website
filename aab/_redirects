@@ -43,8 +43,12 @@
 # the question it was answering.
 /colophon.html        /about                301
 /colophon             /about                301
-/insights/dsex.html   /learn/terms/dsex     301
-/insights/dsex        /learn/terms/dsex     301
+# The .html is not decoration as of Stage 11.7. That term used to
+# be a committed file and the asset router added the extension for
+# an extensionless target; it is a Worker route now, and a route
+# answers at the address the canonical link names.
+/insights/dsex.html   /learn/terms/dsex.html   301
+/insights/dsex        /learn/terms/dsex.html   301
 
 # The three reading hubs, pointing at the canonical address rather
 # than away from it (TRANSITION.md Stage 11.1).

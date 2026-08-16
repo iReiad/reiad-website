@@ -104,7 +104,28 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   "/feed.xml", "/sitemap.xml", "/insights.html", "/cooking/index.html", "/travel/index.html",
   "/about.html", "/contact.html", "/account.html", "/skills/index.html",
   "/tools/index.html", "/tools/stock.html", "/portfolio.html", "/portfolio/*", "/",
-  "/desk/index.html", "/studio/index.html"]
+  "/desk/index.html", "/studio/index.html",
+  # The four schools, Stage 11.7. 247 pages left aab/ in the same
+  # commit that added these, so with not_found_handling set the asset
+  # router would answer every one of them with 404.html and the Worker
+  # would never be called: the whole of /learn/, /deutsch/, /quran/
+  # and /english/ would 404 at once.
+  #
+  # Deliberately NOT "/learn/*". That would take every module of every
+  # school through the Worker as well, /learn/learn.js and
+  # /quran/curriculum.js among them, only to fall straight back to the
+  # assets: a hop on every script of every page for nothing. The four
+  # practice books are files still, and they are why the fall-through
+  # matters rather than being a technicality: /deutsch/stufe-1/arbeitsbuch.html
+  # matches the pattern below, the route declines it because it is in
+  # no ladder, and fromNext() hands it to the asset router exactly as
+  # before.
+  "/learn/index.html", "/deutsch/index.html", "/quran/index.html", "/english/index.html",
+  "/learn/contents.html",
+  "/learn/*/*.html", "/deutsch/*/*.html", "/quran/*/*.html", "/english/*/*.html",
+  # And the suffixless form of the same address, which nothing links
+  # and the asset router used to answer out of html_handling.
+  "/learn/*/*", "/deutsch/*/*", "/quran/*/*", "/english/*/*"]
 
 # ---------- D1: the database everything dynamic runs on ----------
 # Articles, reader questions, subscribers, enquiries, view counts and

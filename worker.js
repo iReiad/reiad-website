@@ -173,6 +173,29 @@ export const NEXT_ROUTES = [
      named. `/index.html` is not here: it 301s to this one, which
      is what the asset router did for it before. */
   /^\/$/,
+  /* The four schools, Stage 11.7, and the largest of these by a
+     long way: 251 committed pages leave `aab/` in the same commit
+     that adds these three lines, which is the rule the whole of
+     Stage 11 has followed. There is no window in which both
+     answer.
+
+     A hub, the money school's full index, a stage's ladder and a
+     lesson. The lesson pattern is last and is the loosest, so the
+     three above it have to come first: `/learn/contents.html`
+     would otherwise be read as a lesson called `contents` in a
+     stage called `learn`, and 404. */
+  /^\/(learn|deutsch|quran|english)\/index\.html$/i,
+  /^\/learn\/contents\.html$/i,
+  /^\/(learn|deutsch|quran|english)\/[a-z0-9-]+\/index\.html$/i,
+  /^\/(learn|deutsch|quran|english)\/[a-z0-9-]+\/[a-z0-9-]+\.html$/i,
+  /* And the same address without the suffix, which nothing on
+     this site links but the asset router used to answer: while
+     these were files, `html_handling` served `dsex.html` for
+     `/learn/terms/dsex`, and a reader who saved that form would
+     have found it dead the day the file left. The route strips
+     the suffix before it looks anything up, so both forms find
+     the same row. */
+  /^\/(learn|deutsch|quran|english)\/[a-z0-9-]+\/[a-z0-9-]+$/i,
   /^\/_next\//,
 ];
 
