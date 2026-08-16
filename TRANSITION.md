@@ -2607,6 +2607,52 @@ is the closest Supabase region to Dhaka.
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
 
+### 2026-08-16 · Two Bangla pieces were being advertised at an address that 404s
+
+Found by `check-live.mjs` on the first push after the Worker
+started deploying again, which is the whole argument for having it
+run on every push. It went red on three things. One was a real
+bug, live, in front of every crawler that reads the sitemap.
+
+`functions/feeds/[kind].js` merges the database into the generated
+sitemap and feed, and it selected
+
+```sql
+SELECT slug, title, dek, published_at, updated_at
+```
+
+with no `section`. `mountOf()` falls back to `/insights/` for a row
+whose section it cannot see, and a row selected without the column
+looks exactly like a row that has no section. So the kitchen piece
+went out as `/insights/onions.html` and the travel piece as
+`/insights/uk-visit-visa.html`, while they are served at
+`/cooking/onions.html` and `/travel/uk-visit-visa.html`. Both
+addresses 404.
+
+**It was latent for as long as those two were files.**
+`existingSlugs()` reads the generated sitemap, finds every slug
+already in it and drops those rows from the merge, so while
+`aab/cooking/onions.html` was committed the wrong URL was never
+built. Stage 11.2 deleted the files. The rows started being
+merged, the fallback started firing, and the first deploy after
+that published two dead URLs. One column in a `SELECT`.
+
+The other two were the check itself describing a plan the site had
+moved past, and both had been wrong since Stage 11 without anybody
+seeing them, because the Worker they described had not deployed:
+
+- *the allowlist is one mount wide.* True of Stage 10, and Stage
+  11.2 forwarded all three mounts on purpose. It now asks that a
+  piece away from `/insights/` renders from its own mount, which
+  is the half of 11.2 nothing offline can see.
+- *the Insights index answers 200.* `_redirects` has sent
+  `/insights` to `/insights.html` since Stage 11.1, where the
+  route renders the hub. It is followed now, so what is asserted
+  is that a reader typing the short address arrives.
+
+`search.js` has the same `MOUNTS` table and selects `section`
+correctly. It is the only other reader of it.
+
 ### 2026-08-16 · The deploy is a file in the repository now
 
 The other half of the outage above. Fixing the config got the
