@@ -1747,8 +1747,19 @@ it collapsed to the width of the word "Bangladesh". */
 
   /* showModal() used to stop the page behind from scrolling. It is
      not modal any more, so the lock is set here off the attribute
-     app.js writes when it opens. */
-  body[data-menu="open"] { overflow: hidden; }
+     app.js writes when it opens.
+
+     On the root element rather than on body, and that is a fix
+     rather than a preference. body's overflow only reaches the
+     viewport while the root's own overflow is `visible`, and it is
+     not: `overflow-x: clip` is set up in the reset so the hero art
+     can bleed past the edge. So locking body locked nothing and
+     made BODY a scroll container instead. The page went on
+     scrolling, and the header, which is sticky and therefore
+     sticks to its nearest scrolling ancestor, went up and off the
+     screen with it: open the menu, scroll, and the header was
+     gone, with the one button that closes the menu on it. */
+  :root:has(body[data-menu="open"]) { overflow-y: hidden; }
 
   /* The menu's bands share the page's own left and right margins,
      published as --header-inset by app.js. The menu is a

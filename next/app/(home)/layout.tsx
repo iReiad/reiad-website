@@ -54,7 +54,14 @@ const WHEN = `[data-hl] [data-when]{display:none}`
   + `[data-hl="open"] .hero-actions[data-when="open"],`
   + `[data-hl="finance"] .hero-actions[data-when="finance"],`
   + `[data-hl="skills"] .hero-actions[data-when="skills"],`
-  + `[data-hl="work"] .hero-actions[data-when="work"]{display:flex}`;
+  + `[data-hl="work"] .hero-actions[data-when="work"]{display:flex}`
+  /* And until somebody has answered the door, the door is the
+     whole page. Everything under the hero is written for one of
+     the three answers, so showing all of it to somebody who has
+     not given one is showing them two thirds of a page meant for
+     somebody else, above the question that would have sorted it
+     out. It all comes back the moment they choose. */
+  + `[data-hl="open"] .home-flow > .hero ~ *{display:none}`;
 
 export default siteLayout({
   beforeMain: (

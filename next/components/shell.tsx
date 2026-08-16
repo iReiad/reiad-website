@@ -177,10 +177,16 @@ export function SiteShell({
   scripts?: ReactNode;
   children: ReactNode;
 }) {
+  /* `suppressHydrationWarning` on both, because the boot script
+     below writes `data-theme`, `data-audience` and, on the home
+     page, `data-hl` onto the root before React sees any of it.
+     Without this React treats an attribute it did not render as a
+     mismatch and takes it off, which is a reader's theme being
+     thrown away between the paint and the hydration. */
   return (
-    <html lang={lang}>
+    <html lang={lang} suppressHydrationWarning>
       <SiteHead />
-      <body className={bodyClass || undefined}>
+      <body className={bodyClass || undefined} suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: BOOT }} />
 
         <a className="skip" href={skipTo}>{skip}</a>

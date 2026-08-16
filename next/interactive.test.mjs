@@ -220,6 +220,15 @@ for (const [who, audience, track, expected] of READERS) {
     shown.length > 0 && new Set(shown).size === 1 && shown[0] === expected,
     `expected ${expected} only, got [${shown}]`);
 
+  /* And until the question is answered, the question is the whole
+     page: everything under the hero is written for one of the
+     three answers. */
+  const below = await page.evaluate(() => [...document.querySelector(".home-flow").children]
+    .filter((el) => getComputedStyle(el).display !== "none").length);
+  ok(`the home page shows ${who} the right amount below the hero`,
+    expected === "open" ? below === 1 : below > 1,
+    `${below} block(s) visible`);
+
   await page.close();
 }
 
