@@ -155,14 +155,27 @@ export async function lessonOf(d1, school, stage, slug) {
 /** The lessons of one stage, in page order, without their text.
     This is what a prev/next pair and a contents list are built
     from, and it is deliberately the same order the builders write
-    the pages in. */
+    the pages in.
+
+    `written` rather than the body itself. Whether a lesson has
+    been written is the one thing about its prose that a list
+    wants: a contents page marks the ones that are not there yet
+    and the Studio's picker does the same. Sending the prose to
+    answer that would be most of a megabyte for the money school,
+    which is the reason the body is left out here in the first
+    place. It is computed by the database and never by counting
+    what came back. */
 export async function lessonsOf(d1, school, stage) {
   if (!isSchool(school)) return [];
   const rows = await d1.prepare(
-    `SELECT school, stage, slug, section, position, title, minutes, status, meta
+    `SELECT school, stage, slug, section, position, title, minutes, status, meta,
+            CASE WHEN body <> '' THEN 1 ELSE 0 END AS written
        FROM school_lessons WHERE school = ? AND stage = ? ORDER BY position`
   ).bind(school, String(stage)).all();
-  return (rows.results ?? []).map(lessonFrom);
+  return (rows.results ?? []).map((row) => ({
+    ...lessonFrom(row),
+    written: Boolean(row.written),
+  }));
 }
 
 /** How many lessons a school has, and how many are written.

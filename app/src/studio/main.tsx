@@ -17,6 +17,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Studio } from "./Studio.tsx";
+import { Lessons } from "./Lessons.tsx";
 
 import { requireOwner } from "/auth.js";
 
@@ -29,6 +30,16 @@ import "/app.js";
 
 const root = document.getElementById("studio-root");
 
+/* Two writing surfaces behind one gate. An article and a lesson
+   are edited with the same `createEditor()` and are otherwise
+   nothing alike: an article has a headline, a section, topics and
+   a share card, and a lesson has a ladder that decides all of
+   that for it. So they are separate components rather than one
+   with a mode flag, and the URL picks. `?lessons` opens the
+   schools; anything else is the Article Studio, which is what
+   every existing link to this page means. */
+const wantsLessons = new URLSearchParams(location.search).has("lessons");
+
 if (root) {
   /* Awaited, not raced. Rendering first and hiding later would put
      the Studio in the DOM for anyone who opened the page, which is
@@ -37,7 +48,9 @@ if (root) {
     root.hidden = false;
     createRoot(root).render(
       <StrictMode>
-        <Studio dynamic={Boolean(session?.server)} />
+        {wantsLessons
+          ? <Lessons />
+          : <Studio dynamic={Boolean(session?.server)} />}
       </StrictMode>
     );
   });

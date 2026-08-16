@@ -17,7 +17,7 @@
    JavaScript; its shape is written down in `site-modules.d.ts`. */
 import { api as rawApi } from "/api.js";
 
-type Method = "GET" | "POST" | "PATCH" | "DELETE";
+type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface Options {
   method?: Method;

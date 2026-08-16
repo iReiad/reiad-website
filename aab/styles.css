@@ -2986,6 +2986,9 @@ it collapsed to the width of the word "Bangladesh". */
       grid-column: 1 / -1;
       display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
       padding-top: 2px;
+      /* The More panel hangs off this row rather than off the
+         button inside it. See the note on .more-body below. */
+      position: relative;
     }
     & .move-field { margin-inline-start: auto; }
     &.status-draft .article-title { color: var(--ink-soft); }
@@ -3005,7 +3008,6 @@ it collapsed to the width of the word "Bangladesh". */
      Escape in every browser that has caught up, and needs no
      script beyond closing its neighbours. */
   .more-menu {
-    position: relative;
 
     & > summary {
       list-style: none; cursor: pointer;
@@ -3014,9 +3016,29 @@ it collapsed to the width of the word "Bangladesh". */
     }
     &[open] > summary::after { content: " ▴"; }
 
+    /* ---------- and where it opens ----------
+
+       THE BUG THIS POSITIONING EXISTS FOR
+
+       This used to be `position: relative` on .more-menu with
+       `inset-inline-end: 0` here, which pins the panel's right
+       edge to the More button's right edge and grows it leftward.
+       The buttons in a row are left-aligned, so on a narrow window
+       the panel ran off the left of the page: Publish, Delete and
+       the Move to picker were all past the border and unreachable,
+       and no amount of scrolling brought them back, because the
+       page does not scroll left of its own origin.
+
+       So it hangs off .line-actions instead, which spans the whole
+       row, and it grows from that row's start edge rather than
+       from the button's end edge. The buttons are at the start of
+       that row, so it still opens directly under them at every
+       width, and both of its edges are now inside the row: it
+       cannot leave the page in either direction. */
     & .more-body {
-      position: absolute; z-index: 6; inset-inline-end: 0; top: calc(100% + 6px);
-      width: max-content; max-width: min(320px, 78vw);
+      position: absolute; z-index: 6;
+      inset-inline-start: 0; inset-inline-end: auto; top: calc(100% + 6px);
+      width: max-content; max-width: min(320px, 100%);
       display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
       padding: 10px;
       background: var(--panel);

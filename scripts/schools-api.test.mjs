@@ -232,6 +232,91 @@ const ADMIN = "reiad_session=t-admin";
     after.body.counts, { total: 3, written: 2 });
 }
 
+{
+  /* A list says which lessons are written without carrying any
+     prose to say it. That is what a contents page marks and what
+     the Studio's picker greys out, and sending the bodies to
+     answer it would be most of a megabyte for the money school. */
+  const res = await call("GET", "/learn/start");
+  const flags = res.body.lessons.map((l) => [l.slug, l.written]);
+  check("a lesson list says which are written", flags,
+    [["money-first", true], ["emergency", false]]);
+  okay("and carries no bodies to say it",
+    res.body.lessons.every((l) => l.body === undefined));
+}
+
+/* ---------- one lesson, which is what the editor saves ---------- */
+
+{
+  const res = await call("PUT", "/learn/start/money-first", {
+    json: { body: "<p>নতুন কথা।</p>" },
+  });
+  check("a stranger cannot write one lesson either", res.status, 401);
+  const after = await call("GET", "/learn/start/money-first");
+  check("and the lesson it would have overwritten is untouched",
+    after.body.lesson.body, "<p>প্রথমে বাজেট।</p>");
+}
+
+{
+  const res = await call("PUT", "/learn/start/money-first", {
+    json: { body: "<p>নতুন কথা।</p>" }, cookie: ADMIN,
+  });
+  check("one lesson's prose can be written", res.status, 200);
+  check("and comes back written", res.body.lesson.body, "<p>নতুন কথা।</p>");
+
+  const again = await call("GET", "/learn/start/money-first");
+  check("and is what the next reader gets", again.body.lesson.body, "<p>নতুন কথা।</p>");
+  check("its title was not asked about, so it did not change",
+    again.body.lesson.bn, "টাকাটা আগে ঠিক করুন");
+}
+
+{
+  /* The lesson body goes through the same sanitiser an article
+     does. `aab/schema.sql` says so where the column is defined,
+     and a lesson editor that skipped it would be the second
+     sanitiser the three-place rule exists to prevent. */
+  const res = await call("PUT", "/learn/start/money-first", {
+    json: { body: '<p>ঠিক আছে।</p><script>alert(1)</script>' }, cookie: ADMIN,
+  });
+  check("a lesson body is sanitised on the way in", res.status, 200);
+  okay("and the script does not survive it",
+    !res.body.lesson.body.includes("<script"));
+}
+
+{
+  const before = await call("GET", "/learn");
+  const res = await call("PUT", "/learn/start/invented", {
+    json: { body: "<p>কেউ এটা চায়নি।</p>" }, cookie: ADMIN,
+  });
+  check("a lesson that is not in the ladder is a 404", res.status, 404);
+  const after = await call("GET", "/learn");
+  check("and it was not inserted", after.body.counts, before.body.counts);
+}
+
+{
+  /* Emptying a lesson is not a deletion and not a failure: an
+     empty body is what makes a builder draw an আসছে page, so a
+     writer taking a lesson back has to be able to say it. */
+  const res = await call("PUT", "/learn/start/money-first", {
+    json: { body: "" }, cookie: ADMIN,
+  });
+  check("a lesson can be emptied", res.status, 200);
+  const after = await call("GET", "/learn");
+  check("and that means unwritten, not gone",
+    after.body.counts, { total: 3, written: 1 });
+  const still = await call("GET", "/learn/start/money-first");
+  check("the row is still there", still.status, 200);
+}
+
+{
+  const res = await call("PUT", "/learn/start", {
+    json: { body: "<p>x</p>" }, cookie: ADMIN,
+  });
+  check("a stage is not writable one at a time", res.status, 400);
+  const school = await call("PUT", "/learn", { json: { body: "<p>x</p>" }, cookie: ADMIN });
+  check("and neither is a school", school.status, 400);
+}
+
 /* ---------- done ---------- */
 
 console.log(failures

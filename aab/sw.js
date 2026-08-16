@@ -31,6 +31,16 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v68: styles.css changed, and it is precached. The desk's More
+        panel used to hang off the More button's right edge and
+        grow leftward, so on a narrow window Publish, Delete and
+        the Move to picker sat past the left border of the page
+        with no way to scroll to them. It hangs off the actions row
+        instead and grows from that row's start edge, so both of
+        its edges stay inside the row. A returning reader holding
+        the v67 stylesheet would keep the unreachable version of
+        that menu.
+
    v67: TRANSITION.md Stage 8. The Quran school's curriculum.js is
         precached and it changed: allLessons(), totalDays(),
         findDhap() and findByPath() take the ladder as an argument
@@ -479,7 +489,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v67";
+const VERSION = "v68";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
