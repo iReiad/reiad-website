@@ -2154,10 +2154,40 @@ is still there.
 ---
 
 ### Stage 13 · The last JavaScript
-**Status: unblocked, 16 August 2026, not started.** Size:
-continuous, and mostly a by-product. The build-step decision it
-was waiting on is in section 7: the arrangement `app/` already
-has, which means this stage needs no new one.
+**Status: started, 16 August 2026. One module of eight moved.**
+Size: continuous, and mostly a by-product. The build-step
+decision it was waiting on is in section 7: the arrangement
+`app/` already has, which means this stage needed no new one.
+
+`aab/src/share-card.ts` is the first, and it was chosen for being
+the smallest thing with a real surface rather than the most
+useful: 118 lines, six exports, and the lowest blast radius of
+the eight. `node scripts/build-modules.mjs` writes
+`aab/share-card.js` and its declaration, and `--check` fails if
+either is edited in its built form.
+
+**Three things it settled that the plan could not.**
+
+`tsc` and not esbuild. esbuild was tried first because it
+preserves formatting where `tsc` reindents, and it strips every
+comment: `legalComments` keeps only `/*!` blocks, and there is no
+option for the rest. The comments in these modules are most of
+their value, so the reindentation is the cost that gets paid.
+**A first conversion therefore has a large diff and almost none
+of it is a change**, which is worth saying in the pull request
+rather than leaving a reviewer to work out.
+
+The declaration is emitted rather than hand-written, and the
+generated one is already better than the file it replaced:
+`app/src/types/share-card.d.ts` never described `cardShape`,
+`SHARE_W`, `SHARE_H` or the `Focus` union at all, because a
+hand-written description only holds what somebody remembered to
+put in it.
+
+And `aab/src/tsconfig.json` needs `"exclude": []` said out loud.
+`tsc` excludes `outDir` and `declarationDir` by default, both of
+which contain this directory, so the default leaves nothing to
+compile and reports it as TS18003.
 
 The language mix is the honest measure of how far this has got.
 On 16 August 2026 GitHub reads this repository as 61% HTML, 33%
@@ -2220,7 +2250,7 @@ repository is.
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | **done, 16 Aug 2026**. 6 HTML files left in aab/, from 283: 404, offline and the four practice books |
 | 12 | The backend, typed and in one shape | steps 1, 2 and half of 4 done, 16 Aug 2026: rows described, one place decides a bad request, and the browser cannot name a route that is gone |
-| 13 | The last JavaScript | unblocked 16 Aug 2026: the build step is decided, not started |
+| 13 | The last JavaScript | started 16 Aug 2026: 1 of 8 modules moved, the arrangement proved |
 | 14 | One way of writing a style, and it is Tailwind | decided 16 Aug 2026, unblocked by 11.7 the same day |
 
 ---
@@ -2518,6 +2548,40 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Stage 13 starts: one module of eight is TypeScript
+
+`aab/src/share-card.ts`, built to `aab/share-card.js` by
+`scripts/build-modules.mjs`, output committed, `--check` failing
+if either is edited in its built form. Chosen for being the
+smallest thing with a real surface and the lowest blast radius,
+not for being the most useful.
+
+**esbuild was tried first and rejected.** It preserves formatting
+where `tsc` reindents to four spaces, which would have made the
+first conversion a near-empty diff. It also strips every comment:
+`legalComments` keeps `/*!` blocks and there is no option for the
+rest. The comments in these modules are most of their value, so
+the reindentation is the cost that gets paid, and a first
+conversion has a large diff of which almost nothing is a change.
+
+**The generated declaration is already better than the one it
+replaced.** The hand-written `share-card.d.ts` described five of
+the module's exports and never mentioned `cardShape`, `SHARE_W`,
+`SHARE_H`, or the fact that `focus` is one of three words rather
+than any string. A hand-written description holds what somebody
+remembered to put in it; an emitted one holds what is there.
+
+Two smaller things worth keeping. `aab/src/tsconfig.json` needs
+`"exclude": []` written out, because `tsc` excludes `outDir` and
+`declarationDir` by default and both contain the source
+directory, so the default compiles nothing and says TS18003. And
+the builder compiles into a temporary directory even when
+writing, because `--check` must be able to compare without
+writing: a check that fixed what it was asked to find would
+always pass.
+
+Seven modules left, and `sw.js` is deliberately not one of them.
 
 ### 2026-08-16 · The build step for `aab/`, decided
 

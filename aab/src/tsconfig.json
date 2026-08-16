@@ -1,0 +1,39 @@
+{
+  "//": [
+    "The site's own modules, as TypeScript. TRANSITION.md Stage 13.",
+    "",
+    "Output goes to aab/ at the exact path each module is served",
+    "from, because those paths are named in HTML, in sw.js and in",
+    "vite.config.ts's list of runtime externals: a hashed chunk",
+    "would fight all three. So no bundling and no renaming, one",
+    "file in and one file out, which is what tsc alone does.",
+    "",
+    "declaration: true is the point of the exercise. app/src/types/",
+    "holds hand-written .d.ts files describing these modules, and",
+    "Stage 13 is done when that directory is empty because the",
+    "modules describe themselves."
+  ],
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "removeComments": false,
+    "declaration": true,
+    "declarationDir": "../../app/src/types",
+    "outDir": "..",
+    "rootDir": ".",
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
+  },
+  "include": ["*.ts"],
+  "//exclude": [
+    "Empty on purpose. tsc excludes outDir and declarationDir by",
+    "default, and both of those contain this directory, so the",
+    "default leaves nothing to compile and says so with TS18003."
+  ],
+  "exclude": []
+}

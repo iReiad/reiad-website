@@ -1,11 +1,9 @@
-/* `/share-card.js`, the picture a pasted link shows. See
-   ./README.md.
-
-   The card is drawn, not borrowed: a 1200x630 JPEG made from the
-   piece's lead photo, cropped around the part the writer marked.
-   It is a JPEG because the scrapers behind WhatsApp, Facebook and
-   LinkedIn will not read the WebP every photo here is stored as. */
-
+export declare const SHARE_W = 1200;
+export declare const SHARE_H = 630;
+/** Where to crop a photo that does not fit, in the writer's own
+    words. The same three values the figure toolbar sets as a
+    class on the figure. */
+export type Focus = "top" | "bottom" | "centre";
 /** Which photo a card should be drawn from, and where to crop it.
 
     `own` is false when the piece has no photo of its own, in which
@@ -13,23 +11,38 @@
     nothing should be drawn. `lead` says the photo was the marked
     lead rather than merely the first one found. */
 export interface Cover {
-  src: string;
-  focus: string;
-  own: boolean;
-  lead: boolean;
+    src: string;
+    focus: Focus;
+    own: boolean;
+    lead: boolean;
 }
-
-export function shareCardBlob(cover: Cover): Promise<Blob>;
-
-/** The cover a parsed article implies: the photo marked `lead-photo`
-    if there is one, otherwise the first, and which part of it to
-    keep. `own` is false when the piece has no photo at all. */
-export function coverFromDocument(doc: Document): Cover;
-export function coverFromHTML(html: string): Cover;
-
-/** Where a piece's drawn card lives in R2, derived from its slug. */
-export function cardSlug(slug: string): string;
-
-/** True for a card this site drew, false for a raw photo pointed
-    at by `og:image`, which is the failure the desk flags. */
-export function isDrawnCard(url: string): boolean;
+/**
+ * Draw the card: a 1200x630 JPEG.
+ *
+ * `src` has to be a path this site serves. The bytes are read back
+ * through fetch, so a `data:` URL works too and somebody else's
+ * URL will not.
+ */
+export declare function shareCardBlob({ src, focus }: {
+    src: string;
+    focus?: Focus;
+}): Promise<Blob>;
+/**
+ * The photo a card should be made from, out of an article body.
+ *
+ * The lead photo if one is marked, otherwise the first photo,
+ * otherwise nothing, and the caller decides what nothing means: in
+ * the Studio it means the section's own card.
+ */
+export declare function coverFromDocument(doc: Document): Cover;
+export declare const coverFromHTML: (html: unknown) => Cover;
+/** Where a drawn card is kept, so one can be told from a raw photo
+    long after it was made. uploadMedia() puts it under this slug. */
+export declare const cardSlug: (slug: string) => string;
+/** Is this cover a card this code drew? Anything else is a photo
+    of unknown shape, in a format half the scrapers refuse. */
+export declare const isDrawnCard: (url: string | null | undefined) => boolean;
+export declare const cardShape: (url: string | null | undefined) => {
+    type: string;
+    sized: boolean;
+};
