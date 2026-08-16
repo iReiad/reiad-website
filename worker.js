@@ -92,7 +92,7 @@ const MEDIA = /^\/media\/(.+)$/;
     aab/cooking/ and aab/travel/ are the ones written by hand. Both
     answer here, and the section decides which mount a database piece
     is served at: the handler falls through when they disagree. */
-const ARTICLE = /^\/(insights|cooking|travel)\/([a-z0-9-]+)(?:\.html)?$/i;
+export const ARTICLE = /^\/(insights|cooking|travel)\/([a-z0-9-]+)(?:\.html)?$/i;
 
 /* ---------- the Next.js allowlist ----------
 
@@ -109,20 +109,21 @@ const ARTICLE = /^\/(insights|cooking|travel)\/([a-z0-9-]+)(?:\.html)?$/i;
    exactly as it is today, and the route turns on by itself the
    moment the binding is added.
 
-   ---- why one section and not all three ----
+   ---- the three reading hubs ----
 
-   The plan says "exactly one entry: /insights/<slug>", and it is
-   worth taking literally rather than generously. The first version
-   of this line forwarded the ARTICLE regex, which is all three
-   reading mounts, on the grounds that the Next route handles them
-   identically and the parity test proves it. That is true and it
-   is still the wrong first move: every piece in the kitchen and on
-   the travel desk is a committed file today, so forwarding those
-   two mounts would put a Worker hop in front of pieces the
-   database has never heard of, for no gain and with a new way to
-   fail.
+   Stage 11.1. `/insights.html`, `/cooking/index.html` and
+   `/travel/index.html` are the addresses every link on this site
+   uses and the ones the canonical links name. They are also the
+   addresses Cloudflare's asset router redirects AWAY from: with a
+   file at `aab/cooking/index.html` it 308s that URL to
+   `/cooking/`, which is why the canonical link on that page has
+   pointed at a redirect for as long as the page has existed.
 
-   Stage 11 adds the other two, when there is a reason to.
+   Listing the path in `run_worker_first` takes it away from the
+   asset router altogether, so the canonical address answers 200
+   and the pretty forms are sent to it by `_redirects` instead of
+   the other way round. That is the first time the site and its
+   own canonical links have agreed.
 
    ---- and /_next/, which is not a page ----
 
@@ -145,8 +146,10 @@ const ARTICLE = /^\/(insights|cooking|travel)\/([a-z0-9-]+)(?:\.html)?$/i;
    `run_worker_first` in wrangler.toml has the matching entry.
    Without it the asset router answers first and this is never
    reached. */
-const NEXT_ROUTES = [
+export const NEXT_ROUTES = [
   /^\/insights\/([a-z0-9-]+)(?:\.html)?$/i,
+  /^\/insights\.html$/i,
+  /^\/(cooking|travel)\/index\.html$/i,
   /^\/_next\//,
 ];
 

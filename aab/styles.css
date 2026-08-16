@@ -6202,21 +6202,12 @@ German for day, and .tag is what the site has always called
   }
   .read-art { color: var(--gold); }
   .read-art .art { width: 30px; height: 30px; }
-  .read-en {
-    color: var(--ink-soft); font-size: 0.66rem;
-    text-transform: none; letter-spacing: 0.04em;
-  }
   .read-meta {
     display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline;
     margin-top: auto; padding-top: 10px;
     color: var(--ink-soft); font-size: 0.72rem;
 
     & .more { margin-inline-start: auto; }
-  }
-  .read-note { color: var(--gold); font-size: 0.85rem; }
-  .read-fallback {
-    display: grid; gap: 10px; color: var(--ink-soft);
-    & b { color: var(--ink); }
   }
 
   /* A piece is printed to be propped against something greasy, or

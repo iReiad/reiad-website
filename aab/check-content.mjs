@@ -62,10 +62,18 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PAGES, COUNTS } from "./content.js";
+import { NEXT_ROUTES, ARTICLE } from "../worker.js";
 import { METRICS, PILLARS } from "./tools/stock.model.js";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 let failures = 0;
+
+/** Is this an address a Worker renders rather than a file? The
+    allowlist in worker.js, read rather than copied. Whether the
+    asset router lets it through is check-routes.mjs's question,
+    and it asks it of the same two lists. */
+const workerAnswers = (url) =>
+  ARTICLE.test(url) || NEXT_ROUTES.some((route) => route.test(url));
 
 const fail = (line, ...detail) => {
   failures++;
@@ -115,14 +123,23 @@ for (const url of listed) {
 }
 
 /* ------------------------------------------------------------
-   2. Every PAGES entry points at a file that exists
+   2. Every PAGES entry resolves: a file, or a Worker
+
+   "A file that exists" was the whole question until Stage 11.
+   Some of these addresses are rendered on request now and have no
+   file behind them on purpose, so the question is the one
+   check-routes.mjs already answers: does anything at all answer
+   this URL. A manifest entry pointing at neither is a dead link
+   in the menu of every page on the site, which is what this has
+   always been for.
    ------------------------------------------------------------ */
 for (const page of PAGES) {
   const rel = page.url.replace(/^\//, "");
-  if (!existsSync(join(ROOT, rel))) {
-    fail(`no-file   ${page.url}`,
-      `PAGES calls this "${page.title}", but there is no such file.`);
-  }
+  if (existsSync(join(ROOT, rel))) continue;
+  if (workerAnswers(page.url)) continue;
+  fail(`no-file   ${page.url}`,
+    `PAGES calls this "${page.title}", and there is neither a file`,
+    "nor a Worker route that answers it.");
 }
 
 /* ------------------------------------------------------------

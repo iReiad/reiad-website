@@ -31,6 +31,28 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v72: styles.css lost three rules with Stage 11.1, and it is
+        precached. `.read-en`, `.read-note` and `.read-fallback`
+        were the English sub-title on a Bangla card, the note on a
+        placeholder and the no-JavaScript list inside the two hub
+        pages. None of the three can be drawn any more: the first
+        was only ever set from a content.js entry and is not a
+        column, and the other two belonged to the markup the route
+        replaced. check-css.mjs is what found them, the moment the
+        pages holding them left aab/.
+
+   v71: TRANSITION.md Stage 11.1. The three reading hubs are
+        rendered by the Next.js Worker now, so /insights.html,
+        /cooking/index.html and /travel/index.html leave the
+        precache list along with /reads.js, which drew the two
+        Bangla ones and has nothing left to draw. A page a Worker
+        builds cannot be precached at install: it is cached the
+        first time it is fetched, network-first like every other
+        page of HTML here, so a reader who loses their connection
+        having never opened a hub gets the offline page rather
+        than a stale hub. That is the trade Stage 11 names, taken
+        knowingly for three index pages and not for a lesson.
+
    v70: /insights.html changed, and it is precached. The subscribe
         box it carried as an inline module is a file now,
         /hub.js, so that this page and the Next.js route that
@@ -507,7 +529,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v70";
+const VERSION = "v72";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -629,20 +651,18 @@ const PRECACHE = [
   "/english/icons.js",
   "/english/part.js",
   "/english/term.js",
-  /* The kitchen. Two pages and one module, so all of it is
-     precached: this is the part of the site most likely to be
-     opened in a kitchen with one bar of signal. */
-  "/cooking/index.html",
+  /* The kitchen and the travel desk. Their index pages are
+     rendered by a Worker as of Stage 11.1 and cannot be
+     precached; the pieces themselves are single pages, worth
+     having offline, and a kitchen is where a recipe is read with
+     one bar of signal. */
   "/cooking/onions.html",
-  "/travel/index.html",
   "/travel/uk-visit-visa.html",
-  "/reads.js",
   "/tools/index.html",
   "/tools/stock.html",
   "/tools/stock.js",
   "/tools/stock.model.js",
   "/tools/stock.i18n.js",
-  "/insights.html",
   "/favicon.ico",
 ];
 

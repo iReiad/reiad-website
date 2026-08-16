@@ -82,6 +82,14 @@ not_found_handling = "404-page"
 #                piece published from the Studio is actually
 #                findable. Assets would otherwise win and the merge
 #                would never run.
+#   the three    /insights.html, /cooking/index.html and
+#   hubs         /travel/index.html are rendered by the Next.js
+#                Worker as of Stage 11.1. They have to be listed
+#                for two reasons rather than one: the files are
+#                still there for now and would win, and the asset
+#                router redirects a .html address to its pretty
+#                form before the Worker is ever called, so the
+#                canonical URL would 308 rather than render.
 #   /_next/*     the Next.js Worker's own JavaScript, once the NEXT
 #                service binding exists. Nothing in aab/ matches, so
 #                with not_found_handling set the asset router would
@@ -91,7 +99,8 @@ not_found_handling = "404-page"
 #                the 404 page. Listing it costs nothing while the
 #                binding is absent, because worker.js then falls
 #                through to the assets exactly as before.
-run_worker_first = ["/api/*", "/insights/*", "/media/*", "/_next/*", "/feed.xml", "/sitemap.xml"]
+run_worker_first = ["/api/*", "/insights/*", "/media/*", "/_next/*", "/feed.xml", "/sitemap.xml",
+  "/insights.html", "/cooking/index.html", "/travel/index.html"]
 
 # ---------- D1: the database everything dynamic runs on ----------
 # Articles, reader questions, subscribers, enquiries, view counts and

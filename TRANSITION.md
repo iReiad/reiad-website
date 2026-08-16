@@ -1339,9 +1339,8 @@ has been looked at once, after a week of real traffic.
 ---
 
 ### Stage 11 · Every remaining route, until no page is a file
-**Status: 11.8 done and 11.1 written but forwarding nobody, 16
-August 2026. 279 files left.** Size: months, at whatever pace
-suits.
+**Status: 11.8 done, 11.1 done and serving, 16 August 2026. 276
+files left.** Size: months, at whatever pace suits.
 
 Stage 10 moved one route and proved the machinery: an allowlist in
 `worker.js`, a service binding, a fallback for anything the second
@@ -1411,10 +1410,43 @@ entry for the day:
   one kind of duplication this repository has already been bitten
   by.
 
-*Still to do:* the three paths join `NEXT_ROUTES` and
-`run_worker_first`, `_redirects` gains the pretty forms, and two
-weeks later the three files go to `archive/` with their entries
-in the precache list. *Deletes* 3 files, when that happens.
+**Switched on, and the files are in `archive/`, the same day.**
+The three paths are in `NEXT_ROUTES` and in `run_worker_first`,
+`_redirects` sends the five pretty forms to them, and
+`insights.html`, `cooking/index.html`, `travel/index.html` and
+`reads.js` have left `aab/`. **276 HTML files left.**
+
+Rule 4 says a fallback stays a fortnight and this did not get
+one, which was asked for and is worth writing down rather than
+glossing: the file is what would have answered if the route were
+wrong, and there is now nothing behind these three addresses but
+the Next.js Worker. What stands in its place is the parity test,
+which drives all three routes against a seeded database on every
+run, and the fact that a hub is an index rather than a piece of
+writing: the pieces themselves are still files and still rows.
+
+Three checks learned something real on the way, and all three
+were the same lesson, that half this repository's checks assume a
+page is a file:
+
+- `check-routes.mjs` models the asset router, and the asset
+  router is no longer the first thing that answers. It reads
+  `run_worker_first` out of `wrangler.toml` and `NEXT_ROUTES` out
+  of `worker.js` now, and a path answers when BOTH are true. That
+  is the mistake this shape of routing invites: a route added to
+  the allowlist and not to `run_worker_first` is a Worker that is
+  never called.
+- `check-content.mjs` failed three `PAGES` entries for having no
+  file. The question it was asking is the right one and the test
+  was too narrow: a file, or a Worker route.
+- `check-css.mjs` reported every rule in the `reads` layer as
+  styling nothing, because the markup carrying those classes is a
+  component now. It reads `next/app` and `next/components` too,
+  and `className=` was already in its regex. Then it found three
+  rules that really do style nothing anywhere: `.read-en`,
+  `.read-note` and `.read-fallback`, the English sub-title on a
+  Bangla card, the note on a placeholder, and the no-JavaScript
+  list inside the two hub pages. All three are gone.
 
 **11.2 The other two article mounts.** `/cooking/<slug>` and
 `/travel/<slug>` join `/insights/<slug>` in `NEXT_ROUTES`, which
@@ -1653,7 +1685,7 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | 11.1 written, not switched on, 16 Aug 2026, 279 files to go |
+| 11 | Every remaining route, until no page is a file | 11.1 serving 16 Aug 2026, 276 files to go |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
 
