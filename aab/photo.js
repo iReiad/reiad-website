@@ -1,5 +1,5 @@
 /* ============================================================
-   photo.js: turning whatever an <img> is pointing at into bytes
+   photo.ts: turning whatever an <img> is pointing at into bytes
    this site can store.
 
    Two surfaces need this and used to have only one copy of it.
@@ -36,20 +36,22 @@
    `aab/studio-publish.test.mjs` drives a real publish under the
    real policy, read out of `_headers`, and fails loudly if this
    regresses.
-   ============================================================ */
+   ---- this file is TypeScript, and the .js beside it is built ----
 
+   TRANSITION.md Stage 13. Edit `aab/src/photo.ts`; the committed
+   `aab/photo.js` is what the browser fetches, and
+   `node scripts/build-modules.mjs --check` fails if it is edited
+   in its built form.
+
+   ============================================================ */
 /** px on the long side: plenty for a blog, and it caps the bytes. */
 export const MAX_EDGE = 1600;
 export const QUALITY = 0.82;
-
 export const isDataUrl = (src) => /^data:/i.test(src ?? "");
-
 /** Is this photo on somebody else's server? */
 export const isOffSite = (src) => /^https?:\/\//i.test(src ?? "");
-
 /** Already ours, so there is nothing to do with it. */
 export const isHosted = (src) => /^\/media\//.test(src ?? "");
-
 /**
  * A URL the browser is actually allowed to read the bytes of.
  *
@@ -59,95 +61,84 @@ export const isHosted = (src) => /^\/media\//.test(src ?? "");
  * server we do not control. Those go through /api/media/fetch,
  * which hands the bytes back same-origin.
  */
-export const fetchableSrc = (src) =>
-  isOffSite(src) ? `/api/media/fetch?u=${encodeURIComponent(src)}` : src;
-
+export const fetchableSrc = (src) => isOffSite(src) ? `/api/media/fetch?u=${encodeURIComponent(src)}` : src;
 /** A data: URL as a Blob, without a network request. See above. */
 export function dataUrlToBlob(src) {
-  const comma = String(src).indexOf(",");
-  const head = String(src).slice(0, comma);
-  const body = String(src).slice(comma + 1);
-  const type = head.match(/^data:([^;,]+)/)?.[1] ?? "application/octet-stream";
-
-  if (!/;base64/i.test(head)) {
-    // Percent-encoded text rather than base64. Rare for a photo.
-    return new Blob([decodeURIComponent(body)], { type });
-  }
-
-  const binary = atob(body);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
-  return new Blob([bytes], { type });
+    const comma = String(src).indexOf(",");
+    const head = String(src).slice(0, comma);
+    const body = String(src).slice(comma + 1);
+    const type = head.match(/^data:([^;,]+)/)?.[1] ?? "application/octet-stream";
+    if (!/;base64/i.test(head)) {
+        // Percent-encoded text rather than base64. Rare for a photo.
+        return new Blob([decodeURIComponent(body)], { type });
+    }
+    const binary = atob(body);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1)
+        bytes[i] = binary.charCodeAt(i);
+    return new Blob([bytes], { type });
 }
-
 /** The bytes of one photo, by whichever route its src allows. */
 export async function photoBytes(src) {
-  if (isDataUrl(src)) return dataUrlToBlob(src);
-  const res = await fetch(fetchableSrc(src), { credentials: "same-origin" });
-  if (!res.ok) throw new Error(String(res.status));
-  return res.blob();
+    if (isDataUrl(src))
+        return dataUrlToBlob(src);
+    const res = await fetch(fetchableSrc(src), { credentials: "same-origin" });
+    if (!res.ok)
+        throw new Error(String(res.status));
+    return res.blob();
 }
-
-/** Resized and re-encoded, so a phone photo does not arrive at 6 MB. */
 export async function encodeImage(source) {
-  const bitmap = await createImageBitmap(source);
-  const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
-  const w = Math.round(bitmap.width * scale);
-  const h = Math.round(bitmap.height * scale);
-
-  const canvas = new OffscreenCanvas(w, h);
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(bitmap, 0, 0, w, h);
-  bitmap.close();
-
-  let blob = await canvas.convertToBlob({ type: "image/webp", quality: QUALITY });
-  // Safari used to hand back a PNG here; JPEG is the safer second choice.
-  if (blob.type !== "image/webp") {
-    blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.85 });
-  }
-  return { blob, width: w, height: h };
-}
-
-/**
- * Move every photo in a body out to /media, and hand back the
- * rewritten HTML.
- *
- * A photo that will not upload is LEFT WHERE IT IS and counted.
- * Dropping a picture out of somebody's article because a request
- * failed would be a far worse bug than the one this file is about.
- */
-export async function hostPhotosIn(html, slug, uploadMedia, onProgress) {
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const pending = [...doc.querySelectorAll("img")].filter((img) => {
-    const src = img.getAttribute("src") ?? "";
-    return src && !isHosted(src);
-  });
-
-  if (!pending.length) return { html, uploaded: 0, failed: 0 };
-
-  let uploaded = 0;
-  let failed = 0;
-
-  for (const [i, img] of pending.entries()) {
-    onProgress?.(i + 1, pending.length);
-    try {
-      const { blob, width, height } = await encodeImage(
-        await photoBytes(img.getAttribute("src"))
-      );
-      const stored = await uploadMedia(blob, slug);
-      if (!stored?.url) throw new Error(stored?.reason ?? "upload-failed");
-
-      img.setAttribute("src", stored.url);
-      img.setAttribute("width", String(width));
-      img.setAttribute("height", String(height));
-      img.setAttribute("loading", "lazy");
-      img.setAttribute("decoding", "async");
-      uploaded += 1;
-    } catch (err) {
-      console.warn("photo upload failed", err);
-      failed += 1;
+    const bitmap = await createImageBitmap(source);
+    const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
+    const w = Math.round(bitmap.width * scale);
+    const h = Math.round(bitmap.height * scale);
+    const canvas = new OffscreenCanvas(w, h);
+    /* Non-null rather than a guard: getContext("2d") on a canvas
+       this code just made returns null only if a context of another
+       kind was already taken on it. */
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(bitmap, 0, 0, w, h);
+    bitmap.close();
+    let blob = await canvas.convertToBlob({ type: "image/webp", quality: QUALITY });
+    // Safari used to hand back a PNG here; JPEG is the safer second choice.
+    if (blob.type !== "image/webp") {
+        blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.85 });
     }
-  }
-
-  return { html: doc.body.innerHTML, uploaded, failed };
+    return { blob, width: w, height: h };
+}
+export async function hostPhotosIn(html, slug, uploadMedia, onProgress) {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const pending = [...doc.querySelectorAll("img")].filter((img) => {
+        const src = img.getAttribute("src") ?? "";
+        return src && !isHosted(src);
+    });
+    if (!pending.length)
+        return { html, uploaded: 0, failed: 0 };
+    let uploaded = 0;
+    let failed = 0;
+    for (const [i, img] of pending.entries()) {
+        onProgress?.(i + 1, pending.length);
+        try {
+            const { blob, width, height } = await encodeImage(
+            /* Non-null, and the filter above is the proof: `pending`
+               holds only images whose `src` is a non-empty string.
+               A `?? ""` here would read as caution and would be the
+               one line in this file that the compiler added to it. */
+            await photoBytes(img.getAttribute("src")));
+            const stored = await uploadMedia(blob, slug);
+            if (!stored?.url)
+                throw new Error(stored?.reason ?? "upload-failed");
+            img.setAttribute("src", stored.url);
+            img.setAttribute("width", String(width));
+            img.setAttribute("height", String(height));
+            img.setAttribute("loading", "lazy");
+            img.setAttribute("decoding", "async");
+            uploaded += 1;
+        }
+        catch (err) {
+            console.warn("photo upload failed", err);
+            failed += 1;
+        }
+    }
+    return { html: doc.body.innerHTML, uploaded, failed };
 }

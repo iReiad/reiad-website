@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v80: TRANSITION.md Stage 13. /photo.js is built from
+        aab/src/photo.ts now. Same code, reindented by tsc, and a
+        precached file that changed its bytes needs a bump even
+        when it did not change its behaviour.
+
    v79: TRANSITION.md Stage 13 and Stage 14. /api.js is built
         from aab/src/api.ts now, and /tailwind.css joins the
         precache list: a second stylesheet, built from
@@ -647,7 +652,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v79";
+const VERSION = "v80";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
