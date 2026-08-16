@@ -96,7 +96,7 @@ scrolling table. Each one is plain HTML with a class on it, and that class
 has to be in three places or it does not survive the trip:
 
 1. a rule in `@layer article` in `aab/styles.css`,
-2. `KEEP_CLASSES` in `aab/studio.js`, the browser's sanitiser,
+2. `KEEP_CLASSES` in `aab/editor.js`, the browser's sanitiser,
 3. `ALLOWED_CLASSES` in `functions/_lib/sanitise.js`, the server's.
 
 `check-css.mjs` fails if the two allowlists disagree, if a class is allowed

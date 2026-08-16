@@ -221,7 +221,10 @@ const classList = (file, name) => {
   return [...block[1].matchAll(/"([a-z][\w-]*)"/g)].map((m) => m[1]);
 };
 
-const studioClasses = classList("studio.js", "KEEP_CLASSES");
+/* The browser's allowlist moved out of studio.js and into
+   editor.js when the React Studio needed the same sanitiser. It is
+   read by name, so this check follows it rather than the file. */
+const studioClasses = classList("editor.js", "KEEP_CLASSES");
 const serverClasses = classList("../functions/_lib/sanitise.js", "ALLOWED_CLASSES");
 
 if (studioClasses.length && serverClasses.length) {
@@ -233,7 +236,7 @@ if (studioClasses.length && serverClasses.length) {
     if (!missing.length) continue;
     failures++;
     console.error(`\nthe two sanitisers disagree, ${side}: ${missing.join(", ")}`);
-    console.error("        KEEP_CLASSES in aab/studio.js and ALLOWED_CLASSES in");
+    console.error("        KEEP_CLASSES in aab/editor.js and ALLOWED_CLASSES in");
     console.error("        functions/_lib/sanitise.js are one list written twice.");
   }
 }
