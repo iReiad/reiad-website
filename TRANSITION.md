@@ -5,18 +5,24 @@
 Kept at the top because this file is long and the answer to "what
 now" should not be a search. One item, replaced when it lands.
 
-> **Stage 11.7: the four schools, step 2 of 3.** The lesson
-> route exists and renders all four schools from their rows,
-> checked against the committed pages fact by fact (step 1,
-> below). Nothing is forwarded to it yet: `NEXT_ROUTES` still
-> says nothing about the schools, so all 251 files answer.
+> **Stage 11.7: the four schools, step 3 of 3.** A lesson and a
+> stage's contents page are both routes now, all four schools,
+> checked against the committed pages fact by fact. Nothing is
+> forwarded to either: `NEXT_ROUTES` still says nothing about the
+> schools, so all 251 files answer.
 >
-> Step 2 is the **stage contents pages and the four hubs**, which
-> are the other 21 of the 251 and the half a reader navigates by.
-> Step 3 turns `NEXT_ROUTES` on, archives the 251, applies the
-> offline decision now written down under Stage 11.7, and moves
-> what is left of the four `curriculum.js` modules to `shared/`
-> in the same commit as the last page that imports them.
+> That is 234 of the 251. The four hand-written hubs and
+> `/learn/contents.html` are the rest, and they are the reason
+> step 3 is not simply a deletion: `/learn/index.html` holds the
+> starter guide, whose eight steps carry a layout of classes no
+> article allowlist holds, and it is the page every other page of
+> that school points back at.
+>
+> Step 3 ports those five, turns `NEXT_ROUTES` on, archives the
+> 251, applies the offline decision written down under Stage
+> 11.7, and moves what is left of the four `curriculum.js`
+> modules to `shared/` in the same commit as the last page that
+> imports them.
 >
 > After it: Stage 13 (the surviving modules to TypeScript, which
 > needs the decision below about a build step for `aab/`), then
@@ -1686,6 +1692,30 @@ the project and the one that has to go last, because it is the
 only one that can take offline reading with it. *Deletes* 251
 files. *Needs* Stage 8, and the offline answer below.
 
+**Step 2 landed, 16 August 2026, and deletes nothing either.**
+The seventeen stage contents pages are routes:
+`next/app/[section]/[slug]/index.html/`, a static segment beside
+`[lesson]`, which is what makes `/quran/dhap-1/index.html` the
+ladder and `/quran/dhap-1/tin-prokar.html` a lesson.
+
+Every number on that page is counted from the lessons rather than
+declared, which is the rule at the top of `CLAUDE.md` and what
+the builders already did: how many lessons, how many are written,
+how many minutes, and for the Quranic Arabic school how many
+days, since it is the only one whose ladder is measured in days
+and whose lessons can cover two. The parity test compares the
+whole facts list word for word, and every card in order with its
+address, for all four schools.
+
+One thing the port got wrong first and the test caught: the money
+school loads `/learn/learn.js` on every one of its ninety-one
+pages and its ladder pages add `/learn/stage.js` on top, where
+the other three give each kind of page a script of its own and
+share none. A shell two segments up cannot tell a lesson from a
+ladder, so the shared script is the layout's and the
+kind-specific one is the page's, and the test now compares the
+set of scripts rather than the first one it finds.
+
 **Step 1 landed, 16 August 2026, and deletes nothing.** The
 lesson route renders all four schools out of D1 at
 `next/app/[section]/[slug]/[lesson]/`, and `NEXT_ROUTES` does not
@@ -2123,7 +2153,7 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | all but 11.7 done, 16 Aug 2026; 11.7 step 1 landed, the lesson route reads the rows and nothing is forwarded to it yet |
+| 11 | Every remaining route, until no page is a file | all but 11.7 done, 16 Aug 2026; 11.7 steps 1 and 2 landed, 234 of the 251 pages are routes and nothing is forwarded to them yet |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
 | 14 | One way of writing a style, and it is Tailwind | decided 16 Aug 2026, waits for 11.7 |
@@ -2378,6 +2408,40 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Stage 11.7 step 2: a stage's ladder is a route too
+
+The seventeen stage contents pages render out of D1 at
+`next/app/[section]/[slug]/index.html/`. Still nothing deleted
+and `NEXT_ROUTES` still untouched: 234 of the 251 pages are now
+routes that nobody is sent to, and the four hand-written hubs
+plus `/learn/contents.html` are what is left.
+
+The four builders' ladder pages differ more than their lesson
+pages do, and all of it is in one table beside the component:
+the hero's extra class, the progress and continue attributes, the
+stage's own script, the facts list, the practice book's band, the
+prev/next wording and the paragraph each school ends with. The
+facts list is where they differ most and it is the part worth
+comparing hardest, because every number in it is counted rather
+than declared: the parity test holds the whole list word for
+word, and every card in order with its address.
+
+The test earned its keep again. The money school writes
+`/learn/learn.js` into all ninety-one of its pages and its ladder
+pages add `/learn/stage.js` on top, where the other three share
+nothing between a lesson and a ladder. The first port put the
+kind-specific script in the shell, which cannot tell the two
+apart, and dropped `learn.js` from every ladder page: the money
+school's progress ticks and its palette entries would have gone
+with it. The shared script is the layout's now, the
+kind-specific one is the page's, and the check compares the set
+rather than the first match.
+
+Parity: 231 checks to 297.
+
+Next: step 3, which is the five hand-written pages, then
+`NEXT_ROUTES`, then the largest deletion in the project.
 
 ### 2026-08-16 · Stage 11.7 step 1: a lesson is a route, and nothing is forwarded to it
 

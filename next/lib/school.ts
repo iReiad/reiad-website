@@ -57,7 +57,15 @@ export interface SchoolLook {
       at them, so a value here that disagrees with its ASSIGN
       table is two generators taking turns. */
   og: string;
-  /** The school's own script, loaded after `/app.js`. */
+  /** A script every page of the school loads, whatever kind of
+      page it is. Only the money school has one: `page()` in
+      `build-lessons.mjs` writes `/learn/learn.js` into all
+      ninety-one of its pages, and its ladder pages add
+      `/learn/stage.js` on top of it. The other three give each
+      kind of page its own and share none. */
+  shellScript?: string;
+  /** The script a LESSON page loads, which is never the script
+      its stage's ladder loads. */
   script?: string;
   /** The heading of a page title: the money school names the
       stage, the other three name its kicker. */
@@ -90,6 +98,61 @@ export interface SchoolLook {
   tail: (
     stage: SchoolStage, stages: SchoolStage[]
   ) => { url: string; kicker: string; label: string } | null;
+
+  /** What a stage's own contents page says, which is a different
+      set of words again. Kept beside the lesson's rather than in
+      a file of its own, because the two describe one school and
+      the failure worth avoiding is a school whose lesson pages
+      and ladder page disagree about what a lesson is called. */
+  stage: StageLook;
+}
+
+export interface StageLook {
+  /** The extra class on the hero, which each school's stylesheet
+      layer hangs its own colour and spacing on. */
+  hero: string;
+  /** The progress bar and the "continue" button read these, and
+      the names are already keys in somebody's browser. */
+  progressAttr: string;
+  continueAttr: string;
+  /** The stage's own script, which is never the lesson's. */
+  script: string;
+  /** Under the kicker in the eyebrow: the school's other
+      language, in its own element. */
+  sub: (stage: SchoolStage) => { text: string; lang?: string } | null;
+  /** The line under the facts, in the schools that make a promise
+      about what you will be able to do. The money school makes
+      none, which is its own choice and is kept. */
+  can?: (stage: SchoolStage) => { text: string; cls: string } | null;
+  /** The definition list, which is where the four schools differ
+      most: one counts days, one counts parts, two count minutes a
+      night. Every number in it is counted from the lessons rather
+      than declared. */
+  facts: (
+    stage: SchoolStage, counted: { total: number; live: number; minutes: number; days: number }
+  ) => { dt: string; dd: string }[];
+  /** The card the reader is sent back to the school by. */
+  back: { url: string; label: string };
+  /** The prev/next pair at the foot, in the school's word for a
+      stage. */
+  ladder: { label: string; prev: string; next: string };
+  /** The paragraph at the very bottom, which every school ends
+      with and no two of which say the same thing. */
+  note: string;
+  /** The practice book's band, above the cards, for the two
+      schools that have one. */
+  book?: {
+    id: string;
+    cls: string;
+    artCls: string;
+    textCls: string;
+    label: string;
+    lang?: string;
+    blurb: string;
+    cta: string;
+    /** What a stage with no book says where the book would be. */
+    instead?: (stage: SchoolStage) => string | null;
+  };
 }
 
 const SOON = "আসছে";
@@ -98,6 +161,16 @@ const SOON = "আসছে";
     line is the reading time alone; the other three prefix it with
     the lesson's own label where they have one. */
 const minutes = (n: number) => `${bnNum(n)} মিনিটের পড়া`;
+
+/** "৭–১০ মিনিট", the range two schools promise for an evening.
+
+    An en dash, and it is the one thing the house rule on dashes
+    keeps it for: a number range. */
+const nightly = (stage: SchoolStage) => {
+  const range = stage.minutes as number[] | undefined;
+  if (!Array.isArray(range) || range.length < 2) return "";
+  return `${bnNum(range[0])}–${bnNum(range[1])} মিনিট`;
+};
 
 /** The stage after this one, or nothing. */
 const after = (stage: SchoolStage, stages: SchoolStage[]) =>
@@ -110,7 +183,7 @@ export const LOOKS: Record<string, SchoolLook> = {
     footer: "এই সাইটের সবকিছু সাধারণ শিক্ষামূলক তথ্য: বিনিয়োগ পরামর্শ না। "
       + "টাকা কোথাও রাখার আগে নিজে যাচাই করুন।",
     og: "stage-",
-    script: "/learn/learn.js",
+    shellScript: "/learn/learn.js",
     stageName: (stage) => String(stage.bn),
     sub: (lesson) => (lesson.en ? { text: String(lesson.en), cls: "en-sub" } : null),
     attr: { id: "data-lesson-id", stage: "data-stage", title: "data-lesson-title" },
@@ -134,6 +207,23 @@ export const LOOKS: Record<string, SchoolLook> = {
        walk through in order, they are six ladders you pick from,
        and `contents.html` is the page that shows all of them. */
     tail: () => null,
+    stage: {
+      hero: "",
+      progressAttr: "data-stage-progress",
+      continueAttr: "data-stage-continue",
+      script: "/learn/stage.js",
+      sub: (stage) => (stage.en ? { text: String(stage.en) } : null),
+      facts: (stage, c) => [
+        { dt: "কার জন্য", dd: String(stage.who ?? "") },
+        { dt: "কতগুলো লেখা", dd: `${bnNum(c.total)}টি${c.live < c.total ? ` (${bnNum(c.live)}টি তৈরি)` : ""}` },
+        { dt: "মোট সময়", dd: `প্রায় ${bnNum(c.minutes)} মিনিট` },
+      ],
+      back: { url: "/learn/index.html", label: "সব ধাপ দেখুন" },
+      ladder: { label: "ধাপের ক্রম", prev: "← আগের ধাপ", next: "পরের ধাপ →" },
+      note: "এই লাইব্রেরির সবকিছু সাধারণ শিক্ষামূলক তথ্য: বিনিয়োগ পরামর্শ না। "
+        + "নিয়ম, হার আর ফি সময়ে সময়ে বদলায়; সিদ্ধান্তের আগে সংশ্লিষ্ট প্রতিষ্ঠানের "
+        + "সর্বশেষ তথ্য দেখে নিন।",
+    },
   },
 
   deutsch: {
@@ -181,6 +271,45 @@ export const LOOKS: Record<string, SchoolLook> = {
             label: "চারটা স্তর একসাথে দেখুন",
           };
     },
+    stage: {
+      hero: "stufe-hero",
+      progressAttr: "data-stufe-progress",
+      continueAttr: "data-stufe-continue",
+      script: "/deutsch/stufe.js",
+      sub: (stage) => (stage.de ? { text: String(stage.de), lang: "de" } : null),
+      can: (stage) => (stage.can ? { text: String(stage.can), cls: "stufe-can" } : null),
+      facts: (stage, c) => [
+        { dt: "কার জন্য", dd: String(stage.who ?? "") },
+        { dt: "কতগুলো পাঠ", dd: `${bnNum(c.total)}টি${c.live < c.total ? ` (${bnNum(c.live)}টি তৈরি)` : ""}` },
+        { dt: "মোট পড়ার সময়", dd: `প্রায় ${bnNum(c.minutes)} মিনিট` },
+        ...(stage.workbook
+          ? [{
+              dt: "অনুশীলন",
+              dd: `${bnNum(Number(stage.workbook.days))} দিন, রোজ একটা পাতা`
+                + (workbookUrl("deutsch", stage) ? "" : " (আসছে)"),
+            }]
+          : stage.uebung
+            ? [{ dt: "অনুশীলন", dd: String(stage.uebung) }]
+            : []),
+      ],
+      back: { url: "/deutsch/index.html", label: "চারটা স্তর দেখুন" },
+      ladder: { label: "স্তরের ক্রম", prev: "← আগের স্তর", next: "পরের স্তর →" },
+      note: "এই কোর্সটা বাংলাভাষীদের জন্য লেখা, আর ধরে নেওয়া হয়েছে আপনি ইংরেজি একবার "
+        + "শিখেছেন। কোনো পরীক্ষার প্রস্তুতি নয়, কোনো সার্টিফিকেট নয়: লক্ষ্য শুধু "
+        + "একটাই, যেন আপনি মুখ খুলে বলতে পারেন।",
+      book: {
+        id: "uebung",
+        cls: "buch-cta",
+        artCls: "buch-art",
+        textCls: "buch-text",
+        label: "রোজকার অনুশীলন",
+        lang: "de",
+        blurb: "দিনে একটা পাতা, একটা ছাঁচ, নিজের জীবনের একটা সত্যি অনুচ্ছেদ। "
+          + "যা লিখবেন সেটা আপনার নিজের ব্রাউজারেই জমা থাকবে।",
+        cta: "খাতা খুলুন →",
+        instead: (stage) => (stage.uebung ? String(stage.uebung) : null),
+      },
+    },
   },
 
   quran: {
@@ -224,6 +353,31 @@ export const LOOKS: Record<string, SchoolLook> = {
             kicker: "ষাট দিন শেষ ✓",
             label: "তিনটা ধাপ একসাথে দেখুন",
           };
+    },
+    stage: {
+      hero: "dhap-hero",
+      progressAttr: "data-dhap-progress",
+      continueAttr: "data-dhap-continue",
+      script: "/quran/dhap.js",
+      sub: (stage) => (stage.ar ? { text: String(stage.ar), lang: "ar" } : null),
+      can: (stage) => (stage.can ? { text: String(stage.can), cls: "stufe-can" } : null),
+      /* The only school whose ladder is measured in days rather
+         than in lessons, because that is what it promises: sixty
+         days, and a lesson can cover two of them. */
+      facts: (stage, c) => [
+        { dt: "কার জন্য", dd: String(stage.who ?? "") },
+        {
+          dt: "কত দিন",
+          dd: `${bnNum(c.days)} দিন, ${bnNum(c.total)}টি পাঠে`
+            + (c.live < c.total ? ` (${bnNum(c.live)}টি তৈরি)` : ""),
+        },
+        { dt: "রোজ কতক্ষণ", dd: nightly(stage) },
+        { dt: "মোট পড়ার সময়", dd: `প্রায় ${bnNum(c.minutes)} মিনিট` },
+      ],
+      back: { url: "/quran/index.html", label: "তিনটা ধাপ দেখুন" },
+      ladder: { label: "ধাপের ক্রম", prev: "← আগের ধাপ", next: "পরের ধাপ →" },
+      note: "এই কোর্সটা তাঁদের জন্য যাঁরা আরবি পড়তে পারেন কিন্তু মানে বোঝেন না। "
+        + "কোনো লেখা নেই, কোনো পরীক্ষা নেই: শুধু রোজ একটু করে চেনা, শোনা আর অনুভব করা।",
     },
   },
 
@@ -278,6 +432,43 @@ export const LOOKS: Record<string, SchoolLook> = {
             kicker: "শেষ পর্ব ✓",
             label: "দুটো টার্ম একসাথে দেখুন",
           };
+    },
+    stage: {
+      hero: "term-hero",
+      progressAttr: "data-term-progress",
+      continueAttr: "data-term-continue",
+      script: "/english/term.js",
+      sub: (stage) => (stage.en ? { text: String(stage.en), lang: "en" } : null),
+      can: (stage) => (stage.can ? { text: String(stage.can), cls: "term-can" } : null),
+      facts: (stage, c) => [
+        { dt: "কার জন্য", dd: String(stage.who ?? "") },
+        { dt: "কতগুলো পর্ব", dd: `${bnNum(c.total)}টি${c.live < c.total ? ` (${bnNum(c.live)}টি তৈরি)` : ""}` },
+        { dt: "মোট পড়ার সময়", dd: `প্রায় ${bnNum(c.minutes)} মিনিট` },
+        { dt: "রোজ কতক্ষণ", dd: `${nightly(stage)}, তার অন্তত অর্ধেক জোরে বলা` },
+        ...(stage.workbook
+          ? [{
+              dt: "অনুশীলন",
+              dd: `${bnNum(Number(stage.workbook.days))} দিন, রোজ একটা পাতা`
+                + (workbookUrl("english", stage) ? "" : " (আসছে)"),
+            }]
+          : []),
+      ],
+      back: { url: "/english/index.html", label: "দুটো টার্ম দেখুন" },
+      ladder: { label: "টার্মের ক্রম", prev: "← আগের টার্ম", next: "পরের টার্ম →" },
+      note: "এই কোর্সটা বাংলাভাষীদের জন্য লেখা। কোনো পরীক্ষার প্রস্তুতি নয়, কোনো "
+        + "সার্টিফিকেট নয়: লক্ষ্য একটাই, যেন আপনি মুখ খুলে বলতে পারেন। ভুল হলেও।",
+      book: {
+        id: "chorcha",
+        cls: "wb-cta",
+        artCls: "wb-cta-art",
+        textCls: "wb-cta-text",
+        label: "রোজকার অনুশীলন",
+        lang: "en",
+        blurb: "দিনে একটা পাতা, একটা কাঠামো, নিজের জীবনের একটা সত্যি অনুচ্ছেদ। "
+          + "যা লিখবেন সেটা আপনার নিজের ব্রাউজারেই জমা থাকবে।",
+        cta: "খাতা খুলুন →",
+        instead: (stage) => (stage.chorcha ? String(stage.chorcha) : null),
+      },
     },
   },
 };
@@ -353,3 +544,49 @@ export const getLesson = cache(async (
 });
 
 export type Lesson = NonNullable<Awaited<ReturnType<typeof getLesson>>>;
+
+/** A stage's contents page, out of the rows.
+
+    Everything a ladder page states about itself is counted from
+    the lessons rather than declared: how many there are, how many
+    are written, how many minutes and how many days. That is the
+    rule at the top of `CLAUDE.md` and it is the reason the
+    builders were written; a route that read a number out of a
+    stage's meta would be the same mistake in a newer file. */
+export const getStage = cache(async (school: string, stageSegment: string) => {
+  if (!isSchool(school)) return null;
+
+  const { env } = getCloudflareContext();
+  const db = (env as { DB?: D1Database }).DB;
+  if (!db) return null;
+
+  const segment = decodeURIComponent(stageSegment);
+  const stages = await stagesOf(db, school);
+  const stage = stages.find((s) => s.slug === segment);
+  if (!stage) return null;
+
+  const lessons = laddered(school, stage);
+  /* A stage with no lessons has no contents page to draw and no
+     first lesson to send anybody to. None exists today and the
+     404 is honest if one ever does. */
+  if (!lessons.length) return null;
+
+  return {
+    school,
+    look: LOOKS[school],
+    stage,
+    stages,
+    lessons,
+    counted: {
+      total: lessons.length,
+      live: lessons.filter((l) => l.status === "live").length,
+      minutes: lessons.reduce((sum, l) => sum + Number(l.minutes ?? 0), 0),
+      days: lessons.reduce((sum, l) => sum + l.days, 0),
+    },
+    prev: stages[stages.findIndex((s) => s.slug === stage.slug) - 1] ?? null,
+    next: stages[stages.findIndex((s) => s.slug === stage.slug) + 1] ?? null,
+    book: workbookUrl(school, stage),
+  };
+});
+
+export type Stage = NonNullable<Awaited<ReturnType<typeof getStage>>>;

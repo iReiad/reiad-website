@@ -96,8 +96,9 @@ export default async function LessonPage({ params }: { params: Params }) {
     .join(" · ");
 
   return (
-    <main id="main">
-      <div className="wrap">
+    <>
+      <main id="main">
+        <div className="wrap">
 
         <article
           className={`term-article lesson${LESSON_CLASS[school] ? ` ${LESSON_CLASS[school]}` : ""}`}
@@ -164,8 +165,14 @@ export default async function LessonPage({ params }: { params: Params }) {
           </nav>
         ) : null}
 
-      </div>
-    </main>
+        </div>
+      </main>
+      {/* The school's own script. Rendered by the page rather
+          than by the shell, because the ladder page beside this
+          one loads a different one and the shell cannot tell them
+          apart. */}
+      {look.script ? <script type="module" src={look.script} /> : null}
+    </>
   );
 }
 
