@@ -52,6 +52,38 @@ if (!block) {
 }
 const paths = [...block.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
 
+/* ------------------------------------------------------------
+   And the entries that are addresses rather than files.
+
+   TRANSITION.md Stage 11.7. Six of the pages this worker
+   precaches are built by a Worker out of the database, so there
+   is nothing in aab/ to hash. That is not a hole in the check:
+   a rendered page changes when a row changes and no VERSION
+   could ever have tracked that, which is what network-first is
+   for. The hash was always about scripts and stylesheets, and
+   those are still files and still hashed.
+
+   What CAN go wrong here is an address in the list that nothing
+   serves, because an install that fetches a 404 caches a 404 and
+   the reader who finds out is the one with no connection. So
+   each one is held to being a route worker.js forwards.
+   ------------------------------------------------------------ */
+const renderedBlock = sw.match(/const RENDERED = \[([\s\S]*?)\];/)?.[1] ?? "";
+const rendered = [...renderedBlock.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+
+if (rendered.length) {
+  const { NEXT_ROUTES } = await import("../worker.js");
+  const orphans = rendered.filter((p) => !NEXT_ROUTES.some((re) => re.test(p)));
+  if (orphans.length) {
+    console.error(`sw.js precaches ${orphans.length} address(es) that no route `
+      + "in worker.js answers:");
+    for (const o of orphans) console.error(`   ${o}`);
+    console.error("\nAn install would fetch a 404 and cache it. Add the route to "
+      + "NEXT_ROUTES,\nor take the address out of RENDERED.");
+    process.exit(1);
+  }
+}
+
 const hashes = {};
 const missing = [];
 for (const p of paths) {
@@ -73,7 +105,8 @@ if (missing.length) {
 
 if (update) {
   await writeFile(MANIFEST, `${JSON.stringify({ version, hashes }, null, 2)}\n`);
-  console.log(`sw-manifest.json written: ${version}, ${paths.length} files`);
+  console.log(`sw-manifest.json written: ${version}, ${paths.length} files`
+    + (rendered.length ? ` and ${rendered.length} rendered page(s)` : ""));
   process.exit(0);
 }
 
@@ -90,7 +123,8 @@ const added = paths.filter((p) => !(p in prev.hashes));
 const removed = Object.keys(prev.hashes).filter((p) => !paths.includes(p));
 
 if (!changed.length && !added.length && !removed.length) {
-  console.log(`sw ${version}: ${paths.length} precached files, none changed.`);
+  console.log(`sw ${version}: ${paths.length} precached files, none changed`
+    + (rendered.length ? `, and ${rendered.length} rendered page(s), each one a route.` : "."));
   process.exit(0);
 }
 

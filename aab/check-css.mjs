@@ -124,7 +124,7 @@ function walk(dir) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) {
       if (!["og", "node_modules"].includes(entry)) walk(full);
-    } else if (/\.(html|js|mjs|tsx)$/.test(entry)) {
+    } else if (/\.(html|js|mjs|tsx|ts)$/.test(entry)) {
       files.push(relative(ROOT, full));
     }
   }
@@ -137,13 +137,68 @@ walk(ROOT);
    page, and a check that could not see it reported every rule in
    the reads layer as styling nothing at all: which is a leak, as
    far as this file can tell, and is not. */
-for (const outside of ["../next/app", "../next/components"]) {
+for (const outside of ["../next/app", "../next/components", "../next/lib"]) {
   if (existsSync(join(ROOT, outside))) walk(join(ROOT, outside));
 }
 
 const markup = new Map(
   files.filter((f) => f !== "check-css.mjs").map((f) => [f, readFileSync(join(ROOT, f), "utf8")])
 );
+
+/* And the schools' prose, which is not a file any more.
+
+   TRANSITION.md Stage 11.7. Until 247 committed pages left `aab/`,
+   every class a lesson's body carries was in this repository as
+   HTML and this file found it by walking. The bodies are rows in
+   D1 now, rendered by a route, and the only copy of them that a
+   check running on a laptop with no network can read is
+   `content/schools.backup.json`, which is the same answer
+   `content/articles.backup.json` already is to the same question.
+
+   Without this, 32 rules in the four school layers reported
+   themselves as styling nothing at all: `.shobdo-list`,
+   `.word-grid` and thirty others, every one of them on a page a
+   reader can see. A check that cannot see the markup does not
+   report less, it reports wrongly. */
+{
+  /* `usedIn()` walks `files` and looks the name up in `markup`, so
+     a source has to be in both. */
+  const add = (name, html) => { files.push(name); markup.set(name, html); };
+
+  const snapshot = join(ROOT, "..", "content", "schools.backup.json");
+  if (existsSync(snapshot)) {
+    const rows = JSON.parse(readFileSync(snapshot, "utf8"));
+    /* One entry PER SCHOOL rather than one for the file, because
+       ownership here is decided by the path a class was found
+       under: a class in one file holding all four schools' prose
+       would belong to none of them, and every rule in every
+       school layer would flag. The names are not real paths and
+       do not need to be; they start with the school's own folder,
+       which is what `owns` matches on, and they read as an
+       explanation when the check prints where a class is used. */
+    for (const school of ["learn", "deutsch", "quran", "english"]) {
+      const prose = (rows.lessons ?? [])
+        .filter((l) => l.school === school)
+        .map((l) => l.body ?? "")
+        .join("\n");
+      if (prose) add(`${school}/ (lesson prose, in D1)`, prose);
+    }
+  }
+
+  /* And the four hand-written pages, which are one generated
+     module now rather than five committed pages. Split the same
+     way and for the same reason. */
+  const hubs = join(ROOT, "..", "next", "lib", "school-hubs.ts");
+  if (existsSync(hubs)) {
+    const text = readFileSync(hubs, "utf8");
+    for (const [, key, body] of text.matchAll(/^  "([^"]+)": \{[\s\S]*?\n    body: ("(?:[^"\\]|\\.)*"),/gm)) {
+      const school = key.split("/")[0];
+      let html = "";
+      try { html = JSON.parse(body); } catch { html = body; }
+      add(`${school}/ (${key}, in next/lib/school-hubs.ts)`, html);
+    }
+  }
+}
 
 /** Files using a class in a class attribute, not in prose or a
     selector string, which say nothing about what is on the page. */

@@ -5,29 +5,17 @@
 Kept at the top because this file is long and the answer to "what
 now" should not be a search. One item, replaced when it lands.
 
-> **Stage 11.7: the four schools, step 3 of 3.** A lesson and a
-> stage's contents page are both routes now, all four schools,
-> checked against the committed pages fact by fact. Nothing is
-> forwarded to either: `NEXT_ROUTES` still says nothing about the
-> schools, so all 251 files answer.
+> **Stage 11 is done. Next is Stage 13, then 14, then 12.**
 >
-> That is 234 of the 251. The four hand-written hubs and
-> `/learn/contents.html` are the rest, and they are the reason
-> step 3 is not simply a deletion: `/learn/index.html` holds the
-> starter guide, whose eight steps carry a layout of classes no
-> article allowlist holds, and it is the page every other page of
-> that school points back at.
+> No page of writing on this site is a file. `aab/` holds six
+> HTML files: `404.html`, `offline.html` and the four practice
+> books, which are the same for every reader and are in no
+> database. It held 283 in the morning.
 >
-> Step 3 ports those five, turns `NEXT_ROUTES` on, archives the
-> 251, applies the offline decision written down under Stage
-> 11.7, and moves what is left of the four `curriculum.js`
-> modules to `shared/` in the same commit as the last page that
-> imports them.
->
-> After it: Stage 13 (the surviving modules to TypeScript, which
-> needs the decision below about a build step for `aab/`), then
-> Stage 14 (Tailwind), then Stage 12 (the backend, which runs
-> alongside anything).
+> Stage 13 is the surviving modules to TypeScript and needs the
+> decision below about a build step for `aab/`. Then Stage 14
+> (Tailwind), which was waiting for exactly this. Stage 12 (the
+> backend) runs alongside either.
 >
 > Not next, and deliberately: the calculators and the case-study
 > models. Left where they are, at their own request.
@@ -1372,9 +1360,11 @@ has been looked at once, after a week of real traffic.
 ---
 
 ### Stage 11 · Every remaining route, until no page is a file
-**Status: everything but 11.7 done, 16 August 2026. 253 files
-left, 251 of them the schools. No hand-written page of this site
-is a file.** Size: months, at whatever pace suits.
+**Status: done, 16 August 2026. Six HTML files left in `aab/`,
+from 283: `404.html`, `offline.html` and the four practice books.
+No page of writing on this site is a file.** Size: it took a day,
+which is not what the estimate said and is worth remembering the
+next time one of these says months.
 
 Stage 10 moved one route and proved the machinery: an allowlist in
 `worker.js`, a service binding, a fallback for anything the second
@@ -2153,10 +2143,10 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | all but 11.7 done, 16 Aug 2026; 11.7 steps 1 and 2 landed, 234 of the 251 pages are routes and nothing is forwarded to them yet |
+| 11 | Every remaining route, until no page is a file | **done, 16 Aug 2026**. 6 HTML files left in aab/, from 283: 404, offline and the four practice books |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
-| 14 | One way of writing a style, and it is Tailwind | decided 16 Aug 2026, waits for 11.7 |
+| 14 | One way of writing a style, and it is Tailwind | decided 16 Aug 2026, unblocked by 11.7 the same day |
 
 ---
 
@@ -2408,6 +2398,79 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Stage 11.7 step 3, and Stage 11: no page of writing is a file
+
+247 school pages left `aab/` and `NEXT_ROUTES` was turned on in
+the same commit, which is the rule the whole of Stage 11 has
+followed: there is no window in which both answer. **Six HTML
+files left in `aab/`, from 283 in the morning.**
+
+**What is left, and why.** `404.html` and `offline.html`, which
+are asked for by `not_found_handling` and by the service worker
+rather than by a route. And four practice books:
+`/deutsch/stufe-<1,2,3>/arbeitsbuch.html` and
+`/english/term-1/workbook.html`. A book is thirty, sixty or
+ninety days written out in full, it is the same for every reader,
+and none of it is in the database, so it is still a file and
+still generated. `build-deutsch.mjs` and `build-english.mjs` are
+cut down to writing only those; `build-lessons.mjs` and
+`build-quran.mjs` are archived, their whole output being routes
+now.
+
+**The five hand-written pages went across as writing, not as
+JSX.** The four hubs and `/learn/contents.html` are prose, and
+`next/lib/school-hubs.ts` holds each one's body exactly as the
+committed page had it. A generator lifted them and
+`check-next.mjs` compared the copy against the original for the
+length of one commit; both are archived now, because the copy is
+the original. Eight hundred lines of Bangla hand-converted into
+JSX is eight hundred chances to change a word that nobody
+reviewing the diff would catch, and the reader who would catch it
+is the one this site is written for.
+
+**The offline decision, as taken.** Six precached school pages
+became addresses rather than files: they are in `RENDERED` in
+`sw.js`, precached exactly as before, and `check-sw.mjs` hashes
+what is still a file and asserts only that each rendered entry is
+a route `worker.js` forwards, which is the failure that could
+actually bite (an install that fetches a 404 caches a 404). And
+`install` stopped using `cache.addAll`, which is atomic: for
+seventy-seven versions a comment under it said one missing file
+should not stop the worker installing, and the opposite was true.
+
+**Two checks had to learn where the markup went.** `check-css.mjs`
+reported 32 rules in the four school layers as styling nothing at
+all, because every class a lesson carries had been in this
+repository as HTML and now is a row in D1. It reads the prose out
+of `content/schools.backup.json`, attributed per school, and the
+hub markup out of `next/lib/school-hubs.ts`. One rule was a real
+finding rather than a blind spot: `.dars-day` is drawn by the
+lesson-card component, which is one component for four schools,
+so it is anchored on `body.quran` now and says out loud what the
+folder used to say silently.
+
+`check-routes.mjs` found the other one. `/insights/dsex` had
+redirected to `/learn/terms/dsex` without the suffix for as long
+as the asset router was adding it. The route answers both forms,
+the redirect points at the canonical one, and the suffixless
+pattern is in `NEXT_ROUTES` so a link somebody saved years ago
+still works.
+
+**And one thing did not move.** The four `curriculum.js` modules
+are still in `aab/`, and the plan at the top of this file said
+they would go to `shared/` in this commit. They cannot, and the
+reason is worth writing down rather than quietly dropping: the
+pages are gone but the SCRIPTS are not. `/quran/hub.js` draws the
+ladder in the browser, `/quran/progress.js` reads the reader's
+ticks, and both import `/quran/curriculum.js`, as do `content.js`,
+`crumbs.js` and `home.js`, which every page of the site loads. A
+module in `shared/` is not served at a URL. So they move when the
+browser stops needing a ladder synchronously, which is Stage 13's
+problem and not this one, and `check-schools.mjs` keeps the two
+copies honest until then.
+
+Parity: 297 checks to 352.
 
 ### 2026-08-16 · Stage 11.7 step 2: a stage's ladder is a route too
 

@@ -691,30 +691,32 @@ ${days}
    go
    ============================================================ */
 
+/* Only the practice books.
+
+   TRANSITION.md Stage 11.7. This file used to write a Stufe's
+   ladder and all fourteen of its Teil pages as well, and those
+   are a Next.js route now, rendered from the rows the Studio
+   writes. Writing them here too would put a file back at an
+   address a Worker already answers, which is the one thing this
+   stage was arranged to end.
+
+   The books stay files, and that is a decision rather than an
+   oversight: a book is thirty, sixty or ninety days written out
+   in full, it is the same for every reader, and none of it is in
+   the database. `arbeitsbuch.data.js` beside this file is where
+   it lives. When that moves, this goes with it. */
 let pages = 0;
 
 for (const stufe of STUFEN) {
-  const teile = stufeTeile(stufe);
+  if (!workbookUrl(stufe)) {
+    console.log(`${stufe.slug.padEnd(9)} no practice book`);
+    continue;
+  }
   const dir = join(OUT, "deutsch", stufe.slug);
   mkdirSync(dir, { recursive: true });
-
-  writeFileSync(join(dir, "index.html"), stufeIndexPage(stufe, teile));
+  writeFileSync(join(dir, `${stufe.workbook.slug}.html`), arbeitsbuchPage(stufe));
   pages++;
-
-  const bodies = await bodiesFor(stufe);
-  teile.forEach((teil, i) => {
-    writeFileSync(join(dir, `${teil.slug}.html`), teilPage(stufe, teile, i, bodies));
-    pages++;
-  });
-
-  if (workbookUrl(stufe)) {
-    writeFileSync(join(dir, `${stufe.workbook.slug}.html`), arbeitsbuchPage(stufe));
-    pages++;
-    console.log(`${stufe.slug.padEnd(9)} ${teile.length} Teil page(s), ` +
-      `${stufeCount(stufe).live} written, + ${dayCount(stufe)}-day workbook`);
-  } else {
-    console.log(`${stufe.slug.padEnd(9)} ${teile.length} Teil page(s), ${stufeCount(stufe).live} written`);
-  }
+  console.log(`${stufe.slug.padEnd(9)} ${dayCount(stufe)}-day workbook`);
 }
 
 console.log(

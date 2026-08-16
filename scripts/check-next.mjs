@@ -4,8 +4,8 @@
 
        node scripts/check-next.mjs
 
-   The Next.js app is a package with its own root, and three
-   things it renders live outside that root. All are copied in,
+   The Next.js app is a package with its own root, and two things
+   it renders live outside that root. Both are copied in,
    and a copy nobody checks is the failure this repository has
    written up more times than any other.
 
@@ -26,6 +26,17 @@
       while forty files in `aab/` still import them; when the
       school pages stop being files, they move properly and both
       this and the generator go.
+
+   There was a third copy here for the length of one commit, and
+   it is worth saying why it went. Stage 11.7 lifted the four
+   schools' hand-written hubs and the money school's full index
+   into `next/lib/school-hubs.ts`, and while the pages they came
+   from were still committed, `build-school-hubs.mjs` regenerated
+   them and this compared. Those pages are in
+   `archive/schools-pages/` now: the copy is the original, there
+   is nothing left to compare it to, and the generator is in
+   `archive/schools-builders/` beside the two builders it
+   outlived by one commit.
 
    There was a second copy here until Stage 11.2: the "coming
    soon" teasers on the Insights hub lived in both `content.js`

@@ -167,8 +167,8 @@ node scripts/check-crons.mjs # a scheduled job the Worker is no longer listening
 node scripts/check-pieces.mjs # a written piece nothing on the site links to
 node scripts/check-headers.mjs # a page a Worker built, served with no CSP
 node scripts/check-schools.mjs # a ladder the browser and the builders disagree about
-node scripts/check-schools-built.mjs # a school page edited by hand, or a snapshot
-                                     # refreshed and the schools never rebuilt
+node scripts/build-school-icons.mjs --check   # a school drawing next/ copied
+node scripts/build-school-hubs.mjs --check    # a school page next/ copied
 node scripts/check-next.mjs # a copy inside next/ that has drifted from the
                             # thing it was copied from
 ```
@@ -197,11 +197,14 @@ node scripts/schools.test.mjs        # a curriculum that lost a field, a lesson
 node scripts/schools-api.test.mjs    # a school readable by anyone, writable by
                                      # somebody else, half-written, or a lesson
                                      # edited into existence (43 checks)
-                                     # schools-build.test.mjs is archived: it
-                                     # compared the database against the files,
-                                     # and the first lesson edited in the Studio
-                                     # makes those differ on purpose.
-                                     # check-schools-built.mjs replaced it.
+                                     # Both page-comparing checks are archived
+                                     # now: schools-build.test.mjs compared the
+                                     # database against the files, and
+                                     # check-schools-built.mjs compared the
+                                     # builders against the committed pages.
+                                     # There are no committed pages. What asks
+                                     # that question now is next/parity.test.mjs,
+                                     # against the route.
 ```
 
 And when anything under `app/src/` changed, after rebuilding.
@@ -316,35 +319,50 @@ site, and they were being uploaded and served at addresses nobody
 had asked for in months.
 
 A lesson is written at `/studio/?lessons`, which saves one row
-through `PUT /api/schools/<school>/<stage>/<lesson>`. Getting that
-onto the site is two steps, and neither happens on its own:
+through `PUT /api/schools/<school>/<stage>/<lesson>`. **As of
+Stage 11.7 that is the whole of it**: the route reads the row, so
+saving in the Studio changes the page. There is nothing to
+rebuild and nothing to commit, which is what the whole stage was
+for.
+
+The snapshot is still worth refreshing, because two checks and
+every test read it and it is the schools' committed backup:
 
 ```sh
 npx wrangler d1 export reiad --remote --output schools.db
 node scripts/export-schools.mjs --db schools.db   # content/schools.backup.json
-node aab/quran/build-quran.mjs                    # and the other three
 ```
 
-**Why there is a file in the middle at all.** A builder is a
-generator somebody runs on a laptop and it has to work with no
-network and no credentials, so it cannot read D1. The export is
-the same answer `content/articles.backup.json` already is to the
-same question, and it is safe on the same grounds: every byte of
-it is already served at a public URL. It carries no timestamp,
+**Why there is a file at all, now that no page is built from it.**
+Three reasons, and none of them is the pages any more. It is the
+schools' half of the nightly backup, on the same footing as
+`content/articles.backup.json`. It is what `check-schools.mjs`
+compares the four `curriculum.js` modules against. And it is the
+only copy of the lesson prose that a check running on a laptop
+with no network can read, which is how `check-css.mjs` knows that
+`.shobdo-list` and thirty-one other rules are styling something
+real.
+
+It is safe on the same grounds as ever: every byte of it is
+already served at a public URL. It carries no timestamp,
 deliberately, so that identical content is identical bytes and
 the git log answers "did the prose change" rather than "was this
 refreshed".
 
-**Two checks watch this, and they ask different questions.**
-`check-schools.mjs` compares the ladder in `curriculum.js` against
-the ladder in the snapshot. `check-schools-built.mjs` rebuilds all
-four schools from the snapshot into a temporary directory and
-compares all 229 pages against the ones committed in `aab/`, which
-catches a generated page edited by hand and a snapshot refreshed
-without a rebuild. The second one outlives the migration:
-`schools-build.test.mjs` compares the database against the
-curriculum files, and the first lesson edited in the Studio makes
-that comparison fail for the right reason.
+**The pages are gone as of 16 August 2026, and so is half of
+this.** TRANSITION.md Stage 11.7: 247 of the 251 school pages are
+Next.js routes rendered from the rows, and the four practice books
+are what is left. So there is no committed page to compare a build
+against, `check-schools-built.mjs` is in `archive/schools-builders/`
+beside the two builders whose whole output it watched, and
+`next/parity.test.mjs` asks that question against the route
+instead.
+
+`check-schools.mjs` stays and does two things: it compares the
+ladder in `curriculum.js` against the ladder in the snapshot, and
+it computes every lesson's URL, progress id and label both through
+`shared/schools.js` and through the school's own `curriculum.js`
+and fails on any pair that disagree.
 
 **The ladder is still `curriculum.js`,** and still read by the
 browser: forty files import from one of the four, and Stage 11.7
@@ -379,10 +397,10 @@ the Studio says where the text actually lives.
 Generated pages are generated. Edit the source, never the output:
 
 ```sh
-node aab/learn/build-lessons.mjs     # aab/learn/**   from the schools snapshot
-node aab/deutsch/build-deutsch.mjs   # aab/deutsch/** from the schools snapshot
-node aab/quran/build-quran.mjs       # aab/quran/**   from the schools snapshot
-node aab/english/build-english.mjs   # aab/english/** from the snapshot + workbook
+node aab/deutsch/build-deutsch.mjs   # the three German practice books
+node aab/english/build-english.mjs   # the English practice book
+node scripts/build-school-icons.mjs  # next/lib/school-icons.ts from aab/*/icons.js
+node scripts/build-school-hubs.mjs   # next/lib/school-hubs.ts from the four hubs
 node aab/build-meta.mjs              # feed.xml, sitemap.xml, robots.txt
 
 cd app && npm run build             # aab/desk/**   from app/src/** (React)

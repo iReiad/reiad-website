@@ -169,3 +169,37 @@ Next.js, one route at a time, and each step ends with its files
 here rather than in `aab/`. The rule for putting something in is
 the one at the top: it is archived when nothing serves it and
 nothing imports it, and never before.
+
+## The schools' pages, 16 August 2026
+
+TRANSITION.md Stage 11.7. `schools-pages/` holds 247 of the 251 HTML
+files the four schools were made of, and `schools-builders/` holds the
+two generators whose whole output they were, plus the check that
+compared the two and the generator that lifted the hand-written pages
+into `next/`.
+
+| What was here | What answers now |
+| --- | --- |
+| `/learn/<stage>/<slug>.html` and the other three schools' lesson pages, 229 of them | `next/app/[section]/[slug]/[lesson]/`, from the `school_lessons` rows |
+| `/learn/<stage>/index.html` and the other 16 stage ladders | `next/app/[section]/[slug]/index.html/`, counted from those rows |
+| `/learn/index.html`, `/deutsch/index.html`, `/quran/index.html`, `/english/index.html` | `next/app/[section]/index.html/`, from `next/lib/school-hubs.ts` |
+| `/learn/contents.html` | `next/app/[section]/contents.html/`, from the same |
+| `aab/learn/build-lessons.mjs`, `aab/quran/build-quran.mjs` | nothing: the pages they wrote are rendered on request |
+| `scripts/check-schools-built.mjs` | `next/parity.test.mjs`, against the route rather than against a file |
+| `scripts/build-school-hubs.mjs` | nothing: the copy it made is the original now |
+
+**Four school pages are NOT here**, and they are still in `aab/`:
+`/deutsch/stufe-<1,2,3>/arbeitsbuch.html` and
+`/english/term-1/workbook.html`. A practice book is thirty, sixty or
+ninety days written out in full, it is the same for every reader, and
+none of it is in the database. `build-deutsch.mjs` and
+`build-english.mjs` are still in `aab/` too, cut down to writing only
+those.
+
+**These pages are still read, by a test.** `next/parity.test.mjs`
+compares what the route renders against what the page here says, fact
+by fact, and the lesson prose byte for byte. That is what this
+directory is for, said in the first paragraph of this file: a
+replacement is checkable against the thing it replaced. When these are
+eventually pruned, those checks lose their other side and should be
+deleted rather than weakened.
