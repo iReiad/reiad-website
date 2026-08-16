@@ -27,10 +27,35 @@
    section, under which stage. It deliberately does NOT compare
    titles or prose, because those are edited in the Studio now
    and the file is not expected to keep up with them.
+
+   ---- and a second question, added for Stage 11.7 ----
+
+   There is now a third place the ladder's arithmetic is written:
+   `shared/schools.js`, which is where it had to go for a Next.js
+   route to reach it, because `next/` cannot import out of its own
+   directory. It holds `lessonUrl`, `lessonId`, `lessonLabel` and
+   the rest, and while the four `curriculum.js` modules survive it
+   is a second implementation of each.
+
+   Two spellings of a URL that agree today and drift tomorrow is
+   how a link goes dead without an error anywhere, so the second
+   half of this file computes every lesson's address, progress id
+   and label BOTH ways and fails on any pair that disagree. The
+   money school is the one that makes this worth doing: its
+   starter guide's lessons are anchors in a hub rather than pages,
+   and `basics-1` files progress under a bare slug because its
+   eighteen terms did so for a year before that stage existed.
+   Neither is guessable from the shape of the data.
+
+   When the school pages stop being files, the modules go, this
+   half goes with them, and `shared/schools.js` is simply where
+   the arithmetic lives.
    ============================================================ */
 
 import { SCHOOLS, readSchool } from "./import-schools.mjs";
 import { readSnapshot } from "./schools-snapshot.mjs";
+import { fromSnapshot } from "./school-source.mjs";
+import { laddered, stageUrl, workbookUrl } from "../shared/schools.js";
 
 const snapshot = readSnapshot();
 const problems = [];
@@ -73,6 +98,106 @@ for (const school of SCHOOLS) {
   }
 }
 
+/* ============================================================
+   the second question: do the two sets of helpers agree?
+
+   `shared/schools.js` is handed a ladder read out of the snapshot
+   and asked for each lesson's URL, id and label. The school's own
+   `curriculum.js` is handed the same ladder and asked the same
+   thing through whichever names it uses for them. Every school
+   spells the flattening differently (`stageLessons`,
+   `stufeTeile`, `dhapLessons`, `termParts`) and that is the
+   point: four spellings of one function is what the shared one
+   replaces.
+
+   `days` is compared only where the file computes it, which is
+   the Quranic Arabic school alone: it is the only one whose
+   lessons can cover more than one day, and asking the other three
+   for a number they never had would be inventing a disagreement
+   rather than finding one. Same for `label`: two schools number
+   their lessons and two do not.
+   ============================================================ */
+
+const FLATTEN = {
+  learn: (m, stage) => m.stageLessons(stage),
+  deutsch: (m, stage) => m.stufeTeile(stage),
+  quran: (m, stage) => m.dhapLessons(stage),
+  english: (m, stage) => m.termParts(stage),
+};
+
+/* The stage's own contents page, under each school's name for it.
+   Four exports, one address. */
+const STAGE_URL = {
+  learn: (m, stage) => m.stageUrl(stage),
+  deutsch: (m, stage) => m.stufeUrl(stage),
+  quran: (m, stage) => m.dhapUrl(stage),
+  english: (m, stage) => m.termUrl(stage),
+};
+
+/* The English school labels a part in a helper of its own rather
+   than on the object, so it is asked for one; the other three
+   either put it on the lesson or do not have one. */
+const LABEL = {
+  english: (m, lesson) => m.partLabel(lesson),
+};
+
+let agreed = 0;
+
+for (const school of SCHOOLS) {
+  const mod = await import(`../aab/${school.dir}/curriculum.js`);
+  const { stages } = await fromSnapshot(school.id);
+
+  for (const stage of stages) {
+    const mine = laddered(school.id, stage);
+    const theirs = FLATTEN[school.id](mod, stage);
+
+    if (mine.length !== theirs.length) {
+      problems.push(`${school.id}: stage "${stage.slug}" flattens to `
+        + `${mine.length} lessons through shared/schools.js and `
+        + `${theirs.length} through aab/${school.dir}/curriculum.js`);
+      continue;
+    }
+
+    const here = stageUrl(school.id, stage);
+    const there = STAGE_URL[school.id](mod, stage);
+    if (here !== there) {
+      problems.push(`${school.id}: stage "${stage.slug}" is at "${here}" `
+        + `through shared/schools.js and "${there}" through curriculum.js`);
+    }
+
+    const bookHere = workbookUrl(school.id, stage) || "";
+    const bookThere = (mod.workbookUrl ? mod.workbookUrl(stage) : null) || "";
+    if (bookHere !== bookThere) {
+      problems.push(`${school.id}: the practice book of "${stage.slug}" is `
+        + `"${bookHere || "(none)"}" through shared/schools.js and `
+        + `"${bookThere || "(none)"}" through curriculum.js`);
+    }
+
+    mine.forEach((lesson, i) => {
+      const other = theirs[i];
+      agreed += 1;
+
+      const say = (what, a, b) => problems.push(
+        `${school.id}: the ${what} of "${stage.slug}/${lesson.slug}" is `
+        + `"${a}" through shared/schools.js and "${b}" through `
+        + `aab/${school.dir}/curriculum.js`);
+
+      if (lesson.url !== other.url) say("URL", lesson.url, other.url);
+      if (lesson.id !== other.id) say("progress id", lesson.id, other.id);
+
+      const otherLabel = other.label ?? (LABEL[school.id]?.(mod, other) ?? "");
+      if ((lesson.label || "") !== (otherLabel || "")) {
+        say("label", lesson.label, otherLabel);
+      }
+
+      /* Only where the file has an opinion. */
+      if (other.days !== undefined && lesson.days !== other.days) {
+        say("day count", lesson.days, other.days);
+      }
+    });
+  }
+}
+
 if (problems.length) {
   console.error("\nThe curriculum files and the snapshot disagree:\n");
   for (const line of problems) console.error(`  ${line}`);
@@ -85,3 +210,5 @@ if (problems.length) {
 }
 
 console.log(`schools: ${checked} ladder entries, the files and the snapshot agree.`);
+console.log(`         ${agreed} lessons address and identify themselves the same `
+  + `way\n         through shared/schools.js and through curriculum.js.`);

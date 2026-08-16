@@ -11,6 +11,10 @@
     "./headers": {
       "types": "./headers.d.ts",
       "default": "./headers.js"
+    },
+    "./schools": {
+      "types": "./schools.d.ts",
+      "default": "./schools.js"
     }
   }
 }
