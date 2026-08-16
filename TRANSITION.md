@@ -749,6 +749,19 @@ npx wrangler d1 execute reiad --local  --file=schools.sql   # practise
 npx wrangler d1 execute reiad --remote --file=schools.sql
 ```
 
+**Check the number wrangler prints.** The script says how many
+queries the file holds and wrangler says how many it processed. If
+those disagree, nothing was written, whatever the tick at the end
+says. That is not a hypothetical: the first run of this import
+uploaded 914 KB, printed **"Processed 0 queries"** and
+"Executed 0 queries in 2.01ms", and returned success. The rows
+were quoted as ordinary SQL strings, so a lesson body's newlines
+put 311 statements across 10,002 lines, and D1's import reads
+statements line by line. It could not see one of them. Every value
+is a hex literal now, so each statement is one line of ASCII
+whatever is inside it, and `schools.test.mjs` executes the
+generated file rather than building rows of its own.
+
 #### Step 3: the door is built, and the files are not the source any more
 
 The fork that was written here on 16 August has been taken rather
@@ -1647,8 +1660,8 @@ refused put nothing on the screen at all, because the code only
 looked for tokens in the fragment and ignored an `error` in it.
 The panel now opens and says what the provider said.
 
-**I12. Two Workers nobody in this repository knows about, and one
-of them can write to the live database.** Asked to check the
+**I12. Two Workers nobody in this repository knew about, one of
+which could write to the live database. Closed 16 August 2026.** Asked to check the
 connections on 16 August 2026, and the account holds five Workers:
 `reiad-website`, `reiad-next` and `market-pulse`, which are all
 accounted for, plus **`reiad-web`** and **`reiad-api`**, both
@@ -1673,13 +1686,11 @@ address by anybody who guesses the name. Nothing in this
 repository would notice, because as far as this repository is
 concerned it does not exist.
 
-**What to do:** confirm what bindings each one holds, then delete
-both, in the dashboard or with `npx wrangler delete --name
-reiad-api` and the same for `reiad-web`. It is a human step for
-the same reason Stage 10's two were: deleting a Worker needs
-credentials this repository does not have. It goes with workstep
-10.5, which is the same question asked of the Workers that are
-supposed to be there.
+**Done, 16 August 2026.** Both were deleted. The account holds
+`reiad-website`, `reiad-next` and `market-pulse`, and nothing else
+that can reach the database. Workstep 10.5 is the same question
+asked of the Workers that are supposed to be there, and is still
+open.
 
 **I9. `aab/insights/dsex.html` is an orphan.** It has no entry in
 `ARTICLES`, nothing on the site links to it, and its own canonical
@@ -1789,6 +1800,48 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · The import wrote nothing, successfully
+The first real run of the schools import uploaded 914 KB and
+reported "Processed 0 queries. Executed 0 queries in 2.01ms",
+with a success table under it. The database was untouched and
+nothing in the output said anything was wrong.
+
+**The file was the problem, and the test could not see it.** Every
+value was quoted as an ordinary SQL string, which is correct SQL.
+A lesson body is HTML with newlines in it, so a single INSERT ran
+to hundreds of lines: 311 statements over 10,002 lines.
+`wrangler d1 execute --file` hands the file to D1's import, which
+reads statements line by line, and a statement that does not end
+on its own line is not a statement it can see.
+
+**`schools.test.mjs` passed the whole time**, because it inserted
+the rows with prepared statements. It proved the data and never
+the file, and the file is the only part anybody actually runs.
+That is the same shape as the parity test that once asked for the
+one URL this site never produces: a test that exercises a path
+nobody takes agrees with itself.
+
+Fixed in three places, because one of them alone would let it come
+back:
+
+- every value is a hex literal now, `CAST(x'...' AS TEXT)`, which
+  cannot contain a quote, a newline or a semicolon. 314 statements,
+  317 lines, twice the bytes, and each statement is one line of
+  ASCII whatever Bangla, Arabic or HTML is inside it.
+- `toSql()` throws if a statement it built spans more than one
+  line, so the property is asserted where it is created.
+- `schools.test.mjs` executes the generated file as text and
+  checks both that every statement ends on its own line and that
+  nothing opens a transaction, which D1's import also refuses.
+
+And the script now prints how many queries the file holds, so the
+number wrangler reports has something to be checked against. A
+silent zero is the only failure mode this import has.
+
+**The two orphan Workers are gone**, confirmed from the account:
+`reiad-api` and `reiad-web` are deleted, leaving `reiad-website`,
+`reiad-next` and `market-pulse`. Issue I12 is closed.
 
 ### 2026-08-16 · Step 3 is done: 229 pages, built from the database, identical
 All four builders can read the rows, and every page they write

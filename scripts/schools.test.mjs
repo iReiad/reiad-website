@@ -31,7 +31,7 @@ import { DatabaseSync } from "node:sqlite";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { SCHOOLS, readAll, readSchool } from "./import-schools.mjs";
+import { SCHOOLS, readAll, readSchool, toSql } from "./import-schools.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -101,27 +101,37 @@ ok("every school has lessons",
   SCHOOLS.map((s) => `${s.id}:${fromFiles.lessons.filter((l) => l.school === s.id).length}`)
     .join(" "));
 
-const now = "2026-08-16T00:00:00.000Z";
-const insertStage = db.prepare(
-  "INSERT INTO school_stages (school, slug, position, title, status, meta, updated_at)"
-  + " VALUES (?, ?, ?, ?, ?, ?, ?)");
-const insertSection = db.prepare(
-  "INSERT INTO school_sections (school, stage, ident, position, title, meta, updated_at)"
-  + " VALUES (?, ?, ?, ?, ?, ?, ?)");
-const insertLesson = db.prepare(
-  "INSERT INTO school_lessons (school, stage, slug, section, position, title,"
-  + " minutes, status, meta, body, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+/* ---------- through the file that actually gets uploaded ----------
 
-for (const s of fromFiles.stages) {
-  insertStage.run(s.school, s.slug, s.position, s.title, s.status, JSON.stringify(s.meta), now);
-}
-for (const s of fromFiles.sections) {
-  insertSection.run(s.school, s.stage, s.ident, s.position, s.title, JSON.stringify(s.meta), now);
-}
-for (const l of fromFiles.lessons) {
-  insertLesson.run(l.school, l.stage, l.slug, l.section, l.position, l.title,
-    l.minutes, l.status, JSON.stringify(l.meta), l.body, now);
-}
+   THE BUG THIS ORDER EXISTS FOR
+
+   This test used to insert the rows with prepared statements,
+   which proved the data and never the file. The file was wrong.
+   `wrangler d1 execute --file` hands it to D1's import, which
+   reads statements line by line, and every lesson body carried
+   raw newlines, so 311 statements were spread over 10,002 lines
+   and not one of them ended on its own line. The upload
+   succeeded, reported "Processed 0 queries", and wrote nothing.
+
+   So the SQL is generated here by the same function the script
+   uses, checked for the property D1 needs, and executed as text.
+   The rows below are the rows that file produces or the test is
+   testing something nobody runs. */
+
+const now = "2026-08-16T00:00:00.000Z";
+const sql = toSql(fromFiles, now);
+
+const statements = sql.split("\n").filter((line) => line.trim() && !line.startsWith("--"));
+
+ok("every statement is on one line, which is all D1's import can read",
+  statements.every((line) => line.trim().endsWith(";")),
+  "a statement that does not end on its own line is one the importer cannot see");
+
+ok("and none of them opens a transaction",
+  !/\bBEGIN\b|\bCOMMIT\b/i.test(sql),
+  "D1's import applies the file itself and will not take an explicit transaction");
+
+for (const statement of statements) db.exec(statement);
 
 ok("every row inserted",
   db.prepare("SELECT COUNT(*) n FROM school_lessons").get().n === fromFiles.lessons.length);
