@@ -720,7 +720,9 @@ curricula and their prose and writes the rows as SQL; and
 SQLite, 30 checks, field by field: **17 stages, 61 sections, 233
 lessons, 178 of them written, every body byte-identical.**
 
-Nothing reads those rows. That is deliberate and it is step 3.
+The site can read those rows through `/api/schools`, and no page
+does yet. The builders are still on the files, which is what is
+left of step 3.
 
 **Two things the round trip caught, both of which would have been
 silent.** The first importer assumed every school called a lesson
