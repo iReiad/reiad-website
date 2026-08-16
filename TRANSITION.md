@@ -2010,7 +2010,7 @@ which is the mistake Stage 13's own rule already names.
 ---
 
 ### Stage 12 · The backend, typed and in one shape
-**Status: step 1 done, 16 August 2026.** Size: weeks. Ran
+**Status: steps 1 and 2 done, 16 August 2026.** Size: weeks. Ran
 alongside Stage 11 and continues after it.
 
 Twenty-two files under `functions/`, 1,842 lines, all plain
@@ -2062,10 +2062,43 @@ the browser and Next can all reach them. In order:
   and `binned`. A description of a database is not an opportunity
   to improve it, and the check caught that by reading the handler
   rather than the schema.
-2. **One request pipeline.** Parse, validate, authorise, handle,
-  respond, with a single error shape and a single place that
-  decides what a 400 looks like. The handlers become the middle
-  of that sandwich rather than the whole of it.
+2. **One request pipeline.** **Step 2 done, 16 August 2026**,
+  and it turned out to be half the job the plan described,
+  because the other half was already there.
+
+  The error SHAPE has been one thing since the beginning:
+  `_lib/http.js` writes `{ ok: false, reason }` and all
+  twenty-three endpoints use it. What was never one thing is the
+  RULES. `functions/_lib/input.js` is a declaration read once per
+  request, and the three write endpoints read it now:
+
+      const got = await read(request, {
+        slug: { slug: true, required: "slug-required" },
+        body: { text: true, min: 2, max: 4000, short: "empty" },
+      });
+      if (got.bad) return got.bad;
+
+  **The reason strings were deliberately not tidied.** They are
+  an API contract: `aab/api.js` and both React apps read `reason`
+  and some of them switch on it, so renaming `empty` to
+  `too-short` to make one file read better would be changing an
+  interface to improve a comment. Each declaration names the
+  reason its endpoint already answers with. The three minimums
+  (2, 10 and 10) are named constants beside their reasons now,
+  visibly three decisions rather than one that drifted.
+
+  `scripts/input.test.mjs` is 36 checks over the module, because
+  a rule that stops rejecting is a hole in three endpoints at
+  once and none of them would fail visibly. It pins the one
+  ordering decision in the file: the cap is applied before the
+  minimum, so a 5000 character body capped at 4000 passes and is
+  stored truncated, rather than passing by luck.
+
+  What is still per handler and should be: authorisation, the
+  throttle, and any rule only one endpoint has. The honeypot on
+  the enquiries endpoint runs before anything can fail, so a bot
+  gets the same cheerful answer as a person and learns nothing
+  from a validation error.
 3. **The handlers become route handlers.** A Next.js route handler
   under `next/app/api/**` is the same function with the shim
   removed, and it is where this ends up for anything the site's
@@ -2160,7 +2193,7 @@ repository is.
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | **done, 16 Aug 2026**. 6 HTML files left in aab/, from 283: 404, offline and the four practice books |
-| 12 | The backend, typed and in one shape | step 1 done, 16 Aug 2026: every row described, and checked against the schema |
+| 12 | The backend, typed and in one shape | steps 1 and 2 done, 16 Aug 2026: every row described, and one place decides what a bad request is |
 | 13 | The last JavaScript | not started |
 | 14 | One way of writing a style, and it is Tailwind | decided 16 Aug 2026, unblocked by 11.7 the same day |
 
@@ -2414,6 +2447,44 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Stage 12 step 2: what a bad request looks like, decided once
+
+`functions/_lib/input.js`, and the three write endpoints read it.
+Half of what the plan described was already there: the error
+shape has been `{ ok: false, reason }` from `_lib/http.js` since
+the beginning. What was never one thing is the rules.
+
+The clearest case is the one the plan names. A comment shorter
+than its minimum answered `empty`; a question shorter than its
+minimum answered `too-short`; an enquiry too, and the minimums
+were 2, 10 and 10. Three numbers and two words for one idea, in
+three files that are otherwise the same handler with different
+nouns.
+
+**The reason strings were not tidied, on purpose.** They are an
+API contract: `aab/api.js` and both React apps read `reason` and
+some switch on it, so renaming `empty` to `too-short` to make a
+new file read better would be changing an interface to improve a
+comment. Each declaration names the reason its endpoint already
+returns. The three minimums are named constants beside their
+reasons, which makes them visibly three decisions rather than one
+that drifted.
+
+Two duplicates went with it: `safeSlug`, written out identically
+in the comments and articles endpoints, and `Number(x) || 0` as
+an id test, which six endpoints used and which says yes to 3.7
+and to -1.
+
+`scripts/input.test.mjs` is 36 checks, because a rule that stops
+rejecting is a hole in three endpoints at once and none of them
+would fail visibly. It pins the one ordering decision in the
+file: the cap is applied before the minimum, so a 5000 character
+body capped at 4000 passes and is stored truncated rather than
+passing by luck.
+
+Next: step 3, the handlers as Next.js route handlers, which
+follows Stage 11's order rather than its own.
 
 ### 2026-08-16 · Stage 12 step 1: one description of every row
 

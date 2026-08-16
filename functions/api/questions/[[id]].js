@@ -12,12 +12,20 @@
    ============================================================ */
 
 import { all, db, one, run } from "../../_lib/db.js";
-import { body, fail, isEmail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.js";
+import { body, fail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.js";
 import { requireAdmin } from "../../_lib/auth.js";
 import { throttle } from "../../_lib/auth.js";
 import { QUESTION_STATUS, allowed } from "../../../shared/rows.js";
+import { read } from "../../_lib/input.js";
 
 const PUBLIC = `id, slug, name, body, answer, created_at, answered_at`;
+
+/* What a question has to be. Named rather than inline so that
+   the number and the reason sit together, and so that the
+   comments endpoint's 2 and this one's 10 are visibly two
+   decisions rather than one that drifted. */
+const MIN_BODY = 10;
+const MAX_BODY = 4000;
 
 export async function onRequest(context) {
   const { request, params } = context;
@@ -81,9 +89,19 @@ export async function onRequest(context) {
     POST: async () => {
       if (await throttle(context, "ask", 5, 30)) return fail("too-many", 429);
 
-      const input = await body(request);
-      const text = str(input.body, 4000);
-      if (text.length < 10) return fail("too-short");
+      /* TRANSITION.md Stage 12, step 2: the same declaration the
+         comments endpoint reads, with this endpoint's own
+         minimum and its own reason. The two are the same handler
+         with different nouns and they disagreed about both. */
+      const got = await read(request, {
+        body: { text: true, min: MIN_BODY, max: MAX_BODY, short: "too-short" },
+        slug: { slug: true, max: 80 },
+        name: { text: true, max: 80 },
+        email: { email: true },
+      });
+      if (got.bad) return got.bad;
+      const { body: text, slug, name, email } = got.value;
+      const input = got.input;
 
       /* Honeypot: a hidden field only a bot fills in. The reply is
          still a cheerful "queued", so the bot has nothing to learn.
@@ -96,13 +114,12 @@ export async function onRequest(context) {
          and makes that recoverable. */
       const trapped = !!str(input.website, 100);
 
-      const email = str(input.email, 200);
       await run(d1,
         `INSERT INTO questions (slug, name, email, body, status, created_at)
          VALUES (?, ?, ?, ?, ?, ?)`,
-        str(input.slug, 80) || null,
-        str(input.name, 80),
-        email && isEmail(email) ? email : null,
+        slug || null,
+        name,
+        email || null,
         text,
         trapped ? "spam" : "pending",
         nowISO());
