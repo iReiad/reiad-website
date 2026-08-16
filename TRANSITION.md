@@ -1993,6 +1993,22 @@ load on exactly the pieces that came out of the Studio. Every
 hand-written page on this site restores both. Both renderers do
 now.
 
+**And the preview check was doing the same thing.** Run against
+the branch preview from this container, `check-preview.mjs`
+printed one tick per route and "the preview renders what the live
+site renders, on 5 route(s)". It had compared nothing: the egress
+proxy here answers 403 to both hosts, the two sides agreed on
+403, and the script compared the statuses and then quietly
+skipped everything below on anything that was not 200. Two sides
+answering the same wrong thing is not agreement. It says so now,
+loudly, per route.
+
+That makes three in one day, which is the actual lesson: every
+one of these was a check that could only report success. The
+parity test could not fail in a sandbox, the preview check could
+not fail behind a proxy, and both said the same reassuring
+sentence at the end.
+
 **What is left of 11.1:** the three paths join `NEXT_ROUTES` and
 `run_worker_first`, `_redirects` gains the pretty forms, and two
 weeks after that the three files go to `archive/` along with

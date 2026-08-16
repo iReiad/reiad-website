@@ -158,7 +158,25 @@ for (const route of ROUTES) {
   if (live.error) { okay("the live site answers", false, live.error); continue; }
 
   check("the same status", pre.status, live.status);
-  if (pre.status !== 200 || live.status !== 200) { console.log(); continue; }
+
+  /* And 200, which is a separate question from agreement.
+
+     THE FALSE PASS THIS CLOSES. This used to compare the two
+     statuses and then quietly `continue` on anything that was not
+     200, so two sides answering the same wrong thing printed one
+     tick and skipped every real check. Run from a sandbox whose
+     egress proxy answers 403 to everything, it compared nothing
+     at all across five routes and finished with "the preview
+     renders what the live site renders". A check that agrees with
+     itself is the failure this repository has written up twice,
+     and this is the third. */
+  if (pre.status !== 200 || live.status !== 200) {
+    okay(`and both answer 200, rather than ${pre.status}`, false,
+      "nothing below was compared. Two sides agreeing on a 404, or on a\n"
+      + "       403 from something in the way, is not the same as agreeing.");
+    console.log();
+    continue;
+  }
 
   check("the same title",
     attr(pre.html, /<title>([^<]*)<\/title>/),
