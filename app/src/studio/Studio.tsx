@@ -17,7 +17,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { EditorHandle } from "/editor.js";
-import { SECTIONS, findSection, pieceUrl } from "/content.js";
+import { findSection, pieceUrl } from "/content.js";
 import { topicsFromTag as topicsFrom } from "./piece.ts";
 import { lock } from "/auth.js";
 import { toast } from "../site.ts";
@@ -27,7 +27,7 @@ import { Editor } from "./Editor.tsx";
 import { Fields } from "./Fields.tsx";
 import { Preview, type ViewMode, type ViewTheme, type ViewWidth } from "./Preview.tsx";
 import { Preflight } from "./Preflight.tsx";
-import { OpenSheet, NotionSheet, filePieces, type FileEntry } from "./Sheets.tsx";
+import { OpenSheet, NotionSheet } from "./Sheets.tsx";
 import { preflight } from "./preflight.ts";
 import { publish } from "./publish.ts";
 import { notionPage, notionStatus } from "./notion.ts";
@@ -97,21 +97,20 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
 
   /* ---------- what the site already calls things ----------
 
-     Both sources count: the pieces in content.js and whatever is
-     in the database, and in both cases the label counts as topics,
-     because that is what a label has always been here. */
+     Out of the database, and the label counts as topics, because
+     that is what a label has always been here.
+
+     It read `content.js` as well until Stage 11.2, when the arrays
+     it read stopped holding pieces: every piece is a row. The
+     visible consequence is that with no database there is no
+     vocabulary to offer, which is honest rather than a loss.
+     Nothing is being suggested from a list of what used to exist. */
   const known = useMemo(() => {
     const seen = new Map<string, string>();
     const add = (t: string) => {
       const key = String(t).trim().toLowerCase();
       if (key && !seen.has(key)) seen.set(key, String(t).trim());
     };
-    for (const sec of SECTIONS) {
-      for (const p of sec.pieces()) {
-        if (p.topics?.length) p.topics.forEach(add);
-        else topicsFrom(p.tag).forEach(add);
-      }
-    }
     for (const a of taken.values()) {
       if (a.topics?.length) a.topics.forEach(add);
       else topicsFrom(a.tag).forEach(add);
@@ -206,51 +205,11 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
     toast(`Editing "${article.title}". Publishing updates it in place.`);
   }, [load]);
 
-  /** A piece that is still a committed file, read back out of its
-      own page. worker.js already prefers a D1 row over a file at
-      every mount, so publishing what comes out of here takes over
-      that URL and the file stays as the fallback. */
-  const openFile = useCallback(async (entry: FileEntry) => {
-    /* At its own mount, not at /insights/. Reading a kitchen piece
-       from /insights/ is a 404, which is why editing one from here
-       used to report that the file could not be read. */
-    const section = findSection(entry.section);
-    const res = await fetch(pieceUrl(section, entry.slug), { credentials: "same-origin" });
-    if (!res.ok) { toast("Couldn't read that file."); return; }
-
-    const { sanitize } = await import("/editor.js");
-    const doc = new DOMParser().parseFromString(await res.text(), "text/html");
-    const article = doc.querySelector("article.article");
-    if (!article) { toast("That page isn't shaped like an article."); return; }
-
-    /* Everything up to and including the byline is rebuilt from
-       the fields, and the disclaimer and the prev/next pair are
-       page furniture. What is left is the piece itself. */
-    article.querySelectorAll(
-      ".eyebrow, h1, .lede, .byline, .prev-next, .engage-block, .read-progress"
-    ).forEach((n) => n.remove());
-    article.querySelectorAll(".note").forEach((n) => {
-      if (/general education, not investment advice/i.test(n.textContent ?? "")) n.remove();
-    });
-
-    load({
-      html: sanitize(article.innerHTML),
-      fields: {
-        title: entry.title ?? "", dek: "", slug: entry.slug ?? "",
-        date: (entry.date ?? "").slice(0, 10) || new Date().toISOString().slice(0, 10),
-        lang: entry.lang === "bn" ? "bn" : (section.lang === "bn" ? "bn" : "en"),
-        section: section.id,
-      },
-      topics: entry.topics?.length ? entry.topics : topicsFrom(entry.tag),
-      tied: {
-        draftId: newDraftId(),
-        // Not in the database yet, so publishing is a first publish.
-        slug: null, section: null, notionPageId: null,
-      },
-    });
-    setSheet(null);
-    toast(`Loaded "${entry.title}" from its file. Publishing takes over that URL.`);
-  }, [load]);
+  /* `openFile()` stood here: it read a committed piece back out
+     of its own rendered page and loaded it into the editor, which
+     is how the last file pieces were moved into the database. It
+     went with them at Stage 11.2, along with the `?file=` address
+     that opened it. */
 
   const importNotion = useCallback(async (pageId: string, silent = false) => {
     const res = await notionPage(pageId);
@@ -380,11 +339,11 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
       history.replaceState(null, "", location.pathname);
 
       if (slug) { void openArticle(slug); return; }
-      const [section, fileSlug] = String(file).split(":");
-      const entry = filePieces()
-        .find((p) => p.slug === fileSlug && p.section === findSection(section).id);
-      if (entry) void openFile(entry);
-      else toast("That piece isn't in content.js, so there is nothing to open.");
+      /* `?file=<section>:<slug>` opened a committed page for
+         import. Nothing is a file any more, so the honest answer
+         is that there is nothing at that address rather than a
+         blank editor. */
+      if (file) toast("There are no pieces written as files any more.");
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dynamic]);
@@ -578,7 +537,6 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
           openDraftId={tied.draftId}
           onClose={() => setSheet(null)}
           onDraft={(d) => { loadDraft(d); setSheet(null); }}
-          onFile={openFile}
           onArticle={openArticle}
           onTaken={setTaken}
         />
@@ -594,13 +552,12 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
 /** The Open sheet's three lists, fetched when it opens rather than
     held in the page: they are only ever looked at on purpose. */
 function OpenSheetLoader({
-  dynamic, openDraftId, onClose, onDraft, onFile, onArticle, onTaken,
+  dynamic, openDraftId, onClose, onDraft, onArticle, onTaken,
 }: {
   dynamic: boolean;
   openDraftId: string | null;
   onClose: () => void;
   onDraft: (draft: Draft) => void;
-  onFile: (entry: FileEntry) => void;
   onArticle: (slug: string) => void;
   onTaken: (taken: Map<string, Article>) => void;
 }) {
@@ -622,12 +579,9 @@ function OpenSheetLoader({
 
   useEffect(() => { void reload(); }, [reload]);
 
-  const inDatabase = new Set(articles.map((a) => a.slug));
-  const files = filePieces().filter((p) => !inDatabase.has(p.slug));
-
   return (
     <OpenSheet
-      drafts={drafts} articles={articles} files={files}
+      drafts={drafts} articles={articles}
       openDraftId={openDraftId} dynamic={dynamic} loading={loading}
       onClose={onClose}
       onDraft={onDraft}
@@ -637,7 +591,6 @@ function OpenSheetLoader({
         await dropDraft(draft.id);
         void reload();
       }}
-      onFile={onFile}
       onArticle={onArticle}
     />
   );

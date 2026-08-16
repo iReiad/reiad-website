@@ -118,11 +118,11 @@ export function SiteHeader({ current }: { current: Current }) {
   );
 }
 
-export function SiteFooter({ note }: { note: string }) {
+export function SiteFooter({ note, name = "Reiad's Library" }: { note: string; name?: string }) {
   return (
     <footer>
       <div className="wrap">
-        <span className="mono">Reiad&apos;s Library · Finance &amp; Bangladesh markets</span>
+        <span className="mono">{name} · Finance &amp; Bangladesh markets</span>
         <p>{note}</p>
         <p style={{ marginTop: "10px" }}>
           <a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a>
@@ -147,6 +147,7 @@ export function SiteShell({
   skip = "Skip to the main content",
   skipTo = "#main",
   footer = LOOK.insights.footer,
+  footerName,
   current = null,
   beforeMain, scripts, children,
 }: {
@@ -158,6 +159,9 @@ export function SiteShell({
      valuation, the stress test, the models. Their own choice, kept. */
   skipTo?: string;
   footer?: string;
+  /* The desk signs its footer "Rony Reiad" rather than "Reiad's
+     Library", which is its own and is kept. */
+  footerName?: string;
   current?: Current;
   beforeMain?: ReactNode;
   scripts?: ReactNode;
@@ -174,7 +178,7 @@ export function SiteShell({
 
         <SiteHeader current={current} />
         {children}
-        <SiteFooter note={footer} />
+        <SiteFooter note={footer} name={footerName} />
 
         {/* The site's own scripts, at the paths every other page
             loads them from. Next's own runtime is loaded alongside

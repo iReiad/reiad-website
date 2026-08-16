@@ -55,6 +55,31 @@ if (!chromium) {
   process.exit(0);
 }
 
+/* ---------- the shell the bundle mounts into ----------
+
+   `/desk/index.html` and `/studio/index.html` are Next.js routes
+   as of TRANSITION.md Stage 11.6, so there is no file at either
+   address for this server to hand back. That is the right place
+   for them and the wrong thing to drag into a browser test: the
+   subject here is the bundle, and starting a Next server to get a
+   header and a footer would make a test of the panels depend on
+   a renderer that has its own test.
+
+   So the server answers those two addresses with the two things
+   the bundle actually needs, the stylesheet and the element it
+   mounts into, and nothing else. Everything this file checks is
+   inside that element. */
+const SHELLS = {
+  "/desk/index.html": ["desk-root", "/desk/app.js"],
+  "/studio/index.html": ["studio-root", "/studio/app.js"],
+};
+
+const shellFor = ([root, bundle]) =>
+  `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">`
+  + `<link rel="stylesheet" href="/styles.css">`
+  + `<script type="module" crossorigin src="${bundle}"></script></head>`
+  + `<body><main id="main"><div class="wrap" id="${root}" hidden></div></main></body></html>`;
+
 /* ---------- a static server, so there's nothing to start ---------- */
 
 const TYPES = {
@@ -67,6 +92,11 @@ const TYPES = {
 const server = createServer(async (req, res) => {
   try {
     const path = decodeURIComponent(new URL(req.url, "http://x").pathname);
+    if (SHELLS[path]) {
+      res.writeHead(200, { "Content-Type": TYPES[".html"] });
+      res.end(shellFor(SHELLS[path]));
+      return;
+    }
     const file = normalize(join(ROOT, path === "/" ? "/index.html" : path));
     if (!file.startsWith(ROOT)) { res.writeHead(403).end(); return; }
     const data = await readFile(file);
@@ -87,9 +117,27 @@ const check = (name, condition, detail = "") => {
   failures.push(name + (detail ? `\n    ${detail}` : ""));
 };
 
-const browser = await chromium.launch({
-  executablePath: process.env.CHROMIUM_PATH || undefined,
-});
+/* A browser, or a clean skip.
+
+   `playwright` is a devDependency here, so `npm i` gets the
+   library; it does not get the browser, and it refuses to launch
+   one it did not download itself unless it is told where one is.
+   A machine with Chromium already on it says so through
+   CHROMIUM_PATH. Anything else skips with the reason, because a
+   test that cannot start is not a test that failed. */
+let browser;
+try {
+  browser = await chromium.launch({
+    executablePath: process.env.CHROMIUM_PATH || undefined,
+  });
+} catch (err) {
+  console.log("No browser to drive, so the browser checks are skipped.");
+  console.log(`  ${String(err.message ?? err).split("\n")[0]}`);
+  console.log("  npx playwright install chromium"
+    + "   (or: CHROMIUM_PATH=/path/to/chrome node app/studio.test.mjs)");
+  server.close();
+  process.exit(0);
+}
 
 const pageErrors = [];
 
@@ -263,15 +311,13 @@ const type = async (page, text) => {
   check("Backspace on an empty box takes the last one back",
     await page.locator(".topic-chip").count() === 1);
 
-  check("the site's own vocabulary is offered",
-    await page.locator("#topic-known .chip").count() > 0);
-  {
-    const first = await page.locator("#topic-known .chip").first().textContent();
-    await page.locator("#topic-known .chip").first().click();
-    await page.waitForTimeout(300);
-    check("and clicking one keeps it",
-      (await page.locator(".topic-chip").allTextContents()).join("|").includes(first));
-  }
+  /* With no database there is nothing to suggest, and the strip
+     says so by not being there. It used to be filled from the
+     lists in content.js, which stopped holding pieces at Stage
+     11.2: every piece is a row. The same two checks are made
+     against a database in part 2, where the vocabulary is real. */
+  check("with no database, no vocabulary is offered",
+    await page.locator("#topic-known .chip").count() === 0);
 
   /* ---- the file name ---- */
   await page.fill("#f-slug", "German Alphabets");
@@ -372,26 +418,13 @@ const type = async (page, text) => {
     check("both drafts are listed, not just the latest",
       text.includes("The first draft") && text.includes("The second draft"), text.slice(0, 240));
     check("no database section without a backend", !text.includes("Published through the Studio"));
-    check("Open lists the file-based articles", text.includes("Written as files"),
+    /* Open used to carry a third list, "Written as files, in the
+       repository", with an Edit that read a committed page back
+       out of its own HTML and into the editor. That is how the
+       last file pieces were moved into the database, and it went
+       with them at Stage 11.2. */
+    check("and nothing offers a file to import", !text.includes("Written as files"),
       text.slice(0, 240));
-  }
-
-  /* ---- editing one of those files ---- */
-  {
-    const row = page.locator("dialog.sheet[open] .admin-line", { hasText: "Dhaka Stock Exchange" }).first();
-    check("a file-based article is listed with an Edit button", await row.count() > 0);
-    await row.locator(".chip", { hasText: "Edit" }).click();
-    await page.waitForTimeout(900);
-
-    const body = await html();
-    check("editing one loads its body", body.length > 200, `${body.length} chars`);
-    check("and fills in its headline", (await page.inputValue("#f-title")).length > 5);
-    check("and its file name", (await page.inputValue("#f-slug")).length > 3);
-    check("without dragging in the byline", !body.includes("byline"), body.slice(0, 160));
-    check("or the standing disclaimer", !/general education, not investment advice/.test(body));
-    check("or the back-to-index links", !body.includes("prev-next"));
-    check("and it says publishing takes over that URL",
-      (await page.locator("#now-line").textContent()).includes("new piece"));
   }
 
   await context.close();
@@ -463,9 +496,22 @@ const type = async (page, text) => {
     /note/.test(await page.locator("#preflight-summary").textContent()),
     await page.locator("#preflight-summary").textContent());
 
-  check("the database's topics join the vocabulary",
+  /* Which is now the only place a vocabulary comes from: this
+     check used to sit beside one that read the same list out of
+     content.js, and content.js stopped holding pieces at Stage
+     11.2. Clicking one is checked below, by publishing with it. */
+  check("the database's topics are the vocabulary",
     (await page.locator("#topic-known .chip").allTextContents()).includes("Banks"),
     (await page.locator("#topic-known .chip").allTextContents()).join("|"));
+  {
+    const first = await page.locator("#topic-known .chip").first().textContent();
+    await page.locator("#topic-known .chip").first().click();
+    await page.waitForTimeout(300);
+    check("and clicking one keeps it",
+      (await page.locator(".topic-chip").allTextContents()).join("|").includes(first));
+    await page.locator(".topic-chip", { hasText: first }).locator("button").click();
+    await page.waitForTimeout(300);
+  }
 
   /* ---- publishing ---- */
   await page.fill("#f-topics", "Rates");

@@ -7,7 +7,7 @@
 
    Open lists three things that are all "something you could be
    working on" and are three different kinds of thing: drafts held
-   in this browser, pieces still written as committed files, and
+   in this browser and
    rows in the database. The middle one matters most and is the one
    that was missing longest: the pieces written before the Studio
    existed are HTML in the repository, so Open could not see them
@@ -16,18 +16,9 @@
    ============================================================ */
 
 import { useEffect, useRef, useState } from "react";
-import { SECTIONS, findSection, livePieces } from "/content.js";
 import type { Article } from "../api.ts";
 import { notionPages, type NotionRow } from "./notion.ts";
 import type { Draft } from "./drafts.ts";
-
-/** Every piece the site has as a file, in every section, with the
-    section it belongs to attached. The desk lists the same set. */
-export const filePieces = () =>
-  SECTIONS.flatMap((sec) =>
-    livePieces(sec).map((piece) => ({ ...piece, section: sec.id })));
-
-export type FileEntry = ReturnType<typeof filePieces>[number];
 
 function Sheet({
   title, onClose, children,
@@ -62,19 +53,17 @@ const Label = ({ children }: { children: React.ReactNode }) =>
    ============================================================ */
 
 export function OpenSheet({
-  drafts, articles, files, openDraftId, dynamic, loading,
-  onClose, onDraft, onDeleteDraft, onFile, onArticle,
+  drafts, articles, openDraftId, dynamic, loading,
+  onClose, onDraft, onDeleteDraft, onArticle,
 }: {
   drafts: Draft[];
   articles: Article[];
-  files: FileEntry[];
   openDraftId: string | null;
   dynamic: boolean;
   loading: boolean;
   onClose: () => void;
   onDraft: (draft: Draft) => void;
   onDeleteDraft: (draft: Draft) => void;
-  onFile: (entry: FileEntry) => void;
   onArticle: (slug: string) => void;
 }) {
   return (
@@ -98,28 +87,11 @@ export function OpenSheet({
             );
           })}
 
-          {/* The pieces that are still committed files, from every
-              section rather than from Insights alone: the kitchen and
-              the travel desk are written as files too, and leaving
-              them out of this list meant the only way to edit one was
-              to open the file. Anything already taken over by a
-              database row is listed below instead, so the same
-              article never appears twice. */}
-          {files.length ? (
-            <>
-              <Label>Written as files, in the repository</Label>
-              {files.map((entry) => (
-                <div className="admin-line" key={`${entry.section}/${entry.slug}`}>
-                  <span>{entry.title}</span>
-                  <span className="mono muted">
-                    {findSection(entry.section).en} · {entry.date ?? ""}
-                  </span>
-                  <button className="chip" type="button"
-                          onClick={() => onFile(entry)}>Edit</button>
-                </div>
-              ))}
-            </>
-          ) : null}
+          {/* The pieces still written as committed files were
+              listed here, with an Edit that read the page back out
+              of its own HTML. There have been none since Stage
+              11.2: every piece is a row, and the last three files
+              are in `archive/`. */}
 
           {dynamic ? (
             <>

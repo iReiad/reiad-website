@@ -46,6 +46,7 @@ what anybody is served.
 | `tools-index.html`, `tools-stock.html` | Next.js routes at the same addresses | 16 August 2026 |
 | `portfolio.html`, `portfolio/*.html` | Next.js routes at the same addresses | 16 August 2026 |
 | `index.html` | a Next.js route at `/`, which its canonical link always named | 16 August 2026 |
+| `shells/*.html` | Next.js routes; Vite stopped emitting a page | 16 August 2026 |
 
 `work.html` and `services.html` were early placeholders that still
 carried template text ("[Your Name]", "hello@yourdomain.com"), kept
@@ -73,6 +74,16 @@ the file used to render from a fetch after paint. The two Bangla
 files are here under flattened names because two `index.html` in
 one directory is one file: what they were is in the table above
 and in the git history either way.
+
+`shells/` is four files for two pages. `desk-src.html` and
+`studio-src.html` are what Vite built from, and
+`desk-index.html` and `studio-index.html` are what it wrote:
+the same shell, hand-written, then generated. Both addresses are
+Next.js routes now and `vite.config.ts` takes a `.tsx` entry, so
+the build emits `app.js` and nothing else. The apps inside those
+shells are still the Vite bundles, and stay so until the site
+modules they import can be reached from `next/`. TRANSITION.md
+Stage 11.6.
 
 `portfolio/` is the seven case studies and the index that lists
 them. Only the pages are here: every `.model.js`, `.data.js` and

@@ -89,6 +89,18 @@ export default defineConfig({
     minify: true,
     sourcemap: false,
     rollupOptions: {
+      /* A `.tsx` entry rather than the `index.html` Vite would
+         find on its own, which is what stops it emitting a page.
+
+         It used to emit one, from `src/index.html`, and that file
+         was the desk's shell: the same head, header and footer as
+         every other page of this site, hand-written twice. Both
+         shells are Next.js routes as of TRANSITION.md Stage 11.6,
+         so the only thing this build still has to produce is the
+         script the route loads. Leave the HTML entry in and Vite
+         writes a second answer to `/desk/index.html` on every
+         build, one the route would have to fight. */
+      input: resolve(here, target.root, "main.tsx"),
       /* The site's own modules are NOT bundled. `/app.js`,
          `/api.js`, `/auth.js`, `/content.js`, `/share-card.js`,
          `/photo.js` and `/editor.js` are served by this site at

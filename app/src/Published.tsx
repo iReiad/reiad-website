@@ -37,42 +37,30 @@ import {
 import { useRows } from "./useRows.ts";
 import { History } from "./History.tsx";
 import {
-  SECTIONS, findSection, pieceUrl, livePieces, isDrawnCard, coverFromHTML,
+  SECTIONS, findSection, pieceUrl, isDrawnCard, coverFromHTML,
   shareCardBlob, cardSlug, hostPhotosIn, isHosted, uploadMedia, toast, copyText,
 } from "./site.ts";
 import {
   Broken, Chip, Count, Empty, Filters, Loading, Pill, SearchBox, when,
 } from "./bits.tsx";
 
-/* A piece as this panel sees it, whichever of the two kinds it is.
-   `file: true` is the whole difference and every action checks it. */
-type Piece = Article & { file?: boolean };
+/* A piece, and there is only one kind of one now.
+
+   This carried a `file: true` variant until Stage 11.2, for the
+   pieces that were committed HTML with an entry in `content.js`,
+   and every action in this panel branched on it. There are none:
+   every piece is a row, the last three files went to `archive/`,
+   and the arrays this read them out of are empty. A panel that
+   still offered to import them would be offering a door to a room
+   that is not there. */
+type Piece = Article;
 
 const SECTION_FILTERS: [string, string][] = [
   ["all", "Everywhere"],
   ...SECTIONS.map((sec) => [sec.id, sec.id === "insights" ? sec.en : sec.bn] as [string, string]),
 ];
 
-/** Everything published as a committed file, in the shape a row has. */
-const filePieces = (): Piece[] =>
-  SECTIONS.flatMap((sec) =>
-    livePieces(sec).map((piece) => ({
-      slug: piece.slug,
-      title: piece.title,
-      dek: "",
-      tag: piece.tag ?? "",
-      topics: piece.topics ?? [],
-      status: "live",
-      section: sec.id,
-      lang: piece.lang ?? sec.lang,
-      minutes: 0,
-      cover: "",
-      published_at: piece.date ? `${piece.date}T00:00:00Z` : null,
-      updated_at: piece.date ? `${piece.date}T00:00:00Z` : "",
-      file: true,
-    })));
-
-/** Newest first, whichever kind of thing it is. */
+/** Newest first. */
 const byDate = (a: Piece, b: Piece) =>
   String(b.updated_at ?? "").localeCompare(String(a.updated_at ?? ""));
 
@@ -89,7 +77,6 @@ const byDate = (a: Piece, b: Piece) =>
     all, and nothing of it in R2. `embedded` is computed by the
     API. */
 function coverWarning(a: Piece): string | null {
-  if (a.file) return null;             // no row, so nothing to fix from here
   if (a.embedded) return "photo not hosted";
   if (a.cover && !isDrawnCard(a.cover)) return "photo, not a card";
   return null;
@@ -257,18 +244,14 @@ function Row({
   };
 
   return (
-    <div className={`admin-line article-line status-${a.status}${a.file ? " is-file" : ""}`}>
+    <div className={`admin-line article-line status-${a.status}`}>
       <a className="article-title" href={url}>{a.title}</a>
 
       <span className="line-facts">
         <span className={`pill section-pill section-${sec.id}`}>
           {sec.id === "insights" ? sec.en : sec.bn}
         </span>
-        <Pill title={a.file
-          ? "Written as a file in the repository, not through the Studio."
-          : undefined}>
-          {a.file ? "file" : a.status}
-        </Pill>
+        <Pill>{a.status}</Pill>
         {warn ? <Pill tone="warn" title={WARN_WHY[warn]}>{warn}</Pill> : null}
         {a.topics?.length ? (
           <span className="line-topics">
@@ -281,24 +264,8 @@ function Row({
       </span>
 
       <span className="line-actions">
-        {/* Editing a file piece means reading the page back into
-            the Studio, which is a different door from editing a
-            row. It says something different because it IS something
-            different: publishing from that door is the piece moving
-            into the database, and a button marked "Edit" does not
-            tell anyone that pressing it finishes a migration. */}
-        <a
-          className={a.file ? "chip chip-move" : "chip"}
-          href={a.file
-            ? `/studio/index.html?file=${encodeURIComponent(`${sec.id}:${a.slug}`)}`
-            : `/studio/index.html?edit=${encodeURIComponent(a.slug)}`}
-          title={a.file
-            ? "Read this committed file into the Studio. Publishing it there "
-              + "creates the database row that takes over its URL."
-            : undefined}
-        >
-          {a.file ? "Import" : "Edit"}
-        </a>
+        <a className="chip"
+           href={`/studio/index.html?edit=${encodeURIComponent(a.slug)}`}>Edit</a>
         <a className="chip" href={url} target="_blank" rel="noopener">View</a>
 
         {/* One open at a time, so the panel below never opens under
@@ -323,25 +290,16 @@ function Row({
         >
           <summary className="chip">More</summary>
           <div className="more-body">
-            {a.file ? (
-              <p className="muted more-note">
-                This one is a committed file. Open it in the Studio and publish it
-                to take over its URL; until then there is no row to change.
-              </p>
-            ) : null}
-
-            {a.file ? null : (
-              <Chip onClick={togglePublished}>
-                {a.status === "live" ? "Unpublish" : "Publish"}
-              </Chip>
-            )}
-            {a.file ? null : <Chip onClick={() => onHistory(a)}>History</Chip>}
+            <Chip onClick={togglePublished}>
+              {a.status === "live" ? "Unpublish" : "Publish"}
+            </Chip>
+            <Chip onClick={() => onHistory(a)}>History</Chip>
             {warn ? <Chip onClick={() => drawCard(a, onDone)}>Draw card</Chip> : null}
             <Chip onClick={() => copyText(`${location.origin}${url}`, "Link copied")}>
               Copy link
             </Chip>
-            {a.file ? null : <Chip onClick={remove}>Delete</Chip>}
-            {a.file ? null : <MoveControl article={a} onDone={onDone} />}
+            <Chip onClick={remove}>Delete</Chip>
+            <MoveControl article={a} onDone={onDone} />
           </div>
         </details>
       </span>
@@ -386,12 +344,7 @@ export function Published() {
     };
   }, [openMenu]);
 
-  /* The database first, then everything published as a file that
-     the database has not taken over. A piece exists once. */
-  const all = useMemo(() => {
-    const known = new Set(stored.map((a) => a.slug));
-    return [...stored as Piece[], ...filePieces().filter((p) => !known.has(p.slug))].sort(byDate);
-  }, [stored]);
+  const all = useMemo(() => [...stored as Piece[]].sort(byDate), [stored]);
 
   /* How many are in each section, so the filter says what is
      behind it rather than making you click to find out. */
@@ -416,7 +369,6 @@ export function Published() {
   if (loading) return <Loading />;
   if (failed) return <Broken what="the published list" />;
 
-  const toImport = all.length - stored.length;
   const needsCard = all.filter((a) => coverWarning(a)).length;
 
   return (
@@ -424,14 +376,13 @@ export function Published() {
       <Filters options={SECTION_FILTERS} active={section} counts={counts} onPick={setSection} />
       <SearchBox placeholder="Search titles, file names and topics" onSearch={setQ} />
 
-      {/* Counted, never remembered, and it names what is left
-          rather than only what there is: "2 still to import" is the
-          same fact as "2 written as files" with the next action in
-          it. TRANSITION.md, Stage 3. */}
+      {/* Counted, never remembered. It used to end with "2 still
+          to import", which was the number of pieces still written
+          as files; there have been none since Stage 11.2 and there
+          cannot be any again. */}
       <Count>
         {`${shown.length}${shown.length === all.length ? "" : ` of ${all.length}`} `}
-        {`piece${all.length === 1 ? "" : "s"} · ${stored.length} in the database`}
-        {toImport ? `, ${toImport} still to import` : ", every piece imported"}
+        {`piece${all.length === 1 ? "" : "s"}`}
         {needsCard ? ` · ${needsCard} share card${needsCard === 1 ? "" : "s"} to draw` : ""}
       </Count>
 

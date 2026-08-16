@@ -163,6 +163,10 @@ export const NEXT_ROUTES = [
   /^\/(about|contact|account)\.html$/i,
   /^\/skills\/index\.html$/i,
   /^\/tools\/(index|stock)\.html$/i,
+  /* The two private shells. Their bundles are NOT here: those are
+     files in aab/desk/ and aab/studio/, and the asset router
+     answers them as it always has. */
+  /^\/(desk|studio)\/index\.html$/i,
   /^\/portfolio\.html$/i,
   /^\/portfolio\/[a-z-]+\.html$/i,
   /* The home page, at the address its canonical link has always
