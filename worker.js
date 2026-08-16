@@ -163,6 +163,8 @@ export const NEXT_ROUTES = [
   /^\/(about|contact|account)\.html$/i,
   /^\/skills\/index\.html$/i,
   /^\/tools\/(index|stock)\.html$/i,
+  /^\/portfolio\.html$/i,
+  /^\/portfolio\/[a-z-]+\.html$/i,
   /^\/_next\//,
 ];
 

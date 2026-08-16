@@ -1340,9 +1340,9 @@ has been looked at once, after a week of real traffic.
 ---
 
 ### Stage 11 · Every remaining route, until no page is a file
-**Status: 11.1, 11.2, 11.4 and 11.8 done, 11.5 all but the home
-page, 16 August 2026. 264 files left. Every hand-written page
-except the home page and the portfolio is now a route.** Size:
+**Status: 11.1, 11.2, 11.3, 11.4 and 11.8 done, 11.5 all but the
+home page, 16 August 2026. 256 files left, and 251 of them are
+the schools. The home page is the last hand-written page.** Size:
 months, at whatever pace suits.
 
 Stage 10 moved one route and proved the machinery: an allowlist in
@@ -1496,13 +1496,26 @@ Two more of the same, found by emptying it:
   the page, which is server-rendered, right for every piece, and
   needs no list at all.
 
-**11.3 The portfolio and the seven case studies.** The most
-component-shaped pages on the site, and the ones where the rule
-above earns its keep: every `.model.js` and `.data.js` stays where
-it is, imported by the route, with its tests running on every
-commit exactly as now. What moves is the page around the numbers,
-not the numbers. *Deletes* 8 files. *Needs* the chart and table
-markup lifted into components without touching a class name.
+**11.3 The portfolio and the seven case studies. Done, 16 August
+2026.** *Deleted* 8 files. Every `.model.js`, `.data.js` and
+`.test.mjs` is exactly where it was in `aab/portfolio/`, loaded
+by the same script at the same address, with 1,931 lines of tests
+running on every commit. What moved is the page around the
+numbers.
+
+**One thing the port would have broken silently.** React reads
+`value` on an input as "this is controlled", and a controlled
+input with no `onChange` is one a reader cannot type in or drag.
+Twenty-seven of them across these pages are sliders and number
+boxes driven by the page's own script, so every one is
+`defaultValue` now. Converted the other way they would have
+rendered perfectly and refused to move, on the pages whose entire
+point is that you can move them.
+
+**And one that would have failed the build rather than the
+page**, which is the better kind: three inline styles set a CSS
+custom property, and React's `CSSProperties` has no index
+signature for `--pct`. They carry a cast.
 
 **11.4 The tools. The pages moved, 16 August 2026; the
 calculators have not.** `/tools/index.html` and
@@ -1770,7 +1783,7 @@ repository is.
 | 8 | The schools' content into the database | done 16 Aug 2026, prose in D1 and the files archived |
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
-| 11 | Every remaining route, until no page is a file | 11.1, 11.2, 11.4, 11.8 done, 11.5 all but the home page, 16 Aug 2026, 264 files to go |
+| 11 | Every remaining route, until no page is a file | all but 11.6 and 11.7 done, 16 Aug 2026, 256 files to go, 251 of them the schools |
 | 12 | The backend, typed and in one shape | not started |
 | 13 | The last JavaScript | not started |
 

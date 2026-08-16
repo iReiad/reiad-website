@@ -51,9 +51,9 @@ export default function ContactPage() {
              anything. "botcheck" is a hidden honeypot: humans never see
              it, spam bots fill it, Web3Forms drops those submissions. */}
             <form className="contact-form" id="contact-form" action="https://api.web3forms.com/submit" method="POST">
-              <input type="hidden" name="access_key" value="015ff92f-3694-4e74-bd19-e1c7e62e422b" />
-              <input type="hidden" name="subject" value="New message from reiad.co.uk" />
-              <input type="hidden" name="from_name" value="reiad.co.uk contact form" />
+              <input type="hidden" name="access_key" defaultValue="015ff92f-3694-4e74-bd19-e1c7e62e422b" />
+              <input type="hidden" name="subject" defaultValue="New message from reiad.co.uk" />
+              <input type="hidden" name="from_name" defaultValue="reiad.co.uk contact form" />
               <input type="checkbox" name="botcheck" tabIndex={-1} className="honeypot" aria-hidden="true" />
               <label>Name
             

@@ -23,6 +23,7 @@ type Options = {
   lang?: string;
   bodyClass?: string;
   skip?: string;
+  skipTo?: string;
   footer?: string;
   scripts?: ReactNode;
 };

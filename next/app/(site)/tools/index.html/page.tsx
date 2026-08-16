@@ -142,25 +142,25 @@ export default function ToolsPage() {
                   <span className="label-row">Starting amount 
                     <span className="val" data-for="start" data-format="money" />
                   </span>
-                  <input type="range" name="start" min="0" max="1000000" step="5000" value="50000" />
+                  <input type="range" name="start" min="0" max="1000000" step="5000" defaultValue="50000" />
                 </label>
                 <label>
                   <span className="label-row">Added every month 
                     <span className="val" data-for="monthly" data-format="money" />
                   </span>
-                  <input type="range" name="monthly" min="0" max="100000" step="500" value="5000" />
+                  <input type="range" name="monthly" min="0" max="100000" step="500" defaultValue="5000" />
                 </label>
                 <label>
                   <span className="label-row">Annual return 
                     <span className="val" data-for="rate" data-suffix="%" />
                   </span>
-                  <input type="range" name="rate" min="0" max="25" step="0.5" value="10" />
+                  <input type="range" name="rate" min="0" max="25" step="0.5" defaultValue="10" />
                 </label>
                 <label>
                   <span className="label-row">For how long 
                     <span className="val" data-for="years" data-suffix=" yrs" />
                   </span>
-                  <input type="range" name="years" min="1" max="40" step="1" value="20" />
+                  <input type="range" name="years" min="1" max="40" step="1" defaultValue="20" />
                 </label>
                 <div className="tool-actions">
                   <button className="chip copy-link" type="button">Copy link to this
@@ -229,37 +229,37 @@ export default function ToolsPage() {
                   <span className="label-row">Amount 
                     <span className="val" data-for="amount" data-format="money" />
                   </span>
-                  <input type="range" name="amount" min="50000" max="5000000" step="50000" value="1000000" />
+                  <input type="range" name="amount" min="50000" max="5000000" step="50000" defaultValue="1000000" />
                 </label>
                 <label>
                   <span className="label-row">Years 
                     <span className="val" data-for="years" data-suffix=" yrs" />
                   </span>
-                  <input type="range" name="years" min="1" max="10" step="1" value="5" />
+                  <input type="range" name="years" min="1" max="10" step="1" defaultValue="5" />
                 </label>
                 <label>
                   <span className="label-row">Sanchayapatra rate 
                     <span className="val" data-for="srate" data-suffix="%" />
                   </span>
-                  <input type="range" name="srate" min="5" max="15" step="0.01" value="11.04" />
+                  <input type="range" name="srate" min="5" max="15" step="0.01" defaultValue="11.04" />
                 </label>
                 <label>
                   <span className="label-row">Tax at source 
                     <span className="val" data-for="stax" data-suffix="%" />
                   </span>
-                  <input type="range" name="stax" min="0" max="20" step="1" value="10" />
+                  <input type="range" name="stax" min="0" max="20" step="1" defaultValue="10" />
                 </label>
                 <label>
                   <span className="label-row">FDR rate 
                     <span className="val" data-for="frate" data-suffix="%" />
                   </span>
-                  <input type="range" name="frate" min="3" max="15" step="0.01" value="9" />
+                  <input type="range" name="frate" min="3" max="15" step="0.01" defaultValue="9" />
                 </label>
                 <label>
                   <span className="label-row">FDR tax at source 
                     <span className="val" data-for="ftax" data-suffix="%" />
                   </span>
-                  <input type="range" name="ftax" min="0" max="20" step="1" value="10" />
+                  <input type="range" name="ftax" min="0" max="20" step="1" defaultValue="10" />
                 </label>
                 <div className="tool-actions">
                   <button className="chip copy-link" type="button">Copy link to this
@@ -354,25 +354,25 @@ export default function ToolsPage() {
                   <span className="label-row">Amount today 
                     <span className="val" data-for="amount" data-format="money" />
                   </span>
-                  <input type="range" name="amount" min="10000" max="10000000" step="10000" value="500000" />
+                  <input type="range" name="amount" min="10000" max="10000000" step="10000" defaultValue="500000" />
                 </label>
                 <label>
                   <span className="label-row">Inflation 
                     <span className="val" data-for="inflation" data-suffix="%" />
                   </span>
-                  <input type="range" name="inflation" min="0" max="20" step="0.25" value="9" />
+                  <input type="range" name="inflation" min="0" max="20" step="0.25" defaultValue="9" />
                 </label>
                 <label>
                   <span className="label-row">Your return 
                     <span className="val" data-for="nominal" data-suffix="%" />
                   </span>
-                  <input type="range" name="nominal" min="0" max="25" step="0.25" value="9" />
+                  <input type="range" name="nominal" min="0" max="25" step="0.25" defaultValue="9" />
                 </label>
                 <label>
                   <span className="label-row">Years 
                     <span className="val" data-for="years" data-suffix=" yrs" />
                   </span>
-                  <input type="range" name="years" min="1" max="30" step="1" value="10" />
+                  <input type="range" name="years" min="1" max="30" step="1" defaultValue="10" />
                 </label>
                 <div className="tool-actions">
                   <button className="chip copy-link" type="button">Copy link to this
@@ -441,19 +441,19 @@ export default function ToolsPage() {
                   <span className="label-row">Loan amount 
                     <span className="val" data-for="principal" data-format="money" />
                   </span>
-                  <input type="range" name="principal" min="50000" max="10000000" step="50000" value="1500000" />
+                  <input type="range" name="principal" min="50000" max="10000000" step="50000" defaultValue="1500000" />
                 </label>
                 <label>
                   <span className="label-row">Interest rate 
                     <span className="val" data-for="rate" data-suffix="%" />
                   </span>
-                  <input type="range" name="rate" min="4" max="20" step="0.25" value="12" />
+                  <input type="range" name="rate" min="4" max="20" step="0.25" defaultValue="12" />
                 </label>
                 <label>
                   <span className="label-row">Term 
                     <span className="val" data-for="years" data-suffix=" yrs" />
                   </span>
-                  <input type="range" name="years" min="1" max="25" step="1" value="10" />
+                  <input type="range" name="years" min="1" max="25" step="1" defaultValue="10" />
                 </label>
                 <div className="tool-actions">
                   <button className="chip copy-link" type="button">Copy link to this
@@ -521,25 +521,25 @@ export default function ToolsPage() {
                   <span className="label-row">Portfolio 
                     <span className="val" data-for="capital" data-format="money" />
                   </span>
-                  <input type="range" name="capital" min="10000" max="5000000" step="10000" value="200000" />
+                  <input type="range" name="capital" min="10000" max="5000000" step="10000" defaultValue="200000" />
                 </label>
                 <label>
                   <span className="label-row">Risk per trade 
                     <span className="val" data-for="risk" data-suffix="%" />
                   </span>
-                  <input type="range" name="risk" min="0.25" max="5" step="0.25" value="1" />
+                  <input type="range" name="risk" min="0.25" max="5" step="0.25" defaultValue="1" />
                 </label>
                 <label>
                   <span className="label-row">Entry price 
                     <span className="val" data-for="entry" data-format="money" />
                   </span>
-                  <input type="number" name="entry" min="1" step="0.1" value="45" />
+                  <input type="number" name="entry" min="1" step="0.1" defaultValue="45" />
                 </label>
                 <label>
                   <span className="label-row">Stop-loss price 
                     <span className="val" data-for="stop" data-format="money" />
                   </span>
-                  <input type="number" name="stop" min="0" step="0.1" value="40" />
+                  <input type="number" name="stop" min="0" step="0.1" defaultValue="40" />
                 </label>
                 <div className="tool-actions">
                   <button className="chip copy-link" type="button">Copy link to this

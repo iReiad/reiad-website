@@ -44,6 +44,7 @@ what anybody is served.
 | `colophon.html` | nothing: `_redirects` sends it to `/about` | 16 August 2026 |
 | `skills-index.html`, `account.html` | Next.js routes at the same addresses | 16 August 2026 |
 | `tools-index.html`, `tools-stock.html` | Next.js routes at the same addresses | 16 August 2026 |
+| `portfolio.html`, `portfolio/*.html` | Next.js routes at the same addresses | 16 August 2026 |
 
 `work.html` and `services.html` were early placeholders that still
 carried template text ("[Your Name]", "hello@yourdomain.com"), kept
@@ -71,6 +72,15 @@ the file used to render from a fetch after paint. The two Bangla
 files are here under flattened names because two `index.html` in
 one directory is one file: what they were is in the table above
 and in the git history either way.
+
+`portfolio/` is the seven case studies and the index that lists
+them. Only the pages are here: every `.model.js`, `.data.js` and
+`.test.mjs` is still in `aab/portfolio/`, imported by the same
+scripts at the same addresses, with 1,931 lines of tests running
+on every commit. That is section 2b's rule about the case
+studies, taken literally: their whole value is that the figures
+are right and provably unchanged, so the numbers were the last
+thing the port was allowed to touch, and it did not.
 
 `colophon.html` is the one page here that was not replaced. It
 described how this site is built, and its own copy said "0 build

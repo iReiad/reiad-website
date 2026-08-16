@@ -514,6 +514,13 @@ for (const [path, title, nav] of [
   ["/skills/index.html", "দক্ষতা · Skills · Reiad's Library", "/skills/index.html"],
   ["/tools/index.html", "Tools & calculators · Reiad's Library", "/tools/index.html"],
   ["/tools/stock.html", "Stock check · buy, hold or sell · Reiad's Library", "/tools/index.html"],
+  ["/portfolio.html", "Portfolio & Services · Reiad's Library", "/portfolio.html"],
+  ["/portfolio/dcf.html",
+    "DCF with sensitivity tables · DSE-listed manufacturer · Reiad's Library",
+    "/portfolio.html"],
+  ["/portfolio/dissertation.html",
+    "Islamic vs conventional funds in the UK · MSc dissertation · Reiad's Library",
+    "/portfolio.html"],
 ]) {
   const page = await hub(path);
   ok(`${path} answers`, page.status === 200, `status ${page.status}`);
@@ -524,6 +531,25 @@ for (const [path, title, nav] of [
     new RegExp(`<a href="${nav}"[^>]*aria-current="page"`).test(page.html)
     || new RegExp(`aria-current="page"[^>]*href="${nav}"`).test(page.html),
     `nothing in the nav carries aria-current="page" for ${nav}`);
+}
+
+/* Every case study is reachable from the portfolio index, and the
+   index is the only thing that says so. A card pointing at a page
+   that does not answer, or a page nothing links, is the failure
+   `check-content.mjs` watches from the other side; this is the
+   half that can only be seen once the pages are being served. */
+{
+  const index = await hub("/portfolio.html");
+  const cards = [...index.html.matchAll(/href="(\/portfolio\/[a-z-]+\.html)"/g)]
+    .map((m) => m[1]);
+  const studies = [...new Set(cards)];
+  ok("the portfolio index links seven case studies", studies.length === 7,
+    `${studies.length}: ${studies.join(", ")}`);
+
+  for (const study of studies) {
+    const page = await hub(study);
+    ok(`  ${study} answers`, page.status === 200, `status ${page.status}`);
+  }
 }
 
 /* The account page marks no nav link, because it is in no nav,

@@ -141,6 +141,7 @@ export function SiteShell({
   lang = "en",
   bodyClass,
   skip = "Skip to the main content",
+  skipTo = "#main",
   footer = LOOK.insights.footer,
   current = null,
   beforeMain, scripts, children,
@@ -148,6 +149,10 @@ export function SiteShell({
   lang?: string;
   bodyClass?: string;
   skip?: string;
+  /* Where the skip link goes. Most pages say #main and the case
+     studies each point at the thing the page is actually for: the
+     valuation, the stress test, the models. Their own choice, kept. */
+  skipTo?: string;
   footer?: string;
   current?: Current;
   beforeMain?: ReactNode;
@@ -160,7 +165,7 @@ export function SiteShell({
       <body className={bodyClass || undefined}>
         <script dangerouslySetInnerHTML={{ __html: BOOT }} />
 
-        <a className="skip" href="#main">{skip}</a>
+        <a className="skip" href={skipTo}>{skip}</a>
         {beforeMain}
 
         <SiteHeader current={current} />
