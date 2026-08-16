@@ -199,17 +199,46 @@ export async function readAll() {
 
 /* ---------- as SQL ---------- */
 
-/** SQLite quoting: double the quote, and nothing else. The bodies
-    are HTML full of quotes and Bangla and Arabic, and anything
-    cleverer than this is a way to corrupt one of them. */
-const q = (value) => `'${String(value).replace(/'/g, "''")}'`;
+/** Text, as a hex literal SQLite decodes back to the same string.
+
+    THE BUG THIS EXISTS FOR
+
+    The first version quoted these as ordinary SQL strings, which
+    is correct SQL and was silently useless. A lesson body is HTML
+    with newlines in it, so a single INSERT ran to hundreds of
+    lines: 311 statements over 10,002 lines. `wrangler d1 execute
+    --file` hands the file to D1's import, which reads statements
+    line by line, and a statement that does not end on its own
+    line is not a statement it can see. It uploaded the whole 914
+    KB, reported **"Processed 0 queries"** and "Executed 0 queries
+    in 2.01ms", and returned success. Nothing was written and
+    nothing said so.
+
+    `x'...'` cannot contain a quote, a newline or a semicolon,
+    because it is only ever hex digits. So every statement below
+    is exactly one line of ASCII whatever the Bangla, the Arabic
+    or the HTML inside it happens to be. It costs twice the bytes
+    and that is the cheapest possible price for the file being
+    readable by the thing that has to read it.
+
+    `CAST(... AS TEXT)` because a bare `x'...'` is a BLOB, and a
+    BLOB in a TEXT column comes back as bytes rather than as the
+    string that went in. */
+const q = (value) => {
+  const hex = Buffer.from(String(value), "utf8").toString("hex");
+  return hex ? `CAST(x'${hex}' AS TEXT)` : `''`;
+};
 const json = (value) => q(JSON.stringify(value));
 
-function toSql(all, now) {
+export function toSql(all, now) {
+  /* No BEGIN TRANSACTION and no COMMIT. D1's import does not take
+     them: it applies the file itself and an explicit transaction
+     in the middle of that is either refused or ignored, and
+     neither is a thing to find out about afterwards. */
   const lines = [
     "-- Written by scripts/import-schools.mjs. Do not edit by hand.",
     "-- The four curricula, as rows. See TRANSITION.md Stage 8.",
-    "BEGIN TRANSACTION;",
+    "-- Every statement is one line: D1's import reads them line by line.",
     /* Replaced wholesale rather than merged. While the files are
        still the source of truth this table is a copy, and a copy
        that half-updates is worse than one that is rewritten. The
@@ -245,7 +274,18 @@ function toSql(all, now) {
     );
   }
 
-  lines.push("COMMIT;");
+  /* The guarantee, asserted rather than hoped for. A statement
+     that grew a newline is a statement D1's import cannot see,
+     and the way that fails is a successful run that writes
+     nothing. */
+  for (const [i, line] of lines.entries()) {
+    if (line.includes("\n")) {
+      throw new Error(
+        `statement ${i} spans more than one line, which D1's import cannot read`
+      );
+    }
+  }
+
   return lines.join("\n") + "\n";
 }
 
@@ -254,8 +294,9 @@ function toSql(all, now) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const all = await readAll();
   const written = all.lessons.filter((l) => l.body).length;
+  const sql = toSql(all, new Date().toISOString());
 
-  process.stdout.write(toSql(all, new Date().toISOString()));
+  process.stdout.write(sql);
 
   console.error(
     `\n${all.stages.length} stage(s), ${all.sections.length} section(s), `
@@ -268,5 +309,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       + `${lessons.filter((l) => l.body).length} written`
     );
   }
-  console.error("\nNothing reads these rows yet. That is Stage 8 step 3.\n");
+  /* The number to check the upload against. `wrangler d1 execute
+     --file` prints "Processed N queries", and the failure this
+     script has already had once is a run that prints 0 and
+     reports success. If the two numbers do not match, nothing
+     was written, whatever the tick says. */
+  const count = sql.split("\n").filter((line) => line.trim() && !line.startsWith("--")).length;
+  console.error(`\n  wrangler should report ${count} queries. A 0 means it read none of them.\n`);
 }
