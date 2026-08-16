@@ -67,7 +67,10 @@ export interface Stage {
       `/learn/` itself rather than pages of their own. */
   inline?: boolean;
   /** A stage whose pages were published somewhere else first and
-      kept those URLs. `basics-1` is `/learn/terms/`. */
+      kept those URLs. `basics-1` is `/learn/terms/`. Its lessons
+      ARE editable here: the builder writes them to that base
+      rather than to /learn/<stage>/, so a `base` says where the
+      pages go and not whether they are written from these rows. */
   base?: string;
   [extra: string]: unknown;
 }
@@ -77,26 +80,29 @@ export interface Stage {
 
     THE BUG THIS EXISTS FOR
 
-    The money school reads 34 written out of 89 and the first
-    stage looked entirely unwritten, which is true of the rows and
-    false about the site: `start`'s eight steps are anchors on the
-    hub page and `basics-1`'s eighteen were published at
-    `/learn/terms/` and kept those URLs. `build-lessons.mjs` skips
-    both stages by name (`if (stage.inline || stage.base)`), so
-    their rows have empty bodies because nothing has ever put text
-    in them and nothing ever reads it.
+    The money school read 34 written out of 89 and its first
+    stages looked entirely unwritten, which was true of the rows
+    and false about the site. `build-lessons.mjs` skipped both by
+    name, so 26 rows had empty bodies because nothing had ever put
+    text in them and nothing would ever read it. The editor
+    offered to write all 26: type a paragraph, press Save, and it
+    lands in a row no page is built from, which is the "finished
+    work nobody can reach" failure arrived at from the other end.
 
-    Without this the editor offers to write 26 lessons whose text
-    the builder will not look at: type a paragraph, press Save, and
-    it goes into a row that no page is built from. That is the
-    "finished work nobody can reach" failure, arrived at from the
-    other end. */
+    Half of that is now fixed at the source rather than described
+    here. `basics-1`'s eighteen term pages are written from these
+    rows: their prose was lifted out of the committed HTML into
+    the database, and the builder writes them back to
+    `/learn/terms/`, which is what its `base` means. So a `base`
+    says where a stage's pages go, not whether anybody can write
+    them, and it is no longer a reason to refuse an editor.
+
+    `inline` still is. The starter guide's eight steps are not
+    pages: they are accordion sections of the hand-written hub at
+    `/learn/`, and nothing generates them. */
 export function elsewhere(stage: Stage): { what: string; where: string } | null {
   if (stage.inline) {
-    return { what: "on the hub page itself, as anchors rather than pages", where: "/learn/" };
-  }
-  if (stage.base) {
-    return { what: "published at their own URLs first, and they kept them", where: stage.base };
+    return { what: "on the hub page itself, as accordion steps rather than pages", where: "/learn/" };
   }
   return null;
 }
