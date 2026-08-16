@@ -778,9 +778,11 @@ as it exists, and `/desk.html` is untouched.
 ---
 
 ### Stage 10 · Next.js takes one public route
-**Status: not started.** Size: a week.
-
-Only after Stage 9 has proved the toolchain on something private.
+**Status: built and proved locally, not switched on. 16 August
+2026.** The route exists, renders, and agrees with the Worker on
+every fact it states; the allowlist that would send readers to it
+is empty, and two things have to happen before it can be filled.
+Size: the rest of it is a day, plus a decision.
 
 - Next.js App Router, deployed to Cloudflare Workers through
   `@opennextjs/cloudflare`, in the same repository, behind the same
@@ -798,6 +800,102 @@ Only after Stage 9 has proved the toolchain on something private.
 its structured data and its canonical link are byte-identical to
 what the Worker produced, and Lighthouse has not moved.
 **Rollback:** remove the path from the allowlist. One line.
+
+---
+
+#### What is built, and what it proved
+
+`next/` is the App Router app: one route, `/[section]/[slug]`,
+reading the same D1 database through the same binding, rendering
+from `shared/look.js`, which is the table the Worker's own
+renderer reads. `next/parity.test.mjs` starts the built Worker on
+workerd with a local D1, asks it for an article, and compares what
+comes back against `functions/insights/[slug].js` for the same
+row: 42 checks, and they pass.
+
+**"Byte-identical" had to become something checkable.** Two of the
+three the sentence names can be exactly that and are compared as
+strings: the canonical link and the structured data. The third
+cannot. React decides attribute order and self-closing, so it
+writes `<meta content="…" property="og:title"/>` where a template
+string writes `<meta property="og:title" content="…">`, and it
+writes `&#x27;` for an apostrophe. Both parse to the same thing.
+So the bar is: every fact identical, checked one tag at a time,
+and the article's own HTML identical as a string. That is what the
+sentence was protecting.
+
+#### Two things it found on the way
+
+**Every article rendered from the database has been served without
+a Content-Security-Policy.** `aab/_headers` is read by
+Cloudflare's static asset server; a response a Worker builds is
+not a static asset, so it gets none of it. A file-based article
+had a CSP, HSTS and `X-Frame-Options`; the identical-looking
+database one beside it had none of the three, and the page renders
+the same either way, which is why it lasted. Fixed:
+`shared/headers.js` holds the list, both renderers attach it, and
+`scripts/check-headers.mjs` fails if it and `_headers` drift.
+
+**Every article rendered from the database has been asking for a
+truncated webfont URL.** The `FONTS` constant in
+`functions/insights/[slug].js` literally ended
+`&family=Noto+Seri[...]` in the source. Google Fonts answers a
+malformed `css2?` request with a 400, so the whole stylesheet
+failed: Spectral, both IBM Plex faces and both Noto Bengali faces
+all fell back, on every piece published through the Studio. A
+Bangla piece was reading in the system serif. Found by diffing the
+Worker's rendered output before and after moving the table out,
+which is the only reason it was ever going to be found: nothing
+about the page looks broken unless you know what it should look
+like.
+
+#### The thing that is not settled
+
+**The App Router ships its own JavaScript to a reading page, and
+there is no supported way to stop it.** Seven chunks, a React
+runtime and a router, hydrating a tree with no interactivity in
+it. The bullet above says that is not acceptable and it was
+written before anybody had measured it.
+
+Three ways out, and this is a decision rather than a detail:
+
+1. **Accept it.** The page is fully rendered on the server and
+   readable with the JavaScript blocked; the cost is transfer and
+   parse, not correctness. It is still a real regression against a
+   page that today ships only `/app.js`.
+2. **Use the Pages Router for reading pages.** `unstable_runtimeJS:
+   false` is a supported per-page switch there and removes all of
+   it. It means two routers in one app, and the App Router for
+   everything interactive later.
+3. **Do not move the reading pages at all.** They are the pages
+   that gain least from React: no state, no interactivity, one
+   template. Stage 11's list already puts the schools last for
+   this reason, and the article route may belong beside them.
+
+Nothing is switched on until this is answered, which is why
+`NEXT_ROUTES` in `worker.js` is an empty array.
+
+#### And two things a human has to do
+
+1. **Create the second Worker.** `next/wrangler.jsonc` deploys as
+   `reiad-next`, with its own build (`npm run deploy` in `next/`).
+   It cannot be deployed from here: it needs Cloudflare
+   credentials, and the deploy command for the main Worker lives
+   in a dashboard this repository cannot see.
+2. **Add the service binding.** The front Worker reaches the
+   second one through `env.NEXT`, which needs this in
+   `wrangler.toml`, after the second Worker exists:
+
+   ```toml
+   [[services]]
+   binding = "NEXT"
+   service = "reiad-next"
+   ```
+
+   Until both are true, `goesToNext()` in `worker.js` is false for
+   every path and the site behaves exactly as it does today. That
+   is deliberate: this stage can be merged without changing what
+   any reader sees.
 
 ---
 
@@ -837,7 +935,7 @@ should.
 | 7 | Comments, moderated, grown from Questions | done, 15 Aug 2026 |
 | 8 | The schools' content into the database | not started |
 | 9 | React in the Studio and the desk | both done 16 Aug 2026, old pages still up |
-| 10 | Next.js takes the article route | not started |
+| 10 | Next.js takes the article route | built 16 Aug 2026, not switched on |
 | 11 | The rest, one route at a time | not started |
 
 ---
@@ -1058,6 +1156,60 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · Stage 10 is built, and it found two live bugs
+The Next.js route exists, renders an article from D1, and agrees
+with the Worker's own renderer on every fact it states: 42 checks
+in `next/parity.test.mjs`, driving the built Worker on workerd
+against a local database. Nothing is switched on. `NEXT_ROUTES` in
+`worker.js` is an empty array and the site behaves exactly as it
+did.
+
+**Two things were already broken, and both were found by the
+discipline rather than by looking.**
+
+Moving the per-section table out of `functions/insights/[slug].js`
+should change nothing, so the first thing written was a diff of
+the rendered page before and after. It came back with one line
+different, and the line was the webfont URL: the constant in the
+old file literally ended `&family=Noto+Seri[...]`. A malformed
+`css2?` request gets a 400 for the whole stylesheet, so every
+article published through the Studio has been rendering in the
+fallback faces, both Bangla ones included. Nothing about the page
+looks broken unless you know what it is meant to look like.
+
+The second came from asking what headers a page from a second
+Worker would carry. `aab/_headers` is read by Cloudflare's static
+asset server, and a response a Worker builds is not a static
+asset: every database-rendered article has been served with no
+Content-Security-Policy, no HSTS and no `X-Frame-Options`, beside
+file-based articles that had all three. `shared/headers.js` holds
+the list now, both renderers attach it, and
+`scripts/check-headers.mjs` fails when it and `_headers` drift.
+
+**The thing the plan asked for that Next cannot give.** "Server
+components only, no client JavaScript on a reading page" is not
+available in the App Router: it ships a runtime and a router to
+every page and there is no switch. The parity test measures it as
+a budget rather than waving it through, and the three ways out are
+written up against the stage. That decision is open, and it is why
+nothing is switched on.
+
+**And two things need a human**, both in the stage: the second
+Worker has to be created, and the service binding added to
+`wrangler.toml`. Neither can happen from here.
+
+One note for whoever picks this up: `shared/` is a `file:` package
+because a relative import out of `next/` does not work. Turbopack
+refuses to resolve above its root; moving the root moves Next's
+file-tracing root with it, and the OpenNext build then fails on a
+missing `pages-manifest.json`, which reads exactly like a Next 16
+incompatibility and is nothing of the sort. `install-links=true`
+in `next/.npmrc` is the other half: npm's default is a symlink and
+Turbopack resolves symlinks to their real path before refusing
+them.
+
+Next: the decision above, then the two dashboard steps.
 
 ### 2026-08-16 · The Studio, in React, and the editor became a module
 The hard half of Stage 9. `aab/studio.js` was 2,464 lines: a

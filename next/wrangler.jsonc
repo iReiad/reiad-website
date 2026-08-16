@@ -1,0 +1,44 @@
+{
+  // ============================================================
+  // The Next.js Worker.
+  //
+  // A SECOND Worker, beside the one at the repository root. The
+  // one at the root stays in front and keeps every path except an
+  // allowlist; this one answers only what that allowlist forwards,
+  // which today is the article route and nothing else. That is
+  // what makes the rollback a single line in worker.js rather than
+  // a revert of the whole stage.
+  //
+  // It reads the same D1 database as the main Worker. Not a copy:
+  // the same database_id, so an article published in the Studio is
+  // the row this renders.
+  //
+  //   npm run deploy      builds with OpenNext and deploys
+  //   npm run preview     the same build, locally, on workerd
+  // ============================================================
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "reiad-next",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-08-01",
+  // nodejs_compat is required by OpenNext, and global_fetch_strictly_public
+  // stops the Worker resolving its own hostname internally, which is how a
+  // fetch to the site from inside the site becomes an infinite loop.
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "reiad",
+      "database_id": "ad23dea3-74fc-4346-8119-ab5936f1a708"
+    }
+  ],
+
+  "vars": {
+    "SITE_ORIGIN": "https://reiad.co.uk"
+  }
+}

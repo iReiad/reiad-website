@@ -92,6 +92,31 @@ const MEDIA = /^\/media\/(.+)$/;
     is served at: the handler falls through when they disagree. */
 const ARTICLE = /^\/(insights|cooking|travel)\/([a-z0-9-]+)(?:\.html)?$/i;
 
+/* ---------- the Next.js allowlist ----------
+
+   TRANSITION.md, Stage 10. A second Worker renders some routes
+   through Next.js, and this one stays in front and keeps
+   everything else. The allowlist is the whole of the switch:
+   adding a path moves it, removing the path moves it back, and
+   that is the rollback.
+
+   It is empty. Nothing is forwarded until a path is written in
+   here AND the NEXT service binding exists in wrangler.toml, and
+   the second of those needs a Worker that has been deployed. Both
+   halves are checked at the call site, so a deploy of this file
+   without the other Worker changes nothing at all: every path
+   carries on being answered exactly as it is today.
+
+   The first entry, when it is time, is the article route:
+
+       const NEXT_ROUTES = [ARTICLE];
+*/
+const NEXT_ROUTES = [];
+
+/** Is this a path the Next.js Worker owns, and is it reachable? */
+const goesToNext = (path, env) =>
+  Boolean(env.NEXT) && NEXT_ROUTES.some((re) => re.test(path));
+
 export default {
   async fetch(request, env, ctx) {
     const path = new URL(request.url).pathname;
@@ -125,6 +150,13 @@ export default {
       if (path === "/feed.xml" || path === "/sitemap.xml") {
         return await feeds(context({ kind: path.slice(1) }));
       }
+
+      /* Before the article route, because the point of the
+         allowlist is to take a path away from the handler below
+         rather than to race it. `fetch` on a service binding is a
+         call into the other Worker, not a network request: no DNS,
+         no TLS, and it never leaves Cloudflare. */
+      if (goesToNext(path, env)) return await env.NEXT.fetch(request);
 
       const article = path.match(ARTICLE);
       if (article) {

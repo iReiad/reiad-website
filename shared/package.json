@@ -1,0 +1,16 @@
+{
+  "name": "@reiad/shared",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    "./look": {
+      "types": "./look.d.ts",
+      "default": "./look.js"
+    },
+    "./headers": {
+      "types": "./headers.d.ts",
+      "default": "./headers.js"
+    }
+  }
+}

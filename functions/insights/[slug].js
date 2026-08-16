@@ -21,121 +21,29 @@
    ============================================================ */
 
 import { db, one } from "../_lib/db.js";
+/* The per-section table, the share-image rules and the head facts
+   all live in shared/look/ now. They were written twice, here and
+   in the Studio, under a comment asking whoever changed one to
+   change the other; Stage 10 adds a third reader whose acceptance
+   test is that it agrees with this one, and three copies cannot
+   pass that.
 
-/* What changes about a rendered piece when it is not an Insights
-   piece. This table is the twin of PAGE_STYLE in aab/studio.js:
-   the Studio writes standalone files with the same five
-   differences, and a piece published to the database renders the
-   same page as one downloaded as a file. Change one, change both.
-
-   `note` is the line at the foot. Insights carries a financial
-   disclaimer because it is about money; a piece about onions
-   carrying one would be comic. */
-const LOOK = {
-  insights: {
-    mount: "/insights/",
-    bodyClass: "",
-    og: "/og/insights.png",
-    minutes: (n) => `${n} min read`,
-    skip: "Skip to the article",
-    note: "This piece is general education, not investment advice. Rules, rates and "
-      + "fees change: confirm the current details with the relevant institution "
-      + "before acting on anything here.",
-    back: { url: "/insights.html", kicker: "All insights", label: "Back to the index →" },
-    side: { url: "/learn/index.html", kicker: "শেখার লাইব্রেরি", label: "Learn hub, বাংলায় →" },
-    footer: "Everything on this site is general education, not investment advice. "
-      + "Do your own research before putting money anywhere.",
-  },
-  cooking: {
-    mount: "/cooking/",
-    bodyClass: "cooking read",
-    og: "/og/cooking.png",
-    minutes: (n) => `${n} মিনিট পড়া`,
-    skip: "মূল লেখায় যান",
-    note: "রান্নাঘরের লেখাগুলো রেসিপি নয়, বোঝার জন্য। নিজের রান্নাঘর, নিজের চুলা আর নিজের "
-      + "স্বাদ অনুযায়ী মাপ আর সময় একটু এদিক-ওদিক হবেই।",
-    back: { url: "/cooking/index.html", kicker: "রান্নাঘর", label: "সব লেখা এক জায়গায় →" },
-    side: { url: "/skills/index.html", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
-    footer: "রান্নাঘরের লেখাগুলো বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া।",
-  },
-  travel: {
-    mount: "/travel/",
-    bodyClass: "travel read",
-    og: "/og/travel.png",
-    minutes: (n) => `${n} মিনিট পড়া`,
-    skip: "মূল লেখায় যান",
-    note: "এই লেখাটা সাধারণ তথ্য, আইনি পরামর্শ নয়। ভিসার নিয়ম আর ফি বদলায়, তাই আবেদনের "
-      + "আগে অফিসিয়াল গাইডেন্স একবার দেখে নিন।",
-    back: { url: "/travel/index.html", kicker: "ভ্রমণ", label: "সব লেখা এক জায়গায় →" },
-    side: { url: "/skills/index.html", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
-    footer: "ভ্রমণের লেখাগুলো বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া।",
-  },
-};
-
-const lookFor = (section) => LOOK[section] ?? LOOK.insights;
-
-/* What to say about the share image. Twinned with cardShape() in
-   aab/studio.js.
-
-   A social scraper is not a browser: it decides whether to show a
-   card at all from these three tags, and several of them refuse a
-   WebP outright. The Studio draws a JPEG at 1200x630 on publish for
-   exactly that reason, and this describes whatever it stored, so a
-   piece published before that existed still gets an honest tag
-   rather than a confident wrong one. Dimensions are declared only
-   for the two kinds of image known to be 1200x630: a section's own
-   card, and one the Studio drew. */
-const IMAGE_TYPES = {
-  png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
-  webp: "image/webp", avif: "image/avif", gif: "image/gif",
-};
-
-const cardShape = (url) => ({
-  type: IMAGE_TYPES[String(url ?? "").split(".").pop().toLowerCase()] ?? "image/png",
-  sized: /^\/og\/[a-z0-9-]+\.png$/.test(url ?? "")
-    || /^\/media\/[a-z0-9-]*-card\/[0-9a-f]+\.jpg$/.test(url ?? ""),
-});
+   It is a package rather than another file under _lib/ because the
+   Next.js route reads it too, and Turbopack will not resolve an
+   import above its own root. See the note in next/next.config.ts. */
+import { LOOK, lookFor, dateLabel, headFacts, FONTS } from "../../shared/look.js";
+import { htmlResponse } from "../../shared/headers.js";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>\"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-const FONTS =
-  "https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Seri[...]";
-
-function render(article, origin) {
-  const look = lookFor(article.section);
-  const url = `${origin}${look.mount}${article.slug}.html`;
-  /* Articles published before `cover` was added have an empty database
-     column even when their body already contains a hosted photo. Recover
-     the lead (or first) /media image here so a re-save is not required
-     just to repair their social preview. The Studio stores this value on
-     every new publish; this is the backwards-compatible bridge. */
-  const lead = article.body?.match(
-    /<figure\b[^>]*class="[^"]*\blead-photo\b[^"]*"[^>]*>[\s\S]*?<img\b[^>]*\bsrc="(\/media\/[A-Za-z0-9._/-]+)"/i
-  )?.[1];
-  const first = article.body?.match(/<img\b[^>]*\bsrc="(\/media\/[A-Za-z0-9._/-]+)"/i)?.[1];
-  const cover = article.cover || lead || first || look.og;
-  const shape = cardShape(cover);
-  const date = new Intl.DateTimeFormat(article.lang === "bn" ? "bn-BD" : "en-GB", {
-    day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
-  }).format(new Date(`${article.published_at || "2026-01-01"}T00:00:00Z`));
-
-  const jsonLd = JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: article.title,
-    description: article.dek,
-    datePublished: article.published_at,
-    dateModified: article.updated_at,
-    inLanguage: article.lang,
-    author: { "@type": "Person", name: "Rony Reiad", url: `${origin}/about.html` },
-    /* The piece's own address. This said /insights/ whatever the
-       section was, which pointed a kitchen piece's structured data
-       at a URL that answers 404. */
-    mainEntityOfPage: url,
-    image: `${origin}${cover}`,
-  }).replace(/</g, "\\u003c");
+export function render(article, origin) {
+  /* Every fact the head states, worked out once in _lib/look.js so
+     that the Next.js route can state exactly the same ones. */
+  const { look, url, cover, image, sized, type, locale, title, jsonLd } =
+    headFacts(article, origin);
+  const date = dateLabel(article);
 
   return `<!DOCTYPE html>
 <html lang="${article.lang}">
@@ -143,21 +51,21 @@ function render(article, origin) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <title>${esc(article.title)}, Reiad's Library</title>
+  <title>${esc(title)}</title>
   <meta name="description" content="${esc(article.dek)}">
   <link rel="canonical" href="${url}">
   <meta property="og:type" content="article">
   <meta property="og:title" content="${esc(article.title)}">
   <meta property="og:description" content="${esc(article.dek)}">
   <meta property="og:url" content="${url}">
-  <meta property="og:image" content="${origin}${cover}">${shape.sized ? `
+  <meta property="og:image" content="${image}">${sized ? `
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">` : ""}
-  <meta property="og:image:type" content="${shape.type}">
+  <meta property="og:image:type" content="${type}">
   <meta property="og:site_name" content="Reiad's Library">
-  <meta property="og:locale" content="${article.lang === "bn" ? "bn_BD" : "en_GB"}">
+  <meta property="og:locale" content="${locale}">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="${origin}${cover}">
+  <meta name="twitter:image" content="${image}">
   <script>
     (function () {
       var saved = localStorage.getItem("theme");
@@ -298,12 +206,12 @@ export async function onRequest(context) {
   if ((article.section || "insights") !== asked) return context.next();
 
   const origin = context.env.SITE_ORIGIN || new URL(context.request.url).origin;
-  return new Response(render(article, origin), {
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-      // Fresh enough that an edit shows up quickly, cached enough
-      // that a popular piece isn't rebuilt for every reader.
-      "Cache-Control": "public, max-age=60, stale-while-revalidate=600",
-    },
+  /* With the security headers, which a response built here does not
+     get from aab/_headers: that file is read by the static asset
+     server, and this is not a static asset. See _lib/headers.js. */
+  return htmlResponse(render(article, origin), {
+    // Fresh enough that an edit shows up quickly, cached enough
+    // that a popular piece isn't rebuilt for every reader.
+    cache: "public, max-age=60, stale-while-revalidate=600",
   });
 }
