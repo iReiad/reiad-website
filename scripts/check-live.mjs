@@ -132,8 +132,21 @@ ok("the piece is rendered by the Next.js Worker",
   chunks.length > 0,
   "no /_next/static script on the page, so the service binding is not in effect");
 
+/* Named, rather than written out as a `<script>` tag, which is
+   what a page rendered by the App Router does now: a module that
+   runs before React has hydrated is a module whose work the
+   hydration undoes, so a route names what it will load in a
+   preload link and loads it once hydration is over. See
+   `next/components/scripts.tsx`. Either spelling counts, because
+   the question here is whether the page loads the site's own
+   scripts at all, not which tag says so. */
+const loads = (src) =>
+  new RegExp(`<script[^>]*src="${src}"`).test(html)
+  || new RegExp(`<link[^>]*rel="(?:modulepreload|preload)"[^>]*href="${src}"`).test(html)
+  || new RegExp(`<link[^>]*href="${src}"[^>]*rel="(?:modulepreload|preload)"`).test(html);
+
 ok("the site's own scripts are still loaded",
-  /<script[^>]*src="\/app\.js"/.test(html) && /read-aloud\.js/.test(html));
+  loads("\\/app\\.js") && loads("\\/read-aloud\\.js"));
 ok("the comment thread is on the page", /id="comments"/.test(html));
 ok("the canonical link is the piece's own address",
   html.includes(`<link rel="canonical" href="${origin}${DB_PIECE}"`)
