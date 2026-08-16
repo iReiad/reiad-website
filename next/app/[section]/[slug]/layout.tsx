@@ -107,9 +107,10 @@ export default async function ArticleLayout({
         </footer>
 
         {/* The site's own scripts, at the paths every other page
-            loads them from. Nothing of Next's own ships to the
-            reader: this route is server components only, which is
-            the current bar and dropping below it is not acceptable. */}
+            loads them from. Next's own runtime is loaded alongside
+            them by the framework, which is a cost this stage
+            measured and accepted rather than one it avoided: see
+            the note at the top of page.tsx. */}
         <script src="/read-aloud.js" defer />
         <script type="module" src="/app.js" />
       </body>

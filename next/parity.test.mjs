@@ -254,19 +254,22 @@ ok("the section's own footer line",
 ok("the site's own script is loaded",
   /<script[^>]*src="\/app\.js"/.test(fromNext));
 ok("read-aloud too", /<script[^>]*src="\/read-aloud\.js"/.test(fromNext));
-/* ---- and the one the plan does not get ----
+/* ---- the cost, which was measured and then accepted ----
 
-   TRANSITION.md's Stage 10 asks for "server components only, no
-   client JavaScript on a reading page, because that is the
-   current bar and dropping below it is not acceptable". The App
-   Router does not offer that. It ships its own runtime and router
-   to every page, hydrating a tree that has no interactivity in
-   it, and there is no supported switch to turn that off.
+   The App Router ships its own runtime and router to every page,
+   hydrating a tree with no interactivity in it, and there is no
+   supported switch to turn that off. That is 170 KB gzipped on a
+   page of prose, against the 31 KB of the site's own scripts.
 
-   So this check is a budget rather than a pass: it records what
-   the route costs today and fails if that grows. The decision
-   about whether the cost is acceptable at all is a real one and
-   is written up in TRANSITION.md, not settled here. */
+   It was measured and accepted on 16 August 2026: the site is
+   going to grow a lot, one framework is worth more than the
+   kilobytes, and the pages that come next are the ones React
+   actually earns its keep on. The reasoning is under Stage 10 in
+   TRANSITION.md.
+
+   Accepted is not unwatched. This is a budget: it fails if the
+   number grows, so an added dependency that drags the client
+   bundle up shows here rather than on somebody's phone. */
 const CHUNK_BUDGET = 8;
 {
   const chunks = new Set(fromNext.match(/\/_next\/static\/chunks\/[a-z0-9_-]+\.js/g) ?? []);
@@ -277,6 +280,27 @@ const CHUNK_BUDGET = 8;
     fromNext.includes(ARTICLE.title.replace(/"/g, "&quot;"))
     || fromNext.includes("actually works"),
     "the headline is not in the server-rendered HTML");
+}
+
+/* ---- the contract worker.js falls back on ----
+
+   Four articles on this site are still committed HTML files.
+   `worker.js` forwards the whole article prefix here, so the only
+   way those keep working is that a slug with no row answers 404
+   and the front Worker serves the file instead. If this route ever
+   answers something else for a piece it does not have, those four
+   go off the site the day the service binding is added. */
+{
+  const missing = await fetch(`http://127.0.0.1:${PORT}/insights/not-a-piece-here`);
+  ok("a slug with no row answers 404, so the file can still win",
+    missing.status === 404, `status ${missing.status}`);
+
+  /* And a piece answering at the wrong mount is the same case:
+     moving one from Insights to the kitchen must not leave it live
+     at both addresses. */
+  const wrongMount = await fetch(`http://127.0.0.1:${PORT}/cooking/${ARTICLE.slug}`);
+  ok("and so does a piece asked for at the wrong mount",
+    wrongMount.status === 404, `status ${wrongMount.status}`);
 }
 
 /* ---- the headers a static page would have had ---- */

@@ -94,28 +94,48 @@ const ARTICLE = /^\/(insights|cooking|travel)\/([a-z0-9-]+)(?:\.html)?$/i;
 
 /* ---------- the Next.js allowlist ----------
 
-   TRANSITION.md, Stage 10. A second Worker renders some routes
+   TRANSITION.md, Stage 10. A second Worker renders these routes
    through Next.js, and this one stays in front and keeps
    everything else. The allowlist is the whole of the switch:
    adding a path moves it, removing the path moves it back, and
    that is the rollback.
 
-   It is empty. Nothing is forwarded until a path is written in
-   here AND the NEXT service binding exists in wrangler.toml, and
-   the second of those needs a Worker that has been deployed. Both
-   halves are checked at the call site, so a deploy of this file
-   without the other Worker changes nothing at all: every path
-   carries on being answered exactly as it is today.
-
-   The first entry, when it is time, is the article route:
-
-       const NEXT_ROUTES = [ARTICLE];
-*/
-const NEXT_ROUTES = [];
+   Nothing is forwarded until a path is in here AND the NEXT
+   service binding exists. Both halves are checked below, so this
+   file can be deployed before the second Worker exists and change
+   nothing at all: `env.NEXT` is undefined, every path is answered
+   exactly as it is today, and the route turns on by itself the
+   moment the binding is added. */
+const NEXT_ROUTES = [ARTICLE];
 
 /** Is this a path the Next.js Worker owns, and is it reachable? */
 const goesToNext = (path, env) =>
   Boolean(env.NEXT) && NEXT_ROUTES.some((re) => re.test(path));
+
+/** Ask the Next.js Worker, and fall back to a file if it has none.
+
+    THE BUG THIS SHAPE EXISTS FOR, BEFORE IT HAPPENED
+
+    Four articles on this site are still committed HTML rather than
+    database rows: the two in aab/insights/, the one about onions
+    and the one about visas. Today they are served by the asset
+    router because `functions/insights/[slug].js` calls
+    `context.next()` when D1 has no row.
+
+    The Next.js Worker cannot do that. It is a different Worker with
+    no ASSETS binding of its own, so all it can say is 404, and
+    forwarding a whole prefix to it would have taken those four
+    pieces off the site the moment the service binding was added.
+    Every link to them, every share, every search result.
+
+    So a 404 from there means the same thing `context.next()` means
+    here, and is answered the same way. Anything else is the piece
+    itself and goes straight back. */
+async function fromNext(request, env) {
+  const answer = await env.NEXT.fetch(request);
+  if (answer.status !== 404) return answer;
+  return env.ASSETS.fetch(request);
+}
 
 export default {
   async fetch(request, env, ctx) {
@@ -156,7 +176,7 @@ export default {
          rather than to race it. `fetch` on a service binding is a
          call into the other Worker, not a network request: no DNS,
          no TLS, and it never leaves Cloudflare. */
-      if (goesToNext(path, env)) return await env.NEXT.fetch(request);
+      if (goesToNext(path, env)) return await fromNext(request, env);
 
       const article = path.match(ARTICLE);
       if (article) {
