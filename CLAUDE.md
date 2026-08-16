@@ -326,12 +326,21 @@ before this school had a builder, and their URLs do not move. They
 are written from the rows like everything else; the builder just
 writes them to that address.
 
-**One stage really is not editable, and should not be.** `start`
-is `inline`: its eight steps are accordion sections of the
-hand-written hub at `/learn/`, not pages, and nothing generates
-them. Its eight rows have empty bodies for ever and text saved
-into them would reach no page, so the Studio says where they
-actually live instead of offering an editor.
+**One stage really is not editable, and the reason is the
+sanitiser rather than the builder.** `start` is `inline`: its
+eight steps are accordion sections of the hand-written hub at
+`/learn/`. They are also not article prose. Each carries a
+two-column "what you do / what others do" split, a risk badge and
+a call-to-action, using the classes `split`, `do`, `others`,
+`warn`, `bn-h` and `btn`, none of which is in the article
+allowlist. Put one through `sanitiseHTML()` and `term` and `ex`
+survive while the rest go: the layout collapses into a run of
+paragraphs.
+
+Widening the allowlist would not fix it. Those classes belong to
+the starter guide's own layer, and `check-css.mjs` fails a class
+two layers both define. So the eight rows keep empty bodies and
+the Studio says where the text actually lives.
 
 Generated pages are generated. Edit the source, never the output:
 

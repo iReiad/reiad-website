@@ -97,9 +97,34 @@ export interface Stage {
     says where a stage's pages go, not whether anybody can write
     them, and it is no longer a reason to refuse an editor.
 
-    `inline` still is. The starter guide's eight steps are not
-    pages: they are accordion sections of the hand-written hub at
-    `/learn/`, and nothing generates them. */
+    `inline` still is, and for a better reason than "the builder
+    skips it".
+
+    THE REASON THE STARTER GUIDE CANNOT MOVE
+
+    Its eight steps are not article prose. Each one is a bespoke
+    layout: a two-column "what you do / what others do" split, a
+    risk badge, a call-to-action button, sub-headings in Bangla
+    styling. That markup carries the classes `split`, `do`,
+    `others`, `warn`, `bn-h` and `btn`, and NONE of them is in the
+    article allowlist that `functions/_lib/sanitise.js` enforces
+    on the way in.
+
+    So a lesson body pasted through this editor would come back
+    with the layout classes gone. Measured rather than assumed:
+    running one step body through `sanitiseHTML()` leaves `term`
+    and `ex` and strips `bn-h`, `split`, `do` and `others`, which
+    is the two-column layout collapsing into a run of paragraphs.
+
+    Widening the allowlist is not the answer either. Those classes
+    belong to the starter guide's own layer, not to `@layer
+    article`, and `check-css.mjs` fails a class that two layers
+    both define. They would also then be offered inside every
+    article, where they are meaningless.
+
+    The steps stay in the hand-written hub, and this says where
+    they are instead of offering an editor that would quietly
+    destroy them. */
 export function elsewhere(stage: Stage): { what: string; where: string } | null {
   if (stage.inline) {
     return { what: "on the hub page itself, as accordion steps rather than pages", where: "/learn/" };

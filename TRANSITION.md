@@ -1852,6 +1852,44 @@ is the closest Supabase region to Dhaka.
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
 
+### 2026-08-16 · The starter guide stays where it is, and the reason is the sanitiser
+
+The last eight rows of the money school will keep empty bodies, on
+purpose. This closes the question the previous entry left open.
+
+**The steps are not article prose.** Each one is a bespoke layout:
+a two-column "what you do / what others do" split, a risk badge, a
+call-to-action button, Bangla sub-headings. That markup carries
+`split`, `do`, `others`, `warn`, `bn-h` and `btn`, and none of
+them is in the allowlist `functions/_lib/sanitise.js` enforces on
+everything written through the Studio.
+
+Measured rather than argued: one step body through
+`sanitiseHTML()` keeps `term` and `ex` and loses `bn-h`, `split`,
+`do` and `others`. The two-column layout collapses into a run of
+paragraphs, and it does so silently, on save, which is the worst
+possible moment.
+
+**Widening the allowlist is not the fix.** Those classes belong to
+the starter guide's own layer, and `check-css.mjs` fails a class
+that two layers both define. They would also be offered inside
+every article, where they mean nothing.
+
+So the eight steps stay in the hand-written hub and the Studio
+says where they are. The blurb question that was open with them is
+moot: nothing generates that markup, so nothing has to choose
+between the hub's wording and `curriculum.js`'s.
+
+**And one stale warning removed.** The top of
+`build-lessons.mjs` carried a block headed BEFORE YOU RUN THIS: IT
+WILL REWRITE MORE THAN YOU EXPECT, describing seventy pages of
+drift between the committed pages and the template. That drift is
+gone and `check-schools-built.mjs` is what says so, on 247 pages.
+A warning telling the next person not to run a generator has a
+real cost once it stops being true, so it now says what is
+actually the case, including the one piece of drift that is left:
+the hub's step blurbs, which this file does not write.
+
 ### 2026-08-16 · Stage 11 starts at the safe end: two dead files leave
 
 `work.html` and `services.html` are in `archive/`. **279 HTML
