@@ -743,8 +743,20 @@ reader of the fourth would have met the pages in the wrong order.
 
 To load them:
 
+**From a browser, which is the way that has not failed:** GitHub,
+Actions, "Import the schools into D1", Run workflow. It builds the
+file, refuses to hand wrangler anything that looks empty, imports
+it, and then asks the database what is in it, so the run itself
+says whether it worked rather than only that it finished. It needs
+one repository secret, `CLOUDFLARE_API_TOKEN`, scoped to D1 Edit
+and nothing else; the note at the top of
+`.github/workflows/import-schools.yml` says where to make it.
+
+**Or from a terminal**, inside the repository, and `--out` rather
+than a `>` redirect:
+
 ```sh
-node scripts/import-schools.mjs > schools.sql
+node scripts/import-schools.mjs --out schools.sql
 npx wrangler d1 execute reiad --local  --file=schools.sql   # practise
 npx wrangler d1 execute reiad --remote --file=schools.sql
 ```
@@ -752,15 +764,31 @@ npx wrangler d1 execute reiad --remote --file=schools.sql
 **Check the number wrangler prints.** The script says how many
 queries the file holds and wrangler says how many it processed. If
 those disagree, nothing was written, whatever the tick at the end
-says. That is not a hypothetical: the first run of this import
-uploaded 914 KB, printed **"Processed 0 queries"** and
-"Executed 0 queries in 2.01ms", and returned success. The rows
-were quoted as ordinary SQL strings, so a lesson body's newlines
-put 311 statements across 10,002 lines, and D1's import reads
-statements line by line. It could not see one of them. Every value
-is a hex literal now, so each statement is one line of ASCII
-whatever is inside it, and `schools.test.mjs` executes the
-generated file rather than building rows of its own.
+says.
+
+That is not a hypothetical. This import ran twice and wrote
+nothing twice, reporting **"Processed 0 queries"** and a success
+table both times, and the cause was not in the SQL at all: the
+commands were run from a home directory rather than from the
+repository. `node scripts/import-schools.mjs` exited with "Cannot
+find module", and the `>` redirect had already created an empty
+`schools.sql` before node started, because that is what a shell
+does. Wrangler then imported an empty file, correctly, twice. The
+second time it even said "File already uploaded", which was the
+tell: the same zero bytes as the first.
+
+Two things came out of it, and only one of them was the bug:
+
+- **`--out` instead of `>`.** The script writes the file itself,
+  after the work is done, or not at all. A redirect cannot leave
+  an empty file behind when the command it is feeding never runs.
+- **Every value is a hex literal**, `CAST(x'...' AS TEXT)`, so
+  each statement is one line of ASCII. That was fixed while
+  looking for the wrong cause, and it is still right: D1's import
+  reads statements line by line, and quoting a lesson body as an
+  ordinary SQL string put 311 statements across 10,002 lines. It
+  would have failed on the first file that ever reached the
+  importer.
 
 #### Step 3: the door is built, and the files are not the source any more
 
@@ -1800,6 +1828,50 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-16 · The import wrote nothing twice, and the second diagnosis was the right one
+The schools import ran again and reported "Processed 0 queries"
+again. The terminal output that came with it had the answer in the
+two lines above the wrangler command:
+
+```
+fatal: not a git repository (or any of the parent directories): .git
+Error: Cannot find module '/Users/reiad/scripts/import-schools.mjs'
+```
+
+**It was being run from a home directory, not from the
+repository.** `node` exited without writing anything, and the `>`
+redirect had already created an empty `schools.sql` before node
+started, because creating the file is the first thing a shell
+does. Wrangler then imported an empty file, correctly, and said
+so: nought queries, nought rows, success. The second run even
+printed "File already uploaded", which was the tell nobody read:
+the same zero bytes as the first time.
+
+**So the entry below is wrong about the cause.** It blamed the
+multi-line statements, which were real and are fixed, but they
+never reached the importer: the file the importer saw was empty
+both times. Left standing rather than edited, because a wrong
+diagnosis that looked this convincing is worth keeping next to the
+right one.
+
+The lesson is not about shells. It is that "the command reported
+success" and "the thing happened" are different claims, and this
+import has now produced the first without the second twice. The
+script prints the number of queries the file holds so that the
+number wrangler prints has something to disagree with, and it
+takes `--out` now so that the file is written by the thing that
+knows whether the work succeeded.
+
+**And the import moved into a workflow**,
+`.github/workflows/import-schools.yml`, run from a browser by
+whoever wants it. Not because typing is hard: because every one of
+the three ways this went wrong was a way a person can be standing
+somewhere unexpected, and a job that checks out the repository
+itself is never standing anywhere. It refuses to hand wrangler a
+file with fewer than 200 statements in it, and the last thing it
+does is count the rows and print them, so the run says whether it
+worked rather than only that it finished.
 
 ### 2026-08-16 · The import wrote nothing, successfully
 The first real run of the schools import uploaded 914 KB and
