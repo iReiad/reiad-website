@@ -63,10 +63,28 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const AAB = join(HERE, "..");
 
 const {
-  TERMS, SCHOOL, termParts, termUrl, termMinutes, termCount,
+  SCHOOL, termParts, termUrl, termMinutes, termCount,
   partId, workbookUrl,
 } = await import(join(HERE, "curriculum.js"));
 const { icon } = await import(join(HERE, "icons.js"));
+
+/* ---------- where the ladder and the text come from ----------
+
+   TRANSITION.md Stage 8, step 3. By default, from `curriculum.js`
+   and the prose beside it, which is what every existing
+   invocation does and what the committed pages were built from.
+
+   With `SCHOOL_DB` set, from the rows in that SQLite file
+   instead. `scripts/schools-build.test.mjs` builds both ways into
+   two temporary directories and diffs every page: the database is
+   only allowed to become the source of these pages when that diff
+   is empty. `SCHOOL_OUT` is what keeps that test out of `aab/`.
+   Neither variable is set in normal use. */
+const { sourceFor } = await import(join(HERE, "../../scripts/school-source.mjs"));
+const source = await sourceFor("english");
+const TERMS = source.stages;
+const OUT = process.env.SCHOOL_OUT || AAB;
+
 const { bookFor, dayCount } = await import(join(HERE, "workbook.data.js"));
 
 /* curriculum.js declares how many days a book has, because the
@@ -94,11 +112,10 @@ for (const term of TERMS) {
 
 /* Part bodies, one module per term. A term with no file is
    entirely "coming soon" and that is a valid state. */
-async function bodiesFor(term) {
-  const file = join(HERE, "content", `${term.slug}.js`);
-  if (!existsSync(file)) return {};
-  return (await import(file)).default ?? {};
-}
+/* Lesson bodies, one set per term, from whichever source was
+   chosen above. One with none is entirely "coming soon" and that
+   is a valid state, not a failure. */
+const bodiesFor = async (term) => source.bodies[term.slug] ?? {};
 
 const esc = (s) =>
   String(s).replace(/[&<>"]/g, (c) =>
@@ -710,7 +727,7 @@ let pages = 0;
 
 for (const term of TERMS) {
   const parts = termParts(term);
-  const dir = join(AAB, "english", term.slug);
+  const dir = join(OUT, "english", term.slug);
   mkdirSync(dir, { recursive: true });
 
   writeFileSync(join(dir, "index.html"), termIndexPage(term, parts));

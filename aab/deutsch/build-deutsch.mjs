@@ -49,10 +49,28 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const AAB = join(HERE, "..");
 
 const {
-  STUFEN, SCHOOL, stufeTeile, stufeUrl, stufeMinutes, stufeCount,
+  SCHOOL, stufeTeile, stufeUrl, stufeMinutes, stufeCount,
   teilId, workbookUrl,
 } = await import(join(HERE, "curriculum.js"));
 const { icon } = await import(join(HERE, "icons.js"));
+
+/* ---------- where the ladder and the text come from ----------
+
+   TRANSITION.md Stage 8, step 3. By default, from `curriculum.js`
+   and the prose beside it, which is what every existing
+   invocation does and what the committed pages were built from.
+
+   With `SCHOOL_DB` set, from the rows in that SQLite file
+   instead. `scripts/schools-build.test.mjs` builds both ways into
+   two temporary directories and diffs every page: the database is
+   only allowed to become the source of these pages when that diff
+   is empty. `SCHOOL_OUT` is what keeps that test out of `aab/`.
+   Neither variable is set in normal use. */
+const { sourceFor } = await import(join(HERE, "../../scripts/school-source.mjs"));
+const source = await sourceFor("deutsch");
+const STUFEN = source.stages;
+const OUT = process.env.SCHOOL_OUT || AAB;
+
 const { bookFor, dayCount } = await import(join(HERE, "arbeitsbuch.data.js"));
 
 /* curriculum.js declares how many days a book has, because the
@@ -80,11 +98,10 @@ for (const stufe of STUFEN) {
 
 /* Teil bodies, one module per Stufe. A Stufe with no file is
    entirely "coming soon" and that is a valid state. */
-async function bodiesFor(stufe) {
-  const file = join(HERE, "content", `${stufe.slug}.js`);
-  if (!existsSync(file)) return {};
-  return (await import(file)).default ?? {};
-}
+/* Lesson bodies, one set per stufe, from whichever source was
+   chosen above. One with none is entirely "coming soon" and that
+   is a valid state, not a failure. */
+const bodiesFor = async (stufe) => source.bodies[stufe.slug] ?? {};
 
 const esc = (s) =>
   String(s).replace(/[&<>"]/g, (c) =>
@@ -678,7 +695,7 @@ let pages = 0;
 
 for (const stufe of STUFEN) {
   const teile = stufeTeile(stufe);
-  const dir = join(AAB, "deutsch", stufe.slug);
+  const dir = join(OUT, "deutsch", stufe.slug);
   mkdirSync(dir, { recursive: true });
 
   writeFileSync(join(dir, "index.html"), stufeIndexPage(stufe, teile));

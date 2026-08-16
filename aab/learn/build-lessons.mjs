@@ -61,17 +61,34 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const AAB = join(HERE, "..");
 
 const {
-  STAGES, stageLessons, stageUrl, stageMinutes, stageCount, lessonId, lessonUrl,
+  stageLessons, stageUrl, stageMinutes, stageCount, lessonId, lessonUrl,
 } = await import(join(HERE, "curriculum.js"));
 const { icon } = await import(join(HERE, "icons.js"));
 
+/* ---------- where the ladder and the text come from ----------
+
+   TRANSITION.md Stage 8, step 3. By default, from `curriculum.js`
+   and the prose beside it, which is what every existing
+   invocation does and what the committed pages were built from.
+
+   With `SCHOOL_DB` set, from the rows in that SQLite file
+   instead. `scripts/schools-build.test.mjs` builds both ways into
+   two temporary directories and diffs every page: the database is
+   only allowed to become the source of these pages when that diff
+   is empty. `SCHOOL_OUT` is what keeps that test out of `aab/`.
+   Neither variable is set in normal use. */
+const { sourceFor } = await import(join(HERE, "../../scripts/school-source.mjs"));
+const source = await sourceFor("learn");
+const STAGES = source.stages;
+const OUT = process.env.SCHOOL_OUT || AAB;
+
+
 /* Lesson bodies, one module per stage. A stage with no file is
    entirely "coming soon" and that is a valid state. */
-async function bodiesFor(stage) {
-  const file = join(HERE, "lessons", `${stage.slug}.js`);
-  if (!existsSync(file)) return {};
-  return (await import(file)).default ?? {};
-}
+/* Lesson bodies, one set per stage, from whichever source was
+   chosen above. One with none is entirely "coming soon" and that
+   is a valid state, not a failure. */
+const bodiesFor = async (stage) => source.bodies[stage.slug] ?? {};
 
 const esc = (s) =>
   String(s).replace(/[&<>"]/g, (c) =>
@@ -534,7 +551,7 @@ let pages = 0;
 
 for (const stage of STAGES) {
   const lessons = stageLessons(stage);
-  const dir = join(AAB, "learn", stage.slug);
+  const dir = join(OUT, "learn", stage.slug);
   mkdirSync(dir, { recursive: true });
 
   // Every stage gets a contents page, including the starter guide,
@@ -560,7 +577,7 @@ for (const stage of STAGES) {
   console.log(`${stage.slug.padEnd(10)} ${lessons.length} lesson page(s), ${written} written`);
 }
 
-writeFileSync(join(AAB, "learn", "contents.html"), contentsPage());
+writeFileSync(join(OUT, "learn", "contents.html"), contentsPage());
 pages++;
 console.log(`contents   1 page, every lesson listed`);
 
