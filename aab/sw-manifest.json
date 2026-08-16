@@ -1,5 +1,5 @@
 {
-  "version": "v68",
+  "version": "v69",
   "hashes": {
     "/": "0210b228b586a0d1",
     "/index.html": "0210b228b586a0d1",
@@ -33,7 +33,7 @@
     "/learn/curriculum.js": "7905a6d63594fe9c",
     "/learn/progress.js": "3066f04538832762",
     "/learn/icons.js": "ce344b09ef1b1c5e",
-    "/learn/contents.html": "0ded74e681c68488",
+    "/learn/contents.html": "2aff3f27de8d83a7",
     "/learn/contents.js": "75b34f6b3cc2545e",
     "/deutsch/curriculum.js": "7dd54f16cf62f39b",
     "/deutsch/index.html": "5d261d166e547e24",

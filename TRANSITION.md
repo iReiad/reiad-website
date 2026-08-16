@@ -1842,6 +1842,64 @@ is the closest Supabase region to Dhaka.
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
 
+### 2026-08-16 · The original eighteen come into the database, and a nav that had been wrong for months
+
+`basics-1`, the money school's eighteen term pages, are written
+from the rows now. Their prose was lifted out of the committed
+HTML verbatim, put in D1 and in the snapshot, and the builder
+writes them back to `/learn/terms/`, which is what a stage's
+`base` has always meant. **The URLs did not move and the prose is
+identical, character for character.**
+
+`check-schools-built.mjs` covers 247 pages now rather than 229.
+
+**What a `base` actually meant, and what it was being read as.**
+The Studio refused to edit that stage because `build-lessons.mjs`
+skipped it, and the note explaining why said its lessons "live
+elsewhere". That was true of where the FILES were and wrong about
+what a base is: it says where a stage's pages are published, not
+whether anybody may write them. So the builder learned to write to
+a base rather than skip it, and eighteen lessons became editable.
+
+**The prose was extracted rather than rewritten.** Everything
+between the standfirst and the backlink, verbatim, including the
+relative cross-links (`href="dividend.html"`) that the house style
+would have written as root-absolute. Rewriting those would have
+been a change to eighteen published pages made in passing, during
+a migration whose whole claim is that it changed nothing.
+
+**And it turned up a live bug that had nothing to do with any of
+this.** Adopting the builder's shell for those pages would have
+regressed their nav, which is how it came out: `build-lessons.mjs`
+was emitting
+
+```
+<a href="/deutsch/index.html">Deutsch</a>
+```
+
+where every hand-written page on the site, and the other three
+schools' builders, emit
+
+```
+<a href="/skills/index.html" data-nav-skills>Skills</a>
+```
+
+So **72 generated money-school pages have been linking to the
+wrong section** for as long as that link has existed, live, while
+the eighteen hand-written term pages beside them were right. It is
+exactly the drift the note in CLAUDE.md warns about, arriving in
+the one builder nobody had reason to re-read. Fixed at the
+template, which rewrote all 72. `sw.js` is v69 because
+`/learn/contents.html` is precached.
+
+**What is left of the money school is `start`**, and it is a
+different shape of problem. Its eight steps are not pages: they
+are `<details class="step">` accordions inside the hand-written
+hub at `/learn/index.html`, which `hub.js` reads out of the DOM
+for its progress ticks. Putting their prose in the database means
+generating part of a hand-written page, and that is a decision
+worth taking deliberately rather than in passing.
+
 ### 2026-08-16 · Stage 8 is done: the prose files leave the site
 
 `aab/<school>/content/<stage>.js` and `aab/learn/lessons/*.js` are

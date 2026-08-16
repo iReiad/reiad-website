@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v69: /learn/contents.html changed, and it is precached. The
+        money school's builder was emitting a nav that linked to
+        Deutsch where the whole rest of the site links to Skills,
+        so its 72 generated pages had been drifting away from
+        every hand-written page for as long as that link has
+        existed. Fixed at the template, which rewrites all of
+        them. A returning reader holding the v68 contents page
+        would keep the wrong link.
+
    v68: styles.css changed, and it is precached. The desk's More
         panel used to hang off the More button's right edge and
         grow leftward, so on a narrow window Publish, Delete and
@@ -489,7 +498,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v68";
+const VERSION = "v69";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

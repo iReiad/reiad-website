@@ -163,7 +163,7 @@ const HEADER = `  <a class="skip" href="#main">মূল লেখায় য�
       </a>
       <nav aria-label="Main">
         <a href="/learn/index.html" data-keep aria-current="page">Learn</a>
-        <a href="/deutsch/index.html">Deutsch</a>
+        <a href="/skills/index.html" data-nav-skills>Skills</a>
         <a href="/tools/index.html">Tools</a>
         <a href="/insights.html">Insights</a>
         <a href="/portfolio.html">Portfolio</a>
@@ -537,6 +537,41 @@ ${azRows}
   });
 }
 
+/* ============================================================
+   A stage published somewhere else, and still published there.
+
+   `basics-1` carries a `base` of /learn/terms/ because its
+   eighteen pages existed for a year before this school had a
+   builder, and the rule when it got one was that their URLs do
+   not move. They were hand-written until Stage 8 step 4; the
+   prose is a row in the database now and this is what draws it
+   back into the page it has always been.
+
+   It is a different template from `lessonPage`, not a variant of
+   it: a term page has no prev/next, no reading time, no stage
+   band, and its heading carries the English name beside the
+   Bangla one. That is the page readers have, and this migration's
+   whole claim is that it changed nothing they can see.
+   ============================================================ */
+function termPage(stage, section, lesson, body) {
+  return page({
+    title: `${lesson.bn} (${lesson.en}) · শেখার লাইব্রেরি · Reiad's Library`,
+    description: lesson.blurb,
+    canonical: `${stage.base}${lesson.slug}.html`,
+    og: `stage-${stage.slug}.png`,
+    body: `
+      <article class="term-article" data-slug="${lesson.slug}">
+        <span class="eyebrow mono">${esc(section.bn)} · শেখার লাইব্রেরি</span>
+        <h1 class="bn-h">${esc(lesson.bn)} <span class="en-sub">${esc(lesson.en)}</span></h1>
+        <p class="one-liner">${esc(lesson.blurb)}</p>
+${body}
+
+        <p class="backlink"><a href="/learn/index.html">← লাইব্রেরির সব লেখা</a></p>
+      </article>
+    `,
+  });
+}
+
 /* build-lessons imports findStage under a clearer local name, since
    `stage` is the loop variable everywhere below */
 function findStageBySlug(slug) {
@@ -560,10 +595,36 @@ for (const stage of STAGES) {
   writeFileSync(join(dir, "index.html"), stageIndexPage(stage, lessons));
   pages++;
 
-  // The starter guide's steps are hub anchors, and basics-1's pages
-  // already exist at /learn/terms/. Neither gets generated lesson files.
-  if (stage.inline || stage.base) {
-    console.log(`${stage.slug.padEnd(10)} index only (${lessons.length} lessons live elsewhere)`);
+  // The starter guide's steps are anchors on /learn/ itself, so it
+  // has no lesson pages to write. See TRANSITION.md Stage 8.
+  if (stage.inline) {
+    console.log(`${stage.slug.padEnd(10)} index only (${lessons.length} steps live on the hub)`);
+    continue;
+  }
+
+  // A stage with a `base` keeps the URLs it was first published
+  // at, so its pages are written there rather than under
+  // /learn/<stage>/. The prose comes from the same rows as every
+  // other lesson's.
+  if (stage.base) {
+    const out = join(OUT, stage.base.replace(/^\/|\/$/g, ""));
+    mkdirSync(out, { recursive: true });
+    const bodies = await bodiesFor(stage);
+    for (const section of stage.sections) {
+      for (const lesson of section.lessons) {
+        const body = bodies[lesson.slug];
+        if (!body) {
+          console.warn(`  ! ${stage.slug}/${lesson.slug} has no text`);
+          continue;
+        }
+        writeFileSync(
+          join(out, `${lesson.slug}.html`),
+          termPage(stage, section, { ...lesson, url: `${stage.base}${lesson.slug}.html` }, body)
+        );
+        pages++;
+      }
+    }
+    console.log(`${stage.slug.padEnd(10)} ${lessons.length} page(s) at ${stage.base}`);
     continue;
   }
 

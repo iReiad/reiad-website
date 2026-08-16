@@ -319,12 +319,19 @@ schools, and `check-schools.mjs` fails if they stop agreeing about
 which lessons exist, in what order, in which section. Titles and
 prose are not compared: those are the Studio's now.
 
-**Two of the money school's stages are not editable there and
-should not be.** `start` is `inline` (its steps are anchors on
-`/learn/` itself) and `basics-1` has a `base` of `/learn/terms/`.
-`build-lessons.mjs` skips both, so their 26 rows have empty bodies
-for ever and text saved into them would reach no page. The Studio
-says so instead of offering an editor.
+**A stage's `base` says where its pages go, not whether anybody
+can write them.** `basics-1` carries a `base` of `/learn/terms/`
+because its eighteen term pages were published there for a year
+before this school had a builder, and their URLs do not move. They
+are written from the rows like everything else; the builder just
+writes them to that address.
+
+**One stage really is not editable, and should not be.** `start`
+is `inline`: its eight steps are accordion sections of the
+hand-written hub at `/learn/`, not pages, and nothing generates
+them. Its eight rows have empty bodies for ever and text saved
+into them would reach no page, so the Studio says where they
+actually live instead of offering an editor.
 
 Generated pages are generated. Edit the source, never the output:
 
