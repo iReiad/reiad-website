@@ -195,8 +195,11 @@ node scripts/schools.test.mjs        # a curriculum that lost a field, a lesson
 node scripts/schools-api.test.mjs    # a school readable by anyone, writable by
                                      # somebody else, half-written, or a lesson
                                      # edited into existence (43 checks)
-node scripts/schools-build.test.mjs  # a page built from the database that is not
-                                     # the page the files built (229 pages)
+                                     # schools-build.test.mjs is archived: it
+                                     # compared the database against the files,
+                                     # and the first lesson edited in the Studio
+                                     # makes those differ on purpose.
+                                     # check-schools-built.mjs replaced it.
 ```
 
 And when anything under `app/src/` changed, after rebuilding:
@@ -272,9 +275,11 @@ npx wrangler d1 execute reiad --remote --file=restore.sql
 
 ## Where a lesson's words live
 
-In D1, and in one committed export of it. Not in
-`aab/<school>/content/<stage>.js` any more, whatever those files
-still say.
+In D1, and in one committed export of it. The
+`aab/<school>/content/<stage>.js` modules are gone from `aab/`
+as of 16 August 2026: they are in `archive/schools/`, off the
+site, and they were being uploaded and served at addresses nobody
+had asked for in months.
 
 A lesson is written at `/studio/?lessons`, which saves one row
 through `PUT /api/schools/<school>/<stage>/<lesson>`. Getting that

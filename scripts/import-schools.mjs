@@ -59,6 +59,21 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+/* The prose these read is in `archive/schools/` as of
+   TRANSITION.md Stage 8 step 4. It left `aab/`, which is what
+   taking it off the site means: those modules were being uploaded
+   and served at `/quran/content/dhap-1.js` and nothing had asked
+   for one in months. The database is where a lesson's words live
+   now, and `content/schools.backup.json` is what the builders
+   read.
+
+   These files stay readable rather than deleted for the reason
+   `archive/README.md` gives for everything in there: whoever has
+   to check that the replacement really does what the thing it
+   replaced did needs to be able to read both. `schools.test.mjs`
+   is that check, and it still runs against these. */
+const ARCHIVE = join(ROOT, "archive", "schools");
 const AAB = join(ROOT, "aab");
 
 /* ---------- the four schools, and what is different ---------- */
@@ -78,32 +93,33 @@ export const SCHOOLS = [
        quietly imported two schools with no lessons in them, which
        is the failure this whole stage is arranged to avoid. */
     within: "lessons",
-    /* Its prose is under lessons/<stage>.js, not content/<stage>.js.
-       The other three agreed on `content/` later; this one was
-       first and nobody went back to rename it, which is a good
-       reason to read it from a table rather than to guess. */
-    bodies: (stage) => join(AAB, "learn", "lessons", `${stage.slug}.js`),
+    /* Its prose was under lessons/<stage>.js, not
+       content/<stage>.js. The other three agreed on `content/`
+       later; this one was first and nobody went back to rename
+       it, which is a good reason to read it from a table rather
+       than to guess. */
+    bodies: (stage) => join(ARCHIVE, "learn", `${stage.slug}.js`),
   },
   {
     id: "deutsch",
     dir: "deutsch",
     stages: (m) => m.STUFEN,
     within: "teile",
-    bodies: (stage) => join(AAB, "deutsch", "content", `${stage.slug}.js`),
+    bodies: (stage) => join(ARCHIVE, "deutsch", `${stage.slug}.js`),
   },
   {
     id: "quran",
     dir: "quran",
     stages: (m) => m.DHAPS,
     within: "lessons",
-    bodies: (stage) => join(AAB, "quran", "content", `${stage.slug}.js`),
+    bodies: (stage) => join(ARCHIVE, "quran", `${stage.slug}.js`),
   },
   {
     id: "english",
     dir: "english",
     stages: (m) => m.TERMS,
     within: "parts",
-    bodies: (stage) => join(AAB, "english", "content", `${stage.slug}.js`),
+    bodies: (stage) => join(ARCHIVE, "english", `${stage.slug}.js`),
   },
 ];
 
