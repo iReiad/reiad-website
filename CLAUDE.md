@@ -167,6 +167,8 @@ node scripts/check-crons.mjs # a scheduled job the Worker is no longer listening
 node scripts/check-pieces.mjs # a written piece nothing on the site links to
 node scripts/check-headers.mjs # a page a Worker built, served with no CSP
 node scripts/check-schools.mjs # a ladder the browser and the builders disagree about
+node scripts/check-schools-built.mjs # a school page edited by hand, or a snapshot
+                                     # refreshed and the schools never rebuilt
 ```
 
 `check-pieces.mjs --live` also asks the database and prints where every
@@ -293,6 +295,17 @@ it is already served at a public URL. It carries no timestamp,
 deliberately, so that identical content is identical bytes and
 the git log answers "did the prose change" rather than "was this
 refreshed".
+
+**Two checks watch this, and they ask different questions.**
+`check-schools.mjs` compares the ladder in `curriculum.js` against
+the ladder in the snapshot. `check-schools-built.mjs` rebuilds all
+four schools from the snapshot into a temporary directory and
+compares all 229 pages against the ones committed in `aab/`, which
+catches a generated page edited by hand and a snapshot refreshed
+without a rebuild. The second one outlives the migration:
+`schools-build.test.mjs` compares the database against the
+curriculum files, and the first lesson edited in the Studio makes
+that comparison fail for the right reason.
 
 **The ladder is still `curriculum.js`,** and still read by the
 browser: forty files import from one of the four, and Stage 11.7
