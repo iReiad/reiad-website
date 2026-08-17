@@ -8548,11 +8548,26 @@ German for day, and .tag is what the site has always called
 
   /* ---------- a hub: the money school, skills, contents ---------- */
 
-  .hub-wrap {
+  /* The wrapper's geometry, named once and used twice. The
+     breadcrumb is a sibling of `.hub-wrap` rather than a child of
+     it, because `crumbs.js` puts it at the top of the page before
+     anything else runs, and it was therefore the one element on a
+     hub with no inline padding at all: it started at x=268 on a
+     1440px window while the eyebrow, the headline, the lede and
+     every card started at 302. Flush against the rail's edge,
+     34px to the left of the page it belongs to.
+
+     Only the hubs had it. Every other page on the site puts the
+     crumb inside `.wrap`, which is why this went unseen: five
+     page types measured identically and the sixth was out by a
+     wrapper's worth of padding. */
+  .hub-wrap,
+  .hub > .crumbs {
     max-width: 1180px;
     margin-inline: auto;
-    padding: clamp(24px, 4vw, 46px) clamp(18px, 3vw, 34px) 0;
+    padding-inline: clamp(18px, 3vw, 34px);
   }
+  .hub-wrap { padding-block: clamp(24px, 4vw, 46px) 0; }
 
   .hub-hero {
     display: grid; gap: 14px;
