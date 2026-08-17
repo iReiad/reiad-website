@@ -1,0 +1,151 @@
+# ============================================================
+# The checks, on a pull request rather than after it.
+#
+# ---- the gap this closes ----
+#
+# Every check in this file already ran, and ran in the right
+# order, inside deploy.yml. That workflow fires on a push to
+# main, which is AFTER the merge. So the sequence was: open a
+# pull request, watch a green tick, merge it, and only then find
+# out whether the checks pass.
+#
+# The green tick was real but it was answering a different
+# question. `live-check.yml` runs on every push and asks the LIVE
+# site how it is doing, which on a branch is a question about the
+# last deploy rather than about the branch. A pull request that
+# broke check-content.mjs showed green on both, merged, and then
+# failed at the top of deploy.yml with main already carrying it.
+#
+# That is the shape of failure this repository has been bitten by
+# twice and written up both times: nothing looks wrong, because a
+# Worker that fails to deploy is a Worker still answering every
+# request with its last good version. The site stays up, the live
+# check stays green, and the only place the failure is written
+# down is a run nobody has open.
+#
+# ---- one list, two entry points ----
+#
+# `workflow_call` is why deploy.yml no longer carries its own
+# copy of the list below. It calls this, waits for it, and
+# uploads only if it passed. Adding a check here adds it to the
+# pull request AND to the deploy, which is the whole point: two
+# copies of a list of checks is the same bug the checks are for.
+# ============================================================
+
+name: checks
+
+on:
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      # The root package.json is not a dependency of the site:
+      # nothing in it is shipped. It is here for the three
+      # `--check` steps, which shell out to tsc and to the
+      # Tailwind CLI, and for linkedom, which is the DOM the
+      # school hub test builds three hubs in.
+      #
+      # Leaving this out does not fail loudly. `build-modules.mjs`
+      # runs `npx tsc`, and with no node_modules npx goes to the
+      # registry, where `tsc` is not TypeScript: a deploy once
+      # died inside `tsc@2.0.4`, a package nothing here has ever
+      # asked for, having installed it first.
+      - name: Install the build tools
+        run: npm ci
+
+      # Every one of these exists because something shipped broken
+      # once. check-routes.mjs is the one that would have caught
+      # the outage deploy.yml was written for: it runs the same
+      # run_worker_first overlap test wrangler runs, and wrangler
+      # runs it before it reads a line of worker.js.
+      - name: Run the checks
+        run: |
+          node aab/check-routes.mjs
+          node aab/check-css.mjs
+          node aab/check-sw.mjs
+          node aab/check-content.mjs
+          node aab/check-csp.mjs
+          node scripts/check-crons.mjs
+          node scripts/check-pieces.mjs
+          node scripts/check-headers.mjs
+          node scripts/check-schools.mjs
+          node scripts/check-rows.mjs
+          node scripts/check-api.mjs
+          node scripts/check-next.mjs
+
+      # Generated files are committed here, so a build is not run:
+      # what matters is that what was committed still matches its
+      # source. An edit to a built file rather than to its source
+      # is a change that survives until the next build silently
+      # reverts it.
+      - name: Check the generated files match their sources
+        run: |
+          node scripts/build-modules.mjs --check
+          node scripts/build-styles.mjs --check
+          node scripts/build-school-icons.mjs --check
+
+      # The tests, which had never run here at all. Fourteen files
+      # and about 1,200 checks, none of which needs a network, a
+      # browser, a database or a running server.
+      #
+      # WHAT IS DELIBERATELY ABSENT, and why it is not an
+      # oversight. aab/studio.test.mjs, aab/sync.test.mjs,
+      # aab/studio-publish.test.mjs, both files in app/ and both
+      # in next/ all need something this job does not have: a
+      # browser, a server on :8899, or an OpenNext build. Every
+      # one of them SKIPS rather than fails when that is missing,
+      # and exits 0.
+      #
+      # So adding them here would turn a green tick into a
+      # statement about nothing, which is worse than not running
+      # them: the repository's own rule is that a skip is never
+      # silent and never a pass. They stay a thing you run on a
+      # laptop until this job is given a browser, and CLAUDE.md
+      # says which ones and what each needs.
+      - name: Run the tests
+        run: |
+          node scripts/input.test.mjs
+          node scripts/reader.test.mjs
+          node scripts/comments.test.mjs
+          node scripts/restore.test.mjs
+          node scripts/snapshot.test.mjs
+          node scripts/schools.test.mjs
+          node scripts/schools-api.test.mjs
+          node functions/_lib/notion.test.mjs
+          node aab/schools/progress.test.mjs
+          node aab/schools/hub.test.mjs
+          node aab/portfolio/stress.test.mjs
+          node aab/portfolio/scorecard.test.mjs
+          node aab/portfolio/frontier.test.mjs
+          node aab/portfolio/dissertation.test.mjs
+
+      # A guard on the one rule this repository opens with. The
+      # character is not written out anywhere here on purpose: a
+      # rule that contains the character it bans always matches
+      # itself.
+      - name: No em dashes
+        run: |
+          if grep -rn $'—' aab/ functions/ shared/ scripts/ next/app next/lib next/components; then
+            echo "::error::An em dash. See the top of CLAUDE.md."
+            exit 1
+          fi
+          echo "No em dashes."
