@@ -63,6 +63,24 @@
         copy of this file would get the renamed markup meeting
         the old class names.
 
+        Two more things about the stylesheet, both of them the
+        same idea as the contrast check. Every timing on the site
+        is a token now: seventy-seven transitions already were,
+        the six animations were not, so a page leaving was 160ms,
+        a page arriving 260, a tilt 240 and three skeletons 1.3
+        and 1.4s, none of them wrong alone and no two agreeing.
+        And fifty distinct font sizes became nine, with the
+        largest single change under a pixel, guarded by
+        scripts/check-scale.mjs.
+
+        The one a reader will actually notice: `a:hover` faded
+        every link on the site to 0.85 opacity, including whole
+        cards, which reads as the card switching off. Nineteen
+        rules wrote `opacity: 1` to undo it. Links hover on their
+        underline now, which does nothing to a card because a
+        card sets `text-decoration: none`, so there is nothing
+        left to undo.
+
    v87: The same code, said better. Seven of the modules in this
         list are compiled from TypeScript now rather than written
         as JavaScript (archive/TRANSITION.md Stage 13), and

@@ -446,6 +446,9 @@ node aab/check-css.mjs      # a school's layer styling the whole site, and a
 node aab/check-sw.mjs       # a precached file changed without a VERSION bump
 node aab/check-content.mjs  # a page that has stopped counting the site correctly
 node aab/check-csp.mjs      # code calling a host the browser is not allowed to reach
+node scripts/check-contrast.mjs # an accent that has drifted under the WCAG
+                            # threshold for the size it is set at
+node scripts/check-scale.mjs # a fifty-first font size
 node scripts/check-crons.mjs # a scheduled job the Worker is no longer listening for
 node scripts/check-pieces.mjs # a written piece nothing on the site links to
 node scripts/check-headers.mjs # a page a Worker built, served with no CSP
