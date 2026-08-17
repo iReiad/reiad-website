@@ -116,7 +116,20 @@
 
     /* --- metrics --- */
     --wrap-pad: 22px;
-    --measure: 66ch;
+
+    /* How wide a line of prose runs, and how big it is.
+       `--measure` has been 66ch since the first version of this
+       site and still is: what changed in August 2026 is that a
+       signed-in reader can move it, so the literal became a
+       default for `--read-measure` rather than the value itself.
+       Both are set on <html> by the boot script in
+       `next/components/shell.tsx` before the first paint, and by
+       `aab/prefs.js` when the reader changes one. Neither is set
+       for a reader who has never expressed a preference, which is
+       why the defaults are here and not there. */
+    --read-measure: 66ch;
+    --read-scale: 1;
+    --measure: var(--read-measure);
     --radius: 16px;
     --radius-sm: 10px;
     --gap: clamp(12px, 1.6vw, 18px);
@@ -822,6 +835,593 @@
 
   @media (max-width: 560px) {
     .saved-row { grid-template-columns: 1fr; }
+  }
+
+  /* ============================================================
+     THE ACCOUNT MENU
+
+     A `popover`, hung off the button in the top bar on a laptop
+     and stood against the bottom edge on a phone. The behaviour
+     is the browser's: `aab/signin.js` implements no dismiss, no
+     Escape and no focus return, because `popover="auto"` is those
+     three and gets the edge cases right.
+
+     Which leaves this file two jobs, placement and how it
+     arrives, and placement is done twice on purpose. Anchor
+     positioning is the correct answer and is not yet everywhere;
+     where it is, nothing runs on scroll, and where it is not, the
+     two custom properties are written by a listener that only
+     exists in that case. Both land in the same place.
+     ============================================================ */
+
+  .acc-menu {
+    /* Popover defaults are a dialog's: a border, black text and
+       `inset: 0` with `margin: auto`, which would centre this in
+       the viewport. All three are cleared. */
+    position: fixed;
+    inset: auto;
+    top: var(--menu-top, 64px);
+    right: var(--menu-right, 12px);
+    margin: 0;
+    width: min(340px, calc(100vw - 24px));
+    max-height: min(78dvh, 640px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    background: var(--panel);
+    color: var(--ink);
+    box-shadow: var(--shadow-lift);
+
+    /* No backdrop on a laptop: this is a menu, and dimming the
+       page behind a menu is what made the thing it replaced feel
+       like a decision the reader could not walk away from. */
+    &::backdrop { background: transparent; }
+
+    /* It grows out of the button rather than appearing, which is
+       the one animation here and the one that says where it came
+       from. `@starting-style` is what lets a popover, which goes
+       from `display: none` to the top layer, animate at all. */
+    transition: opacity var(--fast) var(--ease),
+                translate var(--fast) var(--ease),
+                overlay var(--fast) allow-discrete,
+                display var(--fast) allow-discrete;
+    opacity: 1;
+    translate: 0 0;
+
+    @starting-style { opacity: 0; translate: 0 -6px; }
+    &:not(:popover-open) { opacity: 0; translate: 0 -6px; }
+  }
+
+  /* Where the browser can do it itself. `position-area` puts the
+     menu below the button and aligned to its right edge, and
+     `position-try-fallbacks` is what stops it hanging off a
+     narrow window. Nothing runs on scroll in here. */
+  @supports (anchor-name: --a) {
+    .account-btn { anchor-name: --account-btn; }
+    .acc-menu {
+      position-anchor: --account-btn;
+      position-area: bottom span-left;
+      inset: auto;
+      margin-top: 8px;
+      position-try-fallbacks: flip-block, flip-inline;
+    }
+  }
+
+  .acc-body { display: grid; gap: 2px; padding: 8px; }
+  .acc-body-in { gap: 12px; padding: 22px 20px 18px; }
+
+  /* Who is signed in. Not a menu item: it goes nowhere, so it is
+     not a link, which is the same rule the card system is built
+     on one layer down. */
+  .acc-who {
+    display: grid; grid-template-columns: auto 1fr; gap: 11px;
+    align-items: center;
+    padding: 10px 10px 12px;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 6px;
+  }
+  .acc-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--green); color: #fff;
+    font-family: var(--font-serif); font-size: 1.1rem; line-height: 1;
+  }
+  .acc-who-text {
+    display: grid; min-width: 0;
+
+    & strong { font-weight: 500; font-size: 0.96rem; }
+    & small {
+      color: var(--ink-soft); font-size: 0.78rem;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+  }
+
+  .acc-list { display: grid; gap: 1px; }
+
+  .acc-item {
+    display: grid; grid-template-columns: auto 1fr; gap: 11px;
+    align-items: center;
+    width: 100%; padding: 9px 10px;
+    border: 0; border-radius: var(--radius-sm);
+    background: none; color: var(--ink);
+    font: inherit; text-align: start; text-decoration: none;
+    cursor: pointer;
+    transition: background var(--fast) var(--ease);
+
+    &:hover { background: var(--panel-hover); opacity: 1; }
+    &:focus-visible {
+      outline: 0; background: var(--panel-hover);
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 30%, transparent);
+    }
+    & strong { display: block; font-weight: 500; font-size: 0.92rem; }
+    & small { display: block; color: var(--ink-soft); font-size: 0.75rem; }
+  }
+  .acc-ico {
+    width: 30px; height: 30px; display: grid; place-items: center;
+    border-radius: 9px;
+    color: var(--green);
+    background: color-mix(in oklab, var(--green) 12%, transparent);
+
+    & svg { width: 17px; height: 17px; }
+  }
+  .acc-out .acc-ico { color: var(--ink-soft); background: var(--paper-sunk); }
+  .acc-rule {
+    display: block; height: 1px; margin: 6px 8px;
+    background: var(--hairline);
+  }
+
+  /* On a phone it is a sheet: full width, against the bottom
+     edge, and coming up from it rather than down from a button
+     that is 40px wide at the top of the screen. */
+  @media (max-width: 640px) {
+    .acc-menu {
+      inset: auto 0 0 0;
+      width: auto;
+      max-height: 82dvh;
+      border-radius: var(--radius) var(--radius) 0 0;
+      border-bottom: 0;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+      translate: 0 0;
+
+      @starting-style { opacity: 1; translate: 0 100%; }
+      &:not(:popover-open) { opacity: 1; translate: 0 100%; }
+      &::backdrop { background: color-mix(in oklab, var(--ink) 42%, transparent); }
+    }
+    @supports (anchor-name: --a) {
+      .acc-menu { position-area: none; inset: auto 0 0 0; margin-top: 0; }
+    }
+    .acc-body { padding: 10px 10px 14px; }
+    .acc-item { padding: 12px 12px; }
+    .acc-item strong { font-size: 0.98rem; }
+
+    /* A sheet with the page still scrolling under it is a page
+       that moves when a thumb misses the sheet. */
+    html[data-acc-menu] body { overflow: hidden; }
+  }
+
+  /* ============================================================
+     KEEPING A PAGE, AND WRITING ON IT
+
+     Two buttons under the byline of a piece and under the meta
+     line of a lesson, and the note that opens beneath them.
+     Quiet: this sits above the writing and must not compete with
+     the first paragraph.
+     ============================================================ */
+
+  .keep-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    margin-block: -8px 26px;
+  }
+  .keep-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 13px; min-height: 38px;
+    border: 1px solid var(--hairline); border-radius: 999px;
+    background: var(--panel); color: var(--ink-soft);
+    font: inherit; font-size: 0.82rem; cursor: pointer;
+    transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease),
+                background var(--fast) var(--ease);
+
+    & svg { width: 15px; height: 15px; }
+    &:hover { color: var(--green); border-color: var(--green); }
+    &:focus-visible {
+      outline: 0; border-color: var(--green);
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 25%, transparent);
+    }
+    &[data-on] {
+      color: var(--green); border-color: var(--green);
+      background: var(--green-soft);
+    }
+    /* Filled once it is kept, so the state is legible without
+       reading the word beside it. */
+    &[data-on] svg { fill: currentColor; }
+  }
+  .keep-said {
+    font-size: 0.78rem; color: var(--ink-soft);
+    /* It appears and disappears, so it must not move the prose
+       under it when it does. */
+    min-height: 1lh;
+  }
+
+  .keep-panel {
+    display: grid; gap: 10px;
+    margin-block: -14px 28px;
+    padding: 14px; max-width: var(--measure);
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--paper-sunk);
+  }
+  .keep-note {
+    width: 100%; padding: 11px 12px;
+    font: inherit; font-size: 0.92rem; line-height: 1.55;
+    color: var(--ink); background: var(--paper); resize: vertical;
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    field-sizing: content; min-height: 6lh; max-height: 60vh;
+
+    &:focus {
+      outline: 0; border-color: var(--green);
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+    }
+  }
+  .keep-panel-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+  /* ============================================================
+     THE ACCOUNT PAGE
+
+     It was a hero, three fieldsets and two buttons: a form, with
+     the browser's own defaults showing through, and everything an
+     account grew afterwards was appended to the bottom of it. So
+     the page said "your name" at the top and "everything you have
+     ever saved" eight screens down, in the same visual weight,
+     with no way between them but scrolling.
+
+     Three things fix that and they are the whole of this block:
+     a banded top that states the four numbers before anything
+     else, a sticky rail of links into the sections, and one card
+     shape used by every section so the page reads as one thing.
+
+     PHONE FIRST, LITERALLY. Every rule here is written for the
+     narrow case and widened by a container query or a
+     `minmax()`, rather than written wide and patched at the
+     bottom with a media query. The tiles wrap, the rail scrolls
+     sideways, every control clears 44px, and nothing is laid out
+     in a fixed number of columns.
+     ============================================================ */
+
+  .acct-top {
+    padding-block: clamp(28px, 5vw, 52px) clamp(20px, 3vw, 30px);
+    background:
+      radial-gradient(90% 120% at 0% 0%, var(--green-soft), transparent 70%),
+      var(--paper);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .acct-top-inner {
+    display: grid; gap: 18px 20px;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+  }
+  .acct-face {
+    width: clamp(48px, 12vw, 62px); aspect-ratio: 1; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--green); color: #fff;
+    font-family: var(--font-serif); font-size: clamp(1.3rem, 5vw, 1.8rem);
+    line-height: 1;
+  }
+  .acct-hello {
+    min-width: 0;
+
+    & h1 {
+      font-size: clamp(1.5rem, 5vw, 2.2rem); margin: 0;
+      text-wrap: balance;
+    }
+    & p {
+      margin: 2px 0 0; color: var(--ink-soft); font-size: 0.86rem;
+      font-family: var(--font-mono);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+  }
+
+  /* The four numbers. `auto-fit` rather than four columns,
+     because two-by-two is the right shape on a phone and one row
+     is the right shape on a laptop, and neither needs saying. */
+  .acct-tiles {
+    grid-column: 1 / -1;
+    display: grid; gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(min(45%, 130px), 1fr));
+  }
+  .acct-tile {
+    display: grid; gap: 1px; align-content: start;
+    padding: 12px 14px;
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    background: var(--panel);
+
+    & strong {
+      font-size: 1.35rem; font-weight: 500; line-height: 1.1;
+      color: var(--green); font-variant-numeric: tabular-nums;
+    }
+    & span { font-size: 0.74rem; color: var(--ink-soft); }
+  }
+
+  /* The rail into the sections. Sticky under the top bar, and it
+     scrolls sideways rather than wrapping to three lines: eight
+     links is more than a phone can show and a rail that changed
+     height as you scrolled past it would move the page under the
+     thumb doing the scrolling. */
+  .acct-rail {
+    position: sticky; top: var(--top-h, 58px); z-index: 20;
+    background: color-mix(in oklab, var(--paper) 88%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .acct-rail-inner {
+    display: flex; gap: 4px;
+    overflow-x: auto; scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    padding-block: 7px;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+  .acct-rail-link {
+    flex: 0 0 auto; scroll-snap-align: start;
+    padding: 7px 13px; min-height: 36px;
+    display: inline-flex; align-items: center;
+    border-radius: 999px;
+    color: var(--ink-soft); text-decoration: none;
+    font-size: 0.82rem; white-space: nowrap;
+    transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+
+    &:hover { background: var(--panel-hover); color: var(--ink); opacity: 1; }
+    &:focus-visible {
+      outline: 0; background: var(--panel-hover); color: var(--ink);
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 30%, transparent);
+    }
+  }
+
+  .acct-body {
+    display: grid; gap: clamp(34px, 5vw, 56px);
+    padding-block: clamp(26px, 4vw, 44px) var(--step);
+  }
+
+  .acct-sec {
+    display: grid; gap: 14px; align-content: start;
+    /* So a link from the account menu lands with the heading
+       under the sticky rail rather than behind it. */
+    scroll-margin-top: calc(var(--top-h, 58px) + 58px);
+
+    /* Arrived at from the menu in the header, or from the rail
+       above. The accent says which of eight sections the page
+       just jumped to, which is the question a jump raises and
+       the one a highlighted rail link answers less well: the
+       rail is at the top and the answer is where the eye is. */
+    &:target > .acct-head {
+      border-inline-start: 2px solid var(--green);
+      padding-inline-start: 12px;
+      margin-inline-start: -14px;
+    }
+  }
+  .acct-head {
+    display: grid; gap: 4px;
+
+    & h2 {
+      font-size: clamp(1.2rem, 3.4vw, 1.5rem); margin: 0;
+      font-family: var(--font-serif);
+    }
+    & h3 { font-size: 1.08rem; margin: 0; }
+    & p {
+      margin: 0; color: var(--ink-soft); font-size: 0.9rem;
+      max-width: var(--measure);
+    }
+  }
+  .acct-head-sub {
+    margin-top: 12px; padding-top: 20px;
+    border-top: 1px solid var(--hairline);
+  }
+
+  /* One card, used by every section, so the page reads as one
+     thing rather than as six features that arrived separately. */
+  .acct-card {
+    /* Named, so the rules inside it can ask how wide IT is rather
+       than how wide the window is. On this page that is the whole
+       difference: the card is in a column beside a 268px rail on
+       a laptop and full-width on a phone, and a media query would
+       be answering a question nobody asked. */
+    container: acct / inline-size;
+    display: grid; gap: 10px; align-content: start;
+    padding: clamp(14px, 3vw, 20px);
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+
+    & h3 { margin: 0; font-size: 1.02rem; font-weight: 500; }
+    & p { margin: 0; font-size: 0.88rem; color: var(--ink-soft); }
+    & .btn { justify-self: start; }
+  }
+  .acct-card-warn {
+    border-color: color-mix(in oklab, var(--danger) 35%, var(--hairline));
+    background: color-mix(in oklab, var(--danger) 5%, var(--panel));
+
+    & .btn:hover { border-color: var(--danger); color: var(--danger); }
+  }
+  .acct-exits {
+    display: grid; gap: var(--gap);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  }
+
+  .acct-note { margin: 0; font-size: 0.82rem; color: var(--ink-soft); }
+  .acct-empty {
+    margin: 0; padding: 18px 16px;
+    border: 1px dashed var(--hairline); border-radius: var(--radius);
+    color: var(--ink-soft); font-size: 0.9rem; max-width: var(--measure);
+  }
+  .acct-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+  /* The form, which is the old `.account-panel` with the fieldset
+     defaults finally taken off it. */
+  .acct-form {
+    display: grid; gap: 22px; max-width: 620px;
+
+    & fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 9px; }
+    & legend {
+      padding: 0; font-family: var(--font-serif); font-size: 1.04rem;
+      color: var(--ink);
+    }
+    & .field-note {
+      margin: -3px 0 2px; font-size: 0.85rem; color: var(--ink-soft);
+      max-width: var(--measure);
+    }
+    & input[type="text"] {
+      padding: 11px 13px; font: inherit; font-size: 0.95rem;
+      color: var(--ink); background: var(--paper); max-width: 340px;
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+
+      &:focus {
+        outline: 0; border-color: var(--green);
+        box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+      }
+    }
+  }
+
+  /* "Add a target" is a form nobody needs open until they want
+     it, and a `<details>` is the disclosure this site already
+     uses everywhere else rather than a second panel with its own
+     open state in a script. */
+  .acct-more {
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+
+    & > summary {
+      padding: 13px 16px; cursor: pointer; list-style: none;
+      font-size: 0.92rem; color: var(--green);
+      display: flex; align-items: center; gap: 8px; min-height: 46px;
+    }
+    & > summary::-webkit-details-marker { display: none; }
+    & > summary::before {
+      content: "+"; font-family: var(--font-mono); font-size: 1rem;
+      transition: rotate var(--fast) var(--ease);
+    }
+    &[open] > summary::before { content: "−"; }
+    & > .acct-form { padding: 0 16px 18px; gap: 16px; }
+  }
+
+  /* ---------- a year of days ----------
+
+     `days-active`, drawn. Fifty-three columns of seven, and the
+     cells are sized in `ch` so the whole grid scales with the
+     reader's type rather than being a fixed 700px that a phone
+     has to scroll sideways to see the end of. */
+  .heat {
+    display: grid; gap: 4px;
+    overflow-x: auto; overscroll-behavior-x: contain;
+    padding-bottom: 4px; scrollbar-width: thin;
+    --cell: clamp(9px, 1.35vw, 13px);
+  }
+  .heat-months, .heat-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: var(--cell);
+    gap: 3px;
+    min-width: max-content;
+  }
+  .heat-month {
+    font-family: var(--font-mono); font-size: 0.58rem;
+    color: var(--ink-soft); white-space: nowrap;
+  }
+  .heat-week { display: grid; grid-auto-rows: var(--cell); gap: 3px; }
+  .heat-cell {
+    display: block; border-radius: 2px;
+    background: color-mix(in oklab, var(--ink) 8%, transparent);
+
+    &[data-on] { background: var(--green); }
+    &[data-off] { background: transparent; }
+    &[data-today] { outline: 1px solid var(--gold); outline-offset: 1px; }
+  }
+
+  /* ---------- kept pages, and notes on them ---------- */
+
+  .kept-list { display: grid; gap: 10px; }
+  .kept-row {
+    display: grid; gap: 10px 16px;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    padding: 14px 16px;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+  }
+  .kept-body {
+    display: grid; gap: 5px; min-width: 0;
+
+    & h3 { margin: 0; font-size: 0.98rem; font-weight: 500; }
+    & h3 a { color: var(--ink); text-decoration: none; }
+    & h3 a:hover { color: var(--green); opacity: 1; }
+  }
+  .kept-kind {
+    font-size: 0.6rem; letter-spacing: 0.11em; text-transform: uppercase;
+    color: var(--gold);
+  }
+  /* The note as it was typed, newlines and all, and never as
+     markup. It is the one field on this site whose author and
+     whose only reader are the same person. */
+  .kept-note {
+    margin: 0; font-size: 0.88rem; color: var(--ink-soft);
+    white-space: pre-wrap; overflow-wrap: anywhere;
+    max-width: var(--measure);
+    padding-inline-start: 11px;
+    border-inline-start: 2px solid color-mix(in oklab, var(--green) 45%, transparent);
+  }
+  .kept-when { font-size: 0.68rem; color: var(--ink-soft); }
+  .kept-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  @media (max-width: 560px) {
+    .kept-row { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- how you like to read ----------
+
+     Chips rather than a `<select>`, because every one of these
+     changes the page you are looking at as you press it, and a
+     control you have to open, choose inside and close is a
+     control that hides its own feedback.
+     ============================================================ */
+
+  .prefs { gap: 18px; }
+  .pref-row {
+    display: grid; gap: 8px;
+
+    /* The label beside the chips once there is room for it, above
+       them when there is not. A container query rather than a
+       media query: this card is inside a page whose width is not
+       the window's, and the question is how wide THIS is. */
+    @container acct (min-width: 520px) {
+      grid-template-columns: 150px 1fr;
+      align-items: start; gap: 14px;
+    }
+  }
+  .pref-label {
+    font-size: 0.82rem; color: var(--ink-soft);
+    padding-top: 9px;
+  }
+  .pref-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .pref-chip {
+    display: grid; gap: 1px; text-align: start;
+    padding: 8px 13px; min-height: 42px;
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    background: var(--paper); color: var(--ink);
+    font: inherit; cursor: pointer;
+    transition: border-color var(--fast) var(--ease),
+                background var(--fast) var(--ease);
+
+    & strong { font-weight: 500; font-size: 0.86rem; }
+    & small { color: var(--ink-soft); font-size: 0.7rem; }
+
+    &:hover { border-color: color-mix(in oklab, var(--green) 45%, var(--hairline)); }
+    &:focus-visible {
+      outline: 0; border-color: var(--green);
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 25%, transparent);
+    }
+    &[data-on] {
+      border-color: var(--green); background: var(--green-soft);
+
+      & strong { color: var(--green); }
+    }
   }
 
   /* ---------- HERO ---------- */
@@ -1837,20 +2437,35 @@ it collapsed to the width of the word "Bangladesh". */
     &:focus { outline: 2px solid var(--green); outline-offset: 2px; }
   }
 
-  /* ---------- shared article shell ---------- */
+  /* ---------- shared article shell ----------
+
+     The reading size lives HERE and not on the body, which is the
+     whole of what makes it safe. `--read-scale` multiplies the
+     prose of a piece and a lesson; the rail, the top bar, the
+     cards and every number on a calculator are untouched, because
+     a reader asking for larger type is asking to read more
+     comfortably rather than to rearrange the furniture.
+
+     Which means the sizes inside this rule have to be relative to
+     it. They were rem, which is relative to the root and would
+     have ignored the scale entirely: a reader on Comfortable
+     would have got larger paragraphs under headings that had not
+     moved. `em` is one character per rule and it is the character
+     that makes the setting real. */
   .article, .term-article {
     padding-block: 56px 10px;
+    font-size: calc(1rem * var(--read-scale));
 
     & h1 { font-size: clamp(1.9rem, 4.8vw, 2.7rem); max-width: 24ch; }
     & .meta { margin-block: 14px 30px; color: var(--ink-soft); }
-    & h2 { font-size: 1.35rem; margin-block: 34px 12px; }
-    & h3 { font-size: 1.12rem; margin-block: 26px 10px; }
+    & h2 { font-size: 1.35em; margin-block: 34px 12px; }
+    & h3 { font-size: 1.12em; margin-block: 26px 10px; }
     & p, & li { max-width: var(--measure); margin-bottom: 15px; }
     & ul, & ol { padding-left: 22px; margin-bottom: 15px; }
     & blockquote {
       margin: 26px 0; padding-left: 18px;
       border-left: 3px solid var(--green);
-      font-family: var(--font-serif); font-size: 1.15rem;
+      font-family: var(--font-serif); font-size: 1.15em;
       color: var(--ink); max-width: 60ch;
     }
     & hr { border: 0; border-top: 1px solid var(--hairline); margin-block: 34px; }
@@ -1859,10 +2474,10 @@ it collapsed to the width of the word "Bangladesh". */
       background: var(--green-soft); border-radius: 4px; padding: 1px 5px;
     }
     & table {
-      width: 100%; border-collapse: collapse; margin-bottom: 22px; font-size: 0.95rem;
+      width: 100%; border-collapse: collapse; margin-bottom: 22px; font-size: 0.95em;
     }
     & th, & td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--hairline); }
-    & th { color: var(--gold); font-family: var(--font-mono); font-size: 0.72rem;
+    & th { color: var(--gold); font-family: var(--font-mono); font-size: 0.72em;
            letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; }
   }
   /* tables get their own scroller on narrow screens */
@@ -7707,7 +8322,7 @@ German for day, and .tag is what the site has always called
     display: grid; align-items: center; gap: 12px;
     grid-template-columns: 1fr auto 1fr;
     height: var(--top-h);
-    padding-inline: clamp(12px, 2vw, 24px);
+    padding-inline: clamp(10px, 2vw, 24px);
     background: color-mix(in oklab, var(--paper) 82%, transparent);
     backdrop-filter: saturate(1.4) blur(10px);
     border-bottom: 1px solid var(--hairline);
@@ -7795,9 +8410,29 @@ German for day, and .tag is what the site has always called
   .top-btn:hover { color: var(--green); border-color: var(--green); }
   .top-btn .kbd-hint { font-size: 0.62rem; opacity: 0.8; }
 
-  /* The burger, which only exists where the rail does not. */
-  .drawer-btn, .drawer-close, .drawer-back { display: none; }
+  /* The burger, which only exists where the rail does not, and
+     the mark beside it, which exists for exactly the same reason
+     and at exactly the same widths. */
+  .drawer-btn, .drawer-close, .drawer-back, .topbar-mark { display: none; }
   .drawer-btn { grid-column: 1; justify-self: start; }
+
+  .topbar-mark {
+    grid-column: 1; justify-self: start;
+    align-items: center; gap: 8px; min-width: 0;
+    color: var(--ink); text-decoration: none;
+
+    & svg { width: 24px; height: 24px; flex: 0 0 24px; color: var(--green); }
+    & span {
+      font-family: var(--font-serif); font-size: 0.98rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    &:hover { opacity: 1; }
+  }
+
+  /* The audience switch when it is in the rail rather than in the
+     bar. Hidden at every width where the bar has room for it,
+     which is the same query that shows the burger. */
+  .rail-audience { display: none; }
 
   /* ---------- the same menu on a phone ---------- */
 
@@ -7826,7 +8461,6 @@ German for day, and .tag is what the site has always called
       justify-content: flex-start; padding-inline: 12px;
     }
 
-    .rail-foot { display: none; }
     .drawer-btn { display: inline-flex; }
     .drawer-close {
       display: grid; place-items: center;
@@ -7844,8 +8478,47 @@ German for day, and .tag is what the site has always called
     }
     html[data-drawer="open"] .drawer-back { opacity: 1; pointer-events: auto; }
 
-    .audience-sub { display: none; }
+    /* ---------- the bar, on a phone ----------
+
+       It held a burger, both halves of the audience switch and
+       three icon buttons, on a screen 360px wide, and the switch
+       is the widest of them: "Learning · শিখতে এসেছি" and
+       "Hiring · কাজের খোঁজে" side by side inside a pill. Every
+       one of the six was squeezed, and the bar carried no
+       indication of whose site it was, because the wordmark is in
+       the rail and the rail is a drawer at this width.
+
+       So the switch moves into the drawer, where a question a
+       reader answers once belongs, and the mark takes its place.
+       Two columns rather than three: the mark takes the middle
+       one and grows into it. */
+    .topbar {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 8px;
+    }
+    .topbar > .audience-switch { display: none; }
+    .topbar-mark { display: flex; grid-column: 2; }
+
+    .rail-audience {
+      display: grid; gap: 6px; margin-bottom: 10px;
+
+      & .rail-label { padding-inline: 2px; }
+      & .audience-switch { margin: 0; width: 100%; }
+      & .audience-opt { padding-block: 7px; }
+      & .audience-sub { display: block; }
+    }
+    /* The foot exists again on a phone, because the switch is in
+       it. The fold is still a desktop idea and stays hidden. */
+    .rail-foot { display: block; }
+    .rail-toggle { display: none; }
+
     .top-btn .kbd-hint { display: none; }
+  }
+
+  /* Narrower still: the name goes and the artwork stays, which is
+     the one part of a mark that survives being 24px wide. */
+  @media (max-width: 400px) {
+    .topbar-mark span { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -7856,15 +8529,19 @@ German for day, and .tag is what the site has always called
 
   .deck-foot {
     flex-shrink: 0;
-    margin-top: var(--step);
+    /* Half a step rather than a whole one. The footer already
+       announces itself with a rule and a change of ground; the
+       other 30-odd pixels were doing nothing but pushing it off
+       the bottom of a phone. */
+    margin-top: calc(var(--step) * 0.55);
     background: var(--paper-sunk);
     border-top: 1px solid var(--hairline);
     view-transition-name: site-footer;
   }
   .deck-foot-inner {
     max-width: 1180px; margin-inline: auto;
-    padding: clamp(26px, 3.4vw, 44px) clamp(18px, 3vw, 34px) 26px;
-    display: grid; gap: 24px;
+    padding: clamp(22px, 3vw, 40px) clamp(16px, 3vw, 34px) 22px;
+    display: grid; gap: clamp(16px, 2.2vw, 24px);
   }
 
   /* ---------- how much room the name gets ----------
@@ -7889,7 +8566,33 @@ German for day, and .tag is what the site has always called
     align-items: start;
   }
   @media (max-width: 860px) {
-    .deck-foot-top { grid-template-columns: 1fr; }
+    .deck-foot-top { grid-template-columns: 1fr; gap: 18px; }
+  }
+
+  /* ---------- the footer on a phone ----------
+
+     Four columns of links at 130px each do not fit 360px, so
+     `auto-fit` was already stacking them into four full-width
+     blocks one under another: about 30 lines of footer under
+     every page, which on a phone is a screen and a half of
+     scrolling past the thing the reader came for.
+
+     Two columns, tighter leading, and the masthead's second line
+     goes. Nothing is hidden that is not said elsewhere on the
+     same screen: the description is a description of the site the
+     reader is already on. */
+  @media (max-width: 620px) {
+    .deck-foot-nav {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 14px;
+    }
+    .deck-foot-col a { font-size: 0.82rem; line-height: 1.35; }
+    .deck-foot-col ul { gap: 3px; }
+    .deck-foot-label { margin-bottom: 7px; }
+    .deck-foot-line[lang="en"] { display: none; }
+    .deck-foot-name { font-size: 1.05rem; }
+    .deck-foot-pledge p { font-size: 0.84rem; }
+    .deck-foot-end { padding-top: 13px; gap: 6px 14px; }
   }
 
   .deck-foot-mark { display: grid; gap: 5px; align-content: start; min-width: 0; }
@@ -7935,8 +8638,8 @@ German for day, and .tag is what the site has always called
   }
 
   .deck-foot-pledge {
-    display: grid; gap: 5px;
-    padding: 15px 18px;
+    display: grid; gap: 4px;
+    padding: 13px 16px;
     border-radius: var(--radius);
     background: var(--green-soft);
     border: 1px solid color-mix(in oklab, var(--green) 25%, transparent);

@@ -29,6 +29,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { dateLabel, headFacts, lookFor } from "@reiad/shared/look";
 import { getArticle, siteOrigin } from "../../../lib/article";
+import { SiteScripts } from "../../../components/scripts";
 
 type Params = { params: Promise<{ section: string; slug: string }> };
 
@@ -123,6 +124,17 @@ export default async function ArticlePage({ params }: Params) {
           + `.then((m)=>m.mountComments(host,{slug:host.dataset.slug,`
           + `section:host.dataset.section})).catch(()=>{})}` }}
       />
+
+      {/* Keeping this piece, and writing a note on it. Loaded
+          through SiteScripts rather than as a tag for the reason
+          `components/scripts.tsx` is entirely about: it appends
+          nodes to markup React has just adopted, and a module
+          that runs before hydration has its work undone by it.
+
+          It appends nothing at all when nobody is signed in,
+          which is the whole of how this feature announces
+          itself. */}
+      <SiteScripts srcs={["/keep.js"]} />
     </main>
   );
 }

@@ -126,6 +126,21 @@ const KEYS = {
      the obvious reason: a phone on the bus and a laptop at a desk
      are the same Tuesday, and either one alone under-counts. */
   "days-active":   ["set",   "streak:changed"],
+
+  /* How this reader wants to be read to: the type size, the
+     measure and which language the calculators open in. See
+     /prefs.js.
+
+     A `mark` rather than a `set`, and it is the one key here
+     where that is not obvious. Every other value in this table
+     accumulates: a tick goes from off to on and the union of two
+     devices is what the person actually did. A preference does
+     not accumulate, it is REPLACED, and the union of two devices'
+     type sizes is not a type size. So the newer of the two wins,
+     by the `ts` prefs.js writes into the value, which is exactly
+     what a bookmark already needed and why the rule was there to
+     be reused. */
+  "reader-prefs":  ["mark",  "prefs:sync"],
 };
 
 /** Every key the account owns, which is every key above. */
@@ -183,14 +198,23 @@ function reconcileSet(base, mine, remote) {
   return [...theirs];
 }
 
-/** The bookmark written later. Both carry their own timestamp,
-    so there is nothing to infer. A bookmark cleared on this
-    device (a reset) is cleared, and says so with null. */
+/** The one written later. Both sides carry their own timestamp,
+    so there is nothing to infer, and a value cleared on this
+    device (a reset) stays cleared and says so with null.
+
+    Presence is "an object is there", not "it has an id". That is
+    a widening rather than a looseness: this rule started out
+    serving bookmarks alone, which always carry an `id`, and it
+    now also serves `reader-prefs`, which carries a `ts` and a
+    handful of settings and no id at all. Testing for a field only
+    one of the two shapes has would have made every preference
+    change look like an empty value and clear the account's copy. */
+const there = (v) => v !== null && v !== undefined && typeof v === "object";
+
 function reconcileMark(base, mine, remote) {
-  const hadOne = base && base.id;
-  if (hadOne && !mine?.id) return null;              // cleared here
-  if (!mine?.id) return remote?.id ? remote : null;
-  if (!remote?.id) return mine;
+  if (there(base) && !there(mine)) return null;      // cleared here
+  if (!there(mine)) return there(remote) ? remote : null;
+  if (!there(remote)) return mine;
   return (Number(remote.ts) || 0) > (Number(mine.ts) || 0) ? remote : mine;
 }
 

@@ -1,10 +1,11 @@
 /* ============================================================
-   saved.js: the two things an account holds that are not a tick.
+   saved.js: the things an account holds that are not a tick.
 
    A saved scenario is a filled-in calculator under a name. A
-   target is a goal with a number on it. Both are rows in Postgres
-   behind row-level security, both belong to exactly one person,
-   and neither has a copy on the device.
+   target is a goal with a number on it. A library row is a page
+   this reader kept, or wrote a note on, or both. All three are
+   rows in Postgres behind row-level security, all three belong to
+   exactly one person, and none of them has a copy on the device.
 
    THAT IS THE POINT, and it is the same rule `sync.js` was
    rewritten around. Progress has a copy here because four schools
@@ -34,6 +35,7 @@ const REST = `${SUPABASE_URL}/rest/v1`;
    that it should. */
 const SCENARIO_FIELDS = "id,tool,name,inputs,summary,created_at,updated_at";
 const TARGET_FIELDS = "id,kind,subject,label,target,reached,unit,done_at,created_at";
+const LIBRARY_FIELDS = "id,url,title,kind,saved,note,created_at,updated_at";
 
 async function headers(extra) {
   const access = await token();
@@ -189,6 +191,86 @@ export function updateTarget(id, patch) {
 export function removeTarget(id) {
   return send(
     `targets?id=eq.${encodeURIComponent(id)}&${mine()}`,
+    "DELETE", undefined, "return=minimal",
+  ).then(() => true);
+}
+
+/* ============================================================
+   The library: pages kept, and notes written on them
+
+   One row per person per page, and `saved` and `note` are two
+   facts about that row rather than two kinds of it. The migration
+   says why at length; the shape it produces here is that a page
+   has ONE state, `{ saved, note }`, and both controls on the page
+   write the same row.
+   ============================================================ */
+
+/** What this account holds about one page, or null.
+
+    Null means the reader has neither kept it nor written on it,
+    which is the state nearly every page is in and the reason this
+    returns null rather than an empty row: a control that has to
+    tell "not kept" from "kept and then unkept" would be a control
+    with three states and two of them identical. */
+export async function libraryRow(url) {
+  if (!current()) return null;
+  const rows = await get(
+    `library?select=${LIBRARY_FIELDS}&url=eq.${encodeURIComponent(url)}&limit=1`, []);
+  return rows[0] ?? null;
+}
+
+/**
+ * Write this page's row, whatever state it was in.
+ *
+ * An upsert on `(user_id, url)` rather than a read and a decision:
+ * one round trip instead of two, and it cannot race with the same
+ * reader's phone writing the other column. `merge-duplicates` is
+ * what makes the second Save on the same page an update.
+ *
+ * The trigger in the migration takes the row away again when both
+ * facts have gone, so unsaving a page nobody annotated leaves
+ * nothing behind and the reading list can be COUNTED rather than
+ * filtered.
+ */
+export async function keepPage({ url, title = "", kind = "piece", saved, note }) {
+  const head = await headers({ Prefer: "resolution=merge-duplicates,return=representation" });
+  if (!head) throw new Error("Not signed in.");
+
+  /* Only the columns being changed, plus the three that identify
+     the row. Sending `note: ""` from a Save button would erase
+     what the reader wrote on their phone this morning, which is
+     the one destructive thing this endpoint could do. */
+  const row = { url, title: String(title).slice(0, 200), kind };
+  if (saved !== undefined) row.saved = Boolean(saved);
+  if (note !== undefined) row.note = String(note).slice(0, 20000);
+
+  const res = await fetch(`${REST}/library?on_conflict=user_id,url&select=${LIBRARY_FIELDS}`, {
+    method: "POST",
+    headers: head,
+    body: JSON.stringify([row]),
+  });
+  if (!res.ok) {
+    const said = await res.json().catch(() => null);
+    throw new Error(said?.message || `That did not save (${res.status}).`);
+  }
+  const [back] = await res.json().catch(() => []);
+  return back ?? null;
+}
+
+/** Everything kept, newest first. `only` narrows it to the
+    reading list or to the pages with something written on them,
+    which are the two lists the account page draws. */
+export function listLibrary(only) {
+  if (!current()) return Promise.resolve([]);
+  const where = only === "saved" ? "&saved=is.true"
+    : only === "notes" ? "&note=neq."
+    : "";
+  return get(`library?select=${LIBRARY_FIELDS}${where}&order=updated_at.desc`, []);
+}
+
+export function removeLibraryRow(id) {
+  return send(
+    `library?id=eq.${encodeURIComponent(id)}&${mine()}`,
     "DELETE", undefined, "return=minimal",
   ).then(() => true);
 }

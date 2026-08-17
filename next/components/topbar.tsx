@@ -78,10 +78,38 @@ export function AudienceSwitch() {
     second implementation here would be a second answer to "what
     is the theme", which is the bug the boot script exists to
     avoid. */
+/** The mark, for the one width where the rail is not on screen.
+
+    A phone gets a burger, a switch and three icons and, until
+    this existed, no indication of whose site it was: the rail
+    carries the wordmark and the rail is a drawer below 900px. So
+    the bar carries it there instead, and the stylesheet shows
+    exactly one of the two at any width.
+
+    It is the same artwork as `sidebar.tsx` draws, four rects and
+    a circle, and it is written out twice rather than shared
+    through a component because it is nine attributes and a
+    component boundary would be the larger thing. If it grows a
+    fifth shape, that is the moment to make it one. */
+function BarMark() {
+  return (
+    <a className="topbar-mark" href="/" aria-label="Reiad's Library, home">
+      <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+        <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor" />
+        <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor" />
+        <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor" />
+        <circle cx="63" cy="24" r="5.5" fill="currentColor" />
+      </svg>
+      <span>Reiad&apos;s Library</span>
+    </a>
+  );
+}
+
 export function TopBar() {
   return (
     <div className="topbar">
       <DrawerButton />
+      <BarMark />
       <AudienceSwitch />
       <div className="top-tools">
         <button className="top-btn" id="open-palette" type="button"

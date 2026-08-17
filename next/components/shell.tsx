@@ -41,14 +41,24 @@ import { SiteFooter } from "./footer";
 
 /* Before the first paint, and therefore inline and blocking.
 
-   Three preferences now, all stored by the site's own scripts and
-   all affecting layout: the theme, or a dark-mode reader sees a
-   white flash; the audience, which reorders the rail's groups for
-   somebody who has said they are here for work rather than to
-   learn; and whether the rail is folded away, which is a 190px
-   change to the width of everything. A page that restores one and
-   not the others shows the furniture rearranging itself after
-   load, which is the same bug wearing three hats.
+   Everything here is stored by the site's own scripts and every
+   one of them affects layout: the theme, or a dark-mode reader
+   sees a white flash; the audience, which reorders the rail's
+   groups for somebody who has said they are here for work rather
+   than to learn; whether the rail is folded away, which is a
+   190px change to the width of everything; and, since accounts
+   grew reading preferences, the type scale and the measure, which
+   change the height of every paragraph on the page. A page that
+   restores one and not the others shows the furniture
+   rearranging itself after load, which is the same bug wearing
+   five hats.
+
+   The two custom properties are set rather than defaulted, and
+   the defaults live in `styles.css` so a reader with no
+   preference and a reader with JavaScript off get the same page.
+   `aab/prefs.js` writes the same three values from the account
+   page and applies them the same way; this is the copy that runs
+   first and the only one that runs before a paint.
 
    It is the first thing inside <body> rather than in <head>,
    which is not where the Worker puts it. App Router owns the head
@@ -62,7 +72,12 @@ const BOOT = `(function(){var d=document.documentElement;try{`
   + `var a=localStorage.getItem("audience");`
   + `if(a==="learn"||a==="work")d.setAttribute("data-audience",a);`
   + `var r=localStorage.getItem("rail");`
-  + `d.setAttribute("data-rail",r==="closed"?"closed":"open")}catch(e){`
+  + `d.setAttribute("data-rail",r==="closed"?"closed":"open");`
+  + `var p=JSON.parse(localStorage.getItem("reader-prefs")||"{}")||{};`
+  + `var s={small:"0.94",normal:"1",large:"1.12"}[p.text];`
+  + `if(s)d.style.setProperty("--read-scale",s);`
+  + `var m={narrow:"56ch",normal:"66ch",wide:"78ch"}[p.measure];`
+  + `if(m)d.style.setProperty("--read-measure",m)}catch(e){`
   + `d.setAttribute("data-rail","open")}})()`;
 
 /** Which nav item is marked as where you are.

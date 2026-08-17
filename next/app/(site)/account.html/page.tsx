@@ -1,16 +1,34 @@
 /* ============================================================
    /account.html
 
-   Ported out of `aab/account.html` with archive/TRANSITION.md Stage 11.5,
-   words unchanged. Personal, and not for a search engine: the
-   robots tag it carried is in the metadata below rather than in
-   the markup.
+   The one page on this site that is about the reader rather than
+   about the writing, and since August 2026 the one page that has
+   to hold seven different kinds of thing without looking like a
+   settings screen from a router's admin panel.
 
-   Everything on it is filled by `/account-page.js`, from
-   Supabase and from this browser's own storage. None of it can be
-   rendered on the server and none of it should be: a page that
-   knew who you were before it reached you would be a page this
-   site cached wrong.
+   ---- what changed ----
+
+   It was a hero, three fieldsets and two exit buttons: a form,
+   with the browser's own defaults showing through. Everything an
+   account had grown since then was being added to the bottom of
+   it, so the page said "your name" at the top and "everything you
+   have ever saved" eight screens down, in the same visual weight,
+   with no way to get between them but scrolling.
+
+   It is a summary and eight sections now, with a rail of links
+   across the top that is sticky and scrolls sideways on a phone.
+   The account menu in the header links straight into those
+   sections by their fragment, which is why every `id` here is a
+   word rather than a number: `#reading-list` is in
+   `aab/signin.js` as well and the two have to agree.
+
+   ---- and it is still filled entirely by a script ----
+
+   `/account-page.js`, from Supabase. None of it can be rendered
+   on the server and none of it should be: a page that knew who
+   you were before it reached you would be a page this site cached
+   wrong. What the server renders is the shape, so the page does
+   not reflow as each section answers.
    ============================================================ */
 
 import type { Metadata } from "next";
@@ -20,205 +38,254 @@ export const metadata: Metadata = {
   ...pageMeta({
     path: "/account.html",
     title: "Your account · Reiad's Library",
-    description: "Your account: your name, what is saved, and how to leave.",
+    description: "Your account: what you have read, kept, written and set.",
     ogTitle: "Your account",
     card: "insights",
   }),
   robots: { index: false, follow: false },
 };
 
+/* The section rail. One entry per `<section>` below, in the order
+   they appear, and the ids are the same strings the account menu
+   in `aab/signin.js` links to. Written out here rather than
+   derived, because a rail built by walking the DOM is a rail that
+   is empty until a script runs and that jumps when it does. */
+const SECTIONS = [
+  { id: "you", label: "Overview" },
+  { id: "ladders", label: "Courses" },
+  { id: "reading-list", label: "Reading list" },
+  { id: "notes", label: "Notes" },
+  { id: "targets", label: "Targets" },
+  { id: "scenarios", label: "Scenarios" },
+  { id: "preferences", label: "Preferences" },
+  { id: "data", label: "Your data" },
+];
+
 export default function AccountPage() {
   return (
+    <main id="main">
 
-      <main id="main">
-        <div className="wrap wrap-narrow">
-          {/* Signed out, this page is one sentence and a button. There
-           is no account wall anywhere on this site and this page is
-           not one either. */}
-          <div id="account-out" hidden>
-            <div className="hero" style={{ paddingBlock: "52px 20px" }}>
-              <span className="eyebrow mono">Your account
-              </span>
-              <h1>Nobody is signed in on this device.
-              </h1>
-              <p className="lede">An account is where your reading position, your
-          checkpoints, your saved calculations and anything you are aiming for
-          are kept. Every page on this site is readable without one, and what
-          you tick without one stays on this browser.
-              </p>
-              <div className="hero-actions">
-                <button className="btn btn-solid" id="account-signin">Sign in
-                </button>
-                <a className="btn btn-ghost" href="/index.html">Back to the site
-                </a>
-              </div>
-            </div>
+      {/* Signed out, this page is one sentence and a button.
+          There is no account wall anywhere on this site and this
+          page is not one either. */}
+      <div className="wrap wrap-narrow" id="account-out" hidden>
+        <div className="hero" style={{ paddingBlock: "52px 20px" }}>
+          <span className="eyebrow mono">Your account</span>
+          <h1>Nobody is signed in on this device.</h1>
+          <p className="lede">
+            An account keeps your place in a course, the pages you save, the
+            notes you write, what you are aiming for and how you like to read,
+            and carries all of it between your phone and your laptop. Every
+            page on this site is readable without one.
+          </p>
+          <div className="hero-actions">
+            <button className="btn btn-solid" id="account-signin">Sign in</button>
+            <a className="btn btn-ghost" href="/index.html">Back to the site</a>
           </div>
-          <div id="account-in" hidden>
-            <div className="hero" style={{ paddingBlock: "52px 14px" }}>
-              <span className="eyebrow mono">Your account
-              </span>
-              <h1 id="account-hello">Hello.
-              </h1>
-              <p className="lede" id="account-email" />
+        </div>
+      </div>
+
+      <div id="account-in" hidden>
+
+        {/* ============ WHO, AND THE SHAPE OF THE YEAR ============ */}
+        <header className="acct-top">
+          <div className="wrap acct-top-inner">
+            <span className="acct-face" id="account-face" aria-hidden="true" />
+            <div className="acct-hello">
+              <h1 id="account-hello">Hello.</h1>
+              <p id="account-email" />
             </div>
-            {/* ============ SETTINGS, AND SETUP ============
+            <div className="acct-tiles" id="account-tiles" />
+          </div>
+        </header>
 
-             One form, two framings. The first time somebody lands
-             here after signing in, the label and the paragraph
-             above it ask the three questions as setup and there is
-             a "not now" beside Save. Once answered, the same three
-             fields are settings and the label says so.
+        {/* Sticky, and the one piece of navigation on this page.
+            It is a list of links to fragments rather than tabs
+            that hide things: a reader who lands on
+            `#reading-list` from the header menu should find the
+            page scrolled to their reading list with everything
+            else still there above and below it. */}
+        <nav className="acct-rail" aria-label="This page">
+          <div className="wrap acct-rail-inner">
+            {SECTIONS.map((s) => (
+              <a key={s.id} className="acct-rail-link" href={`#${s.id}`}>{s.label}</a>
+            ))}
+          </div>
+        </nav>
 
-             They are one form because they were nearly two, and
-             two would have been two sets of markup, two save
-             handlers and two places for the wording of a course
-             name to drift. account-page.js swaps four strings. */}
-            <section id="account-settings">
-              <span className="section-label mono" id="settings-label">Your settings
-              </span>
-              <p className="measure" id="settings-intro">Three things, none of them
-          required. You can change any of them whenever you like.
-              </p>
-              <form className="account-panel" id="settings-form">
-                <fieldset>
-                  <legend>Your name
-                  </legend>
-                  <p className="field-note">What appears beside anything you write.
-              Nothing else about you is shown to anyone.
-                  </p>
-                  <input type="text" id="account-name" maxLength={40} autoComplete="name" placeholder="Your name" />
-                </fieldset>
-                <fieldset>
-                  <legend>What are you here to learn?
-                  </legend>
-                  <p className="field-note">The home page offers these first when you
-              come back, and a course you pick here shows up even before you
-              have opened it.
-                  </p>
-                  {/* Built from COURSES in content.js. Ticked already
-                   for anything this device has progress in. */}
-                  <div className="choice-grid" id="account-courses" />
-                </fieldset>
-                <fieldset>
-                  <legend>How often do you want to practise?
-                  </legend>
-                  <p className="field-note">Only so this page can tell you how the
-              last week went. Nothing is sent to you: there are no
-              notifications on this site and there will not be any.
-                  </p>
-                  <div className="choice-row" id="account-pace" />
-                </fieldset>
-                <div className="account-actions">
-                  <button className="btn btn-solid" type="submit">Save
-                  </button>
-                  <button className="btn btn-ghost" type="button" id="settings-skip" hidden>Not now
-                  </button>
-                  <span className="signin-note" id="settings-note" />
-                </div>
-              </form>
-            </section>
-            {/* ============ THE LADDERS ============
+        <div className="wrap acct-body">
 
-             One row per course: how far through it you are, where
-             you were when you stopped, and how many checkpoints
-             inside those lessons you have ticked. All three come
-             out of the account, which is what the rewrite of
-             `aab/sync.js` made true: this page used to be able to
-             report only what this browser happened to hold. */}
-            <section>
-              <span className="section-label mono">Where you are
-              </span>
-              <p className="measure">Your position in each course, the chapters you
-          have finished, and the checkpoints you have ticked inside them. This
-          is the account&apos;s copy, so it is the same on every device you sign
-          in on.
-              </p>
-              <div className="ladder-list" id="account-paths" />
-              <p className="tool-note" id="account-synced" />
-              <p className="account-week" id="account-week" hidden />
-            </section>
-            {/* ============ TARGETS ============
+          <section className="acct-sec" id="you">
+            <div className="acct-head">
+              <h2>Your year</h2>
+              <p>Every day you opened something here. Nothing else is counted,
+                 and none of it is shown to anybody but you.</p>
+            </div>
+            <div className="acct-card">
+              <div className="heat" id="account-heat" />
+              <p className="acct-note" id="account-week" />
+            </div>
+          </section>
 
-             A goal with a number on it and a bar under it. Three
-             kinds, and each one has a source for its progress
-             that already exists: a course reads your ticks, a
-             habit reads the days you turned up, and a number this
-             site cannot see is one you type in. A fourth kind
-             would have to pass that test too. */}
-            <section>
-              <span className="section-label mono">What you are aiming for
-              </span>
-              <p className="measure">Set a target and this page measures it. Nothing
-          is sent to you about it: there are no notifications on this site and
-          there will not be any.
-              </p>
-              <div className="targets" id="account-targets" />
-              <form className="account-panel target-form" id="target-form">
-                <fieldset>
-                  <legend>Add a target
-                  </legend>
-                  <div className="choice-row" id="target-kind" />
-                  <div className="target-fields" id="target-fields" />
-                </fieldset>
-                <div className="account-actions">
-                  <button className="btn btn-solid" type="submit">Add it
-                  </button>
+          {/* ============ THE LADDERS ============ */}
+          <section className="acct-sec" id="ladders">
+            <div className="acct-head">
+              <h2>Where you are</h2>
+              <p>Your position in each course, the chapters you have finished
+                 and the checkpoints you have ticked inside them. This is the
+                 account&apos;s copy, so it is the same on every device.</p>
+            </div>
+            <div className="ladder-list" id="account-paths" />
+            <p className="acct-note" id="account-synced" />
+          </section>
+
+          {/* ============ KEPT, AND WRITTEN ON ============ */}
+          <section className="acct-sec" id="reading-list">
+            <div className="acct-head">
+              <h2>Reading list</h2>
+              <p>Pages you kept for later. Save one from the row under its
+                 title, on any piece or lesson.</p>
+            </div>
+            <div className="kept-list" id="account-kept-list" />
+          </section>
+
+          <section className="acct-sec" id="notes">
+            <div className="acct-head">
+              <h2>Your notes</h2>
+              <p>What you wrote in the margin. Private, stored against your
+                 account, and shown to nobody, including me.</p>
+            </div>
+            <div className="kept-list" id="account-notes" />
+          </section>
+
+          {/* ============ TARGETS ============ */}
+          <section className="acct-sec" id="targets">
+            <div className="acct-head">
+              <h2>What you are aiming for</h2>
+              <p>Set a target and this page measures it. Nothing is sent to
+                 you about it: there are no notifications on this site and
+                 there will not be any.</p>
+            </div>
+            <div className="targets" id="account-targets" />
+            <details className="acct-more" id="target-more">
+              <summary>Add a target</summary>
+              <form className="acct-form" id="target-form">
+                <div className="choice-row" id="target-kind" />
+                <div className="target-fields" id="target-fields" />
+                <div className="acct-actions">
+                  <button className="btn btn-solid" type="submit">Add it</button>
                   <span className="signin-note" id="target-note" />
                 </div>
               </form>
-            </section>
-            {/* ============ SAVED SCENARIOS ============ */}
-            <section>
-              <span className="section-label mono">Saved scenarios
-              </span>
-              <p className="measure">A filled-in calculator, kept under a name. Open
-          one and the tool comes back exactly as you left it, on any device you
-          are signed in on.
-              </p>
-              <div className="saved-list" id="account-scenarios" />
-            </section>
-            {/* ============ WHAT IS KEPT ============ */}
-            <section>
-              <span className="section-label mono">What this account keeps
-              </span>
-              <p className="measure">Only what is listed here, and only because it is
-          useful to you. There is no analytics profile behind it: what you read
-          is not shown to anybody, including me.
-              </p>
-              <div className="cards grid-2" id="account-kept" />
-            </section>
-            {/* ============ LEAVING ============ */}
-            <section>
-              <span className="section-label mono">Leaving
-              </span>
-              <div className="account-exits">
-                <div className="cell">
-                  <h3>Sign out here
-                  </h3>
-                  <p>Ends the session on this device and takes the account&apos;s
-              copy of your progress off it, so the next person at this machine
-              does not inherit your ticks. Nothing on the account is touched:
-              sign in again, anywhere, and it is all there.
-                  </p>
-                  <button className="btn btn-ghost" id="account-signout">Sign out
-                  </button>
-                </div>
-                <div className="cell">
-                  <h3>Forget everything
-                  </h3>
-                  <p>Removes what this account has saved: your position, your
-              checkpoints, your targets and your saved scenarios. This cannot be
-              undone.
-                  </p>
-                  <button className="btn btn-ghost" id="account-forget">Forget it
-                  </button>
-                </div>
+            </details>
+          </section>
+
+          {/* ============ SAVED SCENARIOS ============ */}
+          <section className="acct-sec" id="scenarios">
+            <div className="acct-head">
+              <h2>Saved scenarios</h2>
+              <p>A filled-in calculator, kept under a name. Open one and the
+                 tool comes back exactly as you left it.</p>
+            </div>
+            <div className="saved-list" id="account-scenarios" />
+          </section>
+
+          {/* ============ PREFERENCES, AND THE THREE QUESTIONS ============
+
+              One section, because they are one thing from the
+              reader's side: how this site behaves for them. The
+              reading preferences act on every page immediately
+              and are applied before the first paint on the next
+              one; the three below them are what the site is
+              allowed to do with what it knows. */}
+          <section className="acct-sec" id="preferences">
+            <div className="acct-head">
+              <h2>How you like to read</h2>
+              <p>These take effect as you press them, on every page, and
+                 follow you to your other devices.</p>
+            </div>
+            <div className="acct-card prefs" id="account-prefs" />
+
+            <div className="acct-head acct-head-sub">
+              <h3 id="settings-label">Your settings</h3>
+              <p id="settings-intro">Three things, none of them required. You
+                 can change any of them whenever you like.</p>
+            </div>
+            <form className="acct-form" id="settings-form">
+              <fieldset>
+                <legend>Your name</legend>
+                <p className="field-note">What appears beside anything you
+                   write. Nothing else about you is shown to anyone.</p>
+                <input type="text" id="account-name" maxLength={40}
+                       autoComplete="name" placeholder="Your name" />
+              </fieldset>
+              <fieldset>
+                <legend>What are you here to learn?</legend>
+                <p className="field-note">The home page offers these first when
+                   you come back, and a course you pick here shows up even
+                   before you have opened it.</p>
+                <div className="choice-grid" id="account-courses" />
+              </fieldset>
+              <fieldset>
+                <legend>How often do you want to practise?</legend>
+                <p className="field-note">Only so this page can tell you how
+                   the last week went.</p>
+                <div className="choice-row" id="account-pace" />
+              </fieldset>
+              <div className="acct-actions">
+                <button className="btn btn-solid" type="submit">Save</button>
+                <button className="btn btn-ghost" type="button" id="settings-skip"
+                        hidden>Not now</button>
+                <span className="signin-note" id="settings-note" />
               </div>
-              <p className="signin-note" id="exit-note" />
-            </section>
-          </div>
+            </form>
+          </section>
+
+          {/* ============ WHAT IS KEPT, AND LEAVING ============ */}
+          <section className="acct-sec" id="data">
+            <div className="acct-head">
+              <h2>Your data</h2>
+              <p>Only what is listed here, and only because it is useful to
+                 you. There is no analytics profile behind any of it.</p>
+            </div>
+            <div className="cards grid-2" id="account-kept" />
+
+            <div className="acct-exits">
+              <div className="acct-card">
+                <h3>Take a copy</h3>
+                <p>One file with everything this account holds: your position
+                   in every course, your checkpoints, your reading list, your
+                   notes, your targets, your saved scenarios and your
+                   preferences. Plain JSON, readable in any text editor.</p>
+                <button className="btn btn-ghost" id="account-export">
+                  Download everything
+                </button>
+              </div>
+              <div className="acct-card">
+                <h3>Sign out</h3>
+                <p>Ends the session on this device and takes the account&apos;s
+                   copy of your progress off it, so the next person at this
+                   machine does not inherit your ticks. Nothing on the account
+                   is touched.</p>
+                <button className="btn btn-ghost" id="account-signout">
+                  Sign out
+                </button>
+              </div>
+              <div className="acct-card acct-card-warn">
+                <h3>Erase everything</h3>
+                <p>Removes all of it from the account: position, checkpoints,
+                   reading list, notes, targets and scenarios. This cannot be
+                   undone, so take a copy first if you want one.</p>
+                <button className="btn btn-ghost" id="account-forget">
+                  Erase it
+                </button>
+              </div>
+            </div>
+            <p className="signin-note" id="exit-note" />
+          </section>
+
         </div>
-      </main>
+      </div>
+    </main>
   );
 }

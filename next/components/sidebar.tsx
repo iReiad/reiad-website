@@ -37,6 +37,7 @@
 import { useEffect } from "react";
 import { NAV, ORDER, type NavGroup } from "../lib/nav";
 import { Icon } from "./icons";
+import { AudienceSwitch } from "./topbar";
 import type { Current } from "./shell";
 
 const RAIL_KEY = "rail";
@@ -168,7 +169,29 @@ export function Sidebar({ current }: { current: Current }) {
         ))}
       </nav>
 
+      {/* The fold, and the audience switch.
+
+          The switch is in the top bar on a laptop and in here on
+          a phone, and the stylesheet shows exactly one of the
+          two. That is two instances of one component rather than
+          two implementations of one idea: it holds no state,
+          because the state is `data-audience` on the root, so
+          both copies write the same attribute and read back the
+          same answer from the same stylesheet. There is nothing
+          for them to drift about.
+
+          Why it moves at all: below 900px the bar has a burger,
+          two labels of the switch and three icon buttons on a
+          360px screen, and the switch is the widest of them and
+          the least urgent. It is a question a reader answers once
+          and never again, so it belongs in the menu, which is
+          where somebody goes when they are deciding rather than
+          reading. */}
       <div className="rail-foot">
+        <div className="rail-audience">
+          <span className="rail-label mono">What brings you here</span>
+          <AudienceSwitch />
+        </div>
         <SidebarToggle />
       </div>
     </aside>
