@@ -1,0 +1,47 @@
+-- ============================================================
+-- A trigger function is not an API.
+--
+-- Supabase's own database linter found this the moment the two
+-- migrations before it landed, and it is right:
+--
+--   public.cap_rows() can be executed by the anon role as a
+--   SECURITY DEFINER function via /rest/v1/rpc/cap_rows
+--
+-- PostgREST exposes every function in the `public` schema as an
+-- RPC endpoint, and `execute` on a new function is granted to
+-- `public` by default. So `cap_rows()`, which exists only to be
+-- fired BEFORE INSERT by three triggers, was also a URL that
+-- anybody on the internet could POST to, running as its owner
+-- rather than as them.
+--
+-- ---- how bad was it, honestly ----
+--
+-- Not very, and that is not a reason to leave it. Called outside
+-- a trigger, `cap_rows()` reads `new.user_id` and `tg_argv[0]`,
+-- both of which are null there, so it raises and does nothing.
+-- The same is true of `handle_new_user()`, which came with the
+-- profiles migration on 15 August and has the same shape.
+--
+-- The reason to fix it anyway is that "it happens to error" is a
+-- property of today's function body, not a property of the
+-- permission. The next edit to either function is one nobody
+-- will re-check against the possibility that a stranger can call
+-- it, because nobody would think to: they are triggers.
+--
+-- ---- and this cannot break the triggers ----
+--
+-- A trigger does not run through the caller's `execute`
+-- privilege. It fires as part of the table operation, and the
+-- function runs whether or not the person doing the insert could
+-- have called it by name. Revoking `execute` takes away the URL
+-- and changes nothing about the three tables.
+--
+-- `touch_updated_at()` is not here because it is SECURITY
+-- INVOKER, and neither is `drop_empty_library_row()`, for the
+-- same reason: called by a stranger, both run as that stranger
+-- and row-level security answers them exactly as it answers
+-- everything else.
+-- ============================================================
+
+revoke execute on function public.cap_rows() from public, anon, authenticated;
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
