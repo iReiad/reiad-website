@@ -31,6 +31,22 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v88: Seven colours, one design system. /styles.css gained a
+        palette built out of seven hues at matched lightness, a
+        spacing and type scale, and a top bar that is its own
+        floating surface rather than a strip stuck to the page.
+        Only the stylesheet changed in this list, but it is the
+        one file every page waits for, and a reader holding the
+        v87 copy would get the old bar under the new markup.
+
+        The palette is measured now rather than believed:
+        scripts/check-contrast.mjs reads the tokens out of this
+        stylesheet, converts OKLCH to a WCAG luminance and fails
+        on any pair below the threshold for the size it is used
+        at. That is what moved gold: at hue 85 it measured
+        4.59:1 on the page, which passes and only just, and at
+        hue 75 and a darker lightness it measures 7.11:1.
+
    v87: The same code, said better. Seven of the modules in this
         list are compiled from TypeScript now rather than written
         as JavaScript (archive/TRANSITION.md Stage 13), and
@@ -767,7 +783,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v87";
+const VERSION = "v88";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

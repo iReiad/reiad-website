@@ -35,9 +35,39 @@
        data-theme on <html> to force one side. */
     color-scheme: light dark;
 
-    /* --- hues (one number moves the whole palette) --- */
-    --h-green: 162;
-    --h-gold: 85;
+    /* --- the seven hues ---
+
+       One number moves each colour, and the seven of them are
+       the whole palette.
+
+       IT WAS TWO, and that is the change. Green and gold had to
+       carry five nav groups, six schools, three reading sections
+       and the work, which meant the colour of a thing said
+       nothing about which thing it was: German and English were
+       both green, the kitchen and the travel desk were both
+       green, and the only way to know where you were was to read.
+
+       Seven is enough for every destination to own one and few
+       enough to stay a family rather than a paintbox. They are
+       spread around the wheel at roughly even distance so that no
+       two are confusable, and green stays at 162 because it is
+       the brand and every logo on this site is already it.
+
+       WHAT IS NOT NEGOTIABLE is the lightness they share: see
+       the accents below. A hue is a name; a lightness is whether
+       somebody can read it. */
+    --h-green: 162;   /* money, and the site itself */
+    --h-teal: 205;    /* Qur'anic Arabic */
+    --h-blue: 255;    /* German */
+    --h-violet: 300;  /* English */
+    --h-plum: 345;    /* the work: portfolio, about, contact */
+    --h-rose: 30;     /* the kitchen */
+
+    /* Was 85, which is yellow-green and could only be read at a
+       lightness far above the others. 75 is the warm side of the
+       same idea and sits at the family's lightness without
+       turning olive. */
+    --h-gold: 75;     /* the calculators and the stock check */
 
     /* The paper hue, and it is only the paper.
 
@@ -71,20 +101,63 @@
     --ink:          light-dark(oklch(24%   0.012 var(--h-green)), oklch(93.5% 0.008 var(--h-green)));
     --ink-soft:     light-dark(oklch(43%   0.012 var(--h-green)), oklch(72%   0.020 var(--h-green)));
 
-    /* --- accents --- */
-    --green:        light-dark(oklch(41%   0.080 var(--h-green)), oklch(71%   0.110 var(--h-green)));
+    /* --- the seven accents ---
+
+       ONE LIGHTNESS EACH SIDE, and it is the only rule here that
+       matters. 44% in light, 72% in dark, for all seven, with the
+       chroma being whatever that hue can carry at that lightness
+       up to a cap. OKLCH's L is perceptual, so seven colours at
+       one L are seven colours of one weight: none shouts, none
+       whispers, and a label does not become harder to read
+       because the page it is on happens to be the German one.
+
+       That was not true before. Green sat at 41% and gold at
+       54%, because yellow at 41% is olive, and the two measured
+       8.09:1 and 4.86:1 on the same paper. One of those is
+       comfortable and the other is a pass by four hundredths.
+       The comment that used to live here recorded gold slipping
+       to 4.45 when the paper turned warm, and it was caught by
+       somebody looking. Moving the hue from 85 to 75 lets gold
+       sit at 44% with the rest, and `scripts/check-contrast.mjs`
+       is what looks now: it measures all seven against all three
+       grounds in both themes, and fails the build under 4.5.
+
+       The chroma cap is 0.090 light and 0.105 dark, which is
+       deliberately restrained. These are accents on a reading
+       site, not a brand palette; the job is to say which place
+       you are in, quietly. */
+    --green:        light-dark(oklch(44% 0.090 var(--h-green)),  oklch(72% 0.105 var(--h-green)));
+    --teal:         light-dark(oklch(44% 0.076 var(--h-teal)),   oklch(72% 0.105 var(--h-teal)));
+    --blue:         light-dark(oklch(44% 0.090 var(--h-blue)),   oklch(72% 0.105 var(--h-blue)));
+    --violet:       light-dark(oklch(44% 0.090 var(--h-violet)), oklch(72% 0.105 var(--h-violet)));
+    --plum:         light-dark(oklch(44% 0.090 var(--h-plum)),   oklch(72% 0.105 var(--h-plum)));
+    --rose:         light-dark(oklch(44% 0.090 var(--h-rose)),   oklch(72% 0.105 var(--h-rose)));
+    --gold:         light-dark(oklch(44% 0.090 var(--h-gold)),   oklch(72% 0.105 var(--h-gold)));
+
     --green-strong: light-dark(oklch(30%   0.060 var(--h-green)), oklch(30%   0.060 var(--h-green)));
     --green-soft:   light-dark(oklch(94.5% 0.015 var(--h-green)), oklch(23%   0.020 var(--h-green)));
-    /* 54%, not the 56% it was. The mono labels set in gold are
-       0.76rem, which is normal-size text as far as WCAG is
-       concerned, so they need 4.5:1. On the old green-tinted
-       paper they measured 4.50 exactly; the warm paper is a
-       shade darker and took them to 4.45, which is a fail. Two
-       points of lightness puts them back to 4.9 and is invisible
-       next to the gold that was there. Dark mode is untouched:
-       it measures 7.7 either way. */
-    --gold:         light-dark(oklch(54%   0.090 var(--h-gold)),  oklch(72%   0.090 var(--h-gold)));
     --danger:       light-dark(oklch(52%   0.150 28),             oklch(70%   0.140 28));
+
+    /* --- the one every component actually reads ---
+
+       A component says `var(--accent)` and never names a colour.
+       Which colour that is gets set once, high up: the rail sets
+       it per group, a school's layer sets it for the school, and
+       everything inside inherits. That is what makes seven
+       colours one design rather than seven designs.
+
+       The two derived from it are the reason it works. A soft
+       ground and a hairline that follow the accent mean a card,
+       a chip, a meter and a focus ring all recolour together
+       when one line changes, instead of each carrying its own
+       hand-mixed green. `color-mix` against `--paper` rather
+       than against `transparent`, so the soft ground is opaque
+       and a card can sit on any surface without the ground
+       underneath showing through it. */
+    --accent: var(--green);
+    --accent-soft: color-mix(in oklab, var(--accent) 11%, var(--paper));
+    --accent-line: color-mix(in oklab, var(--accent) 28%, transparent);
+    --accent-ring: color-mix(in oklab, var(--accent) 30%, transparent);
 
     /* --- lines, glass, depth ---
        Contrast on the warm paper, measured in a browser rather
@@ -100,8 +173,33 @@
        dark mode was touched by the warm paper, and these are the
        numbers to re-measure if any of it ever is. */
     --hairline:     light-dark(oklch(88.5% 0.012 var(--h-paper)), oklch(28%   0.015 var(--h-green)));
-    --glass-bg:     light-dark(oklch(100% 0 0 / 0.16), oklch(25% 0.02 var(--h-green) / 0.35));
-    --glass-edge:   light-dark(oklch(100% 0 0 / 0.38), oklch(100% 0 0 / 0.16));
+    /* --- glass ---
+
+       These existed and were used in exactly one place, at an
+       alpha of 0.16, which is a pane you cannot put text on: the
+       page scrolling underneath showed straight through the
+       words. That is the difference between glass as an effect
+       and glass as a surface, and a surface is what the header
+       and the menus need.
+
+       0.72 with a blur behind it reads as frosted rather than
+       tinted, and every contrast pair measured against `--panel`
+       still holds, because at that alpha over a blur the
+       effective ground is within a percent of the panel. What
+       the blur is doing is hiding the CONTENT underneath, not
+       the colour.
+
+       `--glass-solid` is the same surface for a browser with no
+       `backdrop-filter`, and the `@supports` that swaps them is
+       in `@layer shell`. Without it, a header on such a browser
+       is 28% transparent over moving text, which is the one
+       state this must never be in. */
+    --glass-bg:     light-dark(oklch(99% 0.004 var(--h-paper) / 0.72),
+                               oklch(23% 0.014 var(--h-green) / 0.72));
+    --glass-solid:  light-dark(oklch(99% 0.004 var(--h-paper)),
+                               oklch(23% 0.014 var(--h-green)));
+    --glass-edge:   light-dark(oklch(100% 0 0 / 0.7), oklch(100% 0 0 / 0.1));
+    --glass-blur:   saturate(1.7) blur(14px);
     --shadow:       light-dark(0 10px 30px oklch(30% 0.05 var(--h-green) / 0.09),
                                0 10px 30px oklch(0% 0 0 / 0.38));
     --shadow-lift:  light-dark(0 18px 44px oklch(30% 0.05 var(--h-green) / 0.14),
@@ -113,6 +211,46 @@
     --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
     --font-bn: "Noto Sans Bengali", var(--font-sans);
     --font-bn-serif: "Noto Serif Bengali", var(--font-serif);
+
+    /* --- the scales ---
+
+       Every number below existed already, as forty variants of
+       itself. An audit of this file in August 2026 counted 37
+       distinct raw pixel spacings, 14 raw radii and 61 distinct
+       font sizes, against three spacing tokens that were used in
+       3% of the places they applied. Eight different sizes lived
+       inside the 1.3px band between 0.90rem and 0.98rem, and
+       1.24rem and 1.25rem both shipped, a sixth of a pixel apart.
+
+       None of that is a bug and all of it is the same bug: there
+       was nothing to reach for, so everybody reached for a
+       number. These are the things to reach for. A value not on
+       a scale should now be an argued exception rather than a
+       Tuesday afternoon.
+
+       The ramp is 4px, doubling at the top, which is the one
+       most people already have in their heads. */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 20px;
+    --s-6: 26px;
+    --s-7: 34px;
+    --s-8: 44px;
+
+    /* Seven steps, each about 1.125 from the last, which is the
+       ratio the body text and the h2 above it already implied.
+       `--t-0` is the small print and `--t-6` is a card heading;
+       anything above that is a `clamp()` because a page title
+       should answer to the viewport rather than to a scale. */
+    --t-0: 0.68rem;
+    --t-1: 0.76rem;
+    --t-2: 0.86rem;
+    --t-3: 0.94rem;
+    --t-4: 1.06rem;
+    --t-5: 1.18rem;
+    --t-6: 1.32rem;
 
     /* --- metrics --- */
     --wrap-pad: 22px;
@@ -132,6 +270,44 @@
     --measure: var(--read-measure);
     --radius: 16px;
     --radius-sm: 10px;
+    /* The two that were written out as literals 66 times between
+       them. `--radius-pill` was `999px` in 51 places and
+       `--radius-xs` was `4px` in 10. */
+    --radius-pill: 999px;
+    --radius-xs: 4px;
+    /* The icon tile: a 28 to 38px rounded square, which had four
+       different radii (8, 9, 9 and 11px) for one shape. */
+    --radius-icon: 9px;
+
+    /* --- controls ---
+
+       One height for anything you press. It was nine heights
+       between 28px and 48px, and eight of the nine were under
+       the 44px that a thumb actually needs: the two most-used
+       controls in the header were 34.6px and 36px. `--tap` is
+       the floor, and a control that wants to look smaller uses
+       padding to do it while keeping the target.
+
+       `--tap-sm` is the one deliberate exception, for a control
+       that sits INSIDE a row that is itself a target, where two
+       44px boxes would be taller than the row they are in. */
+    --tap: 44px;
+    --tap-sm: 36px;
+
+    /* --- focus ---
+
+       One ring. There were five idioms, three ring alphas
+       (22, 25, 30%) and three outline offsets (1, 2, 3px), so
+       tabbing from one control to the next visibly changed the
+       ring's weight. Worse, thirteen of the nineteen interactive
+       classes had no focus rule of their own at all and fell
+       through to a global `outline-offset: 3px; border-radius:
+       3px`, which draws a small square ring around a pill.
+
+       It follows the accent, so the ring on a German page is the
+       German blue, and it is drawn as a box-shadow so it takes
+       the shape of whatever it is on. */
+    --focus-ring: 0 0 0 2px var(--accent-ring);
     --gap: clamp(12px, 1.6vw, 18px);
     --step: clamp(44px, 6vw, 68px);
 
@@ -269,10 +445,31 @@
   }
   a:hover { opacity: 0.85; }
 
+  /* THE focus ring, and it is one rule on purpose.
+
+     Thirteen of this site's nineteen interactive classes had no
+     focus rule of their own and fell through to this one, which
+     used to end with `border-radius: 3px`. That line was the
+     whole problem: it did not round the ring to match the
+     control, it OVERWROTE the control's own radius while it had
+     focus, so tabbing on to a pill-shaped button squared its
+     corners off, and a 16px card became a 3px one for as long as
+     it was focused.
+
+     An outline already follows the element's border-radius in
+     every browser this site supports, so the correct rule is the
+     short one. Taking those three lines out fixes all thirteen
+     classes at once, which is why there is no long list of
+     `&:focus-visible` blocks in this change.
+
+     It follows `--accent`, so the ring on a German page is the
+     German blue and on the kitchen it is the kitchen's rose.
+     Two pixels of offset rather than three: three was chosen
+     against a 3px radius that is now gone, and on a real control
+     it floated away from the edge. */
   :focus-visible {
-    outline: 2px solid var(--green);
-    outline-offset: 3px;
-    border-radius: 3px;
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 
   ::selection { background: var(--green-soft); color: var(--green); }
@@ -496,7 +693,7 @@
 
       &:focus {
         outline: 0; border-color: var(--green);
-        box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+        box-shadow: var(--focus-ring);
       }
     }
   }
@@ -570,7 +767,7 @@
 
     &:focus {
       outline: 0; border-color: var(--green);
-      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+      box-shadow: var(--focus-ring);
     }
   }
   .comment-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -601,7 +798,7 @@
 
       &:focus {
         outline: 0; border-color: var(--green);
-        box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+        box-shadow: var(--focus-ring);
       }
     }
   }
@@ -632,7 +829,7 @@
       background: var(--green-soft);
     }
     &:has(input:focus-visible) {
-      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 25%, transparent);
+      box-shadow: var(--focus-ring);
     }
   }
   .choice-grid {
@@ -768,7 +965,7 @@
 
     &:focus {
       outline: 0; border-color: var(--green);
-      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+      box-shadow: var(--focus-ring);
     }
   }
 
@@ -790,7 +987,7 @@
     }
     & input:focus, & select:focus {
       outline: 0; border-color: var(--green);
-      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+      box-shadow: var(--focus-ring);
     }
   }
 
@@ -829,7 +1026,7 @@
     }
     & input:focus {
       outline: 0; border-color: var(--green);
-      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+      box-shadow: var(--focus-ring);
     }
   }
 
@@ -953,7 +1150,7 @@
     &:hover { background: var(--panel-hover); opacity: 1; }
     &:focus-visible {
       outline: 0; background: var(--panel-hover);
-      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 30%, transparent);
+      box-shadow: var(--focus-ring);
     }
     & strong { display: block; font-weight: 500; font-size: 0.92rem; }
     & small { display: block; color: var(--ink-soft); font-size: 0.75rem; }
@@ -1027,7 +1224,7 @@
     &:hover { color: var(--green); border-color: var(--green); }
     &:focus-visible {
       outline: 0; border-color: var(--green);
-      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 25%, transparent);
+      box-shadow: var(--focus-ring);
     }
     &[data-on] {
       color: var(--green); border-color: var(--green);
@@ -1060,7 +1257,7 @@
 
     &:focus {
       outline: 0; border-color: var(--green);
-      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+      box-shadow: var(--focus-ring);
     }
   }
   .keep-panel-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -1230,7 +1427,7 @@
     &:hover { border-color: color-mix(in oklab, var(--green) 45%, var(--hairline)); }
     &:focus-visible {
       outline: 0; border-color: var(--green);
-      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 25%, transparent);
+      box-shadow: var(--focus-ring);
     }
     &[data-on] {
       border-color: var(--green); background: var(--green-soft);
@@ -1242,7 +1439,22 @@
   /* ---------- HERO ---------- */
   .hero {
     position: relative;
-    padding-block: 84px 48px;
+    /* One value, and it is the one the pages were reaching for.
+
+       This said `84px 48px` and TWELVE pages overrode it inline,
+       with five different answers: six portfolio pages agreed on
+       56/26, a seventh said 56/22 for no reason anybody could
+       name, the desk and the account said 52/20, the Studio said
+       52/26 and the tools hub said 72/34. The declared value was
+       used by no page at all.
+
+       That is what a fixed value on a responsive page does: it
+       is wrong at some width, somebody fixes it where they are
+       standing, and the fix is invisible to the next person. A
+       clamp covers the whole range those twelve were reaching
+       for, so there is nothing left to override, and all twelve
+       inline styles went in the same commit. */
+    padding-block: clamp(40px, 6vw, 62px) clamp(18px, 2.6vw, 28px);
 
     & > * { position: relative; z-index: 1; }
   }
@@ -1789,7 +2001,7 @@
       border: 1px solid var(--hairline); border-radius: var(--radius-sm);
       transition: border-color var(--fast) var(--ease);
     }
-    & input:focus, & textarea:focus { outline: 2px solid var(--green); outline-offset: 1px; border-color: var(--green); }
+    & input:focus, & textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--green); }
     /* grow with the text instead of scrolling inside a fixed box */
     & textarea { min-height: 150px; resize: vertical; field-sizing: content; }
     & button {
@@ -2131,7 +2343,7 @@ it collapsed to the width of the word "Bangladesh". */
     font-variant-numeric: tabular-nums;
   }
   .tool-inputs input:focus, .tool-inputs select:focus {
-    outline: 2px solid var(--green); outline-offset: 1px; border-color: var(--green);
+    outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--green);
   }
 
   /* range sliders, themed both sides */
@@ -2448,7 +2660,7 @@ it collapsed to the width of the word "Bangladesh". */
     &:hover { background: var(--green-soft); }
     &:focus-visible {
       outline: 0;
-      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 30%, transparent);
+      box-shadow: var(--focus-ring);
     }
   }
   .checklist li[data-done] .checkpoint::before {
@@ -2676,7 +2888,7 @@ it collapsed to the width of the word "Bangladesh". */
     }
     & textarea { resize: vertical; field-sizing: content; min-height: 3lh; }
     & input:focus, & select:focus, & textarea:focus {
-      outline: 2px solid var(--green); outline-offset: 1px; border-color: var(--green);
+      outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--green);
     }
   }
   .field-row {
@@ -2938,7 +3150,7 @@ it collapsed to the width of the word "Bangladesh". */
     color: var(--ink); background: var(--paper);
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
 
-    &:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+    &:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   }
   .pill-new { border-color: var(--gold); color: var(--gold); }
   /* Not an error, and not nothing: something that will look wrong
@@ -3085,7 +3297,7 @@ it collapsed to the width of the word "Bangladesh". */
       background: var(--panel); color: var(--ink);
       box-shadow: 0 1px 2px oklch(0% 0 0 / 0.12);
     }
-    & .chip:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; }
+    & .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   }
 
   /* The destination, which is the first decision and so the first
@@ -3159,7 +3371,7 @@ it collapsed to the width of the word "Bangladesh". */
 
     &:focus-within {
       border-color: var(--green);
-      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+      box-shadow: var(--focus-ring);
     }
     & input {
       flex: 1; min-width: 12ch;
@@ -3321,7 +3533,7 @@ it collapsed to the width of the word "Bangladesh". */
       color: var(--ink); background: var(--panel);
       border: 1px solid var(--hairline); border-radius: 999px;
     }
-    & select:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+    & select:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
     & select:disabled { opacity: 0.5; }
   }
 
@@ -3337,7 +3549,7 @@ it collapsed to the width of the word "Bangladesh". */
       color: var(--ink); background: var(--paper);
       border: 1px solid var(--hairline); border-radius: var(--radius-sm);
     }
-    & input:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+    & input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   }
 
   /* The sheets reuse .admin-line from the `work` layer, which
@@ -3667,7 +3879,7 @@ it collapsed to the width of the word "Bangladesh". */
       field-sizing: content;
     }
     & textarea:focus, & input:focus {
-      outline: 2px solid var(--green); outline-offset: 1px; border-color: var(--green);
+      outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--green);
     }
     & button { align-self: flex-start; }
   }
@@ -3681,7 +3893,7 @@ it collapsed to the width of the word "Bangladesh". */
       font-family: var(--font-sans); color: var(--ink); background: var(--panel);
       border: 1px solid var(--hairline); border-radius: var(--radius-sm);
     }
-    & input:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+    & input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
     & button { white-space: nowrap; }
   }
 
@@ -3711,7 +3923,7 @@ it collapsed to the width of the word "Bangladesh". */
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
     field-sizing: content;
   }
-  textarea.admin-answer:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+  textarea.admin-answer:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   .admin-table { border-top: 1px solid var(--hairline); }
   .admin-line {
     display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
@@ -3749,7 +3961,7 @@ it collapsed to the width of the word "Bangladesh". */
     color: var(--ink); background: var(--paper);
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
   }
-  .gate-card input:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+  .gate-card input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   .gate-msg { font-size: 0.86rem; min-height: 1.3em; }
   .gate-msg.err { color: var(--danger); }
   .gate-msg.ok { color: var(--green); }
@@ -4338,7 +4550,7 @@ it collapsed to the width of the word "Bangladesh". */
       padding: 10px 12px; border-radius: var(--radius-sm);
       border: 1px solid var(--hairline); background: var(--paper); color: var(--ink);
     }
-    & textarea:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+    & textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   }
   .csv-status {
     margin-top: 10px; font-size: 0.86rem; color: var(--ink-soft);
@@ -5591,7 +5803,7 @@ German for day, and .tag is what the site has always called
       font-family: var(--font-sans); font-size: 0.95rem; line-height: 1.7;
       padding: 10px 12px;
     }
-    & textarea:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+    & textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   }
 
   /* ---------- the day walker ---------- */
@@ -5613,7 +5825,7 @@ German for day, and .tag is what the site has always called
       font-family: var(--font-bn); font-size: 0.9rem; padding: 7px 10px;
       max-width: min(58vw, 320px);
     }
-    & select:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+    & select:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   }
 
   /* ---------- one day ---------- */
@@ -5664,9 +5876,23 @@ German for day, and .tag is what the site has always called
     font-family: var(--font-sans); font-size: 0.98rem; line-height: 1.8;
     padding: 6px 2px;
   }
-  .buch-tag textarea[data-schrift]:focus {
-    outline: none; border-bottom-color: var(--green);
-    background: var(--green-soft);
+  .buch-tag textarea[data-schrift]:focus-visible {
+    /* A ring, not just a colour.
+
+       This was `outline: none` with a green underline and a
+       green ground, which is a focus indicator made ENTIRELY of
+       colour: WCAG 2.4.11 wants a non-colour cue, and somebody
+       who cannot separate the green from the paper had no way to
+       tell where the caret was on the one page of this school
+       that is nothing but writing boxes.
+
+       It was also `:focus` rather than `:focus-visible`, so it
+       fired on a mouse click too, which is why it was written
+       quietly enough to be missed. */
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-bottom-color: var(--accent);
+    background: var(--accent-soft);
   }
   .buch-tag textarea[data-schrift]::placeholder { color: var(--ink-soft); opacity: 0.55; }
 
@@ -6165,7 +6391,7 @@ German for day, and .tag is what the site has always called
       font-family: var(--font-sans); font-size: 0.95rem; line-height: 1.7;
       padding: 10px 12px;
     }
-    & textarea:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+    & textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   }
 
   /* ---------- the day walker ---------- */
@@ -6187,7 +6413,7 @@ German for day, and .tag is what the site has always called
       font-family: var(--font-bn); font-size: 0.9rem; padding: 7px 10px;
       max-width: min(58vw, 320px);
     }
-    & select:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+    & select:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   }
 
   /* ---------- one day ---------- */
@@ -6237,9 +6463,23 @@ German for day, and .tag is what the site has always called
     font-family: var(--font-sans); font-size: 0.98rem; line-height: 1.8;
     padding: 6px 2px;
   }
-  .wb-day textarea[data-wb-write]:focus {
-    outline: none; border-bottom-color: var(--green);
-    background: var(--green-soft);
+  .wb-day textarea[data-wb-write]:focus-visible {
+    /* A ring, not just a colour.
+
+       This was `outline: none` with a green underline and a
+       green ground, which is a focus indicator made ENTIRELY of
+       colour: WCAG 2.4.11 wants a non-colour cue, and somebody
+       who cannot separate the green from the paper had no way to
+       tell where the caret was on the one page of this school
+       that is nothing but writing boxes.
+
+       It was also `:focus` rather than `:focus-visible`, so it
+       fired on a mouse click too, which is why it was written
+       quietly enough to be missed. */
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-bottom-color: var(--accent);
+    background: var(--accent-soft);
   }
   .wb-day textarea[data-wb-write]::placeholder { color: var(--ink-soft); opacity: 0.55; }
 
@@ -6828,7 +7068,7 @@ German for day, and .tag is what the site has always called
     border: 1px solid var(--hairline); background: var(--paper); color: var(--ink);
     font-family: var(--font-mono); font-size: 0.82rem;
   }
-  .field-num:focus, .field-select:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+  .field-num:focus, .field-select:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   .field-select { font-family: inherit; }
   html[lang="bn"] .field-select { font-family: var(--font-bn); }
 
@@ -7828,11 +8068,44 @@ German for day, and .tag is what the site has always called
    ============================================================ */
 @layer shell {
 
+  /* ---------- a page knows its own colour ----------
+
+     The rail colours each destination in its list. This is the
+     other half: once you are IN a place, the whole page carries
+     that place's accent, so the meter on a German ladder, the
+     chip on a German lesson and the German entry in the rail are
+     one colour without any of them naming it.
+
+     On the body, because that is the one element every page has
+     and the only one above both the rail and the content. Each
+     school's own layer could set it, and deliberately does not:
+     four layers setting one property is four places to look when
+     it is wrong, and `@layer money` does not exist for the
+     kitchen or the travel desk, which need this too.
+
+     `shared/look.ts` and `next/lib/school.ts` are where these
+     class names come from, and they are the same strings. */
+  body.deutsch { --accent: var(--blue); }
+  body.quran   { --accent: var(--teal); }
+  body.english { --accent: var(--violet); }
+  body.cooking { --accent: var(--rose); }
+  body.travel  { --accent: var(--plum); }
+
   :root {
     --rail-open: 268px;
     --rail-shut: 76px;
     --rail-w: var(--rail-open);
-    --top-h: 58px;
+
+    /* The bar's own height, the air around it, and what the
+       content underneath has to clear. Three numbers rather than
+       one because the bar stopped being attached to anything:
+       see `.topbar` below. Anything else on this site that
+       sticks to the top (the account page's section rail) offsets
+       by `--top-space`, so there is one answer to "how far down
+       does the page start". */
+    --top-h: 52px;
+    --top-gap: 10px;
+    --top-space: calc(var(--top-h) + var(--top-gap) * 2);
     --accent: var(--green);
   }
   html[data-rail="closed"] { --rail-w: var(--rail-shut); }
@@ -7845,6 +8118,9 @@ German for day, and .tag is what the site has always called
     flex: 1 0 auto;
     min-width: 0;
     margin-left: var(--rail-w);
+    /* The bar floats over this column rather than sitting in it,
+       so the column has to make room for it itself. */
+    padding-top: var(--top-space);
     transition: margin-left var(--slow) var(--ease);
   }
 
@@ -8132,16 +8408,51 @@ German for day, and .tag is what the site has always called
      every character added to a button on the right. A grid says
      the thing that was meant, once, and the two outer columns
      stay equal whatever is in them. */
+  /* ---------- the bar, which is now a thing rather than an edge ----------
+
+     It was a full-width strip stuck to the top of the scrolling
+     column with a hairline under it: not an object, just the
+     place where the page stopped. The rail on the left has always
+     been an object, with its own ground and its own edges, and
+     the two did not read as belonging to the same site.
+
+     So the bar is an object too. It floats clear of all four
+     edges, it is a pill with its own border and its own shadow,
+     and the page passes UNDER it rather than stopping at it.
+     That last part is the whole point of the glass: what you see
+     through the bar is the article you are reading, blurred and
+     moving, which is what tells you the page is still going up
+     there. A solid bar with a border under it says the opposite.
+
+     `left` follows the rail so the two never overlap and the bar
+     appears to be a second panel beside it, and it transitions
+     on the same curve as the rail's width, so folding the menu
+     away slides both together as one movement. */
   .topbar {
-    position: sticky; top: 0; z-index: 50;
+    position: fixed;
+    top: var(--top-gap);
+    left: calc(var(--rail-w) + var(--top-gap));
+    right: var(--top-gap);
+    z-index: 50;
     display: grid; align-items: center; gap: 12px;
     grid-template-columns: 1fr auto 1fr;
     height: var(--top-h);
-    padding-inline: clamp(10px, 2vw, 24px);
-    background: color-mix(in oklab, var(--paper) 82%, transparent);
-    backdrop-filter: saturate(1.4) blur(10px);
-    border-bottom: 1px solid var(--hairline);
+    padding-inline: 8px;
+    border-radius: var(--radius-pill);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-edge);
+    box-shadow: var(--shadow);
+    transition: left var(--slow) var(--ease);
     view-transition-name: site-topbar;
+  }
+
+  /* Where there is no backdrop-filter there is no glass, and a
+     28%-transparent bar over moving text is the one state this
+     must never be in. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .topbar { background: var(--glass-solid); }
   }
 
   /* Two equal halves, and they have to be equal because the
@@ -8310,6 +8621,9 @@ German for day, and .tag is what the site has always called
     .topbar {
       grid-template-columns: auto minmax(0, 1fr) auto;
       gap: 8px;
+      /* The rail is a drawer at this width, so the bar has the
+         whole row and floats clear of both edges. */
+      left: var(--top-gap);
     }
     .topbar > .audience-switch { display: none; }
     .topbar-mark { display: flex; grid-column: 2; }
@@ -8769,7 +9083,7 @@ German for day, and .tag is what the site has always called
   /* The starter guide's cards each carry the anchor the old hub's
      accordions had, so a saved link still lands on the step it
      named. The offset stops the sticky top bar covering it. */
-  .hub-step { scroll-margin-top: calc(var(--top-h) + 16px); }
+  .hub-step { scroll-margin-top: calc(var(--top-space) + 16px); }
 
   .risk-chip {
     padding: 2px 8px; border-radius: 999px;
@@ -8935,15 +9249,36 @@ German for day, and .tag is what the site has always called
    ============================================================ */
 @layer shell {
 
+  /* The same bar, on the six pages that are not routes.
+
+     It was an attached strip with a hairline under it, which is
+     what `.topbar` was until the bar became an object. These six
+     are the practice books, 404 and offline, and a reader moving
+     between a lesson and its practice book should not feel the
+     furniture change shape underneath them.
+
+     `sticky` rather than `fixed`, and that is the only real
+     difference: these pages are an ordinary document flow rather
+     than the shell's flex column, so a sticky bar with a margin
+     takes its own space at the top and then floats as the page
+     goes up under it. `fixed` here would need a padding-top on
+     six hand-written pages, which is six chances to forget. */
   .slimbar {
-    position: sticky; top: 0; z-index: 50;
+    position: sticky; top: var(--top-gap); z-index: 50;
     display: flex; align-items: center; gap: 14px;
     height: var(--top-h);
-    padding-inline: clamp(14px, 3vw, 28px);
-    background: color-mix(in oklab, var(--paper) 84%, transparent);
-    backdrop-filter: saturate(1.4) blur(10px);
-    border-bottom: 1px solid var(--hairline);
+    margin: var(--top-gap);
+    padding-inline: 14px;
+    border-radius: var(--radius-pill);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-edge);
+    box-shadow: var(--shadow);
     view-transition-name: site-topbar;
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .slimbar { background: var(--glass-solid); }
   }
 
   /* The same mark as the rail's, on the six pages that are not

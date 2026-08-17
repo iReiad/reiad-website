@@ -115,7 +115,14 @@ function Item({ item, current }: { item: NavGroup["items"][number]; current: Cur
   const here = item.key && item.key === current;
 
   return (
+    /* The item's own colour, where it has one, overriding the
+       group's for everything inside it: the icon tile, the
+       current-page mark and the hover ground all read
+       `var(--accent)` and none of them names a colour. Six of the
+       seven live here, on the six learning destinations, because
+       those are the six a reader sees in one list. */
     <a className="rail-item" href={item.href}
+       style={item.accent ? ({ "--accent": item.accent } as React.CSSProperties) : undefined}
        aria-current={here ? "page" : undefined}
        data-soon={item.soon ? "" : undefined}>
       <span className="rail-ico"><Icon name={item.icon} size={19} /></span>

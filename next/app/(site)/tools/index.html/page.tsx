@@ -44,7 +44,7 @@ export default function ToolsPage() {
 
       <main id="main">
         <div className="wrap">
-          <div className="hero" style={{ paddingBlock: "72px 34px" }}>
+          <div className="hero">
             <span className="eyebrow mono">Tools · ক্যালকুলেটর
             </span>
             <h1>The five sums worth doing before you decide anything.

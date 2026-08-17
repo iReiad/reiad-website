@@ -31,7 +31,7 @@ export default function Page() {
 
       <main id="main">
         <div className="wrap">
-          <div className="hero" style={{ paddingBlock: "56px 26px" }}>
+          <div className="hero">
             <span className="eyebrow mono">Case study · Credit risk · Stress testing
             </span>
             <h1>What a recession does to a loan book, from the macro path to the capital ratio.

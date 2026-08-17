@@ -31,7 +31,7 @@ export default function Page() {
 
       <main id="main">
         <div className="wrap">
-          <div className="hero" style={{ paddingBlock: "56px 26px" }}>
+          <div className="hero">
             <span className="eyebrow mono">Case study · Portfolio construction · Interactive
             </span>
             <h1>A Shariah and ESG screened FTSE 250 fund, built in 2015 and held to 2020.
