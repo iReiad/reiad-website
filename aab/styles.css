@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, learn, deutsch, quran, english, reads, check, about, shell, deck, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, deutsch, quran, english, reads, check, about, shell, deck, utilities;
 
 /* ============================================================
    TOKENS
@@ -506,7 +506,7 @@
      A thread under a piece. Every comment here has been read and
      approved, which is why it can look calm: there is no voting,
      no sorting, no "controversial", and nothing that rewards
-     posting more. See TRANSITION.md, Stage 7. */
+     posting more. See archive/TRANSITION.md, Stage 7. */
   .comments {
     margin-block: 48px 0;
     padding-top: 28px;
@@ -3859,10 +3859,10 @@ it collapsed to the width of the word "Bangladesh". */
    restructured Learn hub needs: the starter accordion, the stage
    ladder, the contents index and the resume card.
    ============================================================ */
-@layer learn {
+@layer money {
 
   /* ---------- icon art ----------
-     One family, one size, one stroke. See /learn/icons.js for why
+     One family, one size, one stroke. See /money/icons.js for why
      every step and stage has a drawing at all. */
   .art {
     width: 1.6em; height: 1.6em; flex-shrink: 0;
@@ -3904,7 +3904,7 @@ it collapsed to the width of the word "Bangladesh". */
   :root[data-audience="work"] body > header nav > [href*="portfolio"] { order: -3; }
   :root[data-audience="work"] body > header nav > [href*="about"]     { order: -2; }
   :root[data-audience="work"] body > header nav > [href*="contact"]   { order: -1; }
-  :root[data-audience="work"] body > header nav > [href*="learn"]     { order: 1; }
+  :root[data-audience="work"] body > header nav > [href*="money"]     { order: 1; }
   :root[data-audience="work"] body > header nav > [href*="tools"]     { order: 2; }
   :root[data-audience="work"] body > header nav > .nav-group          { order: 3; }
   :root[data-audience="work"] body > header nav > [href*="skills"]    { order: 3; }
@@ -3942,7 +3942,7 @@ it collapsed to the width of the word "Bangladesh". */
      and a recruiter's page came out unchanged. Naming the sequence
      also makes it obvious what each visitor actually sees. */
 
-  /* here to learn: the four big "start here" links, then the writing */
+  /* here to money: the four big "start here" links, then the writing */
   /* The learner's half is written in Bangla, so it takes the
      Bangla face, the rest of the page stays English. */
   .learn-half { font-family: var(--font-bn); }
@@ -3950,7 +3950,7 @@ it collapsed to the width of the word "Bangladesh". */
   .learn-half .num, .learn-half .section-label { font-family: var(--font-mono); }
   .section-intro { color: var(--ink-soft); margin-block: 6px 20px; }
 
-  :root[data-audience="learn"] .home-flow > [data-for="learn"]   { order: 1; }
+  :root[data-audience="learn"] .home-flow > [data-for="money"]   { order: 1; }
   :root[data-audience="learn"] .home-flow > [data-for="work"]    { order: 2; }
   :root[data-audience="learn"] .home-flow > [data-for="both"]    { order: 3; }
   :root[data-audience="learn"] .home-flow > [data-for="context"] { order: 4; }
@@ -3967,7 +3967,7 @@ it collapsed to the width of the word "Bangladesh". */
   /* here to hire: credentials, services and the bio first */
   :root[data-audience="work"]  .home-flow > [data-for="work"]    { order: 1; }
   :root[data-audience="work"]  .home-flow > [data-for="both"]    { order: 2; }
-  :root[data-audience="work"]  .home-flow > [data-for="learn"]   { order: 3; }
+  :root[data-audience="work"]  .home-flow > [data-for="money"]   { order: 3; }
   :root[data-audience="work"]  .home-flow > [data-for="context"] { order: 4; }
 
   /* The welcome-back band outranks all of that. Somebody who was
@@ -4447,7 +4447,7 @@ and an intro that needs them in step is an intro that breaks
     .contents-cta .more { grid-column: 2; }
   }
 
-  /* ---------- /learn/contents.html ---------- */
+  /* ---------- /money/contents.html ---------- */
   .contents-jump {
     display: flex; flex-wrap: wrap; gap: 7px; margin-top: 22px;
 
@@ -5175,7 +5175,7 @@ German for day, and .tag is what the site has always called
 
      Anchored on the body class, which the bare selector was not
      and did not need to be while this school's ladder was a
-     generated page under /quran/. TRANSITION.md Stage 11.7 made
+     generated page under /quran/. archive/TRANSITION.md Stage 11.7 made
      it a route, and the component that draws a lesson card is one
      component for all four schools: `check-css.mjs` decides which
      school a class belongs to by where its markup lives, and the
@@ -7535,7 +7535,7 @@ German for day, and .tag is what the site has always called
   .audience-sub {
     font-family: var(--font-bn); font-size: 0.64rem; opacity: 0.85;
   }
-  html[data-audience="learn"] .audience-opt[data-pick="learn"],
+  html[data-audience="learn"] .audience-opt[data-pick="money"],
   html[data-audience="work"] .audience-opt[data-pick="work"] {
     color: #fff;
   }

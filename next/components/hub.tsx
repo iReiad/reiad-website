@@ -1,7 +1,7 @@
 /* ============================================================
    hub.tsx: a reading section's index.
 
-   Two components for three pages, which is the shape TRANSITION.md
+   Two components for three pages, which is the shape archive/TRANSITION.md
    Stage 11.1 says these are: "one component pretending to be three
    pages". The kitchen and the travel desk really are one page with
    two sets of words, so they share `ReadHub` and differ only in
@@ -252,7 +252,7 @@ export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
             <p className="gate-msg mono" id="sub-msg" role="status" style={{ marginTop: "8px" }} />
 
             <p><a href="/feed.xml">RSS feed →</a> &nbsp;·&nbsp;
-               <a href="/learn/index.html">শেখার লাইব্রেরি</a> &nbsp;·&nbsp;
+               <a href="/money/index.html">শেখার লাইব্রেরি</a> &nbsp;·&nbsp;
                <a href="/tools/index.html">Calculators</a></p>
           </div>
         </section>

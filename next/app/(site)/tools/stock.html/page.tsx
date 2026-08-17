@@ -1,7 +1,7 @@
 /* ============================================================
    /tools/stock.html
 
-   Ported out of `aab/tools/stock.html` with TRANSITION.md Stage
+   Ported out of `aab/tools/stock.html` with archive/TRANSITION.md Stage
    11.4, words unchanged. The forty-four ratios, the six pillars
    and every word of the Bangla are `/tools/stock.model.js` and
    `/tools/stock.i18n.js`, unchanged and still in `aab/`: see the

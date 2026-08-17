@@ -30,7 +30,7 @@
    to catch what it cannot know, which is what they are about to
    start.
 
-   TRANSITION.md, Stages 5 and 6.
+   archive/TRANSITION.md, Stages 5 and 6.
    ============================================================ */
 
 import { current, signOut, getProfile, saveProfile } from "/account.js";
@@ -73,8 +73,8 @@ const PACE_TARGET = { daily: 7, often: 5, sometimes: 0 };
    course keeps this page honest even if a course changes shape:
    it reports what is actually stored. */
 const KEPT = [
-  { key: "learn-read", course: "learn", one: "lesson read", many: "lessons read" },
-  { key: "learn-last", course: "learn", single: true },
+  { key: "learn-read", course: "money", one: "lesson read", many: "lessons read" },
+  { key: "learn-last", course: "money", single: true },
   { key: "deutsch-read", course: "deutsch", one: "part read", many: "parts read" },
   { key: "deutsch-days", course: "deutsch", one: "practice day done", many: "practice days done" },
   { key: "english-read", course: "english", one: "part read", many: "parts read" },

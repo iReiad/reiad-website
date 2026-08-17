@@ -55,7 +55,7 @@ const paths = [...block.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
 /* ------------------------------------------------------------
    And the entries that are addresses rather than files.
 
-   TRANSITION.md Stage 11.7. Six of the pages this worker
+   archive/TRANSITION.md Stage 11.7. Six of the pages this worker
    precaches are built by a Worker out of the database, so there
    is nothing in aab/ to hash. That is not a hole in the check:
    a rendered page changes when a row changes and no VERSION

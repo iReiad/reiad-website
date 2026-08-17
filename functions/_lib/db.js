@@ -60,7 +60,7 @@ const MIGRATIONS = [
      comment was posted.
 
      Copying it is not denormalisation for speed. It is the seam in
-     TRANSITION.md section 1: D1 holds what a signed-out reader
+     archive/TRANSITION.md section 1: D1 holds what a signed-out reader
      needs to render the page, Supabase holds who people are, and
      the two never join in a query. A thread has to render for a
      stranger with Supabase unreachable, and it does, because every
@@ -81,7 +81,7 @@ const MIGRATIONS = [
   `CREATE INDEX IF NOT EXISTS idx_comments_queue
      ON comments (status, created_at DESC)`,
   `CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)`,
-  /* The four schools, TRANSITION.md Stage 8. Structure and prose
+  /* The four schools, archive/TRANSITION.md Stage 8. Structure and prose
      both, because half of a lesson in a database and half in a
      file is two sources for whether a lesson exists. The `meta`
      column holds each school's own fields as JSON, and

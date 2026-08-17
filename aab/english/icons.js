@@ -2,7 +2,7 @@
    icons.js: the little drawings for the English school.
 
    Same family as /deutsch/icons.js, /quran/icons.js and
-   /learn/icons.js, and the same reason for existing: a shape
+   /money/icons.js, and the same reason for existing: a shape
    survives a week away from the site in a way that "পর্ব ১৪"
    does not. Every term and every part has one mark, always drawn
    the same way, and it appears everywhere that thing appears:

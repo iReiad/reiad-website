@@ -27,7 +27,7 @@
    can verify it against Supabase's public keys without ever
    holding a password or a secret.
 
-   TRANSITION.md, Stage 5.
+   archive/TRANSITION.md, Stage 5.
    ============================================================ */
 
 /* Public by design, both of them. The publishable key identifies

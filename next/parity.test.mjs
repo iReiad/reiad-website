@@ -29,7 +29,7 @@
 
    ---- "byte-identical", and what that had to become ----
 
-   TRANSITION.md's Stage 10 says the share card, the structured
+   archive/TRANSITION.md's Stage 10 says the share card, the structured
    data and the canonical link must be "byte-identical to what the
    Worker produced". Two of those three can be exactly that and
    are checked as strings here. The third cannot: React writes
@@ -145,7 +145,7 @@ for (const article of [ARTICLE, KITCHEN, DESK, DRAFT]) {
 
 /* ---------- and the schools, out of the real snapshot ----------
 
-   TRANSITION.md Stage 11.7. Unlike the articles above, these are
+   archive/TRANSITION.md Stage 11.7. Unlike the articles above, these are
    NOT invented: the lesson route has to render what the committed
    page renders, and the committed page was built from
    `content/schools.backup.json`. Seeding anything else would
@@ -165,7 +165,7 @@ const snapshot = readSnapshot();
 
 /* `basics-2` is the money school's first GENERATED stage and is
    what its lesson page is compared against. `basics-1` is the
-   eighteen original terms at /learn/terms/, which the builder has
+   eighteen original terms at /money/terms/, which the builder has
    never written and which are compared for less: see the block
    below that asks them only what a wrong answer would cost. The
    other three are the first written stage of each language
@@ -347,6 +347,29 @@ const meta = (html, key, attr = "property") => {
     the site's second half and became one entry in the skills
     list. Substituting rather than skipping means the rest of a
     page title is still compared character for character. */
+/** An address as it is now, wherever a committed page says where
+    it used to be.
+
+    The money school moved from /learn/ to /money/ on 17 August
+    2026: 251 addresses, the folder, the school id in D1 and the
+    modal term reader, which was `/learn/learn.js` and is
+    `/money/reader.js` because it was never named for what it does.
+    There is no redirect; the old addresses are gone, which is what
+    a move is.
+
+    The pages in `archive/schools-pages/` are the historical
+    artifact and still say the old thing, so both sides of every
+    comparison below are normalised through here. What that leaves
+    being checked is the part worth checking: that the route says
+    the same THING at its new address, rung for rung and link for
+    link. Real drift still fails. */
+const moved = (v) => {
+  if (typeof v !== "string") return v;
+  return v
+    .replaceAll("/learn/learn.js", "/money/reader.js")
+    .replaceAll("/learn/", "/money/");
+};
+
 const renamed = (v) =>
   (typeof v === "string" ? v.replaceAll("\u09b6\u09c7\u0996\u09be\u09b0 \u09b2\u09be\u0987\u09ac\u09cd\u09b0\u09c7\u09b0\u09bf", "\u099f\u09be\u0995\u09be \u0993 \u09b6\u09c7\u09af\u09bc\u09be\u09b0") : v);
 
@@ -470,7 +493,7 @@ ok("read-aloud too", loads(fromNext, "\\/read-aloud\\.js"));
    going to grow a lot, one framework is worth more than the
    kilobytes, and the pages that come next are the ones React
    actually earns its keep on. The reasoning is under Stage 10 in
-   TRANSITION.md.
+   archive/TRANSITION.md.
 
    Accepted is not unwatched. This is a budget: it fails if the
    number grows, so an added dependency that drags the client
@@ -480,7 +503,7 @@ const CHUNK_BUDGET = 8;
   const chunks = new Set(fromNext.match(/\/_next\/static\/chunks\/[a-z0-9_-]+\.js/g) ?? []);
   ok(`Next ships ${chunks.size} script(s) of its own to a reading page`,
     chunks.size <= CHUNK_BUDGET,
-    `budget is ${CHUNK_BUDGET}; see the Stage 10 note in TRANSITION.md`);
+    `budget is ${CHUNK_BUDGET}; see the Stage 10 note in archive/TRANSITION.md`);
   ok("the article is readable with none of them run",
     fromNext.includes(ARTICLE.title.replace(/"/g, "&quot;"))
     || fromNext.includes("actually works"),
@@ -494,7 +517,7 @@ const CHUNK_BUDGET = 8;
    mine". It used to mean "serve the committed file", and there
    are no committed pieces left as of Stage 11.2; it still means
    two things that matter. `_redirects` holds a 301 for
-   `/insights/dsex`, a term that moved to `/learn/terms/`, and it
+   `/insights/dsex`, a term that moved to `/money/terms/`, and it
    only ever fires because this route declines the slug. And
    anything else gets the site's own 404 page rather than a
    framework one. */
@@ -524,7 +547,7 @@ const CHUNK_BUDGET = 8;
 
 /* ---------- the three reading hubs ----------
 
-   TRANSITION.md Stage 11.1. There is nothing on the Worker's side
+   archive/TRANSITION.md Stage 11.1. There is nothing on the Worker's side
    to compare these against: the hub it replaces is a committed
    HTML file with an empty grid in it, filled in the browser after
    a fetch, so a diff of the two would be a diff of one page
@@ -720,9 +743,9 @@ for (const [path, title, nav] of [
 
   /* Every school script the page loads, sorted.
 
-     Not the first one: the money school writes `/learn/learn.js`
+     Not the first one: the money school writes `/money/reader.js`
      into every page of the school and its ladder pages add
-     `/learn/stage.js` on top, so "the script" is two of them
+     `/money/stage.js` on top, so "the script" is two of them
      there and one everywhere else. Order is not compared because
      the builder puts the shared one first and a React shell puts
      it last, and both are module scripts.
@@ -733,9 +756,16 @@ for (const [path, title, nav] of [
      a module whose work React undoes: `components/scripts.tsx`
      says why at length. What both sides have to agree on is WHICH
      modules the page loads. */
+  /* `learn` is still in this pattern and the mount is `money`. It
+     has to be: the committed pages in `archive/schools-pages/` load
+     `/learn/learn.js`, and a pattern that could not see it would
+     extract nothing from the old side and compare "" against the
+     route's real answer, which passes for the wrong reason on the
+     day somebody deletes the script. Extract both spellings, then
+     let `moved()` map the old on to the new. */
   const schoolScripts = (html) => [...html.matchAll(
-    /(?:<script type="module" src|<link rel="modulepreload" href)="(\/(?:learn|deutsch|quran|english)\/[a-z-]+\.js)"/g)]
-    .map((m) => m[1]).sort().join(" ");
+    /(?:<script type="module" src|<link rel="modulepreload" href)="(\/(?:learn|money|deutsch|quran|english)\/[a-z-]+\.js)"/g)]
+    .map((m) => moved(m[1])).sort().join(" ");
 
   /* Text, with the tags taken out and the whitespace flattened.
      Indentation is the one difference that is guaranteed and
@@ -747,7 +777,7 @@ for (const [path, title, nav] of [
   /* One lesson per school, and each is the shape that school is
      the only one to have. */
   for (const [path, file, note] of [
-    ["/learn/basics-2/supply-demand.html", "learn/basics-2/supply-demand.html",
+    ["/money/basics-2/supply-demand.html", "learn/basics-2/supply-demand.html",
       "a lesson of the money school"],
     ["/deutsch/stufe-1/anfang.html", "deutsch/stufe-1/anfang.html",
       "a Teil, with German under the title"],
@@ -767,8 +797,8 @@ for (const [path, title, nav] of [
        article and a wrong one here: the thing on the other side
        of this comparison is a committed file. */
     const same = (what, extract) => {
-      const a = decode(extract(was));
-      const b = decode(extract(now));
+      const a = moved(decode(extract(was)));
+      const b = moved(decode(extract(now)));
       ok(`${path}: ${what}`, a === b,
         `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(b)}`);
     };
@@ -841,7 +871,7 @@ for (const [path, title, nav] of [
      be a page telling a reader there are fourteen lessons where
      the ladder shows thirteen. */
   for (const [path, file, note] of [
-    ["/learn/basics-2/index.html", "learn/basics-2/index.html",
+    ["/money/basics-2/index.html", "learn/basics-2/index.html",
       "a stage of the money school"],
     ["/deutsch/stufe-1/index.html", "deutsch/stufe-1/index.html",
       "a Stufe, with a practice book above the cards"],
@@ -857,8 +887,8 @@ for (const [path, title, nav] of [
     const was = committed(file);
     const now = page.html;
     const same = (what, extract) => {
-      const a = decode(extract(was));
-      const b = decode(extract(now));
+      const a = moved(decode(extract(was)));
+      const b = moved(decode(extract(now)));
       ok(`${path}: ${what}`, a === b,
         `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(b)}`);
     };
@@ -901,7 +931,7 @@ for (const [path, title, nav] of [
        ids the route rendered, so there is no attribute to compare
        and the committed page's is the thing that went away.
        Checked here rather than skipped silently. */
-    if (path.startsWith("/learn/")) {
+    if (path.startsWith("/money/")) {
       ok(`${path}: the bar counts what the route rendered`,
         /class="meter"/.test(now) && !/data-stage-progress/.test(now),
         "the money school's stage still carries the old progress markup");
@@ -917,12 +947,12 @@ for (const [path, title, nav] of [
       return inside === null ? null
         : [...inside.matchAll(/href="([^"]+)"/g)].map((m) => m[1]).join(" ");
     });
-    /* The money school's ladder page loaded `/learn/stage.js` on
-       top of `/learn/learn.js`; the second of those is the modal
+    /* The money school's ladder page loaded `/money/stage.js` on
+       top of `/money/reader.js`; the second of those is the modal
        term reader and stayed, the first drew the bar and is
        gone. */
-    if (path.startsWith("/learn/")) {
-      says(`${path}: the scripts the page loads`, "/learn/learn.js", schoolScripts(now));
+    if (path.startsWith("/money/")) {
+      says(`${path}: the scripts the page loads`, "/money/reader.js", schoolScripts(now));
     } else {
       same("the scripts the page loads", schoolScripts);
     }
@@ -944,7 +974,7 @@ for (const [path, title, nav] of [
 
   /* ---- the eighteen originals, which are a different thing ----
 
-     `/learn/terms/*.html` is not a generated page and never has
+     `/money/terms/*.html` is not a generated page and never has
      been: `build-lessons.mjs` says so at the top and steps around
      them. They were written by hand before the money school had a
      builder, and they carry their own title, their own eyebrow,
@@ -955,16 +985,16 @@ for (const [path, title, nav] of [
 
      That is a CHANGE to those eighteen pages rather than a port of
      them, and comparing the two fact by fact would only be
-     measuring a decision that has not been taken yet. TRANSITION.md
+     measuring a decision that has not been taken yet. archive/TRANSITION.md
      Stage 11.7 step 2 is where it gets taken. What is worth holding
      now is the part where a wrong answer costs a reader something:
      the address, and the key their ticks are filed under. */
   {
-    const page = await hub("/learn/terms/share.html");
-    ok("a term of basics-1 answers at /learn/terms/, not at its stage's folder",
+    const page = await hub("/money/terms/share.html");
+    ok("a term of basics-1 answers at /money/terms/, not at its stage's folder",
       page.status === 200, `status ${page.status}`);
     says("and says that address is its own",
-      "https://reiad.co.uk/learn/terms/share.html",
+      "https://reiad.co.uk/money/terms/share.html",
       attr(page.html, /<link rel="canonical" href="([^"]+)"/));
     /* The one that silently loses a year of somebody's progress.
        Every other lesson on the site files a tick under
@@ -1000,8 +1030,8 @@ for (const [path, title, nav] of [
     const was = committed(file);
     const now = page.html;
     const same = (what, extract) => {
-      const a = decode(extract(was));
-      const b = decode(extract(now));
+      const a = moved(decode(extract(was)));
+      const b = moved(decode(extract(now)));
       ok(`${path}: ${what}`, a === b,
         `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(b)}`);
     };
@@ -1023,7 +1053,7 @@ for (const [path, title, nav] of [
       /<main id="main">\s*<div class="wrap"[^>]*>([\s\S]*)<\/div>\s*<\/main>/)?.[1]
       ?.replace(/^\s+|\s+$/g, "") ?? null;
     ok(`${path}: the writing is the page's, character for character`,
-      body(was) !== null && body(was) === body(now),
+      body(was) !== null && moved(body(was)) === moved(body(now)),
       "the body differs from the committed page");
 
     /* The ladder's fallback list survives, which is the half a
@@ -1038,7 +1068,7 @@ for (const [path, title, nav] of [
   /* A lesson the ladder does not have is handed back to the asset
      router, which is what keeps all 251 committed pages answering
      while NEXT_ROUTES says nothing about the schools. */
-  const nothing = await hub("/learn/terms/not-a-lesson.html");
+  const nothing = await hub("/money/terms/not-a-lesson.html");
   ok("a slug the ladder does not name falls through",
     nothing.status === 404, `status ${nothing.status}`);
 
@@ -1048,15 +1078,15 @@ for (const [path, title, nav] of [
      They are pages, so the same check now holds the opposite, and
      it is the same failure it always guarded against: the route
      and the ladder disagreeing about what exists. */
-  const step = await hub("/learn/start/first-buy.html");
+  const step = await hub("/money/start/first-buy.html");
   ok("a step of the starter guide is a page of its own", step.status === 200,
     `status ${step.status}`);
 
   /* ---- the money school's own two pages, out of the rows ---- */
 
   {
-    const hubPage = await hub("/learn/index.html");
-    ok("/learn/index.html answers", hubPage.status === 200, `status ${hubPage.status}`);
+    const hubPage = await hub("/money/index.html");
+    ok("/money/index.html answers", hubPage.status === 200, `status ${hubPage.status}`);
 
     if (hubPage.status === 200) {
       const h = hubPage.html;
@@ -1067,31 +1097,31 @@ for (const [path, title, nav] of [
          stages while the ladder had eight and the count agreed by
          luck. Seventeen is eight steps plus seven ladder rungs
          plus the two doors at the foot. */
-      const stages = snapshot.stages.filter((r) => r.school === "learn");
+      const stages = snapshot.stages.filter((r) => r.school === "money");
       for (const stage of stages.slice(1)) {
-        ok(`/learn/ links its ${stage.slug} rung`,
-          h.includes(`href="/learn/${stage.slug}/index.html"`),
+        ok(`/money/ links its ${stage.slug} rung`,
+          h.includes(`href="/money/${stage.slug}/index.html"`),
           `no card for ${stage.slug}`);
       }
       const steps = snapshot.lessons
-        .filter((r) => r.school === "learn" && r.stage === "start");
+        .filter((r) => r.school === "money" && r.stage === "start");
       for (const step of steps) {
-        ok(`/learn/ links the starter step ${step.slug}`,
-          h.includes(`href="/learn/start/${step.slug}.html"`),
+        ok(`/money/ links the starter step ${step.slug}`,
+          h.includes(`href="/money/start/${step.slug}.html"`),
           `no card for ${step.slug}`);
         /* And keeps the anchor the old accordion had, so a link
            somebody saved still lands where it named. */
-        ok(`/learn/ keeps the #step-${step.slug} anchor`,
+        ok(`/money/ keeps the #step-${step.slug} anchor`,
           h.includes(`id="step-${step.slug}"`), "the anchor is gone");
       }
 
-      ok("/learn/ tells a card that goes somewhere from one that does not",
+      ok("/money/ tells a card that goes somewhere from one that does not",
         h.includes('data-kind="go"') && h.includes('data-kind="info"'),
         "the page has only one kind of card on it");
     }
 
-    const contents = await hub("/learn/contents.html");
-    ok("/learn/contents.html answers", contents.status === 200,
+    const contents = await hub("/money/contents.html");
+    ok("/money/contents.html answers", contents.status === 200,
       `status ${contents.status}`);
 
     if (contents.status === 200) {
@@ -1104,9 +1134,9 @@ for (const [path, title, nav] of [
          the three stages it needs; asking for the other four
          would be asking the route to invent them. */
       const written = snapshot.lessons
-        .filter((r) => r.school === "learn" && r.body && SEEDED.includes(r.stage));
+        .filter((r) => r.school === "money" && r.body && SEEDED.includes(r.stage));
       const missing = written.filter((r) => !contents.html.includes(`>${r.title}<`));
-      ok(`/learn/contents.html names all ${written.length} written lessons`,
+      ok(`/money/contents.html names all ${written.length} written lessons`,
         missing.length === 0,
         `missing: ${missing.slice(0, 4).map((r) => r.slug).join(", ")}`);
     }

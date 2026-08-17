@@ -3,7 +3,7 @@
    where you were.
 
    The same deal as /deutsch/progress.js, /quran/progress.js and
-   /learn/progress.js, and deliberately the same shape so that
+   /money/progress.js, and deliberately the same shape so that
    anyone reading one file understands the others. It is a
    separate module because it stores separate things under
    separate keys: finishing the German ladder should not tell you

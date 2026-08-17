@@ -27,7 +27,7 @@
 
    The `track` half. A learner used to be "finance" or "skills",
    because the learning side had two front doors: money at
-   `/learn/` and everything else at `/skills/`. The money school
+   `/money/` and everything else at `/skills/`. The money school
    is an entry in the skills list now, so there is one door and
    the refinement has nothing left to refine. Anything a browser
    still has stored under `track` is ignored here and cleared the

@@ -5,7 +5,7 @@
    The subscribe box, and the topic chips above the article cards.
    Both were an inline <script type="module"> at the bottom of
    insights.html, which is where a page's own behaviour goes when
-   the page is a file somebody wrote by hand. TRANSITION.md Stage
+   the page is a file somebody wrote by hand. archive/TRANSITION.md Stage
    11.1 makes that page a Next.js route, and a route cannot carry
    an inline module without a second copy of these lines living
    inside a template string, unreadable and unlintable.

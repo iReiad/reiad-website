@@ -1,6 +1,6 @@
 {
   "//": [
-    "The site's own modules, as TypeScript. TRANSITION.md Stage 13.",
+    "The site's own modules, as TypeScript. archive/TRANSITION.md Stage 13.",
     "",
     "Output goes to aab/ at the exact path each module is served",
     "from, because those paths are named in HTML, in sw.js and in",

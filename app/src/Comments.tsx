@@ -2,7 +2,7 @@
    Comments.tsx: the moderation queue.
 
    Nothing a reader writes appears anywhere until it is approved
-   here. That is the decision recorded in TRANSITION.md Stage 7 and
+   here. That is the decision recorded in archive/TRANSITION.md Stage 7 and
    the reason this panel exists.
 
    A comment body is rendered as a string child, which React

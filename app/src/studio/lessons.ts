@@ -1,7 +1,7 @@
 /* ============================================================
    lessons.ts: the four schools, as the Studio talks to them.
 
-   TRANSITION.md Stage 8, step 4. The prose of a lesson lives in
+   archive/TRANSITION.md Stage 8, step 4. The prose of a lesson lives in
    `school_lessons` now, and this is what the writing surface uses
    to read and change it. `functions/api/schools/` is the other
    end.
@@ -36,7 +36,7 @@ import { api } from "../api.ts";
     person would recognise. The ids are the ones in the database
     and in `shared/schools.js`. */
 export const SCHOOLS = [
-  { id: "learn", name: "Money", where: "/learn/" },
+  { id: "money", name: "Money", where: "/money/" },
   { id: "deutsch", name: "German", where: "/deutsch/" },
   { id: "quran", name: "Quran", where: "/quran/" },
   { id: "english", name: "English", where: "/english/" },
@@ -64,12 +64,12 @@ export interface Stage {
   bn: string;
   status: string;
   /** The money school's starter guide: its steps are anchors on
-      `/learn/` itself rather than pages of their own. */
+      `/money/` itself rather than pages of their own. */
   inline?: boolean;
   /** A stage whose pages were published somewhere else first and
-      kept those URLs. `basics-1` is `/learn/terms/`. Its lessons
+      kept those URLs. `basics-1` is `/money/terms/`. Its lessons
       ARE editable here: the builder writes them to that base
-      rather than to /learn/<stage>/, so a `base` says where the
+      rather than to /money/<stage>/, so a `base` says where the
       pages go and not whether they are written from these rows. */
   base?: string;
   [extra: string]: unknown;
@@ -93,7 +93,7 @@ export interface Stage {
     here. `basics-1`'s eighteen term pages are written from these
     rows: their prose was lifted out of the committed HTML into
     the database, and the builder writes them back to
-    `/learn/terms/`, which is what its `base` means. So a `base`
+    `/money/terms/`, which is what its `base` means. So a `base`
     says where a stage's pages go, not whether anybody can write
     them, and it is no longer a reason to refuse an editor.
 
@@ -127,7 +127,7 @@ export interface Stage {
     destroy them. */
 export function elsewhere(stage: Stage): { what: string; where: string } | null {
   if (stage.inline) {
-    return { what: "on the hub page itself, as accordion steps rather than pages", where: "/learn/" };
+    return { what: "on the hub page itself, as accordion steps rather than pages", where: "/money/" };
   }
   return null;
 }

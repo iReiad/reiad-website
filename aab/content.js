@@ -62,25 +62,25 @@ export const ARTICLES = [];
    The Learn area.
 
    The curriculum, every stage, section and lesson, lives in
-   /learn/curriculum.js, which is the one file to edit when the
+   /money/curriculum.js, which is the one file to edit when the
    Learn area changes. It is re-exported here so that the menu,
    the palette and build-meta.mjs have a single import as before.
 
    TERM_GROUPS below is the ORIGINAL eighteen-term grouping, kept
-   because /learn/terms/*.html and the A–Z glossary were built
+   because /money/terms/*.html and the A–Z glossary were built
    around it and its URLs are published. It is now the same data
    as stage `basics-1` of the curriculum; curriculum.js is the
    source of truth for the structure, this for the term cards.
 
    NOTE the relative specifier below. content.js is imported two
    ways: by the browser from /content.js, and by build-meta.mjs
-   from the filesystem. "./learn/curriculum.js" resolves correctly
-   in both; "/learn/curriculum.js" would resolve to the filesystem
+   from the filesystem. "./money/curriculum.js" resolves correctly
+   in both; "/money/curriculum.js" would resolve to the filesystem
    root under Node and break the build scripts.
    ============================================================ */
 import {
   STAGES, SCHOOLS, allLessons, stageLessons, stageUrl, lessonUrl, findStage,
-} from "./learn/curriculum.js";
+} from "./money/curriculum.js";
 
 /* The second school. German has its own curriculum file for the
    same reason it has its own mount: nothing about ব্রোকার belongs
@@ -92,7 +92,7 @@ import {
 
 /* The third school, and the same argument a third time: nothing
    about ইদাফা belongs in a file about Akkusativ either. The
-   aliases are not decoration: /learn/ already exports a
+   aliases are not decoration: /money/ already exports a
    `lessonUrl` and an `allLessons`, and importing this school's
    under the same names would silently shadow them. */
 import {
@@ -209,18 +209,18 @@ export const TERMS = TERM_GROUPS.flatMap((g) =>
      slug     stable id, used for the anchor on /skills/
      bn / en  the name, in both languages
      url      where it lives, for a school that has been built
-     icon     a key in /learn/icons.js, see that file's rules
+     icon     a key in /money/icons.js, see that file's rules
      status   "live" or "soon"
      blurb    one Bangla sentence: what you would actually get
      note     what still has to be written, for a "soon" one
    ============================================================ */
 export const SKILLS = [
   {
-    slug: "learn",
+    slug: "money",
     course: true,
     bn: "টাকা ও শেয়ার",
     en: "Money",
-    url: "/learn/index.html",
+    url: "/money/index.html",
     icon: "coins",
     status: "live",
     blurb: "বিও অ্যাকাউন্ট খোলা থেকে নিজে একটা কোম্পানি যাচাই করা পর্যন্ত, ধাপে ধাপে সাজানো। "
@@ -293,7 +293,7 @@ export const liveSkills = () => SKILLS.filter((s) => s.status === "live");
 
    A course is a ladder: it has stages, it keeps what you have
    read, and it can tell you what comes next. The money ladder at
-   /learn/ is one, and so are the three schools carrying
+   /money/ is one, and so are the three schools carrying
    `course: true` above. The kitchen and the travel desk are not:
    they hold pieces, and a piece has no next.
 
@@ -310,10 +310,10 @@ export const liveSkills = () => SKILLS.filter((s) => s.status === "live");
    ============================================================ */
 export const COURSES = [
   {
-    id: "learn",
+    id: "money",
     bn: "টাকা ও বিনিয়োগ",
     en: "The money ladder",
-    url: "/learn/index.html",
+    url: "/money/index.html",
     icon: "seed",
     blurb: "শেয়ার, সঞ্চয়পত্র, ঝুঁকি: একদম শুরু থেকে।",
   },
@@ -480,12 +480,12 @@ export const PAGES = [
      `_redirects` sends the old spelling here. */
   { title: "Home", url: "/",
     hint: "Page", blurb: "The short version of everything here." },
-  { title: "Learn hub: শেখার লাইব্রেরি", url: "/learn/index.html",
+  { title: "Money: টাকা ও শেয়ার", url: "/money/index.html",
     hint: "Page", blurb: "Start-to-research investing course in plain Bangla, eight stages deep." },
-  { title: "Learn: সব বিষয় এক নজরে", url: "/learn/contents.html",
-    hint: "Page", group: "learn", blurb: "Every lesson in the Learn area on one page, plus the A–Z of terms." },
+  { title: "Money: সব লেখা এক নজরে", url: "/money/contents.html",
+    hint: "Page", group: "money", blurb: "Every lesson of the money school on one page, plus the A–Z of terms." },
   { title: "Skills: দক্ষতা", url: "/skills/index.html",
-    hint: "Page", blurb: "Everything here that isn't money: German, Quran, English, cooking, travel, reviews." },
+    hint: "Page", blurb: "Every course here: money, German, Quran, English, cooking and travel." },
   { title: "Deutsch: জার্মান, বাংলায়", url: "/deutsch/index.html",
     hint: "Page", blurb: "German from Bangla in four stages, with a daily practice book for the first three." },
 
@@ -698,7 +698,7 @@ export const searchIndex = () => [
   ...PAGES.filter((p) => !p.private).map((p) => ({
     title: p.title, url: p.url, hint: p.hint,
     kind: p.group === "case" ? "case" : p.group === "tool" ? "tool"
-      : p.group === "learn" ? "learn"
+      : p.group === "money" ? "money"
       : p.group === "deutsch" || p.url.startsWith("/deutsch/") ? "deutsch"
       : p.group === "english" || p.url.startsWith("/english/") ? "english"
       : p.group === "cooking" || p.url.startsWith("/cooking/") ? "cooking"
@@ -718,15 +718,15 @@ export const searchIndex = () => [
   })),
   ...STAGES.map((s) => ({
     title: `${s.kicker} · ${s.bn}: ${s.en}`,
-    url: s.inline ? "/learn/index.html#starter" : `/learn/${s.slug}/index.html`,
+    url: s.inline ? "/money/index.html#starter" : `/money/${s.slug}/index.html`,
     hint: "Stage",
-    kind: "learn",
+    kind: "money",
   })),
   ...allLessons().map((l) => ({
     title: `${l.bn}: ${l.en}`,
     url: l.url,
     hint: `${l.stage.kicker}`,
-    kind: "learn",
+    kind: "money",
   })),
 
   /* German. Both the four Stufen and every Teil inside them,
@@ -801,7 +801,7 @@ export const SEARCH_GROUPS = [
   ["page", "Pages"],
   ["tool", "Tools"],
   ["case", "Case studies"],
-  ["learn", "শেখার লাইব্রেরি · Learn"],
+  ["money", "শেখার লাইব্রেরি · Learn"],
   ["deutsch", "জার্মান · Deutsch"],
   ["quran", "কুরআনের আরবি · Qur'anic Arabic"],
   ["english", "ইংরেজি · English"],

@@ -6,12 +6,12 @@
    all of them, this puts a fourth one in beside them at runtime,
    which is how the menu and the search buttons already work.
 
-   The rule this file has to keep, from TRANSITION.md: nothing on
+   The rule this file has to keep, from archive/TRANSITION.md: nothing on
    the site requires an account. Signed out, this is one word in a
    corner and every page reads exactly as it did before. Signed in,
    it is a name and a way to leave.
 
-   TRANSITION.md, Stage 5.
+   archive/TRANSITION.md, Stage 5.
    ============================================================ */
 
 import {

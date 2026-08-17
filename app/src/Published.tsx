@@ -19,7 +19,7 @@
    be published, moved or deleted from here, because there is no
    row to change: it can be opened in the Studio, and publishing it
    from there takes over its URL and gives it every other action.
-   That is Stage 3 of TRANSITION.md, one piece at a time.
+   That is Stage 3 of archive/TRANSITION.md, one piece at a time.
 
    ---- and the thing it flags ----
 

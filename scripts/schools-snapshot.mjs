@@ -2,7 +2,7 @@
    schools-snapshot.mjs: the schools' rows, as a file a builder
    can read with no network.
 
-   TRANSITION.md Stage 8, step 4. The prose of a lesson lives in
+   archive/TRANSITION.md Stage 8, step 4. The prose of a lesson lives in
    D1 now and is edited at `/studio/?lessons`. That leaves one
    question the stage has to answer before the old
    `content/<stage>.js` files can be retired: **where does a

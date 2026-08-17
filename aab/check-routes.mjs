@@ -46,9 +46,9 @@ const MAX_HOPS = 10;
 
    The comment lines inside that array are stripped first, and they
    have to be. They quote patterns in prose, and the longest of them
-   says which pattern is deliberately absent: "/learn/*". Reading
+   says which pattern is deliberately absent: "/money/*". Reading
    the block without stripping them picked that up as a rule, so
-   this file believed the Worker answered every path under /learn/
+   this file believed the Worker answered every path under /money/
    when wrangler had been told no such thing. */
 const WORKER_FIRST = (
   readFileSync(join(ROOT, "../wrangler.toml"), "utf8")

@@ -5,7 +5,7 @@
      node scripts/check-preview.mjs \
        --preview https://<branch>-reiad-next.i-reiad.workers.dev
 
-   TRANSITION.md Stage 11. This is `next/parity.test.mjs`'s
+   archive/TRANSITION.md Stage 11. This is `next/parity.test.mjs`'s
    question asked of two deployed Workers instead of one local
    one, and it exists because that test cannot run everywhere.
 

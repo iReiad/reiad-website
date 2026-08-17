@@ -1,7 +1,7 @@
 /* ============================================================
    /portfolio.html
 
-   Ported out of `aab/portfolio.html` with TRANSITION.md Stage 11.3,
+   Ported out of `aab/portfolio.html` with archive/TRANSITION.md Stage 11.3,
    words unchanged: this is the portfolio index.
 
    The numbers are not here and must not be. Every figure on this
@@ -408,7 +408,7 @@ export default function Page() {
                 service, in the form it actually takes.
                   </span>
                 </a>
-                <a className="big-link" href="/learn/index.html" data-keep>
+                <a className="big-link" href="/money/index.html" data-keep>
                   <span className="num">03
                   </span>
                   <span className="t">The Bangla learning library

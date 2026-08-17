@@ -2,7 +2,7 @@
    school.ts: one lesson of one school, out of D1, and the four
    schools' own words about themselves.
 
-   TRANSITION.md Stage 11.7. The prose moved into the database at
+   archive/TRANSITION.md Stage 11.7. The prose moved into the database at
    Stage 8 and `shared/schools.js` has read it since; what did not
    move is the 251 pages, which are still generated files. This is
    the source half of the route that replaces them.
@@ -10,7 +10,7 @@
    ---- why a table rather than four routes ----
 
    The four builders write the same page. Compare `lessonPage()`
-   in `aab/learn/build-lessons.mjs` with `teilPage()`,
+   in `aab/money/build-lessons.mjs` with `teilPage()`,
    `partPage()` and the Quran school's `lessonPage()`: one
    article, one eyebrow, one heading with a drawing in it, one
    blurb, one meta line, the body, a backlink and a prev/next
@@ -47,7 +47,7 @@ export interface SchoolLook {
       now: the rail lists all six under one heading, so a page of
       the German school marks German rather than marking the
       Skills index it used to be reached through. */
-  current: "learn" | "deutsch" | "quran" | "english";
+  current: "money" | "deutsch" | "quran" | "english";
   /** The footer note. Three of the four say the same thing about
       being free and keeping progress in your own browser, in the
       words of the language they teach; the money school carries
@@ -59,7 +59,7 @@ export interface SchoolLook {
       table is two generators taking turns. */
   og: string;
   /** A script every page of the school loads, whatever kind of
-      page it is. Only the money school has one, `/learn/learn.js`,
+      page it is. Only the money school has one, `/money/reader.js`,
       and it is not progress: it is the modal term reader, which
       is why its eighteen glossary pages open one another in a
       panel instead of navigating away. The school's progress used
@@ -118,7 +118,7 @@ export interface StageLook {
   continueAttr: string;
   /** The stage's own script, which is never the lesson's, and
       nothing at all for a school whose ladder is React. The money
-      school's `/learn/stage.js` drew a bar and moved a button
+      school's `/money/stage.js` drew a bar and moved a button
       from `localStorage`; `components/progress.tsx` does both,
       from the ids the route already rendered. */
   script?: string;
@@ -182,7 +182,7 @@ const after = (stage: SchoolStage, stages: SchoolStage[]) =>
   stages[stages.findIndex((s) => s.slug === stage.slug) + 1] ?? null;
 
 export const LOOKS: Record<string, SchoolLook> = {
-  learn: {
+  money: {
     /* "টাকা ও শেয়ার" since Stage 11.8, and it is the rename rather
        than a tidy-up: the school used to be the site's second half
        and be called "the learning library", which made the other
@@ -190,11 +190,11 @@ export const LOOKS: Record<string, SchoolLook> = {
        seven now and it is named for what it teaches. Its URLs did
        not move and neither did anybody's progress. */
     title: "টাকা ও শেয়ার",
-    current: "learn",
+    current: "money",
     footer: "এই সাইটের সবকিছু সাধারণ শিক্ষামূলক তথ্য: বিনিয়োগ পরামর্শ না। "
       + "টাকা কোথাও রাখার আগে নিজে যাচাই করুন।",
     og: "stage-",
-    shellScript: "/learn/learn.js",
+    shellScript: "/money/reader.js",
     stageName: (stage) => String(stage.bn),
     sub: (lesson) => (lesson.en ? { text: String(lesson.en), cls: "en-sub" } : null),
     attr: { id: "data-lesson-id", stage: "data-stage", title: "data-lesson-title" },
@@ -211,7 +211,7 @@ export const LOOKS: Record<string, SchoolLook> = {
       ],
       minutes,
     },
-    alt: () => ({ url: "/learn/contents.html", label: "সব বিষয় এক নজরে →" }),
+    alt: () => ({ url: "/money/contents.html", label: "সব বিষয় এক নজরে →" }),
     /* The money school's lesson pages have never pointed anywhere
        past the end of a stage, and that is its own arrangement
        rather than an oversight: its stages are not a course you
@@ -228,7 +228,7 @@ export const LOOKS: Record<string, SchoolLook> = {
         { dt: "কতগুলো লেখা", dd: `${bnNum(c.total)}টি${c.live < c.total ? ` (${bnNum(c.live)}টি তৈরি)` : ""}` },
         { dt: "মোট সময়", dd: `প্রায় ${bnNum(c.minutes)} মিনিট` },
       ],
-      back: { url: "/learn/index.html", label: "সব ধাপ দেখুন" },
+      back: { url: "/money/index.html", label: "সব ধাপ দেখুন" },
       ladder: { label: "ধাপের ক্রম", prev: "← আগের ধাপ", next: "পরের ধাপ →" },
       note: "এই লাইব্রেরির সবকিছু সাধারণ শিক্ষামূলক তথ্য: বিনিয়োগ পরামর্শ না। "
         + "নিয়ম, হার আর ফি সময়ে সময়ে বদলায়; সিদ্ধান্তের আগে সংশ্লিষ্ট প্রতিষ্ঠানের "
@@ -506,7 +506,7 @@ export const getLesson = cache(async (
 
   /* The URL's middle segment is USUALLY the stage's slug and is
      not always. `basics-1` in the money school answers at
-     `/learn/terms/`, because its eighteen term pages were
+     `/money/terms/`, because its eighteen term pages were
      published there for a year before that school had a builder
      and a URL somebody shared does not move. So the stage is
      found by the address its lessons actually have, not by
@@ -600,7 +600,7 @@ export type Stage = NonNullable<Awaited<ReturnType<typeof getStage>>>;
 /** A whole school: its ladder, its lessons and what has been
     written of it.
 
-    TRANSITION.md Stage 11.8. The four hubs were hand-written
+    archive/TRANSITION.md Stage 11.8. The four hubs were hand-written
     pages copied verbatim into `lib/school-hubs.ts`, which was the
     right move while they were being ported and the wrong place
     for them to stay: a hub says how many stages a school has and

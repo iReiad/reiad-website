@@ -1,7 +1,7 @@
 /* ============================================================
    Lessons.tsx: the schools' prose, edited where it lives.
 
-   TRANSITION.md Stage 8, step 4. Until now a lesson was changed
+   archive/TRANSITION.md Stage 8, step 4. Until now a lesson was changed
    by editing `aab/<school>/content/<stage>.js`, running the
    school's builder and committing 60-odd regenerated pages. The
    text is a row in `school_lessons` as well now, and this is the
@@ -277,7 +277,7 @@ export function Lessons() {
               </button>
               <span className="mono" style={{ fontSize: "0.66rem" }}>
                 Saving writes the row. The page a reader gets is rebuilt by{" "}
-                <code>node aab/{open.school === "learn" ? "learn/build-lessons" : `${open.school}/build-${open.school}`}.mjs</code>.
+                <code>node aab/{open.school === "money" ? "learn/build-lessons" : `${open.school}/build-${open.school}`}.mjs</code>.
               </span>
             </div>
           ) : null}

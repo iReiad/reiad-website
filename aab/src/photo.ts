@@ -38,7 +38,7 @@
    regresses.
    ---- this file is TypeScript, and the .js beside it is built ----
 
-   TRANSITION.md Stage 13. Edit `aab/src/photo.ts`; the committed
+   archive/TRANSITION.md Stage 13. Edit `aab/src/photo.ts`; the committed
    `aab/photo.js` is what the browser fetches, and
    `node scripts/build-modules.mjs --check` fails if it is edited
    in its built form.

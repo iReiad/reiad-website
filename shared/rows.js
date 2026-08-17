@@ -1,7 +1,7 @@
 /* ============================================================
    rows.js: what a row of this database actually is.
 
-   TRANSITION.md Stage 12, step 1: the types first, and only the
+   archive/TRANSITION.md Stage 12, step 1: the types first, and only the
    types. Nothing moves here. Twenty-three handlers under
    `functions/` read and write these tables and every one of them
    re-derives the shape of a row from the SQL it happens to have
@@ -79,7 +79,7 @@ export const SCHOOL_STATUS = ["live", "soon"];
     well because a row's `school` column is one of these and a
     description of the row should say so. `schools.test.mjs`
     fails if the two ever disagree. */
-export const SCHOOLS = ["learn", "deutsch", "quran", "english"];
+export const SCHOOLS = ["money", "deutsch", "quran", "english"];
 
 /** Every table this database has, and what it is for.
 

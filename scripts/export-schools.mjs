@@ -4,7 +4,7 @@
      node scripts/export-schools.mjs --db schools.db
      node scripts/export-schools.mjs --from-files
 
-   TRANSITION.md Stage 8, step 4. The other direction from
+   archive/TRANSITION.md Stage 8, step 4. The other direction from
    `import-schools.mjs`, and the one that runs often: the prose is
    edited at `/studio/?lessons` now, and this is what carries a
    change from the row it was saved into to the file the builders

@@ -15,7 +15,7 @@
    ------------------------------------------------------------
    WHY THIS IS A FOURTH SCHOOL AND NOT A FOURTH STUFE
 
-   /learn/ is about money, /deutsch/ about German, /quran/ about
+   /money/ is about money, /deutsch/ about German, /quran/ about
    reading the Quran. This is about speaking English, and it
    shares no vocabulary with any of them. It is mounted at
    /english/, built from the same parts as the German school so

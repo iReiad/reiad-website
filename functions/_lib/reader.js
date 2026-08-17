@@ -39,7 +39,7 @@
    though the key were a shared secret, which is the other half of
    the same family of attacks.
 
-   TRANSITION.md, Stage 7.
+   archive/TRANSITION.md, Stage 7.
    ============================================================ */
 
 const ALLOWED = new Set(["ES256", "RS256", "HS256"]);

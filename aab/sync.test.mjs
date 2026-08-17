@@ -118,7 +118,7 @@ console.log("resetting progress while signed in");
 
   // Exactly what the school's own reset does.
   await p.evaluate(async () => {
-    const m = await import("/learn/progress.js");
+    const m = await import("/money/progress.js");
     m.resetAll();
   });
   await p.waitForTimeout(4000);

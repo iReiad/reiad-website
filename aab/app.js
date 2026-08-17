@@ -378,7 +378,7 @@ function initShortcuts() {
 
   let goMode = false;
   const GO = {
-    h: "/index.html", l: "/learn/index.html", d: "/deutsch/index.html",
+    h: "/index.html", l: "/money/index.html", d: "/deutsch/index.html",
     s: "/skills/index.html", i: "/insights.html", t: "/tools/index.html",
   };
 

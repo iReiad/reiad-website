@@ -1,7 +1,7 @@
 # ============================================================
 # Import the four curricula into D1, from a browser.
 #
-# TRANSITION.md Stage 8. The import is two commands in a terminal
+# archive/TRANSITION.md Stage 8. The import is two commands in a terminal
 # and it has now failed twice for reasons that had nothing to do
 # with the SQL: run from the wrong folder, an empty file left
 # behind by a shell redirect, and a wrangler that imported that

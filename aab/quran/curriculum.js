@@ -14,7 +14,7 @@
    ------------------------------------------------------------
    WHY THIS IS A THIRD SCHOOL AND NOT A THIRD STUFE
 
-   /learn/ is about money, /deutsch/ is about German. This is
+   /money/ is about money, /deutsch/ is about German. This is
    about reading the Quran with understanding, and it shares no
    vocabulary with either. It is mounted at /quran/, built from
    the same parts as the German school so that anyone who has
@@ -900,7 +900,7 @@ export const dhapLessons = (dhap) =>
     Takes the ladder as an argument, defaulting to this file's own.
     Every other helper here is already a pure function of what it
     is handed, and these three were the only ones that closed over
-    the module's array. TRANSITION.md Stage 8 needs a builder to be
+    the module's array. archive/TRANSITION.md Stage 8 needs a builder to be
     able to pass in a ladder read from the database; no existing
     caller can tell the difference. */
 export const allLessons = (stages = DHAPS) => stages.flatMap(dhapLessons);

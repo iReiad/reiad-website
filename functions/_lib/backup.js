@@ -66,7 +66,7 @@
                 git, and if that ever changes it is the first thing
                 to drop.
 
-   TRANSITION.md, Stage 2.
+   archive/TRANSITION.md, Stage 2.
    ============================================================ */
 
 import { all } from "./db.js";

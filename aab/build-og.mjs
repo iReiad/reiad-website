@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
 import { readFileSync, writeFileSync } from "node:fs";
 import { globSync } from "node:fs";
 import { chromium } from "playwright";
-import { STAGES } from "./learn/curriculum.js";
+import { STAGES } from "./money/curriculum.js";
 import { STUFEN } from "./deutsch/curriculum.js";
 import { DHAPS } from "./quran/curriculum.js";
 import { TERMS } from "./english/curriculum.js";
@@ -197,15 +197,15 @@ const ASSIGN = [
   [/^portfolio\/stress\.html$/, "stress.png"],
   [/^portfolio\/dissertation\.html$/, "dissertation.png"],
   [/^portfolio\.html$/, "portfolio.png"],
-  [/^learn\/contents\.html$/, "contents.png"],
-  [/^learn\/index\.html$/, "learn.png"],
+  [/^money\/contents\.html$/, "contents.png"],
+  [/^money\/index\.html$/, "learn.png"],
   ...STAGES.map((st) => [
     st.slug === "basics-1"
-      ? /^learn\/(basics-1|terms)\//
-      : new RegExp(`^learn\\/${st.slug}\\/`),
+      ? /^money\/(basics-1|terms)\//
+      : new RegExp(`^money\\/${st.slug}\\/`),
     `stage-${st.slug}.png`,
   ]),
-  [/^learn\//, "learn.png"],
+  [/^money\//, "learn.png"],
   [/^skills\//, "skills.png"],
   /* Every practice book, before the per-Stufe rule below, which
      would otherwise claim them for their Stufe's card. This has

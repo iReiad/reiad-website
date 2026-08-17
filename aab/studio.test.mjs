@@ -430,7 +430,7 @@ check("a typed file name is tidied into a usable slug",
   (await page.inputValue("#f-slug")) === "german-alphabets",
   await page.inputValue("#f-slug"));
 
-/* TRANSITION.md, Stage 4: publishing to the database is the only
+/* archive/TRANSITION.md, Stage 4: publishing to the database is the only
    route out of the Studio. The file tools that used to sit here
    described a workflow that no longer exists, and they were the last
    thing keeping a SECOND article renderer alive in studio.js, which

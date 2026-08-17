@@ -33,7 +33,7 @@
    copy rather than merging with it, or "forget my progress" would
    quietly undo itself on the next page.
 
-   TRANSITION.md, Stage 6.
+   archive/TRANSITION.md, Stage 6.
    ============================================================ */
 
 import { SUPABASE_URL, SUPABASE_KEY, token, current } from "/account.js";

@@ -271,7 +271,7 @@ node scripts/check-next.mjs # a copy inside next/ that has drifted from the
 ```
 
 `check-pieces.mjs --live` also asks the database and prints where every
-piece actually lives, which is the one question `TRANSITION.md` Stage 3
+piece actually lives, which is the one question `archive/TRANSITION.md` Stage 3
 turns on.
 
 And when anything under `functions/` or `scripts/` changed:
@@ -453,7 +453,7 @@ the git log answers "did the prose change" rather than "was this
 refreshed".
 
 **The pages are gone as of 16 August 2026, and so is half of
-this.** TRANSITION.md Stage 11.7: 247 of the 251 school pages are
+this.** archive/TRANSITION.md Stage 11.7: 247 of the 251 school pages are
 Next.js routes rendered from the rows, and the four practice books
 are what is left. So there is no committed page to compare a build
 against, `check-schools-built.mjs` is in `archive/schools-builders/`
@@ -629,6 +629,29 @@ so React leaves it alone.
 `next/interactive.test.mjs` drives the built pages in a real browser
 and fails if any of this comes back.
 
+## The money school lives at /money/
+
+It was `/learn/` from the day it existed, because it *was* the
+learning half of the site: one school, and "learn" named the idea
+rather than the subject. There are six schools now and it is one of
+them, so it sits at `/money/` beside `/deutsch/`, `/quran/` and
+`/english/`, under the name it teaches: টাকা ও শেয়ার.
+
+Moved on 17 August 2026, and moved properly: the school id in D1,
+the folder `aab/money/`, the cascade layer `@layer money`, the
+route patterns in `worker.js`, `run_worker_first` in
+`wrangler.toml`, and every link in every lesson body. **No
+redirect.** The old addresses are gone, which is what a move is.
+
+**One thing did not move, and it must not.** The storage keys.
+Progress is still filed under `learn-read` and `learn-last`, and
+`aab/sync.js` still maps them to `learn:progress`. Those strings
+are in real browsers and in real accounts, and the rule at the top
+of "What a reader has read" is the whole reason: renaming a key
+does not move somebody's ticks, it loses them. `next/lib/progress.ts`
+maps the school `money` on to the key `learn-read` deliberately,
+and says so where it does it.
+
 ## Publishing a new case study
 
 The failure this list exists for is a finished case study that nobody can
@@ -642,18 +665,20 @@ reach. In order:
 3. Add its card to `portfolio.html`.
 4. `node aab/check-content.mjs` fails until steps 2 and 3 are both done.
 
-## Where an article lives, and where it is going
+## Where an article lives
 
-Both places, for now: a committed HTML file plus an entry in
-`content.js`, or a row in D1 written by the Studio. The row wins at
-the URL and the file is the fallback. Which lists can see which is
-uneven, and the plan for closing that, moving the writing into the
-database and then moving the site onto React and Next.js one route
-at a time, is in `TRANSITION.md`.
+In D1, written through the Studio, and rendered by a Next.js route.
+There is no file half any more and no fallback to one: `content.js`
+holds the menu, the palette and the site's own furniture, and the
+writing is rows.
 
-That file is a log as well as a plan. Anything that lands against a
-stage in it gets its status changed and a dated entry at the
-bottom, in the same commit as the work.
+`archive/TRANSITION.md` is how it got there, and it is **history
+rather than a plan**. It ran from the 15th to the 17th of August
+2026 and every stage in it has landed or been dropped. Read it for
+why something is the way it is; do not read it for what the site
+looks like, because the addresses and file names in it are the ones
+that were true on the day each entry was written. This file is the
+current description, and this file is the one kept true.
 
 ## Before opening a pull request
 

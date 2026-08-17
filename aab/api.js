@@ -10,7 +10,7 @@
 
    ---- this file is TypeScript, and the .js beside it is built ----
 
-   TRANSITION.md Stage 13. Edit `aab/src/api.ts`; the committed
+   archive/TRANSITION.md Stage 13. Edit `aab/src/api.ts`; the committed
    `aab/api.js` is what the browser fetches, and
    `node scripts/build-modules.mjs --check` fails if it is edited
    in its built form.

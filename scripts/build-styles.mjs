@@ -5,7 +5,7 @@
        node scripts/build-styles.mjs           # write it
        node scripts/build-styles.mjs --check   # or compare
 
-   TRANSITION.md Stage 14. Same arrangement as every other
+   archive/TRANSITION.md Stage 14. Same arrangement as every other
    generated thing here and for the reason in section 7: the site
    deploys by uploading `aab/` with no build step in CI, so the
    output is built on a laptop, committed, and compared by a

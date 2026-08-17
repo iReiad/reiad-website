@@ -5,7 +5,7 @@
    browser. The browser's copy merges the database with the list
    in `content.js`, because for a year some pieces were committed
    files with no row. That half is gone: every live piece is a row
-   as of 15 August 2026 (TRANSITION.md Stage 3), so a hub rendered
+   as of 15 August 2026 (archive/TRANSITION.md Stage 3), so a hub rendered
    here asks the database and nothing else.
 
    ---- what happens when the database is not there ----
@@ -17,7 +17,7 @@
    sentence, and printing the first one for the second is how a
    page quietly tells a reader that the writing was deleted.
 
-   Rule 8 of TRANSITION.md, one level down: the hub still renders,
+   Rule 8 of archive/TRANSITION.md, one level down: the hub still renders,
    with its hero, its prose and its links. It is a smaller page,
    not a broken one.
    ============================================================ */

@@ -493,7 +493,7 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
 
         {/* Publishing to the database is the only route out of the
             Studio now: the file tools it used to offer described a
-            workflow that no longer exists (TRANSITION.md, Stage 4).
+            workflow that no longer exists (archive/TRANSITION.md, Stage 4).
             So the one case worth saying out loud is the one where
             that route is unavailable. */}
         {dynamic ? (

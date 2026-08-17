@@ -41,7 +41,7 @@ export default {
    YOUR code pulls in, and this route's own code is a few kilobytes
    already. The 170 KB is the framework. The only lever that ever
    existed is `unstable_runtimeJS: false`, which is Pages Router
-   only. Stage 10 in TRANSITION.md records why that trade was taken
+   only. Stage 10 in archive/TRANSITION.md records why that trade was taken
    the way it was, so the next person to go looking finds the
    answer instead of the search. */
 

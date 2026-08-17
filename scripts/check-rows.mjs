@@ -5,7 +5,7 @@
 
        node scripts/check-rows.mjs
 
-   TRANSITION.md Stage 12, step 1. `shared/rows.js` is the one
+   archive/TRANSITION.md Stage 12, step 1. `shared/rows.js` is the one
    description of what a row of this database is, and a
    description is worth exactly what checks it. Two ways it can
    quietly stop being true, and this is both of them:

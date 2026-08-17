@@ -18,7 +18,7 @@ import { requireAdmin, throttle } from "../../_lib/auth.js";
 import { ENQUIRY_KIND, ENQUIRY_STATUS, allowed } from "../../../shared/rows.js";
 import { read } from "../../_lib/input.js";
 
-/* TRANSITION.md Stage 12, step 1: the list is shared/rows.js now. */
+/* archive/TRANSITION.md Stage 12, step 1: the list is shared/rows.js now. */
 const KINDS = ENQUIRY_KIND;
 
 /* Ten characters, which is what this endpoint has always asked
@@ -47,7 +47,7 @@ export async function onRequest(context) {
       if (early.bad) return early.bad;
       if (early.value.website) return ok({ received: true });
 
-      /* TRANSITION.md Stage 12, step 2. Same declaration as the
+      /* archive/TRANSITION.md Stage 12, step 2. Same declaration as the
          other two write endpoints, this one's own minimum, and
          the reasons this endpoint has always answered with. */
       const got = await read(request, {

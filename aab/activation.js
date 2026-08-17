@@ -13,7 +13,7 @@
    So every side effect a page performs on load fires while the
    reader is merely moving the mouse across a list of links:
 
-     · /learn/progress.js ticked lessons off as read, so the hub
+     · /money/progress.js ticked lessons off as read, so the hub
        filled with ✓ marks for lessons nobody had opened, and the
        "resume where you were" card pointed at wherever the
        pointer had last drifted.

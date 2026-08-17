@@ -26,7 +26,7 @@ import { latest, subscribe } from "../lib/progress";
 import { Icon } from "./icons";
 
 const WORDS: Record<string, { school: string; go: string }> = {
-  learn: { school: "টাকা ও শেয়ার", go: "পড়া চালিয়ে যান" },
+  money: { school: "টাকা ও শেয়ার", go: "পড়া চালিয়ে যান" },
   deutsch: { school: "জার্মান", go: "পড়া চালিয়ে যান" },
   quran: { school: "কুরআনের আরবি", go: "পড়া চালিয়ে যান" },
   english: { school: "মন থেকে ইংরেজি", go: "পড়া চালিয়ে যান" },
@@ -40,7 +40,7 @@ export function ContinueCard() {
     subscribe,
     () => {
       try {
-        return ["learn", "deutsch", "quran", "english"]
+        return ["money", "deutsch", "quran", "english"]
           .map((s) => localStorage.getItem(`${s}-last`) ?? "")
           .join("|");
       } catch { return ""; }

@@ -1,6 +1,6 @@
 /* Types for rows.js: what a row of this database is.
 
-   TRANSITION.md Stage 12, step 1. Every handler under
+   archive/TRANSITION.md Stage 12, step 1. Every handler under
    `functions/` reads these tables and re-derives their shape from
    whatever SQL it happens to have written, so a row is `any` on
    the way out of D1 and stays `any` all the way to the page. This
@@ -19,7 +19,7 @@ export const SUBSCRIBER_STATUS: readonly ["pending", "confirmed", "unsubscribed"
 export const ENQUIRY_STATUS: readonly ["new", "replied", "closed"];
 export const ENQUIRY_KIND: readonly ["hiring", "project", "reader", "general"];
 export const SCHOOL_STATUS: readonly ["live", "soon"];
-export const SCHOOLS: readonly ["learn", "deutsch", "quran", "english"];
+export const SCHOOLS: readonly ["money", "deutsch", "quran", "english"];
 
 export type Section = (typeof SECTIONS)[number];
 export type ArticleStatus = (typeof ARTICLE_STATUS)[number];
@@ -102,7 +102,7 @@ export interface QuestionRow {
     `author_id` is a Supabase user id, written only after the
     Worker has verified the signature on the reader's access
     token. `author_name` is a COPY of the display name at the
-    time of writing, which is the seam in TRANSITION.md doing its
+    time of writing, which is the seam in archive/TRANSITION.md doing its
     job: D1 holds what a signed-out reader needs to render the
     page, Supabase holds who people are, and the two never join.
 

@@ -56,7 +56,7 @@ const { icon } = await import(join(HERE, "icons.js"));
 
 /* ---------- where the ladder and the text come from ----------
 
-   TRANSITION.md Stage 8, step 3. By default, from `curriculum.js`
+   archive/TRANSITION.md Stage 8, step 3. By default, from `curriculum.js`
    and the prose beside it, which is what every existing
    invocation does and what the committed pages were built from.
 
@@ -124,7 +124,7 @@ const PREPAINT = `  <script>
         var t = localStorage.getItem("theme");
         if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
         var a = localStorage.getItem("audience");
-        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
+        if (a === "money" || a === "work") d.setAttribute("data-audience", a);
       } catch (e) {}
     })();
   </script>`;
@@ -686,7 +686,7 @@ ${days}
 
 /* Only the practice books.
 
-   TRANSITION.md Stage 11.7. This file used to write a Stufe's
+   archive/TRANSITION.md Stage 11.7. This file used to write a Stufe's
    ladder and all fourteen of its Teil pages as well, and those
    are a Next.js route now, rendered from the rows the Studio
    writes. Writing them here too would put a file back at an

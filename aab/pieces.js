@@ -22,7 +22,7 @@
    writing calls this file, and the shape it returns is the same
    whichever store the piece came from.
 
-   TRANSITION.md, Stage 1.
+   archive/TRANSITION.md, Stage 1.
    ============================================================ */
 
 import { SECTIONS, findSection, livePieces, pieceUrl } from "/content.js";

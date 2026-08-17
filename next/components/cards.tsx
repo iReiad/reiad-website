@@ -40,7 +40,7 @@ const dateLabel = (piece: Piece) =>
       }).format(new Date(`${piece.date}T00:00:00Z`))
     : "";
 
-/* The drawings, verbatim out of `aab/learn/icons.js`, for the
+/* The drawings, verbatim out of `aab/money/icons.js`, for the
    three names a reading section uses.
 
    Copied rather than imported, and that is not laziness: it is a

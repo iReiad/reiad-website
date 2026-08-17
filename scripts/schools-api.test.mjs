@@ -3,7 +3,7 @@
 
      node scripts/schools-api.test.mjs
 
-   TRANSITION.md Stage 8. `schools.test.mjs` proves the rows are
+   archive/TRANSITION.md Stage 8. `schools.test.mjs` proves the rows are
    the same thing the files say. This proves the door they are
    read and written through: that a ladder comes back in ladder
    order, that a lesson comes back with its text, that the write
@@ -82,27 +82,27 @@ const call = async (method, path, { json, cookie } = {}) => {
 
 const PAYLOAD = {
   stages: [
-    { school: "learn", slug: "start", position: 0, title: "শুরু",
+    { school: "money", slug: "start", position: 0, title: "শুরু",
       status: "live", meta: { kicker: "ধাপ ০", icon: "seed", can: "শুরু করা" } },
-    { school: "learn", slug: "basics-1", position: 1, title: "ভিত্তি",
+    { school: "money", slug: "basics-1", position: 1, title: "ভিত্তি",
       status: "live", meta: { kicker: "ধাপ ১", icon: "bridge" } },
   ],
   sections: [
-    { school: "learn", stage: "start", ident: "steps", position: 0, title: "ধাপে ধাপে", meta: {} },
-    { school: "learn", stage: "basics-1", ident: "terms", position: 0, title: "শব্দ", meta: {} },
+    { school: "money", stage: "start", ident: "steps", position: 0, title: "ধাপে ধাপে", meta: {} },
+    { school: "money", stage: "basics-1", ident: "terms", position: 0, title: "শব্দ", meta: {} },
   ],
   lessons: [
-    { school: "learn", stage: "start", slug: "money-first", section: "steps", position: 0,
+    { school: "money", stage: "start", slug: "money-first", section: "steps", position: 0,
       title: "টাকাটা আগে ঠিক করুন", minutes: 6, status: "live",
       meta: { icon: "coin", blurb: "প্রথম কাজ" }, body: "<p>প্রথমে বাজেট।</p>" },
-    { school: "learn", stage: "start", slug: "emergency", section: "steps", position: 1,
+    { school: "money", stage: "start", slug: "emergency", section: "steps", position: 1,
       title: "জরুরি তহবিল", minutes: 5, status: "live", meta: { icon: "shield" },
       /* Not written yet. A row with an empty body is a real state:
          the builders draw an "আসছে" page for it and a hub counts
          it as not-yet-written, so it must survive the trip as an
          empty string rather than as a missing row. */
       body: "" },
-    { school: "learn", stage: "basics-1", slug: "share", section: "terms", position: 0,
+    { school: "money", stage: "basics-1", slug: "share", section: "terms", position: 0,
       title: "শেয়ার", minutes: 4, status: "live", meta: { icon: "slice" },
       body: "<p>একটা কোম্পানির টুকরো।</p>" },
   ],
@@ -146,7 +146,7 @@ const ADMIN = "reiad_session=t-admin";
 /* ---------- reading it back ---------- */
 
 {
-  const res = await call("GET", "/learn");
+  const res = await call("GET", "/money");
   check("the ladder answers", res.status, 200);
   check("in ladder order, not alphabetical",
     res.body.stages.map((s) => s.slug), ["start", "basics-1"]);
@@ -160,7 +160,7 @@ const ADMIN = "reiad_session=t-admin";
   /* The key each school uses for the things inside a section. A
      reader that always said `lessons` would look correct here and
      hand /deutsch/ and /english/ something empty. */
-  const key = WITHIN.learn;
+  const key = WITHIN.money;
   check("the lessons are under the key this school uses", key, "lessons");
   check("and they are there",
     first.sections[0][key].map((l) => l.slug), ["money-first", "emergency"]);
@@ -175,13 +175,13 @@ const ADMIN = "reiad_session=t-admin";
 }
 
 {
-  const res = await call("GET", "/learn/start");
+  const res = await call("GET", "/money/start");
   check("a stage's lessons answer in page order",
     res.body.lessons.map((l) => l.slug), ["money-first", "emergency"]);
 }
 
 {
-  const res = await call("GET", "/learn/start/money-first");
+  const res = await call("GET", "/money/start/money-first");
   check("one lesson answers", res.status, 200);
   check("with its text", res.body.lesson.body, "<p>প্রথমে বাজেট।</p>");
   check("and its title", res.body.lesson.bn, "টাকাটা আগে ঠিক করুন");
@@ -191,18 +191,18 @@ const ADMIN = "reiad_session=t-admin";
   /* Every URL on this site ends in .html, and the slug guard in
      the Next article route once refused exactly that. Once is
      enough for it to be a check everywhere a slug is read. */
-  const res = await call("GET", "/learn/start/money-first.html");
+  const res = await call("GET", "/money/start/money-first.html");
   check("asked for at the address the site actually uses", res.status, 200);
 }
 
 {
-  const res = await call("GET", "/learn/start/emergency");
+  const res = await call("GET", "/money/start/emergency");
   check("a lesson nobody has written is a row, not a 404", res.status, 200);
   check("and its body is empty rather than absent", res.body.lesson.body, "");
 }
 
 {
-  const res = await call("GET", "/learn/start/not-a-lesson");
+  const res = await call("GET", "/money/start/not-a-lesson");
   check("an unknown lesson is a 404", res.status, 404);
   const school = await call("GET", "/pottery");
   check("and so is an unknown school", school.status, 404);
@@ -213,13 +213,13 @@ const ADMIN = "reiad_session=t-admin";
 {
   const res = await call("PUT", "", {
     json: {
-      stages: [{ school: "learn", slug: "start", position: 0, title: "x" }],
+      stages: [{ school: "money", slug: "start", position: 0, title: "x" }],
       lessons: [{ school: "deutsch", stage: "stufe-1", slug: "y", position: 0, title: "z" }],
     },
     cookie: ADMIN,
   });
   check("a payload naming two schools is refused", res.status, 400);
-  const after = await call("GET", "/learn");
+  const after = await call("GET", "/money");
   check("and the school it would have half-written is untouched",
     after.body.counts, { total: 3, written: 2 });
 }
@@ -227,7 +227,7 @@ const ADMIN = "reiad_session=t-admin";
 {
   const res = await call("PUT", "", { json: { stages: [], lessons: [] }, cookie: ADMIN });
   check("an empty payload is refused", res.status, 400);
-  const after = await call("GET", "/learn");
+  const after = await call("GET", "/money");
   check("because a curriculum is never emptied by accident",
     after.body.counts, { total: 3, written: 2 });
 }
@@ -237,7 +237,7 @@ const ADMIN = "reiad_session=t-admin";
      prose to say it. That is what a contents page marks and what
      the Studio's picker greys out, and sending the bodies to
      answer it would be most of a megabyte for the money school. */
-  const res = await call("GET", "/learn/start");
+  const res = await call("GET", "/money/start");
   const flags = res.body.lessons.map((l) => [l.slug, l.written]);
   check("a lesson list says which are written", flags,
     [["money-first", true], ["emergency", false]]);
@@ -248,23 +248,23 @@ const ADMIN = "reiad_session=t-admin";
 /* ---------- one lesson, which is what the editor saves ---------- */
 
 {
-  const res = await call("PUT", "/learn/start/money-first", {
+  const res = await call("PUT", "/money/start/money-first", {
     json: { body: "<p>নতুন কথা।</p>" },
   });
   check("a stranger cannot write one lesson either", res.status, 401);
-  const after = await call("GET", "/learn/start/money-first");
+  const after = await call("GET", "/money/start/money-first");
   check("and the lesson it would have overwritten is untouched",
     after.body.lesson.body, "<p>প্রথমে বাজেট।</p>");
 }
 
 {
-  const res = await call("PUT", "/learn/start/money-first", {
+  const res = await call("PUT", "/money/start/money-first", {
     json: { body: "<p>নতুন কথা।</p>" }, cookie: ADMIN,
   });
   check("one lesson's prose can be written", res.status, 200);
   check("and comes back written", res.body.lesson.body, "<p>নতুন কথা।</p>");
 
-  const again = await call("GET", "/learn/start/money-first");
+  const again = await call("GET", "/money/start/money-first");
   check("and is what the next reader gets", again.body.lesson.body, "<p>নতুন কথা।</p>");
   check("its title was not asked about, so it did not change",
     again.body.lesson.bn, "টাকাটা আগে ঠিক করুন");
@@ -275,7 +275,7 @@ const ADMIN = "reiad_session=t-admin";
      does. `aab/schema.sql` says so where the column is defined,
      and a lesson editor that skipped it would be the second
      sanitiser the three-place rule exists to prevent. */
-  const res = await call("PUT", "/learn/start/money-first", {
+  const res = await call("PUT", "/money/start/money-first", {
     json: { body: '<p>ঠিক আছে।</p><script>alert(1)</script>' }, cookie: ADMIN,
   });
   check("a lesson body is sanitised on the way in", res.status, 200);
@@ -284,12 +284,12 @@ const ADMIN = "reiad_session=t-admin";
 }
 
 {
-  const before = await call("GET", "/learn");
-  const res = await call("PUT", "/learn/start/invented", {
+  const before = await call("GET", "/money");
+  const res = await call("PUT", "/money/start/invented", {
     json: { body: "<p>কেউ এটা চায়নি।</p>" }, cookie: ADMIN,
   });
   check("a lesson that is not in the ladder is a 404", res.status, 404);
-  const after = await call("GET", "/learn");
+  const after = await call("GET", "/money");
   check("and it was not inserted", after.body.counts, before.body.counts);
 }
 
@@ -297,23 +297,23 @@ const ADMIN = "reiad_session=t-admin";
   /* Emptying a lesson is not a deletion and not a failure: an
      empty body is what makes a builder draw an আসছে page, so a
      writer taking a lesson back has to be able to say it. */
-  const res = await call("PUT", "/learn/start/money-first", {
+  const res = await call("PUT", "/money/start/money-first", {
     json: { body: "" }, cookie: ADMIN,
   });
   check("a lesson can be emptied", res.status, 200);
-  const after = await call("GET", "/learn");
+  const after = await call("GET", "/money");
   check("and that means unwritten, not gone",
     after.body.counts, { total: 3, written: 1 });
-  const still = await call("GET", "/learn/start/money-first");
+  const still = await call("GET", "/money/start/money-first");
   check("the row is still there", still.status, 200);
 }
 
 {
-  const res = await call("PUT", "/learn/start", {
+  const res = await call("PUT", "/money/start", {
     json: { body: "<p>x</p>" }, cookie: ADMIN,
   });
   check("a stage is not writable one at a time", res.status, 400);
-  const school = await call("PUT", "/learn", { json: { body: "<p>x</p>" }, cookie: ADMIN });
+  const school = await call("PUT", "/money", { json: { body: "<p>x</p>" }, cookie: ADMIN });
   check("and neither is a school", school.status, 400);
 }
 

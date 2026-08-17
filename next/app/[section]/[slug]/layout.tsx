@@ -105,13 +105,13 @@ export function SchoolShell({ school, children }: { school: string; children: Re
 
          The money school is the one with a shell script, and it
          is the modal term reader rather than anything to do with
-         progress: `/learn/learn.js` is what makes a `.term` link
+         progress: `/money/reader.js` is what makes a `.term` link
          open the glossary in a panel instead of navigating away.
          Its progress moved to `components/progress.tsx` with the
          hub. */
       scripts={
         <>
-          {school === "learn" ? <ModalReader /> : null}
+          {school === "money" ? <ModalReader /> : null}
           {look.shellScript ? <SiteScripts srcs={[look.shellScript]} /> : null}
         </>
       }
@@ -121,7 +121,7 @@ export function SchoolShell({ school, children }: { school: string; children: Re
   );
 }
 
-/** The money school's reader, which `/learn/learn.js` fills.
+/** The money school's reader, which `/money/reader.js` fills.
 
     Its eighteen term pages open one another inside this panel
     rather than navigating away, which is most of why they read

@@ -1,7 +1,7 @@
 /* ============================================================
    icons.js: the little drawings for the Quranic Arabic school.
 
-   Same family as /deutsch/icons.js and /learn/icons.js, and the
+   Same family as /deutsch/icons.js and /money/icons.js, and the
    same reason for existing: a shape survives a week away from
    the site in a way that "দিন ১৪" does not. Every ধাপ and every
    day has one mark, always drawn the same way, and it appears

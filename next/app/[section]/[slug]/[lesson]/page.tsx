@@ -1,7 +1,7 @@
 /* ============================================================
    A lesson of one of the four schools, rendered from its row.
 
-   TRANSITION.md Stage 11.7. 251 of the 253 HTML files left in
+   archive/TRANSITION.md Stage 11.7. 251 of the 253 HTML files left in
    `aab/` are school pages, generated on a laptop from a committed
    export of the database and committed themselves. A lesson's
    words therefore exist in three places at once: the row the
@@ -154,7 +154,7 @@ export default async function LessonPage({ params }: { params: Params }) {
               opened, which counted every reader who arrived,
               saw it was the wrong lesson and left. Opening moves
               the bookmark; finishing is something you say. */}
-          {school === "learn" && !soon ? (
+          {school === "money" && !soon ? (
             <LessonTick
               school={school} id={it.id} title={String(it.bn)} stage={stage.slug}
               url={it.url}

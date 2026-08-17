@@ -28,7 +28,7 @@
 
    ---- this file is TypeScript, and the .js beside it is built ----
 
-   TRANSITION.md Stage 13, and the first module to move. Edit
+   archive/TRANSITION.md Stage 13, and the first module to move. Edit
    `aab/src/share-card.ts`; `node scripts/build-modules.mjs`
    writes `aab/share-card.js`, which is what the browser fetches
    and what is committed. `scripts/check-modules.mjs` rebuilds and
@@ -36,7 +36,7 @@
    than being quietly overwritten by the next build.
 
    The output is committed for the reason section 7 of
-   TRANSITION.md gives: the site deploys by uploading `aab/` with
+   archive/TRANSITION.md gives: the site deploys by uploading `aab/` with
    no build step in CI, and adding one would put a build command
    in a dashboard that cannot be seen from this repository.
    ============================================================ */

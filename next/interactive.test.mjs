@@ -95,7 +95,7 @@ const CASES = [
    out of the port. */
 /* Three answers, not four. The `track` axis went at Stage 11.8:
    it split a learner into "finance" and "skills" because the
-   learning half had two front doors, money at /learn/ and
+   learning half had two front doors, money at /money/ and
    everything else at /skills/. The money school is one entry in
    the skills list now, so there is one door and nothing left to
    refine. Anything a browser still has stored under `track` is

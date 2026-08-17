@@ -6,7 +6,7 @@
        node scripts/build-school-icons.mjs           # write it
        node scripts/build-school-icons.mjs --check   # or compare
 
-   TRANSITION.md Stage 11.7. A lesson page puts a small drawing in
+   archive/TRANSITION.md Stage 11.7. A lesson page puts a small drawing in
    its heading, and the four sets of them are browser modules
    under `aab/<school>/icons.js`. Turbopack refuses to resolve
    above `next/`, which is the wall `shared/` exists to get round,
@@ -33,7 +33,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "next", "lib", "school-icons.ts");
 
-const SCHOOLS = ["learn", "deutsch", "quran", "english"];
+const SCHOOLS = ["money", "deutsch", "quran", "english"];
 
 /** Every name the school draws.
 

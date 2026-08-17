@@ -1,12 +1,12 @@
 /* ============================================================
-   /learn/contents.html, the money school's full index.
+   /money/contents.html, the money school's full index.
 
    A static segment beside `index.html` under `[section]`, so it
    answers only where a school has one. Today that is the money
    school alone, which is why anything else here is a 404 and
    falls through to the asset router.
 
-   Built from the rows since TRANSITION.md Stage 11.8. It was a
+   Built from the rows since archive/TRANSITION.md Stage 11.8. It was a
    hand-written page, then a hand-written string, and the whole
    value of a complete list is that it is complete: see the note
    at the top of `components/school-contents.tsx`.
@@ -20,14 +20,14 @@ import { siteOrigin } from "../../../lib/article";
 
 type Params = { params: Promise<{ section: string }> };
 
-const HAS_CONTENTS = new Set(["learn"]);
+const HAS_CONTENTS = new Set(["money"]);
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { section } = await params;
   if (!HAS_CONTENTS.has(section)) return {};
 
   const origin = siteOrigin();
-  const url = `${origin}/learn/contents.html`;
+  const url = `${origin}/money/contents.html`;
 
   return {
     title: "সব লেখা · টাকা ও শেয়ার · Reiad's Library",

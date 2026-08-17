@@ -5,7 +5,7 @@
        node scripts/build-modules.mjs           # write them
        node scripts/build-modules.mjs --check   # or compare
 
-   TRANSITION.md Stage 13, and section 7 for why the output is
+   archive/TRANSITION.md Stage 13, and section 7 for why the output is
    committed rather than built in CI: the site deploys by
    uploading `aab/`, and adding a build step would put a build
    command in a dashboard that cannot be seen from this

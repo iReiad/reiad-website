@@ -12,7 +12,7 @@
 
    ---- and why the words are here rather than in a database ----
 
-   The rule in TRANSITION.md 2b: a thing that changes because
+   The rule in archive/TRANSITION.md 2b: a thing that changes because
    somebody wrote something belongs in a database, and a thing
    that changes because somebody changed the code belongs in the
    repository. A hub's hero is the second kind. It is the page's

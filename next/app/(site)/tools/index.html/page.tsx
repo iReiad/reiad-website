@@ -1,7 +1,7 @@
 /* ============================================================
    /tools/index.html
 
-   Ported out of `aab/tools/index.html` with TRANSITION.md Stage
+   Ported out of `aab/tools/index.html` with archive/TRANSITION.md Stage
    11.4, words unchanged.
 
    ---- where the "use client" is, and why it is not here ----
@@ -207,7 +207,7 @@ export default function ToolsPage() {
                   Assumes the return arrives evenly and gets reinvested, and that you
               never miss a month. Real returns arrive lumpy: the shape holds, the
               exact number won't. 
-                  <a className="term" href="/learn/terms/compounding.html">চক্রবৃদ্ধি কী?
+                  <a className="term" href="/money/terms/compounding.html">চক্রবৃদ্ধি কী?
                   </a>
                 </p>
               </div>
@@ -329,10 +329,10 @@ export default function ToolsPage() {
               the rate gap entirely. Confirm current rates with Bangladesh Bank
               and your branch.
               
-                  <a className="term" href="/learn/terms/sanchayapatra.html">সঞ্চয়পত্র
+                  <a className="term" href="/money/terms/sanchayapatra.html">সঞ্চয়পত্র
                   </a> ·
               
-                  <a className="term" href="/learn/terms/fdr.html">এফডিআর
+                  <a className="term" href="/money/terms/fdr.html">এফডিআর
                   </a>
                 </p>
               </div>
@@ -420,7 +420,7 @@ export default function ToolsPage() {
               − 1, not the subtraction people usually do, which flatters the
               answer at high rates.
               
-                  <a className="term" href="/learn/terms/inflation.html">মূল্যস্ফীতি কী?
+                  <a className="term" href="/money/terms/inflation.html">মূল্যস্ফীতি কী?
                   </a>
                 </p>
               </div>
@@ -578,7 +578,7 @@ export default function ToolsPage() {
               thin liquidity mean the price you get out at can be worse than the
               one you planned. Size as though the stop might slip.
               
-                  <a className="term" href="/learn/terms/risk-return.html">ঝুঁকি ও রিটার্ন
+                  <a className="term" href="/money/terms/risk-return.html">ঝুঁকি ও রিটার্ন
                   </a>
                 </p>
               </div>
@@ -601,7 +601,7 @@ export default function ToolsPage() {
            Bangla, in about two minutes each.
             </p>
             <div className="hero-actions">
-              <a className="btn btn-solid" href="/learn/index.html">শেখার লাইব্রেরি →
+              <a className="btn btn-solid" href="/money/index.html">শেখার লাইব্রেরি →
               </a>
               <a className="btn btn-ghost" href="/insights.html">Read the longer pieces
               </a>
