@@ -2,7 +2,7 @@
   "version": "v88",
   "hashes": {
     "/offline.html": "55bcf02529d11190",
-    "/styles.css": "771584786525b7a6",
+    "/styles.css": "ed6e227e3d8b61b3",
     "/tailwind.css": "c1289f28015e47fd",
     "/app.js": "f56b8c5eed9e972d",
     "/content.js": "b4c77f66d2f9825e",
@@ -22,7 +22,7 @@
     "/crumbs.js": "60beddce649904a9",
     "/audience.js": "638ceb49784d808c",
     "/activation.js": "3d0a5d2317d6d8dc",
-    "/tilt.js": "13960291f3b1a0d7",
+    "/tilt.js": "a451aaad8c9193bc",
     "/news.js": "15aeb0a218a1bc28",
     "/money/reader.js": "4abf83585f45cfbb",
     "/money/curriculum.js": "e82203dc2bdcd450",

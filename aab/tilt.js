@@ -50,16 +50,26 @@
 /* Every card-like thing on the site. Matched at the container so
    that one listener serves a whole grid, rather than one per
    card, a home page has fourteen of these and an Insights page
-   twenty-two. */
-const SCENES = [
-  ".bento", ".cards", ".doorway", ".door-pair", ".news-grid",
-  ".term-grid", ".grid-2", ".grid-3", ".skill-grid", "#wb-continue",
-  ".wb-news", ".path",
-];
+   twenty-two.
 
-const CARD = [
-  ".cell", ".door", ".news-card", ".term-card", ".wb-card", ".skill-card",
-].join(",");
+   Both lists were twice this long and half of each named markup
+   that no longer exists: `.bento`, `.doorway`, `.term-grid`,
+   `.skill-grid`, `#wb-continue`, `.wb-news`, `.door`,
+   `.term-card`, `.wb-card`, `.skill-card`. A selector that
+   matches nothing costs a reader nothing, which is exactly why
+   it sat here through four rewrites of the pages it named; what
+   it costs is the next person, who reads this list to find out
+   what a card is on this site and gets an answer that has been
+   wrong since Stage 11.
+
+   `.deck` and its `.card` are deliberately NOT here. A GoCard
+   already lifts and slides its arrow on hover, and that is the
+   deck's own language; a tilt on top of it would be two answers
+   to one gesture. The rule in `@layer components` names the same
+   two things this does, and the two lists have to agree. */
+const SCENES = [".cards", ".news-grid", ".grid-2", ".grid-3", ".path"];
+
+const CARD = [".cell", ".news-card"].join(",");
 
 const MAX_DEG = 2.6;   // the whole effect, corner to corner
 

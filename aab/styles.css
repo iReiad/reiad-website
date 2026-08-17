@@ -666,13 +666,6 @@
 
     &::backdrop { background: oklch(12% 0.02 var(--h-green) / 0.55); }
   }
-  .signin-body {
-    display: flex; flex-direction: column; gap: 12px;
-    padding: 26px 26px 20px;
-
-    & h2 { font-size: 1.4rem; margin: 0; }
-    & .btn { width: 100%; justify-content: center; }
-  }
   .signin-kicker { color: var(--gold); font-size: 0.62rem;
                    letter-spacing: 0.1em; text-transform: uppercase; }
   .signin-why { font-size: 0.88rem; color: var(--ink-soft); margin: 0; max-width: none; }
@@ -704,8 +697,6 @@
     &[data-state="ok"] { color: var(--green); }
     &[data-state="warn"] { color: var(--gold); }
   }
-  .signin-close { margin-top: 2px; }
-
   /* ---------- the account page ---------- */
   /* The settings form, which is also the setup card: three
      fieldsets down the page, each one a question with its reason
@@ -775,33 +766,19 @@
   .comment-replying { margin: 0; font-size: 0.85rem; color: var(--ink-soft); }
   .comment-note { max-width: var(--measure); }
 
-  .account-panel {
-    display: grid; gap: 26px; margin-top: 6px;
-    max-width: 560px;
+  /* ---------- THE ACCOUNT PAGE THAT WAS ----------
 
-    & fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; }
-    & legend {
-      padding: 0; font-family: var(--font-serif); font-size: 1.08rem;
-      color: var(--ink);
-    }
-    /* The reason the question is being asked. It sits under the
-       legend rather than beside it: a question and its reason on
-       one line is a line nobody finishes reading. */
-    & .field-note {
-      margin: -4px 0 2px; font-size: 0.87rem; color: var(--ink-soft);
-      max-width: var(--measure);
-    }
-    & input[type="text"] {
-      padding: 10px 12px; font-size: 0.95rem; font-family: var(--font-sans);
-      color: var(--ink); background: var(--paper); max-width: 340px;
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+     `.account-panel`, `.account-actions`, `.account-week`,
+     `.welcome-note`, `.welcome-back` and `.account-exits`: about
+     eighty lines of layout for a page whose markup is Tailwind
+     now. Everything they did is a utility on the element itself
+     in `next/app/(site)/account.html/page.tsx`, which is what
+     Stage 14 chose that page for.
 
-      &:focus {
-        outline: 0; border-color: var(--green);
-        box-shadow: var(--focus-ring);
-      }
-    }
-  }
+     `.choice`, `.choice-grid`, `.choice-row` and `.link-btn`
+     stay, and the split is the rule from the top of the file:
+     a tickable row is a control with a hover, a checked state
+     and a focus ring, and CSS with no utility keeps a class. */
 
   /* A tickable row: the whole thing is the label, so the target is
      the card and not the 13px box in the corner of it. That is the
@@ -839,47 +816,6 @@
   .choice-row {
     display: grid; gap: 10px;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
-  }
-  .account-actions {
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  }
-
-  /* The last seven days, stated and not decorated. See the note in
-     account-page.js: this line never turns red and never counts
-     down to anything. */
-  .account-week {
-    margin: 0 0 14px; max-width: var(--measure);
-    font-size: 0.92rem; color: var(--ink);
-    border-inline-start: 2px solid var(--green); padding-inline-start: 12px;
-  }
-  /* The line under the band's heading, for a reader whose progress
-     is one cleared browser from gone. */
-  .welcome-note {
-    margin: -4px 0 14px; font-size: 0.88rem; color: var(--ink-soft);
-    max-width: var(--measure);
-  }
-  /* A button that reads as a link, for the one word inside a
-     sentence that does something. */
-  .link-btn {
-    border: 0; padding: 0; background: none; cursor: pointer;
-    font: inherit; color: var(--green);
-    text-decoration: underline; text-underline-offset: 3px;
-
-    &:hover { text-decoration-style: solid; opacity: 0.85; }
-  }
-  /* The band, when it has been moved above the hero. It is the
-     first thing on the page then, so it carries the top padding
-     the hero would have had. */
-  .welcome-back[data-first] { padding-top: 34px; }
-
-  .account-exits {
-    display: grid; gap: var(--gap); margin-top: 6px;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-
-    & .cell { display: grid; gap: 8px; align-content: start; }
-    & h3 { font-size: 1.05rem; }
-    & p { font-size: 0.9rem; color: var(--ink-soft); margin: 0; }
-    & .btn { justify-self: start; }
   }
 
   /* ============================================================
@@ -1480,88 +1416,21 @@
   }
   .hero-actions { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 12px; }
 
-  /* Kinetic headline: JS wraps each word in <span class="w" style="--i:n"> */
-  .hero h1 .w {
-    display: inline-block;
-    opacity: 0;
-    translate: 0 0.55em;
-    animation: rise 0.6s var(--ease) forwards;
-    animation-delay: calc(var(--i) * 90ms);
-  }
-  @keyframes rise { to { opacity: 1; translate: 0 0; } }
+  /* ---------- THE OLD FRONT PAGE ----------
 
-  /* The market line: draws itself once on load */
-  .hero-chart {
-    position: absolute; z-index: 0;
-    /* runs out to the viewport edge exactly, any further and phones
-       get a sideways scroll */
-    inset-inline-end: calc(-1 * var(--wrap-pad)); top: 0;
-    width: min(560px, 62%);
-    pointer-events: none;
-    opacity: 0.85;
+     Two hundred lines that drew a home page this site no longer
+     has: a kinetic headline whose words a script wrapped in
+     `.w`, a market line that drew itself on load (`.hero-chart`),
+     a scrolling `.ticker`, the `.bento` grid with its five named
+     cells, the services list and the glass credentials tile. The
+     front door is `next/app/(home)/page.tsx` now, and it is one
+     screen: a question, a grid of gates and the writing.
 
-    & .chart-line {
-      fill: none; stroke: var(--green); stroke-width: 2.5; stroke-linecap: round;
-      stroke-dasharray: 1; stroke-dashoffset: 1;
-      animation: draw 2.2s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
-    }
-    & .chart-fill { fill: var(--green); opacity: 0; animation: fadefill 1s ease 1.8s forwards; }
-    & .chart-dot  { fill: var(--gold);  opacity: 0; animation: dotin 0.5s ease 2.3s forwards; }
-  }
-  @keyframes draw     { to { stroke-dashoffset: 0; } }
-  @keyframes fadefill { to { opacity: 0.07; } }
-  @keyframes dotin    { to { opacity: 1; } }
-
-  @media (width <= 700px) {
-    .hero-chart { width: 92%; opacity: 0.35; }
-    .hero { padding-top: 56px; }
-  }
-
-  /* ---------- TICKER ---------- */
-  .ticker {
-    margin-top: 48px;
-    border-block: 1px solid var(--hairline);
-    overflow: hidden;
-    padding-block: 11px;
-    /* fade the ends instead of hard-cutting them */
-    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-
-    &:hover .ticker-track { animation-play-state: paused; }
-  }
-  .ticker-track {
-    display: flex; gap: 40px; width: max-content;
-    animation: tick 42s linear infinite;
-  }
-  .ticker span {
-    font-family: var(--font-mono), var(--font-bn);
-    font-size: 0.78rem; letter-spacing: 0.06em;
-    color: var(--ink-soft); white-space: nowrap;
-  }
-  .ticker b { color: var(--green); font-weight: 600; }
-  @keyframes tick { to { transform: translateX(-50%); } }
-
-  /* ---------- BENTO GRID ---------- */
-  /* The home page's vertical rhythm is carried entirely by
-     `section { padding-block: var(--step) 6px }`– every top-level
-     block on that page sets its own space above itself. The bento
-     is the one that is a <div> rather than a <section>, so it was
-     the one getting none of it: the last row of whichever list ran
-     above it ended, and the cards started six pixels later.
-
-     Same --step as everything else, so the bento sits in the run
-     of the page instead of being shoved against whatever the
-     audience order happens to put in front of it. */
-  .bento {
-    display: grid;
-    gap: var(--gap);
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-areas:
-      "feature feature stats"
-      "feature feature about"
-      "note    services about";
-    padding-block: var(--step) 24px;
-  }
+     `.cell` survives all of it, deliberately. It is the sample
+     card and the read card, rendered by `components/cards.tsx`
+     and `components/hub.tsx`, and it was always the one piece of
+     the bento that described a card rather than where the card
+     sat. */
 
   .cell {
     background: var(--panel);
@@ -1581,79 +1450,11 @@
     & .more { margin-top: auto; font-size: 0.92rem; }
   }
 
-  .cell-feature { grid-area: feature; }
-  .cell-feature h2 { font-size: clamp(1.5rem, 2.6vw, 2.1rem); max-width: 22ch; }
-  .cell-note     { grid-area: note; }
-  .cell-about    { grid-area: about; }
-  .cell-services { grid-area: services; }
-
-  /* The feature cell gets a little more room when its own box is wide,
-     regardless of the viewport, container query, not media query. */
-  @container (min-width: 460px) {
-    .cell-feature h2 { font-size: clamp(1.7rem, 4cqi, 2.3rem); }
-  }
-
-  .svc { display: flex; flex-direction: column; gap: 6px; font-size: 0.95rem; }
-  .svc span {
-    border-bottom: 1px solid var(--hairline);
-    padding-block: 6px; color: var(--ink-soft);
-
-    &:last-child { border-bottom: 0; }
-  }
-
-  /* The one glassmorphism moment: the credentials tile */
-  .cell-stats {
-    grid-area: stats;
-    position: relative;
-    border: 0; padding: 14px;
-    background: linear-gradient(150deg,
-      oklch(38% 0.075 var(--h-green)) 0%,
-      oklch(30% 0.060 var(--h-green)) 55%,
-      oklch(28% 0.040 var(--h-green)) 100%);
-    overflow: hidden;
-  }
-  .cell-stats::before {
-    content: "\09F3";                    /* ৳ */
-    position: absolute; right: -14px; bottom: -34px;
-    font-size: 9rem; color: oklch(100% 0 0 / 0.07);
-    font-family: var(--font-serif);
-  }
-  .glass {
-    position: relative;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-edge);
-    border-radius: 12px;
-    padding: 18px;
-    color: oklch(96% 0.01 var(--h-green));
-    display: flex; flex-direction: column; gap: 10px;
-    height: 100%;
-
-    & .mono { color: oklch(88% 0.03 var(--h-green)); }
-    & strong { font-family: var(--font-serif); font-weight: 500; font-size: 1.02rem; display: block; }
-    & small { color: oklch(82% 0.03 var(--h-green)); }
-  }
 
   /* ---------- generic card grids ---------- */
-  .cards, .term-grid, .grid-2, .grid-3 { display: grid; gap: var(--gap); }
+  .cards, .grid-2, .grid-3 { display: grid; gap: var(--gap); }
   .grid-2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
   .grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
-  .term-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
-
-  a.term-card {
-    text-decoration: none; color: var(--ink);
-    transition: border-color var(--fast) var(--ease),
-                translate var(--fast) var(--ease),
-                box-shadow var(--fast) var(--ease);
-
-    &:hover {
-      border-color: var(--green); translate: 0 -2px;
-      box-shadow: var(--shadow-lift); opacity: 1;
-    }
-    & h3 { font-size: 1.15rem; }
-    & .en-sub { display: block; margin-top: 2px; }
-  }
 
   /* ---------- the pointer tilt ----------
      /tilt.js writes `rotate` and `translate` on the card under the
@@ -1671,7 +1472,7 @@
   @media (hover: hover) and (pointer: fine) {
     @media (prefers-reduced-motion: no-preference) {
       .tilt-scene { perspective: 1100px; }
-      .tilt-scene :is(.cell, .door, .news-card, .term-card, .wb-card, .skill-card) {
+      .tilt-scene :is(.cell, .news-card) {
         transition: rotate 240ms var(--ease),
                     border-color var(--fast) var(--ease),
                     box-shadow var(--fast) var(--ease);
@@ -1683,7 +1484,7 @@
      Guarded so unsupported engines never hide anything. */
   @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
-      .cards > .cell, .bento > .cell, .path > .cell, .rows > .row {
+      .cards > .cell, .path > .cell, .rows > .row {
         animation: reveal-up linear both;
         animation-timeline: view();
         animation-range: entry 0% cover 22%;
@@ -3709,7 +3510,7 @@ it collapsed to the width of the word "Bangladesh". */
   .filter-row .count { color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.68rem; }
 
   /* a card the filter has hidden */
-  .cell[hidden], .term-card[hidden] { display: none; }
+  .cell[hidden] { display: none; }
 
   /* ---------- A–Z glossary index ---------- */
   .az {
@@ -3735,15 +3536,6 @@ it collapsed to the width of the word "Bangladesh". */
   .glossary .g-row .en { color: var(--ink-soft); font-size: 0.88rem; }
   @media (width <= 560px) { .glossary .g-row { grid-template-columns: 1fr; gap: 2px; } }
 
-  /* ---------- read-progress ticks on term cards ---------- */
-  a.term-card { position: relative; }
-  a.term-card[data-read="1"]::after {
-    content: "✓ পড়া হয়েছে";
-    position: absolute; top: 12px; right: 12px;
-    font-family: var(--font-mono); font-size: 0.6rem;
-    color: var(--green); background: var(--green-soft);
-    border-radius: 999px; padding: 2px 8px;
-  }
   .progress-line {
     display: flex; align-items: center; gap: 12px; margin-top: 18px;
     font-family: var(--font-mono); font-size: 0.7rem; color: var(--ink-soft);
@@ -7084,21 +6876,6 @@ German for day, and .tag is what the site has always called
     .path { grid-template-columns: 1fr; }
     .row { grid-template-columns: 1fr; gap: 4px; }
   }
-  @media (width <= 860px) {
-    .bento {
-      grid-template-columns: 1fr 1fr;
-      grid-template-areas:
-        "feature feature"
-        "stats   about"
-        "note    services";
-    }
-  }
-  @media (width <= 600px) {
-    .bento {
-      grid-template-columns: 1fr;
-      grid-template-areas: "feature" "stats" "note" "services" "about";
-    }
-  }
 
   /* ---------- REDUCED MOTION ---------- */
   @media (prefers-reduced-motion: reduce) {
@@ -7108,17 +6885,12 @@ German for day, and .tag is what the site has always called
       animation-iteration-count: 1 !important;
       transition-duration: 0.001ms !important;
     }
-    .hero h1 .w { opacity: 1; translate: none; }
-    .hero-chart .chart-line { stroke-dashoffset: 0; }
-    .hero-chart .chart-fill { opacity: 0.07; }
-    .hero-chart .chart-dot { opacity: 1; }
-    .ticker-track { animation: none; }
     @view-transition { navigation: none; }
   }
 
   /* ---------- PRINT ---------- */
   @media print {
-    body > header, body > footer, #palette, .read-progress, .hero-chart, .ticker,
+    body > footer, #palette, .read-progress,
     .icon-btn, .prev-next, .studio-pane.editor { display: none !important; }
     body { background: #fff; color: #000; font-size: 11pt; }
     .article a::after { content: " (" attr(href) ")"; font-size: 0.85em; color: #555; }

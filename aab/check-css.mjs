@@ -78,6 +78,39 @@ const SCHOOLS = [
 
 const css = readFileSync(join(ROOT, "styles.css"), "utf8");
 
+/* ============================================================
+   Before anything else: do the braces balance.
+
+   A stylesheet with one brace too many is not a stylesheet with
+   one small error in it. A browser recovers by discarding until
+   it finds its footing again, so a stray `}` two thousand lines
+   up silently drops a layer's worth of rules, and every check
+   below this one goes on passing because they all read the file
+   as text.
+
+   This is here because it happened, deleting a dead block whose
+   last line also opened the next rule. The check is four lines
+   and it is the difference between a failed build and a page
+   that renders with a third of its design missing.
+   ============================================================ */
+{
+  const clean = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  let depth = 0, line = 1, worst = 0;
+  for (const ch of clean) {
+    if (ch === "\n") line++;
+    else if (ch === "{") depth++;
+    else if (ch === "}" && --depth < 0 && !worst) worst = line;
+  }
+  if (depth !== 0 || worst) {
+    console.error(
+      worst
+        ? `styles.css closes a block that was never opened, at or before line ${worst}.`
+        : `styles.css leaves ${depth} block(s) open at the end of the file.`);
+    console.error("        Everything after that point is parsed as something else.");
+    process.exit(1);
+  }
+}
+
 /** The body of `@layer <name> { … }`, brace-matched. */
 function layerBody(name) {
   const open = css.indexOf(`@layer ${name} {`);
