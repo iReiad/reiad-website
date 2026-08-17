@@ -307,6 +307,38 @@ if (studioClasses.length && serverClasses.length) {
   }
 }
 
+/** The selectors a layer states unconditionally: depth zero, and
+    NOT inside an `@media`, `@supports` or `@container`.
+
+    `topLevelSelectors()` above deliberately reaches inside a
+    top-level at-rule, because a school can leak from inside a
+    media query just as easily as outside one. This asks a
+    different question, "what does this layer say this class IS",
+    and there a conditional rule is not an answer:
+
+        @media (prefers-reduced-motion: reduce) {
+          .ring-fill { transition: none }
+        }
+
+    is an adjustment to somebody else's ring, and counting it as a
+    definition made three layers look like they each owned one. */
+function bareSelectors(body) {
+  const clean = body.replace(/\/\*[\s\S]*?\*\//g, "");
+  const out = [];
+  let depth = 0, buf = "";
+  for (const ch of clean) {
+    if (ch === "{") {
+      if (depth === 0 && !buf.trim().startsWith("@")) out.push(buf.trim().replace(/\s+/g, " "));
+      depth++; buf = "";
+    } else if (ch === "}") {
+      depth--; buf = "";
+    } else if (depth === 0) {
+      buf += ch;
+    }
+  }
+  return out;
+}
+
 /** Every layer that gives a class a rule of its own: `.cls { … }`
     on its own, which is the shape that says "this is what this
     class is", as opposed to `.cls .child` or `.other.cls`. */
@@ -315,7 +347,7 @@ function definedIn(cls) {
   for (const name of [...css.matchAll(/@layer ([a-z]+) \{/g)].map((m) => m[1])) {
     const body = layerBody(name);
     if (!body) continue;
-    const bare = topLevelSelectors(body)
+    const bare = bareSelectors(body)
       .flatMap((sel) => sel.split(",").map((s) => s.trim()))
       .some((sel) => sel === `.${cls}`);
     if (bare && !layers.includes(name)) layers.push(name);
@@ -345,11 +377,80 @@ for (const cls of new Set([...studioClasses, ...serverClasses])) {
   }
 }
 
+/* ============================================================
+   The same question, asked about every class rather than only
+   the twenty-one an article may carry.
+
+   The loop above has caught a class that means two things since
+   the Studio was written, but only for article blocks, because
+   those were the ones a writer could put on a page by accident.
+   That was too narrow. Twelve classes were defined in two layers
+   at once in August 2026 and none of them was an article block:
+
+     .ladder      the money school's stack of stages, and the
+                  stock check's row of interest rates. `check`
+                  comes after `money`, so every school's ladder
+                  had been drawing with the stock check's gap for
+                  as long as both existed.
+     .ring        34px and green here, 44px and var(--accent)
+                  there. The schools drew deck's, and the copy
+                  that lost sat in the file looking authoritative.
+     .contents-*  three names live in both `money` and `deck` on
+                  the same page.
+
+   Nobody typed a wrong rule. Each was right in its own layer, and
+   a layer is exactly the thing that makes "in its own layer"
+   false. So the rule is now the simple one: a bare `.cls { … }`
+   belongs to one layer, whatever the class is.
+
+   ALLOWED holds the pairs that are deliberate, and every entry
+   needs a reason next to it. It is not a suppression list for
+   whatever happens to be failing today: a genuine collision gets
+   renamed, and this is only for a name two layers really do
+   share on purpose.
+   ============================================================ */
+
+const ALLOWED = new Map([
+  /* deck adds a margin and a width to the money school's resume
+     card rather than restating it. Different properties, and the
+     card is one card. */
+  [".resume", "money+deck, deck adjusts the card money defines"],
+]);
+
+const everyClass = new Set();
+for (const name of [...css.matchAll(/@layer ([a-z]+) \{/g)].map((m) => m[1])) {
+  const body = layerBody(name);
+  if (!body) continue;
+  for (const sel of topLevelSelectors(body)) {
+    for (const part of sel.split(",").map((s) => s.trim())) {
+      const m = part.match(/^\.(-?[A-Za-z_][\w-]*)$/);
+      if (m) everyClass.add(m[1]);
+    }
+  }
+}
+
+let shared = 0;
+for (const cls of [...everyClass].sort()) {
+  if (ALLOWED.has(`.${cls}`)) continue;
+  const layers = definedIn(cls);
+  if (layers.length < 2) continue;
+  failures++;
+  shared++;
+  console.error(`\n.${cls} is defined in ${layers.length} layers: ${layers.join(", ")}.`);
+  console.error(
+    `        ${layers[layers.length - 1]} comes last, so its rule wins on every\n`
+    + "        page, including the ones that meant the other. Rename one, or\n"
+    + "        add it to ALLOWED in this file with the reason it is deliberate."
+  );
+}
+
 console.log(
   failures
     ? `\n${failures} problem(s) in the stylesheet: fix before deploying.`
     : `${SCHOOLS.length} school layer(s) checked, nothing leaks into the rest of the site.\n`
       + `${new Set(studioClasses).size} article block classes, agreed by both sanitisers `
-      + `and defined once each.`
+      + `and defined once each.\n`
+      + `${everyClass.size} classes given a rule of their own, each in one layer `
+      + `(${ALLOWED.size} deliberate exception).`
 );
 process.exit(failures ? 1 : 0);

@@ -47,6 +47,22 @@
         4.59:1 on the page, which passes and only just, and at
         hue 75 and a darker lightness it measures 7.11:1.
 
+        About 500 lines left the stylesheet with it, all of them
+        rules for markup nothing renders any more: the old home
+        page's bento, the welcome-back band, the starter guide's
+        eight accordion steps, the hand-written contents page and
+        the runtime-built skills index. Every one of those pages
+        is a route now.
+
+        /tools/stock.js changed too. Its yield ladder was
+        `.ladder`, which is also the money school's stack of
+        stages and the account page's rows, in three different
+        cascade layers; `check` comes last, so a bond ladder's
+        spacing had been applied to every school ladder on the
+        site. It is `.yield-*` now, and a reader holding the old
+        copy of this file would get the renamed markup meeting
+        the old class names.
+
    v87: The same code, said better. Seven of the modules in this
         list are compiled from TypeScript now rather than written
         as JavaScript (archive/TRANSITION.md Stage 13), and

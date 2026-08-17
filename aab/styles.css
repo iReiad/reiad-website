@@ -4711,126 +4711,33 @@ it collapsed to the width of the word "Bangladesh". */
   }
   html[lang="bn"] .crumbs { font-family: var(--font-bn); letter-spacing: 0; font-size: 0.8rem; }
 
-  /* ---------- the audience split ----------
-     Ordering only. Nothing is hidden from anybody, see the note
-     at the top of audience.js. The attribute is set before first
-     paint by the inline script in each <head>, so these rules
-     apply on the first frame and the nav never visibly reorders. */
-  body > header nav > * { order: 0; }
-  :root[data-audience="work"] body > header nav > [href*="portfolio"] { order: -3; }
-  :root[data-audience="work"] body > header nav > [href*="about"]     { order: -2; }
-  :root[data-audience="work"] body > header nav > [href*="contact"]   { order: -1; }
-  :root[data-audience="work"] body > header nav > [href*="money"]     { order: 1; }
-  :root[data-audience="work"] body > header nav > [href*="tools"]     { order: 2; }
-  :root[data-audience="work"] body > header nav > .nav-group          { order: 3; }
-  :root[data-audience="work"] body > header nav > [href*="skills"]    { order: 3; }
+  /* ---------- THE AUDIENCE SPLIT THAT WAS ----------
 
-  /* ---------- the home page, led by the half they came for ----------
+     A hundred and ten lines that reordered a page nothing renders
+     any more, and one of them was a real leak. This:
 
-     Order only. A recruiter still gets the Learn cards and a learner
-     still gets the credentials, further down. Nothing is display:none,
-     so nobody has to wonder what is being withheld from them.
+         body > header nav > * { order: 0 }
 
-     Two different mechanisms, because the page uses two layouts:
+     names no class at all, and it sat inside a feature layer, so
+     it matched the site's header on every page rather than the
+     money school's. It is the shape `check-css.mjs` was written
+     for, and it escaped that check only because `money` is
+     deliberately not one of the school layers it inspects.
 
-     1. The top-level blocks are a block flow, so they need a flex
-        container before `order` means anything. `.home-flow` becomes
-        one ONLY when a choice has been made, an undecided visitor
-        gets the original block layout untouched, margins and all.
+     What it ordered is gone either way. `body > header` left the
+     stylesheet when the rail landed; `.home-flow` and `.bento`
+     were the old home page's, and the front door is one screen
+     now under `@layer deck`; `.learn-half` and `.welcome-back`
+     went with it. The audience question is still asked, by the
+     switch in the top bar, and `@layer shell` styles it: the
+     copy that used to be here was the single button it replaced,
+     and `shell` beat it everywhere regardless.
 
-     2. The bento is a named-area grid at every breakpoint, so `order`
-        would be ignored there entirely. Its running order is changed
-        by swapping grid-template-areas instead. `feature` stays the
-        big 2×2 cell in both, because .cell-feature's typography is
-        sized for being big. */
+     The two rules below are the survivors, and they are here
+     because the money school really does use them. */
 
-  :root[data-audience] .home-flow { display: flex; flex-direction: column; }
-  .home-flow > * { order: 0; }
-
-  /* the hero and the closing band hold either end regardless */
-  :root[data-audience] .home-flow > .hero { order: -3; }
-  :root[data-audience] .home-flow > .band { order: 8; }
-  :root[data-audience] .home-flow > .note { order: 9; }
-
-  /* An explicit running order per audience, rather than a learn/work
-     binary. The binary didn't work: every recruiter-facing block lives
-     INSIDE the bento, so there was nothing at the top level to promote
-     and a recruiter's page came out unchanged. Naming the sequence
-     also makes it obvious what each visitor actually sees. */
-
-  /* here to money: the four big "start here" links, then the writing */
-  /* The learner's half is written in Bangla, so it takes the
-     Bangla face, the rest of the page stays English. */
-  .learn-half { font-family: var(--font-bn); }
-  .learn-half .big-link .t { font-family: var(--font-bn-serif); }
-  .learn-half .num, .learn-half .section-label { font-family: var(--font-mono); }
   .section-intro { color: var(--ink-soft); margin-block: 6px 20px; }
-
-  :root[data-audience="learn"] .home-flow > [data-for="money"]   { order: 1; }
-  :root[data-audience="learn"] .home-flow > [data-for="work"]    { order: 2; }
-  :root[data-audience="learn"] .home-flow > [data-for="both"]    { order: 3; }
-  :root[data-audience="learn"] .home-flow > [data-for="context"] { order: 4; }
-
-  /* Inside the library, the track picks which of the two Bangla
-     halves leads. The other one keeps its place directly after,
-     ordering, never hiding, so a reader who came for German can
-     still see the money ladder without changing a setting. */
-  :root[data-track="skills"]  .home-flow > [data-track="skills"]  { order: 1; }
-  :root[data-track="skills"]  .home-flow > [data-track="finance"] { order: 2; }
-  :root[data-track="finance"] .home-flow > [data-track="finance"] { order: 1; }
-  :root[data-track="finance"] .home-flow > [data-track="skills"]  { order: 2; }
-
-  /* here to hire: credentials, services and the bio first */
-  :root[data-audience="work"]  .home-flow > [data-for="work"]    { order: 1; }
-  :root[data-audience="work"]  .home-flow > [data-for="both"]    { order: 2; }
-  :root[data-audience="work"]  .home-flow > [data-for="money"]   { order: 3; }
-  :root[data-audience="work"]  .home-flow > [data-for="context"] { order: 4; }
-
-  /* The welcome-back band outranks all of that. Somebody who was
-     halfway through a lesson last night came back for that lesson;
-     making them scroll past a pitch to find it would be the wrong
-     way round. It carries data-for="both" so that it is still in
-     the running order at all when nothing here applies, which is
-     why this has to come after those rules and beat them: it is
-     the same element they are ordering.
-
-     It is `hidden` for everyone with nothing in it, which is
-     every first-time visitor. See the note at the top of home.js. */
-  :root[data-audience] .home-flow > .welcome-back { order: -2; }
-
-  /* the bento, for someone here to hire: credentials, services and
-     the bio across the top, the writing sample below them */
-  :root[data-audience="work"] .bento {
-    grid-template-areas:
-      "stats   services about"
-      "feature feature  about"
-      "feature feature  note";
-  }
-  @media (width <= 860px) {
-    :root[data-audience="work"] .bento {
-      grid-template-areas:
-        "stats   services"
-        "about   about"
-        "feature feature"
-        "note    note";
-    }
-  }
-  @media (width <= 600px) {
-    :root[data-audience="work"] .bento {
-      grid-template-areas: "stats" "services" "about" "feature" "note";
-    }
-  }
-
   .audience-row { margin-top: 16px; }
-  .audience-switch {
-    background: none; border: 1px solid var(--hairline);
-    border-radius: 999px; padding: 6px 14px;
-    font-family: var(--font-mono); font-size: 0.66rem;
-    letter-spacing: 0.06em; color: var(--ink-soft); cursor: pointer;
-    transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
-
-    &:hover { border-color: var(--green); color: var(--green); }
-  }
 
   /* ---------- ONE INTRO PER VISITOR ----------
      Which of the four ledes and button rows is shown is decided by
@@ -4862,93 +4769,13 @@ and an intro that needs them in step is an intro that breaks
      against selector by selector, and a class that means two
      things is the bug `check-css.mjs` exists for one level up. */
 
-  /* ---------- THE WELCOME-BACK BAND (home page) ----------
-     Built by /home.js, and hidden outright for anyone with
-     nothing in it. Two columns: what you were reading, big,
-     beside the smaller "what else" and "what's happened". */
-  /* minmax(0, …) throughout, not plain fr. The recent list clips
-     long titles with white-space: nowrap, and a nowrap child's
-     min-content size is the whole string, which propagates out
-     through every `auto`/`1fr` track above it and pushes the
-     column wider than the page. Naming zero as the minimum is
-     what lets the ellipsis do its job. */
-  .wb-grid {
-    display: grid; gap: var(--gap);
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-    align-items: start;
-  }
-  @media (width <= 780px) {
-    .wb-grid { grid-template-columns: 1fr; }
-  }
-  /* Nothing to continue, a recruiter, or a reader who has only
-     ever browsed, leaves the wide column empty and the news card
-     squeezed into a third of the band. Give the whole width to
-     what is actually there. */
-  .wb-grid:has(> #wb-continue[hidden]) {
-    grid-template-columns: minmax(0, 1fr);
+  /* ---------- THE WELCOME-BACK BAND THAT WAS ----------
 
-    & .wb-side { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
-  }
-
-  #wb-continue {
-    display: grid; gap: var(--gap);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
-  }
-  .wb-card {
-    display: grid; gap: 6px; align-content: start;
-    padding: 18px 20px; border-radius: var(--radius);
-    border: 1px solid var(--green); background: var(--green-soft);
-    text-decoration: none; color: var(--ink);
-    transition: box-shadow var(--fast) var(--ease);
-
-    &:hover { box-shadow: var(--shadow-lift); opacity: 1; }
-    & strong { font-size: 1.14rem; }
-    & .more { color: var(--green); font-size: 0.84rem; }
-  }
-  .wb-art .art { width: 26px; height: 26px; }
-  .wb-where { color: var(--gold); }
-  .wb-bar {
-    display: block; height: 5px; border-radius: 999px; margin-block: 6px 2px;
-    background: color-mix(in oklab, var(--green) 22%, transparent);
-    overflow: clip;
-
-    & i { display: block; height: 100%; background: var(--green); }
-  }
-
-  .wb-side {
-    display: grid; gap: var(--gap); align-content: start;
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .wb-side-label {
-    display: flex; align-items: baseline; gap: 10px;
-    color: var(--gold); margin-bottom: 10px;
-  }
-  .wb-side-more { margin-inline-start: auto; font-size: 0.9em; }
-
-  .wb-recent-list {
-    display: grid; border-top: 1px solid var(--hairline);
-    /* Same reason as .wb-grid above: the nowrap title's min-content
-       is the whole string, and an implicit `auto` track takes that
-       as its floor. On a 390px phone that ran the row past the
-       edge and pushed the kind label off the screen entirely. */
-    grid-template-columns: minmax(0, 1fr);
-
-    & li { min-width: 0; border-bottom: 1px solid var(--hairline); }
-    & a {
-      display: flex; align-items: baseline; gap: 12px; min-width: 0;
-      padding: 9px 2px; text-decoration: none; color: var(--ink);
-
-      &:hover { color: var(--green); opacity: 1; }
-    }
-  }
-  .wb-recent-t {
-    flex: 1; min-width: 0; font-size: 0.95rem;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .wb-recent-k { color: var(--ink-soft); font-size: 0.6rem; white-space: nowrap; }
-
-  .wb-news .news-card { aspect-ratio: auto; min-height: 168px; }
-  .wb-news-time { display: block; margin-top: 8px; color: var(--ink-soft); font-size: 0.62rem; }
+     Ninety lines of `.wb-grid`, `.wb-card`, `.wb-side`,
+     `.wb-recent-*` and `.wb-news-*`, built by a `home.js` that no
+     longer exists. The home page is a route now, and the thing
+     this band did, putting the lesson you were halfway through
+     above everything else, is what the resume card below does. */
 
   /* ---------- the resume card ---------- */
   .resume {
@@ -4965,104 +4792,28 @@ and an intro that needs them in step is an intro that breaks
   .resume-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .resume-pct { color: var(--ink-soft); }
 
-  .filter-count { margin-top: 10px; color: var(--ink-soft); }
+  /* ---------- THE STARTER GUIDE THAT WAS ----------
 
-  /* ---------- the starter guide ---------- */
-  .starter-intro { margin-bottom: 26px; }
-  .starter-intro h2 { font-size: 1.5rem; margin-bottom: 12px; }
-  .starter-intro p { color: var(--ink-soft); margin-bottom: 12px; }
+     A hundred lines of `.steps`, `.step`, `.step-num`, `.risk`,
+     `.legend` and `.starter-*`, drawing eight accordion sections
+     of a hand-written hub. Every one of those eight is an
+     ordinary lesson page now, written from a row like every
+     other lesson, so what draws them is `@layer article` and the
+     school hub's own furniture.
 
-  .legend {
-    display: grid; gap: 7px; padding: 0; margin-block: 14px; list-style: none;
-    font-size: 0.93rem; color: var(--ink-soft);
+     Six of these names were also the kind a later layer captures
+     by accident: `.step`, `.steps`, `.legend`, `.risk` are
+     ordinary enough English that the next feature to want one
+     would have got this instead. `.step-list`, which really is an
+     article block, is a different class in a different layer and
+     always was. */
 
-    /* The dot is positioned rather than made a flex item: as a flex
-       item, the <b> and the sentence after it become separate items
-       and wrap as blocks, which on a phone splits the label from its
-       own explanation. Absolute keeps the whole line one text flow. */
-    & li { position: relative; padding-inline-start: 18px; }
-    & b { color: var(--ink); }
-  }
-  /* Note the modifier is .danger, not .risk: `.risk` is the pill on
-     each step's summary, and reusing the name here made the legend's
-     9px dot inherit the pill's padding and border and stretch into a
-     red slab. */
-  .legend-dot {
-    position: absolute; inset-inline-start: 0; top: 0.62em;
-    width: 9px; height: 9px; border-radius: 50%;
-    background: var(--green);
 
-    &.others { background: var(--gold); }
-    &.danger { background: var(--danger); }
-  }
-  .starter-progress-note { color: var(--gold); margin-top: 16px; }
-
-  .steps { display: grid; gap: 12px; }
-
-  .step {
-    border: 1px solid var(--hairline); border-radius: var(--radius);
-    background: var(--panel); overflow: clip;
-    transition: border-color var(--fast) var(--ease);
-
-    &[open] { border-color: var(--green); }
-    &:hover { border-color: color-mix(in oklab, var(--green) 50%, var(--hairline)); }
-  }
-
-  .step > summary {
-    display: flex; align-items: center; gap: 14px;
-    padding: 16px 20px; cursor: pointer; list-style: none;
-
-    &::-webkit-details-marker { display: none; }
-  }
-  .step-num {
-    color: var(--gold); flex-shrink: 0;
-    min-width: 4.2em;
-  }
-  .step-art { display: flex; flex-shrink: 0; color: var(--green); }
-  .step-art .art { width: 26px; height: 26px; }
-  .step-head { flex: 1 1 200px; display: grid; gap: 2px; min-width: 0; }
-  .step-title { font-size: 1.1rem; }
-  .step-blurb { color: var(--ink-soft); font-size: 0.9rem; }
-  .step-meta {
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    flex-shrink: 0; color: var(--ink-soft);
-  }
-
-  /* the risk pill: the thing a nervous first-timer looks for */
-  .risk {
-    font-family: var(--font-mono); font-size: 0.62rem;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    border-radius: 999px; padding: 3px 10px;
-    border: 1px solid currentColor;
-
-    &[data-risk="low"] { color: var(--green); }
-    &[data-risk="mid"] { color: var(--gold); }
-    &[data-risk="high"] { color: var(--danger); }
-  }
-
-  /* a finished step */
-  .step[data-read] > summary .step-num::after {
-    content: " ✓"; color: var(--green);
-  }
-  .step[data-read] { background: color-mix(in oklab, var(--green-soft) 45%, var(--panel)); }
-
-  .step-body {
-    padding: 4px 20px 22px;
-    border-top: 1px solid var(--hairline);
-
-    & p, & li { max-width: var(--measure); }
-    & p { margin-block: 12px; }
-    & h4 { font-size: 1.04rem; margin-block: 22px 8px; color: var(--ink); }
-    & h5 {
-      font-family: var(--font-mono); font-size: 0.68rem;
-      letter-spacing: 0.07em; text-transform: uppercase;
-      margin: 0 0 8px; color: var(--gold);
-    }
-    & ul { padding-left: 20px; margin-block: 10px; }
-    & li { margin-bottom: 6px; }
-  }
-
-  /* what you do / what is done for you, side by side */
+  /* Two columns, what you do beside what is done for you.
+     It was the starter guide's and the starter guide is eight
+     ordinary lesson pages now; what keeps this rule alive is
+     the lesson prose itself, which uses it in sixty-three
+     places across the four schools. */
   .split {
     display: grid; gap: var(--gap); margin-block: 22px;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
@@ -5077,12 +4828,6 @@ and an intro that needs them in step is an intro that breaks
     & li { font-size: 0.93rem; color: var(--ink-soft); }
   }
 
-  .step-foot, .step-cta {
-    display: flex; gap: 10px; flex-wrap: wrap;
-    margin-top: 24px; padding-top: 18px;
-    border-top: 1px solid var(--hairline);
-  }
-  .step-cta { border-top: 0; }
 
   /* the example / warning box, shared with the lesson pages */
   .ex.warn {
@@ -5127,12 +4872,11 @@ and an intro that needs them in step is an intro that breaks
   .rung[data-state="done"] .state-pill { border-color: var(--green); color: var(--green); }
   .rung[data-state="next"] .state-pill { border-color: var(--gold); color: var(--gold); }
 
-  .ring { width: 34px; height: 34px; flex-shrink: 0; }
-  .ring-track { stroke: var(--hairline); }
-  .ring-fill {
-    stroke: var(--green);
-    transition: stroke-dashoffset var(--slow) var(--ease);
-  }
+  /* The ring is `@layer deck`'s, and only deck's. This layer had
+     its own copy at 34px and a hardcoded green, deck's is 44px
+     and reads var(--accent); deck comes later, so deck's is what
+     every school has actually been drawing. Keeping a losing copy
+     here only made it look as though the two could differ. */
 
   .rung-body {
     padding: 6px 20px 22px;
@@ -5140,24 +4884,6 @@ and an intro that needs them in step is an intro that breaks
   }
   .rung-blurb { color: var(--ink-soft); max-width: var(--measure); margin-block: 14px; }
   .rung-soon { color: var(--gold); margin-bottom: 14px; }
-  .rung-section { margin-block: 18px; }
-  .rung-section h4 { color: var(--gold); margin: 0 0 8px; font-family: var(--font-mono); font-weight: 500; }
-
-  .rung-lessons {
-    display: grid; gap: 2px; padding: 0; margin: 0; list-style: none;
-
-    & li {
-      display: flex; align-items: baseline; gap: 10px;
-      padding: 7px 0; border-bottom: 1px solid var(--hairline);
-    }
-    & li:last-child { border-bottom: 0; }
-    & a { flex: 1; text-decoration: none; color: var(--ink); font-size: 0.97rem; }
-    & a:hover { color: var(--green); opacity: 1; }
-    & li[data-read] a::before { content: "✓ "; color: var(--green); }
-    & li[data-soon] { opacity: 0.55; }
-    & li[data-soon] a { pointer-events: auto; }
-  }
-  .rung-lesson-min { color: var(--ink-soft); flex-shrink: 0; font-size: 0.62rem; }
 
   /* What's inside a stage, as section names and counts. The full
      lesson list lives on the stage's own page, repeating it here
@@ -5182,7 +4908,7 @@ and an intro that needs them in step is an intro that breaks
      header twice: a rung landed 102px below the header bar instead
      of the intended ~14px. Anything needing different clearance
      should set scroll-margin RELATIVE to that, not repeat it. */
-  .rung, .step, #starter { scroll-margin-top: 0; }
+  .rung { scroll-margin-top: 0; }
 
   .rung-foot {
     display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
@@ -5242,86 +4968,21 @@ and an intro that needs them in step is an intro that breaks
     & .mono { color: var(--gold); font-size: 0.72rem; }
   }
 
-  /* ---------- the door to the contents page, on the hub ---------- */
-  .contents-cta {
-    display: grid; gap: 6px 16px; align-items: center;
-    grid-template-columns: auto 1fr auto;
-    padding: 20px 22px; text-decoration: none; color: inherit;
-    border: 1px solid var(--hairline); border-radius: var(--radius);
-    background: var(--panel);
-    transition: border-color var(--fast) var(--ease);
+  /* ---------- THE CONTENTS PAGE THAT WAS ----------
 
-    &:hover { border-color: var(--green); opacity: 1; }
-    & .more { color: var(--green); white-space: nowrap; }
-  }
-  .contents-cta-art .art { width: 26px; height: 26px; color: var(--gold); }
-  .contents-cta-text { display: grid; gap: 3px; }
-  .contents-cta-text strong { font-size: 1.08rem; }
-  .contents-cta-text span { color: var(--ink-soft); font-size: 0.9rem; }
-  @media (width <= 620px) {
-    .contents-cta { grid-template-columns: auto 1fr; }
-    .contents-cta .more { grid-column: 2; }
-  }
+     Eighty lines: `.contents-cta`, `.contents-jump`,
+     `.contents-stage`, `.contents-row` and the rest of a
+     hand-written /money/contents.html. The contents page is a
+     route now, `next/components/school-contents.tsx`, and
+     `@layer deck` styles what it renders.
 
-  /* ---------- /money/contents.html ---------- */
-  .contents-jump {
-    display: flex; flex-wrap: wrap; gap: 7px; margin-top: 22px;
-
-    & a {
-      font-family: var(--font-bn); font-size: 0.78rem;
-      padding: 5px 12px; border-radius: 999px;
-      border: 1px solid var(--hairline); text-decoration: none; color: var(--ink);
-    }
-    & a:hover { border-color: var(--green); color: var(--green); opacity: 1; }
-  }
-
-  .contents-stage { padding-block: 34px 6px; }
-  .contents-stage-head {
-    display: grid; gap: 4px 14px; align-items: start;
-    grid-template-columns: auto 1fr auto;
-    padding-bottom: 12px; margin-bottom: 16px;
-    border-bottom: 1px solid var(--hairline);
-
-    & h2 { font-size: 1.3rem; margin-block: 2px; }
-    & h2 a { color: var(--ink); text-decoration: none; }
-    & h2 a:hover { color: var(--green); opacity: 1; }
-  }
-  .contents-art { display: flex; }
-  .contents-art .art { width: 26px; height: 26px; color: var(--gold); }
-  .contents-kicker { color: var(--gold); }
-  .contents-who { color: var(--ink-soft); font-size: 0.9rem; margin: 0; }
-  .contents-tally {
-    color: var(--ink-soft); white-space: nowrap;
-    border: 1px solid var(--hairline); border-radius: 999px; padding: 3px 10px;
-
-    &[data-state="done"] { color: var(--green); border-color: var(--green); }
-  }
-
-  .contents-section { margin-bottom: 22px; }
-  .contents-section h3 {
-    color: var(--gold); margin: 0 0 6px;
-    font-family: var(--font-mono); font-weight: 500; font-size: 0.68rem;
-  }
-
-  .contents-list { display: grid; gap: 0; padding: 0; margin: 0; list-style: none; }
-  .contents-row {
-    display: grid; align-items: baseline; gap: 4px 18px;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto;
-    padding: 9px 2px; border-bottom: 1px solid var(--hairline);
-
-    & a { text-decoration: none; font-size: 1rem; }
-    & a:hover { opacity: 1; }
-    &[data-read] a::before { content: "✓ "; color: var(--green); }
-    &[data-soon] { opacity: 0.55; }
-  }
-  .contents-en { color: var(--ink-soft); font-size: 0.86rem; }
-  .contents-min { color: var(--ink-soft); font-size: 0.62rem; white-space: nowrap; }
-  @media (width <= 620px) {
-    .contents-row { grid-template-columns: 1fr auto; gap: 1px 10px; }
-    .contents-en { grid-column: 1; }
-    .contents-stage-head { grid-template-columns: auto 1fr; }
-    .contents-tally { grid-column: 2; justify-self: start; }
-  }
+     Three of these names were live in both places at once, and
+     deck comes later, so `.contents-list`, `.contents-en` and
+     `.contents-min` were already being drawn by deck's rules on
+     every school's contents page while these sat here winning
+     nothing. That is the failure `check-css.mjs` catches for
+     article classes and did not catch here, which is what the
+     new check at the end of that file is for. */
 
   .glossary .g-row[data-read] a::before { content: "✓ "; color: var(--green); }
 
@@ -5402,58 +5063,18 @@ and an intro that needs them in step is an intro that breaks
     & p { color: var(--ink-soft); }
   }
 
-  /* ---------- THE SKILLS INDEX  (/skills/) ----------
-     One card per school, built by skills.js from the SKILLS list
-     in content.js. A school that hasn't been written yet is a
-     <div> rather than an <a>, gets the dashed `placeholder`
-     border every unwritten thing on this site gets, and says
-     what is still missing instead of showing an empty progress
-     bar, a bar at 0% reads as a broken feature, a sentence
-     reads as an honest "not yet". */
-  .skill-grid {
-    display: grid; gap: var(--gap);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-  }
-  .skill-card {
-    gap: 6px;
+  /* ---------- THE SKILLS INDEX THAT WAS ----------
 
-    & .tag { margin-top: 2px; }
-    & h3 { font-size: 1.24rem; }
-    & p { margin-top: 4px; }
-    & .more { padding-top: 6px; }
-  }
-  a.skill-card {
-    text-decoration: none; color: inherit;
-    transition: border-color var(--fast) var(--ease),
-                box-shadow var(--fast) var(--ease);
-
-    &:hover {
-      border-color: var(--green); box-shadow: var(--shadow-lift); opacity: 1;
-      & .more { color: var(--green); }
-    }
-  }
-  .skill-art .art { width: 30px; height: 30px; }
-  .skill-en {
-    color: var(--ink-soft); font-size: 0.66rem;
-    text-transform: none; letter-spacing: 0.04em;
-  }
-  .skill-bar {
-    display: block; height: 5px; border-radius: 999px;
-    background: var(--hairline); overflow: clip; margin-top: auto;
-
-    & i { display: block; height: 100%; background: var(--green); }
-  }
-  .skill-note { color: var(--gold); font-size: 0.85rem; }
-  .skill-fallback {
-    display: grid; gap: 10px; color: var(--ink-soft);
-    & b { color: var(--ink); }
-  }
+     `.skill-grid`, `.skill-card`, `.skill-bar` and the rest of a
+     /skills/ built at runtime from the SKILLS list. That page is
+     a route now and its cards are `<GoCard>`, so it gets the
+     same card as every other index on the site rather than one
+     that only looked like it. */
 
   /* ---------- narrow screens ---------- */
   @media (width <= 620px) {
-    .step > summary, .rung > summary { flex-wrap: wrap; gap: 10px 12px; }
-    .step-meta, .rung-state { width: 100%; justify-content: flex-start; }
-    .step-num { min-width: 0; }
+    .rung > summary { flex-wrap: wrap; gap: 10px 12px; }
+    .rung-state { width: 100%; justify-content: flex-start; }
     .crumbs [aria-current="page"] { max-width: 22ch; }
   }
 
@@ -6925,14 +6546,22 @@ German for day, and .tag is what the site has always called
     font-family: var(--font-mono);
   }
 
-  /* ---------- the yield ladder ---------- */
-  .ladder { display: grid; gap: 8px; margin-top: 26px; }
-  .ladder-row {
+  /* ---------- the yield ladder ----------
+
+     `yield-` rather than `ladder-`, which is what this was called
+     until the three families collided. A learning ladder is a
+     stack of stages and this is a row of interest rates; they
+     have nothing to do with each other, and `@layer check` comes
+     after both `components` and `money`, so the stock check's
+     `gap: 8px; margin-top: 26px` was being applied to the money
+     school's stage ladder and to the account page's rows. */
+  .yield-ladder { display: grid; gap: 8px; margin-top: 26px; }
+  .yield-row {
     display: grid; gap: 12px; align-items: center;
     grid-template-columns: minmax(0, 190px) minmax(0, 1fr) auto;
   }
-  .ladder-label { font-size: 0.84rem; }
-  .ladder-track {
+  .yield-label { font-size: 0.84rem; }
+  .yield-track {
     height: 16px; border-radius: 4px; background: var(--paper-sunk); overflow: clip;
 
     & i {
@@ -6942,13 +6571,13 @@ German for day, and .tag is what the site has always called
     & i[data-tone="gold"] { background: var(--gold); }
     & i[data-tone="danger"] { background: var(--danger); }
   }
-  .ladder-value {
+  .yield-value {
     font-family: var(--font-mono); font-size: 0.78rem;
     font-variant-numeric: tabular-nums; white-space: nowrap;
   }
   @media (width <= 620px) {
-    .ladder-row { grid-template-columns: minmax(0, 1fr) auto; }
-    .ladder-track { grid-column: 1 / -1; }
+    .yield-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .yield-track { grid-column: 1 / -1; }
   }
 
   /* ---------- DuPont ---------- */
@@ -7114,7 +6743,7 @@ German for day, and .tag is what the site has always called
   .advanced-langs { color: var(--green) !important; font-family: var(--font-bn); }
 
   @media (prefers-reduced-motion: reduce) {
-    .score-bar i, .ladder-track i, .dupont-track i, .drag-track i, .dial-fill {
+    .score-bar i, .yield-track i, .dupont-track i, .drag-track i, .dial-fill {
       transition: none;
     }
   }

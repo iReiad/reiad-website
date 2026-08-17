@@ -39,20 +39,34 @@ export const el = (tag, props = {}, ...kids) => {
 };
 
 /** The little ring showing a stage's progress. One drawing for
-    four schools, deliberately: one visual language. */
+    four schools, deliberately: one visual language.
+
+    The DOM here is `<Ring>` in `next/components/deck.tsx`, node
+    for node, and that is the point of it rather than a
+    coincidence. There were two rings: this one put `.ring` on
+    the SVG and turned it with a `transform` attribute, deck's
+    wraps the SVG in a span and turns it with a `rotate` in the
+    stylesheet. Both were styled by rules called `.ring`, in two
+    layers, and deck's came later and won. What kept this one
+    looking right was that `.ring svg` did not match an SVG that
+    was itself the `.ring`, so it never got a second rotation.
+
+    Relying on a selector not matching is not a design. One
+    shape, one rule, and the rotation is the stylesheet's in both
+    places now. */
 export function ring(pct) {
-  const r = 15;
+  const r = 19;
   const c = 2 * Math.PI * r;
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 36 36");
-  svg.setAttribute("class", "ring");
-  svg.setAttribute("aria-hidden", "true");
-  svg.innerHTML =
-    `<circle class="ring-track" cx="18" cy="18" r="${r}" fill="none" stroke-width="3"/>` +
-    `<circle class="ring-fill" cx="18" cy="18" r="${r}" fill="none" stroke-width="3"` +
-    ` stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}"` +
-    ` transform="rotate(-90 18 18)" stroke-linecap="round"/>`;
-  return svg;
+  const wrap = document.createElement("span");
+  wrap.className = "ring";
+  wrap.setAttribute("aria-hidden", "true");
+  wrap.innerHTML =
+    `<svg viewBox="0 0 44 44">` +
+    `<circle class="ring-track" cx="22" cy="22" r="${r}" fill="none" stroke-width="4"/>` +
+    `<circle class="ring-fill" cx="22" cy="22" r="${r}" fill="none" stroke-width="4"` +
+    ` stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}"/>` +
+    `</svg>`;
+  return wrap;
 }
 
 /** Where a learner stands on the ladder, in words. Nothing is
