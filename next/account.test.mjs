@@ -320,8 +320,15 @@ console.log("\nthe account page");
 
   ok("it greets the reader",
     (await page.locator("#account-hello").textContent())?.includes("Rony Reiad"));
-  is("the eight sections are all there", await page.locator(".acct-sec").count(), 8);
-  is("and the rail links to each", await page.locator(".acct-rail-link").count(), 8);
+  /* By id and by role rather than by class. Every section here
+     already needs an id, because the account menu in the header
+     links straight into them by fragment, and the rail is a
+     `<nav>` with a label on it. A class hook would be a third
+     name for a thing that has two. */
+  is("the eight sections are all there",
+    await page.locator("#account-in section[id]").count(), 8);
+  is("and the rail links to each",
+    await page.getByRole("navigation", { name: "This page" }).getByRole("link").count(), 8);
   is("four numbers above the fold", await page.locator(".acct-tile").count(), 4);
 
   /* A year of days, drawn from `days-active`. 53 weeks of seven

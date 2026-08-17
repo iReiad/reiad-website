@@ -31,6 +31,21 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v87: The same code, said better. Seven of the modules in this
+        list are compiled from TypeScript now rather than written
+        as JavaScript (archive/TRANSITION.md Stage 13), and
+        /tailwind.css carries real utilities for the first time
+        (Stage 14): the account page's markup is Tailwind and
+        about 240 lines of rules left /styles.css with it.
+
+        Nothing a reader can see is meant to have changed, which
+        is exactly why this needs a bump rather than not needing
+        one: every file involved is byte-different, a precached
+        file is answered from the cache that holds it, and only a
+        new VERSION empties that cache. /styles.css and
+        /tailwind.css are the pair that must not be split, because
+        one of them lost the rules the other gained.
+
    v86: What an account is actually for. Five things a reader
         gets for signing in, and two of them are new modules in
         this list. /keep.js is the Save and the note under the
@@ -752,7 +767,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v86";
+const VERSION = "v87";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

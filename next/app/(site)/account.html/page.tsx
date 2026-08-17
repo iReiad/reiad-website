@@ -22,6 +22,56 @@
    word rather than a number: `#reading-list` is in
    `aab/signin.js` as well and the two have to agree.
 
+   ---- the first component converted to Tailwind ----
+
+   archive/TRANSITION.md Stage 14 set the arrangement up and left
+   it unused on purpose, so that the first conversion would be a
+   change to one component rather than a change to how the site is
+   styled. This is that component, and the reason it is this one
+   is that the markup below is almost entirely layout: sections, a
+   rail, cards, a grid of tiles. Utilities are good at exactly
+   that, and `@theme` in `aab/src/styles/tailwind.css` now carries
+   the site's real tokens, so `bg-panel` and `border-hairline`
+   mean what `var(--panel)` and `var(--hairline)` mean in both
+   themes.
+
+   WHAT DELIBERATELY DID NOT CONVERT, and it is worth saying
+   because "half of it is Tailwind" looks like an unfinished job
+   rather than a decision. Three things stayed in `styles.css`:
+
+     the account menu   it is a `popover`, and its placement is
+                        `@starting-style`, `::backdrop`,
+                        `:popover-open` and CSS anchor
+                        positioning inside an `@supports`. None
+                        of those has a utility, so converting it
+                        means a line of arbitrary values that is
+                        longer and less readable than the rule it
+                        replaced.
+     the year grid      53 columns sized in a custom property,
+                        which is one CSS rule and would be one
+                        arbitrary value per axis.
+     anything an        the `tw` layer sits BELOW `article` on
+     article carries    purpose and permanently: an article's body
+                        is HTML in a database that Tailwind's
+                        compiler cannot see. The note at the top
+                        of `aab/src/styles/tailwind.css` is the
+                        long version.
+
+   The class names that remain are hooks rather than styling, and
+   there are fewer of them than the conversion started with.
+   `ladder-list`, `kept-list`, `targets` and `saved-list` are the
+   containers `aab/account-page.ts` fills, and the rows it builds
+   inside them are named classes styled in `styles.css`: a class
+   name inside a `createElement` call is one Tailwind's scanner
+   finds only because `aab/*.js` is in its source list, which
+   makes it work and does not make it readable. JSX gets
+   utilities; DOM built in a loop gets a class.
+
+   Nothing here carries a class that exists only to be selected. A
+   section is addressed by its `id`, which it needs anyway for the
+   menu's fragments, and the rail is a labelled `<nav>`, which is
+   what `next/account.test.mjs` asks for.
+
    ---- and it is still filled entirely by a script ----
 
    `/account-page.js`, from Supabase. None of it can be rendered
@@ -61,6 +111,85 @@ const SECTIONS = [
   { id: "data", label: "Your data" },
 ];
 
+/* ---------- the four shapes this page repeats ----------
+
+   A section, a card, a row of actions and a form. Written as
+   components rather than as a class name each, because that is
+   what a utility framework gives you instead of a class: the
+   place the decision lives moves from the stylesheet to here,
+   and it is still one place.
+
+   `FORM` is a string rather than a component because it is
+   applied to two `<form>` elements that differ in everything
+   else, and a component wrapping a form would have to forward an
+   id, a submit handler and children to earn its keep. */
+const FORM = "grid max-w-[620px] gap-[22px] "
+  + "[&_fieldset]:m-0 [&_fieldset]:grid [&_fieldset]:gap-[9px] [&_fieldset]:border-0 [&_fieldset]:p-0 "
+  + "[&_legend]:p-0 [&_legend]:font-serif [&_legend]:text-[1.04rem] [&_legend]:text-ink "
+  + "[&_.field-note]:m-0 [&_.field-note]:-mt-[3px] [&_.field-note]:mb-0.5 "
+  + "[&_.field-note]:max-w-[var(--measure)] [&_.field-note]:text-[0.85rem] [&_.field-note]:text-ink-soft "
+  + "[&_input[type=text]]:max-w-[340px] [&_input[type=text]]:rounded-sm "
+  + "[&_input[type=text]]:border [&_input[type=text]]:border-hairline "
+  + "[&_input[type=text]]:bg-paper [&_input[type=text]]:px-[13px] [&_input[type=text]]:py-[11px] "
+  + "[&_input[type=text]]:text-[0.95rem] "
+  + "[&_input[type=text]:focus]:border-green [&_input[type=text]:focus]:outline-none "
+  + "[&_input[type=text]:focus]:ring-2 [&_input[type=text]:focus]:ring-green/20";
+
+function Section({ id, title, blurb, children }: {
+  id: string;
+  title: string;
+  blurb: string;
+  children: React.ReactNode;
+}) {
+  return (
+    /* `scroll-margin-top` so a link from the account menu lands
+       with the heading under the sticky rail rather than behind
+       it, and `:target` marks which of eight sections the page
+       just jumped to: the rail is at the top and the eye is
+       here. */
+    <section id={id}
+             className="grid content-start gap-3.5
+                        scroll-mt-[calc(var(--top-h,58px)+58px)]
+                        target:[&>div:first-child]:-ms-3.5
+                        target:[&>div:first-child]:border-s-2
+                        target:[&>div:first-child]:border-green
+                        target:[&>div:first-child]:ps-3">
+      <div className="grid gap-1">
+        <h2 className="m-0 font-serif text-[clamp(1.2rem,3.4vw,1.5rem)]">{title}</h2>
+        <p className="m-0 max-w-[var(--measure)] text-[0.9rem] text-ink-soft">{blurb}</p>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/** One card, used by every section, so the page reads as one
+    thing rather than as six features that arrived separately.
+    `container` is named so the rules inside can ask how wide THIS
+    is: it sits beside a 268px rail on a laptop and full-width on
+    a phone, and a media query would answer a question nobody
+    asked. */
+function Card({ id, className = "", children }: {
+  id?: string;
+  className?: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div id={id}
+         className={`@container/acct grid content-start gap-2.5 rounded-card
+                     border border-hairline bg-panel p-[clamp(14px,3vw,20px)]
+                     [&>h3]:m-0 [&>h3]:text-[1.02rem] [&>h3]:font-medium
+                     [&>p]:m-0 [&>p]:text-[0.88rem] [&>p]:text-ink-soft
+                     [&>.btn]:justify-self-start ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+const Actions = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex flex-wrap items-center gap-3">{children}</div>
+);
+
 export default function AccountPage() {
   return (
     <main id="main">
@@ -88,14 +217,27 @@ export default function AccountPage() {
       <div id="account-in" hidden>
 
         {/* ============ WHO, AND THE SHAPE OF THE YEAR ============ */}
-        <header className="acct-top">
-          <div className="wrap acct-top-inner">
-            <span className="acct-face" id="account-face" aria-hidden="true" />
-            <div className="acct-hello">
-              <h1 id="account-hello">Hello.</h1>
-              <p id="account-email" />
+        <header className="border-b border-hairline bg-[radial-gradient(90%_120%_at_0%_0%,var(--green-soft),transparent_70%)] py-[clamp(28px,5vw,52px)] pb-[clamp(20px,3vw,30px)]">
+          <div className="wrap grid grid-cols-[auto_1fr] items-center gap-x-5 gap-y-[18px]">
+            <span id="account-face" aria-hidden="true"
+                  className="grid aspect-square w-[clamp(48px,12vw,62px)] place-items-center
+                             rounded-full bg-green font-serif text-[clamp(1.3rem,5vw,1.8rem)]
+                             leading-none text-white" />
+            <div className="min-w-0">
+              <h1 id="account-hello" className="m-0 text-[clamp(1.5rem,5vw,2.2rem)] text-balance">
+                Hello.
+              </h1>
+              <p id="account-email"
+                 className="mt-0.5 mb-0 overflow-hidden text-ellipsis whitespace-nowrap
+                            font-mono text-[0.86rem] text-ink-soft" />
             </div>
-            <div className="acct-tiles" id="account-tiles" />
+            {/* The four numbers. `auto-fit` rather than four
+                columns, because two-by-two is the right shape on
+                a phone and one row is right on a laptop, and
+                neither needs saying. */}
+            <div id="account-tiles"
+                 className="col-span-full grid gap-2.5
+                            grid-cols-[repeat(auto-fit,minmax(min(45%,130px),1fr))]" />
           </div>
         </header>
 
@@ -105,90 +247,98 @@ export default function AccountPage() {
             `#reading-list` from the header menu should find the
             page scrolled to their reading list with everything
             else still there above and below it. */}
-        <nav className="acct-rail" aria-label="This page">
-          <div className="wrap acct-rail-inner">
+        <nav aria-label="This page"
+             className="sticky top-[var(--top-h,58px)] z-20 border-b border-hairline
+                        bg-[color-mix(in_oklab,var(--paper)_88%,transparent)]
+                        backdrop-blur-[10px] backdrop-saturate-150">
+          {/* It scrolls sideways rather than wrapping to three
+              lines: eight links is more than a phone can show,
+              and a rail that changed height as you scrolled past
+              it would move the page under the thumb doing the
+              scrolling. */}
+          <div className="wrap flex gap-1 overflow-x-auto py-[7px]
+                          [scrollbar-width:none] [scroll-snap-type:x_proximity]
+                          [&::-webkit-scrollbar]:hidden">
             {SECTIONS.map((s) => (
-              <a key={s.id} className="acct-rail-link" href={`#${s.id}`}>{s.label}</a>
+              <a key={s.id} href={`#${s.id}`}
+                 className="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap
+                            rounded-full px-[13px] py-[7px] text-[0.82rem] text-ink-soft
+                            no-underline transition-colors [scroll-snap-align:start]
+                            hover:bg-panel-hover hover:text-ink hover:opacity-100
+                            focus-visible:bg-panel-hover focus-visible:text-ink
+                            focus-visible:outline-none
+                            focus-visible:ring-2 focus-visible:ring-green/30">
+                {s.label}
+              </a>
             ))}
           </div>
         </nav>
 
-        <div className="wrap acct-body">
+        <div className="wrap grid gap-[clamp(34px,5vw,56px)]
+                        pt-[clamp(26px,4vw,44px)] pb-[var(--step)]">
 
-          <section className="acct-sec" id="you">
-            <div className="acct-head">
-              <h2>Your year</h2>
-              <p>Every day you opened something here. Nothing else is counted,
-                 and none of it is shown to anybody but you.</p>
-            </div>
-            <div className="acct-card">
+          <Section id="you" title="Your year"
+                   blurb="Every day you opened something here. Nothing else is counted, and none of it is shown to anybody but you.">
+            <Card>
+              {/* The grid itself stays a stylesheet rule: 53
+                  columns sized by a custom property is one line of
+                  CSS and would be one arbitrary value per axis. */}
               <div className="heat" id="account-heat" />
-              <p className="acct-note" id="account-week" />
-            </div>
-          </section>
+              <p className="m-0 text-[0.82rem] text-ink-soft" id="account-week" />
+            </Card>
+          </Section>
 
           {/* ============ THE LADDERS ============ */}
-          <section className="acct-sec" id="ladders">
-            <div className="acct-head">
-              <h2>Where you are</h2>
-              <p>Your position in each course, the chapters you have finished
-                 and the checkpoints you have ticked inside them. This is the
-                 account&apos;s copy, so it is the same on every device.</p>
-            </div>
+          <Section id="ladders" title="Where you are"
+                   blurb="Your position in each course, the chapters you have finished and the checkpoints you have ticked inside them. This is the account's copy, so it is the same on every device.">
             <div className="ladder-list" id="account-paths" />
-            <p className="acct-note" id="account-synced" />
-          </section>
+            <p className="m-0 text-[0.82rem] text-ink-soft" id="account-synced" />
+          </Section>
 
           {/* ============ KEPT, AND WRITTEN ON ============ */}
-          <section className="acct-sec" id="reading-list">
-            <div className="acct-head">
-              <h2>Reading list</h2>
-              <p>Pages you kept for later. Save one from the row under its
-                 title, on any piece or lesson.</p>
-            </div>
+          <Section id="reading-list" title="Reading list"
+                   blurb="Pages you kept for later. Save one from the row under its title, on any piece or lesson.">
             <div className="kept-list" id="account-kept-list" />
-          </section>
+          </Section>
 
-          <section className="acct-sec" id="notes">
-            <div className="acct-head">
-              <h2>Your notes</h2>
-              <p>What you wrote in the margin. Private, stored against your
-                 account, and shown to nobody, including me.</p>
-            </div>
+          <Section id="notes" title="Your notes"
+                   blurb="What you wrote in the margin. Private, stored against your account, and shown to nobody, including me.">
             <div className="kept-list" id="account-notes" />
-          </section>
+          </Section>
 
           {/* ============ TARGETS ============ */}
-          <section className="acct-sec" id="targets">
-            <div className="acct-head">
-              <h2>What you are aiming for</h2>
-              <p>Set a target and this page measures it. Nothing is sent to
-                 you about it: there are no notifications on this site and
-                 there will not be any.</p>
-            </div>
+          <Section id="targets" title="What you are aiming for"
+                   blurb="Set a target and this page measures it. Nothing is sent to you about it: there are no notifications on this site and there will not be any.">
             <div className="targets" id="account-targets" />
-            <details className="acct-more" id="target-more">
-              <summary>Add a target</summary>
-              <form className="acct-form" id="target-form">
+            {/* A form nobody needs open until they want it, and a
+                `<details>` is the disclosure the rest of this site
+                already uses rather than a second panel with its
+                own open state in a script. */}
+            <details id="target-more"
+                     className="rounded-card border border-hairline bg-panel
+                                [&>summary]:list-none
+                                [&>summary::-webkit-details-marker]:hidden">
+              <summary className="flex min-h-[46px] cursor-pointer items-center gap-2
+                                  px-4 py-[13px] text-[0.92rem] text-green
+                                  before:font-mono before:text-base before:content-['+']">
+                Add a target
+              </summary>
+              <form id="target-form" className={`${FORM} gap-4 px-4 pb-[18px]`}>
                 <div className="choice-row" id="target-kind" />
                 <div className="target-fields" id="target-fields" />
-                <div className="acct-actions">
+                <Actions>
                   <button className="btn btn-solid" type="submit">Add it</button>
                   <span className="signin-note" id="target-note" />
-                </div>
+                </Actions>
               </form>
             </details>
-          </section>
+          </Section>
 
           {/* ============ SAVED SCENARIOS ============ */}
-          <section className="acct-sec" id="scenarios">
-            <div className="acct-head">
-              <h2>Saved scenarios</h2>
-              <p>A filled-in calculator, kept under a name. Open one and the
-                 tool comes back exactly as you left it.</p>
-            </div>
+          <Section id="scenarios" title="Saved scenarios"
+                   blurb="A filled-in calculator, kept under a name. Open one and the tool comes back exactly as you left it.">
             <div className="saved-list" id="account-scenarios" />
-          </section>
+          </Section>
 
           {/* ============ PREFERENCES, AND THE THREE QUESTIONS ============
 
@@ -198,20 +348,18 @@ export default function AccountPage() {
               and are applied before the first paint on the next
               one; the three below them are what the site is
               allowed to do with what it knows. */}
-          <section className="acct-sec" id="preferences">
-            <div className="acct-head">
-              <h2>How you like to read</h2>
-              <p>These take effect as you press them, on every page, and
-                 follow you to your other devices.</p>
-            </div>
-            <div className="acct-card prefs" id="account-prefs" />
+          <Section id="preferences" title="How you like to read"
+                   blurb="These take effect as you press them, on every page, and follow you to your other devices.">
+            <Card className="prefs gap-[18px]" id="account-prefs" />
 
-            <div className="acct-head acct-head-sub">
-              <h3 id="settings-label">Your settings</h3>
-              <p id="settings-intro">Three things, none of them required. You
-                 can change any of them whenever you like.</p>
+            <div className="mt-3 grid gap-1 border-t border-hairline pt-5">
+              <h3 id="settings-label" className="m-0 text-[1.08rem]">Your settings</h3>
+              <p id="settings-intro" className="m-0 max-w-[var(--measure)] text-[0.9rem] text-ink-soft">
+                Three things, none of them required. You can change any of them
+                whenever you like.
+              </p>
             </div>
-            <form className="acct-form" id="settings-form">
+            <form className={FORM} id="settings-form">
               <fieldset>
                 <legend>Your name</legend>
                 <p className="field-note">What appears beside anything you
@@ -232,26 +380,23 @@ export default function AccountPage() {
                    the last week went.</p>
                 <div className="choice-row" id="account-pace" />
               </fieldset>
-              <div className="acct-actions">
+              <Actions>
                 <button className="btn btn-solid" type="submit">Save</button>
                 <button className="btn btn-ghost" type="button" id="settings-skip"
                         hidden>Not now</button>
                 <span className="signin-note" id="settings-note" />
-              </div>
+              </Actions>
             </form>
-          </section>
+          </Section>
 
           {/* ============ WHAT IS KEPT, AND LEAVING ============ */}
-          <section className="acct-sec" id="data">
-            <div className="acct-head">
-              <h2>Your data</h2>
-              <p>Only what is listed here, and only because it is useful to
-                 you. There is no analytics profile behind any of it.</p>
-            </div>
+          <Section id="data" title="Your data"
+                   blurb="Only what is listed here, and only because it is useful to you. There is no analytics profile behind any of it.">
             <div className="cards grid-2" id="account-kept" />
 
-            <div className="acct-exits">
-              <div className="acct-card">
+            <div className="grid gap-[var(--gap)]
+                            grid-cols-[repeat(auto-fit,minmax(min(100%,250px),1fr))]">
+              <Card>
                 <h3>Take a copy</h3>
                 <p>One file with everything this account holds: your position
                    in every course, your checkpoints, your reading list, your
@@ -260,8 +405,8 @@ export default function AccountPage() {
                 <button className="btn btn-ghost" id="account-export">
                   Download everything
                 </button>
-              </div>
-              <div className="acct-card">
+              </Card>
+              <Card>
                 <h3>Sign out</h3>
                 <p>Ends the session on this device and takes the account&apos;s
                    copy of your progress off it, so the next person at this
@@ -270,8 +415,8 @@ export default function AccountPage() {
                 <button className="btn btn-ghost" id="account-signout">
                   Sign out
                 </button>
-              </div>
-              <div className="acct-card acct-card-warn">
+              </Card>
+              <Card className="border-danger/35 bg-danger/5 [&_.btn:hover]:border-danger [&_.btn:hover]:text-danger">
                 <h3>Erase everything</h3>
                 <p>Removes all of it from the account: position, checkpoints,
                    reading list, notes, targets and scenarios. This cannot be
@@ -279,10 +424,10 @@ export default function AccountPage() {
                 <button className="btn btn-ghost" id="account-forget">
                   Erase it
                 </button>
-              </div>
+              </Card>
             </div>
             <p className="signin-note" id="exit-note" />
-          </section>
+          </Section>
 
         </div>
       </div>
