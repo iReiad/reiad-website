@@ -46,11 +46,27 @@ const SHELL: Partial<Record<IconName, string>> = {
   person: SCHOOL_ICONS.deutsch?.person,
 };
 
+/** The money school's own set, which is the one the shell and
+    the cards draw from. Named as a constant rather than reached
+    for inline because the name of that set has changed once and
+    the reach was silent when it did: see below.
+
+    `SCHOOL_ICONS` is keyed by school id, and the money school's
+    id was `learn` until it moved to `/money/`. This line still
+    said `SCHOOL_ICONS.learn` afterwards, and `?.` answered
+    `undefined` rather than throwing, so every icon a lesson or a
+    card asked for fell through to SHELL, missed there too, and
+    came back as the empty string. `Icon` duly rendered a correct
+    `<svg>` with nothing inside it: right size, right stroke, no
+    drawing. Sixteen of them on the money hub alone, and nothing
+    anywhere said so, because an empty icon is not an error. */
+const CARD_ICONS = SCHOOL_ICONS.money ?? {};
+
 /** School first, shell second. A name in both is the school's,
     which is the direction that keeps a lesson's heading and the
     sidebar link to it drawing the same thing. */
 export const iconInner = (name: string): string =>
-  SCHOOL_ICONS.learn?.[name] ?? SHELL[name as IconName] ?? "";
+  CARD_ICONS[name] ?? SHELL[name as IconName] ?? "";
 
 export function Icon({
   name, size = 20, className,

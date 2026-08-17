@@ -52,6 +52,8 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { icon } from "../aab/money/icons.js";
+import { SCHOOL_ICONS } from "../next/lib/school-icons.ts";
+import { NAV } from "../next/lib/nav.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
@@ -97,8 +99,79 @@ if (read("next/lib/school-icons.ts") !== wanted) {
     "  node scripts/build-school-icons.mjs");
 }
 
+/* ------------------------------------------------------------
+   3. And that the cards can actually find those drawings
+
+   The two checks above prove `next/` holds the same drawings
+   `aab/` does. Neither proves anything looks them up correctly,
+   and for one commit nothing did.
+
+   `SCHOOL_ICONS` is keyed by school id. The money school's id was
+   `learn` until it moved to `/money/`, and `icons.tsx` went on
+   saying `SCHOOL_ICONS.learn?.[name]` afterwards. Optional
+   chaining answered `undefined` rather than throwing, the lookup
+   fell through to the shell set, missed there too, and returned
+   the empty string. `Icon` rendered a perfectly correct `<svg>`
+   with nothing inside it: right box, right stroke, no drawing.
+
+   Sixteen empty icons on the money hub, more on every lesson
+   card and every contents row, and not one thing anywhere said
+   so. Both checks above passed the whole time, because the
+   drawings were all present and correct; it was the key that had
+   gone.
+
+   So this asks the question those two cannot: does the set
+   `icons.tsx` reads actually exist, and does every name a card
+   asks for come back with something in it.
+   ------------------------------------------------------------ */
+
+const iconsTsx = read("next/components/icons.tsx");
+
+/** The school set `icons.tsx` draws its card icons from. */
+const keyed = iconsTsx.match(/SCHOOL_ICONS\.(\w+)\s*\?\?/)
+  ?? iconsTsx.match(/SCHOOL_ICONS\.(\w+)\?\.\[name\]/);
+
+if (!keyed) {
+  fail("cannot tell which set next/components/icons.tsx draws cards from.",
+    "It should read SCHOOL_ICONS.<school> once, into CARD_ICONS.");
+} else if (!wanted.includes(`  ${keyed[1]}: {`)) {
+  fail(`next/components/icons.tsx reads SCHOOL_ICONS.${keyed[1]},`
+    + " and no school is called that.",
+    `The sets are: ${(wanted.match(/^  (\w+): \{/gm) ?? [])
+      .map((m) => m.trim().replace(": {", "")).join(", ")}.`,
+    "Every icon on every card is an empty <svg> until this matches.");
+}
+
+/* And the names themselves. The shell's own drawings are read out
+   of the same file rather than listed here, so adding one does
+   not mean editing this. */
+const shellNames = new Set(
+  [...iconsTsx.matchAll(/^  ([a-z]+):/gm)].map((m) => m[1]));
+
+const cardIcons = keyed ? (SCHOOL_ICONS[keyed[1]] ?? {}) : {};
+
+const { STAGES, allLessons } = await import("../aab/money/curriculum.js");
+const asked = new Set();
+for (const stage of STAGES) if (stage.icon) asked.add(stage.icon);
+for (const lesson of allLessons()) if (lesson.icon) asked.add(lesson.icon);
+for (const group of NAV) {
+  if (group.icon) asked.add(group.icon);
+  for (const link of group.links ?? []) if (link.icon) asked.add(link.icon);
+}
+
+const empty = [...asked].filter(
+  (name) => !cardIcons[name] && !shellNames.has(name));
+
+if (empty.length) {
+  fail(`${empty.length} icon name(s) a card asks for draw nothing.`,
+    empty.join(", "),
+    "Each renders as an <svg> with no path inside it, which looks"
+    + " like a missing icon and reports as nothing at all.");
+}
+
 console.log(failures
   ? `\n${failures} copy(ies) in next/ have drifted from the original.\n`
   : `next/ holds 3 drawings copied out of aab/ by hand and ${drawings}\n`
-    + "generated, and every one still matches what icons.js draws.\n");
+    + `generated, every one still matches what icons.js draws, and all\n`
+    + `${asked.size} names a card asks for come back with a drawing in them.\n`);
 process.exit(failures ? 1 : 0);
