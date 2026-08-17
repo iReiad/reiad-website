@@ -31,6 +31,32 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v85: Progress belongs to the account. /sync.js is a rewrite: it
+        no longer merges a browser with an account, it adopts the
+        account's rows on to the device and never uploads what the
+        browser held first, and it takes the mirror off again when
+        the session ends. /first-sync.js is gone from this list
+        and from the site, because the three-way question it asked
+        was the old shape's and there is nothing left to ask. A
+        cached v84 shell is the dangerous one here and is exactly
+        why this bump matters: it would serve the OLD sync.js,
+        which reads the same keys under the same names and pushes
+        this browser's copy into the account behind the new
+        rules' back.
+
+        Two modules are new and both are precached. /saved.js is
+        the account's scenarios and targets, imported at the top
+        of /account-page.js and by /tools/stock.js, so a stale
+        shell is an account page that does not load. And
+        /checkpoints.js turns the checklist inside a lesson into
+        ticks that are kept, which is the one of these a reader is
+        most likely to want offline: /styles.css carries the rules
+        it needs and changed with it.
+
+        /styles.css also changed for the alignment pass, and
+        /account-page.js, /tools/stock.js and /tools/stock.i18n.js
+        are all precached and all changed.
+
    v84: The German, English and Quranic Arabic schools stopped
         keeping three copies of the same two modules. Their ticks
         are /schools/progress.js now and the drawings around their
@@ -696,7 +722,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v84";
+const VERSION = "v85";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -740,10 +766,17 @@ const PRECACHE = [
   /* studio.js and desk.js both import this, and a shell without it
      is an editor that cannot save a photo. */
   "/photo.js",
-  /* sync.js imports this lazily, at the one moment it is needed:
-     the first time a device meets an account that already has
-     progress. Offline is exactly when that import must not 404. */
-  "/first-sync.js",
+  /* Everything an account holds that is not a tick: saved
+     scenarios and targets. account-page.js imports it at the top
+     and the stock check imports it too, so a shell without it is
+     an account page that does not load and a stock check with no
+     Save button. */
+  "/saved.js",
+  /* Every school lesson loads this, and a lesson body a reader
+     has offline is exactly where a checklist they were working
+     through is. Without it the ticks are gone and the list is
+     back to being prose. */
+  "/checkpoints.js",
   /* Loaded lazily by an article page. Precached so a thread still
      draws for somebody reading offline. */
   "/comments.js",

@@ -1,30 +1,45 @@
 /* ============================================================
-   sync.test.mjs: the three ways progress went wrong.
+   sync.test.mjs: progress belongs to the account.
 
      node aab/sync.test.mjs        (needs a server on :8899 and
                                     Playwright; skips without them)
 
-   Each of these was reported by a reader of this site, not found
-   by reading the code, and each is the kind of bug that only
-   exists when a browser, a clock and a network are all involved:
+   The old file tested a three-way merge and the dialog that
+   fronted it. Both are gone, so this is a rewrite rather than an
+   edit, and what it holds `aab/sync.js` to is one sentence:
 
-   1. RESETTING DID NOTHING while signed in. Every school's
-      resetAll() removes its key rather than emptying it, and the
-      guard in reconcile() only recognised []. So `undefined` fell
-      through to the union and the account's copy came straight
-      back, every time.
+     THE ACCOUNT IS THE RECORD, AND NOTHING IS EVER PULLED OUT OF
+     THE BROWSER INTO IT.
 
-   2. SIGNING IN ON A SECOND DEVICE silently pushed whatever that
-      browser happened to hold into the account, permanently. Fine
-      on your own laptop; not fine on a borrowed phone or a new
-      account that should start new. It asks now, once, and only
-      when both sides actually hold something.
+   Five things follow from that sentence and each of them is a
+   check below. Three were bugs in the old shape, one is the rule
+   itself, and one is what signing out has to do once the device
+   is a mirror rather than a second copy.
 
-   3. The three answers to that question each have to do exactly
-      what they say, and "use my account's" is the one that went
-      wrong twice while being written: once by clearing the account
-      it was supposed to adopt, and once by announcing the change
-      and feeding its own clock back through the schools.
+   1. SIGNING IN ADOPTS. A browser that already holds progress
+      shows the account's, and what it held is neither merged nor
+      uploaded. The old file asked the reader which they wanted,
+      because it could not tell a laptop from a borrowed phone.
+      Nothing has to tell them apart now.
+
+   2. A TICK MADE WHILE SIGNED IN GOES UP. Adoption must not be
+      mistaken for read-only: everything done after signing in is
+      the account's.
+
+   3. RESETTING CLEARS THE ACCOUNT. Every school's resetAll()
+      REMOVES its key rather than emptying it, and the old guard
+      recognised only an empty array, so `undefined` fell through
+      a union and the account's copy came straight back, every
+      time. There is no guard here: an absent key is an empty set
+      and subtraction does the rest.
+
+   4. A TICK FROM ANOTHER DEVICE ARRIVES. Two signed-in devices
+      is the one case that still needs reconciling, and it is
+      reconciled between two states that both came from the
+      account.
+
+   5. SIGNING OUT TAKES THE MIRROR OFF. The next person at the
+      same machine must not inherit the last one's ticks.
 
    Plus the display name, which is checked here because it shares
    the profile path with everything above.
@@ -38,8 +53,20 @@ try {
   process.exit(0);
 }
 
+/* /404.html rather than /index.html, and the reason is worth
+   writing down because the old file did not notice: the home page
+   has not been a file in `aab/` since archive/TRANSITION.md Stage
+   11.5. A static server over this directory answers it with a
+   404, so every navigation in the old version of this test landed
+   on nothing and every assertion after it was about an empty
+   page.
+
+   404.html is one of the six pages that are not routes and cannot
+   be, it loads `/app.js` like every other page on the site, and
+   app.js imports signin.js, which imports sync.js and starts it.
+   That is the whole of what these checks need a page for. */
 try {
-  const res = await fetch("http://localhost:8899/index.html");
+  const res = await fetch("http://localhost:8899/404.html");
   if (!res.ok) throw new Error(String(res.status));
 } catch {
   console.log("No server on :8899, so this test is skipped.");
@@ -64,6 +91,9 @@ const check = (n, got, want) => {
   console.log(`  ${ok ? "ok  " : "FAIL"} ${n}${ok ? "" : `\n        got  ${JSON.stringify(got)}\n        want ${JSON.stringify(want)}`}`);
 };
 
+/** A browser holding `device`, talking to an account holding
+    `accountRows`. Every Supabase call is answered here, so the
+    real project is never touched and the test needs no network. */
 async function make({ accountRows = [], profile = null, device = {} }) {
   const ctx = await b.newContext({ viewport: { width: 1100, height: 1000 }, serviceWorkers: "block" });
   const p = await ctx.newPage();
@@ -85,7 +115,10 @@ async function make({ accountRows = [], profile = null, device = {} }) {
       }
       return json([...state.rows.values()]);
     }
-    return json({});
+    /* Scenarios and targets: empty, and answered rather than left
+       to fail, because the account page asks for both and a
+       rejected fetch is a console error this file counts. */
+    return json([]);
   });
   await ctx.route(`${SUPA}/auth/v1/**`, (r) => r.fulfill({ status: 200, contentType: "application/json", body: "{}" }));
   await ctx.route("**/api/**", (r) => r.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true,"articles":[]}' }));
@@ -95,115 +128,179 @@ async function make({ accountRows = [], profile = null, device = {} }) {
 }
 
 const old = new Date(Date.now() - 600000).toISOString();
+const local = (p, key) => p.evaluate((k) => JSON.parse(localStorage.getItem(k) ?? "null"), key);
+const sorted = (v) => (Array.isArray(v) ? [...v].sort() : v);
 
-/* ---------- 1. reset while signed in ---------- */
-console.log("resetting progress while signed in");
+/* ---------- 1. signing in adopts, and uploads nothing ---------- */
+console.log("signing in on a browser that already has progress");
+{
+  const { ctx, p, state, errs } = await make({
+    accountRows: [{ key: "learn-read", value: ["a"], updated_at: old }],
+    device: {
+      "reiad-session": session("u-adopt"),
+      /* Somebody else's afternoon on a shared machine, or this
+         reader's own guest visit. The site cannot tell, and under
+         the new rule it does not have to. */
+      "learn-read": JSON.stringify(["b", "c"]),
+      "deutsch-read": JSON.stringify(["stufe-1/anfang"]),
+    },
+  });
+  await p.goto("http://localhost:8899/404.html", { waitUntil: "domcontentloaded" });
+  await p.waitForTimeout(2500);
+
+  check("the device holds the account's", sorted(await local(p, "learn-read")), ["a"]);
+  check("a key the account does not have is dropped", await local(p, "deutsch-read"), null);
+  check("and nothing of the browser's went up",
+    sorted(state.rows.get("learn-read")?.value ?? []), ["a"]);
+  check("the account gained no second key", [...state.rows.keys()], ["learn-read"]);
+  check("nothing was asked", await p.locator("dialog.first-sync").count(), 0);
+  check("no page errors", errs.length ? errs[0] : "none", "none");
+  await ctx.close();
+}
+
+/* ---------- 2. a tick made while signed in goes up ---------- */
+console.log("\nticking a lesson while signed in");
+{
+  const { ctx, p, state, errs } = await make({
+    accountRows: [{ key: "learn-read", value: ["a"], updated_at: old }],
+    device: { "reiad-session": session("u-tick") },
+  });
+  await p.goto("http://localhost:8899/404.html", { waitUntil: "domcontentloaded" });
+  await p.waitForTimeout(2000);
+
+  // Exactly what a tick button does: write the key, announce it.
+  await p.evaluate(() => {
+    localStorage.setItem("learn-read", JSON.stringify(["a", "share"]));
+    dispatchEvent(new CustomEvent("learn:progress"));
+  });
+  await p.waitForTimeout(4000);
+
+  check("the account has both", sorted(state.rows.get("learn-read")?.value ?? []), ["a", "share"]);
+  check("no page errors", errs.length ? errs[0] : "none", "none");
+  await ctx.close();
+}
+
+/* ---------- 3. resetting clears the account ---------- */
+console.log("\nresetting progress while signed in");
 {
   const { ctx, p, state, errs } = await make({
     accountRows: [
       { key: "learn-read", value: ["share", "dse"], updated_at: old },
       { key: "learn-last", value: { id: "share", ts: Date.now() - 600000 }, updated_at: old },
     ],
-    device: {
-      "reiad-session": session("u-reset"),
-      "learn-read": JSON.stringify(["share", "dse"]),
-      "learn-last": JSON.stringify({ id: "share", ts: Date.now() - 600000 }),
-      "sync-accounts": JSON.stringify(["u-reset"]),
-    },
+    device: { "reiad-session": session("u-reset") },
   });
-  await p.goto("http://localhost:8899/index.html", { waitUntil: "domcontentloaded" });
-  await p.waitForTimeout(1600);
+  await p.goto("http://localhost:8899/404.html", { waitUntil: "domcontentloaded" });
+  await p.waitForTimeout(2000);
 
-  check("account starts with the progress", state.rows.has("learn-read"), true);
+  check("the device adopted the account's", sorted(await local(p, "learn-read")), ["dse", "share"]);
 
-  // Exactly what the school's own reset does.
-  await p.evaluate(async () => {
-    const m = await import("/money/progress.js");
-    m.resetAll();
+  // Exactly what the school's own reset does: remove, not empty.
+  await p.evaluate(() => {
+    for (const key of ["learn-read", "learn-last"]) localStorage.removeItem(key);
+    dispatchEvent(new CustomEvent("learn:progress"));
   });
   await p.waitForTimeout(4000);
 
-  const after = await p.evaluate(() => ({
-    read: localStorage.getItem("learn-read"),
-    last: localStorage.getItem("learn-last"),
-  }));
-  // Either absent or an empty list counts as cleared; what must NOT
-  // happen is the account's copy coming back.
-  check("the device stays cleared", JSON.parse(after.read ?? "null") ?? [], []);
-  check("the bookmark stays cleared", after.last, null);
+  check("the device stays cleared", (await local(p, "learn-read")) ?? [], []);
+  check("the bookmark stays cleared", await local(p, "learn-last"), null);
   check("and the account is cleared too", state.rows.get("learn-read")?.value ?? null, []);
   check("no page errors", errs.length ? errs[0] : "none", "none");
   await ctx.close();
 }
 
-/* ---------- 2. first contact on a device that already has progress ---------- */
-console.log("\nsigning in on a browser that already has progress");
-for (const [answer, wantDevice, wantAccount] of [
-  ["merge", ["a", "b"], ["a", "b"]],
-  ["account", ["a"], ["a"]],
-  ["device", ["b"], ["b"]],
-]) {
+/* ---------- 4. a tick from another device arrives ---------- */
+console.log("\na tick made on another device");
+{
   const { ctx, p, state, errs } = await make({
     accountRows: [{ key: "learn-read", value: ["a"], updated_at: old }],
-    device: {
-      "reiad-session": session("u-new"),
-      "learn-read": JSON.stringify(["b"]),
-    },
+    device: { "reiad-session": session("u-two") },
   });
-  await p.goto("http://localhost:8899/index.html", { waitUntil: "domcontentloaded" });
-  await p.waitForTimeout(1500);
+  await p.goto("http://localhost:8899/404.html", { waitUntil: "domcontentloaded" });
+  await p.waitForTimeout(2000);
 
-  const asked = await p.locator("dialog.first-sync").isVisible().catch(() => false);
-  if (asked) {
-    const labels = { merge: "Keep both", account: "Use my account's", device: "Use this browser's" };
-    await p.getByRole("button", { name: labels[answer] }).click();
-    await p.waitForTimeout(2500);
-  }
-  const local = await p.evaluate(() => JSON.parse(localStorage.getItem("learn-read") ?? "null"));
-  console.log(`  answer "${answer}": asked=${asked}`);
-  check(`  device ends with`, (local ?? []).sort(), wantDevice);
-  check(`  account ends with`, (state.rows.get("learn-read")?.value ?? []).sort(), wantAccount);
-  check("  no page errors", errs.length ? errs[0] : "none", "none");
-  await ctx.close();
-}
-
-/* ---------- 3. it does NOT ask when there is nothing to lose ---------- */
-console.log("\nand it does not ask when nothing could be lost");
-{
-  const { ctx, p, errs } = await make({
-    accountRows: [],
-    device: { "reiad-session": session("u-empty"), "learn-read": JSON.stringify(["b"]) },
+  /* The phone, which this browser knows nothing about, and one
+     tick here at the same time. Neither may lose the other. */
+  state.rows.set("learn-read", { key: "learn-read", value: ["a", "phone"], updated_at: new Date().toISOString() });
+  await p.evaluate(() => {
+    localStorage.setItem("learn-read", JSON.stringify(["a", "laptop"]));
+    dispatchEvent(new CustomEvent("learn:progress"));
   });
-  await p.goto("http://localhost:8899/index.html", { waitUntil: "domcontentloaded" });
-  await p.waitForTimeout(1800);
-  check("empty account: no question", await p.locator("dialog.first-sync").count(), 0);
+  await p.waitForTimeout(4000);
+
+  check("the account holds both", sorted(state.rows.get("learn-read")?.value ?? []), ["a", "laptop", "phone"]);
+  check("and so does this device", sorted(await local(p, "learn-read")), ["a", "laptop", "phone"]);
   check("no page errors", errs.length ? errs[0] : "none", "none");
   await ctx.close();
 }
 
-/* ---------- 4. changing the name ---------- */
+/* ---------- 5. signing out takes the mirror off ---------- */
+console.log("\nsigning out");
+{
+  const { ctx, p, state, errs } = await make({
+    accountRows: [{ key: "learn-read", value: ["a", "b"], updated_at: old }],
+    device: { "reiad-session": session("u-out") },
+  });
+  await p.goto("http://localhost:8899/404.html", { waitUntil: "domcontentloaded" });
+  await p.waitForTimeout(2000);
+  check("the mirror is on the device", sorted(await local(p, "learn-read")), ["a", "b"]);
+
+  await p.evaluate(async () => {
+    const m = await import("/account.js");
+    await m.signOut();
+  });
+  await p.waitForTimeout(1500);
+
+  check("and it comes off again", await local(p, "learn-read"), null);
+  check("the account is untouched", sorted(state.rows.get("learn-read")?.value ?? []), ["a", "b"]);
+  check("no page errors", errs.length ? errs[0] : "none", "none");
+  await ctx.close();
+}
+
+/* ---------- 6. changing the name ----------
+
+   Driven through `/account.js` rather than through the account
+   page's form, and that is a change from the old file rather than
+   a shortcut. This harness is a static server over `aab/`, and
+   `/account.html` has not been a file in `aab/` since
+   archive/TRANSITION.md Stage 11.5: it is a Next.js route, so the
+   old version of this check was navigating to a 404 and asserting
+   against an empty page. What it was really testing is the
+   profile path the whole of this file shares, and that is a
+   module. `app/desk.test.mjs` is the pattern for driving a
+   rendered page, and needs a build this file does not. */
 console.log("\nchanging the display name");
 {
   const { ctx, p, state, errs } = await make({
     profile: { display_name: "Rony", following: ["deutsch"], pace: "often", setup_at: new Date().toISOString() },
-    device: { "reiad-session": session("u-name"), "sync-accounts": JSON.stringify(["u-name"]) },
+    device: { "reiad-session": session("u-name") },
   });
-  await p.goto("http://localhost:8899/account.html", { waitUntil: "domcontentloaded" });
-  await p.waitForTimeout(1800);
+  await p.goto("http://localhost:8899/404.html", { waitUntil: "domcontentloaded" });
+  await p.waitForTimeout(1500);
 
-  check("the field is filled from the profile", await p.locator("#account-name").inputValue(), "Rony");
-  await p.fill("#account-name", "Rony Reiad");
-  await p.click("#settings-form button[type=submit]");
-  await p.waitForTimeout(1200);
+  const before = await p.evaluate(async () => {
+    const m = await import("/account.js");
+    return (await m.getProfile())?.display_name ?? null;
+  });
+  check("the profile row is read", before, "Rony");
+
+  await p.evaluate(async () => {
+    const m = await import("/account.js");
+    await m.setDisplayName("Rony Reiad");
+  });
+  await p.waitForTimeout(800);
 
   check("it PATCHed the new name", state.patches.at(-1)?.display_name, "Rony Reiad");
-  check("it said so", await p.locator("#settings-note").textContent(), "Saved.");
-  check("the greeting updated", (await p.locator("#account-hello").textContent())?.includes("Rony Reiad"), true);
-  check("the header button updated", (await p.locator(".account-btn").textContent())?.trim().length > 0, true);
+  check("the session carries it", await p.evaluate(async () => {
+    const m = await import("/account.js");
+    return m.current()?.name ?? null;
+  }), "Rony Reiad");
+  check("the header button updated",
+    (await p.locator(".account-btn").textContent())?.trim(), "R");
   check("no page errors", errs.length ? errs[0] : "none", "none");
   await ctx.close();
 }
 
 await b.close();
-console.log(fails ? `\n${fails} failure(s)` : "\nall good");
+console.log(fails ? `\n${fails} failure(s)` : "\nall good: the account is the record");
 process.exit(fails ? 1 : 0);

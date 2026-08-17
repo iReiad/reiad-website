@@ -155,9 +155,9 @@ nowhere is not a link.
 `next/lib/progress.ts`, and the storage keys in it are the ones
 already in real browsers and in real accounts: `learn-read`,
 `deutsch-read`, `english-read`, `quran-done`, plus a `-last`
-bookmark each. **Do not rename one.** `aab/sync.js` maps the same
-names, and changing a key does not move somebody's ticks, it loses
-them.
+bookmark each, and a `-checks` set each since checkpoints. **Do
+not rename one.** `aab/sync.js` maps the same names, and changing
+a key does not move somebody's ticks, it loses them.
 
 The rule the rewrite turned on: **the ladder is the server's and
 the ticks are the browser's.** Every id, title and URL a progress
@@ -175,6 +175,85 @@ stored a URL, so a lesson that moved took the bookmark with it.
 
 Opening is not finishing. A visit moves the bookmark; the tick is a
 button the reader presses.
+
+### Progress belongs to the account, and the browser is a mirror
+
+`aab/sync.js`, rewritten 17 August 2026, and the whole of it is
+one sentence: **the account is the record, and nothing is ever
+pulled out of the browser into it.**
+
+| | |
+| --- | --- |
+| signed out | nothing. No request, no listener that fires, no storage touched. Progress is this browser's and every page still works. |
+| signing in | the account's rows are written on to the device, and any synced key the account does not have is removed. What the browser held first is not merged and not uploaded. |
+| signed in | the device is a mirror. A tick here goes up; a tick on the phone comes down. |
+| signing out | the mirror comes off, so the next person at the same machine does not inherit somebody's ticks. |
+
+The version before this treated a browser and an account as two
+equal copies and merged them, which forced it to ASK, once per
+account per browser, what should happen to what was already
+there. `archive/first-sync.js` is that dialog. A browser is not a
+copy of an account: it may be a library machine or a phone that
+was handed over for five minutes, and the site cannot tell.
+
+Two signed-in devices still need reconciling and that is the one
+merge left. `base` is what the account said at the last exchange,
+so `local \ base` is what this reader did and `base \ local` is
+what they undid, and the value written back is
+`(remote ∪ added) \ removed`. There is no special case for a
+reset: every school's `resetAll()` REMOVES a key rather than
+emptying it, an absent key is an empty set, and subtraction takes
+the account down with it. The old file needed a timestamp per key
+to get that right and got it wrong for a year.
+
+`aab/sync.test.mjs` is the guard, 27 checks in a real browser
+against a routed Supabase, and it drives `/404.html` because that
+is one of the six pages still served as a file.
+
+### The two things an account holds that are not a tick
+
+`aab/saved.js`, and two tables in
+`supabase/migrations/20260817120000_scenarios_targets.sql`, both
+behind the same row-level security `progress` has.
+
+- **`scenarios`** is a filled-in calculator under a name. The
+  stock check stores its own query string, which is the format it
+  has shared analyses in since it was written, so opening a saved
+  check is a link rather than a restore and there is one encoder.
+- **`targets`** is a goal with a number on it, and the three
+  kinds are three sources of progress that already existed: a
+  `course` reads the reader's ticks, a `habit` reads
+  `days-active`, and a `metric` is a number this site cannot see,
+  so the reader types it in. **A fourth kind has to pass that
+  test**: if the site cannot measure it out of something it
+  already holds, the bar would be a decoration.
+
+Neither has a local copy, and that is deliberate rather than an
+omission. Progress has one because four schools have read
+localStorage since before there were accounts and a reader with
+no account still gets all of it. Nothing here has that history
+and nothing here works signed out, so a second copy would be a
+second record to keep in step for nobody's benefit.
+
+### Checkpoints, which are the ticks inside a lesson
+
+`aab/checkpoints.js`. A lesson's own tick is about the whole page
+and is the right unit for a ladder; a checklist inside the prose
+is five things a reader does over a fortnight, and the page could
+not remember which three were done.
+
+It **invents no markup**. `.checklist` is an article block that
+has been in `@layer article` and in both sanitisers since the
+Studio was written, so every checklist in a school lesson becomes
+a set of checkpoints and a checklist anywhere else stays a list.
+A checkpoint is `<lesson id>#<n>`, filed under `<school>-checks`
+and carried by `sync.js` like every other tick. Position rather
+than text, because prose gets edited and a checkpoint that forgot
+itself over a fixed typo is worse than one that stays put when a
+line is reworded.
+
+It is **not** counted towards a ladder anywhere: a checkpoint is
+not a lesson.
 
 ### Three schools, one engine
 
@@ -358,8 +437,10 @@ node scripts/snapshot.test.mjs     # a nightly snapshot that leaks, or that thro
                                    # at 03:17 where nobody is watching
 node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the
                                    # real CSP (needs Playwright, skips without)
-node aab/sync.test.mjs             # resetting, and meeting an account for the
-                                   # first time (needs a server on :8899)
+node aab/sync.test.mjs             # a browser's own progress getting into an
+                                   # account, resetting, signing out, and two
+                                   # signed-in devices (27 checks, needs a
+                                   # server on :8899 and Playwright)
 node aab/studio.test.mjs           # the editor, end to end (68 checks)
 node aab/schools/progress.test.mjs  # a school's ticks filed under a key that is
                                    # not the one in somebody's browser, and the

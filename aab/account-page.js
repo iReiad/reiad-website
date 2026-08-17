@@ -11,8 +11,8 @@
 
    THE RULE THIS PAGE IS BUILT AROUND
 
-   Nothing is asked for that the site does not then use. Three
-   questions, and each one changes something the reader can point
+   Nothing is asked for that the site does not then use. The three
+   settings questions each change something the reader can point
    at afterwards:
 
      the name      appears beside anything they write
@@ -24,25 +24,60 @@
    birthday, no country and no "how did you hear about us" is that
    nothing on this site would do anything with them.
 
-   And the answers start filled in. Somebody who has read three
-   English parts on this device arrives with English ticked: the
-   setup card is there to confirm what the site already knows and
-   to catch what it cannot know, which is what they are about to
-   start.
+   ---- and four sections that report rather than ask ----
 
-   archive/TRANSITION.md, Stages 5 and 6.
+   Where you are, what you are aiming for, what you have saved,
+   and what is stored. Every number in them comes out of the
+   ACCOUNT, which is what the rewrite of `aab/sync.js` made true
+   in August 2026: this page used to open by counting localStorage
+   and then apologise in a footnote if the network had not
+   answered, because localStorage was a real second copy that
+   might disagree. It is a mirror of the account now, written by
+   the exchange this page kicks off before it draws anything, so
+   the numbers are the account's and the apology is gone.
+
+   The ladders are loaded on demand, four modules and 150 KB of
+   them, and that is worth saying out loud rather than hiding: a
+   progress bar needs a denominator, the denominator is how many
+   lessons a course actually holds, and the only honest source for
+   that is the curriculum. It is one page, visited rarely, and the
+   import is dynamic, so no other page on this site pays a byte
+   for it.
+
+   archive/TRANSITION.md, Stages 5 and 6, and the sync rewrite of
+   17 August 2026.
    ============================================================ */
 
 import { current, signOut, getProfile, saveProfile } from "/account.js";
 import { sync, forgetOnAccount } from "/sync.js";
+import {
+  listScenarios, updateScenario, removeScenario,
+  listTargets, saveTarget, updateTarget, removeTarget,
+} from "/saved.js";
+import { checkpointStats } from "/checkpoints.js";
 import { COURSES } from "/content.js";
 import { daysIn, run } from "/streak.js";
 
 const $ = (sel) => document.querySelector(sel);
 
+/**
+ * An element, its properties, and its children.
+ *
+ * A key with a hyphen in it is set as an ATTRIBUTE rather than
+ * assigned as a property, and that is not a nicety: `aria-label`
+ * is not a property name, so `Object.assign(node, {"aria-label":
+ * x})` hangs a string off the object and the element ends up with
+ * no label at all. Every bar on this page carries one and every
+ * one of them was silent until this branch.
+ */
 const el = (tag, props = {}, ...kids) => {
-  const node = Object.assign(document.createElement(tag), props);
-  node.append(...kids.filter(Boolean));
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(props)) {
+    if (value === undefined) continue;
+    if (key.includes("-")) node.setAttribute(key, String(value));
+    else node[key] = value;
+  }
+  node.append(...kids.filter((k) => k !== null && k !== undefined && k !== false));
   return node;
 };
 
@@ -52,6 +87,25 @@ const say = (node, text, state) => {
   if (state) node.dataset.state = state;
   else delete node.dataset.state;
 };
+
+/** A bar, drawn the same way in all three places this page draws
+    one. `role="progressbar"` and a label, because a bar with no
+    number in it is a picture of a fact rather than the fact. */
+function bar(pct, label) {
+  const clamped = Math.max(0, Math.min(100, Math.round(pct || 0)));
+  return el("span", {
+    className: "meter", role: "progressbar", "aria-label": label,
+  }, el("i", { style: `width:${clamped}%` }));
+}
+
+const setAria = (node, pct) => {
+  node.setAttribute("aria-valuenow", String(Math.max(0, Math.min(100, Math.round(pct || 0)))));
+  node.setAttribute("aria-valuemin", "0");
+  node.setAttribute("aria-valuemax", "100");
+  return node;
+};
+
+const meter = (pct, label) => setAria(bar(pct, label), pct);
 
 /* How often somebody means to practise. The ids are what goes in
    the column; the constraint in the migration holds them to
@@ -74,12 +128,16 @@ const PACE_TARGET = { daily: 7, often: 5, sometimes: 0 };
    it reports what is actually stored. */
 const KEPT = [
   { key: "learn-read", course: "money", one: "lesson read", many: "lessons read" },
+  { key: "learn-checks", course: "money", one: "checkpoint ticked", many: "checkpoints ticked" },
   { key: "learn-last", course: "money", single: true },
   { key: "deutsch-read", course: "deutsch", one: "part read", many: "parts read" },
   { key: "deutsch-days", course: "deutsch", one: "practice day done", many: "practice days done" },
+  { key: "deutsch-checks", course: "deutsch", one: "checkpoint ticked", many: "checkpoints ticked" },
   { key: "english-read", course: "english", one: "part read", many: "parts read" },
   { key: "english-days", course: "english", one: "practice day done", many: "practice days done" },
+  { key: "english-checks", course: "english", one: "checkpoint ticked", many: "checkpoints ticked" },
   { key: "quran-done", course: "quran", one: "day done", many: "days done" },
+  { key: "quran-checks", course: "quran", one: "checkpoint ticked", many: "checkpoints ticked" },
 ];
 
 const readLocal = (key) => {
@@ -98,7 +156,7 @@ function countOf(entry) {
   return Array.isArray(value) ? value.length : 0;
 }
 
-/** Which courses this device has any progress in at all. */
+/** Which courses this account has any progress in at all. */
 const startedCourses = () =>
   new Set(KEPT.filter((entry) => countOf(entry) > 0).map((entry) => entry.course));
 
@@ -172,7 +230,433 @@ function paintWeek(pace) {
 }
 
 /* ============================================================
-   The three questions
+   THE LADDERS
+
+   A bar needs a denominator and the denominator is the
+   curriculum. Each school spells its own list a different way,
+   which is history rather than disorder: `allTeile` is German for
+   the same idea `allParts` is English for, and both were named
+   before there was anything reading all four. This is the one
+   place that has to read all four, so this is where the four
+   names are written down.
+
+   `scripts/check-schools.mjs` is what holds these ladders to the
+   rows in the database, so a lesson added in the Studio and not
+   here fails a check rather than quietly shortening a bar.
+   ============================================================ */
+
+const LADDERS = {
+  money:   { load: () => import("/money/curriculum.js"),   all: (m) => m.allLessons(), key: "learn-read",   hub: "/money/index.html" },
+  deutsch: { load: () => import("/deutsch/curriculum.js"), all: (m) => m.allTeile(),   key: "deutsch-read", hub: "/deutsch/index.html" },
+  quran:   { load: () => import("/quran/curriculum.js"),   all: (m) => m.allLessons(), key: "quran-done",   hub: "/quran/index.html" },
+  english: { load: () => import("/english/curriculum.js"), all: (m) => m.allParts(),   key: "english-read", hub: "/english/index.html" },
+};
+
+const LAST_KEY = {
+  money: "learn-last", deutsch: "deutsch-last",
+  quran: "quran-last", english: "english-last",
+};
+
+/** Every ladder, once per page. Kept because three sections read
+    them and re-importing four modules per repaint would be four
+    modules per repaint. */
+let ladders = null;
+
+async function loadLadders() {
+  if (ladders) return ladders;
+  const entries = await Promise.all(Object.entries(LADDERS).map(async ([id, spec]) => {
+    try {
+      const mod = await spec.load();
+      const lessons = spec.all(mod).map((l) => ({
+        id: l.id, url: l.url, title: String(l.bn ?? l.en ?? l.id),
+        live: (l.status ?? "live") === "live",
+      }));
+      return [id, lessons];
+    } catch (err) {
+      /* A ladder that will not load is a bar this page cannot
+         honestly draw, so it does not draw one. */
+      console.warn("account: could not read the ladder for", id, err);
+      return [id, []];
+    }
+  }));
+  ladders = new Map(entries);
+  return ladders;
+}
+
+/** Where this reader is in one course: the count, the position
+    and the checkpoints, all out of the account's own copy. */
+function standing(course, lessons) {
+  const read = new Set(readLocal(LADDERS[course].key) ?? []);
+  const live = lessons.filter((l) => l.live);
+  const done = live.filter((l) => read.has(l.id));
+
+  /* Where they were, and where to go, which are the same thing
+     only until the lesson they were on is finished. Same rule the
+     school hubs use, and for the same reason: a resume card that
+     sends you back to something you have already ticked is a card
+     nobody presses twice. */
+  const mark = readLocal(LAST_KEY[course]);
+  const at = mark?.id ? live.findIndex((l) => l.id === mark.id) : -1;
+  const next = at === -1
+    ? live.find((l) => !read.has(l.id))
+    : live.slice(at).find((l) => !read.has(l.id)) ?? live.find((l) => !read.has(l.id));
+
+  return {
+    done: done.length,
+    total: live.length,
+    pct: live.length ? (done.length / live.length) * 100 : 0,
+    next: next ?? null,
+    checks: checkpointStats(course),
+    touched: done.length > 0 || Boolean(mark?.id),
+  };
+}
+
+function pathRow(course, lessons) {
+  const s = standing(course, lessons);
+  const name = courseName(course);
+  const label = `${name}: ${s.done} of ${s.total} chapters finished`;
+
+  const line = s.checks.done
+    ? `${s.done} of ${s.total} chapters · ${s.checks.done} checkpoint${
+        s.checks.done === 1 ? "" : "s"} ticked in ${s.checks.lessons} lesson${
+        s.checks.lessons === 1 ? "" : "s"}`
+    : `${s.done} of ${s.total} chapters`;
+
+  return el("div", { className: "ladder-row", "data-started": s.touched ? "" : undefined },
+    el("div", { className: "ladder-head" },
+      el("h3", { className: "bn-h", textContent: name }),
+      el("span", { className: "ladder-pct mono", textContent: `${Math.round(s.pct)}%` })
+    ),
+    meter(s.pct, label),
+    el("p", { className: "ladder-line", textContent: line }),
+    s.next
+      ? el("a", { className: "ladder-go", href: s.next.url },
+          el("span", { className: "mono", textContent: s.touched ? "Carry on" : "Start" }),
+          el("strong", { className: "bn-h", textContent: s.next.title }))
+      : el("p", { className: "ladder-line", textContent:
+          s.total ? "Every written chapter is finished." : "Nothing written here yet." })
+  );
+}
+
+async function paintPaths() {
+  const host = $("#account-paths");
+  if (!host) return;
+
+  const all = await loadLadders();
+
+  /* Followed first, then anything with progress in it, then the
+     rest. A reader who has said they are learning German should
+     not have to scroll past three courses they have never opened
+     to find out how German is going. */
+  const following = new Set(profile?.following ?? []);
+  const started = startedCourses();
+  const rank = (id) => (following.has(id) ? 0 : started.has(id) ? 1 : 2);
+
+  const rows = [...all.keys()]
+    .filter((id) => (all.get(id) ?? []).length)
+    .sort((a, b) => rank(a) - rank(b))
+    .map((id) => pathRow(id, all.get(id)));
+
+  host.replaceChildren(...(rows.length ? rows : [el("p", { className: "muted", textContent:
+    "No course ladders could be read just now." })]));
+}
+
+/* ============================================================
+   TARGETS
+
+   Three kinds, and the difference between them is only where the
+   progress comes from. Two read what the reader has actually
+   done; the third reads a number they typed, because this site
+   cannot see their portfolio and pretending otherwise would be
+   a bar that means nothing.
+   ============================================================ */
+
+const KINDS = [
+  { id: "course", label: "Finish a course", note: "measured by your own ticks" },
+  { id: "habit", label: "Turn up n days a week", note: "measured by the days you were here" },
+  { id: "metric", label: "Reach a number", note: "a figure you keep and update yourself" },
+];
+
+let targets = [];
+
+/** Where a target's progress comes from, per kind. Returns the
+    pair the bar is drawn from and the sentence under it. */
+async function measure(target) {
+  if (target.kind === "course") {
+    const all = await loadLadders();
+    const lessons = all.get(target.subject) ?? [];
+    const s = standing(target.subject, lessons);
+    const goal = Number(target.target) || s.total || 1;
+    return { at: s.done, of: goal, unit: "chapters" };
+  }
+  if (target.kind === "habit") {
+    return { at: daysIn(7), of: Number(target.target) || 7, unit: "days this week" };
+  }
+  return {
+    at: Number(target.reached) || 0,
+    of: Number(target.target) || 1,
+    unit: target.unit || "",
+  };
+}
+
+async function targetRow(target) {
+  const { at, of, unit } = await measure(target);
+  const pct = of ? (at / of) * 100 : 0;
+  const finished = Boolean(target.done_at) || pct >= 100;
+
+  const numbers = `${at} of ${of}${unit ? ` ${unit}` : ""}`;
+
+  const row = el("div", { className: "target", "data-done": finished ? "" : undefined },
+    el("div", { className: "target-head" },
+      el("h3", { textContent: target.label }),
+      el("span", { className: "target-pct mono", textContent: `${Math.round(Math.min(pct, 100))}%` })
+    ),
+    meter(pct, `${target.label}: ${numbers}`),
+    el("p", { className: "target-line", textContent:
+      finished ? `${numbers}. Done.` : numbers })
+  );
+
+  const actions = el("div", { className: "target-actions" });
+
+  /* A number this site cannot see is a number the reader keeps,
+     so the one control it gets is the one that updates it. */
+  if (target.kind === "metric") {
+    const field = el("input", {
+      type: "number", step: "any", min: "0", className: "target-input",
+      value: String(target.reached ?? 0), "aria-label": `Where ${target.label} is now`,
+    });
+    const update = el("button", { className: "btn btn-ghost btn-small", type: "button",
+      textContent: "Update" });
+    update.addEventListener("click", async () => {
+      update.disabled = true;
+      try {
+        await updateTarget(target.id, { reached: Number(field.value) || 0 });
+        await paintTargets();
+      } catch (err) {
+        say($("#target-note"), err.message, "warn");
+      } finally {
+        update.disabled = false;
+      }
+    });
+    actions.append(field, update);
+  }
+
+  const done = el("button", { className: "btn btn-ghost btn-small", type: "button",
+    textContent: target.done_at ? "Reopen" : "Mark done" });
+  done.addEventListener("click", async () => {
+    done.disabled = true;
+    try {
+      await updateTarget(target.id, { done_at: target.done_at ? null : new Date().toISOString() });
+      await paintTargets();
+    } catch (err) {
+      say($("#target-note"), err.message, "warn");
+    } finally {
+      done.disabled = false;
+    }
+  });
+
+  const drop = el("button", { className: "btn btn-ghost btn-small", type: "button",
+    textContent: "Remove" });
+  drop.addEventListener("click", async () => {
+    if (!confirm(`Remove "${target.label}"?`)) return;
+    drop.disabled = true;
+    try {
+      await removeTarget(target.id);
+      await paintTargets();
+    } catch (err) {
+      say($("#target-note"), err.message, "warn");
+      drop.disabled = false;
+    }
+  });
+
+  actions.append(done, drop);
+  row.append(actions);
+  return row;
+}
+
+async function paintTargets() {
+  const host = $("#account-targets");
+  if (!host) return;
+
+  targets = await listTargets();
+  if (!targets.length) {
+    host.replaceChildren(el("p", { className: "muted", textContent:
+      "Nothing set. A target is a sentence with a number in it: finish the money "
+      + "ladder, read on four days a week, get a portfolio yield to six per cent." }));
+    return;
+  }
+  host.replaceChildren(...await Promise.all(targets.map(targetRow)));
+}
+
+/* ---------- the form that adds one ---------- */
+
+function buildKinds() {
+  const host = $("#target-kind");
+  if (!host) return;
+
+  host.replaceChildren(...KINDS.map((kind, n) =>
+    el("label", { className: "choice choice-pace", htmlFor: `kind-${kind.id}` },
+      el("input", { type: "radio", name: "target-kind", id: `kind-${kind.id}`,
+        value: kind.id, checked: n === 0, onchange: buildFields }),
+      el("span", { className: "choice-body" },
+        el("strong", { textContent: kind.label }),
+        el("small", { textContent: kind.note })
+      ))));
+}
+
+const chosenKind = () =>
+  document.querySelector("#target-kind input:checked")?.value ?? "course";
+
+/** The fields, which are different per kind, because a course
+    target has nothing to type and a metric has four things. One
+    form that changes rather than three forms: three would be
+    three save handlers and three places for a label to drift. */
+function buildFields() {
+  const host = $("#target-fields");
+  if (!host) return;
+  const kind = chosenKind();
+
+  const field = (label, input) =>
+    el("label", { className: "target-field" },
+      el("span", { textContent: label }), input);
+
+  if (kind === "course") {
+    host.replaceChildren(field("Which course",
+      el("select", { id: "target-subject" },
+        ...COURSES.map((c) => el("option", { value: c.id, textContent: `${c.bn} · ${c.en}` })))));
+    return;
+  }
+
+  if (kind === "habit") {
+    host.replaceChildren(field("Days a week",
+      el("input", { type: "number", id: "target-number", min: "1", max: "7", value: "4" })));
+    return;
+  }
+
+  host.replaceChildren(
+    field("What you are tracking",
+      el("input", { type: "text", id: "target-label", maxLength: 80,
+        placeholder: "Portfolio dividend yield" })),
+    field("Where it is now",
+      el("input", { type: "number", id: "target-now", step: "any", min: "0", value: "0" })),
+    field("Where you want it",
+      el("input", { type: "number", id: "target-number", step: "any", min: "0", value: "0" })),
+    field("Unit",
+      el("input", { type: "text", id: "target-unit", maxLength: 20, placeholder: "%" }))
+  );
+}
+
+/** What the form is asking for, as the row it would become.
+    Throws a sentence rather than returning null, so the one place
+    that shows a complaint is the one place that catches it. */
+function readTargetForm() {
+  const kind = chosenKind();
+
+  if (kind === "course") {
+    const subject = $("#target-subject")?.value ?? "";
+    const course = COURSES.find((c) => c.id === subject);
+    if (!course) throw new Error("Pick a course.");
+    return { kind, subject, label: `Finish ${course.en}`, target: 0, unit: "chapters" };
+  }
+
+  if (kind === "habit") {
+    const n = Number($("#target-number")?.value);
+    if (!(n >= 1 && n <= 7)) throw new Error("Somewhere between one and seven days.");
+    return { kind, subject: "week", label: `Read on ${n} days a week`, target: n, unit: "days" };
+  }
+
+  const label = ($("#target-label")?.value ?? "").trim();
+  const goal = Number($("#target-number")?.value);
+  if (!label) throw new Error("Say what you are tracking.");
+  if (!(goal > 0)) throw new Error("A target needs a number greater than nothing.");
+  return {
+    kind, subject: label.slice(0, 60), label,
+    target: goal,
+    reached: Number($("#target-now")?.value) || 0,
+    unit: ($("#target-unit")?.value ?? "").trim(),
+  };
+}
+
+/* ============================================================
+   SAVED SCENARIOS
+
+   A filled-in calculator under a name. The row holds the tool's
+   own serialisation of its inputs, so opening one is a link and
+   not a restore: `/tools/stock.html?...` is the format that page
+   has shared analyses in since it was written.
+   ============================================================ */
+
+const TOOL_PAGE = { stock: "/tools/stock.html" };
+const TOOL_NAME = { stock: "The stock check" };
+
+const when = (iso) => {
+  const d = new Date(iso);
+  return Number.isNaN(d.valueOf())
+    ? ""
+    : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+};
+
+function scenarioRow(row, note) {
+  const page = TOOL_PAGE[row.tool] ?? "/tools/index.html";
+  const query = typeof row.inputs?.query === "string" ? row.inputs.query : "";
+  const href = query ? `${page}?${query.replace(/^\?/, "")}` : page;
+
+  const rename = el("button", { className: "btn btn-ghost btn-small", type: "button",
+    textContent: "Rename" });
+  rename.addEventListener("click", async () => {
+    const next = prompt("Call it what?", row.name);
+    if (next === null) return;
+    try {
+      await updateScenario(row.id, { name: next.trim().slice(0, 80) });
+      await paintScenarios();
+    } catch (err) {
+      say(note, err.message, "warn");
+    }
+  });
+
+  const drop = el("button", { className: "btn btn-ghost btn-small", type: "button",
+    textContent: "Remove" });
+  drop.addEventListener("click", async () => {
+    if (!confirm(`Remove "${row.name || "this scenario"}"?`)) return;
+    try {
+      await removeScenario(row.id);
+      await paintScenarios();
+    } catch (err) {
+      say(note, err.message, "warn");
+    }
+  });
+
+  return el("div", { className: "saved-row" },
+    el("div", { className: "saved-body" },
+      el("h3", { textContent: row.name || "Untitled" }),
+      el("p", { className: "saved-line", textContent:
+        [TOOL_NAME[row.tool] ?? row.tool, row.summary, when(row.updated_at)]
+          .filter(Boolean).join(" · ") })
+    ),
+    el("div", { className: "saved-actions" },
+      el("a", { className: "btn btn-solid btn-small", href, textContent: "Open" }),
+      rename, drop)
+  );
+}
+
+async function paintScenarios() {
+  const host = $("#account-scenarios");
+  if (!host) return;
+
+  const note = el("p", { className: "signin-note", id: "scenario-note" });
+  const rows = await listScenarios();
+
+  if (!rows.length) {
+    host.replaceChildren(el("p", { className: "muted", textContent:
+      "Nothing saved. Fill in the stock check and press Save, and it will be "
+      + "here on every device you sign in on." }), note);
+    return;
+  }
+  host.replaceChildren(...rows.map((row) => scenarioRow(row, note)), note);
+}
+
+/* ============================================================
+   The three settings questions
    ============================================================ */
 
 function buildCourses(chosen, started) {
@@ -245,7 +729,7 @@ function frame(isSetup) {
   say($("#settings-label"), isSetup ? "Set up your account" : "Your settings");
   $("#settings-intro").textContent = isSetup
     ? "Three things, and none of them required. Some of it is filled in "
-      + "already from what this device knows. Change what is wrong, tick "
+      + "already from what this account knows. Change what is wrong, tick "
       + "what you are about to start, and this becomes your settings page."
     : "Three things, none of them required. You can change any of them "
       + "whenever you like.";
@@ -259,12 +743,31 @@ async function boot() {
   paintIdentity();
   if (!current()) return;
 
-  /* Filled in from the device first, so the form is usable before
-     the network answers and stays usable if it never does. */
+  buildKinds();
+  buildFields();
+
+  /* The exchange first, and everything else after it.
+
+     This is the one ordering decision on the page and it is the
+     opposite of the old one. This page used to draw from
+     localStorage immediately and correct itself when the network
+     answered, because localStorage was a separate record that
+     might be ahead of the account. It is the account's mirror
+     now, so drawing before the exchange would be drawing the last
+     visit's numbers and then moving them, which is worse than a
+     second of "reading your account". */
+  say($("#account-synced"), "Reading your account…");
+  const done = await sync();
+  say($("#account-synced"), done
+    ? "Up to date with your other devices, as of a moment ago."
+    : "Could not reach your account just now, so this is the last copy this "
+      + "device saw.");
+
   const started = startedCourses();
   buildCourses(started, started);
   buildPace("");
   paintWeek("");
+  paintKept();
 
   /* The profile row is what counts. The token carries whatever
      Google said at sign-in, which may be older. */
@@ -273,9 +776,9 @@ async function boot() {
     const field = $("#account-name");
     if (profile.display_name && field) field.value = profile.display_name;
 
-    /* Union, not replacement. Somebody who follows German on their
-       laptop and has just started English on this phone should see
-       both ticked, not have the phone quietly drop German. */
+    /* Union, not replacement. Somebody who follows German and has
+       just started English should see both ticked, not have one
+       of them quietly dropped. */
     const following = new Set([...(profile.following ?? []), ...started]);
     buildCourses(following, started);
     buildPace(profile.pace ?? "");
@@ -285,13 +788,11 @@ async function boot() {
     frame(false);
   }
 
-  // A fresh sync, so the counts on this page are not yesterday's.
-  const done = await sync();
-  say($("#account-synced"), done
-    ? "Up to date with your other devices, as of a moment ago."
-    : "Could not reach the account just now, so these are this device's numbers.");
-  paintKept();
-  paintWeek(profile?.pace ?? "");
+  /* Three sections that each talk to the account. In parallel,
+     because none of them is waiting on either of the others, and
+     one at a time would be three round trips end to end on a
+     connection that has already made two. */
+  await Promise.all([paintPaths(), paintTargets(), paintScenarios()]);
 }
 
 /* ---------- saving ---------- */
@@ -320,7 +821,7 @@ $("#settings-form")?.addEventListener("submit", async (e) => {
   const name = $("#account-name").value.trim();
   if (!name) { say($("#settings-note"), "A name cannot be empty.", "warn"); return; }
 
-  await save({
+  const saved = await save({
     display_name: name,
     following: chosenCourses(),
     pace: chosenPace(),
@@ -329,6 +830,9 @@ $("#settings-form")?.addEventListener("submit", async (e) => {
        and nothing else has still been through setup. */
     setup_at: new Date().toISOString(),
   }, "Saved.");
+
+  // The order of the ladders below follows `following`.
+  if (saved) paintPaths();
 });
 
 /* "Not now" is a real answer and is recorded as one. Without
@@ -337,6 +841,22 @@ $("#settings-form")?.addEventListener("submit", async (e) => {
 $("#settings-skip")?.addEventListener("click", async () => {
   await save({ setup_at: new Date().toISOString() },
     "Fine. Everything above is here whenever you want it.");
+});
+
+$("#target-form")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const button = e.currentTarget.querySelector("button[type=submit]");
+  button.disabled = true;
+  try {
+    await saveTarget(readTargetForm());
+    say($("#target-note"), "Added.", "ok");
+    buildFields();
+    await paintTargets();
+  } catch (err) {
+    say($("#target-note"), err.message || "That did not save.", "warn");
+  } finally {
+    button.disabled = false;
+  }
 });
 
 /* ---------- leaving ---------- */
@@ -353,12 +873,26 @@ $("#account-signout")?.addEventListener("click", async () => {
 $("#account-forget")?.addEventListener("click", async () => {
   const note = $("#exit-note");
   if (!confirm("Remove everything this account has saved?\n\n"
-    + "What is stored on this device stays. This cannot be undone.")) return;
+    + "Your position, your checkpoints, your targets and your saved "
+    + "scenarios. This cannot be undone.")) return;
 
-  const gone = await forgetOnAccount();
+  let gone = await forgetOnAccount();
+  try {
+    await Promise.all([
+      ...targets.map((t) => removeTarget(t.id)),
+      ...(await listScenarios()).map((s) => removeScenario(s.id)),
+    ]);
+  } catch (err) {
+    console.warn("account: could not remove everything", err);
+    gone = false;
+  }
+
   say(note, gone
-    ? "Removed. This device keeps its own copy until you clear it in each course."
-    : "That did not work. Nothing was removed.", gone ? "ok" : "warn");
+    ? "Removed. Nothing of yours is stored on this account or on this device."
+    : "Some of that did not work. Reload and try again.", gone ? "ok" : "warn");
+
+  paintKept();
+  await Promise.all([paintPaths(), paintTargets(), paintScenarios()]);
 });
 
 document.addEventListener("account:changed", paintIdentity);

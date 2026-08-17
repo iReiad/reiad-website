@@ -108,6 +108,13 @@ export default async function LessonPage({ params }: { params: Params }) {
             [look.attr.id]: it.id,
             [look.attr.stage]: stage.slug,
             [look.attr.title]: it.bn,
+            /* One attribute naming the school, which the three
+               school modules did not need because each one only
+               ever ran on its own pages. `/checkpoints.js` is
+               shared by all four, so it has to be told, and
+               guessing from the URL would be a fifth place that
+               knows what a school address looks like. */
+            "data-school": school,
             ...(soon ? { "data-soon": "1" } : {}),
           }}
         >
@@ -187,11 +194,20 @@ export default async function LessonPage({ params }: { params: Params }) {
 
         </div>
       </main>
-      {/* The school's own script. Rendered by the page rather
-          than by the shell, because the ladder page beside this
-          one loads a different one and the shell cannot tell them
-          apart. */}
-      {look.script ? <SiteScripts srcs={[look.script]} /> : null}
+      {/* The school's own script, and the one every school
+          shares. Rendered by the page rather than by the shell,
+          because the ladder page beside this one loads a
+          different pair and the shell cannot tell them apart.
+
+          `/checkpoints.js` goes on every lesson of every school,
+          including the money school's, whose page-level tick is
+          React and whose checkpoints are not: a checkpoint lives
+          inside a body that arrived as HTML from the database,
+          which React renders and does not own. */}
+      <SiteScripts srcs={[
+        ...(look.script ? [look.script] : []),
+        ...(soon ? [] : ["/checkpoints.js"]),
+      ]} />
     </>
   );
 }

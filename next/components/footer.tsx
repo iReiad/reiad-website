@@ -39,10 +39,10 @@ export function SiteFooter({
               বাংলায় শেখা, আর যে কাজগুলো খুলে দেখা যায়।
             </p>
             <p className="deck-foot-line" lang="en">
-              Bangladesh markets, six free courses, and models you can open.
+              Six free courses and models you can open.
             </p>
             <a className="deck-foot-mail" href="mailto:i@reiad.co.uk">
-              <Icon name="mail" size={16} /> i@reiad.co.uk
+              <Icon name="mail" size={15} /> i@reiad.co.uk
             </a>
           </div>
 
@@ -69,11 +69,13 @@ export function SiteFooter({
         <div className="deck-foot-pledge">
           <p lang="bn">
             <b className="bn-h">সবকিছু ফ্রি, চিরকাল।</b> কোনো লগইন লাগে না, কোনো দাম নেই।
-            আপনি কী কী পড়েছেন সেটা আপনার নিজের ব্রাউজারে জমা থাকে, আমাদের কাছে নয়।
+            অ্যাকাউন্ট ছাড়া পড়লে আপনি কী কী পড়েছেন তা শুধু আপনার নিজের ব্রাউজারে
+            থাকে, আমাদের কাছে নয়।
           </p>
           <p lang="en">
-            Free, no login, no price. What you have read is kept in your own
-            browser; an account only carries it between your devices.
+            Free, no login, no price. Without an account what you have read
+            stays in your own browser; with one it is kept for you and follows
+            you between your devices.
           </p>
         </div>
 

@@ -766,6 +766,19 @@ export const STRINGS = {
   "a.expandAll": { en: "Open every pillar", bn: "সব স্তম্ভ খুলুন" },
   "a.collapseAll": { en: "Close them all", bn: "সব বন্ধ করুন" },
 
+  /* Saving a filled-in check, which only appears when somebody is
+     signed in. Everything a signed-out reader could do before is
+     still there: the URL in the address bar carries every input,
+     and "Copy link" is the button for it. */
+  "a.saveLabel": { en: "Save this check as", bn: "এই যাচাইটা সেভ করুন এই নামে" },
+  "a.save": { en: "Save", bn: "সেভ" },
+  "a.saved": { en: "Saved to your account.", bn: "আপনার অ্যাকাউন্টে জমা হয়েছে।" },
+  "a.saveNamed": { en: "Give it a name first.", bn: "আগে একটা নাম দিন।" },
+  "a.saveFailed": { en: "That did not save.", bn: "এটা জমা হয়নি।" },
+  "a.savedOnes": { en: "Saved checks", bn: "জমা রাখা যাচাই" },
+  "a.open": { en: "Open", bn: "খুলুন" },
+  "a.remove": { en: "Remove", bn: "মুছুন" },
+
   /* ---------------- the disclaimer ---------------- */
   "disc.title": { en: "What this cannot see", bn: "এটা যা দেখতে পায় না" },
   "disc.body": {

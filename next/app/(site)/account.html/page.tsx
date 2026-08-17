@@ -41,9 +41,10 @@ export default function AccountPage() {
               </span>
               <h1>Nobody is signed in on this device.
               </h1>
-              <p className="lede">Signing in keeps your place in a course across your
-          phone and your laptop, and puts a name on anything you write. Every
-          page on this site is readable without one.
+              <p className="lede">An account is where your reading position, your
+          checkpoints, your saved calculations and anything you are aiming for
+          are kept. Every page on this site is readable without one, and what
+          you tick without one stays on this browser.
               </p>
               <div className="hero-actions">
                 <button className="btn btn-solid" id="account-signin">Sign in
@@ -117,6 +118,66 @@ export default function AccountPage() {
                 </div>
               </form>
             </section>
+            {/* ============ THE LADDERS ============
+
+             One row per course: how far through it you are, where
+             you were when you stopped, and how many checkpoints
+             inside those lessons you have ticked. All three come
+             out of the account, which is what the rewrite of
+             `aab/sync.js` made true: this page used to be able to
+             report only what this browser happened to hold. */}
+            <section>
+              <span className="section-label mono">Where you are
+              </span>
+              <p className="measure">Your position in each course, the chapters you
+          have finished, and the checkpoints you have ticked inside them. This
+          is the account&apos;s copy, so it is the same on every device you sign
+          in on.
+              </p>
+              <div className="ladder-list" id="account-paths" />
+              <p className="tool-note" id="account-synced" />
+              <p className="account-week" id="account-week" hidden />
+            </section>
+            {/* ============ TARGETS ============
+
+             A goal with a number on it and a bar under it. Three
+             kinds, and each one has a source for its progress
+             that already exists: a course reads your ticks, a
+             habit reads the days you turned up, and a number this
+             site cannot see is one you type in. A fourth kind
+             would have to pass that test too. */}
+            <section>
+              <span className="section-label mono">What you are aiming for
+              </span>
+              <p className="measure">Set a target and this page measures it. Nothing
+          is sent to you about it: there are no notifications on this site and
+          there will not be any.
+              </p>
+              <div className="targets" id="account-targets" />
+              <form className="account-panel target-form" id="target-form">
+                <fieldset>
+                  <legend>Add a target
+                  </legend>
+                  <div className="choice-row" id="target-kind" />
+                  <div className="target-fields" id="target-fields" />
+                </fieldset>
+                <div className="account-actions">
+                  <button className="btn btn-solid" type="submit">Add it
+                  </button>
+                  <span className="signin-note" id="target-note" />
+                </div>
+              </form>
+            </section>
+            {/* ============ SAVED SCENARIOS ============ */}
+            <section>
+              <span className="section-label mono">Saved scenarios
+              </span>
+              <p className="measure">A filled-in calculator, kept under a name. Open
+          one and the tool comes back exactly as you left it, on any device you
+          are signed in on.
+              </p>
+              <div className="saved-list" id="account-scenarios" />
+            </section>
             {/* ============ WHAT IS KEPT ============ */}
             <section>
               <span className="section-label mono">What this account keeps
@@ -125,9 +186,7 @@ export default function AccountPage() {
           useful to you. There is no analytics profile behind it: what you read
           is not shown to anybody, including me.
               </p>
-              <p className="account-week" id="account-week" hidden />
               <div className="cards grid-2" id="account-kept" />
-              <p className="tool-note" id="account-synced" />
             </section>
             {/* ============ LEAVING ============ */}
             <section>
@@ -137,17 +196,20 @@ export default function AccountPage() {
                 <div className="cell">
                   <h3>Sign out here
                   </h3>
-                  <p>Ends the session on this device. Your progress stays on the
-              account and on this browser.
+                  <p>Ends the session on this device and takes the account&apos;s
+              copy of your progress off it, so the next person at this machine
+              does not inherit your ticks. Nothing on the account is touched:
+              sign in again, anywhere, and it is all there.
                   </p>
                   <button className="btn btn-ghost" id="account-signout">Sign out
                   </button>
                 </div>
                 <div className="cell">
-                  <h3>Forget my progress
+                  <h3>Forget everything
                   </h3>
-                  <p>Removes what this account has saved. What is on this device
-              stays until you clear it in each course.
+                  <p>Removes what this account has saved: your position, your
+              checkpoints, your targets and your saved scenarios. This cannot be
+              undone.
                   </p>
                   <button className="btn btn-ghost" id="account-forget">Forget it
                   </button>

@@ -99,6 +99,22 @@ export default function StockPage() {
                 <button className="btn btn-ghost" id="reset" type="button" data-i18n="a.reset">Reset
                 </button>
               </div>
+              {/* Saving a filled-in check belongs to an account and
+                  to nothing else, so this whole block is hidden
+                  until `stock.js` finds one. A signed-out reader
+                  keeps what they have always had: the URL in the
+                  address bar, which carries every input. */}
+              <div className="save-scenario" id="save-scenario" hidden>
+                <label htmlFor="scenario-name" data-i18n="a.saveLabel">Save this as
+                </label>
+                <div className="save-scenario-row">
+                  <input type="text" id="scenario-name" maxLength={80} placeholder="Square Pharma, Q2" />
+                  <button className="btn btn-solid" id="save-scenario-go" type="button" data-i18n="a.save">Save
+                  </button>
+                </div>
+                <p className="tool-note" id="scenario-note" />
+                <div className="saved-list" id="scenario-list" />
+              </div>
             </aside>
             <div className="model-charts">
               <section className="chart-card">
