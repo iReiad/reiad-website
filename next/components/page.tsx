@@ -26,6 +26,8 @@ type Options = {
   skipTo?: string;
   footer?: string;
   footerName?: string;
+  /** One page fills the viewport and does not scroll. */
+  fixed?: boolean;
   beforeMain?: ReactNode;
   scripts?: ReactNode;
 };

@@ -6,11 +6,17 @@
    2. Palette      Ctrl/Cmd+K search, built at runtime as a
                    native <dialog>, pages don't need the markup,
                    and any legacy <div id="palette"> is upgraded.
-   3. Kinetic      the homepage headline, word by word.
+   3. Shortcuts    "?" opens the sheet.
    4. Speculation  <script type="speculationrules"> prerenders the
                    link you're about to click, so navigation is
                    instant.
    5. Cards        the Insights list renders from content.js.
+
+   What left, August 2026: the overlay menu, the Skills hover
+   panel, the measured header height and the kinetic headline.
+   All four belonged to a header bar this site no longer has; the
+   menu is a rail rendered on the server by
+   `next/components/sidebar.tsx`. See section 2b.
 
    Loaded with <script type="module" src="/app.js">, so it defers
    automatically and never blocks paint.
@@ -21,14 +27,12 @@
 import {
   searchIndex, formatDate,
   PAGES, TOOLS, STAGES, STUFEN, stufeUrl, SITE, SEARCH_GROUPS,
-  SKILLS, skillUrl, COUNTS,
+  COUNTS,
 } from "/content.js";
 import { countView } from "/api.js";
 import { allPieces, piecesIn, filePieces, pieceHref } from "/pieces.js";
 import { initCrumbs } from "/crumbs.js";
 import { initAudience, audienceBoost } from "/audience.js";
-import { recordVisit } from "/learn/progress.js";
-import { recordPage } from "/recent.js";
 import { initTilt, tiltIn } from "/tilt.js";
 import { initStreak } from "/streak.js";
 
@@ -307,35 +311,23 @@ function initPalette() {
 }
 
 /* ============================================================
-   2b. THE MENU
-   A <dialog> built at runtime, so every page gets the same menu
-   without carrying its markup, including the pages nobody has
-   touched in a year.
+   2b. THE `el` HELPER, and what used to be under it
 
-   IT IS NOT MODAL, AND THAT IS THE WHOLE DESIGN
+   A full-screen overlay menu, built here in JavaScript from
+   `content.js`, plus a hover panel under the header's "Skills"
+   link. Both are gone, with the header that held them: the menu
+   is a rail down the left of every page, rendered on the server
+   by `next/components/sidebar.tsx` out of `next/lib/nav.ts`, and
+   it is in the HTML before this file runs.
 
-   It was modal, and a modal covers the header. So the menu grew
-   a bar along its top holding a copy of the header's buttons: a
-   ✕, a search button and a theme button, none of which did
-   anything the real ones did not already do. Keeping that copy
-   standing where the original stood took a measuring pass on
-   open and again on resize, and it went wrong twice anyway,
-   first when the header grew a fourth button and again after
-   that. The fix each time was a better way of imitating the
-   header.
+   That is not a tidier arrangement, it is a different one. The
+   old menu did not exist for a reader with JavaScript off, did
+   not exist for a crawler, and was built from a list that had to
+   agree with the seven links written into every page's header.
+   None of those three problems has anywhere left to happen.
 
-   The header does not need imitating. It needs to stay
-   clickable. So the menu opens under it and stops short of it:
-   the real search and theme buttons are exactly where they
-   were, still working, and the real Menu button turns into the
-   close button, because the burger already draws itself as a ✕
-   while the menu is open. One button, two states, nothing
-   measured and nothing to drift.
-
-   What showModal() was doing for free has to be done by hand,
-   and it is, below: Escape closes, the page behind is made
-   inert and stops scrolling, and focus moves in and comes back
-   out to the button that opened it.
+   `el()` stays because the shortcuts sheet below still builds
+   itself, and so does the palette.
    ============================================================ */
 
 const el = (tag, props = {}, ...kids) => {
@@ -344,458 +336,8 @@ const el = (tag, props = {}, ...kids) => {
   return node;
 };
 
-function menuColumn(title, items, render) {
-  return el("div", { className: "menu-col" },
-    el("span", { className: "mono menu-col-title", textContent: title }),
-    el("ul", { className: "menu-list" }, ...items.map(render))
-  );
-}
-
-function buildMenu() {
-  const here = location.pathname.replace(/\/$/, "/index.html");
-
-  /* Titles only in the menu.
-
-     Every page carried its full blurb here, which turned the first
-     column into thirteen paragraphs, taller than the viewport, so
-     the last few pages were cut off entirely and the menu read as a
-     wall of text rather than a way to get somewhere. The blurbs
-     still do their job on the pages that list these properly; a
-     menu is for aiming, not for reading. */
-  /* `short` where a page has one, which in practice means the case
-     studies. Their full titles end ": interactive case study",
-     which is worth having in the Ctrl+K index, where someone may
-     well type "case study", and is four repetitions of the column
-     heading when the column is already called Case studies. Every
-     one of them wrapped to two lines because of it. */
-  const pageLink = (p) => {
-    const a = el("a", { href: p.url }, el("strong", { textContent: p.short ?? p.title }));
-    if (p.url === here) a.setAttribute("aria-current", "page");
-    return el("li", {}, a);
-  };
-
-  const visible = PAGES.filter((p) => !p.private);
-  const plainPages = visible.filter((p) => !p.group);
-  const caseStudies = visible.filter((p) => p.group === "case");
-  const learnPages = visible.filter((p) => p.group === "learn");
-  const toolPages = visible.filter((p) => p.group === "tool");
-  const deutschPages = visible.filter((p) => p.group === "deutsch");
-
-  /* ============ WHAT THIS MENU LISTS ============
-
-     What is written. Not what is planned.
-
-     It used to list both, and the arithmetic of that was: four of
-     the eight Learn stages, three of the four German Stufen and
-     five of the six Skills schools are marked "soon", so twelve of
-     its forty-two links opened a page whose content is the word
-     আসছে. A menu where a quarter of the doors open onto a note
-     saying "coming" is a menu people stop opening.
-
-     Anything not yet written is one link to the hub that tracks
-     it, and those hubs are built to show what is ready and what is
-     not. That is their job and they are better at it than a list
-     of dead ends is.
-
-     The five calculator anchors went for a related reason: five
-     links to five positions on ONE page, in a menu whose own note
-     says it is for aiming rather than reading. The Tools page is
-     the aim; the anchors are for when you are already on it. */
-  const written = (xs) => xs.filter((x) => x.status !== "soon");
-  const someSoon = (xs) => xs.some((x) => x.status === "soon");
-
-  const liveStages = written(STAGES);
-  const liveStufen = written(STUFEN);
-  const otherSkills = SKILLS.filter((s) => s.slug !== "deutsch");
-
-  /** The one link that stands in for everything not yet written. */
-  const moreLink = (href, strong, small) =>
-    el("li", { className: "menu-standout" },
-      el("a", { href },
-        el("strong", { className: "bn-h", textContent: strong }),
-        el("small", { textContent: small })
-      )
-    );
-
-  /* What content.js knows, drawn now, because the menu is built
-     synchronously. The database is asked afterwards and the two
-     entries are redrawn if it answers with something newer. */
-  const articles = filePieces().slice(0, 2);
-
-  /** One entry under "Latest writing". */
-  const writingLink = (a) =>
-    el("li", {},
-      el("a", { href: a.slug ? pieceHref(a) : "/insights.html" },
-        el("strong", { textContent: a.title }),
-        el("small", {
-          textContent: a.date
-            ? `${formatDate(a.date, a.lang)} · ${a.minutes} min read`
-            : a.dek,
-        })
-      )
-    );
-
-  const dialog = el("dialog", { id: "site-menu", className: "menu" });
-  dialog.setAttribute("aria-label", "Site menu");
-
-  dialog.append(
-    /* tabindex so open() has somewhere to put focus that is not a
-       link. A non-modal dialog focuses its first focusable child,
-       and the first child here is "Home". */
-    el("div", { className: "menu-grid", tabIndex: -1 },
-      /* Pages, with the stock check standing out under them: it is
-         a page rather than a calculator, and it was the one line
-         worth keeping out of a column of six. */
-      el("div", { className: "menu-col" },
-        el("span", { className: "mono menu-col-title", textContent: "Pages" }),
-        el("ul", { className: "menu-list" },
-          ...plainPages.map(pageLink),
-          ...toolPages.map((p) =>
-            el("li", { className: "menu-standout" },
-              el("a", { href: p.url }, el("strong", { textContent: p.short ?? p.title }))
-            )
-          )
-        )
-      ),
-
-      /* Second, not last. This column was at the end of the grid,
-         which put it below the fold on a 1280px laptop the moment
-         the grid dropped to four columns: seven case studies,
-         present in the menu and invisible in it. It is also the
-         half of the site someone is paying for. */
-      el("div", { className: "menu-col" },
-        el("span", { className: "mono menu-col-title", textContent: "Case studies" }),
-        el("ul", { className: "menu-list" }, ...caseStudies.map(pageLink)),
-        el("span", {
-          className: "mono menu-col-title menu-col-title-second",
-          textContent: articles.length ? "Latest writing" : "Writing",
-        }),
-        el("ul", { className: "menu-list", id: "menu-writing" },
-          ...(articles.length
-            ? articles
-            : [{ slug: "", title: "Nothing published yet", dek: "" }]
-          ).map(writingLink)
-        )
-      ),
-
-      // The ladder, as far as it is written.
-      el("div", { className: "menu-col" },
-        el("span", { className: "mono menu-col-title", textContent: "শেখার লাইব্রেরি · Learn" }),
-        el("ul", { className: "menu-list" },
-          ...liveStages.map((s) =>
-            el("li", {},
-              el("a", {
-                href: s.inline ? "/learn/index.html#starter" : `/learn/${s.slug}/index.html`,
-              },
-                el("strong", { className: "bn-h", textContent: `${s.kicker} · ${s.bn}` }),
-                el("small", { textContent: s.en })
-              )
-            )
-          ),
-          ...learnPages.map((p) =>
-            el("li", { className: "menu-standout" },
-              el("a", { href: p.url }, el("strong", { textContent: p.title }))
-            )
-          ),
-          ...(someSoon(STAGES)
-            ? [moreLink("/learn/index.html", "পরের ধাপগুলো",
-                `${STAGES.length - liveStages.length} more stages, in progress`)]
-            : [])
-        )
-      ),
-
-      // German as far as it is written, then the rest of the
-      // schools as one line rather than five coming-soon anchors.
-      el("div", { className: "menu-col" },
-        el("span", { className: "mono menu-col-title", textContent: "দক্ষতা · Skills" }),
-        el("ul", { className: "menu-list" },
-          ...liveStufen.map((s) =>
-            el("li", {},
-              el("a", { href: stufeUrl(s) },
-                el("strong", { className: "bn-h", textContent: `${s.kicker} · ${s.bn}` }),
-                el("small", { lang: "de", textContent: s.de })
-              )
-            )
-          ),
-          ...deutschPages.map((p) =>
-            el("li", { className: "menu-standout" },
-              el("a", { href: p.url }, el("strong", { textContent: p.title }))
-            )
-          ),
-          moreLink("/skills/index.html", "আরও দক্ষতা · More schools",
-            `${otherSkills.length} being written, plus the rest of German`)
-        )
-      )
-    ),
-    el("div", { className: "menu-foot" },
-      el("a", { className: "btn btn-solid", href: "/contact.html", textContent: "Get in touch" }),
-      el("a", { className: "btn btn-ghost", href: `mailto:${SITE.email}`, textContent: SITE.email }),
-      el("a", { className: "btn btn-ghost", href: SITE.linkedin, rel: "noopener", textContent: "LinkedIn" }),
-      el("span", { className: "mono push menu-hint" },
-        el("kbd", { textContent: "Ctrl K" }), " search  ",
-        el("kbd", { textContent: "?" }), " shortcuts"
-      )
-    )
-  );
-
-  /* And now the database, which the menu could not wait for: it is
-     built synchronously so that pressing M always opens something.
-     If the database holds anything newer, the two entries under
-     "Latest writing" are redrawn from it. If it holds nothing, or
-     never answers, what is already on screen stays. */
-  allPieces().then((pieces) => {
-    const host = dialog.querySelector("#menu-writing");
-    if (!host || !pieces.length) return;
-    host.replaceChildren(...pieces.slice(0, 2).map(writingLink));
-  });
-
-  document.body.append(dialog);
-  return dialog;
-}
-
-/* Everything on the page except the header, which is the part
-   that has to stay usable while the menu is over the rest of it. */
-const behindTheMenu = () =>
-  [...document.body.children].filter((node) =>
-    node.tagName !== "HEADER" && node.tagName !== "DIALOG"
-    && node.tagName !== "SCRIPT" && node.tagName !== "STYLE");
-
-function initMenu() {
-  const dialog = buildMenu();
-
-  /* A non-modal dialog does not take the page out of the tab order
-     the way showModal() does, so it is done here. `inert` is one
-     attribute and it does the lot: not focusable, not clickable,
-     not read out. */
-  const setAside = (yes) =>
-    behindTheMenu().forEach((node) => { node.inert = yes; });
-
-  const open = () => {
-    if (dialog.open) return;
-    dialog.show();
-    setAside(true);
-    document.body.dataset.menu = "open";
-    /* Into the menu, not onto its first link: landing on "Home"
-       reads as having pressed something. */
-    dialog.querySelector(".menu-grid")?.focus?.();
-  };
-
-  const close = () => {
-    if (!dialog.open) return;
-    dialog.close();
-    setAside(false);
-    delete document.body.dataset.menu;
-    // Back to the button that opened it, which is now Menu again.
-    button.focus({ preventScroll: true });
-  };
-
-  const toggle = () => (dialog.open ? close() : open());
-
-  // The button lives in the header of every page; if a page predates
-  // it, put one next to the search button rather than losing the menu.
-  let button = document.getElementById("open-menu");
-  if (!button) {
-    button = el("button", {
-      className: "icon-btn", id: "open-menu",
-      ariaLabel: "Open the menu", innerHTML: '<span class="burger" aria-hidden="true"></span>Menu',
-    });
-    document.getElementById("open-palette")?.before(button);
-  }
-
-  /* The one button, in its two states. The burger draws itself as
-     a ✕ from CSS; the word beside it has to change too, because a
-     cross that still says "Menu" is worse than either on its own.
-
-     Both words go in, stacked one on the other, and CSS shows one
-     at a time. Swapping the text of a single node instead makes
-     the button 15px narrower when it says Menu than when it says
-     Close, and since the cluster is pushed to the right-hand end
-     of the header, that 15px moves the button itself: press it,
-     and it slides out from under the finger that pressed it. A
-     grid with both words in one cell is as wide as the longer of
-     them, always, in any font, at any size. */
-  button.setAttribute("aria-expanded", "false");
-  button.setAttribute("aria-controls", "site-menu");
-  const word = [...button.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
-  if (word) {
-    word.replaceWith(el("span", { className: "menu-word", ariaHidden: "true" },
-      el("span", { className: "menu-word-shut", textContent: "Menu" }),
-      el("span", { className: "menu-word-open", textContent: "Close" })
-    ));
-  }
-
-  const paintButton = () => {
-    const shown = dialog.open;
-    button.setAttribute("aria-expanded", String(shown));
-    button.setAttribute("aria-label", shown ? "Close the menu" : "Open the menu");
-  };
-  dialog.addEventListener("close", paintButton);
-  button.addEventListener("click", () => { toggle(); paintButton(); });
-
-  /* Escape came free with showModal() and does not with show().
-     Only when the menu is the frontmost thing: the palette is a
-     modal above it and closes itself. */
-  addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && dialog.open && !document.querySelector("dialog[open]:modal")) {
-      e.preventDefault();
-      close();
-      paintButton();
-    }
-  });
-
-  /* Following a link out of the menu leaves it open behind the new
-     page on a back-navigation restore, so it is shut on the way. */
-  dialog.addEventListener("click", (e) => {
-    if (e.target.closest("a")) { close(); paintButton(); }
-  });
-
-  addEventListener("keydown", (e) => {
-    if (e.key.toLowerCase() === "m" && !e.ctrlKey && !e.metaKey && !e.altKey
-        && !isTyping(e.target)) {
-      e.preventDefault();
-      toggle();
-      paintButton();
-    }
-  });
-}
-
 const isTyping = (node) =>
   /^(input|textarea|select)$/i.test(node?.tagName) || node?.isContentEditable;
-
-/* ============================================================
-   2d. THE SKILLS DROPDOWN
-
-   German used to have its own word in the header. That stopped
-   working the moment there was going to be a second non-finance
-   school, and a third: seven links was already the width at which
-   the inline nav gives up (see the RESPONSIVE note in styles.css),
-   and eleven is not a nav bar, it is a list.
-
-   So one word, "Skills", and everything under it. The panel is
-   built from the SKILLS list in content.js, add a school there
-   and it appears here, on /skills/ and in the overlay menu at
-   once, with no page's markup to edit.
-
-   The <a href="/skills/"> that every page ships is what this
-   replaces. With JavaScript off that link is still there and
-   still goes somewhere useful, which is why the markup is a link
-   and the upgrade is a button: a button that navigates nowhere
-   would be a dead end without a script to run it.
-
-   Opens on hover AND on click, because both were asked for and
-   they want different things: hover opens after a beat so that a
-   pointer travelling to Insights doesn't drag the panel open on
-   the way past, and closes after a longer one so the diagonal
-   trip down to the last item doesn't lose it. Click is instant
-   and sticky, which is also what touch gets, since a tap fires
-   both.
-   ============================================================ */
-const HOVER_IN = 90;
-const HOVER_OUT = 260;
-
-function skillsPanel() {
-  const panel = el("div", { className: "nav-drop", id: "skills-drop", hidden: true });
-
-  for (const s of SKILLS) {
-    const link = el("a", { href: skillUrl(s) },
-      el("strong", { textContent: s.bn }),
-      s.status === "soon"
-        ? el("span", { className: "soon mono", textContent: "আসছে" })
-        : null,
-      el("small", { textContent: s.en })
-    );
-    panel.append(link);
-  }
-
-  panel.append(
-    el("a", { className: "nav-drop-all", href: "/skills/index.html" },
-      el("strong", { textContent: "সব দক্ষতা · All skills →" })
-    )
-  );
-  return panel;
-}
-
-function initSkillsNav() {
-  const link = document.querySelector("body > header nav [data-nav-skills]");
-  if (!link) return;
-
-  const group = el("div", { className: "nav-group" });
-  // carried across so the audience ordering and the responsive
-  // rules keep treating this as the nav item it replaced
-  if (link.hasAttribute("data-keep")) group.setAttribute("data-keep", "");
-
-  const button = el("button", {
-    type: "button", className: "nav-top", id: "skills-top",
-    innerHTML: 'Skills <span class="caret" aria-hidden="true">▾</span>',
-  });
-  button.setAttribute("aria-expanded", "false");
-  button.setAttribute("aria-haspopup", "true");
-  button.setAttribute("aria-controls", "skills-drop");
-  const current = link.getAttribute("aria-current");
-  if (current) button.setAttribute("aria-current", current);
-
-  const panel = skillsPanel();
-  group.append(button, panel);
-  link.replaceWith(group);
-
-  let timer;
-  const set = (open) => {
-    clearTimeout(timer);
-    panel.hidden = !open;
-    button.setAttribute("aria-expanded", String(open));
-  };
-  const later = (open, delay) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => set(open), delay);
-  };
-
-  group.addEventListener("pointerenter", (e) => {
-    if (e.pointerType === "touch") return;   // a tap is a click, not a hover
-    later(true, HOVER_IN);
-  });
-  group.addEventListener("pointerleave", (e) => {
-    if (e.pointerType === "touch") return;
-    later(false, HOVER_OUT);
-  });
-
-  button.addEventListener("click", () => set(panel.hidden));
-
-  /* Tabbing out of the last item, or clicking anywhere else, closes
-     it. `relatedTarget` and not document.activeElement: during a
-     focusout the focus has left one element and not yet landed on
-     the next, so activeElement is <body>– which read as "they've
-     gone" for a keyboard user moving from the button INTO the panel,
-     closed it under them, and left the .focus() call pointing at a
-     display:none link. The deferred check is the fallback for the
-     browsers that hand you a null relatedTarget. */
-  group.addEventListener("focusout", (e) => {
-    if (e.relatedTarget && group.contains(e.relatedTarget)) return;
-    setTimeout(() => {
-      if (!group.contains(document.activeElement)) set(false);
-    });
-  });
-  addEventListener("click", (e) => {
-    if (!group.contains(e.target)) set(false);
-  });
-
-  group.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !panel.hidden) {
-      e.preventDefault();
-      set(false);
-      button.focus();
-      return;
-    }
-    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-    e.preventDefault();
-    if (panel.hidden) set(true);
-    const items = [...panel.querySelectorAll("a")];
-    const at = items.indexOf(document.activeElement);
-    const next = e.key === "ArrowDown"
-      ? (at + 1) % items.length
-      : (at <= 0 ? items.length : at) - 1;
-    items[next]?.focus();
-  });
-}
 
 /* ============================================================
    2c. KEYBOARD SHORTCUTS  ("?")
@@ -856,78 +398,6 @@ function initShortcuts() {
       document.getElementById("theme-toggle")?.click();
     }
   });
-}
-
-/* ============================================================
-   3. KINETIC HEADLINE
-   ============================================================ */
-/* This reads the element's text and rebuilds it as one span per
-   word, which means whatever is in #kinetic when this runs is what
-   the reader ends up with. The home page carries four possible
-   headlines; only ever ONE of them is in the element, because the
-   other three are attributes and the swap happens inline next to
-   the markup. See the note above the headline in index.html for
-   what happened when they were all children of it. */
-function initKinetic() {
-  const el = document.getElementById("kinetic");
-  if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-  const words = el.textContent.trim().split(/\s+/);
-  el.replaceChildren();
-  words.forEach((word, i) => {
-    const span = document.createElement("span");
-    span.className = "w";
-    span.style.setProperty("--i", i);
-    span.textContent = word;
-    el.append(span);
-    if (i < words.length - 1) el.append(" ");
-  });
-}
-
-/* ============================================================
-   3b. HEADER HEIGHT: one number the whole site scrolls by
-
-   The header is sticky, so every in-page jump has to clear it.
-   That clearance was a hard-coded 5rem, which is right on no
-   viewport in particular: the bar is 67px on a desktop and 61px on
-   a phone, and it changes again when the Bangla webfonts land and
-   reflow it. Measuring it once and publishing it as --header-h
-   lets scroll-padding-top be exact everywhere, and means a change
-   to the header's padding cannot silently break scrolling on a
-   page nobody thought to re-check.
-   ============================================================ */
-function initHeaderHeight() {
-  const header = document.querySelector("header");
-  if (!header) return;
-  const publish = () => {
-    const h = Math.round(header.getBoundingClientRect().height);
-    if (h > 0) root.style.setProperty("--header-h", `${h}px`);
-
-    /* --header-inset: how far the header's content starts from the
-       edge of the window. The header lives in a .wrap, so that is
-       the page's own left margin at this width, and because the
-       wrap is centred it is the right margin too.
-
-       The overlay menu uses it to line its bar, grid and footer up
-       with the page underneath. Without it the menu was a
-       full-width layout sitting on top of a 1080px one, and the
-       visible cost was the close button: the ✕ that undoes the
-       Menu button sat 90px to the right of it, because the two
-       were measured from different edges. Measured rather than
-       calculated, because the scrollbar takes a few pixels off the
-       viewport and only the browser knows how many. */
-    const wrap = header.querySelector(".wrap");
-    if (wrap) {
-      const left = Math.round(wrap.getBoundingClientRect().left)
-        + parseFloat(getComputedStyle(wrap).paddingInlineStart || 0);
-      if (left >= 0) root.style.setProperty("--header-inset", `${Math.round(left)}px`);
-    }
-  };
-  publish();
-  // fonts reflow the bar; a resize changes which layout applies
-  document.fonts?.ready.then(publish).catch(() => {});
-  addEventListener("resize", publish, { passive: true });
-  if (typeof ResizeObserver === "function") new ResizeObserver(publish).observe(header);
 }
 
 /* ============================================================
@@ -1110,23 +580,6 @@ export function download(filename, data, type = "text/html;charset=utf-8") {
 }
 
 /* ============================================================
-   5b. READING PROGRESS in the Learn area
-   Opening a lesson ticks it off and records it as the place to
-   resume from. Stored on the device only: it's a bookmark, not
-   analytics, and nothing leaves the browser. The logic lives in
-   /learn/progress.js so that the hub, the stage pages and the
-   lesson pages all agree on what "read" means.
-   ============================================================ */
-function markLessonRead() {
-  try {
-    recordVisit();
-  } catch { /* private mode; the tick is a nicety */ }
-  try {
-    recordPage();
-  } catch { /* ditto, see /recent.js */ }
-}
-
-/* ============================================================
    6. SERVICE WORKER, offline reading, instant repeat visits
    ============================================================ */
 function initServiceWorker() {
@@ -1160,19 +613,14 @@ function initDynamic() {
 
 /* ---------- go ---------- */
 initTheme();
-initHeaderHeight();
 initAudience();
 initCrumbs();
 initPalette();
-initMenu();
-initSkillsNav();
 initShortcuts();
-initKinetic();
 initCounts();
 initTilt();
 initSpeculation();
 initArticleCards();
-markLessonRead();
 initStreak();
 
 /* Reader accounts, before the service worker rather than after it.

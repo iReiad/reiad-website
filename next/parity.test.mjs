@@ -169,8 +169,10 @@ const snapshot = readSnapshot();
    never written and which are compared for less: see the block
    below that asks them only what a wrong answer would cost. The
    other three are the first written stage of each language
-   school. */
-const SEEDED = ["basics-1", "basics-2", "stufe-1", "dhap-1", "term-1"];
+   school. `start`, the starter guide, is here since Stage 11.8:
+   it is eight pages now rather than eight accordions, and the
+   money school's hub is rendered from its rows. */
+const SEEDED = ["start", "basics-1", "basics-2", "stufe-1", "dhap-1", "term-1"];
 
 d1(`CREATE TABLE IF NOT EXISTS school_stages (
       school TEXT, slug TEXT, position INTEGER, title TEXT, status TEXT, meta TEXT,
@@ -339,6 +341,15 @@ const meta = (html, key, attr = "property") => {
   const m = html.match(re);
   return m ? (m[1] ?? m[2]) : null;
 };
+/** The money school's own name, as it is now, wherever a
+    committed page still says what it was. Stage 11.8 renamed
+    "শেখার লাইব্রেরি" to "টাকা ও শেয়ার": the school stopped being
+    the site's second half and became one entry in the skills
+    list. Substituting rather than skipping means the rest of a
+    page title is still compared character for character. */
+const renamed = (v) =>
+  (typeof v === "string" ? v.replaceAll("\u09b6\u09c7\u0996\u09be\u09b0 \u09b2\u09be\u0987\u09ac\u09cd\u09b0\u09c7\u09b0\u09bf", "\u099f\u09be\u0995\u09be \u0993 \u09b6\u09c7\u09af\u09bc\u09be\u09b0") : v);
+
 const tagText = (html, tag) => html.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "i"))?.[1] ?? null;
 const attr = (html, re) => html.match(re)?.[1] ?? null;
 
@@ -599,17 +610,17 @@ const says = (name, want, got) => ok(name, decode(got) === want,
    with its own title and its own canonical link: the mistake this
    catches is a page whose route exists and whose head was copied
    from the one beside it. */
-/* `nav` is the address the header marks, which is not always the
-   page's own: the stock check is under Tools and marks the Tools
-   link, exactly as the page it replaced did. */
+/* `nav` is the address the rail marks, which is not always the
+   page's own: the stock check has its own item under Tools since
+   Stage 11.8, and before that it marked the Tools link. */
 for (const [path, title, nav] of [
   ["/about.html", "About · Reiad's Library", "/about.html"],
   ["/contact.html", "Contact · Reiad's Library", "/contact.html"],
   ["/skills/index.html", "দক্ষতা · Skills · Reiad's Library", "/skills/index.html"],
   ["/tools/index.html", "Tools & calculators · Reiad's Library", "/tools/index.html"],
-  ["/tools/stock.html", "Stock check · buy, hold or sell · Reiad's Library", "/tools/index.html"],
-  /* The home page marks nothing: it is not in the nav. */
-  ["/", "Reiad's Library · Finance & Bangladesh Markets", null],
+  ["/tools/stock.html", "Stock check · buy, hold or sell · Reiad's Library", "/tools/stock.html"],
+  /* The home page marks nothing: it is not in the rail. */
+  ["/", "Reiad's Library · বাংলায় টাকা, দক্ষতা আর কাজ", null],
   ["/portfolio.html", "Portfolio & Services · Reiad's Library", "/portfolio.html"],
   ["/portfolio/dcf.html",
     "DCF with sensitivity tables · DSE-listed manufacturer · Reiad's Library",
@@ -624,12 +635,18 @@ for (const [path, title, nav] of [
   says(`${path} states its own canonical link`, `https://reiad.co.uk${path}`,
     attr(page.html, /<link rel="canonical" href="([^"]+)"/));
   if (nav) {
-    ok(`${path} marks ${nav} in the header`,
-      new RegExp(`<a href="${nav}"[^>]*aria-current="page"`).test(page.html)
-      || new RegExp(`aria-current="page"[^>]*href="${nav}"`).test(page.html),
-      `nothing in the nav carries aria-current="page" for ${nav}`);
+    /* Order-agnostic on purpose. This used to require `href`
+       immediately after `<a `, which was true of hand-written
+       markup and is not true of React: it writes `class` first,
+       so the marked link stopped matching the moment the nav
+       became a component, and the check went quiet rather than
+       red. */
+    ok(`${path} marks ${nav} in the rail`,
+      new RegExp(`<a [^>]*href="${nav}"[^>]*aria-current="page"`).test(page.html)
+      || new RegExp(`<a [^>]*aria-current="page"[^>]*href="${nav}"`).test(page.html),
+      `nothing in the rail carries aria-current="page" for ${nav}`);
   } else {
-    ok(`${path} marks nothing in the nav, because it is not in it`,
+    ok(`${path} marks nothing in the rail, because it is not in it`,
       !/<nav[\s\S]*?aria-current="page"[\s\S]*?<\/nav>/.test(page.html));
   }
 }
@@ -756,11 +773,15 @@ for (const [path, title, nav] of [
         `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(b)}`);
     };
 
-    same("the title", (h) => tagText(h, "title"));
+    /* `renamed` on the two that carry the school's own name: see
+       the note where it is defined. Stage 11.8 renamed the money
+       school and every committed page of it still says what it
+       was called. */
+    same("the title", (h) => renamed(tagText(h, "title")));
     same("the description", (h) => meta(h, "description", "name"));
     same("the canonical link", (h) => attr(h, /<link rel="canonical" href="([^"]+)"/));
     for (const key of ["og:type", "og:title", "og:description", "og:url", "og:image"]) {
-      same(key, (h) => meta(h, key));
+      same(key, (h) => renamed(meta(h, key)));
     }
     same("the language", (h) => attr(h, /<html lang="([^"]+)"/));
 
@@ -842,7 +863,12 @@ for (const [path, title, nav] of [
         `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(b)}`);
     };
 
-    same("the title", (h) => tagText(h, "title"));
+    /* The school's own name is the third clause of the title, and
+       the money school's changed at Stage 11.8: it was "শেখার
+       লাইব্রেরি" on every committed page and it is "টাকা ও শেয়ার".
+       Compared with that substitution rather than skipped, so the
+       other two thirds of the title are still held exactly. */
+    same("the title", (h) => renamed(tagText(h, "title")));
     same("the description", (h) => meta(h, "description", "name"));
     same("the canonical link", (h) => attr(h, /<link rel="canonical" href="([^"]+)"/));
     same("og:image", (h) => meta(h, "og:image"));
@@ -869,17 +895,37 @@ for (const [path, title, nav] of [
       return [...cards, ...other].join(" ");
     });
 
-    same("the progress bar's key",
-      (h) => attr(h, /data-(?:stage|stufe|dhap|term)-progress="([^"]*)"/));
-    same("where the continue button starts",
-      (h) => attr(h, /data-(?:stage|stufe|dhap|term)-continue="[^"]*"[^>]*>|href="([^"]+)"[^>]*data-(?:stage|stufe|dhap|term)-continue/));
+    /* The bar and the "continue" button, for the three schools
+       whose ladder is still a script reading a data attribute.
+       The money school's is React since Stage 11.8: it counts the
+       ids the route rendered, so there is no attribute to compare
+       and the committed page's is the thing that went away.
+       Checked here rather than skipped silently. */
+    if (path.startsWith("/learn/")) {
+      ok(`${path}: the bar counts what the route rendered`,
+        /class="meter"/.test(now) && !/data-stage-progress/.test(now),
+        "the money school's stage still carries the old progress markup");
+    } else {
+      same("the progress bar's key",
+        (h) => attr(h, /data-(?:stufe|dhap|term)-progress="([^"]*)"/));
+      same("where the continue button starts",
+        (h) => attr(h, /data-(?:stufe|dhap|term)-continue="[^"]*"[^>]*>|href="([^"]+)"[^>]*data-(?:stufe|dhap|term)-continue/));
+    }
     same("the prev/next pair", (h) => words(byClass(h, "nav", "prev-next")));
     same("where the prev/next pair points", (h) => {
       const inside = byClass(h, "nav", "prev-next");
       return inside === null ? null
         : [...inside.matchAll(/href="([^"]+)"/g)].map((m) => m[1]).join(" ");
     });
-    same("the scripts the page loads", schoolScripts);
+    /* The money school's ladder page loaded `/learn/stage.js` on
+       top of `/learn/learn.js`; the second of those is the modal
+       term reader and stayed, the first drew the bar and is
+       gone. */
+    if (path.startsWith("/learn/")) {
+      says(`${path}: the scripts the page loads`, "/learn/learn.js", schoolScripts(now));
+    } else {
+      same("the scripts the page loads", schoolScripts);
+    }
     same("the body class", (h) => attr(h, /<body class="([^"]*)"/));
   }
 
@@ -928,22 +974,24 @@ for (const [path, title, nav] of [
       "share", attr(page.html, /data-lesson-id="([^"]*)"/));
   }
 
-  /* ---- the five hand-written pages ----
+  /* ---- the three hand-written pages ----
 
-     Stage 11.7 step 3. Four hubs and the money school's full
-     index, and none of them is generated: they are prose, copied
-     verbatim into `lib/school-hubs.ts` rather than rewritten as
-     JSX, for the reason `scripts/build-school-hubs.mjs` gives at
-     length. `check-next.mjs` holds the copy to the original, so
-     what is worth checking here is the part that is NOT copied:
-     the head Next writes, the shell around the writing, and the
-     scripts that make the ladder live. */
+     Stage 11.7 step 3, and there were five. The money school's
+     hub and its full index left this list at Stage 11.8: both are
+     rendered from the rows now, and what they are held to is
+     below rather than here, because there is no committed page
+     left to compare them against.
+
+     The three that remain are prose, copied verbatim into
+     `lib/school-hubs.ts` rather than rewritten as JSX.
+     `check-next.mjs` holds the copy to the original, so what is
+     worth checking here is the part that is NOT copied: the head
+     Next writes, the shell around the writing, and the scripts
+     that make the ladder live. */
   for (const [path, file] of [
-    ["/learn/index.html", "learn/index.html"],
     ["/deutsch/index.html", "deutsch/index.html"],
     ["/quran/index.html", "quran/index.html"],
     ["/english/index.html", "english/index.html"],
-    ["/learn/contents.html", "learn/contents.html"],
   ]) {
     const page = await hub(path);
     ok(`${path} answers`, page.status === 200, `status ${page.status}`);
@@ -994,13 +1042,75 @@ for (const [path, title, nav] of [
   ok("a slug the ladder does not name falls through",
     nothing.status === 404, `status ${nothing.status}`);
 
-  /* The starter guide is `inline`: its eight steps are accordion
-     sections of a hand-written hub, and they have never had pages.
-     A route that invented one would be advertising eight
-     addresses that have no prose behind them. */
-  const inline = await hub("/learn/start/first-buy.html");
-  ok("and so does a step of the starter guide, which has no page",
-    inline.status === 404, `status ${inline.status}`);
+  /* The starter guide was `inline` until Stage 11.8: its eight
+     steps were accordion sections of the hand-written hub and had
+     never had pages, and this check held the route to 404ing one.
+     They are pages, so the same check now holds the opposite, and
+     it is the same failure it always guarded against: the route
+     and the ladder disagreeing about what exists. */
+  const step = await hub("/learn/start/first-buy.html");
+  ok("a step of the starter guide is a page of its own", step.status === 200,
+    `status ${step.status}`);
+
+  /* ---- the money school's own two pages, out of the rows ---- */
+
+  {
+    const hubPage = await hub("/learn/index.html");
+    ok("/learn/index.html answers", hubPage.status === 200, `status ${hubPage.status}`);
+
+    if (hubPage.status === 200) {
+      const h = hubPage.html;
+
+      /* Every stage, and every step of the starter guide. Counted
+         rather than sampled: the whole reason this page stopped
+         being prose is that a hand-written hub listed eight
+         stages while the ladder had eight and the count agreed by
+         luck. Seventeen is eight steps plus seven ladder rungs
+         plus the two doors at the foot. */
+      const stages = snapshot.stages.filter((r) => r.school === "learn");
+      for (const stage of stages.slice(1)) {
+        ok(`/learn/ links its ${stage.slug} rung`,
+          h.includes(`href="/learn/${stage.slug}/index.html"`),
+          `no card for ${stage.slug}`);
+      }
+      const steps = snapshot.lessons
+        .filter((r) => r.school === "learn" && r.stage === "start");
+      for (const step of steps) {
+        ok(`/learn/ links the starter step ${step.slug}`,
+          h.includes(`href="/learn/start/${step.slug}.html"`),
+          `no card for ${step.slug}`);
+        /* And keeps the anchor the old accordion had, so a link
+           somebody saved still lands where it named. */
+        ok(`/learn/ keeps the #step-${step.slug} anchor`,
+          h.includes(`id="step-${step.slug}"`), "the anchor is gone");
+      }
+
+      ok("/learn/ tells a card that goes somewhere from one that does not",
+        h.includes('data-kind="go"') && h.includes('data-kind="info"'),
+        "the page has only one kind of card on it");
+    }
+
+    const contents = await hub("/learn/contents.html");
+    ok("/learn/contents.html answers", contents.status === 200,
+      `status ${contents.status}`);
+
+    if (contents.status === 200) {
+      /* The complete list is complete. Every lesson of the school
+         with prose in it, by name: this is the one page whose
+         entire value is that nothing is missing from it, and it
+         was a hand-written string until Stage 11.8. */
+      /* Only the stages this fixture seeded prose for. The
+         database has sixty written lessons and this local copy has
+         the three stages it needs; asking for the other four
+         would be asking the route to invent them. */
+      const written = snapshot.lessons
+        .filter((r) => r.school === "learn" && r.body && SEEDED.includes(r.stage));
+      const missing = written.filter((r) => !contents.html.includes(`>${r.title}<`));
+      ok(`/learn/contents.html names all ${written.length} written lessons`,
+        missing.length === 0,
+        `missing: ${missing.slice(0, 4).map((r) => r.slug).join(", ")}`);
+    }
+  }
 }
 
 /* ---- the headers a static page would have had ---- */

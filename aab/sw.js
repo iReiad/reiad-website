@@ -31,6 +31,20 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v82: The shell. The header bar, its overlay menu and its Skills
+        hover panel are gone; the menu is a rail down the left of
+        every page, rendered on the server. /styles.css gained two
+        layers for it and for the card system, /app.js lost 550
+        lines with the three things it no longer draws, and six
+        modules left the precache list because the pages that
+        loaded them are rendered from the database now:
+        /recent.js, /home.js, /skills/skills.js, /learn/hub.js,
+        /learn/progress.js and /learn/contents.js. A cached v81
+        app.js would import two of those and 404, taking the
+        palette with it, so this bump is load-bearing rather than
+        tidy. /content.js changed too: the money school is an
+        entry in the skills list now.
+
    v81: Three fixes a reader can see. /styles.css locks scrolling
         on the root rather than on body, so the sticky header stays
         put while the menu is open instead of scrolling away with
@@ -660,7 +674,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v81";
+const VERSION = "v82";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -714,21 +728,24 @@ const PRECACHE = [
   "/crumbs.js",
   "/audience.js",
   "/activation.js",
-  /* app.js imports these two directly, so a cached app.js without
-     them is an app.js whose imports 404, which is worse than no
-     app.js at all. home.js and news.js belong to the home page and
-     the Insights page and are listed with them. */
-  "/recent.js",
+  /* app.js imports this one directly, so a cached app.js without
+     it is an app.js whose import 404s, which is worse than no
+     app.js at all. news.js belongs to the Insights page and is
+     listed with it.
+
+     Six names left this list in August 2026 and none of them is
+     coming back: /recent.js, /home.js, /skills/skills.js,
+     /learn/hub.js, /learn/progress.js and /learn/contents.js.
+     Each drew a page in the browser that the server draws now,
+     and `archive/shell-2026/README.md` is the table of which is
+     which. /learn/learn.js stayed: it is the modal term reader,
+     which is the one thing on those pages that really did need a
+     browser. */
   "/tilt.js",
-  "/home.js",
   "/news.js",
-  "/skills/skills.js",
   "/learn/learn.js",
-  "/learn/hub.js",
   "/learn/curriculum.js",
-  "/learn/progress.js",
   "/learn/icons.js",
-  "/learn/contents.js",
   /* The German school. curriculum.js is not a nicety here: it is
      an import of content.js, which is an import of app.js and
      crumbs.js, so the shell is broken without it. The hub and the

@@ -33,6 +33,7 @@ import { getStage } from "../../../../lib/school";
 import { siteOrigin } from "../../../../lib/article";
 import { schoolIcon } from "../../../../lib/school-icons";
 import { SiteScripts } from "../../../../components/scripts";
+import { LadderMeter, Resume } from "../../../../components/progress";
 
 type Params = Promise<{ section: string; slug: string }>;
 
@@ -70,18 +71,27 @@ export default async function StagePage({ params }: { params: Params }) {
   if (!found) notFound();
 
   const { school, look, stage, lessons, counted, prev, next, book } = found;
+
+  /* The ladder, in the shape the reader's own ticks are filed
+     under. Only the written ones: a percentage whose denominator
+     counts lessons nobody has typed can never reach a hundred. */
+  const ladderIds = lessons
+    .filter((l) => l.status === "live" && l.written === true)
+    .map((l) => ({ id: l.id, title: String(l.bn), url: l.url, stage: stage.slug }));
   const shape = look.stage;
   const sub = shape.sub(stage);
   const can = shape.can?.(stage) ?? null;
   const instead = book ? null : (shape.book?.instead?.(stage) ?? null);
 
-  /* The ladder cell, in the school's own word for a stage. The
-     money school's starter guide is the one rung with no page of
-     its own: it is `inline`, its eight steps are sections of the
-     hand-written hub, and the cell points at the anchor rather
-     than at a folder nothing writes. */
+  /* The ladder cell, in the school's own word for a stage.
+
+     There used to be a branch here for an `inline` stage, the
+     money school's starter guide, whose eight steps were
+     accordion sections of a hand-written hub rather than pages.
+     They are pages, the hub is rendered from the rows, and no
+     stage on this site is inline any more. */
   const rung = (to: typeof prev, label: string) => (to ? (
-    <a href={to.inline ? `/${school}/index.html#starter` : stageUrl(school, to)}>
+    <a href={stageUrl(school, to)}>
       <span className="mono">{label}</span>
       <strong className="bn-h">{`${to.kicker} · ${to.bn}`}</strong>
     </a>
@@ -109,18 +119,53 @@ export default async function StagePage({ params }: { params: Params }) {
               ))}
             </dl>
             {can ? <p className={can.cls}>{can.text}</p> : null}
-            <div className="stage-progress" {...{ [shape.progressAttr]: stage.slug }}>
-              <span className="track"><i /></span>
-              <span className="count mono" />
-            </div>
-            <div className="hero-actions">
-              {/* Where "continue" goes with no progress stored. The
-                  school's own script moves it to wherever the
-                  reader actually stopped. */}
-              <a className="btn btn-solid" href={lessons[0].url}
-                 {...{ [shape.continueAttr]: stage.slug }}>শুরু করুন →</a>
-              <a className="btn btn-ghost" href={shape.back.url}>{shape.back.label}</a>
-            </div>
+            {/* Two ways of saying the same thing, and which one a
+                school gets is which half of the port it is in.
+
+                The money school's ladder is React: `LadderMeter`
+                counts the ids this route just rendered and
+                `Resume` finds the first of them with no tick, so
+                the bar and the button need no module, no
+                curriculum in the browser and no data attribute.
+                The other three still load their own script, which
+                reads `data-*-progress` and `data-*-continue` off
+                these nodes exactly as it did when they were
+                files. They follow, one at a time. */}
+            {school === "learn" ? (
+              <>
+                <div className="stage-progress-react">
+                  <LadderMeter
+                    school={school}
+                    lessons={ladderIds}
+                    words={{
+                      some: "{done} / {total}টি পড়া হয়েছে",
+                      none: "{total}টি লেখা",
+                    }}
+                  />
+                </div>
+                <div className="hero-actions">
+                  <Resume school={school} lessons={ladderIds}
+                          words={{ label: "যেখানে ছিলেন", go: "পড়া চালিয়ে যান" }} />
+                  <a className="btn btn-solid" href={lessons[0].url}>শুরু করুন →</a>
+                  <a className="btn btn-ghost" href={shape.back.url}>{shape.back.label}</a>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="stage-progress" {...{ [shape.progressAttr]: stage.slug }}>
+                  <span className="track"><i /></span>
+                  <span className="count mono" />
+                </div>
+                <div className="hero-actions">
+                  {/* Where "continue" goes with no progress stored. The
+                      school's own script moves it to wherever the
+                      reader actually stopped. */}
+                  <a className="btn btn-solid" href={lessons[0].url}
+                     {...{ [shape.continueAttr]: stage.slug }}>শুরু করুন →</a>
+                  <a className="btn btn-ghost" href={shape.back.url}>{shape.back.label}</a>
+                </div>
+              </>
+            )}
           </div>
 
           {/* The practice book, above the cards rather than under
@@ -223,7 +268,7 @@ export default async function StagePage({ params }: { params: Params }) {
 
         </div>
       </main>
-      <SiteScripts srcs={[shape.script]} />
+      {shape.script ? <SiteScripts srcs={[shape.script]} /> : null}
     </>
   );
 }

@@ -43,10 +43,11 @@ export interface SchoolLook {
   /** `<body class="...">`, and nothing for the money school,
       which is the site's own default styling. */
   bodyClass?: string;
-  /** Which nav link is marked. The money school has its own
-      top-level link; the three language schools are reached
-      through Skills, and every generated page of theirs says so. */
-  current: "learn" | "in-skills";
+  /** Which rail item is marked. Every school has one of its own
+      now: the rail lists all six under one heading, so a page of
+      the German school marks German rather than marking the
+      Skills index it used to be reached through. */
+  current: "learn" | "deutsch" | "quran" | "english";
   /** The footer note. Three of the four say the same thing about
       being free and keeping progress in your own browser, in the
       words of the language they teach; the money school carries
@@ -58,11 +59,11 @@ export interface SchoolLook {
       table is two generators taking turns. */
   og: string;
   /** A script every page of the school loads, whatever kind of
-      page it is. Only the money school has one: `page()` in
-      `build-lessons.mjs` writes `/learn/learn.js` into all
-      ninety-one of its pages, and its ladder pages add
-      `/learn/stage.js` on top of it. The other three give each
-      kind of page its own and share none. */
+      page it is. Only the money school has one, `/learn/learn.js`,
+      and it is not progress: it is the modal term reader, which
+      is why its eighteen glossary pages open one another in a
+      panel instead of navigating away. The school's progress used
+      to be here too and is `components/progress.tsx` now. */
   shellScript?: string;
   /** The script a LESSON page loads, which is never the script
       its stage's ladder loads. */
@@ -115,8 +116,12 @@ export interface StageLook {
       the names are already keys in somebody's browser. */
   progressAttr: string;
   continueAttr: string;
-  /** The stage's own script, which is never the lesson's. */
-  script: string;
+  /** The stage's own script, which is never the lesson's, and
+      nothing at all for a school whose ladder is React. The money
+      school's `/learn/stage.js` drew a bar and moved a button
+      from `localStorage`; `components/progress.tsx` does both,
+      from the ids the route already rendered. */
+  script?: string;
   /** Under the kicker in the eyebrow: the school's other
       language, in its own element. */
   sub: (stage: SchoolStage) => { text: string; lang?: string } | null;
@@ -178,7 +183,13 @@ const after = (stage: SchoolStage, stages: SchoolStage[]) =>
 
 export const LOOKS: Record<string, SchoolLook> = {
   learn: {
-    title: "শেখার লাইব্রেরি",
+    /* "টাকা ও শেয়ার" since Stage 11.8, and it is the rename rather
+       than a tidy-up: the school used to be the site's second half
+       and be called "the learning library", which made the other
+       six subjects the leftovers. It is one entry in a list of
+       seven now and it is named for what it teaches. Its URLs did
+       not move and neither did anybody's progress. */
+    title: "টাকা ও শেয়ার",
     current: "learn",
     footer: "এই সাইটের সবকিছু সাধারণ শিক্ষামূলক তথ্য: বিনিয়োগ পরামর্শ না। "
       + "টাকা কোথাও রাখার আগে নিজে যাচাই করুন।",
@@ -211,7 +222,6 @@ export const LOOKS: Record<string, SchoolLook> = {
       hero: "",
       progressAttr: "data-stage-progress",
       continueAttr: "data-stage-continue",
-      script: "/learn/stage.js",
       sub: (stage) => (stage.en ? { text: String(stage.en) } : null),
       facts: (stage, c) => [
         { dt: "কার জন্য", dd: String(stage.who ?? "") },
@@ -229,7 +239,7 @@ export const LOOKS: Record<string, SchoolLook> = {
   deutsch: {
     title: "জার্মান বাংলায়",
     bodyClass: "deutsch",
-    current: "in-skills",
+    current: "deutsch",
     footer: "জার্মান অংশটা বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া। "
       + "আপনার অগ্রগতি আপনার নিজের ব্রাউজারেই থাকে।",
     og: "deutsch-",
@@ -315,7 +325,7 @@ export const LOOKS: Record<string, SchoolLook> = {
   quran: {
     title: "কুরআনের আরবি",
     bodyClass: "quran",
-    current: "in-skills",
+    current: "quran",
     footer: "কুরআনের আরবির অংশটা বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া। "
       + "আপনার অগ্রগতি আপনার নিজের ব্রাউজারেই থাকে।",
     og: "quran-",
@@ -384,7 +394,7 @@ export const LOOKS: Record<string, SchoolLook> = {
   english: {
     title: "ইংরেজি বাংলায়",
     bodyClass: "english",
-    current: "in-skills",
+    current: "english",
     footer: "ইংরেজির অংশটা বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া। "
       + "আপনার অগ্রগতি আপনার নিজের ব্রাউজারেই থাকে।",
     og: "english-",
@@ -507,10 +517,6 @@ export const getLesson = cache(async (
   let here = -1;
 
   for (const candidate of stages) {
-    /* An inline stage has no lesson pages at all: its lessons are
-       anchors in a hand-written hub. Asking for one as a page is
-       a 404 rather than a page that half exists. */
-    if (candidate.inline) continue;
     const ladder = laddered(school, candidate);
     const index = ladder.findIndex((l) => l.url === wanted);
     if (index >= 0) {
@@ -590,3 +596,62 @@ export const getStage = cache(async (school: string, stageSegment: string) => {
 });
 
 export type Stage = NonNullable<Awaited<ReturnType<typeof getStage>>>;
+
+/** A whole school: its ladder, its lessons and what has been
+    written of it.
+
+    TRANSITION.md Stage 11.8. The four hubs were hand-written
+    pages copied verbatim into `lib/school-hubs.ts`, which was the
+    right move while they were being ported and the wrong place
+    for them to stay: a hub says how many stages a school has and
+    how many lessons are in them, and a page that says that in
+    prose is a page that stops being true the moment a lesson is
+    added. The money school reads this instead, and the other
+    three follow.
+
+    Every number here is counted from the rows. Nothing in `meta`
+    is trusted to say how much of anything there is. */
+export const getSchool = cache(async (school: string) => {
+  if (!isSchool(school)) return null;
+
+  const { env } = getCloudflareContext();
+  const db = (env as { DB?: D1Database }).DB;
+  if (!db) return null;
+
+  const stages = await stagesOf(db, school);
+  if (!stages.length) return null;
+
+  const rungs = stages.map((stage) => {
+    const lessons = laddered(school, stage);
+    return {
+      stage,
+      lessons,
+      url: stageUrl(school, stage),
+      total: lessons.length,
+      /* "Written" is the body, not the status. A lesson can be
+         live and empty, which is the state the builders drew a
+         "coming soon" page for, and counting it as written is how
+         a school claims prose nobody has typed. */
+      written: lessons.filter((l) => l.written === true).length,
+      minutes: lessons.reduce((sum, l) => sum + Number(l.minutes ?? 0), 0),
+    };
+  });
+
+  const lessons = rungs.flatMap((r) => r.lessons);
+
+  return {
+    school,
+    look: LOOKS[school],
+    stages,
+    rungs,
+    lessons,
+    counts: {
+      stages: stages.length,
+      live: stages.filter((s) => s.status === "live").length,
+      lessons: lessons.length,
+      minutes: lessons.reduce((sum, l) => sum + Number(l.minutes ?? 0), 0),
+    },
+  };
+});
+
+export type School = NonNullable<Awaited<ReturnType<typeof getSchool>>>;

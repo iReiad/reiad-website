@@ -61,10 +61,14 @@
 
 /* ------------------------------------------------------------
    STAGE 0, হাতেখড়ি
-   The steps live inline on /learn/index.html rather than on pages
-   of their own: someone who has never invested should not have to
-   navigate anywhere to be told what to do first. The ids below are
-   the accordion ids on that page, and what progress is stored under.
+
+   Eight lessons at /learn/start/, like every other stage. They
+   were accordion sections of the hub until August 2026, which is
+   why the ids below are the ids they had: progress is filed under
+   `start/<slug>` and moving somebody's ticks is not a thing a
+   restructure is allowed to do. The hub still carries an anchor
+   per step so that a link somebody saved to
+   /learn/index.html#step-papers lands where it named.
    ------------------------------------------------------------ */
 const STARTER_STEPS = [
   {
@@ -151,7 +155,6 @@ const MONEY_STAGES = [
     bn: "হাতেখড়ি",
     en: "Starter Guide",
     icon: "seed",
-    inline: true, // the steps live on /learn/ itself, not on their own pages
     who: "যিনি কখনো বিনিয়োগ করেননি, এবং কোথা থেকে ধরবেন বুঝতে পারছেন না",
     blurb:
       "আট ধাপে বাংলাদেশে বিনিয়োগ শুরু করার পুরো পথ, কোন কাজটা আপনার, কোনটা অন্যরা করে দেবে, আর কোন ধাপে ঝুঁকি কতটা।",
@@ -607,11 +610,13 @@ export const stageUrl = (stage) => `/learn/${stage.slug}/index.html`;
 /** Where a stage's lessons live, `base` wins, so basics-1 keeps /learn/terms/. */
 export const lessonBase = (stage) => stage.base ?? `/learn/${stage.slug}/`;
 
-/** A lesson's URL. Inline stages (the starter guide) are hub anchors. */
+/** A lesson's URL.
+
+    There was a branch here for an `inline` stage, whose lessons
+    were anchors on the hub rather than pages. The starter guide
+    was the only one and it is eight pages now. */
 export const lessonUrl = (stage, lesson) =>
-  stage.inline
-    ? `/learn/index.html#step-${lesson.slug}`
-    : `${lessonBase(stage)}${lesson.slug}.html`;
+  `${lessonBase(stage)}${lesson.slug}.html`;
 
 /** Progress is stored per lesson under a stable id. */
 export const lessonId = (stage, lesson) =>

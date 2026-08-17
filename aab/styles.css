@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, learn, deutsch, quran, english, reads, check, about, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, learn, deutsch, quran, english, reads, check, about, shell, deck, utilities;
 
 /* ============================================================
    TOKENS
@@ -341,164 +341,23 @@
 
      The page chrome is a direct child of <body> on every page
      here, so say so. */
-  body > header {
-    position: sticky; top: 0; z-index: 50;
-    background: color-mix(in oklab, var(--paper) 86%, transparent);
-    backdrop-filter: blur(10px) saturate(1.4);
-    -webkit-backdrop-filter: blur(10px) saturate(1.4);
-    border-bottom: 1px solid var(--hairline);
-    view-transition-name: site-header;   /* stays put across navigations */
-  }
+  /* ---------- THE HEADER THAT WAS ----------
 
-  /* The header row is Latin text on every page, including the
-     Bangla ones. Without a stated line-height it inherits the
-     body's `normal`, which is resolved from whatever font is
-     first in the stack, and on /learn/ and /deutsch/ that is
-     Noto Sans Bengali, and `html[lang="bn"] body` opens the
-     leading right out to 1.9 to give the Bangla matra room. The
-     bar came out 67px on /learn/ and /deutsch/ and 64px
-     everywhere else, so the whole navbar shifted down by three
-     pixels the moment you opened either school, and the nav
-     underline drifted away from its word with it.
+     About 160 lines lived here: a sticky bar, its seven-link nav,
+     the hover panel under Skills, the Menu button's burger, and
+     two media queries folding the row down as it ran out of room.
 
-     1.65 is the English body value, so this changes nothing on
-     the pages that were already right and brings the two Bangla
-     schools into line with them. */
-  .header-inner {
-    display: flex; align-items: center; gap: 18px;
-    padding-block: 14px;
-    line-height: 1.65;
-  }
+     Nothing renders it. Every page of this site is a React route
+     with a rail down the left (`@layer shell`), and the six that
+     are not, the four practice books and the 404 and offline
+     pages, carry the slim bar in the same layer. The classes were
+     checked one at a time before this was deleted: header-inner,
+     site-name, site-mark, nav-drop, nav-group, nav-top, burger
+     and open-menu appear nowhere in `aab/`, `next/` or `app/`.
 
-  .site-name {
-    display: flex; align-items: center; gap: 8px;
-    font-family: var(--font-serif);
-    font-size: 1.2rem; color: var(--ink);
-    text-decoration: none; margin-inline-end: auto;
-    white-space: nowrap;   /* never wrap the name on a narrow phone */
-
-    &:hover { opacity: 1; color: var(--green); }
-  }
-  .site-mark { width: 20px; height: 20px; flex-shrink: 0; }
-
-  /* `body > header` matters here for the same reason it does on
-     the sticky-header block above. A bare `nav` selector claims
-     EVERY <nav> in the document, and this site has a lot of them:
-     107 lesson-footer `.prev-next` pairs, the breadcrumb trail,
-     the contents jump list, the practice book's day tracker.
-
-     They were all inheriting the header's mono font, its
-     letter-spacing, its uppercase, which is why the German
-     lessons' "পরের Teil →" read "পরের TEIL →"– and, worst of
-     all, `nav a::after`: a green 1.5px bar pinned 4px below the
-     element that grows in on hover. On an inline word in a
-     navbar that is an underline; on a bordered card it is a
-     stray line hanging under the box, wider than the text it
-     was ever meant to sit beneath. */
-  body > header nav { display: flex; gap: 18px; align-items: center; }
-
-  /* `aria-current="page"` is the page you are on; `="true"` is the
-     section you are in, a Deutsch lesson lights "Skills" without
-     claiming to BE /skills/. Both take the underline. */
-  body > header nav :is(a, .nav-top) {
-    font-family: var(--font-mono);
-    font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--ink); text-decoration: none;
-    position: relative;
-
-    /* underline grows from the left on hover / current page */
-    &::after {
-      content: ""; position: absolute; left: 0; right: 0; bottom: -4px;
-      height: 1.5px; background: var(--green);
-      scale: 0 1; transform-origin: left;
-      transition: scale var(--fast) var(--ease);
-    }
-    &:hover, &[aria-current="page"], &[aria-current="true"] { color: var(--green); opacity: 1; }
-    &:hover::after,
-    &[aria-current="page"]::after,
-    &[aria-current="true"]::after { scale: 1 1; }
-  }
-
-  /* ---------- the Skills dropdown ----------
-     One word in the bar, six schools under it. Built by app.js
-     from the SKILLS list in content.js, so no page carries the
-     markup; with JavaScript off the plain link it replaces is
-     still sitting there, pointing at /skills/. */
-  .nav-group { position: relative; display: flex; align-items: center; }
-
-  .nav-top {
-    border: 0; background: none; padding: 0; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 5px;
-    font: inherit;
-
-    & .caret {
-      font-size: 0.6em; opacity: 0.6;
-      transition: rotate var(--fast) var(--ease);
-    }
-    &[aria-expanded="true"] {
-      color: var(--green);
-      & .caret { rotate: 180deg; opacity: 1; }
-    }
-  }
-
-  .nav-drop {
-    position: absolute; top: calc(100% + 12px); inset-inline-start: -14px;
-    z-index: 60; min-width: 258px;
-    padding: 8px;
-    background: var(--paper);
-    border: 1px solid var(--hairline); border-radius: var(--radius);
-    box-shadow: var(--shadow-lift);
-    display: grid; gap: 2px;
-
-    /* Closed is `hidden`, so it is out of the tree for a screen
-       reader and for Tab; the animation is on the way in only. */
-    @media (prefers-reduced-motion: no-preference) {
-      animation: drop-in 160ms var(--ease) both;
-    }
-
-    /* A gap between the button and the panel would close the menu
-       as the pointer crossed it. This bridges it invisibly. */
-    &::before {
-      content: ""; position: absolute; inset-inline: 0; top: -14px; height: 14px;
-    }
-
-    & a {
-      display: grid; gap: 1px 10px;
-      grid-template-columns: 1fr auto;
-      align-items: baseline;
-      padding: 8px 12px; border-radius: var(--radius-sm);
-      font-family: var(--font-sans); font-size: 0.95rem;
-      letter-spacing: 0; text-transform: none; color: var(--ink);
-
-      &::after { content: none; }   /* not the nav underline */
-      &:hover, &:focus-visible { background: var(--green-soft); color: var(--green); opacity: 1; }
-    }
-    & strong { font-family: var(--font-bn-serif); font-weight: 500; font-size: 1rem; }
-    & small {
-      grid-column: 1 / -1;
-      font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.05em;
-      color: var(--ink-soft); text-transform: uppercase;
-    }
-    /* The "not written yet" mark sits beside the name rather than
-       trailing the English line, where it wrapped the longest of
-       them onto a third row and made one item twice the height
-       of its neighbours. */
-    & .soon {
-      font-size: 0.6rem; color: var(--gold); white-space: nowrap;
-      border: 1px solid currentColor; border-radius: 999px; padding: 1px 7px;
-    }
-  }
-
-  .nav-drop-all {
-    margin-top: 4px; padding-top: 10px;
-    border-top: 1px solid var(--hairline);
-    & strong { font-family: var(--font-serif); }
-  }
-
-  @keyframes drop-in {
-    from { opacity: 0; translate: 0 -8px; }
-    to   { opacity: 1; translate: 0 0; }
-  }
+     `.account-btn` survived and is not here: `signin.js` still
+     appends that button, into `.top-tools` now, and its rule is in
+     @layer menu with the rest of the account panel. */
 
   /* ---------- FOOTER ---------- */
   body > footer {
@@ -524,31 +383,14 @@
   .section-more { margin-top: 16px; }
 
   /* ---------- RESPONSIVE ----------
-     The header has to fit seven links and three buttons, seven
-     since the German school arrived, which is the point at which
-     the inline nav stops being roomy. Below the desktop width it
-     stands down and the Menu button carries the whole site: it
-     lists every page, so nothing is lost, and the row stops
-     overflowing. */
-  @media (width <= 900px) {
-    .header-inner { gap: 10px; }
-    body > header nav > :is(a, .nav-group) { display: none; }
-    body > header nav > [data-keep] { display: inline; }  /* Learn + Contact stay */
-    .kbd-hint { display: none; }
-  }
+     Two media queries lived here, folding the old header's nav
+     away as the row ran out of width. There is no row: the nav is
+     a rail, and what it does on a narrow screen is in
+     `@layer shell`, where it becomes a drawer.
+
+     One declaration survived the deletion, below, and it is worth
+     keeping for the reason it was written. */
   @media (width <= 620px) {
-    body > header nav { display: none; }   /* the Menu button is the nav now */
-    .header-inner { gap: 8px; padding-block: 11px; }
-    .site-name { font-size: 1.06rem; }
-    #open-palette { padding-inline: 9px; }
-
-    /* Never let the account button wrap. It is the last thing in
-       the row, so the two lines it broke into took the row's
-       height with them and pushed the whole header taller.
-
-       The rest of what this row does on a narrow screen is in
-       @layer menu, because @layer components comes after this one
-       and would otherwise win. */
     .account-btn { white-space: nowrap; }
   }
 }
@@ -1635,236 +1477,29 @@ it collapsed to the width of the word "Bangladesh". */
    ============================================================ */
 @layer menu {
 
-  /* three lines that become an X when the menu is open */
-  .burger {
-    width: 14px; height: 9px; position: relative; display: inline-block;
+  /* ---------- THE OVERLAY MENU THAT WAS ----------
 
-    &::before, &::after {
-      content: ""; position: absolute; inset-inline: 0; height: 1.5px;
-      background: currentColor; transition: all var(--fast) var(--ease);
-    }
-    &::before { top: 0; box-shadow: 0 3.75px 0 currentColor; }
-    &::after { bottom: 0; }
-  }
-  body:has(dialog.menu[open]) .burger::before { transform: translateY(3.75px) rotate(45deg); box-shadow: none; }
-  body:has(dialog.menu[open]) .burger::after { transform: translateY(-3.75px) rotate(-45deg); }
+     Roughly 240 lines: the burger that became a cross, the button
+     whose word swapped without resizing, the full-screen
+     `dialog.menu`, its five columns, their entrance cascade and
+     two media queries folding the header's row down beside it.
 
-  /* "Menu" and "Close" in the same grid cell, so the button is the
-     width of the longer of the two whichever one is showing. See
-     the note in app.js: a button that resizes when it is pressed
-     slides away from the finger that pressed it, and this cluster
-     sits at the right-hand end of the header, so all of that
-     15px lands on the button itself. */
-  .menu-word {
-    display: inline-grid; justify-items: center; align-items: center;
+     `buildMenu()` in app.js built the whole thing at runtime, so
+     a reader with JavaScript off had no menu and a crawler saw
+     none of it. The menu is a rail down the left now, rendered on
+     the server from one table: `@layer shell`, and
+     `next/lib/nav.ts`.
 
-    & > span {
-      grid-area: 1 / 1;
-      transition: opacity var(--fast) var(--ease);
-    }
-  }
-  .menu-word-open { opacity: 0; }
-  body[data-menu="open"] {
-    & .menu-word-shut { opacity: 0; }
-    & .menu-word-open { opacity: 1; }
-  }
+     Two rules from that block are kept below, and neither is the
+     menu's: the `kbd` styling is shared with the shortcuts sheet
+     and the palette, and the account panel further down is
+     `signin.js`'s. */
 
-  /* ---------- the header's row, on a phone ----------
-
-     These belong to the menu rather than to the header's own
-     block because this layer comes after @layer components, and
-     a narrow-screen rule that loses to a full-width one is worse
-     than no rule: it looks written and does nothing. */
-  @media (width <= 620px) {
-    /* The word goes, the drawing stays. Five things share a 390px
-       row, name, menu, search, theme and the account, and the last
-       of them was being pushed off the right-hand edge: "Sign in"
-       broke onto two lines and the second was off the screen.
-       Three lines and a cross are understood without the caption,
-       and the button still says which it is to a screen reader
-       through its aria-label. */
-    .menu-word { display: none; }
-    #open-menu { padding-inline: 10px; }
-
-    /* A phone has no Ctrl key. The line offering two of them was
-       taking a row of the menu's foot to advertise something the
-       reader cannot do. */
-    .menu-hint { display: none; }
-  }
-
-  /* Under about 340px, which is the oldest phones still in use,
-     even that is not enough room. The mark keeps the identity and
-     keeps linking home; the name it sits next to is the one thing
-     in the row that nothing depends on. */
-  @media (width <= 340px) {
-    .site-name { font-size: 0; gap: 0; }
-    .site-mark { font-size: 1rem; }
-  }
-
-  /* NOTE: `display` belongs on [open] ONLY. Setting it on the bare
-     dialog overrides the UA stylesheet's display:none for the closed
-     state, and a closed-but-laid-out 100dvh dialog drops a full screen
-     of invisible dead space under the footer of every page. */
-
-  /* The menu is opened with show(), not showModal(), so that the
-     header stays on top of it and stays clickable. Three things
-     follow from that and all three are here rather than in the
-     script:
-
-       position   a non-modal dialog is position: absolute and would
-                  scroll away with the page. Fixed, so it does not.
-       top        it starts below the header instead of under it.
-                  --header-h is measured by app.js.
-       z-index    under the header's 50, over everything else.
-
-     There is no ::backdrop on a non-modal dialog. It does not need
-     one: it covers the whole page below the header already, and the
-     part it does not cover is the part that has to stay visible. */
-  dialog.menu {
-    position: fixed;
-    inset: var(--header-h, 66px) 0 0 0;
-    width: 100vw; max-width: 100vw;
-    height: auto; max-height: none;
-    margin: 0; padding: 0; border: 0;
-    z-index: 40;
-    background: var(--paper); color: var(--ink);
-    /* The grid inside scrolls, not this. Both scrolling gives the
-       footer nothing to sit against. */
-    overflow: hidden; overscroll-behavior: contain;
-
-    opacity: 0; translate: 0 -12px;
-    transition: opacity var(--slow) var(--ease),
-                translate var(--slow) var(--ease),
-                display var(--slow) allow-discrete,
-                overlay var(--slow) allow-discrete;
-
-    &[open] {
-      display: flex; flex-direction: column;
-      opacity: 1; translate: 0 0;
-    }
-    @starting-style { &[open] { opacity: 0; translate: 0 -12px; } }
-  }
-
-  /* showModal() used to stop the page behind from scrolling. It is
-     not modal any more, so the lock is set here off the attribute
-     app.js writes when it opens.
-
-     On the root element rather than on body, and that is a fix
-     rather than a preference. body's overflow only reaches the
-     viewport while the root's own overflow is `visible`, and it is
-     not: `overflow-x: clip` is set up in the reset so the hero art
-     can bleed past the edge. So locking body locked nothing and
-     made BODY a scroll container instead. The page went on
-     scrolling, and the header, which is sticky and therefore
-     sticks to its nearest scrolling ancestor, went up and off the
-     screen with it: open the menu, scroll, and the header was
-     gone, with the one button that closes the menu on it. */
-  :root:has(body[data-menu="open"]) { overflow-y: hidden; }
-
-  /* The menu's bands share the page's own left and right margins,
-     published as --header-inset by app.js. The menu is a
-     full-width overlay sitting on top of a 1080px layout, and
-     until they agreed on an edge, everything in it was a little
-     to the right of the thing it replaced.
-
-     There used to be a second band above the grid holding a copy
-     of the header's buttons, because a modal menu covered the real
-     ones. The menu is no longer modal and the real header is no
-     longer covered, so the copy is gone, along with the two
-     alignment passes that kept it standing in the right place. */
-  .menu-foot {
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    padding-block: 14px;
-    padding-inline: var(--header-inset, clamp(20px, 4vw, 44px));
-    background: var(--paper);
-  }
-  .menu-foot { border-top: 1px solid var(--hairline); margin-top: auto; }
-  .menu-hint { color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
-  .menu-hint kbd, .shortcut-list kbd, .palette-foot kbd {
+  .shortcut-list kbd, .palette-foot kbd {
     font-family: var(--font-mono); font-size: 0.68rem;
     border: 1px solid var(--hairline); border-radius: 4px;
     padding: 1px 6px; background: var(--paper-sunk); color: var(--ink);
   }
-
-  /* Five columns, and they have to fit on a laptop.
-
-     They did not. At 230px minimum and a 40px gap, five columns
-     need about 1230px of content width, and a 1280px window
-     offers 1192 after the padding: the fifth column wrapped onto
-     a second row 876px down, below the fold, behind the menu's
-     own footer bar. The column that landed there was Case
-     studies, so on the most common laptop width the site's seven
-     case studies were in the menu and invisible in it, which is
-     the same bug as a portfolio page that lists four of seven,
-     wearing different clothes.
-
-     200px and a tighter gap fit five columns from 1180px up. The
-     narrower column costs nothing: every item in it is one line
-     of a title, and titles were already wrapping at 230. */
-  .menu-grid {
-    flex: 1; overflow-y: auto;
-    display: grid; gap: clamp(18px, 2.4vw, 32px);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-    padding-block: clamp(24px, 4vw, 48px);
-    padding-inline: var(--header-inset, clamp(20px, 3vw, 40px));
-    align-content: start;
-
-    /* It is only focusable so that opening the menu has somewhere
-       to land that is not a link. Nobody needs to see that. */
-    &:focus, &:focus-visible { outline: none; }
-  }
-
-  .menu-col-title-second { margin-top: 26px; display: block; }
-  .menu-standout > a {
-    border-top: 1px solid var(--hairline); margin-top: 6px; padding-top: 12px;
-
-    & strong { color: var(--green); }
-  }
-  .menu-col-title {
-    color: var(--gold);
-    border-bottom: 1px solid var(--hairline);
-    padding-bottom: 8px; margin-bottom: 6px; display: block;
-  }
-
-  .menu-list {
-    display: flex; flex-direction: column;
-
-    & li { border-bottom: 1px solid color-mix(in oklab, var(--hairline) 60%, transparent); }
-    & li:last-child { border-bottom: 0; }
-
-    & a {
-      display: block; padding: 11px 10px 11px 0;
-      text-decoration: none; color: var(--ink);
-      /* the padding slides in on hover, so the row feels alive */
-      transition: padding-inline-start var(--fast) var(--ease),
-                  background var(--fast) var(--ease);
-      border-radius: 8px;
-    }
-    & a:hover, & a:focus-visible {
-      background: var(--green-soft); opacity: 1;
-      padding-inline-start: 10px;
-    }
-    & a[aria-current="page"] strong { color: var(--green); }
-    & a[aria-current="page"]::after { content: " ·  you are here"; font-family: var(--font-mono); font-size: 0.62rem; color: var(--gold); }
-
-    & strong {
-      display: block; font-family: var(--font-serif);
-      font-weight: 500; font-size: 1.02rem; line-height: 1.3;
-    }
-    & small { display: block; color: var(--ink-soft); font-size: 0.82rem; margin-top: 3px; }
-  }
-
-  /* menu items arrive in a quick cascade */
-  @media (prefers-reduced-motion: no-preference) {
-    dialog.menu[open] .menu-col {
-      animation: menu-in 0.42s var(--ease) both;
-    }
-    .menu-col:nth-child(1) { animation-delay: 0.02s; }
-    .menu-col:nth-child(2) { animation-delay: 0.07s; }
-    .menu-col:nth-child(3) { animation-delay: 0.12s; }
-    .menu-col:nth-child(4) { animation-delay: 0.17s; }
-  }
-  @keyframes menu-in { from { opacity: 0; translate: 0 14px; } to { opacity: 1; translate: 0 0; } }
 
   .shortcut-list {
     display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; align-items: baseline;
@@ -4397,127 +4032,19 @@ and an intro that needs them in step is an intro that breaks
      wants to set solid. */
   .home-h1.bn-h { line-height: 1.28; }
 
-  /* ---------- the doors on the home page ----------
-     Kept deliberately compact. These are a signpost, not the
-     content: at 26px padding and a 3-line blurb each door was
-     ~234px tall, which pushed the pair below the fold on a 768px
-     laptop and made the first thing a new visitor saw two slabs
-     they had to scroll to finish reading. A choice you want made
-     quickly has to be visible all at once.
+  /* ---------- THE DOORS THAT WERE ----------
 
-     Three doors, two groups. The real question is "learning or
-     hiring?", and "which library?" only exists for one of those
-     answers, so the two learning doors sit under one label
-     rather than lining up as three equal choices, which would
-     have asked a question the visitor doesn't have. */
-  .doorway {
-    display: grid; gap: 18px; margin-block: 24px 8px;
-    grid-template-columns: 1.55fr 1fr;
-    align-items: start;
-    max-width: 940px;
-  }
-  .door-group { display: grid; gap: 8px; align-content: start; }
-  .door-group-label { color: var(--gold); }
-  .door-pair {
-    display: grid; gap: 12px;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
-  }
-  .door-work { height: 100%; }
+     A hundred and twenty lines: `.doorway`, three `.door` cards,
+     `.door-picker`, `.door-btn` and the rest of the front page's
+     two-group question. The front door is one screen now and asks
+     the same question with a switch in the top bar, and its own
+     styling is `@layer deck` under `.gate-*`. Nothing rendered
+     any of these.
 
-  @media (width <= 820px) {
-    .doorway { grid-template-columns: 1fr; gap: 14px; }
-  }
-
-  /* Once they've chosen, the doorway has done its job and the
-     ordinary button row takes its place. Before they choose, the
-     button row would just be the same three links twice. The
-     switch in the footer brings the other half back at any time. */
-  :root[data-audience] .doorway { display: none; }
-
-  /* Two columns inside each door: the mark, then the words. Puts
-     the icon beside the heading instead of on a line of its own,
-     which is most of the height saving. */
-  /* ---------- the three doors, as a mini button row ---------- */
-  .door-picker {
-    display: flex; flex-wrap: wrap; gap: 8px; margin-block: 4px 14px;
-  }
-  .door-btn {
-    display: inline-flex; align-items: center; gap: 9px;
-    padding: 9px 16px; border-radius: 999px; cursor: pointer;
-    border: 1px solid var(--hairline); background: var(--panel);
-    color: var(--ink); font-size: 0.92rem; font-family: var(--font-bn);
-    transition: border-color var(--fast) var(--ease),
-                background var(--fast) var(--ease);
-
-    &:hover { border-color: var(--green); }
-    &[aria-pressed="true"] {
-      border-color: var(--green); background: var(--green-soft); color: var(--green);
-    }
-    & .door-art { color: var(--gold); }
-    &[aria-pressed="true"] .door-art { color: var(--green); }
-  }
-  .door-hint {
-    color: var(--ink-soft); font-size: 0.92rem; margin-block: 0 6px;
-    padding-inline-start: 2px;
-  }
-
-  .door {
-    /* ---------- THE FRONT-DOOR CARDS ----------
-       These are navigation choices, not ordinary content cards.
-       The first pass made all three perfectly even, which was tidy
-       but made the two Bangla libraries and the client-work route
-       feel interchangeable at a glance. Each now gets a barely-there
-       colour wash and a corner glint: enough to make the three routes
-       memorable without breaking the site's restrained paper-and-ink
-       system or adding an extra line of copy to an already compact
-       first screen.
-
-       The colour lives in a custom property rather than three copied
-       card rules. A new route can choose its own accent in markup;
-       the layout, focus treatment and motion stay exactly the same.
-       `isolation` keeps the decorative corner behind this card alone,
-       rather than letting it layer under a neighbouring card. */
-    --door-accent: var(--green);
-    --door-wash: var(--green-soft);
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    display: grid; gap: 4px 12px; align-content: start;
-    grid-template-columns: auto 1fr;
-    padding: 16px 18px; text-decoration: none; color: inherit;
-    border: 1px solid var(--hairline); border-radius: var(--radius);
-    background: linear-gradient(135deg, var(--door-wash), var(--panel) 46%);
-    box-shadow: var(--shadow);
-    transition: border-color var(--fast) var(--ease), transform var(--fast) var(--ease),
-                box-shadow var(--fast) var(--ease);
-
-    /* An asymmetric, quiet cue for a clickable route. It is
-       decorative only; the icon, title and destination remain the
-       accessible description of the card. */
-    &::after {
-      content: ""; position: absolute; z-index: -1;
-      width: 96px; aspect-ratio: 1; border-radius: 50%;
-      inset-inline-end: -46px; inset-block-start: -56px;
-      background: var(--door-accent); opacity: 0.09;
-      transition: opacity var(--fast) var(--ease), scale var(--slow) var(--ease);
-    }
-
-    &:hover { border-color: var(--door-accent); transform: translateY(-2px); box-shadow: var(--shadow-lift); opacity: 1; }
-    &:hover::after { opacity: 0.16; scale: 1.16; }
-    &:focus-visible { outline-color: var(--door-accent); outline-offset: 4px; }
-    & h3 { font-size: 1.04rem; align-self: center; }
-    & p {
-      grid-column: 2; color: var(--ink-soft); font-size: 0.88rem;
-      line-height: 1.5; margin: 0;
-    }
-    & .more { grid-column: 2; color: var(--door-accent); font-size: 0.84rem; margin-top: 2px; }
-  }
-  .door[data-door="finance"] { --door-accent: var(--green); --door-wash: var(--green-soft); }
-  .door[data-door="skills"]  { --door-accent: var(--gold); --door-wash: color-mix(in oklab, var(--green-soft) 62%, var(--gold) 10%); }
-  .door[data-door="work"]    { --door-accent: var(--green); --door-wash: color-mix(in oklab, var(--green-soft) 56%, var(--panel) 44%); }
-
-  .door-art, .door .art { width: 22px; height: 22px; }
-  .door-art { display: flex; align-items: center; color: var(--door-accent); grid-row: 1; }
+     They are also why the new ones are called `gate`: `.door` was
+     still defined here, in a layer the new page's rules had to win
+     against selector by selector, and a class that means two
+     things is the bug `check-css.mjs` exists for one level up. */
 
   /* ---------- THE WELCOME-BACK BAND (home page) ----------
      Built by /home.js, and hidden outright for anyone with
@@ -5117,7 +4644,7 @@ and an intro that needs them in step is an intro that breaks
   /* Someone who asked for less motion gets the state, not the sweep. */
   @media (prefers-reduced-motion: reduce) {
     .ring-fill, .stage-progress .track i { transition: none; }
-    .door:hover, .lesson-card:hover { transform: none; }
+    .lesson-card:hover { transform: none; }
   }
 }
 
@@ -7667,4 +7194,979 @@ German for day, and .tag is what the site has always called
   .line-sml { stroke: var(--ink-soft); stroke-width: 1.4; stroke-dasharray: 4 3; }
   .chart-stem { stroke: var(--ink-soft); stroke-width: 1; opacity: 0.4; }
   .bar-negbeta { fill: var(--danger); opacity: 0.55; }
+}
+
+/* ============================================================
+   SHELL
+   The rail, the top bar and the footer: the furniture every page
+   of this site carries. Rendered by `next/components/shell.tsx`
+   and its three neighbours.
+
+   ---- why it is a layer of its own, near the end ----
+
+   It replaces furniture that has been in `@layer layout` and
+   `@layer components` since the first version of this site, and
+   those rules are still there for as long as anything still
+   renders a `body > header`. Sitting after `about` means nothing
+   below can reach up and restyle the shell by accident, which is
+   the failure `check-css.mjs` exists for one level down.
+
+   ---- three attributes on <html>, all set before paint ----
+
+     data-rail      open | closed     the rail's width
+     data-drawer    open | shut       the same menu on a phone
+     data-audience  learn | work      which groups lead
+
+   The boot script in `shell.tsx` restores all three from
+   localStorage as the first thing inside <body>. Nothing here
+   animates on load because nothing here is set by JavaScript
+   after load.
+   ============================================================ */
+@layer shell {
+
+  :root {
+    --rail-open: 268px;
+    --rail-shut: 76px;
+    --rail-w: var(--rail-open);
+    --top-h: 58px;
+    --accent: var(--green);
+  }
+  html[data-rail="closed"] { --rail-w: var(--rail-shut); }
+
+  /* ---------- the column everything else is in ---------- */
+
+  .shell-col {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+    min-width: 0;
+    margin-left: var(--rail-w);
+    transition: margin-left var(--slow) var(--ease);
+  }
+
+  /* The front door. One page fills the viewport exactly and has
+     no footer under it, because there is nothing under it to
+     scroll to: see `fixed` in shell.tsx. Everything else is a
+     page and scrolls like one. */
+  body.shell-fixed { height: 100dvh; overflow: hidden; }
+  body.shell-fixed .shell-col { height: 100dvh; min-height: 0; overflow: hidden; }
+  body.shell-fixed main { min-height: 0; overflow: hidden; flex: 1 1 auto; }
+
+  /* ---------- the rail ---------- */
+
+  .rail {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 60;
+    width: var(--rail-w);
+    display: flex;
+    flex-direction: column;
+    background: var(--panel);
+    border-right: 1px solid var(--hairline);
+    /* The rail holds still across a cross-document view
+       transition instead of being cross-faded out and back in,
+       which is what makes navigating read as one page
+       rearranging. Same reason the old header carried one. */
+    view-transition-name: site-rail;
+    transition: width var(--slow) var(--ease);
+    overflow: hidden;
+  }
+
+  /* A wash of colour behind the whole rail, strongest at the top.
+     Two stops rather than a flat panel: the rail is the tallest
+     block on the page and a flat 268px of one value reads as a
+     wall. */
+  .rail::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(120% 55% at 0% 0%, color-mix(in oklab, var(--green) 16%, transparent), transparent 70%),
+      radial-gradient(90% 40% at 100% 100%, color-mix(in oklab, var(--gold) 12%, transparent), transparent 70%);
+    pointer-events: none;
+  }
+  .rail > * { position: relative; }
+
+  .rail-head {
+    display: flex; align-items: center; gap: 8px;
+    height: var(--top-h);
+    padding-inline: 16px;
+    border-bottom: 1px solid var(--hairline);
+    flex: 0 0 auto;
+  }
+
+  .rail-mark {
+    display: flex; align-items: center; gap: 10px;
+    min-width: 0; flex: 1;
+    color: var(--ink); text-decoration: none;
+  }
+  .rail-mark:hover { opacity: 1; }
+  .rail-mark-art {
+    width: 26px; height: 26px; flex: 0 0 26px;
+    color: var(--green);
+  }
+  .rail-wordmark { display: grid; min-width: 0; line-height: 1.15; }
+  .rail-wordmark-name {
+    font-family: var(--font-serif); font-size: 1.02rem;
+    white-space: nowrap; overflow: hidden;
+  }
+  .rail-wordmark-sub {
+    color: var(--gold); font-size: 0.6rem; letter-spacing: 0.1em;
+    white-space: nowrap; overflow: hidden;
+  }
+
+  .rail-nav {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 14px 12px 20px;
+    display: grid;
+    gap: 4px;
+    align-content: start;
+    scrollbar-width: thin;
+  }
+
+  .rail-group {
+    display: grid; gap: 1px;
+    padding-block: 4px;
+    border-top: 1px solid color-mix(in oklab, var(--hairline) 70%, transparent);
+    margin-top: 4px; padding-top: 9px;
+  }
+
+  /* ---------- which group leads ----------
+
+     The rail renders in the learner's order, always, because the
+     server does not know who is reading. `data-audience` is set on
+     the root before the first paint and this is what answers it:
+     somebody who said they are here for work gets Work at the top
+     and the six courses under it, and a learner gets the reverse.
+
+     `order` rather than two renderings, for the reason
+     `aab/audience.js` has always given: this reorders and never
+     filters. Every group is there for both readers, and the switch
+     in the top bar undoes itself.
+
+     The separator is a top border on every group, and the one that
+     is visually first has to lose it in both orderings, which is
+     why there are two rules rather than `:first-child`: the
+     pseudo-class follows the DOM and `order` does not. */
+  .rail-nav > .rail-group:first-child,
+  html[data-audience="work"] .rail-group[data-group="work"] {
+    border-top: 0; margin-top: 0; padding-top: 4px;
+  }
+  html[data-audience="work"] .rail-group[data-group="learn"] {
+    border-top: 1px solid color-mix(in oklab, var(--hairline) 70%, transparent);
+    margin-top: 4px; padding-top: 9px;
+  }
+  html[data-audience="work"] {
+    & .rail-group[data-group="work"]  { order: 1; }
+    & .rail-group[data-group="make"]  { order: 2; }
+    & .rail-group[data-group="read"]  { order: 3; }
+    & .rail-group[data-group="learn"] { order: 4; }
+    & .rail-group[data-group="you"]   { order: 5; }
+  }
+
+  /* The same question, in the footer's columns. */
+  html[data-audience="work"] .deck-foot-nav {
+    & .deck-foot-col:nth-child(4) { order: 1; }
+    & .deck-foot-col:nth-child(1) { order: 4; }
+  }
+
+  .rail-label {
+    color: var(--ink-soft);
+    font-size: 0.6rem; letter-spacing: 0.13em;
+    padding: 0 12px 4px;
+    white-space: nowrap; overflow: hidden;
+  }
+
+  .rail-item {
+    display: flex; align-items: center; gap: 11px;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    text-decoration: none;
+    position: relative;
+    min-height: 38px;
+    scroll-margin-block: 18px;
+    transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  }
+  .rail-item:hover {
+    opacity: 1;
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+  }
+
+  .rail-ico {
+    flex: 0 0 28px; height: 28px;
+    display: grid; place-items: center;
+    border-radius: 9px;
+    color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 13%, var(--panel));
+    border: 1px solid color-mix(in oklab, var(--accent) 22%, transparent);
+    transition: background var(--fast) var(--ease), transform var(--fast) var(--ease);
+  }
+  .rail-item:hover .rail-ico { transform: translateY(-1px); }
+
+  .rail-text { display: grid; min-width: 0; line-height: 1.2; }
+  .rail-item-label {
+    font-size: 0.93rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .rail-item-sub {
+    font-family: var(--font-bn);
+    font-size: 0.74rem; color: var(--ink-soft);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* Where you are. A filled tile and a bar against the edge of
+     the rail, rather than a colour change alone: the label is
+     hidden when the rail is folded, so the mark has to survive
+     without it. */
+  .rail-item[aria-current="page"] {
+    background: color-mix(in oklab, var(--accent) 15%, transparent);
+    font-weight: 600;
+  }
+  .rail-item[aria-current="page"]::before {
+    content: "";
+    position: absolute; left: -12px; top: 50%; translate: 0 -50%;
+    width: 3px; height: 22px; border-radius: 0 3px 3px 0;
+    background: var(--accent);
+  }
+  .rail-item[aria-current="page"] .rail-ico {
+    background: var(--accent);
+    color: var(--panel);
+    border-color: transparent;
+  }
+
+  .rail-item[data-soon] .rail-item-label::after {
+    content: "আসছে";
+    font-family: var(--font-bn); font-size: 0.68rem;
+    color: var(--gold); margin-left: 8px;
+  }
+
+  .rail-foot {
+    flex: 0 0 auto;
+    padding: 8px 12px 12px;
+    border-top: 1px solid var(--hairline);
+  }
+  .rail-toggle {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%; padding: 8px 12px;
+    background: none; border: 0; cursor: pointer;
+    border-radius: var(--radius-sm);
+    color: var(--ink-soft);
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .rail-toggle:hover { background: var(--panel-hover); color: var(--ink); }
+  .rail-toggle svg {
+    flex: 0 0 28px;
+    rotate: 180deg;
+    transition: rotate var(--slow) var(--ease);
+  }
+  html[data-rail="closed"] .rail-toggle svg { rotate: 0deg; }
+
+  /* ---------- folded ---------- */
+
+  html[data-rail="closed"] :is(.rail-wordmark, .rail-text, .rail-toggle-word) {
+    display: none;
+  }
+  html[data-rail="closed"] .rail-label {
+    /* Kept in the accessibility tree, out of the picture: the
+       group headings are what make a list of eleven icons
+       readable to a screen reader, and there is no room for them
+       on a 76px rail. */
+    height: 1px; width: 1px; padding: 0; margin: -1px;
+    clip-path: inset(50%); position: absolute;
+  }
+  html[data-rail="closed"] :is(.rail-item, .rail-toggle, .rail-head) {
+    justify-content: center; padding-inline: 8px;
+  }
+  html[data-rail="closed"] .rail-item[aria-current="page"]::before { left: -8px; }
+
+  /* ---------- the top bar ---------- */
+
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; gap: 12px;
+    height: var(--top-h);
+    padding-inline: clamp(12px, 2vw, 24px);
+    background: color-mix(in oklab, var(--paper) 82%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px);
+    border-bottom: 1px solid var(--hairline);
+    view-transition-name: site-topbar;
+  }
+
+  .audience-switch {
+    position: relative;
+    display: flex; align-items: stretch;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--paper-sunk);
+    border: 1px solid var(--hairline);
+    margin-inline: auto;
+  }
+  /* The lozenge behind the chosen half. It moves rather than
+     appearing, so the switch reads as one control with two
+     positions instead of two buttons that light up. */
+  .audience-slider {
+    position: absolute; z-index: 0;
+    top: 3px; bottom: 3px; left: 3px;
+    width: calc(50% - 3px);
+    border-radius: 999px;
+    background: var(--green);
+    transition: translate var(--slow) var(--ease), background var(--fast) var(--ease);
+  }
+  html[data-audience="work"] .audience-slider {
+    translate: 100% 0;
+    background: var(--gold);
+  }
+  /* Nobody has answered yet: neither half is claimed, so the
+     lozenge is not there to claim one. */
+  html:not([data-audience]) .audience-slider { opacity: 0; }
+
+  .audience-opt {
+    position: relative; z-index: 1;
+    display: grid; justify-items: center; gap: 0;
+    padding: 4px 18px;
+    background: none; border: 0; cursor: pointer;
+    border-radius: 999px;
+    color: var(--ink-soft);
+    line-height: 1.15;
+  }
+  .audience-label { font-size: 0.82rem; }
+  .audience-sub {
+    font-family: var(--font-bn); font-size: 0.64rem; opacity: 0.85;
+  }
+  html[data-audience="learn"] .audience-opt[data-pick="learn"],
+  html[data-audience="work"] .audience-opt[data-pick="work"] {
+    color: #fff;
+  }
+
+  .top-tools { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+
+  .top-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 36px; padding-inline: 10px;
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    background: var(--panel);
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
+  }
+  .top-btn:hover { color: var(--green); border-color: var(--green); }
+  .top-btn .kbd-hint { font-size: 0.62rem; opacity: 0.8; }
+
+  /* The burger, which only exists where the rail does not. */
+  .drawer-btn, .drawer-close, .drawer-back { display: none; }
+
+  /* ---------- the same menu on a phone ---------- */
+
+  @media (max-width: 900px) {
+    .shell-col { margin-left: 0; }
+
+    .rail {
+      --rail-w: min(300px, 86vw);
+      translate: -102% 0;
+      transition: translate var(--slow) var(--ease);
+      box-shadow: var(--shadow-lift);
+    }
+    html[data-drawer="open"] .rail { translate: 0 0; }
+
+    /* The fold is a desktop idea. On a phone the menu is either
+       covering the page or it is not, so the rail is always its
+       open width and the labels always show. */
+    html[data-rail="closed"] :is(.rail-wordmark, .rail-text, .rail-toggle-word) {
+      display: revert;
+    }
+    html[data-rail="closed"] .rail-label {
+      height: auto; width: auto; padding: 2px 12px 6px; margin: 0;
+      clip-path: none; position: static;
+    }
+    html[data-rail="closed"] :is(.rail-item, .rail-toggle, .rail-head) {
+      justify-content: flex-start; padding-inline: 12px;
+    }
+
+    .rail-foot { display: none; }
+    .drawer-btn { display: inline-flex; }
+    .drawer-close {
+      display: grid; place-items: center;
+      width: 34px; height: 34px; flex: 0 0 34px;
+      border: 1px solid var(--hairline); border-radius: 50%;
+      background: var(--panel); color: var(--ink-soft); cursor: pointer;
+    }
+    .drawer-back {
+      display: block;
+      position: fixed; inset: 0; z-index: 55;
+      border: 0; padding: 0;
+      background: color-mix(in oklab, var(--ink) 45%, transparent);
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--fast) var(--ease);
+    }
+    html[data-drawer="open"] .drawer-back { opacity: 1; pointer-events: auto; }
+
+    .audience-sub { display: none; }
+    .top-btn .kbd-hint { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rail, .shell-col, .audience-slider, .rail-toggle svg { transition: none; }
+  }
+
+  /* ---------- the footer ---------- */
+
+  .deck-foot {
+    flex-shrink: 0;
+    margin-top: var(--step);
+    background: var(--paper-sunk);
+    border-top: 1px solid var(--hairline);
+    view-transition-name: site-footer;
+  }
+  .deck-foot-inner {
+    max-width: 1180px; margin-inline: auto;
+    padding: clamp(30px, 4vw, 52px) clamp(18px, 3vw, 34px) 30px;
+    display: grid; gap: 28px;
+  }
+
+  .deck-foot-top {
+    display: grid; gap: 30px;
+    grid-template-columns: minmax(240px, 1fr) 2.2fr;
+  }
+  @media (max-width: 860px) {
+    .deck-foot-top { grid-template-columns: 1fr; }
+  }
+
+  .deck-foot-name {
+    font-family: var(--font-serif); font-size: 1.3rem;
+    display: block; margin-bottom: 10px;
+  }
+  .deck-foot-line {
+    color: var(--ink-soft); font-size: 0.9rem; margin: 0 0 4px; max-width: 42ch;
+  }
+  .deck-foot-line[lang="bn"], .deck-foot-pledge [lang="bn"] { font-family: var(--font-bn); }
+  .deck-foot-mail {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 14px; font-family: var(--font-mono); font-size: 0.8rem;
+  }
+
+  .deck-foot-nav {
+    display: grid; gap: 22px;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+  .deck-foot-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .deck-foot-col a {
+    color: var(--ink); text-decoration: none; font-size: 0.88rem;
+  }
+  .deck-foot-col a:hover { color: var(--accent); opacity: 1; }
+  .deck-foot-col a [lang="bn"] { font-family: var(--font-bn); color: var(--ink-soft); }
+  .deck-foot-label {
+    display: block; margin-bottom: 10px;
+    color: var(--accent); font-size: 0.62rem; letter-spacing: 0.12em;
+  }
+
+  .deck-foot-pledge {
+    display: grid; gap: 6px;
+    padding: 18px 20px;
+    border-radius: var(--radius);
+    background: var(--green-soft);
+    border: 1px solid color-mix(in oklab, var(--green) 25%, transparent);
+  }
+  .deck-foot-pledge p { margin: 0; font-size: 0.9rem; }
+  .deck-foot-pledge [lang="en"] { color: var(--ink-soft); font-size: 0.84rem; }
+
+  .deck-foot-end {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--hairline);
+    color: var(--ink-soft);
+  }
+  .deck-foot-note {
+    flex: 1 1 320px; margin: 0; font-size: 0.78rem; min-width: 0;
+  }
+
+  @media print {
+    .rail, .topbar, .deck-foot, .drawer-back { display: none; }
+    .shell-col { margin-left: 0; }
+  }
+}
+
+/* ============================================================
+   DECK
+   The card system, and the one distinction it is built around.
+
+   ---- a card that does something, and a card that says something
+   ----
+
+   This site had one card. `.cell` was a link to an article, a
+   statistic, a paragraph about a service, a calculator and a
+   heading with three bullets under it, and all six looked the
+   same. A reader could not tell, without moving the mouse, which
+   of them would take them somewhere: the only difference was
+   whether the `<div>` happened to be an `<a>`.
+
+   So there are two kinds here and they are told apart before the
+   mouse moves:
+
+     data-kind="go"    it takes you somewhere, or it does
+                       something. An accent rail down the left, an
+                       arrow that slides on hover, a lift, and the
+                       action written out at the bottom.
+
+     data-kind="info"  it tells you something and it is the end of
+                       the road. No arrow, no lift, a quieter
+                       ground and a dotted rule instead of the
+                       rail.
+
+   A third state, `data-kind="soon"`, is a "go" card for a thing
+   nobody has written yet: it says so and it is not a link,
+   because a chip that goes nowhere should not look like a door.
+   ============================================================ */
+@layer deck {
+
+  .deck {
+    display: grid;
+    gap: var(--gap);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  }
+  .deck-2 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); }
+  .deck-wide { grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+
+  .card {
+    --accent: var(--green);
+    position: relative;
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 18px 20px;
+    border-radius: var(--radius);
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    color: inherit;
+    text-decoration: none;
+    isolation: isolate;
+    overflow: hidden;
+  }
+  .card > * { position: relative; z-index: 1; }
+
+  /* ---------- a card that does something ---------- */
+
+  .card[data-kind="go"] {
+    padding-left: 22px;
+    transition: transform var(--fast) var(--ease), box-shadow var(--fast) var(--ease),
+                border-color var(--fast) var(--ease);
+  }
+  /* The rail. Three pixels of the card's own accent down the
+     left edge, which is the one mark every interactive card here
+     carries and no informational one does. */
+  .card[data-kind="go"]::before {
+    content: "";
+    position: absolute; inset: 0 auto 0 0; width: 3px; z-index: 0;
+    background: var(--accent);
+  }
+  /* And a wash that arrives on hover, from the accent, out of the
+     corner the arrow is in. */
+  .card[data-kind="go"]::after {
+    content: "";
+    position: absolute; inset: 0; z-index: 0;
+    background: radial-gradient(120% 100% at 100% 100%,
+      color-mix(in oklab, var(--accent) 14%, transparent), transparent 60%);
+    opacity: 0;
+    transition: opacity var(--fast) var(--ease);
+  }
+  a.card[data-kind="go"]:hover,
+  a.card[data-kind="go"]:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lift);
+    border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline));
+    opacity: 1;
+  }
+  a.card[data-kind="go"]:hover::after { opacity: 1; }
+
+  /* ---------- a card that says something ---------- */
+
+  .card[data-kind="info"] {
+    background: color-mix(in oklab, var(--panel) 55%, var(--paper));
+    border-style: dashed;
+  }
+  .card[data-kind="info"] .card-art {
+    background: none;
+    border: 1px dashed color-mix(in oklab, var(--accent) 40%, var(--hairline));
+  }
+
+  /* ---------- a card for something not written yet ---------- */
+
+  .card[data-kind="soon"] {
+    border-style: dashed;
+    background: none;
+  }
+  .card[data-kind="soon"] .card-title,
+  .card[data-kind="soon"] .card-dek { opacity: 0.72; }
+
+  /* ---------- the parts ---------- */
+
+  .card-top { display: flex; align-items: center; gap: 12px; }
+  .card-art {
+    flex: 0 0 38px; height: 38px;
+    display: grid; place-items: center;
+    border-radius: 11px;
+    color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent) 24%, transparent);
+  }
+  .card-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    align-self: flex-start;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-family: var(--font-mono); font-size: 0.62rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+  }
+  .card-title {
+    font-family: var(--font-serif); font-size: 1.12rem; line-height: 1.25;
+    margin: 0;
+  }
+  .card-title[lang="bn"], .card[lang="bn"] .card-title { font-family: var(--font-bn-serif); }
+  .card-sub {
+    font-family: var(--font-mono); font-size: 0.66rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .card-dek { margin: 0; color: var(--ink-soft); font-size: 0.92rem; }
+  .card-dek[lang="bn"] { font-family: var(--font-bn); }
+
+  .card-meta {
+    display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center;
+    margin-top: auto; padding-top: 6px;
+    font-family: var(--font-mono); font-size: 0.66rem;
+    letter-spacing: 0.06em; color: var(--ink-soft);
+  }
+
+  /* The action, written out, with an arrow that moves. This is
+     the label a reader checks when they are deciding whether to
+     click, so it says what happens rather than "more". */
+  .card-go {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: auto; padding-top: 8px;
+    color: var(--accent);
+    font-family: var(--font-mono); font-size: 0.7rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .card-go::after {
+    content: "→";
+    transition: translate var(--fast) var(--ease);
+  }
+  a.card:hover .card-go::after { translate: 4px 0; }
+
+  /* ---------- ticked, for anything a reader finishes ---------- */
+
+  .card[data-done] { border-color: color-mix(in oklab, var(--green) 40%, var(--hairline)); }
+  .card-tick {
+    position: absolute; top: 12px; right: 12px; z-index: 2;
+    width: 22px; height: 22px;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    background: var(--green); color: var(--panel);
+    font-size: 0.7rem;
+  }
+
+  /* ---------- a bar of progress, wherever one is shown ---------- */
+
+  .meter {
+    height: 6px; border-radius: 999px;
+    background: color-mix(in oklab, var(--ink) 10%, transparent);
+    overflow: hidden;
+  }
+  .meter > i {
+    display: block; height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--green), var(--gold));
+    transition: width var(--slow) var(--ease);
+  }
+  .meter-line {
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-mono); font-size: 0.66rem;
+    letter-spacing: 0.06em; color: var(--ink-soft);
+  }
+  .meter-line .meter { flex: 1 1 auto; }
+
+  /* ---------- the ring, for a stage or a school ---------- */
+
+  .ring { display: grid; place-items: center; width: 44px; height: 44px; }
+  .ring svg { grid-area: 1 / 1; rotate: -90deg; width: 44px; height: 44px; }
+  .ring-track { stroke: color-mix(in oklab, var(--ink) 12%, transparent); }
+  .ring-fill {
+    stroke: var(--accent);
+    stroke-linecap: round;
+    transition: stroke-dashoffset var(--slow) var(--ease);
+  }
+  .ring-num {
+    grid-area: 1 / 1;
+    font-family: var(--font-mono); font-size: 0.62rem; color: var(--ink-soft);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card, .card-go::after, .meter > i, .ring-fill { transition: none; }
+    a.card[data-kind="go"]:hover { transform: none; }
+  }
+}
+
+/* ============================================================
+   DECK, part two: the pages built out of those cards.
+
+   A second block of the same layer rather than a layer of its
+   own. `@layer deck` is "the cards and the pages made of them",
+   and splitting it means the card vocabulary above can be read
+   without scrolling past four page layouts to reach it.
+   ============================================================ */
+@layer deck {
+
+  /* ---------- a hub: the money school, skills, contents ---------- */
+
+  .hub-wrap {
+    max-width: 1180px;
+    margin-inline: auto;
+    padding: clamp(24px, 4vw, 46px) clamp(18px, 3vw, 34px) 0;
+  }
+
+  .hub-hero {
+    display: grid; gap: 14px;
+    padding-bottom: clamp(22px, 3vw, 34px);
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: var(--step);
+  }
+  .hub-eyebrow { color: var(--gold); }
+  .hub-hero h1 {
+    font-size: clamp(1.9rem, 4.4vw, 3rem);
+    margin: 0; max-width: 20ch;
+  }
+  .hub-lede {
+    margin: 0; max-width: 62ch;
+    font-size: clamp(1rem, 1.5vw, 1.1rem);
+    color: var(--ink-soft);
+  }
+  .hub-progress { max-width: 460px; }
+
+  .hub-section { margin-bottom: var(--step); }
+  .hub-section-head { margin-bottom: 18px; display: grid; gap: 8px; }
+  .hub-section-note {
+    margin: 0; max-width: 68ch; color: var(--ink-soft); font-size: 0.94rem;
+  }
+  .hub-section-note[lang="bn"] { font-family: var(--font-bn); }
+
+  .hub-pledge {
+    display: grid; gap: 6px;
+    margin-bottom: var(--step);
+    padding: 20px 22px;
+    border-radius: var(--radius);
+    background: var(--green-soft);
+    border: 1px solid color-mix(in oklab, var(--green) 26%, transparent);
+    font-family: var(--font-bn);
+  }
+  .hub-pledge .pledge-en {
+    font-family: var(--font-mono); font-size: 0.66rem;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--green);
+  }
+
+  /* The starter guide's cards each carry the anchor the old hub's
+     accordions had, so a saved link still lands on the step it
+     named. The offset stops the sticky top bar covering it. */
+  .hub-step { scroll-margin-top: calc(var(--top-h) + 16px); }
+
+  .risk-chip {
+    padding: 2px 8px; border-radius: 999px;
+    background: color-mix(in oklab, var(--green) 14%, transparent);
+    color: var(--green);
+    font-family: var(--font-bn); letter-spacing: 0; text-transform: none;
+  }
+  .risk-chip[data-risk="mid"] {
+    background: color-mix(in oklab, var(--gold) 16%, transparent); color: var(--gold);
+  }
+  .risk-chip[data-risk="high"] {
+    background: color-mix(in oklab, var(--danger) 14%, transparent); color: var(--danger);
+  }
+
+  .card-who {
+    display: flex; align-items: center; gap: 7px;
+    font-family: var(--font-bn); font-size: 0.78rem; color: var(--ink-soft);
+  }
+  .card-who svg { flex: 0 0 auto; opacity: 0.7; }
+
+  /* ---------- the full contents list ---------- */
+
+  .contents-h { margin: 0; font-size: 1.4rem; }
+  .contents-h a { color: inherit; text-decoration: none; }
+  .contents-h a:hover { color: var(--green); opacity: 1; }
+
+  .contents-list {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; gap: 2px;
+    counter-reset: lesson;
+  }
+  .contents-list li > :is(a, span) {
+    display: flex; align-items: baseline; gap: 12px;
+    padding: 9px 14px;
+    border-radius: var(--radius-sm);
+    text-decoration: none; color: var(--ink);
+    position: relative;
+  }
+  .contents-list li > a:hover { background: var(--panel-hover); opacity: 1; }
+  .contents-list li::before {
+    counter-increment: lesson;
+  }
+  .contents-name { font-family: var(--font-bn-serif); }
+  .contents-en {
+    color: var(--ink-soft); font-size: 0.82rem;
+  }
+  .contents-min { margin-left: auto; color: var(--ink-soft); flex: 0 0 auto; }
+  .contents-soon {
+    margin-left: auto; font-family: var(--font-bn);
+    font-size: 0.78rem; color: var(--gold);
+  }
+  .contents-list li:not([data-ready]) > span { opacity: 0.6; }
+  .contents-list .card-tick { position: static; margin-left: 8px; }
+
+  /* ---------- the tick, on a lesson ---------- */
+
+  .tick-btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    margin-block: 28px 6px;
+    padding: 9px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--hairline);
+    background: var(--panel);
+    color: var(--ink-soft);
+    font-family: var(--font-bn); font-size: 0.88rem;
+    cursor: pointer;
+    transition: background var(--fast) var(--ease), color var(--fast) var(--ease),
+                border-color var(--fast) var(--ease);
+  }
+  .tick-btn:hover { border-color: var(--green); color: var(--green); }
+  .tick-btn[data-done] {
+    background: var(--green); border-color: var(--green); color: #fff;
+  }
+
+  .resume { margin-top: 6px; max-width: 480px; }
+  .resume-done {
+    margin: 6px 0 0; max-width: 60ch;
+    font-family: var(--font-bn); color: var(--green);
+  }
+  .stage-progress-react { max-width: 420px; margin-block: 14px; }
+
+  /* ---------- the front door ---------- */
+
+  .gate {
+    display: flex; flex-direction: column;
+    padding: clamp(16px, 3vh, 40px) clamp(18px, 3vw, 44px);
+    min-height: 0;
+  }
+  .gate-grid {
+    flex: 1 1 auto; min-height: 0;
+    display: grid; gap: clamp(20px, 4vw, 56px);
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+    max-width: 1240px; margin-inline: auto; width: 100%;
+  }
+
+  .gate-say { display: grid; gap: clamp(10px, 1.6vh, 18px); align-content: center; }
+  .gate-eyebrow { color: var(--gold); }
+  .gate-h1 {
+    margin: 0;
+    font-size: clamp(2rem, 4.6vw, 3.6rem);
+    max-width: 16ch;
+  }
+  .gate-h1[lang="bn"] { font-family: var(--font-bn-serif); line-height: 1.3; }
+  .gate-lede {
+    margin: 0; max-width: 52ch; color: var(--ink-soft);
+    font-size: clamp(0.95rem, 1.3vw, 1.08rem);
+  }
+  .gate-lede[lang="bn"] { font-family: var(--font-bn); }
+
+  .gate-facts {
+    list-style: none; padding: 0; margin: 6px 0 0;
+    display: flex; flex-wrap: wrap; gap: 10px 26px;
+  }
+  .gate-facts li { display: flex; align-items: baseline; gap: 8px; }
+  .gate-facts b {
+    font-family: var(--font-bn-serif); font-size: 1.5rem; color: var(--green);
+    font-weight: 500;
+  }
+  .gate-facts span { font-family: var(--font-bn); font-size: 0.84rem; color: var(--ink-soft); }
+
+  .gate-picks {
+    display: grid; gap: 10px; align-content: center;
+    min-height: 0;
+  }
+  .gate-picks .card { padding: 14px 18px; gap: 6px; }
+  .gate-picks .card-title { font-size: 1.02rem; }
+  .gate-picks .card-dek { font-size: 0.86rem; }
+
+  .gate-hint {
+    display: flex; align-items: center; gap: 8px;
+    margin: 4px 0 0; color: var(--ink-soft);
+    font-size: 0.62rem;
+  }
+  .gate-hint span { letter-spacing: 0.06em; }
+
+  /* Under 1000px the two columns stack, and a stacked door is
+     taller than a screen. It is the one page allowed to scroll
+     when it cannot fit, because the alternative is a door with
+     its handle cut off. */
+  @media (max-width: 1000px), (max-height: 620px) {
+    body.shell-fixed, body.shell-fixed .shell-col { height: auto; overflow: visible; }
+    body.shell-fixed .shell-col { min-height: 100dvh; }
+    body.shell-fixed main { overflow: visible; }
+    .gate-grid { grid-template-columns: 1fr; align-items: start; }
+  }
+}
+
+/* ============================================================
+   SHELL, part two: the slim bar.
+
+   Six pages of this site are not rendered by Next.js and cannot
+   be: the four practice books, which are generated static HTML a
+   learner opens every evening and fills in offline, and the 404
+   and offline pages, which have to work when nothing else does.
+   They cannot carry the rail, because the rail is a React
+   component and these have no React.
+
+   So they carry this: the wordmark, four links, the palette and
+   the theme toggle, on one line, sized and coloured to match the
+   top bar the rest of the site has. It is the smallest thing that
+   reads as the same site.
+   ============================================================ */
+@layer shell {
+
+  .slimbar {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; gap: 14px;
+    height: var(--top-h);
+    padding-inline: clamp(14px, 3vw, 28px);
+    background: color-mix(in oklab, var(--paper) 84%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px);
+    border-bottom: 1px solid var(--hairline);
+    view-transition-name: site-topbar;
+  }
+
+  .slimbar-mark {
+    display: flex; align-items: center; gap: 9px;
+    color: var(--ink); text-decoration: none;
+    font-family: var(--font-serif); font-size: 1rem;
+    white-space: nowrap;
+  }
+  .slimbar-mark:hover { opacity: 1; color: var(--green); }
+  .slimbar-mark svg { width: 22px; height: 22px; color: var(--green); }
+
+  .slimbar-nav {
+    display: flex; gap: 16px; align-items: center;
+    margin-left: 8px; min-width: 0; overflow: hidden;
+  }
+  .slimbar-nav a {
+    color: var(--ink-soft); text-decoration: none; font-size: 0.86rem;
+    white-space: nowrap;
+  }
+  .slimbar-nav a:hover { color: var(--green); opacity: 1; }
+
+  .slimbar .top-tools { margin-left: auto; }
+
+  @media (width <= 620px) {
+    .slimbar-nav { display: none; }
+  }
 }

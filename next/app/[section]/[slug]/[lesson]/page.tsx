@@ -39,6 +39,7 @@ import { getLesson } from "../../../../lib/school";
 import { siteOrigin } from "../../../../lib/article";
 import { schoolIcon } from "../../../../lib/school-icons";
 import { SiteScripts } from "../../../../components/scripts";
+import { LessonTick } from "../../../../components/progress";
 
 type Params = Promise<{ section: string; slug: string; lesson: string }>;
 
@@ -142,6 +143,24 @@ export default async function LessonPage({ params }: { params: Params }) {
                it is the writing. */
             <div dangerouslySetInnerHTML={{ __html: body }} />
           )}
+
+          {/* The tick, and only for the school whose progress is
+              React. The other three keep their own module, which
+              reads the data attributes on the <article> above and
+              has since these were files.
+
+              It is a button and not an arrival. The money school
+              used to mark a lesson read the moment the page
+              opened, which counted every reader who arrived,
+              saw it was the wrong lesson and left. Opening moves
+              the bookmark; finishing is something you say. */}
+          {school === "learn" && !soon ? (
+            <LessonTick
+              school={school} id={it.id} title={String(it.bn)} stage={stage.slug}
+              url={it.url}
+              words={{ done: "পড়া হয়েছে", notDone: "পড়া হয়েছে চিহ্ন দিন" }}
+            />
+          ) : null}
 
           <p className="backlink">
             <a href={stageUrl(school, stage)}>{look.words.backlink(stage)}</a>

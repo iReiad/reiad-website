@@ -51,7 +51,7 @@ export default async function ReadHubLayout({
       bodyClass={look.bodyClass}
       skip={look.skip}
       footer={look.footer}
-      current="in-skills"
+      current={section === "cooking" ? "cooking" : "travel"}
     >
       {children}
     </SiteShell>

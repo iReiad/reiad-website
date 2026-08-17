@@ -69,16 +69,18 @@ export default function ToolsPage() {
               </span>
               <h2>Stock check: buy, hold or sell?
               </h2>
-              <p>Type a company's figures off its annual report and the price off
-             your broker's app. 
-                <span data-count="ratios">44
-                </span> ratios across
-             
-                <span data-count="pillars">6
-                </span> pillars,
-             weighted by the kind of investor you are, with every step of the
-             arithmetic shown, and a separate set for banks, where
-             debt-to-equity and EBITDA mean nothing.
+              {/* The spaces around the two counting slots are written
+                  as explicit entities. JSX collapses whitespace that
+                  sits between an element and a line break, so the
+                  sentence shipped as "app.44 ratios across6 pillars"
+                  the moment the page became a component. */}
+              <p>Type a company&apos;s figures off its annual report and the price off
+                your broker&apos;s app.{" "}
+                <span data-count="ratios">44</span>{" "}ratios across{" "}
+                <span data-count="pillars">6</span>{" "}pillars,
+                weighted by the kind of investor you are, with every step of the
+                arithmetic shown, and a separate set for banks, where
+                debt-to-equity and EBITDA mean nothing.
               </p>
               <p className="mono advanced-langs" lang="bn">সম্পূর্ণ বাংলায় পড়া যায়: এক ক্লিকে ভাষা বদলান।
               </p>
