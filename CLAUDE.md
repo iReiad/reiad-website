@@ -196,6 +196,13 @@ shows neither, and folding those three into a config would be a
 bigger knot than three readable copies. A row is drawn by the
 school; everything around it is shared.
 
+Two tests cover it, and they cover different halves.
+`aab/schools/progress.test.mjs` is the arithmetic and the keys;
+`aab/schools/hub.test.mjs` is the drawing, and it builds all three
+hubs in a real DOM against the markup out of `next/lib/school-hubs.ts`,
+because a hub that renders and is not finished looks exactly like
+one that is.
+
 **Every storage key is passed in by the school, spelled the way it
 has always been spelled.** That is not decoration, it is the whole
 reason the engine takes them as an argument rather than deriving
@@ -343,6 +350,11 @@ node aab/studio.test.mjs           # the editor, end to end (68 checks)
 node aab/schools/progress.test.mjs  # a school's ticks filed under a key that is
                                    # not the one in somebody's browser, and the
                                    # three schools' shared engine (119 checks)
+node aab/schools/hub.test.mjs      # a school hub that renders and is not finished:
+                                   # the ladder, the ring, the bar and the resume
+                                   # card, built against the markup the route
+                                   # serves (57 checks, needs linkedom, skips
+                                   # without)
 node functions/_lib/notion.test.mjs
 node scripts/schools.test.mjs        # a curriculum that lost a field, a lesson
                                      # body that changed, or a ladder that came
