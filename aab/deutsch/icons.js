@@ -1,7 +1,7 @@
 /* ============================================================
    icons.js: the little drawings for the German school.
 
-   Same family as /learn/icons.js and the same reason for
+   Same family as /money/icons.js and the same reason for
    existing: a shape survives a week away from the site in a way
    that "Teil 6" does not. Every Stufe and every Teil has one
    mark, always drawn the same way, and it appears everywhere

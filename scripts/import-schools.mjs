@@ -18,7 +18,7 @@
    With `--out` the file is written by this script, after the work
    is done, or not at all.
 
-   TRANSITION.md Stage 8, step 2. It reads the files that are the
+   archive/TRANSITION.md Stage 8, step 2. It reads the files that are the
    source of truth today and writes the rows that will be the
    source of truth later. It changes nothing: the files stay, the
    builders still read them, and the only thing that exists
@@ -33,7 +33,7 @@
 
    ---- the four schools are not one school ----
 
-   /learn/ has stages and sections. /deutsch/ has Stufen, Teile
+   /money/ has stages and sections. /deutsch/ has Stufen, Teile
    and a thirty day Arbeitsbuch. /quran/ makes the day itself the
    lesson and carries Arabic beside every Bangla line. /english/
    has terms and parts and a workbook of its own. They were
@@ -61,7 +61,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /* The prose these read is in `archive/schools/` as of
-   TRANSITION.md Stage 8 step 4. It left `aab/`, which is what
+   archive/TRANSITION.md Stage 8 step 4. It left `aab/`, which is what
    taking it off the site means: those modules were being uploaded
    and served at `/quran/content/dhap-1.js` and nothing had asked
    for one in months. The database is where a lesson's words live
@@ -80,13 +80,13 @@ const AAB = join(ROOT, "aab");
 
 export const SCHOOLS = [
   {
-    id: "learn",
-    dir: "learn",
+    id: "money",
+    dir: "money",
     /* The money school's stages. `MONEY_STAGES` is the array;
        `STAGES` is the export that names it. */
     stages: (m) => m.STAGES,
     /* What a section calls its children. Four schools, three
-       words: /learn/ and /quran/ say `lessons`, /deutsch/ says
+       words: /money/ and /quran/ say `lessons`, /deutsch/ says
        `teile` and /english/ says `parts`, because each one is
        written in the vocabulary of the thing it teaches. The
        first version of this file assumed `lessons` everywhere and
@@ -98,7 +98,7 @@ export const SCHOOLS = [
        later; this one was first and nobody went back to rename
        it, which is a good reason to read it from a table rather
        than to guess. */
-    bodies: (stage) => join(ARCHIVE, "learn", `${stage.slug}.js`),
+    bodies: (stage) => join(ARCHIVE, "money", `${stage.slug}.js`),
   },
   {
     id: "deutsch",
@@ -266,7 +266,7 @@ export function toSql(all, now) {
      neither is a thing to find out about afterwards. */
   const lines = [
     "-- Written by scripts/import-schools.mjs. Do not edit by hand.",
-    "-- The four curricula, as rows. See TRANSITION.md Stage 8.",
+    "-- The four curricula, as rows. See archive/TRANSITION.md Stage 8.",
     "-- Every statement is one line: D1's import reads them line by line.",
     /* Replaced wholesale rather than merged. While the files are
        still the source of truth this table is a copy, and a copy

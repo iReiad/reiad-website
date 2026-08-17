@@ -89,7 +89,7 @@ export async function onRequest(context) {
     POST: async () => {
       if (await throttle(context, "ask", 5, 30)) return fail("too-many", 429);
 
-      /* TRANSITION.md Stage 12, step 2: the same declaration the
+      /* archive/TRANSITION.md Stage 12, step 2: the same declaration the
          comments endpoint reads, with this endpoint's own
          minimum and its own reason. The two are the same handler
          with different nouns and they disagreed about both. */

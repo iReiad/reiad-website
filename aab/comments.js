@@ -6,7 +6,7 @@
      signed out    the thread, and a line saying what signing in
                    would let you do. Never a wall: every comment
                    already approved is readable by anybody, which
-                   is rule 7 in TRANSITION.md.
+                   is rule 7 in archive/TRANSITION.md.
      signed in     the same, plus a box.
      just posted   a note saying it is waiting to be approved,
                    because a comment that vanishes on submit looks
@@ -26,7 +26,7 @@
    piece that reads perfectly and has no thread, which is what
    rule 8 asks for.
 
-   TRANSITION.md, Stage 7.
+   archive/TRANSITION.md, Stage 7.
    ============================================================ */
 
 import { token, current } from "/account.js";

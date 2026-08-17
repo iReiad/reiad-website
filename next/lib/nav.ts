@@ -67,8 +67,8 @@ export const NAV: NavGroup[] = [
     items: [
       { label: "All skills", sub: "দক্ষতা", href: "/skills/index.html", icon: "skills", key: "skills" },
       {
-        label: "Money", sub: "টাকা ও শেয়ার", href: "/learn/index.html",
-        icon: "coins", key: "learn", kind: "কোর্স",
+        label: "Money", sub: "টাকা ও শেয়ার", href: "/money/index.html",
+        icon: "coins", key: "money", kind: "কোর্স",
         blurb: "বিও অ্যাকাউন্ট খোলা থেকে নিজে একটা কোম্পানি যাচাই করা পর্যন্ত, "
           + "ধাপে ধাপে সাজানো। সবচেয়ে বড় স্কুল, আর শুরুটা একদম শূন্য থেকে।",
       },

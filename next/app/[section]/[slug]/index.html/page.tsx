@@ -1,8 +1,8 @@
 /* ============================================================
    A stage's contents page, rendered from its rows.
 
-   TRANSITION.md Stage 11.7 step 2. Seventeen of the 251 files:
-   `/learn/<stage>/index.html`, `/deutsch/<stufe>/index.html`,
+   archive/TRANSITION.md Stage 11.7 step 2. Seventeen of the 251 files:
+   `/money/<stage>/index.html`, `/deutsch/<stufe>/index.html`,
    `/quran/<dhap>/index.html` and `/english/<term>/index.html`.
    It is the page a reader navigates the school by, and the one
    that says how much of it there is.
@@ -131,7 +131,7 @@ export default async function StagePage({ params }: { params: Params }) {
                 reads `data-*-progress` and `data-*-continue` off
                 these nodes exactly as it did when they were
                 files. They follow, one at a time. */}
-            {school === "learn" ? (
+            {school === "money" ? (
               <>
                 <div className="stage-progress-react">
                   <LadderMeter
@@ -258,9 +258,9 @@ export default async function StagePage({ params }: { params: Params }) {
           {/* The money school's stages each point at the full
               index, because its six ladders are picked from rather
               than walked through in order. */}
-          {school === "learn" ? (
+          {school === "money" ? (
             <p className="contents-footlink">
-              <a href="/learn/contents.html">সব বিষয় এক নজরে, পুরো সূচিপত্র →</a>
+              <a href="/money/contents.html">সব বিষয় এক নজরে, পুরো সূচিপত্র →</a>
             </p>
           ) : null}
 

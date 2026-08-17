@@ -2,7 +2,7 @@
    progress.js, what you've read, which days you've done, and
    where you were.
 
-   The same deal as /learn/progress.js, and deliberately the same
+   The same deal as /money/progress.js, and deliberately the same
    shape so that anyone reading one file understands the other.
    It is a separate module because it stores separate things
    under separate keys: finishing the money ladder should not

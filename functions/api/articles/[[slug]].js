@@ -42,7 +42,7 @@ const PUBLIC_COLUMNS =
    existed. Kept as a list rather than a free string because it
    becomes a URL prefix, and a URL prefix from a request body is
    how you end up serving /etc/passwd.html. */
-/* TRANSITION.md Stage 12, step 1: the list is `shared/rows.js`
+/* archive/TRANSITION.md Stage 12, step 1: the list is `shared/rows.js`
    now. It was written out here and again in the comments handler,
    and a mount added to one and not the other is a thread that can
    be attached to a section no article can be published into. */

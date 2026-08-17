@@ -1,7 +1,7 @@
 /* `/activation.js`, described just enough for the modules that
    have moved.
 
-   TRANSITION.md Stage 13. A module in `aab/src/` imports its
+   archive/TRANSITION.md Stage 13. A module in `aab/src/` imports its
    neighbours by the path the browser fetches them from,
    `/activation.js` and not `../activation.js`, because that is
    what ends up in the emitted file and what the browser has to

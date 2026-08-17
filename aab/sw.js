@@ -31,6 +31,17 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v83: The money school moved from /learn/ to /money/, which is
+        251 addresses and every one of them 301s. Every precached
+        path under the old mount is a new string: /money/reader.js
+        (the modal term reader, which was /learn/learn.js and was
+        never named for what it does), /money/curriculum.js and
+        /money/icons.js. A cached v82 shell would keep serving the
+        old three at addresses nothing answers any more, and the
+        modal reader failing is the eighteen glossary terms
+        navigating away instead of opening in place. /content.js,
+        /crumbs.js, /audience.js and /app.js all changed with it.
+
    v82: The shell. The header bar, its overlay menu and its Skills
         hover panel are gone; the menu is a rail down the left of
         every page, rendered on the server. /styles.css gained two
@@ -38,8 +49,8 @@
         lines with the three things it no longer draws, and six
         modules left the precache list because the pages that
         loaded them are rendered from the database now:
-        /recent.js, /home.js, /skills/skills.js, /learn/hub.js,
-        /learn/progress.js and /learn/contents.js. A cached v81
+        /recent.js, /home.js, /skills/skills.js, /money/hub.js,
+        /money/progress.js and /money/contents.js. A cached v81
         app.js would import two of those and 404, taking the
         palette with it, so this bump is load-bearing rather than
         tidy. /content.js changed too: the money school is an
@@ -53,12 +64,12 @@
         which is what stopped a page turning itself dark a moment
         after it loaded.
 
-   v80: TRANSITION.md Stage 13. /photo.js is built from
+   v80: archive/TRANSITION.md Stage 13. /photo.js is built from
         aab/src/photo.ts now. Same code, reindented by tsc, and a
         precached file that changed its bytes needs a bump even
         when it did not change its behaviour.
 
-   v79: TRANSITION.md Stage 13 and Stage 14. /api.js is built
+   v79: archive/TRANSITION.md Stage 13 and Stage 14. /api.js is built
         from aab/src/api.ts now, and /tailwind.css joins the
         precache list: a second stylesheet, built from
         aab/src/styles/, holding the theme tokens and whichever
@@ -79,7 +90,7 @@
         and the next real change to this file would then be
         invisible to them too.
 
-   v78: TRANSITION.md Stage 11.7. The four schools are Next.js
+   v78: archive/TRANSITION.md Stage 11.7. The four schools are Next.js
         routes and 247 committed pages have left aab/, six of them
         precached: both learn pages, the German hub and its first
         Stufe ladder, the Quranic Arabic hub and the English hub.
@@ -109,7 +120,7 @@
         beside the request than it does now that six depend on a
         Worker being up.
 
-   v77: TRANSITION.md Stage 11.5, finished. The home page and the
+   v77: archive/TRANSITION.md Stage 11.5, finished. The home page and the
         eight portfolio pages are Next.js routes, so "/" and
         "/index.html" leave the precache list: they are the shell
         this list was named after, and a page a Worker builds
@@ -123,7 +134,7 @@
         untouched and still precached in full, and the home page
         was never the thing being read on a train.
 
-   v76: TRANSITION.md Stage 11.4. The tools index and the stock
+   v76: archive/TRANSITION.md Stage 11.4. The tools index and the stock
         check are Next.js routes, so both leave the precache list.
         Their scripts do not: /tools/stock.js, stock.model.js and
         stock.i18n.js are still precached, because the page is
@@ -132,7 +143,7 @@
         who has opened the stock check once keeps the maths
         offline and needs the network for the page around it.
 
-   v75: TRANSITION.md Stage 11.5 again. /account.html and
+   v75: archive/TRANSITION.md Stage 11.5 again. /account.html and
         /skills/index.html are Next.js routes now, so they leave
         the precache list: a page a Worker builds is cached the
         first time it is fetched rather than at install. The
@@ -142,7 +153,7 @@
         schools' own hubs are still precached and still the thing
         a returning learner opens.
 
-   v74: TRANSITION.md Stage 11.5, and the colophon is gone. Both
+   v74: archive/TRANSITION.md Stage 11.5, and the colophon is gone. Both
         precached files that changed are small: content.js lost
         the colophon's PAGES entry, so a returning reader on the
         v73 shell would have it in the menu and the Ctrl+K palette
@@ -161,7 +172,7 @@
         about.html and contact.html are Next.js routes now and are
         not in this list: neither ever was.
 
-   v73: TRANSITION.md Stage 11.2. The last two article files leave
+   v73: archive/TRANSITION.md Stage 11.2. The last two article files leave
         the precache list: /cooking/onions.html and
         /travel/uk-visit-visa.html are rows, rendered by the
         Next.js Worker at the same addresses, and a page a Worker
@@ -186,7 +197,7 @@
         replaced. check-css.mjs is what found them, the moment the
         pages holding them left aab/.
 
-   v71: TRANSITION.md Stage 11.1. The three reading hubs are
+   v71: archive/TRANSITION.md Stage 11.1. The three reading hubs are
         rendered by the Next.js Worker now, so /insights.html,
         /cooking/index.html and /travel/index.html leave the
         precache list along with /reads.js, which drew the two
@@ -201,13 +212,13 @@
    v70: /insights.html changed, and it is precached. The subscribe
         box it carried as an inline module is a file now,
         /hub.js, so that this page and the Next.js route that
-        replaces it (TRANSITION.md Stage 11.1) run the same lines
+        replaces it (archive/TRANSITION.md Stage 11.1) run the same lines
         rather than two copies of them. A returning reader holding
         the v69 page would keep the inline copy, which still
         works; the reason for the bump is that the day the two
         stop agreeing is the day one of them is being edited.
 
-   v69: /learn/contents.html changed, and it is precached. The
+   v69: /money/contents.html changed, and it is precached. The
         money school's builder was emitting a nav that linked to
         Deutsch where the whole rest of the site links to Skills,
         so its 72 generated pages had been drifting away from
@@ -226,7 +237,7 @@
         the v67 stylesheet would keep the unreachable version of
         that menu.
 
-   v67: TRANSITION.md Stage 8. The Quran school's curriculum.js is
+   v67: archive/TRANSITION.md Stage 8. The Quran school's curriculum.js is
         precached and it changed: allLessons(), totalDays(),
         findDhap() and findByPath() take the ladder as an argument
         now, defaulting to this file's own, so a builder can hand
@@ -252,7 +263,7 @@
         a comment is whatever the poster typed.
 
    v64: the money ladder could not be reset, and now can. app.js
-        runs recordVisit() from /learn/progress.js on every page of
+        runs recordVisit() from /money/progress.js on every page of
         the site, and its selector claimed any article carrying a
         data-lesson-id. The Qur'an school's lessons and the English
         school's parts carry one too, so ninety pages of other
@@ -667,14 +678,14 @@
    /portfolio/ modules all changed together.
 
    v5: added /activation.js (imported by app.js via api.js and
-   progress.js) and the new /learn/contents.html. A cached v4
+   progress.js) and the new /money/contents.html. A cached v4
    app.js would fail to resolve the new import.
 
    v4: the Learn area was restructured, app.js gained three new
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v82";
+const VERSION = "v83";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -688,7 +699,7 @@ const RUNTIME = `runtime-${VERSION}`;
 const PRECACHE = [
   "/offline.html",
   "/styles.css",
-  /* The second stylesheet, TRANSITION.md Stage 14. Small (about
+  /* The second stylesheet, archive/TRANSITION.md Stage 14. Small (about
      1.7 KB gzipped against 72 for styles.css) and precached
      beside it for the same reason: a page that comes back offline
      with one of its two stylesheets missing is a page that looks
@@ -735,17 +746,17 @@ const PRECACHE = [
 
      Six names left this list in August 2026 and none of them is
      coming back: /recent.js, /home.js, /skills/skills.js,
-     /learn/hub.js, /learn/progress.js and /learn/contents.js.
+     /money/hub.js, /money/progress.js and /money/contents.js.
      Each drew a page in the browser that the server draws now,
      and `archive/shell-2026/README.md` is the table of which is
-     which. /learn/learn.js stayed: it is the modal term reader,
+     which. /money/reader.js stayed: it is the modal term reader,
      which is the one thing on those pages that really did need a
      browser. */
   "/tilt.js",
   "/news.js",
-  "/learn/learn.js",
-  "/learn/curriculum.js",
-  "/learn/icons.js",
+  "/money/reader.js",
+  "/money/curriculum.js",
+  "/money/icons.js",
   /* The German school. curriculum.js is not a nicety here: it is
      an import of content.js, which is an import of app.js and
      crumbs.js, so the shell is broken without it. The hub and the
@@ -803,7 +814,7 @@ const PRECACHE = [
 
 /* Addresses rather than files, precached the same way.
 
-   TRANSITION.md Stage 11.7. Every one of these is a page a Worker
+   archive/TRANSITION.md Stage 11.7. Every one of these is a page a Worker
    builds out of the database, so there is nothing in aab/ to hash
    and check-sw.mjs does not try: it checks that each one is a
    route worker.js actually forwards, which is the failure that
@@ -818,8 +829,8 @@ const PRECACHE = [
    the ones a reader actually opens, which is the same arrangement
    they had as files. */
 const RENDERED = [
-  "/learn/index.html",
-  "/learn/contents.html",
+  "/money/index.html",
+  "/money/contents.html",
   "/deutsch/index.html",
   "/deutsch/stufe-1/index.html",
   "/quran/index.html",

@@ -67,7 +67,7 @@ ${(a.topics ?? []).map((t) => `      <category>${esc(t)}</category>`).join("\n")
    asking search engines to index placeholders. They go in the
    moment they are written, with no other change needed here.
 
-   The starter guide's steps are anchors on /learn/, not pages, so
+   The starter guide's steps are anchors on /money/, not pages, so
    they are covered by the hub's own entry. */
 const lessons = allLessons().filter(
   (l) => l.status === "live" && !l.stage.inline
@@ -95,7 +95,7 @@ const parts = allParts().filter((p) => p.status === "live");
 const urls = [
   ...PAGES.filter((p) => !p.private).map((p) => ({ loc: p.url, priority: "0.8" })),
   ...articles.map((a) => ({ loc: `/insights/${a.slug}.html`, lastmod: a.date, priority: "0.9" })),
-  ...STAGES.map((s) => ({ loc: `/learn/${s.slug}/index.html`, priority: "0.8" })),
+  ...STAGES.map((s) => ({ loc: `/money/${s.slug}/index.html`, priority: "0.8" })),
   ...lessons.map((l) => ({ loc: l.url, priority: "0.7" })),
   ...STUFEN.map((s) => ({ loc: stufeUrl(s), priority: "0.8" })),
   ...workbooks.map((loc) => ({ loc, priority: "0.8" })),

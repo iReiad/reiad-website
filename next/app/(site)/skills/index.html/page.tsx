@@ -92,7 +92,7 @@ export default function SkillsPage() {
               ) : (
                 <GoCard
                   key={skill.href} href={skill.href}
-                  accent={skill.key === "learn" ? "var(--gold)" : "var(--green)"}
+                  accent={skill.key === "money" ? "var(--gold)" : "var(--green)"}
                   icon={skill.icon} chip={skill.kind} lang="bn"
                   title={skill.sub ?? skill.label} dek={skill.blurb}
                   go={skill.kind === "কোর্স" ? "কোর্সটা খুলুন" : "লেখাগুলো দেখুন"}

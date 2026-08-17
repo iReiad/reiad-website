@@ -9,7 +9,7 @@
 
    styles.css is one file in cascade order:
 
-       tokens … components … learn, deutsch, check, about …
+       tokens … components … money, deutsch, check, about …
 
    A school's layer therefore beats `components` everywhere, not
    only on that school's pages. So a class name the school
@@ -43,7 +43,7 @@
                                    site's, so this rule is not
                                    about German at all
 
-   ONLY THE SCHOOLS ARE CHECKED, and deliberately so. `learn`
+   ONLY THE SCHOOLS ARE CHECKED, and deliberately so. `money`
    holds the site's .hero, .band, .note and .section-label, which
    really are sitewide and really do live there; `check` and
    `work` share their furniture with the case studies on purpose.
@@ -147,7 +147,7 @@ const markup = new Map(
 
 /* And the schools' prose, which is not a file any more.
 
-   TRANSITION.md Stage 11.7. Until 247 committed pages left `aab/`,
+   archive/TRANSITION.md Stage 11.7. Until 247 committed pages left `aab/`,
    every class a lesson's body carries was in this repository as
    HTML and this file found it by walking. The bodies are rows in
    D1 now, rendered by a route, and the only copy of them that a
@@ -176,7 +176,7 @@ const markup = new Map(
        do not need to be; they start with the school's own folder,
        which is what `owns` matches on, and they read as an
        explanation when the check prints where a class is used. */
-    for (const school of ["learn", "deutsch", "quran", "english"]) {
+    for (const school of ["money", "deutsch", "quran", "english"]) {
       const prose = (rows.lessons ?? [])
         .filter((l) => l.school === school)
         .map((l) => l.body ?? "")

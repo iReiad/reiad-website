@@ -3,7 +3,7 @@
 
      node scripts/restore.test.mjs
 
-   Stage 2 of TRANSITION.md says a restore is only done when it
+   Stage 2 of archive/TRANSITION.md says a restore is only done when it
    "has been run once and produced the same rows". This is that
    run, and it is a test rather than a note in a file, so it is
    still true next month.

@@ -1,3 +1,24 @@
+> **Archived, 17 August 2026. History, not a plan.**
+>
+> This document ran the site from a folder of hand-written HTML to
+> a database and a React application, in fourteen stages between
+> the 15th and the 17th of August 2026. Every stage in it has
+> landed or been deliberately dropped, and the site is past it.
+>
+> It is kept because the reasoning is the useful part: why the
+> articles went into D1 and the calculators did not, why accounts
+> are Supabase and reading is Cloudflare, what each bug cost and
+> what caught it. Read it to find out **why** something is the way
+> it is.
+>
+> Do not read it to find out how the site works today. Addresses,
+> file paths and module names in here are the ones that were true
+> on the day each entry was written, and a good many of them have
+> moved since: the money school alone went from `/learn/` to
+> `/money/` with 251 addresses on the day this was archived.
+> `CLAUDE.md` is the current description of the site, and it is the
+> one that is kept true.
+
 # Where the writing lives, and where it is going
 
 ## Immediately next

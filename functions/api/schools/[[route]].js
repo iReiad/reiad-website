@@ -10,7 +10,7 @@
    PUT  /api/schools/<school>/<stage>/<lesson>    admin: write one
                                                   lesson's prose
 
-   TRANSITION.md Stage 8. The rows exist and this is the door they
+   archive/TRANSITION.md Stage 8. The rows exist and this is the door they
    are read through. Nothing on the site reads it yet: the pages
    are still generated from `curriculum.js` and the committed HTML
    is still what a reader gets. This is the half that has to exist

@@ -3,7 +3,7 @@
 
    Every one of these renders class names that already exist in
    `aab/styles.css`. Nothing here introduces a style, and that is
-   the constraint TRANSITION.md calls the most important one in
+   the constraint archive/TRANSITION.md calls the most important one in
    Stage 9: the port has to be invisible, or it cannot be judged.
 
    The old desk had all of these too, as functions returning DOM

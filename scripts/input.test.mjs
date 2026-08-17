@@ -4,7 +4,7 @@
 
        node scripts/input.test.mjs
 
-   TRANSITION.md Stage 12, step 2. `functions/_lib/input.js` is
+   archive/TRANSITION.md Stage 12, step 2. `functions/_lib/input.js` is
    now the one place that decides whether a request body is good
    enough, for three endpoints that used to decide it three ways.
    That makes it the kind of file where a small mistake is a

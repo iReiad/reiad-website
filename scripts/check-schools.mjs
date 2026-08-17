@@ -4,7 +4,7 @@
 
      node scripts/check-schools.mjs
 
-   TRANSITION.md Stage 8, step 4. Two files now say what a ladder
+   archive/TRANSITION.md Stage 8, step 4. Two files now say what a ladder
    is, and they are read by different people:
 
    - `aab/<school>/curriculum.js` is read by the BROWSER. Forty
@@ -119,7 +119,7 @@ for (const school of SCHOOLS) {
    ============================================================ */
 
 const FLATTEN = {
-  learn: (m, stage) => m.stageLessons(stage),
+  money: (m, stage) => m.stageLessons(stage),
   deutsch: (m, stage) => m.stufeTeile(stage),
   quran: (m, stage) => m.dhapLessons(stage),
   english: (m, stage) => m.termParts(stage),
@@ -128,7 +128,7 @@ const FLATTEN = {
 /* The stage's own contents page, under each school's name for it.
    Four exports, one address. */
 const STAGE_URL = {
-  learn: (m, stage) => m.stageUrl(stage),
+  money: (m, stage) => m.stageUrl(stage),
   deutsch: (m, stage) => m.stufeUrl(stage),
   quran: (m, stage) => m.dhapUrl(stage),
   english: (m, stage) => m.termUrl(stage),

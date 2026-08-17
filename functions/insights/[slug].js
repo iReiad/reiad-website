@@ -83,7 +83,7 @@ export function render(article, origin) {
           root.setAttribute("data-theme", theme);
         }
         var audience = localStorage.getItem("audience");
-        if (audience === "learn" || audience === "work") {
+        if (audience === "money" || audience === "work") {
           root.setAttribute("data-audience", audience);
         }
       } catch (e) {}
@@ -116,7 +116,7 @@ export function render(article, origin) {
         Reiad's Library
       </a>
       <nav aria-label="Main">
-        <a href="/learn/index.html" data-keep>Learn</a>
+        <a href="/money/index.html" data-keep>Learn</a>
         <a href="/skills/index.html" data-nav-skills${
           look === LOOK.insights ? "" : ' aria-current="true"'}>Skills</a>
         <a href="/tools/index.html">Tools</a>
@@ -162,7 +162,7 @@ ${article.body}
     <!-- The thread. Empty in the markup and filled by comments.js,
          which is loaded lazily and allowed to fail: a piece with a
          broken thread reads perfectly and has no thread, which is
-         rule 8 in TRANSITION.md. Approved comments are readable by
+         rule 8 in archive/TRANSITION.md. Approved comments are readable by
          anybody; signing in is only needed to add one. -->
     <section class="wrap wrap-narrow comments" id="comments"
              data-slug="${esc(article.slug)}" data-section="${esc(article.section)}"></section>

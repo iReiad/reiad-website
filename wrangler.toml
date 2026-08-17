@@ -124,11 +124,11 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   # The four schools, Stage 11.7. 247 pages left aab/ in the same
   # commit that added these, so with not_found_handling set the asset
   # router would answer every one of them with 404.html and the Worker
-  # would never be called: the whole of /learn/, /deutsch/, /quran/
+  # would never be called: the whole of /money/, /deutsch/, /quran/
   # and /english/ would 404 at once.
   #
-  # Deliberately NOT "/learn/*". That would take every module of every
-  # school through the Worker as well, /learn/learn.js and
+  # Deliberately NOT "/money/*". That would take every module of every
+  # school through the Worker as well, /money/reader.js and
   # /quran/curriculum.js among them, only to fall straight back to the
   # assets: a hop on every script of every page for nothing. The four
   # practice books are files still, and they are why the fall-through
@@ -136,13 +136,13 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   # matches the pattern below, the route declines it because it is in
   # no ladder, and fromNext() hands it to the asset router exactly as
   # before.
-  "/learn/index.html", "/deutsch/index.html", "/quran/index.html", "/english/index.html",
-  "/learn/contents.html",
+  "/money/index.html", "/deutsch/index.html", "/quran/index.html", "/english/index.html",
+  "/money/contents.html",
   # One pattern per school, not two. The suffixless form already
   # matches the .html one, so listing both is the overlap above: a
-  # star matches a dot as readily as anything else, and /learn/*/*
-  # covers /learn/stage/lesson.html as well as /learn/stage/lesson.
-  "/learn/*/*", "/deutsch/*/*", "/quran/*/*", "/english/*/*"]
+  # star matches a dot as readily as anything else, and /money/*/*
+  # covers /money/stage/lesson.html as well as /money/stage/lesson.
+  "/money/*/*", "/deutsch/*/*", "/quran/*/*", "/english/*/*"]
 
 # ---------- D1: the database everything dynamic runs on ----------
 # Articles, reader questions, subscribers, enquiries, view counts and

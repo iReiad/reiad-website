@@ -23,7 +23,7 @@
    Dates are local, not UTC. Somebody in Dhaka reading at 1am has
    turned up today, by any definition of "today" they would use.
 
-   TRANSITION.md, Stage 6: this rides on the same sync as the rest
+   archive/TRANSITION.md, Stage 6: this rides on the same sync as the rest
    of the progress, as a union, so two devices give the true set
    of days rather than whichever synced last.
    ============================================================ */

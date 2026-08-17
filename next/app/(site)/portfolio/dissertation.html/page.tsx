@@ -1,7 +1,7 @@
 /* ============================================================
    /portfolio/dissertation.html
 
-   Ported out of `aab/portfolio/dissertation.html` with TRANSITION.md Stage 11.3,
+   Ported out of `aab/portfolio/dissertation.html` with archive/TRANSITION.md Stage 11.3,
    words unchanged: this is one of the seven case studies.
 
    The numbers are not here and must not be. Every figure on this

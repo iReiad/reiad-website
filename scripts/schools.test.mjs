@@ -3,7 +3,7 @@
 
      node scripts/schools.test.mjs
 
-   TRANSITION.md Stage 8. Before any page is rendered from these
+   archive/TRANSITION.md Stage 8. Before any page is rendered from these
    rows, the rows have to be provably the same thing the files
    say. This runs the real SQL against real SQLite through
    `node:sqlite`, reads it back, rebuilds the shape
@@ -245,7 +245,7 @@ ok(`${empty} lesson(s) are not written yet, and are rows all the same`,
    on the primary key, and SQLite would have thrown above. This
    says so out loud, because the collision a person would actually
    make is across stages, which is allowed and must stay allowed:
-   `/learn/basics-2/inflation` and `/deutsch/stufe-1/inflation`
+   `/money/basics-2/inflation` and `/deutsch/stufe-1/inflation`
    are different pages. */
 const slugs = new Set(lessonsOut.map((l) => `${l.school}/${l.stage}/${l.slug}`));
 same("every lesson has its own address", lessonsOut.length, slugs.size);

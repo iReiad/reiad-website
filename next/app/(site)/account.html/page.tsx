@@ -1,7 +1,7 @@
 /* ============================================================
    /account.html
 
-   Ported out of `aab/account.html` with TRANSITION.md Stage 11.5,
+   Ported out of `aab/account.html` with archive/TRANSITION.md Stage 11.5,
    words unchanged. Personal, and not for a search engine: the
    robots tag it carried is in the metadata below rather than in
    the markup.

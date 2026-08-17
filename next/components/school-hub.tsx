@@ -1,7 +1,7 @@
 /* ============================================================
    school-hub.tsx: a school's front page, out of its rows.
 
-   TRANSITION.md Stage 11.8. `/learn/index.html` was 832 lines of
+   archive/TRANSITION.md Stage 11.8. `/money/index.html` was 832 lines of
    hand-written HTML: the eight starter steps written out as
    accordions, the ladder written out as eight cards, and a
    sentence saying how many lessons there were. All three were
@@ -107,7 +107,7 @@ export function MoneyHub({ school }: { school: School }) {
               {first.lessons.map((lesson, i) => (
                 /* The id is what the old hub's accordions carried,
                    so a link somebody saved to
-                   `/learn/index.html#step-papers` still lands on
+                   `/money/index.html#step-papers` still lands on
                    the thing it named. The page it points at is a
                    real page now; the anchor is the courtesy. */
                 <div key={lesson.slug} id={`step-${lesson.slug}`} className="hub-step">
@@ -232,7 +232,7 @@ export function MoneyHub({ school }: { school: School }) {
         <section className="hub-section" id="ekhon">
           <div className="deck deck-2">
             <GoCard
-              href="/learn/contents.html" accent="var(--green)" icon="book" lang="bn"
+              href="/money/contents.html" accent="var(--green)" icon="book" lang="bn"
               chip="পুরো তালিকা"
               title="সব লেখার তালিকা"
               dek="এক পাতায় প্রতিটা ধাপের প্রতিটা লেখা, নাম ধরে ধরে।"

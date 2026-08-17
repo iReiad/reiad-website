@@ -19,7 +19,7 @@
    Both are invisible to `wrangler.toml`, invisible to the parity
    test, and invisible to a reader, because an article renders
    perfectly with neither of them working. The whole Stage 10 note
-   in TRANSITION.md ends by saying so: the first thing to check
+   in archive/TRANSITION.md ends by saying so: the first thing to check
    after switching on is one `/_next/static/chunks/*.js` URL, and
    until this file existed there was nothing to check it with.
 

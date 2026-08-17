@@ -6,7 +6,7 @@
 
    A piece on this site can be a committed HTML file, a row in D1,
    or both, and the row wins at the URL. That is the whole of
-   Stage 3 in TRANSITION.md, and until this file existed nobody
+   Stage 3 in archive/TRANSITION.md, and until this file existed nobody
    could answer "which is which" without poking five URLs by hand.
    Stage 3 cannot be called done from a feeling.
 

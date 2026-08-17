@@ -12,9 +12,9 @@
      /build-meta.mjs                  sitemap.xml
 
    ------------------------------------------------------------
-   WHY THIS IS NOT IN /learn/curriculum.js
+   WHY THIS IS NOT IN /money/curriculum.js
 
-   /learn/ is the money school: eight stages about investing in
+   /money/ is the money school: eight stages about investing in
    Bangladesh, with risk labels, broker warnings and a starter
    guide about opening a BO account. German shares none of that
    vocabulary. Mounting it there would have meant a reader

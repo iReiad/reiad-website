@@ -4,7 +4,7 @@
 
        node scripts/check-api.mjs
 
-   TRANSITION.md Stage 12, step 4. `aab/api.js` knows every
+   archive/TRANSITION.md Stage 12, step 4. `aab/api.js` knows every
    endpoint by string:
 
        api("signals/react", { method: "POST", body })

@@ -14,7 +14,7 @@
    `aab/audience.js` kept two things: an `audience` of "learn" or
    "work", and a `track` of "finance" or "skills" that refined
    the first. The track existed because the learning half was two
-   libraries with two front doors, money at `/learn/` and
+   libraries with two front doors, money at `/money/` and
    everything else at `/skills/`. It is one library now: the
    money school is an entry in the skills list like the other
    five. So the refinement has nothing left to refine, and the

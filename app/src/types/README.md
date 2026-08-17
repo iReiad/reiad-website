@@ -1,6 +1,6 @@
 # The site's own modules, described
 
-**This directory is emptying, on purpose.** TRANSITION.md Stage 13:
+**This directory is emptying, on purpose.** archive/TRANSITION.md Stage 13:
 a module that moves to `aab/src/` as TypeScript emits its own
 declaration here, and the hand-written one is deleted in the same
 commit. `share-card.d.ts` is generated as of 16 August 2026 and

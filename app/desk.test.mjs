@@ -59,7 +59,7 @@ if (!chromium) {
 /* ---------- the shell the bundle mounts into ----------
 
    `/desk/index.html` and `/studio/index.html` are Next.js routes
-   as of TRANSITION.md Stage 11.6, so there is no file at either
+   as of archive/TRANSITION.md Stage 11.6, so there is no file at either
    address for this server to hand back. That is the right place
    for them and the wrong thing to drag into a browser test: the
    subject here is the bundle, and starting a Next server to get a
@@ -167,7 +167,7 @@ const FIXTURES = {
         created_at: ago(60), confirmed_at: ago(58) },
       { email: "two@example.com", status: "confirmed", lang: "en", source: "insights",
         created_at: ago(600), confirmed_at: ago(598) },
-      { email: "three@example.com", status: "pending", lang: "bn", source: "learn",
+      { email: "three@example.com", status: "pending", lang: "bn", source: "money",
         created_at: ago(6000), confirmed_at: null },
       { email: "four@example.com", status: "confirmed", lang: "en", source: "",
         created_at: ago(60000), confirmed_at: ago(59000) },

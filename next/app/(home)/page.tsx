@@ -120,7 +120,7 @@ export default function HomePage() {
             go="তালিকা দেখুন"
           />
           <GoCard
-            href="/learn/index.html" accent="var(--gold)" icon="coins" lang="bn"
+            href="/money/index.html" accent="var(--gold)" icon="coins" lang="bn"
             chip="সবচেয়ে বড়টা"
             title="টাকা ও শেয়ার"
             dek="হাতেখড়ি থেকে গবেষণা পর্যন্ত, ধাপে ধাপে।"

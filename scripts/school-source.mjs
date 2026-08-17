@@ -1,7 +1,7 @@
 /* ============================================================
    school-source.mjs: where a builder gets its curriculum.
 
-   TRANSITION.md Stage 8, step 3. The builders read the four
+   archive/TRANSITION.md Stage 8, step 3. The builders read the four
    `curriculum.js` modules today. This is the switch that lets one
    read the database instead, so that the two can be run against
    each other and the pages diffed.
@@ -118,7 +118,7 @@ async function fromD1(id, d1, from) {
 
 /** Where this build's curriculum comes from.
 
-    Three sources, and the default has moved. TRANSITION.md Stage
+    Three sources, and the default has moved. archive/TRANSITION.md Stage
     8 step 4: the prose is edited in the database now, so the
     files can no longer be what a build reads, or a lesson written
     in the Studio would never reach a page.

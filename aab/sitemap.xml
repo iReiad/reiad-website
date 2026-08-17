@@ -5,11 +5,11 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/index.html</loc>
+    <loc>https://reiad.co.uk/money/index.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/contents.html</loc>
+    <loc>https://reiad.co.uk/money/contents.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
@@ -101,275 +101,275 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/start/index.html</loc>
+    <loc>https://reiad.co.uk/money/start/index.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-1/index.html</loc>
+    <loc>https://reiad.co.uk/money/basics-1/index.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/index.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/index.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/index.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/index.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/inter-1/index.html</loc>
+    <loc>https://reiad.co.uk/money/inter-1/index.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/inter-2/index.html</loc>
+    <loc>https://reiad.co.uk/money/inter-2/index.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/inter-3/index.html</loc>
+    <loc>https://reiad.co.uk/money/inter-3/index.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/advanced/index.html</loc>
+    <loc>https://reiad.co.uk/money/advanced/index.html</loc>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/start/money-first.html</loc>
+    <loc>https://reiad.co.uk/money/start/money-first.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/start/papers.html</loc>
+    <loc>https://reiad.co.uk/money/start/papers.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/start/safest-first.html</loc>
+    <loc>https://reiad.co.uk/money/start/safest-first.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/start/bo-account.html</loc>
+    <loc>https://reiad.co.uk/money/start/bo-account.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/start/first-buy.html</loc>
+    <loc>https://reiad.co.uk/money/start/first-buy.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/start/make-a-rule.html</loc>
+    <loc>https://reiad.co.uk/money/start/make-a-rule.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/start/dont-get-cheated.html</loc>
+    <loc>https://reiad.co.uk/money/start/dont-get-cheated.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/start/where-next.html</loc>
+    <loc>https://reiad.co.uk/money/start/where-next.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/share.html</loc>
+    <loc>https://reiad.co.uk/money/terms/share.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/dse.html</loc>
+    <loc>https://reiad.co.uk/money/terms/dse.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/dsex.html</loc>
+    <loc>https://reiad.co.uk/money/terms/dsex.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/bo-account.html</loc>
+    <loc>https://reiad.co.uk/money/terms/bo-account.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/broker.html</loc>
+    <loc>https://reiad.co.uk/money/terms/broker.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/ipo.html</loc>
+    <loc>https://reiad.co.uk/money/terms/ipo.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/mutual-fund.html</loc>
+    <loc>https://reiad.co.uk/money/terms/mutual-fund.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/sanchayapatra.html</loc>
+    <loc>https://reiad.co.uk/money/terms/sanchayapatra.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/bond.html</loc>
+    <loc>https://reiad.co.uk/money/terms/bond.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/fdr.html</loc>
+    <loc>https://reiad.co.uk/money/terms/fdr.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/dividend.html</loc>
+    <loc>https://reiad.co.uk/money/terms/dividend.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/eps.html</loc>
+    <loc>https://reiad.co.uk/money/terms/eps.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/pe-ratio.html</loc>
+    <loc>https://reiad.co.uk/money/terms/pe-ratio.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/nav.html</loc>
+    <loc>https://reiad.co.uk/money/terms/nav.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/risk-return.html</loc>
+    <loc>https://reiad.co.uk/money/terms/risk-return.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/diversification.html</loc>
+    <loc>https://reiad.co.uk/money/terms/diversification.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/inflation.html</loc>
+    <loc>https://reiad.co.uk/money/terms/inflation.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/terms/compounding.html</loc>
+    <loc>https://reiad.co.uk/money/terms/compounding.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/supply-demand.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/supply-demand.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/news-and-price.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/news-and-price.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/interest-and-taka.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/interest-and-taka.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/war-and-shocks.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/war-and-shocks.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/crowd-behaviour.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/crowd-behaviour.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/when-to-buy.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/when-to-buy.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/when-to-sell.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/when-to-sell.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/why-hold.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/why-hold.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/cost-of-churn.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/cost-of-churn.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/sectors.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/sectors.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/share-categories.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/share-categories.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/commodities.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/commodities.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/complements-substitutes.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/complements-substitutes.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/bsec.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/bsec.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/exchanges-cdbl.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/exchanges-cdbl.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/bangladesh-bank.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/bangladesh-bank.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/amcs-icb.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/amcs-icb.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/choosing-a-broker.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/choosing-a-broker.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/reading-a-quote.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/reading-a-quote.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/apps-and-sites.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/apps-and-sites.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-2/watchlist.html</loc>
+    <loc>https://reiad.co.uk/money/basics-2/watchlist.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/dse-website.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/dse-website.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/annual-report.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/annual-report.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/official-sources.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/official-sources.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/keeping-records.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/keeping-records.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/income-statement.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/income-statement.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/balance-sheet.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/balance-sheet.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/cash-flow.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/cash-flow.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/ratios.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/ratios.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/red-flags.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/red-flags.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/a-thesis.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/a-thesis.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/news-vs-rumour.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/news-vs-rumour.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/case-study.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/case-study.html</loc>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://reiad.co.uk/learn/basics-3/your-own-biases.html</loc>
+    <loc>https://reiad.co.uk/money/basics-3/your-own-biases.html</loc>
     <priority>0.7</priority>
   </url>
   <url>

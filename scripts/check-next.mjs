@@ -9,7 +9,7 @@
    and a copy nobody checks is the failure this repository has
    written up more times than any other.
 
-   1. THE DRAWINGS on a Bangla reading card. `aab/learn/icons.js`
+   1. THE DRAWINGS on a Bangla reading card. `aab/money/icons.js`
       is a browser module served out of `aab/`, and Turbopack
       refuses to resolve above `next/`, which is the wall
       `shared/` exists to get round. Promoting the whole icon set
@@ -51,7 +51,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { icon } from "../aab/learn/icons.js";
+import { icon } from "../aab/money/icons.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
@@ -77,7 +77,7 @@ const inner = (name) => icon(name).replace(/^<svg[^>]*>|<\/svg>$/g, "");
 for (const name of ["cart", "book", "compass"]) {
   if (!cards.includes(inner(name))) {
     fail(`the "${name}" drawing in next/components/cards.tsx is not the one`
-      + " aab/learn/icons.js draws.",
+      + " aab/money/icons.js draws.",
       "Copy it across verbatim:",
       `  ${name}: \`${inner(name)}\`,`);
   }

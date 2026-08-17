@@ -2,7 +2,7 @@
    Vite, configured to fit a site that has never had a build step.
 
    THE OUTPUT IS COMMITTED, and that is not laziness. Every school
-   on this site is already generated and committed: `aab/learn/**`
+   on this site is already generated and committed: `aab/money/**`
    comes out of `build-lessons.mjs`, and CLAUDE.md's rule is "edit
    the source, never the output". This is the same arrangement with
    a different generator, so it needs no change to how the site
@@ -23,7 +23,7 @@
                                   system and the page loads it as
                                   it always has. React renders the
                                   same class names into the same
-                                  @layer rules. TRANSITION.md calls
+                                  @layer rules. archive/TRANSITION.md calls
                                   this the single most important
                                   constraint of Stage 9, so there
                                   is no CSS-in-JS, no Tailwind and
@@ -95,7 +95,7 @@ export default defineConfig({
          It used to emit one, from `src/index.html`, and that file
          was the desk's shell: the same head, header and footer as
          every other page of this site, hand-written twice. Both
-         shells are Next.js routes as of TRANSITION.md Stage 11.6,
+         shells are Next.js routes as of archive/TRANSITION.md Stage 11.6,
          so the only thing this build still has to produce is the
          script the route loads. Leave the HTML entry in and Vite
          writes a second answer to `/desk/index.html` on every

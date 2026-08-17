@@ -28,7 +28,7 @@
    do want the backup to be the whole truth, and it says what it
    is about to do before it does it.
 
-   TRANSITION.md, Stage 2.
+   archive/TRANSITION.md, Stage 2.
    ============================================================ */
 
 import { readFileSync } from "node:fs";

@@ -35,7 +35,7 @@
    A stage comes back with its own fields spread back out of
    `meta`, its sections attached, and its lessons inside them
    under the key that school uses for them: `lessons` for
-   /learn/ and /quran/, `teile` for /deutsch/, `parts` for
+   /money/ and /quran/, `teile` for /deutsch/, `parts` for
    /english/. That last detail is not decoration. Those keys are
    what the builders and the hubs index by, and a reader handing
    back `lessons` to a school that says `teile` is handing back
@@ -44,14 +44,14 @@
 
 /** What each school calls the things inside a section. */
 export const WITHIN = {
-  learn: "lessons",
+  money: "lessons",
   deutsch: "teile",
   quran: "lessons",
   english: "parts",
 };
 
 /** The schools, in the order the site lists them. */
-export const SCHOOL_IDS = ["learn", "deutsch", "quran", "english"];
+export const SCHOOL_IDS = ["money", "deutsch", "quran", "english"];
 
 export const isSchool = (id) => SCHOOL_IDS.includes(String(id));
 
@@ -219,7 +219,7 @@ export async function countsOf(d1, school) {
    hand a builder a ladder read out of D1 and let the file's own
    helpers decorate it.
 
-   TRANSITION.md Stage 11.7 needs the same arithmetic somewhere a
+   archive/TRANSITION.md Stage 11.7 needs the same arithmetic somewhere a
    Next.js route can reach, and `next/` cannot import out of its
    own directory. So it is written once, here, beside the reader
    that produces the objects it works on.
@@ -239,7 +239,7 @@ export async function countsOf(d1, school) {
 
     Almost always the stage's own folder. `basics-1` in the money
     school is the exception and it is a deliberate one: its
-    eighteen term pages were published at `/learn/terms/` for a
+    eighteen term pages were published at `/money/terms/` for a
     year before that school had a builder, and a URL somebody has
     shared does not move because the generator that writes it
     changed. The `base` in its meta is what says so. */
@@ -259,7 +259,7 @@ export const stageUrl = (school, stage) =>
     than the builder: its eight steps carried a layout of classes
     no article allowlist held. They were rewritten in the
     article's own vocabulary in August 2026 and they are eight
-    pages at `/learn/start/`. No stage on this site is inline. */
+    pages at `/money/start/`. No stage on this site is inline. */
 export const lessonUrl = (school, stage, lesson) =>
   `${stageBase(school, stage)}${lesson.slug}.html`;
 
@@ -268,7 +268,7 @@ export const lessonUrl = (school, stage, lesson) =>
     The id is the stage's slug and the lesson's, except for the
     money school's `basics-1`, where it is the lesson's alone.
     That is not a tidier scheme, it is the eighteen original term
-    pages: they were published at `/learn/terms/` and their
+    pages: they were published at `/money/terms/` and their
     progress was filed under a bare slug for a year before the
     stage that now holds them existed. Changing the key would not
     move anybody's ticks, it would lose them. */

@@ -1,7 +1,7 @@
 /* ============================================================
    /contact.html
 
-   Ported out of `aab/contact.html` with TRANSITION.md Stage 11.5.
+   Ported out of `aab/contact.html` with archive/TRANSITION.md Stage 11.5.
    The words are that page's, unchanged: a port that also rewrites
    the page cannot be judged against the page it replaced.
 
@@ -153,7 +153,7 @@ export default function ContactPage() {
                If there's a term the Learn hub is missing, or a calculation you keep
                having to do by hand, that's exactly the kind of thing worth building.
                 </p>
-                <a className="more" href="/learn/index.html">শেখার লাইব্রেরি →
+                <a className="more" href="/money/index.html">শেখার লাইব্রেরি →
                 </a>
               </div>
             </div>
@@ -168,7 +168,7 @@ export default function ContactPage() {
                 <p>No: I'm not a licensed adviser and it would be a bad idea from someone
                who doesn't know your income, debts, or what the money is for. What I can
                point you at is the reasoning: the 
-                  <a href="/learn/index.html">Learn hub
+                  <a href="/money/index.html">Learn hub
                   </a>
                   for the vocabulary and the 
                   <a href="/tools/index.html">calculators

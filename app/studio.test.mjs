@@ -58,7 +58,7 @@ if (!chromium) {
 /* ---------- the shell the bundle mounts into ----------
 
    `/desk/index.html` and `/studio/index.html` are Next.js routes
-   as of TRANSITION.md Stage 11.6, so there is no file at either
+   as of archive/TRANSITION.md Stage 11.6, so there is no file at either
    address for this server to hand back. That is the right place
    for them and the wrong thing to drag into a browser test: the
    subject here is the bundle, and starting a Next server to get a

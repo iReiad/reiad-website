@@ -29,7 +29,7 @@
    this path to get wrong. Every previous class of injection bug on
    this site came from parsing something; this parses nothing.
 
-   TRANSITION.md, Stage 7.
+   archive/TRANSITION.md, Stage 7.
    ============================================================ */
 
 import { all, db, one, run } from "../../_lib/db.js";
@@ -51,7 +51,7 @@ const MAX_BODY = 4000;
 const MIN_BODY = 2;
 
 /* Where a piece can live, so a thread cannot be attached to a made
-   up mount. TRANSITION.md Stage 12, step 1: this used to be a
+   up mount. archive/TRANSITION.md Stage 12, step 1: this used to be a
    second copy of the list in the articles endpoint, under a
    comment saying so, which is how a copy gets kept until it is
    not. */
@@ -127,7 +127,7 @@ export async function onRequest(context) {
          the questions endpoint uses two files away. */
       if (await throttle(context, "comment", 10, 60)) return fail("too-many", 429);
 
-      /* TRANSITION.md Stage 12, step 2. The three checks below
+      /* archive/TRANSITION.md Stage 12, step 2. The three checks below
          were three checks in three files with three different
          minimums; the declaration is what they are now, and the
          reasons are the ones this endpoint has always answered

@@ -1,7 +1,7 @@
 /* ============================================================
    progress.js, which days you have done and where you were.
 
-   The same deal as /deutsch/progress.js and /learn/progress.js,
+   The same deal as /deutsch/progress.js and /money/progress.js,
    and deliberately the same shape so that anyone reading one
    file understands the others. It is a separate module because
    it stores separate things under separate keys: finishing the

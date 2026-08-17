@@ -15,7 +15,7 @@
    already drifted once on the disclaimer's punctuation, which is
    invisible until you diff two rendered pages.
 
-   Stage 10 of TRANSITION.md makes it worse by adding a fourth
+   Stage 10 of archive/TRANSITION.md makes it worse by adding a fourth
    reader, the Next.js route, whose whole acceptance test is that
    it renders the same head tags as the Worker does. Two copies
    cannot pass that test for long, so there is one.
@@ -49,7 +49,7 @@ export const LOOK = {
       + "fees change: confirm the current details with the relevant institution "
       + "before acting on anything here.",
     back: { url: HUB.insights, kicker: "All insights", label: "Back to the index →" },
-    side: { url: "/learn/index.html", kicker: "শেখার লাইব্রেরি", label: "Learn hub, বাংলায় →" },
+    side: { url: "/money/index.html", kicker: "টাকা ও শেয়ার", label: "টাকার স্কুল, বাংলায় →" },
     footer: "Everything on this site is general education, not investment advice. "
       + "Do your own research before putting money anywhere.",
   },

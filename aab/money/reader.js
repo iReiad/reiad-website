@@ -1,10 +1,15 @@
 /* ============================================================
-   learn.js: the Learn hub's interactive layer.  (v2, bugfix)
+   reader.js: the modal term reader.  (v2, bugfix)
+
+   Named for what it does, as of 17 August 2026. It was
+   `/learn/learn.js`, which said neither: the hub it was named
+   after is rendered from the rows now, and the school it lived in
+   is at /money/.
+
    1. MODAL READER: links with class="term" open in a pop-up.
       Terms clicked inside the pop-up load in place, with a back
       button: the rabbit hole. Esc / ✕ / backdrop closes.
-   2. FILTER BOX on the hub index.
-   v2 fix: article pages live in /learn/terms/, so their internal
+   v2 fix: article pages live in /money/terms/, so their internal
    links are RELATIVE (e.g. "dividend.html"). When shown in the
    modal on a different page, those links used to resolve against
    the host page's URL and 404. Now every term link inside the
@@ -89,7 +94,7 @@
       // THE FIX: rewrite every term link inside the article to a
       // root-absolute path, resolved against the URL this article
       // was fetched from, so "dividend.html" inside
-      // /learn/terms/share.html becomes /learn/terms/dividend.html
+      // /money/terms/share.html becomes /money/terms/dividend.html
       // no matter which page is hosting the modal.
       const base = new URL(url, location.origin);
       article.querySelectorAll("a.term").forEach((a) => {

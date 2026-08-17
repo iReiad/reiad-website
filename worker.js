@@ -96,7 +96,7 @@ export const ARTICLE = /^\/(insights|cooking|travel)\/([a-z0-9-]+)(?:\.html)?$/i
 
 /* ---------- the Next.js allowlist ----------
 
-   TRANSITION.md, Stage 10. A second Worker renders these routes
+   archive/TRANSITION.md, Stage 10. A second Worker renders these routes
    through Next.js, and this one stays in front and keeps
    everything else. The allowlist is the whole of the switch:
    adding a path moves it, removing the path moves it back, and
@@ -181,21 +181,21 @@ export const NEXT_ROUTES = [
 
      A hub, the money school's full index, a stage's ladder and a
      lesson. The lesson pattern is last and is the loosest, so the
-     three above it have to come first: `/learn/contents.html`
+     three above it have to come first: `/money/contents.html`
      would otherwise be read as a lesson called `contents` in a
-     stage called `learn`, and 404. */
-  /^\/(learn|deutsch|quran|english)\/index\.html$/i,
-  /^\/learn\/contents\.html$/i,
-  /^\/(learn|deutsch|quran|english)\/[a-z0-9-]+\/index\.html$/i,
-  /^\/(learn|deutsch|quran|english)\/[a-z0-9-]+\/[a-z0-9-]+\.html$/i,
+     stage called `money`, and 404. */
+  /^\/(money|deutsch|quran|english)\/index\.html$/i,
+  /^\/money\/contents\.html$/i,
+  /^\/(money|deutsch|quran|english)\/[a-z0-9-]+\/index\.html$/i,
+  /^\/(money|deutsch|quran|english)\/[a-z0-9-]+\/[a-z0-9-]+\.html$/i,
   /* And the same address without the suffix, which nothing on
      this site links but the asset router used to answer: while
      these were files, `html_handling` served `dsex.html` for
-     `/learn/terms/dsex`, and a reader who saved that form would
+     `/money/terms/dsex`, and a reader who saved that form would
      have found it dead the day the file left. The route strips
      the suffix before it looks anything up, so both forms find
      the same row. */
-  /^\/(learn|deutsch|quran|english)\/[a-z0-9-]+\/[a-z0-9-]+$/i,
+  /^\/(money|deutsch|quran|english)\/[a-z0-9-]+\/[a-z0-9-]+$/i,
   /^\/_next\//,
 ];
 
@@ -221,7 +221,7 @@ const goesToNext = (path, env) =>
 
     None of them is a file any more (Stage 11.2), and this shape
     is still what two things rest on. `_redirects` holds a 301 for
-    `/insights/dsex`, a term that moved to `/learn/terms/`, and
+    `/insights/dsex`, a term that moved to `/money/terms/`, and
     that rule fires only because the route declines the slug. And
     a slug nobody has written gets this site's own 404 page rather
     than a framework one. */

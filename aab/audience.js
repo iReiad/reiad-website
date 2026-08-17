@@ -104,7 +104,7 @@ function apply(value, track = getTrack()) {
   if (value) root.setAttribute("data-audience", value);
   else root.removeAttribute("data-audience");
 
-  if (value === "learn" && TRACKS.has(track)) root.setAttribute("data-track", track);
+  if (value === "money" && TRACKS.has(track)) root.setAttribute("data-track", track);
   else root.removeAttribute("data-track");
 }
 
@@ -183,7 +183,7 @@ function buildSwitcher() {
   const paint = () => {
     const current = getAudience();
     button.textContent = switcherLabel(current);
-    button.dataset.to = current === "work" ? "learn" : "work";
+    button.dataset.to = current === "work" ? "money" : "work";
   };
   paint();
   button.addEventListener("click", () => {
@@ -206,7 +206,7 @@ function buildTrackSwitcher() {
   const paint = () => {
     const who = getAudience();
     const track = getTrack();
-    button.hidden = who !== "learn";
+    button.hidden = who !== "money";
     button.dataset.to = track === "skills" ? "finance" : "skills";
     button.textContent = track === "skills"
       ? "টাকা ও বিনিয়োগে ফিরে যান"
@@ -246,7 +246,7 @@ export function audienceBoost(item) {
   if (!who) return 0;
   const isSkill = SKILL_URLS.some((u) => item.url.startsWith(u));
   const isMoney =
-    item.url.startsWith("/learn") ||
+    item.url.startsWith("/money") ||
     item.url.startsWith("/tools") ||
     item.hint === "Learn" ||
     item.hint === "Tool";

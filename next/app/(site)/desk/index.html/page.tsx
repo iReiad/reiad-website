@@ -2,7 +2,7 @@
    /desk/index.html
 
    The desk's shell, ported out of the hand-written page Vite
-   used to build it from, with TRANSITION.md Stage 11.6.
+   used to build it from, with archive/TRANSITION.md Stage 11.6.
 
    ---- what moved, and what did not ----
 

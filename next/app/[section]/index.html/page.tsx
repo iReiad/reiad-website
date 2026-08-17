@@ -4,9 +4,9 @@
    `/cooking/index.html` and `/travel/index.html` are the Bangla
    reading hubs, built from the database.
 
-   `/learn/index.html` is the money school's front page, built
+   `/money/index.html` is the money school's front page, built
    from its rows: the ladder, the starter guide and how much of
-   each a reader has done. TRANSITION.md Stage 11.8.
+   each a reader has done. archive/TRANSITION.md Stage 11.8.
 
    `/deutsch/index.html`, `/quran/index.html` and
    `/english/index.html` are still the three hand-written pages
@@ -35,7 +35,7 @@ import { writtenPage, writtenMetadata } from "../../../components/written";
 type Params = { params: Promise<{ section: string }> };
 
 /** The one school rendered from its rows, today. */
-const BUILT = new Set(["learn"]);
+const BUILT = new Set(["money"]);
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { section } = await params;
@@ -46,12 +46,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       title: "টাকা ও শেয়ার · বাংলায় বিনিয়োগ শিক্ষা · Reiad's Library",
       description: "একদম শুরু থেকে: বাংলাদেশে বিনিয়োগ শুরু করার আট ধাপের হাতেখড়ি, তারপর ভিত্তি "
         + "থেকে গবেষণা পর্যন্ত সাজানো ধাপ, সবটাই সহজ বাংলায়।",
-      alternates: { canonical: `${origin}/learn/index.html` },
+      alternates: { canonical: `${origin}/money/index.html` },
       openGraph: {
         type: "website",
         title: "টাকা ও শেয়ার · Money",
         description: "বাংলাদেশে বিনিয়োগ শেখার পুরো পথ, একদম শুরু থেকে, বাংলায়।",
-        url: `${origin}/learn/index.html`,
+        url: `${origin}/money/index.html`,
         siteName: "Reiad's Library",
         locale: "bn_BD",
         images: [{ url: `${origin}/og/learn.png`, width: 1200, height: 630 }],

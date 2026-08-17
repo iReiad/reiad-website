@@ -3,7 +3,7 @@
 
    It was an inline module at the bottom of `aab/contact.html`,
    which is where a page's own behaviour goes while the page is a
-   file somebody wrote by hand. TRANSITION.md Stage 11.5 makes
+   file somebody wrote by hand. archive/TRANSITION.md Stage 11.5 makes
    that page a Next.js route, and a route cannot carry an inline
    module without putting these lines inside a template string,
    unreadable and unlintable. Same reasoning as `hub.js`.

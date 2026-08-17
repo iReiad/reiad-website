@@ -9,7 +9,7 @@
 
    ---- what this replaces, and what was wrong with it ----
 
-   Four modules: `aab/learn/progress.js`, and one each in the
+   Four modules: `aab/money/progress.js`, and one each in the
    three language schools. They agreed on nothing. The money
    school stored a set under `learn-read` and a bookmark under
    `learn-last`; the Qur'anic Arabic school called its set
@@ -47,19 +47,30 @@
    falls back to the stored one.
    ============================================================ */
 
-/** Where each school keeps its set. Three names for one idea, and
-    they are the names already in somebody's browser and in their
-    account, so they are kept exactly. `aab/sync.js` maps the same
-    three. */
+/** Where each school keeps its set.
+
+    These are storage keys, not identifiers, and the difference is
+    the whole of this table. The money school moved from /learn/ to
+    /money/ on 17 August 2026 and its key did NOT move with it: it
+    is still `learn-read`, because that string is what is in real
+    browsers and in real accounts today, and `CLAUDE.md` says the
+    plain truth about renaming one, that it does not move somebody's
+    ticks, it loses them. `aab/sync.js` maps the same names on to
+    `learn:progress` in Supabase, and it needed no change either.
+
+    So the odd-looking line below is the deliberate one: the school
+    is `money` and the key it reads is `learn-read`. A reader who
+    had done forty lessons before the move has done forty after
+    it. */
 const READ_KEY: Record<string, string> = {
-  learn: "learn-read",
+  money: "learn-read",
   deutsch: "deutsch-read",
   english: "english-read",
   quran: "quran-done",
 };
 
 const LAST_KEY: Record<string, string> = {
-  learn: "learn-last",
+  money: "learn-last",
   deutsch: "deutsch-last",
   english: "english-last",
   quran: "quran-last",
@@ -186,7 +197,7 @@ export { EVENT as PROGRESS_EVENT };
     file is the browser's and that one is the Worker's; the check
     that they agree is that both are four names long and this list
     is only ever read to look four keys up. */
-export const SCHOOLS = ["learn", "deutsch", "quran", "english"];
+export const SCHOOLS = ["money", "deutsch", "quran", "english"];
 
 /** The most recent bookmark of any school, for the front door.
 

@@ -1,7 +1,7 @@
 /* ============================================================
    _lib/input.js: what a bad request looks like, decided once.
 
-   TRANSITION.md Stage 12, step 2. The error SHAPE has been one
+   archive/TRANSITION.md Stage 12, step 2. The error SHAPE has been one
    thing since the beginning: `_lib/http.js` writes
    `{ ok: false, reason }` and every endpoint uses it. What was
    never one thing is the RULES, and the two handlers the plan

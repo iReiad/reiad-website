@@ -9,7 +9,7 @@
    being decoration.
 
    How the trail is worked out:
-     · /learn/** is read from the curriculum, so a lesson knows
+     · /money/** is read from the curriculum, so a lesson knows
        its stage and a stage knows the school. Rename a stage in
        curriculum.js and every crumb follows.
      · everything else comes from PAGES in /content.js, plus the
@@ -25,7 +25,7 @@
 
 import {
   STAGES, stageUrl, allLessons, findStage,
-} from "/learn/curriculum.js";
+} from "/money/curriculum.js";
 import {
   STUFEN, stufeUrl, allTeile, findStufe, workbookUrl,
 } from "/deutsch/curriculum.js";
@@ -49,8 +49,8 @@ const ENGLISH = () => (isBn() ? "মন থেকে ইংরেজি" : "Engl
 const SKILLS = () => (isBn() ? "দক্ষতা" : "Skills");
 const sectionName = (section) => (isBn() ? section.bn : section.en);
 
-/** Normalise the URL Pages might serve us: /learn, /learn/ and
-    /learn/index.html are all the same place. */
+/** Normalise the URL Pages might serve us: /learn, /money/ and
+    /money/index.html are all the same place. */
 /** The title of the piece being read.
 
     Off the page itself, rather than out of a list. It used to be
@@ -74,11 +74,11 @@ function normalise(path) {
   if (!/\.[a-z0-9]+$/i.test(p)) {
     // extensionless: either a folder index or a stripped .html
     const isFolder =
-      STAGES.some((s) => `/learn/${s.slug}` === p) ||
+      STAGES.some((s) => `/money/${s.slug}` === p) ||
       STUFEN.some((s) => `/deutsch/${s.slug}` === p) ||
       DHAPS.some((d) => `/quran/${d.slug}` === p) ||
       TERMS.some((t) => `/english/${t.slug}` === p) ||
-      p === "/learn" || p === "/deutsch" || p === "/quran" ||
+      p === "/money" || p === "/deutsch" || p === "/quran" ||
       p === "/english" || p === "/cooking" || p === "/travel" ||
       p === "/tools" || p === "/skills";
     return isFolder ? `${p}/index.html` : `${p}.html`;
@@ -93,13 +93,13 @@ function trailFor(path) {
   const crumbs = [{ name: HOME(), url: "/index.html" }];
 
   /* ---------- the Learn area ---------- */
-  if (p.startsWith("/learn/")) {
-    if (p === "/learn/index.html") return { crumbs, here: LEARN() };
+  if (p.startsWith("/money/")) {
+    if (p === "/money/index.html") return { crumbs, here: LEARN() };
 
-    crumbs.push({ name: LEARN(), url: "/learn/index.html" });
+    crumbs.push({ name: LEARN(), url: "/money/index.html" });
 
-    // a stage index: /learn/basics-2/index.html
-    const stageHere = STAGES.find((s) => p === `/learn/${s.slug}/index.html`);
+    // a stage index: /money/basics-2/index.html
+    const stageHere = STAGES.find((s) => p === `/money/${s.slug}/index.html`);
     if (stageHere) return { crumbs, here: `${stageHere.kicker} · ${stageHere.bn}` };
 
     // a lesson
@@ -112,8 +112,8 @@ function trailFor(path) {
       return { crumbs, here: lesson.bn };
     }
 
-    // an unlisted page under /learn/terms/, still give it its stage
-    if (p.startsWith("/learn/terms/")) {
+    // an unlisted page under /money/terms/, still give it its stage
+    if (p.startsWith("/money/terms/")) {
       const stage = findStage("basics-1");
       if (stage) crumbs.push({ name: `${stage.kicker} · ${stage.bn}`, url: stageUrl(stage) });
       return { crumbs, here: document.title.split("\u2014")[0].trim() };

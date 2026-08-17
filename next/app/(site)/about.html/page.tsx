@@ -1,7 +1,7 @@
 /* ============================================================
    /about.html
 
-   Ported out of `aab/about.html` with TRANSITION.md Stage 11.5,
+   Ported out of `aab/about.html` with archive/TRANSITION.md Stage 11.5,
    words unchanged.
 
    ---- the tally, and why it is still filled in the browser ----
@@ -177,13 +177,13 @@ export default function AboutPage() {
            the figures cannot drift from the site they describe. */}
           <section className="no-label">
             <div className="tally" id="tally">
-              <a className="tally-item" href="/learn/index.html" data-keep>
+              <a className="tally-item" href="/money/index.html" data-keep>
                 <b data-tally="lessons">–
                 </b>
                 <span>lessons in the Bangla library
                 </span>
               </a>
-              <a className="tally-item" href="/learn/index.html" data-keep>
+              <a className="tally-item" href="/money/index.html" data-keep>
                 <b data-tally="stages">–
                 </b>
                 <span>stages, starter to research level

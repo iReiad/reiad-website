@@ -10,7 +10,7 @@
    asked for the second thing. The App Router sends its runtime and
    router to every page whatever the tree contains, about 170 KB
    gzipped, and there is no supported way to stop it. That cost was
-   measured and accepted; see Stage 10 in TRANSITION.md. What being
+   measured and accepted; see Stage 10 in archive/TRANSITION.md. What being
    server-only buys is that none of the cost grows with this file,
    and that the page is complete before any of it runs.
 
@@ -110,7 +110,7 @@ export default async function ArticlePage({ params }: Params) {
       {/* The thread. Empty in the markup and filled by comments.js,
           which is loaded lazily and allowed to fail: a piece with a
           broken thread reads perfectly and has no thread, which is
-          rule 8 in TRANSITION.md. Approved comments are readable by
+          rule 8 in archive/TRANSITION.md. Approved comments are readable by
           anybody; signing in is only needed to add one. */}
       <section className="wrap wrap-narrow comments" id="comments"
                data-slug={article.slug} data-section={article.section} />
