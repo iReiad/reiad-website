@@ -43,7 +43,20 @@ const SRC = join(ROOT, "aab", "src");
     Listed rather than globbed, so that adding one is a line
     somebody wrote and the check below knows what to compare
     without guessing. */
-export const MODULES = ["share-card", "api", "photo"];
+export const MODULES = [
+  "share-card", "api", "photo",
+  /* The account's own four, moved 17 August 2026 with the work
+     that added them. They are the first modules here that import
+     each other: `keep` imports `saved`, and `tsconfig.json` maps
+     `/saved.js` at the SOURCE rather than at a declaration, so
+     there is one description of that module and it is the module.
+
+     They emit declarations into `app/src/types/` like the three
+     above. Nothing in `app/` imports them today, which is not a
+     reason to throw the declarations away: the desk is the next
+     thing that will want to know what a saved scenario is. */
+  "prefs", "saved", "checkpoints", "keep", "sync", "signin", "account-page",
+];
 
 /** Compile into a temporary directory and read the results back.
 

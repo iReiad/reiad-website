@@ -38,6 +38,7 @@
    Signed out it is simply a local preference, which is what it
    was before this file existed, and every page still works.
    ============================================================ */
+
 /* One key, holding all four, because they are read together on
    every page and four keys would be four reads in a blocking
    inline script. `theme` is the exception and stays its own key:
@@ -45,34 +46,75 @@
    it for as long, and CLAUDE.md is unambiguous about renaming a
    key somebody's browser already holds. */
 export const PREFS_KEY = "reader-prefs";
+
+/** One option of one preference. `size` and `ch` are the values
+    that reach the stylesheet, and they are strings because that
+    is what a custom property is: writing `1.12` as a number here
+    would be a number this file then had to stringify at the one
+    place it is used. */
+export interface PrefOption {
+  readonly id: string;
+  readonly label: string;
+  readonly note?: string;
+  readonly size?: string;
+  readonly ch?: string;
+}
+
 export const SCALES = [
-    { id: "small", label: "Compact", note: "more on a screen", size: "0.94" },
-    { id: "normal", label: "Normal", note: "what this site has always been", size: "1" },
-    { id: "large", label: "Comfortable", note: "easier on the eyes", size: "1.12" },
-];
+  { id: "small", label: "Compact", note: "more on a screen", size: "0.94" },
+  { id: "normal", label: "Normal", note: "what this site has always been", size: "1" },
+  { id: "large", label: "Comfortable", note: "easier on the eyes", size: "1.12" },
+] as const satisfies readonly PrefOption[];
+
 /* The middle one is the `--measure` this site has always used,
    which is why it is 66 and not a round number: the two either
    side are steps away from what is already there rather than a
    scale invented around it. */
 export const MEASURES = [
-    { id: "narrow", label: "Narrow", note: "about 56 characters", ch: "56ch" },
-    { id: "normal", label: "Normal", note: "about 66 characters", ch: "66ch" },
-    { id: "wide", label: "Wide", note: "about 78 characters", ch: "78ch" },
-];
+  { id: "narrow", label: "Narrow", note: "about 56 characters", ch: "56ch" },
+  { id: "normal", label: "Normal", note: "about 66 characters", ch: "66ch" },
+  { id: "wide", label: "Wide", note: "about 78 characters", ch: "78ch" },
+] as const satisfies readonly PrefOption[];
+
 export const THEMES = [
-    { id: "system", label: "Follow my system" },
-    { id: "light", label: "Always light" },
-    { id: "dark", label: "Always dark" },
-];
+  { id: "system", label: "Follow my system" },
+  { id: "light", label: "Always light" },
+  { id: "dark", label: "Always dark" },
+] as const satisfies readonly PrefOption[];
+
 export const LANGS = [
-    { id: "bn", label: "বাংলা", note: "the calculators open in Bangla" },
-    { id: "en", label: "English", note: "the calculators open in English" },
-];
-const DEFAULTS = { text: "normal", measure: "normal", lang: "bn" };
-const known = (list, value, fallback) => (list.some((x) => x.id === value) ? value : fallback);
+  { id: "bn", label: "বাংলা", note: "the calculators open in Bangla" },
+  { id: "en", label: "English", note: "the calculators open in English" },
+] as const satisfies readonly PrefOption[];
+
+/* The four settings, as the types they can actually hold. Derived
+   from the tables above rather than written out again: a fifth
+   scale added to SCALES is a fifth `Scale` without anybody
+   remembering to widen a union, and a typo in one of the two
+   lists stops compiling instead of quietly becoming a preference
+   that never matches. */
+export type Scale = (typeof SCALES)[number]["id"];
+export type Measure = (typeof MEASURES)[number]["id"];
+export type Theme = (typeof THEMES)[number]["id"];
+export type Lang = (typeof LANGS)[number]["id"];
+
+export interface Prefs {
+  text: Scale;
+  measure: Measure;
+  theme: Theme;
+  lang: Lang;
+}
+
+const DEFAULTS = { text: "normal", measure: "normal", lang: "bn" } as const;
+
+const known = <T extends string>(
+  list: readonly PrefOption[], value: unknown, fallback: T,
+): T => (list.some((x) => x.id === value) ? value as T : fallback);
+
 /* ============================================================
    Reading and writing
    ============================================================ */
+
 /** What this device holds, with anything unrecognised replaced.
 
     Filtering on read rather than migrating on write, which is the
@@ -81,32 +123,32 @@ const known = (list, value, fallback) => (list.some((x) => x.id === value) ? val
     fixes a device the first time it is opened. A preference that
     arrived from a newer version of this file, or from somebody
     editing localStorage, is simply not one of the options. */
-export function readPrefs() {
-    let stored = {};
-    try {
-        stored = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}") || {};
-    }
-    catch {
-        stored = {};
-    }
-    return {
-        text: known(SCALES, stored.text, DEFAULTS.text),
-        measure: known(MEASURES, stored.measure, DEFAULTS.measure),
-        lang: known(LANGS, stored.lang, DEFAULTS.lang),
-        /* Not stored here, and read from where it has always lived so
-           that this file and `/app.js` cannot disagree about it. */
-        theme: readTheme(),
-    };
+export function readPrefs(): Prefs {
+  let stored: Partial<Record<keyof Prefs, unknown>> = {};
+  try {
+    stored = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}") || {};
+  } catch {
+    stored = {};
+  }
+  return {
+    text: known(SCALES, stored.text, DEFAULTS.text),
+    measure: known(MEASURES, stored.measure, DEFAULTS.measure),
+    lang: known(LANGS, stored.lang, DEFAULTS.lang),
+    /* Not stored here, and read from where it has always lived so
+       that this file and `/app.js` cannot disagree about it. */
+    theme: readTheme(),
+  };
 }
-function readTheme() {
-    try {
-        const t = localStorage.getItem("theme");
-        return t === "dark" || t === "light" ? t : "system";
-    }
-    catch {
-        return "system";
-    }
+
+function readTheme(): Theme {
+  try {
+    const t = localStorage.getItem("theme");
+    return t === "dark" || t === "light" ? t : "system";
+  } catch {
+    return "system";
+  }
 }
+
 /**
  * Write some of them, apply them, and say so.
  *
@@ -117,37 +159,35 @@ function readTheme() {
  * than an addition, and "the union of two devices' text sizes" is
  * not a size.
  */
-export function savePrefs(patch) {
-    const next = { ...readPrefs(), ...patch };
-    /* The tools' own key, written here so that one choice is one
-       choice. `stock.js` reads it before its first render and has
-       since long before there were accounts, so this needs nothing
-       of that file and cannot drift from it: there is one key. */
-    if (patch.lang !== undefined) {
-        try {
-            localStorage.setItem("tool-lang", next.lang);
-        }
-        catch { /* private mode */ }
-    }
-    if (patch.theme !== undefined) {
-        try {
-            if (next.theme === "system")
-                localStorage.removeItem("theme");
-            else
-                localStorage.setItem("theme", next.theme);
-        }
-        catch { /* private mode: it holds for this page */ }
-    }
+export function savePrefs(patch: Partial<Prefs>): Prefs {
+  const next = { ...readPrefs(), ...patch };
+
+  /* The tools' own key, written here so that one choice is one
+     choice. `stock.js` reads it before its first render and has
+     since long before there were accounts, so this needs nothing
+     of that file and cannot drift from it: there is one key. */
+  if (patch.lang !== undefined) {
+    try { localStorage.setItem("tool-lang", next.lang); } catch { /* private mode */ }
+  }
+
+  if (patch.theme !== undefined) {
     try {
-        localStorage.setItem(PREFS_KEY, JSON.stringify({
-            text: next.text, measure: next.measure, lang: next.lang, ts: Date.now(),
-        }));
-    }
-    catch { /* private mode */ }
-    applyPrefs(next);
-    dispatchEvent(new CustomEvent("prefs:changed", { detail: next }));
-    return next;
+      if (next.theme === "system") localStorage.removeItem("theme");
+      else localStorage.setItem("theme", next.theme);
+    } catch { /* private mode: it holds for this page */ }
+  }
+
+  try {
+    localStorage.setItem(PREFS_KEY, JSON.stringify({
+      text: next.text, measure: next.measure, lang: next.lang, ts: Date.now(),
+    }));
+  } catch { /* private mode */ }
+
+  applyPrefs(next);
+  dispatchEvent(new CustomEvent("prefs:changed", { detail: next }));
+  return next;
 }
+
 /* ============================================================
    Putting them on the page
 
@@ -157,23 +197,27 @@ export function savePrefs(patch) {
    rendered after it ran, and the boot script that runs before the
    first paint could not walk one anyway.
    ============================================================ */
-export function applyPrefs(prefs = readPrefs()) {
-    const root = document.documentElement;
-    const scale = SCALES.find((s) => s.id === prefs.text) ?? SCALES[1];
-    const measure = MEASURES.find((m) => m.id === prefs.measure) ?? MEASURES[1];
-    root.style.setProperty("--read-scale", scale.size);
-    root.style.setProperty("--read-measure", measure.ch);
-    if (prefs.theme === "light" || prefs.theme === "dark") {
-        root.setAttribute("data-theme", prefs.theme);
-    }
-    else {
-        root.removeAttribute("data-theme");
-    }
+
+export function applyPrefs(prefs: Prefs = readPrefs()): void {
+  const root = document.documentElement;
+  const scale = SCALES.find((s) => s.id === prefs.text) ?? SCALES[1];
+  const measure = MEASURES.find((m) => m.id === prefs.measure) ?? MEASURES[1];
+
+  root.style.setProperty("--read-scale", scale.size);
+  root.style.setProperty("--read-measure", measure.ch);
+
+  if (prefs.theme === "light" || prefs.theme === "dark") {
+    root.setAttribute("data-theme", prefs.theme);
+  } else {
+    root.removeAttribute("data-theme");
+  }
 }
+
 /* A change arriving from another device through sync.js, or from
    the account page in another tab. The event is the one sync.js
    announces for this key. */
 addEventListener("prefs:sync", () => applyPrefs(), { passive: true });
+
 /* And on load, for the six pages that are files rather than
    routes and therefore have no boot script of the shell's. It is
    a no-op everywhere else: the boot script has already set the
