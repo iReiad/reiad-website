@@ -167,15 +167,24 @@ function paintButton(button) {
 }
 
 export async function initSignIn() {
-  const header = document.querySelector(".header-inner");
-  if (!header) return;
+  /* `.top-tools` is the little group at the right end of the bar,
+     and it is the same class on both bars this site has: the top
+     bar every React page renders, and the slim bar the four
+     practice books and the two error pages carry.
+
+     It used to be `.header-inner`, the whole of the old header
+     row. That element went with the header in August 2026, and a
+     selector that matches nothing is a sign-in button that is
+     simply not there: no error, no gap, nothing to notice. */
+  const bar = document.querySelector(".top-tools");
+  if (!bar) return;
 
   const button = el("button", { className: "icon-btn account-btn", type: "button" });
   button.addEventListener("click", openPanel);
 
   /* After the theme toggle, which is the last thing in the row, so
-     the header's order does not change for anyone used to it. */
-  header.append(button);
+     the order does not change for anyone used to it. */
+  bar.append(button);
   paintButton(button);
 
   document.addEventListener("account:changed", () => paintButton(button));

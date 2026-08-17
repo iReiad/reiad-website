@@ -60,7 +60,8 @@ export default async function ReadingLayout({
       bodyClass={look.bodyClass}
       skip={look.skip}
       footer={look.footer}
-      current={article.section === "insights" ? "insights" : "in-skills"}
+      current={article.section === "insights" ? "insights"
+        : article.section === "cooking" ? "cooking" : "travel"}
       beforeMain={<div className="read-progress" aria-hidden="true" />}
       scripts={<SiteScripts srcs={[{ src: "/read-aloud.js", classic: true }]} />}
     >
@@ -103,10 +104,11 @@ export function SchoolShell({ school, children }: { school: string; children: Re
          alternative is a shell that guesses.
 
          The money school is the one with a shell script, and it
-         is not a tidier arrangement: `page()` in
-         `build-lessons.mjs` writes `/learn/learn.js` into all
-         ninety-one of its pages, and its ladder pages add
-         `/learn/stage.js` on top. */
+         is the modal term reader rather than anything to do with
+         progress: `/learn/learn.js` is what makes a `.term` link
+         open the glossary in a panel instead of navigating away.
+         Its progress moved to `components/progress.tsx` with the
+         hub. */
       scripts={
         <>
           {school === "learn" ? <ModalReader /> : null}

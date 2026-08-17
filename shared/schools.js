@@ -79,6 +79,11 @@ const lessonFrom = (row) => spread(row, {
   bn: row.title,
   minutes: row.minutes,
   status: row.status,
+  /* Only where the query asked for it. `lessonOf()` selects the
+     body itself and has no such column, so the field is absent
+     there rather than false, which is the honest answer to "has
+     this been written" from a query that did not ask. */
+  ...(row.written === undefined ? {} : { written: Boolean(row.written) }),
 });
 
 /* ---------- reading ---------- */
@@ -102,12 +107,20 @@ export async function stagesOf(d1, school) {
     d1.prepare(
       `SELECT * FROM school_sections WHERE school = ? ORDER BY stage, position`
     ).bind(school).all(),
-    /* Without the body. A ladder page names 89 lessons and needs
-       none of their text, and the money school's prose alone is
-       most of a megabyte. The body is fetched one lesson at a
-       time, by the page that is actually going to show it. */
+    /* Without the body, but with whether there is one. A ladder
+       page names 89 lessons and needs none of their text, and the
+       money school's prose alone is most of a megabyte. The body
+       is fetched one lesson at a time, by the page that is
+       actually going to show it.
+
+       `written` is the one thing about the prose a ladder does
+       want: a hub that says how much of a school exists has to
+       count the lessons that have words in them, and a lesson can
+       be live and empty. It is computed by the database, never by
+       counting what came back. */
     d1.prepare(
-      `SELECT school, stage, slug, section, position, title, minutes, status, meta
+      `SELECT school, stage, slug, section, position, title, minutes, status, meta,
+              CASE WHEN body <> '' THEN 1 ELSE 0 END AS written
          FROM school_lessons WHERE school = ? ORDER BY stage, position`
     ).bind(school).all(),
   ]);
@@ -239,16 +252,16 @@ export const stageUrl = (school, stage) =>
 
 /** A lesson's page.
 
-    An `inline` stage has no pages: its lessons are sections of a
-    hand-written hub and their addresses are anchors in it. One
-    stage is like that, the money school's starter guide, and the
-    reason is the sanitiser rather than the builder: its eight
-    steps carry a layout of classes that no article allowlist
-    holds. `CLAUDE.md` says why at length. */
+    There used to be a branch here for an `inline` stage, whose
+    lessons were sections of a hand-written hub rather than pages
+    of their own. The money school's starter guide was the only
+    one, and the reason it was inline was the sanitiser rather
+    than the builder: its eight steps carried a layout of classes
+    no article allowlist held. They were rewritten in the
+    article's own vocabulary in August 2026 and they are eight
+    pages at `/learn/start/`. No stage on this site is inline. */
 export const lessonUrl = (school, stage, lesson) =>
-  stage.inline
-    ? `/${school}/index.html#step-${lesson.slug}`
-    : `${stageBase(school, stage)}${lesson.slug}.html`;
+  `${stageBase(school, stage)}${lesson.slug}.html`;
 
 /** Progress is stored per lesson under a stable id.
 

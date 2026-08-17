@@ -1,12 +1,11 @@
 /* ============================================================
    shell.tsx: the page around the page.
 
-   The head, the header and the footer, once. Four routes render
-   them now, an article and the three reading hubs, and the head
-   is the part where a second copy costs the most: a canonical
-   link, an Open Graph tag or the webfont URL written twice drifts
-   the day one of them is edited, which is the whole argument of
-   `shared/look.js` one level up.
+   The head, the rail, the top bar and the footer, once. Every
+   route renders them, and the head is where a second copy costs
+   the most: a canonical link, an Open Graph tag or the webfont
+   URL written twice drifts the day one of them is edited, which
+   is the whole argument of `shared/look.js` one level up.
 
    What is NOT in here is anything a route states about itself.
    The title, the description, the canonical link and the share
@@ -14,60 +13,85 @@
    owns the head and hoists those tags itself. This file holds the
    furniture: the things every page of this site carries whatever
    is written on it.
+
+   ---- the shape, and what changed ----
+
+   Until August 2026 this was a header bar with seven links, an
+   overlay menu built in JavaScript, and a three-line footer. The
+   nav is a rail down the left now (`sidebar.tsx`), the bar at the
+   top carries the audience switch and nothing else
+   (`topbar.tsx`), and the footer spells the whole site out
+   (`footer.tsx`). All three read one table, `lib/nav.ts`.
+
+   Two elements are deliberately not `<header>` and `<footer>` as
+   direct children of `<body>`: `styles.css` has rules for
+   `body > header` and `body > footer` going back to the first
+   version of this site, and a shell that half-matched them would
+   be two designs fighting. The rail is an `<aside>`, the footer
+   sits inside the scrolling column, and the old rules match
+   nothing.
    ============================================================ */
 
 import type { ReactNode } from "react";
 import { FONTS, LOOK } from "@reiad/shared/look";
 import { SiteScripts } from "./scripts";
+import { Sidebar, DrawerBackdrop } from "./sidebar";
+import { TopBar } from "./topbar";
+import { SiteFooter } from "./footer";
 
 /* Before the first paint, and therefore inline and blocking.
 
-   Two preferences, both stored by the site's own scripts and both
-   affecting layout: the theme, or a dark-mode reader sees a white
-   flash; and the audience, which reorders the header's nav for
+   Three preferences now, all stored by the site's own scripts and
+   all affecting layout: the theme, or a dark-mode reader sees a
+   white flash; the audience, which reorders the rail's groups for
    somebody who has said they are here for work rather than to
-   learn. A page that restores the first and not the second shows
-   the nav jumping about after load, which is the same bug wearing
-   a different hat.
+   learn; and whether the rail is folded away, which is a 190px
+   change to the width of everything. A page that restores one and
+   not the others shows the furniture rearranging itself after
+   load, which is the same bug wearing three hats.
 
-   It is the first thing inside <body> rather than in <head>, which
-   is not where the Worker puts it. App Router owns the head and
-   hoists only the tags it knows about; a blocking inline script is
-   not one of them. First-child-of-body runs before the browser has
-   painted anything, which is the property that matters. */
+   It is the first thing inside <body> rather than in <head>,
+   which is not where the Worker puts it. App Router owns the head
+   and hoists only the tags it knows about; a blocking inline
+   script is not one of them. First-child-of-body runs before the
+   browser has painted anything, which is the property that
+   matters. */
 const BOOT = `(function(){var d=document.documentElement;try{`
   + `var t=localStorage.getItem("theme");`
   + `if(t==="dark"||t==="light")d.setAttribute("data-theme",t);`
   + `var a=localStorage.getItem("audience");`
-  + `if(a==="learn"||a==="work")d.setAttribute("data-audience",a)}catch(e){}})()`;
+  + `if(a==="learn"||a==="work")d.setAttribute("data-audience",a);`
+  + `var r=localStorage.getItem("rail");`
+  + `d.setAttribute("data-rail",r==="closed"?"closed":"open")}catch(e){`
+  + `d.setAttribute("data-rail","open")}})()`;
 
 /** Which nav item is marked as where you are.
 
     A page marks its own link with `aria-current="page"`. A page
-    that sits INSIDE a section marks that section's link with
-    `aria-current="true"` instead: the reader is in there, not on
-    the page the link points at. Every Bangla reading section is
-    reached through Skills, so a piece in the kitchen marks Skills
-    that way. Both spellings are what the hand-written pages
-    already carried, and `null` is for a page in the nav at all,
-    like the account. */
+    that sits INSIDE a section marks that section's link the same
+    way: the rail is a list of places, and a lesson of the money
+    school is in the money school. `null` is for a page the rail
+    does not list, a case study or an article. */
 export type Current =
-  | "learn" | "skills" | "tools" | "insights" | "portfolio" | "about" | "contact"
+  | "learn" | "skills" | "tools" | "stock" | "insights" | "portfolio"
+  | "about" | "contact" | "account" | "deutsch" | "quran" | "english"
+  | "cooking" | "travel" | "home"
+  /* Kept because four routes still pass it: a piece in the
+     kitchen or on the travel desk is inside the skills half, and
+     said so before the money school joined that list. */
   | "in-skills" | null;
 
 export function SiteHead() {
   return (
     <head>
-      {/* The stylesheet is the site's, whole and unchanged. That is
-          the constraint at the top of Stage 9 and it does not stop
-          being true because the renderer changed. */}
+      {/* The stylesheet is the site's, whole and unchanged. */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       <link href={FONTS} rel="stylesheet" />
       <link rel="stylesheet" href="/styles.css" />
       {/* Second, and the order is the whole of it. The first
           `@layer` statement a browser sees fixes the order of the
-          layers, and `styles.css` declares all eighteen of them
+          layers, and `styles.css` declares all twenty of them
           including `tw`. Swap these two links and Tailwind's own
           declaration wins instead, which puts its utilities above
           the article layer: see the note at the top of
@@ -83,72 +107,13 @@ export function SiteHead() {
   );
 }
 
-export function SiteHeader({ current }: { current: Current }) {
-  /* "page" for the page itself, "true" for a page inside the
-     section that link points at. Written once rather than at each
-     of the seven links. */
-  const mark = (key: Current) => (current === key ? "page" : undefined);
-
-  return (
-    <header>
-      <div className="wrap header-inner">
-        {/* "/" rather than "/index.html" as of Stage 11.5: the home
-            page answers there, and the old spelling is a 301. The
-            schools' 251 generated pages still say the old one and
-            take that hop until Stage 11.7 rewrites them. */}
-        <a className="site-name" href="/">
-          <svg className="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-            <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor" />
-            <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor" />
-            <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor" />
-            <circle cx="63" cy="24" r="5.5" fill="currentColor" />
-          </svg>
-          Reiad&apos;s Library
-        </a>
-        <nav aria-label="Main">
-          <a href="/learn/index.html" data-keep aria-current={mark("learn")}>Learn</a>
-          <a href="/skills/index.html" data-nav-skills
-             aria-current={current === "in-skills" ? "true" : mark("skills")}>Skills</a>
-          <a href="/tools/index.html" aria-current={mark("tools")}>Tools</a>
-          <a href="/insights.html" aria-current={mark("insights")}>Insights</a>
-          <a href="/portfolio.html" aria-current={mark("portfolio")}>Portfolio</a>
-          <a href="/about.html" aria-current={mark("about")}>About</a>
-          <a href="/contact.html" data-keep aria-current={mark("contact")}>Contact</a>
-        </nav>
-        <button className="icon-btn" id="open-menu" aria-label="Open the menu">
-          <span className="burger" aria-hidden="true" />Menu
-        </button>
-        <button className="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">
-          ⌕ <span className="kbd-hint">Ctrl K</span>
-        </button>
-        <button className="icon-btn" id="theme-toggle"
-                aria-label="Switch between light and dark mode">◐</button>
-      </div>
-    </header>
-  );
-}
-
-export function SiteFooter({ note, name = "Reiad's Library" }: { note: string; name?: string }) {
-  return (
-    <footer>
-      <div className="wrap">
-        <span className="mono">{name} · Finance &amp; Bangladesh markets</span>
-        <p>{note}</p>
-        <p style={{ marginTop: "10px" }}>
-          <a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a>
-        </p>
-      </div>
-    </footer>
-  );
-}
-
 /**
- * A whole page: <html>, the head, the header, what is in the
- * middle, the footer, and the site's own scripts.
+ * A whole page: <html>, the head, the rail, the top bar, what is
+ * in the middle, the footer, and the site's own scripts.
  *
- * `scripts` is for the modules one kind of page needs and the rest
- * do not, `/pulse.js` on the Insights hub for instance. `/app.js`
- * is not one of them: the menu, the palette, the theme toggle and
+ * `scripts` is for the modules one kind of page needs and the
+ * rest do not, `/pulse.js` on the Insights hub for instance.
+ * `/app.js` is not one of them: the palette, the theme toggle and
  * the tilt are on every page of this site.
  */
 export function SiteShell({
@@ -159,6 +124,7 @@ export function SiteShell({
   footer = LOOK.insights.footer,
   footerName,
   current = null,
+  fixed = false,
   beforeMain, scripts, children,
 }: {
   lang?: string;
@@ -173,43 +139,51 @@ export function SiteShell({
      Library", which is its own and is kept. */
   footerName?: string;
   current?: Current;
+  /** One page is not a scrolling column: the front door fills the
+      viewport exactly and has no footer under it, because there is
+      nothing under it to scroll to. Everything else is a page. */
+  fixed?: boolean;
   beforeMain?: ReactNode;
   scripts?: ReactNode;
   children: ReactNode;
 }) {
   /* `suppressHydrationWarning` on both, because the boot script
-     below writes `data-theme`, `data-audience` and, on the home
-     page, `data-hl` onto the root before React sees any of it.
-     Without this React treats an attribute it did not render as a
-     mismatch and takes it off, which is a reader's theme being
-     thrown away between the paint and the hydration. */
+     below writes `data-theme`, `data-audience`, `data-rail` and,
+     on the home page, `data-hl` onto the root before React sees
+     any of it. Without this React treats an attribute it did not
+     render as a mismatch and takes it off, which is a reader's
+     theme being thrown away between the paint and the hydration. */
   return (
     <html lang={lang} suppressHydrationWarning>
       <SiteHead />
-      <body className={bodyClass || undefined} suppressHydrationWarning>
+      <body className={[bodyClass, fixed ? "shell-fixed" : null].filter(Boolean).join(" ") || undefined}
+            suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: BOOT }} />
 
         <a className="skip" href={skipTo}>{skip}</a>
-        {beforeMain}
 
-        <SiteHeader current={current} />
-        {children}
-        <SiteFooter note={footer} name={footerName} />
+        <Sidebar current={current} />
+        <DrawerBackdrop />
+
+        <div className="shell-col">
+          <TopBar />
+          {beforeMain}
+          {children}
+          {fixed ? null : <SiteFooter note={footer} name={footerName} />}
+        </div>
 
         {/* The site's own scripts, at the paths every other page
-            loads them from. Next's own runtime is loaded alongside
-            them by the framework, which is a cost Stage 10 measured
-            and accepted rather than one it avoided: see the note at
-            the top of app/[section]/[slug]/page.tsx.
-
-            Through `SiteScripts` rather than as `<script>` tags,
-            and never as `<script>` tags again: a module that runs
-            before React has hydrated has its work undone by the
-            hydration. `components/scripts.tsx` is the whole story
-            and is worth reading before adding one. */}
+            loads them from, through `SiteScripts` rather than as
+            `<script>` tags, and never as `<script>` tags again: a
+            module that runs before React has hydrated has its work
+            undone by the hydration. `components/scripts.tsx` is
+            the whole story and is worth reading before adding
+            one. */}
         {scripts}
         <SiteScripts srcs={["/app.js"]} />
       </body>
     </html>
   );
 }
+
+export { SiteFooter };

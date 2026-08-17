@@ -5,6 +5,12 @@
 Kept at the top because this file is long and the answer to "what
 now" should not be a search. One item, replaced when it lands.
 
+> **Stage 11.8 landed on 17 August: the shell is a rail, the
+> money school is one entry in the skills list, and its starter
+> guide is eight pages rather than eight accordions. Next is
+> Stage 13, then 14, then 12, and the three language school hubs
+> follow the money school's whenever one of them is next to hand.**
+>
 > **Stage 11 is done. Next is Stage 13, then 14, then 12.**
 >
 > No page of writing on this site is a file. `aab/` holds six
@@ -2307,6 +2313,7 @@ repository is.
 | 9 | React in the Studio and the desk | done 16 Aug 2026, old pages archived |
 | 10 | Next.js takes the article route | on and serving 16 Aug 2026, seven worksteps open |
 | 11 | Every remaining route, until no page is a file | **done, 16 Aug 2026**. 6 HTML files left in aab/, from 283: 404, offline and the four practice books |
+| 11.8 | The shell, the money school as a skill, stage 0 as pages | done, 17 Aug 2026. Three school hubs still strings |
 | 12 | The backend, typed and in one shape | steps 1, 2 and half of 4 done, 16 Aug 2026: rows described, one place decides a bad request, and the browser cannot name a route that is gone |
 | 13 | The last JavaScript | started 16 Aug 2026: 3 of 8 moved; auth.js waits for Stage 12 step 4 |
 | 14 | One way of writing a style, and it is Tailwind | the arrangement is in, 16 Aug 2026; nothing converted yet |
@@ -2381,6 +2388,42 @@ published row goes live the moment Publish is pressed. That is the
 point of the Studio and it is also a real loss. Not solved by this
 plan; worth deciding later whether the desk should grow a "changed
 since last published" view.
+
+**I13. Dead stylesheet from the old front page, 17 August 2026.**
+Stage 11.8 deleted the header block, the overlay menu and the
+`.doorway`/`.door` rules with the markup that used them, and
+stopped there. What is still in `styles.css` and rendered by
+nothing: `.wb-grid` and the rest of the welcome-back band,
+`.bento` and its `.cell-*` variants, `.ticker`, `#kinetic` and
+`.home-h1`. Roughly 300 lines. Harmless, because no page carries
+those classes, and worth deleting in one pass with a grep per
+class rather than by eye: that is how the eight header classes
+were checked before they went.
+
+**I14. Two lists of the same seven schools, 17 August 2026.**
+`next/lib/nav.ts` is what the rail, the footer and
+`/skills/index.html` render from. `SKILLS` in `aab/content.js` is
+what the Ctrl+K palette and the sitemap read, because those are
+the browser's and `next/` cannot import out of its own directory.
+They agree today and nothing checks that they do, which is the
+exact shape of the failure this repository has been bitten by
+twice. The cheap fix is a check, not a merge: `check-content.mjs`
+already reads both trees.
+
+**I15. The `track` half of the audience is dead but still
+stored, 17 August 2026.** `aab/audience.js` still exports
+`getTrack()` and `setAudience(value, track)`, and
+`audienceBoost()` in the palette still reads a track. Nothing
+sets one: the switch in the top bar clears it. It is inert rather
+than wrong, and it should go with whatever next touches that
+module.
+
+**I16. `recordPage()` has no caller, 17 August 2026.**
+`aab/recent.js` went to `archive/shell-2026/` with the home
+page's "recently read" list, and `app.js` no longer calls it. The
+feature is gone rather than broken, and it is written down here
+because "the home page used to remember what you had opened" is
+the kind of thing noticed a month later and mistaken for a bug.
 
 **I11. The site refused to talk to Supabase, 15 August 2026.** The
 magic link came back "Failed to fetch" from the live site, with the
@@ -2606,6 +2649,130 @@ is the closest Supabase region to Dhaka.
 
 Append only. Newest first. One entry per landed stage or per
 decision worth remembering.
+
+### 2026-08-17 · Stage 11.8: the money school is a skill, the header is a rail, and stage 0 is eight pages
+
+Four changes that are one change. Each of them was possible on its
+own and none of them was worth doing on its own, because what they
+have in common is the shape the site had grown into: money on one
+side, everything else on the other, and a header bar trying to
+carry both.
+
+**The money school joins the list.** `/learn/` was the site's
+second half. It had its own word in the header, its own front page,
+its own half of the home page's doorway, and the six other subjects
+were listed at `/skills/` under a heading that said, in as many
+words, "everything except money". That was true when there was one
+school. It produced a reader who had found the German course with
+no reason to think a money course existed, and a reader who had
+found the money course being told the other five were the
+leftovers.
+
+There is one list now, `next/lib/nav.ts`, and the money school is
+on it as টাকা ও শেয়ার, first and largest. The rail, the footer and
+`/skills/index.html` are three renderings of that one table. **No
+URL moved.** The school is still `learn`, its hub is still
+`/learn/index.html`, and its eighty-nine lessons are still where
+they were.
+
+**The hub is rendered from the rows.** It was 832 lines of
+hand-written HTML, lifted verbatim into `lib/school-hubs.ts` at
+Stage 11.7 because a port is finished when it does what the thing
+it replaced did. What it did was state, in prose, how many stages
+the school had and how many lessons were in them, and hold a
+hand-written copy of the ladder as a no-JavaScript fallback under a
+`<div>` that `hub.js` filled in the browser. Every one of those
+numbers was a number somebody had typed.
+
+`components/school-hub.tsx` counts them. So does
+`components/school-contents.tsx`, which replaces the full index at
+`/learn/contents.html`, the one page on this site whose entire
+value is that it is complete and which was therefore the page most
+likely to be out of date. Adding a lesson in the Studio changes
+both, and nothing is rebuilt: that is what Stage 11.7 was for and
+what the hub never got.
+
+**Stage 0 became eight pages, and the progress bar started
+telling the truth.** The starter guide's eight steps were accordion
+sections of the hub rather than pages, because their two-column
+"what you do / what others do" layout used classes no article
+allowlist holds, and `CLAUDE.md` said so at length. The prose was
+rewritten in the article's own vocabulary, `checklist`,
+`side-note`, `note` and `ex`, put through the real sanitiser, and
+written into the eight rows that had been sitting there with empty
+bodies since Stage 8. The stage lost `inline`; no stage on this
+site is inline any more, and the branch is gone from
+`shared/schools.js` and from `curriculum.js` together.
+
+That fixed the oldest of three bugs in the money school's progress.
+Nothing ever called `markLessonRead()` for a step that was not a
+page, so eight of the school's lessons could not be ticked and the
+percentage on the hub was wrong for every reader who had done them.
+The other two: the "which ids are real" filter needed
+`curriculum.js` loaded in the browser, and it was loaded because of
+the filter; and the bookmark stored a URL, so a lesson that moved
+took the bookmark with it. `next/lib/progress.ts` takes the valid
+ids from the server, out of the same rows the ladder was rendered
+from, and files everything under the same storage keys, so nobody's
+ticks moved. `aab/sync.js` needed no change at all.
+
+**And the header became a rail.** Seven links, a Menu button whose
+overlay was built at runtime by 200 lines of `app.js`, and a hover
+panel under "Skills" that opened on a timer. The menu did not exist
+for a reader with JavaScript off and did not exist for a crawler,
+and it agreed with the seven links beside it only because somebody
+remembered. It is `next/components/sidebar.tsx` now, server-rendered
+from `nav.ts`, expandable, and the whole site is in it. The top bar
+carries one thing: the audience switch, which is two answers rather
+than the old two-axis `audience` plus `track`, because the second
+axis existed to choose between two learning front doors and there
+is one.
+
+The front page does not scroll. It was a hero, a doorway, a
+welcome-back panel, a nine-cell bento, a ticker, a feature card, a
+services list and a credentials box, two thirds of it hidden by a
+stylesheet rule depending on who you were: the page's real job,
+asking who you are, was the top eighth of it. It is one screen, and
+the footer is left off it because a footer you cannot reach is
+furniture in a cupboard.
+
+**What was deleted, and what it cost.** `app.js` went from 1,188
+lines to 636. Eight modules are in `archive/shell-2026/` with a
+table of what replaced each. About 400 lines of stylesheet went
+with them: the header block, the overlay menu, the two media
+queries that folded the nav away, and the old home page's doors.
+Two features really are gone rather than replaced, and both are
+written down here rather than discovered later: the home page's
+"recently read" list, and the news strip that came with it.
+
+**The six pages that are not routes** are the four practice books
+and the 404 and offline pages. They cannot carry a React rail, so
+they carry a slim bar in the same layer, sized and coloured to
+match the top bar. That is also what let the old header CSS be
+deleted rather than left: nothing renders `body > header` any more,
+and the eight classes it styled were checked one at a time first.
+
+**The cards.** `.cell` was a link to an article, a statistic, a
+paragraph about a service, a calculator, and a heading with three
+bullets under it, and all five looked the same: a reader could not
+tell without moving the mouse which of them would take them
+somewhere. `@layer deck` has two kinds and they are told apart
+before the mouse moves. A card that does something carries an
+accent rail down its left edge, an arrow that slides, a lift and
+the action written out; a card that says something has a dashed
+edge, a quieter ground, no arrow and no lift. `GoCard` is an `<a>`
+and `InfoCard` is a `<div>`, so neither can be the other by
+accident.
+
+**Not done, deliberately.** The three language schools still render
+their hubs from the strings in `lib/school-hubs.ts` and still load
+their own progress modules. They follow one at a time, and the
+money school is the proof that the shape works. Tailwind is still
+unconverted: this change writes its new furniture in the site's own
+cascade layers, because the shell needs `[data-rail]`,
+`[data-audience]` and `:has()` selectors that utilities do not
+express, and a half-Tailwind shell would have been two systems
+rather than one.
 
 ### 2026-08-16 · Every calculator on the site was blank, and the port was the reason
 

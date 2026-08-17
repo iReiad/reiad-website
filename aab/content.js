@@ -216,6 +216,17 @@ export const TERMS = TERM_GROUPS.flatMap((g) =>
    ============================================================ */
 export const SKILLS = [
   {
+    slug: "learn",
+    course: true,
+    bn: "টাকা ও শেয়ার",
+    en: "Money",
+    url: "/learn/index.html",
+    icon: "coins",
+    status: "live",
+    blurb: "বিও অ্যাকাউন্ট খোলা থেকে নিজে একটা কোম্পানি যাচাই করা পর্যন্ত, ধাপে ধাপে সাজানো। "
+      + "সবচেয়ে বড় স্কুল, আর শুরুটা একদম শূন্য থেকে।",
+  },
+  {
     slug: "deutsch",
     course: true,
     bn: "জার্মান",
@@ -605,13 +616,11 @@ export const COUNTS = {
   stages: STAGES.length,
   /** Lessons actually written, not the ones still marked "soon".
 
-      This is 8 higher than the number of lesson FILES, and both
-      are right: the starter guide's steps are written lessons
-      that live as anchors on the Learn hub rather than as pages
-      of their own (`stage.inline`), so build-meta.mjs, which is
-      counting things to put in a sitemap, reports the smaller
-      number. A reader being told how much there is to read wants
-      this one. */
+      It used to be 8 higher than the number of lesson PAGES,
+      because the starter guide's eight steps were anchors on the
+      hub rather than pages of their own. They are pages, the
+      stage is no longer `inline`, and the two numbers are the
+      same number again. */
   lessons: allLessons().filter((l) => l.status === "live").length,
   /** Terms in the A-Z glossary. */
   terms: TERM_GROUPS.reduce((n, g) => n + g.terms.length, 0),

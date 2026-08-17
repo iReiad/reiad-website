@@ -88,6 +88,94 @@ blurb inside `content.js`) goes in the `CLAIMS` table in
 `check-content.mjs`, so the next data change fails a check rather than a
 reader.
 
+## The shell, and the one table the menu comes from
+
+Every page of this site is a rail down the left, a bar across the
+top and a footer. All three are rendered on the server by
+`next/components/`, and all three read **one** table:
+`next/lib/nav.ts`. Add a school there and it appears in the rail,
+in the footer and on `/skills/index.html` at once.
+
+That is not tidiness. The menu used to be said in four places: the
+seven links written into every page's header, `buildMenu()` in
+`aab/app.js` which drew the overlay at runtime, the `SKILLS` list
+in `content.js`, and the footer. They agreed because somebody
+remembered, which is the failure this file opens with, one level up
+from counting. The overlay also did not exist for a reader with
+JavaScript off, or for a crawler.
+
+Three attributes on `<html>` drive the chrome, and all three are
+restored **before the first paint** by the boot script in
+`shell.tsx`:
+
+| | |
+| --- | --- |
+| `data-rail` | `open` or `closed`, the rail's width |
+| `data-drawer` | `open` or `shut`, the same menu on a phone |
+| `data-audience` | `learn` or `work`, which groups lead |
+
+The attribute is the state. The buttons write it and the stylesheet
+answers; nothing keeps a second copy in React, because the copy is
+the one that arrives a paint late. `@layer shell` in `styles.css`
+is where the rules are.
+
+**Six pages are not routes and cannot be:** the four practice
+books, which are generated static HTML a learner fills in offline,
+and `404.html` and `offline.html`, which have to work when nothing
+else does. They carry `.slimbar` instead, in the same layer. If you
+add a seventh, give it the slim bar too: `body > header` is gone
+from the stylesheet and nothing will style a header you write.
+
+## Two kinds of card, and a reader can tell them apart
+
+`.cell` was one card doing five jobs: a link to an article, a
+statistic, a paragraph about a service, a calculator, and a heading
+with bullets under it. All five looked the same, so the only way to
+find out which of them would take you somewhere was to move the
+mouse.
+
+`@layer deck` has two, and `components/deck.tsx` is the markup:
+
+- **`<GoCard>`**, `data-kind="go"`. It takes you somewhere or does
+  something. An accent rail down the left edge, an arrow that
+  slides on hover, a lift, and the action written out at the
+  bottom. It is an `<a>`.
+- **`<InfoCard>`**, `data-kind="info"`. It tells you something and
+  it is the end of the road. Dashed edge, quieter ground, no
+  arrow, no lift. It is a `<div>`.
+
+Neither can be the other by accident, which is the whole point of
+them being two components rather than one with a prop.
+`<SoonCard>` is the third state: a thing that has been promised and
+not written, which is a `div` for the same reason a chip that goes
+nowhere is not a link.
+
+## What a reader has read
+
+`next/lib/progress.ts`, and the storage keys in it are the ones
+already in real browsers and in real accounts: `learn-read`,
+`deutsch-read`, `english-read`, `quran-done`, plus a `-last`
+bookmark each. **Do not rename one.** `aab/sync.js` maps the same
+names, and changing a key does not move somebody's ticks, it loses
+them.
+
+The rule the rewrite turned on: **the ladder is the server's and
+the ticks are the browser's.** Every id, title and URL a progress
+component works with comes down as a prop from the route that read
+the rows. It decides one thing per lesson, whether there is a tick,
+and it renders nothing at all on the server, because what a reader
+has read is not a fact the server has.
+
+Three things were wrong with the money school's old module and are
+worth not repeating: a lesson that was not a page could never be
+ticked, so the percentage was wrong for anybody who had read one;
+the "is this id real" filter needed `curriculum.js` in the browser,
+and the module was loaded because of the filter; and the bookmark
+stored a URL, so a lesson that moved took the bookmark with it.
+
+Opening is not finishing. A visit moves the bookmark; the tick is a
+button the reader presses.
+
 ## The blocks an article is made of
 
 A piece can hold a box of quick answers, a note in the margin, numbered
@@ -178,7 +266,6 @@ node scripts/build-modules.mjs --check # a served module edited in its built
 node scripts/build-styles.mjs --check  # /tailwind.css edited by hand, or built
                                        # from a source that changed
 node scripts/build-school-icons.mjs --check   # a school drawing next/ copied
-node scripts/build-school-hubs.mjs --check    # a school page next/ copied
 node scripts/check-next.mjs # a copy inside next/ that has drifted from the
                             # thing it was copied from
 ```
@@ -394,21 +481,26 @@ before this school had a builder, and their URLs do not move. They
 are written from the rows like everything else; the builder just
 writes them to that address.
 
-**One stage really is not editable, and the reason is the
-sanitiser rather than the builder.** `start` is `inline`: its
-eight steps are accordion sections of the hand-written hub at
-`/learn/`. They are also not article prose. Each carries a
-two-column "what you do / what others do" split, a risk badge and
-a call-to-action, using the classes `split`, `do`, `others`,
-`warn`, `bn-h` and `btn`, none of which is in the article
-allowlist. Put one through `sanitiseHTML()` and `term` and `ex`
-survive while the rest go: the layout collapses into a run of
-paragraphs.
+**Every stage is editable, as of 17 August 2026.** `start` was
+`inline` until then: its eight steps were accordion sections of
+the hand-written hub at `/learn/`, and they were not article prose
+either. Each carried a two-column "what you do / what others do"
+split, a risk badge and a call-to-action, using the classes
+`split`, `do`, `others`, `warn`, `bn-h` and `btn`, none of which is
+in the article allowlist, and widening the allowlist would not have
+fixed it: those classes belonged to the starter guide's own layer
+and `check-css.mjs` fails a class two layers both define.
 
-Widening the allowlist would not fix it. Those classes belong to
-the starter guide's own layer, and `check-css.mjs` fails a class
-two layers both define. So the eight rows keep empty bodies and
-the Studio says where the text actually lives.
+They were rewritten into the article's own vocabulary instead. The
+split became a `checklist` and a `side-note`, the warnings became
+`note` boxes, the risk badge moved into the lesson's `meta` where
+the card draws it, and the call-to-action went because the page
+already has a prev/next pair. Eight rows that had sat with empty
+bodies since Stage 8 have prose in them, and `/learn/start/` is
+eight pages like every other stage.
+
+No stage on this site is `inline` now, and the branch is gone from
+both ladders, `shared/schools.js` and `aab/learn/curriculum.js`.
 
 Generated pages are generated. Edit the source, never the output:
 
@@ -418,7 +510,6 @@ node aab/english/build-english.mjs   # the English practice book
 node scripts/build-modules.mjs       # aab/share-card.js and aab/api.js from aab/src/
 node scripts/build-styles.mjs        # aab/tailwind.css from aab/src/styles/
 node scripts/build-school-icons.mjs  # next/lib/school-icons.ts from aab/*/icons.js
-node scripts/build-school-hubs.mjs   # next/lib/school-hubs.ts from the four hubs
 node aab/build-meta.mjs              # feed.xml, sitemap.xml, robots.txt
 
 cd app && npm run build             # aab/desk/**   from app/src/** (React)

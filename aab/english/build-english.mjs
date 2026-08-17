@@ -196,31 +196,32 @@ const HEAD_TAIL = `  <link rel="preconnect" href="https://fonts.googleapis.com">
   <meta name="theme-color" content="#0B3D2E">`;
 
 const HEADER = `  <a class="skip" href="#main">মূল লেখায় যান</a>
-  <header>
-    <div class="wrap header-inner">
-      <a class="site-name" href="/index.html">
-        <svg class="site-mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-          <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
-          <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
-          <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
-          <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
-        </svg>
-        Reiad's Library
-      </a>
-      <nav aria-label="Main">
-        <a href="/learn/index.html" data-keep>Learn</a>
-        <a href="/skills/index.html" data-nav-skills aria-current="page">Skills</a>
-        <a href="/tools/index.html">Tools</a>
-        <a href="/insights.html">Insights</a>
-        <a href="/portfolio.html">Portfolio</a>
-        <a href="/about.html">About</a>
-        <a href="/contact.html" data-keep>Contact</a>
-      </nav>
-      <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
-      <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>
-      <button class="icon-btn" id="theme-toggle" aria-label="Switch between light and dark mode">◐</button>
+    <!-- The slim bar, not the site's rail. A practice book is
+       generated static HTML a learner opens every evening and
+       fills in offline; the rail is a React component and these
+       pages have no React. The shell layer in styles.css says
+       the same thing where the rule is. -->
+  <div class="slimbar">
+    <a class="slimbar-mark" href="/">
+      <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+        <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor"/>
+        <rect x="40" y="46" width="10" height="32" rx="3" fill="currentColor"/>
+        <rect x="58" y="32" width="10" height="46" rx="3" fill="currentColor"/>
+        <circle cx="63" cy="24" r="5.5" fill="currentColor"/>
+      </svg>
+      Reiad's Library
+    </a>
+    <nav class="slimbar-nav" aria-label="Main">
+      <a href="/skills/index.html">Skills</a>
+      <a href="/tools/index.html">Tools</a>
+      <a href="/insights.html">Insights</a>
+      <a href="/portfolio.html">Portfolio</a>
+    </nav>
+    <div class="top-tools">
+      <button class="top-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">&#8981; <span class="kbd-hint mono">Ctrl K</span></button>
+      <button class="top-btn" id="theme-toggle" aria-label="Switch between light and dark mode">&#9680;</button>
     </div>
-  </header>`;
+  </div>`;
 
 const FOOTER = `  <footer>
     <div class="wrap">

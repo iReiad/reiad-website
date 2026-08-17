@@ -133,6 +133,38 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/learn/start/money-first.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/start/papers.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/start/safest-first.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/start/bo-account.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/start/first-buy.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/start/make-a-rule.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/start/dont-get-cheated.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://reiad.co.uk/learn/start/where-next.html</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/learn/terms/share.html</loc>
     <priority>0.7</priority>
   </url>

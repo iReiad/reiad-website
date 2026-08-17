@@ -31,7 +31,10 @@ export interface SchoolStage {
   icon?: string;
   /** Where its lesson pages are written, when not its own folder. */
   base?: string;
-  /** Its lessons are anchors in a hand-written hub, not pages. */
+  /** Retired, August 2026. Its lessons were anchors in a
+      hand-written hub rather than pages; no stage is like that
+      now. Kept on the type because a row's `meta` is JSON and an
+      old one may still carry it. */
   inline?: boolean;
   workbook?: { slug: string; days: number };
   sections: SchoolSection[];
@@ -52,6 +55,10 @@ export interface SchoolLesson {
   n?: number;
   from?: number;
   to?: number;
+  /** Whether the row has a body, where the query asked. Absent,
+      rather than false, from a query that did not: see
+      `lessonFrom` in schools.js. */
+  written?: boolean;
   [key: string]: unknown;
 }
 

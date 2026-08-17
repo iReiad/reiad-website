@@ -48,8 +48,13 @@ const PORT = 8991;
    too: an element that exists in the page either way proves
    nothing, and this is a check about whether anything filled it. */
 const CASES = [
-  ["/", "index.html", "#kinetic .w",
-   "the headline, rebuilt one span per word by /app.js"],
+  /* The home page is not here any more. It carried `#kinetic`, a
+     headline `/app.js` rebuilt one span per word, and the front
+     door has no such thing since Stage 11.8: it renders three
+     headlines and shows one, and the choosing is a stylesheet
+     rule rather than a script. What holds the door now is the
+     block at the foot of this file, which checks that it shows
+     one introduction and fits one screen. */
   ["/tools/index.html", "tools/index.html.html", '[data-stat="final"] .v',
    "what a monthly habit becomes, computed by /tools/tools.js", "–"],
   ["/tools/stock.html", "tools/stock.html.html", "#pillars .pillar",
@@ -68,26 +73,36 @@ const CASES = [
    "the frontier itself, drawn by /portfolio/frontier.js"],
   ["/portfolio/scorecard.html", "portfolio/scorecard.html.html", "#roc-chart *",
    "the ROC curve, drawn by /portfolio/scorecard.js"],
-  /* Both of these are here for `/app.js`, which every page loads
-     and no page's markup holds any of: the menu it builds under
-     the Skills link is in neither file. A `[data-count]` would
-     have been the obvious thing to look at and proves nothing,
-     because the markup carries a number already for a reader with
-     no JavaScript. */
-  ["/portfolio.html", "portfolio.html.html", "#skills-drop *",
-   "the Skills menu, built by /app.js"],
-  ["/skills/index.html", "skills/index.html.html", "#skills-drop *",
-   "the Skills menu, built by /app.js"],
+  /* Both of these were here for `/app.js`, which every page loads
+     and no page's markup held any of: the hover panel it built
+     under the Skills link was in neither file, so it was the one
+     thing that proved the module had run.
+
+     There is no panel. The menu is a rail rendered on the server
+     and it is in both files, which is the improvement and also
+     why it cannot be the witness here. `#app-toast` is app.js's
+     now: the toast host is appended by the module and by nothing
+     else, and it is on every page. */
+  ["/portfolio.html", "portfolio.html.html", "#palette",
+   "the Ctrl+K palette, built by /app.js"],
+  ["/skills/index.html", "skills/index.html.html", "#palette",
+   "the Ctrl+K palette, built by /app.js"],
 ];
 
 /* The home page shows one of four introductions, chosen before the
    first paint from what the reader chose last time. All four at
    once is what shipped when the boot script that picks was left
    out of the port. */
+/* Three answers, not four. The `track` axis went at Stage 11.8:
+   it split a learner into "finance" and "skills" because the
+   learning half had two front doors, money at /learn/ and
+   everything else at /skills/. The money school is one entry in
+   the skills list now, so there is one door and nothing left to
+   refine. Anything a browser still has stored under `track` is
+   ignored. */
 const READERS = [
   ["a reader who has just arrived", null, null, "open"],
-  ["a learner on the money track", "learn", "finance", "finance"],
-  ["a learner on the skills track", "learn", "skills", "skills"],
+  ["a learner", "learn", null, "learn"],
   ["a reader here for work", "work", null, "work"],
 ];
 
@@ -145,7 +160,16 @@ const TYPES = {
   ".xml": "application/xml",
 };
 
-const PRERENDERED = Object.fromEntries(CASES.map(([url, file]) => [url, file]));
+/* Which URL is answered by which of Next's prerendered files.
+   Mostly the cases above; the front door is here as well and is
+   not one of them, because what it proves is not "a module ran"
+   but "one introduction shows and the page fits a screen", which
+   is the block at the foot of this file. Leaving it out of both
+   is how it silently started 404ing. */
+const PRERENDERED = {
+  ...Object.fromEntries(CASES.map(([url, file]) => [url, file])),
+  "/": "index.html",
+};
 
 const server = createServer(async (req, res) => {
   const path = new URL(req.url, "http://x").pathname;
@@ -220,14 +244,16 @@ for (const [who, audience, track, expected] of READERS) {
     shown.length > 0 && new Set(shown).size === 1 && shown[0] === expected,
     `expected ${expected} only, got [${shown}]`);
 
-  /* And until the question is answered, the question is the whole
-     page: everything under the hero is written for one of the
-     three answers. */
-  const below = await page.evaluate(() => [...document.querySelector(".home-flow").children]
-    .filter((el) => getComputedStyle(el).display !== "none").length);
-  ok(`the home page shows ${who} the right amount below the hero`,
-    expected === "open" ? below === 1 : below > 1,
-    `${below} block(s) visible`);
+  /* And there is nothing under the hero to count, because there
+     is nothing under the hero: the front door is one screen and
+     does not scroll. What is worth checking instead is exactly
+     that, since a page that quietly grew a scrollbar has stopped
+     being a door. `.home-flow` was the old page's column and this
+     check used to count how much of it was showing. */
+  const fits = await page.evaluate(() =>
+    document.documentElement.scrollHeight <= innerHeight + 2);
+  ok(`the front door fits one screen for ${who}`, fits,
+    "the page scrolls");
 
   await page.close();
 }
