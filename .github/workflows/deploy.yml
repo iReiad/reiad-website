@@ -89,7 +89,19 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # The same checks a pull request runs, called rather than
+  # copied. checks.yml is the one list; this waits for it and the
+  # upload below happens only if it passed.
+  #
+  # It used to be a copy of that list living here, which meant the
+  # checks ran after the merge and a pull request could be green
+  # on a branch that failed every one of them. Two copies of a
+  # list of checks is the same bug the checks exist for.
+  checks:
+    uses: ./.github/workflows/checks.yml
+
   deploy:
+    needs: checks
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -98,23 +110,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
 
-      # The root package.json is not a dependency of the site: nothing
-      # in it is shipped, and the deploy is an upload rather than a
-      # build. It is here for the two `--check` steps below, and the
-      # first run of this workflow is why that is worth a step of its
-      # own rather than a line in a comment.
+      # No `npm ci` here any more, and that is a deliberate
+      # subtraction rather than an oversight. It was here for the
+      # checks and the three `--check` builds, which shell out to
+      # tsc and to the Tailwind CLI; those are checks.yml's now,
+      # and that job does its own install. What is left in this
+      # job needs nothing from node_modules: `npx --yes wrangler@4`
+      # fetches wrangler itself, and check-live.mjs imports only
+      # node builtins and one file from shared/.
       #
-      # `build-modules.mjs` shells out to `npx tsc`. With no
-      # node_modules, npx does not fail: it goes to the registry, and
-      # `tsc` there is not TypeScript. The run died inside
-      # `tsc@2.0.4`, a package nothing in this repository has ever
-      # asked for, having installed it first. That is the exact hole
-      # the root package.json was added to close, and leaving the
-      # install out reopened it in a new place.
-      - name: Install the build tools
-        run: npm ci
+      # The reason it mattered is worth keeping even though the
+      # step has gone. `build-modules.mjs` runs `npx tsc`, and
+      # with no node_modules npx does not fail: it goes to the
+      # registry, where `tsc` is not TypeScript. A run once died
+      # inside `tsc@2.0.4`, a package nothing here has ever asked
+      # for, having installed it first. That is why checks.yml
+      # installs before it builds anything.
 
       # Said before anything runs, because the failure it prevents
       # is a job that gets all the way to the upload and then dies
@@ -127,42 +139,6 @@ jobs:
             echo "::error::top of this file for which permissions it needs."
             exit 1
           fi
-
-      # The checks that do not need a network, a browser or a
-      # database, run before the upload rather than after it. Every
-      # one of them exists because something shipped broken once,
-      # and the whole argument for deploying from CI is that a
-      # failure is visible on the commit that caused it.
-      #
-      # check-routes.mjs is the one that would have caught the
-      # outage this file was written for: it runs the same
-      # run_worker_first overlap test wrangler runs, and wrangler
-      # runs it before it reads a line of worker.js.
-      - name: Run the checks
-        run: |
-          node aab/check-routes.mjs
-          node aab/check-css.mjs
-          node aab/check-sw.mjs
-          node aab/check-content.mjs
-          node aab/check-csp.mjs
-          node scripts/check-crons.mjs
-          node scripts/check-pieces.mjs
-          node scripts/check-headers.mjs
-          node scripts/check-schools.mjs
-          node scripts/check-rows.mjs
-          node scripts/check-api.mjs
-          node scripts/check-next.mjs
-
-      # Generated files are committed here, so a build is not run:
-      # what matters is that what was committed still matches its
-      # source. An edit to a built file rather than to aab/src/ is
-      # a change that survives until the next build silently
-      # reverts it.
-      - name: Check the generated files match their sources
-        run: |
-          node scripts/build-modules.mjs --check
-          node scripts/build-styles.mjs --check
-          node scripts/build-school-icons.mjs --check
 
       # Everything the real deploy validates, uploading nothing. It
       # is a second or two, and it turns a failed deploy into a

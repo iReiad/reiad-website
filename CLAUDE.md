@@ -299,7 +299,21 @@ replaced what.
 ## Before deploying
 
 Run the checks. They are fast and each one exists because something
-shipped broken once:
+shipped broken once.
+
+**CI runs them too, on the pull request.** `.github/workflows/checks.yml`
+is the list, and `deploy.yml` calls it rather than keeping a second
+copy, so the upload happens only if it passed. That is a change: the
+checks used to live inside `deploy.yml` alone, which fires on a push
+to main, so they ran AFTER the merge. A pull request that broke one
+showed a green tick, because the only thing answering on a branch was
+`live-check.yml`, and on a branch that asks the live site how the LAST
+deploy is doing.
+
+Running them here first is still worth it. CI tells you on a pull
+request; a laptop tells you before you have written the commit
+message, and the four that need a browser or a build do not run in CI
+at all:
 
 ```sh
 node aab/check-routes.mjs   # redirect loops, dead links, bad article slugs, and
