@@ -31,7 +31,7 @@ export default function Page() {
 
       <main id="main">
         <div className="wrap">
-          <div className="hero" style={{ paddingBlock: "56px 26px" }}>
+          <div className="hero">
             <span className="eyebrow mono">Case study · Financial model · Excel-equivalent
             </span>
             <h1>A three-statement model you can actually push around.

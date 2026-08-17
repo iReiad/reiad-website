@@ -114,7 +114,7 @@ export function Desk() {
 
   return (
     <>
-      <div className="hero" style={{ paddingBlock: "52px 20px" }}>
+      <div className="hero">
         <span className="eyebrow mono">The desk · private</span>
         <h1 style={{ fontSize: "clamp(1.9rem,4.4vw,2.8rem)" }}>The site, answering back.</h1>
         <p className="lede">

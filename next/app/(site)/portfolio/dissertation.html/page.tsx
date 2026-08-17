@@ -32,7 +32,7 @@ export default function Page() {
 
       <main id="main">
         <div className="wrap">
-          <div className="hero" style={{ paddingBlock: "56px 22px" }}>
+          <div className="hero">
             <span className="eyebrow mono">Case study · Empirical research · MSc dissertation
             </span>
             <h1>Lower risk? Not in this data, and not provable either way.

@@ -31,7 +31,7 @@ export default function Page() {
 
       <main id="main">
         <div className="wrap">
-          <div className="hero" style={{ paddingBlock: "56px 26px" }}>
+          <div className="hero">
             <span className="eyebrow mono">Case study · Valuation · Excel-equivalent
             </span>
             <h1>A DCF that shows its working, and a sensitivity table that earns its place.

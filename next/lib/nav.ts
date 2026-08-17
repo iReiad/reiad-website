@@ -49,12 +49,23 @@ export interface NavItem {
   blurb?: string;
   /** What that entry is, in three words, for the card's chip. */
   kind?: string;
+  /** The colour this destination owns, as a token name.
+
+      A place on this site has a colour, and the colour is how a
+      reader knows where they are before they have read the
+      label. Six of the seven belong to the six learning
+      destinations, because those are the ones seen together in
+      one list; the seventh is the calculators. Anything without
+      one inherits its group's, which is the right answer for a
+      group whose items are all the same kind of thing. */
+  accent?: string;
 }
 
 export interface NavGroup {
   id: "learn" | "make" | "read" | "work" | "you";
   label: string;
-  /** A token name in `styles.css`, used as the group's accent. */
+  /** The group's own colour, and the fallback for any item that
+      does not name one. */
   accent: string;
   items: NavItem[];
 }
@@ -68,34 +79,34 @@ export const NAV: NavGroup[] = [
       { label: "All skills", sub: "দক্ষতা", href: "/skills/index.html", icon: "skills", key: "skills" },
       {
         label: "Money", sub: "টাকা ও শেয়ার", href: "/money/index.html",
-        icon: "coins", key: "money", kind: "কোর্স",
+        icon: "coins", key: "money", kind: "কোর্স", accent: "var(--green)",
         blurb: "বিও অ্যাকাউন্ট খোলা থেকে নিজে একটা কোম্পানি যাচাই করা পর্যন্ত, "
           + "ধাপে ধাপে সাজানো। সবচেয়ে বড় স্কুল, আর শুরুটা একদম শূন্য থেকে।",
       },
       {
         label: "German", sub: "জার্মান", href: "/deutsch/index.html",
-        icon: "book", key: "deutsch", kind: "কোর্স",
+        icon: "book", key: "deutsch", kind: "কোর্স", accent: "var(--blue)",
         blurb: "চারটা স্তরে জার্মান, বাংলা দিয়ে বোঝানো, আর রোজ এক পাতার অনুশীলন খাতা।",
       },
       {
         label: "Qur'anic Arabic", sub: "কুরআনের আরবি", href: "/quran/index.html",
-        icon: "scroll", key: "quran", kind: "কোর্স",
+        icon: "scroll", key: "quran", kind: "কোর্স", accent: "var(--teal)",
         blurb: "তিন ধাপে ষাট দিন: শব্দ চেনা, বাক্য বোঝা, তারপর গোটা সূরা খুলে পড়া।",
       },
       {
         label: "English", sub: "মন থেকে ইংরেজি", href: "/english/index.html",
-        icon: "signpost", key: "english", kind: "কোর্স",
+        icon: "signpost", key: "english", kind: "কোর্স", accent: "var(--violet)",
         blurb: "দুই টার্মে ইংরেজি: শব্দের ক্রম থেকে দুই মিনিট টানা বলা পর্যন্ত, সাথে ৩০ দিনের খাতা।",
       },
       {
         label: "Cooking", sub: "রান্না", href: "/cooking/index.html",
-        icon: "cart", key: "cooking", kind: "লেখা",
+        icon: "cart", key: "cooking", kind: "লেখা", accent: "var(--rose)",
         blurb: "মাপ, তাপ আর সময়: রেসিপি মুখস্থ না করে রান্নাটা বোঝা। কোর্স নয়, "
           + "একেকটা উপকরণ নিয়ে পুরো একটা লেখা।",
       },
       {
         label: "Travel", sub: "ভ্রমণ", href: "/travel/index.html",
-        icon: "compass", key: "travel", kind: "লেখা",
+        icon: "compass", key: "travel", kind: "লেখা", accent: "var(--plum)",
         blurb: "ভিসা, কাগজপত্র আর প্রথমবার দেশের বাইরে যাওয়ার পুরো ধাপ।",
       },
       {
@@ -125,7 +136,7 @@ export const NAV: NavGroup[] = [
   {
     id: "work",
     label: "Work",
-    accent: "var(--gold)",
+    accent: "var(--plum)",
     items: [
       { label: "Portfolio", href: "/portfolio.html", icon: "briefcase", key: "portfolio" },
       { label: "About", href: "/about.html", icon: "person", key: "about" },

@@ -31,7 +31,7 @@ export default function Page() {
 
       <main id="main">
         <div className="wrap">
-          <div className="hero" style={{ paddingBlock: "56px 26px" }}>
+          <div className="hero">
             <span className="eyebrow mono">Case study · Credit risk · Machine learning
             </span>
             <h1>A probability-of-default model, and an honest answer about whether the clever one wins.

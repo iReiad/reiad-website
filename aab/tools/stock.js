@@ -582,12 +582,12 @@ function yieldChart(d, r) {
     { k: lang === "bn" ? "মূল্যস্ফীতি" : "Inflation", v: d.inflation, tone: "danger" },
   ].filter((x) => Number.isFinite(x.v));
   const max = Math.max(...rows.map((x) => x.v), 1);
-  return `<div class="ladder">${rows.map((x) => `
-    <div class="ladder-row">
-      <span class="ladder-label">${esc(x.k)}</span>
-      <span class="ladder-track"><i data-tone="${x.tone}"
+  return `<div class="yield-ladder">${rows.map((x) => `
+    <div class="yield-row">
+      <span class="yield-label">${esc(x.k)}</span>
+      <span class="yield-track"><i data-tone="${x.tone}"
         style="width:${Math.max(0, (x.v / max) * 100).toFixed(1)}%"></i></span>
-      <span class="ladder-value">${fmtNum(x.v, lang, 2)}%</span>
+      <span class="yield-value">${fmtNum(x.v, lang, 2)}%</span>
     </div>`).join("")}</div>`;
 }
 

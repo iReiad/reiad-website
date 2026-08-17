@@ -368,7 +368,7 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
 
   return (
     <>
-      <div className="hero" style={{ paddingBlock: "52px 26px" }}>
+      <div className="hero">
         <span className="eyebrow mono">Article Studio · private tool</span>
         <h1 style={{ fontSize: "clamp(1.9rem,4.4vw,2.8rem)" }}>
           Paste the article. Paste the photos. Publish.

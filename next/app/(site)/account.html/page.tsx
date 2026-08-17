@@ -149,7 +149,7 @@ function Section({ id, title, blurb, children }: {
        here. */
     <section id={id}
              className="grid content-start gap-3.5
-                        scroll-mt-[calc(var(--top-h,58px)+58px)]
+                        scroll-mt-[calc(var(--top-space)+58px)]
                         target:[&>div:first-child]:-ms-3.5
                         target:[&>div:first-child]:border-s-2
                         target:[&>div:first-child]:border-green
@@ -198,7 +198,7 @@ export default function AccountPage() {
           There is no account wall anywhere on this site and this
           page is not one either. */}
       <div className="wrap wrap-narrow" id="account-out" hidden>
-        <div className="hero" style={{ paddingBlock: "52px 20px" }}>
+        <div className="hero">
           <span className="eyebrow mono">Your account</span>
           <h1>Nobody is signed in on this device.</h1>
           <p className="lede">
@@ -248,7 +248,7 @@ export default function AccountPage() {
             page scrolled to their reading list with everything
             else still there above and below it. */}
         <nav aria-label="This page"
-             className="sticky top-[var(--top-h,58px)] z-20 border-b border-hairline
+             className="sticky top-[var(--top-space)] z-20 border-b border-hairline
                         bg-[color-mix(in_oklab,var(--paper)_88%,transparent)]
                         backdrop-blur-[10px] backdrop-saturate-150">
           {/* It scrolls sideways rather than wrapping to three

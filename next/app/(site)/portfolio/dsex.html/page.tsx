@@ -32,7 +32,7 @@ export default function Page() {
 
       <main id="main">
         <div className="wrap">
-          <div className="hero" style={{ paddingBlock: "56px 26px" }}>
+          <div className="hero">
             <span className="eyebrow mono">Case study · Data analysis · Python-equivalent
             </span>
             <h1>Volatility is a statistic. A drawdown is a year of your life.
