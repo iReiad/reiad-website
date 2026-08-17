@@ -29,21 +29,21 @@
    ---- and why SQLite rather than the API ----
 
    A builder is a generator somebody runs on a laptop, and it has
-   to work with no network and no Worker. `shared/schools.js` is
+   to work with no network and no Worker. `shared/schools.ts` is
    written against the D1 interface, and the shim below is that
    interface over `node:sqlite`, the same one every server test in
    this repository uses. Against the live database the same code
    runs unchanged with a real D1 handle.
    ============================================================ */
 
-import { WITHIN, stagesOf } from "../shared/schools.js";
+import { WITHIN, stagesOf } from "../shared/schools.ts";
 import { d1FromSnapshot } from "./schools-snapshot.mjs";
 
 /* ---------- the database ---------- */
 
 /** The D1 interface, over node:sqlite.
 
-    `shared/schools.js` is written against D1 because that is what
+    `shared/schools.ts` is written against D1 because that is what
     the Worker and the Next route hand it. A builder has neither,
     so it gets the same interface over a local file, and the code
     under test is the same code in all three places. */
@@ -76,7 +76,7 @@ async function fromSqlite(id, path) {
 
     `content/schools.backup.json` is an export of the same three
     tables, and it is read by loading it into an in-memory
-    database and going through `shared/schools.js` exactly as the
+    database and going through `shared/schools.ts` exactly as the
     live one does. So there is one implementation of "what is a
     ladder", and a build from the file runs the same code as a
     build from D1. The note at the top of `schools-snapshot.mjs`

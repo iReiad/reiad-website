@@ -41,7 +41,7 @@
 import { existsSync } from "node:fs";
 import { relative } from "node:path";
 import { SNAPSHOT, countsOf, writeSnapshot } from "./schools-snapshot.mjs";
-import { SCHOOL_IDS } from "../shared/schools.js";
+import { SCHOOL_IDS } from "../shared/schools.ts";
 
 /* ---------- out of a SQLite copy of the database ---------- */
 

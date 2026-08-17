@@ -280,7 +280,7 @@ const CARD_LABEL: Record<string, string> = {
   english: "part-num",
 };
 
-/** Bangla numerals. `bnNum` in `shared/schools.js` under a name
+/** Bangla numerals. `bnNum` in `shared/schools.ts` under a name
     that reads right beside JSX. */
 const bnDigits = (n: number) =>
   String(Number.isFinite(n) ? n : 0).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]);

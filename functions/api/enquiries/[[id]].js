@@ -15,10 +15,10 @@
 import { all, db, one, run } from "../../_lib/db.js";
 import { body, fail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.js";
 import { requireAdmin, throttle } from "../../_lib/auth.js";
-import { ENQUIRY_KIND, ENQUIRY_STATUS, allowed } from "../../../shared/rows.js";
+import { ENQUIRY_KIND, ENQUIRY_STATUS, allowed } from "../../../shared/rows.ts";
 import { read } from "../../_lib/input.js";
 
-/* archive/TRANSITION.md Stage 12, step 1: the list is shared/rows.js now. */
+/* archive/TRANSITION.md Stage 12, step 1: the list is shared/rows.ts now. */
 const KINDS = ENQUIRY_KIND;
 
 /* Ten characters, which is what this endpoint has always asked

@@ -1,0 +1,38 @@
+/* Typechecking only. This config emits nothing.
+
+   `shared/` is TypeScript that its consumers compile themselves:
+   Next.js compiles it through `transpilePackages` in
+   next/next.config.ts, and wrangler's esbuild compiles it when it
+   bundles worker.js. Neither reads a .js file from this directory,
+   and there is no build step here that writes one.
+
+   That is deliberate and it replaced the opposite arrangement.
+   Compiling these four modules to committed .js beside their own
+   source meant twelve files where there are now four, a build
+   script, and a check to notice when somebody edited the output
+   instead of the input. Every one of those exists to serve a
+   compile step that neither runtime needs.
+
+   What this file is for is `npx tsc -p shared/tsconfig.json`,
+   which answers "does shared/ typecheck on its own" without
+   waiting on either consumer's build. `noEmit` is what keeps it
+   an answer rather than an artefact.
+
+   `lib` carries DOM because headers.ts constructs a `Response`.
+   Both runtimes have one; neither is a browser. */
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["*.ts"],
+  "exclude": ["node_modules"]
+}

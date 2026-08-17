@@ -35,7 +35,7 @@
    before one.
    ============================================================ */
 
-import { SECURITY_HEADERS } from "../shared/headers.js";
+import { SECURITY_HEADERS } from "../shared/headers.ts";
 
 const args = process.argv.slice(2);
 const origin = (args[args.indexOf("--origin") + 1] || "").startsWith("http")

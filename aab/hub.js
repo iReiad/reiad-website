@@ -11,7 +11,7 @@
    inside a template string, unreadable and unlintable.
 
    So they moved here, and both pages load this one file. That is
-   the same answer `shared/look.js` is to the same question, one
+   the same answer `shared/look.ts` is to the same question, one
    floor down: the thing that must not be written twice is the
    thing that has to behave the same in two places.
 

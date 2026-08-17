@@ -544,7 +544,7 @@ instead.
 `check-schools.mjs` stays and does two things: it compares the
 ladder in `curriculum.js` against the ladder in the snapshot, and
 it computes every lesson's URL, progress id and label both through
-`shared/schools.js` and through the school's own `curriculum.js`
+`shared/schools.ts` and through the school's own `curriculum.js`
 and fails on any pair that disagree.
 
 **The ladder is still `curriculum.js`,** and still read by the
@@ -580,7 +580,7 @@ bodies since Stage 8 have prose in them, and `/learn/start/` is
 eight pages like every other stage.
 
 No stage on this site is `inline` now, and the branch is gone from
-both ladders, `shared/schools.js` and `aab/learn/curriculum.js`.
+both ladders, `shared/schools.ts` and `aab/learn/curriculum.js`.
 
 Generated pages are generated. Edit the source, never the output:
 
@@ -624,19 +624,51 @@ silences the next complaint too.
 ## What more than one runtime has to agree on
 
 `shared/` is for anything the Worker, the browser and the Next.js
-route must all say the same way. Two files today: `look.js`, the
-per-section table and the head facts every article page states, and
-`headers.js`, the security headers a response has to carry when it
-was not served as a static file.
+route must all say the same way. Four files today: `look.ts`, the
+per-section table and the head facts every article page states;
+`headers.ts`, the security headers a response has to carry when it
+was not served as a static file; `schools.ts`, the four curricula
+and the ladder's arithmetic; and `rows.ts`, what a row of this
+database is.
+
+**They are TypeScript, and nothing is compiled beside them.** Both
+consumers have a compiler and use it: Next through
+`transpilePackages` in `next/next.config.ts`, needed because the
+package resolves inside `node_modules` and Next will not compile
+TypeScript it finds there, and the Worker through wrangler's own
+esbuild, which needs no configuration at all. Plain `node` reads
+them too, which is what the checks under `scripts/` rely on: type
+stripping has been on by default since Node 22.18.
+
+It was briefly the other way round and that is worth not repeating.
+The four were compiled to committed `.js` and `.d.ts` beside their
+own source, which is twelve files where there are four, plus a
+build script, plus a check to catch somebody editing the output
+instead of the input, all of it serving a compile step that no
+runtime here needed.
 
 It is an npm package (`@reiad/shared`) because `next/` cannot import
 by relative path out of its own directory: Turbopack refuses to
 resolve above its root, and moving the root moves Next's file-tracing
 root with it, which breaks the OpenNext build. `next/.npmrc` sets
 `install-links=true` so npm copies it in rather than symlinking, for
-the same reason. `shared/README.md` says all of this again where
-somebody editing it will see it. The Worker imports the files
-directly; esbuild has no such restriction.
+the same reason. The Worker imports the files directly; esbuild has
+no such restriction.
+
+**That copy does not notice that you edited one.** npm keys a
+`file:` dependency by its version, so `npm install` leaves a stale
+copy in place however much the contents changed, and `next build`
+compiles the old code without a word. Delete it first:
+
+```sh
+rm -rf next/node_modules/@reiad/shared && (cd next && npm install)
+```
+
+A typo in `bnNum` put every Bangla numeral into Devanagari, `০১২৩`
+becoming `०१२३`. It was fixed, the build was re-run, and the route
+went on serving the wrong digits from the copy. `next/parity.test.mjs`
+is what caught it. `shared/README.md` says all of this again where
+somebody editing those files will see it.
 
 **A response a Worker builds is not a static asset**, so `aab/_headers`
 does not apply to it. Every article rendered from the database was
@@ -644,7 +676,7 @@ served with no Content-Security-Policy, no HSTS and no
 `X-Frame-Options` for as long as that route existed, beside
 file-based articles that had all three, and the page renders the
 same either way. Anything that returns HTML from a Worker goes
-through `htmlResponse()` in `shared/headers.js`, and
+through `htmlResponse()` in `shared/headers.ts`, and
 `check-headers.mjs` fails if that list and `_headers` drift.
 
 ## The writing surface is one module

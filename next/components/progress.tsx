@@ -115,7 +115,7 @@ export function LessonTick({
 /* ---------- on a ladder, a hub, or a contents page ---------- */
 
 /** Bangla numerals, for the labels below. The same substitution
-    `shared/schools.js` does; a copy rather than an import because
+    `shared/schools.ts` does; a copy rather than an import because
     this file is the browser's bundle and that one is the Worker's,
     and it is one line. */
 const bn = (n: number) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]);

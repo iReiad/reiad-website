@@ -20,7 +20,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { webcrypto } from "node:crypto";
 import { onRequest } from "../functions/api/schools/[[route]].js";
-import { WITHIN } from "../shared/schools.js";
+import { WITHIN } from "../shared/schools.ts";
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 

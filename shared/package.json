@@ -4,21 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "exports": {
-    "./look": {
-      "types": "./look.d.ts",
-      "default": "./look.js"
-    },
-    "./headers": {
-      "types": "./headers.d.ts",
-      "default": "./headers.js"
-    },
-    "./schools": {
-      "types": "./schools.d.ts",
-      "default": "./schools.js"
-    },
-    "./rows": {
-      "types": "./rows.d.ts",
-      "default": "./rows.js"
-    }
+    "./look": "./look.ts",
+    "./headers": "./headers.ts",
+    "./schools": "./schools.ts",
+    "./rows": "./rows.ts"
   }
 }

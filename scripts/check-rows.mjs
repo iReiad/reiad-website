@@ -1,30 +1,30 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-rows.mjs: does `shared/rows.js` still describe this
+   check-rows.mjs: does `shared/rows.ts` still describe this
    database, and do the handlers still agree with it?
 
        node scripts/check-rows.mjs
 
-   archive/TRANSITION.md Stage 12, step 1. `shared/rows.js` is the one
+   archive/TRANSITION.md Stage 12, step 1. `shared/rows.ts` is the one
    description of what a row of this database is, and a
    description is worth exactly what checks it. Two ways it can
    quietly stop being true, and this is both of them:
 
    1. **A column is added, renamed or dropped in `schema.sql`**
-      and the interface in `rows.d.ts` still says what used to be
+      and the interface in `rows.ts` still says what used to be
       there. Nothing fails: a row is `any` on the way out of D1
       today, and a type that lies is worse than no type, because
       it is believed.
 
    2. **A handler keeps its own copy of a vocabulary.** Four of
-      them did, which is why `rows.js` exists: the comment states
-      are `pending`, `live` and `binned`, and the first draft of
-      `rows.js` said `approved` and `spam`, which are what those
-      words would be if anybody had chosen them fresh and are not
-      what the column holds. That was caught by comparing the two.
+      them did, which is why `rows.ts` exists: the comment states
+      are `pending`, `live` and `binned`, and the first draft of it
+      said `approved` and `spam`, which are what those words would
+      be if anybody had chosen them fresh and are not what the
+      column holds. That was caught by comparing the two.
       The handlers import the vocabulary now, so the question
       flipped: nothing under `functions/` may write out a list
-      `shared/rows.js` already holds.
+      `shared/rows.ts` already holds.
 
    ---- what it deliberately does not do ----
 
@@ -57,7 +57,7 @@ const fail = (line, ...detail) => {
    ------------------------------------------------------------ */
 
 const schema = read("aab/schema.sql");
-const { TABLES, ...vocab } = await import("../shared/rows.js");
+const { TABLES, ...vocab } = await import("../shared/rows.ts");
 
 /** The columns of one table, in the order the schema declares
     them. Deliberately dumb: the block between the parentheses,
@@ -79,13 +79,13 @@ const inSchema = [...schema.matchAll(/CREATE TABLE IF NOT EXISTS (\w+)/g)].map((
 
 for (const table of inSchema) {
   if (!(table in TABLES)) {
-    fail(`aab/schema.sql has a table shared/rows.js does not describe: ${table}`,
+    fail(`aab/schema.sql has a table shared/rows.ts does not describe: ${table}`,
       "Add it to TABLES, with one sentence on what it is for.");
   }
 }
 for (const table of Object.keys(TABLES)) {
   if (!inSchema.includes(table)) {
-    fail(`shared/rows.js describes a table that is not in aab/schema.sql: ${table}`);
+    fail(`shared/rows.ts describes a table that is not in aab/schema.sql: ${table}`);
   }
 }
 
@@ -93,7 +93,16 @@ for (const table of Object.keys(TABLES)) {
    2. Every interface names the columns its table has
    ------------------------------------------------------------ */
 
-const types = read("shared/rows.d.ts");
+/* The interfaces and the constants are the same file now.
+
+   They were `rows.d.ts` and `rows.js`, which is the split
+   TypeScript forces on a JavaScript module that wants types, and
+   the reason this check read the `.d.ts` rather than the module it
+   describes. `shared/rows.ts` is TypeScript, so there is one file
+   and this reads it. The parsing below is unchanged: it still
+   matches `export interface <Name> {` as text, which that file
+   still writes one per line exactly as the declaration file did. */
+const types = read("shared/rows.ts");
 
 /** The property names of one interface, as written. */
 function propsOf(name) {
@@ -162,7 +171,7 @@ for (const [table, iface] of Object.entries(DESCRIBES)) {
    the question worth asking flipped with them. A second copy that
    agrees today is the thing that drifts, and the four that were
    here are the reason this file exists at all. So: nothing under
-   `functions/` may write out a list that `shared/rows.js`
+   `functions/` may write out a list that `shared/rows.ts`
    already holds.
 
    Deliberately a text search rather than anything cleverer. A
@@ -196,16 +205,16 @@ for (const file of HANDLERS) {
 
     if (pattern.test(src)) {
       fail(`${file} writes out ${name} instead of importing it`,
-        `shared/rows.js holds ${JSON.stringify(values)}.`,
+        `shared/rows.ts holds ${JSON.stringify(values)}.`,
         "Two copies that agree today are two copies, which is what",
         "this file exists to stop:",
-        `  import { ${name}, allowed } from "<...>/shared/rows.js";`);
+        `  import { ${name}, allowed } from "<...>/shared/rows.ts";`);
     }
   }
 }
 
 console.log(failures
-  ? `\n${failures} problem(s): shared/rows.js does not describe this database.\n`
+  ? `\n${failures} problem(s): shared/rows.ts does not describe this database.\n`
   : `rows: ${Object.keys(DESCRIBES).length} tables described, ${described} columns\n`
     + `      matched against aab/schema.sql, and ${scanned} handlers holding\n`
     + "      no second copy of a vocabulary.\n");

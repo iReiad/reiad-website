@@ -1,18 +1,17 @@
 /* ============================================================
    next.config.ts
 
-   Two settings, and both are about this app living inside a
-   repository that is mostly not a Next.js app.
+   Three settings, and all of them are about this app living inside
+   a repository that is mostly not a Next.js app.
 
-   ---- the one interesting line ----
+   ---- the package, and why it is one ----
 
-   `@reiad/look` is `shared/look/`, a `file:` dependency, and it is
-   a package rather than a relative import for a reason worth
-   writing down. The table it holds is what the Worker's own
-   renderer reads, and the acceptance test for this whole stage is
-   that the two renderers agree; a copy of it in here would give
-   this route a second answer to what a kitchen piece's footer
-   says.
+   `@reiad/shared` is `shared/`, a `file:` dependency, and it is a
+   package rather than a relative import for a reason worth writing
+   down. The table it holds is what the Worker's own renderer
+   reads, and the acceptance test for this whole stage is that the
+   two renderers agree; a copy of it in here would give this route
+   a second answer to what a kitchen piece's footer says.
 
    A relative import up and out of this directory is the obvious
    way to share it and does not work. Turbopack refuses to resolve
@@ -23,14 +22,31 @@
    16 incompatibility and is nothing of the sort. The two roots are
    coupled and want opposite answers.
 
-   npm resolves a `file:` dependency to a symlink inside
-   node_modules, which is inside the root, so there is nothing to
-   configure and nothing to keep in step.
+   `next/.npmrc` sets `install-links=true`, so npm copies the
+   directory into `node_modules` rather than symlinking it: a
+   symlink resolves to its real path and gets refused for being
+   outside the root all over again.
+
+   ---- and why it has to be transpiled ----
+
+   `shared/` is TypeScript, with no compiled JavaScript beside it.
+   Both of its consumers compile it themselves, which is the whole
+   reason there is no build step in that directory: wrangler's
+   esbuild does it when it bundles `worker.js`, and this line is
+   the same instruction for Next.
+
+   It is needed because the package resolves INSIDE `node_modules`,
+   by the arrangement two paragraphs up, and Next does not compile
+   TypeScript it finds there. Without this the build fails on the
+   first `import ... from "@reiad/shared/look"` with a syntax error
+   in a `.ts` file, which reads like a broken package and is only
+   ever this setting missing.
    ============================================================ */
 
 import type { NextConfig } from "next";
 export default {
   reactStrictMode: true,
+  transpilePackages: ["@reiad/shared"],
 } satisfies NextConfig;
 
 /* There is no setting here that reduces what a reading page ships.

@@ -52,7 +52,7 @@ import { body, fail, methods, notConfigured, ok, nowISO } from "../../_lib/http.
 import { requireAdmin } from "../../_lib/auth.js";
 import {
   isSchool, stagesOf, lessonOf, lessonsOf, countsOf, SCHOOL_IDS,
-} from "../../../shared/schools.js";
+} from "../../../shared/schools.ts";
 import { sanitiseHTML } from "../../_lib/sanitise.js";
 
 export async function onRequest(context) {

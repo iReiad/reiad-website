@@ -15,7 +15,7 @@ import { all, db, one, run } from "../../_lib/db.js";
 import { body, fail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.js";
 import { requireAdmin } from "../../_lib/auth.js";
 import { throttle } from "../../_lib/auth.js";
-import { QUESTION_STATUS, allowed } from "../../../shared/rows.js";
+import { QUESTION_STATUS, allowed } from "../../../shared/rows.ts";
 import { read } from "../../_lib/input.js";
 
 const PUBLIC = `id, slug, name, body, answer, created_at, answered_at`;

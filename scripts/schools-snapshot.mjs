@@ -49,7 +49,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { SCHOOL_IDS } from "../shared/schools.js";
+import { SCHOOL_IDS } from "../shared/schools.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -159,7 +159,7 @@ export function readSnapshot(file = SNAPSHOT) {
 /** The snapshot's rows for one school, back into a database.
 
     Into an in-memory one, and then read out through
-    `shared/schools.js` like any other. That is the point of doing
+    `shared/schools.ts` like any other. That is the point of doing
     it this way rather than reshaping the JSON by hand: the
     grouping of lessons into sections, the ladder ordering and the
     spreading of `meta` are decided in exactly one place, and a
