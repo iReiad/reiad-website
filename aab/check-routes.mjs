@@ -31,7 +31,7 @@
    ============================================================ */
 
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { liveArticles } from "./content.js";
 import { NEXT_ROUTES, ARTICLE } from "../worker.js";
@@ -121,17 +121,21 @@ function trace(start) {
 
 /* ---------- what to check: every page, and every link in it ---------- */
 
-const pages = [];
+/** Every file under aab/, as a path relative to it. The pages
+    come out of this and so does the upload check further down. */
+const files = [];
 (function walk(dir) {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) {
       if (!["og", "functions", "node_modules"].includes(entry)) walk(full);
-    } else if (entry.endsWith(".html")) {
-      pages.push("/" + relative(ROOT, full));
+    } else {
+      files.push(relative(ROOT, full).split(sep).join("/"));
     }
   }
 })(ROOT);
+
+const pages = files.filter((f) => f.endsWith(".html")).map((f) => `/${f}`);
 
 const targets = new Set(["/", ...pages, ...rules.map((r) => r.from)]);
 
@@ -190,6 +194,47 @@ for (const pattern of WORKER_FIRST) {
    "German Alphabets" put a URL containing a raw space into the
    sitemap submitted to search engines. Nothing here looked at
    ARTICLES, so nothing caught it. */
+/* ---------- what gets uploaded ----------
+
+   Everything in aab/ is an asset, so everything in aab/ is a
+   public URL. The checks, the tests, the two school builders and
+   the TypeScript sources of four served modules were all being
+   published: about 300 KB at addresses like /check-routes.mjs
+   and /schema.sql, which nobody had asked for and nobody
+   maintained as pages.
+
+   aab/.assetsignore is what stops that, and this is what stops
+   .assetsignore going stale. A new check or a new test added
+   beside the others starts being published the moment it is
+   committed, and nothing about the site looks any different, so
+   the failure is exactly the kind this repository writes down:
+   silent, and only wrong later. Every path below has to be
+   covered by a rule in that file. */
+const DEV_ONLY = /(^|\/)(check-[^/]*\.mjs|build-[^/]*\.mjs|[^/]*\.test\.mjs)$|^src\/|\.sql$|scorecard\.fetch\.mjs$/;
+
+const IGNORED = readFileSync(join(ROOT, ".assetsignore"), "utf8")
+  .split("\n")
+  .map((line) => line.trim())
+  .filter((line) => line && !line.startsWith("#"));
+
+/** The matching .assetsignore does: a leading or trailing `/`
+    anchors a directory, `*` matches within one path segment. */
+const ignores = (rule, path) => {
+  if (rule.endsWith("/")) return path.startsWith(rule) || path.includes(`/${rule}`);
+  const re = new RegExp(`^${rule.split("*").map((p) =>
+    p.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join("[^/]*")}$`);
+  return re.test(path) || re.test(path.split("/").pop());
+};
+
+for (const path of files) {
+  if (!DEV_ONLY.test(path)) continue;
+  if (IGNORED.some((rule) => ignores(rule, path))) continue;
+  failures++;
+  console.error(`published  ${path}`);
+  console.error("        this is a build or test file and would be served at "
+    + `/${path}. Add a rule for it to aab/.assetsignore.`);
+}
+
 const SLUG = /^[a-z0-9-]+$/;
 for (const article of liveArticles()) {
   if (SLUG.test(article.slug)) continue;

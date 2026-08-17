@@ -28,44 +28,15 @@ import {
   resetAll, onProgress,
 } from "/english/progress.js";
 import { icon } from "/english/icons.js";
+import {
+  bn, el, ring, STATE_LABEL, paintResume, paintBar, wireReset,
+} from "/schools/hub.js";
 
-const bn = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
-
-const el = (tag, props = {}, ...kids) => {
-  const node = Object.assign(document.createElement(tag), props);
-  node.append(...kids.filter(Boolean));
-  return node;
-};
 
 /* ============================================================
    the ladder
    ============================================================ */
 
-/** A little ring showing a term's progress. Same drawing as the
-    other three schools', deliberately: four schools, one visual
-    language. */
-function ring(pct) {
-  const r = 15;
-  const c = 2 * Math.PI * r;
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 36 36");
-  svg.setAttribute("class", "ring");
-  svg.setAttribute("aria-hidden", "true");
-  svg.innerHTML =
-    `<circle class="ring-track" cx="18" cy="18" r="${r}" fill="none" stroke-width="3"/>` +
-    `<circle class="ring-fill" cx="18" cy="18" r="${r}" fill="none" stroke-width="3"` +
-    ` stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}"` +
-    ` transform="rotate(-90 18 18)" stroke-linecap="round"/>`;
-  return svg;
-}
-
-const STATE_LABEL = {
-  done: "শেষ",
-  now: "এখানে আছেন",
-  next: "পরবর্তী",
-  past: "এড়িয়ে গেছেন",
-  later: "পরে",
-};
 
 function termRow(term) {
   const stats = termStats(term);
@@ -162,7 +133,7 @@ function buildResume() {
   /* Nothing read: a first-time visitor should see a clean start,
      not an empty box telling them they have done nothing. */
   if (!all.done) {
-    host.hidden = true;
+    paintResume(host, null, icon);
     return;
   }
 
@@ -188,21 +159,7 @@ function buildResume() {
         pct: 100,
       };
 
-  host.hidden = false;
-  host.className = "resume";
-  host.textContent = "";
-  host.append(
-    el("span", { className: "resume-art", innerHTML: icon(target.art) }),
-    el("div", { className: "resume-text" },
-      el("span", { className: "mono resume-label", textContent: target.label }),
-      el("strong", { className: "bn-h", textContent: target.title }),
-      el("span", { className: "resume-where", textContent: target.where })
-    ),
-    el("div", { className: "resume-actions" },
-      el("a", { className: "btn btn-solid", href: target.url, textContent: "চালিয়ে যান →" }),
-      el("span", { className: "mono resume-pct", textContent: `${bn(target.pct)}%` })
-    )
-  );
+  paintResume(host, target, icon);
 }
 
 /* ============================================================
@@ -210,25 +167,12 @@ function buildResume() {
    ============================================================ */
 
 function paintProgress() {
-  const line = document.getElementById("english-progress");
-  if (!line) return;
-
   const all = overallStats();
   const days = allDayStats();
-  line.querySelector(".track i").style.width = `${all.pct}%`;
-  line.querySelector(".count").textContent =
-    `${bn(all.done)}/${bn(all.live)}টি পর্ব পড়া · ${bn(days.done)}/${bn(days.total)} দিনের অনুশীলন`;
-
-  const reset = document.getElementById("english-reset");
-  if (reset) reset.hidden = all.done === 0 && days.done === 0;
-}
-
-function wireReset() {
-  const reset = document.getElementById("english-reset");
-  if (!reset) return;
-  reset.addEventListener("click", () => {
-    if (!confirm("পড়া পর্ব আর খাতার দিনের হিসাব মুছে যাবে। আপনার লেখা থেকে যাবে। ঠিক আছে?")) return;
-    resetAll();
+  paintBar("english", {
+    pct: all.pct,
+    count: `${bn(all.done)}/${bn(all.live)}টি পর্ব পড়া · ${bn(days.done)}/${bn(days.total)} দিনের অনুশীলন`,
+    anything: all.done > 0 || days.done > 0,
   });
 }
 
@@ -243,5 +187,5 @@ function repaint() {
 }
 
 repaint();
-wireReset();
+wireReset("english", "পড়া পর্ব আর খাতার দিনের হিসাব মুছে যাবে। আপনার লেখা থেকে যাবে। ঠিক আছে?", resetAll);
 onProgress(repaint);
