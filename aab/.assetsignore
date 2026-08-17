@@ -1,0 +1,47 @@
+# ============================================================
+# .assetsignore: what does NOT get uploaded to the edge.
+#
+# `[assets] directory = "./aab"` in wrangler.toml means every file
+# in this folder is uploaded and served by Cloudflare at its own
+# public URL. Every file: the checks, the tests, the two school
+# builders and the TypeScript the served modules are compiled
+# from were all live on reiad.co.uk, about 300 KB of them, at
+# addresses like /check-routes.mjs and /schema.sql.
+#
+# Nothing in them is secret. schema.sql is the shape of a database
+# nobody can reach, the tests describe behaviour the site performs
+# in public anyway, and the checks are the reason any of it works.
+# It was still wrong twice over: they are not the site, and a file
+# nobody meant to publish is a file nobody thinks about before
+# changing.
+#
+# The rule is the same one the rest of this repository runs on.
+# What is served is what a reader asks for. Everything below is
+# how the site is built and checked, which is a question for a
+# clone rather than for the edge.
+#
+# `check-routes.mjs` reads this file and fails if a file matching
+# one of these shapes is missing from it, so a new check or a new
+# test cannot start being published by accident.
+# ============================================================
+
+# The checks and the builders. Run from a clone, never fetched.
+check-*.mjs
+build-*.mjs
+*/build-*.mjs
+
+# The tests. Same.
+*.test.mjs
+*/*.test.mjs
+
+# One-off data fetchers, run by hand when a model needs refreshing.
+portfolio/scorecard.fetch.mjs
+
+# The TypeScript that /api.js, /share-card.js, /photo.js and
+# /tailwind.css are compiled from. The built files are served; the
+# sources are not, and `scripts/build-modules.mjs --check` is what
+# keeps the two honest.
+src/
+
+# The database's shape, applied with wrangler from a clone.
+schema.sql

@@ -176,6 +176,37 @@ stored a URL, so a lesson that moved took the bookmark with it.
 Opening is not finishing. A visit moves the bookmark; the tick is a
 button the reader presses.
 
+### Three schools, one engine
+
+`aab/schools/progress.js` is the browser's half of that, and
+`aab/schools/hub.js` is the drawing around it. Both are shared by
+the German, English and Quranic Arabic schools, which is a change
+from three copies of each.
+
+The copies were not a variant of one another. `deutsch/progress.js`
+and `english/progress.js` were 316 and 318 lines whose diff was
+nouns, `stufe` against `term`, and `quran/progress.js` was the same
+program minus the practice book. Three hubs drew the same progress
+ring from three copies of the same twelve lines. A fix to one was a
+fix somebody had to remember to make twice more.
+
+What a school still owns is its ladder, its words and its ladder
+row: a Stufe shows sections and a book, a ধাপ shows days, a term
+shows neither, and folding those three into a config would be a
+bigger knot than three readable copies. A row is drawn by the
+school; everything around it is shared.
+
+**Every storage key is passed in by the school, spelled the way it
+has always been spelled.** That is not decoration, it is the whole
+reason the engine takes them as an argument rather than deriving
+them from the school's name: `english-day` is not `english-tag`,
+and the rule at the top of this section is why. `aab/schools/progress.test.mjs`
+asserts all ten of them by name.
+
+The money school is not a caller. Its ticks are `next/lib/progress.ts`,
+because its pages are routes; these three still need a browser
+module because their practice books are generated static HTML.
+
 ## The blocks an article is made of
 
 A piece can hold a box of quick answers, a note in the margin, numbered
@@ -218,6 +249,25 @@ before it left the browser, silently, for weeks: R2 stayed empty, every
 a real publish under the policy read out of `_headers` and fails if that
 regresses. Do not "simplify" it back to a fetch.
 
+## What is served, and what is only in the clone
+
+`[assets] directory = "./aab"` means every file in `aab/` is
+uploaded and answers at its own public URL. Every file: the five
+`check-*.mjs`, the seven `*.test.mjs`, both school builders, the
+TypeScript that four served modules are compiled from and
+`schema.sql` were all live, about 300 KB of them, at addresses
+like `/check-routes.mjs`.
+
+`aab/.assetsignore` is what stops that. Nothing in them was secret
+and none of it was reachable from a link, which is exactly why it
+sat there: a file nobody meant to publish is a file nobody thinks
+about before changing.
+
+Add a check or a test beside the others and it starts being
+published the moment it is committed, so `check-routes.mjs` reads
+that file and fails on any path matching a build-or-test shape
+that no rule covers.
+
 ## Archiving a page, rather than deleting it
 
 A page that has been replaced goes to `archive/`, not to the bin.
@@ -245,7 +295,8 @@ Run the checks. They are fast and each one exists because something
 shipped broken once:
 
 ```sh
-node aab/check-routes.mjs   # redirect loops, dead links, bad article slugs
+node aab/check-routes.mjs   # redirect loops, dead links, bad article slugs, and
+                            # a check or a test being published as a page
 node aab/check-css.mjs      # a school's layer styling the whole site, and a
                             # block class that means two things at once
 node aab/check-sw.mjs       # a precached file changed without a VERSION bump
@@ -289,6 +340,9 @@ node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the
 node aab/sync.test.mjs             # resetting, and meeting an account for the
                                    # first time (needs a server on :8899)
 node aab/studio.test.mjs           # the editor, end to end (68 checks)
+node aab/schools/progress.test.mjs  # a school's ticks filed under a key that is
+                                   # not the one in somebody's browser, and the
+                                   # three schools' shared engine (119 checks)
 node functions/_lib/notion.test.mjs
 node scripts/schools.test.mjs        # a curriculum that lost a field, a lesson
                                      # body that changed, or a ladder that came

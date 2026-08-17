@@ -1,0 +1,292 @@
+#!/usr/bin/env node
+/* ============================================================
+   progress.test.mjs: what the three schools' progress modules do.
+
+       node aab/schools/progress.test.mjs
+
+   `schools/progress.js` replaced three copies of the same 300
+   lines, one per school. The house rule for that kind of change
+   is in CLAUDE.md and it is not "it renders": a port is finished
+   when it does what the thing it replaced did, and the list of
+   what that was gets written down as a test. This is that list.
+
+   It is not a test of localStorage. Two things here are worth a
+   check every time, and both of them are the kind that breaks
+   silently:
+
+     THE KEYS. `deutsch-read`, `english-day`, `quran-done` and
+     the rest are in real browsers and in real accounts, and
+     `aab/sync.js` maps them by name. Renaming one does not move
+     somebody's ticks, it loses them, so every key each school
+     writes is asserted by name below. The engine is handed them
+     by the school precisely so that this test can read them off
+     the storage rather than off the source.
+
+     THE SHAPES. Three hubs read `stats.live`, `stats.days`,
+     `stats.next`. A shared function that starts returning a
+     differently-shaped object breaks a page and no check that
+     reads HTML would see it, because the HTML is fine and the
+     number in it is a dash.
+
+   No browser is needed and none is started: localStorage and the
+   handful of DOM calls the module makes are stubbed below, which
+   is the whole of what it touches.
+   ============================================================ */
+
+import { registerHooks } from "node:module";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const AAB = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+/* The modules import each other the way a browser asks for them,
+   `/deutsch/curriculum.js`, because that is what the served page
+   does. Node reads a leading slash as a filesystem path, so this
+   points those at aab/ and leaves every other specifier alone. */
+registerHooks({
+  resolve(specifier, context, next) {
+    if (specifier.startsWith("/")) {
+      return { url: pathToFileURL(join(AAB, specifier)).href, shortCircuit: true };
+    }
+    return next(specifier, context);
+  },
+});
+
+let passed = 0;
+const failures = [];
+const ok = (name, condition, detail = "") => {
+  if (condition) { passed++; return; }
+  failures.push(detail ? `${name}\n      ${detail}` : name);
+};
+const same = (name, a, b) => ok(name, Object.is(a, b),
+  `expected ${JSON.stringify(a)}, got ${JSON.stringify(b)}`);
+const sameSet = (name, a, b) => ok(name,
+  JSON.stringify([...a].sort()) === JSON.stringify([...b].sort()),
+  `expected ${JSON.stringify([...a].sort())}, got ${JSON.stringify([...b].sort())}`);
+const hasKeys = (name, obj, keys) => ok(name,
+  keys.every((k) => k in obj),
+  `missing ${keys.filter((k) => !(k in obj)).join(", ")} from ${JSON.stringify(obj)}`);
+
+/* ------------------------------------------------------------
+   the browser, in about twenty lines
+
+   Everything the module touches and nothing else. `store` is
+   handed back so a test can ask what was actually written, by
+   key, which is the assertion that matters most here.
+   ------------------------------------------------------------ */
+
+function stubBrowser({ title = "", path = "/", attrs = {} } = {}) {
+  const store = new Map();
+  const fired = [];
+  globalThis.localStorage = {
+    getItem: (k) => (store.has(k) ? store.get(k) : null),
+    setItem: (k, v) => store.set(k, String(v)),
+    removeItem: (k) => store.delete(k),
+  };
+  globalThis.addEventListener = () => {};
+  globalThis.dispatchEvent = (e) => { fired.push(e.type); return true; };
+  globalThis.CustomEvent = class { constructor(type) { this.type = type; } };
+  globalThis.location = { pathname: path };
+
+  const has = Object.keys(attrs).length > 0;
+  const article = {
+    getAttribute: (n) => (n in attrs ? attrs[n] : null),
+    hasAttribute: (n) => n in attrs,
+  };
+  globalThis.document = { title, querySelector: () => (has ? article : null) };
+  return { store, fired };
+}
+
+/* ------------------------------------------------------------
+   the three schools, and the words each one uses
+
+   Every school is driven through the identical sequence. Where
+   the expected answer is a count it is computed from that
+   school's own curriculum.js rather than typed here, so a school
+   that grows a stage does not fail this file.
+   ------------------------------------------------------------ */
+
+const SCHOOLS = [
+  {
+    id: "deutsch",
+    keys: { read: "deutsch-read", days: "deutsch-days", last: "deutsch-last", tag: "deutsch-tag" },
+    ladder: "STUFEN",
+    all: "allTeile",
+    stageProp: "stufe",
+    stats: "stufeStats", state: "stufeState", current: "currentStufe",
+    mark: "markRead", unmark: "unmarkRead", set: "readSet", is: "isRead",
+    book: true,
+    title: "Laute – Stufe 1",
+    path: "/deutsch/stufe-1/laute.html",
+    attrs: { "data-teil-id": "stufe-1/laute", "data-stufe": "stufe-1", "data-teil-title": "Laute" },
+    visitId: "stufe-1/laute",
+    visitBn: "Laute",
+  },
+  {
+    id: "english",
+    keys: { read: "english-read", days: "english-days", last: "english-last", tag: "english-day" },
+    ladder: "TERMS",
+    all: "allParts",
+    stageProp: "term",
+    stats: "termStats", state: "termState", current: "currentTerm",
+    mark: "markRead", unmark: "unmarkRead", set: "readSet", is: "isRead",
+    book: true,
+    title: "Alphabet: টার্ম ১",
+    path: "/english/term-1/alphabet.html",
+    attrs: { "data-part-id": "term-1/alphabet", "data-term": "term-1", "data-part-title": "Alphabet" },
+    visitId: "term-1/alphabet",
+    visitBn: "Alphabet",
+  },
+  {
+    id: "quran",
+    keys: { read: "quran-done", last: "quran-last" },
+    ladder: "DHAPS",
+    all: "allLessons",
+    stageProp: "dhap",
+    stats: "dhapStats", state: "dhapState", current: "currentDhap",
+    mark: "markDone", unmark: "unmarkDone", set: "doneSet", is: "isDone",
+    book: false,
+    title: "প্রথম দিন: ধাপ ১",
+    path: "/quran/dhap-1/day-1.html",
+    attrs: { "data-lesson-id": "dhap-1/day-1", "data-dhap": "dhap-1", "data-lesson-title": "প্রথম দিন" },
+    visitId: "dhap-1/day-1",
+    visitBn: "প্রথম দিন",
+  },
+];
+
+for (const S of SCHOOLS) {
+  const n = S.id;
+  const cur = await import(`/${n}/curriculum.js`);
+  const stages = cur[S.ladder];
+  const lessons = cur[S.all]();
+  const live = lessons.filter((l) => l.status === "live");
+
+  /* A fresh browser before the module is loaded, because loading
+     it is the first thing a page does. */
+  const { store } = stubBrowser({ title: S.title, path: S.path, attrs: S.attrs });
+  const P = await import(`/${n}/progress.js`);
+
+  const mark = P[S.mark];
+  const unmark = P[S.unmark];
+  const readSet = P[S.set];
+  const isRead = P[S.is];
+  const stageStats = P[S.stats];
+
+  /* ---- nothing read yet ---- */
+
+  same(`${n}: a new reader has read nothing`, 0, P.overallStats().done);
+  same(`${n}: and has started no stage`, false, stageStats(stages[0]).started);
+  same(`${n}: the first written lesson is what is next`, live[0].id, P.nextUp()?.id);
+  same(`${n}: and the stage they are in is the first`, stages[0].slug, P[S.current]()?.slug);
+  same(`${n}: nothing is written to storage by loading the module`, 0, store.size);
+
+  /* ---- reading ---- */
+
+  live.slice(0, 11).forEach((l) => mark(l.id));
+  unmark(live[3].id);
+
+  same(`${n}: ten lessons read`, 10, P.overallStats().done);
+  same(`${n}: the eleventh is what is next`, live[3].id, P.nextUp()?.id);
+  same(`${n}: a read lesson says so`, true, isRead(live[0].id));
+  same(`${n}: an unread one does not`, false, isRead(live[3].id));
+  same(`${n}: and neither does a lesson that does not exist`, false, isRead("nonsense"));
+  sameSet(`${n}: the set is exactly what was marked`,
+    live.slice(0, 11).filter((l) => l.id !== live[3].id).map((l) => l.id), readSet());
+
+  /* THE KEY. Not "a key", this one, spelled this way. */
+  ok(`${n}: the ticks are filed under ${S.keys.read}`, store.has(S.keys.read),
+    `wrote ${[...store.keys()].join(", ") || "nothing"}`);
+  same(`${n}: and nothing else was written by reading`, 1, store.size);
+
+  /* ---- the shape three hubs read ---- */
+
+  hasKeys(`${n}: a stage's stats carry what a hub row draws`, stageStats(stages[0]),
+    ["done", "total", "live", "pct", "complete", "started"]);
+  hasKeys(`${n}: the ladder's stats carry what the top bar draws`, P.overallStats(),
+    ["done", "live", "pct", "complete"]);
+  same(`${n}: a percentage is a whole number`, true,
+    Number.isInteger(stageStats(stages[0]).pct));
+  same(`${n}: an unstarted ladder is not complete`, false, P.overallStats().complete);
+
+  /* ---- the ladder's states ---- */
+
+  const states = stages.map((s) => P[S.state](s));
+  ok(`${n}: every stage has a state a hub knows how to label`,
+    states.every((s) => ["done", "now", "next", "past", "later"].includes(s)),
+    states.join(", "));
+  same(`${n}: exactly one stage is the one they are in`, 1,
+    states.filter((s) => s === "now").length);
+
+  /* ---- where they were ---- */
+
+  P.setLast({ id: live[2].id, [S.stageProp]: stages[0].slug, url: "/x", bn: "x" });
+  const last = P.getLast();
+  same(`${n}: the bookmark comes back`, live[2].id, last.id);
+  same(`${n}: with the stage it was set with`, stages[0].slug, last[S.stageProp]);
+  ok(`${n}: and a timestamp`, Number.isFinite(last.ts));
+  ok(`${n}: filed under ${S.keys.last}`, store.has(S.keys.last));
+
+  /* ---- opening a lesson ---- */
+
+  same(`${n}: opening a lesson records it`, S.visitId, P.recordVisit());
+  same(`${n}: and moves the bookmark to it`, S.visitId, P.getLast().id);
+  same(`${n}: with the title off the page`, S.visitBn, P.getLast().bn);
+  same(`${n}: and the address it was read at`, S.path, P.getLast().url);
+
+  /* ---- the practice book, where there is one ---- */
+
+  if (S.book) {
+    const book = stages.find((s) => s.workbook?.days);
+    same(`${n}: an untouched book has no days done`, 0, P.dayStats(book).done);
+    same(`${n}: and points at day one`, 1, P.dayStats(book).next);
+
+    [1, 2, 3, 7].forEach((d) => P.toggleDay(book, d));
+    P.toggleDay(book, 2);
+
+    same(`${n}: ticking is a toggle`, 3, P.dayStats(book).done);
+    same(`${n}: an untick sticks`, false, P.isDayDone(book, 2));
+    same(`${n}: a tick sticks`, true, P.isDayDone(book, 1));
+    same(`${n}: and the next day is the first gap`, 2, P.dayStats(book).next);
+    same(`${n}: every book adds up`, 3, P.allDayStats().done);
+    ok(`${n}: the book still being skipped is offered`, P.nextBook()?.slug);
+    ok(`${n}: the days are filed under ${S.keys.days}`, store.has(S.keys.days));
+
+    P.setLastDay(12);
+    same(`${n}: the book remembers where it was left`, 12, P.getLastDay());
+    ok(`${n}: under ${S.keys.tag}`, store.has(S.keys.tag));
+  } else {
+    same(`${n}: a school with no book has no days key`, undefined, S.keys.days);
+    same(`${n}: and counts in days rather than pages`, true,
+      Number.isInteger(P.overallStats().days));
+    ok(`${n}: which is not the same number as the pages`,
+      P.overallStats().totalDays >= P.overallStats().live);
+  }
+
+  /* ---- every key, and only those keys ---- */
+
+  sameSet(`${n}: the keys written are exactly the ones this school owns`,
+    Object.values(S.keys), [...store.keys()]);
+
+  /* ---- resetting ---- */
+
+  P.resetAll();
+  same(`${n}: resetting empties the storage`, 0, store.size);
+  same(`${n}: and the ticks with it`, 0, readSet().size);
+  same(`${n}: and the bookmark`, null, P.getLast());
+}
+
+/* ------------------------------------------------------------
+   and the thing that must never be true again
+   ------------------------------------------------------------ */
+
+const all = SCHOOLS.flatMap((S) => Object.values(S.keys));
+sameSet("no two schools share a storage key", all, new Set(all));
+
+console.log(`\n${passed} checks passed`);
+if (failures.length) {
+  console.log(`${failures.length} failed:\n`);
+  for (const f of failures) console.log(`  ✗ ${f}`);
+  process.exit(1);
+}
+console.log("Three schools, one engine, and every key still spelled the way\n"
+  + "it is spelled in somebody's browser.\n");

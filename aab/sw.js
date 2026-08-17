@@ -31,6 +31,17 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v84: The German, English and Quranic Arabic schools stopped
+        keeping three copies of the same two modules. Their ticks
+        are /schools/progress.js now and the drawings around their
+        ladders are /schools/hub.js, so every one of the six files
+        already in this list changed, and two new ones joined it.
+        A cached v83 shell would answer /deutsch/hub.js from the
+        cache with a copy that imports helpers it defines itself,
+        which works, right up until the day one of them changes in
+        the shared file and not in the stale copy. Bumping empties
+        both.
+
    v83: The money school moved from /learn/ to /money/, which is
         251 addresses and every one of them 301s. Every precached
         path under the old mount is a new string: /money/reader.js
@@ -685,7 +696,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v83";
+const VERSION = "v84";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -774,6 +785,14 @@ const PRECACHE = [
      opened, which is the evening before the bus.
      (Keep double quotes out of this comment: check-sw.mjs reads
      the list below by pulling quoted strings out of the block.) */
+  /* The two modules all three of the schools below now run on.
+     progress.js is the ticks, the days and the bookmark, and
+     hub.js is the ring, the resume card and the bar: one copy
+     each, where there used to be three. A school hub is broken
+     without them, so they are precached beside the schools
+     rather than left to the runtime cache. */
+  "/schools/progress.js",
+  "/schools/hub.js",
   "/deutsch/curriculum.js",
   "/deutsch/hub.js",
   "/deutsch/progress.js",

@@ -28,43 +28,15 @@ import {
   nextBook, nextUp, resetAll, onProgress,
 } from "/deutsch/progress.js";
 import { icon } from "/deutsch/icons.js";
+import {
+  bn, el, ring, STATE_LABEL, paintResume, paintBar, wireReset,
+} from "/schools/hub.js";
 
-const bn = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
-
-const el = (tag, props = {}, ...kids) => {
-  const node = Object.assign(document.createElement(tag), props);
-  node.append(...kids.filter(Boolean));
-  return node;
-};
 
 /* ============================================================
    the ladder
    ============================================================ */
 
-/** A little ring showing a Stufe's progress. Same drawing as the
-    Learn hub's, deliberately: two schools, one visual language. */
-function ring(pct) {
-  const r = 15;
-  const c = 2 * Math.PI * r;
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("viewBox", "0 0 36 36");
-  svg.setAttribute("class", "ring");
-  svg.setAttribute("aria-hidden", "true");
-  svg.innerHTML =
-    `<circle class="ring-track" cx="18" cy="18" r="${r}" fill="none" stroke-width="3"/>` +
-    `<circle class="ring-fill" cx="18" cy="18" r="${r}" fill="none" stroke-width="3"` +
-    ` stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct / 100)}"` +
-    ` transform="rotate(-90 18 18)" stroke-linecap="round"/>`;
-  return svg;
-}
-
-const STATE_LABEL = {
-  done: "শেষ",
-  now: "এখানে আছেন",
-  next: "পরবর্তী",
-  past: "এড়িয়ে গেছেন",
-  later: "পরে",
-};
 
 function stufeRow(stufe) {
   const stats = stufeStats(stufe);
@@ -181,7 +153,7 @@ function buildResume() {
      device, a key that changed, was shown no way back in at all,
      with a ladder full of ticks right underneath saying otherwise. */
   if (!readSet().size && !allDayStats().done) {
-    host.hidden = true;
+    paintResume(host, null, icon);
     return;
   }
 
@@ -231,21 +203,7 @@ function buildResume() {
           pct: 100,
         };
 
-  host.hidden = false;
-  host.className = "resume";
-  host.textContent = "";
-  host.append(
-    el("span", { className: "resume-art", innerHTML: icon(target.art) }),
-    el("div", { className: "resume-text" },
-      el("span", { className: "mono resume-label", textContent: target.label }),
-      el("strong", { className: "bn-h", textContent: target.title }),
-      el("span", { className: "resume-where", textContent: target.where })
-    ),
-    el("div", { className: "resume-actions" },
-      el("a", { className: "btn btn-solid", href: target.url, textContent: "চালিয়ে যান →" }),
-      el("span", { className: "mono resume-pct", textContent: `${bn(target.pct)}%` })
-    )
-  );
+  paintResume(host, target, icon);
 }
 
 /* ============================================================
@@ -253,26 +211,12 @@ function buildResume() {
    ============================================================ */
 
 function paintProgress() {
-  const line = document.getElementById("deutsch-progress");
-  if (!line) return;
-
   const teile = overallStats();
   const days = allDayStats();
-
-  line.querySelector(".track i").style.width = `${teile.pct}%`;
-  line.querySelector(".count").textContent =
-    `${bn(teile.done)}/${bn(teile.live)} পাঠ পড়া · ${bn(days.done)}/${bn(days.total)} দিন অনুশীলন`;
-
-  const reset = document.getElementById("deutsch-reset");
-  if (reset) reset.hidden = teile.done === 0 && days.done === 0;
-}
-
-function wireReset() {
-  const reset = document.getElementById("deutsch-reset");
-  if (!reset) return;
-  reset.addEventListener("click", () => {
-    if (!confirm("সব টিক আর দিনের হিসাব মুছে যাবে। আপনার লেখা কথাগুলো থাকবে। ঠিক আছে?")) return;
-    resetAll();
+  paintBar("deutsch", {
+    pct: teile.pct,
+    count: `${bn(teile.done)}/${bn(teile.live)} পাঠ পড়া · ${bn(days.done)}/${bn(days.total)} দিন অনুশীলন`,
+    anything: teile.done > 0 || days.done > 0,
   });
 }
 
@@ -287,5 +231,5 @@ function repaint() {
 }
 
 repaint();
-wireReset();
+wireReset("deutsch", "সব টিক আর দিনের হিসাব মুছে যাবে। আপনার লেখা কথাগুলো থাকবে। ঠিক আছে?", resetAll);
 onProgress(repaint);
