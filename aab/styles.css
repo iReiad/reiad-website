@@ -728,6 +728,43 @@
   }
   .kbd-hint { opacity: 0.6; font-size: var(--t-2); }
 
+  /* ---------- a target a thumb can actually hit ----------
+
+     `--tap` is 44px because that is roughly the width of an adult
+     fingertip, and eight of this site's nine buttons were under
+     it: the two most-used controls in the top bar measured 32x36
+     and 37x36 on a 390px phone, which is a third less area than
+     the guideline in each direction.
+
+     The fix is NOT to make them 44px tall. These are small on
+     purpose: a bar that is mostly chrome is a bar in the way, and
+     three 44px lozenges across the top of a phone is what that
+     looks like. The visible control stays exactly the size it is
+     and an invisible box is centred over it, at least `--tap` in
+     both directions, which is what the pointer actually hits.
+
+     `::before` rather than `::after`, because two of these
+     controls already draw something in `::after`, and it sits
+     behind the label rather than over it so that text inside the
+     button is still selectable and the icon still receives its
+     own hover.
+
+     Any control that is already big enough is unaffected: the
+     box is `100%` of the button and only grows to `--tap` when
+     the button is smaller than that. */
+  :is(.icon-btn, .top-btn) {
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      left: 50%; top: 50%;
+      translate: -50% -50%;
+      width: 100%; height: 100%;
+      min-width: var(--tap); min-height: var(--tap);
+    }
+  }
+
   /* ---------- reader accounts ----------
      One button in the header: the word "Sign in" until somebody
      does, then their initial in a circle. It is the whole visible
