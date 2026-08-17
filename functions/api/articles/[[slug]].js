@@ -20,7 +20,7 @@ import {
 } from "../../_lib/http.js";
 import { requireAdmin, readSession } from "../../_lib/auth.js";
 import { sanitiseHTML, readingMinutes } from "../../_lib/sanitise.js";
-import { SECTIONS, allowed } from "../../../shared/rows.js";
+import { SECTIONS, allowed } from "../../../shared/rows.ts";
 
 /* `embedded` is computed rather than stored: it says whether the
    body still carries a photo as a data: URL instead of a /media
@@ -42,7 +42,7 @@ const PUBLIC_COLUMNS =
    existed. Kept as a list rather than a free string because it
    becomes a URL prefix, and a URL prefix from a request body is
    how you end up serving /etc/passwd.html. */
-/* archive/TRANSITION.md Stage 12, step 1: the list is `shared/rows.js`
+/* archive/TRANSITION.md Stage 12, step 1: the list is `shared/rows.ts`
    now. It was written out here and again in the comments handler,
    and a mount added to one and not the other is a thread that can
    be attached to a section no article can be published into. */

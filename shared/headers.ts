@@ -1,5 +1,5 @@
 /* ============================================================
-   headers.js: the security headers, for responses this code
+   headers.ts: the security headers, for responses this code
    builds itself.
 
    ---- the hole this closes ----
@@ -27,10 +27,6 @@
    as the Worker produced" has to include the headers it came with.
    ============================================================ */
 
-/** Everything `aab/_headers` sends with every file in `aab/`.
-
-    Kept as an object rather than a Headers instance so it can be
-    compared, spread and read by a check that has no DOM. */
 export const SECURITY_HEADERS = {
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
@@ -53,12 +49,15 @@ export const SECURITY_HEADERS = {
     + "object-src 'none'",
 };
 
-/** An HTML response with the headers a static page would have had.
+export interface HtmlResponseOptions {
+  cache?: string;
+  status?: number;
+}
 
-    `cache` is passed rather than assumed: an article is cached for
-    a minute at the edge, and a page that has just been published
-    should not be. */
-export function htmlResponse(body, { cache, status = 200 } = {}) {
+export function htmlResponse(
+  body: string,
+  { cache, status = 200 }: HtmlResponseOptions = {}
+): Response {
   return new Response(body, {
     status,
     headers: {
@@ -69,6 +68,4 @@ export function htmlResponse(body, { cache, status = 200 } = {}) {
   });
 }
 
-/** The same set, as plain entries, for anything that builds its
-    own Response and only wants the security half. */
-export const securityEntries = () => Object.entries(SECURITY_HEADERS);
+export const securityEntries = (): Array<[string, string]> => Object.entries(SECURITY_HEADERS);

@@ -40,7 +40,7 @@ const ROOT = dirname(fileURLToPath(import.meta.url));
 /* `https://fonts.googleapis.com` was here until 16 August 2026, when
    `studio.js` and `desk.js` were archived and took the last mention
    of it in any scanned file with them. The webfont link lives in
-   HTML shells and in `shared/look.js` now, and this check reads
+   HTML shells and in `shared/look.ts` now, and this check reads
    neither: it is about what a browser is allowed to *fetch*, and a
    stylesheet link is style-src's business. It comes back the day a
    script names it again, which is the point of the list. */
@@ -104,7 +104,7 @@ walk(join(ROOT, "..", "app", "src"));
    governs the page, not the Worker that built it, and the Worker
    talks to Notion and to R2 without a browser being involved at
    all. Adding them would report every one of those as a violation
-   of a policy that does not apply to them, and `shared/headers.js`
+   of a policy that does not apply to them, and `shared/headers.ts`
    would report itself, because the policy is what it contains. */
 
 const wanted = new Map();      // origin → the files that name it

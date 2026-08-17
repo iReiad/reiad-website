@@ -3,7 +3,7 @@
    schools' own words about themselves.
 
    archive/TRANSITION.md Stage 11.7. The prose moved into the database at
-   Stage 8 and `shared/schools.js` has read it since; what did not
+   Stage 8 and `shared/schools.ts` has read it since; what did not
    move is the 251 pages, which are still generated files. This is
    the source half of the route that replaces them.
 

@@ -31,8 +31,8 @@ import { db, one } from "../_lib/db.js";
    It is a package rather than another file under _lib/ because the
    Next.js route reads it too, and Turbopack will not resolve an
    import above its own root. See the note in next/next.config.ts. */
-import { LOOK, lookFor, dateLabel, headFacts, FONTS } from "../../shared/look.js";
-import { htmlResponse } from "../../shared/headers.js";
+import { LOOK, lookFor, dateLabel, headFacts, FONTS } from "../../shared/look.ts";
+import { htmlResponse } from "../../shared/headers.ts";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>\"]/g, (c) =>

@@ -6,7 +6,7 @@
 
    `aab/_headers` is read by Cloudflare's static asset server and
    applies to every file in `aab/`. A response a Worker builds is
-   not a file, so it gets none of them; `shared/headers.js` is that
+   not a file, so it gets none of them; `shared/headers.ts` is that
    same list, declared so the Worker and the Next.js route can
    attach it by hand.
 
@@ -31,7 +31,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-const { SECURITY_HEADERS } = await import(join(ROOT, "shared/headers.js"));
+const { SECURITY_HEADERS } = await import(join(ROOT, "shared/headers.ts"));
 
 /* ---------- what _headers says for every file ---------- */
 
@@ -71,7 +71,7 @@ const failures = [];
 
 for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
   if (!(key in fromFile)) {
-    failures.push(`${key} is in shared/headers.js and not in aab/_headers`);
+    failures.push(`${key} is in shared/headers.ts and not in aab/_headers`);
     continue;
   }
   if (tidy(fromFile[key]) !== tidy(value)) {
@@ -90,7 +90,7 @@ for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
 const NOT_SHARED = new Set(["Cache-Control"]);
 for (const key of Object.keys(fromFile)) {
   if (NOT_SHARED.has(key) || key in SECURITY_HEADERS) continue;
-  failures.push(`${key} is in aab/_headers and not in shared/headers.js, `
+  failures.push(`${key} is in aab/_headers and not in shared/headers.ts, `
     + "so a page rendered by a Worker would not have it");
 }
 
@@ -99,11 +99,11 @@ if (failures.length) {
   for (const f of failures) console.error(`  ✗ ${f}`);
   console.error(
     "\n        aab/_headers is what Cloudflare sends with a static file.\n"
-    + "        shared/headers.js is what the Worker and the Next.js route\n"
+    + "        shared/headers.ts is what the Worker and the Next.js route\n"
     + "        attach by hand, because a response they build is not a file.\n");
   process.exit(1);
 }
 
 console.log(
   `headers: ${Object.keys(SECURITY_HEADERS).length} security header(s), `
-  + "the same in aab/_headers and shared/headers.js.");
+  + "the same in aab/_headers and shared/headers.ts.");

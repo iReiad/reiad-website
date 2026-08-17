@@ -9,7 +9,7 @@
    size on one section.
 
    The article route builds its head from `headFacts()` in
-   `shared/look.js` instead: that one has to agree with the
+   `shared/look.ts` instead: that one has to agree with the
    Worker's own renderer, tag for tag, and this one has nothing on
    the other side to agree with.
    ============================================================ */

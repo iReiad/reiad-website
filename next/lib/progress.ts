@@ -193,7 +193,7 @@ export { EVENT as PROGRESS_EVENT };
 /* ---------- across the four schools ---------- */
 
 /** The four schools, in the order the rail lists them. Written
-    out rather than imported from `shared/schools.js` because this
+    out rather than imported from `shared/schools.ts` because this
     file is the browser's and that one is the Worker's; the check
     that they agree is that both are four names long and this list
     is only ever read to look four keys up. */

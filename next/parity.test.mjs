@@ -289,7 +289,7 @@ await new Promise((r) => setTimeout(r, 500));
 
 const ORIGIN = "https://reiad.co.uk";
 const { render } = await import("../functions/insights/[slug].js");
-const { SECURITY_HEADERS } = await import("../shared/headers.js");
+const { SECURITY_HEADERS } = await import("../shared/headers.ts");
 
 /* Asked for at the address the piece actually has.
 

@@ -1,5 +1,5 @@
 /* ============================================================
-   look.js: what a rendered piece looks like, per section.
+   look.ts: what a rendered piece looks like, per section.
 
    The three reading sections share a page shell and differ in a
    handful of small ways: the mount they are served at, the class
@@ -25,19 +25,42 @@
    test can all read it.
    ============================================================ */
 
-/* Where a section's own index lives, written once because four
-   things say it: the "back to the index" link under every piece,
-   the hub route's canonical link, its Open Graph URL, and the
-   allowlist in worker.js. They were the same string typed twice
-   in this file already, which is one typo away from a piece whose
-   back link goes somewhere the hub is not. */
+export interface Look {
+  mount: string;
+  hub: string;
+  bodyClass: string;
+  og: string;
+  minutes: (n: number) => string;
+  skip: string;
+  note: string;
+  back: { url: string; kicker: string; label: string };
+  side: { url: string; kicker: string; label: string };
+  footer: string;
+}
+
+export interface Article {
+  slug: string;
+  section: string;
+  lang: string;
+  title: string;
+  dek: string;
+  tag: string;
+  body: string;
+  cover: string;
+  topics: string;
+  minutes: number;
+  status: string;
+  published_at: string;
+  updated_at: string;
+}
+
 const HUB = {
   insights: "/insights.html",
   cooking: "/cooking/index.html",
   travel: "/travel/index.html",
 };
 
-export const LOOK = {
+export const LOOK: Record<string, Look> = {
   insights: {
     mount: "/insights/",
     hub: HUB.insights,
@@ -81,76 +104,58 @@ export const LOOK = {
   },
 };
 
-/** The section a piece belongs to, falling back to Insights: an
-    unknown value comes from an old row, and the honest answer is
-    the default section rather than a crash. */
-export const lookFor = (section) => LOOK[section] ?? LOOK.insights;
+export const lookFor = (section: string): Look => LOOK[section] ?? LOOK.insights;
 
-/** Is this a section anything is served at? Used to tell "the
-    request came in at the wrong mount" from "we do not know that
-    word at all". */
-export const isSection = (name) => Object.hasOwn(LOOK, String(name));
+export const isSection = (name: string): boolean => Object.hasOwn(LOOK, String(name));
 
-/* ---------- the share image ----------
-
-   A social scraper is not a browser: it decides whether to show a
-   card at all from these three tags, and several of them refuse a
-   WebP outright. The Studio draws a JPEG at 1200x630 on publish
-   for exactly that reason, and this describes whatever it stored,
-   so a piece published before that existed still gets an honest
-   tag rather than a confident wrong one. Dimensions are declared
-   only for the two kinds of image known to be 1200x630: a
-   section's own card, and one the Studio drew. */
-
-const IMAGE_TYPES = {
+const IMAGE_TYPES: Record<string, string> = {
   png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
   webp: "image/webp", avif: "image/avif", gif: "image/gif",
 };
 
-export const cardShape = (url) => ({
-  type: IMAGE_TYPES[String(url ?? "").split(".").pop().toLowerCase()] ?? "image/png",
-  sized: /^\/og\/[a-z0-9-]+\.png$/.test(url ?? "")
-    || /^\/media\/[a-z0-9-]*-card\/[0-9a-f]+\.jpg$/.test(url ?? ""),
-});
+export const cardShape = (url: string | null | undefined): { type: string; sized: boolean } => {
+  const ext = String(url ?? "").split(".").pop()?.toLowerCase() ?? "";
+  return {
+    type: IMAGE_TYPES[ext] ?? "image/png",
+    sized: /^\/og\/[a-z0-9-]+\.png$/.test(url ?? "")
+      || /^\/media\/[a-z0-9-]*-card\/[0-9a-f]+\.jpg$/.test(url ?? ""),
+  };
+};
 
-/** The picture a pasted link should show.
-
-    Articles published before `cover` was a column have an empty
-    one even when their body already holds a hosted photo. The lead
-    photo, then the first photo, then the section's own card: that
-    recovers the preview for those pieces without anybody having to
-    re-save them. The Studio stores `cover` on every new publish;
-    this is the backwards-compatible bridge. */
-export function coverFor(article) {
+export function coverFor(article: Partial<Article> | null | undefined): string {
   const body = article?.body ?? "";
   const lead = body.match(
     /<figure\b[^>]*class="[^"]*\blead-photo\b[^"]*"[^>]*>[\s\S]*?<img\b[^>]*\bsrc="(\/media\/[A-Za-z0-9._/-]+)"/i
   )?.[1];
   const first = body.match(/<img\b[^>]*\bsrc="(\/media\/[A-Za-z0-9._/-]+)"/i)?.[1];
-  return article?.cover || lead || first || lookFor(article?.section).og;
+  const section = article?.section ? String(article.section) : "insights";
+  return article?.cover || lead || first || lookFor(section).og;
 }
 
-/** The date under the headline, in the piece's own language. */
-export const dateLabel = (article) =>
+export const dateLabel = (article: Pick<Article, "lang" | "published_at">): string =>
   new Intl.DateTimeFormat(article.lang === "bn" ? "bn-BD" : "en-GB", {
     day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
   }).format(new Date(`${article.published_at || "2026-01-01"}T00:00:00Z`));
 
-/** The webfonts every page of this site loads. One string, because
-    a second copy of it with one weight missing is a page whose
-    headings quietly render in the fallback face. */
 export const FONTS =
   "https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600"
   + "&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500"
   + "&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Serif+Bengali:wght@500;600"
   + "&display=swap";
 
-/** Everything the head of an article page says about itself.
+export interface HeadFacts {
+  look: Look;
+  url: string;
+  cover: string;
+  image: string;
+  sized: boolean;
+  type: string;
+  locale: string;
+  title: string;
+  jsonLd: string;
+}
 
-    Both renderers build their tags from this, which is what makes
-    "the Next route and the Worker agree" a thing a test can check
-    rather than a thing a comment can ask for. */
-export function headFacts(article, origin) {
+export function headFacts(article: Article, origin: string): HeadFacts {
   const look = lookFor(article.section);
   const cover = coverFor(article);
   const shape = cardShape(cover);
@@ -174,9 +179,6 @@ export function headFacts(article, origin) {
       dateModified: article.updated_at,
       inLanguage: article.lang,
       author: { "@type": "Person", name: "Rony Reiad", url: `${origin}/about.html` },
-      /* The piece's own address. This said /insights/ whatever the
-         section was, which pointed a kitchen piece's structured
-         data at a URL that answers 404. */
       mainEntityOfPage: url,
       image: `${origin}${cover}`,
     }).replace(/</g, "\\u003c"),

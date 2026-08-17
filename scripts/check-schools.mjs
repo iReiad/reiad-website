@@ -31,7 +31,7 @@
    ---- and a second question, added for Stage 11.7 ----
 
    There is now a third place the ladder's arithmetic is written:
-   `shared/schools.js`, which is where it had to go for a Next.js
+   `shared/schools.ts`, which is where it had to go for a Next.js
    route to reach it, because `next/` cannot import out of its own
    directory. It holds `lessonUrl`, `lessonId`, `lessonLabel` and
    the rest, and while the four `curriculum.js` modules survive it
@@ -48,14 +48,14 @@
    Neither is guessable from the shape of the data.
 
    When the school pages stop being files, the modules go, this
-   half goes with them, and `shared/schools.js` is simply where
+   half goes with them, and `shared/schools.ts` is simply where
    the arithmetic lives.
    ============================================================ */
 
 import { SCHOOLS, readSchool } from "./import-schools.mjs";
 import { readSnapshot } from "./schools-snapshot.mjs";
 import { fromSnapshot } from "./school-source.mjs";
-import { laddered, stageUrl, workbookUrl } from "../shared/schools.js";
+import { laddered, stageUrl, workbookUrl } from "../shared/schools.ts";
 
 const snapshot = readSnapshot();
 const problems = [];
@@ -101,7 +101,7 @@ for (const school of SCHOOLS) {
 /* ============================================================
    the second question: do the two sets of helpers agree?
 
-   `shared/schools.js` is handed a ladder read out of the snapshot
+   `shared/schools.ts` is handed a ladder read out of the snapshot
    and asked for each lesson's URL, id and label. The school's own
    `curriculum.js` is handed the same ladder and asked the same
    thing through whichever names it uses for them. Every school
@@ -153,7 +153,7 @@ for (const school of SCHOOLS) {
 
     if (mine.length !== theirs.length) {
       problems.push(`${school.id}: stage "${stage.slug}" flattens to `
-        + `${mine.length} lessons through shared/schools.js and `
+        + `${mine.length} lessons through shared/schools.ts and `
         + `${theirs.length} through aab/${school.dir}/curriculum.js`);
       continue;
     }
@@ -162,14 +162,14 @@ for (const school of SCHOOLS) {
     const there = STAGE_URL[school.id](mod, stage);
     if (here !== there) {
       problems.push(`${school.id}: stage "${stage.slug}" is at "${here}" `
-        + `through shared/schools.js and "${there}" through curriculum.js`);
+        + `through shared/schools.ts and "${there}" through curriculum.js`);
     }
 
     const bookHere = workbookUrl(school.id, stage) || "";
     const bookThere = (mod.workbookUrl ? mod.workbookUrl(stage) : null) || "";
     if (bookHere !== bookThere) {
       problems.push(`${school.id}: the practice book of "${stage.slug}" is `
-        + `"${bookHere || "(none)"}" through shared/schools.js and `
+        + `"${bookHere || "(none)"}" through shared/schools.ts and `
         + `"${bookThere || "(none)"}" through curriculum.js`);
     }
 
@@ -179,7 +179,7 @@ for (const school of SCHOOLS) {
 
       const say = (what, a, b) => problems.push(
         `${school.id}: the ${what} of "${stage.slug}/${lesson.slug}" is `
-        + `"${a}" through shared/schools.js and "${b}" through `
+        + `"${a}" through shared/schools.ts and "${b}" through `
         + `aab/${school.dir}/curriculum.js`);
 
       if (lesson.url !== other.url) say("URL", lesson.url, other.url);
@@ -211,4 +211,4 @@ if (problems.length) {
 
 console.log(`schools: ${checked} ladder entries, the files and the snapshot agree.`);
 console.log(`         ${agreed} lessons address and identify themselves the same `
-  + `way\n         through shared/schools.js and through curriculum.js.`);
+  + `way\n         through shared/schools.ts and through curriculum.js.`);

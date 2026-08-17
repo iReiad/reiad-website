@@ -5,7 +5,7 @@
    route renders them, and the head is where a second copy costs
    the most: a canonical link, an Open Graph tag or the webfont
    URL written twice drifts the day one of them is edited, which
-   is the whole argument of `shared/look.js` one level up.
+   is the whole argument of `shared/look.ts` one level up.
 
    What is NOT in here is anything a route states about itself.
    The title, the description, the canonical link and the share

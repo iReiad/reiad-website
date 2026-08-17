@@ -9,7 +9,7 @@
    ---- why nothing here knows about `teile` or `parts` ----
 
    A school's own vocabulary is real: /deutsch/ calls a lesson a
-   Teil and /english/ calls it a part, and `shared/schools.js`
+   Teil and /english/ calls it a part, and `shared/schools.ts`
    hands a stage back with its lessons under that key because the
    builders and the hubs index by it.
 
@@ -34,7 +34,7 @@ import { api } from "../api.ts";
 
 /** The schools, in the order the site lists them, with the name a
     person would recognise. The ids are the ones in the database
-    and in `shared/schools.js`. */
+    and in `shared/schools.ts`. */
 export const SCHOOLS = [
   { id: "money", name: "Money", where: "/money/" },
   { id: "deutsch", name: "German", where: "/deutsch/" },
