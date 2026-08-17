@@ -98,12 +98,23 @@ for (const school of ["deutsch", "english", "quran"]) {
   const rungs = [...document.querySelectorAll("details.rung")];
   ok(`${school}: the ladder built its rungs (${rungs.length})`, rungs.length > 0);
 
-  const rings = document.querySelectorAll("svg.ring").length;
+  /* `span.ring > svg`, which is `<Ring>` in components/deck.tsx node
+     for node. It was `svg.ring` with the rotation on a transform
+     attribute, and that shape existed only because two layers both
+     defined `.ring` and the school's copy lost: `.ring svg` does not
+     match an SVG that is itself the `.ring`, so the schools' ring was
+     never rotated twice by accident. One shape now, and the rotation
+     is the stylesheet's in both places. */
+  const rings = document.querySelectorAll("span.ring > svg").length;
   ok(`${school}: the shared ring drew one per rung (${rings})`, rings === rungs.length && rings > 0);
 
-  const dash = [...document.querySelectorAll("svg.ring circle.ring-fill")]
-    .every((c) => Number(c.getAttribute("stroke-dasharray")) > 0);
-  ok(`${school}: every ring has a real circumference`, dash);
+  const fills = [...document.querySelectorAll("span.ring > svg circle.ring-fill")];
+  /* `.every()` on an empty list is true, so the count is asserted
+     first. This check passed for three schools while the selector
+     above it was returning nothing at all. */
+  ok(`${school}: every ring has a real circumference`,
+    fills.length === rungs.length
+    && fills.every((c) => Number(c.getAttribute("stroke-dasharray")) > 0));
 
   const states = rungs.map((r) => r.getAttribute("data-state"));
   ok(`${school}: exactly one rung is "now"`, states.filter((s) => s === "now").length === 1, states.join(","));
