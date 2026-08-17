@@ -235,6 +235,50 @@ no account still gets all of it. Nothing here has that history
 and nothing here works signed out, so a second copy would be a
 second record to keep in step for nobody's benefit.
 
+### What else an account is for
+
+Five things, and each one had to pass the same test the three
+settings questions pass: it changes something the reader can point
+at.
+
+- **A reading list and notes.** `aab/src/keep.ts` puts a Save and
+  an Add a note under the byline of every piece and every lesson,
+  and `public.library` is **one row per person per page**, with
+  `saved` and `note` as two columns of it. They are two facts
+  about one thing rather than two things, and a trigger removes
+  the row once both have gone, so the list can be counted rather
+  than filtered.
+- **Reading preferences.** `aab/src/prefs.ts`: the type size, the
+  measure, the theme and which language the calculators open in.
+  Applied before the first paint by the boot script in
+  `next/components/shell.tsx`, carried between devices by
+  `sync.ts` under `reader-prefs`, and the language one writes
+  `tool-lang`, which the stock check has read since long before
+  accounts. One choice, one key.
+- **A year of days**, drawn from `days-active` on the account
+  page. No flame, nothing red, nothing counting down.
+- **Take a copy of everything.** One JSON file with the progress,
+  the library, the targets, the scenarios and the profile in it.
+  Leaving should be as easy as arriving.
+- **Erase everything**, which means the account and the mirror.
+
+`next/account.test.mjs` is the guard: 71 checks in a real browser
+against a routed Supabase.
+
+### The account menu is a popover, not a dialog
+
+`aab/src/signin.ts`. It was `showModal()`, which dimmed the site
+and took the focus for "which account am I on" and "go to my
+reading list", neither of which is a decision the page cannot
+continue without.
+
+`popover="auto"` brings the top layer, light dismiss, Escape and
+the focus return, so this file implements none of the four. CSS
+anchor positioning places it where the browser has it, and the
+two custom properties are the fallback where it does not, with
+the scroll listener added **only** in that case. Below 640px it is
+a sheet against the bottom edge, decided by a media query.
+
 ### Checkpoints, which are the ticks inside a lesson
 
 `aab/checkpoints.js`. A lesson's own tick is about the whole page
@@ -437,6 +481,10 @@ node scripts/snapshot.test.mjs     # a nightly snapshot that leaks, or that thro
                                    # at 03:17 where nobody is watching
 node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the
                                    # real CSP (needs Playwright, skips without)
+node next/account.test.mjs        # the account's five features, the popover
+                                  # menu and the Save under a byline
+                                  # (71 checks, needs the Next build and a
+                                  # browser, skips without)
 node aab/sync.test.mjs             # a browser's own progress getting into an
                                    # account, resetting, signing out, and two
                                    # signed-in devices (27 checks, needs a
@@ -687,10 +735,27 @@ build step in CI, and adding one would mean a build command in a
 dashboard that cannot be seen from the repository. So the rule is the
 rule: edit `app/src/**`, run the build, commit both.
 
-The stylesheet is not part of it. `aab/styles.css` stays the design
-system and React renders the same class names into the same `@layer`
-rules. No CSS-in-JS, no Tailwind, no second design system: a port that
-also redesigns the page cannot be judged.
+The stylesheet was not part of it, and now partly is. `aab/styles.css`
+is still the design system: the rule that a port must not also be a
+redesign held for every page ported in stages 9 to 12, which is what
+made those ports judgeable.
+
+**Tailwind is live as of 17 August 2026, on one page.** Stage 14 set
+the arrangement up and deliberately left it unused so the first
+conversion would be a change to one component. `/account.html` is
+that component, because its markup is almost entirely layout.
+`@theme` in `aab/src/styles/tailwind.css` names the site's own
+tokens, so `bg-panel` means `var(--panel)` in both themes.
+
+Three things stay in the stylesheet and the split is the point:
+
+| | |
+| --- | --- |
+| anything an article carries | `tw` sits BELOW `article`, permanently. An article's body is HTML in a database and Tailwind's compiler cannot see it. |
+| CSS with no utility | the popover menu is `@starting-style`, `::backdrop`, `:popover-open` and anchor positioning. Arbitrary values would be longer than the rule. |
+| DOM built in a loop | a class name inside `createElement` is found by the scanner only because `aab/*.js` is a source. That makes it work, not readable. |
+
+JSX gets utilities; everything else keeps a class.
 
 Neither are the site's own modules. `/app.js`, `/api.js`, `/auth.js`,
 `/content.js`, `/share-card.js`, `/photo.js` and `/editor.js` are left

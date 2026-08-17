@@ -1,11 +1,16 @@
 /* ============================================================
    tailwind.css: the source of /tailwind.css.
 
-   archive/TRANSITION.md Stage 14, step 1. Nothing on this site uses a
-   Tailwind class yet. This is the arrangement, set up and proved
-   to change nothing, so that the first component to convert is a
-   change to one component rather than a change to how the site
-   is styled.
+   archive/TRANSITION.md Stage 14. The arrangement was set up in
+   step 1 and left unused on purpose, so that the first component
+   to convert would be a change to one component rather than a
+   change to how the site is styled.
+
+   The account page is that component, as of 17 August 2026. Its
+   markup is almost entirely layout, which is what utilities are
+   good at; the parts of it that are not, the popover menu and the
+   year grid, stayed in `styles.css` and the note at the top of
+   `next/app/(site)/account.html/page.tsx` says why each did.
 
    ---- where its utilities sit in the cascade ----
 
@@ -73,17 +78,76 @@
 @source "../../../app/src";
 @source "../../*.js";
 
-/* The site's own tokens, as Tailwind's. Every one of these is a
-   custom property `styles.css` already defines and already
-   swaps for dark mode, so a utility built from it follows the
-   theme without knowing there is one. */
+/* The site's own tokens, as Tailwind's.
+
+   Every one of these is a custom property `styles.css` already
+   defines and already swaps for dark mode through
+   `light-dark()`, so a utility built from one follows the theme
+   without knowing there is a theme. That is the whole of why the
+   values here are `var(...)` rather than colours: `bg-panel` has
+   to mean what `var(--panel)` means, in both themes, or the
+   first converted component is a redesign wearing a port's
+   clothes.
+
+   ---- why the list grew ----
+
+   It was six entries, which was enough to prove the arrangement
+   and not enough to convert anything: the first real component
+   needed the sunk paper, the soft green, the gold, the danger
+   red, both shadows, the two radii, the motion pair and the
+   three type families. A conversion that reached for
+   `bg-[var(--paper-sunk)]` for each of those would be a
+   conversion that had given up on the theme, and an arbitrary
+   value is not checked against anything.
+
+   ---- and what is deliberately NOT here ----
+
+   `--measure`, `--read-scale` and `--step` are not tokens in
+   this sense. They are set on `<html>` at runtime, by the boot
+   script and by `prefs.js`, and a Tailwind theme entry is
+   resolved when the stylesheet is compiled. A utility built from
+   one would freeze the value a reader can move, which is the
+   opposite of what it is for. Anything reading those uses the
+   custom property directly. */
 @theme {
+  /* surfaces */
+  --color-paper: var(--paper);
+  --color-paper-sunk: var(--paper-sunk);
+  --color-panel: var(--panel);
+  --color-panel-hover: var(--panel-hover);
+
+  /* text */
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
-  --color-panel: var(--panel);
-  --color-hairline: var(--hairline);
+
+  /* accents */
   --color-green: var(--green);
+  --color-green-soft: var(--green-soft);
+  --color-green-strong: var(--green-strong);
+  --color-gold: var(--gold);
+  --color-danger: var(--danger);
+
+  /* lines and depth */
+  --color-hairline: var(--hairline);
+  --shadow-card: var(--shadow);
+  --shadow-lift: var(--shadow-lift);
+
+  /* metrics */
   --radius-card: var(--radius);
+  --radius-sm: var(--radius-sm);
+
+  /* type */
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+  --font-bn: var(--font-bn);
+
+  /* motion. Named for what they are rather than for a number,
+     because `duration-fast` is the site's own 0.18s and a
+     `duration-200` beside it would be somebody's guess. */
+  --ease-site: var(--ease);
+  --animate-duration-fast: var(--fast);
+  --animate-duration-slow: var(--slow);
 }
 
 /* Preflight is deliberately absent.

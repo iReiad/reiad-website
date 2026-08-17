@@ -35,6 +35,18 @@ import { initCrumbs } from "/crumbs.js";
 import { initAudience, audienceBoost } from "/audience.js";
 import { initTilt, tiltIn } from "/tilt.js";
 import { initStreak } from "/streak.js";
+/* Imported for its side effect, which is the point of it: reading
+   `reader-prefs` and putting the type scale and the measure on
+   <html>. Every Next.js route already does that before the first
+   paint in the boot script in `next/components/shell.tsx`, so on
+   a route this changes nothing and costs one no-op.
+
+   The six pages that are NOT routes are why it is here: the four
+   practice books, 404 and offline carry their own inline boot
+   script, and none of them knows about preferences. Without this
+   a reader who set Comfortable would find the four pages they
+   read offline were the only ones that ignored it. */
+import "/prefs.js";
 
 /* ============================================================
    1. THEME

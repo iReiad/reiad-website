@@ -31,6 +31,51 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v87: The same code, said better. Seven of the modules in this
+        list are compiled from TypeScript now rather than written
+        as JavaScript (archive/TRANSITION.md Stage 13), and
+        /tailwind.css carries real utilities for the first time
+        (Stage 14): the account page's markup is Tailwind and
+        about 240 lines of rules left /styles.css with it.
+
+        Nothing a reader can see is meant to have changed, which
+        is exactly why this needs a bump rather than not needing
+        one: every file involved is byte-different, a precached
+        file is answered from the cache that holds it, and only a
+        new VERSION empties that cache. /styles.css and
+        /tailwind.css are the pair that must not be split, because
+        one of them lost the rules the other gained.
+
+   v86: What an account is actually for. Five things a reader
+        gets for signing in, and two of them are new modules in
+        this list. /keep.js is the Save and the note under the
+        byline of every piece and every lesson, and /prefs.js is
+        the type size, the measure, the theme and the language the
+        calculators open in.
+
+        /prefs.js is the one worth thinking about, because it is
+        the first preference this site has that is not applied by
+        the boot script alone. The script in the shell reads
+        `reader-prefs` and sets two custom properties before the
+        first paint; this module writes them and is what the
+        account page's chips call. A v85 shell has neither, so
+        both are new rather than changed, and a reader carrying
+        the old one would get a preferences panel that does not
+        load rather than a page at the wrong size, which is the
+        right way round for a failure.
+
+        /signin.js is a rewrite: the account panel was a modal
+        dialog and is a `popover` menu now, so light dismiss,
+        Escape and the focus return are the browser's rather than
+        four listeners. /styles.css carries the rules it needs and
+        changed with it, along with the account page's whole
+        design, the top bar on a phone and the footer.
+        /account-page.js and /sync.js changed with them, and
+        /app.js gained one import: it pulls /prefs.js in for its
+        side effect, so the six pages that are files rather than
+        routes apply the reader's type size like every other page.
+        All four are precached.
+
    v85: Progress belongs to the account. /sync.js is a rewrite: it
         no longer merges a browser with an account, it adopts the
         account's rows on to the device and never uploads what the
@@ -722,7 +767,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v85";
+const VERSION = "v87";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -767,11 +812,19 @@ const PRECACHE = [
      is an editor that cannot save a photo. */
   "/photo.js",
   /* Everything an account holds that is not a tick: saved
-     scenarios and targets. account-page.js imports it at the top
-     and the stock check imports it too, so a shell without it is
-     an account page that does not load and a stock check with no
-     Save button. */
+     scenarios, targets, and the library of kept pages and notes.
+     account-page.js imports it at the top and the stock check
+     imports it too, so a shell without it is an account page that
+     does not load and a stock check with no Save button. */
   "/saved.js",
+  /* The Save and the note under the byline of every piece and
+     every lesson. */
+  "/keep.js",
+  /* How the reader wants to be read to. The boot script in the
+     shell applies the same values before the first paint without
+     this file, so a stale shell is a preferences panel that does
+     not load rather than a page at the wrong size. */
+  "/prefs.js",
   /* Every school lesson loads this, and a lesson body a reader
      has offline is exactly where a checklist they were working
      through is. Without it the ticks are gone and the list is

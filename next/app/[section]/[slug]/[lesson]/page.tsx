@@ -206,7 +206,7 @@ export default async function LessonPage({ params }: { params: Params }) {
           which React renders and does not own. */}
       <SiteScripts srcs={[
         ...(look.script ? [look.script] : []),
-        ...(soon ? [] : ["/checkpoints.js"]),
+        ...(soon ? [] : ["/checkpoints.js", "/keep.js"]),
       ]} />
     </>
   );
