@@ -1,8 +1,8 @@
 {
-  "version": "v84",
+  "version": "v85",
   "hashes": {
     "/offline.html": "55bcf02529d11190",
-    "/styles.css": "1676bff1c5536a80",
+    "/styles.css": "109cdecbe1386a47",
     "/tailwind.css": "46e4e139a56be439",
     "/app.js": "47c66b0b67019dc8",
     "/content.js": "b4c77f66d2f9825e",
@@ -10,11 +10,12 @@
     "/pieces.js": "5722a2dcbf3eade1",
     "/signin.js": "86cb1b5df565d062",
     "/account.js": "750be2410c75791b",
-    "/sync.js": "867b9ee9b37c5844",
-    "/account-page.js": "c993203060acb363",
+    "/sync.js": "87e47f6f025866ce",
+    "/account-page.js": "ff529968dd4de047",
     "/streak.js": "25830604a1fca932",
     "/photo.js": "0da1dd227bcb6aa1",
-    "/first-sync.js": "27b259136c10a641",
+    "/saved.js": "9705edfad949a20b",
+    "/checkpoints.js": "efb7f079477dd70d",
     "/comments.js": "2767263efe40b421",
     "/crumbs.js": "60beddce649904a9",
     "/audience.js": "638ceb49784d808c",
@@ -44,9 +45,9 @@
     "/english/icons.js": "a7b36e9bdc48f610",
     "/english/part.js": "c62f3c202be0ccde",
     "/english/term.js": "e9af15c1e57e24ce",
-    "/tools/stock.js": "cb0484c49f953ae2",
+    "/tools/stock.js": "e7fe828b51cb39e1",
     "/tools/stock.model.js": "039a045e95fbd777",
-    "/tools/stock.i18n.js": "d04aa0302144fe17",
+    "/tools/stock.i18n.js": "06644bc77ab9eba5",
     "/favicon.ico": "296539578a1f25f8"
   }
 }

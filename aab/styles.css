@@ -565,42 +565,6 @@
   .comment-replying { margin: 0; font-size: 0.85rem; color: var(--ink-soft); }
   .comment-note { max-width: var(--measure); }
 
-  /* The one question signing in is allowed to ask. See first-sync.js:
-     it appears only when this browser and the account both hold
-     progress, which is the only case where merging silently could
-     lose something somebody would miss. */
-  .first-sync {
-    width: min(520px, calc(100vw - 32px));
-    border: 1px solid var(--hairline); border-radius: var(--radius);
-    background: var(--panel); color: var(--ink);
-    padding: 0; box-shadow: var(--shadow-lift);
-
-    &::backdrop { background: oklch(12% 0.02 var(--h-green) / 0.55); }
-  }
-  .first-sync-body { padding: 24px; display: grid; gap: 12px; }
-  .first-sync-body h2 { font-size: 1.25rem; margin: 0; }
-  .first-sync-body p { margin: 0; font-size: 0.92rem; color: var(--ink-soft); }
-  .first-sync-choices { display: grid; gap: 10px; margin-top: 4px; }
-
-  /* Each answer says what it COSTS, not what it does, so the whole
-     row is the target and the consequence is the second line. */
-  .first-sync-choice {
-    display: grid; gap: 3px; text-align: start; cursor: pointer;
-    padding: 12px 14px; font: inherit;
-    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-    background: var(--paper); color: var(--ink);
-    transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
-
-    &:hover { border-color: var(--green); background: var(--green-soft); }
-    &:focus-visible {
-      outline: 0; border-color: var(--green);
-      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 25%, transparent);
-    }
-    & strong { font-weight: 500; font-size: 0.98rem; }
-    & small { color: var(--ink-soft); font-size: 0.84rem; }
-  }
-  .first-sync-note { font-size: 0.82rem !important; opacity: 0.85; }
-
   .account-panel {
     display: grid; gap: 26px; margin-top: 6px;
     max-width: 560px;
@@ -706,6 +670,158 @@
     & h3 { font-size: 1.05rem; }
     & p { font-size: 0.9rem; color: var(--ink-soft); margin: 0; }
     & .btn { justify-self: start; }
+  }
+
+  /* ============================================================
+     WHAT AN ACCOUNT HOLDS
+
+     Three lists on the account page, and one of them appears
+     again on the stock check. They are one visual idea: a row
+     with its name on the left, its number on the right, a bar
+     under both and the actions at the end.
+
+     THE ALIGNMENT RULE THEY SHARE. Every number in a row is in
+     the same column as every other number in every other row,
+     because a column of percentages that wanders is a column
+     nobody can read down. That is why the head is a two-column
+     grid with `1fr auto` rather than a flex row with
+     `space-between`: flex puts the number wherever the name
+     stopped, and the names here are Bangla, English and a
+     reader's own typing.
+     ============================================================ */
+
+  .ladder-list, .targets, .saved-list {
+    display: grid; gap: 12px; margin-top: 6px;
+  }
+
+  .ladder-row, .target, .saved-row {
+    padding: 16px 18px;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--panel);
+    display: grid; gap: 10px; align-content: start;
+  }
+
+  /* Not started is not a failure and is not dressed as one: the
+     row is quieter, and that is the whole difference. */
+  .ladder-row:not([data-started]) { background: var(--paper); }
+
+  .ladder-head, .target-head {
+    display: grid; grid-template-columns: 1fr auto;
+    align-items: baseline; gap: 12px;
+
+    & h3 {
+      margin: 0; font-size: 1.02rem; font-weight: 500;
+      min-width: 0; overflow-wrap: anywhere;
+    }
+  }
+  .ladder-pct, .target-pct {
+    font-size: 0.78rem; color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ladder-line, .target-line, .saved-line {
+    margin: 0; font-size: 0.85rem; color: var(--ink-soft);
+  }
+
+  /* Where to carry on. A link with two lines in it: what it is,
+     and where it goes. The arrow is the same one `.card-go`
+     uses, so the two read as one family. */
+  .ladder-go {
+    display: grid; grid-template-columns: auto 1fr auto;
+    align-items: center; gap: 10px;
+    padding: 9px 12px; margin-top: 2px;
+    border-radius: var(--radius-sm);
+    background: var(--green-soft);
+    color: var(--ink); text-decoration: none;
+
+    & .mono { font-size: 0.62rem; letter-spacing: 0.1em; color: var(--green); }
+    & strong { font-weight: 500; font-size: 0.94rem; min-width: 0; }
+    &::after { content: "→"; color: var(--green); transition: translate var(--fast) var(--ease); }
+    &:hover { opacity: 1; }
+    &:hover::after { translate: 3px 0; }
+  }
+
+  .target[data-done] {
+    border-color: color-mix(in oklab, var(--green) 40%, var(--hairline));
+    background: var(--green-soft);
+  }
+  .target-actions, .saved-actions {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  }
+  .target-input {
+    width: 110px; padding: 7px 10px; font: inherit; font-size: 0.9rem;
+    color: var(--ink); background: var(--paper);
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+
+    &:focus {
+      outline: 0; border-color: var(--green);
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+    }
+  }
+
+  /* The form under the list. Its fields change with the kind of
+     target being set, so they are laid out on a grid that does
+     not care how many there are. */
+  .target-fields {
+    display: grid; gap: 12px; margin-top: 4px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  }
+  .target-field {
+    display: grid; gap: 5px; align-content: start;
+
+    & > span { font-size: 0.78rem; color: var(--ink-soft); }
+    & input, & select {
+      padding: 9px 11px; font: inherit; font-size: 0.92rem;
+      color: var(--ink); background: var(--paper); width: 100%;
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    }
+    & input:focus, & select:focus {
+      outline: 0; border-color: var(--green);
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+    }
+  }
+
+  .saved-row {
+    grid-template-columns: 1fr auto;
+    align-items: center; gap: 10px 16px;
+
+    & h3 { margin: 0; font-size: 0.98rem; font-weight: 500; }
+  }
+  .saved-body { display: grid; gap: 3px; min-width: 0; }
+
+  /* One button size smaller than `.btn`, for a row of three that
+     would otherwise be the widest thing on the card. */
+  .btn-small {
+    padding: 6px 12px; font-size: 0.8rem;
+  }
+
+  /* The save panel on the stock check, which is the same list
+     under a field. It is inside the model's own sidebar, so it
+     takes that column's width and nothing wider. */
+  .save-scenario {
+    display: grid; gap: 8px; margin-top: 18px;
+    padding-top: 16px; border-top: 1px solid var(--hairline);
+
+    & > label { font-size: 0.78rem; color: var(--ink-soft); }
+    & .saved-list { margin-top: 4px; }
+    & .saved-row { padding: 11px 13px; }
+  }
+  .save-scenario-row {
+    display: grid; grid-template-columns: 1fr auto; gap: 8px;
+
+    & input {
+      min-width: 0; padding: 9px 11px; font: inherit; font-size: 0.9rem;
+      color: var(--ink); background: var(--paper);
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    }
+    & input:focus {
+      outline: 0; border-color: var(--green);
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 22%, transparent);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .saved-row { grid-template-columns: 1fr; }
   }
 
   /* ---------- HERO ---------- */
@@ -1860,6 +1976,64 @@ it collapsed to the width of the word "Bangladesh". */
       border: 1px solid var(--green); border-radius: 5px;
       color: var(--green); font-size: 0.7rem; line-height: 1;
     }
+  }
+
+  /* ---------- a checklist inside a lesson, which remembers ----------
+
+     `/checkpoints.js` wraps each item's own content in a button
+     and files the tick under the lesson's id. Nothing about the
+     markup a writer produces changes: a checklist in a piece that
+     is not a lesson has no id to file anything under and stays
+     exactly the list above.
+
+     The mark is the box the rule above already draws, so a ticked
+     item is the same shape filled in rather than a second control
+     bolted beside it. The button is the whole line, because a
+     20px target inside prose is a target nobody hits on a phone. */
+  .checklist li.has-checkpoint {
+    padding-left: 0;
+
+    &::before { content: none; }
+  }
+
+  .checkpoint {
+    display: grid; grid-template-columns: 20px 1fr;
+    align-items: start; gap: 10px;
+    width: 100%; padding: 3px 6px 3px 0; margin-inline-start: -6px;
+    font: inherit; text-align: start; color: inherit;
+    background: none; border: 0; border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--fast) var(--ease);
+
+    /* The box, drawn on the button rather than the item, so the
+       tick and the words move together. */
+    &::before {
+      content: "✓";
+      width: 20px; height: 20px; margin-top: 0.05em;
+      display: grid; place-items: center;
+      border: 1px solid var(--green); border-radius: 5px;
+      color: transparent; font-size: 0.7rem; line-height: 1;
+      transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+    }
+    &:hover { background: var(--green-soft); }
+    &:focus-visible {
+      outline: 0;
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--green) 30%, transparent);
+    }
+  }
+  .checklist li[data-done] .checkpoint::before {
+    background: var(--green); color: var(--panel);
+  }
+  .checklist li[data-done] .checkpoint { color: var(--ink-soft); }
+
+  /* How much of this list is left, above it, so a reader coming
+     back does not have to count five lines to find out. */
+  .checkpoint-count {
+    margin: 0 0 -12px; font-size: 0.66rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-soft);
+
+    &[data-state="all"] { color: var(--green); }
   }
 
   /* ---------- the two or three numbers that matter ----------
@@ -7286,31 +7460,60 @@ German for day, and .tag is what the site has always called
   }
   .rail > * { position: relative; }
 
+  /* ---------- the mark, and where its edges actually are ----------
+
+     The rail head, the rail items under it and the collapsed
+     rail all have to agree about one number: where the left edge
+     of an icon is. They did not. The head was padded 16px and
+     every item below it 12px inside a 12px-padded nav, which put
+     the logo's artwork four pixels to the right of the column of
+     icons it sits above, on every page of the site. Nobody would
+     name it looking at the page and everybody would feel it.
+
+     So the head is padded to the same total the nav's items
+     resolve to, and the artwork is given the same 28px box the
+     `.rail-ico` under it has. `--rail-pad` is the one number: the
+     nav insets by it, an item insets by it again, and the head,
+     which has no nav around it, takes both. Change it and the
+     whole column moves together, which is the point of a variable
+     rather than four literals that agreed on the day they were
+     typed. */
+  :root { --rail-pad: 12px; }
+
   .rail-head {
     display: flex; align-items: center; gap: 8px;
     height: var(--top-h);
-    padding-inline: 16px;
+    padding-inline: calc(var(--rail-pad) * 2) var(--rail-pad);
     border-bottom: 1px solid var(--hairline);
     flex: 0 0 auto;
   }
 
   .rail-mark {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 11px;
     min-width: 0; flex: 1;
     color: var(--ink); text-decoration: none;
   }
   .rail-mark:hover { opacity: 1; }
   .rail-mark-art {
-    width: 26px; height: 26px; flex: 0 0 26px;
+    /* The same 28px box as `.rail-ico`, so the mark's artwork and
+       every icon below it share a centre line. The art inside it
+       is 26px and centred, which is what the extra pixel of
+       padding is doing. */
+    width: 28px; height: 28px; flex: 0 0 28px;
+    padding: 1px;
     color: var(--green);
   }
-  .rail-wordmark { display: grid; min-width: 0; line-height: 1.15; }
+  .rail-wordmark { display: grid; min-width: 0; line-height: 1.2; gap: 1px; }
   .rail-wordmark-name {
     font-family: var(--font-serif); font-size: 1.02rem;
     white-space: nowrap; overflow: hidden;
+    /* A serif at this size sits a shade high against a sub-line in
+       small caps. One pixel, and it is the difference between the
+       two lines reading as one mark and as two things stacked. */
+    margin-block-start: -1px;
   }
   .rail-wordmark-sub {
-    color: var(--gold); font-size: 0.6rem; letter-spacing: 0.1em;
+    color: var(--gold); font-size: 0.58rem; letter-spacing: 0.1em;
     white-space: nowrap; overflow: hidden;
   }
 
@@ -7318,7 +7521,7 @@ German for day, and .tag is what the site has always called
     flex: 1 1 auto;
     overflow-y: auto;
     overscroll-behavior: contain;
-    padding: 14px 12px 20px;
+    padding: 14px var(--rail-pad) 20px;
     display: grid;
     gap: 4px;
     align-content: start;
@@ -7374,13 +7577,13 @@ German for day, and .tag is what the site has always called
   .rail-label {
     color: var(--ink-soft);
     font-size: 0.6rem; letter-spacing: 0.13em;
-    padding: 0 12px 4px;
+    padding: 0 var(--rail-pad) 4px;
     white-space: nowrap; overflow: hidden;
   }
 
   .rail-item {
     display: flex; align-items: center; gap: 11px;
-    padding: 6px 12px;
+    padding: 6px var(--rail-pad);
     border-radius: var(--radius-sm);
     color: var(--ink);
     text-decoration: none;
@@ -7425,7 +7628,7 @@ German for day, and .tag is what the site has always called
   }
   .rail-item[aria-current="page"]::before {
     content: "";
-    position: absolute; left: -12px; top: 50%; translate: 0 -50%;
+    position: absolute; left: calc(var(--rail-pad) * -1); top: 50%; translate: 0 -50%;
     width: 3px; height: 22px; border-radius: 0 3px 3px 0;
     background: var(--accent);
   }
@@ -7443,12 +7646,12 @@ German for day, and .tag is what the site has always called
 
   .rail-foot {
     flex: 0 0 auto;
-    padding: 8px 12px 12px;
+    padding: 8px var(--rail-pad) 12px;
     border-top: 1px solid var(--hairline);
   }
   .rail-toggle {
-    display: flex; align-items: center; gap: 12px;
-    width: 100%; padding: 8px 12px;
+    display: flex; align-items: center; gap: 11px;
+    width: 100%; padding: 8px var(--rail-pad);
     background: none; border: 0; cursor: pointer;
     border-radius: var(--radius-sm);
     color: var(--ink-soft);
@@ -7479,13 +7682,30 @@ German for day, and .tag is what the site has always called
   html[data-rail="closed"] :is(.rail-item, .rail-toggle, .rail-head) {
     justify-content: center; padding-inline: 8px;
   }
+  /* The mark is a flex child set to fill the head, so centring the
+     head does nothing to it: the artwork stays hard left while
+     every icon under it has moved to the middle. It is the folded
+     rail's version of the same four pixels the comment at the top
+     of this section is about. */
+  html[data-rail="closed"] .rail-mark { flex: 0 1 auto; justify-content: center; }
   html[data-rail="closed"] .rail-item[aria-current="page"]::before { left: -8px; }
 
   /* ---------- the top bar ---------- */
 
+  /* Three columns rather than a flex row, because the switch in
+     the middle has to be in the MIDDLE of the bar.
+
+     It was `margin-inline: auto` on the switch next to
+     `margin-left: auto` on the tools, which is three automatic
+     margins sharing the free space between them: the switch
+     landed a third of the way across and drifted further with
+     every character added to a button on the right. A grid says
+     the thing that was meant, once, and the two outer columns
+     stay equal whatever is in them. */
   .topbar {
     position: sticky; top: 0; z-index: 50;
-    display: flex; align-items: center; gap: 12px;
+    display: grid; align-items: center; gap: 12px;
+    grid-template-columns: 1fr auto 1fr;
     height: var(--top-h);
     padding-inline: clamp(12px, 2vw, 24px);
     background: color-mix(in oklab, var(--paper) 82%, transparent);
@@ -7494,14 +7714,26 @@ German for day, and .tag is what the site has always called
     view-transition-name: site-topbar;
   }
 
+  /* Two equal halves, and they have to be equal because the
+     lozenge behind them is exactly half the control wide. They
+     were sized by their own text: "Learning · শিখতে এসেছি" is
+     wider than "Hiring · কাজের খোঁজে", so the lozenge covered the
+     first label and part of the gap, and stopped short of the
+     second. A grid of two `1fr` columns is the fix and it is also
+     what a switch with two positions means. */
   .audience-switch {
     position: relative;
-    display: flex; align-items: stretch;
+    display: grid; grid-template-columns: 1fr 1fr; align-items: stretch;
+    /* Named rather than left to auto-placement: the burger in
+       column one is `display: none` on a laptop, and an element
+       that is not displayed is not a grid item, so the switch
+       would slide into the column it vacated and be centred over
+       nothing. */
+    grid-column: 2; justify-self: center;
     padding: 3px;
     border-radius: 999px;
     background: var(--paper-sunk);
     border: 1px solid var(--hairline);
-    margin-inline: auto;
   }
   /* The lozenge behind the chosen half. It moves rather than
      appearing, so the switch reads as one control with two
@@ -7535,12 +7767,20 @@ German for day, and .tag is what the site has always called
   .audience-sub {
     font-family: var(--font-bn); font-size: 0.64rem; opacity: 0.85;
   }
-  html[data-audience="learn"] .audience-opt[data-pick="money"],
+  /* The chosen half's label, on the lozenge. `data-pick` holds
+     the audience id, which is `learn`; this said `money`, so the
+     rule never matched and only one of the two halves ever turned
+     white. A learner pressing "Learning" got grey text on green
+     for as long as this bar has existed. */
+  html[data-audience="learn"] .audience-opt[data-pick="learn"],
   html[data-audience="work"] .audience-opt[data-pick="work"] {
     color: #fff;
   }
 
-  .top-tools { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+  .top-tools {
+    display: flex; align-items: center; gap: 6px;
+    grid-column: 3; justify-self: end;
+  }
 
   .top-btn {
     display: inline-flex; align-items: center; gap: 8px;
@@ -7557,6 +7797,7 @@ German for day, and .tag is what the site has always called
 
   /* The burger, which only exists where the rail does not. */
   .drawer-btn, .drawer-close, .drawer-back { display: none; }
+  .drawer-btn { grid-column: 1; justify-self: start; }
 
   /* ---------- the same menu on a phone ---------- */
 
@@ -7622,64 +7863,106 @@ German for day, and .tag is what the site has always called
   }
   .deck-foot-inner {
     max-width: 1180px; margin-inline: auto;
-    padding: clamp(30px, 4vw, 52px) clamp(18px, 3vw, 34px) 30px;
-    display: grid; gap: 28px;
+    padding: clamp(26px, 3.4vw, 44px) clamp(18px, 3vw, 34px) 26px;
+    display: grid; gap: 24px;
   }
 
+  /* ---------- how much room the name gets ----------
+
+     A quarter of the footer, and it used to be a third. The mark
+     column held a 1.3rem serif name, two lines of description and
+     an email address in a `minmax(240px, 1fr)` against `2.2fr`,
+     which on a 1180px footer is 290px of masthead beside four
+     columns of links squeezed into 140px each. The links are what
+     a footer is FOR on this site: it is the menu spelled out, and
+     the whole argument for having one is that there is more here
+     than a reader thinks. The masthead is a caption on it.
+
+     So: `minmax(0, 0.8fr)` against `2.6fr`, one size down on the
+     name, and the description trimmed to one line of each
+     language rather than two of English. The gap closes with it,
+     because 30px between a 290px column and a 620px one is a
+     different distance from 30px between 210px and 700px. */
   .deck-foot-top {
-    display: grid; gap: 30px;
-    grid-template-columns: minmax(240px, 1fr) 2.2fr;
+    display: grid; gap: 22px 36px;
+    grid-template-columns: minmax(0, 0.8fr) 2.6fr;
+    align-items: start;
   }
   @media (max-width: 860px) {
     .deck-foot-top { grid-template-columns: 1fr; }
   }
 
+  .deck-foot-mark { display: grid; gap: 5px; align-content: start; min-width: 0; }
   .deck-foot-name {
-    font-family: var(--font-serif); font-size: 1.3rem;
-    display: block; margin-bottom: 10px;
+    font-family: var(--font-serif); font-size: 1.12rem;
+    display: block; margin-bottom: 1px;
   }
   .deck-foot-line {
-    color: var(--ink-soft); font-size: 0.9rem; margin: 0 0 4px; max-width: 42ch;
+    color: var(--ink-soft); font-size: 0.84rem; margin: 0; max-width: 34ch;
+    line-height: 1.5;
   }
   .deck-foot-line[lang="bn"], .deck-foot-pledge [lang="bn"] { font-family: var(--font-bn); }
   .deck-foot-mail {
-    display: inline-flex; align-items: center; gap: 8px;
-    margin-top: 14px; font-family: var(--font-mono); font-size: 0.8rem;
+    display: inline-flex; align-items: center; gap: 7px;
+    justify-self: start;
+    margin-top: 6px; font-family: var(--font-mono); font-size: 0.76rem;
   }
+  /* The icon and the address are on one baseline rather than on
+     one centre line: an inline SVG's box is taller than the
+     lowercase text beside it, so centring the two puts the glyph
+     a pixel low against every letter of the address. */
+  .deck-foot-mail svg { flex: 0 0 15px; translate: 0 1px; }
 
   .deck-foot-nav {
-    display: grid; gap: 22px;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    display: grid; gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   }
-  .deck-foot-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .deck-foot-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 5px; }
   .deck-foot-col a {
-    color: var(--ink); text-decoration: none; font-size: 0.88rem;
+    color: var(--ink); text-decoration: none; font-size: 0.86rem;
+    line-height: 1.45; display: inline-block;
   }
   .deck-foot-col a:hover { color: var(--accent); opacity: 1; }
   .deck-foot-col a [lang="bn"] { font-family: var(--font-bn); color: var(--ink-soft); }
+  /* Every column's label sits on the same line, and every
+     column's first link sits on the line under it, whatever the
+     label says. A block label with a margin does that; a label
+     that inherits the list's line height does not, and the four
+     headings here are three, four, five and eight characters. */
   .deck-foot-label {
-    display: block; margin-bottom: 10px;
+    display: block; margin-bottom: 9px; line-height: 1;
     color: var(--accent); font-size: 0.62rem; letter-spacing: 0.12em;
   }
 
   .deck-foot-pledge {
-    display: grid; gap: 6px;
-    padding: 18px 20px;
+    display: grid; gap: 5px;
+    padding: 15px 18px;
     border-radius: var(--radius);
     background: var(--green-soft);
     border: 1px solid color-mix(in oklab, var(--green) 25%, transparent);
   }
-  .deck-foot-pledge p { margin: 0; font-size: 0.9rem; }
-  .deck-foot-pledge [lang="en"] { color: var(--ink-soft); font-size: 0.84rem; }
+  .deck-foot-pledge p { margin: 0; font-size: 0.88rem; line-height: 1.55; }
+  .deck-foot-pledge [lang="en"] { color: var(--ink-soft); font-size: 0.82rem; }
 
+  /* The last line: three short marks, then the page's own
+     disclaimer pushed to the far end. `margin-inline-start: auto`
+     on the note rather than `justify-content: space-between` on
+     the row, because the note wraps to its own line on a narrow
+     footer and space-between would then spread the three marks
+     across the whole width to fill the gap it left. */
   .deck-foot-end {
     display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 18px;
-    padding-top: 18px;
+    padding-top: 16px;
     border-top: 1px solid var(--hairline);
     color: var(--ink-soft);
   }
+  .deck-foot-end > .mono { font-size: 0.72rem; }
   .deck-foot-note {
-    flex: 1 1 320px; margin: 0; font-size: 0.78rem; min-width: 0;
+    flex: 1 1 320px; margin: 0; font-size: 0.76rem; min-width: 0;
+    margin-inline-start: auto; text-align: end;
+  }
+  @media (max-width: 700px) {
+    .deck-foot-note { text-align: start; margin-inline-start: 0; }
   }
 
   @media print {
@@ -8145,18 +8428,27 @@ German for day, and .tag is what the site has always called
     view-transition-name: site-topbar;
   }
 
+  /* The same mark as the rail's, on the six pages that are not
+     routes: the four practice books, 404 and offline. It is
+     smaller here because it is beside a nav rather than above
+     one, and the artwork gets a box a shade taller than the
+     serif's cap height so the two share a centre line instead of
+     the glyph sitting a pixel proud of it. */
   .slimbar-mark {
     display: flex; align-items: center; gap: 9px;
     color: var(--ink); text-decoration: none;
-    font-family: var(--font-serif); font-size: 1rem;
-    white-space: nowrap;
+    font-family: var(--font-serif); font-size: 1rem; line-height: 1;
+    white-space: nowrap; flex: 0 0 auto;
   }
   .slimbar-mark:hover { opacity: 1; color: var(--green); }
-  .slimbar-mark svg { width: 22px; height: 22px; color: var(--green); }
+  .slimbar-mark svg {
+    width: 24px; height: 24px; flex: 0 0 24px;
+    color: var(--green); translate: 0 -1px;
+  }
 
   .slimbar-nav {
     display: flex; gap: 16px; align-items: center;
-    margin-left: 8px; min-width: 0; overflow: hidden;
+    margin-left: 10px; min-width: 0; overflow: hidden;
   }
   .slimbar-nav a {
     color: var(--ink-soft); text-decoration: none; font-size: 0.86rem;

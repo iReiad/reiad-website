@@ -1,70 +1,135 @@
 /* ============================================================
-   sync.js: the same learner on a phone and on a laptop.
+   sync.js: progress belongs to the account.
 
-   Four schools keep what you have read in localStorage, and have
-   since before there were accounts. That is still where they read
-   and write it: this file copies those keys up to the account and
-   back, and touches nothing else. None of the four progress
-   modules knows it exists, which is the point. They each announce
-   their changes on the window already, so there is nothing to
-   rewire and nothing new to keep in step.
+   ---- what changed, and why the old one had to go ----
 
-   Signed out, this file does nothing at all. No request, no
-   storage, no listener that matters. Progress works exactly as it
-   did in 2025, on this device, for anyone who never signs in.
+   The first version of this file treated a browser and an account
+   as two equal copies of the same thing and merged them. It read
+   localStorage, unioned it with the account's rows, wrote the
+   result back to both, and asked a three-way question the first
+   time a device met an account so that the merge could not lose
+   anything. Every one of those pieces was careful and the shape
+   underneath them was wrong.
 
-   ---- merging, and why nothing is ever lost ----
+   A browser is not a copy of an account. It is a machine somebody
+   happens to be sitting at, and it may be a library computer, a
+   phone that was handed over for five minutes, or a profile that
+   was used for testing. Treating whatever it held as a claim on
+   the account meant the site had to ASK before it could act, and
+   a dialog in the middle of signing in is what an unanswerable
+   design question looks like from the reader's side.
 
-   Two devices holding two versions of the same key is the normal
-   case, not the exception: read a lesson on the bus, tick another
-   at a desk, and neither copy is wrong. So there is no
-   "last writer wins" here for the things that matter.
+   So there is one record now, and it is the account. This file
+   reads it, writes it, and keeps a copy of it on the device so
+   that pages which have always read localStorage go on working
+   without knowing any of this happened.
 
-     a set of ids     union. A tick only ever goes from off to on,
-                      so the union of two devices is exactly what
-                      the person actually did.
-     a bookmark       the newer of the two, by the timestamp it
-                      already carries.
-     a day counter    the higher number. You do not un-reach day
-                      eleven of a thirty day book.
+     signed out    nothing. No request, no listener, no storage
+                   touched. Progress is this browser's, exactly as
+                   it was in 2025, and no page needs an account.
 
-   The one exception is deliberate erasure: emptying a set here,
-   more recently than the account was touched, replaces the account
-   copy rather than merging with it, or "forget my progress" would
-   quietly undo itself on the next page.
+     signing in    the account's rows are written onto this
+                   device. What the browser held before is not
+                   uploaded, not merged and not consulted. That is
+                   the whole rule, and it is the one the old file
+                   could not state in a sentence.
 
-   archive/TRANSITION.md, Stage 6.
+     signed in     the device is a mirror. A tick made here is a
+                   change to the account and goes up; a tick made
+                   on the phone comes down.
+
+     signing out   the mirror is taken off. It was never this
+                   browser's to keep, and leaving one reader's
+                   ticks behind for the next person at the same
+                   machine is the failure the rule above exists to
+                   prevent.
+
+   ---- two signed-in devices, which is a real case ----
+
+   Read a lesson on the bus, tick another at a desk, and neither
+   the phone nor the laptop is wrong. Nothing here is
+   last-writer-wins for the things that matter, but the
+   reconciliation is now between two states that both came FROM
+   the account, rather than between the account and whatever a
+   browser happened to hold.
+
+   `base` is what the account said when this page last exchanged
+   with it. `local` is what the device says now. The difference
+   between them is what this reader actually did in this session:
+
+     added   = local \ base        their ticks
+     removed = base \ local        their untick, or a reset
+
+   and the value written back is `(remote ∪ added) \ removed`,
+   against a freshly read `remote`. A tick from another device
+   inside `remote` survives; a reset here clears the account
+   instead of being undone by it. The old file needed a special
+   case and a timestamp per key to get the reset right, and it got
+   it wrong for a year because every school's resetAll() removes a
+   key rather than emptying it. There is no special case here: an
+   absent key is an empty set, an empty set makes `removed` the
+   whole of `base`, and the account ends up empty because that is
+   what subtraction says.
+
+   archive/TRANSITION.md, Stage 6, rewritten 17 August 2026.
    ============================================================ */
 
 import { SUPABASE_URL, SUPABASE_KEY, token, current } from "/account.js";
 
 const REST = `${SUPABASE_URL}/rest/v1/progress`;
 
-/* Which keys travel, how two copies are reconciled, and which
-   school to tell when one changes underneath it. */
-const KEYS = {
-  "learn-read": ["union", "learn:progress"],
-  "learn-last": ["newest", "learn:progress"],
-  "deutsch-read": ["union", "deutsch:progress"],
-  "deutsch-days": ["union", "deutsch:progress"],
-  "deutsch-last": ["newest", "deutsch:progress"],
-  "deutsch-tag": ["highest", "deutsch:progress"],
-  "english-read": ["union", "english:progress"],
-  "english-days": ["union", "english:progress"],
-  "english-last": ["newest", "english:progress"],
-  "english-day": ["highest", "english:progress"],
-  "quran-done": ["union", "quran:progress"],
-  "quran-last": ["newest", "quran:progress"],
+/* ============================================================
+   What the account holds
 
-  /* Which days this person turned up, from streak.js. A union for
+   Three shapes, and the school to tell when one of them moves.
+
+     set      a list of ids. A tick, a practice day, a checkpoint.
+              Reconciled by the subtraction above.
+     mark     a bookmark, { id, url, ts }. The newer of the two,
+              by the timestamp it already carries.
+     count    a number that only goes up inside a book. The
+              higher of the two, unless this device went
+              backwards, which is a reset and is respected.
+
+   The names are storage keys and not identifiers, and none of
+   them may be renamed. `learn-read` is the money school's even
+   though the school moved to /money/ in August 2026: the string
+   is what is in real browsers and in real accounts, and CLAUDE.md
+   says the plain truth about renaming one, that it does not move
+   somebody's ticks, it loses them.
+   ============================================================ */
+
+const KEYS = {
+  "learn-read":    ["set",   "learn:progress"],
+  "learn-last":    ["mark",  "learn:progress"],
+  "deutsch-read":  ["set",   "deutsch:progress"],
+  "deutsch-days":  ["set",   "deutsch:progress"],
+  "deutsch-last":  ["mark",  "deutsch:progress"],
+  "deutsch-tag":   ["count", "deutsch:progress"],
+  "english-read":  ["set",   "english:progress"],
+  "english-days":  ["set",   "english:progress"],
+  "english-last":  ["mark",  "english:progress"],
+  "english-day":   ["count", "english:progress"],
+  "quran-done":    ["set",   "quran:progress"],
+  "quran-last":    ["mark",  "quran:progress"],
+
+  /* Checkpoints inside a lesson: the ticks on a checklist a
+     reader works through as they read. New with this rewrite, and
+     a `set` like every other tick, so it needed nothing here
+     except a line. See /checkpoints.js. */
+  "learn-checks":   ["set", "learn:progress"],
+  "deutsch-checks": ["set", "deutsch:progress"],
+  "english-checks": ["set", "english:progress"],
+  "quran-checks":   ["set", "quran:progress"],
+
+  /* Which days this person turned up, from streak.js. A set for
      the obvious reason: a phone on the bus and a laptop at a desk
      are the same Tuesday, and either one alone under-counts. */
-  "days-active": ["union", "streak:changed"],
+  "days-active":   ["set",   "streak:changed"],
 };
 
-/* When each key was last written on this device. Kept so an empty
-   set can be told apart from a set that was never filled in. */
-const CLOCK = "sync-clock";
+/** Every key the account owns, which is every key above. */
+export const SYNCED_KEYS = Object.keys(KEYS);
 
 /* ============================================================
    localStorage, carefully
@@ -84,11 +149,10 @@ const write = (key, value) => {
     localStorage.setItem(key, JSON.stringify(value));
     return true;
   } catch {
-    return false;          // private mode: syncing is a nicety
+    return false;          // private mode: the mirror is a nicety
   }
 };
 
-/** Take a key away, as the schools' own reset does. */
 const forget = (key) => {
   try {
     localStorage.removeItem(key);
@@ -98,74 +162,59 @@ const forget = (key) => {
   }
 };
 
-const clock = () => read(CLOCK) ?? {};
-const touch = (keys) => {
-  const now = Date.now();
-  const map = clock();
-  keys.forEach((key) => { map[key] = now; });
-  write(CLOCK, map);
-};
-
 /* ============================================================
-   Merging
+   The three shapes
+
+   Each takes what the account said last time this page spoke to
+   it, what this device says now, and what the account says at
+   this moment, and returns what both should hold.
    ============================================================ */
 
-const asArray = (v) => (Array.isArray(v) ? v : []);
+const list = (v) => (Array.isArray(v) ? v.filter((x) => typeof x === "string") : []);
 
-/** Both, with duplicates removed and order made stable. */
-const union = (mine, theirs) => [...new Set([...asArray(theirs), ...asArray(mine)])];
+/** (remote ∪ added) \ removed, with the order made stable. */
+function reconcileSet(base, mine, remote) {
+  const was = new Set(list(base));
+  const now = new Set(list(mine));
+  const theirs = new Set(list(remote));
 
-/** The one written later. Bookmarks carry their own timestamp. */
-const newest = (mine, theirs, mineAt, theirsAt) => {
-  const a = Number(mine?.ts) || mineAt || 0;
-  const b = Number(theirs?.ts) || theirsAt || 0;
-  if (mine === undefined) return theirs;
-  if (theirs === undefined) return mine;
-  return b > a ? theirs : mine;
-};
-
-/** The further of the two through a book. */
-const highest = (mine, theirs) => {
-  const a = Number(mine) || 0;
-  const b = Number(theirs) || 0;
-  return String(Math.max(a, b) || "");
-};
-
-/**
- * One key, reconciled.
- *
- * `mineAt` is when this device last wrote it, `theirsAt` when the
- * account row was last touched. They only decide anything for the
- * two rules that cannot merge, and for the erasure case below.
- */
-function reconcile(rule, mine, theirs, mineAt, theirsAt) {
-  /* CLEARED HERE, MORE RECENTLY THAN THE ACCOUNT WAS TOUCHED.
-     That is somebody pressing "reset", not an empty first visit,
-     and the difference is `mineAt`: a device that never had the
-     key has no clock entry, so mineAt is 0 and this never fires.
-
-     `mine === undefined` has to count as cleared, and that is the
-     bug this comment exists for. Every school's resetAll() does
-     `localStorage.removeItem(key)` rather than writing an empty
-     array, so after a reset `mine` is undefined, not []. The guard
-     tested only for [], so the union ran, the account's copy came
-     straight back, and the answer to "reset my progress" while
-     signed in was that nothing happened. */
-  const cleared = mine === undefined
-    || (Array.isArray(mine) && mine.length === 0);
-
-  if (rule === "union") {
-    if (cleared && mineAt > theirsAt) return [];
-    return union(mine, theirs);
-  }
-  if (rule === "highest") {
-    if (cleared && mineAt > theirsAt) return "";
-    return highest(mine, theirs);
-  }
-  // A bookmark, cleared here on purpose, stays cleared.
-  if (cleared && mineAt > theirsAt) return null;
-  return newest(mine, theirs, mineAt, theirsAt);
+  for (const id of now) if (!was.has(id)) theirs.add(id);     // added here
+  for (const id of was) if (!now.has(id)) theirs.delete(id);  // removed here
+  return [...theirs];
 }
+
+/** The bookmark written later. Both carry their own timestamp,
+    so there is nothing to infer. A bookmark cleared on this
+    device (a reset) is cleared, and says so with null. */
+function reconcileMark(base, mine, remote) {
+  const hadOne = base && base.id;
+  if (hadOne && !mine?.id) return null;              // cleared here
+  if (!mine?.id) return remote?.id ? remote : null;
+  if (!remote?.id) return mine;
+  return (Number(remote.ts) || 0) > (Number(mine.ts) || 0) ? remote : mine;
+}
+
+/** The further of the two through a practice book, unless this
+    device went backwards, which only a reset does. */
+function reconcileCount(base, mine, remote) {
+  const was = Number(base) || 0;
+  const now = Number(mine) || 0;
+  const theirs = Number(remote) || 0;
+  if (now < was) return now ? String(now) : "";      // reset, or a step back
+  return String(Math.max(now, theirs) || "");
+}
+
+function reconcile(rule, base, mine, remote) {
+  if (rule === "set") return reconcileSet(base, mine, remote);
+  if (rule === "count") return reconcileCount(base, mine, remote);
+  return reconcileMark(base, mine, remote);
+}
+
+/** What a key holds when nothing holds it, so that "the account
+    has nothing" and "this device has nothing" are one answer. */
+const emptyFor = (rule) => (rule === "set" ? [] : rule === "count" ? "" : null);
+
+const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 
 /* ============================================================
    The account end
@@ -181,16 +230,18 @@ async function headers() {
   };
 }
 
+/** Every row this account holds, as key → value. */
 async function fetchRows(head) {
-  const res = await fetch(`${REST}?select=key,value,updated_at`, { headers: head });
+  const res = await fetch(`${REST}?select=key,value`, { headers: head });
   if (!res.ok) throw new Error(`pull ${res.status}`);
   const rows = await res.json();
-  return new Map(rows.map((row) => [row.key, row]));
+  return new Map(rows.map((row) => [row.key, row.value]));
 }
 
-/** Upsert, which is what `merge-duplicates` means here. user_id is
-    filled in by the column default from the token, so this browser
-    never names whose rows it is writing. */
+/** Upsert. `user_id` is filled in by the column default from the
+    token, so this browser never names whose rows it is writing:
+    it cannot get that wrong and it cannot be talked into getting
+    it wrong. */
 async function sendRows(head, rows) {
   if (!rows.length) return;
   const res = await fetch(`${REST}?on_conflict=user_id,key`, {
@@ -202,117 +253,98 @@ async function sendRows(head, rows) {
 }
 
 /* ============================================================
-   Meeting an account for the first time on this device
+   The mirror
 
-   Every sync after the first is a merge, and a merge is right:
-   two devices holding two versions of the same key is the normal
-   case, and neither copy is wrong.
-
-   The FIRST one is a different question, and answering it as a
-   merge was wrong. Signing in on a browser that already had
-   progress silently pushed that progress into the account, for
-   ever, with nothing said and no way to tell it apart afterwards.
-   That is fine when it was you reading as a guest on your own
-   laptop. It is not fine on a borrowed phone, on a browser you
-   were testing with, or on a new account that should start new,
-   and those are exactly the cases where it cannot be undone.
-
-   So the first contact between a device and an account is a
-   question rather than an assumption, asked once, and only when
-   there is genuinely something to lose: this device has progress
-   AND the account already has its own. Anything else needs no
-   question, because nothing can be lost by merging with nothing.
-
-   The answer is remembered per account id, so signing out and
-   back in does not ask again, and a second account on the same
-   browser is its own first contact.
+   `base` is the account as this page last saw it. It lives in
+   memory rather than in storage on purpose: it is a statement
+   about this page's conversation with the account, and a page
+   that has not had that conversation yet has no business having
+   an opinion. A fresh load starts with nothing and adopts.
    ============================================================ */
 
-const SEEN = "sync-accounts";
+let base = null;          // Map(key → value), or null before adopting
+let who = null;           // the account `base` belongs to
 
-const seenAccounts = () => {
-  const list = read(SEEN);
-  return Array.isArray(list) ? list : [];
-};
-
-const rememberAccount = (id) => {
-  const list = seenAccounts();
-  if (!list.includes(id)) write(SEEN, [...list, id]);
-};
-
-/** Does this device hold progress of its own? */
-function deviceHasProgress() {
-  return Object.keys(KEYS).some((key) => {
-    if (key === "days-active") return false;   // a by-product, not a decision
-    const value = read(key);
-    if (Array.isArray(value)) return value.length > 0;
-    return value !== undefined && value !== null && value !== "";
-  });
-}
-
-/**
- * Take this device's progress off, so the account's is adopted.
- *
- * THE CLOCK IS CLEARED TOO, and that is the whole subtlety. An
- * empty key with a RECENT clock entry means "somebody pressed
- * reset", and reconcile() propagates that to the account, which is
- * correct for a reset and catastrophic here: answering "use my
- * account's" would clear the device and then clear the account to
- * match it, losing exactly what the reader asked to keep. Removing
- * the clock entry says the opposite thing, "this device has never
- * had an opinion about this key", so the account's copy wins the
- * merge that follows.
- */
-function adoptAccount() {
-  const map = clock();
-  for (const key of Object.keys(KEYS)) {
+/** Take the mirror off this device. Called when the session ends
+    and when the account is emptied. Announces, because a hub with
+    a progress ring on it is looking at storage that just moved. */
+function clearMirror() {
+  const schools = new Set();
+  for (const [key, [, event]] of Object.entries(KEYS)) {
+    if (read(key) === undefined) continue;
     forget(key);
-    delete map[key];
+    schools.add(event);
   }
-  write(CLOCK, map);
-
-  /* AND IT DOES NOT ANNOUNCE. Telling the schools here would be
-     the obvious courtesy and is a loop: each school's listener in
-     startSync() calls touch(), which writes the clock entries this
-     function just deleted, so the very next pass reads an empty
-     key with a fresh timestamp, decides it was a deliberate reset
-     and clears the account to match. Answering "use my account's"
-     would empty the account instead of adopting it.
-
-     Nothing is lost by staying quiet. The merge immediately after
-     this writes the account's values in and announces exactly the
-     schools whose keys actually changed. */
+  base = null;
+  who = null;
+  schools.forEach((event) => dispatchEvent(new CustomEvent(event)));
 }
 
 /**
- * Ask, once, what should happen to what is already on this device.
+ * Write the account's rows onto this device, and drop anything
+ * the account does not have.
  *
- * Returns "merge", "account" or "device". A reader who dismisses
- * the question gets "account", which is the answer that changes
- * nothing about the account: the cautious default belongs on the
- * side of the shared thing, not the local one.
+ * THIS IS THE RULE THE FILE EXISTS FOR. Nothing local is read
+ * here, nothing local is uploaded here, and a key this browser
+ * holds that the account does not is removed rather than pushed.
+ * Signing in on a machine that already had progress in it shows
+ * you your account, which is the only thing signing in has ever
+ * been able to honestly promise.
+ *
+ * `pre` is the one exception and it is not an exception to the
+ * rule: it is the ticks made in the second or two this request
+ * was in flight, on a page the reader is already using. Those
+ * were made by the person who is signed in, after they signed in,
+ * so they are theirs and they go up with the next push.
  */
-async function askFirstContact(counts) {
-  const { openChoice } = await import("/first-sync.js");
-  return openChoice(counts);
+function adopt(remote, pre) {
+  const schools = new Set();
+
+  for (const [key, [rule, event]] of Object.entries(KEYS)) {
+    const theirs = remote.has(key) ? remote.get(key) : undefined;
+    const mine = read(key);
+
+    /* Anything that arrived while the fetch was in the air. For a
+       set that is the ids added since; for the other two shapes a
+       change during one round trip is simply kept. */
+    const during = rule === "set"
+      ? list(mine).filter((id) => !list(pre.get(key)).includes(id))
+      : same(mine, pre.get(key)) ? null : mine;
+
+    let next;
+    if (rule === "set") next = [...new Set([...list(theirs), ...during])];
+    else if (during !== null && during !== undefined) next = during;
+    else next = theirs;
+
+    if (next === undefined || same(next, emptyFor(rule))) {
+      if (mine !== undefined) { forget(key); schools.add(event); }
+      continue;
+    }
+    if (!same(next, mine) && write(key, next)) schools.add(event);
+  }
+
+  base = new Map(Object.keys(KEYS).map((key) =>
+    [key, remote.has(key) ? remote.get(key) : emptyFor(KEYS[key][0])]));
+  schools.forEach((event) => dispatchEvent(new CustomEvent(event)));
 }
 
 /* ============================================================
-   The whole job
+   One exchange
    ============================================================ */
 
 let running = null;
 let pending = false;
 
 /**
- * Pull, merge, write back locally, push whatever differs.
+ * Read the account, reconcile, write both ends.
  *
- * Runs at most one at a time; a request to sync while one is in
- * flight sets a flag and runs once more afterwards, so a burst of
- * ticks costs two round trips rather than ten.
+ * Runs at most one at a time; asking while one is in flight sets
+ * a flag and runs once more afterwards, so a burst of ticks costs
+ * two round trips rather than ten.
  */
 export function sync() {
-  if (!current()) return Promise.resolve(false);
+  const user = current();
+  if (!user) return Promise.resolve(false);
   if (running) { pending = true; return running; }
 
   running = (async () => {
@@ -320,82 +352,66 @@ export function sync() {
       const head = await headers();
       if (!head) return false;
 
-      let theirs = await fetchRows(head);
+      /* A different person on the same browser is a different
+         record. Nothing of the last one's is carried over, and
+         nothing of it is uploaded to this one. */
+      if (who && who !== user.id) clearMirror();
 
-      /* First contact, and only when something could be lost. See
-         the long note above: everything after this is a merge, and
-         a merge is right; the first one is a question. */
-      const who = current()?.id;
-      if (who && !seenAccounts().includes(who)) {
-        const accountHas = [...theirs.keys()].some((k) => k !== "days-active");
-        if (accountHas && deviceHasProgress()) {
-          const answer = await askFirstContact({
-            account: theirs.size,
-            device: Object.keys(KEYS).filter((k) => read(k) !== undefined).length,
-          });
-          if (answer === "device") {
-            /* Keep this browser's, so the account is replaced. The
-               push below does it: every key is written from here. */
-            const now = Date.now();
-            const map = clock();
-            Object.keys(KEYS).forEach((k) => { map[k] = now; });
-            write(CLOCK, map);
-            theirs = new Map();
-          } else if (answer !== "merge") {
-            // "account": this device starts from what the account has.
-            adoptAccount();
-          }
-        }
-        rememberAccount(who);
+      const before = new Map(SYNCED_KEYS.map((key) => [key, read(key)]));
+      const remote = await fetchRows(head);
+
+      if (!base) {
+        adopt(remote, before);
+        who = user.id;
+        document.dispatchEvent(new CustomEvent("sync:done", {
+          detail: { adopted: true, kept: remote.size, sent: 0 },
+        }));
+        return true;
       }
 
-      const times = clock();
-      const changedSchools = new Set();
+      const schools = new Set();
       const toPush = [];
 
       for (const [key, [rule, event]] of Object.entries(KEYS)) {
-        const mine = read(key);
-        const row = theirs.get(key);
-        const theirValue = row?.value ?? undefined;
+        const was = base.has(key) ? base.get(key) : emptyFor(rule);
+        const mine = read(key) ?? emptyFor(rule);
+        const theirs = remote.has(key) ? remote.get(key) : emptyFor(rule);
 
-        // Neither side has anything to say about this key.
-        if (mine === undefined && theirValue === undefined) continue;
+        // Nobody has ever said anything about this key.
+        if (same(was, emptyFor(rule)) && same(mine, emptyFor(rule))
+            && same(theirs, emptyFor(rule))) continue;
 
-        const merged = reconcile(
-          rule, mine, theirValue,
-          times[key] ?? 0,
-          row ? Date.parse(row.updated_at) : 0
-        );
+        const merged = reconcile(rule, was, mine, theirs);
 
-        const mineJson = JSON.stringify(mine ?? null);
-        const mergedJson = JSON.stringify(merged ?? null);
-
-        if (mergedJson !== mineJson && merged !== undefined) {
+        if (!same(merged, mine)) {
           /* A cleared bookmark is removed rather than written as
              the string "null", so the school reads it back as
              absent, which is what it was before it was ever set. */
-          const stored = merged === null ? forget(key) : write(key, merged);
-          if (stored) changedSchools.add(event);
+          const stored = same(merged, emptyFor(rule)) && rule !== "set"
+            ? forget(key)
+            : write(key, merged);
+          if (stored) schools.add(event);
         }
-        if (mergedJson !== JSON.stringify(theirValue ?? null)) {
-          toPush.push({ key, value: merged ?? null });
-        }
+        if (!same(merged, theirs)) toPush.push({ key, value: merged ?? null });
+        base.set(key, merged);
       }
 
       await sendRows(head, toPush);
 
       /* Tell the school its own storage moved underneath it, using
-         the event it already listens to. Without this a tick
-         arriving from another device does not appear until the
-         next page load. */
-      changedSchools.forEach((event) => dispatchEvent(new CustomEvent(event)));
+         the event it already listens to. Without this a tick made
+         on another device does not appear until the next load. */
+      schools.forEach((event) => dispatchEvent(new CustomEvent(event)));
 
       document.dispatchEvent(new CustomEvent("sync:done", {
-        detail: { pulled: theirs.size, pushed: toPush.length },
+        detail: { adopted: false, kept: remote.size, sent: toPush.length },
       }));
       return true;
     } catch (err) {
-      // A failed sync is a device that is still perfectly usable.
+      /* A failed exchange is a device that is still perfectly
+         usable, and a `base` that must not be trusted afterwards:
+         half a conversation is not a record of one. */
+      base = null;
       console.warn("progress sync failed", err);
       return false;
     } finally {
@@ -407,13 +423,16 @@ export function sync() {
   return running;
 }
 
-/** Take everything off the account. The local copy is left alone:
-    clearing this device is what the schools' own reset does. */
+/** Take everything off the account, and off this device with it.
+    The two are one record now, so emptying one and leaving the
+    other would put them straight back next time. */
 export async function forgetOnAccount() {
   const head = await headers();
   if (!head) return false;
   const res = await fetch(`${REST}?key=neq.`, { method: "DELETE", headers: head });
-  return res.ok;
+  if (!res.ok) return false;
+  clearMirror();
+  return true;
 }
 
 /* ============================================================
@@ -422,42 +441,58 @@ export async function forgetOnAccount() {
 
 let wired = false;
 
-/** Called by signin.js once it knows whether anyone is signed in. */
-export function startSync() {
-  if (!current()) return;
+/** Called by signin.js once it knows whether anyone is signed in.
 
+    The listeners go on whether or not anybody is, so that signing
+    in halfway through a page adopts without a reload, and every
+    one of them is a no-op signed out: `schedule()` returns at its
+    first line and `sync()` returns false at its own. A reader who
+    never signs in makes no request, stores nothing new and is
+    read from by nobody, which is what "no feature on this site
+    requires an account" has to cost. */
+export function startSync() {
   if (!wired) {
     wired = true;
 
-    /* Each school announces its own changes already. Recording the
-       time here is what lets an emptied set be told from an empty
-       one later. */
-    for (const [key, [, event]] of Object.entries(KEYS)) {
-      addEventListener(event, () => {
-        touch(Object.keys(KEYS).filter((k) => KEYS[k][1] === event));
-        schedule();
-      }, { passive: true });
-      void key;
+    /* Each school announces its own changes already, so there is
+       nothing to rewire in any of them. */
+    for (const event of new Set(Object.values(KEYS).map(([, e]) => e))) {
+      addEventListener(event, schedule, { passive: true });
     }
 
-    // Another tab, same person.
+    // Another tab, same person, same account.
     addEventListener("storage", (e) => {
-      if (e.key && e.key in KEYS) { touch([e.key]); schedule(); }
+      if (e.key && e.key in KEYS) schedule();
     });
 
     // Leaving the page is the last chance to send a tick.
     addEventListener("pagehide", () => { if (current()) sync(); });
-    document.addEventListener("account:changed", () => { if (current()) sync(); });
+
+    /* Coming back to a tab that has been open since this morning.
+       The account may have moved on another device, and a hub
+       showing yesterday's ring is the thing an account was for. */
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && current()) sync();
+    });
+
+    /* Signing in adopts; signing out takes the mirror off. Both
+       arrive here as the same event, and which one it is is the
+       detail. */
+    document.addEventListener("account:changed", (e) => {
+      if (e.detail) sync();
+      else clearMirror();
+    });
   }
 
-  sync();
+  if (current()) sync();
 }
 
-/* Ticks arrive in bursts: opening a lesson marks it read and moves
-   the bookmark in the same breath. One sync a few seconds later
-   carries both. */
+/* Ticks arrive in bursts: opening a lesson moves the bookmark and
+   ticking a checkpoint follows a second later. One exchange a few
+   seconds afterwards carries both. */
 let timer;
 function schedule() {
+  if (!current()) return;
   clearTimeout(timer);
   timer = setTimeout(sync, 2500);
 }

@@ -47,6 +47,7 @@ what anybody is served.
 | `portfolio.html`, `portfolio/*.html` | Next.js routes at the same addresses | 16 August 2026 |
 | `index.html` | a Next.js route at `/`, which its canonical link always named | 16 August 2026 |
 | `shells/*.html` | Next.js routes; Vite stopped emitting a page | 16 August 2026 |
+| `first-sync.js` | nothing: `aab/sync.js` no longer has a question to ask | 17 August 2026 |
 
 `work.html` and `services.html` were early placeholders that still
 carried template text ("[Your Name]", "hello@yourdomain.com"), kept
@@ -115,6 +116,25 @@ nothing reached. `dsex` is not a piece at all: `_redirects` sends
 both of its addresses to `/learn/terms/dsex`, and has since before
 this. Their entries in `content.js` went in the same commit, which
 is what Stage 3 asked for. TRANSITION.md Stage 11.2.
+
+`first-sync.js` is the only module here that was archived because
+the question it asked stopped being a question. It was a modal
+with three answers, shown once per account per browser, asking
+what should happen to the progress a device already held when
+somebody signed in on it. The three answers were "keep both",
+"use my account's" and "use this browser's", and the dialog
+existed because `aab/sync.js` merged a browser and an account as
+two equal copies of one thing and could not tell a laptop from a
+borrowed phone.
+
+The account is the record now. Signing in writes the account's
+rows onto the device and uploads nothing that was there first, so
+there is one answer and the site does not have to ask for it. The
+file is kept because the three-way merge it fronted is the thing
+the rewrite has to be checked against, and because the wording of
+those three choices is a good record of how hard the old shape
+was to explain. `.first-sync*` went out of `styles.css` in the
+same commit.
 
 `reads.js` drew the cards on both of those pages and has nothing
 left to draw. `.read-en`, `.read-note` and `.read-fallback` went

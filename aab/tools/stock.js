@@ -18,6 +18,22 @@
    script in the page head before first paint, so a returning
    reader never sees a flash of English before their Bangla
    arrives.
+
+   SAVING A CHECK
+
+   Forty-odd inputs is enough work that doing it twice is a
+   reason not to do it once. The page has always encoded all of
+   them in its own query string, so a filled-in check has always
+   been shareable as a link; what it could not do was keep one.
+
+   It keeps them on the ACCOUNT and nowhere else. There is no
+   local list, no "saved on this device", and a signed-out reader
+   sees no panel at all rather than a panel that tells them to
+   sign in: what they had before this existed, the URL in the
+   address bar and the button that copies it, is untouched. The
+   stored row holds that same query string, so opening a saved
+   check is a link, and the format the page reads is the format
+   it writes, once.
    ============================================================ */
 
 import {
@@ -27,6 +43,8 @@ import {
 import {
   t, fmtNum, fmtInt, fmtValue, fmtLakh, fmtTk,
 } from "/tools/stock.i18n.js";
+import { current } from "/account.js";
+import { listScenarios, saveScenario, removeScenario } from "/saved.js";
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -1073,6 +1091,118 @@ function download() {
    INIT
    ============================================================ */
 
+/* ============================================================
+   SAVED CHECKS
+
+   The panel exists only for somebody signed in, and it is hidden
+   in the markup rather than built here so that the layout it sits
+   in is the layout the route rendered. `hidden` comes off once,
+   after the account has answered.
+   ============================================================ */
+
+/** One line of the answer, stored beside the inputs so that the
+    account page can list a saved check without loading a thousand
+    lines of scoring model to find out what it concluded. */
+function summarise() {
+  if (!last) return "";
+  const band = last.vetoed
+    ? t("verdict.vetoed", "en")
+    : t(`verdict.${last.verdict.id}`, "en");
+  const score = last.score === null ? "no score" : last.score.toFixed(1);
+  return `${score} · ${band}`;
+}
+
+function scenarioCard(row) {
+  const query = typeof row.inputs?.query === "string" ? row.inputs.query : "";
+  const card = el("div", "saved-row");
+
+  const body = el("div", "saved-body");
+  body.append(
+    el("h3", null, esc(row.name || "Untitled")),
+    el("p", "saved-line", esc(row.summary || "")),
+  );
+
+  const open = document.createElement("a");
+  open.className = "btn btn-ghost btn-small";
+  open.href = query ? `?${query.replace(/^\?/, "")}` : location.pathname;
+  open.textContent = t("a.open", lang);
+
+  const drop = document.createElement("button");
+  drop.type = "button";
+  drop.className = "btn btn-ghost btn-small";
+  drop.textContent = t("a.remove", lang);
+  drop.addEventListener("click", async () => {
+    drop.disabled = true;
+    try {
+      await removeScenario(row.id);
+      await paintSaved();
+    } catch {
+      drop.disabled = false;
+    }
+  });
+
+  const actions = el("div", "saved-actions");
+  actions.append(open, drop);
+  card.append(body, actions);
+  return card;
+}
+
+async function paintSaved() {
+  const host = $("#scenario-list");
+  if (!host) return;
+  const rows = await listScenarios("stock");
+  host.replaceChildren(...rows.map(scenarioCard));
+}
+
+/* Signing in and out on this page calls initSaved() again, and a
+   second listener on the same button is a second row saved per
+   press. The panel is wired once; showing it is the part that
+   repeats. */
+let savedWired = false;
+
+function initSaved() {
+  const panel = $("#save-scenario");
+  if (!panel || !current()) return;
+
+  panel.hidden = false;
+  if (savedWired) { paintSaved(); return; }
+  savedWired = true;
+
+  const note = $("#scenario-note");
+  const field = $("#scenario-name");
+
+  $("#save-scenario-go").addEventListener("click", async (e) => {
+    const name = field.value.trim();
+    if (!name) { note.textContent = t("a.saveNamed", lang); return; }
+
+    const button = e.currentTarget;
+    button.disabled = true;
+    try {
+      /* The URL is written on every render, so what is in the
+         address bar right now IS the state of this page. Reading
+         it back rather than re-serialising `state` means there is
+         one encoder and it is the one every shared link has been
+         proving correct for a year. */
+      writeUrl();
+      await saveScenario({
+        tool: "stock",
+        name,
+        inputs: { query: location.search.replace(/^\?/, "") },
+        summary: summarise(),
+      });
+      note.textContent = t("a.saved", lang);
+      field.value = "";
+      await paintSaved();
+    } catch (err) {
+      note.textContent = err.message || t("a.saveFailed", lang);
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  paintSaved();
+}
+
 function init() {
   // language: URL wins over the stored choice, both over English
   let stored = null;
@@ -1124,6 +1254,17 @@ function init() {
   applyLang(lang, { save: false });          // builds the inputs and renders
   onSectorChange();
   render();
+
+  /* Last, and after the first render, so the summary a save
+     stores is the answer the reader is looking at. It reads the
+     session out of this device and makes no request when nobody
+     is signed in. */
+  initSaved();
+  document.addEventListener("account:changed", () => {
+    const panel = $("#save-scenario");
+    if (panel && !current()) { panel.hidden = true; return; }
+    initSaved();
+  });
 }
 
 init();
