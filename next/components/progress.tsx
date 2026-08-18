@@ -42,10 +42,20 @@ const EMPTY = new Set<string>();
 
 /** Subscribing to a store whose snapshot is a fresh Set on every
     read would loop: React compares snapshots by identity. So the
-    snapshot is the stored string, and the Set is derived from it. */
-function useRead(school: string, known: string[]): Set<string> {
-  const knownSet = new Set(known);
+    snapshot is the stored string, and the Set is derived from it.
 
+    It takes no list of ids any more, and that is the fix for the
+    worst bug this file has had. It used to hand its caller's ids
+    to `readSet` as the set of "real" ones, and `readSet` deleted
+    everything else from storage. Every caller passes a SUBSET:
+    one lesson, one card, one stage's rungs. So drawing a tick
+    threw away the rest of the school. See the note on `readSet`.
+
+    Nothing is lost by dropping it. Each caller below already
+    asks `read.has(id)` for the ids it cares about, which is the
+    same intersection done in memory, where it cannot destroy
+    anything. */
+function useRead(school: string): Set<string> {
   const raw = useSyncExternalStore(
     subscribe,
     () => {
@@ -55,7 +65,7 @@ function useRead(school: string, known: string[]): Set<string> {
   );
 
   if (!raw) return EMPTY;
-  return readSet(school, knownSet);
+  return readSet(school);
 }
 
 const keyOf = (school: string) =>
@@ -100,7 +110,7 @@ export function LessonTick({
     setLast(school, { id, title, stage, url });
   }, [school, id, title, stage, url]);
 
-  const done = useRead(school, [id]).has(id);
+  const done = useRead(school).has(id);
   const onClick = useCallback(() => { toggleRead(school, id); }, [school, id]);
 
   return (
@@ -146,7 +156,7 @@ export function LadderMeter({
   accent?: string;
 }) {
   const ids = lessons.map((l) => l.id);
-  const read = useRead(school, ids);
+  const read = useRead(school);
   const done = ids.filter((id) => read.has(id)).length;
   const pct = ids.length ? Math.round((done / ids.length) * 100) : 0;
 
@@ -168,7 +178,7 @@ export function LadderMeter({
 /** A tick on a card, for a lesson in a list. Rendered inside the
     card by the server; this is only the mark. */
 export function CardTick({ school, id }: { school: string; id: string }) {
-  const done = useRead(school, [id]).has(id);
+  const done = useRead(school).has(id);
   if (!done) return null;
   return <span className="card-tick" aria-label="পড়া হয়েছে">✓</span>;
 }
@@ -187,7 +197,7 @@ export function Resume({
 }) {
   const ids = lessons.map((l) => l.id);
   const last = useBookmark(school, ids);
-  const read = useRead(school, ids);
+  const read = useRead(school);
 
   /* The bookmark is where they were. What they want is where to
      go, and those are the same only until they finish the lesson
