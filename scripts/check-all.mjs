@@ -32,7 +32,7 @@ const ONLY_CHECKS = process.argv.includes("--checks");
 const STAGES = [
   ["checks", [
     "scripts/check-routes.js",
-    "aab/check-css.mjs",
+    "scripts/check-css.js",
     "scripts/check-sw.js",
     "aab/check-content.mjs",
     "scripts/check-csp.js",

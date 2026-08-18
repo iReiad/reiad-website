@@ -31,6 +31,20 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v122: Seven rules that style nothing on this site are gone,
+        and `check-css.js` counts them now so no eighth arrives
+        quietly. `.card-sub`, `.news-meta`, `.palette-panel`,
+        `.pill-new`, `.section-more` and the two `-dot` variants
+        of chart lines whose templates build `line-${k}` and
+        `dot-${k}`, never `line-x-dot`.
+
+        The count is a ratchet at zero rather than a wall, and its
+        test is deliberately broad: half this site writes
+        `className={plain ? "art" : "art stage-art"}`, and a
+        pattern anchored to the quotes calls every one of those
+        dead. A rule flagged and then deleted is a page losing its
+        design.
+
    v120: Both practice books work. Neither did.
 
         `schools/workbook.js` is one engine where there were two
@@ -1245,7 +1259,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v121";
+const VERSION = "v122";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

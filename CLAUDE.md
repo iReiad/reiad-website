@@ -458,7 +458,7 @@ has to be in three places or it does not survive the trip:
 2. `KEEP_CLASSES` in `aab/editor.js`, the browser's sanitiser,
 3. `ALLOWED_CLASSES` in `functions/_lib/sanitise.js`, the server's.
 
-`check-css.mjs` fails if the two allowlists disagree, if a class is allowed
+`check-css.js` fails if the two allowlists disagree, if a class is allowed
 into an article and styled nowhere, or if two cascade layers both define
 one. The last of those is not hypothetical twice over: `.glance` was
 already the About page's, `.steps` already the Learn hub's, and a later
@@ -552,8 +552,9 @@ at all:
 node scripts/check-routes.js # redirect loops, dead links in routes as well
                             # as in files, a live article whose slug cannot be a
                             # URL, and a check or a test published as a page
-node aab/check-css.mjs      # a school's layer styling the whole site, and a
-                            # block class that means two things at once
+node scripts/check-css.js   # a school's layer styling the whole site, a block
+                            # class that means two things at once, and a rule
+                            # that styles nothing on the site at all
 node scripts/check-sw.js    # a precached file changed without a VERSION bump,
                             # or a precached module whose import is not precached
 node aab/check-content.mjs  # a page that has stopped counting the site correctly
@@ -830,7 +831,7 @@ schools' half of the nightly backup, on the same footing as
 `content/articles.backup.json`. It is what `check-schools.mjs`
 compares the four `curriculum.js` modules against. And it is the
 only copy of the lesson prose that a check running on a laptop
-with no network can read, which is how `check-css.mjs` knows that
+with no network can read, which is how `check-css.js` knows that
 `.shobdo-list` and thirty-one other rules are styling something
 real.
 

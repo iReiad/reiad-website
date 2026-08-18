@@ -150,8 +150,8 @@ The method at the top, applied to the rest. Biggest first, one per
 change, because each will surface something: none of them have
 been read since 250 pages moved out from under them.
 
-`check-routes` (260) **done** · `check-csp` (157) **done** ·
-`check-sw` (143) **done** · `check-css` (558) · then the nine tests.
+All four **done**: `check-routes` (260), `check-css` (558),
+`check-csp` (157), `check-sw` (143). Then the nine tests.
 
 **What the first audit found.** Five claims in its header, three
 still true and two that had quietly stopped being:
@@ -194,6 +194,26 @@ became four lines over was not.
 Static imports only. `signin.js` is imported lazily inside a try,
 and the entry above it says an offline visit without it is a page
 with no sign-in button rather than a broken one.
+
+**`check-css` was current on every claim it makes**, which was
+worth establishing rather than assuming: it already walks
+`next/app`, `next/components` and `next/lib`, and reads the
+schools' prose out of the snapshot, both added when the pages
+became rows. All four claims were shown to fire.
+
+So again the finding was what it does not ask: a rule with a
+class of its own that no markup in this repository carries. That
+is how 236 lines went dead without anybody noticing, and they
+were found by hand rather than by anything here. Seven survived
+and are gone; the count is a ratchet at zero.
+
+Its test is deliberately broader than the leak check's `usedIn()`
+next door. That one looks only in a class attribute, which is
+right for asking whether a school's rule is anchored by a class
+the school's pages carry. For "is this rule dead" any mention
+counts, because half the site writes
+`className={plain ? "art" : "art stage-art"}`: a pattern anchored
+to the quotes called two live classes dead on the first run.
 
 They move to `scripts/` as they are audited, which is also when
 they can lose the `.mjs` extension: the root declares

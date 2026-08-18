@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-css.mjs, catch a school's styles leaking into the
+   check-css.js, catch a school's styles leaking into the
    whole site.
 
-       node aab/check-css.mjs
+       node scripts/check-css.js
 
    THE BUG THIS EXISTS FOR
 
@@ -56,11 +56,19 @@
    a second, next to the other checks, or it will not get run.
    ============================================================ */
 
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = dirname(fileURLToPath(import.meta.url));
+/* `AAB` is the served directory and `ROOT` is the repository.
+   They were the same until this file moved out: every file in
+   `aab/` is uploaded and answers at a public URL, so a check
+   living there was a check published at `/check-css.mjs`, kept
+   private only by a line in `.assetsignore`. A check outside the
+   served directory cannot be served. The extension went with it:
+   the root declares `"type": "module"`. */
+const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
+const ROOT = join(REPO, "aab");
 
 /** A school: its cascade layer, and the files it owns. */
 const SCHOOLS = [
@@ -174,8 +182,16 @@ for (const outside of ["../next/app", "../next/components", "../next/lib"]) {
   if (existsSync(join(ROOT, outside))) walk(join(ROOT, outside));
 }
 
+/* And the Studio and the desk, which are a Vite workspace whose
+   OUTPUT is committed into `aab/` and therefore already walked.
+   The sources are here for the dead-rule count at the foot of
+   this file: `.pill-warn` is written in `app/src/Published.tsx`
+   and appears in the built bundle as a minified class string,
+   which is enough for a substring test and not enough to trust. */
+if (existsSync(join(ROOT, "../app/src"))) walk(join(ROOT, "../app/src"));
+
 const markup = new Map(
-  files.filter((f) => f !== "check-css.mjs").map((f) => [f, readFileSync(join(ROOT, f), "utf8")])
+  files.filter((f) => f !== "check-css.js").map((f) => [f, readFileSync(join(ROOT, f), "utf8")])
 );
 
 /* And the schools' prose, which is not a file any more.
@@ -543,6 +559,72 @@ for (const token of [...used].sort()) {
     "        An undefined custom property makes the whole declaration invalid\n"
     + "        at computed value time, so the property reverts and the rule does\n"
     + "        nothing. That is why it looks fine in a diff.");
+}
+
+/* ============================================================
+   A rule that styles nothing
+
+   This file already asks whether an ARTICLE class is styled
+   nowhere. The other direction was never asked: a class with a
+   rule of its own that no markup in this repository carries.
+
+   That is how 236 lines went dead without anybody noticing, and
+   they were found by hand on 18 August 2026 rather than by
+   anything here: the whole `.wb-*` vocabulary outlived the module
+   that wrote it, `.cell-aim` outlived the card it painted, and
+   `.wb-picker` was a byte-for-byte copy of `.tag-waehler`.
+
+   A RATCHET, not a wall, for the same reason `check-components.mjs`
+   is one: there are 45 of them, clearing them is a change nobody
+   could review in one sitting, and each needs looking at rather
+   than deleting. The number may only fall.
+
+   The test is deliberately broader than `usedIn()` above. That one
+   looks only in a class attribute, which is right for the leak
+   question: a school's rule is anchored by a class the school's
+   PAGES carry. Here any mention counts, because a class can be
+   real without ever appearing in an attribute in this repository:
+   `classList.add("x")`, a selector string in a module, a template
+   literal. A rule flagged as dead and then deleted is a page
+   losing its design, so this errs towards saying nothing.
+   ============================================================ */
+{
+  const anywhere = [...markup.values()].join("\n");
+  /* The name as a WHOLE WORD inside any quoted string, or after a
+     dot in a selector. Not "the whole string is this class": half
+     the site writes `className={plain ? "art" : "art stage-art"}`,
+     and a pattern anchored to the quotes calls every one of those
+     dead. Both false positives it produced were that shape. */
+  const mentions = (cls) =>
+    new RegExp(`["'\`][^"'\`]*(?<![\\w-])${cls}(?![\\w-])[^"'\`]*["'\`]`).test(anywhere)
+    || new RegExp(`\\.${cls}(?![\\w-])`).test(anywhere);
+
+  const dead = [...everyClass].filter((c) => !mentions(c)).sort();
+
+  const LEDGER = join(REPO, "scripts", "css-debt.json");
+  const recorded = existsSync(LEDGER)
+    ? JSON.parse(readFileSync(LEDGER, "utf8")).dead ?? 0
+    : dead.length;
+
+  if (process.argv.includes("--update")) {
+    writeFileSync(LEDGER, `${JSON.stringify({ dead: dead.length, classes: dead }, null, 2)}\n`);
+    console.log(`css debt recorded: ${dead.length} rule(s) that style nothing.`);
+    process.exit(0);
+  }
+
+  if (dead.length > recorded) {
+    failures++;
+    const known = new Set(existsSync(LEDGER)
+      ? JSON.parse(readFileSync(LEDGER, "utf8")).classes ?? [] : []);
+    console.error(`\n${dead.length - recorded} new rule(s) style nothing on this site:`);
+    for (const c of dead.filter((c) => !known.has(c))) console.error(`        .${c}`);
+    console.error("        Either the markup that carried it went and the rule should go\n"
+      + "        with it, or it was written before the thing it styles. Run\n"
+      + "        `--update` only to record a fall.");
+  } else if (dead.length < recorded && !failures) {
+    console.log(`${recorded - dead.length} dead rule(s) gone since the last count. `
+      + "Run --update to hold it.");
+  }
 }
 
 console.log(
