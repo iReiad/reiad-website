@@ -8404,6 +8404,149 @@ German for day, and .tag is what the site has always called
     grid-template-columns: minmax(0, 0.8fr) 2.6fr;
     align-items: start;
   }
+  .deck-foot-mark { display: grid; gap: 5px; align-content: start; min-width: 0; }
+  .deck-foot-name {
+    font-family: var(--font-serif); font-size: var(--t-7);
+    display: block; margin-bottom: 1px;
+  }
+  .deck-foot-line {
+    color: var(--ink-soft); font-size: var(--t-4); margin: 0; max-width: 34ch;
+    line-height: 1.5;
+  }
+  .deck-foot-line[lang="bn"] { font-family: var(--font-bn); }
+  .deck-foot-mail {
+    display: inline-flex; align-items: center; gap: 7px;
+    justify-self: start;
+    margin-top: 6px; font-family: var(--font-mono); font-size: var(--t-3);
+  }
+  /* The icon and the address are on one baseline rather than on
+     one centre line: an inline SVG's box is taller than the
+     lowercase text beside it, so centring the two puts the glyph
+     a pixel low against every letter of the address. */
+  .deck-foot-mail svg { flex: 0 0 15px; translate: 0 1px; }
+
+  /* ---------- five groups of very different lengths ----------
+
+     One of these columns has eight links in it and the others
+     have one, two, three and three. In an `auto-fit` grid that is
+     a ragged block: at 965px wide it fitted three columns, so the
+     short ones sat in a row of their own and the Learning column
+     started a second row and set the footer's height on its own.
+     470px of footer, most of it beside white space.
+
+     Learning takes two tracks and flows its own list down two
+     sub-columns, which makes it four links tall instead of eight
+     and puts every group on one row at any width that fits four
+     tracks. The grid is `auto-fill` rather than `auto-fit` so the
+     tracks keep their width instead of stretching when there are
+     too few to fill the row.
+
+     `data-group` rather than `:nth-child`, because the order of
+     these columns is not fixed: `[data-audience="work"]` swaps
+     the first and fourth, and a positional selector would then
+     put two sub-columns under the wrong heading. */
+  .deck-foot-nav {
+    /* Named, because the learning list is a subgrid of these
+       tracks and a subgrid does NOT inherit a gap its own rule
+       has set. `.deck-foot-col ul` sets `gap: 5px`, which is a
+       column gap too, so the links stood on the right tracks and
+       five pixels inside them: every heading below was out by a
+       different amount, growing across the row. One value, read
+       by both. */
+    --foot-gap: var(--s-7);
+    display: grid; gap: var(--s-8) var(--foot-gap);
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    align-items: start;
+  }
+
+  /* Learning has eight links and the other four groups have one,
+     two, three and one. Left to `auto-fit` that is a ragged
+     block: at 965px it fitted three tracks, so the short groups
+     took a row of their own and Learning started a second row and
+     set the footer's height by itself. 470px of footer, most of
+     it beside white space.
+
+     Learning takes the whole row and lays its own list out in as
+     many sub-columns as fit, so it is two or three links deep
+     instead of eight, and the four short groups share the row
+     under it. Two rows on purpose, each one full, rather than two
+     rows because something did not fit.
+
+     The list stays a grid. `columns: 2` was the first thing tried
+     here and it does nothing at all: multi-column does not apply
+     to a grid container, and `ul` above is `display: grid`, so
+     the rule was inert and the column stayed eight deep. */
+  .deck-foot-col[data-group="learn"] {
+    grid-column: 1 / -1;
+    display: grid;
+    /* SUBGRID, so the eight learning links stand in the same
+       columns as the four groups under them.
+
+       The first version gave this list its own
+       `auto-fill minmax(150px, 1fr)`, which is a second column
+       system laid over the first: at 965px the nav was four
+       100px tracks and the list was two 212px ones, so "Work"
+       began six pixels from "Qur'anic Arabic" and every heading
+       below was out by a different amount. Six pixels is worse
+       than sixty, because sixty reads as two blocks and six
+       reads as a mistake.
+
+       It nests twice because the tracks have to reach the `li`,
+       and subgrid only inherits from the immediate parent: the
+       column takes the nav's tracks, the list takes the column's,
+       and the links land on the nav's own lines. */
+    grid-template-columns: subgrid;
+
+    & .deck-foot-label { grid-column: 1 / -1; }
+    & ul {
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+      gap: var(--s-2) var(--foot-gap);
+    }
+  }
+  .deck-foot-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 5px; }
+  .deck-foot-col a {
+    color: var(--ink); text-decoration: none; font-size: var(--t-4);
+    line-height: 1.45; display: inline-block;
+  }
+  .deck-foot-col a:hover { color: var(--accent); }
+  .deck-foot-col a [lang="bn"] { font-family: var(--font-bn); color: var(--ink-soft); }
+  /* Every column's label sits on the same line, and every
+     column's first link sits on the line under it, whatever the
+     label says. A block label with a margin does that; a label
+     that inherits the list's line height does not, and the four
+     headings here are three, four, five and eight characters. */
+  .deck-foot-label {
+    display: block; margin-bottom: 9px; line-height: 1;
+    color: var(--accent); font-size: var(--t-0); letter-spacing: 0.12em;
+  }
+
+  /* The last line: three short marks, then the page's own
+     disclaimer pushed to the far end. `margin-inline-start: auto`
+     on the note rather than `justify-content: space-between` on
+     the row, because the note wraps to its own line on a narrow
+     footer and space-between would then spread the three marks
+     across the whole width to fill the gap it left. */
+  .deck-foot-end {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-4) 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--hairline);
+    color: var(--ink-soft);
+  }
+  .deck-foot-end > .mono { font-size: var(--t-2); }
+  .deck-foot-note {
+    flex: 1 1 320px; margin: 0; font-size: var(--t-3); min-width: 0;
+    margin-inline-start: auto; text-align: end;
+  }
+
+  /* ---------- narrower screens ----------
+
+     These sat ABOVE the rules they override, and for two
+     selectors of the same weight in the same layer the only
+     thing that decides is which comes last. So the phone's
+     `repeat(2, ...)` never applied: a 390px screen got whatever
+     `auto-fit` worked out to, which agreed with two by luck
+     until the track size changed and quietly became three. */
   @media (max-width: 860px) {
     .deck-foot-top { grid-template-columns: 1fr; gap: 18px; }
   }
@@ -8430,79 +8573,10 @@ German for day, and .tag is what the site has always called
     .deck-foot-label { margin-bottom: 7px; }
     .deck-foot-line[lang="en"] { display: none; }
     .deck-foot-name { font-size: var(--t-6); }
-    .deck-foot-pledge p { font-size: var(--t-4); }
     .deck-foot-end { padding-top: 13px; gap: var(--s-3) 14px; }
   }
 
-  .deck-foot-mark { display: grid; gap: 5px; align-content: start; min-width: 0; }
-  .deck-foot-name {
-    font-family: var(--font-serif); font-size: var(--t-7);
-    display: block; margin-bottom: 1px;
-  }
-  .deck-foot-line {
-    color: var(--ink-soft); font-size: var(--t-4); margin: 0; max-width: 34ch;
-    line-height: 1.5;
-  }
-  .deck-foot-line[lang="bn"], .deck-foot-pledge [lang="bn"] { font-family: var(--font-bn); }
-  .deck-foot-mail {
-    display: inline-flex; align-items: center; gap: 7px;
-    justify-self: start;
-    margin-top: 6px; font-family: var(--font-mono); font-size: var(--t-3);
-  }
-  /* The icon and the address are on one baseline rather than on
-     one centre line: an inline SVG's box is taller than the
-     lowercase text beside it, so centring the two puts the glyph
-     a pixel low against every letter of the address. */
-  .deck-foot-mail svg { flex: 0 0 15px; translate: 0 1px; }
 
-  .deck-foot-nav {
-    display: grid; gap: var(--s-8);
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  }
-  .deck-foot-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 5px; }
-  .deck-foot-col a {
-    color: var(--ink); text-decoration: none; font-size: var(--t-4);
-    line-height: 1.45; display: inline-block;
-  }
-  .deck-foot-col a:hover { color: var(--accent); }
-  .deck-foot-col a [lang="bn"] { font-family: var(--font-bn); color: var(--ink-soft); }
-  /* Every column's label sits on the same line, and every
-     column's first link sits on the line under it, whatever the
-     label says. A block label with a margin does that; a label
-     that inherits the list's line height does not, and the four
-     headings here are three, four, five and eight characters. */
-  .deck-foot-label {
-    display: block; margin-bottom: 9px; line-height: 1;
-    color: var(--accent); font-size: var(--t-0); letter-spacing: 0.12em;
-  }
-
-  .deck-foot-pledge {
-    display: grid; gap: var(--s-2);
-    padding: 13px 16px;
-    border-radius: var(--radius);
-    background: var(--green-soft);
-    border: 1px solid color-mix(in oklab, var(--green) 25%, transparent);
-  }
-  .deck-foot-pledge p { margin: 0; font-size: var(--t-4); line-height: 1.55; }
-  .deck-foot-pledge [lang="en"] { color: var(--ink-soft); font-size: var(--t-3); }
-
-  /* The last line: three short marks, then the page's own
-     disclaimer pushed to the far end. `margin-inline-start: auto`
-     on the note rather than `justify-content: space-between` on
-     the row, because the note wraps to its own line on a narrow
-     footer and space-between would then spread the three marks
-     across the whole width to fill the gap it left. */
-  .deck-foot-end {
-    display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-4) 18px;
-    padding-top: 16px;
-    border-top: 1px solid var(--hairline);
-    color: var(--ink-soft);
-  }
-  .deck-foot-end > .mono { font-size: var(--t-2); }
-  .deck-foot-note {
-    flex: 1 1 320px; margin: 0; font-size: var(--t-3); min-width: 0;
-    margin-inline-start: auto; text-align: end;
-  }
   @media (max-width: 700px) {
     .deck-foot-note { text-align: start; margin-inline-start: 0; }
   }

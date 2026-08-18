@@ -31,6 +31,32 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v91: The footer, which said the same thing twice and was
+        half again as tall as it needed to be.
+
+        A green band under the links promised, in both languages,
+        that everything is free, that there is no login, and that
+        what you have read stays in your own browser. All three
+        of those are in the page's own note a hundred pixels
+        below it: the German school's reads "free, in Bangla, and
+        without a login. Your progress stays in your own browser."
+        On /skills/ the page said it a third time in a band
+        directly above the footer. One sentence of the band
+        survives, the only part not said anywhere else, that an
+        account carries progress between devices.
+
+        The links were a ragged block. Learning has eight of them
+        and the other four groups have one, two, three and one,
+        so an `auto-fit` grid put the short ones in a row of
+        their own and let Learning start a second row and set the
+        height by itself. Learning takes the whole row now and
+        stands its list on the nav's own tracks with `subgrid`,
+        so the eight links and the four headings under them share
+        four columns exactly rather than nearly.
+
+        744px to 397px at 965 wide, 550 to 374 at 1440, 982 to
+        681 on a 390px phone.
+
    v90: The live portfolio landed at /tools/live.html. /styles.css
         gained its drawing vocabulary in the tools layer, and
         /comments.js learned that an admin's comment comes back
@@ -39,7 +65,6 @@
         precached; its module /tools/live.js is new and useless
         offline (a live feed has nothing honest to say from a
         cache), so it is deliberately not in PRECACHE either.
-
    v89: The menu on a phone. /styles.css only, and three things
         in it that a reader can point at.
 
@@ -855,7 +880,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v90";
+const VERSION = "v91";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
