@@ -1,6 +1,6 @@
 # Migration tracker
 
-Three moves, all part-done. The rule is **convert what you touch**: any file
+Four moves, all part-done. The rule is **convert what you touch**: any file
 you edit for another reason gets converted in the same change, wired up
 properly, with its checks passing. No separate "migration sprint".
 
@@ -97,7 +97,29 @@ Three things stay in `aab/styles.css` permanently, and the split is the point:
 
 So the target is JSX and route markup, not the whole stylesheet.
 
-## 3. Prose
+## 3. Hand-written HTML to routes
+
+**Nothing new is built as a hand-written or string-generated page.** A page
+is a Next.js route; a piece of interface is a component. See CLAUDE.md.
+
+**Left:** the four practice books, generated as template literals by
+`aab/deutsch/build-deutsch.mjs` and `aab/english/build-english.mjs`. They
+are the last real pages on the old method, and being on it is why they
+carry `.slimbar` and lose the rail. Porting them to routes gives them the
+rail, the drawer, the audience switch and the accent for free, and deletes
+two builders.
+
+They are precached, and the service worker already precaches six rendered
+routes, so offline is not the obstacle it looks like.
+
+`htmlAttrs()` in `next/lib/nav.ts` is a stopgap that gives the generated
+books the right accent until they are routes. It goes when they do.
+
+**Not moving:** `404.html` and `offline.html`. They have to answer when the
+Worker, the route and the network are all unavailable, which is exactly
+when a route cannot.
+
+## 4. Prose
 
 Comments and docs carry the constraint, not the story. Keep: what breaks, what
 must not be renamed, why an order is load-bearing, what a check is for. Cut:

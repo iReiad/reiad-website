@@ -32,12 +32,13 @@
    nothing.
    ============================================================ */
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { FONTS, LOOK } from "@reiad/shared/look";
 import { SiteScripts } from "./scripts";
 import { Sidebar, DrawerBackdrop } from "./sidebar";
 import { TopBar } from "./topbar";
 import { SiteFooter } from "./footer";
+import { accentStyle } from "../lib/nav";
 
 /* Before the first paint, and therefore inline and blocking.
 
@@ -169,7 +170,26 @@ export function SiteShell({
      render as a mismatch and takes it off, which is a reader's
      theme being thrown away between the paint and the hydration. */
   return (
-    <html lang={lang} suppressHydrationWarning>
+    <html
+      lang={lang}
+      /* The page wears the colour of its own icon in the rail.
+         One custom property does it: `--accent-soft`,
+         `--accent-line` and `--accent-ring` all derive from
+         `--accent`, so the cards, chips, meters, rules and focus
+         rings on a German page are blue without one of them
+         naming blue.
+
+         Inline rather than a stylesheet of `[data-section]` rules,
+         so the table in `lib/nav.ts` stays the only place the
+         mapping exists and there is nothing to regenerate.
+         `data-section` is written too, for the few rules that
+         need to know WHICH section rather than what colour. */
+      data-section={current ?? undefined}
+      /* Cast for the same reason `footer.tsx` casts: React's
+         CSSProperties cannot express a custom property. */
+      style={accentStyle(current) as CSSProperties | undefined}
+      suppressHydrationWarning
+    >
       <SiteHead />
       <body className={[bodyClass, fixed ? "shell-fixed" : null].filter(Boolean).join(" ") || undefined}
             suppressHydrationWarning>

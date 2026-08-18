@@ -40,6 +40,32 @@ Quick check before committing:
 grep -rn $'\u2014' aab/ functions/
 ```
 
+## React or a route. Never new hand-written HTML.
+
+**Nothing new is built as a hand-written or string-generated HTML page.**
+A page is a Next.js route under `next/app/`; a piece of interface is a
+component under `next/components/` or `app/src/`. That is the target for
+everything, and anything still built the old way is a thing waiting to be
+ported rather than a pattern to copy.
+
+What that rules out, concretely:
+
+- a new `aab/*.html` file,
+- a new page emitted as a template literal from a `build-*.mjs`,
+- a second copy of chrome the shell already renders. The rail, the top
+  bar and the footer are `next/components/`, and a page that draws its own
+  is a page that will drift from the other 250.
+
+`MIGRATION.md` lists what is still on the old method. The four practice
+books are the last real pages: they carry `.slimbar` instead of the rail
+purely because they are generated static HTML with no React in them, and
+that is a reason to port them, not a reason to teach a `.mjs` builder to
+render a rail.
+
+The two exceptions are `404.html` and `offline.html`, and they are
+exceptions on purpose: they have to answer when the Worker, the route and
+the network are all unavailable, which is exactly when a route cannot.
+
 ## Convert what you touch
 
 Three migrations are part-done and `MIGRATION.md` tracks them. The rule is

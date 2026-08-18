@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v99: A page wears the colour of its own icon in the rail.
+        --accent arrives inline on <html> from the one table in
+        next/lib/nav.ts, so /styles.css lost the five body rules
+        that said five of the sixteen destinations by hand, and
+        the practice books gained the attribute their school owns.
+
    v98: The breadcrumb stopped printing the site's name in it.
         /crumbs.js split the document title on U+2014, which this
         site's rules guarantee never appears, so the split did
@@ -951,7 +957,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v98";
+const VERSION = "v99";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

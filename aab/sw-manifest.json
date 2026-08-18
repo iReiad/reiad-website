@@ -1,8 +1,8 @@
 {
-  "version": "v98",
+  "version": "v99",
   "hashes": {
     "/offline.html": "55bcf02529d11190",
-    "/styles.css": "675bf40cd3772e61",
+    "/styles.css": "ba0b4e1b19d42021",
     "/tailwind.css": "dba9db77d3a8bd1e",
     "/app.js": "f56b8c5eed9e972d",
     "/content.js": "3c535dcbbd7173be",
@@ -33,7 +33,7 @@
     "/deutsch/hub.js": "6642cd4bdc487991",
     "/deutsch/progress.js": "4523407c531be072",
     "/deutsch/icons.js": "d77b4623e36ae3a6",
-    "/deutsch/stufe-1/arbeitsbuch.html": "8fd610385cdbf3aa",
+    "/deutsch/stufe-1/arbeitsbuch.html": "3dd2949eaa076eac",
     "/deutsch/arbeitsbuch.js": "f58ebe4d061a1571",
     "/quran/curriculum.js": "35e19529cc04d32f",
     "/quran/hub.js": "8dff73064a16e35c",

@@ -7773,26 +7773,23 @@ German for day, and .tag is what the site has always called
 
   /* ---------- a page knows its own colour ----------
 
-     The rail colours each destination in its list. This is the
-     other half: once you are IN a place, the whole page carries
-     that place's accent, so the meter on a German ladder, the
-     chip on a German lesson and the German entry in the rail are
-     one colour without any of them naming it.
+     Once you are IN a place, the whole page carries that place's
+     accent, so the meter on a German ladder, the chip on a German
+     lesson and the German entry in the rail are one colour
+     without any of them naming it.
 
-     On the body, because that is the one element every page has
-     and the only one above both the rail and the content. Each
-     school's own layer could set it, and deliberately does not:
-     four layers setting one property is four places to look when
-     it is wrong, and `@layer money` does not exist for the
-     kitchen or the travel desk, which need this too.
+     THE MAPPING IS NOT HERE. `--accent` arrives inline on <html>,
+     read off the one table in `next/lib/nav.ts` by whatever is
+     rendering: `accentStyle()` for a route, `htmlAttrs()` for the
+     generated books and the two file-served pages.
 
-     `shared/look.ts` and `next/lib/school.ts` are where these
-     class names come from, and they are the same strings. */
-  body.deutsch { --accent: var(--blue); }
-  body.quran   { --accent: var(--teal); }
-  body.english { --accent: var(--violet); }
-  body.cooking { --accent: var(--rose); }
-  body.travel  { --accent: var(--plum); }
+     Five rules used to sit here saying `body.deutsch { --accent:
+     var(--blue) }` and so on. They covered five of the sixteen
+     destinations, and they agreed with the rail only because
+     nobody had added the sixth. A colour said in two places is
+     the failure this repository opens with.
+
+     `check-accents.mjs` fails if they come back. */
 
   :root {
     --rail-open: 268px;
