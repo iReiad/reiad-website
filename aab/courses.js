@@ -56,6 +56,7 @@ import { token, current } from "/account.js";
    ============================================================ */
 const READ_KEY = "courses-read";
 const LAST_KEY = "courses-last";
+const ANSWER_KEY = "courses-answers";
 const CHANGED = "courses:progress";
 const readJSON = (key, fallback) => {
     try {
@@ -103,6 +104,59 @@ function toggleRead(id) {
     writeJSON(READ_KEY, [...set]);
     dispatchEvent(new CustomEvent(CHANGED));
     return now;
+}
+/* ---- quiz answers ----
+
+   A `set` of `<lesson id>#<question>#<option>`, which is the
+   checkpoint shape with one more segment. Filed beside the ticks
+   and carried by `aab/sync.js` under the same key rules, so a quiz
+   answered on a laptop is answered on the phone.
+
+   It records what was PICKED and never whether it was right: a
+   Coursera export carries no answer key, so there is nothing here
+   to mark against and nothing pretends otherwise. */
+const answerKey = (lesson, q, opt) => `${lesson}#${q}#${opt}`;
+function readAnswers() {
+    const raw = readJSON(ANSWER_KEY, []);
+    if (!Array.isArray(raw))
+        return new Set();
+    return new Set(raw.filter((id) => typeof id === "string"));
+}
+/** Record one answer.
+
+    `only` is what makes a radio a radio: for a single-answer
+    question every other option of that question is cleared, so the
+    stored set can never say a reader picked two things where the
+    page allowed one. */
+function setAnswer(lesson, q, opt, on, only) {
+    const set = readAnswers();
+    if (only) {
+        const prefix = `${lesson}#${q}#`;
+        for (const id of [...set])
+            if (id.startsWith(prefix))
+                set.delete(id);
+    }
+    const id = answerKey(lesson, q, opt);
+    if (on)
+        set.add(id);
+    else
+        set.delete(id);
+    writeJSON(ANSWER_KEY, [...set]);
+    dispatchEvent(new CustomEvent(CHANGED));
+}
+function clearAnswers(lesson) {
+    const set = readAnswers();
+    const prefix = `${lesson}#`;
+    let touched = false;
+    for (const id of [...set])
+        if (id.startsWith(prefix)) {
+            set.delete(id);
+            touched = true;
+        }
+    if (!touched)
+        return;
+    writeJSON(ANSWER_KEY, [...set]);
+    dispatchEvent(new CustomEvent(CHANGED));
 }
 function setLast(entry) {
     writeJSON(LAST_KEY, { ...entry, ts: Date.now() });
@@ -512,7 +566,15 @@ function drawLesson(root, course, mod, lesson) {
             el("p", { class: "course-waiting" }, [`Loading the ${KIND_WORD[kind].toLowerCase()}…`]),
         ]);
         main.append(box);
-        void mountReading(box, drive, kind);
+        /* A quiz and an exam are the same file shape and neither is a
+           reading: every option in one lives inside a `<form>`, which
+           the sanitiser deletes whole. They go through the parser
+           instead, and `mountQuiz` falls back to the reading renderer
+           if the file turns out not to be a quiz. */
+        if (kind === "reading")
+            void mountReading(box, drive, kind);
+        else
+            void mountQuiz(box, drive, kind, id);
     }
     if (!lesson.video && !lesson.reading && !lesson.quiz && !lesson.exam) {
         main.append(el("p", { class: "course-empty" }, [
@@ -671,6 +733,90 @@ async function mountCaptions(video, drive) {
         default: true,
     }));
 }
+/** A quiz, as something a reader can actually answer.
+
+    The inputs are built HERE, out of the option strings the Worker
+    parsed. None of Coursera's own markup reaches this page: their
+    `<input name="0">` was wired to their server and is meaningless
+    off it, and building our own is what makes an answer something
+    this site can keep.
+
+    Answers save as they are pressed. There is no submit button
+    because there is nothing to submit to and nothing to mark
+    against: the export carries no answer key, so this records what
+    the reader picked and says so plainly rather than implying a
+    score it cannot compute. */
+async function mountQuiz(box, drive, kind, lesson) {
+    const answer = await api(`/quiz/${drive}`);
+    if (!answer.ok || !answer.data) {
+        saySo(box, answer.message || "That quiz could not be opened.");
+        return;
+    }
+    /* Not a quiz after all, or one in a shape the parser does not
+       know. Render it as a page rather than as nothing: unreadable
+       is worse than plain. */
+    if (!answer.data.parsed) {
+        const body = el("div", { class: "course-page" });
+        body.innerHTML = answer.data.html;
+        box.replaceChildren(body, originalLink(drive, kind));
+        return;
+    }
+    const chosen = readAnswers();
+    const form = el("div", { class: "course-quiz" });
+    for (const q of answer.data.questions) {
+        const prompt = el("div", { class: "course-page" });
+        prompt.innerHTML = q.prompt;
+        const field = el("fieldset", { class: "quiz-q" }, [
+            el("legend", {}, [
+                `Question ${q.n}`,
+                q.multiple ? el("span", { class: "quiz-hint" }, [" select all that apply"]) : null,
+            ]),
+            prompt,
+        ]);
+        const list = el("ul", { class: "quiz-options" });
+        q.options.forEach((text, opt) => {
+            const input = el("input", {
+                type: q.multiple ? "checkbox" : "radio",
+                /* One name per question, so the browser enforces
+                   single-select for a radio group without this code
+                   having to. Scoped by lesson because two quizzes could
+                   otherwise share a group across a redraw. */
+                name: `q-${lesson}-${q.n}`,
+            });
+            /* The PROPERTY, not the attribute. `checked=""` in the markup
+               is `defaultChecked`: it says what the control resets to,
+               not what it currently is. Setting the attribute alone
+               restored an answer that a form reset would have shown and
+               a reader never saw. */
+            input.checked = chosen.has(answerKey(lesson, q.n, opt));
+            input.addEventListener("change", () => {
+                setAnswer(lesson, q.n, opt, input.checked, !q.multiple);
+            });
+            list.append(el("li", {}, [el("label", { class: "quiz-option" }, [input, ` ${text}`])]));
+        });
+        field.append(list);
+        form.append(field);
+    }
+    /* Said once, at the bottom, rather than beside every question.
+       A reader is owed the truth about what this does and does not
+       do, and the honest version is short. */
+    const note = el("p", { class: "course-quiz-note" }, [
+        "Your answers save as you go, on this device and to your account. ",
+        "This course's files carry no answer key, so nothing here is marked right or wrong.",
+    ]);
+    const reset = el("button", { type: "button", class: "quiz-reset" }, ["Clear my answers"]);
+    reset.addEventListener("click", () => {
+        clearAnswers(lesson);
+        for (const input of form.querySelectorAll("input")) {
+            input.checked = false;
+        }
+    });
+    box.replaceChildren(form, note, reset, originalLink(drive, kind));
+}
+/** The quiet way back to the file this was built from. */
+const originalLink = (drive, kind) => el("p", { class: "course-original mono" }, [
+    el("a", { href: driveUrl(drive), target: "_blank", rel: "noopener" }, [`Open the original ${kind} in Drive`]),
+]);
 async function mountReading(box, drive, kind) {
     const answer = await api(`/reading/${drive}`);
     if (!answer.ok || !answer.data) {
@@ -683,9 +829,7 @@ async function mountReading(box, drive, kind) {
        iframe and the rest outright. What arrives is words and
        structure. */
     body.innerHTML = answer.data.html;
-    box.replaceChildren(body, el("p", { class: "course-original mono" }, [
-        el("a", { href: driveUrl(drive), target: "_blank", rel: "noopener" }, [`Open the original ${kind} in Drive`]),
-    ]));
+    box.replaceChildren(body, originalLink(drive, kind));
 }
 /** One row of the Files list.
 

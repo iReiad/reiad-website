@@ -514,6 +514,8 @@ node aab/schools/hub.test.mjs      # a school hub that renders and is not finish
 node functions/_lib/notion.test.mjs
 node functions/_lib/drive.test.mjs   # a JWT Google would refuse, and a pass that
                                      # opens more than the one file it names
+node functions/_lib/quiz.test.mjs    # a quiz rendered with its questions and none
+                                     # of its answers, which looks finished
 node scripts/schools.test.mjs        # a curriculum that lost a field, a lesson
                                      # body that changed, or a ladder that came
                                      # back in the wrong order (32 checks)
@@ -996,6 +998,7 @@ course, so the pages are empty and the catalogue is behind
 | `functions/api/courses/` | the only thing that ever sends it |
 | `functions/_lib/drive.ts` | the one place this site reads Drive |
 | `functions/_lib/ticket.ts` | a signed pass, because `<video>` sends no header |
+| `functions/_lib/quiz.ts` | a Coursera quiz export, read into questions |
 | `functions/_lib/drive.test.mjs` | the JWT really is a signature, and the pass opens one file |
 | `aab/src/courses.ts` | the browser's half: all four pages |
 | `next/app/(site)/skills/courses/` | four shells with nothing in them |
@@ -1064,6 +1067,7 @@ bytes from this origin, where there is no third party to block:
 | `GET /api/courses/ticket/<id>` | a signed pass for one file, thirty minutes |
 | `GET /api/courses/file/<id>?t=` | those bytes, streamed, `Range` forwarded |
 | `GET /api/courses/reading/<id>` | that page, sanitised, rendered in the lesson |
+| `GET /api/courses/quiz/<id>` | that quiz, as questions rather than markup |
 | `GET /api/courses/captions/<id>?t=` | the `.srt` beside the video, as WebVTT |
 
 **Two locks on the file route, and the second is the one that
@@ -1114,6 +1118,41 @@ the property that makes it safe to put in a URL.
 
 `media-src 'self'` already covers a `<track>`, so the CSP did not
 change.
+
+**A quiz is parsed, never sanitised into shape.** Every option in
+a Coursera quiz lives inside a `<form>`, and `sanitiseHTML()` drops
+`form` WHOLE, contents and all. That is right for an article and it
+deleted every answer here: the page showed "Question 2", a rule,
+"Question 3", a rule, and looked finished.
+
+The fix was not to widen the allowlist, which would let a form into
+every article on the site to serve one page that is not an article.
+`functions/_lib/quiz.ts` reads the structure FIRST and sanitises
+only the prompt it hands on, so what crosses the wire is data: a
+prompt, whether it is pick-one or select-all, and a list of option
+strings. **The browser builds its own inputs from that**, which is
+also how no foreign `<input>` ever reaches the page. An export in a
+shape the parser does not know falls back to the reading renderer,
+because unreadable is worse than plain.
+
+**It cannot mark anything, and it says so.** The export carries no
+answer key: no `checked`, no `correct`, nothing. Coursera marks on
+its own server and what was downloaded is the paper, not the
+marking scheme. So the page records what the reader picked and
+prints one line saying nothing is marked right or wrong. A tick
+next to a wrong answer would be worse than no tick.
+`quiz.test.mjs` asserts the absence of a score as well as the
+presence of the options.
+
+Answers are `courses-answers`, a `set` of
+`<course>/<module>/<lesson>#<question>#<option>` beside the ticks
+in `aab/sync.js`. That is the checkpoint shape with one segment
+more, and a `set` for the same reason. A pick-one question clears
+its other options on change, so the store can never say a reader
+chose two things where the page allowed one.
+
+**Answering is still not finishing.** The lesson's tick is the
+button, exactly as it is for a video.
 
 **`ID_FIELDS` in `shared/courses.ts` is the list of lesson fields
 holding a Drive id**, and it is exported because more than one

@@ -31,6 +31,16 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v95: A quiz became something a reader can answer.
+        Every option in a Coursera quiz lives inside a <form>,
+        which the sanitiser drops whole, so the page showed the
+        questions and none of the answers and looked finished.
+        The Worker parses the file into questions now and the
+        browser builds its own inputs, so /styles.css grew the
+        fieldset, the option rows and the reset button they need.
+        Captions landed in the same change and needed no CSS: a
+        <track> is drawn by the player.
+
    v94: The course section stopped asking Drive for anything.
         Embedding a private Drive file was never going to work: a
         cross-site iframe gets no Drive cookie in a modern
@@ -921,7 +931,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v94";
+const VERSION = "v95";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

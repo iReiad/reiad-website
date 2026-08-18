@@ -126,9 +126,10 @@ const COURSE = {
       slug: "week-two", n: 2, title: "Week two", pending: false,
       lessons: [
         {
-          slug: "thinking", title: "Thinking", kind: "video", section: "Analytical",
+          slug: "thinking", title: "Thinking", kind: "quiz", section: "Analytical",
           position: 1, video: "vid-thinking-00000000000000000000",
-          reading: null, quiz: null, exam: null, transcript: null, captions: null, files: [],
+          reading: null, quiz: "qz-thinking-0000000000000000000", exam: null,
+          transcript: null, captions: null, files: [],
         },
       ],
     },
@@ -151,12 +152,37 @@ const SHELL = '<!doctype html><html><body><div id="course-app"></div></body></ht
    the module renders it as it stands. */
 const READING_HTML = '<h2>What you will do</h2><p>Read the syllabus.</p>';
 
+/* What the Worker answers for a quiz: questions, already parsed
+   and sanitised. No markup of Coursera's own reaches the browser,
+   which is why this is a list of strings rather than HTML. */
+const QUIZ_BODY = {
+  ok: true,
+  title: "Checkup",
+  parsed: true,
+  html: "",
+  questions: [
+    {
+      n: 1,
+      prompt: "<p>Which one of these?</p>",
+      multiple: false,
+      options: ["The first", "The second", "The third"],
+    },
+    {
+      n: 2,
+      prompt: "<p>Which of these? Select all that apply.</p>",
+      multiple: true,
+      options: ["One of them", "Another"],
+    },
+  ],
+};
+
 /** Build a DOM at one address, run the module against it, and
     hand back the document. `store` persists across calls inside
     one scenario so that a tick made on one page is visible on the
     next, which is the whole point of the ticks. */
 async function visit(
-  path, store, { reader = { id: "admin" }, status = 200, ticketFails = null } = {},
+  path, store,
+  { reader = { id: "admin" }, status = 200, ticketFails = null, quizBody = null } = {},
 ) {
   const { window, document } = parseHTML(SHELL);
   const listeners = new Map();
@@ -200,6 +226,8 @@ async function visit(
         body = { ok: true, url: `/api/courses/file/${path.slice(8)}?t=1.sig` };
       } else if (path.startsWith("/reading/")) {
         body = { ok: true, title: "A reading", html: READING_HTML };
+      } else if (path.startsWith("/quiz/")) {
+        body = quizBody ?? QUIZ_BODY;
       } else if (path.length > 1) {
         body = { ok: true, course: COURSE };
       }
@@ -469,6 +497,135 @@ console.log("\n--- the lesson page ---");
 }
 
 /* ============================================================ */
+
+/* ============================================================ */
+
+console.log("\n--- a quiz a reader can answer ---");
+
+{
+  const store = new Map();
+  const { document: doc } = await visit(
+    "/skills/courses/foundations/week-two/thinking.html", store);
+
+  const qs = all(doc, ".course-quiz .quiz-q");
+  ok("every question is drawn", qs.length === 2, `saw ${qs.length}`);
+  ok("each is a fieldset with a legend, not a bare div",
+    qs.every((q) => q.tagName.toLowerCase() === "fieldset" && q.querySelector("legend")));
+  ok("the question number is the export's own",
+    qs[0]?.querySelector("legend")?.textContent?.includes("Question 1"));
+  ok("the prompt is rendered",
+    doc.querySelector(".course-quiz")?.textContent?.includes("Which one of these?"));
+
+  /* The check this whole feature exists for. The page used to show
+     the questions and none of the options, because the sanitiser
+     drops <form> whole, and it looked finished. */
+  const opts = all(doc, ".quiz-options .quiz-option");
+  ok("THE OPTIONS ARE THERE", opts.length === 5, `saw ${opts.length}`);
+  ok("and they carry their words",
+    opts[0]?.textContent?.includes("The first"), opts[0]?.textContent);
+
+  const inputs = all(doc, ".quiz-option input");
+  ok("a pick-one question draws radios",
+    all(doc, ".quiz-q")[0].querySelectorAll("input[type=radio]").length === 3);
+  ok("a select-all question draws checkboxes",
+    all(doc, ".quiz-q")[1].querySelectorAll("input[type=checkbox]").length === 2);
+  ok("radios of one question share a name, so the browser enforces one",
+    new Set(all(doc, ".quiz-q")[0].querySelectorAll("input")
+      .values ? [...all(doc, ".quiz-q")[0].querySelectorAll("input")].map(
+        (i) => i.getAttribute("name")) : []).size === 1);
+  ok("and the two questions do not share it",
+    all(doc, ".quiz-q")[0].querySelector("input")?.getAttribute("name")
+      !== all(doc, ".quiz-q")[1].querySelector("input")?.getAttribute("name"));
+
+  ok("nothing is answered to begin with",
+    inputs.every((i) => !i.checked) && !store.has("courses-answers"));
+
+  ok("it says answers are kept",
+    doc.querySelector(".course-quiz-note")?.textContent?.includes("save"));
+  /* The honest half, and it is not decoration: the export carries
+     no answer key, so a page implying a score would be lying. */
+  ok("and says plainly that nothing is marked",
+    /no answer key|not marked|right or wrong/i.test(
+      doc.querySelector(".course-quiz-note")?.textContent ?? ""));
+  ok("so there is no score anywhere on the page",
+    !/\bscore\b|\bcorrect\b|\d+\s*\/\s*\d+\s*correct/i.test(
+      doc.querySelector(".course-quiz")?.textContent ?? ""));
+  ok("and no submit button, because there is nothing to submit to",
+    !doc.querySelector(".course-quiz button[type=submit]")
+    && !doc.querySelector(".course-quiz input[type=submit]"));
+
+  console.log("\n--- answering, and remembering ---");
+
+  const first = all(doc, ".quiz-q")[0].querySelectorAll("input")[1];
+  first.checked = true;
+  first.dispatchEvent(new doc.defaultView.Event("change"));
+
+  const saved = JSON.parse(store.get("courses-answers") ?? "[]");
+  ok("an answer is written down",
+    saved.includes("foundations/week-two/thinking#1#1"), JSON.stringify(saved));
+  ok("filed under the lesson, the question and the option",
+    saved[0]?.split("#").length === 3, saved[0]);
+
+  /* A radio that stored two answers would be a page saying the
+     reader picked two things where it allowed one. */
+  const other = all(doc, ".quiz-q")[0].querySelectorAll("input")[2];
+  other.checked = true;
+  other.dispatchEvent(new doc.defaultView.Event("change"));
+  const after = JSON.parse(store.get("courses-answers") ?? "[]");
+  ok("changing a pick-one answer replaces it rather than adding",
+    after.filter((a) => a.startsWith("foundations/week-two/thinking#1#")).length === 1,
+    JSON.stringify(after));
+
+  /* Select-all is the opposite and must accumulate. */
+  const multi = all(doc, ".quiz-q")[1].querySelectorAll("input");
+  multi[0].checked = true;
+  multi[0].dispatchEvent(new doc.defaultView.Event("change"));
+  multi[1].checked = true;
+  multi[1].dispatchEvent(new doc.defaultView.Event("change"));
+  const both = JSON.parse(store.get("courses-answers") ?? "[]");
+  ok("a select-all question keeps both answers",
+    both.filter((a) => a.startsWith("foundations/week-two/thinking#2#")).length === 2,
+    JSON.stringify(both));
+
+  /* Coming back to the page is the point of saving at all. */
+  const { document: again } = await visit(
+    "/skills/courses/foundations/week-two/thinking.html", store);
+  const back = all(again, ".quiz-q")[0].querySelectorAll("input");
+  ok("the answer is still ticked on the way back", back[2].checked === true);
+  ok("and the ones not picked are not", !back[0].checked && !back[1].checked);
+
+  console.log("\n--- clearing ---");
+
+  const reset = again.querySelector(".quiz-reset");
+  ok("there is a way to clear them", Boolean(reset));
+  reset.dispatchEvent(new again.defaultView.Event("click"));
+  const cleared = JSON.parse(store.get("courses-answers") ?? "[]");
+  ok("clearing removes this lesson's answers",
+    !cleared.some((a) => a.startsWith("foundations/week-two/thinking#")),
+    JSON.stringify(cleared));
+  ok("and unticks the boxes on the page",
+    [...again.querySelectorAll(".quiz-option input")].every((i) => !i.checked));
+
+  console.log("\n--- answering is not finishing ---");
+
+  /* The rule the whole section is built on. A quiz answered is
+     not a lesson done: that is still a button the reader presses. */
+  ok("answering does not tick the lesson",
+    !JSON.parse(store.get("courses-read") ?? "[]")
+      .includes("foundations/week-two/thinking"));
+}
+
+{
+  /* A file the parser does not recognise is still readable. */
+  const { document: doc } = await visit(
+    "/skills/courses/foundations/week-two/thinking.html", new Map(),
+    { quizBody: { ok: true, title: "Not a quiz", parsed: false,
+      questions: [], html: "<p>Just a page after all.</p>" } });
+
+  ok("an unparseable quiz falls back to being a page",
+    doc.querySelector(".course-page")?.textContent?.includes("Just a page after all"));
+  ok("and draws no empty question boxes", !doc.querySelector(".quiz-q"));
+}
 
 console.log("\n--- mark complete and continue ---");
 
