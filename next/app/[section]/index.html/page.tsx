@@ -77,7 +77,7 @@ export default async function IndexPage({ params }: Params) {
     return <MoneyHub school={school} />;
   }
 
-  if (isSchool(section)) return writtenPage(SCHOOL_HUBS[section]);
+  if (isSchool(section)) return writtenPage(section, SCHOOL_HUBS[section]);
 
   const copy = READ_HUB[section];
   if (!copy) notFound();

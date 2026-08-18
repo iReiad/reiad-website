@@ -15,15 +15,27 @@
    finished when it does what the thing it replaced did, not when
    it renders, and those two look identical from the outside. So
    this loads each school's real hub.js against the real hub
-   markup out of `next/lib/school-hubs.ts`, which is the file the
-   route serves, and asks what a reader would ask. Is there a
+   markup, and asks what a reader would ask. Is there a
    ladder. Does every rung have a ring, a state and a count. Does
    the bar say anything. Is the resume card hidden before there
    is anything to resume and there afterwards.
 
+   ---- where the markup comes from ----
+
+   `components/school-hub-page.tsx`, rendered here rather than
+   read off disk. The three hubs were an HTML string each until
+   they became components, and a test that kept reading the
+   string would have gone on passing against markup nothing
+   serves. Rendering the component is the only way this stays a
+   test of what a reader gets.
+
+   It is a plain synchronous component on purpose: its content is
+   a file in this repository rather than a row, so nothing here
+   awaits and `renderToStaticMarkup` is enough.
+
    No browser and no network: `linkedom` is a DOM, the twenty
    lines of storage and events the modules touch are stubbed, and
-   the markup is read off disk. It runs in about a second.
+   the markup is rendered in process. It runs in about a second.
 
    Without linkedom installed it says so and skips, which is not
    a pass. `npm install` at the root is the whole of the fix.
@@ -57,11 +69,52 @@ registerHooks({
   },
 });
 
-/* The hub bodies, straight out of the file the route serves them
-   from, so this is the markup a reader actually gets. */
-const { SCHOOL_HUBS } = await import(pathToFileURL(join(ROOT, "next/lib/school-hubs.ts")).href);
+/* The hub bodies, rendered from the component the route uses, so
+   this is the markup a reader actually gets.
+
+   Node strips TypeScript types on its own but cannot transform
+   JSX, so the component is bundled first. esbuild does it in
+   about eighty milliseconds.
+
+   Bare specifiers, resolved from the root, where `linkedom` is
+   and for the same reason: the workflow runs `npm ci` at the root
+   and nowhere else. Reaching into `next/node_modules` worked on a
+   laptop and failed on the runner, which is the shape of mistake
+   the root package.json was created to stop. */
+const { build } = await import("esbuild");
+
+/* The renderer is bundled WITH the component, and that is not
+   tidiness either: the result is imported as a `data:` URL, and a
+   data module cannot resolve a bare specifier, so anything left
+   external throws at import rather than at build. One bundle, one
+   React, nothing to resolve at run time.
+
+   `resolveDir` is `next/`, so the component's neighbours resolve
+   beside it and react resolves by walking up to the root, which
+   is where the checks' own copy lives. */
+const bundled = await build({
+  stdin: {
+    contents: `export { SchoolHubPage } from "./components/school-hub-page";
+               export { renderToStaticMarkup } from "react-dom/server.browser";`,
+    resolveDir: join(ROOT, "next"),
+    loader: "ts",
+  },
+  bundle: true,
+  write: false,
+  format: "esm",
+  platform: "neutral",
+  mainFields: ["module", "main"],
+  conditions: ["import", "default"],
+  jsx: "automatic",
+  logLevel: "silent",
+});
+
+const mod = await import(
+  `data:text/javascript;base64,${Buffer.from(bundled.outputFiles[0].text).toString("base64")}`);
+
 const bodies = Object.fromEntries(
-  Object.entries(SCHOOL_HUBS).map(([k, v]) => [k, v.body]));
+  ["deutsch", "english", "quran"].map((school) =>
+    [school, mod.renderToStaticMarkup(mod.SchoolHubPage({ school }))]));
 
 let bad = 0;
 const ok = (n, c, d = "") => { console.log(`${c ? "  ok " : "FAIL"}  ${n}${c ? "" : "   " + d}`); if (!c) bad++; };

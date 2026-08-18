@@ -21,6 +21,7 @@
 import type { Metadata } from "next";
 import type { SchoolHub } from "../lib/school-hubs";
 import { SiteScripts } from "./scripts";
+import { SchoolHubPage } from "./school-hub-page";
 
 /** The head, stated exactly as the committed page states it.
 
@@ -56,13 +57,15 @@ export function writtenMetadata(page: SchoolHub | undefined): Metadata {
     for the same reason a lesson's are: the shell cannot tell a
     hub from a ladder from a lesson, and each of the three loads
     something different. */
-export function writtenPage(page: SchoolHub | undefined) {
+export function writtenPage(school: string, page: SchoolHub | undefined) {
   if (!page) return null;
 
   return (
     <>
       <main id="main">
-        <div className="wrap" dangerouslySetInnerHTML={{ __html: page.body }} />
+        <div className="wrap">
+          <SchoolHubPage school={school} />
+        </div>
       </main>
       <SiteScripts srcs={page.scripts} />
     </>
