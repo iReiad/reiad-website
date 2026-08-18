@@ -4895,9 +4895,17 @@ it collapsed to the width of the word "Bangladesh". */
     display: grid; gap: var(--gap); margin-bottom: 18px;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
   }
+  /* Fifty of these across the seven case studies, and this rule
+     is the whole of what they look like: `ui/stat.tsx` renders
+     the classes rather than utilities, because seven browser
+     modules fill these in and one of them builds one. Its header
+     has the argument. One edit here is fifty tiles. */
   .tile {
-    border: 1px solid var(--hairline); border-radius: var(--radius);
-    background: var(--panel); padding: 16px 18px;
+    border: 1px solid var(--pane-edge); border-radius: var(--radius);
+    background-color: var(--glass-solid);
+    background-image: var(--sheen);
+    box-shadow: inset 0 1px 0 var(--pane-top);
+    padding: 16px 18px;
     display: grid; gap: 3px; align-content: start;
 
     & .mono { color: var(--accent); }

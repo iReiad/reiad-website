@@ -1,65 +1,91 @@
 /* ============================================================
    ui/stat.tsx: a figure, and what it is a figure of.
 
-   `.tile` and `.tile-value` are written fifty times across the
-   case studies, always as the same three lines: a label, a
-   number, sometimes a note under it. Fifty copies is fifty
-   chances for one of them to set its own font size, and several
-   have.
+   Fifty of these across the seven case studies, every one the
+   same four lines written out: a label, a placeholder, a note,
+   and a `data-tile` key. Fifty copies is fifty chances for one of
+   them to set its own font size, and several had.
+
+   ---- it renders the classes, and that is deliberate ----
+
+   This does NOT style itself with utilities, which is what the
+   first version of it did, and the reason is a contract rather
+   than a preference.
+
+   Seven modules under `aab/portfolio/` and the stock check fill
+   these in, and they find them by `[data-tile="x"] .tile-value`.
+   Two other things follow from that:
+
+     · `dissertation.js` BUILDS one, in the browser, out of the
+       same `.tile` / `.mono` / `.tile-value` markup. A tile whose
+       look lived in utilities would leave that one unstyled,
+       because Tailwind's compiler cannot see a string inside a
+       module any more than it can see an article body.
+
+     · The tone colours are `.tile[data-tone="warn"] .tile-value`
+       in `@layer components`, and `tw` is a LATER layer than
+       `components`. So a utility on the value silently wins over
+       every tone a module sets, and the page still renders: the
+       number is simply never red. That is the exact shape of
+       failure this repository keeps returning to.
+
+   So the class is the interface, `@layer components` owns the
+   look, and one rule there restyles all fifty. When the seven
+   modules become components (ARCHITECTURE.md, Stage B) this can
+   become utilities and not before.
 
    ---- the number is not the label ----
 
-   `<StatTile>` takes them separately and renders the value in the
-   mono face at a scale step, because a figure and its caption are
-   different kinds of text and a component that took one string
-   would leave that to whoever wrote it.
-
-   ---- and a row of them is a component too ----
-
-   `<StatRow>` rather than a div with a grid class repeated at
-   every call site. It is auto-fit, so three tiles and five both
-   lay out without being told how many there are, which is the
-   same rule the collection page in the practice book follows.
+   Taken as three props rather than as children, because a figure,
+   its caption and its footnote are three kinds of text and a
+   component that took one blob would leave that to the call site,
+   which is where the fifty copies came from.
    ============================================================ */
 
 import type { ReactNode } from "react";
-import { Surface } from "./surface";
 
 export function StatTile({
-  label, value, note, accent,
+  label, value = "–", note, fills, tone, children,
 }: {
+  /** What the figure is of. Set in the mono face, in the accent. */
   label: ReactNode;
-  value: ReactNode;
-  /** One line under the figure: what it is measured over, what it
-      excludes, why it is not the number somebody expected. */
+  /** The figure. An en dash by default, because on every tile on
+      this site the server renders a placeholder and a module in
+      the browser puts the number in. */
+  value?: ReactNode;
+  /** One line under it: what it is measured over, what it
+      excludes, why it is not the number somebody expected.
+
+      An EMPTY string is not the same as no note, which is why
+      this is tested against null rather than for truthiness. Two
+      tiles on the index page carry `<small></small>` with nothing
+      in it, and dropping the element changes the tile's height by
+      a line. */
   note?: ReactNode;
-  /** A colour token, for a tile that belongs to a section rather
-      than to the page it is on. */
-  accent?: string;
+  /** The `data-tile` key its module writes into. Without one the
+      tile is static, which is a real case: several state a figure
+      that never changes. */
+  fills?: string;
+  /** `good`, `warn` or `bad`, when the SERVER knows. A module
+      that decides at runtime sets `data-tone` itself. */
+  tone?: "good" | "warn" | "bad";
+  /** Anything after the note. Three tiles carry a second line. */
+  children?: ReactNode;
 }) {
   return (
-    <Surface material="pane" accent={accent} className="flex flex-col gap-1.5 p-4">
-      <span className="text-t1 font-medium tracking-wide uppercase text-ink-soft">
-        {label}
-      </span>
-      <span className="font-mono text-t6 leading-none text-ink tabular-nums">
-        {value}
-      </span>
-      {note ? <span className="text-t1 text-ink-soft">{note}</span> : null}
-    </Surface>
+    <div className="tile" data-tile={fills} data-tone={tone}>
+      <span className="mono">{label}</span>
+      <strong className="tile-value">{value}</strong>
+      {note == null ? null : <small>{note}</small>}
+      {children}
+    </div>
   );
 }
 
 /** A row of tiles that wraps rather than scrolls.
 
-    `auto-fit` with a floor, so a narrow screen gets one column
-    and a wide one gets as many as fit, and neither is told a
-    number. A grid with a fixed column count is how a row of three
-    becomes a row of two and a widow. */
+    `.tiles` is the stylesheet's, for the same reason the tile's
+    own look is: a module builds a row of these. */
 export function StatRow({ children }: { children: ReactNode }) {
-  return (
-    <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr))]">
-      {children}
-    </div>
-  );
+  return <div className="tiles">{children}</div>;
 }

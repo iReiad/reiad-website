@@ -19,6 +19,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
+import { StatTile } from "../../../../components/ui/stat";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/dissertation.html",
@@ -75,38 +76,18 @@ export default function Page() {
             </p>
           </div>
           <div className="tiles">
-            <div className="tile" data-tile="fact-funds">
-              <span className="mono">Funds in the sample
-              </span>
-              <strong className="tile-value">–
-              </strong>
-              <small>UK-domiciled equity funds, Bloomberg
-              </small>
-            </div>
-            <div className="tile" data-tile="fact-islamic">
-              <span className="mono">Of which Shariah-compliant
-              </span>
-              <strong className="tile-value">–
-              </strong>
-              <small>The constraint the whole study runs into
-              </small>
-            </div>
-            <div className="tile" data-tile="fact-obs">
-              <span className="mono">Fund-months
-              </span>
-              <strong className="tile-value">–
-              </strong>
-              <small>The panel behind every regression
-              </small>
-            </div>
-            <div className="tile" data-tile="fact-months">
-              <span className="mono">Months covered
-              </span>
-              <strong className="tile-value">–
-              </strong>
-              <small>Jan 2018 → Jul 2025, COVID included
-              </small>
-            </div>
+            <StatTile label="Funds in the sample"
+                      note="UK-domiciled equity funds, Bloomberg"
+                      fills="fact-funds" />
+            <StatTile label="Of which Shariah-compliant"
+                      note="The constraint the whole study runs into"
+                      fills="fact-islamic" />
+            <StatTile label="Fund-months"
+                      note="The panel behind every regression"
+                      fills="fact-obs" />
+            <StatTile label="Months covered"
+                      note="Jan 2018 → Jul 2025, COVID included"
+                      fills="fact-months" />
           </div>
           <nav className="page-toc" id="page-toc" aria-label="On this page" />
           <section id="dissertation" className="model">
@@ -670,30 +651,17 @@ export default function Page() {
                 </p>
               </figure>
               <div className="tiles">
-                <div className="tile">
-                  <span className="mono">Mean maximum drawdown · Islamic
-                  </span>
-                  <strong className="tile-value">−17.8%
-                  </strong>
-                  <small>Average across the three funds
-                  </small>
-                </div>
-                <div className="tile" data-tone="bad">
-                  <span className="mono">Mean maximum drawdown · Conventional
-                  </span>
-                  <strong className="tile-value">−23.5%
-                  </strong>
-                  <small>Average across 217 funds
-                  </small>
-                </div>
-                <div className="tile" data-tone="warn">
-                  <span className="mono">p-value
-                  </span>
-                  <strong className="tile-value">0.068
-                  </strong>
-                  <small>The closest any test in the study came
-                  </small>
-                </div>
+                <StatTile label="Mean maximum drawdown · Islamic"
+                          value="−17.8%"
+                          note="Average across the three funds" />
+                <StatTile label="Mean maximum drawdown · Conventional"
+                          value="−23.5%"
+                          note="Average across 217 funds"
+                          tone="bad" />
+                <StatTile label="p-value"
+                          value="0.068"
+                          note="The closest any test in the study came"
+                          tone="warn" />
               </div>
               <p className="prose">
                 A 5.7 percentage point difference in the worst fall an investor had
@@ -753,30 +721,17 @@ export default function Page() {
                 </label>
               </div>
               <div className="tiles">
-                <div className="tile" data-tile="power-mde" data-tone="bad">
-                  <span className="mono">Smallest difference detectable
-                  </span>
-                  <strong className="tile-value">–
-                  </strong>
-                  <small>At 80% power, 5% two-sided
-                  </small>
-                </div>
-                <div className="tile" data-tile="power-detect" data-tone="bad">
-                  <span className="mono">Chance of catching the 5.7pp gap
-                  </span>
-                  <strong className="tile-value">–
-                  </strong>
-                  <small>If that gap were real
-                  </small>
-                </div>
-                <div className="tile" data-tile="power-needed">
-                  <span className="mono">Islamic funds actually needed
-                  </span>
-                  <strong className="tile-value">–
-                  </strong>
-                  <small>To find it four times in five
-                  </small>
-                </div>
+                <StatTile label="Smallest difference detectable"
+                          note="At 80% power, 5% two-sided"
+                          fills="power-mde"
+                          tone="bad" />
+                <StatTile label="Chance of catching the 5.7pp gap"
+                          note="If that gap were real"
+                          fills="power-detect"
+                          tone="bad" />
+                <StatTile label="Islamic funds actually needed"
+                          note="To find it four times in five"
+                          fills="power-needed" />
               </div>
               <figure className="chart-card wide-chart">
                 <figcaption>

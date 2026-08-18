@@ -18,6 +18,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
+import { StatTile } from "../../../../components/ui/stat";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/scorecard.html",
@@ -86,56 +87,20 @@ export default function Page() {
               </p>
             </div>
             <div className="tiles">
-              <div className="tile" data-tile="auc-logit">
-                <span className="mono">Scorecard AUC
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Held-out applicants, 
-                  <span id="test-n">–
-                  </span> of them
-                </small>
-              </div>
-              <div className="tile" data-tile="auc-gbm">
-                <span className="mono">Boosted AUC
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Same applicants, same split
-                </small>
-              </div>
-              <div className="tile" data-tile="ks">
-                <span className="mono">KS
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>The separation credit teams quote
-                </small>
-              </div>
-              <div className="tile" data-tile="cost">
-                <span className="mono">Cost per applicant
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>At your cut-off, on the dataset's 5:1 matrix
-                </small>
-              </div>
-              <div className="tile" data-tile="approval">
-                <span className="mono">Approval rate
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>What the cut-off actually does
-                </small>
-              </div>
-              <div className="tile" data-tile="brier">
-                <span className="mono">Brier score
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Whether the probability means anything
-                </small>
-              </div>
+              <StatTile label="Scorecard AUC"
+                        note={<>Held-out applicants, <span id="test-n">– </span> of them</>}
+                        fills="auc-logit" />
+              <StatTile label="Boosted AUC" note="Same applicants, same split" fills="auc-gbm" />
+              <StatTile label="KS" note="The separation credit teams quote" fills="ks" />
+              <StatTile label="Cost per applicant"
+                        note="At your cut-off, on the dataset's 5:1 matrix"
+                        fills="cost" />
+              <StatTile label="Approval rate"
+                        note="What the cut-off actually does"
+                        fills="approval" />
+              <StatTile label="Brier score"
+                        note="Whether the probability means anything"
+                        fills="brier" />
             </div>
             <div className="model-body">
               <aside className="model-drivers">

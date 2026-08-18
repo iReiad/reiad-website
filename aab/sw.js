@@ -31,6 +31,19 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v115: Fifty tiles are one component. Every figure across the
+        seven case studies was the same four lines written out,
+        and one rule here is now all fifty of them, which is what
+        gave them the glass the rest of the site has.
+
+        `ui/stat.tsx` renders the CLASSES rather than utilities,
+        and its header says why at length: seven browser modules
+        fill these in by `[data-tile="x"] .tile-value`, one of
+        them builds a tile out of that markup, and `tw` is a later
+        layer than `components`, so a utility on the value would
+        have silently won over every tone a module sets. The page
+        would render and the number would simply never be red.
+
    v114: A strip of choices is one object. The calculators' five
         tabs and the account page's eight section links were two
         looks: `.tool-tab` here, and twelve Tailwind arbitrary
@@ -1150,7 +1163,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v114";
+const VERSION = "v115";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -19,6 +19,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
+import { StatTile } from "../../../../components/ui/stat";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/dsex.html",
@@ -109,52 +110,18 @@ export default function Page() {
             </div>
             {/* ============ HEADLINES ============ */}
             <div className="tiles">
-              <div className="tile" data-tile="cagr">
-                <span className="mono">Annualised return
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Compound, over the whole series
-                </small>
-              </div>
-              <div className="tile" data-tile="vol">
-                <span className="mono">Annualised volatility
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Daily sd × √252
-                </small>
-              </div>
-              <div className="tile" data-tile="mdd">
-                <span className="mono">Maximum drawdown
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Worst fall from a previous peak
-                </small>
-              </div>
-              <div className="tile" data-tile="best">
-                <span className="mono">Best single day
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small />
-              </div>
-              <div className="tile" data-tile="worst">
-                <span className="mono">Worst single day
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small />
-              </div>
-              <div className="tile" data-tile="kurt">
-                <span className="mono">Excess kurtosis
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>0 would be a normal distribution
-                </small>
-              </div>
+              <StatTile label="Annualised return"
+                        note="Compound, over the whole series"
+                        fills="cagr" />
+              <StatTile label="Annualised volatility" note="Daily sd × √252" fills="vol" />
+              <StatTile label="Maximum drawdown"
+                        note="Worst fall from a previous peak"
+                        fills="mdd" />
+              <StatTile label="Best single day" note="" fills="best" />
+              <StatTile label="Worst single day" note="" fills="worst" />
+              <StatTile label="Excess kurtosis"
+                        note="0 would be a normal distribution"
+                        fills="kurt" />
             </div>
             {/* ============ 1 · THE INDEX ============ */}
             <figure className="chart-card wide-chart">
@@ -275,40 +242,12 @@ export default function Page() {
                 </button>
               </div>
               <div className="tiles">
-                <div className="tile" data-tile="hppos">
-                  <span className="mono">Ended positive
-                  </span>
-                  <strong className="tile-value">–
-                  </strong>
-                  <small>Of all 
-                    <span id="hp-label">1 year
-                    </span> windows
-                  </small>
-                </div>
-                <div className="tile" data-tile="hpworst">
-                  <span className="mono">Worst outcome
-                  </span>
-                  <strong className="tile-value">–
-                  </strong>
-                  <small>The unluckiest start date
-                  </small>
-                </div>
-                <div className="tile" data-tile="hpmed">
-                  <span className="mono">Median outcome
-                  </span>
-                  <strong className="tile-value">–
-                  </strong>
-                  <small>The typical experience
-                  </small>
-                </div>
-                <div className="tile" data-tile="hpbest">
-                  <span className="mono">Best outcome
-                  </span>
-                  <strong className="tile-value">–
-                  </strong>
-                  <small>The luckiest start date
-                  </small>
-                </div>
+                <StatTile label="Ended positive"
+                          note={<>Of all <span id="hp-label">1 year </span> windows</>}
+                          fills="hppos" />
+                <StatTile label="Worst outcome" note="The unluckiest start date" fills="hpworst" />
+                <StatTile label="Median outcome" note="The typical experience" fills="hpmed" />
+                <StatTile label="Best outcome" note="The luckiest start date" fills="hpbest" />
               </div>
               <p className="statement-note" id="hp-readout">–
               </p>

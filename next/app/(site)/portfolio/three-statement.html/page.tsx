@@ -18,6 +18,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
+import { StatTile } from "../../../../components/ui/stat";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/three-statement.html",
@@ -88,54 +89,14 @@ export default function Page() {
             </div>
             {/* ============ HEADLINES ============ */}
             <div className="tiles">
-              <div className="tile" data-tile="cagr">
-                <span className="mono">Revenue CAGR
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>FY24A → FY29E
-                </small>
-              </div>
-              <div className="tile" data-tile="ebitda">
-                <span className="mono">Exit EBITDA margin
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>FY29E
-                </small>
-              </div>
-              <div className="tile" data-tile="leverage">
-                <span className="mono">Net debt / EBITDA
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>FY29E: the covenant everyone watches
-                </small>
-              </div>
-              <div className="tile" data-tile="fcf">
-                <span className="mono">Cumulative free cash flow
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Five years, BDT lakh
-                </small>
-              </div>
-              <div className="tile" data-tile="roe">
-                <span className="mono">Return on equity
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>FY29E
-                </small>
-              </div>
-              <div className="tile" data-tile="cover">
-                <span className="mono">Interest cover
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>EBIT ÷ interest, FY29E
-                </small>
-              </div>
+              <StatTile label="Revenue CAGR" note="FY24A → FY29E" fills="cagr" />
+              <StatTile label="Exit EBITDA margin" note="FY29E" fills="ebitda" />
+              <StatTile label="Net debt / EBITDA"
+                        note="FY29E: the covenant everyone watches"
+                        fills="leverage" />
+              <StatTile label="Cumulative free cash flow" note="Five years, BDT lakh" fills="fcf" />
+              <StatTile label="Return on equity" note="FY29E" fills="roe" />
+              <StatTile label="Interest cover" note="EBIT ÷ interest, FY29E" fills="cover" />
             </div>
             <p className="note note-inline" id="revolver-note" hidden />
             {/* ============ DRIVERS + CHARTS ============ */}

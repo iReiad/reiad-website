@@ -18,6 +18,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
+import { StatTile } from "../../../../components/ui/stat";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/frontier.html",
@@ -92,54 +93,14 @@ export default function Page() {
               </p>
             </div>
             <div className="tiles">
-              <div className="tile" data-tile="ret">
-                <span className="mono">Hold-out return
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Cumulative over the five years
-                </small>
-              </div>
-              <div className="tile" data-tile="cagr">
-                <span className="mono">Annualised
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Compound, after the whole period
-                </small>
-              </div>
-              <div className="tile" data-tile="beta">
-                <span className="mono">Portfolio beta
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Weighted, against the FTSE 250
-                </small>
-              </div>
-              <div className="tile" data-tile="sharpe">
-                <span className="mono">Sharpe
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Realised, on the held-out years
-                </small>
-              </div>
-              <div className="tile" data-tile="dd">
-                <span className="mono">Deepest drawdown
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Peak to trough, along the way
-                </small>
-              </div>
-              <div className="tile" data-tile="vsindex">
-                <span className="mono">Average year, vs index
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Mean annual return against the FTSE 250
-                </small>
-              </div>
+              <StatTile label="Hold-out return" note="Cumulative over the five years" fills="ret" />
+              <StatTile label="Annualised" note="Compound, after the whole period" fills="cagr" />
+              <StatTile label="Portfolio beta" note="Weighted, against the FTSE 250" fills="beta" />
+              <StatTile label="Sharpe" note="Realised, on the held-out years" fills="sharpe" />
+              <StatTile label="Deepest drawdown" note="Peak to trough, along the way" fills="dd" />
+              <StatTile label="Average year, vs index"
+                        note="Mean annual return against the FTSE 250"
+                        fills="vsindex" />
             </div>
             <div className="model-body">
               <aside className="model-drivers">
