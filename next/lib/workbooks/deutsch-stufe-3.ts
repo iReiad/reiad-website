@@ -1,9 +1,9 @@
 /* ============================================================
-   arbeitsbuch/stufe-3.js: the ninety days of Stufe Drei.
+   deutsch-stufe-3.ts: the ninety days of Stufe Drei.
 
    Straight out of "Das 90-Tage-Arbeitsbuch · Stufe Drei", one
    object per day, in order. Same five parts as the two books
-   before it. See ../arbeitsbuch.data.js for what a day holds.
+   before it. See ../workbook.ts for what a day holds.
 
    Ninety days, the longest book here, because fluency is not
    built in a hurry: it is grown. The daily tick asks for a whole
