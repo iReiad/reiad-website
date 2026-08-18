@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v119: A text box is `@layer base` and `ui/field.tsx` adds
+        nothing to it. The component carried its own box in
+        utilities, and `tw` is a later layer than `base`, so the
+        pages using it had `--radius-card` corners at `--t-3` over
+        a flat panel while every other box on the site had
+        `--radius-sm` corners at `--t-5` over glass. One
+        definition, the one v112 made.
+
    v118: A button is one object. `ui/button.tsx` was Tailwind
         utilities, which made it a FIFTH way of making one rather
         than the one: `.btn-solid` in the stylesheet was `--accent`
@@ -1208,7 +1216,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v118";
+const VERSION = "v119";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

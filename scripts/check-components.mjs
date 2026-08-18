@@ -65,7 +65,13 @@ const UPDATE = process.argv.includes("--update");
 
    `find` is matched against the source as plain text, because
    these are literal class strings rather than a shape. `use` is
-   what the message tells somebody to reach for instead. */
+   what the message tells somebody to reach for instead. `skip` is
+   a line this pattern matches and the component does not cover.
+
+   `skip` exists because of the input rule below, and the lesson
+   generalises: a check that reports work which cannot be done is
+   a check that gets ignored, and an ignored check is the same as
+   a deleted one. */
 const OWNED = [
   /* Two of these will never reach zero and should not: the CSV
      pickers on two case studies are a `<label>` wrapping a hidden
@@ -79,7 +85,25 @@ const OWNED = [
   { id: "chip", find: 'className="tag mono"', use: "<Chip> from ui/chip" },
   { id: "chip-class", find: 'className="chip', use: "<Chip> from ui/chip" },
   { id: "stat-tile", find: 'className="tile"', use: "<StatTile> from ui/stat" },
-  { id: "input", find: "<input ", use: "<Field> from ui/field" },
+  /* Only the boxes a person types words into.
+
+     This counted every `<input>` and stood at 37, of which 29
+     were things `<Field>` cannot be: 22 range sliders on the
+     calculators, three hidden Web3Forms fields, two honeypots and
+     two file pickers. A slider is not a text box and a honeypot
+     must never be a labelled field, so a check demanding they be
+     converted was asking for the site to be made worse.
+
+     `--radius-range` and the rest of what a slider looks like are
+     the stylesheet's; `@layer base` styles the text boxes on
+     `:is(input:not([type="range"], …), textarea, select)`, which
+     is the same list as this one and for the same reason. */
+  {
+    id: "input",
+    find: "<input ",
+    skip: /type="(?:range|checkbox|radio|hidden|file|submit|button)"|honeypot/,
+    use: "<Field> from ui/field",
+  },
   { id: "textarea", find: "<textarea ", use: "<TextArea> from ui/field" },
 ];
 
@@ -160,6 +184,7 @@ for (const file of files) {
   src.split("\n").forEach((line, i) => {
     for (const owned of OWNED) {
       if (!line.includes(owned.find)) continue;
+      if (owned.skip?.test(line)) continue;
       counts[owned.id] += 1;
       where[owned.id].push(`${rel}:${i + 1}`);
     }
