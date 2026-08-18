@@ -110,19 +110,39 @@ Two things learned from the first attempt, which was reverted:
 fall. 245 at the start, 223 now, and zero is what "the design is
 consistent" means here.
 
-## Phase 3. The English practice book, which does not work
+## Phase 3. The practice books, which did not work
 
-`components/workbook.tsx` renders both books with the German
-vocabulary: `.buch-tag`, `data-antwort`, `data-schrift`.
-`aab/english/workbook.js` keys on `.wb-day`, `data-wb-answers`,
-`data-answers`. So on the English book nothing saves, nothing
-reveals an answer and nothing ticks. It renders, and it is not
-finished.
+**Done, and it was worse than this said.** The English book was
+the one reported: `components/workbook.tsx` renders both books
+with the German vocabulary, `.buch-tag`, `data-schrift`,
+`data-antwort`, and `aab/english/workbook.js` keyed on `.wb-day`,
+`data-wb-write`, `data-wb-done`. Nothing saved, nothing revealed
+an answer, nothing ticked.
 
-One component needs one module, taking its storage keys as
-arguments the way `schools/progress.js` already does.
-`english-write` and `deutsch-schrift` are in real browsers and
-must not be renamed.
+The German book did not run at all, which nothing had noticed.
+Both modules opened with
+
+    const book = document.getElementById("tage");
+    const articles = [...book.querySelectorAll(".buch-tag[data-tag]")];
+
+at the top level, and the route that replaced the generated page
+had no element with that id. `book` was null and the second line
+threw before the first function ran.
+
+`aab/schools/workbook.js` is one engine, on the arrangement
+`schools/progress.js` already had: the DOM vocabulary is fixed
+because one component draws both books, and what a school passes
+in is its storage key, its curriculum, its `dayId` and two words.
+776 lines became 450.
+
+`dayId` is an argument for a reason found by the test written
+with it: English files a day as `term-1/day-3` and German as
+`stufe-1/tag-3`. The engine built the German shape for both, so
+the English ticks were written correctly by `toggleDay` and
+looked for under a name nothing had ever used.
+
+`aab/schools/workbook.test.mjs`, 40 checks, drives both books
+against the route's own markup.
 
 ## Phase 4. Audit each check, then move it
 

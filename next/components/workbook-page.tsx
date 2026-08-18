@@ -35,6 +35,18 @@ const SCRIPT = {
   english: "/english/workbook.js",
 } as const;
 
+/* Both of those are now four lines over `/schools/workbook.js`,
+   which is the whole program. A school owns its storage key, its
+   curriculum and, in the German book's case, a one-off rename. */
+
+/** The route: the guards, and then the body.
+
+    Split in two so the body can be rendered by a test without a
+    Next request behind it. `workbook.test.mjs` drives both books
+    against exactly this markup, and it exists because both of
+    them rendered and did nothing for a while: a port is finished
+    when it does what the thing it replaced did, and those two
+    look identical from the outside. */
 export async function WorkbookPage(
   { section, slug }: { section: string; slug: string },
 ) {
@@ -45,6 +57,15 @@ export async function WorkbookPage(
      exercise stops being a page you fill in. */
   if (!book || SCRIPT[book.school] === undefined) notFound();
   if (section !== book.school) notFound();
+
+  return <WorkbookBody section={section} slug={slug} />;
+}
+
+export function WorkbookBody(
+  { section, slug }: { section: string; slug: string },
+) {
+  const book = bookFor(slug);
+  if (!book || SCRIPT[book.school] === undefined || section !== book.school) return null;
 
   const total = book.days.length;
   const lang = targetLang(book);
@@ -114,7 +135,22 @@ export async function WorkbookPage(
             </section>
           ) : null}
 
-          <div className="buch-tage">
+          {/* The day walker, filled in by the module: prev, a
+              day picker, next, and "all days at once". It ships
+              hidden and empty so that with scripts off the book
+              is simply every day, printed, which is what a
+              practice book on paper is.
+
+              `data-tag-nav` and the `id` on the days below are
+              not decoration. `schools/workbook.js` opens with
+              `document.getElementById("tage")` and dereferences
+              it on the next line; the generated page it replaced
+              had that id and this route did not, so the module
+              threw before its first function ran and BOTH books
+              rendered perfectly and did nothing. */}
+          <nav className="tag-nav" data-tag-nav hidden aria-label="দিন বদলান" />
+
+          <div className="buch-tage" id="tage">
             {book.days.map((day) => (
               <WorkbookDayCard day={day} slug={slug} book={book} key={day.n} />
             ))}

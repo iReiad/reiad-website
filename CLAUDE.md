@@ -416,12 +416,32 @@ hubs in a real DOM against the markup out of `next/lib/school-hubs.ts`,
 because a hub that renders and is not finished looks exactly like
 one that is.
 
+**The practice books are the same arrangement.**
+`aab/schools/workbook.js` is one engine where there were two
+388-line modules whose diff was nouns, and both of them were
+broken: the English one keyed on `.wb-day` and `[data-wb-write]`
+where the component renders `.buch-tag` and `data-schrift`, so
+nothing saved and nothing ticked, and the German one dereferenced
+`document.getElementById("tage")` at its top level on a route that
+had no such element, so it threw before its first function ran.
+Both pages rendered perfectly. `aab/schools/workbook.test.mjs` is
+what says they do not any more.
+
 **Every storage key is passed in by the school, spelled the way it
 has always been spelled.** That is not decoration, it is the whole
 reason the engine takes them as an argument rather than deriving
 them from the school's name: `english-day` is not `english-tag`,
 and the rule at the top of this section is why. `aab/schools/progress.test.mjs`
 asserts all ten of them by name.
+
+That covers the ID SHAPES too, and it had to. A day's tick is
+`term-1/day-3` in English and `stufe-1/tag-3` in German, both from
+the school's own `curriculum.js`, and the shared book engine built
+the German shape for both when it was first written. `toggleDay`
+wrote the English ticks correctly and the tracker looked for them
+under a name nothing had ever used, so a day could be ticked and
+came back unticked. `dayId` is an argument now, like every other
+key.
 
 The money school is not a caller. Its ticks are `next/lib/progress.ts`,
 because its pages are routes; these three still need a browser
@@ -596,6 +616,10 @@ node aab/courses.test.mjs          # the third-party course player: the sidebar,
                                    # ticks, the per-module bars, mark-complete-and-
                                    # continue, the deep link, and the timers it must
                                    # never grow (74 checks, needs linkedom)
+node aab/schools/workbook.test.mjs # a practice book that renders and does nothing:
+                                   # the day walker, what was typed, the answers,
+                                   # the tick, and the storage key each is filed
+                                   # under (40 checks, needs linkedom)
 node aab/schools/hub.test.mjs      # a school hub that renders and is not finished:
                                    # the ladder, the ring, the bar and the resume
                                    # card, built against the markup the route

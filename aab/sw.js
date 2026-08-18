@@ -31,6 +31,35 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v120: Both practice books work. Neither did.
+
+        `schools/workbook.js` is one engine where there were two
+        388-line modules whose diff was nouns, and the English one
+        keyed on a vocabulary the page does not have: it looked
+        for `.wb-day` and `[data-wb-write]` where the component
+        renders `.buch-tag` and `data-schrift`, so nothing saved,
+        nothing revealed an answer and nothing ticked.
+
+        The German one did not run at all. Both files opened with
+        `document.getElementById("tage")` and dereferenced it on
+        the next line, and the route that replaced the generated
+        page had no element with that id, so the module threw
+        before its first function ran. The route has the id now,
+        and the day walker it also never rendered.
+
+        `/schools/workbook.js` and `/english/workbook.js` join the
+        precache: a cached caller whose import resolves to nothing
+        is a book that comes back offline with none of what was
+        written in it.
+
+        And a day's tick is filed as `term-1/day-3` in English and
+        `stufe-1/tag-3` in German. The engine built the German
+        shape for both, so `toggleDay` wrote the English ticks
+        correctly and the tracker looked for them under a name
+        nothing had ever used: a day could be ticked and came back
+        unticked. `dayId` comes from the school now, like every
+        other key.
+
    v119: A text box is `@layer base` and `ui/field.tsx` adds
         nothing to it. The component carried its own box in
         utilities, and `tw` is a later layer than `base`, so the
@@ -1216,7 +1245,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v119";
+const VERSION = "v121";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -1328,6 +1357,13 @@ const PRECACHE = [
      rather than left to the runtime cache. */
   "/schools/progress.js",
   "/schools/hub.js",
+  /* And the practice books' one engine. Both schools' book
+     scripts are four lines over this, so precaching one of them
+     without it is the `pieces.js` mistake in the paragraph above:
+     an offline visit gets the caller from the cache and its
+     import resolves to nothing, and the book that comes back is a
+     printed one with none of what was written in it. */
+  "/schools/workbook.js",
   "/deutsch/curriculum.js",
   "/deutsch/hub.js",
   "/deutsch/progress.js",
@@ -1365,6 +1401,11 @@ const PRECACHE = [
   "/english/icons.js",
   "/english/part.js",
   "/english/term.js",
+  /* Beside the German book's, and for the same reason. It was
+     missing, which mattered less while it did not work: it keyed
+     on a vocabulary the page has not had since the book became a
+     route. */
+  "/english/workbook.js",
   "/tools/stock.js",
   "/tools/stock.model.js",
   "/tools/stock.i18n.js",

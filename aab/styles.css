@@ -5888,6 +5888,21 @@ German for day, and .tag is what the site has always called
     }
     & .tracker-tag[data-current] { outline: 2px solid var(--accent); outline-offset: 1px; }
   }
+  /* The day walker: prev, a picker, next, and "all days at once"
+     pushed to the far end. It ships hidden and empty, and
+     `schools/workbook.js` fills it in, so with scripts off the
+     book is every day printed, which is what a practice book on
+     paper is. */
+  .tag-nav {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-4);
+    margin-bottom: var(--gap);
+
+    & .push { margin-inline-start: auto; }
+  }
+  @media (width <= 620px) {
+    .tag-nav .push { margin-inline-start: 0; }
+  }
+
   .tag-waehler {
     display: flex; align-items: center; gap: var(--s-4);
 
@@ -6590,31 +6605,18 @@ German for day, and .tag is what the site has always called
      THE PRACTICE BOOK
      ============================================================ */
 
-  /* ---------- the thirty squares ----------
-     Folded away, the same way the sound key on the same page is.
-     How many days are done is in the hero's bar a few hundred
-     pixels above, and which day is next is on the button beside
-     it; what the grid alone can tell you is WHICH days are still
-     empty, so that is what its summary line offers. */
-  .wb-picker {
-    display: flex; align-items: center; gap: var(--s-4);
+  /* The last two `.wb-*` rules went with the module that named
+     them. `.wb-picker` was a byte-for-byte copy of `.tag-waehler`
+     in the workbook layer, and `.wb-day` is markup no component
+     renders: one component draws both books and it draws
+     `.buch-tag`. */
 
-    & .mono { color: var(--ink-soft); font-size: var(--t-2); }
-    & select {
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-      background: var(--panel); color: var(--ink);
-      font-family: var(--font-bn); font-size: var(--t-5); padding: 7px 10px;
-      max-width: min(58vw, 320px);
-    }
-    & select:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-  }
-  .wb-day .shape { margin-top: 0; }
-
-  /* resize/overflow are deliberately the no-JavaScript values.
-     workbook.js sets overflow:hidden on the boxes it takes over
-     and grows them to fit instead; without it they stay ordinary
-     resizable, scrollable textareas, which is what a learner with
-     scripts off needs in order to read back what they wrote. */
+  /* resize/overflow on a practice book's boxes are deliberately
+     the no-JavaScript values. `schools/workbook.js` sets
+     overflow:hidden on the ones it takes over and grows them to
+     fit instead; without it they stay ordinary resizable,
+     scrollable textareas, which is what a learner with scripts
+     off needs in order to read back what they wrote. */
 
   /* Printing the book should give you the book, not one day of it
      and a navigation bar. Every selector is under body.english,
