@@ -1,5 +1,5 @@
 /* ============================================================
-   check-sw.mjs, did a precached file change without a VERSION bump?
+   check-sw.js, did a precached file change without a VERSION bump?
 
    This exists because the same mistake has now been made twice.
    sw.js precaches the shell, and a precached file is answered from
@@ -19,8 +19,8 @@
    recorded in sw-manifest.json alongside the VERSION they belong
    to. Run this before committing:
 
-       node check-sw.mjs            verify
-       node check-sw.mjs --update   record the current state
+       node scripts/check-sw.js            verify
+       node scripts/check-sw.js --update   record the current state
 
    If any precached file has changed since the manifest was written
    and VERSION has not moved, it fails and says which files.
@@ -31,11 +31,25 @@ import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const MANIFEST = join(HERE, "sw-manifest.json");
+/* `AAB` is the served directory and `HERE` used to be it. Every
+   file in `aab/` is uploaded and answers at a public URL, so a
+   check living there was a check published at `/check-sw.mjs`,
+   kept private only by a line in `.assetsignore` somebody has to
+   remember to add. A check outside the served directory cannot be
+   served. The extension went with it: the root declares
+   `"type": "module"`, so `.js` behaves exactly as `.mjs` did.
+
+   `sw-manifest.json` stays in `aab/`, and that is not an
+   oversight: it is data the service worker's own check reads
+   about files in that directory, it is committed beside them, and
+   moving it would change a path in the one place a stale-cache
+   bug is least welcome. */
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const AAB = join(ROOT, "aab");
+const MANIFEST = join(AAB, "sw-manifest.json");
 const update = process.argv.includes("--update");
 
-const sw = await readFile(join(HERE, "sw.js"), "utf8");
+const sw = await readFile(join(AAB, "sw.js"), "utf8");
 
 const version = sw.match(/const VERSION = "([^"]+)"/)?.[1];
 if (!version) {
@@ -84,13 +98,86 @@ if (rendered.length) {
   }
 }
 
+/* ------------------------------------------------------------
+   A precached module whose import is not precached
+
+   `app.js` imports `pieces.js`, and the note beside that line in
+   `sw.js` says why it is in the list: "a shell without it is an
+   app.js whose import resolves to nothing: the menu, the palette
+   and every list of writing die together on the first offline
+   visit."
+
+   That reasoning was written down and then had to be applied by
+   hand every time, which is the failure this repository keeps
+   naming. It went wrong again on 18 August 2026: the two practice
+   books became four lines each over `/schools/workbook.js`, the
+   callers stayed precached and the engine was not, so an offline
+   visit would have got a printed book with none of the learner's
+   writing in it. Nothing here would have said so, and it was
+   caught by reading the `pieces.js` comment rather than by any
+   check.
+
+   A STATIC import only. `signin.js` is imported lazily by
+   `app.js` inside a try, which is why the entry above it says an
+   offline visit without it is "a page with no sign-in button
+   rather than a broken one". A dynamic import that fails is a
+   feature switching off; a static one that fails takes the module
+   with it.
+   ------------------------------------------------------------ */
+const precached = new Set(paths);
+const unreachable = [];
+
+for (const p of paths) {
+  if (!p.endsWith(".js")) continue;
+  let src;
+  try {
+    src = await readFile(join(AAB, p.replace(/^\//, "")), "utf8");
+  } catch {
+    continue;      // the missing-file check below says so properly
+  }
+  /* The three static forms: a side-effect `import "/a.js"`, an
+     `import … from "/a.js"`, and an `export … from "/a.js"`. Both
+     of the `from` kinds may span lines, so the gap is `[^;]` and
+     not `.`.
+
+     The first version of this was looser and found two things
+     that are not imports at all, which is why it is written out
+     rather than approximated:
+
+       `import("/engage.js").catch(…)` in app.js, a DYNAMIC import
+       inside a catch, which is the shape that is allowed to fail;
+
+       `export const schoolFor = (path = "/money/") =>`, an export
+       whose DEFAULT PARAMETER is a path.
+
+     Adding either to PRECACHE would have been two files served to
+     every reader for no reason, on the word of a check. */
+  const specs = [
+    ...src.matchAll(/(?:^|\n)\s*import\s+["'](\/[^"']+)["']/g),
+    ...src.matchAll(/(?:^|\n)\s*(?:import|export)\s[^;]*?\bfrom\s*["'](\/[^"']+)["']/g),
+  ];
+  for (const [, spec] of specs) {
+    if (!precached.has(spec)) unreachable.push({ from: p, spec });
+  }
+}
+
+if (unreachable.length) {
+  console.error(`sw.js precaches ${unreachable.length} module(s) whose static `
+    + "import is not precached:");
+  for (const u of unreachable) console.error(`   ${u.from}  imports  ${u.spec}`);
+  console.error("\nOffline, the cached module loads and its import resolves to");
+  console.error("nothing, so the module dies and takes its feature with it.");
+  console.error("Add the import to PRECACHE, or take its caller out.");
+  process.exit(1);
+}
+
 const hashes = {};
 const missing = [];
 for (const p of paths) {
   // "/" is the same file as /index.html on a static host
   const rel = p === "/" ? "index.html" : p.replace(/^\//, "");
   try {
-    const buf = await readFile(join(HERE, rel));
+    const buf = await readFile(join(AAB, rel));
     hashes[p] = createHash("sha256").update(buf).digest("hex").slice(0, 16);
   } catch {
     missing.push(p);
@@ -114,7 +201,7 @@ let prev = null;
 try {
   prev = JSON.parse(await readFile(MANIFEST, "utf8"));
 } catch {
-  console.error("no sw-manifest.json: run: node check-sw.mjs --update");
+  console.error("no sw-manifest.json: run: node scripts/check-sw.js --update");
   process.exit(1);
 }
 
@@ -130,7 +217,7 @@ if (!changed.length && !added.length && !removed.length) {
 
 if (version !== prev.version) {
   console.log(`sw ${prev.version} → ${version}, ${changed.length} file(s) changed. Fine.`);
-  console.log("   run: node check-sw.mjs --update");
+  console.log("   run: node scripts/check-sw.js --update");
   process.exit(0);
 }
 
@@ -139,5 +226,5 @@ for (const p of changed) console.error(`   changed  ${p}`);
 for (const p of added) console.error(`   added    ${p}`);
 for (const p of removed) console.error(`   removed  ${p}`);
 console.error("\nEvery returning visitor will keep the old copies until VERSION moves.");
-console.error("Bump VERSION in sw.js, then run: node check-sw.mjs --update");
+console.error("Bump VERSION in sw.js, then run: node scripts/check-sw.js --update");
 process.exit(1);

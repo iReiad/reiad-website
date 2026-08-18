@@ -23,10 +23,20 @@
    ============================================================ */
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = dirname(fileURLToPath(import.meta.url));
+/* `AAB` is the browser modules and `ROOT` is the repository. They
+   were the same directory until this file moved out of it: every
+   file in `aab/` is uploaded and served, so a check living there
+   was a check published at `/check-csp.mjs`, kept private only by
+   a line in `.assetsignore` that somebody has to remember to add.
+   A check outside the served directory cannot be served.
+
+   The extension went with it: the root declares
+   `"type": "module"`, so `.js` behaves exactly as `.mjs` did. */
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const AAB = join(ROOT, "aab");
 
 /* Hosts that appear in browser code and are never fetched from it.
    Each one needs a reason, because "it is probably fine" is how the
@@ -54,6 +64,24 @@ const NOT_FETCHED = {
   "https://drive.google.com": "a link to the original, beside each file on /skills/courses/",
   "https://schema.org": "the JSON-LD vocabulary, an identifier and not an address",
   "https://www.linkedin.com": "a link in the footer",
+  /* The profile links on the About page, beside the LinkedIn one
+     that has been here since before the page was a route. `rel="me"`
+     on every one of them: an anchor, never a fetch. */
+  "https://x.com": "a profile link on /about.html",
+  "https://www.facebook.com": "a profile link on /about.html",
+  "https://www.instagram.com": "a profile link on /about.html",
+  "https://github.com": "a link to this repository on /about.html",
+  /* The webfonts, and they are here rather than in connect-src
+     because a stylesheet link and a font file are `style-src` and
+     `font-src`, which the policy already allows both of. A
+     `<link rel="preconnect">` opens a socket and fetches nothing;
+     if a script ever fetches from either, this list is what stops
+     it passing quietly. The same two were in this list once and
+     left it when the Studio was archived, which is the entry above
+     `NOT_FETCHED` saying they would come back the day something
+     named them again. They did. */
+  "https://fonts.googleapis.com": "the webfont stylesheet link and its preconnect",
+  "https://fonts.gstatic.com": "the webfont files' preconnect",
   "https://www.tbsnews.net": "a source credited in an article",
   "https://www.bbc.co.uk": "a source credited in an article",
   "https://doi.org": "a citation in the dissertation case study",
@@ -62,7 +90,7 @@ const NOT_FETCHED = {
 
 /* ---------- what the policy allows ---------- */
 
-const headers = readFileSync(join(ROOT, "_headers"), "utf8");
+const headers = readFileSync(join(AAB, "_headers"), "utf8");
 const csp = headers.match(/^\s*Content-Security-Policy:\s*(.+)$/m)?.[1];
 if (!csp) {
   console.error("no Content-Security-Policy in aab/_headers: this check cannot see the policy.");
@@ -103,22 +131,46 @@ const walk = (dir, skip = new Set()) => {
   }
 };
 
-walk(ROOT, GENERATED);
-walk(join(ROOT, "..", "app", "src"));
-/* Not `functions/` or `shared/`, on purpose. This check is about
-   what a BROWSER is allowed to reach: a Content-Security-Policy
-   governs the page, not the Worker that built it, and the Worker
-   talks to Notion and to R2 without a browser being involved at
-   all. Adding them would report every one of those as a violation
-   of a policy that does not apply to them, and `shared/headers.ts`
-   would report itself, because the policy is what it contains. */
+walk(AAB, GENERATED);
+walk(join(ROOT, "app", "src"));
+
+/* And the routes, which is where the site is built now.
+
+   This walked `aab/` and `app/src` and stopped, which was every
+   line of browser code when it was written. Proved before fixing:
+   a `fetch()` to a host `connect-src` does not allow, added to a
+   Next component, passed, and the same line in `aab/app.js`
+   failed. The bug at the top of this file is one a route can make
+   as easily as a module, and it is the same bug: invisible in
+   review, invisible locally, and it blames somebody else.
+
+   `next/app` and `next/components` only. `next/lib` is the
+   database reads, which run on the Worker, and adding it would be
+   the `functions/` mistake below one directory over. A component
+   that fetches something does it in the browser, and a component
+   that renders a `<script>` writes browser code as a string,
+   which this reads as text like everything else. */
+walk(join(ROOT, "next", "app"));
+walk(join(ROOT, "next", "components"));
+
+/* Not `functions/`, `shared/` or `next/lib`, on purpose. This
+   check is about what a BROWSER is allowed to reach: a
+   Content-Security-Policy governs the page, not the Worker that
+   built it, and the Worker talks to Notion and to R2 without a
+   browser being involved at all. Adding them would report every
+   one of those as a violation of a policy that does not apply to
+   them, and `shared/headers.ts` would report itself, because the
+   policy is what it contains. */
 
 const wanted = new Map();      // origin → the files that name it
 for (const path of jsFiles) {
   const src = readFileSync(path, "utf8");
   for (const [, origin] of src.matchAll(/(https:\/\/[a-zA-Z0-9._-]+)/g)) {
     if (!wanted.has(origin)) wanted.set(origin, new Set());
-    wanted.get(origin).add(path.slice(ROOT.length + 1));
+    /* Named from the repository root, because half these files are
+         no longer under `aab/` and "components/footer.tsx" alone
+         does not say which of the three component folders it is. */
+    wanted.get(origin).add(relative(ROOT, path).split(sep).join("/"));
   }
 }
 

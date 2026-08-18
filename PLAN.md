@@ -150,16 +150,100 @@ The method at the top, applied to the rest. Biggest first, one per
 change, because each will surface something: none of them have
 been read since 250 pages moved out from under them.
 
-`check-css` (558) · `check-routes` (260) · `check-csp` (157) ·
-`check-sw` (143) · then the nine tests.
+All five **done**: `check-routes` (260), `check-css` (558),
+`check-csp` (157), `check-sw` (143), `check-content` (audited
+earlier the same day). No check is served any more.
+
+**What the first audit found.** Five claims in its header, three
+still true and two that had quietly stopped being:
+
+| | |
+| --- | --- |
+| dead links | it walked every `.html` under `aab/`, which was the whole site when it was written and is three files now. A link to a page that does not exist, added to a route, passed. It reads `next/app` and `next/components` too, and went from 53 targets to 72. |
+| bad article slugs | it read `liveArticles()` from `content.js`, which holds none since the writing became rows, so the loop ran over an empty list. It reads `content/articles.backup.json`, which is the nightly export of the live rows and covers what the write path cannot: a slug that arrived by a migration or by hand. |
+| redirect loops | current |
+| overlapping `run_worker_first` | current |
+| a check or a test published as a page | current |
+
+Each was proved before being fixed and again after, the way the
+method says.
+
+**`check-csp` had one hole and it was the same one.** It walked
+`aab/` and `app/src`, which was every line of browser code when it
+was written. A `fetch()` to a host `connect-src` does not allow,
+added to a Next component, passed; the same line in `aab/app.js`
+failed. It reads `next/app` and `next/components` now, and not
+`next/lib`, which is the database reads and runs on the Worker.
+
+Widening it surfaced six hosts the routes name and nothing had
+accounted for: four profile links on the About page and the two
+webfont preconnects. Each has a reason in `NOT_FETCHED` now, which
+is the discipline that list exists for. The webfonts were in it
+once and left when the Studio was archived, under a note saying
+they would come back the day something named them again.
+
+**`check-sw` was current on all four of its claims**, and the
+audit found what it does not ask rather than what has stopped
+being true: nothing held a precached module's static imports to
+being precached too. `app.js` imports `pieces.js` and the note
+beside that entry says why it must be in the list, which meant
+the reasoning was written down and applied by hand. It went wrong
+again on 18 August 2026, in the commit that made both practice
+books work: the callers stayed precached and the engine they
+became four lines over was not.
+
+Static imports only. `signin.js` is imported lazily inside a try,
+and the entry above it says an offline visit without it is a page
+with no sign-in button rather than a broken one.
+
+**`check-css` was current on every claim it makes**, which was
+worth establishing rather than assuming: it already walks
+`next/app`, `next/components` and `next/lib`, and reads the
+schools' prose out of the snapshot, both added when the pages
+became rows. All four claims were shown to fire.
+
+So again the finding was what it does not ask: a rule with a
+class of its own that no markup in this repository carries. That
+is how 236 lines went dead without anybody noticing, and they
+were found by hand rather than by anything here. Seven survived
+and are gone; the count is a ratchet at zero.
+
+Its test is deliberately broader than the leak check's `usedIn()`
+next door. That one looks only in a class attribute, which is
+right for asking whether a school's rule is anchored by a class
+the school's pages carry. For "is this rule dead" any mention
+counts, because half the site writes
+`className={plain ? "art" : "art stage-art"}`: a pattern anchored
+to the quotes called two live classes dead on the first run.
+
+### The tests
+
+Audited on the two questions that matter for a test rather than
+for a check, and both came back clean.
+
+**Does it run, or does it skip and look like a pass?** Every test
+in `check-all.mjs` runs. Every test that needs a browser or a
+build says so and exits, loudly: `studio`, `studio-publish`, the
+desk's and the Studio's own. `interactive` and `account` find a
+browser here and run.
+
+**Has its subject moved out from under it?** No. `courses` is
+about `aab/src/courses.ts`, `studio` about `aab/editor.js`,
+`sync` about `aab/sync.js`, and the schools' three about
+`aab/schools/`. Each subject is still where the test looks.
+
+Which is why the tests do NOT move yet. A test belongs beside the
+thing it tests, so they move when their subjects do, in Phase 5's
+Stage B. Moving them first would be five files pointing back into
+a directory they had just left.
 
 They move to `scripts/` as they are audited, which is also when
 they can lose the `.mjs` extension: the root declares
 `"type": "module"`, so `.js` behaves identically there. Inside
 `aab/` the extension is load-bearing, because `.assetsignore`
-matches `check-*.mjs` and `*.test.mjs` and those patterns are the
-only thing stopping the tools from being served at public URLs.
-Moving them out is what retires that question.
+matches `check-*.mjs` and that pattern is the only thing stopping
+the tools being served at public URLs. Moving them out is what
+retires that question rather than guarding it.
 
 ## Phase 5. Off `aab/`
 

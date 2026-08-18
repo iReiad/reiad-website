@@ -175,7 +175,7 @@ import. They are asserted against that model by the check below.
 
 A sentence that genuinely cannot hold a slot (a `<meta>` description, a
 blurb inside `content.js`) goes in the `CLAIMS` table in
-`check-content.mjs`, so the next data change fails a check rather than a
+`scripts/check-content.js`, so the next data change fails a check rather than a
 reader.
 
 ## The shell, and the one table the menu comes from
@@ -458,7 +458,7 @@ has to be in three places or it does not survive the trip:
 2. `KEEP_CLASSES` in `aab/editor.js`, the browser's sanitiser,
 3. `ALLOWED_CLASSES` in `functions/_lib/sanitise.js`, the server's.
 
-`check-css.mjs` fails if the two allowlists disagree, if a class is allowed
+`check-css.js` fails if the two allowlists disagree, if a class is allowed
 into an article and styled nowhere, or if two cascade layers both define
 one. The last of those is not hypothetical twice over: `.glance` was
 already the About page's, `.steps` already the Learn hub's, and a later
@@ -504,7 +504,7 @@ sat there: a file nobody meant to publish is a file nobody thinks
 about before changing.
 
 Add a check or a test beside the others and it starts being
-published the moment it is committed, so `check-routes.mjs` reads
+published the moment it is committed, so `scripts/check-routes.js` reads
 that file and fails on any path matching a build-or-test shape
 that no rule covers.
 
@@ -549,13 +549,18 @@ message, and the four that need a browser or a build do not run in CI
 at all:
 
 ```sh
-node aab/check-routes.mjs   # redirect loops, dead links, bad article slugs, and
-                            # a check or a test being published as a page
-node aab/check-css.mjs      # a school's layer styling the whole site, and a
-                            # block class that means two things at once
-node aab/check-sw.mjs       # a precached file changed without a VERSION bump
-node aab/check-content.mjs  # a page that has stopped counting the site correctly
-node aab/check-csp.mjs      # code calling a host the browser is not allowed to reach
+node scripts/check-routes.js # redirect loops, dead links in routes as well
+                            # as in files, a live article whose slug cannot be a
+                            # URL, and a check or a test published as a page
+node scripts/check-css.js   # a school's layer styling the whole site, a block
+                            # class that means two things at once, and a rule
+                            # that styles nothing on the site at all
+node scripts/check-sw.js    # a precached file changed without a VERSION bump,
+                            # or a precached module whose import is not precached
+node scripts/check-content.js # a page that has stopped counting the site
+                            # correctly
+node scripts/check-csp.js   # code calling a host the browser is not allowed to
+                            # reach, from a route as well as from a module
 node scripts/check-contrast.mjs # an accent that has drifted under the WCAG
                             # threshold for the size it is set at
 node scripts/check-scale.mjs # a fifty-first font size
@@ -718,7 +723,7 @@ renders perfectly with both of them broken.
 
 If a precached file changed, bump `VERSION` in `aab/sw.js`, add a line to
 the changelog at the top of that file saying what changed and why it needs
-the bump, then run `node aab/check-sw.mjs --update`.
+the bump, then run `node scripts/check-sw.js --update`.
 
 ## A migration's filename is a fact, not a label
 
@@ -827,7 +832,7 @@ schools' half of the nightly backup, on the same footing as
 `content/articles.backup.json`. It is what `check-schools.mjs`
 compares the four `curriculum.js` modules against. And it is the
 only copy of the lesson prose that a check running on a laptop
-with no network can read, which is how `check-css.mjs` knows that
+with no network can read, which is how `check-css.js` knows that
 `.shobdo-list` and thirty-one other rules are styling something
 real.
 
@@ -1361,8 +1366,8 @@ one place they all pass through: the public snapshot lives in D1
 `settings` and refreshes at most every five minutes, a reader's own
 numbers cache at the edge for one minute and their history for ten.
 Do not add a second caller, and do not write the broker's hostname
-into anything under `aab/`: `check-csp.mjs` scans every string there
-and will rightly fail it.
+into anything under `aab/` or `next/`: `scripts/check-csp.js` scans
+every string in both and will rightly fail it.
 
 **A key is stored sealed or not at all.** `PUT /api/broker/key`
 proves a key against the broker, seals it with AES-GCM under the
@@ -1401,7 +1406,7 @@ reach. In order:
    puts it in the menu, the Ctrl+K palette, the sitemap, the home page
    rotation and the portfolio count.
 3. Add its card to `portfolio.html`.
-4. `node aab/check-content.mjs` fails until steps 2 and 3 are both done.
+4. `node scripts/check-content.js` fails until steps 2 and 3 are both done.
 
 ## Where an article lives
 
@@ -1440,7 +1445,7 @@ every check still runs first:
 
 - all four checks in **Before deploying** pass,
 - anything that touched a precached file bumped `VERSION` in
-  `aab/sw.js` and re-ran `check-sw.mjs --update`,
+  `aab/sw.js` and re-ran `scripts/check-sw.js --update`,
 - generated pages were regenerated from their source, not edited,
 - and `grep -rn $'\u2014' aab/ functions/` comes back empty.
 

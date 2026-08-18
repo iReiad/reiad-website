@@ -1131,7 +1131,6 @@
   /* The link line under a list: "everything I have written",
      "every case study". Same story, an inline margin repeated
      wherever a section ended in a pointer somewhere else. */
-  .section-more { margin-top: 16px; }
 
   /* ---------- RESPONSIVE ----------
      Two media queries lived here, folding the old header's nav
@@ -2349,13 +2348,6 @@
 
     &[hidden] { display: none; }
   }
-  .palette-panel {
-    width: 100%; max-width: 560px;
-    background: var(--panel); color: var(--ink);
-    border: 1px solid var(--hairline); border-radius: var(--radius);
-    box-shadow: 0 24px 60px oklch(0% 0 0 / 0.28);
-    overflow: clip;
-  }
 
   #palette-input {
     width: 100%; border: 0; outline: 0; padding: 0;
@@ -2662,12 +2654,6 @@ it collapsed to the width of the word "Bangladesh". */
   .news-window-foot {
     display: flex; gap: var(--s-5); flex-wrap: wrap;
     padding: 18px 26px 22px;
-  }
-  .news-meta {
-    display: flex; gap: var(--s-5); align-items: center; margin-top: 5px;
-    font-family: var(--font-mono);
-    font-size: var(--t-2); letter-spacing: 0.05em; text-transform: uppercase;
-    color: var(--ink-soft); flex-wrap: wrap;
   }
   .pulse-note { font-size: var(--t-4); color: var(--ink-soft); margin-top: 14px; max-width: var(--measure); }
   .pulse-fallback { padding-block: 20px; color: var(--ink-soft); }
@@ -3829,7 +3815,6 @@ it collapsed to the width of the word "Bangladesh". */
 
     &:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   }
-  .pill-new { border-color: var(--accent); color: var(--accent); }
   /* Not an error, and not nothing: something that will look wrong
      to a reader until it is published again. */
   .pill-warn {
@@ -5094,9 +5079,7 @@ it collapsed to the width of the word "Bangladesh". */
   }
   .chart-zero { stroke: var(--hairline); stroke-width: 1; }
   .line-cash { stroke: var(--accent); stroke-width: 2; }
-  .line-cash-dot { fill: var(--accent); }
   .line-netdebt { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 4 3; }
-  .line-netdebt-dot { fill: var(--accent); }
 
   /* ---------- the DCF's verdict ---------- */
   .verdict-card {
@@ -9439,11 +9422,6 @@ German for day, and .tag is what the site has always called
     margin: 0;
   }
   .card-title[lang="bn"], .card[lang="bn"] .card-title { font-family: var(--font-bn-serif); }
-  .card-sub {
-    font-family: var(--font-mono); font-size: var(--t-1);
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--ink-soft);
-  }
   .card-dek { margin: 0; color: var(--ink-soft); font-size: var(--t-5); }
   .card-dek[lang="bn"] { font-family: var(--font-bn); }
 

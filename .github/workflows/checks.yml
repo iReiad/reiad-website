@@ -89,17 +89,17 @@ jobs:
         run: npm ci
 
       # Every one of these exists because something shipped broken
-      # once. check-routes.mjs is the one that would have caught
+      # once. check-routes.js is the one that would have caught
       # the outage deploy.yml was written for: it runs the same
       # run_worker_first overlap test wrangler runs, and wrangler
       # runs it before it reads a line of worker.js.
       - name: Run the checks
         run: |
-          node aab/check-routes.mjs
-          node aab/check-css.mjs
-          node aab/check-sw.mjs
-          node aab/check-content.mjs
-          node aab/check-csp.mjs
+          node scripts/check-routes.js
+          node scripts/check-css.js
+          node scripts/check-sw.js
+          node scripts/check-content.js
+          node scripts/check-csp.js
           node scripts/check-crons.mjs
           node scripts/check-pieces.mjs
           node scripts/check-headers.mjs
