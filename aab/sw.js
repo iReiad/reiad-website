@@ -31,7 +31,7 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
-   v89: The live portfolio landed at /tools/live.html. /styles.css
+   v90: The live portfolio landed at /tools/live.html. /styles.css
         gained its drawing vocabulary in the tools layer, and
         /comments.js learned that an admin's comment comes back
         already live and redraws the thread instead of promising
@@ -39,6 +39,35 @@
         precached; its module /tools/live.js is new and useless
         offline (a live feed has nothing honest to say from a
         cache), so it is deliberately not in PRECACHE either.
+
+   v89: The menu on a phone. /styles.css only, and three things
+        in it that a reader can point at.
+
+        The button that closes the drawer was a 34px circle in
+        the drawer's far corner, 233px from the burger that had
+        just been pressed. Opening a menu and closing it are one
+        gesture and the control should not move, so the close
+        button is the burger's shape laid out on the burger's
+        exact pixels: [19, 18, 42x36] at every phone width. Both
+        derive from `--bar-inset` rather than from a number typed
+        twice, and the drawer's whole column is built from it too.
+
+        `.audience-switch` carried `grid-column: 2`, which is
+        correct in the top bar and wrong in the drawer, and that
+        component is deliberately rendered in both. In the drawer
+        it grew an implicit second column and sat in it, so "What
+        brings you here" and the switch went side by side in a
+        275px drawer and the label was clipped to "What brings
+        yo". Placement belongs to the container now.
+
+        And the site's name was on screen twice with the menu
+        open, once in the bar and once in the drawer's head. The
+        bar's copy is the one that stays, because it is there in
+        the state a reader is in nearly all of the time.
+
+        A stale v88 stylesheet under this markup is a drawer whose
+        head is empty and whose close button is nowhere, which is
+        why this needs the bump.
 
    v88: Seven colours, one design system. /styles.css gained a
         palette built out of seven hues at matched lightness, a
@@ -826,7 +855,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v89";
+const VERSION = "v90";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

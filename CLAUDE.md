@@ -493,6 +493,8 @@ node aab/sync.test.mjs             # a browser's own progress getting into an
                                    # signed-in devices (27 checks, needs a
                                    # server on :8899 and Playwright)
 node aab/studio.test.mjs           # the editor, end to end (68 checks)
+node next/progress.test.mjs         # a page that costs a reader their ticks just
+                                   # by being read (23 checks, no browser)
 node aab/schools/progress.test.mjs  # a school's ticks filed under a key that is
                                    # not the one in somebody's browser, and the
                                    # three schools' shared engine (119 checks)
