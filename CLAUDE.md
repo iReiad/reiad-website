@@ -504,7 +504,7 @@ sat there: a file nobody meant to publish is a file nobody thinks
 about before changing.
 
 Add a check or a test beside the others and it starts being
-published the moment it is committed, so `check-routes.mjs` reads
+published the moment it is committed, so `scripts/check-routes.js` reads
 that file and fails on any path matching a build-or-test shape
 that no rule covers.
 
@@ -549,8 +549,9 @@ message, and the four that need a browser or a build do not run in CI
 at all:
 
 ```sh
-node aab/check-routes.mjs   # redirect loops, dead links, bad article slugs, and
-                            # a check or a test being published as a page
+node scripts/check-routes.js # redirect loops, dead links in routes as well
+                            # as in files, a live article whose slug cannot be a
+                            # URL, and a check or a test published as a page
 node aab/check-css.mjs      # a school's layer styling the whole site, and a
                             # block class that means two things at once
 node aab/check-sw.mjs       # a precached file changed without a VERSION bump

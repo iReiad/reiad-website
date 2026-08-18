@@ -20,9 +20,12 @@
 # how the site is built and checked, which is a question for a
 # clone rather than for the edge.
 #
-# `check-routes.mjs` reads this file and fails if a file matching
-# one of these shapes is missing from it, so a new check or a new
-# test cannot start being published by accident.
+# `scripts/check-routes.js` reads this file and fails if a file
+# matching one of these shapes is missing from it, so a new check
+# or a new test cannot start being published by accident. It used
+# to live here itself, which is why the first rule below exists
+# and why it is now the weaker half of the answer: a check that is
+# not in this directory cannot be served whatever this file says.
 # ============================================================
 
 # The checks and the builders. Run from a clone, never fetched.

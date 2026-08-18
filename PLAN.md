@@ -150,16 +150,30 @@ The method at the top, applied to the rest. Biggest first, one per
 change, because each will surface something: none of them have
 been read since 250 pages moved out from under them.
 
-`check-css` (558) · `check-routes` (260) · `check-csp` (157) ·
-`check-sw` (143) · then the nine tests.
+`check-routes` (260) **done** · `check-css` (558) ·
+`check-csp` (157) · `check-sw` (143) · then the nine tests.
+
+**What the first audit found.** Five claims in its header, three
+still true and two that had quietly stopped being:
+
+| | |
+| --- | --- |
+| dead links | it walked every `.html` under `aab/`, which was the whole site when it was written and is three files now. A link to a page that does not exist, added to a route, passed. It reads `next/app` and `next/components` too, and went from 53 targets to 72. |
+| bad article slugs | it read `liveArticles()` from `content.js`, which holds none since the writing became rows, so the loop ran over an empty list. It reads `content/articles.backup.json`, which is the nightly export of the live rows and covers what the write path cannot: a slug that arrived by a migration or by hand. |
+| redirect loops | current |
+| overlapping `run_worker_first` | current |
+| a check or a test published as a page | current |
+
+Each was proved before being fixed and again after, the way the
+method says.
 
 They move to `scripts/` as they are audited, which is also when
 they can lose the `.mjs` extension: the root declares
 `"type": "module"`, so `.js` behaves identically there. Inside
 `aab/` the extension is load-bearing, because `.assetsignore`
-matches `check-*.mjs` and `*.test.mjs` and those patterns are the
-only thing stopping the tools from being served at public URLs.
-Moving them out is what retires that question.
+matches `check-*.mjs` and that pattern is the only thing stopping
+the tools being served at public URLs. Moving them out is what
+retires that question rather than guarding it.
 
 ## Phase 5. Off `aab/`
 

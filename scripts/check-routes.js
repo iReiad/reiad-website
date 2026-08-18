@@ -2,7 +2,7 @@
 /* ============================================================
    check-routes.mjs, catch broken URLs before deploying.
 
-       node aab/check-routes.mjs
+       node scripts/check-routes.js
 
    Cloudflare Pages' routing is the one part of this site that
    can't be tested with a local file server, and it has already
@@ -33,10 +33,27 @@
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { liveArticles } from "./content.js";
 import { NEXT_ROUTES, ARTICLE } from "../worker.js";
 
-const ROOT = dirname(fileURLToPath(import.meta.url));
+/* `AAB` is what this walks and `ROOT` is the repository, and the
+   two were the same directory until this file moved out of it.
+
+   It moved because of what it checks two hundred lines down:
+   every file in `aab/` is uploaded and served, so a check living
+   there was a check published at `/check-routes.mjs`. The rule
+   that kept that from happening was a line in `.assetsignore`,
+   and a rule you have to remember is the thing this repository
+   keeps replacing. A check that is not in the served directory
+   cannot be served, which retires the question rather than
+   guarding it.
+
+   The extension went with it: the root package.json declares
+   `"type": "module"`, so `.js` here behaves exactly as `.mjs`
+   did. Inside `aab/` it could not, because `.assetsignore`
+   matches `check-*.mjs` and that pattern was the only thing
+   standing between these files and a public URL. */
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const AAB = join(ROOT, "aab");
 const MAX_HOPS = 10;
 
 /* ---------- what a Worker answers ---------- */
@@ -51,7 +68,7 @@ const MAX_HOPS = 10;
    this file believed the Worker answered every path under /money/
    when wrangler had been told no such thing. */
 const WORKER_FIRST = (
-  readFileSync(join(ROOT, "../wrangler.toml"), "utf8")
+  readFileSync(join(ROOT, "wrangler.toml"), "utf8")
     .match(/run_worker_first\s*=\s*\[([\s\S]*?)\]/)?.[1] ?? ""
 )
   .replace(/^\s*#.*$/gm, "")
@@ -73,7 +90,7 @@ const workerAnswers = (path) =>
 
 /* ---------- the rules ---------- */
 
-const rules = readFileSync(join(ROOT, "_redirects"), "utf8")
+const rules = readFileSync(join(AAB, "_redirects"), "utf8")
   .split("\n")
   .map((l) => l.trim())
   .filter((l) => l && !l.startsWith("#"))
@@ -99,7 +116,7 @@ function step(path) {
   }
 
   for (const candidate of [path, `${path}.html`, `${path.replace(/\/$/, "")}/index.html`]) {
-    const file = join(ROOT, candidate);
+    const file = join(AAB, candidate);
     if (existsSync(file) && statSync(file).isFile()) return { file: candidate };
   }
   return { missing: true };
@@ -130,26 +147,78 @@ const files = [];
     if (statSync(full).isDirectory()) {
       if (!["og", "functions", "node_modules"].includes(entry)) walk(full);
     } else {
-      files.push(relative(ROOT, full).split(sep).join("/"));
+      files.push(relative(AAB, full).split(sep).join("/"));
     }
   }
-})(ROOT);
+})(AAB);
 
 const pages = files.filter((f) => f.endsWith(".html")).map((f) => `/${f}`);
 
 const targets = new Set(["/", ...pages, ...rules.map((r) => r.from)]);
 
-// every root-absolute href/src the pages point at
+/* ---------- every root-absolute link, from wherever it is written
+
+   THREE HTML FILES ARE LEFT. This walked `pages`, which is
+   every `.html` under `aab/`, and that was the whole site when
+   it was written; since Stage 11.7 it is `404.html`,
+   `offline.html` and the preview harness. The other 250 pages
+   are Next.js routes, and their links are written in `next/app`
+   and `next/components`.
+
+   So the dead-link half of this file was checking three pages out
+   of two hundred and fifty. Proved before fixing, the way
+   `PLAN.md` says: a link to a page that does not exist, added to
+   a route, passed; the same link in `404.html` failed.
+
+   A route writes its links as JSX, so only the literal ones can
+   be read: `href="/money/index.html"` is checkable and
+   `href={lesson.url}` is not, and pretending otherwise would mean
+   a check that guesses. The literals are most of them, and the
+   computed ones are computed by `shared/schools.ts`, which
+   `check-schools.mjs` already holds to the ladder.
+   ---------------------------------------------------------- */
+
 const linkSources = new Map();
+
+const addLinks = (text, source) => {
+  for (const m of text.matchAll(/(?:href|src)="(\/[^"#?]*)/g)) {
+    targets.add(m[1]);
+    if (!linkSources.has(m[1])) linkSources.set(m[1], source);
+  }
+};
+
 for (const page of pages) {
   // Comments explain example paths that deliberately don't exist yet,
   // so scan the real markup only.
-  const html = readFileSync(join(ROOT, page.slice(1)), "utf8")
-    .replace(/<!--[\s\S]*?-->/g, "");
-  for (const m of html.matchAll(/(?:href|src)="(\/[^"#?]*)/g)) {
-    targets.add(m[1]);
-    if (!linkSources.has(m[1])) linkSources.set(m[1], page);
+  addLinks(
+    readFileSync(join(AAB, page.slice(1)), "utf8").replace(/<!--[\s\S]*?-->/g, ""),
+    page,
+  );
+}
+
+/* The routes and the components they are built from. Comments are
+   stripped for the same reason: this repository's are long and
+   several of them quote an address as an example. */
+const NEXT = join(ROOT, "next");
+const tsx = [];
+(function walkTsx(dir) {
+  let entries;
+  try { entries = readdirSync(dir); } catch { return; }
+  for (const entry of entries) {
+    if (entry === "node_modules" || entry === ".next") continue;
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) walkTsx(full);
+    else if (entry.endsWith(".tsx") || entry.endsWith(".ts")) tsx.push(full);
   }
+})(NEXT);
+
+for (const file of tsx) {
+  addLinks(
+    readFileSync(file, "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^\s*\/\/.*$/gm, ""),
+    `next/${relative(NEXT, file).split(sep).join("/")}`,
+  );
 }
 
 let failures = 0;
@@ -184,16 +253,37 @@ for (const pattern of WORKER_FIRST) {
 }
 
 /* An article's slug becomes a URL, and only some strings can.
-   worker.js matches /insights/([a-z0-9-]+) and static assets are no
-   more forgiving, so a slug with a capital or a space cannot resolve
-   however it is published, but it still reaches feed.xml, the
-   sitemap and the Ctrl+K index, because those are built straight
-   from content.js.
+   worker.js matches /insights/([a-z0-9-]+) and static assets are
+   no more forgiving, so a slug with a capital or a space cannot
+   resolve however it is published, but it still reaches feed.xml
+   and the sitemap.
 
    That is exactly what happened: a live entry with the slug
    "German Alphabets" put a URL containing a raw space into the
-   sitemap submitted to search engines. Nothing here looked at
-   ARTICLES, so nothing caught it. */
+   sitemap submitted to search engines.
+
+   ---- where the slugs are now ----
+
+   This read `liveArticles()` out of `content.js`, which held
+   every article when it was written and holds NONE of them since
+   the writing became rows. So the loop ran over an empty list and
+   reported nothing, on a site with live articles, which is a
+   check that had stopped asking its own question.
+
+   Two things answer it instead, and both are needed:
+
+     `functions/api/articles/[[slug]].js` strips anything outside
+     `[a-z0-9-]` before it writes, and rejects what is left if it
+     is empty. Nothing published through the Studio can be wrong.
+
+     `content/articles.backup.json` is the nightly export of the
+     live rows, and it is what this reads. It covers what the
+     write path cannot: a slug that arrived by a migration, by
+     wrangler, or by hand.
+
+   The backup is committed, so this still needs no network. If it
+   is missing entirely that is worth saying rather than passing
+   quietly. */
 /* ---------- what gets uploaded ----------
 
    Everything in aab/ is an asset, so everything in aab/ is a
@@ -212,7 +302,7 @@ for (const pattern of WORKER_FIRST) {
    covered by a rule in that file. */
 const DEV_ONLY = /(^|\/)(check-[^/]*\.mjs|build-[^/]*\.mjs|[^/]*\.test\.mjs)$|^src\/|\.sql$|scorecard\.fetch\.mjs$/;
 
-const IGNORED = readFileSync(join(ROOT, ".assetsignore"), "utf8")
+const IGNORED = readFileSync(join(AAB, ".assetsignore"), "utf8")
   .split("\n")
   .map((line) => line.trim())
   .filter((line) => line && !line.startsWith("#"));
@@ -236,10 +326,27 @@ for (const path of files) {
 }
 
 const SLUG = /^[a-z0-9-]+$/;
-for (const article of liveArticles()) {
-  if (SLUG.test(article.slug)) continue;
+const BACKUP = join(ROOT, "content", "articles.backup.json");
+
+let live = [];
+if (!existsSync(BACKUP)) {
   failures++;
-  console.error(`bad-slug  ${JSON.stringify(article.slug)}   (content.js: "${article.title}")`);
+  console.error("no-backup  content/articles.backup.json");
+  console.error("        the nightly export of the live articles is the only");
+  console.error("        copy of their slugs a check with no network can read.");
+} else {
+  try {
+    live = JSON.parse(readFileSync(BACKUP, "utf8")).articles ?? [];
+  } catch (e) {
+    failures++;
+    console.error(`unreadable-backup  content/articles.backup.json   (${e.message})`);
+  }
+}
+
+for (const article of live) {
+  if (SLUG.test(article.slug ?? "")) continue;
+  failures++;
+  console.error(`bad-slug  ${JSON.stringify(article.slug)}   (live article: "${article.title}")`);
   console.error("        a slug may only contain lowercase letters, digits and hyphens");
 }
 
