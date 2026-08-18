@@ -602,6 +602,51 @@ If a precached file changed, bump `VERSION` in `aab/sw.js`, add a line to
 the changelog at the top of that file saying what changed and why it needs
 the bump, then run `node aab/check-sw.mjs --update`.
 
+## A migration's filename is a fact, not a label
+
+`supabase/migrations/` is read by the Supabase GitHub integration,
+which compares the versions in those filenames against the
+versions recorded in `supabase_migrations.schema_migrations` and
+applies anything it has not seen. So the number in front of a
+migration is not decoration: it is the primary key of a row in the
+database, and renaming a file after it has run tells the
+integration that a migration it has never applied has appeared.
+
+**Never rename a migration that has been applied**, and never
+round its timestamp to something tidier. If a migration was
+applied out of band, through the dashboard or through the Supabase
+MCP, the version it was stamped with is the version the file must
+carry, however ugly.
+
+That is not hypothetical. Two migrations were applied that way and
+then written into the repository under hand-rounded names:
+
+| the file said | the database recorded |
+| --- | --- |
+| `20260817180000_lock_trigger_functions.sql` | `20260817181442` |
+| `20260818090000_broker_admins.sql` | `20260818030907` |
+
+The integration saw two migrations it had not applied, and one of
+them sorted BEFORE the last one it had, which is an out-of-order
+insert and something it refuses outright. The Supabase branch went
+to `MIGRATIONS_FAILED` and stayed there, red on every commit to
+main from 15 August onwards.
+
+Nothing was broken by it and that is the point: the project stayed
+`ACTIVE_HEALTHY`, every table was correct, the site never noticed,
+and the only symptom was a red tick next to a check most people
+would read as somebody else's. The SQL was fine. The filenames
+were the bug.
+
+Both files now carry the versions the database recorded. To check
+that the two still agree:
+
+```sh
+# what ran, and when it was stamped
+select version, name from supabase_migrations.schema_migrations order by version;
+ls supabase/migrations/
+```
+
 ## Backups
 
 The database has two, and the split between them is about who can read

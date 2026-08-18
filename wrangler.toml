@@ -259,7 +259,7 @@ SUPABASE_KEY = "sb_publishable_lvckv69CrjRyF1_urwDrCQ_PWoTH3UW"
 # account and opens nothing, so it can live here beside the URL
 # that is already in every browser. The durable record is the
 # public.admins table in Supabase (see
-# supabase/migrations/20260818090000_broker_admins.sql); this list
+# supabase/migrations/20260818030907_broker_admins.sql); this list
 # is the half that works before that migration has run, and the
 # two are OR'd together in functions/_lib/broker.js.
 ADMIN_READERS = "f8278696-caa3-4321-938c-ead22d86d144"
