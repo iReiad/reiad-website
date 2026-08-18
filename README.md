@@ -43,7 +43,9 @@ cd app && npm run build               # aab/desk/, aab/studio/
 
 ## The rules that will bite you
 
-- **No em dashes anywhere.** `grep -rn $'—' aab/ functions/`
+- **No em dashes anywhere.** The check is in `CLAUDE.md`, which does not
+  write the character out either: a rule containing the thing it bans
+  always matches itself.
 - **Never rename a storage key.** `learn-read`, `courses-read` and the rest are
   in real browsers and real accounts. Renaming one loses somebody's progress.
 - **Never rename an applied migration.** The version in the filename is a

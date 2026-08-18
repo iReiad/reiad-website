@@ -5815,35 +5815,12 @@ German for day, and .tag is what the site has always called
     & .mono { color: var(--accent); display: block; margin-bottom: 8px; }
     & p { margin: 0; max-width: var(--measure); }
   }
-
-  /* ---------- a Stufe page ---------- */
-  .stufe-hero .stufe-can {
-    margin-top: 16px; color: var(--ink);
-    border-left: 3px solid var(--accent); padding-left: 14px; max-width: 60ch;
-  }
   /* A Teil's German name rides inline in the heading as .en-sub:
      the same slot, the same mono grey, the same rhythm the Learn
      cards have used since they were written. It had its own gold
      line under the title for a while, which made every card a line
      taller, put a second accent colour beside the icon, and made
      the two schools' card grids look like two different sites. */
-
-  .buch-cta {
-    display: grid; grid-template-columns: auto 1fr auto; gap: 18px;
-    align-items: center; text-decoration: none; color: var(--ink);
-
-    & .buch-art { color: var(--accent); }
-    & .buch-art svg { width: 30px; height: 30px; }
-    & strong { display: block; font-size: var(--t-7); margin-bottom: 4px; }
-    & .buch-text span { color: var(--ink-soft); font-size: var(--t-5); }
-    & .more { color: var(--accent); white-space: nowrap; font-family: var(--font-mono);
-              font-size: var(--t-3); }
-  }
-  @media (width <= 640px) {
-    .buch-cta { grid-template-columns: auto 1fr; }
-    .buch-cta .more { grid-column: 2; }
-  }
-
   /* ---------- the pattern box ----------
      The single most important object in the course: the shape,
      alone, before any explanation of it. It is deliberately the
@@ -5994,12 +5971,6 @@ German for day, and .tag is what the site has always called
      Bangla digits and nothing else, and at 34px ten fit on a phone
      row where seven did, which is nine rows for the longest book
      rather than thirteen. */
-  .tracker-details {
-    & summary { font-family: var(--font-mono); font-size: var(--t-5); }
-    /* details.faq caps its children at the measure, which is right
-       for prose and wrong for a grid that wants the full width. */
-    & .tracker { max-width: none; }
-  }
 
 
   /* ---------- the sound key, folded away ---------- */
@@ -6030,16 +6001,6 @@ German for day, and .tag is what the site has always called
       padding: 10px 12px;
     }
     & textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-  }
-
-  /* ---------- the day walker ---------- */
-  .tag-nav {
-    display: flex; gap: var(--s-5); align-items: center; flex-wrap: wrap;
-    margin-block: 16px 26px; padding-bottom: 16px;
-    border-bottom: 1px solid var(--hairline);
-
-    & .push { margin-inline-start: auto; }
-    & .btn:disabled { opacity: 0.35; pointer-events: none; }
   }
 
   /* ---------- one day ---------- */
@@ -6328,37 +6289,10 @@ German for day, and .tag is what the site has always called
 
   /* ---------- the hub ---------- */
   .english-hero .lede [lang="en"] { color: var(--accent); }
-
-  /* ---------- a term page ---------- */
-  .term-hero .term-can {
-    margin-top: 16px; color: var(--ink);
-    border-left: 3px solid var(--accent); padding-left: 14px; max-width: 60ch;
-  }
   /* The part number on a card. The deck numbers its parts and a
      learner with the deck open should be able to match the two
      without counting, which is the whole reason `n` is in the
      curriculum at all. */
-  .lesson-card .part-num {
-    display: block; color: var(--accent); font-size: var(--t-1);
-    letter-spacing: 0.08em; margin-bottom: 6px;
-  }
-
-  .wb-cta {
-    display: grid; grid-template-columns: auto 1fr auto; gap: 18px;
-    align-items: center; text-decoration: none; color: var(--ink);
-
-    & .wb-cta-art { color: var(--accent); }
-    & .wb-cta-art svg { width: 30px; height: 30px; }
-    & strong { display: block; font-size: var(--t-7); margin-bottom: 4px; }
-    & .wb-cta-text span { color: var(--ink-soft); font-size: var(--t-5); }
-    & .more { color: var(--accent); white-space: nowrap; font-family: var(--font-mono);
-              font-size: var(--t-3); }
-  }
-  @media (width <= 640px) {
-    .wb-cta { grid-template-columns: auto 1fr; }
-    .wb-cta .more { grid-column: 2; }
-  }
-
   /* ---------- the pattern box ----------
      The single most important object in the course, and the one
      thing every page and every workbook day opens with: the
@@ -6455,106 +6389,12 @@ German for day, and .tag is what the site has always called
      THE PRACTICE BOOK
      ============================================================ */
 
-  .wb-warning {
-    margin-top: 14px; max-width: var(--measure);
-    color: var(--ink-soft); font-size: var(--t-5);
-  }
-
-  .wb-progress {
-    display: flex; align-items: center; gap: var(--s-6); flex-wrap: wrap;
-    margin-block: 20px;
-
-    & .track {
-      flex: 1; min-width: 160px; max-width: 340px; height: 6px;
-      background: var(--hairline); border-radius: var(--radius-pill); overflow: hidden;
-    }
-    & .track i {
-      display: block; height: 100%; width: 0; background: var(--accent);
-      transition: width var(--slow) var(--ease);
-    }
-    & .count { color: var(--ink-soft); font-size: var(--t-3); }
-    &[data-state="done"] .track i { background: var(--accent); }
-  }
-
   /* ---------- the thirty squares ----------
      Folded away, the same way the sound key on the same page is.
      How many days are done is in the hero's bar a few hundred
      pixels above, and which day is next is on the button beside
      it; what the grid alone can tell you is WHICH days are still
      empty, so that is what its summary line offers. */
-  .wb-tracker-details {
-    & summary { font-family: var(--font-mono); font-size: var(--t-5); }
-    /* details.faq caps its children at the measure, which is right
-       for prose and wrong for a grid that wants the full width. */
-    & .wb-tracker { max-width: none; }
-  }
-
-  .wb-tracker {
-    display: grid; gap: 5px; margin-top: 14px;
-    grid-template-columns: repeat(auto-fit, minmax(34px, 1fr));
-
-    & .wb-chip {
-      display: grid; place-items: center; text-decoration: none;
-      aspect-ratio: 1; border: 1px solid var(--hairline);
-      border-radius: var(--radius-sm); background: var(--panel);
-      color: var(--ink-soft); font-family: var(--font-mono); font-size: var(--t-3);
-      transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
-    }
-    & .wb-chip:hover { border-color: var(--accent); }
-    & .wb-chip[data-done] {
-      background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
-    }
-    & .wb-chip[data-current] { outline: 2px solid var(--accent); outline-offset: 1px; }
-  }
-
-  /* ---------- the sounds Bangla does not have ---------- */
-  .wb-sounds {
-    display: grid; gap: var(--s-4); margin-top: 14px;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-
-    & .wb-sound {
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-      padding: 10px 12px; background: var(--panel); display: grid; gap: 3px;
-      font-size: var(--t-5);
-    }
-    & .wb-sound b { font-weight: 600; }
-    & .wb-sound [lang="en"] { color: var(--accent); }
-    & .wb-sound-how { color: var(--ink-soft); font-size: var(--t-4); }
-  }
-
-  /* ---------- the collection ---------- */
-  .wb-collect {
-    display: grid; gap: var(--gap); margin-top: 16px;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-
-    & .wb-collect-col {
-      border: 1px solid var(--hairline); border-top: 3px solid var(--accent);
-      border-radius: var(--radius-sm); background: var(--panel);
-      padding: 14px 16px; display: grid;
-    }
-    & .wb-collect-head {
-      display: block; font-family: var(--font-mono); font-size: var(--t-5);
-      font-weight: 600; color: var(--accent); margin-bottom: 10px;
-    }
-    & textarea {
-      width: 100%; resize: vertical; min-height: 120px;
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-      background: var(--paper); color: var(--ink);
-      font-family: var(--font-sans); font-size: var(--t-5); line-height: 1.7;
-      padding: 10px 12px;
-    }
-    & textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-  }
-
-  /* ---------- the day walker ---------- */
-  .wb-nav {
-    display: flex; gap: var(--s-5); align-items: center; flex-wrap: wrap;
-    margin-block: 16px 26px; padding-bottom: 16px;
-    border-bottom: 1px solid var(--hairline);
-
-    & .push { margin-inline-start: auto; }
-    & .btn:disabled { opacity: 0.35; pointer-events: none; }
-  }
   .wb-picker {
     display: flex; align-items: center; gap: var(--s-4);
 
@@ -6567,99 +6407,13 @@ German for day, and .tag is what the site has always called
     }
     & select:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   }
-
-  /* ---------- one day ---------- */
-  .wb-day {
-    border: 1px solid var(--hairline); border-radius: var(--radius);
-    background: var(--panel); padding: clamp(18px, 3vw, 30px);
-    margin-bottom: var(--gap);
-  }
-  .wb-day-head {
-    border-bottom: 1px solid var(--hairline); padding-bottom: 14px; margin-bottom: 18px;
-
-    & .wb-day-num { color: var(--accent); font-size: var(--t-2); letter-spacing: 0.08em; }
-    & h2 { font-size: clamp(1.2rem, 3vw, 1.5rem); margin: 6px 0 4px; }
-    & .wb-day-bn { color: var(--ink-soft); margin: 0; }
-  }
   .wb-day .shape { margin-top: 0; }
-
-  .wb-block {
-    margin-top: 26px;
-
-    & h3 {
-      font-size: var(--t-2); letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 10px;
-    }
-  }
-  .wb-hint { color: var(--ink-soft); font-size: var(--t-4); margin-top: 10px; }
-
-  /* the eight boxes you fill in yourself */
-  .wb-fields {
-    display: grid; gap: var(--s-4);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-  }
-  .wb-field, .wb-say-row {
-    display: grid; grid-template-columns: 26px 1fr; gap: var(--s-4); align-items: start;
-  }
-  .wb-num { color: var(--accent); font-size: var(--t-3); padding-top: 9px; }
 
   /* resize/overflow are deliberately the no-JavaScript values.
      workbook.js sets overflow:hidden on the boxes it takes over
      and grows them to fit instead; without it they stay ordinary
      resizable, scrollable textareas, which is what a learner with
      scripts off needs in order to read back what they wrote. */
-  .wb-day textarea[data-wb-write] {
-    width: 100%; resize: vertical; overflow: auto;
-    border: 0; border-bottom: 1px solid var(--hairline);
-    background: transparent; color: var(--ink);
-    font-family: var(--font-sans); font-size: var(--t-5); line-height: 1.8;
-    padding: 6px 2px;
-  }
-  .wb-day textarea[data-wb-write]:focus-visible {
-    /* A ring, not just a colour.
-
-       This was `outline: none` with a green underline and a
-       green ground, which is a focus indicator made ENTIRELY of
-       colour: WCAG 2.4.11 wants a non-colour cue, and somebody
-       who cannot separate the green from the paper had no way to
-       tell where the caret was on the one page of this school
-       that is nothing but writing boxes.
-
-       It was also `:focus` rather than `:focus-visible`, so it
-       fired on a mouse click too, which is why it was written
-       quietly enough to be missed. */
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-    border-bottom-color: var(--accent);
-    background: var(--accent-soft);
-  }
-  .wb-day textarea[data-wb-write]::placeholder { color: var(--ink-soft); opacity: 0.55; }
-
-  /* the six to translate, with the answer hidden until asked for */
-  .wb-say-list { display: grid; gap: var(--s-6); }
-  .wb-say-q { grid-column: 2; font-size: var(--t-5); }
-  .wb-say-row textarea { grid-column: 2; }
-  .wb-say-a {
-    grid-column: 2; display: none;
-    color: var(--accent); font-size: var(--t-5); padding-top: 2px;
-  }
-  .wb-day[data-answers] .wb-say-a { display: block; }
-  .wb-answer-toggle { margin-top: 14px; }
-
-  .wb-heart-task { margin-bottom: 2px; }
-  .wb-heart-en { color: var(--ink-soft); font-size: var(--t-3); margin-bottom: 10px; }
-  .wb-heart textarea[data-wb-write] {
-    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-    padding: 10px 12px; min-height: 96px; resize: vertical; overflow: auto;
-  }
-
-  .wb-foot {
-    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-    margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--hairline);
-
-    & .wb-foot-note { color: var(--ink-soft); font-size: var(--t-2); }
-  }
-  .wb-done[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 
   /* Printing the book should give you the book, not one day of it
      and a navigation bar. Every selector is under body.english,
@@ -6668,15 +6422,13 @@ German for day, and .tag is what the site has always called
      buttons on every page of the site whenever anyone printed
      anything. That is not hypothetical; it happened next door. */
   @media print {
-    body.english :is(.wb-nav, .wb-tracker, .wb-progress, .hero-actions) { display: none; }
-    body.english .wb-day { break-inside: avoid; border-color: #999; }
-    body.english .wb-day[hidden] { display: block !important; }
-    body.english .wb-say-a { display: none !important; }
+    /* `.hero-actions` is the whole site's, not English's, which is
+       why the scope stays even now that the four `.wb-*` names
+       beside it have gone: unscoped this hides the call to action
+       on every page whenever anyone prints anything, and that is
+       not hypothetical, it happened next door. */
+    body.english .hero-actions { display: none; }
     body.english :is(.shape, .bolo, .mone) { break-inside: avoid; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .wb-progress .track i { transition: none; }
   }
 }
 

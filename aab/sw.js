@@ -31,6 +31,20 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v110: The four practice books stopped being files when they
+        became routes, and nobody told the rest of the repository.
+        2.2 MB of generated HTML sat in `aab/` shadowed, the two
+        builders that wrote it (1,473 lines) built nothing,
+        `wrangler.toml` still said "the four practice books are
+        files still", and this list precached one of them.
+
+        Deleting them showed what had really happened: 40 rules in
+        the German and English layers were only alive because those
+        dead files referenced them, including the whole `.wb-*`
+        workbook vocabulary, which nothing has used since one
+        component started rendering both books. Verified against
+        the lesson prose as well as the markup before removal.
+
    v109: The site stops being square, and the textures exist.
 
         Tailwind owns the `--radius-*` namespace and so does this
@@ -1065,7 +1079,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v109";
+const VERSION = "v110";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -1181,7 +1195,12 @@ const PRECACHE = [
   "/deutsch/hub.js",
   "/deutsch/progress.js",
   "/deutsch/icons.js",
-  "/deutsch/stufe-1/arbeitsbuch.html",
+  /* The practice book is a route now, so there is no file to
+     precache: the runtime cache picks the page up on the first
+     visit like every other rendered page. `arbeitsbuch.js` stays,
+     because the route still loads it and a book that cannot
+     restore what was written is the offline visit going wrong in
+     the one place a reader would notice. */
   "/deutsch/arbeitsbuch.js",
   /* The Quranic Arabic school, on exactly the German rule.
      curriculum.js is an import of content.js, so the shell is
