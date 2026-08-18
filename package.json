@@ -38,7 +38,6 @@
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
-    "linkedom": "^0.18.12",
     "linkedom": "^0.18.13",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3"

@@ -15,7 +15,7 @@
    cannot be: the catalogue is one person's private Drive folder
    and it is admin-only, so the server must not put it in a page.
    The Worker checks `isAdmin()` and answers `/api/courses`; this
-   fetches it. See the head of `functions/api/courses/[[route]].js`.
+   fetches it. See the head of `functions/api/courses/[[route]].ts`.
 
    The ticks are still the browser's, filed under `courses-read`
    like every other school's, and `sync.js` carries them to the

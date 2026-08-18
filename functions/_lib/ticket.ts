@@ -27,13 +27,13 @@
 
    ---- the key ----
 
-   Derived rather than added. The obvious move is a fourth
-   wrangler secret, and that is a fourth thing to set up, rotate
-   and forget. This takes the Drive client secret, which this
-   feature cannot work without anyway, and derives a key from it
-   for this one purpose:
+   Derived rather than added. The obvious move is a third wrangler
+   secret, and that is a third thing to set up, rotate and forget.
+   This takes the service account's private key, which this feature
+   cannot work without anyway, and derives a key from it for this
+   one purpose:
 
-       key = HMAC(GOOGLE_CLIENT_SECRET, "reiad-course-ticket-v1")
+       key = HMAC(GOOGLE_SA_KEY, "reiad-course-ticket-v1")
 
    That is domain separation, and it matters: the derived key
    signs tickets and nothing else, and a ticket tells an attacker
@@ -69,13 +69,13 @@ async function hmacKey(secret: string, label: string): Promise<CryptoKey> {
 }
 
 export interface TicketEnv {
-  GOOGLE_CLIENT_SECRET?: string;
+  GOOGLE_SA_KEY?: string;
 }
 
-export const canTicket = (env: TicketEnv): boolean => Boolean(env.GOOGLE_CLIENT_SECRET);
+export const canTicket = (env: TicketEnv): boolean => Boolean(env.GOOGLE_SA_KEY);
 
 const sign = async (env: TicketEnv, message: string): Promise<string> => {
-  const key = await hmacKey(env.GOOGLE_CLIENT_SECRET as string, LABEL);
+  const key = await hmacKey(env.GOOGLE_SA_KEY as string, LABEL);
   return b64url(await crypto.subtle.sign("HMAC", key, enc.encode(message)));
 };
 

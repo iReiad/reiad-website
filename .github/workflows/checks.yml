@@ -140,6 +140,7 @@ jobs:
           node scripts/schools.test.mjs
           node scripts/schools-api.test.mjs
           node functions/_lib/notion.test.mjs
+          node functions/_lib/drive.test.mjs
           node aab/schools/progress.test.mjs
           node next/progress.test.mjs
           node aab/schools/hub.test.mjs

@@ -512,6 +512,8 @@ node aab/schools/hub.test.mjs      # a school hub that renders and is not finish
                                    # serves (57 checks, needs linkedom, skips
                                    # without)
 node functions/_lib/notion.test.mjs
+node functions/_lib/drive.test.mjs   # a JWT Google would refuse, and a pass that
+                                     # opens more than the one file it names
 node scripts/schools.test.mjs        # a curriculum that lost a field, a lesson
                                      # body that changed, or a ladder that came
                                      # back in the wrong order (32 checks)
@@ -994,6 +996,7 @@ course, so the pages are empty and the catalogue is behind
 | `functions/api/courses/` | the only thing that ever sends it |
 | `functions/_lib/drive.ts` | the one place this site reads Drive |
 | `functions/_lib/ticket.ts` | a signed pass, because `<video>` sends no header |
+| `functions/_lib/drive.test.mjs` | the JWT really is a signature, and the pass opens one file |
 | `aab/src/courses.ts` | the browser's half: all four pages |
 | `next/app/(site)/skills/courses/` | four shells with nothing in them |
 
@@ -1087,21 +1090,45 @@ lesson of a module goes to the module summary rather than into the
 next module. `aab/courses.test.mjs` asserts the absence as well as
 the presence.
 
-**The credential.** Three wrangler secrets, and the site works
-without them: every caller checks `canReachDrive()` and the page
-says the section is not connected rather than failing oddly.
+**The credential is a SERVICE ACCOUNT, and that is not a
+convenience.** Two wrangler secrets, and the site works without
+them: every caller checks `canReachDrive()` and the page says the
+section is not connected rather than failing oddly.
 
 ```sh
-npx wrangler secret put GOOGLE_CLIENT_ID
-npx wrangler secret put GOOGLE_CLIENT_SECRET
-npx wrangler secret put GOOGLE_REFRESH_TOKEN
+npx wrangler secret put GOOGLE_SA_EMAIL   # ...@....iam.gserviceaccount.com
+npx wrangler secret put GOOGLE_SA_KEY     # private_key from its JSON key file
 ```
 
-The scope is `drive.readonly`, and it has to be: `drive.metadata.readonly`,
-which `import-courses.mjs` uses, deliberately cannot read file
-content and content is the whole point here. A refresh token
-rather than an access token, because access tokens last an hour
-and a section that stops working every hour is not a section.
+Then **share the Drive folder with that address**, as Viewer, the
+same way you would share it with a person. That sharing IS the
+grant: a service account owns no files, so it can see exactly what
+has been shared with it and nothing else.
+
+This was a user OAuth refresh token first and that was wrong twice
+over. It could not be obtained: `drive.readonly` is a RESTRICTED
+scope, so an app using it needs a security assessment before
+Google lets it out of "Testing", and refresh tokens issued in
+Testing expire after seven days. The section would have worked for
+a week and then quietly stopped. And it was far too much power: a
+user refresh token with that scope reads the WHOLE of a person's
+Drive, every document and every photo, where this needs one
+folder. If the service account's key leaks, what leaks is a folder
+of somebody else's course.
+
+That is also what makes `isCourseFile()` a second lock rather than
+the only real one.
+
+The scope is still `drive.readonly`: read, never write.
+`drive.metadata.readonly`, which `import-courses.mjs` uses, is not
+enough here, because it deliberately cannot read file content.
+
+`functions/_lib/drive.test.mjs` generates a throwaway RSA key and
+verifies the signed assertion against its public half, because
+every way of getting the JWT wrong comes back from Google as
+`invalid_grant`, which is also what it says when a clock is wrong
+or a key has been deleted. Without that test the first guess is
+always the credential and never the code.
 
 **The CSP swapped a line.** `frame-src https://drive.google.com`
 is gone with the iframe it existed for, and `media-src 'self'` is
