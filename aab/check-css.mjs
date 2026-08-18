@@ -480,6 +480,47 @@ for (const cls of [...everyClass].sort()) {
   );
 }
 
+/* ============================================================
+   A token nothing defines
+
+   `background: var(--ground)` is a declaration the browser throws
+   away whole: an undefined custom property is invalid at computed
+   value time, and the property reverts rather than falling back.
+   The quiz's selected answer was styled with it, so picking an
+   option highlighted nothing and the only feedback was the native
+   dot. `--header-h` was the same, left behind when `body > header`
+   was removed, and both of its uses carried a fallback so nothing
+   ever looked broken enough to chase.
+
+   A token set by a script is real even though this file cannot
+   see it declared, so those are proved rather than assumed: the
+   name has to turn up in a `setProperty()` somewhere under
+   `aab/`. Five do. Nothing else gets the benefit of the doubt.
+   ============================================================ */
+
+const noComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
+const declared = new Set([...noComments.matchAll(/(--[a-z0-9-]+)\s*:/g)].map((m) => m[1]));
+const used = new Set([...noComments.matchAll(/var\(\s*(--[a-z0-9-]+)/g)].map((m) => m[1]));
+
+/* Every `setProperty("--x", ...)` this site ships, from the
+   sources rather than the built copies. */
+const scriptSet = new Set();
+for (const [, src] of markup) {
+  for (const m of src.matchAll(/setProperty\(\s*["'`](--[a-z0-9-]+)["'`]/g)) {
+    scriptSet.add(m[1]);
+  }
+}
+
+for (const token of [...used].sort()) {
+  if (declared.has(token) || scriptSet.has(token)) continue;
+  failures++;
+  console.error(`\n${token} is used but never defined, and no script sets it.`);
+  console.error(
+    "        An undefined custom property makes the whole declaration invalid\n"
+    + "        at computed value time, so the property reverts and the rule does\n"
+    + "        nothing. That is why it looks fine in a diff.");
+}
+
 console.log(
   failures
     ? `\n${failures} problem(s) in the stylesheet: fix before deploying.`
@@ -487,6 +528,7 @@ console.log(
       + `${new Set(studioClasses).size} article block classes, agreed by both sanitisers `
       + `and defined once each.\n`
       + `${everyClass.size} classes given a rule of their own, each in one layer `
-      + `(${ALLOWED.size} deliberate exception).`
+      + `(${ALLOWED.size} deliberate exception).\n`
+      + `${used.size} tokens used, every one of them defined here or set by a script.`
 );
 process.exit(failures ? 1 : 0);

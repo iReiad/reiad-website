@@ -43,6 +43,7 @@ import { FeaturedCard } from "../../components/featured";
 import { PulseCard } from "../../components/pulse-card";
 import { Icon } from "../../components/icons";
 import { pageMeta } from "../../lib/pageMeta";
+import { SCHOOL_ACCENTS } from "../../lib/nav";
 
 export const metadata: Metadata = pageMeta({
   path: "/",
@@ -67,13 +68,6 @@ const FACTS = [
   { n: "৭", label: "কেস স্টাডি", en: "case studies" },
 ];
 
-/** The six schools' colours, in the order the rail lists them.
-    The skills tile wears all six instead of one accent, because
-    the thing it opens is the list they name. */
-const SCHOOL_DOTS = [
-  "var(--green)", "var(--blue)", "var(--teal)",
-  "var(--violet)", "var(--rose)", "var(--plum)",
-];
 
 /** A plain destination tile. Everything the deck holds that is
     not personalised is one of these, so a new card is a data
@@ -93,7 +87,7 @@ function Tile({ href, accent, icon, chip, title, dek, go, lang, span, dots }: {
       <span className="gt-title">{title}</span>
       {dots ? (
         <span className="flex gap-[5px] my-0.5" aria-hidden="true">
-          {SCHOOL_DOTS.map((c) => (
+          {SCHOOL_ACCENTS.map((c) => (
             <i key={c} className="size-[9px] rounded-full" style={{ background: c }} />
           ))}
         </span>

@@ -28,6 +28,7 @@
    ============================================================ */
 
 import { useEffect, useRef, useState } from "react";
+import { accentStyle } from "../lib/nav";
 import { Icon } from "./icons";
 
 type Piece = {
@@ -76,7 +77,17 @@ export function PulseCard() {
 
   return (
     <a className="gate-tile min-h-[150px] col-span-2 lg:col-span-6" href={href}
-      style={{ ["--accent" as string]: "var(--green)" }}
+      /* The colour of whichever piece is showing, not a fixed one.
+         This tile cycles between the three reading sections, so a
+         cooking piece makes it rose and a travel piece plum, out
+         of the one table in lib/nav.ts. It named a colour once and
+         so a kitchen piece arrived wearing Insights' colour.
+
+         `accentStyle` returns undefined for a section the rail
+         does not list, which leaves the attribute off and lets the
+         page's own accent through, rather than writing a colour
+         that was already going to apply. */
+      style={accentStyle(piece?.section)}
       onMouseEnter={() => { paused.current = true; }}
       onMouseLeave={() => { paused.current = false; }}
       onFocus={() => { paused.current = true; }}

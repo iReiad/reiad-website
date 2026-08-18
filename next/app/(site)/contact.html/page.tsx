@@ -12,6 +12,8 @@
    ============================================================ */
 
 import type { Metadata } from "next";
+import { Field, TextArea } from "../../../components/ui/field";
+import { Button } from "../../../components/ui/button";
 import { pageMeta } from "../../../lib/pageMeta";
 
 export const metadata: Metadata = pageMeta({
@@ -50,26 +52,61 @@ export default function ContactPage() {
              designed to be public: it can only send TO you, never read
              anything. "botcheck" is a hidden honeypot: humans never see
              it, spam bots fill it, Web3Forms drops those submissions. */}
-            <form className="contact-form" id="contact-form" action="https://api.web3forms.com/submit" method="POST">
+            <form
+              className="flex flex-col gap-4"
+              id="contact-form"
+              action="https://api.web3forms.com/submit"
+              method="POST"
+            >
               <input type="hidden" name="access_key" defaultValue="015ff92f-3694-4e74-bd19-e1c7e62e422b" />
               <input type="hidden" name="subject" defaultValue="New message from reiad.co.uk" />
               <input type="hidden" name="from_name" defaultValue="reiad.co.uk contact form" />
               <input type="checkbox" name="botcheck" tabIndex={-1} className="honeypot" aria-hidden="true" />
-              <label>Name
-            
-                <input type="text" name="name" required autoComplete="name" placeholder="Your name" />
-              </label>
-              <label>Email
-            
-                <input type="email" name="email" required autoComplete="email" placeholder="you@example.com" />
-              </label>
-              <label>Message
-            
-                <textarea name="message" required placeholder="A few lines about what you need: a role, a project brief, or a question." />
-              </label>
-              <button type="submit" id="form-submit">Send message
-              </button>
-              <p id="form-status" role="status" aria-live="polite" />
+
+              {/* Three fields, and every one of them used to be a
+                  bare input inside a wrapping label with no id on
+                  it. That works for a mouse and is thin for
+                  everything else: nothing tied a message to a
+                  field, and the placeholder was doing the label's
+                  job. `ui/field.tsx` wires the label, the hint and
+                  `aria-describedby` together. */}
+              <Field
+                id="contact-name"
+                name="name"
+                label="Name"
+                type="text"
+                required
+                autoComplete="name"
+                placeholder="Your name"
+              />
+              <Field
+                id="contact-email"
+                name="email"
+                label="Email"
+                type="email"
+                required
+                autoComplete="email"
+                hint="So I can reply. Nothing else is done with it."
+                placeholder="you@example.com"
+              />
+              <TextArea
+                id="contact-message"
+                name="message"
+                label="Message"
+                required
+                rows={5}
+                placeholder="A few lines about what you need: a role, a project brief, or a question."
+              />
+
+              <Button type="submit" id="form-submit" kind="solid" size="lg">
+                Send message
+              </Button>
+
+              {/* `contact-form.js` writes into this. Kept as an
+                  id and a live region, because that module finds
+                  it by id and a reader needs the result announced
+                  rather than only shown. */}
+              <p id="form-status" role="status" aria-live="polite" className="text-t2 text-ink-soft" />
             </form>
           </section>
           <section>

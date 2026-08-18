@@ -37,6 +37,19 @@
    It reads the scale out of `styles.css` rather than keeping a
    copy: a check with its own copy of the design is a check that
    passes while the site drifts.
+
+   ---- and the corners, for the same reason ----
+
+   The radii went the same way and further: thirty-three literal
+   `border-radius` declarations across fourteen values, from 2px
+   to 20px, with a `--radius-icon` token that nothing reached for
+   at all. Nobody chose fourteen corner sizes either. The result
+   was a site that read as boxes, because a 10px corner on a
+   200px card is a square with the edges taken off.
+
+   `--radius-xs` to `--radius-lg` and `--radius-pill` are the
+   rungs. A literal px radius fails here. A percentage or a `50%`
+   does not, because a circle is a shape rather than a rung.
    ============================================================ */
 
 import { readFileSync } from "node:fs";
@@ -104,6 +117,55 @@ if (bad.length) {
   process.exit(1);
 }
 
+/* ---------- the corners ---------- */
+
+const RUNGS = [...css.matchAll(/(--radius(?:-[a-z]+)?):\s*([^;]+);/g)]
+  .map(([, name]) => name);
+
+/* Prose is not code, and this file's prose talks about corners.
+
+   The line "used to end with `border-radius: 3px`" is inside a
+   block comment whose first line is prose, so a test for a line
+   STARTING with a comment marker walks straight past it. That is
+   the same hole check-contrast.mjs had, where a comment saying
+   `--accent: blue` became the first declaration of --accent.
+   Track the block instead of guessing from one line. */
+const corners = [];
+let inComment = false;
+lines.forEach((line, i) => {
+  const opens = line.lastIndexOf("/*");
+  const closes = line.lastIndexOf("*/");
+  const wasIn = inComment;
+  if (inComment && closes > -1) inComment = false;
+  else if (!inComment && opens > -1 && closes < opens) inComment = true;
+  if (wasIn) return;
+  if (/^\s*(\/\/|\*)/.test(line)) return;
+
+  const code = line.replace(/\/\*[\s\S]*?\*\//g, "");
+  const decl = /border-radius:\s*([^;{}]+)/.exec(code);
+  if (!decl) return;
+  for (const [, px] of decl[1].matchAll(/\b([0-9.]+)px\b/g)) {
+    corners.push({ line: i + offset, px: Number(px) });
+  }
+});
+
+if (list) {
+  console.log(`\n  corners: ${RUNGS.join(" ")}`);
+}
+
+if (corners.length) {
+  console.error(`${corners.length} literal border-radius value(s):\n`);
+  for (const c of corners.slice(0, 20)) {
+    console.error(`  ${FILE}:${c.line}  ${c.px}px`);
+  }
+  if (corners.length > 20) console.error(`  ... and ${corners.length - 20} more`);
+  console.error(`\nUse a rung: ${RUNGS.join(", ")}. Fourteen corner sizes is how`
+    + "\nthe last set went, and the site read as boxes because of it.");
+  process.exit(1);
+}
+
 const uses = [...css.matchAll(/var\(--t-\d+\)/g)].length;
+const radii = [...css.matchAll(/var\(--radius(?:-[a-z]+)?\)/g)].length;
 console.log(`type scale: ${scale.size} steps, ${uses} uses, and every font-size `
   + `below ${top}rem is one of them.`);
+console.log(`corners: ${RUNGS.length} rungs, ${radii} uses, and no literal px radius.`);

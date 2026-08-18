@@ -74,6 +74,13 @@ export const MODULES = [
      minus its extension, and everything below joins paths, so a
      slash in a name costs nothing. */
   "tools/live",
+  /* The five calculators, converted with the change that stopped
+     them naming a colour: every chart drew `--green` and `--gold`
+     regardless of the page, so a calculator on the tools page drew
+     itself in Insights' colour. They read `--series-1` and
+     `--series-2` now, and the legend beside them reads the same
+     two. */
+  "tools/tools",
 ];
 
 /** Compile into a temporary directory and read the results back.

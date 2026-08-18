@@ -33,9 +33,23 @@ import { Icon } from "./icons";
 import { LadderMeter, Resume, type LadderLesson } from "./progress";
 import type { School } from "../lib/school";
 
+/* What a rung's card is coloured by, and the distinction is
+   between STATE and section.
+
+   `live` follows the page. It said `var(--green)` and that was a
+   real bug rather than a preference: a written Stufe on the
+   German hub drew a green card while the rail, the meter and
+   every other card on the page were blue. A rung belongs to its
+   school, so it wears its school's colour.
+
+   `soon` is a state and is deliberately not the accent: a rung
+   that has been promised and not written should look the same in
+   every school, because what it is saying has nothing to do with
+   which school it is in. `<SoonCard>` in deck.tsx makes the same
+   argument about being a div rather than a link. */
 const ACCENT = {
-  start: "var(--gold)",
-  live: "var(--green)",
+  start: "var(--accent)",
+  live: "var(--accent)",
   soon: "var(--ink-soft)",
 };
 

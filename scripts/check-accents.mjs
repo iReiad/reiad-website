@@ -105,6 +105,81 @@ if (accentFor("skills") !== null) {
   }
 }
 
+/* ============================================================
+   3. And no rule paints a section colour by name
+   ============================================================
+
+   The mapping existing once is not enough on its own, and this is
+   what proved it: `--accent` was set correctly on every page and
+   then ignored by 388 declarations that named `var(--green)`
+   instead. A German page carried `--accent: var(--blue)` on
+   <html> and drew a green button, a green eyebrow and a green
+   section label, because that is what the rules said.
+
+   Nothing could see it. The routes were clean, the table was
+   right, the attribute was on the element, and the page was the
+   wrong colour.
+
+   So: a rule may not name one of the seven. Three shapes are
+   allowed and each is a real category:
+
+     --accent: var(--green)   the DEFAULT, which has to name one
+     --h-<name>               a hue, used by inks and papers that
+                              are not accents at all
+     the rail's own wash      the rail lists every section, so one
+                              section's colour across it would be
+                              a lie about where the reader is
+*/
+
+const NAMED = /var\(--(green|teal|blue|violet|plum|rose|gold)\)/g;
+const OK = [
+  /--accent(-[a-z]+)?:\s*var\(--[a-z]+\)/,   // the default
+  /radial-gradient\(120% 55% at 0% 0%/,        // the rail's wash
+  /radial-gradient\(90% 40% at 100% 100%/,
+];
+
+/* The gold that is left is the gold that MEANS something.
+
+   192 of them said gold and meant "an eyebrow", "a kicker", "a
+   tag": the second brand colour used as decoration, which is why
+   the German page drew a gold eyebrow over a blue button. Those
+   are the accent now.
+
+   Twenty are not decoration. A warning is gold on every page
+   including the gold one, a rung that is not written yet says so
+   in gold, and a risk bar is gold because the bar beside it is
+   red. Swapping those for the accent would say something false,
+   so they stay and this counts them rather than forgetting
+   them. */
+let gold = 0;
+const painted = [];
+{
+  const lines = css.split("\n");
+  let inComment = false;
+  lines.forEach((line, i) => {
+    const opens = line.lastIndexOf("/*");
+    const closes = line.lastIndexOf("*/");
+    const wasIn = inComment;
+    if (inComment && closes > -1) inComment = false;
+    else if (!inComment && opens > -1 && closes < opens) inComment = true;
+    if (wasIn || /^\s*(\*|\/\*)/.test(line)) return;
+
+    const code = line.replace(/\/\*[\s\S]*?\*\//g, "");
+    if (OK.some((re) => re.test(code))) return;
+    for (const [, name] of code.matchAll(NAMED)) {
+      if (name === "gold") { gold += 1; continue; }
+      painted.push(`aab/styles.css:${i + 1}  ${code.trim().slice(0, 74)}`);
+    }
+  });
+}
+
+for (const at of painted) {
+  say(`a rule names a section colour: ${at}\n`
+    + "        Every component reads var(--accent), which <html> carries from\n"
+    + "        the table in next/lib/nav.ts. A named colour is a rule that\n"
+    + "        paints green on a page wearing blue.");
+}
+
 /* ============================================================ */
 
 if (problems.length) {
@@ -116,3 +191,6 @@ if (problems.length) {
 console.log(
   `accents: ${Object.keys(ACCENTS).length} destination(s), each owning one colour `
   + "the stylesheet defines, mapped in one place.");
+console.log(
+  `           no rule paints a section colour by name (${gold} --gold left, `
+  + "which mean warn, soon and second series rather than a section).");
