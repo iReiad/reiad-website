@@ -98,7 +98,7 @@ jobs:
           node scripts/check-routes.js
           node scripts/check-css.js
           node scripts/check-sw.js
-          node aab/check-content.mjs
+          node scripts/check-content.js
           node scripts/check-csp.js
           node scripts/check-crons.mjs
           node scripts/check-pieces.mjs

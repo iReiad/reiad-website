@@ -28,7 +28,19 @@
 # not in this directory cannot be served whatever this file says.
 # ============================================================
 
-# The checks and the builders. Run from a clone, never fetched.
+# The builders. Run from a clone, never fetched.
+#
+# The five checks left this directory on 18 August 2026 and the
+# `check-*.mjs` rule below now guards nothing that is here. It
+# stays because the rule is cheap and the mistake is not: a check
+# written beside these files again would be published by the next
+# commit, and `scripts/check-routes.js` fails on a build-or-test
+# shape no rule covers, so the two together mean it cannot happen
+# quietly either way.
+#
+# `build-meta.mjs` and `build-og.mjs` are still here. PLAN.md
+# Phase 6 is what retires them: a sitemap and an OpenGraph image
+# are both things Next has a better idiom for than a script.
 check-*.mjs
 build-*.mjs
 */build-*.mjs

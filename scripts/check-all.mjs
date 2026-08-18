@@ -34,7 +34,7 @@ const STAGES = [
     "scripts/check-routes.js",
     "scripts/check-css.js",
     "scripts/check-sw.js",
-    "aab/check-content.mjs",
+    "scripts/check-content.js",
     "scripts/check-csp.js",
     "scripts/check-crons.mjs",
     "scripts/check-pieces.mjs",

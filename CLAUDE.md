@@ -175,7 +175,7 @@ import. They are asserted against that model by the check below.
 
 A sentence that genuinely cannot hold a slot (a `<meta>` description, a
 blurb inside `content.js`) goes in the `CLAIMS` table in
-`check-content.mjs`, so the next data change fails a check rather than a
+`scripts/check-content.js`, so the next data change fails a check rather than a
 reader.
 
 ## The shell, and the one table the menu comes from
@@ -557,7 +557,8 @@ node scripts/check-css.js   # a school's layer styling the whole site, a block
                             # that styles nothing on the site at all
 node scripts/check-sw.js    # a precached file changed without a VERSION bump,
                             # or a precached module whose import is not precached
-node aab/check-content.mjs  # a page that has stopped counting the site correctly
+node scripts/check-content.js # a page that has stopped counting the site
+                            # correctly
 node scripts/check-csp.js   # code calling a host the browser is not allowed to
                             # reach, from a route as well as from a module
 node scripts/check-contrast.mjs # an accent that has drifted under the WCAG
@@ -1405,7 +1406,7 @@ reach. In order:
    puts it in the menu, the Ctrl+K palette, the sitemap, the home page
    rotation and the portfolio count.
 3. Add its card to `portfolio.html`.
-4. `node aab/check-content.mjs` fails until steps 2 and 3 are both done.
+4. `node scripts/check-content.js` fails until steps 2 and 3 are both done.
 
 ## Where an article lives
 

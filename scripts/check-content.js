@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-content.mjs, catch a page that has stopped telling the
+   check-content.js, catch a page that has stopped telling the
    truth about the site.
 
-       node aab/check-content.mjs
+       node scripts/check-content.js
 
    THE BUG THIS EXISTS FOR
 
@@ -61,11 +61,21 @@
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PAGES, COUNTS } from "./content.js";
+import { PAGES, COUNTS } from "../aab/content.js";
 import { NEXT_ROUTES, ARTICLE } from "../worker.js";
-import { METRICS, PILLARS } from "./tools/stock.model.js";
+import { METRICS, PILLARS } from "../aab/tools/stock.model.js";
 
-const ROOT = dirname(fileURLToPath(import.meta.url));
+/* `ROOT` was this file's own directory, which was `aab/`. It moved
+   out for the reason the four checks before it did: every file in
+   `aab/` is uploaded and answers at a public URL, so a check
+   living there was a check published at `/check-content.js`,
+   kept private only by a line in `.assetsignore`. A check outside
+   the served directory cannot be served, and the extension goes
+   with it because the root declares `"type": "module"`.
+
+   Everything it reads is still relative to `aab/`, so that is
+   what `ROOT` keeps meaning. */
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "aab");
 let failures = 0;
 
 /** Is this an address a Worker renders rather than a file? The
@@ -256,7 +266,7 @@ for (const claim of CLAIMS) {
     fail(`gone      ${claim.file}`,
       `CLAIMS expects the phrase ${JSON.stringify(claim.text)} in this file,`,
       "and it is not there. If the sentence was rewritten, update CLAIMS in",
-      "check-content.mjs so the next data change is still checked.");
+      "check-content.js so the next data change is still checked.");
     continue;
   }
   const value = COUNTS[claim.key];
