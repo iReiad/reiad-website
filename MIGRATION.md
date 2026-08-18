@@ -82,7 +82,26 @@ rather than with this work.
 `scripts/build-styles.mjs`. `@theme` maps the site's own tokens, so
 `bg-panel` means `var(--panel)` in both themes.
 
-**Done:** `/account.html`.
+**Done:** `/account.html`, and the component library under
+`next/components/ui/`.
+
+That library is the mechanism for the rest of it. Eight components, each
+replacing a pattern the routes were writing out by hand:
+
+| | replaces | written by hand |
+| --- | --- | ---: |
+| `button.tsx` | `.btn` `.btn-solid` `.btn-ghost` `.icon-btn` `.top-btn` | 37 |
+| `field.tsx` | an input styled in 11 places, 5 setting focus by hand | 11 |
+| `surface.tsx` | `.card` `.cell` `.tile` `.chart-card` grounds | 50+ |
+| `chip.tsx` | `.chip` `.tag` | 46 |
+| `stat.tsx` | `.tile` + `.tile-value` | 50 |
+| `note.tsx` | hand-coloured aside boxes, empty states | |
+| `label.tsx` | `.section-label mono` `.eyebrow` | 43 |
+| `meter.tsx` | five separate progress bars | 5 |
+
+None of them names a colour: `accent-*` resolves to whatever `--accent` is
+on the nearest container. A page converted to use them is themed by being
+converted.
 
 The stylesheet's own tokens moved first, which is what makes the rest
 cheap: `--panel` and `--hairline` are `color-mix()` expressions carrying a
@@ -108,7 +127,17 @@ So the target is JSX and route markup, not the whole stylesheet.
 **Nothing new is built as a hand-written or string-generated page.** A page
 is a Next.js route; a piece of interface is a component. See CLAUDE.md.
 
-**Left:** the four practice books, generated as template literals by
+**In flight:** the German book is a route (`arbeitsbuch.html`), sharing
+`components/workbook.tsx` with a data shape that already covers both schools.
+
+**The English book is blocked on a decision, not on work.** The two books are
+the same page structurally and two different designs visually: German uses
+`buch-tag`, `tag-teil`, `muster` in `@layer deutsch`; English uses `wb-day`,
+`wb-block`, `wb-field` in `@layer english`. One component cannot serve both
+until somebody decides they should look the same. Unifying them is a
+redesign and wants saying out loud rather than doing halfway through a port.
+
+**Left:** the English book, generated as a template literal by
 `aab/deutsch/build-deutsch.mjs` and `aab/english/build-english.mjs`. They
 are the last real pages on the old method, and being on it is why they
 carry `.slimbar` and lose the rail. Porting them to routes gives them the

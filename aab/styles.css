@@ -92,8 +92,6 @@
     --h-paper: 84;
 
     /* --- surfaces --- */
-    --paper:        light-dark(oklch(98.4% 0.008 var(--h-paper)), oklch(16.5% 0.012 var(--h-green)));
-    --paper-sunk:   light-dark(oklch(96.4% 0.011 var(--h-paper)), oklch(14%   0.012 var(--h-green)));
     /* --- the two surfaces, and both are glass ---
 
        `--panel-base` is the opaque colour a panel used to be, and
@@ -104,31 +102,99 @@
        faintly blue and the same card on the calculators read as
        faintly gold, without either of them naming a colour.
 
-       The mix is 4%. That is deliberately below where anybody
-       would call it tinted: the point is that the page feels
-       like one place, not that the cards look coloured. Every
-       contrast pair is measured against this by
-       `check-contrast.mjs` and the accent at 4% moves none of
-       them by more than a rounding error, because an accent at
-       this site's chroma is close to neutral in lightness.
+       ---- how much, and why it differs by mode ----
+
+       The strength is a token rather than a number in each mix,
+       because the right amount is not the same in both themes and
+       a single figure has to be wrong in one of them. A light
+       surface near white shows a tint immediately and goes muddy
+       if pushed; a dark surface absorbs three times as much
+       before it reads as coloured at all. The first attempt used
+       4% everywhere, which was visible in neither.
+
+       `color-mix` takes a percentage from a custom property, so
+       `light-dark()` decides it once here and every surface
+       downstream follows.
+
+       ---- the ladder ----
+
+       Four rungs, and they are a ladder rather than four
+       unrelated numbers: a page is the faintest, a sunk ground
+       sits under it, a panel sits on it, and an edge is the
+       strongest because a one-pixel line needs far more colour
+       than a field to read as the same hue.
 
        TRANSLUCENT, not transparent. 0.86 over the paper is a
        surface you can put text on: what shows through is the
-       page's own ground rather than words. The overlay tier
-       below is the one that needs a blur, because it is the only
-       tier with moving content underneath it. */
+       page's own ground rather than words. The overlay tier is
+       the one that needs a blur, because it is the only tier with
+       moving content underneath it. */
+    --tint-page:    light-dark( 2.5%,  6%);
+    --tint-sunk:    light-dark( 5%,   11%);
+    --tint-panel:   light-dark( 8%,   17%);
+    --tint-edge:    light-dark(30%,   38%);
+
+    --paper-base:   light-dark(oklch(98.4% 0.008 var(--h-paper)), oklch(16.5% 0.012 var(--h-green)));
+    --paper:        color-mix(in oklab, var(--accent) var(--tint-page), var(--paper-base));
+
+    --paper-sunk-base: light-dark(oklch(96.4% 0.011 var(--h-paper)), oklch(14% 0.012 var(--h-green)));
+    --paper-sunk:   color-mix(in oklab, var(--accent) var(--tint-sunk), var(--paper-sunk-base));
+
     --panel-base:   light-dark(oklch(99.5% 0.004 var(--h-paper)), oklch(21%   0.014 var(--h-green)));
-    --panel:        color-mix(in oklab, var(--accent) 4%,
+    --panel:        color-mix(in oklab, var(--accent) var(--tint-panel),
                       color-mix(in srgb, var(--panel-base) 86%, transparent));
-    --panel-hover:  color-mix(in oklab, var(--accent) 7%,
+    --panel-hover:  color-mix(in oklab, var(--accent) calc(var(--tint-panel) + 6%),
                       light-dark(oklch(98% 0.012 var(--h-paper)), oklch(24% 0.016 var(--h-green))));
 
     /* The edge and the lift a pane carries. A light hairline
        along the top of a surface is what reads as a pane of
-       something rather than a rectangle of paint, and it follows
-       the accent for the same reason the ground does. */
-    --pane-edge:    color-mix(in oklab, var(--accent) 18%, var(--hairline));
+       something rather than a rectangle of paint. */
+    --pane-edge:    color-mix(in oklab, var(--accent) var(--tint-edge), var(--hairline));
     --pane-top:     light-dark(oklch(100% 0 0 / 0.55), oklch(100% 0 0 / 0.06));
+
+    /* --- texture ---
+
+       Colour alone makes a page tinted; texture makes it a
+       material. Three of them, and each is a gradient rather than
+       an image: no request, no data URI for the CSP to think
+       about, and they resample at any zoom instead of going soft.
+
+       All three are drawn IN THE ACCENT, so the grain on a German
+       page is blue grain. That is the point of having them at all
+       rather than a flat wash: two surfaces at the same lightness
+       read as different materials, and a reader can tell a ground
+       from a card without either carrying a border.
+
+       The alphas are low on purpose, between 2% and 6%. A texture
+       you can name while reading is a texture that is too strong;
+       what these do is stop a large area reading as flat paint.
+
+       `--grain`   the page. A dot grid at 3px, which at any real
+                   viewing distance is tooth rather than dots.
+       `--weave`   a sunk ground. Diagonal, so it does not line up
+                   with the text baseline and shimmer.
+       `--sheen`   a panel. One soft diagonal highlight, which is
+                   what makes glass read as lit from somewhere. */
+    --tex-ink:      color-mix(in oklab, var(--accent) 60%,
+                      light-dark(oklch(45% 0.04 var(--h-green)), oklch(85% 0.04 var(--h-green))));
+    --tex-a:        light-dark(0.035, 0.05);
+    --tex-b:        light-dark(0.028, 0.042);
+
+    --grain:
+      radial-gradient(circle at 50% 50%,
+        color-mix(in oklab, var(--tex-ink) calc(var(--tex-a) * 100%), transparent) 0.5px,
+        transparent 0.6px);
+    --grain-size: 3px 3px;
+
+    --weave:
+      repeating-linear-gradient(135deg,
+        color-mix(in oklab, var(--tex-ink) calc(var(--tex-b) * 100%), transparent) 0 1px,
+        transparent 1px 7px);
+
+    --sheen:
+      linear-gradient(147deg,
+        color-mix(in oklab, var(--pane-top) 90%, transparent) 0%,
+        transparent 34%);
 
     /* --- text --- */
     --ink:          light-dark(oklch(24%   0.012 var(--h-green)), oklch(93.5% 0.008 var(--h-green)));
@@ -191,6 +257,14 @@
     --accent-soft: color-mix(in oklab, var(--accent) 11%, var(--paper));
     --accent-line: color-mix(in oklab, var(--accent) 28%, transparent);
     --accent-ring: color-mix(in oklab, var(--accent) 30%, transparent);
+    /* The accent at full strength, for a surface that IS the
+       accent rather than one tinted by it: a solid button, a
+       filled chip. And the ink that reads on it, which is the
+       paper in light and stays the paper in dark, because a
+       solid accent is dark enough in both. */
+    --accent-strong: color-mix(in oklab, var(--accent) 88%,
+                       light-dark(oklch(20% 0.02 var(--h-green)), oklch(96% 0.01 var(--h-paper))));
+    --accent-ink:   light-dark(oklch(99% 0.004 var(--h-paper)), oklch(14% 0.012 var(--h-green)));
 
     /* --- lines, glass, depth ---
        Contrast on the warm paper, measured in a browser rather
@@ -212,7 +286,7 @@
        this site's chroma is a hue you notice only next to another
        section's. */
     --hairline-base: light-dark(oklch(88.5% 0.012 var(--h-paper)), oklch(28%   0.015 var(--h-green)));
-    --hairline:     color-mix(in oklab, var(--accent) 10%, var(--hairline-base));
+    --hairline:     color-mix(in oklab, var(--accent) var(--tint-sunk), var(--hairline-base));
     /* --- glass ---
 
        These existed and were used in exactly one place, at an
@@ -5353,7 +5427,7 @@ German for day, and .tag is what the site has always called
      The single most important object in the course: the shape,
      alone, before any explanation of it. It is deliberately the
      loudest thing on a lesson page. */
-  .muster {
+  body.deutsch .muster {
     border: 1px solid var(--green); border-radius: var(--radius);
     background: var(--green-soft); padding: 20px 22px;
     margin-block: 26px;
@@ -5377,7 +5451,7 @@ German for day, and .tag is what the site has always called
   }
 
   /* ---------- German line beside its meaning ---------- */
-  .satz-list {
+  body.deutsch .satz-list {
     display: grid; gap: var(--s-1); margin-block: 14px 20px;
 
     & .satz {
@@ -5391,7 +5465,7 @@ German for day, and .tag is what the site has always called
     & .satz span { color: var(--ink-soft); }
   }
   @media (width <= 560px) {
-    .satz-list .satz { grid-template-columns: 1fr; gap: var(--s-1); }
+    body.deutsch .satz-list .satz { grid-template-columns: 1fr; gap: var(--s-1); }
   }
   /* the English-bridge list on the first page is short pairs, so
      it can run several to a row instead of one per line */
@@ -5429,7 +5503,7 @@ German for day, and .tag is what the site has always called
     display: grid; gap: var(--gap); margin-block: 20px 26px;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
   }
-  .hut-spalte {
+  body.deutsch .hut-spalte {
     border: 1px solid var(--hairline); border-top-width: 3px;
     border-radius: var(--radius-sm); background: var(--panel); padding: 14px 16px;
 
@@ -5441,9 +5515,9 @@ German for day, and .tag is what the site has always called
     & li { margin: 0; max-width: none; font-size: var(--t-5); }
     & li span { color: var(--ink-soft); font-size: var(--t-4); }
   }
-  .hut-spalte[data-hut="der"] { border-top-color: var(--hut-der); & .hut-kopf { color: var(--hut-der); } }
-  .hut-spalte[data-hut="die"] { border-top-color: var(--hut-die); & .hut-kopf { color: var(--hut-die); } }
-  .hut-spalte[data-hut="das"] { border-top-color: var(--hut-das); & .hut-kopf { color: var(--hut-das); } }
+  body.deutsch .hut-spalte[data-hut="der"] { border-top-color: var(--hut-der); & .hut-kopf { color: var(--hut-der); } }
+  body.deutsch .hut-spalte[data-hut="die"] { border-top-color: var(--hut-die); & .hut-kopf { color: var(--hut-die); } }
+  body.deutsch .hut-spalte[data-hut="das"] { border-top-color: var(--hut-das); & .hut-kopf { color: var(--hut-das); } }
 
   /* Stufe 2 and 3 collect Partizip pairs and the three verb forms
      rather than hats, so their columns take the site's own accent.
@@ -5451,7 +5525,7 @@ German for day, and .tag is what the site has always called
      those mean der, die and das everywhere else in this school,
      and a green column headed "haben" would be teaching a gender
      that does not exist. */
-  .hut-spalte:not([data-hut="der"], [data-hut="die"], [data-hut="das"]) {
+  body.deutsch .hut-spalte:not([data-hut="der"], body.deutsch [data-hut="die"], body.deutsch [data-hut="das"]) {
     border-top-color: var(--green);
     & .hut-kopf { color: var(--green); }
   }
@@ -5481,12 +5555,12 @@ German for day, and .tag is what the site has always called
      THE PRACTICE BOOK
      ============================================================ */
 
-  .buch-warnung {
+  body.deutsch .buch-warnung {
     margin-top: 14px; max-width: var(--measure);
     color: var(--ink-soft); font-size: var(--t-5);
   }
 
-  .buch-fortschritt {
+  body.deutsch .buch-fortschritt {
     display: flex; align-items: center; gap: var(--s-6); flex-wrap: wrap;
     margin-block: 20px;
 
@@ -5525,7 +5599,7 @@ German for day, and .tag is what the site has always called
     & .tracker { max-width: none; }
   }
 
-  .tracker {
+  body.deutsch .tracker {
     display: grid; gap: 5px; margin-top: 14px;
     grid-template-columns: repeat(auto-fit, minmax(34px, 1fr));
 
@@ -5544,7 +5618,7 @@ German for day, and .tag is what the site has always called
   }
 
   /* ---------- the sound key, folded away ---------- */
-  .laut-gitter {
+  body.deutsch .laut-gitter {
     display: grid; gap: var(--s-3); margin-top: 14px;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
 
@@ -5558,7 +5632,7 @@ German for day, and .tag is what the site has always called
   }
 
   /* ---------- the noun collection ---------- */
-  .hut-sammlung {
+  body.deutsch .hut-sammlung {
     display: grid; gap: var(--gap); margin-top: 16px;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
 
@@ -5596,21 +5670,21 @@ German for day, and .tag is what the site has always called
   }
 
   /* ---------- one day ---------- */
-  .buch-tag {
+  body.deutsch .buch-tag {
     border: 1px solid var(--hairline); border-radius: var(--radius);
     background: var(--panel); padding: clamp(18px, 3vw, 30px);
     margin-bottom: var(--gap);
   }
-  .tag-kopf {
+  body.deutsch .tag-kopf {
     border-bottom: 1px solid var(--hairline); padding-bottom: 14px; margin-bottom: 18px;
 
     & .tag-num { color: var(--gold); font-size: var(--t-2); letter-spacing: 0.08em; }
     & h2 { font-size: clamp(1.2rem, 3vw, 1.5rem); margin: 6px 0 4px; }
     & .tag-bn { color: var(--ink-soft); margin: 0; }
   }
-  .buch-tag .muster { margin-top: 0; }
+  body.deutsch .buch-tag .muster { margin-top: 0; }
 
-  .tag-teil {
+  body.deutsch .tag-teil {
     margin-top: 26px;
 
     & h3 {
@@ -5618,17 +5692,17 @@ German for day, and .tag is what the site has always called
       color: var(--green); margin-bottom: 10px;
     }
   }
-  .tag-hinweis { color: var(--ink-soft); font-size: var(--t-4); margin-top: 10px; }
+  body.deutsch .tag-hinweis { color: var(--ink-soft); font-size: var(--t-4); margin-top: 10px; }
 
   /* the eight boxes you fill in yourself */
-  .felder {
+  body.deutsch .felder {
     display: grid; gap: var(--s-4);
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   }
-  .feld, .sag-zeile {
+  body.deutsch .feld, body.deutsch .sag-zeile {
     display: grid; grid-template-columns: 26px 1fr; gap: var(--s-4); align-items: start;
   }
-  .feld-num { color: var(--gold); font-size: var(--t-3); padding-top: 9px; }
+  body.deutsch .feld-num { color: var(--gold); font-size: var(--t-3); padding-top: 9px; }
 
   /* resize/overflow are deliberately the no-JavaScript values.
      arbeitsbuch.js sets overflow:hidden on the boxes it takes over
@@ -5636,14 +5710,14 @@ German for day, and .tag is what the site has always called
      resizable, scrollable textareas. They used to ship as
      rows="1" with overflow:hidden, which, with scripts off, is a
      one-line box you can type into and never read back. */
-  .buch-tag textarea[data-schrift] {
+  body.deutsch .buch-tag textarea[data-schrift] {
     width: 100%; resize: vertical; overflow: auto;
     border: 0; border-bottom: 1px solid var(--hairline);
     background: transparent; color: var(--ink);
     font-family: var(--font-sans); font-size: var(--t-5); line-height: 1.8;
     padding: 6px 2px;
   }
-  .buch-tag textarea[data-schrift]:focus-visible {
+  body.deutsch .buch-tag textarea[data-schrift]:focus-visible {
     /* A ring, not just a colour.
 
        This was `outline: none` with a green underline and a
@@ -5661,34 +5735,34 @@ German for day, and .tag is what the site has always called
     border-bottom-color: var(--accent);
     background: var(--accent-soft);
   }
-  .buch-tag textarea[data-schrift]::placeholder { color: var(--ink-soft); opacity: 0.55; }
+  body.deutsch .buch-tag textarea[data-schrift]::placeholder { color: var(--ink-soft); opacity: 0.55; }
 
   /* the six to translate, with the answer hidden until asked for */
-  .sag-liste { display: grid; gap: var(--s-6); }
-  .sag-zeile { grid-template-columns: 26px 1fr; }
-  .sag-frage { grid-column: 2; font-size: var(--t-5); }
-  .sag-zeile textarea { grid-column: 2; }
-  .sag-antwort {
+  body.deutsch .sag-liste { display: grid; gap: var(--s-6); }
+  body.deutsch .sag-zeile { grid-template-columns: 26px 1fr; }
+  body.deutsch .sag-frage { grid-column: 2; font-size: var(--t-5); }
+  body.deutsch .sag-zeile textarea { grid-column: 2; }
+  body.deutsch .sag-antwort {
     grid-column: 2; display: none;
     color: var(--green); font-size: var(--t-5); padding-top: 2px;
   }
-  .buch-tag[data-antworten] .sag-antwort { display: block; }
-  .antwort-schalter { margin-top: 14px; }
+  body.deutsch .buch-tag[data-antworten] .sag-antwort { display: block; }
+  body.deutsch .antwort-schalter { margin-top: 14px; }
 
-  .herz-aufgabe { margin-bottom: 2px; }
-  .herz-en { color: var(--ink-soft); font-size: var(--t-3); margin-bottom: 10px; }
-  .herzen textarea[data-schrift] {
+  body.deutsch .herz-aufgabe { margin-bottom: 2px; }
+  body.deutsch .herz-en { color: var(--ink-soft); font-size: var(--t-3); margin-bottom: 10px; }
+  body.deutsch .herzen textarea[data-schrift] {
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
     padding: 10px 12px; min-height: 96px; resize: vertical; overflow: auto;
   }
 
-  .tag-fuss {
+  body.deutsch .tag-fuss {
     display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
     margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--hairline);
 
     & .tag-fuss-note { color: var(--ink-soft); font-size: var(--t-2); }
   }
-  .tag-fertig[aria-pressed="true"] { color: var(--green); border-color: var(--green); }
+  body.deutsch .tag-fertig[aria-pressed="true"] { color: var(--green); border-color: var(--green); }
 
   /* Printing the book should give you the book, not one day of it
      and a navigation bar.
@@ -5705,7 +5779,7 @@ German for day, and .tag is what the site has always called
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .buch-fortschritt .track i { transition: none; }
+    body.deutsch .buch-fortschritt .track i { transition: none; }
   }
 }
 
@@ -9737,10 +9811,16 @@ German for day, and .tag is what the site has always called
 
   .quiz-reset:hover { border-color: var(--ink-soft); color: var(--ink); }
 
+  /* No rule of its own. This is a footnote at the bottom of a
+     block that already has an edge, and the block after it draws
+     one too: two lines sixty pixels apart read as a mistake,
+     because they are one. The earlier fix removed the SECOND
+     line and depended on the two being adjacent siblings, which
+     they stop being the moment a lesson has a file list. One
+     separator, owned by one element, is the version that cannot
+     come undone. */
   .course-original {
-    margin-top: 1.5rem;
-    padding-top: 0.9rem;
-    border-top: 1px solid var(--hairline);
+    margin-top: 1.25rem;
     font-size: var(--t-2);
   }
   .course-original a { color: var(--ink-soft); }
@@ -9786,14 +9866,6 @@ German for day, and .tag is what the site has always called
     border-top: 1px solid var(--hairline);
   }
 
-  /* One rule, not two. A reading block ends with the "open the
-     original in Drive" line, which draws its own, and a file list
-     ends with the last row's. A second rule sixty pixels below
-     the first reads as a mistake, because it is one. */
-  :is(.course-reading, .course-files) + .course-actions {
-    border-top: 0;
-    padding-top: 0;
-  }
 
   .course-continue { flex: 0 1 auto; }
 

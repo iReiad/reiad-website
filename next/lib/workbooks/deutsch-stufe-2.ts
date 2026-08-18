@@ -1,10 +1,10 @@
 /* ============================================================
-   arbeitsbuch/stufe-2.js: the sixty days of Stufe Zwei.
+   deutsch-stufe-2.ts: the sixty days of Stufe Zwei.
 
    Straight out of "Das 60-Tage-Arbeitsbuch · Stufe Zwei", one
    object per day, in order. Same five parts as Stufe 1, because
    the shape of the page never changes: that is the whole point
-   of the book. See ../arbeitsbuch.data.js for what a day holds.
+   of the book. See ../workbook.ts for what a day holds.
 
    Sixty days rather than thirty, and that is the book being
    honest: cases and the Perfekt need room to settle. The daily

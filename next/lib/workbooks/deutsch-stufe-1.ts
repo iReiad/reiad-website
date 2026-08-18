@@ -1,8 +1,8 @@
 /* ============================================================
-   arbeitsbuch/stufe-1.js: the thirty days of Stufe Eins.
+   deutsch-stufe-1.ts: the thirty days of Stufe Eins.
 
    Straight out of "Das 30-Tage-Arbeitsbuch · Stufe Eins", one
-   object per day, in order. See ../arbeitsbuch.data.js for what
+   object per day, in order. See ../workbook.ts for what
    a day holds and why the workbook is one page and not thirty.
 
    Days 1-3 are pronunciation, so their sagEs prompts are German
