@@ -38,7 +38,16 @@
       not, and a slug is the one thing that cannot be tidied later
       without losing somebody's progress.
 
-   5. FILES THE IMPORTER QUIETLY DROPPED. `splitName()` decides
+   5. AN ADDRESS THE WORKER DOES NOT ROUTE. `NEXT_ROUTES` in
+      `worker.js` decides which paths reach the Next.js Worker at
+      all. A slug shape it does not match is a page that 404s on
+      the live site while every other check here passes, and the
+      Cloudflare branch preview CANNOT catch it: the preview is
+      the Next Worker addressed directly, so it answers whatever
+      it is asked and never consults that table. This is the one
+      thing about this section that only a local check can see.
+
+   6. FILES THE IMPORTER QUIETLY DROPPED. `splitName()` decides
       what a filename is, and anything it does not recognise is
       skipped. That is not a visible failure: the lesson still
       renders, with one fewer thing under it, and two whole modules
@@ -47,7 +56,7 @@
       133 of 1,579 files this way. So the drop rate is measured
       against the committed listing and has to stay near zero.
 
-   6. THE API SAYING SOMETHING THE BROWSER DOES NOT EXPECT.
+   7. THE API SAYING SOMETHING THE BROWSER DOES NOT EXPECT.
       `forBrowser()` decides what a lesson looks like on the wire
       and the `Lesson` interface in the browser module describes
       it. A field added to one and not the other is `undefined`
@@ -60,7 +69,9 @@ import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import {
   COURSES, CATALOGUE, forBrowser, laddered, catalogueCounts,
+  courseUrl, moduleUrl, lessonUrl,
 } from "../shared/courses.ts";
+import { NEXT_ROUTES } from "../worker.js";
 import { splitName } from "./lib/coursera.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -218,7 +229,33 @@ for (const name of RULES) {
 }
 
 /* ============================================================
-   5. Almost nothing was dropped on the way in
+   5. Every address the catalogue generates is one the Worker
+      forwards
+   ============================================================ */
+
+{
+  const urls = ["/skills/courses/index.html"];
+  for (const course of COURSES) {
+    urls.push(courseUrl(course.slug));
+    for (const mod of course.modules) {
+      urls.push(moduleUrl(course.slug, mod.slug));
+      for (const lesson of mod.lessons) {
+        urls.push(lessonUrl(course.slug, mod.slug, lesson.slug));
+      }
+    }
+  }
+
+  const missed = urls.filter((url) => !NEXT_ROUTES.some((re) => re.test(url)));
+  if (missed.length) {
+    say(`${missed.length} of ${urls.length} address(es) are not in NEXT_ROUTES, so the `
+      + `Worker would hand them to the asset router and they would 404:`);
+    for (const url of missed.slice(0, 8)) say(`  unrouted: ${url}`);
+    if (missed.length > 8) say(`  ... and ${missed.length - 8} more`);
+  }
+}
+
+/* ============================================================
+   6. Almost nothing was dropped on the way in
    ============================================================ */
 
 /* A ratio rather than a count, so it keeps meaning something when
@@ -245,7 +282,7 @@ if (existsSync(listing)) {
 }
 
 /* ============================================================
-   6. The wire format is what the browser expects
+   7. The wire format is what the browser expects
    ============================================================ */
 
 /** The field names of one `export interface` in the browser
