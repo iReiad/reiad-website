@@ -86,11 +86,48 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
   const { request, env, params } = context;
   const route = (params.route ?? []).join("/");
 
-  /* Sign-in first, and its failure is separate from the
-     permission failure below on purpose: "you are not signed in"
-     and "you are signed in and this is not yours" are different
-     things to be told, and a page that conflates them offers a
-     sign-in button to somebody already signed in. */
+  const parts = (params.route ?? []).map(String);
+
+  /* ---- bytes, and the one route that is NOT behind sign-in ----
+
+     `<video src>` is the browser fetching a URL by itself. It
+     sends no `Authorization` header, and this site's reader
+     session is a bearer token in localStorage rather than a
+     cookie, so such a request arrives with NO credential of any
+     kind. Putting it behind the sign-in check below would 401
+     every video that has ever been played. It did, for exactly as
+     long as it took to ask the deployed site.
+
+     A ticket is the credential instead, and it is not a weaker
+     one: it is signed with a key only this Worker holds, it names
+     this one file, it expires in half an hour, and it is only ever
+     minted for a reader who was signed in and an admin at the
+     moment they asked. Possession of a valid ticket therefore
+     means an admin minted it, minutes ago, for this file, which is
+     the whole of what the two checks below would establish.
+
+     `isCourseFile()` still runs first, so an id the catalogue does
+     not name is refused before a credential is even loaded. */
+  if (parts[0] === "file") {
+    const id = parts[1] ?? "";
+    if (!isCourseFile(id)) return fail("no-such-file", 404);
+    if (!canReachDrive(env)) return notConnected();
+
+    const url = new URL(request.url);
+    if (!await checkTicket(env, id, url.searchParams.get("t"))) {
+      return fail("bad-ticket", 403, {
+        message: "That pass is missing or has expired. Reload the lesson.",
+      });
+    }
+    return serveFile(request, env, id);
+  }
+
+  /* Everything else is somebody signed in, and that failure is
+     separate from the permission failure below on purpose: "you
+     are not signed in" and "you are signed in and this is not
+     yours" are different things to be told, and a page that
+     conflates them offers a sign-in button to somebody already
+     signed in. */
   let reader;
   try {
     reader = await readerFrom(request, env);
@@ -110,31 +147,6 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
     return methods(request, {
       GET: async () => ok({ courses: listForBrowser() }),
     });
-  }
-
-  const parts = (params.route ?? []).map(String);
-
-  /* ---- bytes, for an element the browser fetches by itself ----
-
-     `<video src>` sends no Authorization header, so this one route
-     is reached with a signed ticket in the query string instead of
-     a bearer. It is checked BEFORE sign-in below, because a
-     reader whose token has expired mid-video should keep watching
-     to the end of the pass rather than have the player die. See
-     `_lib/ticket.ts` for why it is a ticket and not a cookie or a
-     token in a URL. */
-  if (parts[0] === "file") {
-    const id = parts[1] ?? "";
-    if (!isCourseFile(id)) return fail("no-such-file", 404);
-    if (!canReachDrive(env)) return notConnected();
-
-    const url = new URL(request.url);
-    if (!await checkTicket(env, id, url.searchParams.get("t"))) {
-      return fail("bad-ticket", 403, {
-        message: "That pass is missing or has expired. Reload the lesson.",
-      });
-    }
-    return serveFile(request, env, id);
   }
 
   /* ---- a pass, and a reading's HTML ----
