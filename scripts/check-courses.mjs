@@ -259,7 +259,33 @@ for (const name of RULES) {
 }
 
 /* ============================================================
-   6. Almost nothing was dropped on the way in
+   6. The file route is reachable without a session
+   ============================================================ */
+
+{
+  const endpoint = readFileSync(
+    join(ROOT, "functions", "api", "courses", "[[route]].ts"), "utf8");
+
+  const atFile = endpoint.indexOf('parts[0] === "file"');
+  const atSignIn = endpoint.indexOf('"sign-in-required"');
+
+  if (atFile === -1 || atSignIn === -1) {
+    say("cannot find the file route or the sign-in check in the courses endpoint");
+  } else if (atFile > atSignIn) {
+    say("the file route is behind the sign-in check, so every <video> will 401: "
+      + "a media element sends no Authorization header, which is the whole reason "
+      + "it carries a signed ticket instead");
+  }
+
+  /* And the ticket must still be checked. Putting that route in
+     front of sign-in is only safe because of this line. */
+  if (!/checkTicket\(/.test(endpoint)) {
+    say("the file route no longer checks a ticket, and nothing else guards it");
+  }
+}
+
+/* ============================================================
+   7. Almost nothing was dropped on the way in
    ============================================================ */
 
 /* A ratio rather than a count, so it keeps meaning something when
