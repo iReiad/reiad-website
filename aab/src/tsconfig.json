@@ -47,6 +47,7 @@
       "/saved.js": ["./saved.ts"],
       "/prefs.js": ["./prefs.ts"],
       "/checkpoints.js": ["./checkpoints.ts"],
+      "/crumbs.js": ["./crumbs.ts"],
       "/sync.js": ["./sync.ts"],
       "/signin.js": ["./signin.ts"],
       "/account-page.js": ["./account-page.ts"],

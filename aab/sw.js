@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v98: The breadcrumb stopped printing the site's name in it.
+        /crumbs.js split the document title on U+2014, which this
+        site's rules guarantee never appears, so the split did
+        nothing and "Lesson · Reiad's Library" reached the crumb.
+        It strips the site name now. /styles.css lost a doubled
+        rule above the lesson buttons and gained overflow-wrap on
+        prose, where a Bangla sentence running into an English one
+        is one token to the line breaker and used to overflow.
+
    v97: /checkpoints.js and /sync.js rebuilt: _lib/sanitise and
         _lib/http became TypeScript and the modules that name them
         were repointed. No behaviour change.
@@ -942,7 +951,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v97";
+const VERSION = "v98";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

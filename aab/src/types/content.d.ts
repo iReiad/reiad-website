@@ -24,3 +24,46 @@ export interface Course {
 
 export const COURSES: Course[];
 export function findCourse(id: string): Course | null;
+
+/* ---- the site's own facts ---- */
+
+export interface Site {
+  name: string;
+  tagline: string;
+  origin: string;
+  email: string;
+  linkedin: string;
+}
+
+export const SITE: Site;
+
+/** One entry of the menu, the palette and the sitemap. */
+export interface Page {
+  title: string;
+  url: string;
+  hint?: string;
+  blurb?: string;
+  group?: string;
+  /** Kept out of the sitemap and the menu. */
+  private?: boolean;
+  /** Case studies only: which kind, and a title short enough for
+      a list that already says what these are. */
+  kind?: "model" | "analysis" | "research";
+  short?: string;
+}
+
+export const PAGES: Page[];
+
+/** A reading section: the kitchen, the travel desk. Not a school,
+    but it hangs off Skills the same way one does. */
+export interface ReadSection {
+  id: string;
+  bn: string;
+  en: string;
+  /** The path every piece in the section starts with. */
+  mount: string;
+  /** The section's own index. */
+  hub: string;
+}
+
+export const READS: ReadSection[];

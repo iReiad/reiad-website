@@ -14,10 +14,10 @@ Built from `aab/src/*.ts` to `aab/*.js` by `scripts/build-modules.mjs`. The
 built file is committed because the site deploys by uploading `aab/` with no
 build step.
 
-**Done (12):** `account-page` `api` `checkpoints` `courses` `keep` `photo`
-`prefs` `saved` `share-card` `signin` `sync` `tools/live`
+**Done (13):** `account-page` `api` `checkpoints` `courses` `crumbs` `keep`
+`photo` `prefs` `saved` `share-card` `signin` `sync` `tools/live`
 
-**Left (21),** largest first:
+**Left (20),** largest first:
 
 | File | Lines | Notes |
 | --- | ---: | --- |
@@ -26,7 +26,6 @@ build step.
 | `content.js` | 825 | menu, palette, `COUNTS`. Imported by checks that run in node |
 | `app.js` | 649 | theme, palette, prerender, service-worker registration |
 | `account.js` | 418 | Supabase session. `token()` is imported by most of `aab/src/` |
-| `crumbs.js` | 330 | |
 | `tilt.js` | 283 | |
 | `audience.js` | 282 | |
 | `news.js` | 247 | |
@@ -67,6 +66,15 @@ same from any check that greps a source file.
 ### Shared
 
 `shared/` is already all TypeScript.
+
+### The declarations are the slow part
+
+`aab/src/types/` is what a converted module leans on, and it was
+written thin: `curriculum.d.ts` described four exports where `crumbs`
+needed fifteen, and `content.d.ts` had no `SITE`, `PAGES` or `READS` at
+all. Both are filled in now, so the next conversion of anything that
+reads a ladder or the site's own furniture starts with real types
+rather than with this work.
 
 ## 2. Stylesheet to Tailwind
 

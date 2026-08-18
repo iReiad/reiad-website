@@ -39,6 +39,7 @@
    opening is not finishing.
    ============================================================ */
 import { token, current } from "/account.js";
+import { setHere } from "/crumbs.js";
 /* ============================================================
    Progress
 
@@ -396,6 +397,7 @@ function drawCatalogue(root, courses) {
     to a course wants the lesson they have not done, not a table
     of contents they have to read to find it. */
 function drawCourse(root, course) {
+    name(course.title);
     const rungs = laddered(course);
     const read = readSet();
     const done = rungs.filter((r) => read.has(r.id)).length;
@@ -459,6 +461,7 @@ function drawCourse(root, course) {
     place: what was in the module, what is ticked, and the way on
     to the next one. */
 function drawModule(root, course, mod) {
+    name(`${mod.title} · ${course.title}`);
     const read = readSet();
     const ids = mod.lessons.map((l) => lessonId(course.slug, mod.slug, l.slug));
     const done = ids.filter((id) => read.has(id)).length;
@@ -520,6 +523,12 @@ function drawLesson(root, course, mod, lesson) {
     /* Opening moves the bookmark and nothing else. The tick is the
        button below, for the reason at the top of this file. */
     setLast({ id, title: lesson.title, url: lessonUrl(course.slug, mod.slug, lesson.slug) });
+    /* The route's own title is generic, because the server renders
+       nothing in this section: it cannot say which lesson this is
+       without putting the catalogue in the page. So the browser
+       says it, once it knows, in the tab and in the last crumb.
+       Before this, both read "Lesson". */
+    name(lesson.title);
     root.append(sidebar(course, here));
     const main = el("article", { class: "course-body course-lesson-page" });
     main.append(el("span", { class: "eyebrow mono" }, [
@@ -658,6 +667,19 @@ function drawLesson(root, course, mod, lesson) {
     the reason a pass was refused is the only useful thing on the
     page when one is. See `mountVideo`. */
 const ticketFor = (drive) => api(`/ticket/${drive}`);
+/** Name this page, in the tab and in the last crumb.
+
+    Every other section on this site is rendered by the server, so
+    its title arrives with the HTML. This one deliberately renders
+    nothing, so the title says "Lesson" until the catalogue comes
+    down and the browser can say better. */
+function name(title) {
+    const clean = String(title ?? "").trim();
+    if (!clean)
+        return;
+    document.title = `${clean} · Reiad's Library`;
+    setHere(clean);
+}
 function saySo(box, message) {
     box.replaceChildren(el("p", { class: "course-empty" }, [message]));
 }
