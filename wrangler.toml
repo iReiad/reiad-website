@@ -119,7 +119,7 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   # mount prefixes above already carry them, and naming them as well
   # is the overlap wrangler rejects.
   "/about.html", "/contact.html", "/account.html", "/skills/index.html",
-  "/tools/index.html", "/tools/stock.html", "/portfolio.html", "/portfolio/*", "/",
+  "/tools/index.html", "/tools/stock.html", "/tools/live.html", "/portfolio.html", "/portfolio/*", "/",
   "/desk/index.html", "/studio/index.html",
   # The four schools, Stage 11.7. 247 pages left aab/ in the same
   # commit that added these, so with not_found_handling set the asset
@@ -238,6 +238,41 @@ SITE_ORIGIN = "https://reiad.co.uk"
 #   npx wrangler secret put SUPABASE_JWT_SECRET
 # Without it, an HS256 token is refused rather than believed.
 SUPABASE_URL = "https://wvjarqnnmkkuxyrndtya.supabase.co"
+
+# The publishable key, which is the other half of talking to
+# Supabase REST. Publishable is the word Supabase uses and means
+# it: this exact string is in aab/account.js, which every browser
+# downloads. The Worker needs it because /api/broker reads and
+# writes a reader's broker_tokens row AS THE READER, forwarding
+# their own bearer token, and PostgREST wants the apikey header
+# beside it. Row-level security does the scoping either way.
+SUPABASE_KEY = "sb_publishable_lvckv69CrjRyF1_urwDrCQ_PWoTH3UW"
+
+# Who the live-portfolio dashboard treats as an admin, as a
+# comma-separated list of Supabase user ids. A user id names an
+# account and opens nothing, so it can live here beside the URL
+# that is already in every browser. The durable record is the
+# public.admins table in Supabase (see
+# supabase/migrations/20260818090000_broker_admins.sql); this list
+# is the half that works before that migration has run, and the
+# two are OR'd together in functions/_lib/broker.js.
+ADMIN_READERS = "f8278696-caa3-4321-938c-ead22d86d144"
+
+# ---------- the live portfolio (optional) ----------
+# Two secrets, both optional, and the dashboard degrades politely
+# without either:
+#
+#   npx wrangler secret put BROKER_TOKEN_KEY
+#     Any long random string. It seals every stored Trading 212
+#     key with AES-GCM before the row is written; without it,
+#     nothing is ever stored and readers can still paste a key
+#     that lives only for the session.
+#
+#   npx wrangler secret put T212_PUBLIC_TOKEN
+#     The site's own Trading 212 API key, read-scoped, behind the
+#     public percentages on /tools/live.html. An admin can instead
+#     set (and rotate) the same thing from the dashboard itself,
+#     sealed into D1 settings; this secret wins where both exist.
 
 [[services]]
 binding = "NEXT"

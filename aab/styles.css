@@ -2346,6 +2346,115 @@ it collapsed to the width of the word "Bangladesh". */
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     padding: 14px 16px; font-size: var(--t-5);
   }
+
+  /* ---------- the live portfolio, /tools/live.html ----------
+
+     One drawing vocabulary for both faces of the page: the
+     public weight list and the reader's own dashboard. Two
+     colours ever mean anything here: the gold accent is always
+     "share of the whole", and green against danger is always
+     the sign of a return. Every bar carries its number in ink
+     beside it, so nothing is colour-alone. */
+
+  .live-holdings { margin-top: var(--gap); display: grid; gap: 6px; }
+  .live-row {
+    display: grid; align-items: center; gap: 10px;
+    grid-template-columns: minmax(0, 1.2fr) minmax(60px, 1fr) 3.6em 4.2em;
+    font-size: var(--t-4);
+  }
+  .live-row.live-head {
+    color: var(--ink-soft); font-size: var(--t-1);
+    letter-spacing: 0.07em; text-transform: uppercase;
+    border-bottom: 1px solid var(--hairline); padding-bottom: 4px;
+  }
+  .live-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .live-ticker { color: var(--ink-soft); font-size: var(--t-2); margin-inline-start: 7px; }
+  .live-bar {
+    display: block; height: 8px; border-radius: var(--radius-pill);
+    background: var(--paper-sunk); border: 1px solid var(--hairline);
+    overflow: hidden;
+  }
+  .live-fill {
+    display: block; height: 100%;
+    background: var(--gold); border-radius: var(--radius-pill);
+  }
+  .live-weight, .live-return { text-align: right; font-variant-numeric: tabular-nums; }
+  .live-up { color: var(--green); }
+  .live-down { color: var(--danger); }
+  .live-soft { color: var(--ink-soft); font-size: var(--t-3); }
+  .live-warn { color: var(--danger); font-size: var(--t-5); }
+
+  /* the key form, and the admin's twin of it */
+  .live-key-grid {
+    display: grid; gap: var(--s-6);
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+  }
+  @container (max-width: 560px) { .live-key-grid { grid-template-columns: 1fr; } }
+  .live-key-grid label {
+    display: flex; flex-direction: column; gap: var(--s-3);
+    font-size: var(--t-4); color: var(--ink-soft);
+  }
+  .live-key-grid input, .live-key-grid select {
+    padding: 10px 12px; font-size: var(--t-5);
+    font-family: var(--font-mono);
+    color: var(--ink); background: var(--paper);
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+  }
+  .live-remember {
+    display: flex; gap: 10px; align-items: baseline;
+    margin-top: var(--s-6); font-size: var(--t-4); color: var(--ink-soft);
+    max-width: 66ch;
+  }
+  .live-remember input[type="number"] { width: 5em; padding: 4px 8px;
+    font-family: var(--font-mono); background: var(--paper);
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm); color: var(--ink); }
+  .live-actions { display: flex; gap: var(--s-5); align-items: center;
+    flex-wrap: wrap; margin-top: var(--s-6); }
+  .live-form-note { font-size: var(--t-3); color: var(--ink-soft); }
+  .live-admin-form { border-top: 1px dashed var(--hairline);
+    padding-top: var(--s-7); margin-top: var(--s-7); }
+
+  /* the dashboard proper */
+  .live-dash { display: grid; gap: var(--gap); margin-top: var(--s-6); }
+  .live-block h3 { font-size: var(--t-6); margin-bottom: 10px; }
+  .live-table { overflow-x: auto; }
+  .live-table table { width: 100%; border-collapse: collapse; font-size: var(--t-4); }
+  .live-table th {
+    text-align: left; font-family: var(--font-mono); font-weight: 500;
+    font-size: var(--t-1); letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--ink-soft); padding: 6px 10px 6px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .live-table td {
+    padding: 8px 10px 8px 0; border-bottom: 1px solid var(--hairline);
+    font-variant-numeric: tabular-nums; vertical-align: baseline;
+    white-space: nowrap;
+  }
+  .live-table td:first-child { white-space: normal; min-width: 12em; }
+  .live-table .live-bar { width: 64px; display: inline-block; vertical-align: middle; }
+  .live-table .live-weight { margin-inline-start: 7px; }
+
+  /* dividend columns: one series, one hue, months in mono */
+  .live-cols {
+    display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+    gap: 6px; align-items: end; height: 120px; padding-top: 6px;
+  }
+  .live-col { display: grid; align-content: end; justify-items: center;
+    gap: 4px; height: 100%; }
+  .live-col-fill {
+    display: block; width: min(100%, 26px); align-self: end;
+    background: var(--gold); border-radius: 4px 4px 0 0;
+  }
+  .live-col-m { font-size: var(--t-0); color: var(--ink-soft); }
+
+  .live-list { list-style: none; padding: 0; display: grid; gap: 8px; }
+  .live-list li {
+    display: flex; justify-content: space-between; gap: 12px;
+    align-items: baseline; font-size: var(--t-4);
+    border-bottom: 1px dashed var(--hairline); padding-bottom: 8px;
+  }
+  .live-activity { margin-top: var(--s-6); }
 }
 
 /* ============================================================

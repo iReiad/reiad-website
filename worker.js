@@ -46,6 +46,7 @@ import { onRequest as media } from "./functions/api/media/[[key]].js";
 import { onRequest as notion } from "./functions/api/notion/[[route]].js";
 import { onRequest as backup } from "./functions/api/backup/[[route]].js";
 import { onRequest as comments } from "./functions/api/comments/[[id]].js";
+import { onRequest as broker } from "./functions/api/broker/[[route]].js";
 import { onRequest as schools } from "./functions/api/schools/[[route]].js";
 import { onRequest as insight } from "./functions/insights/[slug].js";
 import { onRequest as feeds } from "./functions/feeds/[kind].js";
@@ -68,6 +69,7 @@ const API_ROUTES = [
   ["/api/notion", notion, "route"],
   ["/api/backup", backup, "route"],
   ["/api/comments", comments, "id"],
+  ["/api/broker", broker, "route"],
   ["/api/schools", schools, "route"],
 ];
 
@@ -162,7 +164,7 @@ export const NEXT_ROUTES = [
      from the asset router in the same commit. */
   /^\/(about|contact|account)\.html$/i,
   /^\/skills\/index\.html$/i,
-  /^\/tools\/(index|stock)\.html$/i,
+  /^\/tools\/(index|stock|live)\.html$/i,
   /* The two private shells. Their bundles are NOT here: those are
      files in aab/desk/ and aab/studio/, and the asset router
      answers them as it always has. */

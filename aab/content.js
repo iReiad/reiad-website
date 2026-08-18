@@ -535,6 +535,8 @@ export const PAGES = [
     hint: "Page", blurb: "Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing." },
   { title: "Stock check: buy, hold or sell", url: "/tools/stock.html",
     hint: "Tool", group: "tool", blurb: "Forty-odd ratios across six pillars, a verdict that shows its own arithmetic, in English or Bangla." },
+  { title: "Live portfolio: a real account, live", url: "/tools/live.html",
+    hint: "Tool", group: "tool", blurb: "The site's own Trading 212 portfolio in percentages, live from the broker, and the full dashboard for your own account when you connect a key." },
   { title: "Insights", url: "/insights.html",
     hint: "Page", blurb: "Longer pieces, plus an auto-updating pulse of market news." },
   { title: "Three-statement model: interactive case study", url: "/portfolio/three-statement.html",

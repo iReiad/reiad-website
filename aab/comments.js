@@ -166,8 +166,15 @@ export async function mountComments(host, { slug, section = "insights" } = {}) {
         box.value = "";
         setReply(null);
         /* Said plainly, because a comment that disappears on submit
-           looks exactly like one that failed to send. */
-        say("Thank you. It is waiting to be read, and will appear once it is approved.", "ok");
+           looks exactly like one that failed to send. The site's
+           own people skip the queue, so their words are already up
+           and the thread can simply show them. */
+        if (data.live) {
+          await draw();
+          say("Posted.", "ok");
+        } else {
+          say("Thank you. It is waiting to be read, and will appear once it is approved.", "ok");
+        }
         return;
       }
       if (data?.reason === "sign-in-required" || data?.reason === "bad-token") {

@@ -87,6 +87,23 @@ export default function ToolsPage() {
               <span className="more mono">Open the stock check →
               </span>
             </a>
+            {/* Its sibling, for the same reason and in the same place:
+             a live feed is not a calculator tab either. */}
+            <a className="work-card advanced-card" href="/tools/live.html">
+              <span className="mono">Live · লাইভ
+              </span>
+              <h2>Live portfolio: a real account, as it stands
+              </h2>
+              <p>The site&apos;s own Trading 212 portfolio in percentages, straight
+                from the broker: what is held, what each holding weighs, and
+                what it has returned. Sign in and connect your own key, and
+                the same dashboard reads your account in full instead.
+              </p>
+              <p className="mono advanced-langs" lang="bn">সাইটের নিজের পোর্টফোলিও, ব্রোকার থেকে সরাসরি।
+              </p>
+              <span className="more mono">Open the live portfolio →
+              </span>
+            </a>
             {/* The tool picker. These are real links to real anchors, so
              with JavaScript off they still jump to a calculator and all
              five remain on the page. tools.js upgrades them into a tab
