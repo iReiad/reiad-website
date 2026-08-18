@@ -70,9 +70,16 @@ const { build } = await import("esbuild");
 /* Bundled WITH the renderer, because the result is imported as a
    `data:` URL and a data module cannot resolve a bare specifier.
    `hub.test.mjs` says the rest. */
+/* The BODY rather than the page, and that is not a detail: the
+   page imports `notFound` from `next/navigation`, and the
+   workflow runs `npm ci` at the root and nowhere else, so
+   `next/node_modules` is not on the runner and esbuild cannot
+   resolve that specifier. It resolved on a laptop and failed in
+   CI, which is exactly the mistake `hub.test.mjs` warns about two
+   comments up. */
 const bundled = await build({
   stdin: {
-    contents: `export { WorkbookBody } from "./components/workbook-page";
+    contents: `export { WorkbookBody } from "./components/workbook-body";
                export { renderToStaticMarkup } from "react-dom/server.browser";`,
     resolveDir: join(ROOT, "next"),
     loader: "ts",
