@@ -37,6 +37,7 @@ import { FONTS, LOOK } from "@reiad/shared/look";
 import { SiteScripts } from "./scripts";
 import { Sidebar, DrawerBackdrop } from "./sidebar";
 import { TopBar } from "./topbar";
+import { NavTree } from "./nav-tree";
 import { SiteFooter } from "./footer";
 import { accentStyle } from "../lib/nav";
 
@@ -201,7 +202,7 @@ export function SiteShell({
         <DrawerBackdrop />
 
         <div className="shell-col">
-          <TopBar />
+          <TopBar tree={<NavTree current={current} />} />
           {beforeMain}
           {children}
           {fixed ? null : <SiteFooter note={footer} name={footerName} />}

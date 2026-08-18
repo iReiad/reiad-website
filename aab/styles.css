@@ -1042,7 +1042,19 @@
   }
   .wrap-narrow { max-width: 760px; }
 
-  section {
+  /* A page's vertical rhythm, and `main` is what makes it a
+     page's. Bare `section` gave 68px of top padding to every
+     section element on the site, which is right for the seven a
+     hub is made of and wrong for anything in the chrome: the
+     header's tree is five `<section>`s and each one opened with
+     68px of nothing, so the panel was 704px tall to hold 500px
+     of menu and scrolled.
+
+     Every section this site renders is inside `main` today,
+     which is what makes the scope free rather than a change:
+     checked across `next/components/`, the two file pages and
+     the four practice books. */
+  main section {
     padding-block: var(--step) 6px;
     /* No content-visibility here. It skips layout for offscreen
        sections, which means the page's height is a guess until you
@@ -8192,6 +8204,19 @@ German for day, and .tag is what the site has always called
     gap: var(--s-2);
     align-content: start;
     scrollbar-width: thin;
+
+    /* Sixteen destinations and five headings are 975px of list,
+       and the rail is a viewport tall minus a bar and a foot. So
+       it scrolls, and it always did; what it did not do was say
+       so, and a menu cut off mid-word at the fold looks like a
+       menu that is broken rather than one with more in it.
+
+       A mask rather than a shadow or a gradient overlay, because
+       those two both need an element that sits over a scrolling
+       box and neither can be inside it. This is one property and
+       nothing to position. */
+    mask-image: linear-gradient(to bottom,
+      transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%);
   }
 
   .rail-group {
@@ -8417,8 +8442,7 @@ German for day, and .tag is what the site has always called
     left: calc(var(--rail-w) + var(--top-gap));
     right: var(--top-gap);
     z-index: 50;
-    display: grid; align-items: center; gap: var(--s-6);
-    grid-template-columns: 1fr auto 1fr;
+    display: flex; align-items: center; gap: var(--s-6);
     height: var(--top-h);
     padding-inline: var(--bar-pad);
     border-radius: var(--radius-pill);
@@ -8471,7 +8495,185 @@ German for day, and .tag is what the site has always called
      on a laptop, and an element that is not displayed is not a
      grid item, so the switch would slide into the column it
      vacated and be centred over nothing. */
-  .topbar > .audience-switch { grid-column: 2; justify-self: center; }
+  /* ---------- the whole site, from the bar ----------
+
+     `next/components/nav-tree.tsx` is the markup and says why it
+     is a popover. This is the shape of it.
+
+     The button is the section you are in, wearing its icon and
+     its colour, which makes it read as "you are here, and here
+     is everywhere else" rather than as a menu button. */
+  .tree-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: var(--tap-sm);
+    padding: 0 6px 0 10px;
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    background: none;
+    color: var(--ink-soft);
+    font: inherit; font-size: var(--t-2);
+    white-space: nowrap; cursor: pointer;
+    transition: background var(--fast) var(--ease), color var(--fast) var(--ease),
+                border-color var(--fast) var(--ease);
+  }
+  .tree-btn-ico { display: inline-flex; color: var(--accent); }
+  .tree-btn-chev {
+    display: inline-flex; opacity: 0.6;
+    transition: rotate var(--fast) var(--ease);
+  }
+  .tree-btn:hover {
+    color: var(--ink);
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
+  }
+  /* Open: the button holds the accent so the panel below it
+     reads as belonging to it, and the chevron points at it. */
+  .tree-btn:is(:hover, :focus-visible) .tree-btn-chev { opacity: 1; }
+  .tree-btn[aria-expanded="true"] .tree-btn-chev { rotate: 180deg; }
+
+  /* ---------- the panel ----------
+
+     Top layer, so it is above the fixed bar and the rail without
+     either of their stacking contexts having a say. Placed by
+     hand rather than by anchor positioning: it is not anchored
+     to the button, it spans the content column, which is the
+     same span every page's own content has. */
+  .tree-panel {
+    position: fixed;
+    inset: calc(var(--top-gap) + var(--top-h) + 8px) var(--top-gap) auto
+           calc(var(--rail-w) + var(--top-gap));
+    width: auto; max-width: none;
+    max-height: min(70dvh, 640px);
+    overflow-y: auto; overscroll-behavior: contain;
+    margin: 0; padding: clamp(14px, 2vw, 22px);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-edge);
+    background-color: var(--glass-bg);
+    background-image: var(--sheen), var(--weave);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: var(--shadow-lift);
+    color: var(--ink);
+    transition: opacity var(--fast) var(--ease), translate var(--fast) var(--ease),
+                overlay var(--fast) allow-discrete, display var(--fast) allow-discrete;
+  }
+  .tree-panel:not(:popover-open) { opacity: 0; translate: 0 -6px; }
+  @starting-style {
+    .tree-panel:popover-open { opacity: 0; translate: 0 -6px; }
+  }
+  .tree-panel::backdrop { background: transparent; }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .tree-panel { background-color: var(--glass-solid); }
+  }
+
+  /* Learning across the top, the other four groups under it.
+
+     Not five equal columns, which is what this was: the learning
+     group is six destinations with fourteen stages hanging off
+     them and the other four are one, three, three and one, so
+     five equal columns is one column 640px long beside four that
+     are 90px, and the fifth wrapped off the bottom of a panel
+     that was three-quarters empty.
+
+     A row that wraps rather than one that scrolls, throughout: a
+     menu that scrolls sideways hides the half of itself that is
+     the reason to open it. */
+  .tree-cols {
+    display: grid; gap: clamp(14px, 2vw, 26px);
+    grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+    align-items: start;
+  }
+  .tree-group[data-group="learn"] { grid-column: 1 / -1; }
+  .tree-group[data-group="learn"] .tree-list {
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+    gap: 2px clamp(10px, 1.6vw, 22px);
+    align-items: start;
+  }
+
+  .tree-group { display: grid; gap: 6px; align-content: start; }
+  .tree-head {
+    font-size: var(--t-1); letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--accent-line);
+  }
+  .tree-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+  .tree-item { min-width: 0; }
+
+  .tree-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 9px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    color: var(--ink); text-decoration: none;
+    transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease);
+  }
+  .tree-link:hover { background: var(--accent-soft); border-color: var(--accent-line); }
+  .tree-link[aria-current="page"] {
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
+    font-weight: 500;
+  }
+  .tree-ico {
+    display: inline-flex; flex: 0 0 auto;
+    color: var(--accent);
+  }
+  .tree-text { display: grid; min-width: 0; }
+  .tree-label {
+    font-size: var(--t-3); line-height: 1.3;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tree-sub {
+    font-family: var(--font-bn); font-size: var(--t-1);
+    color: var(--ink-soft); line-height: 1.4;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tree-soon {
+    margin-left: auto; flex: 0 0 auto;
+    font-family: var(--font-bn); font-size: var(--t-0);
+    color: var(--accent);
+  }
+
+  /* The level the rail cannot show. Indented under its school
+     and hung off a rule in that school's colour, so four stages
+     read as belonging to the line above them rather than as four
+     more destinations. */
+  .tree-stages {
+    list-style: none; margin: 1px 0 5px; padding: 0 0 0 12px;
+    margin-left: 18px;
+    border-left: 1px solid var(--accent-line);
+    display: grid; gap: 1px;
+  }
+  .tree-stages a {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 4px 8px;
+    border-radius: var(--radius-xs);
+    color: var(--ink-soft); text-decoration: none;
+    font-size: var(--t-2);
+    transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  }
+  .tree-stages a:hover { background: var(--accent-soft); color: var(--ink); }
+  .tree-stage-name {
+    font-family: var(--font-bn);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tree-stage-n {
+    margin-left: auto; flex: 0 0 auto;
+    font-size: var(--t-0); color: var(--ink-soft); opacity: 0.75;
+  }
+
+  /* On a phone the bar is a burger, a mark and two icons, and
+     there is no room for a label beside them. The tree stays:
+     it is the one control that reaches the whole site, and the
+     drawer is one level deep like the rail it holds. */
+  @media (width <= 900px) {
+    .tree-btn-text { display: none; }
+    .tree-panel {
+      inset: calc(var(--top-gap) + var(--top-h) + 8px) var(--top-gap) auto var(--top-gap);
+      max-height: min(76dvh, 560px);
+    }
+  }
 
   /* The lozenge behind the chosen half. It moves rather than
      appearing, so the switch reads as one control with two
@@ -8515,9 +8717,15 @@ German for day, and .tag is what the site has always called
     color: #fff;
   }
 
+  /* Hard right, whatever is to its left and whatever of that is
+     hidden at this width. `margin-left: auto` rather than a named
+     grid column, which is what this was until the bar became a
+     flex row: two of the bar's children are `display: none` above
+     900px, and an element that is not displayed is not a grid
+     item, so a named column is a column that moves. */
   .top-tools {
     display: flex; align-items: center; gap: var(--s-3);
-    grid-column: 3; justify-self: end;
+    margin-left: auto;
   }
 
   .top-btn {
@@ -8554,7 +8762,12 @@ German for day, and .tag is what the site has always called
   /* The audience switch when it is in the rail rather than in the
      bar. Hidden at every width where the bar has room for it,
      which is the same query that shows the burger. */
-  .rail-audience { display: none; }
+  /* The switch lives here now, at every width. It was in the bar
+     on a laptop and only in the drawer on a phone, which meant
+     the question sat across the top of every page somebody read.
+     It is asked once and then never again, so it belongs with the
+     menu, which is where somebody goes when they are deciding. */
+  .rail-audience { display: grid; gap: 7px; }
 
   /* ---------- the same menu on a phone ---------- */
 
@@ -8675,19 +8888,15 @@ German for day, and .tag is what the site has always called
        indication of whose site it was, because the wordmark is in
        the rail and the rail is a drawer at this width.
 
-       So the switch moves into the drawer, where a question a
-       reader answers once belongs, and the mark takes its place.
-       Two columns rather than three: the mark takes the middle
-       one and grows into it. */
+       So the mark takes its place, and grows into whatever the
+       burger and the two icons leave. */
     .topbar {
-      grid-template-columns: auto minmax(0, 1fr) auto;
       gap: var(--s-4);
       /* The rail is a drawer at this width, so the bar has the
          whole row and floats clear of both edges. */
       left: var(--top-gap);
     }
-    .topbar > .audience-switch { display: none; }
-    .topbar-mark { display: flex; grid-column: 2; }
+    .topbar-mark { display: flex; flex: 1 1 auto; min-width: 0; }
 
     .rail-audience {
       display: grid; gap: var(--s-3); margin-bottom: 10px;

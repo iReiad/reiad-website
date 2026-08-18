@@ -31,6 +31,21 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v113: The whole site from the top bar, as a tree. The rail is
+        a column and a column has room for one level, so getting
+        to Stufe 3 meant opening the German hub to find it. The
+        bar carries every group, every destination and every
+        school's stages, as a popover with no JavaScript in it.
+
+        Two rules changed with it. `section` gave 68px of top
+        padding to every section element on the site, including
+        the five the tree is made of, which is why the panel was
+        704px tall to hold 500px of menu: it is `main section`
+        now, and every section this site renders is inside main.
+        `.topbar` is a flex row rather than a three-column grid,
+        because two of its children are display:none above 900px
+        and an element that is not displayed is not a grid item.
+
    v112: A text box is one object now. Five blocks said what a
         field is, in five layers, with five paddings (12/14,
         10/12, 11/13, 10/12, 9/11), three backgrounds, two font
@@ -1119,7 +1134,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v112";
+const VERSION = "v113";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
