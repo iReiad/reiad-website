@@ -149,6 +149,18 @@ export function Sidebar({ current }: { current: Current }) {
   return (
     <aside className="rail" id="rail" aria-label="Site menu">
       <div className="rail-head">
+        {/* The close button comes FIRST, and that is the whole
+            point of it: on a phone it is laid out to land on the
+            exact pixels the burger occupies in the top bar, so the
+            control that opened the menu and the control that
+            closes it are the same shape in the same place. It was
+            a 34px circle in the far corner, 233px away from the
+            thing the reader had just tapped.
+
+            It renders on every width and the stylesheet hides it
+            wherever the rail is a rail rather than a drawer, which
+            is the same query that shows the burger. */}
+        <DrawerClose />
         <a className="rail-mark" href="/" aria-label="Reiad's Library, home">
           <svg className="rail-mark-art" viewBox="0 0 100 100" fill="none" aria-hidden="true">
             <rect x="22" y="58" width="10" height="20" rx="3" fill="currentColor" />
@@ -161,7 +173,6 @@ export function Sidebar({ current }: { current: Current }) {
             <span className="rail-wordmark-sub mono">Finance &amp; Bangla</span>
           </span>
         </a>
-        <DrawerClose />
       </div>
 
       <nav className="rail-nav" aria-label="Main">
@@ -209,7 +220,11 @@ function DrawerClose() {
   return (
     <button className="drawer-close" type="button" onClick={() => setDrawer(false)}
             aria-label="Close the menu">
-      <Icon name="close" size={18} />
+      {/* The burger's size, not a smaller one. Both take the
+          default, so the two states of this control are the same
+          42x36 box and neither the button nor the glyph inside it
+          changes size when the menu opens. */}
+      <Icon name="close" />
     </button>
   );
 }
