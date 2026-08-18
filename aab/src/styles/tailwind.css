@@ -125,8 +125,6 @@
      a component follows the accent the component was given,
      which is how the deck's cards have always worked. */
   --color-green: var(--green);
-  --color-green-soft: var(--green-soft);
-  --color-green-strong: var(--green-strong);
   --color-gold: var(--gold);
   --color-teal: var(--teal);
   --color-blue: var(--blue);
@@ -162,9 +160,36 @@
   --shadow-card: var(--shadow);
   --shadow-lift: var(--shadow-lift);
 
-  /* metrics */
+  /* ---- metrics, and the collision that made the site square ----
+
+     Tailwind owns the `--radius-*` namespace, and so does this
+     site. Two things went wrong at once and both were invisible.
+
+     `--radius-sm: var(--radius-sm)` is a SELF-REFERENCE. `@theme`
+     emits its keys into `:root`, so the browser saw a custom
+     property defined as itself, which is a cycle: the property is
+     invalid at computed value time and every
+     `border-radius: var(--radius-sm)` on the site fell back to
+     nothing. That is the square button, the square text box, the
+     square stat tile and the square box around the progress ring.
+     Roughly seventy rules, all of them looking like a deliberate
+     design.
+
+     And Tailwind's OWN scale was still being emitted, under
+     `@layer base`, which sits ABOVE `tokens` in the order this
+     stylesheet declares. So `--radius-xs` became .125rem and
+     `--radius-lg` became .5rem, overriding the ladder in
+     `styles.css` from a file nobody would think to look in.
+
+     `--radius-*: initial` clears the namespace, so Tailwind emits
+     none of its own and `styles.css` is the only thing that says
+     what a corner is. The keys below are named for what they are
+     rather than for a size, which also means they cannot collide
+     with the site's names again. */
+  --radius-*: initial;
   --radius-card: var(--radius);
-  --radius-sm: var(--radius-sm);
+  --radius-tight: var(--radius-sm);
+  --radius-round: var(--radius-pill);
 
   /* type */
   --font-sans: var(--font-sans);

@@ -39,7 +39,12 @@ export type ButtonSize = "sm" | "md" | "lg";
 const BASE = [
   "inline-flex items-center justify-center gap-2",
   "font-medium leading-none whitespace-nowrap",
-  "rounded-[var(--radius-sm)] border",
+  /* A pill, which is what `.btn` in the stylesheet has always
+     been. This said `--radius-sm` and the two disagreed, so the
+     converted pages grew squarer buttons than the ones still on
+     the class: a component library that does not match the thing
+     it replaces makes the site less consistent, not more. */
+  "rounded-[var(--radius-pill)] border",
   "transition-[background-color,border-color,color,box-shadow,transform]",
   "duration-[var(--fast)] ease-[var(--ease)]",
   "cursor-pointer select-none",

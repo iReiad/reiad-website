@@ -223,7 +223,7 @@ export default function AccountPage() {
       <div id="account-in" hidden>
 
         {/* ============ WHO, AND THE SHAPE OF THE YEAR ============ */}
-        <header className="border-b border-hairline bg-[radial-gradient(90%_120%_at_0%_0%,var(--green-soft),transparent_70%)] py-[clamp(28px,5vw,52px)] pb-[clamp(20px,3vw,30px)]">
+        <header className="border-b border-hairline bg-[radial-gradient(90%_120%_at_0%_0%,var(--accent-soft),transparent_70%)] py-[clamp(28px,5vw,52px)] pb-[clamp(20px,3vw,30px)]">
           <div className="wrap grid grid-cols-[auto_1fr] items-center gap-x-5 gap-y-[18px]">
             <span id="account-face" aria-hidden="true"
                   className="grid aspect-square w-[clamp(48px,12vw,62px)] place-items-center

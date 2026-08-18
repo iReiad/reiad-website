@@ -503,9 +503,28 @@ for (const cls of [...everyClass].sort()) {
    `aab/`. Five do. Nothing else gets the benefit of the doubt.
    ============================================================ */
 
-const noComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
+const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, "");
+const noComments = strip(css);
 const declared = new Set([...noComments.matchAll(/(--[a-z0-9-]+)\s*:/g)].map((m) => m[1]));
 const used = new Set([...noComments.matchAll(/var\(\s*(--[a-z0-9-]+)/g)].map((m) => m[1]));
+
+/* And the Tailwind source, which NAMES this stylesheet's tokens
+   without declaring any: `@theme` there is how `bg-panel` comes to
+   mean `var(--panel)`.
+
+   Reading only `styles.css` missed the worst instance of exactly
+   this. `--background-image-weave: var(--weave)` and its sheen
+   twin sat in the Tailwind source for weeks and `--weave` was
+   never declared anywhere, so `bg-weave` and `bg-sheen` computed
+   to nothing in all seven components that asked for one, and
+   every surface on the site was flat. It looked like a design
+   choice. */
+const tw = join(ROOT, "src", "styles", "tailwind.css");
+if (existsSync(tw)) {
+  const theme = strip(readFileSync(tw, "utf8"));
+  for (const m of theme.matchAll(/(--[a-z0-9-]+)\s*:/g)) declared.add(m[1]);
+  for (const m of theme.matchAll(/var\(\s*(--[a-z0-9-]+)/g)) used.add(m[1]);
+}
 
 /* Every `setProperty("--x", ...)` this site ships, from the
    sources rather than the built copies. */

@@ -79,16 +79,25 @@ const OWNED = [
 
 /* A colour a route names for itself. `--accent` and the tokens
    derived from it are the point and are allowed; a specific one
-   is the opt-out. */
-/* Six digits or eight, not three.
+   is the opt-out.
 
-   `#dcf` is three hex digits and it is the anchor a skip link
-   points at, which this flagged as a hex colour on a route that
-   names no colour at all. Nothing in this repository writes a
-   short hex, so the narrower rule loses nothing and stops the
-   check crying wolf, which is the way a check gets switched off. */
+   Two things it took a bug each to get right.
+
+   The FAMILY SUFFIX counts. `var(--green-soft)` slipped past a
+   rule that only looked for `var(--green)`, and it was on the
+   account page's header gradient. That token had been removed
+   with the sweep to `--accent-soft`, so the header computed to
+   nothing at all and the page lost its wash. A colour named for a
+   section is the same mistake whichever shade is asked for.
+
+   A HEX IS SIX DIGITS OR EIGHT, not three. `#dcf` is three hex
+   digits and it is the anchor a skip link points at, which this
+   flagged on a route that names no colour at all. Nothing here
+   writes a short hex, so the narrower rule loses nothing and
+   stops the check crying wolf, which is how a check gets switched
+   off. */
 const NAMED_COLOUR =
-  /var\(--(green|teal|blue|violet|plum|rose|gold)\b(?!-)|#[0-9a-f]{6}(?:[0-9a-f]{2})?\b|\brgb\(|\boklch\(/i;
+  /var\(--(green|teal|blue|violet|plum|rose|gold)(?:-[a-z]+)?\)|#[0-9a-f]{6}(?:[0-9a-f]{2})?\b|\brgb\(|\boklch\(/i;
 
 /* Two ways of naming a colour that are the design rather than an
    escape from it.

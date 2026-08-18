@@ -207,6 +207,55 @@
     --glass-solid:  color-mix(in oklab, var(--accent) 4%, var(--glass-solid-base));
     --tex-ink:      color-mix(in oklab, var(--accent) 60%, var(--tex-base));
 
+    /* ---- the two textures, which did not exist ----
+
+       `bg-weave` and `bg-sheen` map to `--weave` and `--sheen` in
+       `src/styles/tailwind.css`, and neither token was ever
+       declared. Seven components asked for one: the meter's
+       track, a soft button, every `<Surface material="sunk">`.
+       An undefined custom property makes the whole declaration
+       invalid at computed value time, so all seven quietly got
+       nothing and every surface on this site was flat colour.
+
+       `check-css.mjs` could not see it because it reads
+       `styles.css` and these are named from the Tailwind source.
+       It reads both now.
+
+       WEAVE is a cloth, for a ground that is meant to be sunk: two
+       hairlines crossing at 45 degrees, four pixels apart, at the
+       alpha `--tex-a` and `--tex-b` carry. Those are per-mode
+       already and the dark values are higher, because a light
+       thread on a dark ground disappears sooner than a dark one on
+       a light ground.
+
+       SHEEN is a lit edge, for a surface that is meant to be
+       raised: one soft fall from `--pane-top` over the top fifth,
+       which is the same highlight the glass panes carry as an
+       inset shadow. As a gradient it survives a border-radius and
+       a transform, which an inset shadow on a rotated card does
+       not.
+
+       Both take the page's accent through `--tex-ink`, so the
+       weave on a German page is faintly blue. */
+    --weave:
+      repeating-linear-gradient(45deg,
+        color-mix(in oklab, var(--tex-ink) calc(var(--tex-a) * 100%), transparent) 0 1px,
+        transparent 1px 5px),
+      repeating-linear-gradient(-45deg,
+        color-mix(in oklab, var(--tex-ink) calc(var(--tex-b) * 100%), transparent) 0 1px,
+        transparent 1px 5px);
+    --sheen: linear-gradient(180deg, var(--pane-top) 0%, transparent 22%);
+
+    /* GRAIN is the third and the quietest: a stipple rather than a
+       cloth, for a large flat area that wants tooth without
+       wanting a pattern. Four offset dot grids at half the
+       weave's alpha, which at 3px spacing reads as paper rather
+       than as anything a reader could name. */
+    --grain:
+      radial-gradient(circle at 1px 1px,
+        color-mix(in oklab, var(--tex-ink) calc(var(--tex-a) * 55%), transparent) 0.5px,
+        transparent 0.5px);
+
     /* The two lines on a chart.
 
        A chart with two series needs two colours a reader can tell
@@ -576,6 +625,55 @@
     --glass-bg:     color-mix(in oklab, var(--accent) 4%, var(--glass-base));
     --glass-solid:  color-mix(in oklab, var(--accent) 4%, var(--glass-solid-base));
     --tex-ink:      color-mix(in oklab, var(--accent) 60%, var(--tex-base));
+
+    /* ---- the two textures, which did not exist ----
+
+       `bg-weave` and `bg-sheen` map to `--weave` and `--sheen` in
+       `src/styles/tailwind.css`, and neither token was ever
+       declared. Seven components asked for one: the meter's
+       track, a soft button, every `<Surface material="sunk">`.
+       An undefined custom property makes the whole declaration
+       invalid at computed value time, so all seven quietly got
+       nothing and every surface on this site was flat colour.
+
+       `check-css.mjs` could not see it because it reads
+       `styles.css` and these are named from the Tailwind source.
+       It reads both now.
+
+       WEAVE is a cloth, for a ground that is meant to be sunk: two
+       hairlines crossing at 45 degrees, four pixels apart, at the
+       alpha `--tex-a` and `--tex-b` carry. Those are per-mode
+       already and the dark values are higher, because a light
+       thread on a dark ground disappears sooner than a dark one on
+       a light ground.
+
+       SHEEN is a lit edge, for a surface that is meant to be
+       raised: one soft fall from `--pane-top` over the top fifth,
+       which is the same highlight the glass panes carry as an
+       inset shadow. As a gradient it survives a border-radius and
+       a transform, which an inset shadow on a rotated card does
+       not.
+
+       Both take the page's accent through `--tex-ink`, so the
+       weave on a German page is faintly blue. */
+    --weave:
+      repeating-linear-gradient(45deg,
+        color-mix(in oklab, var(--tex-ink) calc(var(--tex-a) * 100%), transparent) 0 1px,
+        transparent 1px 5px),
+      repeating-linear-gradient(-45deg,
+        color-mix(in oklab, var(--tex-ink) calc(var(--tex-b) * 100%), transparent) 0 1px,
+        transparent 1px 5px);
+    --sheen: linear-gradient(180deg, var(--pane-top) 0%, transparent 22%);
+
+    /* GRAIN is the third and the quietest: a stipple rather than a
+       cloth, for a large flat area that wants tooth without
+       wanting a pattern. Four offset dot grids at half the
+       weave's alpha, which at 3px spacing reads as paper rather
+       than as anything a reader could name. */
+    --grain:
+      radial-gradient(circle at 1px 1px,
+        color-mix(in oklab, var(--tex-ink) calc(var(--tex-a) * 55%), transparent) 0.5px,
+        transparent 0.5px);
 
     /* The two lines on a chart.
 
