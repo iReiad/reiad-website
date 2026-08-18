@@ -258,6 +258,135 @@ for (const [who, audience, track, expected] of READERS) {
   await page.close();
 }
 
+/* ============================================================
+   The drawer, on a phone.
+
+   Three things, and all three were wrong at once in August 2026.
+
+   1. The button that closes the menu was a 34px circle in the far
+      corner of the drawer, 233px from the burger the reader had
+      just pressed. Opening and closing are one gesture and it
+      should not move, so the close button is laid out to land on
+      the burger's exact pixels. That is asserted as a box, not as
+      "roughly", because the whole point is that it is exact.
+
+   2. `.audience-switch` carried `grid-column: 2`, which is right
+      in the bar and wrong in the drawer, and this component is
+      deliberately rendered in both. In the drawer it grew an
+      implicit second column and sat in it, so the label "What
+      brings you here" and the switch went side by side in a 275px
+      drawer and the label was clipped to "What brings yo".
+
+   3. The site's name was on screen twice with the menu open, once
+      in the bar and once in the drawer's head.
+
+   None of these is visible to a check that reads HTML. The markup
+   was correct for all three.
+   ============================================================ */
+for (const width of [360, 390, 412]) {
+  const page = await browser.newPage({ viewport: { width, height: 780 } });
+  await page.route("https://fonts.googleapis.com/**", (r) => r.abort());
+  await page.goto(`http://localhost:${PORT}/skills/index.html`, { waitUntil: "load" });
+  await page.waitForTimeout(900);
+
+  const box = (sel) => page.evaluate((s) => {
+    const e = document.querySelector(s);
+    if (!e || getComputedStyle(e).display === "none") return null;
+    const r = e.getBoundingClientRect();
+    return [r.left, r.top, r.width, r.height].map(Math.round).join(",");
+  }, sel);
+
+  const burger = await box(".drawer-btn");
+  ok(`${width}px: the bar has a burger`, burger !== null);
+
+  /* Open it by pressing the burger where a thumb would. */
+  const b = await page.locator(".drawer-btn").boundingBox();
+  const x = b.x + b.width / 2, y = b.y + b.height / 2;
+  await page.mouse.click(x, y);
+  await page.waitForTimeout(700);
+
+  ok(`${width}px: the burger opens the drawer`,
+    await page.evaluate(() => document.documentElement.dataset.drawer) === "open");
+
+  ok(`${width}px: the close button is exactly where the burger was`,
+    await box(".drawer-close") === burger,
+    `burger ${burger}, close ${await box(".drawer-close")}`);
+
+  ok(`${width}px: that pixel now belongs to the close button`,
+    await page.evaluate(([px, py]) =>
+      !!document.elementFromPoint(px, py)?.closest(".drawer-close"), [x, y]));
+
+  /* The drawer's column is built from the button, so everything
+     that is not indented starts on its line. */
+  const lefts = await page.evaluate(() => {
+    const l = (s) => { const e = document.querySelector(s);
+      return e ? Math.round(e.getBoundingClientRect().left) : null; };
+    return { close: l(".drawer-close"), group: l(".rail-nav .rail-label"),
+             askLabel: l(".rail-audience .rail-label"),
+             ask: l(".rail-audience .audience-switch") };
+  });
+  ok(`${width}px: the drawer's column starts on the button's line`,
+    new Set(Object.values(lefts)).size === 1, JSON.stringify(lefts));
+
+  /* The question and its switch stack. Side by side is the bug. */
+  const stacked = await page.evaluate(() => {
+    const a = document.querySelector(".rail-audience .rail-label");
+    const c = document.querySelector(".rail-audience .audience-switch");
+    if (!a || !c) return null;
+    return a.getBoundingClientRect().bottom <= c.getBoundingClientRect().top + 1;
+  });
+  ok(`${width}px: the audience question sits above its switch`, stacked === true);
+
+  /* And the label is not cut off, which is what side by side did. */
+  ok(`${width}px: the audience question is not clipped`,
+    await page.evaluate(() => {
+      const e = document.querySelector(".rail-audience .rail-label");
+      return e && e.scrollWidth <= e.clientWidth + 1;
+    }));
+
+  /* One site name on screen, not two. */
+  ok(`${width}px: the site is named once with the menu open`,
+    await page.evaluate(() => [...document.querySelectorAll(".rail-mark, .topbar-mark")]
+      .filter((e) => getComputedStyle(e).display !== "none").length) === 1);
+
+  /* The foot is reachable rather than pushed off the bottom. */
+  ok(`${width}px: the audience switch is inside the drawer`,
+    await page.evaluate(() => {
+      const f = document.querySelector(".rail-foot");
+      return !!f && f.getBoundingClientRect().bottom <= innerHeight + 1;
+    }));
+
+  /* And the same pixel closes it again. */
+  await page.mouse.click(x, y);
+  await page.waitForTimeout(700);
+  ok(`${width}px: the same pixel closes the drawer`,
+    await page.evaluate(() => document.documentElement.dataset.drawer) === "shut");
+
+  await page.close();
+}
+
+/* On a laptop the rail is a rail: no burger, no close button, the
+   mark in the rail rather than the bar, and the switch back in the
+   bar's second column. The drawer rules must not leak up here. */
+{
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  await page.route("https://fonts.googleapis.com/**", (r) => r.abort());
+  await page.goto(`http://localhost:${PORT}/skills/index.html`, { waitUntil: "load" });
+  await page.waitForTimeout(900);
+  const state = await page.evaluate(() => {
+    const shown = (s) => { const e = document.querySelector(s);
+      return !!e && getComputedStyle(e).display !== "none"; };
+    return { burger: shown(".drawer-btn"), close: shown(".drawer-close"),
+             railMark: shown(".rail-mark"), barMark: shown(".topbar-mark"),
+             barSwitch: shown(".topbar > .audience-switch"),
+             railSwitch: shown(".rail-audience") };
+  });
+  ok("on a laptop the menu is a rail, not a drawer",
+    !state.burger && !state.close && state.railMark && !state.barMark
+    && state.barSwitch && !state.railSwitch, JSON.stringify(state));
+  await page.close();
+}
+
 await browser.close();
 server.close();
 
