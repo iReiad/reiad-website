@@ -17,7 +17,9 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
-import { ButtonLink } from "../../../../components/ui/button";
+import { Button, ButtonLink } from "../../../../components/ui/button";
+import { StatTile } from "../../../../components/ui/stat";
+import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/three-statement.html",
@@ -34,8 +36,8 @@ export default function Page() {
       <main id="main">
         <div className="wrap">
           <div className="hero">
-            <span className="eyebrow mono">Case study · Financial model · Excel-equivalent
-            </span>
+            <Eyebrow>Case study · Financial model · Excel-equivalent
+            </Eyebrow>
             <h1>A three-statement model you can actually push around.
             </h1>
             <p className="lede">
@@ -69,10 +71,10 @@ export default function Page() {
               <p className="scenario-blurb" id="scenario-blurb">–
               </p>
               <div className="model-actions">
-                <button className="btn btn-ghost" type="button" id="download-csv">Download CSV
-                </button>
-                <button className="btn btn-ghost" type="button" id="copy-link">Copy this model's link
-                </button>
+                <Button kind="ghost" id="download-csv">Download CSV
+                </Button>
+                <Button kind="ghost" id="copy-link">Copy this model's link
+                </Button>
               </div>
             </div>
             {/* ============ THE BALANCE CHECK ============ */}
@@ -88,54 +90,14 @@ export default function Page() {
             </div>
             {/* ============ HEADLINES ============ */}
             <div className="tiles">
-              <div className="tile" data-tile="cagr">
-                <span className="mono">Revenue CAGR
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>FY24A → FY29E
-                </small>
-              </div>
-              <div className="tile" data-tile="ebitda">
-                <span className="mono">Exit EBITDA margin
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>FY29E
-                </small>
-              </div>
-              <div className="tile" data-tile="leverage">
-                <span className="mono">Net debt / EBITDA
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>FY29E: the covenant everyone watches
-                </small>
-              </div>
-              <div className="tile" data-tile="fcf">
-                <span className="mono">Cumulative free cash flow
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Five years, BDT lakh
-                </small>
-              </div>
-              <div className="tile" data-tile="roe">
-                <span className="mono">Return on equity
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>FY29E
-                </small>
-              </div>
-              <div className="tile" data-tile="cover">
-                <span className="mono">Interest cover
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>EBIT ÷ interest, FY29E
-                </small>
-              </div>
+              <StatTile label="Revenue CAGR" note="FY24A → FY29E" fills="cagr" />
+              <StatTile label="Exit EBITDA margin" note="FY29E" fills="ebitda" />
+              <StatTile label="Net debt / EBITDA"
+                        note="FY29E: the covenant everyone watches"
+                        fills="leverage" />
+              <StatTile label="Cumulative free cash flow" note="Five years, BDT lakh" fills="fcf" />
+              <StatTile label="Return on equity" note="FY29E" fills="roe" />
+              <StatTile label="Interest cover" note="EBIT ÷ interest, FY29E" fills="cover" />
             </div>
             <p className="note note-inline" id="revolver-note" hidden />
             {/* ============ DRIVERS + CHARTS ============ */}
@@ -206,8 +168,8 @@ export default function Page() {
           </section>
           {/* ============ HOW IT'S BUILT ============ */}
           <section>
-            <span className="section-label mono">How this model is built
-            </span>
+            <SectionLabel>How this model is built
+            </SectionLabel>
             <div className="principles">
               <div className="principle">
                 <h3>The links are the model

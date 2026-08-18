@@ -100,6 +100,23 @@ if (read("next/lib/school-icons.ts") !== wanted) {
 }
 
 /* ------------------------------------------------------------
+   2b. The four ladders the header's tree shows
+
+   Same arrangement as the drawings above: generated out of
+   `content/schools.backup.json`, committed, and compared here.
+   A school that gains a stage and is not regenerated shows a
+   header one stage short of the hub it links to.
+   ------------------------------------------------------------ */
+
+const { generate: ladder } = await import("./build-school-tree.mjs");
+
+if (read("next/lib/school-stages.ts") !== ladder()) {
+  fail("next/lib/school-stages.ts is not what content/schools.backup.json holds.",
+    "Regenerate it and commit the result:",
+    "  node scripts/build-school-tree.mjs");
+}
+
+/* ------------------------------------------------------------
    3. And that the cards can actually find those drawings
 
    The two checks above prove `next/` holds the same drawings

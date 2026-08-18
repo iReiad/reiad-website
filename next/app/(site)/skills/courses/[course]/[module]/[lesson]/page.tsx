@@ -12,5 +12,5 @@ import { CourseShell, courseMeta } from "../../../../../../../components/course-
 export const metadata: Metadata = courseMeta("Lesson");
 
 export default function LessonPage() {
-  return <CourseShell />;
+  return <CourseShell here="Lesson" />;
 }

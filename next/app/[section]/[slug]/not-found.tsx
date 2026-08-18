@@ -7,16 +7,19 @@
    no ASSETS binding of its own: worker.js only forwards a path
    here once the allowlist says the database owns it. If this page
    is ever seen, the allowlist and the database disagree. */
+import { Eyebrow } from "../../../components/ui/label";
+import { Button, ButtonLink } from "../../../components/ui/button";
+
 export default function NotFound() {
   return (
     <main id="main">
       <div className="wrap hero">
-        <span className="eyebrow mono">404</span>
+        <Eyebrow>404</Eyebrow>
         <h1>There is nothing at that address.</h1>
         <p className="lede">
           The piece may have moved, or the link may have a typo in it.
         </p>
-        <p><a className="btn btn-ghost" href="/insights.html">Back to the index →</a></p>
+        <p><ButtonLink kind="ghost" href="/insights.html">Back to the index →</ButtonLink></p>
       </div>
     </main>
   );

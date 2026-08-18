@@ -36,26 +36,23 @@
 
 import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
 
-/* The box itself, shared by the input and the textarea so the two
-   cannot drift. */
-const BOX = [
-  "w-full block",
-  "bg-panel text-ink",
-  /* Not a pill: a box a reader types more than a word into wants
-     a corner rather than a capsule, and a textarea as a capsule
-     crops its own first line. `--radius` is the card's, which is
-     what a field sits among. */
-  "border border-pane-edge rounded-[var(--radius-card)]",
-  "px-3.5 py-2.5 text-t3 font-[inherit]",
-  "transition-[border-color,box-shadow,background-color]",
-  "duration-[var(--fast)] ease-[var(--ease)]",
-  "placeholder:text-ink-soft placeholder:opacity-70",
-  "hover:border-accent-line",
-  "focus:outline-2 focus:outline-offset-2 focus:outline-accent",
-  "focus:border-accent focus:bg-panel-hover",
-  "disabled:opacity-55 disabled:cursor-not-allowed",
-  "aria-[invalid=true]:border-danger",
-].join(" ");
+/* The box itself is `@layer base`, and this adds nothing to it.
+
+   That is a change, and the reason is the one this file already
+   argues for one level down. `styles.css` used to style an input
+   in eleven places; it now styles one, on
+   `:is(input:not(...), textarea, select)`, so every box on this
+   site is that box whether React made it, a browser module made
+   it, or an article carries one. A second definition here in
+   utilities would have made twelve, and it would have won,
+   because `tw` is a later cascade layer than `base`: the pages
+   using this component had `--radius-card` corners at `--t-3`
+   over a flat panel, and every other box on the site had
+   `--radius-sm` corners at `--t-5` over glass.
+
+   So the only thing this adds is width, which is layout rather
+   than looks and belongs to the caller's column. */
+const BOX = "w-full block";
 
 interface Shared {
   /** Required, and used for the label, the hint and the error.

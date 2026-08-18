@@ -31,6 +31,186 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v120: Both practice books work. Neither did.
+
+        `schools/workbook.js` is one engine where there were two
+        388-line modules whose diff was nouns, and the English one
+        keyed on a vocabulary the page does not have: it looked
+        for `.wb-day` and `[data-wb-write]` where the component
+        renders `.buch-tag` and `data-schrift`, so nothing saved,
+        nothing revealed an answer and nothing ticked.
+
+        The German one did not run at all. Both files opened with
+        `document.getElementById("tage")` and dereferenced it on
+        the next line, and the route that replaced the generated
+        page had no element with that id, so the module threw
+        before its first function ran. The route has the id now,
+        and the day walker it also never rendered.
+
+        `/schools/workbook.js` and `/english/workbook.js` join the
+        precache: a cached caller whose import resolves to nothing
+        is a book that comes back offline with none of what was
+        written in it.
+
+        And a day's tick is filed as `term-1/day-3` in English and
+        `stufe-1/tag-3` in German. The engine built the German
+        shape for both, so `toggleDay` wrote the English ticks
+        correctly and the tracker looked for them under a name
+        nothing had ever used: a day could be ticked and came back
+        unticked. `dayId` comes from the school now, like every
+        other key.
+
+   v119: A text box is `@layer base` and `ui/field.tsx` adds
+        nothing to it. The component carried its own box in
+        utilities, and `tw` is a later layer than `base`, so the
+        pages using it had `--radius-card` corners at `--t-3` over
+        a flat panel while every other box on the site had
+        `--radius-sm` corners at `--t-5` over glass. One
+        definition, the one v112 made.
+
+   v118: A button is one object. `ui/button.tsx` was Tailwind
+        utilities, which made it a FIFTH way of making one rather
+        than the one: `.btn-solid` in the stylesheet was `--accent`
+        with an 80%-ink border, the component was `--accent-strong`
+        with a transparent one, and a converted page grew visibly
+        different buttons from the page beside it. Eighteen browser
+        modules build `.btn .btn-ghost` nodes by hand, so a button
+        has to mean one thing whichever half of the site made it.
+
+        The stylesheet gained the two kinds it was missing and the
+        on-accent set, so the component now writes class names and
+        adds nothing. The on-accent set is a CLASS the caller opts
+        into rather than a `.band .btn-ghost` descendant rule: that
+        ties the ink to where a button sits, and it broke twice
+        when a band changed its ground and the buttons did not
+        follow.
+
+   v117: The small line above a heading is two components, and
+        they are two because they are two things: a
+        `<SectionLabel>` closes with a rule, because it separates
+        a section from the one before it, and an `<Eyebrow>` has
+        nothing above it to separate from.
+
+        The component that existed styled itself with utilities at
+        `text-ink-soft`, with no rule and no margin, which is none
+        of the three things `.section-label` does. So one school
+        hub renderer drew a quiet grey label with no separator
+        while the other drew an accent one with a rule, for the
+        same heading on the same site.
+
+   v116: `.cell` was one card doing five jobs and is gone from
+        every route. Thirteen of them are `<GoCard>` or
+        `<InfoCard>` now, which is the distinction the deck exists
+        to make impossible to get wrong: one takes you somewhere
+        and is an anchor, the other is the end of the road and is
+        a div.
+
+        `.cell-aim` went with them, and it is the reason to check
+        rather than assume: it coloured `.tag` and `h3`, which is
+        what a `.cell` was made of, and the deck renders
+        `.card-chip` and `.card-title`. Moving that card across
+        without moving the rule would have left an unreadable chip
+        on an accent ground and nothing would have failed. It is
+        `.card[data-fill]` and an `<InfoCard fill>`.
+
+   v115: Fifty tiles are one component. Every figure across the
+        seven case studies was the same four lines written out,
+        and one rule here is now all fifty of them, which is what
+        gave them the glass the rest of the site has.
+
+        `ui/stat.tsx` renders the CLASSES rather than utilities,
+        and its header says why at length: seven browser modules
+        fill these in by `[data-tile="x"] .tile-value`, one of
+        them builds a tile out of that markup, and `tw` is a later
+        layer than `components`, so a utility on the value would
+        have silently won over every tone a module sets. The page
+        would render and the number would simply never be red.
+
+   v114: A strip of choices is one object. The calculators' five
+        tabs and the account page's eight section links were two
+        looks: `.tool-tab` here, and twelve Tailwind arbitrary
+        values written inline on the account page, naming `green`
+        where every component on this site names `--accent`, at a
+        font size that is not on the scale. `ui/tabs.tsx` is both,
+        as two components rather than one with a role prop,
+        because one HIDES what it is not showing and the other
+        hides nothing.
+
+        And two the top bar's flex row turned up. The button that
+        closes the drawer kept its own copy of the burger's
+        declarations and had one wrong, so the two were 42px and
+        40px in the same place. Nothing in a flex row told the
+        controls not to shrink.
+
+   v113: The whole site from the top bar, as a tree. The rail is
+        a column and a column has room for one level, so getting
+        to Stufe 3 meant opening the German hub to find it. The
+        bar carries every group, every destination and every
+        school's stages, as a popover with no JavaScript in it.
+
+        Two rules changed with it. `section` gave 68px of top
+        padding to every section element on the site, including
+        the five the tree is made of, which is why the panel was
+        704px tall to hold 500px of menu: it is `main section`
+        now, and every section this site renders is inside main.
+        `.topbar` is a flex row rather than a three-column grid,
+        because two of its children are display:none above 900px
+        and an element that is not displayed is not a grid item.
+
+   v112: A text box is one object now. Five blocks said what a
+        field is, in five layers, with five paddings (12/14,
+        10/12, 11/13, 10/12, 9/11), three backgrounds, two font
+        sizes and two different ways of showing focus. Nothing was
+        wrong with any of them and no two matched, so the Studio's
+        text box, the contact form's and the stock check's were
+        three different objects.
+
+        One rule, on the ELEMENTS rather than a class, because
+        half the fields on this site are written by a browser
+        module or live in an app that does not import the
+        component library. Glass ground, the sheen, a pane edge,
+        `--tap` so a field lines up with the button beside it, and
+        `--focus-ring` instead of an outline here and a shadow
+        there. The five blocks keep only what differs: a width, a
+        mono face for a number.
+
+        `:is()` takes the specificity of its most specific
+        argument, so a plain `textarea` rule after it lost and
+        every textarea came out one line tall. The height is set
+        per shape now.
+
+   v111: Two alignments that were reported first and fixed last.
+
+        The course breadcrumb sat against the window edge because
+        `crumbs.js` mounts into `main > .wrap` and falls back to
+        bare `main`, and the course shell has no wrap. It is
+        `<Crumbs>` now, rendered by the route inside the same
+        column `.course-shell` uses, so the two line up by
+        construction rather than by being told the same number.
+
+        `.btn` did not use `--tap`, the token whose own note says
+        it is one height for anything you press. So `.btn` came out
+        near 39px and `.tick-btn` near 37, and beside each other
+        they were visibly off. Both are `--tap` now. `.tick-btn`
+        also carried `margin-block: 28px 6px` for the one school
+        lesson it was written for and took it everywhere else,
+        which pushed it down out of a centred row; that spacing
+        belongs to the caller and is there now.
+
+   v110: The four practice books stopped being files when they
+        became routes, and nobody told the rest of the repository.
+        2.2 MB of generated HTML sat in `aab/` shadowed, the two
+        builders that wrote it (1,473 lines) built nothing,
+        `wrangler.toml` still said "the four practice books are
+        files still", and this list precached one of them.
+
+        Deleting them showed what had really happened: 40 rules in
+        the German and English layers were only alive because those
+        dead files referenced them, including the whole `.wb-*`
+        workbook vocabulary, which nothing has used since one
+        component started rendering both books. Verified against
+        the lesson prose as well as the markup before removal.
+
    v109: The site stops being square, and the textures exist.
 
         Tailwind owns the `--radius-*` namespace and so does this
@@ -1065,7 +1245,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v109";
+const VERSION = "v121";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -1177,11 +1357,23 @@ const PRECACHE = [
      rather than left to the runtime cache. */
   "/schools/progress.js",
   "/schools/hub.js",
+  /* And the practice books' one engine. Both schools' book
+     scripts are four lines over this, so precaching one of them
+     without it is the `pieces.js` mistake in the paragraph above:
+     an offline visit gets the caller from the cache and its
+     import resolves to nothing, and the book that comes back is a
+     printed one with none of what was written in it. */
+  "/schools/workbook.js",
   "/deutsch/curriculum.js",
   "/deutsch/hub.js",
   "/deutsch/progress.js",
   "/deutsch/icons.js",
-  "/deutsch/stufe-1/arbeitsbuch.html",
+  /* The practice book is a route now, so there is no file to
+     precache: the runtime cache picks the page up on the first
+     visit like every other rendered page. `arbeitsbuch.js` stays,
+     because the route still loads it and a book that cannot
+     restore what was written is the offline visit going wrong in
+     the one place a reader would notice. */
   "/deutsch/arbeitsbuch.js",
   /* The Quranic Arabic school, on exactly the German rule.
      curriculum.js is an import of content.js, so the shell is
@@ -1209,6 +1401,11 @@ const PRECACHE = [
   "/english/icons.js",
   "/english/part.js",
   "/english/term.js",
+  /* Beside the German book's, and for the same reason. It was
+     missing, which mattered less while it did not work: it keyed
+     on a vocabulary the page has not had since the book became a
+     route. */
+  "/english/workbook.js",
   "/tools/stock.js",
   "/tools/stock.model.js",
   "/tools/stock.i18n.js",

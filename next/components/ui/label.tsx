@@ -1,11 +1,40 @@
 /* ============================================================
    ui/label.tsx: the small line above a heading.
 
-   `className="section-label mono"` appears forty-three times in
-   the routes, and `.eyebrow` is the same object under a second
-   name. Both are a short line in the mono face, uppercase, in the
-   quiet ink, sitting above a heading and saying what part of the
-   page this is.
+   Forty-four call sites write `className="section-label mono"`
+   and twenty-one write `className="eyebrow mono"`.
+
+   ---- they are not the same object ----
+
+   An earlier note here said they were, and they are not. Both are
+   a short line in the mono face, in the accent, above a heading,
+   and the difference is what they divide:
+
+     `.section-label` closes with a rule and 26px under it. It is
+     the top of a SECTION, and the rule is what separates that
+     section from the one before it.
+
+     `.eyebrow` has no rule and 18px. It is the top of a hero,
+     where there is nothing above it to be separated from.
+
+   Swapping one for the other is not a rename, so there are two
+   components, and this file is the only place either name is
+   written.
+
+   ---- it renders the class, not utilities ----
+
+   The version before this styled itself with Tailwind, at
+   `text-ink-soft`, with no rule and no margin, which is none of
+   the three things `.section-label` does. So its one caller,
+   `school-hub-page.tsx`, drew a quiet grey label with no
+   separator while `school-hub.tsx` drew an accent one with a rule
+   under it, on the same site, for the same thing, and the two
+   are meant to be the same page rendered two ways.
+
+   `aab/engage.js` also builds one, in the browser, under every
+   piece on the site. Same argument as `ui/stat.tsx` at more
+   length: the class is the interface while anything outside React
+   still writes it.
 
    ---- it is not a heading ----
 
@@ -17,43 +46,27 @@
 
 import type { ReactNode } from "react";
 
+/** The top of a section: accent, mono, and a rule under it. */
 export function SectionLabel({
-  children, className,
-}: { children: ReactNode; className?: string }) {
+  children, className, lang, id,
+}: { children: ReactNode; className?: string; lang?: string; id?: string }) {
   return (
-    <span
-      className={["block font-mono text-t1 font-medium uppercase",
-        "tracking-[0.07em] text-ink-soft", className].filter(Boolean).join(" ")}
-    >
+    <span className={["section-label mono", className].filter(Boolean).join(" ")}
+          lang={lang} id={id}>
       {children}
     </span>
   );
 }
 
-/**
- * The label, its heading and whatever sits beside them.
- *
- * A header is three things often enough to be one component: the
- * eyebrow, the title, and an action on the right. Written out at
- * every call site, the action ends up under the title on a phone
- * about half the time, because whoever wrote that one forgot to
- * let it wrap.
- */
-export function SectionHead({
-  label, title, action, as: Tag = "h2",
-}: {
-  label?: ReactNode;
-  title: ReactNode;
-  action?: ReactNode;
-  as?: "h1" | "h2" | "h3";
-}) {
+/** The top of a hero: the same line, with nothing above it to be
+    separated from, so no rule. */
+export function Eyebrow({
+  children, className, lang, id,
+}: { children: ReactNode; className?: string; lang?: string; id?: string }) {
   return (
-    <div className="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
-      <div className="flex flex-col gap-1">
-        {label ? <SectionLabel>{label}</SectionLabel> : null}
-        <Tag className="text-t5 leading-tight text-ink">{title}</Tag>
-      </div>
-      {action ? <div className="shrink-0">{action}</div> : null}
-    </div>
+    <span className={["eyebrow mono", className].filter(Boolean).join(" ")}
+          lang={lang} id={id}>
+      {children}
+    </span>
   );
 }

@@ -19,6 +19,9 @@ import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
+import { StatTile } from "../../../../components/ui/stat";
+import { InfoCard } from "../../../../components/deck";
+import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/dissertation.html",
@@ -35,8 +38,8 @@ export default function Page() {
       <main id="main">
         <div className="wrap">
           <div className="hero">
-            <span className="eyebrow mono">Case study · Empirical research · MSc dissertation
-            </span>
+            <Eyebrow>Case study · Empirical research · MSc dissertation
+            </Eyebrow>
             <h1>Lower risk? Not in this data, and not provable either way.
             </h1>
             <p className="lede">
@@ -75,38 +78,18 @@ export default function Page() {
             </p>
           </div>
           <div className="tiles">
-            <div className="tile" data-tile="fact-funds">
-              <span className="mono">Funds in the sample
-              </span>
-              <strong className="tile-value">–
-              </strong>
-              <small>UK-domiciled equity funds, Bloomberg
-              </small>
-            </div>
-            <div className="tile" data-tile="fact-islamic">
-              <span className="mono">Of which Shariah-compliant
-              </span>
-              <strong className="tile-value">–
-              </strong>
-              <small>The constraint the whole study runs into
-              </small>
-            </div>
-            <div className="tile" data-tile="fact-obs">
-              <span className="mono">Fund-months
-              </span>
-              <strong className="tile-value">–
-              </strong>
-              <small>The panel behind every regression
-              </small>
-            </div>
-            <div className="tile" data-tile="fact-months">
-              <span className="mono">Months covered
-              </span>
-              <strong className="tile-value">–
-              </strong>
-              <small>Jan 2018 → Jul 2025, COVID included
-              </small>
-            </div>
+            <StatTile label="Funds in the sample"
+                      note="UK-domiciled equity funds, Bloomberg"
+                      fills="fact-funds" />
+            <StatTile label="Of which Shariah-compliant"
+                      note="The constraint the whole study runs into"
+                      fills="fact-islamic" />
+            <StatTile label="Fund-months"
+                      note="The panel behind every regression"
+                      fills="fact-obs" />
+            <StatTile label="Months covered"
+                      note="Jan 2018 → Jul 2025, COVID included"
+                      fills="fact-months" />
           </div>
           <nav className="page-toc" id="page-toc" aria-label="On this page" />
           <section id="dissertation" className="model">
@@ -123,31 +106,12 @@ export default function Page() {
           
               </p>
               <div className="grid-2">
-                <div className="cell">
-                  <span className="tag mono">Argument one · lower risk
-                  </span>
-                  <h3>Screening removes the risky part
-                  </h3>
-                  <p>Excluding highly leveraged firms strips out the credit-like
-                channel that turns market falls into fund collapses. Excluding
-                banks avoids the sector that led the 2008 drawdown. On this
-                reading Islamic funds should show a lower beta, lower
-                volatility, and shallower falls
-                (Hayat & Kraeussl, 2011; Naveed et al., 2020).
-                  </p>
-                </div>
-                <div className="cell">
-                  <span className="tag mono">Argument two · higher risk
-                  </span>
-                  <h3>Screening removes the diversification
-                  </h3>
-                  <p>Markowitz (1952) is unambiguous: a smaller investable universe
-                means a worse efficient frontier. Cut out whole sectors and what
-                remains is concentrated, heavier in technology and healthcare,
-                more dependent on one market regime, carrying more
-                fund-specific risk (Hoepner et al., 2011; Walkshäusl & Lobe, 2012).
-                  </p>
-                </div>
+                <InfoCard chip="Argument one · lower risk"
+                          title="Screening removes the risky part"
+                          dek="Excluding highly leveraged firms strips out the credit-like channel that turns market falls into fund collapses. Excluding banks avoids the sector that led the 2008 drawdown. On this reading Islamic funds should show a lower beta, lower volatility, and shallower falls (Hayat & Kraeussl, 2011; Naveed et al., 2020)." />
+                <InfoCard chip="Argument two · higher risk"
+                          title="Screening removes the diversification"
+                          dek="Markowitz (1952) is unambiguous: a smaller investable universe means a worse efficient frontier. Cut out whole sectors and what remains is concentrated, heavier in technology and healthcare, more dependent on one market regime, carrying more fund-specific risk (Hoepner et al., 2011; Walkshäusl & Lobe, 2012)." />
               </div>
               <p className="prose">
                 Theory cannot settle it. That makes it an empirical question, and the
@@ -469,8 +433,8 @@ export default function Page() {
                   </p>
                 </div>
               </div>
-              <span className="section-label mono">The six factors, in one sentence each
-              </span>
+              <SectionLabel>The six factors, in one sentence each
+              </SectionLabel>
               <div className="rows" id="factor-list" />
               <p className="statement-note">
                 Group comparisons use Welch's two-sample t-test: unequal variances,
@@ -670,30 +634,17 @@ export default function Page() {
                 </p>
               </figure>
               <div className="tiles">
-                <div className="tile">
-                  <span className="mono">Mean maximum drawdown · Islamic
-                  </span>
-                  <strong className="tile-value">−17.8%
-                  </strong>
-                  <small>Average across the three funds
-                  </small>
-                </div>
-                <div className="tile" data-tone="bad">
-                  <span className="mono">Mean maximum drawdown · Conventional
-                  </span>
-                  <strong className="tile-value">−23.5%
-                  </strong>
-                  <small>Average across 217 funds
-                  </small>
-                </div>
-                <div className="tile" data-tone="warn">
-                  <span className="mono">p-value
-                  </span>
-                  <strong className="tile-value">0.068
-                  </strong>
-                  <small>The closest any test in the study came
-                  </small>
-                </div>
+                <StatTile label="Mean maximum drawdown · Islamic"
+                          value="−17.8%"
+                          note="Average across the three funds" />
+                <StatTile label="Mean maximum drawdown · Conventional"
+                          value="−23.5%"
+                          note="Average across 217 funds"
+                          tone="bad" />
+                <StatTile label="p-value"
+                          value="0.068"
+                          note="The closest any test in the study came"
+                          tone="warn" />
               </div>
               <p className="prose">
                 A 5.7 percentage point difference in the worst fall an investor had
@@ -753,30 +704,17 @@ export default function Page() {
                 </label>
               </div>
               <div className="tiles">
-                <div className="tile" data-tile="power-mde" data-tone="bad">
-                  <span className="mono">Smallest difference detectable
-                  </span>
-                  <strong className="tile-value">–
-                  </strong>
-                  <small>At 80% power, 5% two-sided
-                  </small>
-                </div>
-                <div className="tile" data-tile="power-detect" data-tone="bad">
-                  <span className="mono">Chance of catching the 5.7pp gap
-                  </span>
-                  <strong className="tile-value">–
-                  </strong>
-                  <small>If that gap were real
-                  </small>
-                </div>
-                <div className="tile" data-tile="power-needed">
-                  <span className="mono">Islamic funds actually needed
-                  </span>
-                  <strong className="tile-value">–
-                  </strong>
-                  <small>To find it four times in five
-                  </small>
-                </div>
+                <StatTile label="Smallest difference detectable"
+                          note="At 80% power, 5% two-sided"
+                          fills="power-mde"
+                          tone="bad" />
+                <StatTile label="Chance of catching the 5.7pp gap"
+                          note="If that gap were real"
+                          fills="power-detect"
+                          tone="bad" />
+                <StatTile label="Islamic funds actually needed"
+                          note="To find it four times in five"
+                          fills="power-needed" />
               </div>
               <figure className="chart-card wide-chart">
                 <figcaption>
@@ -889,48 +827,42 @@ export default function Page() {
           
               </p>
               <div className="grid-2">
-                <div className="cell">
-                  <span className="tag mono">Affected
-                  </span>
-                  <h3>Anything that reads the level
-                  </h3>
+                <InfoCard chip="Affected"
+                          title="Anything that reads the level">
                   <ul className="checks">
-                    <li>Sharpe ratios: a monthly figure of −2.09 is not interpretable and should not be quoted
-                    </li>
-                    <li>Treynor ratios, for the same reason
-                    </li>
-                    <li>The absolute size of Jensen's alpha
-                    </li>
-                    <li>The pooled intercept as a statement about abnormal return
-                    </li>
+                  <li>Sharpe ratios: a monthly figure of −2.09 is not interpretable and should not be quoted
+                  </li>
+                  <li>Treynor ratios, for the same reason
+                  </li>
+                  <li>The absolute size of Jensen's alpha
+                  </li>
+                  <li>The pooled intercept as a statement about abnormal return
+                  </li>
                   </ul>
-                </div>
-                <div className="cell">
-                  <span className="tag mono">Not affected
-                  </span>
-                  <h3>Anything that reads a slope or a difference
-                  </h3>
+                </InfoCard>
+                <InfoCard chip="Not affected"
+                          title="Anything that reads a slope or a difference">
                   <ul className="checks">
-                    <li>Market beta: a constant shift in both sides of a regression moves the intercept, not the slope
-                    </li>
-                    <li>Every factor loading, for the same reason
-                    </li>
-                    {/* One span, not bare inline markup: .checks li is a
-                     two-column grid, and a stray <strong> next to a text
-                     node becomes a third grid item that pushes the row
-                     past the viewport on a phone. */}
-                    <li>
-                      <span>
-                        <strong>The Islamic dummy
-                        </strong>: the offset is identical for both groups, so it cancels in the comparison
-                      </span>
-                    </li>
-                    <li>Volatility, idiosyncratic volatility and drawdown, none of which touch the risk-free rate at all
-                    </li>
-                    <li>Every p-value in the study
-                    </li>
+                  <li>Market beta: a constant shift in both sides of a regression moves the intercept, not the slope
+                  </li>
+                  <li>Every factor loading, for the same reason
+                  </li>
+                  {/* One span, not bare inline markup: .checks li is a
+                  two-column grid, and a stray <strong> next to a text
+                  node becomes a third grid item that pushes the row
+                  past the viewport on a phone. */}
+                  <li>
+                  <span>
+                  <strong>The Islamic dummy
+                  </strong>: the offset is identical for both groups, so it cancels in the comparison
+                  </span>
+                  </li>
+                  <li>Volatility, idiosyncratic volatility and drawdown, none of which touch the risk-free rate at all
+                  </li>
+                  <li>Every p-value in the study
+                  </li>
                   </ul>
-                </div>
+                </InfoCard>
               </div>
               <p className="prose">
                 So the research question survives intact and the presentation of the
@@ -1096,8 +1028,8 @@ export default function Page() {
           </section>
           {/* ============ HOW THIS PAGE IS BUILT ============ */}
           <section>
-            <span className="section-label mono">How this page is built
-            </span>
+            <SectionLabel>How this page is built
+            </SectionLabel>
             <div className="principles">
               <div className="principle">
                 <h3>The numbers are the submitted ones

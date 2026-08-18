@@ -40,6 +40,7 @@ import { siteOrigin } from "../../../../lib/article";
 import { schoolIcon } from "../../../../lib/school-icons";
 import { SiteScripts } from "../../../../components/scripts";
 import { LessonTick } from "../../../../components/progress";
+import { Eyebrow } from "../../../../components/ui/label";
 
 type Params = Promise<{ section: string; slug: string; lesson: string }>;
 
@@ -118,10 +119,10 @@ export default async function LessonPage({ params }: { params: Params }) {
             ...(soon ? { "data-soon": "1" } : {}),
           }}
         >
-          <span className="eyebrow mono">
+          <Eyebrow>
             <a href={stageUrl(school, stage)}>{`${stage.kicker} · ${stage.bn}`}</a>
             {` · ${it.section?.bn ?? ""}`}
-          </span>
+          </Eyebrow>
 
           <h1 className="bn-h">
             {art ? (

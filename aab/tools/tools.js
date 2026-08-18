@@ -414,7 +414,7 @@ bindTool("position", (v, root) => {
     const panels = $$(".tool");
     if (!bar || panels.length === 0)
         return;
-    const links = $$(".tool-tab", bar);
+    const links = $$(".tab", bar);
     const idOf = (a) => a.getAttribute("href")?.slice(1) ?? "";
     // Only now does hiding become safe.
     document.body.dataset.toolTabs = "on";
@@ -441,7 +441,7 @@ bindTool("position", (v, root) => {
         return panel.id;
     }
     bar.addEventListener("click", (e) => {
-        const a = e.target?.closest(".tool-tab");
+        const a = e.target?.closest(".tab");
         if (!a || e.metaKey || e.ctrlKey || e.shiftKey)
             return;
         e.preventDefault();

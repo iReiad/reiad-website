@@ -13,26 +13,18 @@
    ============================================================ */
 
 import { notFound } from "next/navigation";
-import { SiteScripts } from "./scripts";
-import { WorkbookCollection, WorkbookDayCard, WorkbookTracker } from "./workbook";
-import { bn, bnWord, bookFor, targetLang } from "../lib/workbook";
+import { SCRIPT, WorkbookBody } from "./workbook-body";
+import { bn, bnWord, bookFor } from "../lib/workbook";
 
-/** The module that makes the page work: it restores what was
-    written, grows the textareas, reveals an answer when asked,
-    ticks a day off and draws the progress bar.
 
-    Unchanged by this port, and that is the point. It queries
-    `textarea[data-schrift]`, `.buch-tag` and `.antwort-schalter`,
-    and does not care whether a builder or a route put them there.
-    Loaded through `SiteScripts` like every other module on this
-    site, so it runs AFTER hydration: a module that runs before it
-    has its work undone. `components/scripts.tsx` is the whole
-    story. */
-const SCRIPT = {
-  deutsch: "/deutsch/arbeitsbuch.js",
-  english: "/english/workbook.js",
-} as const;
+/** The route: the guards, and then the body.
 
+    Split in two so the body can be rendered by a test without a
+    Next request behind it. `workbook.test.mjs` drives both books
+    against exactly this markup, and it exists because both of
+    them rendered and did nothing for a while: a port is finished
+    when it does what the thing it replaced did, and those two
+    look identical from the outside. */
 export async function WorkbookPage(
   { section, slug }: { section: string; slug: string },
 ) {
@@ -44,94 +36,7 @@ export async function WorkbookPage(
   if (!book || SCRIPT[book.school] === undefined) notFound();
   if (section !== book.school) notFound();
 
-  const total = book.days.length;
-  const lang = targetLang(book);
-
-  /* The rail, the top bar, the footer and the school's accent all
-     come from `[section]/[slug]/layout.tsx`, which already wraps
-     everything under these two segments in `SchoolShell`. This
-     page renders its own body and its own script, which is the
-     arrangement every school page here uses: a layout two
-     segments up cannot tell a book from a lesson. */
-  return (
-    <>
-      <main id="main">
-        <div className="wrap">
-          <div className="hero buch-hero" data-buch={slug}>
-            <span className="eyebrow mono">
-              <span lang={lang}>{bn(total)}</span> · {bnWord(total)} দিন
-            </span>
-            <h1 className="bn-h">{bn(total)} দিনের অনুশীলন খাতা</h1>
-            <p className="lede">
-              <span lang={lang}>{book.lede.target}</span><br />
-              {book.lede.bn}
-            </p>
-            <p className="buch-warnung">
-              এই খাতা পড়ার জন্য নয়, লেখার জন্য, আর জোরে বলার জন্য। খালি ঘরগুলো আপনার।
-              ভরান। যা লেখেন সেটা শুধু আপনার এই ব্রাউজারেই জমা থাকে, কোথাও পাঠানো হয় না।
-            </p>
-
-            <div className="buch-fortschritt" data-buch-fortschritt>
-              <span className="track"><i /></span>
-              <span className="count mono" />
-            </div>
-
-            <div className="hero-actions">
-              <a className="btn btn-solid" href="#tag-1" data-buch-heute>
-                আজকের পাতা খুলুন →
-              </a>
-            </div>
-          </div>
-
-          <nav className="tracker" aria-label="দিনের তালিকা">
-            <WorkbookTracker days={book.days} />
-          </nav>
-
-          {/* The sound key, and only the first book of a school
-              carries one. After that the sounds are behind you and
-              a section repeating them would be the book treating a
-              reader as if they had not moved. */}
-          {book.sounds?.length ? (
-            <section id="schluessel" className="no-filter">
-              <span className="section-label mono">ধ্বনির চাবি</span>
-              <p className="measure">
-                আটকে গেলে এখানে ফিরে আসুন। এই এক তালিকা মুখস্থ হলে যেকোনো শব্দ পড়তে পারবেন।
-              </p>
-              <details className="faq laut-details">
-                <summary>ধ্বনির চাবি খুলুন</summary>
-                <div className="laut-gitter">
-                  {book.sounds.map((s) => (
-                    <div className="laut-paar" key={s.pair}>
-                      <b>{s.pair}</b>
-                      <span lang={lang}>{s.words}</span>
-                      {s.how ? <span className="laut-wie">{s.how}</span> : null}
-                    </div>
-                  ))}
-                </div>
-              </details>
-            </section>
-          ) : null}
-
-          <div className="buch-tage">
-            {book.days.map((day) => (
-              <WorkbookDayCard day={day} slug={slug} book={book} key={day.n} />
-            ))}
-          </div>
-
-          <WorkbookCollection book={book} slug={slug} />
-
-          <section className="buch-schluss no-filter">
-            <p className="measure" lang={lang}>{book.end.target}</p>
-            <p className="measure">{book.end.bn}</p>
-            <p className="buch-motto" lang={lang}>{book.motto.target}</p>
-            <p className="buch-motto-bn">{book.motto.bn}</p>
-          </section>
-        </div>
-      </main>
-
-      <SiteScripts srcs={[SCRIPT[book.school]]} />
-    </>
-  );
+  return <WorkbookBody section={section} slug={slug} />;
 }
 
 /** The head of a book page. */

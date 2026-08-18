@@ -17,7 +17,9 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../lib/pageMeta";
 import { Band } from "../../../components/ui/band";
-import { ButtonLink } from "../../../components/ui/button";
+import { Button, ButtonLink } from "../../../components/ui/button";
+import { InfoCard } from "../../../components/deck";
+import { Eyebrow, SectionLabel } from "../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio.html",
@@ -43,8 +45,8 @@ export default function Page() {
            three sections and an FAQ near the bottom of the page.
            ============================================================ */}
           <div className="hero">
-            <span className="eyebrow mono">Portfolio & services · Rony Reiad
-            </span>
+            <Eyebrow>Portfolio & services · Rony Reiad
+            </Eyebrow>
             <h1>Models, analysis and writing: shown, not told.
             </h1>
             <p className="lede">
@@ -55,10 +57,10 @@ export default function Page() {
         
             </p>
             <div className="hero-actions">
-              <a className="btn btn-solid" href="/contact.html">Start a project
-              </a>
-              <a className="btn btn-ghost" href="#work">See the work
-              </a>
+              <ButtonLink kind="solid" href="/contact.html">Start a project
+              </ButtonLink>
+              <ButtonLink kind="ghost" href="#work">See the work
+              </ButtonLink>
             </div>
             <ul className="terms-row" aria-label="Terms, in brief">
               <li>Fixed price per project
@@ -127,8 +129,8 @@ export default function Page() {
            pick it up too.
            ============================================================ */}
           <section id="work">
-            <span className="section-label mono">Selected work
-            </span>
+            <SectionLabel>Selected work
+            </SectionLabel>
             <p className="section-intro measure">
               Every piece here is interactive, running its own arithmetic in your
           browser. Nothing is a picture of a spreadsheet: change an input and
@@ -448,8 +450,8 @@ export default function Page() {
            in the same card.
            ============================================================ */}
           <section id="services">
-            <span className="section-label mono">What I do
-            </span>
+            <SectionLabel>What I do
+            </SectionLabel>
             <p className="section-intro measure">
               Three services, one standard across them: the working file is the
           deliverable, the assumptions are visible, and nothing arrives locked.
@@ -538,44 +540,20 @@ export default function Page() {
           </section>
           {/* ============ HOW IT WORKS ============ */}
           <section>
-            <span className="section-label mono">How it works
-            </span>
+            <SectionLabel>How it works
+            </SectionLabel>
             <div className="path">
-              <div className="cell">
-                <span className="tag mono">Step one
-                </span>
-                <h3>The brief
-                </h3>
-                <p>Send what you need with any files or examples, through the
-              
-                  <a href="/contact.html">contact form
-                  </a> or straight to
-              
-                  <a href="mailto:i@reiad.co.uk">i@reiad.co.uk
-                  </a>. A paragraph and a
-              spreadsheet is enough to start.
-                </p>
-              </div>
-              <div className="cell">
-                <span className="tag mono">Step two
-                </span>
-                <h3>The quote
-                </h3>
-                <p>A reply within one business day with scope, a delivery date and a
-              fixed price. The price does not move unless the scope does, so the
-              estimate is my problem rather than yours.
-                </p>
-              </div>
-              <div className="cell">
-                <span className="tag mono">Step three
-                </span>
-                <h3>Delivery
-                </h3>
-                <p>The working files (model, code or draft), a walkthrough of how they
-              fit together, and one round of revisions included. Ownership
-              transfers on final payment.
-                </p>
-              </div>
+              <InfoCard chip="Step one" title="The brief"
+                        dek={<>Send what you need with any files or examples, through
+                          the <a href="/contact.html">contact form</a> or straight
+                          to <a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a>. A
+                          paragraph and a spreadsheet is enough to start.</>} />
+              <InfoCard chip="Step two"
+                        title="The quote"
+                        dek="A reply within one business day with scope, a delivery date and a fixed price. The price does not move unless the scope does, so the estimate is my problem rather than yours." />
+              <InfoCard chip="Step three"
+                        title="Delivery"
+                        dek="The working files (model, code or draft), a walkthrough of how they fit together, and one round of revisions included. Ownership transfers on final payment." />
             </div>
             <p className="note">
               Prefer the protection of a platform? I also take projects through Fiverr
@@ -596,8 +574,8 @@ export default function Page() {
            the route there.
            ============================================================ */}
           <section id="who">
-            <span className="section-label mono">Who does the work
-            </span>
+            <SectionLabel>Who does the work
+            </SectionLabel>
             <div className="cred">
               <div className="cred-main">
                 <h2>One person, start to finish, and I answer my own email.
@@ -675,8 +653,8 @@ export default function Page() {
           </section>
           {/* ============ WHAT I NEED ============ */}
           <section>
-            <span className="section-label mono">What makes a project go well
-            </span>
+            <SectionLabel>What makes a project go well
+            </SectionLabel>
             <div className="rows">
               <div className="row">
                 <span className="k mono">The real question
@@ -713,8 +691,8 @@ export default function Page() {
           </section>
           {/* ============ FAQ ============ */}
           <section>
-            <span className="section-label mono">Before you ask
-            </span>
+            <SectionLabel>Before you ask
+            </SectionLabel>
             <div className="stack measure">
               <details className="faq">
                 <summary>How much does it cost?

@@ -32,6 +32,7 @@
    stylesheet, which is what makes the reorder free of a flash.
    ============================================================ */
 
+import type { ReactNode } from "react";
 import { AUDIENCES } from "../lib/nav";
 import { Icon } from "./icons";
 import { DrawerButton } from "./sidebar";
@@ -112,12 +113,22 @@ function BarMark() {
   );
 }
 
-export function TopBar() {
+export function TopBar({ tree }: { tree: ReactNode }) {
   return (
     <div className="topbar">
       <DrawerButton />
       <BarMark />
-      <AudienceSwitch />
+      {/* The switch used to be here and is in the rail's foot
+          now, where the question belongs: "what brings you here"
+          is asked once and then never again, so it sits with the
+          menu somebody opens when they are deciding rather than
+          across the top of every page they read.
+
+          What the bar carries instead is the whole site as a
+          tree, rendered on the server and handed in as a slot,
+          because this file is a client component and that one is
+          a database read. See `nav-tree.tsx`. */}
+      {tree}
       <div className="top-tools">
         <button className="top-btn" id="open-palette" type="button"
                 aria-label="Search the site (Ctrl+K)">

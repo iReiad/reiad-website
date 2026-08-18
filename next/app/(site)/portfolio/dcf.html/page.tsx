@@ -17,7 +17,9 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
-import { ButtonLink } from "../../../../components/ui/button";
+import { Button, ButtonLink } from "../../../../components/ui/button";
+import { StatTile } from "../../../../components/ui/stat";
+import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/dcf.html",
@@ -34,8 +36,8 @@ export default function Page() {
       <main id="main">
         <div className="wrap">
           <div className="hero">
-            <span className="eyebrow mono">Case study · Valuation · Excel-equivalent
-            </span>
+            <Eyebrow>Case study · Valuation · Excel-equivalent
+            </Eyebrow>
             <h1>A DCF that shows its working, and a sensitivity table that earns its place.
             </h1>
             <p className="lede">
@@ -78,10 +80,10 @@ export default function Page() {
               <p className="scenario-blurb" id="scenario-blurb">–
               </p>
               <div className="model-actions">
-                <button className="btn btn-ghost" type="button" id="download-csv">Download CSV
-                </button>
-                <button className="btn btn-ghost" type="button" id="copy-link">Copy this valuation's link
-                </button>
+                <Button kind="ghost" id="download-csv">Download CSV
+                </Button>
+                <Button kind="ghost" id="copy-link">Copy this valuation's link
+                </Button>
               </div>
             </div>
             {/* ============ THE ANSWER ============ */}
@@ -96,54 +98,14 @@ export default function Page() {
               </p>
             </div>
             <div className="tiles">
-              <div className="tile" data-tile="wacc">
-                <span className="mono">WACC
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>The discount rate, built up below
-                </small>
-              </div>
-              <div className="tile" data-tile="ke">
-                <span className="mono">Cost of equity
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Risk-free + beta × ERP + country
-                </small>
-              </div>
-              <div className="tile" data-tile="ev">
-                <span className="mono">Enterprise value
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>BDT lakh
-                </small>
-              </div>
-              <div className="tile" data-tile="equity">
-                <span className="mono">Equity value
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>After bridging out net debt
-                </small>
-              </div>
-              <div className="tile" data-tile="terminal">
-                <span className="mono">Terminal value share
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Of enterprise value: above 80% is a warning
-                </small>
-              </div>
-              <div className="tile" data-tile="entry">
-                <span className="mono">Implied EV/EBITDA
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>At the DCF value, on FY25E
-                </small>
-              </div>
+              <StatTile label="WACC" note="The discount rate, built up below" fills="wacc" />
+              <StatTile label="Cost of equity" note="Risk-free + beta × ERP + country" fills="ke" />
+              <StatTile label="Enterprise value" note="BDT lakh" fills="ev" />
+              <StatTile label="Equity value" note="After bridging out net debt" fills="equity" />
+              <StatTile label="Terminal value share"
+                        note="Of enterprise value: above 80% is a warning"
+                        fills="terminal" />
+              <StatTile label="Implied EV/EBITDA" note="At the DCF value, on FY25E" fills="entry" />
             </div>
             <div className="model-body">
               <aside className="model-drivers">
@@ -215,8 +177,8 @@ export default function Page() {
           </section>
           {/* ============ HOW IT'S BUILT ============ */}
           <section>
-            <span className="section-label mono">How this valuation is built
-            </span>
+            <SectionLabel>How this valuation is built
+            </SectionLabel>
             <div className="principles">
               <div className="principle">
                 <h3>The cash flows aren't typed in

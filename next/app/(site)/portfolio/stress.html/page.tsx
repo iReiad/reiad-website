@@ -17,7 +17,9 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
-import { ButtonLink } from "../../../../components/ui/button";
+import { Button, ButtonLink } from "../../../../components/ui/button";
+import { StatTile } from "../../../../components/ui/stat";
+import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/stress.html",
@@ -34,8 +36,8 @@ export default function Page() {
       <main id="main">
         <div className="wrap">
           <div className="hero">
-            <span className="eyebrow mono">Case study · Credit risk · Stress testing
-            </span>
+            <Eyebrow>Case study · Credit risk · Stress testing
+            </Eyebrow>
             <h1>What a recession does to a loan book, from the macro path to the capital ratio.
             </h1>
             <p className="lede">
@@ -70,10 +72,10 @@ export default function Page() {
               <p className="scenario-blurb" id="scenario-blurb">–
               </p>
               <div className="model-actions">
-                <button className="btn btn-ghost" type="button" id="download-csv">Download CSV
-                </button>
-                <button className="btn btn-ghost" type="button" id="copy-link">Copy this run's link
-                </button>
+                <Button kind="ghost" id="download-csv">Download CSV
+                </Button>
+                <Button kind="ghost" id="copy-link">Copy this run's link
+                </Button>
               </div>
             </div>
             {/* ============ THE ANSWER ============ */}
@@ -88,56 +90,24 @@ export default function Page() {
               </p>
             </div>
             <div className="tiles">
-              <div className="tile" data-tile="severity">
-                <span className="mono">Scenario severity
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Standard deviations from normal, at the worst quarter
-                </small>
-              </div>
-              <div className="tile" data-tile="pd">
-                <span className="mono">Peak default rate
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Whole book, annualised, against 
-                  <span id="tile-pd-base">–
-                  </span> today
-                </small>
-              </div>
-              <div className="tile" data-tile="loss">
-                <span className="mono">Three-year credit loss
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Cumulative, as a share of exposure
-                </small>
-              </div>
-              <div className="tile" data-tile="charge">
-                <span className="mono">Peak provision charge
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>In one quarter, BDT crore
-                </small>
-              </div>
-              <div className="tile" data-tile="stage2">
-                <span className="mono">Peak stage 2
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Of the performing book, on lifetime allowance
-                </small>
-              </div>
-              <div className="tile" data-tile="headroom">
-                <span className="mono">Headroom at the trough
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Against the 7.0% requirement
-                </small>
-              </div>
+              <StatTile label="Scenario severity"
+                        note="Standard deviations from normal, at the worst quarter"
+                        fills="severity" />
+              <StatTile label="Peak default rate"
+                        note={<>Whole book, annualised, against <span id="tile-pd-base">– </span> today</>}
+                        fills="pd" />
+              <StatTile label="Three-year credit loss"
+                        note="Cumulative, as a share of exposure"
+                        fills="loss" />
+              <StatTile label="Peak provision charge"
+                        note="In one quarter, BDT crore"
+                        fills="charge" />
+              <StatTile label="Peak stage 2"
+                        note="Of the performing book, on lifetime allowance"
+                        fills="stage2" />
+              <StatTile label="Headroom at the trough"
+                        note="Against the 7.0% requirement"
+                        fills="headroom" />
             </div>
             <div className="model-body">
               <aside className="model-drivers">
@@ -565,8 +535,7 @@ export default function Page() {
                 </label>
                 <span className="mono">or drag one here, or paste below
                 </span>
-                <button className="btn btn-ghost" type="button" id="csv-reset" hidden>Back to the shipped book
-                </button>
+                <Button kind="ghost" id="csv-reset" hidden>Back to the shipped book</Button>
               </div>
               <label className="csv-paste-label">
                 <span className="mono">Paste rows
@@ -651,8 +620,8 @@ export default function Page() {
           </section>
           {/* ============ HOW IT'S BUILT ============ */}
           <section>
-            <span className="section-label mono">How this is built
-            </span>
+            <SectionLabel>How this is built
+            </SectionLabel>
             <div className="principles">
               <div className="principle">
                 <h3>Two engines, kept honest by each other

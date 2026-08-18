@@ -114,11 +114,18 @@ export function LessonTick({
   const onClick = useCallback(() => { toggleRead(school, id); }, [school, id]);
 
   return (
-    <button className="tick-btn" type="button" onClick={onClick}
-            data-done={done ? "" : undefined} aria-pressed={done}>
-      <Icon name="check" size={16} />
-      {done ? words.done : words.notDone}
-    </button>
+    /* The air around it is this caller's, not the button's. The
+       control carried `margin-block: 28px 6px` for this one place
+       and took it everywhere else it was used, including into a
+       centred row on the course player where it pushed itself out
+       of line with the button beside it. */
+    <div className="mt-7 mb-1.5">
+      <button className="tick-btn" type="button" onClick={onClick}
+              data-done={done ? "" : undefined} aria-pressed={done}>
+        <Icon name="check" size={16} />
+        {done ? words.done : words.notDone}
+      </button>
+    </div>
   );
 }
 

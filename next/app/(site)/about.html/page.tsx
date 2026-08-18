@@ -22,6 +22,8 @@ import type { Metadata } from "next";
 import { pageMeta } from "../../../lib/pageMeta";
 import { Band } from "../../../components/ui/band";
 import { ButtonLink } from "../../../components/ui/button";
+import { InfoCard } from "../../../components/deck";
+import { Eyebrow, SectionLabel } from "../../../components/ui/label";
 
 const DEK = "Rony Reiad: economics graduate from Chittagong, MSc Finance & Risk "
   + "Management from Brighton, researching Islamic funds and credit risk, and "
@@ -51,8 +53,8 @@ export default function AboutPage() {
            ============================================================ */}
           <section className="about-hero">
             <div className="about-intro">
-              <span className="eyebrow mono">About
-              </span>
+              <Eyebrow>About
+              </Eyebrow>
               <h1>Economics first, risk second, plain language always.
               </h1>
               <p className="lede">
@@ -207,8 +209,8 @@ export default function AboutPage() {
           </section>
           {/* ============ THE STORY ============ */}
           <section className="prose">
-            <span className="section-label mono">The route here
-            </span>
+            <SectionLabel>The route here
+            </SectionLabel>
             <p>
               He read Economics at the University of Chittagong, then moved to the UK for
           an MSc in Finance and Risk Management at the University of Brighton's School
@@ -253,8 +255,8 @@ export default function AboutPage() {
            reading them as one sequence is the only way the shape of
            it makes sense. */}
           <section>
-            <span className="section-label mono">Education & experience
-            </span>
+            <SectionLabel>Education & experience
+            </SectionLabel>
             <ol className="cv">
               <li className="cv-item" data-kind="edu">
                 <span className="cv-year mono">2024–26
@@ -349,8 +351,8 @@ export default function AboutPage() {
           </section>
           {/* ============ RESEARCH ============ */}
           <section>
-            <span className="section-label mono">Research
-            </span>
+            <SectionLabel>Research
+            </SectionLabel>
             {/* ============================================================
              Each of these three became a case study you can open and
              drive. For a while the cards did not say so: they
@@ -415,8 +417,8 @@ export default function AboutPage() {
           </section>
           {/* ============ TOOLKIT ============ */}
           <section>
-            <span className="section-label mono">Toolkit & certificates
-            </span>
+            <SectionLabel>Toolkit & certificates
+            </SectionLabel>
             <div className="kit">
               <div className="kit-group">
                 <span className="kit-k mono">Modelling
@@ -485,8 +487,8 @@ export default function AboutPage() {
           </section>
           {/* ============ HOW HE WORKS ============ */}
           <section>
-            <span className="section-label mono">How he works
-            </span>
+            <SectionLabel>How he works
+            </SectionLabel>
             <div className="principles">
               <div className="principle">
                 <h3>Assumptions live in one place
@@ -525,16 +527,13 @@ export default function AboutPage() {
           </section>
           {/* ============ WHERE THIS IS GOING ============ */}
           <section>
-            <span className="section-label mono">Where this is going
-            </span>
+            <SectionLabel>Where this is going
+            </SectionLabel>
             {/* Roadmap, not résumé: "Now" is in progress, the rest are
              stated intentions. Worth keeping that distinction visible. */}
             <div className="path">
-              <div className="cell">
-                <span className="tag mono">Now · 2026
-                </span>
-                <h3>Building the foundation
-                </h3>
+              <InfoCard chip="Now · 2026"
+                        title="Building the foundation">
                 <ul>
                   <li>CFA Level 1: November 2026 window
                   </li>
@@ -543,12 +542,9 @@ export default function AboutPage() {
                   <li>A public library of models: every one open, editable and showing its arithmetic
                   </li>
                 </ul>
-              </div>
-              <div className="cell">
-                <span className="tag mono">Next · 2027–28
-                </span>
-                <h3>Into the industry
-                </h3>
+              </InfoCard>
+              <InfoCard chip="Next · 2027–28"
+                        title="Into the industry">
                 <ul>
                   <li>Analyst or management trainee: Bangladesh banking or Gulf finance
                   </li>
@@ -557,12 +553,10 @@ export default function AboutPage() {
                   <li>Freelance modeling practice with repeat clients
                   </li>
                 </ul>
-              </div>
-              <div className="cell cell-aim">
-                <span className="tag mono">The aim
-                </span>
-                <h3>Research-grade finance, spoken plainly
-                </h3>
+              </InfoCard>
+              <InfoCard chip="The aim"
+                        title="Research-grade finance, spoken plainly"
+                        fill>
                 <ul>
                   <li>Charterholder working across Bangladesh and Gulf markets
                   </li>
@@ -571,13 +565,13 @@ export default function AboutPage() {
                   <li>Research that bridges local markets and global standards
                   </li>
                 </ul>
-              </div>
+              </InfoCard>
             </div>
           </section>
           {/* ============ FAQ ============ */}
           <section>
-            <span className="section-label mono">Questions people actually ask
-            </span>
+            <SectionLabel>Questions people actually ask
+            </SectionLabel>
             <div className="stack measure">
               <details className="faq">
                 <summary>Why write investment education in Bangla?

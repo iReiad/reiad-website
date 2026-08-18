@@ -136,12 +136,15 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   # Deliberately NOT "/money/*". That would take every module of every
   # school through the Worker as well, /money/reader.js and
   # /quran/curriculum.js among them, only to fall straight back to the
-  # assets: a hop on every script of every page for nothing. The four
-  # practice books are files still, and they are why the fall-through
-  # matters rather than being a technicality: /deutsch/stufe-1/arbeitsbuch.html
-  # matches the pattern below, the route declines it because it is in
-  # no ladder, and fromNext() hands it to the asset router exactly as
-  # before.
+  # assets: a hop on every script of every page for nothing.
+  #
+  # The fall-through still matters, and no longer for the practice
+  # books. They were files, and this comment said so for a fortnight
+  # after they stopped being any: /deutsch/stufe-1/arbeitsbuch.html
+  # matches the pattern below and the ROUTE answers it now, so the
+  # four generated pages sat in aab/ shadowed, 2.2 MB nothing could
+  # reach. What still falls through is every school's own modules,
+  # which is what the star above is deliberately not.
   "/money/index.html", "/deutsch/index.html", "/quran/index.html", "/english/index.html",
   "/money/contents.html",
   # One pattern per school, not two. The suffixless form already

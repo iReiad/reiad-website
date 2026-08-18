@@ -17,7 +17,9 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
-import { ButtonLink } from "../../../../components/ui/button";
+import { Button, ButtonLink } from "../../../../components/ui/button";
+import { StatTile } from "../../../../components/ui/stat";
+import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/frontier.html",
@@ -34,8 +36,8 @@ export default function Page() {
       <main id="main">
         <div className="wrap">
           <div className="hero">
-            <span className="eyebrow mono">Case study · Portfolio construction · Interactive
-            </span>
+            <Eyebrow>Case study · Portfolio construction · Interactive
+            </Eyebrow>
             <h1>A Shariah and ESG screened FTSE 250 fund, built in 2015 and held to 2020.
             </h1>
             <p className="lede">
@@ -74,10 +76,10 @@ export default function Page() {
               <p className="scenario-blurb" id="strategy-blurb">–
               </p>
               <div className="model-actions">
-                <button className="btn btn-ghost" type="button" id="download-csv">Download CSV
-                </button>
-                <button className="btn btn-ghost" type="button" id="copy-link">Copy this run's link
-                </button>
+                <Button kind="ghost" id="download-csv">Download CSV
+                </Button>
+                <Button kind="ghost" id="copy-link">Copy this run's link
+                </Button>
               </div>
             </div>
             {/* ============ THE ANSWER ============ */}
@@ -92,54 +94,14 @@ export default function Page() {
               </p>
             </div>
             <div className="tiles">
-              <div className="tile" data-tile="ret">
-                <span className="mono">Hold-out return
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Cumulative over the five years
-                </small>
-              </div>
-              <div className="tile" data-tile="cagr">
-                <span className="mono">Annualised
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Compound, after the whole period
-                </small>
-              </div>
-              <div className="tile" data-tile="beta">
-                <span className="mono">Portfolio beta
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Weighted, against the FTSE 250
-                </small>
-              </div>
-              <div className="tile" data-tile="sharpe">
-                <span className="mono">Sharpe
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Realised, on the held-out years
-                </small>
-              </div>
-              <div className="tile" data-tile="dd">
-                <span className="mono">Deepest drawdown
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Peak to trough, along the way
-                </small>
-              </div>
-              <div className="tile" data-tile="vsindex">
-                <span className="mono">Average year, vs index
-                </span>
-                <strong className="tile-value">–
-                </strong>
-                <small>Mean annual return against the FTSE 250
-                </small>
-              </div>
+              <StatTile label="Hold-out return" note="Cumulative over the five years" fills="ret" />
+              <StatTile label="Annualised" note="Compound, after the whole period" fills="cagr" />
+              <StatTile label="Portfolio beta" note="Weighted, against the FTSE 250" fills="beta" />
+              <StatTile label="Sharpe" note="Realised, on the held-out years" fills="sharpe" />
+              <StatTile label="Deepest drawdown" note="Peak to trough, along the way" fills="dd" />
+              <StatTile label="Average year, vs index"
+                        note="Mean annual return against the FTSE 250"
+                        fills="vsindex" />
             </div>
             <div className="model-body">
               <aside className="model-drivers">
@@ -530,8 +492,8 @@ export default function Page() {
           </section>
           {/* ============ HOW IT'S BUILT ============ */}
           <section>
-            <span className="section-label mono">How this is built
-            </span>
+            <SectionLabel>How this is built
+            </SectionLabel>
             <div className="principles">
               <div className="principle">
                 <h3>Solved, not stored

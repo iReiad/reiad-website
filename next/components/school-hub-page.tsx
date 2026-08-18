@@ -40,7 +40,7 @@ import { HUB_CONTENT, type HubAction, type HubSection } from "../lib/school-hub-
 import { Band } from "./ui/band";
 import { Button, ButtonLink } from "./ui/button";
 import { InfoCard } from "./deck";
-import { SectionLabel } from "./ui/label";
+import { Eyebrow, SectionLabel } from "./ui/label";
 
 /* The hero's own class, written out rather than interpolated.
 
@@ -157,7 +157,7 @@ export function SchoolHubPage({ school }: { school: string }) {
   return (
     <>
       <div className={`hero ${HERO_CLASS[school] ?? ""}`}>
-        <Html as="span" className="eyebrow mono" html={hero.eyebrow} />
+        <Eyebrow><Html as="span" html={hero.eyebrow} /></Eyebrow>
         <Html as="h1" className="bn-h" html={hero.title} />
         <Html className="lede" html={hero.lede} />
 

@@ -70,6 +70,7 @@ const STAGES = [
     "aab/schools/progress.test.mjs",
     "next/progress.test.mjs",
     "aab/schools/hub.test.mjs",
+    "aab/schools/workbook.test.mjs",
     "aab/courses.test.mjs",
     "aab/portfolio/stress.test.mjs",
     "aab/portfolio/scorecard.test.mjs",

@@ -83,6 +83,9 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../lib/pageMeta";
+import { PageNav, Tab } from "../../../components/ui/tabs";
+import { Eyebrow } from "../../../components/ui/label";
+import { Button, ButtonLink } from "../../../components/ui/button";
 
 export const metadata: Metadata = {
   ...pageMeta({
@@ -205,7 +208,7 @@ export default function AccountPage() {
           page is not one either. */}
       <div className="wrap wrap-narrow" id="account-out" hidden>
         <div className="hero">
-          <span className="eyebrow mono">Your account</span>
+          <Eyebrow>Your account</Eyebrow>
           <h1>Nobody is signed in on this device.</h1>
           <p className="lede">
             An account keeps your place in a course, the pages you save, the
@@ -214,8 +217,8 @@ export default function AccountPage() {
             page on this site is readable without one.
           </p>
           <div className="hero-actions">
-            <button className="btn btn-solid" id="account-signin">Sign in</button>
-            <a className="btn btn-ghost" href="/index.html">Back to the site</a>
+            <Button kind="solid" id="account-signin">Sign in</Button>
+            <ButtonLink kind="ghost" href="/index.html">Back to the site</ButtonLink>
           </div>
         </div>
       </div>
@@ -247,38 +250,23 @@ export default function AccountPage() {
           </div>
         </header>
 
-        {/* Sticky, and the one piece of navigation on this page.
-            It is a list of links to fragments rather than tabs
-            that hide things: a reader who lands on
-            `#reading-list` from the header menu should find the
-            page scrolled to their reading list with everything
-            else still there above and below it. */}
-        <nav aria-label="This page"
-             className="sticky top-[var(--top-space)] z-20 border-b border-hairline
-                        bg-[color-mix(in_oklab,var(--paper)_88%,transparent)]
-                        backdrop-blur-[10px] backdrop-saturate-150">
-          {/* It scrolls sideways rather than wrapping to three
-              lines: eight links is more than a phone can show,
-              and a rail that changed height as you scrolled past
-              it would move the page under the thumb doing the
-              scrolling. */}
-          <div className="wrap flex gap-1 overflow-x-auto py-[7px]
-                          [scrollbar-width:none] [scroll-snap-type:x_proximity]
-                          [&::-webkit-scrollbar]:hidden">
-            {SECTIONS.map((s) => (
-              <a key={s.id} href={`#${s.id}`}
-                 className="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap
-                            rounded-full px-[13px] py-[7px] text-[0.82rem] text-ink-soft
-                            no-underline transition-colors [scroll-snap-align:start]
-                            hover:bg-panel-hover hover:text-ink hover:opacity-100
-                            focus-visible:bg-panel-hover focus-visible:text-ink
-                            focus-visible:outline-none
-                            focus-visible:ring-2 focus-visible:ring-green/30">
-                {s.label}
-              </a>
-            ))}
-          </div>
-        </nav>
+        {/* The one piece of navigation on this page, and it is a
+            `<PageNav>` rather than a `<TabBar>` because nothing
+            here is hidden: a reader who lands on `#reading-list`
+            from a link should find the page scrolled to their
+            reading list with everything else still above and
+            below it. `ui/tabs.tsx` says why that is two
+            components rather than one with a role prop.
+
+            It was twelve Tailwind arbitrary values written
+            inline, naming `green` where every component on this
+            site names `--accent`, at a font size that is not on
+            the scale. */}
+        <PageNav label="This page" sticky>
+          {SECTIONS.map((s) => (
+            <Tab key={s.id} href={`#${s.id}`} label={s.label} />
+          ))}
+        </PageNav>
 
         <div className="wrap grid gap-[clamp(34px,5vw,56px)]
                         pt-[clamp(26px,4vw,44px)] pb-[var(--step)]">
@@ -333,7 +321,7 @@ export default function AccountPage() {
                 <div className="choice-row" id="target-kind" />
                 <div className="target-fields" id="target-fields" />
                 <Actions>
-                  <button className="btn btn-solid" type="submit">Add it</button>
+                  <Button kind="solid" type="submit">Add it</Button>
                   <span className="signin-note" id="target-note" />
                 </Actions>
               </form>
@@ -387,9 +375,8 @@ export default function AccountPage() {
                 <div className="choice-row" id="account-pace" />
               </fieldset>
               <Actions>
-                <button className="btn btn-solid" type="submit">Save</button>
-                <button className="btn btn-ghost" type="button" id="settings-skip"
-                        hidden>Not now</button>
+                <Button kind="solid" type="submit">Save</Button>
+                <Button kind="ghost" id="settings-skip" hidden>Not now</Button>
                 <span className="signin-note" id="settings-note" />
               </Actions>
             </form>
@@ -408,9 +395,9 @@ export default function AccountPage() {
                    in every course, your checkpoints, your reading list, your
                    notes, your targets, your saved scenarios and your
                    preferences. Plain JSON, readable in any text editor.</p>
-                <button className="btn btn-ghost" id="account-export">
+                <Button kind="ghost" id="account-export">
                   Download everything
-                </button>
+                </Button>
               </Card>
               <Card>
                 <h3>Sign out</h3>
@@ -418,18 +405,18 @@ export default function AccountPage() {
                    copy of your progress off it, so the next person at this
                    machine does not inherit your ticks. Nothing on the account
                    is touched.</p>
-                <button className="btn btn-ghost" id="account-signout">
+                <Button kind="ghost" id="account-signout">
                   Sign out
-                </button>
+                </Button>
               </Card>
               <Card className="border-danger/35 bg-danger/5 [&_.btn:hover]:border-danger [&_.btn:hover]:text-danger">
                 <h3>Erase everything</h3>
                 <p>Removes all of it from the account: position, checkpoints,
                    reading list, notes, targets and scenarios. This cannot be
                    undone, so take a copy first if you want one.</p>
-                <button className="btn btn-ghost" id="account-forget">
+                <Button kind="ghost" id="account-forget">
                   Erase it
-                </button>
+                </Button>
               </Card>
             </div>
             <p className="signin-note" id="exit-note" />

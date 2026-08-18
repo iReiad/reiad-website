@@ -15,6 +15,8 @@ import type { Metadata } from "next";
 import { Field, TextArea } from "../../../components/ui/field";
 import { Button } from "../../../components/ui/button";
 import { pageMeta } from "../../../lib/pageMeta";
+import { GoCard } from "../../../components/deck";
+import { Eyebrow, SectionLabel } from "../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/contact.html",
@@ -31,8 +33,8 @@ export default function ContactPage() {
       <main id="main">
         <div className="wrap">
           <div className="hero">
-            <span className="eyebrow mono">Contact · Register interest
-            </span>
+            <Eyebrow>Contact · Register interest
+            </Eyebrow>
             <h1>Hiring, or need a model built?
             </h1>
             <p className="lede">
@@ -45,8 +47,8 @@ export default function ContactPage() {
             </p>
           </div>
           <section>
-            <span className="section-label mono">Send a message
-            </span>
+            <SectionLabel>Send a message
+            </SectionLabel>
             {/* Web3Forms: the form POSTs to their endpoint, which emails the
              submission to the address tied to the access key. The key is
              designed to be public: it can only send TO you, never read
@@ -110,8 +112,8 @@ export default function ContactPage() {
             </form>
           </section>
           <section>
-            <span className="section-label mono">Elsewhere
-            </span>
+            <SectionLabel>Elsewhere
+            </SectionLabel>
             <p>
               <a href="https://www.linkedin.com/in/reiad">LinkedIn
               </a> ·
@@ -121,8 +123,8 @@ export default function ContactPage() {
             </p>
           </section>
           <section>
-            <span className="section-label mono">What happens next
-            </span>
+            <SectionLabel>What happens next
+            </SectionLabel>
             <div className="rows">
               <div className="row">
                 <span className="k mono">Within a business day
@@ -153,51 +155,29 @@ export default function ContactPage() {
             </div>
           </section>
           <section>
-            <span className="section-label mono">Who this is for
-            </span>
+            <SectionLabel>Who this is for
+            </SectionLabel>
             <div className="grid-3">
-              <div className="cell">
-                <span className="tag mono">Recruiters
-                </span>
-                <h3>Roles in finance, risk or analysis
-                </h3>
-                <p>MSc Finance & Risk Management, CFA Level 1 candidate, comfortable in
-               Excel, Python and R, and equally comfortable presenting the result to
-               people who don't want the technical version. Happy to talk about roles in
-               the UK or Bangladesh.
-                </p>
-                <a className="more" href="/about.html">Full background →
-                </a>
-              </div>
-              <div className="cell">
-                <span className="tag mono">Clients
-                </span>
-                <h3>A model, an analysis, or something written
-                </h3>
-                <p>Send the brief in whatever state it's in: a paragraph and a spreadsheet
-               is enough. You'll get a fixed price and a date back, and the files are
-               yours at the end.
-                </p>
-                <a className="more" href="/portfolio.html">How projects run →
-                </a>
-              </div>
-              <div className="cell">
-                <span className="tag mono">Readers
-                </span>
-                <h3>A question, a correction, a request
-                </h3>
-                <p>If something on the site is wrong, tell me and I'll fix it and say so.
-               If there's a term the Learn hub is missing, or a calculation you keep
-               having to do by hand, that's exactly the kind of thing worth building.
-                </p>
-                <a className="more" href="/money/index.html">শেখার লাইব্রেরি →
-                </a>
-              </div>
+              <GoCard href="/about.html"
+                      chip="Recruiters"
+                      title="Roles in finance, risk or analysis"
+                      dek="MSc Finance & Risk Management, CFA Level 1 candidate, comfortable in Excel, Python and R, and equally comfortable presenting the result to people who don't want the technical version. Happy to talk about roles in the UK or Bangladesh."
+                      go="Full background" />
+              <GoCard href="/portfolio.html"
+                      chip="Clients"
+                      title="A model, an analysis, or something written"
+                      dek="Send the brief in whatever state it's in: a paragraph and a spreadsheet is enough. You'll get a fixed price and a date back, and the files are yours at the end."
+                      go="How projects run" />
+              <GoCard href="/money/index.html"
+                      chip="Readers"
+                      title="A question, a correction, a request"
+                      dek="If something on the site is wrong, tell me and I'll fix it and say so. If there's a term the Learn hub is missing, or a calculation you keep having to do by hand, that's exactly the kind of thing worth building."
+                      go={<span lang="bn">শেখার লাইব্রেরি</span>} />
             </div>
           </section>
           <section>
-            <span className="section-label mono">Common questions
-            </span>
+            <SectionLabel>Common questions
+            </SectionLabel>
             <div className="stack measure">
               <details className="faq">
                 <summary>Can you look at my portfolio and tell me what to buy?

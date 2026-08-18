@@ -928,8 +928,83 @@
 
   ::selection { background: var(--accent-soft); color: var(--accent); }
 
-  /* Native form controls follow the theme */
+  /* ---------- what a field is, said once ----------
+
+     Five blocks used to say this, in five layers, with five
+     paddings (12/14, 10/12, 11/13, 10/12, 9/11), three
+     backgrounds (panel, paper, panel), two font sizes and two
+     different ways of showing focus. Nothing was wrong with any
+     one of them and no two matched, so the Studio's text box and
+     the contact form's and the stock check's were three
+     different objects.
+
+     It is on the ELEMENTS rather than a class because half the
+     fields on this site are written by a browser module or live
+     in an app that does not import this library, and an element
+     selector reaches all of them. The five blocks below now carry
+     only what genuinely differs: a width, a min-height, a mono
+     face for a number.
+
+     The material is the site's own: glass ground, the sheen down
+     the top, a pane edge, and `--tap` so a field lines up with
+     the button beside it. Focus is `--focus-ring`, which is the
+     one ring, rather than an outline in some places and a shadow
+     in others. */
   input, textarea, select, button { font: inherit; color: inherit; }
+
+  :is(input:not([type="range"], [type="checkbox"], [type="radio"],
+                [type="submit"], [type="button"], [type="file"]),
+      textarea, select) {
+    padding: 10px 14px;
+    font-size: var(--t-5);
+    color: var(--ink);
+    background-color: var(--glass-solid);
+    background-image: var(--sheen);
+    border: 1px solid var(--pane-edge);
+    border-radius: var(--radius-sm);
+    box-shadow: inset 0 1px 0 var(--pane-top);
+    transition: border-color var(--fast) var(--ease),
+                box-shadow var(--fast) var(--ease),
+                background-color var(--fast) var(--ease);
+  }
+
+  :is(input, textarea, select):focus-visible {
+    outline: 0;
+    border-color: var(--accent);
+    box-shadow: inset 0 1px 0 var(--pane-top), var(--focus-ring);
+  }
+
+  :is(input, textarea, select):hover:not(:focus-visible) {
+    border-color: color-mix(in oklab, var(--accent) 40%, var(--pane-edge));
+  }
+
+  /* The floor, and why it is two rules rather than one line in
+     the block above.
+
+     `:is(input:not(...), textarea, select)` takes the specificity
+     of its most specific argument, which is the `input:not(...)`,
+     so a plain `textarea { min-height: 3lh }` after it LOSES and
+     every textarea on the site came out one line tall. Measured
+     at 44px when it should have been about 75.
+
+     So the height is set per shape, at matching specificity, and
+     the block above carries only what the three genuinely share. */
+  :is(input:not([type="range"], [type="checkbox"], [type="radio"],
+                [type="submit"], [type="button"], [type="file"]),
+      select) {
+    min-height: var(--tap);
+  }
+
+  textarea {
+    resize: vertical;
+    /* Grow with the text rather than scrolling inside a fixed box.
+       Three lines is the floor for something you write a
+       paragraph in. */
+    field-sizing: content;
+    min-height: 3lh;
+  }
+
+  ::placeholder { color: var(--ink-soft); opacity: 0.62; }
 
   /* Skip link, visible only when focused */
   .skip {
@@ -967,7 +1042,19 @@
   }
   .wrap-narrow { max-width: 760px; }
 
-  section {
+  /* A page's vertical rhythm, and `main` is what makes it a
+     page's. Bare `section` gave 68px of top padding to every
+     section element on the site, which is right for the seven a
+     hub is made of and wrong for anything in the chrome: the
+     header's tree is five `<section>`s and each one opened with
+     68px of nothing, so the panel was 704px tall to hold 500px
+     of menu and scrolled.
+
+     Every section this site renders is inside `main` today,
+     which is what makes the scope free rather than a change:
+     checked across `next/components/`, the two file pages and
+     the four practice books. */
+  main section {
     padding-block: var(--step) 6px;
     /* No content-visibility here. It skips layout for offscreen
        sections, which means the page's height is a guess until you
@@ -1081,6 +1168,12 @@
     display: inline-flex; align-items: center; justify-content: center;
     gap: var(--s-4); text-decoration: none;
     padding: 10px 20px; border-radius: var(--radius-pill);
+    /* `--tap` is described above as one height for anything you
+       press, and this did not use it, which is why no two controls
+       in a row ever lined up: `.btn` came out around 39px and
+       `.tick-btn` around 37, and beside each other in
+       `.course-actions` the difference was the whole complaint. */
+    min-height: var(--tap);
     font-family: var(--font-mono);
     font-size: var(--t-3); letter-spacing: 0.06em; text-transform: uppercase;
     line-height: 1.2;
@@ -1095,25 +1188,106 @@
     &:focus-visible { outline: none; box-shadow: var(--focus-ring); }
     &:disabled { opacity: 0.45; pointer-events: none; }
   }
-  .btn-solid {
-    background: var(--accent); color: var(--accent-ink);
-    border-color: color-mix(in oklab, var(--accent) 80%, var(--ink));
+  /* ---------- the four kinds, and the ladder between them ----------
 
-    &:hover {
-      background: color-mix(in oklab, var(--accent) 82%, var(--ink));
-      box-shadow: var(--shadow);
-    }
+     Loudness rather than importance: `solid` for the one action a
+     page is for, `soft` for the ones beside it, `ghost` for a
+     choice that is not an action, `quiet` for something that
+     should not draw the eye until it is looked for.
+
+     `ui/button.tsx` writes these class names and adds nothing of
+     its own, which is the point: eighteen browser modules build
+     `.btn .btn-ghost` nodes by hand, and until they are components
+     a button has to mean one thing whichever half of the site
+     made it. It did not: the component was Tailwind utilities at
+     `--accent-strong` with a transparent border, the class was
+     `--accent` with an 80%-ink border, and a page that had been
+     converted grew different buttons from the page beside it. */
+  .btn-solid {
+    background: var(--accent-strong); color: var(--accent-ink);
+    border-color: transparent;
+    box-shadow: var(--shadow);
+
+    &:hover { filter: brightness(1.1); box-shadow: var(--shadow-lift); }
+  }
+  .btn-soft {
+    background-color: var(--accent-soft); color: var(--accent);
+    background-image: var(--sheen);
+    border-color: var(--accent-line);
+
+    &:hover { background-color: var(--panel-hover); border-color: var(--accent); }
   }
   .btn-ghost {
-    border-color: var(--hairline); color: var(--ink); background: var(--panel);
+    background-color: var(--panel); color: var(--ink);
+    background-image: var(--sheen);
+    border-color: var(--pane-edge);
 
-    &:hover {
-      border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline));
-      color: var(--accent);
-      background: var(--accent-soft);
-      box-shadow: var(--shadow);
+    &:hover { background-color: var(--panel-hover); border-color: var(--accent-line); }
+  }
+  .btn-quiet {
+    background: transparent; color: var(--ink-soft);
+    border-color: transparent;
+
+    &:hover { background: var(--panel); color: var(--ink); border-color: var(--pane-edge); }
+  }
+
+  /* ---------- the same four, standing ON the accent ----------
+
+     A button inside a filled block cannot use the palette above:
+     `solid` is an accent fill, and an accent fill on an accent
+     ground is a button you cannot see.
+
+     This was `.band .btn-ghost` overrides once and it broke twice,
+     both times the same way: `.band.soft` turned the ground back
+     to paper without undoing them, so a ghost button on a light
+     band was white text on a near-white fill, and the other never
+     reset the ghost's background at all. A descendant selector
+     ties the ink to where the button SITS; this ties it to what
+     the caller says the ground IS, and `<Button onAccent>` sets
+     both at once so neither can be set without the other. */
+  .btn-on-accent {
+    &.btn-solid {
+      background: var(--accent-ink); color: var(--accent-strong);
+      border-color: transparent;
+
+      &:hover { filter: brightness(0.95); box-shadow: var(--shadow-lift); }
+    }
+    &.btn-soft {
+      background: color-mix(in oklab, var(--accent-ink) 16%, transparent);
+      color: var(--accent-ink);
+      border-color: color-mix(in oklab, var(--accent-ink) 28%, transparent);
+
+      &:hover { background: color-mix(in oklab, var(--accent-ink) 24%, transparent); }
+    }
+    &.btn-ghost {
+      background: transparent; color: var(--accent-ink);
+      border-color: color-mix(in oklab, var(--accent-ink) 32%, transparent);
+
+      &:hover {
+        background: color-mix(in oklab, var(--accent-ink) 10%, transparent);
+        border-color: var(--accent-ink);
+      }
+    }
+    &.btn-quiet {
+      background: transparent; border-color: transparent;
+      color: color-mix(in oklab, var(--accent-ink) 72%, transparent);
+
+      &:hover {
+        color: var(--accent-ink);
+        background: color-mix(in oklab, var(--accent-ink) 10%, transparent);
+      }
     }
   }
+
+  /* ---------- the other two sizes ----------
+
+     `.btn` above is the middle one, so there is no `.btn-md`. The
+     small one is `.btn-small` and it is defined further down,
+     where it has been since before any of this: eighteen browser
+     modules write that name and it is not worth a second spelling
+     to make three sizes read alike. */
+  .btn-lg { padding: 12px 24px; font-size: var(--t-4); min-height: 48px; }
+  .btn-block { width: 100%; }
 
   .icon-btn {
     border: 1px solid var(--hairline);
@@ -1151,7 +1325,7 @@
      Any control that is already big enough is unaffected: the
      box is `100%` of the button and only grows to `--tap` when
      the button is smaller than that. */
-  :is(.icon-btn, .top-btn) {
+  :is(.icon-btn, .top-btn, .drawer-close) {
     position: relative;
 
     &::before {
@@ -1432,11 +1606,7 @@
     display: grid; gap: 5px; align-content: start;
 
     & > span { font-size: var(--t-3); color: var(--ink-soft); }
-    & input, & select {
-      padding: 9px 11px; font: inherit; font-size: var(--t-5);
-      color: var(--ink); background: var(--paper); width: 100%;
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-    }
+    & input, & select { width: 100%; }
     & input:focus, & select:focus {
       outline: 0; border-color: var(--accent);
       box-shadow: var(--focus-ring);
@@ -2066,14 +2236,6 @@
 
     &:last-child { border-bottom: 0; }
   }
-  .cell-aim {
-    background: var(--accent-strong); border-color: transparent;
-
-    & .tag { color: color-mix(in oklab, var(--accent-ink) 72%, transparent); }
-    & h3, & li { color: var(--accent-ink); }
-    & li { border-color: oklch(100% 0 0 / 0.14); }
-  }
-
   /* ---------- notes & callouts ---------- */
   .note {
     background: var(--accent-soft);
@@ -2344,14 +2506,10 @@
     max-width: 560px; display: flex; flex-direction: column; gap: var(--s-7); margin-top: 8px;
 
     & label { display: flex; flex-direction: column; gap: var(--s-3); font-size: var(--t-5); color: var(--ink); }
-    & input, & textarea {
-      padding: 12px 14px; font-size: var(--t-6);
-      font-family: var(--font-sans);
-      color: var(--ink); background: var(--panel);
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-      transition: border-color var(--fast) var(--ease);
-    }
-    & input:focus, & textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--accent); }
+    /* The field itself is `@layer base`. What is left here is the
+       one thing this form wants differently: a larger face, because
+       it is the page's whole purpose. */
+    & input, & textarea { font-size: var(--t-6); }
     /* grow with the text instead of scrolling inside a fixed box */
     & textarea { min-height: 150px; resize: vertical; field-sizing: content; }
     & button {
@@ -2611,31 +2769,81 @@ it collapsed to the width of the word "Bangladesh". */
      Styled as tabs, but they are anchor links to real sections. If
      tools.js never runs, body[data-tool-tabs] is never set, nothing
      is hidden, and these behave as the jump links they always were. */
-  .tool-tabs {
+  /* ---------- a strip of choices ----------
+
+     `next/components/ui/tabs.tsx` is the markup and says why it
+     is two components. This is the look, and it is one look:
+     the calculators' five, the account page's eight and anything
+     after them.
+
+     It was `.tool-tab` here and twelve arbitrary Tailwind values
+     inline on the account page, and the second named `green`
+     directly at a font size that is not on the scale. The
+     calculators' was the better of the two, so this is that one,
+     given the glass the rest of the site has. */
+  .tabs {
     display: flex; flex-wrap: wrap; gap: var(--s-4);
     margin-top: 26px;
   }
-  .tool-tab {
+
+  .tab {
     display: grid; gap: 1px;
-    padding: 9px 16px; border-radius: var(--radius-pill);
-    border: 1px solid var(--hairline);
-    background: var(--panel);
+    padding: 9px 16px;
+    min-height: var(--tap-sm);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--pane-edge);
+    background-color: var(--glass-solid);
+    background-image: var(--sheen);
+    box-shadow: inset 0 1px 0 var(--pane-top);
     text-decoration: none; color: var(--ink);
     transition: border-color var(--fast) var(--ease),
-                background var(--fast) var(--ease);
-
-    &:hover { border-color: var(--accent); }
-    &[aria-selected="true"] {
-      border-color: var(--accent);
-      background: var(--accent-soft);
-    }
+                background-color var(--fast) var(--ease),
+                color var(--fast) var(--ease);
   }
-  .tool-tab-en {
+  .tab:hover { border-color: var(--accent); }
+
+  /* Two states, and they are two because they mean two things.
+     `aria-selected` is a tablist's: this panel is the one on
+     screen. `aria-current` is a nav's: this is the part of the
+     page you are at. They look the same because to a reader they
+     are the same answer to "which one am I on". */
+  .tab:is([aria-selected="true"], [aria-current="true"]) {
+    border-color: var(--accent);
+    background-color: var(--accent-soft);
+  }
+  .tab-en {
     font-family: var(--font-mono); font-size: var(--t-2);
     letter-spacing: 0.05em; text-transform: uppercase;
   }
-  .tool-tab[aria-selected="true"] .tool-tab-en { color: var(--accent); }
-  .tool-tab-bn { font-size: var(--t-3); color: var(--ink-soft); }
+  .tab:is([aria-selected="true"], [aria-current="true"]) .tab-en { color: var(--accent); }
+  .tab-bn { font-size: var(--t-3); color: var(--ink-soft); }
+
+  /* A nav down one page, rather than five panels one of which
+     shows. Eight of them do not wrap to three lines on a phone:
+     they scroll, because a strip that changed height as you
+     scrolled past it would move the page under the thumb doing
+     the scrolling. */
+  .tabs-nav {
+    flex-wrap: nowrap; overflow-x: auto;
+    scrollbar-width: none; scroll-snap-type: x proximity;
+    margin-top: 0;
+  }
+  .tabs-nav::-webkit-scrollbar { display: none; }
+  .tabs-nav > .tab { flex: 0 0 auto; scroll-snap-align: start; }
+
+  /* Stuck under the bar, which is the one place on a page where
+     a backdrop filter earns its cost: content scrolls under it. */
+  .tabs-nav[data-sticky] {
+    position: sticky; top: var(--top-space); z-index: 20;
+    padding-block: 7px;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .tabs-nav[data-sticky] { background: var(--glass-solid); }
+  }
 
   /* With one calculator on screen the card no longer needs to be
      scrolled to, and scroll-margin would drag it under the header
@@ -2685,11 +2893,11 @@ it collapsed to the width of the word "Bangladesh". */
     font-family: var(--font-mono); font-size: var(--t-4); color: var(--accent);
     font-variant-numeric: tabular-nums;
   }
+  /* A figure, so the mono face and lining numerals. Everything
+     else about the box is `@layer base`. */
   .tool-inputs input[type="number"], .tool-inputs select {
-    padding: 10px 12px; font-size: var(--t-6);
     font-family: var(--font-mono);
-    color: var(--ink); background: var(--paper);
-    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    font-size: var(--t-6);
     font-variant-numeric: tabular-nums;
   }
   .tool-inputs input:focus, .tool-inputs select:focus {
@@ -3357,15 +3565,7 @@ it collapsed to the width of the word "Bangladesh". */
     padding: 18px;
 
     & label { display: flex; flex-direction: column; gap: 5px; font-size: var(--t-4); color: var(--ink-soft); }
-    & input[type="text"], & input[type="date"], & select, & textarea {
-      padding: 10px 12px; font-size: var(--t-5);
-      font-family: var(--font-sans);
-      color: var(--ink); background: var(--paper);
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-    }
-    & textarea { resize: vertical; field-sizing: content; min-height: 3lh; }
     & input:focus, & select:focus, & textarea:focus {
-      outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--accent);
     }
   }
   .field-row {
@@ -4365,15 +4565,8 @@ it collapsed to the width of the word "Bangladesh". */
 
     & label { display: flex; flex-direction: column; gap: 5px;
               font-size: var(--t-4); color: var(--ink-soft); }
-    & textarea, & input[type="text"], & input[type="email"] {
-      padding: 11px 13px; font-size: var(--t-5); width: 100%;
-      font-family: var(--font-sans); color: var(--ink); background: var(--panel);
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-      field-sizing: content;
-    }
-    & textarea:focus, & input:focus {
-      outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--accent);
-    }
+    /* Full width is the only thing this one adds. */
+    & textarea, & input[type="text"], & input[type="email"] { width: 100%; }
     & button { align-self: flex-start; }
   }
 
@@ -4775,9 +4968,17 @@ it collapsed to the width of the word "Bangladesh". */
     display: grid; gap: var(--gap); margin-bottom: 18px;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
   }
+  /* Fifty of these across the seven case studies, and this rule
+     is the whole of what they look like: `ui/stat.tsx` renders
+     the classes rather than utilities, because seven browser
+     modules fill these in and one of them builds one. Its header
+     has the argument. One edit here is fifty tiles. */
   .tile {
-    border: 1px solid var(--hairline); border-radius: var(--radius);
-    background: var(--panel); padding: 16px 18px;
+    border: 1px solid var(--pane-edge); border-radius: var(--radius);
+    background-color: var(--glass-solid);
+    background-image: var(--sheen);
+    box-shadow: inset 0 1px 0 var(--pane-top);
+    padding: 16px 18px;
     display: grid; gap: 3px; align-content: start;
 
     & .mono { color: var(--accent); }
@@ -5687,6 +5888,21 @@ German for day, and .tag is what the site has always called
     }
     & .tracker-tag[data-current] { outline: 2px solid var(--accent); outline-offset: 1px; }
   }
+  /* The day walker: prev, a picker, next, and "all days at once"
+     pushed to the far end. It ships hidden and empty, and
+     `schools/workbook.js` fills it in, so with scripts off the
+     book is every day printed, which is what a practice book on
+     paper is. */
+  .tag-nav {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-4);
+    margin-bottom: var(--gap);
+
+    & .push { margin-inline-start: auto; }
+  }
+  @media (width <= 620px) {
+    .tag-nav .push { margin-inline-start: 0; }
+  }
+
   .tag-waehler {
     display: flex; align-items: center; gap: var(--s-4);
 
@@ -5815,35 +6031,12 @@ German for day, and .tag is what the site has always called
     & .mono { color: var(--accent); display: block; margin-bottom: 8px; }
     & p { margin: 0; max-width: var(--measure); }
   }
-
-  /* ---------- a Stufe page ---------- */
-  .stufe-hero .stufe-can {
-    margin-top: 16px; color: var(--ink);
-    border-left: 3px solid var(--accent); padding-left: 14px; max-width: 60ch;
-  }
   /* A Teil's German name rides inline in the heading as .en-sub:
      the same slot, the same mono grey, the same rhythm the Learn
      cards have used since they were written. It had its own gold
      line under the title for a while, which made every card a line
      taller, put a second accent colour beside the icon, and made
      the two schools' card grids look like two different sites. */
-
-  .buch-cta {
-    display: grid; grid-template-columns: auto 1fr auto; gap: 18px;
-    align-items: center; text-decoration: none; color: var(--ink);
-
-    & .buch-art { color: var(--accent); }
-    & .buch-art svg { width: 30px; height: 30px; }
-    & strong { display: block; font-size: var(--t-7); margin-bottom: 4px; }
-    & .buch-text span { color: var(--ink-soft); font-size: var(--t-5); }
-    & .more { color: var(--accent); white-space: nowrap; font-family: var(--font-mono);
-              font-size: var(--t-3); }
-  }
-  @media (width <= 640px) {
-    .buch-cta { grid-template-columns: auto 1fr; }
-    .buch-cta .more { grid-column: 2; }
-  }
-
   /* ---------- the pattern box ----------
      The single most important object in the course: the shape,
      alone, before any explanation of it. It is deliberately the
@@ -5994,12 +6187,6 @@ German for day, and .tag is what the site has always called
      Bangla digits and nothing else, and at 34px ten fit on a phone
      row where seven did, which is nine rows for the longest book
      rather than thirteen. */
-  .tracker-details {
-    & summary { font-family: var(--font-mono); font-size: var(--t-5); }
-    /* details.faq caps its children at the measure, which is right
-       for prose and wrong for a grid that wants the full width. */
-    & .tracker { max-width: none; }
-  }
 
 
   /* ---------- the sound key, folded away ---------- */
@@ -6030,16 +6217,6 @@ German for day, and .tag is what the site has always called
       padding: 10px 12px;
     }
     & textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-  }
-
-  /* ---------- the day walker ---------- */
-  .tag-nav {
-    display: flex; gap: var(--s-5); align-items: center; flex-wrap: wrap;
-    margin-block: 16px 26px; padding-bottom: 16px;
-    border-bottom: 1px solid var(--hairline);
-
-    & .push { margin-inline-start: auto; }
-    & .btn:disabled { opacity: 0.35; pointer-events: none; }
   }
 
   /* ---------- one day ---------- */
@@ -6328,37 +6505,10 @@ German for day, and .tag is what the site has always called
 
   /* ---------- the hub ---------- */
   .english-hero .lede [lang="en"] { color: var(--accent); }
-
-  /* ---------- a term page ---------- */
-  .term-hero .term-can {
-    margin-top: 16px; color: var(--ink);
-    border-left: 3px solid var(--accent); padding-left: 14px; max-width: 60ch;
-  }
   /* The part number on a card. The deck numbers its parts and a
      learner with the deck open should be able to match the two
      without counting, which is the whole reason `n` is in the
      curriculum at all. */
-  .lesson-card .part-num {
-    display: block; color: var(--accent); font-size: var(--t-1);
-    letter-spacing: 0.08em; margin-bottom: 6px;
-  }
-
-  .wb-cta {
-    display: grid; grid-template-columns: auto 1fr auto; gap: 18px;
-    align-items: center; text-decoration: none; color: var(--ink);
-
-    & .wb-cta-art { color: var(--accent); }
-    & .wb-cta-art svg { width: 30px; height: 30px; }
-    & strong { display: block; font-size: var(--t-7); margin-bottom: 4px; }
-    & .wb-cta-text span { color: var(--ink-soft); font-size: var(--t-5); }
-    & .more { color: var(--accent); white-space: nowrap; font-family: var(--font-mono);
-              font-size: var(--t-3); }
-  }
-  @media (width <= 640px) {
-    .wb-cta { grid-template-columns: auto 1fr; }
-    .wb-cta .more { grid-column: 2; }
-  }
-
   /* ---------- the pattern box ----------
      The single most important object in the course, and the one
      thing every page and every workbook day opens with: the
@@ -6455,211 +6605,18 @@ German for day, and .tag is what the site has always called
      THE PRACTICE BOOK
      ============================================================ */
 
-  .wb-warning {
-    margin-top: 14px; max-width: var(--measure);
-    color: var(--ink-soft); font-size: var(--t-5);
-  }
+  /* The last two `.wb-*` rules went with the module that named
+     them. `.wb-picker` was a byte-for-byte copy of `.tag-waehler`
+     in the workbook layer, and `.wb-day` is markup no component
+     renders: one component draws both books and it draws
+     `.buch-tag`. */
 
-  .wb-progress {
-    display: flex; align-items: center; gap: var(--s-6); flex-wrap: wrap;
-    margin-block: 20px;
-
-    & .track {
-      flex: 1; min-width: 160px; max-width: 340px; height: 6px;
-      background: var(--hairline); border-radius: var(--radius-pill); overflow: hidden;
-    }
-    & .track i {
-      display: block; height: 100%; width: 0; background: var(--accent);
-      transition: width var(--slow) var(--ease);
-    }
-    & .count { color: var(--ink-soft); font-size: var(--t-3); }
-    &[data-state="done"] .track i { background: var(--accent); }
-  }
-
-  /* ---------- the thirty squares ----------
-     Folded away, the same way the sound key on the same page is.
-     How many days are done is in the hero's bar a few hundred
-     pixels above, and which day is next is on the button beside
-     it; what the grid alone can tell you is WHICH days are still
-     empty, so that is what its summary line offers. */
-  .wb-tracker-details {
-    & summary { font-family: var(--font-mono); font-size: var(--t-5); }
-    /* details.faq caps its children at the measure, which is right
-       for prose and wrong for a grid that wants the full width. */
-    & .wb-tracker { max-width: none; }
-  }
-
-  .wb-tracker {
-    display: grid; gap: 5px; margin-top: 14px;
-    grid-template-columns: repeat(auto-fit, minmax(34px, 1fr));
-
-    & .wb-chip {
-      display: grid; place-items: center; text-decoration: none;
-      aspect-ratio: 1; border: 1px solid var(--hairline);
-      border-radius: var(--radius-sm); background: var(--panel);
-      color: var(--ink-soft); font-family: var(--font-mono); font-size: var(--t-3);
-      transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
-    }
-    & .wb-chip:hover { border-color: var(--accent); }
-    & .wb-chip[data-done] {
-      background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
-    }
-    & .wb-chip[data-current] { outline: 2px solid var(--accent); outline-offset: 1px; }
-  }
-
-  /* ---------- the sounds Bangla does not have ---------- */
-  .wb-sounds {
-    display: grid; gap: var(--s-4); margin-top: 14px;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-
-    & .wb-sound {
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-      padding: 10px 12px; background: var(--panel); display: grid; gap: 3px;
-      font-size: var(--t-5);
-    }
-    & .wb-sound b { font-weight: 600; }
-    & .wb-sound [lang="en"] { color: var(--accent); }
-    & .wb-sound-how { color: var(--ink-soft); font-size: var(--t-4); }
-  }
-
-  /* ---------- the collection ---------- */
-  .wb-collect {
-    display: grid; gap: var(--gap); margin-top: 16px;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
-
-    & .wb-collect-col {
-      border: 1px solid var(--hairline); border-top: 3px solid var(--accent);
-      border-radius: var(--radius-sm); background: var(--panel);
-      padding: 14px 16px; display: grid;
-    }
-    & .wb-collect-head {
-      display: block; font-family: var(--font-mono); font-size: var(--t-5);
-      font-weight: 600; color: var(--accent); margin-bottom: 10px;
-    }
-    & textarea {
-      width: 100%; resize: vertical; min-height: 120px;
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-      background: var(--paper); color: var(--ink);
-      font-family: var(--font-sans); font-size: var(--t-5); line-height: 1.7;
-      padding: 10px 12px;
-    }
-    & textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-  }
-
-  /* ---------- the day walker ---------- */
-  .wb-nav {
-    display: flex; gap: var(--s-5); align-items: center; flex-wrap: wrap;
-    margin-block: 16px 26px; padding-bottom: 16px;
-    border-bottom: 1px solid var(--hairline);
-
-    & .push { margin-inline-start: auto; }
-    & .btn:disabled { opacity: 0.35; pointer-events: none; }
-  }
-  .wb-picker {
-    display: flex; align-items: center; gap: var(--s-4);
-
-    & .mono { color: var(--ink-soft); font-size: var(--t-2); }
-    & select {
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-      background: var(--panel); color: var(--ink);
-      font-family: var(--font-bn); font-size: var(--t-5); padding: 7px 10px;
-      max-width: min(58vw, 320px);
-    }
-    & select:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-  }
-
-  /* ---------- one day ---------- */
-  .wb-day {
-    border: 1px solid var(--hairline); border-radius: var(--radius);
-    background: var(--panel); padding: clamp(18px, 3vw, 30px);
-    margin-bottom: var(--gap);
-  }
-  .wb-day-head {
-    border-bottom: 1px solid var(--hairline); padding-bottom: 14px; margin-bottom: 18px;
-
-    & .wb-day-num { color: var(--accent); font-size: var(--t-2); letter-spacing: 0.08em; }
-    & h2 { font-size: clamp(1.2rem, 3vw, 1.5rem); margin: 6px 0 4px; }
-    & .wb-day-bn { color: var(--ink-soft); margin: 0; }
-  }
-  .wb-day .shape { margin-top: 0; }
-
-  .wb-block {
-    margin-top: 26px;
-
-    & h3 {
-      font-size: var(--t-2); letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 10px;
-    }
-  }
-  .wb-hint { color: var(--ink-soft); font-size: var(--t-4); margin-top: 10px; }
-
-  /* the eight boxes you fill in yourself */
-  .wb-fields {
-    display: grid; gap: var(--s-4);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
-  }
-  .wb-field, .wb-say-row {
-    display: grid; grid-template-columns: 26px 1fr; gap: var(--s-4); align-items: start;
-  }
-  .wb-num { color: var(--accent); font-size: var(--t-3); padding-top: 9px; }
-
-  /* resize/overflow are deliberately the no-JavaScript values.
-     workbook.js sets overflow:hidden on the boxes it takes over
-     and grows them to fit instead; without it they stay ordinary
-     resizable, scrollable textareas, which is what a learner with
-     scripts off needs in order to read back what they wrote. */
-  .wb-day textarea[data-wb-write] {
-    width: 100%; resize: vertical; overflow: auto;
-    border: 0; border-bottom: 1px solid var(--hairline);
-    background: transparent; color: var(--ink);
-    font-family: var(--font-sans); font-size: var(--t-5); line-height: 1.8;
-    padding: 6px 2px;
-  }
-  .wb-day textarea[data-wb-write]:focus-visible {
-    /* A ring, not just a colour.
-
-       This was `outline: none` with a green underline and a
-       green ground, which is a focus indicator made ENTIRELY of
-       colour: WCAG 2.4.11 wants a non-colour cue, and somebody
-       who cannot separate the green from the paper had no way to
-       tell where the caret was on the one page of this school
-       that is nothing but writing boxes.
-
-       It was also `:focus` rather than `:focus-visible`, so it
-       fired on a mouse click too, which is why it was written
-       quietly enough to be missed. */
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-    border-bottom-color: var(--accent);
-    background: var(--accent-soft);
-  }
-  .wb-day textarea[data-wb-write]::placeholder { color: var(--ink-soft); opacity: 0.55; }
-
-  /* the six to translate, with the answer hidden until asked for */
-  .wb-say-list { display: grid; gap: var(--s-6); }
-  .wb-say-q { grid-column: 2; font-size: var(--t-5); }
-  .wb-say-row textarea { grid-column: 2; }
-  .wb-say-a {
-    grid-column: 2; display: none;
-    color: var(--accent); font-size: var(--t-5); padding-top: 2px;
-  }
-  .wb-day[data-answers] .wb-say-a { display: block; }
-  .wb-answer-toggle { margin-top: 14px; }
-
-  .wb-heart-task { margin-bottom: 2px; }
-  .wb-heart-en { color: var(--ink-soft); font-size: var(--t-3); margin-bottom: 10px; }
-  .wb-heart textarea[data-wb-write] {
-    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-    padding: 10px 12px; min-height: 96px; resize: vertical; overflow: auto;
-  }
-
-  .wb-foot {
-    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-    margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--hairline);
-
-    & .wb-foot-note { color: var(--ink-soft); font-size: var(--t-2); }
-  }
-  .wb-done[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+  /* resize/overflow on a practice book's boxes are deliberately
+     the no-JavaScript values. `schools/workbook.js` sets
+     overflow:hidden on the ones it takes over and grows them to
+     fit instead; without it they stay ordinary resizable,
+     scrollable textareas, which is what a learner with scripts
+     off needs in order to read back what they wrote. */
 
   /* Printing the book should give you the book, not one day of it
      and a navigation bar. Every selector is under body.english,
@@ -6668,15 +6625,13 @@ German for day, and .tag is what the site has always called
      buttons on every page of the site whenever anyone printed
      anything. That is not hypothetical; it happened next door. */
   @media print {
-    body.english :is(.wb-nav, .wb-tracker, .wb-progress, .hero-actions) { display: none; }
-    body.english .wb-day { break-inside: avoid; border-color: #999; }
-    body.english .wb-day[hidden] { display: block !important; }
-    body.english .wb-say-a { display: none !important; }
+    /* `.hero-actions` is the whole site's, not English's, which is
+       why the scope stays even now that the four `.wb-*` names
+       beside it have gone: unscoped this hides the call to action
+       on every page whenever anyone prints anything, and that is
+       not hypothetical, it happened next door. */
+    body.english .hero-actions { display: none; }
     body.english :is(.shape, .bolo, .mone) { break-inside: avoid; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .wb-progress .track i { transition: none; }
   }
 }
 
@@ -8382,6 +8337,19 @@ German for day, and .tag is what the site has always called
     gap: var(--s-2);
     align-content: start;
     scrollbar-width: thin;
+
+    /* Sixteen destinations and five headings are 975px of list,
+       and the rail is a viewport tall minus a bar and a foot. So
+       it scrolls, and it always did; what it did not do was say
+       so, and a menu cut off mid-word at the fold looks like a
+       menu that is broken rather than one with more in it.
+
+       A mask rather than a shadow or a gradient overlay, because
+       those two both need an element that sits over a scrolling
+       box and neither can be inside it. This is one property and
+       nothing to position. */
+    mask-image: linear-gradient(to bottom,
+      transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%);
   }
 
   .rail-group {
@@ -8607,8 +8575,7 @@ German for day, and .tag is what the site has always called
     left: calc(var(--rail-w) + var(--top-gap));
     right: var(--top-gap);
     z-index: 50;
-    display: grid; align-items: center; gap: var(--s-6);
-    grid-template-columns: 1fr auto 1fr;
+    display: flex; align-items: center; gap: var(--s-6);
     height: var(--top-h);
     padding-inline: var(--bar-pad);
     border-radius: var(--radius-pill);
@@ -8661,7 +8628,185 @@ German for day, and .tag is what the site has always called
      on a laptop, and an element that is not displayed is not a
      grid item, so the switch would slide into the column it
      vacated and be centred over nothing. */
-  .topbar > .audience-switch { grid-column: 2; justify-self: center; }
+  /* ---------- the whole site, from the bar ----------
+
+     `next/components/nav-tree.tsx` is the markup and says why it
+     is a popover. This is the shape of it.
+
+     The button is the section you are in, wearing its icon and
+     its colour, which makes it read as "you are here, and here
+     is everywhere else" rather than as a menu button. */
+  .tree-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: var(--tap-sm);
+    padding: 0 6px 0 10px;
+    border-radius: var(--radius-pill);
+    border: 1px solid transparent;
+    background: none;
+    color: var(--ink-soft);
+    font: inherit; font-size: var(--t-2);
+    white-space: nowrap; cursor: pointer;
+    transition: background var(--fast) var(--ease), color var(--fast) var(--ease),
+                border-color var(--fast) var(--ease);
+  }
+  .tree-btn-ico { display: inline-flex; color: var(--accent); }
+  .tree-btn-chev {
+    display: inline-flex; opacity: 0.6;
+    transition: rotate var(--fast) var(--ease);
+  }
+  .tree-btn:hover {
+    color: var(--ink);
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
+  }
+  /* Open: the button holds the accent so the panel below it
+     reads as belonging to it, and the chevron points at it. */
+  .tree-btn:is(:hover, :focus-visible) .tree-btn-chev { opacity: 1; }
+  .tree-btn[aria-expanded="true"] .tree-btn-chev { rotate: 180deg; }
+
+  /* ---------- the panel ----------
+
+     Top layer, so it is above the fixed bar and the rail without
+     either of their stacking contexts having a say. Placed by
+     hand rather than by anchor positioning: it is not anchored
+     to the button, it spans the content column, which is the
+     same span every page's own content has. */
+  .tree-panel {
+    position: fixed;
+    inset: calc(var(--top-gap) + var(--top-h) + 8px) var(--top-gap) auto
+           calc(var(--rail-w) + var(--top-gap));
+    width: auto; max-width: none;
+    max-height: min(70dvh, 640px);
+    overflow-y: auto; overscroll-behavior: contain;
+    margin: 0; padding: clamp(14px, 2vw, 22px);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-edge);
+    background-color: var(--glass-bg);
+    background-image: var(--sheen), var(--weave);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: var(--shadow-lift);
+    color: var(--ink);
+    transition: opacity var(--fast) var(--ease), translate var(--fast) var(--ease),
+                overlay var(--fast) allow-discrete, display var(--fast) allow-discrete;
+  }
+  .tree-panel:not(:popover-open) { opacity: 0; translate: 0 -6px; }
+  @starting-style {
+    .tree-panel:popover-open { opacity: 0; translate: 0 -6px; }
+  }
+  .tree-panel::backdrop { background: transparent; }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .tree-panel { background-color: var(--glass-solid); }
+  }
+
+  /* Learning across the top, the other four groups under it.
+
+     Not five equal columns, which is what this was: the learning
+     group is six destinations with fourteen stages hanging off
+     them and the other four are one, three, three and one, so
+     five equal columns is one column 640px long beside four that
+     are 90px, and the fifth wrapped off the bottom of a panel
+     that was three-quarters empty.
+
+     A row that wraps rather than one that scrolls, throughout: a
+     menu that scrolls sideways hides the half of itself that is
+     the reason to open it. */
+  .tree-cols {
+    display: grid; gap: clamp(14px, 2vw, 26px);
+    grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+    align-items: start;
+  }
+  .tree-group[data-group="learn"] { grid-column: 1 / -1; }
+  .tree-group[data-group="learn"] .tree-list {
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+    gap: 2px clamp(10px, 1.6vw, 22px);
+    align-items: start;
+  }
+
+  .tree-group { display: grid; gap: 6px; align-content: start; }
+  .tree-head {
+    font-size: var(--t-1); letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--accent-line);
+  }
+  .tree-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+  .tree-item { min-width: 0; }
+
+  .tree-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 9px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    color: var(--ink); text-decoration: none;
+    transition: background var(--fast) var(--ease), border-color var(--fast) var(--ease);
+  }
+  .tree-link:hover { background: var(--accent-soft); border-color: var(--accent-line); }
+  .tree-link[aria-current="page"] {
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
+    font-weight: 500;
+  }
+  .tree-ico {
+    display: inline-flex; flex: 0 0 auto;
+    color: var(--accent);
+  }
+  .tree-text { display: grid; min-width: 0; }
+  .tree-label {
+    font-size: var(--t-3); line-height: 1.3;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tree-sub {
+    font-family: var(--font-bn); font-size: var(--t-1);
+    color: var(--ink-soft); line-height: 1.4;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tree-soon {
+    margin-left: auto; flex: 0 0 auto;
+    font-family: var(--font-bn); font-size: var(--t-0);
+    color: var(--accent);
+  }
+
+  /* The level the rail cannot show. Indented under its school
+     and hung off a rule in that school's colour, so four stages
+     read as belonging to the line above them rather than as four
+     more destinations. */
+  .tree-stages {
+    list-style: none; margin: 1px 0 5px; padding: 0 0 0 12px;
+    margin-left: 18px;
+    border-left: 1px solid var(--accent-line);
+    display: grid; gap: 1px;
+  }
+  .tree-stages a {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 4px 8px;
+    border-radius: var(--radius-xs);
+    color: var(--ink-soft); text-decoration: none;
+    font-size: var(--t-2);
+    transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+  }
+  .tree-stages a:hover { background: var(--accent-soft); color: var(--ink); }
+  .tree-stage-name {
+    font-family: var(--font-bn);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tree-stage-n {
+    margin-left: auto; flex: 0 0 auto;
+    font-size: var(--t-0); color: var(--ink-soft); opacity: 0.75;
+  }
+
+  /* On a phone the bar is a burger, a mark and two icons, and
+     there is no room for a label beside them. The tree stays:
+     it is the one control that reaches the whole site, and the
+     drawer is one level deep like the rail it holds. */
+  @media (width <= 900px) {
+    .tree-btn-text { display: none; }
+    .tree-panel {
+      inset: calc(var(--top-gap) + var(--top-h) + 8px) var(--top-gap) auto var(--top-gap);
+      max-height: min(76dvh, 560px);
+    }
+  }
 
   /* The lozenge behind the chosen half. It moves rather than
      appearing, so the switch reads as one control with two
@@ -8705,12 +8850,24 @@ German for day, and .tag is what the site has always called
     color: #fff;
   }
 
+  /* Hard right, whatever is to its left and whatever of that is
+     hidden at this width. `margin-left: auto` rather than a named
+     grid column, which is what this was until the bar became a
+     flex row: two of the bar's children are `display: none` above
+     900px, and an element that is not displayed is not a grid
+     item, so a named column is a column that moves. */
   .top-tools {
     display: flex; align-items: center; gap: var(--s-3);
-    grid-column: 3; justify-self: end;
+    margin-left: auto;
   }
 
-  .top-btn {
+  /* `.drawer-close` is not in the bar and is not `.top-btn` in the
+     markup, and it is the same control: the burger and the button
+     that closes what the burger opened have to be the same size in
+     the same place, or the menu moves under the thumb. It is named
+     here rather than given a second copy of these declarations,
+     which is what it had. */
+  :is(.top-btn, .drawer-close) {
     display: inline-flex; align-items: center; gap: var(--s-4);
     height: 36px; padding-inline: 10px;
     border: 1px solid var(--hairline);
@@ -8720,14 +8877,25 @@ German for day, and .tag is what the site has always called
     cursor: pointer;
     transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
   }
-  .top-btn:hover { color: var(--accent); border-color: var(--accent); }
+  :is(.top-btn, .drawer-close):hover { color: var(--accent); border-color: var(--accent); }
   .top-btn .kbd-hint { font-size: var(--t-0); opacity: 0.8; }
 
   /* The burger, which only exists where the rail does not, and
      the mark beside it, which exists for exactly the same reason
      and at exactly the same widths. */
   .drawer-btn, .drawer-close, .drawer-back, .topbar-mark { display: none; }
-  .drawer-btn { grid-column: 1; justify-self: start; }
+  /* In a flex row a control shrinks unless it is told not to,
+     and a control that shrinks is a control that is not the size
+     it was designed at. The burger measured 40px against the
+     close button's 42 on a 412px phone, so the button moved a
+     pixel under the thumb that had just pressed it, and
+     `interactive.test.mjs` is the check that says those two are
+     the same box.
+
+     The mark is the one thing here that MAY shrink: it is a
+     wordmark with `text-overflow: ellipsis` already on it, so it
+     is the right thing to give the leftover width to. */
+  :is(.drawer-btn, .tree-btn, .top-tools, .top-btn) { flex: 0 0 auto; }
 
   .topbar-mark {
     grid-column: 1; justify-self: start;
@@ -8744,7 +8912,12 @@ German for day, and .tag is what the site has always called
   /* The audience switch when it is in the rail rather than in the
      bar. Hidden at every width where the bar has room for it,
      which is the same query that shows the burger. */
-  .rail-audience { display: none; }
+  /* The switch lives here now, at every width. It was in the bar
+     on a laptop and only in the drawer on a phone, which meant
+     the question sat across the top of every page somebody read.
+     It is asked once and then never again, so it belongs with the
+     menu, which is where somebody goes when they are deciding. */
+  .rail-audience { display: grid; gap: 7px; }
 
   /* ---------- the same menu on a phone ---------- */
 
@@ -8835,16 +9008,14 @@ German for day, and .tag is what the site has always called
        bar's copy is the one that has to stay: it is there in the
        state the reader is in almost all of the time. */
     .rail-head .rail-mark { display: none; }
-    .drawer-close {
-      display: inline-flex; align-items: center; justify-content: center;
-      flex: 0 0 auto;
-      height: 36px; padding-inline: var(--s-5);
-      border: 1px solid var(--hairline);
-      border-radius: var(--radius-pill);
-      background: var(--panel); color: var(--ink-soft); cursor: pointer;
-      transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
-    }
-    .drawer-close:hover { color: var(--accent); border-color: var(--accent); }
+    /* The close button IS the burger, so it takes the burger's
+       rule rather than a copy of it. It had a copy, and the copy
+       had `padding-inline: var(--s-5)` where `.top-btn` has 10px,
+       so the two were 42px and 40px and the button moved 1px
+       under the thumb that opened the menu. That is what a copy
+       of a control does, and it is the reason `.btn` and
+       `<Button>` had to become one thing. */
+    .drawer-close { display: inline-flex; flex: 0 0 auto; }
     .drawer-back {
       display: block;
       position: fixed; inset: 0; z-index: 55;
@@ -8865,19 +9036,15 @@ German for day, and .tag is what the site has always called
        indication of whose site it was, because the wordmark is in
        the rail and the rail is a drawer at this width.
 
-       So the switch moves into the drawer, where a question a
-       reader answers once belongs, and the mark takes its place.
-       Two columns rather than three: the mark takes the middle
-       one and grows into it. */
+       So the mark takes its place, and grows into whatever the
+       burger and the two icons leave. */
     .topbar {
-      grid-template-columns: auto minmax(0, 1fr) auto;
       gap: var(--s-4);
       /* The rail is a drawer at this width, so the bar has the
          whole row and floats clear of both edges. */
       left: var(--top-gap);
     }
-    .topbar > .audience-switch { display: none; }
-    .topbar-mark { display: flex; grid-column: 2; }
+    .topbar-mark { display: flex; flex: 1 1 auto; min-width: 0; }
 
     .rail-audience {
       display: grid; gap: var(--s-3); margin-bottom: 10px;
@@ -9303,6 +9470,24 @@ German for day, and .tag is what the site has always called
   }
   a.card:hover .card-go::after { translate: 4px 0; }
 
+  /* ---------- printed in the accent ----------
+
+     The last card in a set, when it is the conclusion of the
+     others rather than another of them. It was `.cell-aim` and it
+     coloured `.tag` and `h3`, which are what a `.cell` was made
+     of; the deck renders `.card-chip` and `.card-title`, so
+     moving that card across without moving this rule would have
+     left the chip unreadable on an accent ground and nothing
+     would have failed. */
+  .card[data-fill] {
+    background: var(--accent-strong);
+    border-color: transparent;
+
+    & .card-chip { color: color-mix(in oklab, var(--accent-ink) 72%, transparent); }
+    & .card-title, & li { color: var(--accent-ink); }
+    & li { border-color: oklch(100% 0 0 / 0.14); }
+  }
+
   /* ---------- ticked, for anything a reader finishes ---------- */
 
   .card[data-done] { border-color: color-mix(in oklab, var(--accent) 40%, var(--hairline)); }
@@ -9488,9 +9673,15 @@ German for day, and .tag is what the site has always called
 
   /* ---------- the tick, on a lesson ---------- */
 
+  /* Spacing is the container's, not the control's. This carried
+     `margin-block: 28px 6px` for the school lesson it was written
+     for, and a top margin on a flex item is a top margin wherever
+     that item lands: inside `.course-actions`, which centres its
+     row, it pushed this 28px down past the button beside it. The
+     school's own wrapper owns that gap now. */
   .tick-btn {
-    display: inline-flex; align-items: center; gap: 9px;
-    margin-block: 28px 6px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    min-height: var(--tap);
     padding: 9px 18px;
     border-radius: var(--radius-pill);
     border: 1px solid var(--hairline);

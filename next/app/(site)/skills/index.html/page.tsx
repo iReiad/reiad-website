@@ -33,6 +33,7 @@ import type { Metadata } from "next";
 import { GoCard, InfoCard, SoonCard } from "../../../../components/deck";
 import { NAV } from "../../../../lib/nav";
 import { pageMeta } from "../../../../lib/pageMeta";
+import { SectionLabel } from "../../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/skills/index.html",
@@ -80,9 +81,9 @@ export default function SkillsPage() {
 
         <section className="hub-section" id="all">
           <div className="hub-section-head">
-            <span className="section-label mono">
+            <SectionLabel>
               যা যা আছে · <span lang="en">Everything here</span>
-            </span>
+            </SectionLabel>
           </div>
 
           <div className="deck deck-2">
@@ -115,9 +116,9 @@ export default function SkillsPage() {
 
         <section className="hub-section" id="kilo">
           <div className="hub-section-head">
-            <span className="section-label mono">
+            <SectionLabel>
               কেন এভাবে · <span lang="en">How they are written</span>
-            </span>
+            </SectionLabel>
           </div>
 
           <div className="deck">
@@ -147,9 +148,9 @@ export default function SkillsPage() {
         {mine.length ? (
           <section className="hub-section" id="mine">
             <div className="hub-section-head">
-              <span className="section-label mono">
+              <SectionLabel>
                 আমার নিজের · <span lang="en">Mine, and not published</span>
-              </span>
+              </SectionLabel>
             </div>
 
             <div className="deck deck-2">

@@ -63,8 +63,11 @@ export function GoCard({
   href, go, done, ...rest
 }: Common & {
   href: string;
-  /** What happens when you press it, written out. */
-  go: string;
+  /** What happens when you press it, written out. A node rather
+      than a string because one card's action is in Bangla and the
+      rest of it is not: `lang` on the card would put the English
+      title in the Bangla serif to get the last line right. */
+  go: ReactNode;
   /** Ticked, for anything a reader has finished. */
   done?: boolean;
 }) {
@@ -79,11 +82,20 @@ export function GoCard({
   );
 }
 
-/** A card that tells you something and is the end of the road. */
-export function InfoCard(props: Common) {
+/** A card that tells you something and is the end of the road.
+
+    `fill` is the one variant it has: the card printed in the
+    accent rather than on the paper, for the last card in a set
+    that is the conclusion of the others. One card on the site
+    uses it, and it was `.cell-aim` in the stylesheet, whose rule
+    coloured `.tag` and `h3`: two names the deck does not render,
+    so as a `.cell` it worked and as a card it would silently have
+    lost its chip. */
+export function InfoCard({ fill, ...props }: Common & { fill?: boolean }) {
   return (
     <div className={["card", props.className].filter(Boolean).join(" ")}
-         data-kind="info" lang={props.lang} style={style(props.accent)}>
+         data-kind="info" data-fill={fill ? "" : undefined}
+         lang={props.lang} style={style(props.accent)}>
       <Inside {...props} />
     </div>
   );
