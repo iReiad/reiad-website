@@ -31,6 +31,28 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v112: A text box is one object now. Five blocks said what a
+        field is, in five layers, with five paddings (12/14,
+        10/12, 11/13, 10/12, 9/11), three backgrounds, two font
+        sizes and two different ways of showing focus. Nothing was
+        wrong with any of them and no two matched, so the Studio's
+        text box, the contact form's and the stock check's were
+        three different objects.
+
+        One rule, on the ELEMENTS rather than a class, because
+        half the fields on this site are written by a browser
+        module or live in an app that does not import the
+        component library. Glass ground, the sheen, a pane edge,
+        `--tap` so a field lines up with the button beside it, and
+        `--focus-ring` instead of an outline here and a shadow
+        there. The five blocks keep only what differs: a width, a
+        mono face for a number.
+
+        `:is()` takes the specificity of its most specific
+        argument, so a plain `textarea` rule after it lost and
+        every textarea came out one line tall. The height is set
+        per shape now.
+
    v111: Two alignments that were reported first and fixed last.
 
         The course breadcrumb sat against the window edge because
@@ -1097,7 +1119,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v111";
+const VERSION = "v112";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
