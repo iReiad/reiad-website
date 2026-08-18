@@ -65,18 +65,23 @@
    stylesheet that grows a rule because a comment used a word is
    the kind of thing noticed six months later by its side effects.
 
-   So the sources are named. They are the places a class name on
-   this site is written now that no page is a file, plus the
-   site's own modules, some of which build DOM.
+   So the sources are named, and every one of them is inside
+   `next/`. That is a constraint rather than a choice: Turbopack
+   refuses to resolve above its own root, so a source in `aab/` or
+   `app/src` fails the build outright with "leaves the filesystem
+   root". Raising the root would fix it and break the OpenNext
+   build instead, which `shared/README.md` says at more length.
 
-   `aab/` itself is not scanned as a whole, and that is deliberate
-   rather than an oversight: it holds this file's own output, and
-   a scanner that read its own output would keep whatever it
-   emitted last. */
-@source "../../../next/app";
-@source "../../../next/components";
-@source "../../../app/src";
-@source "../../*.js";
+   Nothing is lost by it, which was measured rather than assumed.
+   Of the 252 class selectors the committed build emitted, exactly
+   two appear only outside these two folders: `italic`, which is
+   an execCommand name in the Studio's editor, and `lowercase`,
+   which is a word in a comment in `sw.js`. Neither is a class.
+   The desk and the Studio are Next ROUTES that load their own
+   bundle, so the utilities their JSX uses are emitted because
+   `next/` uses them too. */
+@source "../app";
+@source "../components";
 
 /* The site's own tokens, as Tailwind's.
 
