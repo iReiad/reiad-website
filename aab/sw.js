@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v106: A selected quiz answer highlights. Both rules that drew
+        it said `var(--ground)`, which is not a token this
+        stylesheet defines: an undefined custom property makes the
+        whole declaration invalid at computed value time, so
+        picking an answer did nothing visible. `--header-h` was
+        the same, left behind when `body > header` was removed.
+        `check-css.mjs` now fails on a token nothing defines and
+        no script sets.
+
    v105: The theming actually reaches the page. `--accent` was set
         correctly on every page and then ignored by 557 rules that
         named `var(--green)` or `var(--gold)`, so a German page
@@ -1009,7 +1018,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v105";
+const VERSION = "v106";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

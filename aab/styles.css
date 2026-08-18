@@ -719,7 +719,7 @@
        fallback covers the moment before that runs. The extra ~1rem
        is the "little space"– a heading pinned flush against the
        header bottom reads as clipped. */
-    scroll-padding-top: calc(var(--header-h, 5rem) + 0.9rem);
+    scroll-padding-top: calc(var(--top-space) + 0.9rem);
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
 
@@ -3589,7 +3589,7 @@ it collapsed to the width of the word "Bangladesh". */
      ============================================================ */
   .studio-tools {
     position: sticky;
-    top: calc(var(--header-h, 66px) - 1px);
+    top: calc(var(--top-space) - 1px);
     z-index: 4;
     gap: var(--s-4);
     /* The bar sits over text as it scrolls past, so it needs a
@@ -9935,17 +9935,31 @@ German for day, and .tag is what the site has always called
   .quiz-option {
     display: flex;
     gap: 0.7rem;
-    align-items: baseline;
+    /* `center`, not `baseline`. A 1.05rem control aligned to the
+       baseline of its label sits low and slightly left of where
+       the eye puts it, which is what made a row of answers look
+       ragged. */
+    align-items: center;
     padding: 0.55rem 0.65rem;
-    border-radius: 0.45rem;
+    border-radius: var(--radius-sm);
     line-height: 1.5;
     cursor: pointer;
+    border: 1px solid transparent;
+    transition: background var(--fast) var(--ease),
+                border-color var(--fast) var(--ease);
   }
 
-  .quiz-option:hover { background: var(--ground); }
+  .quiz-option:hover { background: var(--panel-hover); }
 
+  /* The answer a reader picked. Both of these said
+     `var(--ground)`, which is not a token this stylesheet
+     defines and never has been, so the declaration was invalid
+     at computed value time and dropped: picking an answer
+     highlighted nothing, and the only feedback was the native
+     dot. `check-css.mjs` fails on a token nothing defines now. */
   .quiz-option:has(input:checked) {
-    background: var(--ground);
+    background: var(--accent-soft);
+    border-color: var(--accent-line);
     font-weight: 500;
   }
 
