@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v100: Glass everywhere, and it follows the accent. --panel and
+        --hairline are a mix now rather than flat colours, so all
+        75 surfaces and all 269 borders carry a trace of the
+        page's own colour without one of them being edited. The
+        rail and the account popover gained the real backdrop
+        blur the top bar already had.
+
    v99: A page wears the colour of its own icon in the rail.
         --accent arrives inline on <html> from the one table in
         next/lib/nav.ts, so /styles.css lost the five body rules
@@ -957,7 +964,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v99";
+const VERSION = "v100";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

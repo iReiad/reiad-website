@@ -84,6 +84,12 @@ rather than with this work.
 
 **Done:** `/account.html`.
 
+The stylesheet's own tokens moved first, which is what makes the rest
+cheap: `--panel` and `--hairline` are `color-mix()` expressions carrying a
+trace of `--accent`, so 75 surfaces and 269 borders follow the page's
+colour without any of them being edited. A component converted to Tailwind
+inherits the same thing through `@theme`.
+
 Three things stay in `aab/styles.css` permanently, and the split is the point:
 
 - **anything an article carries.** `tw` sits below `article` in the layer
