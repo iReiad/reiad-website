@@ -31,6 +31,28 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v100: Glass everywhere, and it follows the accent. --panel and
+        --hairline are a mix now rather than flat colours, so all
+        75 surfaces and all 269 borders carry a trace of the
+        page's own colour without one of them being edited. The
+        rail and the account popover gained the real backdrop
+        blur the top bar already had.
+
+   v99: A page wears the colour of its own icon in the rail.
+        --accent arrives inline on <html> from the one table in
+        next/lib/nav.ts, so /styles.css lost the five body rules
+        that said five of the sixteen destinations by hand, and
+        the practice books gained the attribute their school owns.
+
+   v98: The breadcrumb stopped printing the site's name in it.
+        /crumbs.js split the document title on U+2014, which this
+        site's rules guarantee never appears, so the split did
+        nothing and "Lesson · Reiad's Library" reached the crumb.
+        It strips the site name now. /styles.css lost a doubled
+        rule above the lesson buttons and gained overflow-wrap on
+        prose, where a Bangla sentence running into an English one
+        is one token to the line breaker and used to overflow.
+
    v97: /checkpoints.js and /sync.js rebuilt: _lib/sanitise and
         _lib/http became TypeScript and the modules that name them
         were repointed. No behaviour change.
@@ -942,7 +964,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v97";
+const VERSION = "v100";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

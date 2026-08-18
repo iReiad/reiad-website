@@ -46,6 +46,7 @@ const STAGES = [
     "scripts/check-scale.mjs",
     "scripts/check-next.mjs",
     "scripts/check-courses.mjs",
+    "scripts/check-accents.mjs",
   ]],
   ["generated", [
     ["scripts/build-modules.mjs", "--check"],

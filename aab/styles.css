@@ -94,8 +94,41 @@
     /* --- surfaces --- */
     --paper:        light-dark(oklch(98.4% 0.008 var(--h-paper)), oklch(16.5% 0.012 var(--h-green)));
     --paper-sunk:   light-dark(oklch(96.4% 0.011 var(--h-paper)), oklch(14%   0.012 var(--h-green)));
-    --panel:        light-dark(oklch(99.5% 0.004 var(--h-paper)), oklch(21%   0.014 var(--h-green)));
-    --panel-hover:  light-dark(oklch(98%   0.012 var(--h-paper)), oklch(24%   0.016 var(--h-green)));
+    /* --- the two surfaces, and both are glass ---
+
+       `--panel-base` is the opaque colour a panel used to be, and
+       it is still what a browser without `color-mix` falls back
+       to. `--panel` is that colour with a trace of the page's
+       accent mixed in and a little of the paper showing through,
+       which is what makes a card on a German page read as
+       faintly blue and the same card on the calculators read as
+       faintly gold, without either of them naming a colour.
+
+       The mix is 4%. That is deliberately below where anybody
+       would call it tinted: the point is that the page feels
+       like one place, not that the cards look coloured. Every
+       contrast pair is measured against this by
+       `check-contrast.mjs` and the accent at 4% moves none of
+       them by more than a rounding error, because an accent at
+       this site's chroma is close to neutral in lightness.
+
+       TRANSLUCENT, not transparent. 0.86 over the paper is a
+       surface you can put text on: what shows through is the
+       page's own ground rather than words. The overlay tier
+       below is the one that needs a blur, because it is the only
+       tier with moving content underneath it. */
+    --panel-base:   light-dark(oklch(99.5% 0.004 var(--h-paper)), oklch(21%   0.014 var(--h-green)));
+    --panel:        color-mix(in oklab, var(--accent) 4%,
+                      color-mix(in srgb, var(--panel-base) 86%, transparent));
+    --panel-hover:  color-mix(in oklab, var(--accent) 7%,
+                      light-dark(oklch(98% 0.012 var(--h-paper)), oklch(24% 0.016 var(--h-green))));
+
+    /* The edge and the lift a pane carries. A light hairline
+       along the top of a surface is what reads as a pane of
+       something rather than a rectangle of paint, and it follows
+       the accent for the same reason the ground does. */
+    --pane-edge:    color-mix(in oklab, var(--accent) 18%, var(--hairline));
+    --pane-top:     light-dark(oklch(100% 0 0 / 0.55), oklch(100% 0 0 / 0.06));
 
     /* --- text --- */
     --ink:          light-dark(oklch(24%   0.012 var(--h-green)), oklch(93.5% 0.008 var(--h-green)));
@@ -172,7 +205,14 @@
        Dark mode, for the record: 14.6, 7.8, 7.2, 7.7. Nothing in
        dark mode was touched by the warm paper, and these are the
        numbers to re-measure if any of it ever is. */
-    --hairline:     light-dark(oklch(88.5% 0.012 var(--h-paper)), oklch(28%   0.015 var(--h-green)));
+    /* 269 rules draw a border with this, so tinting it here is
+       how every edge on a German page goes faintly blue without
+       one of those rules being touched. Same argument as the
+       panel above, and the same restraint: 10% of an accent at
+       this site's chroma is a hue you notice only next to another
+       section's. */
+    --hairline-base: light-dark(oklch(88.5% 0.012 var(--h-paper)), oklch(28%   0.015 var(--h-green)));
+    --hairline:     color-mix(in oklab, var(--accent) 10%, var(--hairline-base));
     /* --- glass ---
 
        These existed and were used in exactly one place, at an
@@ -194,11 +234,17 @@
        in `@layer shell`. Without it, a header on such a browser
        is 28% transparent over moving text, which is the one
        state this must never be in. */
-    --glass-bg:     light-dark(oklch(99% 0.004 var(--h-paper) / 0.72),
+    --glass-base:   light-dark(oklch(99% 0.004 var(--h-paper) / 0.72),
                                oklch(23% 0.014 var(--h-green) / 0.72));
-    --glass-solid:  light-dark(oklch(99% 0.004 var(--h-paper)),
-                               oklch(23% 0.014 var(--h-green)));
+    --glass-bg:     color-mix(in oklab, var(--accent) 5%, var(--glass-base));
+    --glass-solid:  color-mix(in oklab, var(--accent) 5%,
+                      light-dark(oklch(99% 0.004 var(--h-paper)),
+                                 oklch(23% 0.014 var(--h-green))));
     --glass-edge:   light-dark(oklch(100% 0 0 / 0.7), oklch(100% 0 0 / 0.1));
+    /* The lit top edge that reads as a pane rather than a
+       rectangle of paint. One shadow, so a surface can carry it
+       without a pseudo-element. */
+    --pane-lift:    inset 0 1px 0 var(--pane-top), var(--shadow);
     --glass-blur:   saturate(1.7) blur(14px);
     --shadow:       light-dark(0 10px 30px oklch(30% 0.05 var(--h-green) / 0.09),
                                0 10px 30px oklch(0% 0 0 / 0.38));
@@ -1146,7 +1192,13 @@
     padding: 0;
     border: 1px solid var(--hairline);
     border-radius: var(--radius);
-    background: var(--panel);
+    background: var(--glass-bg);
+    /* Real glass: this sits over content that scrolls under it,
+       which is the one place a backdrop blur earns its cost. A
+       card does not, and gets the tint and the edge without the
+       filter. See the note above `--glass-bg`. */
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     color: var(--ink);
     box-shadow: var(--shadow-lift);
 
@@ -2542,7 +2594,7 @@ it collapsed to the width of the word "Bangladesh". */
 
   /* term links inside prose */
   a.term {
-    color: var(--green);
+    color: var(--accent);
     text-decoration: underline dotted 1.5px;
     text-underline-offset: 4px;
     cursor: pointer;
@@ -2578,6 +2630,14 @@ it collapsed to the width of the word "Bangladesh". */
   .article, .term-article {
     padding-block: 56px 10px;
     font-size: calc(1rem * var(--read-scale));
+
+    /* A run with no break opportunity in it is not hypothetical
+       here: a lesson mixes Bangla and English, and a sentence
+       ending in one script followed straight by the other is one
+       token as far as the line breaker is concerned. Without this
+       it overflows the column and the underline runs off the
+       edge of the page. */
+    overflow-wrap: anywhere;
 
     & h1 { font-size: clamp(1.9rem, 4.8vw, 2.7rem); max-width: 24ch; }
     & .meta { margin-block: 14px 30px; color: var(--ink-soft); }
@@ -7765,26 +7825,23 @@ German for day, and .tag is what the site has always called
 
   /* ---------- a page knows its own colour ----------
 
-     The rail colours each destination in its list. This is the
-     other half: once you are IN a place, the whole page carries
-     that place's accent, so the meter on a German ladder, the
-     chip on a German lesson and the German entry in the rail are
-     one colour without any of them naming it.
+     Once you are IN a place, the whole page carries that place's
+     accent, so the meter on a German ladder, the chip on a German
+     lesson and the German entry in the rail are one colour
+     without any of them naming it.
 
-     On the body, because that is the one element every page has
-     and the only one above both the rail and the content. Each
-     school's own layer could set it, and deliberately does not:
-     four layers setting one property is four places to look when
-     it is wrong, and `@layer money` does not exist for the
-     kitchen or the travel desk, which need this too.
+     THE MAPPING IS NOT HERE. `--accent` arrives inline on <html>,
+     read off the one table in `next/lib/nav.ts` by whatever is
+     rendering: `accentStyle()` for a route, `htmlAttrs()` for the
+     generated books and the two file-served pages.
 
-     `shared/look.ts` and `next/lib/school.ts` are where these
-     class names come from, and they are the same strings. */
-  body.deutsch { --accent: var(--blue); }
-  body.quran   { --accent: var(--teal); }
-  body.english { --accent: var(--violet); }
-  body.cooking { --accent: var(--rose); }
-  body.travel  { --accent: var(--plum); }
+     Five rules used to sit here saying `body.deutsch { --accent:
+     var(--blue) }` and so on. They covered five of the sixteen
+     destinations, and they agreed with the rail only because
+     nobody had added the sixth. A colour said in two places is
+     the failure this repository opens with.
+
+     `check-accents.mjs` fails if they come back. */
 
   :root {
     --rail-open: 268px;
@@ -7844,7 +7901,13 @@ German for day, and .tag is what the site has always called
     width: var(--rail-w);
     display: flex;
     flex-direction: column;
-    background: var(--panel);
+    background: var(--glass-bg);
+    /* Real glass: this sits over content that scrolls under it,
+       which is the one place a backdrop blur earns its cost. A
+       card does not, and gets the tint and the edge without the
+       filter. See the note above `--glass-bg`. */
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border-right: 1px solid var(--hairline);
     /* The rail holds still across a cross-document view
        transition instead of being cross-faded out and back in,
@@ -9548,6 +9611,9 @@ German for day, and .tag is what the site has always called
   .course-page {
     max-width: 42rem;
     line-height: 1.65;
+    /* Somebody else's prose, so it can contain anything, including
+       a token with no break opportunity in it. */
+    overflow-wrap: anywhere;
   }
 
   .course-page > :first-child { margin-top: 0; }
@@ -9718,6 +9784,15 @@ German for day, and .tag is what the site has always called
     margin: 2rem 0;
     padding-top: 1.5rem;
     border-top: 1px solid var(--hairline);
+  }
+
+  /* One rule, not two. A reading block ends with the "open the
+     original in Drive" line, which draws its own, and a file list
+     ends with the last row's. A second rule sixty pixels below
+     the first reads as a mistake, because it is one. */
+  :is(.course-reading, .course-files) + .course-actions {
+    border-top: 0;
+    padding-top: 0;
   }
 
   .course-continue { flex: 0 1 auto; }

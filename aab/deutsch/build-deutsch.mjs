@@ -42,6 +42,7 @@
    ============================================================ */
 
 import { writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { htmlAttrs } from "../../next/lib/nav.ts";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -204,7 +205,7 @@ const FOOTER = `  <footer>
    generators take turns overwriting each other. */
 function page({ title, description, canonical, body, og = "deutsch.png", extraScripts = "" }) {
   return `<!DOCTYPE html>
-<html lang="bn">
+<html ${htmlAttrs("deutsch")}>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">

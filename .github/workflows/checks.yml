@@ -110,6 +110,7 @@ jobs:
           node scripts/check-scale.mjs
           node scripts/check-next.mjs
           node scripts/check-courses.mjs
+          node scripts/check-accents.mjs
 
       # Generated files are committed here, so a build is not run:
       # what matters is that what was committed still matches its

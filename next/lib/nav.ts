@@ -189,3 +189,83 @@ export const AUDIENCES = [
   { id: "learn" as const, label: "Learning", sub: "শিখতে এসেছি" },
   { id: "work" as const, label: "Hiring", sub: "কাজের খোঁজে" },
 ];
+
+/* ============================================================
+   The colour a page wears
+
+   A place on this site has a colour and the reader learns it from
+   the rail: the German book is blue, the Qur'anic scroll is teal,
+   the calculators are gold. Once they know that, the colour is
+   faster than the label, so the page a reader opens wears the
+   same one its icon does.
+
+   `--accent` is the single property that does it. Every component
+   already reads it and never names a colour, and `--accent-soft`,
+   `--accent-line` and `--accent-ring` derive from it, so one
+   declaration recolours the cards, the chips, the meters, the
+   rules and every focus ring on the page.
+
+   This table is DERIVED from NAV above rather than written out,
+   because it was written out once already: `aab/styles.css` had
+   five `body.deutsch { --accent: ... }` rules, which covered five
+   of the sixteen destinations and disagreed with nothing only
+   because nobody had added the sixth. An item's own accent wins,
+   its group's is the fallback, and a destination that names
+   neither gets the site's default.
+   ============================================================ */
+
+/** Every `key` in the rail, to the colour that key owns. */
+export const ACCENTS: Record<string, string> = Object.fromEntries(
+  NAV.flatMap((group) =>
+    group.items.map((item) => [item.key ?? item.href, item.accent ?? group.accent])),
+);
+
+/** The colour for one destination, as a `var(...)` string.
+
+    Returns null rather than the default for somewhere the rail
+    does not list, so a caller can leave the attribute off
+    entirely instead of writing the value that was already going
+    to apply. */
+export function accentFor(key: string | null | undefined): string | null {
+  if (!key) return null;
+  return ACCENTS[key] ?? null;
+}
+
+/** What a renderer puts on `<html>`.
+
+    An inline custom property rather than a generated stylesheet,
+    and that is the whole point: the table above is the only place
+    the mapping exists, so a section added to the rail is themed
+    by the same edit that lists it. There is no second file to
+    regenerate and nothing that can drift from this one.
+
+    `in-skills` is the one alias, kept because four routes still
+    pass it: a piece in the kitchen or on the travel desk is
+    inside the skills half and said so before the money school
+    joined that list. */
+export function accentStyle(
+  key: string | null | undefined,
+): Record<string, string> | undefined {
+  const accent = accentFor(key === "in-skills" ? "skills" : key);
+  return accent ? { "--accent": accent } : undefined;
+}
+
+/** The attributes `<html>` carries, as a string, for a renderer
+    that is not React.
+
+    The four practice books are generated static HTML and
+    `404.html` and `offline.html` are served as files, so six
+    pages build their own `<html>` tag. They read this rather than
+    each writing a colour, which is the same argument as
+    everything above: one table, and a section added to the rail is
+    themed everywhere by that one edit.
+
+    Returns `lang` and nothing else for a page the rail does not
+    list, so the site default applies rather than a wrong colour. */
+export function htmlAttrs(key: string | null | undefined, lang = "bn"): string {
+  const accent = accentFor(key === "in-skills" ? "skills" : key);
+  const parts = [`lang="${lang}"`];
+  if (key) parts.push(`data-section="${key}"`);
+  if (accent) parts.push(`style="--accent: ${accent}"`);
+  return parts.join(" ");
+}

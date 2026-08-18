@@ -1,6 +1,6 @@
 # Migration tracker
 
-Three moves, all part-done. The rule is **convert what you touch**: any file
+Four moves, all part-done. The rule is **convert what you touch**: any file
 you edit for another reason gets converted in the same change, wired up
 properly, with its checks passing. No separate "migration sprint".
 
@@ -14,10 +14,10 @@ Built from `aab/src/*.ts` to `aab/*.js` by `scripts/build-modules.mjs`. The
 built file is committed because the site deploys by uploading `aab/` with no
 build step.
 
-**Done (12):** `account-page` `api` `checkpoints` `courses` `keep` `photo`
-`prefs` `saved` `share-card` `signin` `sync` `tools/live`
+**Done (13):** `account-page` `api` `checkpoints` `courses` `crumbs` `keep`
+`photo` `prefs` `saved` `share-card` `signin` `sync` `tools/live`
 
-**Left (21),** largest first:
+**Left (20),** largest first:
 
 | File | Lines | Notes |
 | --- | ---: | --- |
@@ -26,7 +26,6 @@ build step.
 | `content.js` | 825 | menu, palette, `COUNTS`. Imported by checks that run in node |
 | `app.js` | 649 | theme, palette, prerender, service-worker registration |
 | `account.js` | 418 | Supabase session. `token()` is imported by most of `aab/src/` |
-| `crumbs.js` | 330 | |
 | `tilt.js` | 283 | |
 | `audience.js` | 282 | |
 | `news.js` | 247 | |
@@ -68,6 +67,15 @@ same from any check that greps a source file.
 
 `shared/` is already all TypeScript.
 
+### The declarations are the slow part
+
+`aab/src/types/` is what a converted module leans on, and it was
+written thin: `curriculum.d.ts` described four exports where `crumbs`
+needed fifteen, and `content.d.ts` had no `SITE`, `PAGES` or `READS` at
+all. Both are filled in now, so the next conversion of anything that
+reads a ladder or the site's own furniture starts with real types
+rather than with this work.
+
 ## 2. Stylesheet to Tailwind
 
 `aab/tailwind.css` is built from `aab/src/styles/` by
@@ -75,6 +83,12 @@ same from any check that greps a source file.
 `bg-panel` means `var(--panel)` in both themes.
 
 **Done:** `/account.html`.
+
+The stylesheet's own tokens moved first, which is what makes the rest
+cheap: `--panel` and `--hairline` are `color-mix()` expressions carrying a
+trace of `--accent`, so 75 surfaces and 269 borders follow the page's
+colour without any of them being edited. A component converted to Tailwind
+inherits the same thing through `@theme`.
 
 Three things stay in `aab/styles.css` permanently, and the split is the point:
 
@@ -89,7 +103,29 @@ Three things stay in `aab/styles.css` permanently, and the split is the point:
 
 So the target is JSX and route markup, not the whole stylesheet.
 
-## 3. Prose
+## 3. Hand-written HTML to routes
+
+**Nothing new is built as a hand-written or string-generated page.** A page
+is a Next.js route; a piece of interface is a component. See CLAUDE.md.
+
+**Left:** the four practice books, generated as template literals by
+`aab/deutsch/build-deutsch.mjs` and `aab/english/build-english.mjs`. They
+are the last real pages on the old method, and being on it is why they
+carry `.slimbar` and lose the rail. Porting them to routes gives them the
+rail, the drawer, the audience switch and the accent for free, and deletes
+two builders.
+
+They are precached, and the service worker already precaches six rendered
+routes, so offline is not the obstacle it looks like.
+
+`htmlAttrs()` in `next/lib/nav.ts` is a stopgap that gives the generated
+books the right accent until they are routes. It goes when they do.
+
+**Not moving:** `404.html` and `offline.html`. They have to answer when the
+Worker, the route and the network are all unavailable, which is exactly
+when a route cannot.
+
+## 4. Prose
 
 Comments and docs carry the constraint, not the story. Keep: what breaks, what
 must not be renamed, why an order is load-bearing, what a check is for. Cut:
