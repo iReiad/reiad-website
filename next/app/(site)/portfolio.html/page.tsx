@@ -19,6 +19,7 @@ import { pageMeta } from "../../../lib/pageMeta";
 import { Band } from "../../../components/ui/band";
 import { ButtonLink } from "../../../components/ui/button";
 import { InfoCard } from "../../../components/deck";
+import { Eyebrow, SectionLabel } from "../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio.html",
@@ -44,8 +45,8 @@ export default function Page() {
            three sections and an FAQ near the bottom of the page.
            ============================================================ */}
           <div className="hero">
-            <span className="eyebrow mono">Portfolio & services · Rony Reiad
-            </span>
+            <Eyebrow>Portfolio & services · Rony Reiad
+            </Eyebrow>
             <h1>Models, analysis and writing: shown, not told.
             </h1>
             <p className="lede">
@@ -128,8 +129,8 @@ export default function Page() {
            pick it up too.
            ============================================================ */}
           <section id="work">
-            <span className="section-label mono">Selected work
-            </span>
+            <SectionLabel>Selected work
+            </SectionLabel>
             <p className="section-intro measure">
               Every piece here is interactive, running its own arithmetic in your
           browser. Nothing is a picture of a spreadsheet: change an input and
@@ -449,8 +450,8 @@ export default function Page() {
            in the same card.
            ============================================================ */}
           <section id="services">
-            <span className="section-label mono">What I do
-            </span>
+            <SectionLabel>What I do
+            </SectionLabel>
             <p className="section-intro measure">
               Three services, one standard across them: the working file is the
           deliverable, the assumptions are visible, and nothing arrives locked.
@@ -539,8 +540,8 @@ export default function Page() {
           </section>
           {/* ============ HOW IT WORKS ============ */}
           <section>
-            <span className="section-label mono">How it works
-            </span>
+            <SectionLabel>How it works
+            </SectionLabel>
             <div className="path">
               <InfoCard chip="Step one" title="The brief"
                         dek={<>Send what you need with any files or examples, through
@@ -573,8 +574,8 @@ export default function Page() {
            the route there.
            ============================================================ */}
           <section id="who">
-            <span className="section-label mono">Who does the work
-            </span>
+            <SectionLabel>Who does the work
+            </SectionLabel>
             <div className="cred">
               <div className="cred-main">
                 <h2>One person, start to finish, and I answer my own email.
@@ -652,8 +653,8 @@ export default function Page() {
           </section>
           {/* ============ WHAT I NEED ============ */}
           <section>
-            <span className="section-label mono">What makes a project go well
-            </span>
+            <SectionLabel>What makes a project go well
+            </SectionLabel>
             <div className="rows">
               <div className="row">
                 <span className="k mono">The real question
@@ -690,8 +691,8 @@ export default function Page() {
           </section>
           {/* ============ FAQ ============ */}
           <section>
-            <span className="section-label mono">Before you ask
-            </span>
+            <SectionLabel>Before you ask
+            </SectionLabel>
             <div className="stack measure">
               <details className="faq">
                 <summary>How much does it cost?

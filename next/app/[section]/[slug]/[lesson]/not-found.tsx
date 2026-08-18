@@ -9,11 +9,13 @@
    forwarded here AND the database has no such lesson, which is a
    real state: a stage's ladder can name a lesson that has not
    been written, and a link somebody saved can outlive one. */
+import { Eyebrow } from "../../../../components/ui/label";
+
 export default function NotFound() {
   return (
     <main id="main">
       <div className="wrap hero">
-        <span className="eyebrow mono">404</span>
+        <Eyebrow>404</Eyebrow>
         <h1 className="bn-h">এই ঠিকানায় কিছু নেই।</h1>
         <p className="lede">
           লেখাটা হয়তো সরে গেছে, বা লিংকে টাইপো আছে।

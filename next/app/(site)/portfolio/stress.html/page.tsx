@@ -19,6 +19,7 @@ import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
 import { StatTile } from "../../../../components/ui/stat";
+import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/stress.html",
@@ -35,8 +36,8 @@ export default function Page() {
       <main id="main">
         <div className="wrap">
           <div className="hero">
-            <span className="eyebrow mono">Case study · Credit risk · Stress testing
-            </span>
+            <Eyebrow>Case study · Credit risk · Stress testing
+            </Eyebrow>
             <h1>What a recession does to a loan book, from the macro path to the capital ratio.
             </h1>
             <p className="lede">
@@ -620,8 +621,8 @@ export default function Page() {
           </section>
           {/* ============ HOW IT'S BUILT ============ */}
           <section>
-            <span className="section-label mono">How this is built
-            </span>
+            <SectionLabel>How this is built
+            </SectionLabel>
             <div className="principles">
               <div className="principle">
                 <h3>Two engines, kept honest by each other

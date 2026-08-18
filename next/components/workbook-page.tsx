@@ -16,6 +16,7 @@ import { notFound } from "next/navigation";
 import { SiteScripts } from "./scripts";
 import { WorkbookCollection, WorkbookDayCard, WorkbookTracker } from "./workbook";
 import { bn, bnWord, bookFor, targetLang } from "../lib/workbook";
+import { Eyebrow, SectionLabel } from "./ui/label";
 
 /** The module that makes the page work: it restores what was
     written, grows the textareas, reveals an answer when asked,
@@ -58,9 +59,9 @@ export async function WorkbookPage(
       <main id="main">
         <div className="wrap">
           <div className="hero buch-hero" data-buch={slug}>
-            <span className="eyebrow mono">
+            <Eyebrow>
               <span lang={lang}>{bn(total)}</span> · {bnWord(total)} দিন
-            </span>
+            </Eyebrow>
             <h1 className="bn-h">{bn(total)} দিনের অনুশীলন খাতা</h1>
             <p className="lede">
               <span lang={lang}>{book.lede.target}</span><br />
@@ -93,7 +94,7 @@ export async function WorkbookPage(
               reader as if they had not moved. */}
           {book.sounds?.length ? (
             <section id="schluessel" className="no-filter">
-              <span className="section-label mono">ধ্বনির চাবি</span>
+              <SectionLabel>ধ্বনির চাবি</SectionLabel>
               <p className="measure">
                 আটকে গেলে এখানে ফিরে আসুন। এই এক তালিকা মুখস্থ হলে যেকোনো শব্দ পড়তে পারবেন।
               </p>

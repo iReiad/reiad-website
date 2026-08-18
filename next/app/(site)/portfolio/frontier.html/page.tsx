@@ -19,6 +19,7 @@ import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
 import { StatTile } from "../../../../components/ui/stat";
+import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/frontier.html",
@@ -35,8 +36,8 @@ export default function Page() {
       <main id="main">
         <div className="wrap">
           <div className="hero">
-            <span className="eyebrow mono">Case study · Portfolio construction · Interactive
-            </span>
+            <Eyebrow>Case study · Portfolio construction · Interactive
+            </Eyebrow>
             <h1>A Shariah and ESG screened FTSE 250 fund, built in 2015 and held to 2020.
             </h1>
             <p className="lede">
@@ -491,8 +492,8 @@ export default function Page() {
           </section>
           {/* ============ HOW IT'S BUILT ============ */}
           <section>
-            <span className="section-label mono">How this is built
-            </span>
+            <SectionLabel>How this is built
+            </SectionLabel>
             <div className="principles">
               <div className="principle">
                 <h3>Solved, not stored

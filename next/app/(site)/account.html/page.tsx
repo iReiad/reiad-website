@@ -84,6 +84,7 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../lib/pageMeta";
 import { PageNav, Tab } from "../../../components/ui/tabs";
+import { Eyebrow } from "../../../components/ui/label";
 
 export const metadata: Metadata = {
   ...pageMeta({
@@ -206,7 +207,7 @@ export default function AccountPage() {
           page is not one either. */}
       <div className="wrap wrap-narrow" id="account-out" hidden>
         <div className="hero">
-          <span className="eyebrow mono">Your account</span>
+          <Eyebrow>Your account</Eyebrow>
           <h1>Nobody is signed in on this device.</h1>
           <p className="lede">
             An account keeps your place in a course, the pages you save, the

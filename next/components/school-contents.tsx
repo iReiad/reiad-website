@@ -22,6 +22,7 @@
 import { bnNum } from "@reiad/shared/schools";
 import { CardTick, LadderMeter, type LadderLesson } from "./progress";
 import type { School } from "../lib/school";
+import { SectionLabel } from "./ui/label";
 
 export function SchoolContents({ school }: { school: School }) {
   const lessons: LadderLesson[] = school.lessons
@@ -54,7 +55,7 @@ export function SchoolContents({ school }: { school: School }) {
         {school.rungs.map((rung) => (
           <section className="hub-section" key={rung.stage.slug} id={rung.stage.slug}>
             <div className="hub-section-head">
-              <span className="section-label mono">{String(rung.stage.kicker ?? "")}</span>
+              <SectionLabel>{String(rung.stage.kicker ?? "")}</SectionLabel>
               <h2 className="bn-h contents-h">
                 <a href={rung.url}>{String(rung.stage.bn)}</a>
               </h2>

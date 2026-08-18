@@ -1,8 +1,8 @@
 {
   "button": 42,
   "icon-button": 2,
-  "section-label": 43,
-  "chip": 26,
+  "section-label": 0,
+  "chip": 13,
   "chip-class": 21,
   "stat-tile": 0,
   "input": 37,

@@ -19,6 +19,7 @@ import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
 import { StatTile } from "../../../../components/ui/stat";
+import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/dcf.html",
@@ -35,8 +36,8 @@ export default function Page() {
       <main id="main">
         <div className="wrap">
           <div className="hero">
-            <span className="eyebrow mono">Case study · Valuation · Excel-equivalent
-            </span>
+            <Eyebrow>Case study · Valuation · Excel-equivalent
+            </Eyebrow>
             <h1>A DCF that shows its working, and a sensitivity table that earns its place.
             </h1>
             <p className="lede">
@@ -176,8 +177,8 @@ export default function Page() {
           </section>
           {/* ============ HOW IT'S BUILT ============ */}
           <section>
-            <span className="section-label mono">How this valuation is built
-            </span>
+            <SectionLabel>How this valuation is built
+            </SectionLabel>
             <div className="principles">
               <div className="principle">
                 <h3>The cash flows aren't typed in

@@ -30,6 +30,7 @@ import { notFound } from "next/navigation";
 import { dateLabel, headFacts, lookFor } from "@reiad/shared/look";
 import { getArticle, siteOrigin } from "../../../lib/article";
 import { SiteScripts } from "../../../components/scripts";
+import { Eyebrow } from "../../../components/ui/label";
 
 type Params = { params: Promise<{ section: string; slug: string }> };
 
@@ -82,7 +83,7 @@ export default async function ArticlePage({ params }: Params) {
               dangerouslySetInnerHTML={{ __html: jsonLd }} />
 
       <article className="wrap article" data-slug={article.slug}>
-        <span className="eyebrow mono">{article.tag}</span>
+        <Eyebrow>{article.tag}</Eyebrow>
         <h1>{article.title}</h1>
         {article.dek ? <p className="lede">{article.dek}</p> : null}
         <p className="byline mono">

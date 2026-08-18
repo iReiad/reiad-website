@@ -34,6 +34,7 @@ import { siteOrigin } from "../../../../lib/article";
 import { schoolIcon } from "../../../../lib/school-icons";
 import { SiteScripts } from "../../../../components/scripts";
 import { LadderMeter, Resume } from "../../../../components/progress";
+import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
 type Params = Promise<{ section: string; slug: string }>;
 
@@ -104,10 +105,10 @@ export default async function StagePage({ params }: { params: Params }) {
 
           <div className={`hero stage-hero${shape.hero ? ` ${shape.hero}` : ""}`}
                {...{ [look.attr.stage]: stage.slug }}>
-            <span className="eyebrow mono">
+            <Eyebrow>
               {stage.kicker}
               {sub ? <>{" · "}<span lang={sub.lang}>{sub.text}</span></> : null}
-            </span>
+            </Eyebrow>
             <h1 className="bn-h">
               <StageArt school={school} name={String(stage.icon ?? "")} />
               {stage.bn}
@@ -174,13 +175,13 @@ export default async function StagePage({ params }: { params: Params }) {
               past the course to reach the homework every evening. */}
           {shape.book && (book || instead) ? (
             <section id={shape.book.id} className="no-filter">
-              <span className="section-label mono">
+              <SectionLabel>
                 {shape.book.label}
                 {" · "}
                 <span lang={shape.book.lang}>
                   {shape.book.lang === "de" ? "Jeden Tag" : "Every day"}
                 </span>
-              </span>
+              </SectionLabel>
               {book ? (
                 <a className={`cell ${shape.book.cls}`} href={book}
                    data-workbook={stage.slug}>
@@ -210,11 +211,11 @@ export default async function StagePage({ params }: { params: Params }) {
             const inSection = lessons.filter((l) => l.section.id === section.id);
             return (
               <section key={String(section.id)} id={String(section.id)}>
-                <span className="section-label mono">
+                <SectionLabel>
                   {section.bn}
                   {" · "}
                   <SectionSub section={section} />
-                </span>
+                </SectionLabel>
                 <div className="cards lesson-grid">
                   {inSection.map((lesson) => {
                     const soon = lesson.status !== "live";

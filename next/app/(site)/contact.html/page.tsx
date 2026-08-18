@@ -16,6 +16,7 @@ import { Field, TextArea } from "../../../components/ui/field";
 import { Button } from "../../../components/ui/button";
 import { pageMeta } from "../../../lib/pageMeta";
 import { GoCard } from "../../../components/deck";
+import { Eyebrow, SectionLabel } from "../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/contact.html",
@@ -32,8 +33,8 @@ export default function ContactPage() {
       <main id="main">
         <div className="wrap">
           <div className="hero">
-            <span className="eyebrow mono">Contact · Register interest
-            </span>
+            <Eyebrow>Contact · Register interest
+            </Eyebrow>
             <h1>Hiring, or need a model built?
             </h1>
             <p className="lede">
@@ -46,8 +47,8 @@ export default function ContactPage() {
             </p>
           </div>
           <section>
-            <span className="section-label mono">Send a message
-            </span>
+            <SectionLabel>Send a message
+            </SectionLabel>
             {/* Web3Forms: the form POSTs to their endpoint, which emails the
              submission to the address tied to the access key. The key is
              designed to be public: it can only send TO you, never read
@@ -111,8 +112,8 @@ export default function ContactPage() {
             </form>
           </section>
           <section>
-            <span className="section-label mono">Elsewhere
-            </span>
+            <SectionLabel>Elsewhere
+            </SectionLabel>
             <p>
               <a href="https://www.linkedin.com/in/reiad">LinkedIn
               </a> ·
@@ -122,8 +123,8 @@ export default function ContactPage() {
             </p>
           </section>
           <section>
-            <span className="section-label mono">What happens next
-            </span>
+            <SectionLabel>What happens next
+            </SectionLabel>
             <div className="rows">
               <div className="row">
                 <span className="k mono">Within a business day
@@ -154,8 +155,8 @@ export default function ContactPage() {
             </div>
           </section>
           <section>
-            <span className="section-label mono">Who this is for
-            </span>
+            <SectionLabel>Who this is for
+            </SectionLabel>
             <div className="grid-3">
               <GoCard href="/about.html"
                       chip="Recruiters"
@@ -175,8 +176,8 @@ export default function ContactPage() {
             </div>
           </section>
           <section>
-            <span className="section-label mono">Common questions
-            </span>
+            <SectionLabel>Common questions
+            </SectionLabel>
             <div className="stack measure">
               <details className="faq">
                 <summary>Can you look at my portfolio and tell me what to buy?

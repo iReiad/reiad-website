@@ -32,6 +32,7 @@ import { GoCard, InfoCard } from "./deck";
 import { Icon } from "./icons";
 import { LadderMeter, Resume, type LadderLesson } from "./progress";
 import type { School } from "../lib/school";
+import { SectionLabel } from "./ui/label";
 
 /* What a rung's card is coloured by, and the distinction is
    between STATE and section.
@@ -111,9 +112,9 @@ export function MoneyHub({ school }: { school: School }) {
         {first ? (
           <section className="hub-section" id="hatekhori">
             <div className="hub-section-head">
-              <span className="section-label mono">
+              <SectionLabel>
                 {stageWord(first.stage)} · <span lang="en">Start here</span>
-              </span>
+              </SectionLabel>
               <p className="hub-section-note" lang="bn">{String(first.stage.blurb ?? "")}</p>
             </div>
 
@@ -154,9 +155,9 @@ export function MoneyHub({ school }: { school: School }) {
         {/* ---------- the ladder ---------- */}
         <section className="hub-section" id="dhap">
           <div className="hub-section-head">
-            <span className="section-label mono">
+            <SectionLabel>
               ধাপে ধাপে · <span lang="en">The ladder</span>
-            </span>
+            </SectionLabel>
             <p className="hub-section-note" lang="bn">
               হাতেখড়ির পর ক্রম মেনে এগোনো সবচেয়ে কাজে দেয়, তবে যেকোনো ধাপ থেকে শুরু করা যায়।
               যেগুলো এখনো লেখা হয়নি সেগুলোও নিচে আছে, কারণ কী আসছে জানা থাকলে অপেক্ষা করা যায়।
@@ -215,9 +216,9 @@ export function MoneyHub({ school }: { school: School }) {
         {/* ---------- how it is put together ---------- */}
         <section className="hub-section" id="kivabe">
           <div className="hub-section-head">
-            <span className="section-label mono">
+            <SectionLabel>
               কীভাবে সাজানো · <span lang="en">How it works</span>
-            </span>
+            </SectionLabel>
           </div>
 
           <div className="deck">

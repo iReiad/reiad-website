@@ -36,6 +36,7 @@
 
 import type { WorkbookBook, WorkbookDay } from "../lib/workbook";
 import { bn, targetLang } from "../lib/workbook";
+import { SectionLabel } from "./ui/label";
 
 /** The key a textarea saves under.
 
@@ -202,9 +203,9 @@ export function WorkbookCollection(
   const lang = targetLang(book);
   return (
     <section id="sammlung" className="no-filter">
-      <span className="section-label mono">
+      <SectionLabel>
         <span lang={lang}>{c.target}</span> · {c.bn}
-      </span>
+      </SectionLabel>
       <p className="measure">{c.blurb}</p>
       <div className="hut-sammlung">
         {c.columns.map((col) => (

@@ -31,6 +31,19 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v117: The small line above a heading is two components, and
+        they are two because they are two things: a
+        `<SectionLabel>` closes with a rule, because it separates
+        a section from the one before it, and an `<Eyebrow>` has
+        nothing above it to separate from.
+
+        The component that existed styled itself with utilities at
+        `text-ink-soft`, with no rule and no margin, which is none
+        of the three things `.section-label` does. So one school
+        hub renderer drew a quiet grey label with no separator
+        while the other drew an accent one with a rule, for the
+        same heading on the same site.
+
    v116: `.cell` was one card doing five jobs and is gone from
         every route. Thirteen of them are `<GoCard>` or
         `<InfoCard>` now, which is the distinction the deck exists
@@ -1178,7 +1191,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v116";
+const VERSION = "v117";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -20,6 +20,7 @@ import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
 import { StatTile } from "../../../../components/ui/stat";
+import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/dsex.html",
@@ -36,8 +37,8 @@ export default function Page() {
       <main id="main">
         <div className="wrap">
           <div className="hero">
-            <span className="eyebrow mono">Case study · Data analysis · Python-equivalent
-            </span>
+            <Eyebrow>Case study · Data analysis · Python-equivalent
+            </Eyebrow>
             <h1>Volatility is a statistic. A drawdown is a year of your life.
             </h1>
             <p className="lede">
@@ -267,8 +268,8 @@ export default function Page() {
           </section>
           {/* ============ METHOD ============ */}
           <section>
-            <span className="section-label mono">How this analysis is built
-            </span>
+            <SectionLabel>How this analysis is built
+            </SectionLabel>
             <div className="principles">
               <div className="principle">
                 <h3>The data question, answered honestly

@@ -30,6 +30,7 @@ import { pageMeta } from "../../../../lib/pageMeta";
 import { Legend, Key } from "../../../../components/ui/legend";
 import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
+import { Eyebrow } from "../../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/index.html",
@@ -49,8 +50,8 @@ export default function ToolsPage() {
       <main id="main">
         <div className="wrap">
           <div className="hero">
-            <span className="eyebrow mono">Tools · ক্যালকুলেটর
-            </span>
+            <Eyebrow>Tools · ক্যালকুলেটর
+            </Eyebrow>
             <h1>The five sums worth doing before you decide anything.
             </h1>
             <p className="lede">

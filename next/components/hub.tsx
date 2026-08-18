@@ -24,6 +24,7 @@ import { ReadCard, SampleCard, SoonCard, bn } from "./cards";
 import { SOON, type ReadHubCopy } from "../lib/hub";
 import type { Piece } from "../lib/pieces";
 import { InfoCard } from "./deck";
+import { Eyebrow, SectionLabel } from "./ui/label";
 
 /* ---------- the kitchen and the travel desk ---------- */
 
@@ -39,9 +40,9 @@ export function ReadHub({ copy, pieces }: { copy: ReadHubCopy; pieces: Piece[] |
       <div className="wrap">
 
         <div className="hero read-hero">
-          <span className="eyebrow mono">
+          <Eyebrow>
             {copy.eyebrow.bn} · <span lang="en">{copy.eyebrow.en}</span>
-          </span>
+          </Eyebrow>
           <h1 className="bn-h">{copy.heading}</h1>
           <p className="lede">{copy.lede}</p>
 
@@ -54,9 +55,9 @@ export function ReadHub({ copy, pieces }: { copy: ReadHubCopy; pieces: Piece[] |
         </div>
 
         <section id="lekha">
-          <span className="section-label mono">
+          <SectionLabel>
             {copy.list.bn} · <span lang="en">{copy.list.en}</span>
-          </span>
+          </SectionLabel>
           {pieces ? (
             <>
               {/* One string rather than three expressions, so that
@@ -79,9 +80,9 @@ export function ReadHub({ copy, pieces }: { copy: ReadHubCopy; pieces: Piece[] |
         </section>
 
         <section id="kivabe" className="no-filter">
-          <span className="section-label mono">
+          <SectionLabel>
             {copy.how.bn} · <span lang="en">{copy.how.en}</span>
-          </span>
+          </SectionLabel>
           <div className="wie-gitter">
             {copy.cells.map((cell) => (
               <InfoCard key={cell.heading} lang="bn"
@@ -138,7 +139,7 @@ export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
       <div className="wrap">
 
         <div className="hero">
-          <span className="eyebrow mono">Insights</span>
+          <Eyebrow>Insights</Eyebrow>
           <h1>Notes on markets, written to be understood.</h1>
           <p className="lede">
             Longer-form pieces on Bangladesh and global finance, plus a live pulse
@@ -149,7 +150,7 @@ export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
 
         <section>
           <div className="pulse-head">
-            <span className="section-label mono" style={{ flex: 1 }}>Market pulse · auto-updating</span>
+            <SectionLabel className="flex-1">Market pulse · auto-updating</SectionLabel>
           </div>
           <div id="pulse" aria-live="polite" />
           {/* The caveats matter, but they shouldn't outweigh the thing they
@@ -170,7 +171,7 @@ export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
 
         <section>
           <div className="pulse-head">
-            <span className="section-label mono" style={{ flex: 1 }}>Articles</span>
+            <SectionLabel className="flex-1">Articles</SectionLabel>
           </div>
 
           {pieces ? <TopicChips pieces={pieces} /> : null}
@@ -192,7 +193,7 @@ export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
         </section>
 
         <section>
-          <span className="section-label mono">How to read anything here</span>
+          <SectionLabel>How to read anything here</SectionLabel>
           <div className="prose">
             <p>A few habits make finance writing, mine or anyone&apos;s, much less
                dangerous to act on:</p>
@@ -232,7 +233,7 @@ export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
         </section>
 
         <section>
-          <span className="section-label mono">Subscribe</span>
+          <SectionLabel>Subscribe</SectionLabel>
           <div className="prose">
             <p>No newsletter, no tracking, no &quot;sign up to continue reading&quot;. If you
                want to know when something new appears, the feed is the honest way:

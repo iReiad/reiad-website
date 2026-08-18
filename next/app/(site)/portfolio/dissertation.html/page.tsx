@@ -21,6 +21,7 @@ import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
 import { StatTile } from "../../../../components/ui/stat";
 import { InfoCard } from "../../../../components/deck";
+import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/dissertation.html",
@@ -37,8 +38,8 @@ export default function Page() {
       <main id="main">
         <div className="wrap">
           <div className="hero">
-            <span className="eyebrow mono">Case study · Empirical research · MSc dissertation
-            </span>
+            <Eyebrow>Case study · Empirical research · MSc dissertation
+            </Eyebrow>
             <h1>Lower risk? Not in this data, and not provable either way.
             </h1>
             <p className="lede">
@@ -432,8 +433,8 @@ export default function Page() {
                   </p>
                 </div>
               </div>
-              <span className="section-label mono">The six factors, in one sentence each
-              </span>
+              <SectionLabel>The six factors, in one sentence each
+              </SectionLabel>
               <div className="rows" id="factor-list" />
               <p className="statement-note">
                 Group comparisons use Welch's two-sample t-test: unequal variances,
@@ -1027,8 +1028,8 @@ export default function Page() {
           </section>
           {/* ============ HOW THIS PAGE IS BUILT ============ */}
           <section>
-            <span className="section-label mono">How this page is built
-            </span>
+            <SectionLabel>How this page is built
+            </SectionLabel>
             <div className="principles">
               <div className="principle">
                 <h3>The numbers are the submitted ones
