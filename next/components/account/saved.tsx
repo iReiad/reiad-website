@@ -28,13 +28,12 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Scenario } from "/saved.js";
 import { Button, ButtonLink } from "../ui/button";
+import { runtimeModule } from "./runtime";
 import { when } from "./when";
 
 type SavedModule = typeof import("/saved.js");
 
-let loading: Promise<SavedModule> | null = null;
-export const savedModule = (): Promise<SavedModule> =>
-  (loading ??= import(/* turbopackIgnore: true */ "/saved.js"));
+export const savedModule = () => runtimeModule<SavedModule>("/saved.js");
 
 /* Where a saved thing opens, by the tool that saved it. One
    entry, and the fallback is the calculators' own index rather

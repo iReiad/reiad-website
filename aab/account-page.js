@@ -43,7 +43,7 @@
    ============================================================ */
 import { current, signOut, getProfile, saveProfile } from "/account.js";
 import { sync, forgetOnAccount, SYNCED_KEYS } from "/sync.js";
-import { listScenarios, removeScenario, listTargets, saveTarget, updateTarget, removeTarget, listLibrary, keepPage, removeLibraryRow, } from "/saved.js";
+import { listScenarios, removeScenario, listTargets, saveTarget, updateTarget, removeTarget, listLibrary, removeLibraryRow, } from "/saved.js";
 import { checkpointStats } from "/checkpoints.js";
 import { COURSES } from "/content.js";
 import { activeDays, daysIn, run, today } from "/streak.js";
@@ -93,12 +93,6 @@ function meter(pct, label) {
     drawn as a dashed box with a shrug in it. */
 const nothing = (text) => el("p", { className: "acct-empty" }, text);
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-const when = (iso) => {
-    const d = new Date(iso);
-    return Number.isNaN(d.valueOf())
-        ? ""
-        : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-};
 /* ============================================================
    What this account keeps, counted rather than described
    ============================================================ */
@@ -359,64 +353,14 @@ async function paintPaths() {
    a page can appear in both lists, which is correct: keeping
    something and writing on it are different acts.
    ============================================================ */
-let library = [];
-function keptRow(row, { showNote }) {
-    const drop = el("button", {
-        className: "btn btn-ghost btn-small", type: "button",
-        textContent: showNote ? "Delete the note" : "Remove",
-    });
-    drop.addEventListener("click", async () => {
-        if (showNote && !confirm(`Delete your note on "${row.title || "this page"}"?`))
-            return;
-        drop.disabled = true;
-        try {
-            /* Taking a note off a page that is also on the reading list
-               must not take the page off the list, and vice versa. So
-               one control clears one column and the trigger in the
-               migration removes the row once both have gone. */
-            if (showNote)
-                await keepPage({ url: row.url, title: row.title, kind: row.kind, note: "" });
-            else if (row.note)
-                await keepPage({ url: row.url, title: row.title, kind: row.kind, saved: false });
-            else
-                await removeLibraryRow(row.id);
-            await paintLibrary();
-        }
-        catch (err) {
-            say($("#exit-note"), err.message, "warn");
-            drop.disabled = false;
-        }
-    });
-    return el("article", { className: "kept-row" }, el("div", { className: "kept-body" }, el("span", { className: "kept-kind mono",
-        textContent: row.kind === "lesson" ? "Lesson" : "Piece" }), el("h3", {}, el("a", { href: row.url, textContent: row.title || row.url })), showNote
-        /* The note as the reader typed it, in a `<p>` with
-           `white-space: pre-wrap`, and never as HTML. Nothing on
-           this site renders a note as markup and nothing should:
-           it is the one field here whose author and whose reader
-           are the same person, which is exactly the case where
-           nobody would notice it being used against them. */
-        ? el("p", { className: "kept-note", textContent: row.note })
-        : null, el("p", { className: "kept-when mono", textContent: when(row.updated_at) })), el("div", { className: "kept-actions" }, el("a", { className: "btn btn-ghost btn-small", href: row.url, textContent: "Open" }), drop));
-}
-async function paintLibrary() {
-    library = await listLibrary();
-    const list = $("#account-kept-list");
-    if (list) {
-        const kept = library.filter((r) => r.saved);
-        list.replaceChildren(...(kept.length
-            ? kept.map((r) => keptRow(r, { showNote: false }))
-            : [nothing("Nothing kept yet. On any piece or lesson there is a Save "
-                    + "button under the title, and what you save lands here.")]));
-    }
-    const notes = $("#account-notes");
-    if (notes) {
-        const written = library.filter((r) => r.note);
-        notes.replaceChildren(...(written.length
-            ? written.map((r) => keptRow(r, { showNote: true }))
-            : [nothing("Nothing written yet. Every piece and every lesson has an "
-                    + "\"Add a note\" button under the title.")]));
-    }
-}
+/* The reading list and the notes were painted here and are
+   `components/account/library.tsx` now, one component for both
+   because they are two columns of one row.
+
+   The module-level `library` went with them. It looked like
+   "take a copy of everything" still needed it and it did not:
+   that function calls `listLibrary()` itself and reads its own
+   local. The compiler is what said so. */
 /* ============================================================
    TARGETS
    ============================================================ */
@@ -763,7 +707,7 @@ async function boot() {
     /* Four sections that each talk to the account, in parallel,
        because none is waiting on any other and one at a time would
        be four round trips end to end. */
-    await Promise.all([paintPaths(), paintTargets(), paintLibrary()]);
+    await Promise.all([paintPaths(), paintTargets()]);
 }
 /* ---------- saving ---------- */
 async function save(patch, note) {
@@ -884,7 +828,7 @@ $("#account-forget")?.addEventListener("click", async () => {
     paintKept();
     paintHeat();
     paintTiles(profile?.pace ?? "");
-    await Promise.all([paintPaths(), paintTargets(), paintLibrary()]);
+    await Promise.all([paintPaths(), paintTargets()]);
 });
 document.addEventListener("account:changed", () => {
     paintIdentity();

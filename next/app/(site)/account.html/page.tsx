@@ -88,6 +88,7 @@ import { Eyebrow } from "../../../components/ui/label";
 import { Button, ButtonLink } from "../../../components/ui/button";
 import { Preferences } from "../../../components/account/prefs";
 import { Scenarios } from "../../../components/account/saved";
+import { ReadingList, Notes } from "../../../components/account/library";
 
 export const metadata: Metadata = {
   ...pageMeta({
@@ -294,12 +295,12 @@ export default function AccountPage() {
           {/* ============ KEPT, AND WRITTEN ON ============ */}
           <Section id="reading-list" title="Reading list"
                    blurb="Pages you kept for later. Save one from the row under its title, on any piece or lesson.">
-            <div className="kept-list" id="account-kept-list" />
+            <div className="kept-list" id="account-kept-list"><ReadingList /></div>
           </Section>
 
           <Section id="notes" title="Your notes"
                    blurb="What you wrote in the margin. Private, stored against your account, and shown to nobody, including me.">
-            <div className="kept-list" id="account-notes" />
+            <div className="kept-list" id="account-notes"><Notes /></div>
           </Section>
 
           {/* ============ TARGETS ============ */}

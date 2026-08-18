@@ -31,6 +31,18 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v125: The reading list and the notes are components too, one
+        for both because `public.library` is one row per person
+        per page with `saved` and `note` as two columns of it.
+
+        `runtimeModule()` is how a component reaches a module this
+        site serves at a path, and it hides the specifier from
+        TWO bundlers rather than one: a "use client" component is
+        built for the server render as well, and OpenNext bundles
+        that copy with esbuild, which resolved what Turbopack had
+        been told to leave. `next build` passed and the Cloudflare
+        build did not.
+
    v124: Two sections of the account page are components. It is
         the one page whose whole body is built in the browser, by
         1,155 lines of `account-page.ts`, which is why nothing on
@@ -1284,7 +1296,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v124";
+const VERSION = "v125";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

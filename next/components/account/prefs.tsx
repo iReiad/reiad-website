@@ -12,15 +12,14 @@
    ---- why this imports a path rather than a package ----
 
    `/prefs.js` is served by the other Worker at that address and
-   is precached, and this reads it at RUN time:
+   is precached, and this reads it at RUN time through
+   `runtimeModule()`, whose header says how and why it has to hide
+   the specifier from two bundlers rather than one.
 
-       await import(/* turbopackIgnore *\/ "/prefs.js")
-
-   which is the same arrangement the Studio and the desk already
-   use. `vite.config.ts` leaves `/app.js`, `/api.js` and five
-   others external for exactly this reason, and `CLAUDE.md` gives
-   it: one copy of each module, shared by every page, rather than
-   a second that can drift.
+   It is the same arrangement the Studio and the desk already use:
+   `vite.config.ts` leaves `/app.js`, `/api.js` and five others
+   external so every page shares one copy of each rather than
+   carrying a second that can drift.
 
    The types come from `app/src/types/prefs.d.ts`, which those
    two apps already had, mapped in `next/tsconfig.json`. Do not
@@ -39,13 +38,11 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { Prefs, PrefOption } from "/prefs.js";
+import { runtimeModule } from "./runtime";
 
 type PrefsModule = typeof import("/prefs.js");
 
-let loading: Promise<PrefsModule> | null = null;
-/** One import for the page, however many components ask. */
-const prefsModule = (): Promise<PrefsModule> =>
-  (loading ??= import(/* turbopackIgnore: true */ "/prefs.js"));
+const prefsModule = () => runtimeModule<PrefsModule>("/prefs.js");
 
 interface Row {
   key: keyof Prefs;
