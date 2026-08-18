@@ -554,7 +554,8 @@ node scripts/check-routes.js # redirect loops, dead links in routes as well
                             # URL, and a check or a test published as a page
 node aab/check-css.mjs      # a school's layer styling the whole site, and a
                             # block class that means two things at once
-node aab/check-sw.mjs       # a precached file changed without a VERSION bump
+node scripts/check-sw.js    # a precached file changed without a VERSION bump,
+                            # or a precached module whose import is not precached
 node aab/check-content.mjs  # a page that has stopped counting the site correctly
 node scripts/check-csp.js   # code calling a host the browser is not allowed to
                             # reach, from a route as well as from a module
@@ -720,7 +721,7 @@ renders perfectly with both of them broken.
 
 If a precached file changed, bump `VERSION` in `aab/sw.js`, add a line to
 the changelog at the top of that file saying what changed and why it needs
-the bump, then run `node aab/check-sw.mjs --update`.
+the bump, then run `node scripts/check-sw.js --update`.
 
 ## A migration's filename is a fact, not a label
 
@@ -1442,7 +1443,7 @@ every check still runs first:
 
 - all four checks in **Before deploying** pass,
 - anything that touched a precached file bumped `VERSION` in
-  `aab/sw.js` and re-ran `check-sw.mjs --update`,
+  `aab/sw.js` and re-ran `scripts/check-sw.js --update`,
 - generated pages were regenerated from their source, not edited,
 - and `grep -rn $'\u2014' aab/ functions/` comes back empty.
 

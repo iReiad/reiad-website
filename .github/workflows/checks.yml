@@ -97,7 +97,7 @@ jobs:
         run: |
           node scripts/check-routes.js
           node aab/check-css.mjs
-          node aab/check-sw.mjs
+          node scripts/check-sw.js
           node aab/check-content.mjs
           node scripts/check-csp.js
           node scripts/check-crons.mjs

@@ -1197,7 +1197,7 @@
    the figure toolbar and the pre-flight panel (v16); and the desk
    moved onto its own page, taking the dashboard's styles with it
    (v17). styles.css is precached and changed in all three, which is
-   exactly the shape of the v3 and v10 mistakes, check-sw.mjs caught
+   exactly the shape of the v3 and v10 mistakes, check-sw.js caught
    each one before it shipped.
 
    v12: the About page was rebuilt, new markup, a new `about`
@@ -1208,7 +1208,7 @@
    menu and palette were restructured, the home page gained a
    Bangla half and a models section, and the learn hub's doors
    became buttons. styles.css, app.js, content.js, learn.js,
-   hub.js and three precached pages all changed. check-sw.mjs
+   hub.js and three precached pages all changed. check-sw.js
    caught this one before it shipped, which is what it is for.
 
    v10: THE SAME MISTAKE AS v3, MADE AGAIN. The stock check shipped
@@ -1222,7 +1222,7 @@
    The structural fix is below in the fetch handler: the runtime
    cache is now consulted BEFORE the shell, so a background refresh
    actually takes effect. A missed bump now costs one stale load
-   instead of freezing a file forever. check-sw.mjs guards the rest.
+   instead of freezing a file forever. check-sw.js guards the rest.
 
    v9: the stock check landed, a new page under /tools/ with its
    own engine, string table and stylesheet block, plus a changed
@@ -1347,7 +1347,7 @@ const PRECACHE = [
      of a reader who may never open Stufe 2. The other two are
      picked up by the runtime cache the first evening they are
      opened, which is the evening before the bus.
-     (Keep double quotes out of this comment: check-sw.mjs reads
+     (Keep double quotes out of this comment: check-sw.js reads
      the list below by pulling quoted strings out of the block.) */
   /* The two modules all three of the schools below now run on.
      progress.js is the ticks, the days and the bookmark, and
@@ -1416,7 +1416,7 @@ const PRECACHE = [
 
    archive/TRANSITION.md Stage 11.7. Every one of these is a page a Worker
    builds out of the database, so there is nothing in aab/ to hash
-   and check-sw.mjs does not try: it checks that each one is a
+   and check-sw.js does not try: it checks that each one is a
    route worker.js actually forwards, which is the failure that
    would matter here (an address in this list that nothing serves
    is an install that fetches a 404 and caches it).

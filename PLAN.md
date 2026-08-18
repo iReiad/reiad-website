@@ -151,7 +151,7 @@ change, because each will surface something: none of them have
 been read since 250 pages moved out from under them.
 
 `check-routes` (260) **done** · `check-csp` (157) **done** ·
-`check-css` (558) · `check-sw` (143) · then the nine tests.
+`check-sw` (143) **done** · `check-css` (558) · then the nine tests.
 
 **What the first audit found.** Five claims in its header, three
 still true and two that had quietly stopped being:
@@ -180,6 +180,20 @@ webfont preconnects. Each has a reason in `NOT_FETCHED` now, which
 is the discipline that list exists for. The webfonts were in it
 once and left when the Studio was archived, under a note saying
 they would come back the day something named them again.
+
+**`check-sw` was current on all four of its claims**, and the
+audit found what it does not ask rather than what has stopped
+being true: nothing held a precached module's static imports to
+being precached too. `app.js` imports `pieces.js` and the note
+beside that entry says why it must be in the list, which meant
+the reasoning was written down and applied by hand. It went wrong
+again on 18 August 2026, in the commit that made both practice
+books work: the callers stayed precached and the engine they
+became four lines over was not.
+
+Static imports only. `signin.js` is imported lazily inside a try,
+and the entry above it says an offline visit without it is a page
+with no sign-in button rather than a broken one.
 
 They move to `scripts/` as they are audited, which is also when
 they can lose the `.mjs` extension: the root declares
