@@ -31,6 +31,21 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v116: `.cell` was one card doing five jobs and is gone from
+        every route. Thirteen of them are `<GoCard>` or
+        `<InfoCard>` now, which is the distinction the deck exists
+        to make impossible to get wrong: one takes you somewhere
+        and is an anchor, the other is the end of the road and is
+        a div.
+
+        `.cell-aim` went with them, and it is the reason to check
+        rather than assume: it coloured `.tag` and `h3`, which is
+        what a `.cell` was made of, and the deck renders
+        `.card-chip` and `.card-title`. Moving that card across
+        without moving the rule would have left an unreadable chip
+        on an accent ground and nothing would have failed. It is
+        `.card[data-fill]` and an `<InfoCard fill>`.
+
    v115: Fifty tiles are one component. Every figure across the
         seven case studies was the same four lines written out,
         and one rule here is now all fifty of them, which is what
@@ -1163,7 +1178,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v115";
+const VERSION = "v116";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

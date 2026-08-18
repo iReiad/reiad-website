@@ -18,6 +18,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "../../../lib/pageMeta";
 import { Band } from "../../../components/ui/band";
 import { ButtonLink } from "../../../components/ui/button";
+import { InfoCard } from "../../../components/deck";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio.html",
@@ -541,41 +542,17 @@ export default function Page() {
             <span className="section-label mono">How it works
             </span>
             <div className="path">
-              <div className="cell">
-                <span className="tag mono">Step one
-                </span>
-                <h3>The brief
-                </h3>
-                <p>Send what you need with any files or examples, through the
-              
-                  <a href="/contact.html">contact form
-                  </a> or straight to
-              
-                  <a href="mailto:i@reiad.co.uk">i@reiad.co.uk
-                  </a>. A paragraph and a
-              spreadsheet is enough to start.
-                </p>
-              </div>
-              <div className="cell">
-                <span className="tag mono">Step two
-                </span>
-                <h3>The quote
-                </h3>
-                <p>A reply within one business day with scope, a delivery date and a
-              fixed price. The price does not move unless the scope does, so the
-              estimate is my problem rather than yours.
-                </p>
-              </div>
-              <div className="cell">
-                <span className="tag mono">Step three
-                </span>
-                <h3>Delivery
-                </h3>
-                <p>The working files (model, code or draft), a walkthrough of how they
-              fit together, and one round of revisions included. Ownership
-              transfers on final payment.
-                </p>
-              </div>
+              <InfoCard chip="Step one" title="The brief"
+                        dek={<>Send what you need with any files or examples, through
+                          the <a href="/contact.html">contact form</a> or straight
+                          to <a href="mailto:i@reiad.co.uk">i@reiad.co.uk</a>. A
+                          paragraph and a spreadsheet is enough to start.</>} />
+              <InfoCard chip="Step two"
+                        title="The quote"
+                        dek="A reply within one business day with scope, a delivery date and a fixed price. The price does not move unless the scope does, so the estimate is my problem rather than yours." />
+              <InfoCard chip="Step three"
+                        title="Delivery"
+                        dek="The working files (model, code or draft), a walkthrough of how they fit together, and one round of revisions included. Ownership transfers on final payment." />
             </div>
             <p className="note">
               Prefer the protection of a platform? I also take projects through Fiverr

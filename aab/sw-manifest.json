@@ -1,8 +1,8 @@
 {
-  "version": "v115",
+  "version": "v116",
   "hashes": {
     "/offline.html": "55bcf02529d11190",
-    "/styles.css": "fe18f41081be46e5",
+    "/styles.css": "bd3d384120005db9",
     "/tailwind.css": "949c1e2629a9bba7",
     "/app.js": "f56b8c5eed9e972d",
     "/content.js": "3c535dcbbd7173be",

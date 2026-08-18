@@ -80,8 +80,22 @@ anything structural.
 
 ## Phase 2. The component sweep
 
-93 hand-written call sites in routes, all convertible today:
-50 `.tile`, 16 `.stat`, 27 `.cell`.
+**The `.stat` count in the first version of this was wrong.** It
+came from a grep for `className="stat`, which matches
+`.statement`, the section wrapper on the case studies, and there
+is no `.stat` on this site at all. 50 `.tile` and 27 `.cell` were
+right.
+
+Done: the 50 tiles are `<StatTile>` and the 13 plain cells are
+`<GoCard>` or `<InfoCard>`. What is left of the 27 is the
+portfolio page's own two kinds, `work-card` and `svc-card`, which
+carry a bespoke SVG where a deck card has an icon tile. Those are
+a third component rather than a conversion, and a port must not
+also be a redesign.
+
+The rest of the ledger in `scripts/component-debt.json` is the
+real remaining sweep: `section-label` 43, `button` 42, `input`
+37, `chip` 26, `chip-class` 21.
 
 Two things learned from the first attempt, which was reverted:
 

@@ -23,6 +23,7 @@
 import { ReadCard, SampleCard, SoonCard, bn } from "./cards";
 import { SOON, type ReadHubCopy } from "../lib/hub";
 import type { Piece } from "../lib/pieces";
+import { InfoCard } from "./deck";
 
 /* ---------- the kitchen and the travel desk ---------- */
 
@@ -83,10 +84,8 @@ export function ReadHub({ copy, pieces }: { copy: ReadHubCopy; pieces: Piece[] |
           </span>
           <div className="wie-gitter">
             {copy.cells.map((cell) => (
-              <div className="cell" key={cell.heading}>
-                <h3 className="bn-h">{cell.heading}</h3>
-                <p>{cell.body}</p>
-              </div>
+              <InfoCard key={cell.heading} lang="bn"
+                        title={cell.heading} dek={cell.body} />
             ))}
           </div>
         </section>

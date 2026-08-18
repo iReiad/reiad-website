@@ -2155,14 +2155,6 @@
 
     &:last-child { border-bottom: 0; }
   }
-  .cell-aim {
-    background: var(--accent-strong); border-color: transparent;
-
-    & .tag { color: color-mix(in oklab, var(--accent-ink) 72%, transparent); }
-    & h3, & li { color: var(--accent-ink); }
-    & li { border-color: oklch(100% 0 0 / 0.14); }
-  }
-
   /* ---------- notes & callouts ---------- */
   .note {
     background: var(--accent-soft);
@@ -9394,6 +9386,24 @@ German for day, and .tag is what the site has always called
     transition: translate var(--fast) var(--ease);
   }
   a.card:hover .card-go::after { translate: 4px 0; }
+
+  /* ---------- printed in the accent ----------
+
+     The last card in a set, when it is the conclusion of the
+     others rather than another of them. It was `.cell-aim` and it
+     coloured `.tag` and `h3`, which are what a `.cell` was made
+     of; the deck renders `.card-chip` and `.card-title`, so
+     moving that card across without moving this rule would have
+     left the chip unreadable on an accent ground and nothing
+     would have failed. */
+  .card[data-fill] {
+    background: var(--accent-strong);
+    border-color: transparent;
+
+    & .card-chip { color: color-mix(in oklab, var(--accent-ink) 72%, transparent); }
+    & .card-title, & li { color: var(--accent-ink); }
+    & li { border-color: oklch(100% 0 0 / 0.14); }
+  }
 
   /* ---------- ticked, for anything a reader finishes ---------- */
 

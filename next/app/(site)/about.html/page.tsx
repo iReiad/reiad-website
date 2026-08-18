@@ -22,6 +22,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "../../../lib/pageMeta";
 import { Band } from "../../../components/ui/band";
 import { ButtonLink } from "../../../components/ui/button";
+import { InfoCard } from "../../../components/deck";
 
 const DEK = "Rony Reiad: economics graduate from Chittagong, MSc Finance & Risk "
   + "Management from Brighton, researching Islamic funds and credit risk, and "
@@ -530,11 +531,8 @@ export default function AboutPage() {
             {/* Roadmap, not résumé: "Now" is in progress, the rest are
              stated intentions. Worth keeping that distinction visible. */}
             <div className="path">
-              <div className="cell">
-                <span className="tag mono">Now · 2026
-                </span>
-                <h3>Building the foundation
-                </h3>
+              <InfoCard chip="Now · 2026"
+                        title="Building the foundation">
                 <ul>
                   <li>CFA Level 1: November 2026 window
                   </li>
@@ -543,12 +541,9 @@ export default function AboutPage() {
                   <li>A public library of models: every one open, editable and showing its arithmetic
                   </li>
                 </ul>
-              </div>
-              <div className="cell">
-                <span className="tag mono">Next · 2027–28
-                </span>
-                <h3>Into the industry
-                </h3>
+              </InfoCard>
+              <InfoCard chip="Next · 2027–28"
+                        title="Into the industry">
                 <ul>
                   <li>Analyst or management trainee: Bangladesh banking or Gulf finance
                   </li>
@@ -557,12 +552,10 @@ export default function AboutPage() {
                   <li>Freelance modeling practice with repeat clients
                   </li>
                 </ul>
-              </div>
-              <div className="cell cell-aim">
-                <span className="tag mono">The aim
-                </span>
-                <h3>Research-grade finance, spoken plainly
-                </h3>
+              </InfoCard>
+              <InfoCard chip="The aim"
+                        title="Research-grade finance, spoken plainly"
+                        fill>
                 <ul>
                   <li>Charterholder working across Bangladesh and Gulf markets
                   </li>
@@ -571,7 +564,7 @@ export default function AboutPage() {
                   <li>Research that bridges local markets and global standards
                   </li>
                 </ul>
-              </div>
+              </InfoCard>
             </div>
           </section>
           {/* ============ FAQ ============ */}

@@ -20,6 +20,7 @@ import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
 import { StatTile } from "../../../../components/ui/stat";
+import { InfoCard } from "../../../../components/deck";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/dissertation.html",
@@ -104,31 +105,12 @@ export default function Page() {
           
               </p>
               <div className="grid-2">
-                <div className="cell">
-                  <span className="tag mono">Argument one · lower risk
-                  </span>
-                  <h3>Screening removes the risky part
-                  </h3>
-                  <p>Excluding highly leveraged firms strips out the credit-like
-                channel that turns market falls into fund collapses. Excluding
-                banks avoids the sector that led the 2008 drawdown. On this
-                reading Islamic funds should show a lower beta, lower
-                volatility, and shallower falls
-                (Hayat & Kraeussl, 2011; Naveed et al., 2020).
-                  </p>
-                </div>
-                <div className="cell">
-                  <span className="tag mono">Argument two · higher risk
-                  </span>
-                  <h3>Screening removes the diversification
-                  </h3>
-                  <p>Markowitz (1952) is unambiguous: a smaller investable universe
-                means a worse efficient frontier. Cut out whole sectors and what
-                remains is concentrated, heavier in technology and healthcare,
-                more dependent on one market regime, carrying more
-                fund-specific risk (Hoepner et al., 2011; Walkshäusl & Lobe, 2012).
-                  </p>
-                </div>
+                <InfoCard chip="Argument one · lower risk"
+                          title="Screening removes the risky part"
+                          dek="Excluding highly leveraged firms strips out the credit-like channel that turns market falls into fund collapses. Excluding banks avoids the sector that led the 2008 drawdown. On this reading Islamic funds should show a lower beta, lower volatility, and shallower falls (Hayat & Kraeussl, 2011; Naveed et al., 2020)." />
+                <InfoCard chip="Argument two · higher risk"
+                          title="Screening removes the diversification"
+                          dek="Markowitz (1952) is unambiguous: a smaller investable universe means a worse efficient frontier. Cut out whole sectors and what remains is concentrated, heavier in technology and healthcare, more dependent on one market regime, carrying more fund-specific risk (Hoepner et al., 2011; Walkshäusl & Lobe, 2012)." />
               </div>
               <p className="prose">
                 Theory cannot settle it. That makes it an empirical question, and the
@@ -844,48 +826,42 @@ export default function Page() {
           
               </p>
               <div className="grid-2">
-                <div className="cell">
-                  <span className="tag mono">Affected
-                  </span>
-                  <h3>Anything that reads the level
-                  </h3>
+                <InfoCard chip="Affected"
+                          title="Anything that reads the level">
                   <ul className="checks">
-                    <li>Sharpe ratios: a monthly figure of −2.09 is not interpretable and should not be quoted
-                    </li>
-                    <li>Treynor ratios, for the same reason
-                    </li>
-                    <li>The absolute size of Jensen's alpha
-                    </li>
-                    <li>The pooled intercept as a statement about abnormal return
-                    </li>
+                  <li>Sharpe ratios: a monthly figure of −2.09 is not interpretable and should not be quoted
+                  </li>
+                  <li>Treynor ratios, for the same reason
+                  </li>
+                  <li>The absolute size of Jensen's alpha
+                  </li>
+                  <li>The pooled intercept as a statement about abnormal return
+                  </li>
                   </ul>
-                </div>
-                <div className="cell">
-                  <span className="tag mono">Not affected
-                  </span>
-                  <h3>Anything that reads a slope or a difference
-                  </h3>
+                </InfoCard>
+                <InfoCard chip="Not affected"
+                          title="Anything that reads a slope or a difference">
                   <ul className="checks">
-                    <li>Market beta: a constant shift in both sides of a regression moves the intercept, not the slope
-                    </li>
-                    <li>Every factor loading, for the same reason
-                    </li>
-                    {/* One span, not bare inline markup: .checks li is a
-                     two-column grid, and a stray <strong> next to a text
-                     node becomes a third grid item that pushes the row
-                     past the viewport on a phone. */}
-                    <li>
-                      <span>
-                        <strong>The Islamic dummy
-                        </strong>: the offset is identical for both groups, so it cancels in the comparison
-                      </span>
-                    </li>
-                    <li>Volatility, idiosyncratic volatility and drawdown, none of which touch the risk-free rate at all
-                    </li>
-                    <li>Every p-value in the study
-                    </li>
+                  <li>Market beta: a constant shift in both sides of a regression moves the intercept, not the slope
+                  </li>
+                  <li>Every factor loading, for the same reason
+                  </li>
+                  {/* One span, not bare inline markup: .checks li is a
+                  two-column grid, and a stray <strong> next to a text
+                  node becomes a third grid item that pushes the row
+                  past the viewport on a phone. */}
+                  <li>
+                  <span>
+                  <strong>The Islamic dummy
+                  </strong>: the offset is identical for both groups, so it cancels in the comparison
+                  </span>
+                  </li>
+                  <li>Volatility, idiosyncratic volatility and drawdown, none of which touch the risk-free rate at all
+                  </li>
+                  <li>Every p-value in the study
+                  </li>
                   </ul>
-                </div>
+                </InfoCard>
               </div>
               <p className="prose">
                 So the research question survives intact and the presentation of the
