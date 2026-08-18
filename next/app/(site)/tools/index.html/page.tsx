@@ -25,6 +25,7 @@
    ============================================================ */
 
 import type { Metadata } from "next";
+import { TabBar, Tab } from "../../../../components/ui/tabs";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Legend, Key } from "../../../../components/ui/legend";
 import { Band } from "../../../../components/ui/band";
@@ -113,38 +114,18 @@ export default function ToolsPage() {
              set, one calculator at a time, which is the difference
              between "a page of five things" and "the thing you came
              for, with the others one tap away". */}
-            <div className="tool-tabs" id="tool-tabs" role="tablist" aria-label="Choose a calculator">
-              <a className="tool-tab" href="#compounding" role="tab" id="tab-compounding" aria-controls="compounding">
-                <span className="tool-tab-en">Compounding
-                </span>
-                <span className="tool-tab-bn bn-h">চক্রবৃদ্ধি
-                </span>
-              </a>
-              <a className="tool-tab" href="#sanchayapatra" role="tab" id="tab-sanchayapatra" aria-controls="sanchayapatra">
-                <span className="tool-tab-en">Sanchayapatra vs FDR
-                </span>
-                <span className="tool-tab-bn bn-h">সঞ্চয়পত্র বনাম এফডিআর
-                </span>
-              </a>
-              <a className="tool-tab" href="#inflation" role="tab" id="tab-inflation" aria-controls="inflation">
-                <span className="tool-tab-en">Inflation
-                </span>
-                <span className="tool-tab-bn bn-h">মূল্যস্ফীতি
-                </span>
-              </a>
-              <a className="tool-tab" href="#emi" role="tab" id="tab-emi" aria-controls="emi">
-                <span className="tool-tab-en">Loan EMI
-                </span>
-                <span className="tool-tab-bn bn-h">কিস্তির হিসাব
-                </span>
-              </a>
-              <a className="tool-tab" href="#position" role="tab" id="tab-position" aria-controls="position">
-                <span className="tool-tab-en">Position size
-                </span>
-                <span className="tool-tab-bn bn-h">ঝুঁকি ও পজিশন
-                </span>
-              </a>
-            </div>
+            <TabBar id="tool-tabs" label="Choose a calculator">
+              <Tab href="#compounding" id="tab-compounding" controls="compounding"
+                   label="Compounding" sub="চক্রবৃদ্ধি" />
+              <Tab href="#sanchayapatra" id="tab-sanchayapatra" controls="sanchayapatra"
+                   label="Sanchayapatra vs FDR" sub="সঞ্চয়পত্র বনাম এফডিআর" />
+              <Tab href="#inflation" id="tab-inflation" controls="inflation"
+                   label="Inflation" sub="মূল্যস্ফীতি" />
+              <Tab href="#emi" id="tab-emi" controls="emi"
+                   label="Loan EMI" sub="কিস্তির হিসাব" />
+              <Tab href="#position" id="tab-position" controls="position"
+                   label="Position size" sub="ঝুঁকি ও পজিশন" />
+            </TabBar>
           </div>
           {/* ============ 1 · COMPOUNDING ============ */}
           <section id="compounding" className="tool">

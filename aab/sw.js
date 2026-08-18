@@ -31,6 +31,22 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v114: A strip of choices is one object. The calculators' five
+        tabs and the account page's eight section links were two
+        looks: `.tool-tab` here, and twelve Tailwind arbitrary
+        values written inline on the account page, naming `green`
+        where every component on this site names `--accent`, at a
+        font size that is not on the scale. `ui/tabs.tsx` is both,
+        as two components rather than one with a role prop,
+        because one HIDES what it is not showing and the other
+        hides nothing.
+
+        And two the top bar's flex row turned up. The button that
+        closes the drawer kept its own copy of the burger's
+        declarations and had one wrong, so the two were 42px and
+        40px in the same place. Nothing in a flex row told the
+        controls not to shrink.
+
    v113: The whole site from the top bar, as a tree. The rail is
         a column and a column has room for one level, so getting
         to Stufe 3 meant opening the German hub to find it. The
@@ -1134,7 +1150,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v113";
+const VERSION = "v114";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

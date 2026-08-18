@@ -144,6 +144,41 @@ Moving them out is what retires that question.
 - **D. The Studio and the desk**, importing `next/components/ui`
   rather than keeping their own controls.
 
+## Phase 5.5. Drop `.html` from every address
+
+`/about.html`, `/money/index.html`, `/deutsch/stufe-1/anfang.html`.
+Those are the addresses of FILES, and there have been no files
+behind them since Stage 11.7. A Next route serves `/about` and
+`/money/` and needs no extension, and the extension is the last
+visible piece of the old system on a reader's screen.
+
+**It is not a rename.** 251 of those addresses are live, shared
+and indexed, and the rule this repository runs on is that a URL
+somebody shared does not move. So every old address gets a
+permanent 301 and keeps answering forever:
+
+| | |
+| --- | --- |
+| the route folders under `next/app/` | `about.html/page.tsx` becomes `about/page.tsx` |
+| `NEXT_ROUTES` in `worker.js` | the patterns match the extension today |
+| `run_worker_first` in `wrangler.toml` | same |
+| `next/lib/nav.ts` | sixteen hrefs, and it is the one table |
+| `stageUrl`, `lessonUrl`, `stageBase` in `shared/schools.ts` | which is where 251 of them are computed |
+| every `<a href>` in a lesson body | in D1, so one UPDATE and a re-export |
+| the canonicals, `sitemap.xml`, `feed.xml`, `og:url` | `build-meta.mjs` writes these |
+| `aab/_redirects` | one line per old address |
+| `check-routes.mjs` | a new rule: no internal link ends in `.html` |
+
+Two things make this safe to leave until here. It touches nothing
+structural, so it can happen at any point without changing what
+any other phase does. And `check-routes.mjs` already walks every
+link on the site, so the rule that proves it finished is nine
+lines in a check that exists.
+
+**`404.html` and `offline.html` keep theirs**, for the reason they
+are exceptions to everything else: they are files, and a file has
+an extension.
+
 ## Phase 6. Rebuild the two builders the Next way
 
 The only place "from scratch" is right, because the framework has

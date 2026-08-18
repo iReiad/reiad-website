@@ -83,6 +83,7 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../lib/pageMeta";
+import { PageNav, Tab } from "../../../components/ui/tabs";
 
 export const metadata: Metadata = {
   ...pageMeta({
@@ -247,38 +248,23 @@ export default function AccountPage() {
           </div>
         </header>
 
-        {/* Sticky, and the one piece of navigation on this page.
-            It is a list of links to fragments rather than tabs
-            that hide things: a reader who lands on
-            `#reading-list` from the header menu should find the
-            page scrolled to their reading list with everything
-            else still there above and below it. */}
-        <nav aria-label="This page"
-             className="sticky top-[var(--top-space)] z-20 border-b border-hairline
-                        bg-[color-mix(in_oklab,var(--paper)_88%,transparent)]
-                        backdrop-blur-[10px] backdrop-saturate-150">
-          {/* It scrolls sideways rather than wrapping to three
-              lines: eight links is more than a phone can show,
-              and a rail that changed height as you scrolled past
-              it would move the page under the thumb doing the
-              scrolling. */}
-          <div className="wrap flex gap-1 overflow-x-auto py-[7px]
-                          [scrollbar-width:none] [scroll-snap-type:x_proximity]
-                          [&::-webkit-scrollbar]:hidden">
-            {SECTIONS.map((s) => (
-              <a key={s.id} href={`#${s.id}`}
-                 className="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap
-                            rounded-full px-[13px] py-[7px] text-[0.82rem] text-ink-soft
-                            no-underline transition-colors [scroll-snap-align:start]
-                            hover:bg-panel-hover hover:text-ink hover:opacity-100
-                            focus-visible:bg-panel-hover focus-visible:text-ink
-                            focus-visible:outline-none
-                            focus-visible:ring-2 focus-visible:ring-green/30">
-                {s.label}
-              </a>
-            ))}
-          </div>
-        </nav>
+        {/* The one piece of navigation on this page, and it is a
+            `<PageNav>` rather than a `<TabBar>` because nothing
+            here is hidden: a reader who lands on `#reading-list`
+            from a link should find the page scrolled to their
+            reading list with everything else still above and
+            below it. `ui/tabs.tsx` says why that is two
+            components rather than one with a role prop.
+
+            It was twelve Tailwind arbitrary values written
+            inline, naming `green` where every component on this
+            site names `--accent`, at a font size that is not on
+            the scale. */}
+        <PageNav label="This page" sticky>
+          {SECTIONS.map((s) => (
+            <Tab key={s.id} href={`#${s.id}`} label={s.label} />
+          ))}
+        </PageNav>
 
         <div className="wrap grid gap-[clamp(34px,5vw,56px)]
                         pt-[clamp(26px,4vw,44px)] pb-[var(--step)]">

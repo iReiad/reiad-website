@@ -503,7 +503,7 @@ bindTool("position", (v, root) => {
   const panels = $$(".tool");
   if (!bar || panels.length === 0) return;
 
-  const links = $$<HTMLAnchorElement>(".tool-tab", bar);
+  const links = $$<HTMLAnchorElement>(".tab", bar);
   const idOf = (a: Element) => a.getAttribute("href")?.slice(1) ?? "";
 
   // Only now does hiding become safe.
@@ -533,7 +533,7 @@ bindTool("position", (v, root) => {
   }
 
   bar.addEventListener("click", (e) => {
-    const a = (e.target as Element | null)?.closest(".tool-tab");
+    const a = (e.target as Element | null)?.closest(".tab");
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;
     e.preventDefault();
     show(idOf(a), { push: true });

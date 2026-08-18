@@ -377,8 +377,17 @@ for (const width of [360, 390, 412]) {
 }
 
 /* On a laptop the rail is a rail: no burger, no close button, the
-   mark in the rail rather than the bar, and the switch back in the
-   bar's second column. The drawer rules must not leak up here. */
+   mark in the rail rather than the bar. The drawer rules must not
+   leak up here.
+
+   The switch is in the RAIL at every width now, which is a change
+   and is what this used to assert the opposite of. It was in the
+   bar on a laptop, so "what brings you here" sat across the top
+   of every page somebody read; it is asked once and then never
+   again, so it belongs with the menu. What the bar carries
+   instead is the tree, and that is asserted here too, because a
+   bar with neither is what this change would look like if the
+   component failed to render. */
 {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   await page.route("https://fonts.googleapis.com/**", (r) => r.abort());
@@ -390,11 +399,12 @@ for (const width of [360, 390, 412]) {
     return { burger: shown(".drawer-btn"), close: shown(".drawer-close"),
              railMark: shown(".rail-mark"), barMark: shown(".topbar-mark"),
              barSwitch: shown(".topbar > .audience-switch"),
-             railSwitch: shown(".rail-audience") };
+             railSwitch: shown(".rail-audience"),
+             tree: shown(".topbar .tree-btn") };
   });
   ok("on a laptop the menu is a rail, not a drawer",
     !state.burger && !state.close && state.railMark && !state.barMark
-    && state.barSwitch && !state.railSwitch, JSON.stringify(state));
+    && !state.barSwitch && state.railSwitch && state.tree, JSON.stringify(state));
   await page.close();
 }
 

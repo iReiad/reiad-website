@@ -1244,7 +1244,7 @@
      Any control that is already big enough is unaffected: the
      box is `100%` of the button and only grows to `--tap` when
      the button is smaller than that. */
-  :is(.icon-btn, .top-btn) {
+  :is(.icon-btn, .top-btn, .drawer-close) {
     position: relative;
 
     &::before {
@@ -2696,31 +2696,81 @@ it collapsed to the width of the word "Bangladesh". */
      Styled as tabs, but they are anchor links to real sections. If
      tools.js never runs, body[data-tool-tabs] is never set, nothing
      is hidden, and these behave as the jump links they always were. */
-  .tool-tabs {
+  /* ---------- a strip of choices ----------
+
+     `next/components/ui/tabs.tsx` is the markup and says why it
+     is two components. This is the look, and it is one look:
+     the calculators' five, the account page's eight and anything
+     after them.
+
+     It was `.tool-tab` here and twelve arbitrary Tailwind values
+     inline on the account page, and the second named `green`
+     directly at a font size that is not on the scale. The
+     calculators' was the better of the two, so this is that one,
+     given the glass the rest of the site has. */
+  .tabs {
     display: flex; flex-wrap: wrap; gap: var(--s-4);
     margin-top: 26px;
   }
-  .tool-tab {
+
+  .tab {
     display: grid; gap: 1px;
-    padding: 9px 16px; border-radius: var(--radius-pill);
-    border: 1px solid var(--hairline);
-    background: var(--panel);
+    padding: 9px 16px;
+    min-height: var(--tap-sm);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--pane-edge);
+    background-color: var(--glass-solid);
+    background-image: var(--sheen);
+    box-shadow: inset 0 1px 0 var(--pane-top);
     text-decoration: none; color: var(--ink);
     transition: border-color var(--fast) var(--ease),
-                background var(--fast) var(--ease);
-
-    &:hover { border-color: var(--accent); }
-    &[aria-selected="true"] {
-      border-color: var(--accent);
-      background: var(--accent-soft);
-    }
+                background-color var(--fast) var(--ease),
+                color var(--fast) var(--ease);
   }
-  .tool-tab-en {
+  .tab:hover { border-color: var(--accent); }
+
+  /* Two states, and they are two because they mean two things.
+     `aria-selected` is a tablist's: this panel is the one on
+     screen. `aria-current` is a nav's: this is the part of the
+     page you are at. They look the same because to a reader they
+     are the same answer to "which one am I on". */
+  .tab:is([aria-selected="true"], [aria-current="true"]) {
+    border-color: var(--accent);
+    background-color: var(--accent-soft);
+  }
+  .tab-en {
     font-family: var(--font-mono); font-size: var(--t-2);
     letter-spacing: 0.05em; text-transform: uppercase;
   }
-  .tool-tab[aria-selected="true"] .tool-tab-en { color: var(--accent); }
-  .tool-tab-bn { font-size: var(--t-3); color: var(--ink-soft); }
+  .tab:is([aria-selected="true"], [aria-current="true"]) .tab-en { color: var(--accent); }
+  .tab-bn { font-size: var(--t-3); color: var(--ink-soft); }
+
+  /* A nav down one page, rather than five panels one of which
+     shows. Eight of them do not wrap to three lines on a phone:
+     they scroll, because a strip that changed height as you
+     scrolled past it would move the page under the thumb doing
+     the scrolling. */
+  .tabs-nav {
+    flex-wrap: nowrap; overflow-x: auto;
+    scrollbar-width: none; scroll-snap-type: x proximity;
+    margin-top: 0;
+  }
+  .tabs-nav::-webkit-scrollbar { display: none; }
+  .tabs-nav > .tab { flex: 0 0 auto; scroll-snap-align: start; }
+
+  /* Stuck under the bar, which is the one place on a page where
+     a backdrop filter earns its cost: content scrolls under it. */
+  .tabs-nav[data-sticky] {
+    position: sticky; top: var(--top-space); z-index: 20;
+    padding-block: 7px;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .tabs-nav[data-sticky] { background: var(--glass-solid); }
+  }
 
   /* With one calculator on screen the card no longer needs to be
      scrolled to, and scroll-margin would drag it under the header
@@ -8728,7 +8778,13 @@ German for day, and .tag is what the site has always called
     margin-left: auto;
   }
 
-  .top-btn {
+  /* `.drawer-close` is not in the bar and is not `.top-btn` in the
+     markup, and it is the same control: the burger and the button
+     that closes what the burger opened have to be the same size in
+     the same place, or the menu moves under the thumb. It is named
+     here rather than given a second copy of these declarations,
+     which is what it had. */
+  :is(.top-btn, .drawer-close) {
     display: inline-flex; align-items: center; gap: var(--s-4);
     height: 36px; padding-inline: 10px;
     border: 1px solid var(--hairline);
@@ -8738,14 +8794,25 @@ German for day, and .tag is what the site has always called
     cursor: pointer;
     transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
   }
-  .top-btn:hover { color: var(--accent); border-color: var(--accent); }
+  :is(.top-btn, .drawer-close):hover { color: var(--accent); border-color: var(--accent); }
   .top-btn .kbd-hint { font-size: var(--t-0); opacity: 0.8; }
 
   /* The burger, which only exists where the rail does not, and
      the mark beside it, which exists for exactly the same reason
      and at exactly the same widths. */
   .drawer-btn, .drawer-close, .drawer-back, .topbar-mark { display: none; }
-  .drawer-btn { grid-column: 1; justify-self: start; }
+  /* In a flex row a control shrinks unless it is told not to,
+     and a control that shrinks is a control that is not the size
+     it was designed at. The burger measured 40px against the
+     close button's 42 on a 412px phone, so the button moved a
+     pixel under the thumb that had just pressed it, and
+     `interactive.test.mjs` is the check that says those two are
+     the same box.
+
+     The mark is the one thing here that MAY shrink: it is a
+     wordmark with `text-overflow: ellipsis` already on it, so it
+     is the right thing to give the leftover width to. */
+  :is(.drawer-btn, .tree-btn, .top-tools, .top-btn) { flex: 0 0 auto; }
 
   .topbar-mark {
     grid-column: 1; justify-self: start;
@@ -8858,16 +8925,14 @@ German for day, and .tag is what the site has always called
        bar's copy is the one that has to stay: it is there in the
        state the reader is in almost all of the time. */
     .rail-head .rail-mark { display: none; }
-    .drawer-close {
-      display: inline-flex; align-items: center; justify-content: center;
-      flex: 0 0 auto;
-      height: 36px; padding-inline: var(--s-5);
-      border: 1px solid var(--hairline);
-      border-radius: var(--radius-pill);
-      background: var(--panel); color: var(--ink-soft); cursor: pointer;
-      transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
-    }
-    .drawer-close:hover { color: var(--accent); border-color: var(--accent); }
+    /* The close button IS the burger, so it takes the burger's
+       rule rather than a copy of it. It had a copy, and the copy
+       had `padding-inline: var(--s-5)` where `.top-btn` has 10px,
+       so the two were 42px and 40px and the button moved 1px
+       under the thumb that opened the menu. That is what a copy
+       of a control does, and it is the reason `.btn` and
+       `<Button>` had to become one thing. */
+    .drawer-close { display: inline-flex; flex: 0 0 auto; }
     .drawer-back {
       display: block;
       position: fixed; inset: 0; z-index: 55;
