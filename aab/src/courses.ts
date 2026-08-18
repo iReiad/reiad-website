@@ -763,22 +763,33 @@ function drawLesson(root: HTMLElement, course: Course, mod: Module, lesson: Less
     `<video src>` is the browser fetching a URL on its own, with
     no header this code can add, so the permission has to travel
     in the URL. `functions/_lib/ticket.ts` is why that is a signed
-    ticket naming one file rather than the session token. */
-async function ticketFor(drive: string): Promise<string | null> {
-  const answer = await api<{ url: string }>(`/ticket/${drive}`);
-  return answer.ok && answer.data ? answer.data.url : null;
-}
+    ticket naming one file rather than the session token.
+
+    The whole answer comes back rather than just the URL, because
+    the reason a pass was refused is the only useful thing on the
+    page when one is. See `mountVideo`. */
+const ticketFor = (drive: string) => api<{ url: string }>(`/ticket/${drive}`);
 
 function saySo(box: HTMLElement, message: string) {
   box.replaceChildren(el("p", { class: "course-empty" }, [message]));
 }
 
 async function mountVideo(box: HTMLElement, drive: string, title: string) {
-  const url = await ticketFor(drive);
-  if (!url) {
-    saySo(box, "That video could not be opened. If you have just signed in, reload.");
+  const answer = await ticketFor(drive);
+  if (!answer.ok || !answer.data) {
+    /* The server's own reason, not a general one. This said "that
+       video could not be opened, try reloading" for every failure
+       there is, including the one that was actually happening: the
+       Worker had no Google credential and was saying so in the
+       response, in a sentence naming the secret to set. Reloading
+       was never going to fix it, and the page recommended it.
+
+       `mountReading` beside this has always shown the message. The
+       two now agree. */
+    saySo(box, answer.message || "That video could not be opened.");
     return;
   }
+  const url = answer.data.url;
 
   /* `preload="metadata"` rather than `auto`: a lesson video is
      tens of megabytes and a reader who opened the page to read
@@ -827,9 +838,16 @@ function fileRow(name: string, ext: string, drive: string): HTMLElement {
 
   link.addEventListener("click", (event) => {
     event.preventDefault();
-    void ticketFor(drive).then((url) => {
-      if (url) window.open(url, "_blank", "noopener");
-      else link.after(el("span", { class: "course-empty" }, [" could not be opened"]));
+    void ticketFor(drive).then((answer) => {
+      if (answer.ok && answer.data) {
+        window.open(answer.data.url, "_blank", "noopener");
+        return;
+      }
+      /* The server's reason, for the same argument as `mountVideo`:
+         "could not be opened" is true of every failure and useful
+         for none of them. */
+      link.after(el("span", { class: "course-empty" },
+        [` ${answer.message || "could not be opened"}`]));
     });
   });
 
