@@ -39,6 +39,7 @@ import {
 import { requireAdmin } from "../../_lib/auth.js";
 import { throttle } from "../../_lib/auth.js";
 import { readerFrom } from "../../_lib/reader.js";
+import { isAdmin } from "../../_lib/admins.js";
 import { SECTIONS, COMMENT_STATUS, allowed } from "../../../shared/rows.ts";
 import { read, safeSlug } from "../../_lib/input.js";
 
@@ -159,17 +160,28 @@ export async function onRequest(context) {
          page afterwards; this is who they were when they wrote it. */
       const name = str(reader.name || "Reader", 60);
 
+      /* The site's own people skip their own queue. Moderation
+         exists so a stranger's words wait for the person who runs
+         the site; when the writer IS that person, pending would
+         mean approving yourself, a button with one possible
+         answer. Everybody else's path is exactly as it was. */
+      const live = await isAdmin(env, request, reader.id);
+
       await run(d1,
         `INSERT INTO comments
-           (slug, section, parent_id, author_id, author_name, body, status, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)`,
+           (slug, section, parent_id, author_id, author_name, body,
+            status, created_at, approved_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         slug, safeSection(input.section), parent,
-        reader.id, name, text, nowISO());
+        reader.id, name, text,
+        live ? "live" : "pending", nowISO(), live ? nowISO() : null);
 
       /* Deliberately no row back. There is nothing to show yet, and
          answering with the comment would invite a page to render
-         it, which is the one thing moderation is for. */
-      return ok({ queued: true });
+         it, which is the one thing moderation is for. `live` tells
+         an admin's browser their words are already up, so it can
+         reload the thread instead of promising a wait. */
+      return ok(live ? { queued: false, live: true } : { queued: true });
     },
 
     PATCH: async () => {

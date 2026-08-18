@@ -642,6 +642,7 @@ for (const [path, title, nav] of [
   ["/skills/index.html", "দক্ষতা · Skills · Reiad's Library", "/skills/index.html"],
   ["/tools/index.html", "Tools & calculators · Reiad's Library", "/tools/index.html"],
   ["/tools/stock.html", "Stock check · buy, hold or sell · Reiad's Library", "/tools/stock.html"],
+  ["/tools/live.html", "Live portfolio · a real account, live from the broker · Reiad's Library", "/tools/live.html"],
   /* The home page marks nothing: it is not in the rail. */
   ["/", "Reiad's Library · বাংলায় টাকা, দক্ষতা আর কাজ", null],
   ["/portfolio.html", "Portfolio & Services · Reiad's Library", "/portfolio.html"],

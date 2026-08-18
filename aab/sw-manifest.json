@@ -1,11 +1,11 @@
 {
-  "version": "v89",
+  "version": "v90",
   "hashes": {
     "/offline.html": "55bcf02529d11190",
-    "/styles.css": "9a61af51802932cd",
+    "/styles.css": "4ada940ad3c56987",
     "/tailwind.css": "3037e1e16f17096a",
     "/app.js": "f56b8c5eed9e972d",
-    "/content.js": "b4c77f66d2f9825e",
+    "/content.js": "3c535dcbbd7173be",
     "/api.js": "fb43503e1326fabe",
     "/pieces.js": "5722a2dcbf3eade1",
     "/signin.js": "020867ee35ca4d5d",
@@ -18,7 +18,7 @@
     "/keep.js": "72957ee6132be7e2",
     "/prefs.js": "84bbd206848e1dbc",
     "/checkpoints.js": "f0a67f8ffea44934",
-    "/comments.js": "2767263efe40b421",
+    "/comments.js": "fc3e807e43622e9d",
     "/crumbs.js": "60beddce649904a9",
     "/audience.js": "638ceb49784d808c",
     "/activation.js": "3d0a5d2317d6d8dc",

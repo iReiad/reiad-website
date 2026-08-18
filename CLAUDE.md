@@ -915,6 +915,56 @@ does not move somebody's ticks, it loses them. `next/lib/progress.ts`
 maps the school `money` on to the key `learn-read` deliberately,
 and says so where it does it.
 
+## The live portfolio, and who is an admin
+
+`/tools/live.html` shows one real Trading 212 account, live, three
+ways. A stranger gets the site's own portfolio in percentages: a
+weight and a return teach a lesson, a balance only says how much
+money somebody else has. A signed-in reader who connects their own
+API key gets the same dashboard over their own account, in full. An
+admin gets the levers: the key behind the public feed, the switches
+that decide what a stranger's list shows, and the site account
+unsanitised.
+
+**The browser never speaks to the broker.** `aab/tools/live.js`
+calls `/api/broker/*` and nothing else; the Worker
+(`functions/api/broker/[[route]].js` over `functions/_lib/broker.js`)
+is the only caller of `live.trading212.com`, which is why
+`connect-src` did not change. The broker's rate limits are per
+ACCOUNT, so the one place that can meter requests honestly is the
+one place they all pass through: the public snapshot lives in D1
+`settings` and refreshes at most every five minutes, a reader's own
+numbers cache at the edge for one minute and their history for ten.
+Do not add a second caller, and do not write the broker's hostname
+into anything under `aab/`: `check-csp.mjs` scans every string there
+and will rightly fail it.
+
+**A key is stored sealed or not at all.** `PUT /api/broker/key`
+proves a key against the broker, seals it with AES-GCM under the
+`BROKER_TOKEN_KEY` wrangler secret, and writes it to
+`public.broker_tokens` in Supabase AS THE READER, forwarding their
+own bearer: this project holds no service-role key and this table is
+not a reason to start. The row's owner can read their row back and
+learns ciphertext. Without the secret, nothing is stored and the
+paste-it-per-session path (the `x-broker-key` header, sessionStorage
+in the tab) is all there is. The public feed's key is the
+`T212_PUBLIC_TOKEN` secret, or one an admin sets from the dashboard,
+sealed into D1 `settings` the same way; the secret wins where both
+exist.
+
+**Admin is a reader id in two records, either is enough.**
+`ADMIN_READERS` in `wrangler.toml` is the half that works with
+nothing else set up; `public.admins` in Supabase is the durable one,
+granted only in SQL, with a select policy that shows a reader their
+own row and no write policies at all, so no combination of browser
+tokens can mint an admin. `functions/_lib/admins.js` asks both and
+is the ONLY place that asks: anything that wants to know goes
+through `isAdmin()`. What an admin currently gets: the dashboard's
+admin panel, the full site account, and their comments go live
+without the moderation queue (their name is on the site; approving
+themselves was a button with one possible answer). A new privilege
+belongs behind the same function, not behind a second list.
+
 ## Publishing a new case study
 
 The failure this list exists for is a finished case study that nobody can

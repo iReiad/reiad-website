@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v90: The live portfolio landed at /tools/live.html. /styles.css
+        gained its drawing vocabulary in the tools layer, and
+        /comments.js learned that an admin's comment comes back
+        already live and redraws the thread instead of promising
+        a wait. The page itself is Worker-rendered and not
+        precached; its module /tools/live.js is new and useless
+        offline (a live feed has nothing honest to say from a
+        cache), so it is deliberately not in PRECACHE either.
+
    v89: The menu on a phone. /styles.css only, and three things
         in it that a reader can point at.
 
@@ -846,7 +855,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v89";
+const VERSION = "v90";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

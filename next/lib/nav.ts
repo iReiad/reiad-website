@@ -123,6 +123,7 @@ export const NAV: NavGroup[] = [
     items: [
       { label: "Calculators", sub: "ক্যালকুলেটর", href: "/tools/index.html", icon: "calculator", key: "tools" },
       { label: "Stock check", sub: "শেয়ার যাচাই", href: "/tools/stock.html", icon: "gauge", key: "stock" },
+      { label: "Live portfolio", sub: "লাইভ পোর্টফোলিও", href: "/tools/live.html", icon: "wallet", key: "live" },
     ],
   },
   {
