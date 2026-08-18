@@ -139,6 +139,26 @@
 
   /* lines and depth */
   --color-hairline: var(--hairline);
+  --color-pane-edge: var(--pane-edge);
+  --color-glass: var(--glass-bg);
+  --color-glass-solid: var(--glass-solid);
+  --color-glass-edge: var(--glass-edge);
+
+  /* the accent's own family, so a component can reach for a
+     shade rather than mixing one inline. `accent-line` is the
+     hairline weight and `accent-ring` the focus weight: two
+     jobs, two alphas, and neither is a component's guess. */
+  --color-accent-line: var(--accent-line);
+  --color-accent-ring: var(--accent-ring);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-ink: var(--accent-ink);
+
+  /* texture, as backgrounds a utility can name. A surface that
+     wants tooth says `bg-grain` rather than repeating a
+     gradient nobody will keep in step with the others. */
+  --background-image-grain: var(--grain);
+  --background-image-weave: var(--weave);
+  --background-image-sheen: var(--sheen);
   --shadow-card: var(--shadow);
   --shadow-lift: var(--shadow-lift);
 

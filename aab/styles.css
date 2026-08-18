@@ -92,8 +92,6 @@
     --h-paper: 84;
 
     /* --- surfaces --- */
-    --paper:        light-dark(oklch(98.4% 0.008 var(--h-paper)), oklch(16.5% 0.012 var(--h-green)));
-    --paper-sunk:   light-dark(oklch(96.4% 0.011 var(--h-paper)), oklch(14%   0.012 var(--h-green)));
     /* --- the two surfaces, and both are glass ---
 
        `--panel-base` is the opaque colour a panel used to be, and
@@ -104,31 +102,99 @@
        faintly blue and the same card on the calculators read as
        faintly gold, without either of them naming a colour.
 
-       The mix is 4%. That is deliberately below where anybody
-       would call it tinted: the point is that the page feels
-       like one place, not that the cards look coloured. Every
-       contrast pair is measured against this by
-       `check-contrast.mjs` and the accent at 4% moves none of
-       them by more than a rounding error, because an accent at
-       this site's chroma is close to neutral in lightness.
+       ---- how much, and why it differs by mode ----
+
+       The strength is a token rather than a number in each mix,
+       because the right amount is not the same in both themes and
+       a single figure has to be wrong in one of them. A light
+       surface near white shows a tint immediately and goes muddy
+       if pushed; a dark surface absorbs three times as much
+       before it reads as coloured at all. The first attempt used
+       4% everywhere, which was visible in neither.
+
+       `color-mix` takes a percentage from a custom property, so
+       `light-dark()` decides it once here and every surface
+       downstream follows.
+
+       ---- the ladder ----
+
+       Four rungs, and they are a ladder rather than four
+       unrelated numbers: a page is the faintest, a sunk ground
+       sits under it, a panel sits on it, and an edge is the
+       strongest because a one-pixel line needs far more colour
+       than a field to read as the same hue.
 
        TRANSLUCENT, not transparent. 0.86 over the paper is a
        surface you can put text on: what shows through is the
-       page's own ground rather than words. The overlay tier
-       below is the one that needs a blur, because it is the only
-       tier with moving content underneath it. */
+       page's own ground rather than words. The overlay tier is
+       the one that needs a blur, because it is the only tier with
+       moving content underneath it. */
+    --tint-page:    light-dark( 2.5%,  6%);
+    --tint-sunk:    light-dark( 5%,   11%);
+    --tint-panel:   light-dark( 8%,   17%);
+    --tint-edge:    light-dark(30%,   38%);
+
+    --paper-base:   light-dark(oklch(98.4% 0.008 var(--h-paper)), oklch(16.5% 0.012 var(--h-green)));
+    --paper:        color-mix(in oklab, var(--accent) var(--tint-page), var(--paper-base));
+
+    --paper-sunk-base: light-dark(oklch(96.4% 0.011 var(--h-paper)), oklch(14% 0.012 var(--h-green)));
+    --paper-sunk:   color-mix(in oklab, var(--accent) var(--tint-sunk), var(--paper-sunk-base));
+
     --panel-base:   light-dark(oklch(99.5% 0.004 var(--h-paper)), oklch(21%   0.014 var(--h-green)));
-    --panel:        color-mix(in oklab, var(--accent) 4%,
+    --panel:        color-mix(in oklab, var(--accent) var(--tint-panel),
                       color-mix(in srgb, var(--panel-base) 86%, transparent));
-    --panel-hover:  color-mix(in oklab, var(--accent) 7%,
+    --panel-hover:  color-mix(in oklab, var(--accent) calc(var(--tint-panel) + 6%),
                       light-dark(oklch(98% 0.012 var(--h-paper)), oklch(24% 0.016 var(--h-green))));
 
     /* The edge and the lift a pane carries. A light hairline
        along the top of a surface is what reads as a pane of
-       something rather than a rectangle of paint, and it follows
-       the accent for the same reason the ground does. */
-    --pane-edge:    color-mix(in oklab, var(--accent) 18%, var(--hairline));
+       something rather than a rectangle of paint. */
+    --pane-edge:    color-mix(in oklab, var(--accent) var(--tint-edge), var(--hairline));
     --pane-top:     light-dark(oklch(100% 0 0 / 0.55), oklch(100% 0 0 / 0.06));
+
+    /* --- texture ---
+
+       Colour alone makes a page tinted; texture makes it a
+       material. Three of them, and each is a gradient rather than
+       an image: no request, no data URI for the CSP to think
+       about, and they resample at any zoom instead of going soft.
+
+       All three are drawn IN THE ACCENT, so the grain on a German
+       page is blue grain. That is the point of having them at all
+       rather than a flat wash: two surfaces at the same lightness
+       read as different materials, and a reader can tell a ground
+       from a card without either carrying a border.
+
+       The alphas are low on purpose, between 2% and 6%. A texture
+       you can name while reading is a texture that is too strong;
+       what these do is stop a large area reading as flat paint.
+
+       `--grain`   the page. A dot grid at 3px, which at any real
+                   viewing distance is tooth rather than dots.
+       `--weave`   a sunk ground. Diagonal, so it does not line up
+                   with the text baseline and shimmer.
+       `--sheen`   a panel. One soft diagonal highlight, which is
+                   what makes glass read as lit from somewhere. */
+    --tex-ink:      color-mix(in oklab, var(--accent) 60%,
+                      light-dark(oklch(45% 0.04 var(--h-green)), oklch(85% 0.04 var(--h-green))));
+    --tex-a:        light-dark(0.035, 0.05);
+    --tex-b:        light-dark(0.028, 0.042);
+
+    --grain:
+      radial-gradient(circle at 50% 50%,
+        color-mix(in oklab, var(--tex-ink) calc(var(--tex-a) * 100%), transparent) 0.5px,
+        transparent 0.6px);
+    --grain-size: 3px 3px;
+
+    --weave:
+      repeating-linear-gradient(135deg,
+        color-mix(in oklab, var(--tex-ink) calc(var(--tex-b) * 100%), transparent) 0 1px,
+        transparent 1px 7px);
+
+    --sheen:
+      linear-gradient(147deg,
+        color-mix(in oklab, var(--pane-top) 90%, transparent) 0%,
+        transparent 34%);
 
     /* --- text --- */
     --ink:          light-dark(oklch(24%   0.012 var(--h-green)), oklch(93.5% 0.008 var(--h-green)));
@@ -191,6 +257,14 @@
     --accent-soft: color-mix(in oklab, var(--accent) 11%, var(--paper));
     --accent-line: color-mix(in oklab, var(--accent) 28%, transparent);
     --accent-ring: color-mix(in oklab, var(--accent) 30%, transparent);
+    /* The accent at full strength, for a surface that IS the
+       accent rather than one tinted by it: a solid button, a
+       filled chip. And the ink that reads on it, which is the
+       paper in light and stays the paper in dark, because a
+       solid accent is dark enough in both. */
+    --accent-strong: color-mix(in oklab, var(--accent) 88%,
+                       light-dark(oklch(20% 0.02 var(--h-green)), oklch(96% 0.01 var(--h-paper))));
+    --accent-ink:   light-dark(oklch(99% 0.004 var(--h-paper)), oklch(14% 0.012 var(--h-green)));
 
     /* --- lines, glass, depth ---
        Contrast on the warm paper, measured in a browser rather
@@ -212,7 +286,7 @@
        this site's chroma is a hue you notice only next to another
        section's. */
     --hairline-base: light-dark(oklch(88.5% 0.012 var(--h-paper)), oklch(28%   0.015 var(--h-green)));
-    --hairline:     color-mix(in oklab, var(--accent) 10%, var(--hairline-base));
+    --hairline:     color-mix(in oklab, var(--accent) var(--tint-sunk), var(--hairline-base));
     /* --- glass ---
 
        These existed and were used in exactly one place, at an
@@ -9737,10 +9811,16 @@ German for day, and .tag is what the site has always called
 
   .quiz-reset:hover { border-color: var(--ink-soft); color: var(--ink); }
 
+  /* No rule of its own. This is a footnote at the bottom of a
+     block that already has an edge, and the block after it draws
+     one too: two lines sixty pixels apart read as a mistake,
+     because they are one. The earlier fix removed the SECOND
+     line and depended on the two being adjacent siblings, which
+     they stop being the moment a lesson has a file list. One
+     separator, owned by one element, is the version that cannot
+     come undone. */
   .course-original {
-    margin-top: 1.5rem;
-    padding-top: 0.9rem;
-    border-top: 1px solid var(--hairline);
+    margin-top: 1.25rem;
     font-size: var(--t-2);
   }
   .course-original a { color: var(--ink-soft); }
@@ -9786,14 +9866,6 @@ German for day, and .tag is what the site has always called
     border-top: 1px solid var(--hairline);
   }
 
-  /* One rule, not two. A reading block ends with the "open the
-     original in Drive" line, which draws its own, and a file list
-     ends with the last row's. A second rule sixty pixels below
-     the first reads as a mistake, because it is one. */
-  :is(.course-reading, .course-files) + .course-actions {
-    border-top: 0;
-    padding-top: 0;
-  }
 
   .course-continue { flex: 0 1 auto; }
 

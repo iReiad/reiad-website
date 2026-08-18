@@ -219,6 +219,42 @@ function parts(text) {
  * moment `--panel` became a mix, and the only thing that noticed
  * was the count in this file's own output.
  */
+/** A percentage, as a fraction of one.
+
+    `8%`, `var(--tint-panel)` naming a `light-dark(8%, 17%)`, or
+    `calc(var(--tint-panel) + 6%)`, which is how a hover state
+    says "a little more than a panel" without repeating the
+    ladder. */
+function percent(text, mode, depth = 0) {
+  const t = String(text ?? "").trim();
+  if (depth > 8) return null;
+
+  const lit = /^([\d.]+)%$/.exec(t);
+  if (lit) return Number(lit[1]) / 100;
+
+  const name = /^var\(\s*(--[a-z0-9-]+)\s*\)$/.exec(t)?.[1];
+  if (name) return percent(DECLS[name], mode, depth + 1);
+
+  const ld = /^light-dark\(([\s\S]*)\)$/.exec(t);
+  if (ld) {
+    const [light, dark] = parts(ld[1]);
+    return percent(mode === "dark" ? dark : light, mode, depth + 1);
+  }
+
+  /* Only addition and subtraction of two terms, which is all the
+     stylesheet writes. Anything else returns null and the caller
+     reports it rather than guessing. */
+  const sum = /^calc\(([\s\S]+?)\s*([+-])\s*([\s\S]+?)\)$/.exec(t);
+  if (sum) {
+    const a = percent(sum[1], mode, depth + 1);
+    const b = percent(sum[3], mode, depth + 1);
+    if (a === null || b === null) return null;
+    return sum[2] === "+" ? a + b : a - b;
+  }
+
+  return null;
+}
+
 function resolve(value, mode, seen = new Set(), accent = null) {
   const text = String(value ?? "").trim();
   if (!text) return null;
@@ -252,11 +288,17 @@ function resolve(value, mode, seen = new Set(), accent = null) {
     const [space, first, second] = parts(cm[1]);
     if (!/^in\s+(oklab|srgb|oklch)$/i.test(space)) return null;
 
-    const pct = /([\d.]+)%\s*$/.exec(first);
-    if (!pct) return null;
-    const p = Number(pct[1]) / 100;
+    /* The percentage can be a literal, a `var()` naming one, or a
+       `calc()` of the two. It is a token because the right tint
+       is not the same in both themes and one number has to be
+       wrong in one of them, so this has to follow the same
+       indirection every colour does. */
+    const split = /^([\s\S]*?)\s*(\S+%|var\([^()]*\)|calc\([^()]*\))\s*$/.exec(first);
+    if (!split) return null;
+    const p = percent(split[2], mode);
+    if (p === null) return null;
 
-    const a = resolve(first.replace(/\s*[\d.]+%\s*$/, ""), mode, seen, accent);
+    const a = resolve(split[1], mode, seen, accent);
     const b = resolve(second, mode, seen, accent);
     if (!a || !b) return null;
     return mix(a, b, p);
