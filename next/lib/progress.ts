@@ -112,24 +112,44 @@ const writeJSON = (key: string, value: unknown) => {
 
 /** Everything this school has been ticked for.
 
-    `known` is the set of ids the server just rendered a ladder
-    from. Anything else is dropped, which is not tidiness: for a
-    while the money school's recorder claimed every page carrying
-    a `data-lesson-id`, which is ninety pages of Arabic and
-    English as well as its own, and those ids are in real readers'
-    storage. Filtering on read rather than migrating on write
-    needs no version flag, cannot half-run, and fixes a device the
-    first time it is opened. */
-export function readSet(school: string, known?: Set<string>): Set<string> {
+    READING NEVER WRITES. That sentence is the whole of this
+    function and it is here because the previous version did.
+
+    It took a `known` set, the ids the server had just rendered a
+    ladder from, dropped anything else, and wrote the survivors
+    back, on the theory that a device would heal itself the first
+    time it was opened. The theory needed `known` to be the
+    school's COMPLETE set of ids, and not one caller passed that:
+
+      <LessonTick>   passed `[id]`, the one lesson on screen
+      <CardTick>     passed `[id]`, the one card
+      <LadderMeter>  passed one stage's lessons, once per rung
+      <Resume>       passed the ladder it was given
+
+    So opening any lesson in the money school pruned that reader's
+    ticks down to that single lesson and saved it. Forty finished
+    lessons became zero, silently, and with an account the empty
+    set went up to the account and out to their other devices,
+    because a device is a mirror and this looked exactly like
+    somebody un-ticking thirty-nine lessons by hand. The school
+    hub was worse: it draws one meter per stage, so the stages
+    took turns overwriting each other and whichever rendered last
+    was all that was left.
+
+    Nothing needs the filtering. Every consumer already intersects
+    this set with its own list of ids, `read.has(id)`, so a
+    foreign id left in storage is inert: it cannot inflate a
+    count, because no count is `set.size`. A few stale bytes are
+    worth nothing and a reader's year of ticks is worth a great
+    deal, so the trade is not close.
+
+    If those stale ids ever do need clearing out, it is a
+    deliberate one-shot against a list that is known to be
+    complete, not a side effect of drawing a percentage. */
+export function readSet(school: string): Set<string> {
   const raw = readJSON<unknown>(READ_KEY[school] ?? `${school}-read`, []);
   if (!Array.isArray(raw)) return new Set();
-
-  const ids = raw.filter((id): id is string => typeof id === "string");
-  if (!known) return new Set(ids);
-
-  const mine = ids.filter((id) => known.has(id));
-  if (mine.length !== ids.length) writeJSON(READ_KEY[school] ?? `${school}-read`, mine);
-  return new Set(mine);
+  return new Set(raw.filter((id): id is string => typeof id === "string"));
 }
 
 /** Add or remove one, and say which it ended up as. */

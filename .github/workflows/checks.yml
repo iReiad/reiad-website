@@ -134,6 +134,7 @@ jobs:
           node scripts/schools-api.test.mjs
           node functions/_lib/notion.test.mjs
           node aab/schools/progress.test.mjs
+          node next/progress.test.mjs
           node aab/schools/hub.test.mjs
           node aab/portfolio/stress.test.mjs
           node aab/portfolio/scorecard.test.mjs
