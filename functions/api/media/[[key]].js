@@ -28,7 +28,7 @@
    response say `immutable` and mean it.
    ============================================================ */
 
-import { fail, methods, notConfigured, ok, str } from "../../_lib/http.js";
+import { fail, methods, notConfigured, ok, str } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.js";
 
 /* No SVG. It is a document format that can carry script, and this

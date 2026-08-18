@@ -15,7 +15,7 @@
    `.checklist` is an article block that has existed since the
    Studio was written. It is styled in `@layer article`, allowed
    in `KEEP_CLASSES` in `aab/editor.js` and in `ALLOWED_CLASSES`
-   in `functions/_lib/sanitise.js`, and there are checklists in
+   in `functions/_lib/sanitise.ts`, and there are checklists in
    real lessons today. So this adds no class, changes no lesson
    body and asks nothing of whoever writes the next one: every
    checklist in a school lesson becomes a set of checkpoints, and

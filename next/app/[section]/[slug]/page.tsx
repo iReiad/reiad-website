@@ -18,7 +18,7 @@
 
    `article.body` has been through `sanitize()` twice before it
    reaches this line: once in the editor on the way in, and once
-   by `functions/_lib/sanitise.js` on the server before the row was
+   by `functions/_lib/sanitise.ts` on the server before the row was
    written. It is stored as HTML and there is no version of it that
    is not. Parsing it into React elements here would be a third
    implementation of the article's vocabulary, which is the exact

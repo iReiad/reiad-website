@@ -31,6 +31,17 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v97: /checkpoints.js and /sync.js rebuilt: _lib/sanitise and
+        _lib/http became TypeScript and the modules that name them
+        were repointed. No behaviour change.
+
+   v96: Quiz answers reach the account. `courses-answers` was
+        added to the BUILT /sync.js rather than to its source, so
+        the next build silently dropped it and answers saved on
+        one device and nowhere else. It is in aab/src/sync.ts now,
+        and check-courses.mjs fails if a key this section writes
+        is one the account does not carry.
+
    v95: A quiz became something a reader can answer.
         Every option in a Coursera quiz lives inside a <form>,
         which the sanitiser drops whole, so the page showed the
@@ -931,7 +942,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v95";
+const VERSION = "v97";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

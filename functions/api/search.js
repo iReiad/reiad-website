@@ -12,8 +12,8 @@
    ============================================================ */
 
 import { all, db } from "../_lib/db.js";
-import { methods, notConfigured, ok, str } from "../_lib/http.js";
-import { textOf } from "../_lib/sanitise.js";
+import { methods, notConfigured, ok, str } from "../_lib/http.ts";
+import { textOf } from "../_lib/sanitise.ts";
 
 /* Where each section is served, the same table feeds/[kind].js
    keeps. A result has to point at the piece's own mount: this used

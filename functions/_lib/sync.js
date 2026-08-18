@@ -30,8 +30,8 @@
    ============================================================ */
 
 import { all, one, run } from "./db.js";
-import { nowISO } from "./http.js";
-import { sanitiseHTML, readingMinutes } from "./sanitise.js";
+import { nowISO } from "./http.ts";
+import { sanitiseHTML, readingMinutes } from "./sanitise.ts";
 import { client, convert, fetchBlocks, readFields } from "./notion.js";
 
 /* A Cron run gets the same subrequest budget as any other request,

@@ -66,7 +66,7 @@ const ATTRS = {
 };
 
 /* The class names the stylesheet actually knows about: the same list
-   _lib/sanitise.js enforces server-side.
+   _lib/sanitise.ts enforces server-side.
 
    Without this the two sanitisers disagreed, and the browser's was
    the stricter one: a <div class="note"> became a plain paragraph and

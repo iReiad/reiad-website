@@ -363,6 +363,43 @@ if (!sample) {
   }
 }
 
+/* ============================================================
+   Every storage key this section writes is one the account carries
+
+   `aab/src/courses.ts` names its keys as `*_KEY` constants and
+   `aab/src/sync.ts` lists what an account owns. A key in the first
+   and not the second saves on this device and goes nowhere else,
+   which is a feature that works when you test it and quietly does
+   not when you pick up a phone.
+
+   That is not hypothetical. `courses-answers` was added to the
+   BUILT `aab/sync.js` rather than to its source, and the next
+   `build-modules` run overwrote it. Every check passed: the built
+   file matched its source again, because the edit was gone.
+
+   Read as text rather than imported. Both files are browser
+   modules that touch `localStorage` as they load, and a check
+   should not need a DOM to answer a question about a string. */
+{
+  const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
+
+  const keys = [...read("aab/src/courses.ts")
+    .matchAll(/^const\s+\w*_KEY\s*=\s*"([^"]+)"/gm)].map((m) => m[1]);
+
+  const synced = new Set([...read("aab/src/sync.ts")
+    .matchAll(/^\s*"([a-z-]+)":\s*\[\s*"(?:set|mark|count)"/gm)].map((m) => m[1]));
+
+  if (!keys.length) say("no *_KEY constants found in aab/src/courses.ts, so this check is blind");
+  if (!synced.size) say("no keys parsed out of aab/src/sync.ts, so this check is blind");
+
+  for (const key of keys) {
+    if (!synced.has(key)) {
+      say(`aab/src/courses.ts writes "${key}", which aab/src/sync.ts does not carry: `
+        + "it would save on one device and reach no other");
+    }
+  }
+}
+
 /* ============================================================ */
 
 const counts = catalogueCounts();

@@ -18,7 +18,7 @@
    ============================================================ */
 
 import { parseQuiz } from "./quiz.ts";
-import { sanitiseHTML } from "./sanitise.js";
+import { sanitiseHTML } from "./sanitise.ts";
 
 let bad = 0;
 const ok = (name, cond, detail = "") => {

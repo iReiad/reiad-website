@@ -40,6 +40,63 @@ Quick check before committing:
 grep -rn $'\u2014' aab/ functions/
 ```
 
+## Convert what you touch
+
+Three migrations are part-done and `MIGRATION.md` tracks them. The rule is
+not a sprint: **any file you edit for another reason gets converted in the
+same change**, wired up properly, with its checks passing.
+
+| From | To |
+| --- | --- |
+| a hand-written `aab/*.js` | `aab/src/*.ts`, built by `build-modules.mjs` |
+| a `functions/**/*.js` | `.ts`. Wrangler's esbuild type-strips with no config |
+| a `<style>` block or new component markup | Tailwind utilities |
+
+Real types, not `any` and not `@ts-expect-error`: the latter silences the
+complaint without describing anything, and silences the next one too. A JS
+module that has to stay JS gets a declaration in `app/src/types/`.
+
+Update `MIGRATION.md` in the same commit. A tracker that is right on the day
+it was written is the failure this file opens with.
+
+**Never edit a built file.** `aab/*.js` that has a source in `aab/src/` is
+output. Editing it looks like it works, passes every check, and is discarded
+by the next build. That happened to `courses-answers` in `sync.js`: the key
+was added to the output, the next `build-modules` run dropped it, and quiz
+answers saved on one device and reached no other. `check-courses.mjs` now
+fails if this section writes a storage key the account does not carry.
+
+## Comments carry the constraint, not the story
+
+Keep what a reader needs in order not to break something: what will fail,
+what must never be renamed, why an order is load-bearing, what a check
+exists to catch. One or two lines.
+
+Cut narrative, dated process notes, and reasoning that only made sense while
+a decision was being taken. "This was three files and is now one" is
+history; `archive/` is where history goes.
+
+The test is whether removing the comment would let somebody make a mistake.
+If it would, keep it and make it shorter. If it would not, cut it.
+
+## Ship it
+
+Open the pull request, wait for the checks, squash merge. No second
+conversation, no asking whether it should go in.
+
+```sh
+node scripts/check-all.mjs      # every check and fast test, about 18s
+```
+
+That is the same list `.github/workflows/checks.yml` runs, in the same order,
+so green here is green there. The browser and network tests are listed under
+"Before deploying" and still have to be run by hand.
+
+Note `checks.yml` fires on **synchronize**, and has been seen not to fire on
+**opened**: a pull request created and never pushed to again can sit with no
+`checks` run while the other three report green. Push again, or dispatch it,
+before merging.
+
 ## Language
 
 Bangla is the site's learning language, English the working one. Bangla

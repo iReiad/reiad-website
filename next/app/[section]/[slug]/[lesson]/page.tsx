@@ -145,7 +145,7 @@ export default async function LessonPage({ params }: { params: Params }) {
           ) : (
             /* The lesson's own HTML, written in the Studio and
                sanitised on the way into the row by
-               `functions/_lib/sanitise.js`. Rendered rather than
+               `functions/_lib/sanitise.ts`. Rendered rather than
                escaped for the same reason an article's body is:
                it is the writing. */
             <div dangerouslySetInnerHTML={{ __html: body }} />

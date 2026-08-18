@@ -53,10 +53,10 @@
    Both locks are real and neither is the other.
    ============================================================ */
 
-import { fail, methods, ok } from "../../_lib/http.js";
+import { fail, methods, ok } from "../../_lib/http.ts";
 import { readerFrom } from "../../_lib/reader.js";
 import { isAdmin } from "../../_lib/admins.js";
-import { sanitiseHTML } from "../../_lib/sanitise.js";
+import { sanitiseHTML } from "../../_lib/sanitise.ts";
 import { canReachDrive, driveFile } from "../../_lib/drive.ts";
 import {
   courseOf, forBrowser, listForBrowser, isCourseFile, lessonForFile,

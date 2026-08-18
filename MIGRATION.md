@@ -1,0 +1,105 @@
+# Migration tracker
+
+Three moves, all part-done. The rule is **convert what you touch**: any file
+you edit for another reason gets converted in the same change, wired up
+properly, with its checks passing. No separate "migration sprint".
+
+Updated 18 August 2026.
+
+## 1. JavaScript to TypeScript
+
+### Browser modules
+
+Built from `aab/src/*.ts` to `aab/*.js` by `scripts/build-modules.mjs`. The
+built file is committed because the site deploys by uploading `aab/` with no
+build step.
+
+**Done (12):** `account-page` `api` `checkpoints` `courses` `keep` `photo`
+`prefs` `saved` `share-card` `signin` `sync` `tools/live`
+
+**Left (21),** largest first:
+
+| File | Lines | Notes |
+| --- | ---: | --- |
+| `sw.js` | 1211 | service worker. Convert last: it is precached and a mistake logs nobody out but serves stale everything |
+| `editor.js` | 953 | the contenteditable. Two Studios import it |
+| `content.js` | 825 | menu, palette, `COUNTS`. Imported by checks that run in node |
+| `app.js` | 649 | theme, palette, prerender, service-worker registration |
+| `account.js` | 418 | Supabase session. `token()` is imported by most of `aab/src/` |
+| `crumbs.js` | 330 | |
+| `tilt.js` | 283 | |
+| `audience.js` | 282 | |
+| `news.js` | 247 | |
+| `comments.js` | 220 | |
+| `auth.js` | 217 | the Studio's gate |
+| `engage.js` | 187 | |
+| `read-aloud.js` | 151 | |
+| `about.js` | 145 | |
+| `streak.js` | 123 | writes `days-active` |
+| `pieces.js` | 121 | |
+| `hub.js` | 98 | |
+| `pulse.js` | 84 | |
+| `contact-form.js` | 65 | |
+| `activation.js` | 62 | |
+| `auth-config.js` | 36 | |
+
+Also `aab/schools/*.js` (the three-school engine) and `aab/*/curriculum.js`.
+
+### Worker
+
+`functions/` is compiled by wrangler's esbuild, which type-strips with no
+configuration, so a `.ts` there needs nothing but the rename and real types.
+
+**Done (6):** `_lib/drive.ts` `_lib/ticket.ts` `_lib/quiz.ts`
+`_lib/http.ts` `_lib/sanitise.ts` `api/courses/[[route]].ts`
+
+**Left (25):** `_lib/` (`notion` 380, `broker` 277, `auth` 264, `backup` 223,
+`sync` 210, `reader` 192, `input` 172, `db` 163, `admins` 58) and the 16
+handlers under `functions/api/`, `functions/feeds/`, `functions/insights/`.
+
+`_lib/db.js` is the remaining one nearly everything imports, so it is next.
+
+Converting `sanitise` broke `check-css.mjs`, which read `ALLOWED_CLASSES` with
+a regex that had no room for `: Set<string>` between the name and the `=`.
+The check was right to fail and its parser now reads both forms. Expect the
+same from any check that greps a source file.
+
+### Shared
+
+`shared/` is already all TypeScript.
+
+## 2. Stylesheet to Tailwind
+
+`aab/tailwind.css` is built from `aab/src/styles/` by
+`scripts/build-styles.mjs`. `@theme` maps the site's own tokens, so
+`bg-panel` means `var(--panel)` in both themes.
+
+**Done:** `/account.html`.
+
+Three things stay in `aab/styles.css` permanently, and the split is the point:
+
+- **anything an article carries.** `tw` sits below `article` in the layer
+  order. An article's body is HTML in a database and Tailwind's compiler
+  cannot see it.
+- **CSS with no utility.** The popover menu is `@starting-style`,
+  `::backdrop`, `:popover-open` and anchor positioning.
+- **DOM built in a loop.** A class name inside `createElement` is only found
+  by the scanner because `aab/*.js` is a source. That makes it work, not
+  readable.
+
+So the target is JSX and route markup, not the whole stylesheet.
+
+## 3. Prose
+
+Comments and docs carry the constraint, not the story. Keep: what breaks, what
+must not be renamed, why an order is load-bearing, what a check is for. Cut:
+narrative, dated process notes, and reasoning that only made sense while a
+decision was being made.
+
+**Done:** `README.md` 514 to 62 lines.
+
+**Left:** `CLAUDE.md` (1336), and the file headers across `aab/` and
+`functions/`, most of which run 30 to 70 lines.
+
+`archive/TRANSITION.md` (5158) is history and is not loaded by anything. Leave
+it.

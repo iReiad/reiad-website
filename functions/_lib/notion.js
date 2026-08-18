@@ -7,7 +7,7 @@
 
    The conversion is lossy on purpose. Notion has infinite block
    types; this site has about twenty tags, listed in
-   _lib/sanitise.js, and anything that survives the conversion has
+   _lib/sanitise.ts, and anything that survives the conversion has
    to survive that allowlist afterwards anyway. So every block maps
    to something the stylesheet already draws, or to nothing at all.
    ============================================================ */

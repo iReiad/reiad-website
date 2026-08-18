@@ -107,7 +107,7 @@ export interface Stage {
     risk badge, a call-to-action button, sub-headings in Bangla
     styling. That markup carries the classes `split`, `do`,
     `others`, `warn`, `bn-h` and `btn`, and NONE of them is in the
-    article allowlist that `functions/_lib/sanitise.js` enforces
+    article allowlist that `functions/_lib/sanitise.ts` enforces
     on the way in.
 
     So a lesson body pasted through this editor would come back

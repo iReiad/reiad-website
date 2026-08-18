@@ -1,17 +1,18 @@
-/* ============================================================
-   _lib/sanitise.js, server-side HTML cleaning.
+/* _lib/sanitise.ts: server-side HTML cleaning.
 
-   The Studio already sanitises what you paste, but that protects
-   the person doing the pasting, not the site: a client-side
-   sanitiser is trivially bypassed by anyone who can reach the
-   write endpoint directly. So anything that ends up stored and
-   later rendered gets cleaned again here, where it can't be
-   skipped.
+   The Studio sanitises what you paste, which protects the person
+   pasting and not the site: a client-side sanitiser is bypassed by
+   anyone who can reach the write endpoint directly. Anything
+   stored and later rendered is cleaned again here, where it cannot
+   be skipped.
 
-   Workers have no DOM, so this is a small tokeniser rather than a
-   DOMParser pass. It is deliberately allowlist-only: anything not
-   explicitly permitted is dropped, tags and attributes alike.
-   ============================================================ */
+   Workers have no DOM, so this is a tokeniser rather than a
+   DOMParser pass, and allowlist-only: anything not named below is
+   dropped, tags and attributes alike.
+
+   ALLOWED_CLASSES is the twin of KEEP_CLASSES in aab/editor.js and
+   the two must agree. `check-css.mjs` fails if they drift, or if a
+   class is allowed here and styled nowhere. */
 
 /* `class` is allowed on most of these because the article blocks
    the Studio inserts are built out of ordinary tags with a class
@@ -19,7 +20,7 @@
    and a <ul>, and the steps are an <ol>. The class is the whole
    difference between that and a bare list, and it survives only
    what ALLOWED_CLASSES below permits. */
-const ALLOWED = {
+const ALLOWED: Record<string, string[]> = {
   p: ["class"], h2: [], h3: [], ul: ["class"], ol: ["class"], li: [],
   blockquote: [],
   strong: [], em: [], br: [], hr: [], code: [], sup: [], sub: [],
@@ -37,7 +38,7 @@ const ALLOWED = {
    two disagreed the browser's was the stricter one, and the result
    was a server that supported callouts nothing could produce. Add
    to one, add to the other. */
-const ALLOWED_CLASSES = new Set([
+const ALLOWED_CLASSES: Set<string> = new Set([
   /* photos: how big, what shape, and which part to keep */
   "wide", "full", "duo", "lead-photo",
   "frame-wide", "frame-square", "frame-tall", "focus-top", "focus-bottom",
@@ -50,14 +51,14 @@ const ALLOWED_CLASSES = new Set([
 const SAFE_URL = /^(https?:\/\/|mailto:|\/|#)/i;
 const SAFE_IMG = /^(https?:\/\/|\/|data:image\/(png|jpeg|webp|gif|svg\+xml);)/i;
 
-const escapeText = (s) =>
+const escapeText = (s: string): string =>
   s.replace(/&(?![a-z#0-9]+;)/gi, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-function cleanAttrs(tag, raw) {
+function cleanAttrs(tag: string, raw: string): string {
   const allowed = ALLOWED[tag];
   if (!allowed?.length) return "";
 
-  const out = [];
+  const out: string[] = [];
   for (const m of raw.matchAll(/([a-zA-Z-]+)\s*=\s*("([^"]*)"|'([^']*)')/g)) {
     const name = m[1].toLowerCase();
     const value = (m[3] ?? m[4] ?? "").trim();
@@ -84,7 +85,7 @@ function cleanAttrs(tag, raw) {
   return out.length ? " " + out.join(" ") : "";
 }
 
-export function sanitiseHTML(input) {
+export function sanitiseHTML(input: unknown): string {
   if (!input) return "";
 
   // Drop whole dangerous elements, contents and all, before tokenising.
@@ -93,7 +94,7 @@ export function sanitiseHTML(input) {
     .replace(/<(script|style|iframe|object|embed|form|input|button)\b[^>]*\/?>/gi, "")
     .replace(/<!--[\s\S]*?-->/g, "");
 
-  const open = [];
+  const open: string[] = [];
   let out = "";
   let last = 0;
 
@@ -125,7 +126,7 @@ export function sanitiseHTML(input) {
 }
 
 /** Plain text out of cleaned HTML, for reading time and search. */
-export const textOf = (html) =>
+export const textOf = (html: unknown): string =>
   String(html ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
 export const readingMinutes = (html) =>

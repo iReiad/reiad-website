@@ -109,6 +109,10 @@ const KEYS = {
        `aab/src/courses.ts`. */
     "courses-read": ["set", "courses:progress"],
     "courses-last": ["mark", "courses:progress"],
+    /* Quiz answers: `<course>/<module>/<lesson>#<question>#<option>`.
+       A `set`, like a checkpoint, and never a score: the course
+       exports carry no answer key. See functions/_lib/quiz.ts. */
+    "courses-answers": ["set", "courses:progress"],
     /* Which days this person turned up, from streak.js. A set for
        the obvious reason: a phone on the bus and a laptop at a desk
        are the same Tuesday, and either one alone under-counts. */
