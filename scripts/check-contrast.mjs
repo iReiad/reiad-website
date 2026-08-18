@@ -104,6 +104,27 @@ const PAIRS = [
   ["--danger", "--panel", 4.5, "a warning on a card"],
 ];
 
+/* Text ON an accent fill, which nothing measured until a reader
+   photographed the same button twice.
+
+   `<Band>` fills a block with `--accent-strong` and everything
+   inside it is `--accent-ink`. That pairing was written out by
+   hand in four places before it was a token, and two of the four
+   got it wrong in a way no check could see: a ghost button kept
+   the near-white panel it had and was given white text, so it
+   was invisible on the dark band, and `.band.soft` then turned
+   the ground back to paper without undoing the white text, so it
+   was invisible on the light one too.
+
+   Both directions are here because the accent is the DARK thing
+   in the light theme and the LIGHT thing in the dark one, so the
+   ink swaps and a check that measured one mode would have passed
+   through the whole bug. */
+const ON_ACCENT = [
+  ["--accent-ink", "--accent-strong", 4.5, "text on a filled band"],
+  ["--accent-ink", "--accent", 4.5, "text on a solid button"],
+];
+
 /* ============================================================
    The run
    ============================================================ */
@@ -128,6 +149,8 @@ const TINTED = ACCENTS.flatMap((accent) => [
   ["--ink", "--panel", 4.5, `heading on a card in ${accent.replace("--", "")}`, accent],
   ["--ink-soft", "--panel", 4.5, `secondary text on a card in ${accent.replace("--", "")}`, accent],
   ["--danger", "--panel", 4.5, `a warning on a card in ${accent.replace("--", "")}`, accent],
+  ...ON_ACCENT.map(([fg, bg, min, what]) =>
+    [fg, bg, min, `${what} in ${accent.replace("--", "")}`, accent]),
 ]);
 
 for (const [fg, bg, threshold, what, accent] of [...PAIRS, ...TINTED]) {

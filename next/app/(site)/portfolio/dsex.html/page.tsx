@@ -17,6 +17,8 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
+import { Band } from "../../../../components/ui/band";
+import { ButtonLink } from "../../../../components/ui/button";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/dsex.html",
@@ -398,22 +400,16 @@ export default function Page() {
         prices to make every figure on this page real.
       
           </div>
-          <div className="band">
-            <span className="mono">Working together
-            </span>
-            <h2>Have a series that needs interrogating?
-            </h2>
-            <p>Return and risk analysis in Python or R: cleaning, statistics,
-           charts and a written answer to the question you actually asked, with
-           the notebook handed over so the work can be rerun.
-            </p>
-            <div className="hero-actions">
-              <a className="btn btn-solid" href="/contact.html">Start a conversation
-              </a>
-              <a className="btn btn-ghost" href="/portfolio.html">Back to the portfolio
-              </a>
-            </div>
-          </div>
+          <Band
+            label={"Working together"}
+            title={"Have a series that needs interrogating?"}
+            actions={<>
+              <ButtonLink kind="solid" onAccent href="/contact.html">{"Start a conversation"}</ButtonLink>
+              <ButtonLink kind="ghost" onAccent href="/portfolio.html">{"Back to the portfolio"}</ButtonLink>
+            </>}
+          >
+            <p>{"Return and risk analysis in Python or R: cleaning, statistics, charts and a written answer to the question you actually asked, with the notebook handed over so the work can be rerun."}</p>
+          </Band>
         </div>
       </main>
   );

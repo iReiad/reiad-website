@@ -16,6 +16,8 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
+import { Band } from "../../../../components/ui/band";
+import { ButtonLink } from "../../../../components/ui/button";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/scorecard.html",
@@ -711,23 +713,16 @@ export default function Page() {
           </section>
           <div className="note" id="attribution">–
           </div>
-          <div className="band">
-            <span className="mono">Working together
-            </span>
-            <h2>Need a model that survives a validation team?
-            </h2>
-            <p>Scorecards, machine-learning challengers, the comparison that says whether
-           the challenger is really better, calibration, cut-off economics and the
-           documentation a model risk function will ask for. In Python or R, with the
-           notebook and the data pipeline handed over.
-            </p>
-            <div className="hero-actions">
-              <a className="btn btn-solid" href="/contact.html">Start a conversation
-              </a>
-              <a className="btn btn-ghost" href="/portfolio.html">Back to the portfolio
-              </a>
-            </div>
-          </div>
+          <Band
+            label={"Working together"}
+            title={"Need a model that survives a validation team?"}
+            actions={<>
+              <ButtonLink kind="solid" onAccent href="/contact.html">{"Start a conversation"}</ButtonLink>
+              <ButtonLink kind="ghost" onAccent href="/portfolio.html">{"Back to the portfolio"}</ButtonLink>
+            </>}
+          >
+            <p>{"Scorecards, machine-learning challengers, the comparison that says whether the challenger is really better, calibration, cut-off economics and the documentation a model risk function will ask for. In Python or R, with the notebook and the data pipeline handed over."}</p>
+          </Band>
         </div>
       </main>
   );

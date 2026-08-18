@@ -14,6 +14,8 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
+import { Band } from "../../../../components/ui/band";
+import { ButtonLink } from "../../../../components/ui/button";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/stock.html",
@@ -196,21 +198,16 @@ export default function StockPage() {
               <p className="check-detail" data-i18n="disc.units" />
             </div>
           </section>
-          <div className="band">
-            <span className="mono">Working together
-            </span>
-            <h2>Need this built properly, on your own data?
-            </h2>
-            <p>Screening frameworks, valuation models and research notes: the same
-           method as this page, in Excel or Python, against a real portfolio.
-            </p>
-            <div className="hero-actions">
-              <a className="btn btn-solid" href="/contact.html">Start a conversation
-              </a>
-              <a className="btn btn-ghost" href="/tools/index.html">Back to the calculators
-              </a>
-            </div>
-          </div>
+          <Band
+            label={"Working together"}
+            title={"Need this built properly, on your own data?"}
+            actions={<>
+              <ButtonLink kind="solid" onAccent href="/contact.html">{"Start a conversation"}</ButtonLink>
+              <ButtonLink kind="ghost" onAccent href="/tools/index.html">{"Back to the calculators"}</ButtonLink>
+            </>}
+          >
+            <p>{"Screening frameworks, valuation models and research notes: the same method as this page, in Excel or Python, against a real portfolio."}</p>
+          </Band>
         </div>
       </main>
   );

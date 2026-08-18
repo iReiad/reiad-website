@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, deutsch, quran, english, reads, check, about, shell, deck, courses, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, utilities;
 
 /* ============================================================
    TOKENS
@@ -197,8 +197,8 @@
     --accent-ring:   color-mix(in oklab, var(--accent) 30%, transparent);
     --accent-strong: color-mix(in oklab, var(--accent) 88%, var(--accent-mate));
 
-    --paper:        color-mix(in oklab, var(--accent) 1.5%, var(--paper-base));
-    --paper-sunk:   color-mix(in oklab, var(--accent) 2.5%, var(--paper-sunk-base));
+    --paper:        color-mix(in oklab, var(--accent) 4%, var(--paper-base));
+    --paper-sunk:   color-mix(in oklab, var(--accent) 6%, var(--paper-sunk-base));
     --panel:        color-mix(in oklab, var(--accent) 2%, var(--panel-base));
     --panel-hover:  color-mix(in oklab, var(--accent) 3.5%, var(--panel-base));
     --hairline:     color-mix(in oklab, var(--accent) 12%, var(--hairline-base));
@@ -265,8 +265,6 @@
     --plum:         light-dark(oklch(44% 0.090 var(--h-plum)),   oklch(72% 0.105 var(--h-plum)));
     --rose:         light-dark(oklch(44% 0.090 var(--h-rose)),   oklch(72% 0.105 var(--h-rose)));
     --gold:         light-dark(oklch(44% 0.090 var(--h-gold)),   oklch(72% 0.105 var(--h-gold)));
-
-    --green-strong: light-dark(oklch(30%   0.060 var(--h-green)), oklch(30%   0.060 var(--h-green)));
     --danger:       light-dark(oklch(52%   0.150 28),             oklch(70%   0.140 28));
 
     /* --- the one every component actually reads ---
@@ -569,8 +567,8 @@
     --accent-ring:   color-mix(in oklab, var(--accent) 30%, transparent);
     --accent-strong: color-mix(in oklab, var(--accent) 88%, var(--accent-mate));
 
-    --paper:        color-mix(in oklab, var(--accent) 1.5%, var(--paper-base));
-    --paper-sunk:   color-mix(in oklab, var(--accent) 2.5%, var(--paper-sunk-base));
+    --paper:        color-mix(in oklab, var(--accent) 4%, var(--paper-base));
+    --paper-sunk:   color-mix(in oklab, var(--accent) 6%, var(--paper-sunk-base));
     --panel:        color-mix(in oklab, var(--accent) 2%, var(--panel-base));
     --panel-hover:  color-mix(in oklab, var(--accent) 3.5%, var(--panel-base));
     --hairline:     color-mix(in oklab, var(--accent) 12%, var(--hairline-base));
@@ -930,8 +928,8 @@
   /* ---------- FOOTER ---------- */
   body > footer {
     margin-top: 56px;
-    background: var(--green-strong);
-    color: oklch(93.5% 0.008 var(--h-green));
+    background: var(--accent-strong);
+    color: var(--accent-ink);
     padding-block: 44px;
 
     & a { color: #fff; }
@@ -1971,10 +1969,10 @@
     &:last-child { border-bottom: 0; }
   }
   .cell-aim {
-    background: var(--green-strong); border-color: transparent;
+    background: var(--accent-strong); border-color: transparent;
 
-    & .tag { color: oklch(80% 0.09 var(--h-gold)); }
-    & h3, & li { color: oklch(93.5% 0.008 var(--h-green)); }
+    & .tag { color: color-mix(in oklab, var(--accent-ink) 72%, transparent); }
+    & h3, & li { color: var(--accent-ink); }
     & li { border-color: oklch(100% 0 0 / 0.14); }
   }
 
@@ -4184,21 +4182,50 @@ it collapsed to the width of the word "Bangladesh". */
   }
 
   /* ---------- callout band ---------- */
+  /* A filled block, in the page's own colour.
+
+     Every colour in here was written out: a green fill, white
+     headings, a green-tinted paragraph and a GOLD `.mono`, so a
+     German page drew a green band with a gold label on it. They
+     are the accent and `--accent-ink`, which is the token for
+     text on an accent fill and is near-white in the light theme
+     and near-black in the dark one, where the accent is the light
+     thing.
+
+     `:not(.soft)` on the button rules is the fix to a real
+     failure. `.band.soft` turns the ground back to paper and the
+     ink back to `--ink`, and it did not undo these two, so a
+     ghost button inside a soft band kept `color: #fff` on a
+     near-white ground and could not be read at all. Scoping them
+     to the band that is actually dark means a `.soft` band cannot
+     forget: there is nothing to undo. */
   .band {
-    background: var(--green-strong);
+    background: var(--accent-strong);
     border-radius: var(--radius);
     padding: clamp(26px, 4vw, 42px);
-    color: oklch(93.5% 0.008 var(--h-green));
+    color: var(--accent-ink);
     margin-block: 40px 10px;
     display: grid; gap: var(--s-7);
 
-    & h2 { color: #fff; max-width: 22ch; }
-    & p { color: oklch(85% 0.02 var(--h-green)); max-width: 58ch; }
-    & .mono { color: oklch(80% 0.09 var(--h-gold)); }
-    & .btn-ghost { border-color: oklch(100% 0 0 / 0.3); color: #fff; }
-    & .btn-ghost:hover { border-color: #fff; color: #fff; background: oklch(100% 0 0 / 0.08); }
-    & .btn-solid { background: #fff; color: var(--green-strong); }
-    & .btn-solid:hover { background: oklch(92% 0.02 var(--h-green)); }
+    & h2 { color: var(--accent-ink); max-width: 22ch; }
+    & p { color: color-mix(in oklab, var(--accent-ink) 82%, transparent); max-width: 58ch; }
+    & .mono { color: color-mix(in oklab, var(--accent-ink) 72%, transparent); }
+  }
+
+  .band:not(.soft) {
+    & .btn-ghost {
+      border-color: color-mix(in oklab, var(--accent-ink) 32%, transparent);
+      color: var(--accent-ink);
+      background: transparent;
+    }
+    & .btn-ghost:hover {
+      border-color: var(--accent-ink); color: var(--accent-ink);
+      background: color-mix(in oklab, var(--accent-ink) 10%, transparent);
+    }
+    & .btn-solid { background: var(--accent-ink); color: var(--accent-strong); }
+    & .btn-solid:hover {
+      background: color-mix(in oklab, var(--accent-ink) 92%, var(--accent));
+    }
   }
 
   /* ---------- reader engagement (engage.js) ---------- */
@@ -5489,6 +5516,155 @@ German for day, and .tag is what the site has always called
 
    check-css.mjs now does, and runs with the others.
    ============================================================ */
+@layer workbook {
+  /* ============================================================
+     The practice book, which two schools have.
+
+     Every rule here was `body.deutsch .buch-tag` and friends,
+     inside `@layer deutsch`, because the German book was written
+     first and was the only one. `components/workbook.tsx` renders
+     both books now, out of one shape in `lib/workbook.ts`, so the
+     English book arrived carrying markup that nothing on an
+     English page could style: the thirty day buttons collapsed
+     into a run of underlined numbers and a day was a stack of
+     unstyled paragraphs. It rendered, and it was not finished,
+     which is the failure this repository keeps returning to.
+
+     The anchor is gone rather than widened to a second school,
+     because the book is the component's and not a school's. What
+     stays in `@layer deutsch` is what is actually German: the
+     der/die/das hats, the `[lang="de"]` typography, the verb and
+     number grids, the sound tables.
+
+     The class names are German words because that book was
+     written first. They are the component's names now, not a
+     school's, and renaming forty of them would move `sw.js`,
+     `arbeitsbuch.js` and two tests to tell a reader nothing.
+
+     Ordered before the school layers, so a school can still say
+     something about its own book and win.
+     ============================================================ */
+  .buch-warnung {
+    margin-top: 14px; max-width: var(--measure);
+    color: var(--ink-soft); font-size: var(--t-5);
+  }
+  .buch-fortschritt {
+    display: flex; align-items: center; gap: var(--s-6); flex-wrap: wrap;
+    margin-block: 20px;
+
+    & .track {
+      flex: 1; min-width: 160px; max-width: 340px; height: 6px;
+      background: var(--hairline); border-radius: var(--radius-pill); overflow: hidden;
+    }
+    & .track i {
+      display: block; height: 100%; width: 0; background: var(--accent);
+      transition: width var(--slow) var(--ease);
+    }
+    & .count { color: var(--ink-soft); font-size: var(--t-3); }
+    &[data-state="done"] .track i { background: var(--accent); }
+  }
+  .tracker {
+    display: grid; gap: 5px; margin-top: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(34px, 1fr));
+
+    /* A disc, not a tile. Thirty of them in a row read as a
+       calendar grid at 12px corners and as a row of days at a
+       full round, which is what they are. */
+    & .tracker-tag {
+      display: grid; place-items: center; text-decoration: none;
+      aspect-ratio: 1; border: 1px solid var(--hairline);
+      border-radius: var(--radius-pill); background: var(--panel);
+      color: var(--ink-soft); font-family: var(--font-mono); font-size: var(--t-3);
+      box-shadow: inset 0 1px 0 var(--pane-top);
+      transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease),
+                  transform var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+    }
+    & .tracker-tag:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: inset 0 1px 0 var(--pane-top), var(--shadow);
+    }
+    & .tracker-tag[data-done] {
+      background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
+    }
+    & .tracker-tag[data-current] { outline: 2px solid var(--accent); outline-offset: 1px; }
+  }
+  .tag-waehler {
+    display: flex; align-items: center; gap: var(--s-4);
+
+    & .mono { color: var(--ink-soft); font-size: var(--t-2); }
+    & select {
+      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      background: var(--panel); color: var(--ink);
+      font-family: var(--font-bn); font-size: var(--t-5); padding: 7px 10px;
+      max-width: min(58vw, 320px);
+    }
+    & select:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+  }
+  .tag-kopf {
+    border-bottom: 1px solid var(--hairline); padding-bottom: 14px; margin-bottom: 18px;
+
+    & .tag-num { color: var(--accent); font-size: var(--t-2); letter-spacing: 0.08em; }
+    & h2 { font-size: clamp(1.2rem, 3vw, 1.5rem); margin: 6px 0 4px; }
+    & .tag-bn { color: var(--ink-soft); margin: 0; }
+  }
+  .buch-tag .muster { margin-top: 0; }
+  .tag-teil {
+    margin-top: 26px;
+
+    & h3 {
+      font-size: var(--t-2); letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 10px;
+    }
+  }
+  .tag-hinweis { color: var(--ink-soft); font-size: var(--t-4); margin-top: 10px; }
+  .feld, .sag-zeile {
+    display: grid; grid-template-columns: 26px 1fr; gap: var(--s-4); align-items: start;
+  }
+  .feld-num { color: var(--accent); font-size: var(--t-3); padding-top: 9px; }
+  .buch-tag textarea[data-schrift]:focus-visible {
+    /* A ring, not just a colour.
+
+       This was `outline: none` with a green underline and a
+       green ground, which is a focus indicator made ENTIRELY of
+       colour: WCAG 2.4.11 wants a non-colour cue, and somebody
+       who cannot separate the green from the paper had no way to
+       tell where the caret was on the one page of this school
+       that is nothing but writing boxes.
+
+       It was also `:focus` rather than `:focus-visible`, so it
+       fired on a mouse click too, which is why it was written
+       quietly enough to be missed. */
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-bottom-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .buch-tag textarea[data-schrift]::placeholder { color: var(--ink-soft); opacity: 0.55; }
+  .sag-zeile { grid-template-columns: 26px 1fr; }
+  .sag-frage { grid-column: 2; font-size: var(--t-5); }
+  .sag-zeile textarea { grid-column: 2; }
+  .sag-antwort {
+    grid-column: 2; display: none;
+    color: var(--accent); font-size: var(--t-5); padding-top: 2px;
+  }
+  .buch-tag[data-antworten] .sag-antwort { display: block; }
+  .antwort-schalter { margin-top: 14px; }
+  .herz-aufgabe { margin-bottom: 2px; }
+  .herz-en { color: var(--ink-soft); font-size: var(--t-3); margin-bottom: 10px; }
+  .herzen textarea[data-schrift] {
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+    padding: 10px 12px; min-height: 96px; resize: vertical; overflow: auto;
+  }
+  .tag-fuss {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--hairline);
+
+    & .tag-fuss-note { color: var(--ink-soft); font-size: var(--t-2); }
+  }
+  .tag-fertig[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+}
+
 @layer deutsch {
 
   /* ---------- the three hats ----------
@@ -5702,26 +5878,7 @@ German for day, and .tag is what the site has always called
      THE PRACTICE BOOK
      ============================================================ */
 
-  body.deutsch .buch-warnung {
-    margin-top: 14px; max-width: var(--measure);
-    color: var(--ink-soft); font-size: var(--t-5);
-  }
 
-  body.deutsch .buch-fortschritt {
-    display: flex; align-items: center; gap: var(--s-6); flex-wrap: wrap;
-    margin-block: 20px;
-
-    & .track {
-      flex: 1; min-width: 160px; max-width: 340px; height: 6px;
-      background: var(--hairline); border-radius: var(--radius-pill); overflow: hidden;
-    }
-    & .track i {
-      display: block; height: 100%; width: 0; background: var(--accent);
-      transition: width var(--slow) var(--ease);
-    }
-    & .count { color: var(--ink-soft); font-size: var(--t-3); }
-    &[data-state="done"] .track i { background: var(--accent); }
-  }
 
   /* ---------- the thirty squares ---------- */
   /* The tracker folds away, the same way the sound key on the same
@@ -5746,23 +5903,6 @@ German for day, and .tag is what the site has always called
     & .tracker { max-width: none; }
   }
 
-  body.deutsch .tracker {
-    display: grid; gap: 5px; margin-top: 14px;
-    grid-template-columns: repeat(auto-fit, minmax(34px, 1fr));
-
-    & .tracker-tag {
-      display: grid; place-items: center; text-decoration: none;
-      aspect-ratio: 1; border: 1px solid var(--hairline);
-      border-radius: var(--radius-sm); background: var(--panel);
-      color: var(--ink-soft); font-family: var(--font-mono); font-size: var(--t-3);
-      transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
-    }
-    & .tracker-tag:hover { border-color: var(--accent); }
-    & .tracker-tag[data-done] {
-      background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
-    }
-    & .tracker-tag[data-current] { outline: 2px solid var(--accent); outline-offset: 1px; }
-  }
 
   /* ---------- the sound key, folded away ---------- */
   body.deutsch .laut-gitter {
@@ -5803,18 +5943,6 @@ German for day, and .tag is what the site has always called
     & .push { margin-inline-start: auto; }
     & .btn:disabled { opacity: 0.35; pointer-events: none; }
   }
-  .tag-waehler {
-    display: flex; align-items: center; gap: var(--s-4);
-
-    & .mono { color: var(--ink-soft); font-size: var(--t-2); }
-    & select {
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-      background: var(--panel); color: var(--ink);
-      font-family: var(--font-bn); font-size: var(--t-5); padding: 7px 10px;
-      max-width: min(58vw, 320px);
-    }
-    & select:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-  }
 
   /* ---------- one day ---------- */
   body.deutsch .buch-tag {
@@ -5822,34 +5950,13 @@ German for day, and .tag is what the site has always called
     background: var(--panel); padding: clamp(18px, 3vw, 30px);
     margin-bottom: var(--gap);
   }
-  body.deutsch .tag-kopf {
-    border-bottom: 1px solid var(--hairline); padding-bottom: 14px; margin-bottom: 18px;
 
-    & .tag-num { color: var(--accent); font-size: var(--t-2); letter-spacing: 0.08em; }
-    & h2 { font-size: clamp(1.2rem, 3vw, 1.5rem); margin: 6px 0 4px; }
-    & .tag-bn { color: var(--ink-soft); margin: 0; }
-  }
-  body.deutsch .buch-tag .muster { margin-top: 0; }
-
-  body.deutsch .tag-teil {
-    margin-top: 26px;
-
-    & h3 {
-      font-size: var(--t-2); letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 10px;
-    }
-  }
-  body.deutsch .tag-hinweis { color: var(--ink-soft); font-size: var(--t-4); margin-top: 10px; }
 
   /* the eight boxes you fill in yourself */
   body.deutsch .felder {
     display: grid; gap: var(--s-4);
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   }
-  body.deutsch .feld, body.deutsch .sag-zeile {
-    display: grid; grid-template-columns: 26px 1fr; gap: var(--s-4); align-items: start;
-  }
-  body.deutsch .feld-num { color: var(--accent); font-size: var(--t-3); padding-top: 9px; }
 
   /* resize/overflow are deliberately the no-JavaScript values.
      arbeitsbuch.js sets overflow:hidden on the boxes it takes over
@@ -5864,52 +5971,11 @@ German for day, and .tag is what the site has always called
     font-family: var(--font-sans); font-size: var(--t-5); line-height: 1.8;
     padding: 6px 2px;
   }
-  body.deutsch .buch-tag textarea[data-schrift]:focus-visible {
-    /* A ring, not just a colour.
-
-       This was `outline: none` with a green underline and a
-       green ground, which is a focus indicator made ENTIRELY of
-       colour: WCAG 2.4.11 wants a non-colour cue, and somebody
-       who cannot separate the green from the paper had no way to
-       tell where the caret was on the one page of this school
-       that is nothing but writing boxes.
-
-       It was also `:focus` rather than `:focus-visible`, so it
-       fired on a mouse click too, which is why it was written
-       quietly enough to be missed. */
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-    border-bottom-color: var(--accent);
-    background: var(--accent-soft);
-  }
-  body.deutsch .buch-tag textarea[data-schrift]::placeholder { color: var(--ink-soft); opacity: 0.55; }
 
   /* the six to translate, with the answer hidden until asked for */
   body.deutsch .sag-liste { display: grid; gap: var(--s-6); }
-  body.deutsch .sag-zeile { grid-template-columns: 26px 1fr; }
-  body.deutsch .sag-frage { grid-column: 2; font-size: var(--t-5); }
-  body.deutsch .sag-zeile textarea { grid-column: 2; }
-  body.deutsch .sag-antwort {
-    grid-column: 2; display: none;
-    color: var(--accent); font-size: var(--t-5); padding-top: 2px;
-  }
-  body.deutsch .buch-tag[data-antworten] .sag-antwort { display: block; }
-  body.deutsch .antwort-schalter { margin-top: 14px; }
 
-  body.deutsch .herz-aufgabe { margin-bottom: 2px; }
-  body.deutsch .herz-en { color: var(--ink-soft); font-size: var(--t-3); margin-bottom: 10px; }
-  body.deutsch .herzen textarea[data-schrift] {
-    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-    padding: 10px 12px; min-height: 96px; resize: vertical; overflow: auto;
-  }
 
-  body.deutsch .tag-fuss {
-    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-    margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--hairline);
-
-    & .tag-fuss-note { color: var(--ink-soft); font-size: var(--t-2); }
-  }
-  body.deutsch .tag-fertig[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 
   /* Printing the book should give you the book, not one day of it
      and a navigation bar.

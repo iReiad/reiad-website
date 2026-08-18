@@ -16,6 +16,8 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
+import { Band } from "../../../../components/ui/band";
+import { ButtonLink } from "../../../../components/ui/button";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/frontier.html",
@@ -587,23 +589,16 @@ export default function Page() {
           </section>
           <div className="note" id="attribution">–
           </div>
-          <div className="band">
-            <span className="mono">Working together
-            </span>
-            <h2>Need a portfolio built and then honestly tested?
-            </h2>
-            <p>Screening, covariance estimation, constrained optimisation, and the
-           out-of-sample work that says whether any of it survives contact with the
-           years that follow. In Python or Excel, with the data and the code handed
-           over.
-            </p>
-            <div className="hero-actions">
-              <a className="btn btn-solid" href="/contact.html">Start a conversation
-              </a>
-              <a className="btn btn-ghost" href="/portfolio.html">Back to the portfolio
-              </a>
-            </div>
-          </div>
+          <Band
+            label={"Working together"}
+            title={"Need a portfolio built and then honestly tested?"}
+            actions={<>
+              <ButtonLink kind="solid" onAccent href="/contact.html">{"Start a conversation"}</ButtonLink>
+              <ButtonLink kind="ghost" onAccent href="/portfolio.html">{"Back to the portfolio"}</ButtonLink>
+            </>}
+          >
+            <p>{"Screening, covariance estimation, constrained optimisation, and the out-of-sample work that says whether any of it survives contact with the years that follow. In Python or Excel, with the data and the code handed over."}</p>
+          </Band>
         </div>
       </main>
   );

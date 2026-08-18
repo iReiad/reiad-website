@@ -16,6 +16,8 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
+import { Band } from "../../../../components/ui/band";
+import { ButtonLink } from "../../../../components/ui/button";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/dcf.html",
@@ -284,22 +286,16 @@ export default function Page() {
         build in Excel, with a client's own numbers and their own comparables.
       
           </div>
-          <div className="band">
-            <span className="mono">Working together
-            </span>
-            <h2>Need a valuation that survives a second reader?
-            </h2>
-            <p>DCFs, comparable-company analysis and operating models in Excel,
-           assumptions in one place, conventions stated, and the sensitivity
-           tables built before anyone asks for them.
-            </p>
-            <div className="hero-actions">
-              <a className="btn btn-solid" href="/contact.html">Start a conversation
-              </a>
-              <a className="btn btn-ghost" href="/portfolio.html">Back to the portfolio
-              </a>
-            </div>
-          </div>
+          <Band
+            label={"Working together"}
+            title={"Need a valuation that survives a second reader?"}
+            actions={<>
+              <ButtonLink kind="solid" onAccent href="/contact.html">{"Start a conversation"}</ButtonLink>
+              <ButtonLink kind="ghost" onAccent href="/portfolio.html">{"Back to the portfolio"}</ButtonLink>
+            </>}
+          >
+            <p>{"DCFs, comparable-company analysis and operating models in Excel, assumptions in one place, conventions stated, and the sensitivity tables built before anyone asks for them."}</p>
+          </Band>
         </div>
       </main>
   );
