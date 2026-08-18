@@ -161,14 +161,41 @@ const toBangla = (n) => String(n).replace(/\d/g, (d) => BN_DIGITS[Number(d)]);
 const fromBangla = (s) =>
   s.replace(/[০-৯]/g, (d) => String(BN_DIGITS.indexOf(d)));
 
+/* Every file that can carry a slot, which is no longer only
+   `aab/*.html`.
+
+   This walked `aab/` for `.html` and nothing else, and by the time
+   anybody looked there was ONE slot left there and six in the
+   routes. So the rule below was reading a seventh of the site and
+   reporting "every count agrees with the data", which is this
+   check's own opening bug wearing a hat: each thing was right when
+   it was typed, and then the pages moved.
+
+   Proven rather than assumed: setting `data-count="ratios"` to 99
+   in `tools/index.html/page.tsx`, for a model that scores 44, left
+   this passing. */
 const htmlFiles = [];
 (function walk(dir) {
   for (const entry of readdirSync(join(ROOT, dir), { withFileTypes: true })) {
     const rel = dir ? `${dir}/${entry.name}` : entry.name;
+    if (entry.name === "node_modules" || entry.name === ".next"
+        || entry.name === ".open-next") continue;
     if (entry.isDirectory()) walk(rel);
-    else if (entry.name.endsWith(".html")) htmlFiles.push(rel);
+    else if (entry.name.endsWith(".html") || entry.name.endsWith(".tsx")) {
+      htmlFiles.push(rel);
+    }
   }
 })("");
+for (const dir of ["../next/app", "../next/components"]) {
+  if (existsSync(join(ROOT, dir))) (function walk(d) {
+    for (const entry of readdirSync(join(ROOT, d), { withFileTypes: true })) {
+      const rel = `${d}/${entry.name}`;
+      if (entry.name === "node_modules" || entry.name === ".next") continue;
+      if (entry.isDirectory()) walk(rel);
+      else if (entry.name.endsWith(".tsx")) htmlFiles.push(rel);
+    }
+  })(dir);
+}
 
 const SLOT = /<span[^>]*\bdata-count="([a-zA-Z]+)"[^>]*>([^<]*)<\/span>/g;
 
