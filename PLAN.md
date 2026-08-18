@@ -150,8 +150,9 @@ The method at the top, applied to the rest. Biggest first, one per
 change, because each will surface something: none of them have
 been read since 250 pages moved out from under them.
 
-All four **done**: `check-routes` (260), `check-css` (558),
-`check-csp` (157), `check-sw` (143). Then the nine tests.
+All five **done**: `check-routes` (260), `check-css` (558),
+`check-csp` (157), `check-sw` (143), `check-content` (audited
+earlier the same day). No check is served any more.
 
 **What the first audit found.** Five claims in its header, three
 still true and two that had quietly stopped being:
@@ -214,6 +215,27 @@ the school's pages carry. For "is this rule dead" any mention
 counts, because half the site writes
 `className={plain ? "art" : "art stage-art"}`: a pattern anchored
 to the quotes called two live classes dead on the first run.
+
+### The tests
+
+Audited on the two questions that matter for a test rather than
+for a check, and both came back clean.
+
+**Does it run, or does it skip and look like a pass?** Every test
+in `check-all.mjs` runs. Every test that needs a browser or a
+build says so and exits, loudly: `studio`, `studio-publish`, the
+desk's and the Studio's own. `interactive` and `account` find a
+browser here and run.
+
+**Has its subject moved out from under it?** No. `courses` is
+about `aab/src/courses.ts`, `studio` about `aab/editor.js`,
+`sync` about `aab/sync.js`, and the schools' three about
+`aab/schools/`. Each subject is still where the test looks.
+
+Which is why the tests do NOT move yet. A test belongs beside the
+thing it tests, so they move when their subjects do, in Phase 5's
+Stage B. Moving them first would be five files pointing back into
+a directory they had just left.
 
 They move to `scripts/` as they are audited, which is also when
 they can lose the `.mjs` extension: the root declares
