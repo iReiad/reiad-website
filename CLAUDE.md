@@ -92,10 +92,12 @@ That is the same list `.github/workflows/checks.yml` runs, in the same order,
 so green here is green there. The browser and network tests are listed under
 "Before deploying" and still have to be run by hand.
 
-Note `checks.yml` fires on **synchronize**, and has been seen not to fire on
-**opened**: a pull request created and never pushed to again can sit with no
-`checks` run while the other three report green. Push again, or dispatch it,
-before merging.
+`checks.yml` was seen not to fire on **opened** for a draft pull request,
+which left it sitting with no `checks` run while the other three reported
+green. Its trigger now lists `ready_for_review` as well, so marking a draft
+ready runs them, which is the moment before a merge anyway. If a pull request
+still shows only three checks, dispatch the workflow on the branch rather
+than merging on an incomplete signal.
 
 ## Language
 

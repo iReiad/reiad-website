@@ -35,7 +35,14 @@
 name: checks
 
 on:
+  # The types are listed rather than left to the default, and
+  # `ready_for_review` is the one that matters: a pull request
+  # opened as a draft has been seen not to fire this workflow at
+  # all, so it sat with no `checks` run while the other three
+  # reported green. Marking it ready now always runs them, which
+  # is the moment before a merge either way.
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_call:
   workflow_dispatch:
 
