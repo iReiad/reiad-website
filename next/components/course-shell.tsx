@@ -11,7 +11,7 @@
    whatever the page then chose to draw. So the route serves the
    chrome, the address and a container, and `/courses.js` fills it
    after asking `/api/courses` with the reader's own token. The
-   long version is at the head of `functions/api/courses/[[route]].js`.
+   long version is at the head of `functions/api/courses/[[route]].ts`.
 
    That is the opposite of the rule everywhere else on this site,
    where the ladder is the server's, and it is worth being explicit

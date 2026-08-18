@@ -20,7 +20,7 @@
    files shared by link, and these deliberately are not.
 
    So the browser asks this origin instead and the Worker holds
-   the one credential. `_lib/drive.js` is that seam.
+   the one credential. `_lib/drive.ts` is that seam.
 
    ---- why this is an endpoint rather than a page ----
 
@@ -180,7 +180,7 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
 
 const notConnected = (): Response => fail("drive-not-connected", 503, {
   message: "This site cannot read the course files yet: the Google credential is not "
-    + "set. See GOOGLE_REFRESH_TOKEN in CLAUDE.md.",
+    + "set. See GOOGLE_SA_EMAIL in CLAUDE.md.",
 });
 
 /** Stream one file through, without holding it.

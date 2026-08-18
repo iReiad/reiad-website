@@ -168,7 +168,7 @@ export const lessonId = (course: string, mod: string, lesson: string): string =>
 
     So the Worker holds the credential and serves the bytes from
     this origin, where no third-party anything is involved. See
-    `functions/_lib/drive.js`.
+    `functions/_lib/drive.ts`.
 
     Still no player events, and still a button: the reason has not
     changed, only the source. A `<video>` element would happily
