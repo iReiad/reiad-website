@@ -106,18 +106,19 @@ const COURSE = {
           slug: "welcome", title: "Welcome", kind: "video", section: "Get started",
           position: 1, video: "vid-welcome-0000000000000000000000",
           reading: null, quiz: null, exam: null,
-          transcript: "txt-welcome-0000000000000000000000", files: [],
+          transcript: "txt-welcome-0000000000000000000000",
+          captions: "srt-welcome-0000000000000000000000", files: [],
         },
         {
           slug: "syllabus", title: "Syllabus", kind: "reading", section: "Get started",
           position: 2, video: null, reading: "doc-syllabus-000000000000000000000",
-          quiz: null, exam: null, transcript: null,
+          quiz: null, exam: null, transcript: null, captions: null,
           files: [{ name: "Learning log", ext: "docx", drive: "att-log-00000000000000000000000" }],
         },
         {
           slug: "insights", title: "Insights", kind: "video", section: "Second group",
           position: 3, video: "vid-insights-00000000000000000000",
-          reading: null, quiz: null, exam: null, transcript: null, files: [],
+          reading: null, quiz: null, exam: null, transcript: null, captions: null, files: [],
         },
       ],
     },
@@ -127,7 +128,7 @@ const COURSE = {
         {
           slug: "thinking", title: "Thinking", kind: "video", section: "Analytical",
           position: 1, video: "vid-thinking-00000000000000000000",
-          reading: null, quiz: null, exam: null, transcript: null, files: [],
+          reading: null, quiz: null, exam: null, transcript: null, captions: null, files: [],
         },
       ],
     },
@@ -373,6 +374,46 @@ console.log("\n--- the lesson page ---");
 
   ok("a transcript is offered",
     all(doc, ".course-files a").some((a) => a.textContent === "Transcript"));
+
+  /* ---- captions ----
+
+     Every video in this catalogue ships with two files beside it:
+     a `.en.txt`, which is the transcript and is offered as a link,
+     and a `.en.srt`, which is the same words with timings on them.
+     Only the first was carried through the importer for a while,
+     so the player had a captions button that turned nothing on.
+
+     They are two things, not one thing twice, and the test says
+     so: the transcript stays a link in the Files list and the
+     captions become a track inside the player. */
+  const track = doc.querySelector(".course-video video track");
+  ok("a video carries a caption track", Boolean(track));
+  ok("the track is captions, not chapters or metadata",
+    track?.getAttribute("kind") === "captions", track?.getAttribute("kind"));
+  ok("served by this site, converted from SubRip on the way",
+    track?.getAttribute("src")?.startsWith("/api/courses/captions/"),
+    track?.getAttribute("src"));
+  ok("and it carries a pass of its own, because <track> sends no header",
+    /[?&]t=/.test(track?.getAttribute("src") ?? ""), track?.getAttribute("src"));
+  ok("the pass names the captions file, not the video",
+    track?.getAttribute("src")?.includes("srt-welcome"), track?.getAttribute("src"));
+  ok("captions are on without being asked for",
+    track?.hasAttribute("default"));
+  ok("the track is labelled, so the player's menu reads as a language",
+    track?.getAttribute("srclang") === "en" && Boolean(track?.getAttribute("label")));
+  ok("the transcript is still a link, not swallowed by the track",
+    all(doc, ".course-files a").some((a) => a.textContent === "Transcript"));
+
+  {
+    /* `insights` has a video and no captions, which is what a
+       lesson looks like when the export was missing its .srt. No
+       track at all, rather than one pointing at nothing. */
+    const { document: bare } = await visit(
+      "/skills/courses/foundations/week-one/insights.html", new Map());
+    ok("a video with no captions gets no track",
+      Boolean(bare.querySelector(".course-video video"))
+      && !bare.querySelector(".course-video video track"));
+  }
 
   /* ---- when the pass is refused ----
 

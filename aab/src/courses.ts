@@ -68,6 +68,7 @@ export interface Lesson {
   quiz: string | null;
   exam: string | null;
   transcript: string | null;
+  captions: string | null;
   files: CourseFile[];
 }
 
@@ -191,6 +192,7 @@ const lessonId = (course: string, mod: string, lesson: string) =>
   `${course}/${mod}/${lesson}`;
 
 const fileUrl = (drive: string) => `/api/courses/file/${drive}`;
+const captionsUrl = (drive: string) => `/api/courses/captions/${drive}`;
 const driveUrl = (drive: string) => `https://drive.google.com/file/d/${drive}/view`;
 
 /* ============================================================
@@ -656,7 +658,7 @@ function drawLesson(root: HTMLElement, course: Course, mod: Module, lesson: Less
       el("p", { class: "course-waiting" }, ["Loading the video…"]),
     ]);
     main.append(box);
-    void mountVideo(box, lesson.video, lesson.title);
+    void mountVideo(box, lesson.video, lesson.captions, lesson.title);
   }
 
   /* A reading, a quiz or a challenge is a saved Coursera page. It
@@ -774,7 +776,9 @@ function saySo(box: HTMLElement, message: string) {
   box.replaceChildren(el("p", { class: "course-empty" }, [message]));
 }
 
-async function mountVideo(box: HTMLElement, drive: string, title: string) {
+async function mountVideo(
+  box: HTMLElement, drive: string, captions: string | null, title: string,
+) {
   const answer = await ticketFor(drive);
   if (!answer.ok || !answer.data) {
     /* The server's own reason, not a general one. This said "that
@@ -795,12 +799,57 @@ async function mountVideo(box: HTMLElement, drive: string, title: string) {
      tens of megabytes and a reader who opened the page to read
      the transcript should not pay for all of it. Metadata is
      enough for the duration and the scrub bar. */
-  box.replaceChildren(el("video", {
+  const video = el("video", {
     src: url,
     controls: true,
     preload: "metadata",
     playsinline: true,
     title,
+  });
+  box.replaceChildren(video);
+
+  /* Captions after the player rather than with it, because they
+     need a pass of their own and waiting for it would hold up the
+     video. A `<track>` appended later is picked up: the browser
+     loads it when the reader turns captions on, not when the
+     element appears.
+
+     `default` on, because this section has one reader and they
+     asked for captions. The control to turn them off is in the
+     player, where a reader would look for it. */
+  if (captions) void mountCaptions(video, captions);
+}
+
+/** The subtitles, once their own pass has been minted.
+
+    Separate from the video's pass and not reusing it: a ticket
+    names ONE file, which is the property that makes it safe to put
+    in a URL, and a second file needs a second ticket rather than a
+    wider one. */
+async function mountCaptions(video: HTMLElement, drive: string) {
+  const answer = await api<{ url: string }>(`/ticket/${drive}`);
+  if (!answer.ok || !answer.data) return;
+
+  /* The ticket names the file; the address says what is done to it
+     on the way through. `captionsUrl` is the SubRip-to-WebVTT
+     route, because no browser reads SubRip in a track, so the pass
+     is lifted out of the URL the ticket route returned and put on
+     a different path.
+
+     Read with a pattern rather than `new URL`, which needs a base
+     and would mean inventing a hostname to parse a relative path.
+     `check-csp.mjs` reads every host named in this directory and
+     is right to refuse one that exists only to satisfy a
+     constructor. */
+  const pass = /[?&]t=([^&]*)/.exec(answer.data.url)?.[1] ?? "";
+  if (!pass) return;
+
+  video.append(el("track", {
+    kind: "captions",
+    src: `${captionsUrl(drive)}?t=${pass}`,
+    srclang: "en",
+    label: "English",
+    default: true,
   }));
 }
 

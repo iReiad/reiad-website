@@ -989,7 +989,7 @@ course, so the pages are empty and the catalogue is behind
 
 | | |
 | --- | --- |
-| `shared/courses.data.json` | the catalogue. **Generated.** 8 courses, 43 modules, 794 lessons |
+| `shared/courses.data.json` | the catalogue. **Generated.** 8 courses, 43 modules, 794 lessons, 1629 Drive ids |
 | `scripts/import-courses.mjs` | what generates it, out of Drive |
 | `scripts/fixtures/course-crawl/` | the Drive listing it is built from, so CI can rebuild it with no credential |
 | `shared/courses.ts` | the types, the counts and every address |
@@ -1064,6 +1064,7 @@ bytes from this origin, where there is no third party to block:
 | `GET /api/courses/ticket/<id>` | a signed pass for one file, thirty minutes |
 | `GET /api/courses/file/<id>?t=` | those bytes, streamed, `Range` forwarded |
 | `GET /api/courses/reading/<id>` | that page, sanitised, rendered in the lesson |
+| `GET /api/courses/captions/<id>?t=` | the `.srt` beside the video, as WebVTT |
 
 **Two locks on the file route, and the second is the one that
 matters.** `isAdmin()` is the first. On its own it would leave a
@@ -1089,6 +1090,37 @@ when the reader presses "Mark complete & continue", and the last
 lesson of a module goes to the module summary rather than into the
 next module. `aab/courses.test.mjs` asserts the absence as well as
 the presence.
+
+**A transcript and captions are two files and two jobs.** Every
+video in this catalogue ships with a `.en.txt` and a `.en.srt`
+beside it. The first is prose and is offered as a link, for
+reading instead of watching. The second is the same words with
+timings on them, which is the only thing a `<track>` can use.
+
+`coursera.mjs` classified both correctly from the first import and
+`import-courses.mjs` carried only the transcript, so for a while
+every lesson had a player with a captions button that turned
+nothing on. The lesson looked finished, which is the failure mode
+this whole file keeps returning to.
+
+No browser reads SubRip in a `<track>`, so the Worker converts:
+`toVTT()` in the endpoint adds the `WEBVTT` header and moves the
+decimal point, and does it only inside a timecode, because
+captions are prose and a blanket comma replace turns "first, we
+will" into "first. we will" in every subtitle on the site. The
+track carries its own ticket, minted for the captions file rather
+than shared with the video's, because a ticket naming ONE file is
+the property that makes it safe to put in a URL.
+
+`media-src 'self'` already covers a `<track>`, so the CSP did not
+change.
+
+**`ID_FIELDS` in `shared/courses.ts` is the list of lesson fields
+holding a Drive id**, and it is exported because more than one
+thing walks it. `check-courses.mjs` kept its own copy, and the day
+`captions` was added it went on reporting every id well formed
+while never looking at 298 of them. One vocabulary, one place: the
+rule `check-rows.mjs` already enforces for the database.
 
 **The credential is a SERVICE ACCOUNT, and that is not a
 convenience.** Two wrangler secrets, and the site works without

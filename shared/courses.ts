@@ -72,7 +72,13 @@ export interface CourseLesson {
   reading?: string;
   quiz?: string;
   exam?: string;
+  /** The `.en.txt`: prose, offered as a link, for reading rather
+      than watching. */
   transcript?: string;
+  /** The `.en.srt`: the same words with timings on them, which is
+      what a <track> needs. Served as WebVTT, because no browser
+      reads SubRip. Two files and two jobs, not one thing twice. */
+  captions?: string;
   files?: CourseFile[];
 }
 
@@ -183,6 +189,15 @@ export const fileUrl = (drive: string): string =>
 export const readingUrl = (drive: string): string =>
   `/api/courses/reading/${drive}`;
 
+/** A video's captions, converted to WebVTT on the way through.
+
+    Separate from `fileUrl` because the bytes are rewritten rather
+    than passed along: the files in Drive are SubRip, and no
+    browser has ever read SubRip in a <track>. One route, one
+    conversion, one place to fix it. */
+export const captionsUrl = (drive: string): string =>
+  `/api/courses/captions/${drive}`;
+
 /** Drive's own page, kept for one job only: the "open in Drive"
     link beside a file, for when somebody wants the original
     rather than this site's copy of it. Never used for playback
@@ -205,12 +220,24 @@ export const driveUrl = (drive: string): string =>
 
    Built once at module load. 1,331 strings is nothing to hold and
    the alternative is walking eight courses per request. */
+/** Every field of a lesson that holds a Drive id.
+
+    Exported because more than one thing walks it, and a second
+    copy of this list is a lesson field that some checks validate
+    and others do not. That is not hypothetical: `captions` was
+    added to the catalogue and to this set, and `check-courses.mjs`
+    kept its own list and went on reporting a clean bill of health
+    for 298 ids it had never looked at. */
+export const ID_FIELDS = [
+  "video", "reading", "quiz", "exam", "transcript", "captions",
+] as const;
+
 const driveIds = (): Set<string> => {
   const ids = new Set<string>();
   for (const course of COURSES) {
     for (const mod of course.modules) {
       for (const lesson of mod.lessons) {
-        for (const key of ["video", "reading", "quiz", "exam", "transcript"] as const) {
+        for (const key of ID_FIELDS) {
           const id = lesson[key];
           if (id) ids.add(id);
         }
@@ -235,7 +262,7 @@ export function lessonForFile(id: string): { course: Course; mod: CourseModule; 
     for (const mod of course.modules) {
       for (const lesson of mod.lessons) {
         if (lesson.video === id || lesson.reading === id || lesson.quiz === id
-          || lesson.exam === id || lesson.transcript === id
+          || lesson.exam === id || lesson.transcript === id || lesson.captions === id
           || (lesson.files ?? []).some((f) => f.drive === id)) {
           return { course, mod, lesson };
         }
@@ -333,6 +360,7 @@ export const forBrowser = (course: Course) => ({
       quiz: l.quiz ?? null,
       exam: l.exam ?? null,
       transcript: l.transcript ?? null,
+      captions: l.captions ?? null,
       files: l.files ?? [],
     })),
   })),

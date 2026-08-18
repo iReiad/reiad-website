@@ -423,8 +423,19 @@ function oneLesson(parts, groupSlug) {
     if (id) lesson[kind] = id;
   }
 
-  const transcript = pick("transcript");
-  if (transcript) lesson.transcript = transcript;
+  /* Two files, and they are not the same thing. The `.en.txt` is
+     the transcript: prose, offered as a link, for reading instead
+     of watching. The `.en.srt` is the captions: the same words
+     with timings on them, which is what a <track> needs and what
+     puts subtitles over the picture.
+
+     Only the first was carried for a while. Every video had both
+     in Drive, `coursera.mjs` classified both correctly, and the
+     player had no captions because the id stopped here. */
+  for (const kind of ["transcript", "captions"]) {
+    const id = pick(kind);
+    if (id) lesson[kind] = id;
+  }
 
   const files = parts
     .filter((p) => p.kind === "attachment")

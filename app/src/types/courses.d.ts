@@ -14,6 +14,7 @@ export interface Lesson {
     quiz: string | null;
     exam: string | null;
     transcript: string | null;
+    captions: string | null;
     files: CourseFile[];
 }
 export interface Module {
