@@ -25,6 +25,16 @@
     "so that test needs no browser and no network. Without it the",
     "test says so and skips, which is not a pass.",
     "",
+    "react, react-dom and esbuild are here for the same test and",
+    "for the same reason. The three hubs became components, so it",
+    "renders one instead of reading an HTML string, and node",
+    "strips TypeScript types on its own but cannot transform JSX.",
+    "They are in next/ too, and that is not where CI can reach:",
+    "the workflow runs `npm ci` at the root and nowhere else, so a",
+    "test that resolved out of next/node_modules passed on a",
+    "laptop and failed on the runner. Same versions as next/ on",
+    "purpose, so what this renders is what the route renders.",
+    "",
     "The one script below is not a build step either. It is the",
     "deploy command written down where a person looking for it will",
     "find it: next/ has `npm run deploy`, this did not, and a",
@@ -38,7 +48,10 @@
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
+    "esbuild": "^0.25.4",
     "linkedom": "^0.18.13",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3"
   }

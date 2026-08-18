@@ -74,33 +74,47 @@ registerHooks({
 
    Node strips TypeScript types on its own but cannot transform
    JSX, so the component is bundled first. esbuild does it in
-   about eighty milliseconds and it is already here: it is what
-   wrangler and Next both build with. React and react-dom live in
-   `next/`, which is its own npm workspace, so the bundle resolves
-   from there rather than from this file. */
-const { build } = await import(
-  pathToFileURL(join(ROOT, "next/node_modules/esbuild/lib/main.js")).href);
+   about eighty milliseconds.
 
+   Bare specifiers, resolved from the root, where `linkedom` is
+   and for the same reason: the workflow runs `npm ci` at the root
+   and nowhere else. Reaching into `next/node_modules` worked on a
+   laptop and failed on the runner, which is the shape of mistake
+   the root package.json was created to stop. */
+const { build } = await import("esbuild");
+
+/* The renderer is bundled WITH the component, and that is not
+   tidiness either: the result is imported as a `data:` URL, and a
+   data module cannot resolve a bare specifier, so anything left
+   external throws at import rather than at build. One bundle, one
+   React, nothing to resolve at run time.
+
+   `resolveDir` is `next/`, so the component's neighbours resolve
+   beside it and react resolves by walking up to the root, which
+   is where the checks' own copy lives. */
 const bundled = await build({
-  entryPoints: [join(ROOT, "next/components/school-hub-page.tsx")],
+  stdin: {
+    contents: `export { SchoolHubPage } from "./components/school-hub-page";
+               export { renderToStaticMarkup } from "react-dom/server.browser";`,
+    resolveDir: join(ROOT, "next"),
+    loader: "ts",
+  },
   bundle: true,
   write: false,
   format: "esm",
-  platform: "node",
+  platform: "neutral",
+  mainFields: ["module", "main"],
+  conditions: ["import", "default"],
   jsx: "automatic",
-  absWorkingDir: join(ROOT, "next"),
   logLevel: "silent",
 });
 
 const mod = await import(
   `data:text/javascript;base64,${Buffer.from(bundled.outputFiles[0].text).toString("base64")}`);
 
-const { renderToStaticMarkup } = await import(
-  pathToFileURL(join(ROOT, "next/node_modules/react-dom/server.browser.js")).href);
-
 const bodies = Object.fromEntries(
   ["deutsch", "english", "quran"].map((school) =>
-    [school, renderToStaticMarkup(mod.SchoolHubPage({ school }))]));
+    [school, mod.renderToStaticMarkup(mod.SchoolHubPage({ school }))]));
 
 let bad = 0;
 const ok = (n, c, d = "") => { console.log(`${c ? "  ok " : "FAIL"}  ${n}${c ? "" : "   " + d}`); if (!c) bad++; };
