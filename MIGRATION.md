@@ -82,7 +82,26 @@ rather than with this work.
 `scripts/build-styles.mjs`. `@theme` maps the site's own tokens, so
 `bg-panel` means `var(--panel)` in both themes.
 
-**Done:** `/account.html`.
+**Done:** `/account.html`, and the component library under
+`next/components/ui/`.
+
+That library is the mechanism for the rest of it. Eight components, each
+replacing a pattern the routes were writing out by hand:
+
+| | replaces | written by hand |
+| --- | --- | ---: |
+| `button.tsx` | `.btn` `.btn-solid` `.btn-ghost` `.icon-btn` `.top-btn` | 37 |
+| `field.tsx` | an input styled in 11 places, 5 setting focus by hand | 11 |
+| `surface.tsx` | `.card` `.cell` `.tile` `.chart-card` grounds | 50+ |
+| `chip.tsx` | `.chip` `.tag` | 46 |
+| `stat.tsx` | `.tile` + `.tile-value` | 50 |
+| `note.tsx` | hand-coloured aside boxes, empty states | |
+| `label.tsx` | `.section-label mono` `.eyebrow` | 43 |
+| `meter.tsx` | five separate progress bars | 5 |
+
+None of them names a colour: `accent-*` resolves to whatever `--accent` is
+on the nearest container. A page converted to use them is themed by being
+converted.
 
 The stylesheet's own tokens moved first, which is what makes the rest
 cheap: `--panel` and `--hairline` are `color-mix()` expressions carrying a

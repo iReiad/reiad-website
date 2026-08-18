@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v103: Five more components, so /tailwind.css carries the
+        utilities they need: chip, stat tile, note, section label
+        and meter. Each replaces a pattern the routes were writing
+        out by hand between twenty and fifty times.
+
    v102: The theming got loud enough to see. The tint is a token
         per mode now, not one number: a light surface shows colour
         immediately and a dark one absorbs three times as much, so
@@ -979,7 +984,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v102";
+const VERSION = "v103";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
