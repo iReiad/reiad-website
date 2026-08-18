@@ -9520,7 +9520,72 @@ German for day, and .tag is what the site has always called
     background: #000;
   }
 
+  .course-video video,
   .course-video iframe { display: block; width: 100%; height: 100%; border: 0; }
+
+  /* While a ticket is being minted and the first bytes arrive. It
+     is a line of text rather than a spinner because it says which
+     of the three things is happening. */
+  .course-waiting {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: var(--t-3);
+  }
+
+  /* ---- a reading, rendered here ----
+
+     These are saved Coursera pages with their own stylesheets
+     stripped out by the sanitiser, so what arrives is headings,
+     paragraphs, lists and tables with no styling of their own.
+     They are given the site's reading measure and nothing more:
+     dressing somebody else's page up to look like this site's
+     writing is the one thing this section must not do. */
+  .course-reading { margin: 1.5rem 0; }
+
+  .course-page {
+    max-width: 42rem;
+    line-height: 1.65;
+  }
+
+  .course-page > :first-child { margin-top: 0; }
+  .course-page h1, .course-page h2, .course-page h3 {
+    margin: 1.6em 0 0.5em;
+    line-height: 1.25;
+  }
+  .course-page h1 { font-size: var(--t-8); }
+  .course-page h2 { font-size: var(--t-7); }
+  .course-page h3 { font-size: var(--t-6); }
+  .course-page p, .course-page li { margin: 0 0 0.8em; }
+  .course-page ul, .course-page ol { padding-left: 1.4em; }
+  .course-page a { text-decoration: underline; }
+
+  .course-page img { max-width: 100%; height: auto; }
+
+  /* A scraped page brings tables that were laid out for a wider
+     column than this one. They scroll rather than push the page
+     sideways, which is the rule every other table here follows. */
+  .course-page table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+    border-collapse: collapse;
+  }
+  .course-page th, .course-page td {
+    padding: 0.4em 0.7em;
+    border: 1px solid var(--hairline);
+    text-align: left;
+  }
+
+  .course-original {
+    margin-top: 1.5rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--hairline);
+    font-size: var(--t-2);
+  }
+  .course-original a { color: var(--ink-soft); }
 
   .course-open { margin: 1.25rem 0; }
 

@@ -120,8 +120,8 @@ const courseUrl = (course) => `/skills/courses/${course}/index.html`;
 const moduleUrl = (course, mod) => `/skills/courses/${course}/${mod}/index.html`;
 const lessonUrl = (course, mod, lesson) => `/skills/courses/${course}/${mod}/${lesson}.html`;
 const lessonId = (course, mod, lesson) => `${course}/${mod}/${lesson}`;
-const videoEmbed = (drive) => `https://drive.google.com/file/d/${drive}/preview`;
-const fileUrl = (drive) => `https://drive.google.com/file/d/${drive}/view`;
+const fileUrl = (drive) => `/api/courses/file/${drive}`;
+const driveUrl = (drive) => `https://drive.google.com/file/d/${drive}/view`;
 const laddered = (course) => course.modules.flatMap((mod) => mod.lessons.map((lesson) => ({
     ...lesson,
     module: mod.slug,
@@ -477,32 +477,41 @@ function drawLesson(root, course, mod, lesson) {
     main.append(el("p", { class: "lesson-meta mono" }, [
         `${KIND_WORD[lesson.kind] ?? lesson.kind} · lesson ${lesson.position} of ${mod.lessons.length}`,
     ]));
-    /* ---- the player ---- */
+    /* ---- the player ----
+  
+       A real `<video>`, served from this site's own origin, and not
+       a Drive iframe. The iframe is what the first version had and
+       it could never have worked: a private Drive file inside a
+       cross-site frame gets no Drive cookie in a modern browser, so
+       Drive sees an anonymous request for something that is not
+       public and answers "Unable to load video". The Worker holds
+       the credential now and streams the bytes from here, where
+       there is no third party to be blocked. */
     if (lesson.video) {
-        main.append(el("div", { class: "course-video" }, [
-            el("iframe", {
-                src: videoEmbed(lesson.video),
-                title: lesson.title,
-                allow: "autoplay; fullscreen",
-                allowfullscreen: true,
-                loading: "lazy",
-                referrerpolicy: "no-referrer",
-            }),
-        ]));
+        const box = el("div", { class: "course-video" }, [
+            el("p", { class: "course-waiting" }, ["Loading the video…"]),
+        ]);
+        main.append(box);
+        void mountVideo(box, lesson.video, lesson.title);
     }
-    /* A reading, a quiz or a challenge is a page of Coursera HTML in
-       Drive. It opens in Drive's own viewer in a new tab rather than
-       being framed: an instructions page is a document, and framing
-       a document to look like part of this site would be this site
-       pretending to have written it. */
+    /* A reading, a quiz or a challenge is a saved Coursera page. It
+       is fetched, sanitised by the Worker and rendered HERE.
+  
+       The first version made it a button out to Drive's viewer, on
+       the reasoning that framing somebody else's document would be
+       this site pretending to have written it. That is a publishing
+       argument and this section is not published: it is one
+       person's own study, behind the admin check. A course you
+       cannot read on the page is not a course. */
     for (const kind of ["reading", "quiz", "exam"]) {
         const drive = lesson[kind];
         if (!drive)
             continue;
-        main.append(el("p", { class: "course-open" }, [
-            el("a", { class: "btn btn-solid", href: fileUrl(drive), target: "_blank",
-                rel: "noopener" }, [`Open the ${KIND_WORD[kind].toLowerCase()} in Drive`]),
-        ]));
+        const box = el("div", { class: "course-reading" }, [
+            el("p", { class: "course-waiting" }, [`Loading the ${KIND_WORD[kind].toLowerCase()}…`]),
+        ]);
+        main.append(box);
+        void mountReading(box, drive, kind);
     }
     if (!lesson.video && !lesson.reading && !lesson.quiz && !lesson.exam) {
         main.append(el("p", { class: "course-empty" }, [
@@ -511,18 +520,10 @@ function drawLesson(root, course, mod, lesson) {
     }
     /* ---- what came with it ---- */
     const extras = [];
-    if (lesson.transcript) {
-        extras.push(el("li", {}, [
-            el("a", { href: fileUrl(lesson.transcript), target: "_blank", rel: "noopener" }, ["Transcript"]),
-            el("span", { class: "mono" }, ["txt"]),
-        ]));
-    }
-    for (const file of lesson.files) {
-        extras.push(el("li", {}, [
-            el("a", { href: fileUrl(file.drive), target: "_blank", rel: "noopener" }, [file.name]),
-            el("span", { class: "mono" }, [file.ext]),
-        ]));
-    }
+    if (lesson.transcript)
+        extras.push(fileRow("Transcript", "txt", lesson.transcript));
+    for (const file of lesson.files)
+        extras.push(fileRow(file.name, file.ext, file.drive));
     if (extras.length) {
         main.append(el("div", { class: "course-files" }, [
             el("h2", { class: "mono" }, ["Files"]),
@@ -576,6 +577,78 @@ function drawLesson(root, course, mod, lesson) {
         ]) : null,
     ]));
     root.append(main);
+}
+/* ============================================================
+   Fetching a lesson's own content
+
+   All three go through this site, never through Drive, for the
+   reason at the top of `functions/_lib/drive.ts`.
+   ============================================================ */
+/** A pass for one file, good for half an hour.
+
+    `<video src>` is the browser fetching a URL on its own, with
+    no header this code can add, so the permission has to travel
+    in the URL. `functions/_lib/ticket.ts` is why that is a signed
+    ticket naming one file rather than the session token. */
+async function ticketFor(drive) {
+    const answer = await api(`/ticket/${drive}`);
+    return answer.ok && answer.data ? answer.data.url : null;
+}
+function saySo(box, message) {
+    box.replaceChildren(el("p", { class: "course-empty" }, [message]));
+}
+async function mountVideo(box, drive, title) {
+    const url = await ticketFor(drive);
+    if (!url) {
+        saySo(box, "That video could not be opened. If you have just signed in, reload.");
+        return;
+    }
+    /* `preload="metadata"` rather than `auto`: a lesson video is
+       tens of megabytes and a reader who opened the page to read
+       the transcript should not pay for all of it. Metadata is
+       enough for the duration and the scrub bar. */
+    box.replaceChildren(el("video", {
+        src: url,
+        controls: true,
+        preload: "metadata",
+        playsinline: true,
+        title,
+    }));
+}
+async function mountReading(box, drive, kind) {
+    const answer = await api(`/reading/${drive}`);
+    if (!answer.ok || !answer.data) {
+        saySo(box, answer.message || "That page could not be opened.");
+        return;
+    }
+    const body = el("div", { class: "course-page" });
+    /* The Worker has already run this through the same sanitiser
+       the Studio uses on an article, which drops script, style,
+       iframe and the rest outright. What arrives is words and
+       structure. */
+    body.innerHTML = answer.data.html;
+    box.replaceChildren(body, el("p", { class: "course-original mono" }, [
+        el("a", { href: driveUrl(drive), target: "_blank", rel: "noopener" }, [`Open the original ${kind} in Drive`]),
+    ]));
+}
+/** One row of the Files list.
+
+    A link rather than a button, so it can be opened in a new tab
+    and copied like any other, but its address is minted on the
+    click: a ticket lasts half an hour and a page left open all
+    afternoon would otherwise offer a set of dead links. */
+function fileRow(name, ext, drive) {
+    const link = el("a", { href: fileUrl(drive), target: "_blank", rel: "noopener" }, [name]);
+    link.addEventListener("click", (event) => {
+        event.preventDefault();
+        void ticketFor(drive).then((url) => {
+            if (url)
+                window.open(url, "_blank", "noopener");
+            else
+                link.after(el("span", { class: "course-empty" }, [" could not be opened"]));
+        });
+    });
+    return el("li", {}, [link, el("span", { class: "mono" }, [ext])]);
 }
 /** Redraw the rail after a tick, so the sidebar's ticks and bars
     agree with the button that was just pressed. Cheap: a course

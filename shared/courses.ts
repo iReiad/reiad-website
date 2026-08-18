@@ -156,21 +156,94 @@ export const lessonUrl = (course: string, mod: string, lesson: string): string =
 export const lessonId = (course: string, mod: string, lesson: string): string =>
   `${course}/${mod}/${lesson}`;
 
-/** Drive's own embedded player.
+/** Where the browser gets a lesson's bytes.
 
-    `/preview` and not `/view`: the second is Drive's page, with
-    its chrome and its download button, and it refuses to be
-    framed. The player exposes NO events to the embedding page,
-    which is why nothing on this site tries to detect play, pause
-    or ended. A lesson is finished when the reader says it is. */
-export const videoEmbed = (drive: string): string =>
-  `https://drive.google.com/file/d/${drive}/preview`;
+    This site, not Drive, and that is the fix for the bug the
+    whole section had: a private Drive file cannot be embedded
+    cross-site, because browsers block or partition the cookies
+    Drive would need to recognise the viewer. A `/preview` iframe
+    of a private file answers "Unable to load video", and a link
+    to one answers a sign-in wall. Neither is fixable from this
+    side; the mechanism only ever worked for files shared by link.
 
-/** Drive's own page for anything that is not a video: a reading,
-    a quiz, an attachment. Opened in a new tab rather than framed,
-    because these are documents rather than players. */
+    So the Worker holds the credential and serves the bytes from
+    this origin, where no third-party anything is involved. See
+    `functions/_lib/drive.js`.
+
+    Still no player events, and still a button: the reason has not
+    changed, only the source. A `<video>` element would happily
+    report `ended`, and using it would still be guessing that
+    somebody who left a tab open has learnt something. A lesson is
+    finished when the reader says it is. */
 export const fileUrl = (drive: string): string =>
+  `/api/courses/file/${drive}`;
+
+/** A reading, sanitised and rendered into the page rather than
+    handed to Drive's viewer. */
+export const readingUrl = (drive: string): string =>
+  `/api/courses/reading/${drive}`;
+
+/** Drive's own page, kept for one job only: the "open in Drive"
+    link beside a file, for when somebody wants the original
+    rather than this site's copy of it. Never used for playback
+    and never framed. */
+export const driveUrl = (drive: string): string =>
   `https://drive.google.com/file/d/${drive}/view`;
+
+/* ---------- what the Worker is allowed to fetch ----------
+
+   Every Drive id the catalogue names, and nothing else.
+
+   This is the second lock on `/api/courses/file/<id>`, and it is
+   the one that does the real work. The first is `isAdmin()`, and
+   on its own it would leave a proxy that fetches ANY id it is
+   handed: a read-only window onto the whole of somebody's Drive,
+   one guessed id at a time, standing or falling entirely on that
+   one check. This set means a request for an id that is not part
+   of a lesson is refused before a credential is even loaded,
+   whoever is asking.
+
+   Built once at module load. 1,331 strings is nothing to hold and
+   the alternative is walking eight courses per request. */
+const driveIds = (): Set<string> => {
+  const ids = new Set<string>();
+  for (const course of COURSES) {
+    for (const mod of course.modules) {
+      for (const lesson of mod.lessons) {
+        for (const key of ["video", "reading", "quiz", "exam", "transcript"] as const) {
+          const id = lesson[key];
+          if (id) ids.add(id);
+        }
+        for (const file of lesson.files ?? []) ids.add(file.drive);
+      }
+    }
+  }
+  return ids;
+};
+
+export const DRIVE_IDS: Set<string> = driveIds();
+
+/** Is this id one a lesson actually names? */
+export const isCourseFile = (id: unknown): boolean =>
+  typeof id === "string" && DRIVE_IDS.has(id);
+
+/** The lesson a Drive id belongs to, for labelling a response.
+    Null when the id is not in the catalogue at all, which the
+    caller should already have refused. */
+export function lessonForFile(id: string): { course: Course; mod: CourseModule; lesson: CourseLesson } | null {
+  for (const course of COURSES) {
+    for (const mod of course.modules) {
+      for (const lesson of mod.lessons) {
+        if (lesson.video === id || lesson.reading === id || lesson.quiz === id
+          || lesson.exam === id || lesson.transcript === id
+          || (lesson.files ?? []).some((f) => f.drive === id)) {
+          return { course, mod, lesson };
+        }
+      }
+    }
+  }
+  return null;
+}
 
 /* ---------- the ladder ---------- */
 

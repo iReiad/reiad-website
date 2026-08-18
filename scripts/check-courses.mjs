@@ -216,7 +216,11 @@ function template(src, name) {
   return close === -1 ? null : src.slice(open + 1, close);
 }
 
-const RULES = ["courseUrl", "moduleUrl", "lessonUrl", "lessonId", "videoEmbed", "fileUrl"];
+/* The address rules both files define. `readingUrl` is only in
+   `shared/courses.ts`: the browser reaches that endpoint through
+   `api()`, which composes the path itself, so a second copy of it
+   here would be a rule with one author and nothing to check. */
+const RULES = ["courseUrl", "moduleUrl", "lessonUrl", "lessonId", "fileUrl", "driveUrl"];
 
 for (const name of RULES) {
   const a = template(sharedSrc, name);

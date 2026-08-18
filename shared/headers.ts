@@ -43,12 +43,13 @@ export const SECURITY_HEADERS = {
     + "img-src 'self' data:; "
     + "connect-src 'self' https://api.web3forms.com "
     + "https://market-pulse.i-reiad.workers.dev https://wvjarqnnmkkuxyrndtya.supabase.co; "
-    /* The one thing this site frames: a Drive video on
-       /skills/courses/. Without it `default-src 'self'` refuses
-       the iframe and the lesson page shows an empty box. It is
-       not `frame-ancestors`, three lines down, which is the
-       opposite direction and still 'none'. */
-    + "frame-src https://drive.google.com; "
+    /* Media is this origin's, which is the whole of the course
+       section's video story: the Worker streams a lesson's bytes
+       from /api/courses/file/, so there is no third-party frame
+       and no third-party media. There was a `frame-src` for
+       drive.google.com here and it is deliberately gone: a
+       private Drive file cannot be framed cross-site at all. */
+    + "media-src 'self'; "
     + "form-action 'self' https://api.web3forms.com; "
     + "frame-ancestors 'none'; "
     + "base-uri 'self'; "

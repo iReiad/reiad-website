@@ -992,6 +992,8 @@ course, so the pages are empty and the catalogue is behind
 | `scripts/fixtures/course-crawl/` | the Drive listing it is built from, so CI can rebuild it with no credential |
 | `shared/courses.ts` | the types, the counts and every address |
 | `functions/api/courses/` | the only thing that ever sends it |
+| `functions/_lib/drive.ts` | the one place this site reads Drive |
+| `functions/_lib/ticket.ts` | a signed pass, because `<video>` sends no header |
 | `aab/src/courses.ts` | the browser's half: all four pages |
 | `next/app/(site)/skills/courses/` | four shells with nothing in them |
 
@@ -1038,24 +1040,76 @@ token that expires halfway leaves the committed catalogue alone.
 The head of `import-courses.mjs` says all of this again where
 somebody running it will see it.
 
-**The Drive player has no events, and nothing here pretends
-otherwise.** A lesson's video is a `https://drive.google.com/file/d/<id>/preview`
-iframe. That player exposes no play, no pause, no ended and no
-useful `postMessage`, so there is no timer, no watch-percentage
-and no heuristic anywhere in `courses.ts`: a lesson is complete
-when the reader presses "Mark complete & continue", and the last
-lesson of a module goes to the module summary rather than into
-the next module. `aab/courses.test.mjs` asserts the absence as
-well as the presence, because the tempting bug here is a timer
-that marks a lesson done for somebody who opened it and left.
+**The browser never talks to Drive. The Worker does.** That is
+the second version of this section and the first one was wrong in
+a way worth writing down, because it looked right and shipped.
 
-**One line of CSP, and it is `frame-src`.** `default-src 'self'`
-refuses the Drive iframe, and `check-csp.mjs` cannot see it: that
-check is about `connect-src` and an iframe is not a fetch. So
-`frame-src https://drive.google.com` is in `aab/_headers` and in
-`shared/headers.ts`, and `check-headers.mjs` holds the two to
-agreeing. `frame-ancestors` is unchanged and still `'none'`:
-this site frames Drive, and nothing frames this site.
+It handed Drive file ids to the page: a `/preview` iframe for a
+video, a link for a reading. Neither can work for a PRIVATE file.
+Drive has to know who is asking, and inside a cross-site iframe it
+cannot, because browsers block or partition third-party cookies
+now. Drive sees an anonymous request for something that is not
+public and answers "Unable to load video". Nothing is broken: not
+the embed, not the file, not the CSP. The mechanism only ever
+worked for files shared by a link, and these deliberately are not.
+
+So `functions/_lib/drive.ts` holds one credential and serves the
+bytes from this origin, where there is no third party to block:
+
+| | |
+| --- | --- |
+| `GET /api/courses/ticket/<id>` | a signed pass for one file, thirty minutes |
+| `GET /api/courses/file/<id>?t=` | those bytes, streamed, `Range` forwarded |
+| `GET /api/courses/reading/<id>` | that page, sanitised, rendered in the lesson |
+
+**Two locks on the file route, and the second is the one that
+matters.** `isAdmin()` is the first. On its own it would leave a
+proxy that fetches any Drive id it is handed, which is a read-only
+window onto the whole of somebody's Drive resting entirely on one
+check. So `isCourseFile()` refuses any id the catalogue does not
+name, before a credential is even loaded.
+
+**`<video src>` sends no `Authorization` header**, which is why
+there is a ticket at all. The alternatives were a bearer token in
+a query string, which puts a long-lived credential in history and
+in every proxy log, or a cookie, which is a third way of being
+signed in on a site that already has two. A ticket names one file,
+expires, and grants nothing else. Its key is derived from
+`GOOGLE_CLIENT_SECRET` rather than being a fourth secret to
+manage, with domain separation so it signs tickets and nothing
+else.
+
+**Still no player events.** A `<video>` element would happily
+report `ended`, and using it would still be guessing that somebody
+who left a tab open has learnt something. A lesson is complete
+when the reader presses "Mark complete & continue", and the last
+lesson of a module goes to the module summary rather than into the
+next module. `aab/courses.test.mjs` asserts the absence as well as
+the presence.
+
+**The credential.** Three wrangler secrets, and the site works
+without them: every caller checks `canReachDrive()` and the page
+says the section is not connected rather than failing oddly.
+
+```sh
+npx wrangler secret put GOOGLE_CLIENT_ID
+npx wrangler secret put GOOGLE_CLIENT_SECRET
+npx wrangler secret put GOOGLE_REFRESH_TOKEN
+```
+
+The scope is `drive.readonly`, and it has to be: `drive.metadata.readonly`,
+which `import-courses.mjs` uses, deliberately cannot read file
+content and content is the whole point here. A refresh token
+rather than an access token, because access tokens last an hour
+and a section that stops working every hour is not a section.
+
+**The CSP swapped a line.** `frame-src https://drive.google.com`
+is gone with the iframe it existed for, and `media-src 'self'` is
+in its place in both `aab/_headers` and `shared/headers.ts`.
+`default-src` would already cover same-origin media; it is written
+out because it is the line somebody would otherwise widen back to
+drive.google.com the next time a video looks broken.
+`frame-ancestors` is unchanged and still `'none'`.
 
 **Progress is a tick like any other.** `courses-read` and
 `courses-last`, a set of `<course>/<module>/<lesson>` ids and a

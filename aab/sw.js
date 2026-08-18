@@ -31,6 +31,18 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v94: The course section stopped asking Drive for anything.
+        Embedding a private Drive file was never going to work: a
+        cross-site iframe gets no Drive cookie in a modern
+        browser, so Drive answered "Unable to load video" and a
+        reading was a button out to a viewer rather than a page.
+        The Worker holds a Google credential now and streams the
+        bytes from this origin, so /styles.css grew a real video
+        element, the reading rendered in place, and the type it
+        needs. The CSP swapped frame-src for media-src in the same
+        change, which is a header rather than a precached file but
+        belongs in the same sentence.
+
    v93: The third-party course section landed at /skills/courses/.
         /styles.css grew `@layer courses`, the two-column shape
         and the rail that section draws, and /sync.js grew two
@@ -909,7 +921,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v93";
+const VERSION = "v94";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

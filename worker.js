@@ -48,7 +48,7 @@ import { onRequest as backup } from "./functions/api/backup/[[route]].js";
 import { onRequest as comments } from "./functions/api/comments/[[id]].js";
 import { onRequest as broker } from "./functions/api/broker/[[route]].js";
 import { onRequest as schools } from "./functions/api/schools/[[route]].js";
-import { onRequest as courses } from "./functions/api/courses/[[route]].js";
+import { onRequest as courses } from "./functions/api/courses/[[route]].ts";
 import { onRequest as insight } from "./functions/insights/[slug].js";
 import { onRequest as feeds } from "./functions/feeds/[kind].js";
 import { db } from "./functions/_lib/db.js";

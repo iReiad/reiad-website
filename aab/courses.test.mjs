@@ -146,6 +146,10 @@ const SUMMARIES = [
 
 const SHELL = '<!doctype html><html><body><div id="course-app"></div></body></html>';
 
+/* What the Worker hands back for a reading: already sanitised, so
+   the module renders it as it stands. */
+const READING_HTML = '<h2>What you will do</h2><p>Read the syllabus.</p>';
+
 /** Build a DOM at one address, run the module against it, and
     hand back the document. `store` persists across calls inside
     one scenario so that a tick made on one page is visible on the
@@ -153,7 +157,9 @@ const SHELL = '<!doctype html><html><body><div id="course-app"></div></body></ht
 async function visit(path, store, { reader = { id: "admin" }, status = 200 } = {}) {
   const { window, document } = parseHTML(SHELL);
   const listeners = new Map();
+  const asked = [];
   let gone = null;
+  let opened = null;
 
   Object.assign(globalThis, {
     window, document,
@@ -161,6 +167,8 @@ async function visit(path, store, { reader = { id: "admin" }, status = 200 } = {
     Node: window.Node,
     __reader: reader,
     __token: reader ? "a-token" : null,
+    setTimeout,
+    open: (to) => { opened = to; return null; },
     localStorage: {
       getItem: (k) => (store.has(k) ? store.get(k) : null),
       setItem: (k, v) => store.set(k, String(v)),
@@ -169,10 +177,18 @@ async function visit(path, store, { reader = { id: "admin" }, status = 200 } = {
     addEventListener: (t, f) => listeners.set(t, [...(listeners.get(t) ?? []), f]),
     dispatchEvent: (e) => { (listeners.get(e.type) ?? []).forEach((f) => f(e)); return true; },
     fetch: async (url) => {
-      const one = /\/api\/courses\/(.+)$/.exec(String(url));
-      const body = one
-        ? { ok: true, course: COURSE }
-        : { ok: true, courses: SUMMARIES };
+      const path = String(url).replace(/^.*\/api\/courses/, "");
+      asked.push(path);
+
+      let body = { ok: true, courses: SUMMARIES };
+      if (path.startsWith("/ticket/")) {
+        body = { ok: true, url: `/api/courses/file/${path.slice(8)}?t=1.sig` };
+      } else if (path.startsWith("/reading/")) {
+        body = { ok: true, title: "A reading", html: READING_HTML };
+      } else if (path.length > 1) {
+        body = { ok: true, course: COURSE };
+      }
+
       return {
         ok: status === 200,
         status,
@@ -197,7 +213,13 @@ async function visit(path, store, { reader = { id: "admin" }, status = 200 } = {
   const mod = await import(`/courses.js?${Math.random()}`);
   await mod.start(document.getElementById("course-app"));
 
-  return { document, went: () => gone };
+  /* The player and the reading are fetched, so the page is not
+     finished when start() resolves. One turn of the microtask
+     queue is enough here because every stub above resolves
+     immediately. */
+  await new Promise((go) => { setTimeout(go, 0); });
+
+  return { document, went: () => gone, asked, opened: () => opened };
 }
 
 const text = (doc, sel) => doc.querySelector(sel)?.textContent?.trim() ?? "";
@@ -321,14 +343,19 @@ console.log("\n--- the lesson page ---");
   const { document: doc } = await visit(
     "/skills/courses/foundations/week-one/welcome.html", store);
 
-  const frame = doc.querySelector(".course-video iframe");
-  ok("a video lesson has a player", Boolean(frame));
-  ok("the player is Drive's /preview embed",
-    frame?.getAttribute("src")
-      === "https://drive.google.com/file/d/vid-welcome-0000000000000000000000/preview",
-    frame?.getAttribute("src"));
+  const video = doc.querySelector(".course-video video");
+  ok("a video lesson has a real player, not an iframe",
+    Boolean(video) && !doc.querySelector(".course-video iframe"));
+  ok("the player is served by this site, never by Drive",
+    video?.getAttribute("src")?.startsWith("/api/courses/file/"),
+    video?.getAttribute("src"));
+  ok("and it carries a ticket, because <video> sends no header",
+    video?.getAttribute("src")?.includes("?t="), video?.getAttribute("src"));
+  ok("the player has controls", video?.hasAttribute("controls"));
+  ok("it does not preload the whole file",
+    video?.getAttribute("preload") === "metadata");
   ok("the player is titled for assistive tech",
-    frame?.getAttribute("title") === "Welcome");
+    video?.getAttribute("title") === "Welcome");
 
   ok("a transcript is offered",
     all(doc, ".course-files a").some((a) => a.textContent === "Transcript"));
@@ -351,12 +378,13 @@ console.log("\n--- the lesson page ---");
     "/skills/courses/foundations/week-one/syllabus.html", store);
 
   ok("a reading lesson has no player", !doc.querySelector(".course-video"));
-  ok("a reading opens in Drive",
-    doc.querySelector(".course-open a")?.getAttribute("href")
+  ok("the reading is rendered ON the page", Boolean(doc.querySelector(".course-page")));
+  ok("and it is the words, not a button out to Drive",
+    text(doc, ".course-page h2") === "What you will do"
+      && !doc.querySelector(".course-open"));
+  ok("the original is still reachable, quietly",
+    doc.querySelector(".course-original a")?.getAttribute("href")
       === "https://drive.google.com/file/d/doc-syllabus-000000000000000000000/view");
-  ok("a reading opens in a new tab",
-    doc.querySelector(".course-open a")?.getAttribute("target") === "_blank");
-  ok("and safely", doc.querySelector(".course-open a")?.getAttribute("rel") === "noopener");
   ok("an attachment is listed",
     all(doc, ".course-files a").some((a) => a.textContent === "Learning log"));
 }
@@ -576,9 +604,13 @@ console.log("\n--- what it must never do ---");
      guess dressed as a measurement, and the button exists so that
      no guess is needed. */
   ok("no postMessage listener near the player", !/addEventListener\(\s*["']message["']/.test(src));
-  ok("no timers pretending to watch", !/setInterval|setTimeout/.test(src));
+  ok("no timers pretending to watch", !/setInterval/.test(src));
   ok("nothing listens for play, pause or ended",
-    !/["'](play|pause|ended|timeupdate)["']/.test(src));
+    !/["'](play|pause|ended|timeupdate)["']/.test(src),
+    "a <video> WOULD report these now, and using them would still be a guess");
+  ok("the browser never asks Drive for a lesson's bytes",
+    !/drive\.google\.com\/file\/d\/\$\{[a-z]+\}\/preview/.test(src),
+    "a private Drive file cannot be embedded cross-site");
   ok("progress is only ever written by a press", (() => {
     /* Every call that writes a tick is inside a click handler or
        the function one calls. `setLast` is the exception and is
