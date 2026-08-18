@@ -1,40 +1,46 @@
 /* ============================================================
-   The front door, and it is a door rather than a page.
+   The front door, and now also the hallway.
 
-   ---- one screen, and no scrollbar ----
+   ---- a deck that builds downwards ----
 
-   This page fills the viewport exactly and does not scroll. That
-   is a decision, not a layout accident, and it is the answer to
-   what the old front page had become: a hero, a doorway, a
-   welcome-back panel, a nine-cell bento, a ticker, a feature
-   card, a services list and a credentials box, roughly four
-   screens of things each written for a different one of three
-   readers. Two thirds of it was hidden by a stylesheet rule
-   depending on who you were, which meant the page's real job,
-   asking who you are, was the top eighth of it and everything
-   else was the answer to a question you had not been asked yet.
+   The one-screen door lasted a day: a front page that cannot
+   grow is a front page that has to turn things away, and this
+   site keeps making things. So the top of the page is still the
+   door (who are you, and the answer back), and under it is a
+   deck of cards from every part of the site, built to take
+   another row whenever something new is worth one. Adding a card
+   here is one more <Tile> with a column span, and nothing else.
 
-   So: the question, three ways in, and nothing under the fold
-   because there is no fold. `fixed` on the shell is what turns
-   the scrolling column off, and the footer is left off with it,
-   because a footer you cannot reach is furniture in a cupboard.
-   Every link in it is in the rail on the left, on this page and
-   every other.
+   ---- what is chosen for the reader ----
 
-   ---- and the two answers ----
+   Three cards on this page are not the same for everybody:
 
-   `data-hl` on the root, set before the first paint by the boot
-   script in `layout.tsx`, says which of three introductions this
-   reader gets: `open` for somebody who has just arrived, `learn`
-   and `work` for the two answers. The rule lives in the document
-   for the reason that file gives at length: `sw.js` serves HTML
-   network-first and everything else cache-first, so the first
-   load after a deploy pairs new markup with the old stylesheet.
+   - the headline and lede swap on `data-hl` (layout.tsx, before
+     first paint);
+   - the FEATURED card answers the audience switch
+     (components/featured.tsx);
+   - the CONTINUE strip appears for a reader mid-course
+     (components/door.tsx), and the PULSE card cycles the latest
+     pieces (components/pulse-card.tsx).
+
+   Everything else is written here, server-rendered, and true
+   with JavaScript off.
+
+   ---- how this is styled, and where ----
+
+   Layout is Tailwind utilities in this file, per the house rule
+   that JSX gets utilities. What a tile IS (the accent rail, the
+   wash, the chip and disc recipes, the lean from /tilt.js) stays
+   `.gate-tile`/`.gt-*` in styles.css, because pseudo-elements,
+   lang-driven type and a class /tilt.js selects on are exactly
+   the three things the Tailwind table in CLAUDE.md keeps in the
+   stylesheet.
    ============================================================ */
 
 import type { Metadata } from "next";
-import { GoCard } from "../../components/deck";
 import { ContinueCard } from "../../components/door";
+import { FeaturedCard } from "../../components/featured";
+import { PulseCard } from "../../components/pulse-card";
 import { Icon } from "../../components/icons";
 import { pageMeta } from "../../lib/pageMeta";
 
@@ -61,27 +67,86 @@ const FACTS = [
   { n: "৭", label: "কেস স্টাডি", en: "case studies" },
 ];
 
+/** The six schools' colours, in the order the rail lists them.
+    The skills tile wears all six instead of one accent, because
+    the thing it opens is the list they name. */
+const SCHOOL_DOTS = [
+  "var(--green)", "var(--blue)", "var(--teal)",
+  "var(--violet)", "var(--rose)", "var(--plum)",
+];
+
+/** A plain destination tile. Everything the deck holds that is
+    not personalised is one of these, so a new card is a data
+    line, not new markup. */
+function Tile({ href, accent, icon, chip, title, dek, go, lang, span, dots }: {
+  href: string; accent: string; icon: string; chip: string;
+  title: string; dek?: string; go: string; lang?: string;
+  span: string; dots?: boolean;
+}) {
+  return (
+    <a className={`gate-tile ${span}`} href={href} lang={lang}
+      style={{ ["--accent" as string]: accent }}>
+      <span className="flex items-center gap-2.5 min-w-0">
+        <span className="gt-disc"><Icon name={icon} size={18} /></span>
+        <span className="gt-chip mono">{chip}</span>
+      </span>
+      <span className="gt-title">{title}</span>
+      {dots ? (
+        <span className="flex gap-[5px] my-0.5" aria-hidden="true">
+          {SCHOOL_DOTS.map((c) => (
+            <i key={c} className="size-[9px] rounded-full" style={{ background: c }} />
+          ))}
+        </span>
+      ) : null}
+      {dek ? <span className="gt-dek max-sm:line-clamp-3">{dek}</span> : null}
+      <span className="gt-go">{go}
+        <span className="gt-arrow"><Icon name="arrow" size={14} /></span>
+      </span>
+    </a>
+  );
+}
+
+/** One line in the side column: a handle, not a card. */
+function SlimTile({ href, accent, icon, chip, title, live }: {
+  href: string; accent: string; icon: string; chip: string;
+  title: string; live?: boolean;
+}) {
+  return (
+    <a className="gate-tile gate-slim" href={href} lang="bn"
+      style={{ ["--accent" as string]: accent }}>
+      <span className="gt-disc"><Icon name={icon} size={16} /></span>
+      <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1 min-w-0">
+        <span className="gt-chip mono">{live ? <i className="gt-live" /> : null} {chip}</span>
+        <span className="gt-title">{title}</span>
+      </span>
+      <span className="gt-go">
+        <span className="gt-arrow"><Icon name="arrow" size={14} /></span>
+      </span>
+    </a>
+  );
+}
+
 export default function HomePage() {
   return (
-    <main id="main" className="gate">
-      <div className="gate-grid">
+    <main id="main">
+      <div className="mx-auto w-full max-w-[1240px]
+        px-[clamp(16px,3vw,44px)] pt-[clamp(18px,3.4vw,44px)] pb-[clamp(28px,4vw,56px)]
+        grid gap-[clamp(20px,3.2vw,40px)]">
 
-        <section className="gate-say">
+        {/* ============ the door ============ */}
+        <header className="grid gap-[clamp(10px,1.6vw,18px)]">
           <span className="gate-eyebrow mono">
             Rony Reiad · Dhaka / Brighton · CFA L1 candidate
           </span>
 
-          {/* Three headlines, one shown. The attribute the rule
-              keys off is on the root, so none of this is a
-              measurement and none of it moves after load. */}
           <h1 className="gate-h1" data-when="open" lang="bn">
-            টাকার ভাষা, আমাদের ভাষায়।
+            টাকার ভাষা, <em className="gate-mark">আমাদের ভাষায়</em>।
           </h1>
           <h1 className="gate-h1" data-when="learn" lang="bn">
-            যা শিখতে চান, নিজের ভাষায়।
+            যা শিখতে চান, <em className="gate-mark">নিজের ভাষায়</em>।
           </h1>
           <h1 className="gate-h1" data-when="work" lang="en">
-            Financial models you can open, edit and trust.
+            Financial models you can <em className="gate-mark">open, edit and trust</em>.
           </h1>
 
           <p className="gate-lede" data-when="open" lang="bn">
@@ -99,47 +164,75 @@ export default function HomePage() {
             browser and pull apart. The numbers are pinned by tests.
           </p>
 
-          <ul className="gate-facts">
-            {FACTS.map((f) => (
-              <li key={f.en}>
-                <b lang="bn">{f.n}</b>
-                <span lang="bn">{f.label}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+          <div className="flex flex-wrap items-center gap-y-2 gap-x-[clamp(20px,3vw,40px)] mt-0.5">
+            <ul className="gate-facts">
+              {FACTS.map((f) => (
+                <li key={f.en}>
+                  <b lang="bn">{f.n}</b>
+                  <span lang="bn">{f.label}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="gate-hint mono max-sm:hidden">
+              <Icon name="search" size={13} /> <kbd>Ctrl K</kbd>
+              <span> anything on this site, by name</span>
+            </p>
+          </div>
+        </header>
 
-        <section className="gate-picks" aria-label="Where to go">
-          <ContinueCard />
+        {/* ============ the deck ============ */}
+        <section aria-label="Where to go"
+          className="gate-deck grid items-stretch gap-[clamp(10px,1.4vw,16px)]
+            grid-cols-2 lg:grid-cols-12">
 
-          <GoCard
-            href="/skills/index.html" accent="var(--green)" icon="skills" lang="bn"
-            chip="শেখা"
+          <FeaturedCard />
+
+          <aside aria-label="Yours, and the biggest school"
+            className="col-span-2 lg:col-span-4 grid content-stretch
+              gap-[clamp(10px,1.4vw,16px)] sm:grid-cols-2 lg:grid-cols-1">
+            <ContinueCard />
+            <SlimTile href="/money/index.html" accent="var(--green)" icon="coins"
+              chip="সবচেয়ে বড়টা" title="টাকা ও শেয়ার" />
+            <SlimTile href="/account.html" accent="var(--green)" icon="user"
+              chip="আপনার" title="অ্যাকাউন্ট, টিক আর লক্ষ্য" />
+            <SlimTile href="/tools/live.html" accent="var(--gold)" icon="wallet"
+              chip="Live" title="লাইভ পোর্টফোলিও" live />
+          </aside>
+
+          <Tile span="col-span-1 lg:col-span-3" href="/skills/index.html"
+            accent="var(--green)" icon="skills" chip="শেখা" lang="bn" dots
             title="ছয়টা কোর্স, সবটাই বাংলায়"
-            dek="টাকা ও শেয়ার, জার্মান, কুরআনের আরবি, ইংরেজি, রান্না আর ভ্রমণ।"
-            go="তালিকা দেখুন"
-          />
-          <GoCard
-            href="/money/index.html" accent="var(--gold)" icon="coins" lang="bn"
-            chip="সবচেয়ে বড়টা"
-            title="টাকা ও শেয়ার"
-            dek="হাতেখড়ি থেকে গবেষণা পর্যন্ত, ধাপে ধাপে।"
-            go="শুরু করুন"
-          />
-          <GoCard
-            href="/portfolio.html" accent="var(--green)" icon="briefcase"
-            chip="Work"
-            title="Seven case studies, all of them open"
-            dek="Valuation, stress testing, portfolio construction, and a dissertation."
-            go="See the work"
-          />
+            go="তালিকা দেখুন" />
+          <Tile span="col-span-1 lg:col-span-3" href="/deutsch/index.html"
+            accent="var(--blue)" icon="book" chip="কোর্স" lang="bn"
+            title="জার্মান, বাংলা দিয়ে"
+            dek="চারটা স্তর, রোজ এক পাতার অনুশীলন খাতা।"
+            go="শুরু করুন" />
+          <Tile span="col-span-1 lg:col-span-3" href="/tools/stock.html"
+            accent="var(--gold)" icon="gauge" chip="Tool"
+            title="Stock check: buy, hold or sell?"
+            dek="Forty-odd ratios, a verdict that shows its arithmetic."
+            go="Check a share" />
+          <Tile span="col-span-1 lg:col-span-3" href="/portfolio.html"
+            accent="var(--plum)" icon="briefcase" chip="Work"
+            title="The case studies"
+            dek="Valuation, stress testing, portfolio construction."
+            go="See the work" />
 
-          <p className="gate-hint mono">
-            <Icon name="search" size={14} /> Ctrl K
-            <span> anything on this site, by name</span>
-          </p>
+          <PulseCard />
+
+          <Tile span="col-span-1 lg:col-span-3" href="/tools/index.html"
+            accent="var(--gold)" icon="calculator" chip="Tools" lang="bn"
+            title="পাঁচটা ক্যালকুলেটর"
+            dek="চক্রবৃদ্ধি, সঞ্চয়পত্র, মূল্যস্ফীতি, কিস্তি, পজিশন।"
+            go="হিসাব করুন" />
+          <Tile span="col-span-1 lg:col-span-3" href="/quran/index.html"
+            accent="var(--teal)" icon="scroll" chip="কোর্স" lang="bn"
+            title="কুরআনের আরবি"
+            dek="তিন ধাপে ষাট দিন, শব্দ চেনা থেকে সূরা পড়া।"
+            go="শুরু করুন" />
+
         </section>
-
       </div>
     </main>
   );

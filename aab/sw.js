@@ -31,6 +31,18 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v91: The front door redrawn, and the live dashboard contained.
+        /styles.css only. The door's escape hatch ("the one page
+        allowed to scroll") is gone: every vertical measure is a
+        dvh clamp, the tiles become a snap rail where the columns
+        cannot sit side by side, and the paragraphs step out on a
+        phone held sideways. The live portfolio's holdings table
+        was setting its whole column's width (a grid item's
+        min-width is auto), pushing the stat tiles off the page
+        edge; it scrolls inside its own box now. A reader holding
+        the v90 stylesheet would get the new door markup with no
+        rules for any of it.
+
    v90: The live portfolio landed at /tools/live.html. /styles.css
         gained its drawing vocabulary in the tools layer, and
         /comments.js learned that an admin's comment comes back
@@ -855,7 +867,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v90";
+const VERSION = "v91";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -30,7 +30,7 @@
    ============================================================ */
 
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -56,6 +56,12 @@ export const MODULES = [
      reason to throw the declarations away: the desk is the next
      thing that will want to know what a saved scenario is. */
   "prefs", "saved", "checkpoints", "keep", "sync", "signin", "account-page",
+  /* The first module served from a subdirectory: the live
+     portfolio's page module, at /tools/live.js beside the plain
+     JavaScript calculators. The name here is the served path
+     minus its extension, and everything below joins paths, so a
+     slash in a name costs nothing. */
+  "tools/live",
 ];
 
 /** Compile into a temporary directory and read the results back.
@@ -78,9 +84,11 @@ export function compile() {
     }
     /* Anything else tsc produced. A module added to `aab/src/`
        and not to MODULES would otherwise be compiled and
-       silently thrown away. */
-    const strays = readdirSync(out)
-      .filter((f) => f.endsWith(".js"))
+       silently thrown away. Recursive since `tools/live` moved
+       in: a stray in a subdirectory is still a stray. */
+    const strays = readdirSync(out, { recursive: true })
+      .map((f) => String(f).replaceAll("\\", "/"))
+      .filter((f) => f.endsWith(".js") && !f.startsWith("types/"))
       .filter((f) => !MODULES.includes(f.replace(/\.js$/, "")));
     return { built, strays };
   } finally {
@@ -115,7 +123,10 @@ if (RUN) {
     }
     console.log(`modules: ${MODULES.length} built file(s) match aab/src/.`);
   } else {
-    for (const [rel, text] of Object.entries(built)) writeFileSync(join(ROOT, rel), text);
+    for (const [rel, text] of Object.entries(built)) {
+      mkdirSync(dirname(join(ROOT, rel)), { recursive: true });
+      writeFileSync(join(ROOT, rel), text);
+    }
     console.log(`wrote ${Object.keys(built).length} file(s) from aab/src/:`);
     for (const rel of Object.keys(built)) console.log(`   ${rel}`);
   }

@@ -54,15 +54,20 @@ export function ContinueCard() {
 
   const words = WORDS[mark.school] ?? { school: mark.school, go: "চালিয়ে যান" };
 
+  /* The same tile the rest of the door is built from, in its slim
+     row form: a returning reader knows where they were going, so
+     this is a handle rather than a card, one line tall. */
   return (
-    <a className="card gate-continue" data-kind="go" href={mark.url}
+    <a className="gate-tile gate-slim" href={mark.url}
        style={{ ["--accent" as string]: "var(--gold)" }}>
-      <span className="card-chip">
-        <Icon name="spark" size={13} /> যেখানে ছিলেন
+      <span className="gt-disc"><Icon name="spark" size={16} /></span>
+      <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1 min-w-0">
+        <span className="gt-chip mono" lang="bn">যেখানে ছিলেন · {words.school}</span>
+        <span className="gt-title" lang="bn">{mark.title}</span>
       </span>
-      <h3 className="card-title" lang="bn">{mark.title}</h3>
-      <p className="card-dek" lang="bn">{words.school}</p>
-      <span className="card-go">{words.go}</span>
+      <span className="gt-go" lang="bn">{words.go}
+        <span className="gt-arrow"><Icon name="arrow" size={14} /></span>
+      </span>
     </a>
   );
 }

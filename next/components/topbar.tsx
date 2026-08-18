@@ -53,6 +53,13 @@ function pick(value: "learn" | "work") {
      here means pressing the switch on the home page changes the
      home page, rather than changing the next one. */
   if (root.hasAttribute("data-hl")) root.setAttribute("data-hl", value);
+
+  /* Said out loud as well, for the one component that answers
+     the switch with different CONTENT rather than a different
+     order: the featured card on the front page. An attribute is
+     the right channel for CSS and the wrong one for React, which
+     would have to poll it. */
+  document.dispatchEvent(new CustomEvent("audience:pick", { detail: value }));
 }
 
 export function AudienceSwitch() {

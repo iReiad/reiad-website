@@ -55,7 +55,7 @@
       "*/curriculum.js": ["./types/curriculum.d.ts"]
     }
   },
-  "include": ["*.ts"],
+  "include": ["*.ts", "tools/*.ts"],
   "//exclude": [
     "Empty on purpose. tsc excludes outDir and declarationDir by",
     "default, and both of those contain this directory, so the",
