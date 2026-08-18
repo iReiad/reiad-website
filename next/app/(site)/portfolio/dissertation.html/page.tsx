@@ -17,6 +17,8 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
+import { Band } from "../../../../components/ui/band";
+import { ButtonLink } from "../../../../components/ui/button";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/dissertation.html",
@@ -1166,24 +1168,16 @@ export default function Page() {
         central finding is a limit on what the available UK data can establish.
       
           </div>
-          <div className="band">
-            <span className="mono">Working together
-            </span>
-            <h2>Need a question answered with data, and answered honestly?
-            </h2>
-            <p>Empirical finance work: panel construction, factor models, risk
-           measurement and the power analysis that tells you whether the design
-           can answer the question at all. Delivered with the code, the
-           assumptions written down, and the limitations stated before anyone
-           has to ask.
-            </p>
-            <div className="hero-actions">
-              <a className="btn btn-solid" href="/contact.html">Start a conversation
-              </a>
-              <a className="btn btn-ghost" href="/portfolio.html">Back to the portfolio
-              </a>
-            </div>
-          </div>
+          <Band
+            label={"Working together"}
+            title={"Need a question answered with data, and answered honestly?"}
+            actions={<>
+              <ButtonLink kind="solid" onAccent href="/contact.html">{"Start a conversation"}</ButtonLink>
+              <ButtonLink kind="ghost" onAccent href="/portfolio.html">{"Back to the portfolio"}</ButtonLink>
+            </>}
+          >
+            <p>{"Empirical finance work: panel construction, factor models, risk measurement and the power analysis that tells you whether the design can answer the question at all. Delivered with the code, the assumptions written down, and the limitations stated before anyone has to ask."}</p>
+          </Band>
         </div>
       </main>
   );

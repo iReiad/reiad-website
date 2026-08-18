@@ -27,6 +27,8 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Legend, Key } from "../../../../components/ui/legend";
+import { Band } from "../../../../components/ui/band";
+import { ButtonLink } from "../../../../components/ui/button";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/index.html",
@@ -597,22 +599,16 @@ export default function ToolsPage() {
         Bangladesh Bank, the BSEC, or your own bank before acting.
       
           </div>
-          <div className="band">
-            <span className="mono">Next
-            </span>
-            <h2>The words behind the numbers
-            </h2>
-            <p>Every calculator here leans on a handful of ideas: compounding, real
-           return, risk and return. The Learn hub explains each one in plain
-           Bangla, in about two minutes each.
-            </p>
-            <div className="hero-actions">
-              <a className="btn btn-solid" href="/money/index.html">শেখার লাইব্রেরি →
-              </a>
-              <a className="btn btn-ghost" href="/insights.html">Read the longer pieces
-              </a>
-            </div>
-          </div>
+          <Band
+            label={"Next"}
+            title={"The words behind the numbers"}
+            actions={<>
+              <ButtonLink kind="solid" onAccent href="/money/index.html">{"শেখার লাইব্রেরি →"}</ButtonLink>
+              <ButtonLink kind="ghost" onAccent href="/insights.html">{"Read the longer pieces"}</ButtonLink>
+            </>}
+          >
+            <p>{"Every calculator here leans on a handful of ideas: compounding, real return, risk and return. The Learn hub explains each one in plain Bangla, in about two minutes each."}</p>
+          </Band>
         </div>
       </main>
   );

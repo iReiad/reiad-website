@@ -16,6 +16,8 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../lib/pageMeta";
+import { Band } from "../../../components/ui/band";
+import { ButtonLink } from "../../../components/ui/button";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio.html",
@@ -770,22 +772,16 @@ export default function Page() {
               </details>
             </div>
           </section>
-          <div className="band">
-            <span className="mono">Next step
-            </span>
-            <h2>Send the brief: however rough it is
-            </h2>
-            <p>A paragraph and a spreadsheet is plenty to start. You'll get scope, a
-           delivery date and a fixed price back within one business day, with no
-           obligation and no sales sequence.
-            </p>
-            <div className="hero-actions">
-              <a className="btn btn-solid" href="/contact.html">Send a brief
-              </a>
-              <a className="btn btn-ghost" href="mailto:i@reiad.co.uk">i@reiad.co.uk
-              </a>
-            </div>
-          </div>
+          <Band
+            label={"Next step"}
+            title={"Send the brief: however rough it is"}
+            actions={<>
+              <ButtonLink kind="solid" onAccent href="/contact.html">{"Send a brief"}</ButtonLink>
+              <ButtonLink kind="ghost" onAccent href="mailto:i@reiad.co.uk">{"i@reiad.co.uk"}</ButtonLink>
+            </>}
+          >
+            <p>{"A paragraph and a spreadsheet is plenty to start. You'll get scope, a delivery date and a fixed price back within one business day, with no obligation and no sales sequence."}</p>
+          </Band>
         </div>
       </main>
   );

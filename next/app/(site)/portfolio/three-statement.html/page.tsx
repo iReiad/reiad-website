@@ -16,6 +16,8 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
+import { Band } from "../../../../components/ui/band";
+import { ButtonLink } from "../../../../components/ui/button";
 
 export const metadata: Metadata = pageMeta({
   path: "/portfolio/three-statement.html",
@@ -279,22 +281,16 @@ export default function Page() {
         with their numbers, their chart of accounts and their covenant tests.
       
           </div>
-          <div className="band">
-            <span className="mono">Working together
-            </span>
-            <h2>Need this for a real company?
-            </h2>
-            <p>Three-statement models, DCFs and operating models in Excel: built so
-           you can edit them after I hand them over, with the assumptions in one
-           place and the checks visible.
-            </p>
-            <div className="hero-actions">
-              <a className="btn btn-solid" href="/contact.html">Start a conversation
-              </a>
-              <a className="btn btn-ghost" href="/portfolio.html">Back to the portfolio
-              </a>
-            </div>
-          </div>
+          <Band
+            label={"Working together"}
+            title={"Need this for a real company?"}
+            actions={<>
+              <ButtonLink kind="solid" onAccent href="/contact.html">{"Start a conversation"}</ButtonLink>
+              <ButtonLink kind="ghost" onAccent href="/portfolio.html">{"Back to the portfolio"}</ButtonLink>
+            </>}
+          >
+            <p>{"Three-statement models, DCFs and operating models in Excel: built so you can edit them after I hand them over, with the assumptions in one place and the checks visible."}</p>
+          </Band>
         </div>
       </main>
   );

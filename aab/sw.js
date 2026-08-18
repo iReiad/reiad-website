@@ -31,6 +31,20 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v107: The band is a component, and a button on it can be read.
+        A ghost button inside `.band` kept its near-white panel
+        fill and was given white text, so it was invisible on the
+        dark band; `.band.soft` then turned the ground back to
+        paper without undoing the white text, so it was invisible
+        on the light one too. `<Band>` and `<Button onAccent>` are
+        one prop instead of two rules that have to remember each
+        other. The band, the footer and the aim cell follow the
+        accent rather than a fixed green. The practice book's
+        rules moved out of `@layer deutsch` into `@layer workbook`,
+        which is why the English book was rendering unstyled. The
+        page ground carries more of its section's colour, and the
+        day chips are discs.
+
    v106: A selected quiz answer highlights. Both rules that drew
         it said `var(--ground)`, which is not a token this
         stylesheet defines: an undefined custom property makes the
@@ -1018,7 +1032,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v106";
+const VERSION = "v107";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
