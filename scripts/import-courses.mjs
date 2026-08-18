@@ -100,7 +100,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  splitName, splitCourse, kindOf, titleOf,
+  splitName, splitCourse, kindOf, titleOf, slugify,
 } from "./lib/coursera.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -326,7 +326,7 @@ function build(tree, root) {
       if (!parsed) continue;
 
       const mod = {
-        slug: parsed[2],
+        slug: slugify(parsed[2]),
         n: Number(parsed[1]),
         title: titleOf(parsed[2]),
         drive: modFolder.id,
@@ -402,7 +402,7 @@ function oneLesson(parts, groupSlug) {
      rather than only on collision, deliberately: a slug that
      changed the day a second `01__resources.html` appeared in the
      module would be a URL that moved and a tick that was lost. */
-  const slug = first.bare ? `${groupSlug}-${first.slug}` : first.slug;
+  const slug = slugify(first.bare ? `${groupSlug}-${first.slug}` : first.slug);
 
   const lesson = {
     slug,
@@ -448,10 +448,7 @@ const attachmentName = (part) =>
     .replace(/\s+/g, " ")
     .trim();
 
-const slugOf = (title) =>
-  title.toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
+const slugOf = slugify;
 
 /* ============================================================
    Run

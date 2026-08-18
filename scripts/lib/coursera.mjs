@@ -174,6 +174,27 @@ const ACRONYMS = {
   bigquery: "BigQuery", kaggle: "Kaggle", tidyverse: "tidyverse",
 };
 
+/** Anything that is going to appear in a URL.
+
+    Lowercase, hyphens, nothing else. Almost every name in a
+    Coursera export is already this shape, which is why it took a
+    full import to notice the ones that are not: a `06_Resources`
+    folder, and the saved pages whose names are file names rather
+    than titles, `Make_your_content_more_accessible` and
+    `File-Florence_Nightingale_H_Hering_NPG_x82368`.
+
+    Those went into addresses as they stood. A capital in a URL is
+    not fatal, it is just wrong on a site where every other address
+    is lower case, and it is the kind of wrong that is expensive to
+    change later: a slug is the tick's id as well, so moving one
+    after somebody has ticked it loses their progress. Cheap now,
+    not cheap in a month. */
+export const slugify = (name) =>
+  String(name)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
 /** A course folder is `4. Process Data from Dirty to Clean`, and
     both halves of that are wanted: the number orders the eight,
     and the rest is the title with the numbering taken off. */

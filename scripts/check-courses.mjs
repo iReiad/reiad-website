@@ -31,7 +31,14 @@
       one address while the router serves another is a section of
       dead links that every individual page passes.
 
-   4. FILES THE IMPORTER QUIETLY DROPPED. `splitName()` decides
+   4. A SLUG THAT IS NOT AN ADDRESS. Every slug is both a URL
+      segment and part of the id a reader's ticks are filed under,
+      so it has to be lower case and hyphens like every other
+      address here. The first real import produced 21 that were
+      not, and a slug is the one thing that cannot be tidied later
+      without losing somebody's progress.
+
+   5. FILES THE IMPORTER QUIETLY DROPPED. `splitName()` decides
       what a filename is, and anything it does not recognise is
       skipped. That is not a visible failure: the lesson still
       renders, with one fewer thing under it, and two whole modules
@@ -40,7 +47,7 @@
       133 of 1,579 files this way. So the drop rate is measured
       against the committed listing and has to stay near zero.
 
-   5. THE API SAYING SOMETHING THE BROWSER DOES NOT EXPECT.
+   6. THE API SAYING SOMETHING THE BROWSER DOES NOT EXPECT.
       `forBrowser()` decides what a lesson looks like on the wire
       and the `Lesson` interface in the browser module describes
       it. A field added to one and not the other is `undefined`
@@ -71,6 +78,19 @@ const say = (what) => problems.push(what);
    it is really catching is the truncation and the stray quote. */
 const DRIVE_ID = /^[A-Za-z0-9_-]{25,60}$/;
 
+/* Every slug goes into an address and into the tick's id, so it is
+   held to the shape every other address on this site has. The
+   first real import produced 21 that were not: a `06_Resources`
+   folder kept its capital, and the saved pages named after files
+   rather than titles brought underscores with them. Neither is
+   fatal on its own; both are expensive to correct later, because
+   moving a slug moves the id a reader's progress is filed under. */
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+const checkSlug = (value, what, where) => {
+  if (!SLUG.test(value)) say(`${where}: ${what} slug "${value}" is not lower case and hyphens`);
+};
+
 let ids = 0;
 const seen = new Map();
 
@@ -91,10 +111,12 @@ checkId(CATALOGUE.root, "the catalogue root");
 
 for (const course of COURSES) {
   checkId(course.drive, `course ${course.slug}`);
+  checkSlug(course.slug, "course", course.slug);
 
   const slugs = new Set();
   for (const mod of course.modules) {
     checkId(mod.drive, `${course.slug}/${mod.slug}`);
+    checkSlug(mod.slug, "module", `${course.slug}/${mod.slug}`);
 
     if (slugs.has(mod.slug)) say(`${course.slug}: two modules called ${mod.slug}`);
     slugs.add(mod.slug);
@@ -107,6 +129,7 @@ for (const course of COURSES) {
          the address and the tick's id are both built from it. Two
          lessons sharing one means one of them is unreachable and
          both share a tick. */
+      checkSlug(lesson.slug, "lesson", at);
       if (lessonSlugs.has(lesson.slug)) say(`${at}: two lessons share this slug`);
       lessonSlugs.add(lesson.slug);
 
@@ -195,7 +218,7 @@ for (const name of RULES) {
 }
 
 /* ============================================================
-   4. Almost nothing was dropped on the way in
+   5. Almost nothing was dropped on the way in
    ============================================================ */
 
 /* A ratio rather than a count, so it keeps meaning something when
@@ -222,7 +245,7 @@ if (existsSync(listing)) {
 }
 
 /* ============================================================
-   5. The wire format is what the browser expects
+   6. The wire format is what the browser expects
    ============================================================ */
 
 /** The field names of one `export interface` in the browser

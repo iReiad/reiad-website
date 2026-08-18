@@ -932,7 +932,7 @@
           ]
         },
         {
-          "slug": "Resources",
+          "slug": "resources",
           "n": 6,
           "title": "Resources",
           "drive": "1nGJUt_3Rf7-mNGv0pD3sR18BsM0p7ZDn",
@@ -946,8 +946,8 @@
               "position": 1
             },
             {
-              "slug": "make-your-content-more-accessible-Make_your_content_more_accessible",
-              "title": "Make your content more accessible Make_your_content_more_accessible",
+              "slug": "make-your-content-more-accessible-make-your-content-more-accessible",
+              "title": "Make your content more accessible make your content more accessible",
               "kind": "reading",
               "reading": "18Iwbu6Nub30wG8iX4B3LVAOJuF3cA89W",
               "section": "Make your content more accessible",
@@ -986,16 +986,16 @@
               "position": 6
             },
             {
-              "slug": "citations-from-course-File-Florence_Nightingale_H_Hering_NPG_x82368",
-              "title": "Citations from course File Florence_Nightingale_H_Hering_NPG_x82368",
+              "slug": "citations-from-course-file-florence-nightingale-h-hering-npg-x82368",
+              "title": "Citations from course file florence nightingale h hering npg x82368",
               "kind": "reading",
               "reading": "1KvAZkcqKrum_vdL7pfEUjA--DCo-d4ku",
               "section": "Citations from course",
               "position": 7
             },
             {
-              "slug": "citations-from-course-File-Nightingale-mortality",
-              "title": "Citations from course File Nightingale mortality",
+              "slug": "citations-from-course-file-nightingale-mortality",
+              "title": "Citations from course file nightingale mortality",
               "kind": "reading",
               "reading": "170JNmHDPdpeX82U_GodsIgjMOAQaboSi",
               "section": "Citations from course",
@@ -1910,7 +1910,7 @@
           ]
         },
         {
-          "slug": "Resources",
+          "slug": "resources",
           "n": 5,
           "title": "Resources",
           "drive": "19WMeny3wrGIzUbyCfdMW5v3yec9Dw0ij",
@@ -1924,16 +1924,16 @@
               "position": 1
             },
             {
-              "slug": "citations-from-course-actions_filter",
-              "title": "Citations from course actions_filter",
+              "slug": "citations-from-course-actions-filter",
+              "title": "Citations from course actions filter",
               "kind": "reading",
               "reading": "1XKLknJMbl2Qw5ccKpCcAheREtzAWKjEW",
               "section": "Citations from course",
               "position": 2
             },
             {
-              "slug": "citations-from-course-Excel_QS",
-              "title": "Citations from course Excel_QS",
+              "slug": "citations-from-course-excel-qs",
+              "title": "Citations from course Excel qs",
               "kind": "reading",
               "reading": "1OVBA8bsNGkGu968fEpY5sJQcw16gH5W7",
               "section": "Citations from course",
@@ -1948,8 +1948,8 @@
               "position": 4
             },
             {
-              "slug": "citations-from-course-Requirements_Gathering_Worksheet",
-              "title": "Citations from course Requirements_Gathering_Worksheet",
+              "slug": "citations-from-course-requirements-gathering-worksheet",
+              "title": "Citations from course requirements gathering worksheet",
               "kind": "reading",
               "reading": "1S-KwqOx5KCYVHL0Rf8OTWfsHo0ctTDpt",
               "section": "Citations from course",
@@ -3040,7 +3040,7 @@
           ]
         },
         {
-          "slug": "Resources",
+          "slug": "resources",
           "n": 7,
           "title": "Resources",
           "drive": "1gUyRSrCEFzEFaQunRZoh_tGtHhK3bpSz",
@@ -3110,8 +3110,8 @@
               "position": 8
             },
             {
-              "slug": "citations-from-course-search_and_replace_overview",
-              "title": "Citations from course search_and_replace_overview",
+              "slug": "citations-from-course-search-and-replace-overview",
+              "title": "Citations from course search and replace overview",
               "kind": "reading",
               "reading": "1yIC3Q4WCE8_jKXIxNn_Yk54JGjqscF9-",
               "section": "Citations from course",
@@ -4104,7 +4104,7 @@
           ]
         },
         {
-          "slug": "Resources",
+          "slug": "resources",
           "n": 7,
           "title": "Resources",
           "drive": "11LFD8-t0pk9qXJljVB96rsor0CsvoWDb",
@@ -5202,7 +5202,7 @@
           ]
         },
         {
-          "slug": "Resources",
+          "slug": "resources",
           "n": 5,
           "title": "Resources",
           "drive": "1ul2dtlyzDuXbSfS3E_nQ_WEAlrS_rXtG",
@@ -5224,32 +5224,32 @@
               "position": 2
             },
             {
-              "slug": "citations-from-course-func_mysql_if",
-              "title": "Citations from course func_mysql_if",
+              "slug": "citations-from-course-func-mysql-if",
+              "title": "Citations from course func mysql if",
               "kind": "reading",
               "reading": "1_bAi8ZdVeM1yKxTGbB5Jrzy_OAjbrQ3r",
               "section": "Citations from course",
               "position": 3
             },
             {
-              "slug": "citations-from-course-func_sqlserver_concat",
-              "title": "Citations from course func_sqlserver_concat",
+              "slug": "citations-from-course-func-sqlserver-concat",
+              "title": "Citations from course func sqlserver concat",
               "kind": "reading",
               "reading": "1hd3a9wyQCDMeOTeEs7Fpn-ttIVgVmALf",
               "section": "Citations from course",
               "position": 4
             },
             {
-              "slug": "citations-from-course-func_sqlserver_concat_with_plus",
-              "title": "Citations from course func_sqlserver_concat_with_plus",
+              "slug": "citations-from-course-func-sqlserver-concat-with-plus",
+              "title": "Citations from course func sqlserver concat with plus",
               "kind": "reading",
               "reading": "1TJT542W8loDQ9J8ELtY57K_zSy4BcYZH",
               "section": "Citations from course",
               "position": 5
             },
             {
-              "slug": "citations-from-course-func_sqlserver_concat_ws",
-              "title": "Citations from course func_sqlserver_concat_ws",
+              "slug": "citations-from-course-func-sqlserver-concat-ws",
+              "title": "Citations from course func sqlserver concat ws",
               "kind": "reading",
               "reading": "1AzJTamE92uxFdPj28xqQVw8_kLJuI440",
               "section": "Citations from course",
@@ -5264,40 +5264,40 @@
               "position": 7
             },
             {
-              "slug": "citations-from-course-sql_alias",
-              "title": "Citations from course sql_alias",
+              "slug": "citations-from-course-sql-alias",
+              "title": "Citations from course SQL alias",
               "kind": "reading",
               "reading": "1PgC_8v8MfHC16EEKEj0Jfrsv6Ltwwacg",
               "section": "Citations from course",
               "position": 8
             },
             {
-              "slug": "citations-from-course-sql_case",
-              "title": "Citations from course sql_case",
+              "slug": "citations-from-course-sql-case",
+              "title": "Citations from course SQL case",
               "kind": "reading",
               "reading": "1TJjZed104-Z51DVF2O96v_Rj8bX9D5CD",
               "section": "Citations from course",
               "position": 9
             },
             {
-              "slug": "citations-from-course-sql_join",
-              "title": "Citations from course sql_join",
+              "slug": "citations-from-course-sql-join",
+              "title": "Citations from course SQL join",
               "kind": "reading",
               "reading": "16l3HbP0vdv47GQ9Asefm_nvTUe79v1JD",
               "section": "Citations from course",
               "position": 10
             },
             {
-              "slug": "citations-from-course-sql_ref_keywords",
-              "title": "Citations from course sql_ref_keywords",
+              "slug": "citations-from-course-sql-ref-keywords",
+              "title": "Citations from course SQL ref keywords",
               "kind": "reading",
               "reading": "1FBD8VWTaLJXl9b06dFVL4xYUV9TjPWzU",
               "section": "Citations from course",
               "position": 11
             },
             {
-              "slug": "citations-from-course-sql_ref_sqlserver",
-              "title": "Citations from course sql_ref_sqlserver",
+              "slug": "citations-from-course-sql-ref-sqlserver",
+              "title": "Citations from course SQL ref sqlserver",
               "kind": "reading",
               "reading": "1zlbynS_P-FQU_EKFB1Tz_T9dDT90dfyc",
               "section": "Citations from course",
