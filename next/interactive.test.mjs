@@ -244,16 +244,27 @@ for (const [who, audience, track, expected] of READERS) {
     shown.length > 0 && new Set(shown).size === 1 && shown[0] === expected,
     `expected ${expected} only, got [${shown}]`);
 
-  /* And there is nothing under the hero to count, because there
-     is nothing under the hero: the front door is one screen and
-     does not scroll. What is worth checking instead is exactly
-     that, since a page that quietly grew a scrollbar has stopped
-     being a door. `.home-flow` was the old page's column and this
-     check used to count how much of it was showing. */
-  const fits = await page.evaluate(() =>
-    document.documentElement.scrollHeight <= innerHeight + 2);
-  ok(`the front door fits one screen for ${who}`, fits,
-    "the page scrolls");
+  /* Under the hero there is a deck now, and the deck is the
+     thing to hold: the one-screen door lasted a day, because a
+     front page that cannot grow is a front page that turns
+     things away. What must not regress is the deck's own
+     contract: the tiles are there, every one of them is a real
+     link somewhere, and the featured card answered THIS reader.
+     The audience switch is the only personalisation the card
+     reads, so learn features the money school, work features the
+     case studies, and a reader who has said nothing gets the
+     live portfolio. */
+  const deck = await page.evaluate(() => ({
+    tiles: [...document.querySelectorAll(".gate-tile")]
+      .map((t) => t.getAttribute("href")).filter(Boolean),
+    featured: document.querySelector(".gate-feat")?.getAttribute("href") ?? null,
+  }));
+  ok(`the deck stands under the hero for ${who}`, deck.tiles.length >= 8,
+    `${deck.tiles.length} tiles`);
+  const wantFeatured = { open: "/tools/live.html", learn: "/money/index.html",
+    work: "/portfolio.html" }[expected];
+  ok(`and the featured card answers ${who}`, deck.featured === wantFeatured,
+    `featured ${deck.featured}, expected ${wantFeatured}`);
 
   await page.close();
 }

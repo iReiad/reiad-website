@@ -1393,6 +1393,28 @@
     color: var(--ink-soft); font-size: var(--t-5); max-width: var(--measure);
   }
 
+  /* The four numbers above the account's fold. account-page.ts
+     writes them into #account-tiles, so they are a named class
+     like everything else that module builds, and they wear the
+     stat tile's own recipe: sunk ground, hairline, the number in
+     the site's green. This rule was simply MISSING for a day:
+     the module wrote `.acct-tile` and nothing anywhere styled
+     it, so the account opened on four bare lines of text, which
+     is the sort of gap the Stage 14 conversion note two comments
+     up warns about. */
+  .acct-tile {
+    display: grid; gap: 2px; align-content: start;
+    padding: 13px 16px;
+    background: var(--paper-sunk);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+  }
+  .acct-tile strong {
+    font-family: var(--font-serif); font-size: 1.5rem; font-weight: 500;
+    color: var(--green); font-variant-numeric: tabular-nums; line-height: 1.15;
+  }
+  .acct-tile span { font-size: var(--t-3); color: var(--ink-soft); }
+
   /* ---------- a year of days ----------
 
      `days-active`, drawn. Fifty-three columns of seven, and the
@@ -2482,10 +2504,15 @@ it collapsed to the width of the word "Bangladesh". */
     display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
     gap: 6px; align-items: end; height: 120px; padding-top: 6px;
   }
-  .live-col { display: grid; align-content: end; justify-items: center;
-    gap: 4px; height: 100%; }
+  /* Flex rather than grid, and not for taste: the fill's height
+     is a percentage, and a percentage inside an auto grid track
+     is indefinite and collapses to nothing. A flex column whose
+     own height comes from .live-cols is a definite chain all the
+     way down, so 40% is forty percent of something. */
+  .live-col { display: flex; flex-direction: column; justify-content: flex-end;
+    align-items: center; gap: 4px; height: 100%; }
   .live-col-fill {
-    display: block; width: min(100%, 26px); align-self: end;
+    display: block; width: min(100%, 26px);
     background: var(--gold); border-radius: 4px 4px 0 0;
   }
   .live-col-m { font-size: var(--t-0); color: var(--ink-soft); }

@@ -188,8 +188,8 @@ export default function HomePage() {
           <FeaturedCard />
 
           <aside aria-label="Yours, and the biggest school"
-            className="col-span-2 lg:col-span-4 grid content-stretch
-              gap-[clamp(10px,1.4vw,16px)] sm:grid-cols-2 lg:grid-cols-1">
+            className="col-span-2 lg:col-span-4 grid
+              gap-[clamp(10px,1.4vw,16px)] sm:grid-cols-2 lg:grid-cols-1 lg:auto-rows-fr">
             <ContinueCard />
             <SlimTile href="/money/index.html" accent="var(--green)" icon="coins"
               chip="সবচেয়ে বড়টা" title="টাকা ও শেয়ার" />
