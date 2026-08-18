@@ -958,14 +958,32 @@ bundling. `check-courses.mjs` fails on the other kind.
 **The catalogue is generated and must stay generated.** It is a
 list of things that exist elsewhere, which is the rule at the top
 of this file: a hand-edited copy is right on the day it is typed
-and wrong the first time the Drive folder changes. Refresh it
-with a Drive OAuth token, which a private file needs and an API
-key will not do:
+and wrong the first time the Drive folder changes.
+
+Refreshing it needs a Drive OAuth **access token**. A private file
+will not open for an API key, and not for a service account
+either unless the folder has been shared with it. Ask for the
+narrowest scope that works, `drive.metadata.readonly`, which
+cannot read file content at all: this script reads `id`, `name`
+and `mimeType` and never opens a file. Get one either from
+[the OAuth playground](https://developers.google.com/oauthplayground)
+or, with no third-party client involved, from gcloud:
 
 ```sh
-node scripts/import-courses.mjs --drive <folderId> --token ya29....
-node scripts/import-courses.mjs --check          # has it drifted
+gcloud auth application-default login \
+  --scopes=https://www.googleapis.com/auth/drive.metadata.readonly
+export GOOGLE_OAUTH_TOKEN=$(gcloud auth application-default print-access-token)
+
+node scripts/import-courses.mjs --drive <folderId>
+node scripts/import-courses.mjs --crawl scripts/fixtures/course-crawl --check
 ```
+
+Export it rather than passing `--token`: an argument goes into the
+shell history and a token is a bearer credential for the hour it
+lives. Nothing is written until the whole walk succeeds, so a
+token that expires halfway leaves the committed catalogue alone.
+The head of `import-courses.mjs` says all of this again where
+somebody running it will see it.
 
 **The Drive player has no events, and nothing here pretends
 otherwise.** A lesson's video is a `https://drive.google.com/file/d/<id>/preview`

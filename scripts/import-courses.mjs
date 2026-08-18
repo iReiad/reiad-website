@@ -30,13 +30,63 @@
    The files are private, which is the whole point of this
    section: it is one person's own copy of a course they are
    working through, gated behind the admin check, never
-   published. A private file needs an OAuth access token; an API
-   key will not open one. Pass `--token`, or set
-   GOOGLE_OAUTH_TOKEN.
+   published. A private file needs an OAuth ACCESS TOKEN. An API
+   key will not open one, and neither will a service account
+   unless the folder has been shared with it, so do not reach for
+   either.
 
-     node scripts/import-courses.mjs --drive 1dyYL... --token ya29....
-     node scripts/import-courses.mjs --crawl tmp/crawl
-     node scripts/import-courses.mjs --drive 1dyYL... --check
+   The scope to ask for is the narrowest one that works:
+
+     https://www.googleapis.com/auth/drive.metadata.readonly
+
+   This script reads three fields per row, `id`, `name` and
+   `mimeType`, and never opens a file. That scope cannot read file
+   CONTENT at all, which is the right amount of power to hand a
+   catalogue builder: if it is ever wrong, the worst it can do is
+   read the names of things.
+
+   TWO WAYS TO GET ONE. Both give a token that lasts about an
+   hour, which is roughly fifty times longer than a full walk of
+   the folder takes.
+
+   1. The OAuth playground, if you want no setup at all.
+
+      https://developers.google.com/oauthplayground
+
+      Put the scope above into "Input your own scopes" in step 1,
+      authorise as the account that OWNS the folder, then press
+      "Exchange authorization code for tokens" in step 2. The
+      access token is the `ya29....` string.
+
+      Note the playground is a Google-owned OAuth client, so this
+      grants that client read access to your Drive metadata for
+      the hour the token lives. Revoke it afterwards at
+      myaccount.google.com/permissions if you would rather not
+      leave it sitting there.
+
+   2. gcloud, if it is already installed, which leaves no
+      third-party client holding anything:
+
+        gcloud auth application-default login \
+          --scopes=https://www.googleapis.com/auth/drive.metadata.readonly
+        gcloud auth application-default print-access-token
+
+   Then either pass it or export it. Exporting is better, because
+   an argument ends up in the shell history and a token is a
+   bearer credential for the hour it lives:
+
+     export GOOGLE_OAUTH_TOKEN=ya29....
+     node scripts/import-courses.mjs --drive 1dyYLbVa2lS9o7oRAEZOpQgZMpUtd15La
+
+   NOTHING IS WRITTEN UNTIL THE WHOLE WALK SUCCEEDS, so a token
+   that expires halfway leaves the committed catalogue exactly as
+   it was. Get a fresh one and run it again.
+
+   ---- the three ways to run it ----
+
+     node scripts/import-courses.mjs --drive 1dyYL...    refresh
+     node scripts/import-courses.mjs --crawl <dir>       from a listing
+     node scripts/import-courses.mjs --crawl <dir> --check   has it drifted
    ============================================================ */
 
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
@@ -75,6 +125,62 @@ const SKIP_FOLDER = /^0\.\s|^Websites you may like/i;
 
 const API = "https://www.googleapis.com/drive/v3/files";
 
+/* At most this many listings in the air at once.
+
+   The tree is walked a level at a time, and the bottom level of a
+   Coursera export is about 170 folders. Firing all of those at
+   once is not faster: Drive answers a burst like that with 429s,
+   the walk then fails on whichever folders happened to lose, and
+   the failure looks like a permissions problem because the body
+   of a 429 mentions quota. Eight is comfortably under the
+   per-user ceiling and finishes the whole tree in well under a
+   minute. */
+const AT_ONCE = 8;
+
+/* A 429 or a 5xx is Drive asking for a moment, not an answer. The
+   backoff is exponential from a quarter second, which is the
+   shape Google's own client libraries use, with a cap so a
+   genuinely broken call fails in seconds rather than minutes. */
+const RETRIES = 5;
+
+const sleep = (ms) => new Promise((go) => { setTimeout(go, ms); });
+
+async function askDrive(url, parent) {
+  for (let attempt = 0; ; attempt += 1) {
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${TOKEN}` } });
+    if (res.ok) return res.json();
+
+    const said = await res.text();
+
+    /* 401 is the one worth naming, because it is the one that
+       will actually happen: an access token from the OAuth
+       playground or from gcloud lasts an hour, and an import
+       started at fifty-nine minutes dies in the middle with a
+       message about credentials that reads like a scope problem. */
+    if (res.status === 401) {
+      throw new Error(
+        "Drive said 401: the access token is expired or wrong.\n"
+        + "  Access tokens last about an hour. Get a fresh one and re-run;\n"
+        + "  nothing is written until the whole walk succeeds.");
+    }
+    if (res.status === 403 && !/rateLimit|userRateLimit|quota/i.test(said)) {
+      throw new Error(
+        `Drive said 403 for ${parent}: the token is valid and is not allowed to read `
+        + `this folder.\n  Check the scope covers metadata, and that this account `
+        + `owns the folder.\n  ${said}`);
+    }
+
+    const worthRetrying = res.status === 429 || res.status >= 500
+      || (res.status === 403 && /rateLimit|userRateLimit|quota/i.test(said));
+
+    if (!worthRetrying || attempt >= RETRIES) {
+      throw new Error(`Drive said ${res.status} for ${parent}: ${said}`);
+    }
+
+    await sleep(Math.min(250 * 2 ** attempt, 8000));
+  }
+}
+
 async function listChildren(parent) {
   const rows = [];
   let pageToken = "";
@@ -87,11 +193,7 @@ async function listChildren(parent) {
     url.searchParams.set("supportsAllDrives", "true");
     if (pageToken) url.searchParams.set("pageToken", pageToken);
 
-    const res = await fetch(url, { headers: { Authorization: `Bearer ${TOKEN}` } });
-    if (!res.ok) {
-      throw new Error(`Drive said ${res.status} for ${parent}: ${await res.text()}`);
-    }
-    const body = await res.json();
+    const body = await askDrive(url, parent);
     for (const f of body.files ?? []) rows.push(f);
     pageToken = body.nextPageToken ?? "";
   } while (pageToken);
@@ -99,15 +201,36 @@ async function listChildren(parent) {
   return rows;
 }
 
+/** Run `job` over every item, `AT_ONCE` at a time, keeping the
+    results in the order the items came in. */
+async function pooled(items, job) {
+  const out = new Array(items.length);
+  let next = 0;
+
+  const worker = async () => {
+    while (next < items.length) {
+      const mine = next;
+      next += 1;
+      out[mine] = await job(items[mine]);
+    }
+  };
+
+  await Promise.all(
+    Array.from({ length: Math.min(AT_ONCE, items.length) }, worker));
+  return out;
+}
+
 const FOLDER = "application/vnd.google-apps.folder";
 
-/** Breadth-first, so a slow folder does not hold up the level
-    below it, and so the progress line means something. */
+/** Breadth-first, a level at a time, so the progress line means
+    something and so the pool above has a whole level to work
+    through rather than one folder's children. */
 async function walkDrive(root) {
   if (!TOKEN) {
     throw new Error(
-      "No credential. These files are private, so an API key will not open them: "
-      + "pass --token <oauth access token> or set GOOGLE_OAUTH_TOKEN.");
+      "No credential. These files are private, so an API key will not open them.\n"
+      + "  Pass --token <access token>, or set GOOGLE_OAUTH_TOKEN.\n"
+      + "  See the head of this file for the two ways to get one.");
   }
 
   const tree = new Map();
@@ -115,7 +238,7 @@ async function walkDrive(root) {
   let depth = 0;
 
   while (level.length) {
-    const listings = await Promise.all(level.map((id) => listChildren(id)));
+    const listings = await pooled(level, listChildren);
     const next = [];
 
     level.forEach((parent, i) => {
@@ -127,7 +250,9 @@ async function walkDrive(root) {
     });
 
     depth += 1;
-    process.stderr.write(`  level ${depth}: ${next.length} folders, ${tree.size} entries so far\n`);
+    process.stderr.write(
+      `  level ${depth}: read ${level.length} folder(s), found ${next.length} more, `
+      + `${tree.size} entries so far\n`);
     level = next;
   }
 
@@ -322,7 +447,17 @@ if (!root) {
   process.exit(1);
 }
 
-const tree = CRAWL ? walkCrawl(join(ROOT, CRAWL)) : await walkDrive(root);
+/* A tool somebody runs by hand, so a failure is a sentence rather
+   than a stack trace: every throw above is written to be read,
+   and a trace would bury the one line that says what to do. */
+let tree;
+try {
+  tree = CRAWL ? walkCrawl(join(ROOT, CRAWL)) : await walkDrive(root);
+} catch (err) {
+  console.error(`\n${err?.message ?? err}\n`);
+  process.exit(1);
+}
+
 const built = build(tree, root);
 
 const catalogue = {
