@@ -53,7 +53,7 @@
    answer is worse than no tick at all.
    ============================================================ */
 
-import { sanitiseHTML } from "./sanitise.js";
+import { sanitiseHTML } from "./sanitise.ts";
 
 export interface QuizQuestion {
   /** As printed on the page: "Question 3" is 3. Read rather than

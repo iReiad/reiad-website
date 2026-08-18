@@ -1,5 +1,5 @@
 {
-  "version": "v95",
+  "version": "v97",
   "hashes": {
     "/offline.html": "55bcf02529d11190",
     "/styles.css": "0682bd7741925e0d",
@@ -10,14 +10,14 @@
     "/pieces.js": "5722a2dcbf3eade1",
     "/signin.js": "020867ee35ca4d5d",
     "/account.js": "750be2410c75791b",
-    "/sync.js": "820b9ec362fff5a0",
+    "/sync.js": "168e88f34e40a1c7",
     "/account-page.js": "4e49ead6148b4a63",
     "/streak.js": "25830604a1fca932",
     "/photo.js": "0da1dd227bcb6aa1",
     "/saved.js": "a19be7d350dc2498",
     "/keep.js": "72957ee6132be7e2",
     "/prefs.js": "84bbd206848e1dbc",
-    "/checkpoints.js": "f0a67f8ffea44934",
+    "/checkpoints.js": "8903c0d041e563b3",
     "/comments.js": "fc3e807e43622e9d",
     "/crumbs.js": "60beddce649904a9",
     "/audience.js": "638ceb49784d808c",

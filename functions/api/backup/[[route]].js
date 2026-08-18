@@ -26,7 +26,7 @@
    ============================================================ */
 
 import { db } from "../../_lib/db.js";
-import { fail, json, methods, notConfigured } from "../../_lib/http.js";
+import { fail, json, methods, notConfigured } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.js";
 import { articleBackup, fullSnapshot, writeSnapshot } from "../../_lib/backup.js";
 

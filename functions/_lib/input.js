@@ -2,7 +2,7 @@
    _lib/input.js: what a bad request looks like, decided once.
 
    archive/TRANSITION.md Stage 12, step 2. The error SHAPE has been one
-   thing since the beginning: `_lib/http.js` writes
+   thing since the beginning: `_lib/http.ts` writes
    `{ ok: false, reason }` and every endpoint uses it. What was
    never one thing is the RULES, and the two handlers the plan
    names are the clearest case of it.
@@ -44,7 +44,7 @@
    side effect of a refactor.
    ============================================================ */
 
-import { body as readBody, fail, isEmail, str } from "./http.js";
+import { body as readBody, fail, isEmail, str } from "./http.ts";
 
 /** A slug, or "".
 
@@ -75,7 +75,7 @@ export const safeId = (value) => {
  * Returns `{ value }` when everything passed, or `{ bad }` where
  * `bad` is the Response to return. Never both, and never throws:
  * a body that is not JSON at all is an empty object, which is
- * what `http.js` has always done and what every "required" rule
+ * what `http.ts` has always done and what every "required" rule
  * then catches by itself.
  *
  * Each field takes one of four kinds and some options:

@@ -35,7 +35,7 @@
 import { all, db, one, run } from "../../_lib/db.js";
 import {
   body, fail, methods, notConfigured, ok, str, nowISO,
-} from "../../_lib/http.js";
+} from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.js";
 import { throttle } from "../../_lib/auth.js";
 import { readerFrom } from "../../_lib/reader.js";

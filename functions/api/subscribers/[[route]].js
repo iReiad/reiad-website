@@ -19,7 +19,7 @@
    ============================================================ */
 
 import { all, db, one, run } from "../../_lib/db.js";
-import { body, fail, isEmail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.js";
+import { body, fail, isEmail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.ts";
 import { requireAdmin, throttle } from "../../_lib/auth.js";
 
 const token = () =>

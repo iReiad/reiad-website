@@ -13,7 +13,7 @@
    ============================================================ */
 
 import { all, db, one, run } from "../../_lib/db.js";
-import { body, fail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.js";
+import { body, fail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.ts";
 import { requireAdmin, throttle } from "../../_lib/auth.js";
 import { ENQUIRY_KIND, ENQUIRY_STATUS, allowed } from "../../../shared/rows.ts";
 import { read } from "../../_lib/input.js";

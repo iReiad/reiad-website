@@ -48,12 +48,12 @@
    ============================================================ */
 
 import { db } from "../../_lib/db.js";
-import { body, fail, methods, notConfigured, ok, nowISO } from "../../_lib/http.js";
+import { body, fail, methods, notConfigured, ok, nowISO } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.js";
 import {
   isSchool, stagesOf, lessonOf, lessonsOf, countsOf, SCHOOL_IDS,
 } from "../../../shared/schools.ts";
-import { sanitiseHTML } from "../../_lib/sanitise.js";
+import { sanitiseHTML } from "../../_lib/sanitise.ts";
 
 export async function onRequest(context) {
   const { request, params } = context;

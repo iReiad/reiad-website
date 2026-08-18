@@ -51,7 +51,7 @@
    ============================================================ */
 
 import { db, one, run, setting, setSetting } from "./db.js";
-import { fail, nowISO } from "./http.js";
+import { fail, nowISO } from "./http.ts";
 
 const ITERATIONS = 210_000;
 const SESSION_DAYS = 30;

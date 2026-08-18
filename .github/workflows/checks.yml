@@ -35,7 +35,23 @@
 name: checks
 
 on:
+  # `push` is the trigger this leans on, and that is deliberate.
+  #
+  # `pull_request` stopped firing this workflow on 18 August 2026,
+  # for opens and for pushes alike, while `push` kept working:
+  # live-check.yml runs on push and never missed one. Two pull
+  # requests sat with three green checks and no `checks` run, which
+  # is the one that runs the tests, and merging on that is merging
+  # on an incomplete signal.
+  #
+  # main is excluded because deploy.yml calls this workflow before
+  # it uploads, so a push there would run it twice.
+  push:
+    branches-ignore: [main]
+  # Kept as well, so the run attaches to the pull request itself
+  # whenever GitHub does deliver the event.
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_call:
   workflow_dispatch:
 

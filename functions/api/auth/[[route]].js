@@ -15,7 +15,7 @@
    ============================================================ */
 
 import { db, setting } from "../../_lib/db.js";
-import { body, fail, methods, notConfigured, ok, str } from "../../_lib/http.js";
+import { body, fail, methods, notConfigured, ok, str } from "../../_lib/http.ts";
 import {
   ADMIN_KEY, CLIENT_ITERATIONS, createSession, destroySession, isConfigured,
   isKey, isSalt, isSecure, keyParams, newSalt, readSession, requireAdmin,

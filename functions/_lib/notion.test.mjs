@@ -6,14 +6,14 @@
    No token, no network, no Worker: `convert` is handed a fake
    client, and every block below is the shape Notion's API actually
    returns. What is being checked is that a page comes out as the
-   small set of tags _lib/sanitise.js will let through, because
+   small set of tags _lib/sanitise.ts will let through, because
    anything else is silently deleted on the way into the database.
    ============================================================ */
 
 import {
   convert, inline, normaliseId, propValue, readFields, textOf,
 } from "./notion.js";
-import { sanitiseHTML } from "./sanitise.js";
+import { sanitiseHTML } from "./sanitise.ts";
 
 let passed = 0;
 const failures = [];
@@ -158,7 +158,7 @@ check("textOf joins the parts", textOf([rt("a"), rt("b")]), "ab");
 }
 
 {
-  // The site already styles `note`, and sanitise.js allows exactly
+  // The site already styles `note`, and sanitise.ts allows exactly
   // that class on a div, so a callout has somewhere to land.
   const { html } = await run([block("callout", { rich_text: [rt("Careful.")] })]);
   check("callout becomes the note box", html, '<div class="note">Careful.</div>');
@@ -408,7 +408,7 @@ check("a too-short id is rejected", normaliseId("1a2b3c"), null);
    7. The whole point: does it survive the server sanitiser?
 
    Every one of these tags is dropped on the way into the database
-   if the allowlist in sanitise.js doesn't know it, so converting to
+   if the allowlist in sanitise.ts doesn't know it, so converting to
    something pretty that gets deleted is the failure mode worth a
    test of its own.
    ============================================================ */

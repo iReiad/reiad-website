@@ -15,7 +15,7 @@
    ============================================================ */
 
 import { all, db, one, run } from "../../_lib/db.js";
-import { body, fail, methods, notConfigured, ok, str, today } from "../../_lib/http.js";
+import { body, fail, methods, notConfigured, ok, str, today } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.js";
 
 const REACTIONS = ["helpful", "confusing", "more"];

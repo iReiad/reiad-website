@@ -311,7 +311,10 @@ for (const { layer, owns } of SCHOOLS) {
 
 const classList = (file, name) => {
   const src = readFileSync(join(ROOT, file), "utf8");
-  const block = src.match(new RegExp(`${name}\\s*=\\s*new Set\\(\\[([\\s\\S]*?)\\]\\)`));
+  /* `: Set<string>` may sit between the name and the `=` now that
+     these files are TypeScript. Optional, so this reads both. */
+  const block = src.match(
+    new RegExp(`${name}\\s*(?::[^=]+)?=\\s*new Set\\(\\[([\\s\\S]*?)\\]\\)`));
   if (!block) {
     console.error(`no ${name} in ${file}: this check cannot see the vocabulary any more`);
     failures++;
@@ -324,7 +327,7 @@ const classList = (file, name) => {
    editor.js when the React Studio needed the same sanitiser. It is
    read by name, so this check follows it rather than the file. */
 const studioClasses = classList("editor.js", "KEEP_CLASSES");
-const serverClasses = classList("../functions/_lib/sanitise.js", "ALLOWED_CLASSES");
+const serverClasses = classList("../functions/_lib/sanitise.ts", "ALLOWED_CLASSES");
 
 if (studioClasses.length && serverClasses.length) {
   const only = (a, b) => a.filter((c) => !b.includes(c));
@@ -336,7 +339,7 @@ if (studioClasses.length && serverClasses.length) {
     failures++;
     console.error(`\nthe two sanitisers disagree, ${side}: ${missing.join(", ")}`);
     console.error("        KEEP_CLASSES in aab/editor.js and ALLOWED_CLASSES in");
-    console.error("        functions/_lib/sanitise.js are one list written twice.");
+    console.error("        functions/_lib/sanitise.ts are one list written twice.");
   }
 }
 

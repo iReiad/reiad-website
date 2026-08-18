@@ -30,7 +30,7 @@
    article's body is HTML in a database, written by a person
    through the Studio, and the classes it may carry are policed in
    three places: the stylesheet, `editor.js`'s allowlist and
-   `sanitise.js`'s. Tailwind's compiler cannot see a database, so
+   `sanitise.ts`'s. Tailwind's compiler cannot see a database, so
    a utility that outranked the article layer would be a rule
    nothing in this repository knows about winning over prose
    nobody can re-scan. The article layer stays a stylesheet and

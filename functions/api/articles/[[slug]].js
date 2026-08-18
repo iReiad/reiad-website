@@ -17,9 +17,9 @@
 import { all, db, one, run } from "../../_lib/db.js";
 import {
   body, fail, methods, notConfigured, ok, str, nowISO, today,
-} from "../../_lib/http.js";
+} from "../../_lib/http.ts";
 import { requireAdmin, readSession } from "../../_lib/auth.js";
-import { sanitiseHTML, readingMinutes } from "../../_lib/sanitise.js";
+import { sanitiseHTML, readingMinutes } from "../../_lib/sanitise.ts";
 import { SECTIONS, allowed } from "../../../shared/rows.ts";
 
 /* `embedded` is computed rather than stored: it says whether the
