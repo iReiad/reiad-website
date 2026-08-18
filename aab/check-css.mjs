@@ -218,19 +218,14 @@ const markup = new Map(
     }
   }
 
-  /* And the four hand-written pages, which are one generated
-     module now rather than five committed pages. Split the same
-     way and for the same reason. */
-  const hubs = join(ROOT, "..", "next", "lib", "school-hubs.ts");
-  if (existsSync(hubs)) {
-    const text = readFileSync(hubs, "utf8");
-    for (const [, key, body] of text.matchAll(/^  "([^"]+)": \{[\s\S]*?\n    body: ("(?:[^"\\]|\\.)*"),/gm)) {
-      const school = key.split("/")[0];
-      let html = "";
-      try { html = JSON.parse(body); } catch { html = body; }
-      add(`${school}/ (${key}, in next/lib/school-hubs.ts)`, html);
-    }
-  }
+  /* The three hand-written hubs used to be an HTML string each in
+     `school-hubs.ts`, and this read them because no other file
+     could see the classes inside. They are `components/
+     school-hub-page.tsx` now, which `walk()` above already reads,
+     and the prose left in `school-hub-content.ts` carries inline
+     markup and no class at all. So there is nothing here to read
+     any more, and a reader for a field that no longer exists is
+     worse than none: it would report every hub class as unused. */
 }
 
 /** Files using a class in a class attribute, not in prose or a
@@ -253,6 +248,16 @@ for (const { layer, owns } of SCHOOLS) {
   const mine = new Map(); // class → is it this school's alone?
   const isMine = (cls) => {
     if (!mine.has(cls)) {
+      /* A class NAMED for the school is the school's, whoever
+         writes it. That used to be the same question as "which
+         folder is it in", because each hub was an HTML string
+         under its own key. `components/school-hub-page.tsx`
+         renders all three now, so `deutsch-hero` appears in a
+         file that also says `english-hero`, and the folder test
+         reported the German hero rule as styling the English
+         book. The name is the ownership; the folder was only ever
+         a proxy for it. */
+      if (cls.startsWith(`${layer}-`)) { mine.set(cls, true); return true; }
       const users = usedIn(cls);
       mine.set(cls, users.length > 0 && users.every((f) => owns.some((p) => f.startsWith(p))));
     }

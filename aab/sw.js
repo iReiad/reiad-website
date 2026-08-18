@@ -31,6 +31,16 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v108: The three hand-written school hubs are components. They
+        were an HTML string each inside `school-hubs.ts`, so the
+        page around them was React and everything inside them was
+        not: the explainer cards were `.cell`, which `<InfoCard>`
+        replaced months ago, and the closing block was `.band`,
+        which is `<Band>`. A change to a card reached every page
+        except the three a learner opens first. The prose moved to
+        `school-hub-content.ts` as data, lifted by a script and
+        checked back word for word, so no Bangla was retyped.
+
    v107: The band is a component, and a button on it can be read.
         A ghost button inside `.band` kept its near-white panel
         fill and was given white text, so it was invisible on the
@@ -1032,7 +1042,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v107";
+const VERSION = "v108";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

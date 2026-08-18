@@ -5709,7 +5709,7 @@ German for day, and .tag is what the site has always called
   /* ---------- the hub ---------- */
   .deutsch-hero .lede [lang="de"] { color: var(--accent); }
 
-  .ein-regel {
+  body.deutsch .ein-regel {
     margin-top: var(--gap);
     border: 1px solid var(--accent); border-radius: var(--radius);
     background: var(--paper-sunk); padding: 20px 22px;
