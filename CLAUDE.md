@@ -942,8 +942,9 @@ course, so the pages are empty and the catalogue is behind
 
 | | |
 | --- | --- |
-| `shared/courses.data.json` | the catalogue. **Generated.** |
+| `shared/courses.data.json` | the catalogue. **Generated.** 8 courses, 43 modules, 794 lessons |
 | `scripts/import-courses.mjs` | what generates it, out of Drive |
+| `scripts/fixtures/course-crawl/` | the Drive listing it is built from, so CI can rebuild it with no credential |
 | `shared/courses.ts` | the types, the counts and every address |
 | `functions/api/courses/` | the only thing that ever sends it |
 | `aab/src/courses.ts` | the browser's half: all four pages |
@@ -974,9 +975,16 @@ gcloud auth application-default login \
   --scopes=https://www.googleapis.com/auth/drive.metadata.readonly
 export GOOGLE_OAUTH_TOKEN=$(gcloud auth application-default print-access-token)
 
-node scripts/import-courses.mjs --drive <folderId>
+node scripts/import-courses.mjs --drive <folderId> \
+  --dump scripts/fixtures/course-crawl
 node scripts/import-courses.mjs --crawl scripts/fixtures/course-crawl --check
 ```
+
+**Always pass `--dump` on a `--drive` run.** It writes the Drive
+listing back out beside the catalogue, and that listing is the only
+reason CI can rebuild the catalogue without a credential. Refresh
+one without the other and the next `--check` fails on a drift that
+is really a stale fixture.
 
 Export it rather than passing `--token`: an argument goes into the
 shell history and a token is a bearer credential for the hour it

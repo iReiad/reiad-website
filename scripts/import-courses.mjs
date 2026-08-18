@@ -87,9 +87,16 @@
      node scripts/import-courses.mjs --drive 1dyYL...    refresh
      node scripts/import-courses.mjs --crawl <dir>       from a listing
      node scripts/import-courses.mjs --crawl <dir> --check   has it drifted
+
+   Add `--dump <dir>` to a `--drive` run to write the listing back
+   out as TSV. Do that whenever the catalogue is refreshed, so the
+   fixture CI reads stays in step with it:
+
+     node scripts/import-courses.mjs --drive 1dyYL... \
+       --dump scripts/fixtures/course-crawl
    ============================================================ */
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -109,6 +116,7 @@ const flag = (name) => {
 const has = (name) => argv.includes(name);
 
 const CHECK = has("--check");
+const DUMP = flag("--dump");
 const DRIVE = flag("--drive");
 const CRAWL = flag("--crawl");
 const TOKEN = flag("--token") ?? process.env.GOOGLE_OAUTH_TOKEN ?? "";
@@ -335,7 +343,8 @@ function build(tree, root) {
         const parsedGroup = /^(\d{2})_(.+)$/.exec(group.name);
         const section = titleOf(parsedGroup ? parsedGroup[2] : group.name);
 
-        for (const lesson of lessonsIn(tree, group.id)) {
+        const groupSlug = parsedGroup ? parsedGroup[2] : group.name;
+        for (const lesson of lessonsIn(tree, group.id, groupSlug)) {
           position += 1;
           mod.lessons.push({ ...lesson, section, position });
         }
@@ -367,7 +376,7 @@ function build(tree, root) {
     A lesson is a `NN_` prefix, and everything sharing that prefix
     belongs to it: the video, the transcript, the reading, the
     quiz and any attachments. */
-function lessonsIn(tree, group) {
+function lessonsIn(tree, group, groupSlug) {
   const byPrefix = new Map();
 
   for (const file of childrenOf(tree, group, false)) {
@@ -380,16 +389,24 @@ function lessonsIn(tree, group) {
 
   return [...byPrefix.entries()]
     .sort((a, b) => a[0].localeCompare(b[0], "en"))
-    .map(([, parts]) => oneLesson(parts));
+    .map(([, parts]) => oneLesson(parts, groupSlug));
 }
 
-function oneLesson(parts) {
+function oneLesson(parts, groupSlug) {
   const first = parts[0];
   const pick = (kind) => parts.find((p) => p.kind === kind)?.id ?? null;
 
+  /* A `bare` page is named after its file rather than after
+     itself, and the same file name recurs across groups, so it
+     takes its group's name as well. Qualified for EVERY such page
+     rather than only on collision, deliberately: a slug that
+     changed the day a second `01__resources.html` appeared in the
+     module would be a URL that moved and a tick that was lost. */
+  const slug = first.bare ? `${groupSlug}-${first.slug}` : first.slug;
+
   const lesson = {
-    slug: first.slug,
-    title: titleOf(first.slug),
+    slug,
+    title: titleOf(slug),
     kind: kindOf(parts),
   };
 
@@ -456,6 +473,33 @@ try {
 } catch (err) {
   console.error(`\n${err?.message ?? err}\n`);
   process.exit(1);
+}
+
+/* Write the listing back out as TSV, so that a walk which needed a
+   credential leaves behind something that does not. That is what
+   `scripts/fixtures/course-crawl/` is: without it, the catalogue
+   is the one generated file in this repository whose generator
+   only one person can run, and a generated file nobody can
+   regenerate quietly becomes a hand-maintained one. */
+if (DUMP) {
+  const dir = join(ROOT, DUMP);
+  mkdirSync(dir, { recursive: true });
+
+  const rows = [...tree.entries()];
+  const line = (cols) => `${cols.join("\t")}\n`;
+
+  writeFileSync(join(dir, "tree.tsv"), rows
+    .filter(([, r]) => r.folder)
+    .map(([id, r]) => line([id, r.parent, "folder", r.name]))
+    .join(""));
+
+  writeFileSync(join(dir, "files.tsv"), rows
+    .filter(([, r]) => !r.folder)
+    .map(([id, r]) => line([id, r.parent, r.name]))
+    .join(""));
+
+  console.log(`${DUMP}: ${rows.filter(([, r]) => r.folder).length} folder(s), `
+    + `${rows.filter(([, r]) => !r.folder).length} file(s)`);
 }
 
 const built = build(tree, root);

@@ -31,20 +31,30 @@
       one address while the router serves another is a section of
       dead links that every individual page passes.
 
-   4. THE API SAYING SOMETHING THE BROWSER DOES NOT EXPECT.
+   4. FILES THE IMPORTER QUIETLY DROPPED. `splitName()` decides
+      what a filename is, and anything it does not recognise is
+      skipped. That is not a visible failure: the lesson still
+      renders, with one fewer thing under it, and two whole modules
+      once came back empty and were drawn as "not imported" while
+      their pages sat in the folder. The first real import dropped
+      133 of 1,579 files this way. So the drop rate is measured
+      against the committed listing and has to stay near zero.
+
+   5. THE API SAYING SOMETHING THE BROWSER DOES NOT EXPECT.
       `forBrowser()` decides what a lesson looks like on the wire
       and the `Lesson` interface in the browser module describes
       it. A field added to one and not the other is `undefined`
       where a title should be.
    ============================================================ */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import {
   COURSES, CATALOGUE, forBrowser, laddered, catalogueCounts,
 } from "../shared/courses.ts";
+import { splitName } from "./lib/coursera.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const problems = [];
@@ -185,7 +195,34 @@ for (const name of RULES) {
 }
 
 /* ============================================================
-   4. The wire format is what the browser expects
+   4. Almost nothing was dropped on the way in
+   ============================================================ */
+
+/* A ratio rather than a count, so it keeps meaning something when
+   the folder grows. 133 of 1,579 is 8.4% and has to fail; the two
+   that survive today are 0.13% and are genuinely not lessons: the
+   README at the root of the download, and one saved link whose
+   name ends `.with.google` so its last dot is not an extension. */
+const DROP_ALLOWANCE = 0.01;
+
+const listing = join(ROOT, "scripts", "fixtures", "course-crawl", "files.tsv");
+
+if (existsSync(listing)) {
+  const files = readFileSync(listing, "utf8").split("\n").filter(Boolean)
+    .map((line) => line.split("\t")[2] ?? "");
+  const dropped = files.filter((name) => !splitName(name));
+
+  if (files.length && dropped.length / files.length > DROP_ALLOWANCE) {
+    say(`the importer drops ${dropped.length} of ${files.length} file(s), over `
+      + `${Math.round(DROP_ALLOWANCE * 100)}%. Each one is a lesson or an attachment `
+      + `nobody will see is missing.`);
+    for (const name of dropped.slice(0, 12)) say(`  dropped: ${name}`);
+    if (dropped.length > 12) say(`  ... and ${dropped.length - 12} more`);
+  }
+}
+
+/* ============================================================
+   5. The wire format is what the browser expects
    ============================================================ */
 
 /** The field names of one `export interface` in the browser
