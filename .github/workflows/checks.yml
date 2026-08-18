@@ -99,7 +99,7 @@ jobs:
           node aab/check-css.mjs
           node aab/check-sw.mjs
           node aab/check-content.mjs
-          node aab/check-csp.mjs
+          node scripts/check-csp.js
           node scripts/check-crons.mjs
           node scripts/check-pieces.mjs
           node scripts/check-headers.mjs

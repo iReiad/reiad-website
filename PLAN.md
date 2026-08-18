@@ -150,8 +150,8 @@ The method at the top, applied to the rest. Biggest first, one per
 change, because each will surface something: none of them have
 been read since 250 pages moved out from under them.
 
-`check-routes` (260) **done** · `check-css` (558) ·
-`check-csp` (157) · `check-sw` (143) · then the nine tests.
+`check-routes` (260) **done** · `check-csp` (157) **done** ·
+`check-css` (558) · `check-sw` (143) · then the nine tests.
 
 **What the first audit found.** Five claims in its header, three
 still true and two that had quietly stopped being:
@@ -166,6 +166,20 @@ still true and two that had quietly stopped being:
 
 Each was proved before being fixed and again after, the way the
 method says.
+
+**`check-csp` had one hole and it was the same one.** It walked
+`aab/` and `app/src`, which was every line of browser code when it
+was written. A `fetch()` to a host `connect-src` does not allow,
+added to a Next component, passed; the same line in `aab/app.js`
+failed. It reads `next/app` and `next/components` now, and not
+`next/lib`, which is the database reads and runs on the Worker.
+
+Widening it surfaced six hosts the routes name and nothing had
+accounted for: four profile links on the About page and the two
+webfont preconnects. Each has a reason in `NOT_FETCHED` now, which
+is the discipline that list exists for. The webfonts were in it
+once and left when the Studio was archived, under a note saying
+they would come back the day something named them again.
 
 They move to `scripts/` as they are audited, which is also when
 they can lose the `.mjs` extension: the root declares

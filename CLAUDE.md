@@ -556,7 +556,8 @@ node aab/check-css.mjs      # a school's layer styling the whole site, and a
                             # block class that means two things at once
 node aab/check-sw.mjs       # a precached file changed without a VERSION bump
 node aab/check-content.mjs  # a page that has stopped counting the site correctly
-node aab/check-csp.mjs      # code calling a host the browser is not allowed to reach
+node scripts/check-csp.js   # code calling a host the browser is not allowed to
+                            # reach, from a route as well as from a module
 node scripts/check-contrast.mjs # an accent that has drifted under the WCAG
                             # threshold for the size it is set at
 node scripts/check-scale.mjs # a fifty-first font size
@@ -1362,8 +1363,8 @@ one place they all pass through: the public snapshot lives in D1
 `settings` and refreshes at most every five minutes, a reader's own
 numbers cache at the edge for one minute and their history for ten.
 Do not add a second caller, and do not write the broker's hostname
-into anything under `aab/`: `check-csp.mjs` scans every string there
-and will rightly fail it.
+into anything under `aab/` or `next/`: `scripts/check-csp.js` scans
+every string in both and will rightly fail it.
 
 **A key is stored sealed or not at all.** `PUT /api/broker/key`
 proves a key against the broker, seals it with AES-GCM under the
