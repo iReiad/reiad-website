@@ -86,6 +86,8 @@ import { pageMeta } from "../../../lib/pageMeta";
 import { PageNav, Tab } from "../../../components/ui/tabs";
 import { Eyebrow } from "../../../components/ui/label";
 import { Button, ButtonLink } from "../../../components/ui/button";
+import { Preferences } from "../../../components/account/prefs";
+import { Scenarios } from "../../../components/account/saved";
 
 export const metadata: Metadata = {
   ...pageMeta({
@@ -331,7 +333,9 @@ export default function AccountPage() {
           {/* ============ SAVED SCENARIOS ============ */}
           <Section id="scenarios" title="Saved scenarios"
                    blurb="A filled-in calculator, kept under a name. Open one and the tool comes back exactly as you left it.">
-            <div className="saved-list" id="account-scenarios" />
+            <div className="saved-list" id="account-scenarios">
+              <Scenarios />
+            </div>
           </Section>
 
           {/* ============ PREFERENCES, AND THE THREE QUESTIONS ============
@@ -344,7 +348,13 @@ export default function AccountPage() {
               allowed to do with what it knows. */}
           <Section id="preferences" title="How you like to read"
                    blurb="These take effect as you press them, on every page, and follow you to your other devices.">
-            <Card className="prefs gap-[18px]" id="account-prefs" />
+            {/* The one section of this page that is a component
+                rather than a slot a script fills in. `account-page.ts`
+                painted it and no longer does: see the note at the top
+                of `components/account/prefs.tsx`. */}
+            <Card className="prefs gap-[18px]" id="account-prefs">
+              <Preferences />
+            </Card>
 
             <div className="mt-3 grid gap-1 border-t border-hairline pt-5">
               <h3 id="settings-label" className="m-0 text-[1.08rem]">Your settings</h3>

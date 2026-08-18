@@ -45,17 +45,13 @@
 import { current, signOut, getProfile, saveProfile, type Profile } from "/account.js";
 import { sync, forgetOnAccount, SYNCED_KEYS } from "/sync.js";
 import {
-  listScenarios, updateScenario, removeScenario,
+  listScenarios, removeScenario,
   listTargets, saveTarget, updateTarget, removeTarget,
   listLibrary, keepPage, removeLibraryRow,
-  type Scenario, type Target, type TargetKind, type LibraryRow,
+  type Target, type TargetKind, type LibraryRow,
 } from "/saved.js";
 import { checkpointStats } from "/checkpoints.js";
 import type { Rung } from "/money/curriculum.js";
-import {
-  readPrefs, savePrefs, SCALES, MEASURES, THEMES, LANGS,
-  type Prefs, type PrefOption,
-} from "/prefs.js";
 import { COURSES } from "/content.js";
 import { activeDays, daysIn, run, today } from "/streak.js";
 
@@ -739,59 +735,8 @@ function readTargetForm(): Parameters<typeof saveTarget>[0] {
    SAVED SCENARIOS
    ============================================================ */
 
-const TOOL_PAGE: Record<string, string> = { stock: "/tools/stock.html" };
-const TOOL_NAME: Record<string, string> = { stock: "The stock check" };
-
-function scenarioRow(row: Scenario): HTMLElement {
-  const page = TOOL_PAGE[row.tool] ?? "/tools/index.html";
-  const query = typeof row.inputs?.query === "string" ? row.inputs.query : "";
-  const href = query ? `${page}?${query.replace(/^\?/, "")}` : page;
-
-  const rename = el("button", { className: "btn btn-ghost btn-small", type: "button",
-    textContent: "Rename" });
-  rename.addEventListener("click", async () => {
-    const next = prompt("Call it what?", row.name);
-    if (next === null) return;
-    try {
-      await updateScenario(row.id, { name: next.trim().slice(0, 80) });
-      await paintScenarios();
-    } catch (err) {
-      say($("#exit-note"), (err as Error).message, "warn");
-    }
-  });
-
-  const drop = el("button", { className: "btn btn-ghost btn-small", type: "button",
-    textContent: "Remove" });
-  drop.addEventListener("click", async () => {
-    if (!confirm(`Remove "${row.name || "this scenario"}"?`)) return;
-    try {
-      await removeScenario(row.id);
-      await paintScenarios();
-    } catch (err) {
-      say($("#exit-note"), (err as Error).message, "warn");
-    }
-  });
-
-  return el("div", { className: "saved-row" },
-    el("div", { className: "saved-body" },
-      el("h3", { textContent: row.name || "Untitled" }),
-      el("p", { className: "saved-line", textContent:
-        [TOOL_NAME[row.tool] ?? row.tool, row.summary, when(row.updated_at)]
-          .filter(Boolean).join(" · ") })),
-    el("div", { className: "saved-actions" },
-      el("a", { className: "btn btn-solid btn-small", href, textContent: "Open" }),
-      rename, drop));
-}
-
-async function paintScenarios(): Promise<void> {
-  const host = $("#account-scenarios");
-  if (!host) return;
-  const rows = await listScenarios();
-  host.replaceChildren(...(rows.length
-    ? rows.map(scenarioRow)
-    : [nothing("Nothing saved. Fill in the stock check and press Save, and it "
-      + "will be here on every device you sign in on.")]));
-}
+/* The saved scenarios were painted here and are
+   `components/account/saved.tsx` now. */
 
 /* ============================================================
    READING PREFERENCES
@@ -803,36 +748,11 @@ async function paintScenarios(): Promise<void> {
    control has.
    ============================================================ */
 
-const PREF_ROWS: Array<{ key: keyof Prefs; label: string; options: readonly PrefOption[] }> = [
-  { key: "text", label: "Type size", options: SCALES },
-  { key: "measure", label: "Line width", options: MEASURES },
-  { key: "theme", label: "Theme", options: THEMES },
-  { key: "lang", label: "Calculators open in", options: LANGS },
-];
-
-function paintPrefs(): void {
-  const host = $("#account-prefs");
-  if (!host) return;
-  const now = readPrefs();
-
-  host.replaceChildren(...PREF_ROWS.map((row) =>
-    el("div", { className: "pref-row" },
-      el("span", { className: "pref-label", textContent: row.label }),
-      el("div", { className: "pref-chips", role: "group", "aria-label": row.label },
-        ...row.options.map((option) => {
-          const on = now[row.key] === option.id;
-          const chip = el("button", {
-            className: "pref-chip", type: "button",
-            "aria-pressed": String(on), "data-on": on ? "" : undefined,
-          }, el("strong", { textContent: option.label }),
-             option.note ? el("small", { textContent: option.note }) : null);
-          chip.addEventListener("click", () => {
-            savePrefs({ [row.key]: option.id } as Partial<Prefs>);
-            paintPrefs();
-          });
-          return chip;
-        })))));
-}
+/* The four reading preferences were painted here and are
+   `components/account/prefs.tsx` now. They were the simplest
+   section on the page and they are the pattern the rest follow:
+   a client component that reads this site's own module at run
+   time, rather than DOM built in a loop. */
 
 /* ============================================================
    THE THREE SETTINGS QUESTIONS
@@ -980,7 +900,6 @@ async function boot(): Promise<void> {
 
   buildKinds();
   buildFields();
-  paintPrefs();
 
   /* The exchange first, and everything else after it.
 
@@ -1026,7 +945,7 @@ async function boot(): Promise<void> {
   /* Four sections that each talk to the account, in parallel,
      because none is waiting on any other and one at a time would
      be four round trips end to end. */
-  await Promise.all([paintPaths(), paintTargets(), paintScenarios(), paintLibrary()]);
+  await Promise.all([paintPaths(), paintTargets(), paintLibrary()]);
 }
 
 /* ---------- saving ---------- */
@@ -1140,11 +1059,21 @@ $("#account-forget")?.addEventListener("click", async () => {
     ? "Erased. Nothing of yours is stored on this account or on this device."
     : "Some of that did not work. Reload and try again.", gone ? "ok" : "warn");
 
+  /* The sections this file no longer draws hear about it here.
+
+     `components/account/` reads the same rows and cannot know
+     that a button in this file has just emptied them. The same
+     channel `account:changed` below already uses, for the same
+     reason: an event is the right way for two things that do not
+     import each other to agree, and it goes away with this file
+     when the last section moves. */
+  document.dispatchEvent(new CustomEvent("account:refresh"));
+
   button.disabled = false;
   paintKept();
   paintHeat();
   paintTiles(profile?.pace ?? "");
-  await Promise.all([paintPaths(), paintTargets(), paintScenarios(), paintLibrary()]);
+  await Promise.all([paintPaths(), paintTargets(), paintLibrary()]);
 });
 
 document.addEventListener("account:changed", () => {

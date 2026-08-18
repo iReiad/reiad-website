@@ -31,6 +31,19 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v124: Two sections of the account page are components. It is
+        the one page whose whole body is built in the browser, by
+        1,155 lines of `account-page.ts`, which is why nothing on
+        it used a component. The reading preferences and the saved
+        scenarios are `next/components/account/` now, and the
+        module no longer paints them.
+
+        They read `/prefs.js` and `/saved.js` at RUN time, which
+        is the arrangement the Studio and the desk already use for
+        seven modules: one copy of each, shared by every page,
+        rather than a second that can drift. The types come from
+        the declarations those two apps already had.
+
    v123: The stylesheet is Next's. `/styles.css` and
         `/tailwind.css` are not served any more: every route links
         a hashed stylesheet Next emits, which no service worker
@@ -1271,7 +1284,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v123";
+const VERSION = "v124";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
