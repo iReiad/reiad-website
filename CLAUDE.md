@@ -92,12 +92,17 @@ That is the same list `.github/workflows/checks.yml` runs, in the same order,
 so green here is green there. The browser and network tests are listed under
 "Before deploying" and still have to be run by hand.
 
-`checks.yml` was seen not to fire on **opened** for a draft pull request,
-which left it sitting with no `checks` run while the other three reported
-green. Its trigger now lists `ready_for_review` as well, so marking a draft
-ready runs them, which is the moment before a merge anyway. If a pull request
-still shows only three checks, dispatch the workflow on the branch rather
-than merging on an incomplete signal.
+**`checks.yml` runs on `push`, and that is deliberate.** On 18 August 2026
+`pull_request` stopped firing it, for opens and for pushes alike, while
+`push` kept working: `live-check.yml` runs on push and never missed one. Two
+pull requests sat with three green checks and no `checks` run, which is the
+one that runs the tests. `pull_request` is still listed so the run attaches
+to the pull request when GitHub does deliver the event, and main is excluded
+because `deploy.yml` calls this workflow before it uploads.
+
+**Three green checks is not green.** `checks` is the fourth and it is the one
+that matters. If a pull request is missing it, dispatch the workflow on the
+branch rather than merging on an incomplete signal.
 
 ## Language
 
