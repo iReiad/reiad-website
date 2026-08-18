@@ -68,6 +68,7 @@ export interface Lesson {
   quiz: string | null;
   exam: string | null;
   transcript: string | null;
+  captions: string | null;
   files: CourseFile[];
 }
 
@@ -114,6 +115,7 @@ export interface CourseSummary {
 
 const READ_KEY = "courses-read";
 const LAST_KEY = "courses-last";
+const ANSWER_KEY = "courses-answers";
 const CHANGED = "courses:progress";
 
 interface Bookmark {
@@ -168,6 +170,54 @@ function toggleRead(id: string): boolean {
   return now;
 }
 
+/* ---- quiz answers ----
+
+   A `set` of `<lesson id>#<question>#<option>`, which is the
+   checkpoint shape with one more segment. Filed beside the ticks
+   and carried by `aab/sync.js` under the same key rules, so a quiz
+   answered on a laptop is answered on the phone.
+
+   It records what was PICKED and never whether it was right: a
+   Coursera export carries no answer key, so there is nothing here
+   to mark against and nothing pretends otherwise. */
+const answerKey = (lesson: string, q: number, opt: number) => `${lesson}#${q}#${opt}`;
+
+function readAnswers(): Set<string> {
+  const raw = readJSON<unknown>(ANSWER_KEY, []);
+  if (!Array.isArray(raw)) return new Set();
+  return new Set(raw.filter((id): id is string => typeof id === "string"));
+}
+
+/** Record one answer.
+
+    `only` is what makes a radio a radio: for a single-answer
+    question every other option of that question is cleared, so the
+    stored set can never say a reader picked two things where the
+    page allowed one. */
+function setAnswer(
+  lesson: string, q: number, opt: number, on: boolean, only: boolean,
+) {
+  const set = readAnswers();
+  if (only) {
+    const prefix = `${lesson}#${q}#`;
+    for (const id of [...set]) if (id.startsWith(prefix)) set.delete(id);
+  }
+  const id = answerKey(lesson, q, opt);
+  if (on) set.add(id); else set.delete(id);
+  writeJSON(ANSWER_KEY, [...set]);
+  dispatchEvent(new CustomEvent(CHANGED));
+}
+
+function clearAnswers(lesson: string) {
+  const set = readAnswers();
+  const prefix = `${lesson}#`;
+  let touched = false;
+  for (const id of [...set]) if (id.startsWith(prefix)) { set.delete(id); touched = true; }
+  if (!touched) return;
+  writeJSON(ANSWER_KEY, [...set]);
+  dispatchEvent(new CustomEvent(CHANGED));
+}
+
 function setLast(entry: Omit<Bookmark, "ts">) {
   writeJSON(LAST_KEY, { ...entry, ts: Date.now() });
   dispatchEvent(new CustomEvent(CHANGED));
@@ -191,6 +241,7 @@ const lessonId = (course: string, mod: string, lesson: string) =>
   `${course}/${mod}/${lesson}`;
 
 const fileUrl = (drive: string) => `/api/courses/file/${drive}`;
+const captionsUrl = (drive: string) => `/api/courses/captions/${drive}`;
 const driveUrl = (drive: string) => `https://drive.google.com/file/d/${drive}/view`;
 
 /* ============================================================
@@ -656,7 +707,7 @@ function drawLesson(root: HTMLElement, course: Course, mod: Module, lesson: Less
       el("p", { class: "course-waiting" }, ["Loading the video…"]),
     ]);
     main.append(box);
-    void mountVideo(box, lesson.video, lesson.title);
+    void mountVideo(box, lesson.video, lesson.captions, lesson.title);
   }
 
   /* A reading, a quiz or a challenge is a saved Coursera page. It
@@ -675,7 +726,14 @@ function drawLesson(root: HTMLElement, course: Course, mod: Module, lesson: Less
       el("p", { class: "course-waiting" }, [`Loading the ${KIND_WORD[kind].toLowerCase()}…`]),
     ]);
     main.append(box);
-    void mountReading(box, drive, kind);
+
+    /* A quiz and an exam are the same file shape and neither is a
+       reading: every option in one lives inside a `<form>`, which
+       the sanitiser deletes whole. They go through the parser
+       instead, and `mountQuiz` falls back to the reading renderer
+       if the file turns out not to be a quiz. */
+    if (kind === "reading") void mountReading(box, drive, kind);
+    else void mountQuiz(box, drive, kind, id);
   }
 
   if (!lesson.video && !lesson.reading && !lesson.quiz && !lesson.exam) {
@@ -774,7 +832,9 @@ function saySo(box: HTMLElement, message: string) {
   box.replaceChildren(el("p", { class: "course-empty" }, [message]));
 }
 
-async function mountVideo(box: HTMLElement, drive: string, title: string) {
+async function mountVideo(
+  box: HTMLElement, drive: string, captions: string | null, title: string,
+) {
   const answer = await ticketFor(drive);
   if (!answer.ok || !answer.data) {
     /* The server's own reason, not a general one. This said "that
@@ -795,14 +855,169 @@ async function mountVideo(box: HTMLElement, drive: string, title: string) {
      tens of megabytes and a reader who opened the page to read
      the transcript should not pay for all of it. Metadata is
      enough for the duration and the scrub bar. */
-  box.replaceChildren(el("video", {
+  const video = el("video", {
     src: url,
     controls: true,
     preload: "metadata",
     playsinline: true,
     title,
+  });
+  box.replaceChildren(video);
+
+  /* Captions after the player rather than with it, because they
+     need a pass of their own and waiting for it would hold up the
+     video. A `<track>` appended later is picked up: the browser
+     loads it when the reader turns captions on, not when the
+     element appears.
+
+     `default` on, because this section has one reader and they
+     asked for captions. The control to turn them off is in the
+     player, where a reader would look for it. */
+  if (captions) void mountCaptions(video, captions);
+}
+
+/** The subtitles, once their own pass has been minted.
+
+    Separate from the video's pass and not reusing it: a ticket
+    names ONE file, which is the property that makes it safe to put
+    in a URL, and a second file needs a second ticket rather than a
+    wider one. */
+async function mountCaptions(video: HTMLElement, drive: string) {
+  const answer = await api<{ url: string }>(`/ticket/${drive}`);
+  if (!answer.ok || !answer.data) return;
+
+  /* The ticket names the file; the address says what is done to it
+     on the way through. `captionsUrl` is the SubRip-to-WebVTT
+     route, because no browser reads SubRip in a track, so the pass
+     is lifted out of the URL the ticket route returned and put on
+     a different path.
+
+     Read with a pattern rather than `new URL`, which needs a base
+     and would mean inventing a hostname to parse a relative path.
+     `check-csp.mjs` reads every host named in this directory and
+     is right to refuse one that exists only to satisfy a
+     constructor. */
+  const pass = /[?&]t=([^&]*)/.exec(answer.data.url)?.[1] ?? "";
+  if (!pass) return;
+
+  video.append(el("track", {
+    kind: "captions",
+    src: `${captionsUrl(drive)}?t=${pass}`,
+    srclang: "en",
+    label: "English",
+    default: true,
   }));
 }
+
+interface QuizQuestion {
+  n: number;
+  prompt: string;
+  multiple: boolean;
+  options: string[];
+}
+
+/** A quiz, as something a reader can actually answer.
+
+    The inputs are built HERE, out of the option strings the Worker
+    parsed. None of Coursera's own markup reaches this page: their
+    `<input name="0">` was wired to their server and is meaningless
+    off it, and building our own is what makes an answer something
+    this site can keep.
+
+    Answers save as they are pressed. There is no submit button
+    because there is nothing to submit to and nothing to mark
+    against: the export carries no answer key, so this records what
+    the reader picked and says so plainly rather than implying a
+    score it cannot compute. */
+async function mountQuiz(box: HTMLElement, drive: string, kind: string, lesson: string) {
+  const answer = await api<{
+    title: string; questions: QuizQuestion[]; parsed: boolean; html: string;
+  }>(`/quiz/${drive}`);
+
+  if (!answer.ok || !answer.data) {
+    saySo(box, answer.message || "That quiz could not be opened.");
+    return;
+  }
+
+  /* Not a quiz after all, or one in a shape the parser does not
+     know. Render it as a page rather than as nothing: unreadable
+     is worse than plain. */
+  if (!answer.data.parsed) {
+    const body = el("div", { class: "course-page" });
+    body.innerHTML = answer.data.html;
+    box.replaceChildren(body, originalLink(drive, kind));
+    return;
+  }
+
+  const chosen = readAnswers();
+  const form = el("div", { class: "course-quiz" });
+
+  for (const q of answer.data.questions) {
+    const prompt = el("div", { class: "course-page" });
+    prompt.innerHTML = q.prompt;
+
+    const field = el("fieldset", { class: "quiz-q" }, [
+      el("legend", {}, [
+        `Question ${q.n}`,
+        q.multiple ? el("span", { class: "quiz-hint" }, [" select all that apply"]) : null,
+      ]),
+      prompt,
+    ]);
+
+    const list = el("ul", { class: "quiz-options" });
+    q.options.forEach((text, opt) => {
+      const input = el("input", {
+        type: q.multiple ? "checkbox" : "radio",
+        /* One name per question, so the browser enforces
+           single-select for a radio group without this code
+           having to. Scoped by lesson because two quizzes could
+           otherwise share a group across a redraw. */
+        name: `q-${lesson}-${q.n}`,
+      }) as HTMLInputElement;
+
+      /* The PROPERTY, not the attribute. `checked=""` in the markup
+         is `defaultChecked`: it says what the control resets to,
+         not what it currently is. Setting the attribute alone
+         restored an answer that a form reset would have shown and
+         a reader never saw. */
+      input.checked = chosen.has(answerKey(lesson, q.n, opt));
+
+      input.addEventListener("change", () => {
+        setAnswer(lesson, q.n, opt, input.checked, !q.multiple);
+      });
+
+      list.append(el("li", {}, [el("label", { class: "quiz-option" }, [input, ` ${text}`])]));
+    });
+
+    field.append(list);
+    form.append(field);
+  }
+
+  /* Said once, at the bottom, rather than beside every question.
+     A reader is owed the truth about what this does and does not
+     do, and the honest version is short. */
+  const note = el("p", { class: "course-quiz-note" }, [
+    "Your answers save as you go, on this device and to your account. ",
+    "This course's files carry no answer key, so nothing here is marked right or wrong.",
+  ]);
+
+  const reset = el("button", { type: "button", class: "quiz-reset" }, ["Clear my answers"]);
+  reset.addEventListener("click", () => {
+    clearAnswers(lesson);
+    for (const input of form.querySelectorAll("input")) {
+      (input as HTMLInputElement).checked = false;
+    }
+  });
+
+  box.replaceChildren(form, note, reset, originalLink(drive, kind));
+}
+
+/** The quiet way back to the file this was built from. */
+const originalLink = (drive: string, kind: string): HTMLElement =>
+  el("p", { class: "course-original mono" }, [
+    el("a", { href: driveUrl(drive), target: "_blank", rel: "noopener" },
+      [`Open the original ${kind} in Drive`]),
+  ]);
 
 async function mountReading(box: HTMLElement, drive: string, kind: string) {
   const answer = await api<{ html: string }>(`/reading/${drive}`);
@@ -818,13 +1033,7 @@ async function mountReading(box: HTMLElement, drive: string, kind: string) {
      structure. */
   body.innerHTML = answer.data.html;
 
-  box.replaceChildren(
-    body,
-    el("p", { class: "course-original mono" }, [
-      el("a", { href: driveUrl(drive), target: "_blank", rel: "noopener" },
-        [`Open the original ${kind} in Drive`]),
-    ]),
-  );
+  box.replaceChildren(body, originalLink(drive, kind));
 }
 
 /** One row of the Files list.

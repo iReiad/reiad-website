@@ -62,6 +62,7 @@ import {
   courseOf, forBrowser, listForBrowser, isCourseFile, lessonForFile,
 } from "../../../shared/courses.ts";
 import { canTicket, checkTicket, mintTicket } from "../../_lib/ticket.ts";
+import { parseQuiz } from "../../_lib/quiz.ts";
 import type { DriveEnv } from "../../_lib/drive.ts";
 import type { TicketEnv } from "../../_lib/ticket.ts";
 
@@ -122,6 +123,26 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
     return serveFile(request, env, id);
   }
 
+  /* ---- captions, in front of sign-in for the same reason ----
+
+     A `<track>` inside a `<video>` is fetched by the browser on
+     its own, exactly like the video, with no header this site can
+     add. So it carries the same signed ticket and rests on the
+     same argument. */
+  if (parts[0] === "captions") {
+    const id = parts[1] ?? "";
+    if (!isCourseFile(id)) return fail("no-such-file", 404);
+    if (!canReachDrive(env)) return notConnected();
+
+    const url = new URL(request.url);
+    if (!await checkTicket(env, id, url.searchParams.get("t"))) {
+      return fail("bad-ticket", 403, {
+        message: "That pass is missing or has expired. Reload the lesson.",
+      });
+    }
+    return serveCaptions(env, id);
+  }
+
   /* Everything else is somebody signed in, and that failure is
      separate from the permission failure below on purpose: "you
      are not signed in" and "you are signed in and this is not
@@ -157,13 +178,14 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
      somebody's Drive resting entirely on the admin check above.
      With it, an id that is not part of a lesson is refused before
      a credential is even loaded. */
-  if (parts[0] === "ticket" || parts[0] === "reading") {
+  if (parts[0] === "ticket" || parts[0] === "reading" || parts[0] === "quiz") {
     const id = parts[1] ?? "";
 
     if (!isCourseFile(id)) return fail("no-such-file", 404);
     if (!canReachDrive(env) || !canTicket(env)) return notConnected();
 
     if (parts[0] === "reading") return serveReading(env, id);
+    if (parts[0] === "quiz") return serveQuiz(env, id);
     return ok({ url: `/api/courses/file/${id}?t=${await mintTicket(env, id)}` });
   }
 
@@ -265,6 +287,105 @@ async function serveReading(env: CoursesEnv, id: string): Promise<Response> {
     title: found?.lesson.title ?? "",
     html: sanitiseHTML(bodyOf(raw)),
   });
+}
+
+/** A quiz, as questions rather than as somebody else's markup.
+
+    `serveReading` cannot do this job. Every option in a Coursera
+    quiz lives inside a `<form>`, and `sanitiseHTML()` drops `form`
+    whole, contents and all, which is correct for an article and
+    silently deletes the entire answer list here. The page showed
+    "Question 2", a rule, "Question 3", a rule, and looked fine.
+
+    So the structure is read before anything is sanitised, and what
+    goes over the wire is data: a prompt, a type, and a list of
+    option strings. The browser builds its own inputs from that,
+    which is also why no foreign `<input>` ever reaches this page.
+
+    Falls back to the reading renderer when the file turns out not
+    to be a quiz after all, so an export in a shape this does not
+    know is still readable rather than blank. */
+async function serveQuiz(env: CoursesEnv, id: string): Promise<Response> {
+  const upstream = await driveFile(env, id);
+  if (!upstream) return fail("drive-not-connected", 503);
+  if (!upstream.ok) {
+    return fail("drive-said-no", upstream.status === 404 ? 404 : 502, {
+      message: `Drive answered ${upstream.status} for that quiz.`,
+    });
+  }
+
+  const raw = await upstream.text();
+  const questions = parseQuiz(raw);
+  const found = lessonForFile(id);
+
+  return ok({
+    title: found?.lesson.title ?? "",
+    questions,
+    /* Said out loud rather than left for the browser to infer from
+       an empty list, because "this is not a quiz" and "this quiz
+       has no questions" want different words on the page. */
+    parsed: questions.length > 0,
+    html: questions.length ? "" : sanitiseHTML(bodyOf(raw)),
+  });
+}
+
+/** A video's captions, as WebVTT.
+
+    The files in Drive are SubRip, which no browser has ever read
+    in a `<track>`: point one at an `.srt` and you get a player
+    with a captions button that turns nothing on. The two formats
+    are close enough that converting is a header and a decimal
+    point, and far enough apart that not converting fails silently.
+
+    Read whole rather than streamed: a caption file for a ten
+    minute lesson is a few kilobytes, and it has to be rewritten
+    before it can be sent. */
+async function serveCaptions(env: CoursesEnv, id: string): Promise<Response> {
+  const upstream = await driveFile(env, id);
+  if (!upstream) return fail("drive-not-connected", 503);
+  if (!upstream.ok) {
+    return fail("drive-said-no", upstream.status === 404 ? 404 : 502, {
+      message: `Drive answered ${upstream.status} for those captions.`,
+    });
+  }
+
+  return new Response(toVTT(await upstream.text()), {
+    headers: {
+      "Content-Type": "text/vtt; charset=utf-8",
+      /* Same as the video it belongs to: checked per request, so
+         never held by a cache that would hand it to the next
+         person to ask. */
+      "Cache-Control": "private, max-age=0, no-store",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
+}
+
+/** SubRip to WebVTT.
+
+    Three differences and that is all of them: VTT wants a
+    `WEBVTT` line at the top, it writes the fraction of a second
+    after a full stop where SubRip writes a comma, and it will not
+    tolerate a byte order mark before the header. Cue numbers are
+    legal in both and are left alone.
+
+    The comma is replaced only inside a timecode, not everywhere.
+    Captions are prose and prose has commas in it; a blanket
+    replace turns "first, we will" into "first. we will" in every
+    subtitle on the site. */
+export function toVTT(srt: string): string {
+  const text = srt.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
+
+  /* Already VTT, which is what a future export might hand us.
+     Passing it through is one line and saves a corrupted file. */
+  if (/^WEBVTT/.test(text.trimStart())) return text;
+
+  const cues = text.replace(
+    /(\d{1,2}:\d{2}(?::\d{2})?),(\d{1,3})\s*-->\s*(\d{1,2}:\d{2}(?::\d{2})?),(\d{1,3})/g,
+    "$1.$2 --> $3.$4",
+  );
+
+  return `WEBVTT\n\n${cues.trimStart()}`;
 }
 
 /** The inside of `<body>`, when the file is a whole document.

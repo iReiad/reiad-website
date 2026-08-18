@@ -9579,6 +9579,98 @@ German for day, and .tag is what the site has always called
     text-align: left;
   }
 
+  /* ---- a quiz a reader can answer ----
+
+     The options are this site's own inputs built from parsed
+     text, never Coursera's markup, so these are ordinary form
+     controls and are styled as such. A question is a fieldset
+     because that is what a group of related controls is, and a
+     screen reader reads the legend before each option. */
+  .course-quiz { margin: 1.5rem 0; max-width: 42rem; }
+
+  .quiz-q {
+    margin: 0 0 1.75rem;
+    padding: 1.1rem 1.25rem 1.25rem;
+    border: 1px solid var(--hairline);
+    border-radius: 0.6rem;
+    background: var(--panel);
+  }
+
+  .quiz-q legend {
+    padding: 0 0.45rem;
+    font-size: var(--t-2);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .quiz-hint {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .quiz-options {
+    margin: 0.9rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .quiz-options li { margin: 0 0 0.15rem; }
+
+  /* The whole row is the target, not just the dot. A tap on a
+     phone lands on a word rather than on a 13px circle. */
+  .quiz-option {
+    display: flex;
+    gap: 0.7rem;
+    align-items: baseline;
+    padding: 0.55rem 0.65rem;
+    border-radius: 0.45rem;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+
+  .quiz-option:hover { background: var(--ground); }
+
+  .quiz-option:has(input:checked) {
+    background: var(--ground);
+    font-weight: 500;
+  }
+
+  .quiz-option input {
+    flex: none;
+    width: 1.05rem;
+    height: 1.05rem;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .quiz-option:focus-within {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .course-quiz-note {
+    margin: 0 0 0.9rem;
+    max-width: 42rem;
+    font-size: var(--t-2);
+    color: var(--ink-soft);
+  }
+
+  .quiz-reset {
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--hairline);
+    border-radius: 0.45rem;
+    background: none;
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: var(--t-2);
+    cursor: pointer;
+  }
+
+  .quiz-reset:hover { border-color: var(--ink-soft); color: var(--ink); }
+
   .course-original {
     margin-top: 1.5rem;
     padding-top: 0.9rem;

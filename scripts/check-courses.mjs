@@ -69,7 +69,7 @@ import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import {
   COURSES, CATALOGUE, forBrowser, laddered, catalogueCounts,
-  courseUrl, moduleUrl, lessonUrl,
+  courseUrl, moduleUrl, lessonUrl, ID_FIELDS,
 } from "../shared/courses.ts";
 import { NEXT_ROUTES } from "../worker.js";
 import { splitName } from "./lib/coursera.mjs";
@@ -144,7 +144,11 @@ for (const course of COURSES) {
       if (lessonSlugs.has(lesson.slug)) say(`${at}: two lessons share this slug`);
       lessonSlugs.add(lesson.slug);
 
-      for (const key of ["video", "reading", "quiz", "exam", "transcript"]) {
+      /* `ID_FIELDS`, not a list written out here. This check kept
+         its own and quietly stopped covering `captions` the day it
+         was added: 298 ids, none of them ever validated, and the
+         summary line said everything was well formed. */
+      for (const key of ID_FIELDS) {
         if (lesson[key]) checkId(lesson[key], `${at} (${key})`);
       }
       for (const file of lesson.files ?? []) checkId(file.drive, `${at} (${file.name})`);
