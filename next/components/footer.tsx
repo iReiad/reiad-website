@@ -8,13 +8,26 @@
 
    This one is the menu again, spelled out. Same table,
    `lib/nav.ts`, so a school added there appears here as well as
-   in the rail, and neither can drift from the other. Under it,
-   the two things a reader of this site should never have to go
-   looking for: that everything is free, and that what they have
-   read is stored on their own machine and nowhere else.
+   in the rail, and neither can drift from the other.
 
    The per-page note is kept and is the last line rather than the
    first. It is a disclaimer, not a greeting.
+
+   ---- what came out, and why ----
+
+   A green band under the links said, in both languages, that
+   everything is free, that there is no login, and that what you
+   have read stays in your own browser. Every one of those facts
+   is in `note`, two elements below it, on every page that has a
+   note: the German school's reads "free, in Bangla, and without
+   a login. Your progress stays in your own browser." So the
+   footer made the same promise twice, a hundred pixels apart,
+   and on /skills/ the page itself made it a third time in a band
+   directly above.
+
+   One sentence of it survives, under the mark, because it was
+   the only part not said anywhere else: that an account carries
+   progress between devices.
    ============================================================ */
 
 import { NAV } from "../lib/nav";
@@ -44,11 +57,20 @@ export function SiteFooter({
             <a className="deck-foot-mail" href="mailto:i@reiad.co.uk">
               <Icon name="mail" size={15} /> i@reiad.co.uk
             </a>
+            {/* The one thing the green band used to say that the
+                page's own note does not: what an account is FOR.
+                Everything else it said, that this is free, that
+                there is no login, that progress stays on the
+                device, is said again in `note` two elements
+                below, on every school page and on /skills/. */}
+            <p className="deck-foot-line" lang="bn">
+              অ্যাকাউন্ট খুললে অগ্রগতি আপনার সব ডিভাইসে থাকে।
+            </p>
           </div>
 
           <nav className="deck-foot-nav" aria-label="Everything on this site">
             {NAV.map((group) => (
-              <div className="deck-foot-col" key={group.id}
+              <div className="deck-foot-col" key={group.id} data-group={group.id}
                    style={{ "--accent": group.accent } as React.CSSProperties}>
                 <span className="deck-foot-label mono">{group.label}</span>
                 <ul>
@@ -64,19 +86,6 @@ export function SiteFooter({
               </div>
             ))}
           </nav>
-        </div>
-
-        <div className="deck-foot-pledge">
-          <p lang="bn">
-            <b className="bn-h">সবকিছু ফ্রি, চিরকাল।</b> কোনো লগইন লাগে না, কোনো দাম নেই।
-            অ্যাকাউন্ট ছাড়া পড়লে আপনি কী কী পড়েছেন তা শুধু আপনার নিজের ব্রাউজারে
-            থাকে, আমাদের কাছে নয়।
-          </p>
-          <p lang="en">
-            Free, no login, no price. Without an account what you have read
-            stays in your own browser; with one it is kept for you and follows
-            you between your devices.
-          </p>
         </div>
 
         <div className="deck-foot-end">

@@ -1,9 +1,9 @@
 {
-  "version": "v91",
+  "version": "v92",
   "hashes": {
     "/offline.html": "55bcf02529d11190",
-    "/styles.css": "a042eefe3264806f",
-    "/tailwind.css": "3037e1e16f17096a",
+    "/styles.css": "e4a0480abdbdbb28",
+    "/tailwind.css": "f712e618fc5f7bfc",
     "/app.js": "f56b8c5eed9e972d",
     "/content.js": "3c535dcbbd7173be",
     "/api.js": "fb43503e1326fabe",
@@ -22,7 +22,7 @@
     "/crumbs.js": "60beddce649904a9",
     "/audience.js": "638ceb49784d808c",
     "/activation.js": "3d0a5d2317d6d8dc",
-    "/tilt.js": "a451aaad8c9193bc",
+    "/tilt.js": "31fb2d9138644e3a",
     "/news.js": "15aeb0a218a1bc28",
     "/money/reader.js": "4abf83585f45cfbb",
     "/money/curriculum.js": "e82203dc2bdcd450",
