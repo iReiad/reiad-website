@@ -24,6 +24,27 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "/account.js": [
+        "../app/src/types/account.d.ts"
+      ],
+      "/sync.js": [
+        "../app/src/types/sync.d.ts"
+      ],
+      "/saved.js": [
+        "../app/src/types/saved.d.ts"
+      ],
+      "/prefs.js": [
+        "../app/src/types/prefs.d.ts"
+      ],
+      "/checkpoints.js": [
+        "../app/src/types/checkpoints.d.ts"
+      ],
+      "/streak.js": [
+        "../app/src/types/streak.d.ts"
+      ],
+      "/content.js": [
+        "../app/src/types/content.d.ts"
       ]
     },
     "isolatedModules": true,

@@ -43,9 +43,8 @@
    ============================================================ */
 import { current, signOut, getProfile, saveProfile } from "/account.js";
 import { sync, forgetOnAccount, SYNCED_KEYS } from "/sync.js";
-import { listScenarios, updateScenario, removeScenario, listTargets, saveTarget, updateTarget, removeTarget, listLibrary, keepPage, removeLibraryRow, } from "/saved.js";
+import { listScenarios, removeScenario, listTargets, saveTarget, updateTarget, removeTarget, listLibrary, removeLibraryRow, } from "/saved.js";
 import { checkpointStats } from "/checkpoints.js";
-import { readPrefs, savePrefs, SCALES, MEASURES, THEMES, LANGS, } from "/prefs.js";
 import { COURSES } from "/content.js";
 import { activeDays, daysIn, run, today } from "/streak.js";
 const $ = (sel) => document.querySelector(sel);
@@ -94,12 +93,6 @@ function meter(pct, label) {
     drawn as a dashed box with a shrug in it. */
 const nothing = (text) => el("p", { className: "acct-empty" }, text);
 const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-const when = (iso) => {
-    const d = new Date(iso);
-    return Number.isNaN(d.valueOf())
-        ? ""
-        : d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-};
 /* ============================================================
    What this account keeps, counted rather than described
    ============================================================ */
@@ -360,64 +353,14 @@ async function paintPaths() {
    a page can appear in both lists, which is correct: keeping
    something and writing on it are different acts.
    ============================================================ */
-let library = [];
-function keptRow(row, { showNote }) {
-    const drop = el("button", {
-        className: "btn btn-ghost btn-small", type: "button",
-        textContent: showNote ? "Delete the note" : "Remove",
-    });
-    drop.addEventListener("click", async () => {
-        if (showNote && !confirm(`Delete your note on "${row.title || "this page"}"?`))
-            return;
-        drop.disabled = true;
-        try {
-            /* Taking a note off a page that is also on the reading list
-               must not take the page off the list, and vice versa. So
-               one control clears one column and the trigger in the
-               migration removes the row once both have gone. */
-            if (showNote)
-                await keepPage({ url: row.url, title: row.title, kind: row.kind, note: "" });
-            else if (row.note)
-                await keepPage({ url: row.url, title: row.title, kind: row.kind, saved: false });
-            else
-                await removeLibraryRow(row.id);
-            await paintLibrary();
-        }
-        catch (err) {
-            say($("#exit-note"), err.message, "warn");
-            drop.disabled = false;
-        }
-    });
-    return el("article", { className: "kept-row" }, el("div", { className: "kept-body" }, el("span", { className: "kept-kind mono",
-        textContent: row.kind === "lesson" ? "Lesson" : "Piece" }), el("h3", {}, el("a", { href: row.url, textContent: row.title || row.url })), showNote
-        /* The note as the reader typed it, in a `<p>` with
-           `white-space: pre-wrap`, and never as HTML. Nothing on
-           this site renders a note as markup and nothing should:
-           it is the one field here whose author and whose reader
-           are the same person, which is exactly the case where
-           nobody would notice it being used against them. */
-        ? el("p", { className: "kept-note", textContent: row.note })
-        : null, el("p", { className: "kept-when mono", textContent: when(row.updated_at) })), el("div", { className: "kept-actions" }, el("a", { className: "btn btn-ghost btn-small", href: row.url, textContent: "Open" }), drop));
-}
-async function paintLibrary() {
-    library = await listLibrary();
-    const list = $("#account-kept-list");
-    if (list) {
-        const kept = library.filter((r) => r.saved);
-        list.replaceChildren(...(kept.length
-            ? kept.map((r) => keptRow(r, { showNote: false }))
-            : [nothing("Nothing kept yet. On any piece or lesson there is a Save "
-                    + "button under the title, and what you save lands here.")]));
-    }
-    const notes = $("#account-notes");
-    if (notes) {
-        const written = library.filter((r) => r.note);
-        notes.replaceChildren(...(written.length
-            ? written.map((r) => keptRow(r, { showNote: true }))
-            : [nothing("Nothing written yet. Every piece and every lesson has an "
-                    + "\"Add a note\" button under the title.")]));
-    }
-}
+/* The reading list and the notes were painted here and are
+   `components/account/library.tsx` now, one component for both
+   because they are two columns of one row.
+
+   The module-level `library` went with them. It looked like
+   "take a copy of everything" still needed it and it did not:
+   that function calls `listLibrary()` itself and reads its own
+   local. The compiler is what said so. */
 /* ============================================================
    TARGETS
    ============================================================ */
@@ -580,52 +523,8 @@ function readTargetForm() {
 /* ============================================================
    SAVED SCENARIOS
    ============================================================ */
-const TOOL_PAGE = { stock: "/tools/stock.html" };
-const TOOL_NAME = { stock: "The stock check" };
-function scenarioRow(row) {
-    const page = TOOL_PAGE[row.tool] ?? "/tools/index.html";
-    const query = typeof row.inputs?.query === "string" ? row.inputs.query : "";
-    const href = query ? `${page}?${query.replace(/^\?/, "")}` : page;
-    const rename = el("button", { className: "btn btn-ghost btn-small", type: "button",
-        textContent: "Rename" });
-    rename.addEventListener("click", async () => {
-        const next = prompt("Call it what?", row.name);
-        if (next === null)
-            return;
-        try {
-            await updateScenario(row.id, { name: next.trim().slice(0, 80) });
-            await paintScenarios();
-        }
-        catch (err) {
-            say($("#exit-note"), err.message, "warn");
-        }
-    });
-    const drop = el("button", { className: "btn btn-ghost btn-small", type: "button",
-        textContent: "Remove" });
-    drop.addEventListener("click", async () => {
-        if (!confirm(`Remove "${row.name || "this scenario"}"?`))
-            return;
-        try {
-            await removeScenario(row.id);
-            await paintScenarios();
-        }
-        catch (err) {
-            say($("#exit-note"), err.message, "warn");
-        }
-    });
-    return el("div", { className: "saved-row" }, el("div", { className: "saved-body" }, el("h3", { textContent: row.name || "Untitled" }), el("p", { className: "saved-line", textContent: [TOOL_NAME[row.tool] ?? row.tool, row.summary, when(row.updated_at)]
-            .filter(Boolean).join(" · ") })), el("div", { className: "saved-actions" }, el("a", { className: "btn btn-solid btn-small", href, textContent: "Open" }), rename, drop));
-}
-async function paintScenarios() {
-    const host = $("#account-scenarios");
-    if (!host)
-        return;
-    const rows = await listScenarios();
-    host.replaceChildren(...(rows.length
-        ? rows.map(scenarioRow)
-        : [nothing("Nothing saved. Fill in the stock check and press Save, and it "
-                + "will be here on every device you sign in on.")]));
-}
+/* The saved scenarios were painted here and are
+   `components/account/saved.tsx` now. */
 /* ============================================================
    READING PREFERENCES
 
@@ -635,30 +534,11 @@ async function paintScenarios() {
    would be a Save button between them and the only feedback the
    control has.
    ============================================================ */
-const PREF_ROWS = [
-    { key: "text", label: "Type size", options: SCALES },
-    { key: "measure", label: "Line width", options: MEASURES },
-    { key: "theme", label: "Theme", options: THEMES },
-    { key: "lang", label: "Calculators open in", options: LANGS },
-];
-function paintPrefs() {
-    const host = $("#account-prefs");
-    if (!host)
-        return;
-    const now = readPrefs();
-    host.replaceChildren(...PREF_ROWS.map((row) => el("div", { className: "pref-row" }, el("span", { className: "pref-label", textContent: row.label }), el("div", { className: "pref-chips", role: "group", "aria-label": row.label }, ...row.options.map((option) => {
-        const on = now[row.key] === option.id;
-        const chip = el("button", {
-            className: "pref-chip", type: "button",
-            "aria-pressed": String(on), "data-on": on ? "" : undefined,
-        }, el("strong", { textContent: option.label }), option.note ? el("small", { textContent: option.note }) : null);
-        chip.addEventListener("click", () => {
-            savePrefs({ [row.key]: option.id });
-            paintPrefs();
-        });
-        return chip;
-    })))));
-}
+/* The four reading preferences were painted here and are
+   `components/account/prefs.tsx` now. They were the simplest
+   section on the page and they are the pattern the rest follow:
+   a client component that reads this site's own module at run
+   time, rather than DOM built in a loop. */
 /* ============================================================
    THE THREE SETTINGS QUESTIONS
    ============================================================ */
@@ -785,7 +665,6 @@ async function boot() {
         return;
     buildKinds();
     buildFields();
-    paintPrefs();
     /* The exchange first, and everything else after it.
   
        This is the one ordering decision on the page and it is the
@@ -828,7 +707,7 @@ async function boot() {
     /* Four sections that each talk to the account, in parallel,
        because none is waiting on any other and one at a time would
        be four round trips end to end. */
-    await Promise.all([paintPaths(), paintTargets(), paintScenarios(), paintLibrary()]);
+    await Promise.all([paintPaths(), paintTargets()]);
 }
 /* ---------- saving ---------- */
 async function save(patch, note) {
@@ -936,11 +815,20 @@ $("#account-forget")?.addEventListener("click", async () => {
     say(note, gone
         ? "Erased. Nothing of yours is stored on this account or on this device."
         : "Some of that did not work. Reload and try again.", gone ? "ok" : "warn");
+    /* The sections this file no longer draws hear about it here.
+  
+       `components/account/` reads the same rows and cannot know
+       that a button in this file has just emptied them. The same
+       channel `account:changed` below already uses, for the same
+       reason: an event is the right way for two things that do not
+       import each other to agree, and it goes away with this file
+       when the last section moves. */
+    document.dispatchEvent(new CustomEvent("account:refresh"));
     button.disabled = false;
     paintKept();
     paintHeat();
     paintTiles(profile?.pace ?? "");
-    await Promise.all([paintPaths(), paintTargets(), paintScenarios(), paintLibrary()]);
+    await Promise.all([paintPaths(), paintTargets()]);
 });
 document.addEventListener("account:changed", () => {
     paintIdentity();
