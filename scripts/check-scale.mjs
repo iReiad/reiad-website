@@ -57,7 +57,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const FILE = join("aab", "styles.css");
+const FILE = join("next", "styles", "site.css");
 const css = readFileSync(join(ROOT, FILE), "utf8");
 
 /* The scale, as the stylesheet states it. */

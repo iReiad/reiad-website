@@ -1,3 +1,5 @@
+import "../styles/globals.css";
+
 /* ============================================================
    shell.tsx: the page around the page.
 
@@ -101,20 +103,20 @@ export type Current =
 export function SiteHead() {
   return (
     <head>
-      {/* The stylesheet is the site's, whole and unchanged. */}
+      {/* No stylesheet link. The stylesheet is imported at the top
+          of this file, so Next compiles it, hashes it and puts the
+          tag here itself.
+
+          It was two `<link>` tags at `/styles.css` and
+          `/tailwind.css`, which were files in `aab/` served by the
+          other Worker, and the order between them was the whole of
+          the cascade: the first `@layer` statement a browser sees
+          fixes the order of the layers. That ordering is now two
+          lines in `styles/globals.css`, which is a sequence rather
+          than something to remember. */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       <link href={FONTS} rel="stylesheet" />
-      <link rel="stylesheet" href="/styles.css" />
-      {/* Second, and the order is the whole of it. The first
-          `@layer` statement a browser sees fixes the order of the
-          layers, and `styles.css` declares all twenty of them
-          including `tw`. Swap these two links and Tailwind's own
-          declaration wins instead, which puts its utilities above
-          the article layer: see the note at the top of
-          `aab/src/styles/tailwind.css` for why that must never
-          happen. */}
-      <link rel="stylesheet" href="/tailwind.css" />
       <link rel="icon" type="image/x-icon" href="/favicon.ico" />
       <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
       <link rel="manifest" href="/site.webmanifest" />

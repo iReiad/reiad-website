@@ -580,8 +580,9 @@ node scripts/check-api.mjs  # the browser asking for an endpoint the Worker
                             # quietly switches a feature off
 node scripts/build-modules.mjs --check # a served module edited in its built
                                        # form rather than in aab/src/
-node scripts/build-styles.mjs --check  # /tailwind.css edited by hand, or built
-                                       # from a source that changed
+node scripts/build-fallback.mjs --check # /fallback.css, which the two pages that
+                                       # are files link, no longer matching the
+                                       # stylesheet it is drawn from
 node scripts/build-school-icons.mjs --check   # a school drawing next/ copied
 node scripts/check-next.mjs # a copy inside next/ that has drifted from the
                             # thing it was copied from
@@ -898,7 +899,7 @@ Generated pages are generated. Edit the source, never the output:
 node aab/deutsch/build-deutsch.mjs   # the three German practice books
 node aab/english/build-english.mjs   # the English practice book
 node scripts/build-modules.mjs       # aab/share-card.js and aab/api.js from aab/src/
-node scripts/build-styles.mjs        # aab/tailwind.css from aab/src/styles/
+node scripts/build-fallback.mjs     # aab/fallback.css from next/styles/site.css
 node scripts/build-school-icons.mjs  # next/lib/school-icons.ts from aab/*/icons.js
 node aab/build-meta.mjs              # feed.xml, sitemap.xml, robots.txt
 
@@ -920,6 +921,19 @@ The stylesheet was not part of it, and now partly is. `aab/styles.css`
 is still the design system: the rule that a port must not also be a
 redesign held for every page ported in stages 9 to 12, which is what
 made those ports judgeable.
+
+**The stylesheet is `next/styles/` as of 18 August 2026.**
+`site.css` is the design system, `tailwind.css` is the theme and
+the utilities, and `globals.css` imports them in that order, which
+is where the cascade order lives: it was two `<link>` tags in
+`shell.tsx` whose sequence was the whole of it. `shell.tsx`
+imports the one file and Next emits a hashed stylesheet, so
+nothing is served at `/styles.css` any more.
+
+`aab/fallback.css` is that stylesheet with its comments removed,
+for `404.html` and `offline.html`, which cannot link a name that
+carries a content hash. `scripts/build-fallback.mjs` writes it and
+`check-next.mjs` fails if it has drifted.
 
 **Tailwind is live as of 17 August 2026, on one page.** Stage 14 set
 the arrangement up and deliberately left it unused so the first

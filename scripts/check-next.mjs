@@ -117,6 +117,25 @@ if (read("next/lib/school-stages.ts") !== ladder()) {
 }
 
 /* ------------------------------------------------------------
+   2c. The stylesheet the two file pages link
+
+   `404.html` and `offline.html` cannot link the stylesheet Next
+   emits, because its name carries a content hash. They link
+   `aab/fallback.css`, which is the same file with its comments
+   removed, written by `scripts/build-fallback.mjs`. A stylesheet
+   edited and not regenerated is those two pages drifting from the
+   other 250, and they are the two nobody looks at.
+   ------------------------------------------------------------ */
+
+const { generate: fallback } = await import("./build-fallback.mjs");
+
+if (read("aab/fallback.css") !== fallback()) {
+  fail("aab/fallback.css is not next/styles/site.css with its comments out.",
+    "Regenerate it and commit the result:",
+    "  node scripts/build-fallback.mjs");
+}
+
+/* ------------------------------------------------------------
    3. And that the cards can actually find those drawings
 
    The two checks above prove `next/` holds the same drawings

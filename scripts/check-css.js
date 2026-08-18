@@ -84,7 +84,7 @@ const SCHOOLS = [
   { layer: "reads", owns: ["cooking/", "travel/", "../next/"] },
 ];
 
-const css = readFileSync(join(ROOT, "styles.css"), "utf8");
+const css = readFileSync(join(REPO, "next", "styles", "site.css"), "utf8");
 
 /* ============================================================
    Before anything else: do the braces balance.
@@ -535,7 +535,7 @@ const used = new Set([...noComments.matchAll(/var\(\s*(--[a-z0-9-]+)/g)].map((m)
    to nothing in all seven components that asked for one, and
    every surface on the site was flat. It looked like a design
    choice. */
-const tw = join(ROOT, "src", "styles", "tailwind.css");
+const tw = join(REPO, "next", "styles", "tailwind.css");
 if (existsSync(tw)) {
   const theme = strip(readFileSync(tw, "utf8"));
   for (const m of theme.matchAll(/(--[a-z0-9-]+)\s*:/g)) declared.add(m[1]);

@@ -62,8 +62,13 @@ const page = `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Surfaces</title>
-<link rel="stylesheet" href="/styles.css">
-<link rel="stylesheet" href="/tailwind.css">
+<!-- /fallback.css rather than the hashed stylesheet Next emits.
+     This harness is a file served off the assets directory, like
+     404.html, so like 404.html it cannot know a name with a
+     content hash in it. It IS the real stylesheet with its
+     comments removed, so what is looked at here is what a reader
+     gets. -->
+<link rel="stylesheet" href="/fallback.css">
 <style>
   /* The harness's own furniture only. Nothing here styles a
      surface: every surface below is drawn by the real tokens. */

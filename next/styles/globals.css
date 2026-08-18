@@ -1,0 +1,20 @@
+/* ============================================================
+   globals.css: the whole stylesheet, in the order it has to load.
+
+   Two files and one rule about them, and the rule used to be a
+   comment in `shell.tsx` and nothing else: `site.css` declares
+   the cascade layer order in its first twenty lines, so it has to
+   arrive before anything that fills a layer in. As two `<link>`
+   tags that was an ordering somebody had to keep; as two lines
+   here it is a sequence.
+
+   `site.css` is the design system, hand-written, and it stays
+   hand-written: an article's body is HTML in a database and
+   Tailwind's compiler cannot see it, so `@layer article` can
+   never be utilities. `tailwind.css` is the theme and the
+   utilities, and it goes second because `@layer tw` sits after
+   `components` and before `article` in that declaration.
+   ============================================================ */
+
+@import "./site.css";
+@import "./tailwind.css";

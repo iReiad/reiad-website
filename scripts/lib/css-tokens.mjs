@@ -31,7 +31,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
    "could not be resolved" and the twenty-one that did resolve
    measured the wrong colour. A parser that reads prose as code is
    a parser that measures whatever the last person wrote about. */
-const CSS = readFileSync(join(ROOT, "aab", "styles.css"), "utf8")
+const CSS = readFileSync(join(ROOT, "next", "styles", "site.css"), "utf8")
   .replace(/\/\*[\s\S]*?\*\//g, "");
 
 /* ============================================================

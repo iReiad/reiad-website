@@ -31,7 +31,7 @@ const say = (m) => problems.push(m);
    1. Nothing else sets --accent per section
    ============================================================ */
 
-const css = read("aab/styles.css");
+const css = read("next/styles/site.css");
 
 /* A rule that sets `--accent` under a body class or a section
    attribute is a second copy of this table. `:root` is the
