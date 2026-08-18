@@ -31,6 +31,19 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v105: The theming actually reaches the page. `--accent` was set
+        correctly on every page and then ignored by 557 rules that
+        named `var(--green)` or `var(--gold)`, so a German page
+        carried a blue accent on <html> and drew a green button, a
+        green section label and a gold eyebrow. They read
+        `var(--accent)` now, and check-accents.mjs fails on a rule
+        that names one of the seven. Twenty golds stay, because
+        they mean warn, risk and not-written-yet rather than a
+        section. The corners are a five-rung ladder instead of
+        thirty-three literals across fourteen values, and every
+        rung is a step rounder: the site read as boxes. Rail rows
+        are pills with a disc and glass on hover.
+
    v104: The surfaces compute again. `color-mix()` cannot contain
         `light-dark()`: the property does not compute at all, so
         every card's background came out at rgba(0,0,0,0) and the
@@ -996,7 +1009,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v104";
+const VERSION = "v105";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

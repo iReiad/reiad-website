@@ -35,6 +35,13 @@ import {
   listArticles, readArticle, patchArticle, deleteArticle,
 } from "./api.ts";
 import { useRows } from "./useRows.ts";
+/* The colour a section owns, from the one table the rail, the
+   footer and every route already read. `styles.css` kept its own
+   copy of two of them and both were wrong: cooking was gold where
+   the rail says rose, and travel was plain ink where the rail says
+   plum. A second copy of a mapping does not stay right, it stays
+   whatever it was on the day it was typed. */
+import { accentStyle } from "../../next/lib/nav.ts";
 import { History } from "./History.tsx";
 import {
   SECTIONS, findSection, pieceUrl, isDrawnCard, coverFromHTML,
@@ -248,7 +255,8 @@ function Row({
       <a className="article-title" href={url}>{a.title}</a>
 
       <span className="line-facts">
-        <span className={`pill section-pill section-${sec.id}`}>
+        <span className={`pill section-pill section-${sec.id}`}
+          style={accentStyle(sec.id)}>
           {sec.id === "insights" ? sec.en : sec.bn}
         </span>
         <Pill>{a.status}</Pill>

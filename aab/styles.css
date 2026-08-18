@@ -267,7 +267,6 @@
     --gold:         light-dark(oklch(44% 0.090 var(--h-gold)),   oklch(72% 0.105 var(--h-gold)));
 
     --green-strong: light-dark(oklch(30%   0.060 var(--h-green)), oklch(30%   0.060 var(--h-green)));
-    --green-soft:   light-dark(oklch(94.5% 0.015 var(--h-green)), oklch(23%   0.020 var(--h-green)));
     --danger:       light-dark(oklch(52%   0.150 28),             oklch(70%   0.140 28));
 
     /* --- the one every component actually reads ---
@@ -445,19 +444,28 @@
     --read-measure: 66ch;
     --read-scale: 1;
     --measure: var(--read-measure);
-    --radius: 16px;
-    --radius-sm: 10px;
-    /* The two that were written out as literals 54 times between
-       them, and are now written out twice: `--radius-pill` was
-       `999px` in 44 places and `--radius-xs` was `4px` in 10.
-       Purely mechanical, identical computed value, and the only
-       reason to do it is that a token nothing reaches for is a
-       token that is not really there. */
+    /* --- the corners ---
+
+       Four rungs and a pill, and every corner on the site is one
+       of them. `check-scale.mjs` fails on a literal `px` radius
+       for the same reason it fails on a fifty-first font size:
+       thirty-three of them had accumulated across fourteen
+       different values, which is not a design with a soft corner,
+       it is fourteen people's idea of one.
+
+       They are also all a step rounder than they were. A 10px
+       corner on a 200px card is a square with the edges taken
+       off, and the whole site read as boxes. `--radius-icon` was
+       here for the 28 to 38px tile and was reached for by
+       nothing at all, which is the state a token is in just
+       before somebody writes a literal instead. It is gone: a
+       tile that small takes `--radius-sm`, and the rail's own
+       discs are pills. */
+    --radius-xs: 5px;
+    --radius-sm: 12px;
+    --radius: 18px;
+    --radius-lg: 24px;
     --radius-pill: 999px;
-    --radius-xs: 4px;
-    /* The icon tile: a 28 to 38px rounded square, which had four
-       different radii (8, 9, 9 and 11px) for one shape. */
-    --radius-icon: 9px;
 
     /* --- controls ---
 
@@ -770,7 +778,7 @@
   }
 
   a {
-    color: var(--green);
+    color: var(--accent);
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
     transition: text-decoration-color var(--fast) var(--ease);
@@ -822,7 +830,7 @@
     outline-offset: 2px;
   }
 
-  ::selection { background: var(--green-soft); color: var(--green); }
+  ::selection { background: var(--accent-soft); color: var(--accent); }
 
   /* Native form controls follow the theme */
   input, textarea, select, button { font: inherit; color: inherit; }
@@ -830,8 +838,8 @@
   /* Skip link, visible only when focused */
   .skip {
     position: absolute; left: 12px; top: -60px; z-index: 200;
-    background: var(--green); color: #fff;
-    padding: 10px 16px; border-radius: 0 0 10px 10px;
+    background: var(--accent); color: var(--accent-ink);
+    padding: 10px 16px; border-radius: 0 0 var(--radius-sm) var(--radius-sm);
     text-decoration: none; font-family: var(--font-mono); font-size: var(--t-3);
     transition: top var(--fast) var(--ease);
 
@@ -874,7 +882,7 @@
   }
 
   .section-label {
-    color: var(--gold);
+    color: var(--accent);
     border-bottom: 1px solid var(--hairline);
     padding-bottom: 10px;
     margin-bottom: 26px;
@@ -992,11 +1000,11 @@
     &:disabled { opacity: 0.45; pointer-events: none; }
   }
   .btn-solid {
-    background: var(--green); color: light-dark(#fff, oklch(16.5% 0.012 var(--h-green)));
-    border-color: color-mix(in oklab, var(--green) 80%, var(--ink));
+    background: var(--accent); color: var(--accent-ink);
+    border-color: color-mix(in oklab, var(--accent) 80%, var(--ink));
 
     &:hover {
-      background: color-mix(in oklab, var(--green) 82%, var(--ink));
+      background: color-mix(in oklab, var(--accent) 82%, var(--ink));
       box-shadow: var(--shadow);
     }
   }
@@ -1004,9 +1012,9 @@
     border-color: var(--hairline); color: var(--ink); background: var(--panel);
 
     &:hover {
-      border-color: color-mix(in oklab, var(--green) 45%, var(--hairline));
-      color: var(--green);
-      background: var(--green-soft);
+      border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline));
+      color: var(--accent);
+      background: var(--accent-soft);
       box-shadow: var(--shadow);
     }
   }
@@ -1014,12 +1022,12 @@
   .icon-btn {
     border: 1px solid var(--hairline);
     background: var(--panel); color: var(--ink);
-    border-radius: 8px; padding: 6px 10px;
+    border-radius: var(--radius-sm); padding: 6px 10px;
     font-family: var(--font-mono); font-size: var(--t-3);
     cursor: pointer; display: inline-flex; align-items: center; gap: var(--s-3);
     transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
 
-    &:hover { border-color: var(--green); color: var(--green); }
+    &:hover { border-color: var(--accent); color: var(--accent); }
   }
   .kbd-hint { opacity: 0.6; font-size: var(--t-2); }
 
@@ -1067,8 +1075,8 @@
   .account-btn[data-signed-in="true"] {
     width: 30px; height: 30px; padding: 0;
     justify-content: center; border-radius: 50%;
-    background: var(--green-soft); border-color: var(--green);
-    color: var(--green); font-size: var(--t-3);
+    background: var(--accent-soft); border-color: var(--accent);
+    color: var(--accent); font-size: var(--t-3);
   }
 
   .signin {
@@ -1079,7 +1087,7 @@
 
     &::backdrop { background: oklch(12% 0.02 var(--h-green) / 0.55); }
   }
-  .signin-kicker { color: var(--gold); font-size: var(--t-0);
+  .signin-kicker { color: var(--accent); font-size: var(--t-0);
                    letter-spacing: 0.1em; text-transform: uppercase; }
   .signin-why { font-size: var(--t-4); color: var(--ink-soft); margin: 0; max-width: none; }
   .signin-or {
@@ -1098,7 +1106,7 @@
       border: 1px solid var(--hairline); border-radius: var(--radius-sm);
 
       &:focus {
-        outline: 0; border-color: var(--green);
+        outline: 0; border-color: var(--accent);
         box-shadow: var(--focus-ring);
       }
     }
@@ -1107,7 +1115,7 @@
     font-size: var(--t-4); margin: 0; max-width: none; color: var(--ink-soft);
 
     &:empty { display: none; }
-    &[data-state="ok"] { color: var(--green); }
+    &[data-state="ok"] { color: var(--accent); }
     &[data-state="warn"] { color: var(--gold); }
   }
   /* ---------- the account page ---------- */
@@ -1142,7 +1150,7 @@
   .comment-mark {
     display: grid; place-items: center;
     width: 26px; height: 26px; border-radius: 50%;
-    background: var(--green-soft); color: var(--green);
+    background: var(--accent-soft); color: var(--accent);
     font-family: var(--font-mono); font-size: var(--t-2);
   }
   .comment-when { font-size: var(--t-2); color: var(--ink-soft); }
@@ -1170,7 +1178,7 @@
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
 
     &:focus {
-      outline: 0; border-color: var(--green);
+      outline: 0; border-color: var(--accent);
       box-shadow: var(--focus-ring);
     }
   }
@@ -1206,17 +1214,17 @@
     transition: border-color var(--fast) var(--ease),
                 background var(--fast) var(--ease);
 
-    &:hover { border-color: color-mix(in oklab, var(--green) 40%, var(--hairline)); }
+    &:hover { border-color: color-mix(in oklab, var(--accent) 40%, var(--hairline)); }
 
-    & input { margin-top: 3px; accent-color: var(--green); width: 16px; height: 16px; }
+    & input { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; }
     & strong { display: block; font-weight: 500; font-size: var(--t-5); }
     & small { display: block; color: var(--ink-soft); font-size: var(--t-4); margin-top: 2px; }
 
     /* Ticked is a state worth seeing from across the form, not a
        13px mark you have to go and look for. */
     &:has(input:checked) {
-      border-color: var(--green);
-      background: var(--green-soft);
+      border-color: var(--accent);
+      background: var(--accent-soft);
     }
     &:has(input:focus-visible) {
       box-shadow: var(--focus-ring);
@@ -1290,18 +1298,18 @@
     align-items: center; gap: var(--s-5);
     padding: 9px 12px; margin-top: 2px;
     border-radius: var(--radius-sm);
-    background: var(--green-soft);
+    background: var(--accent-soft);
     color: var(--ink); text-decoration: none;
 
-    & .mono { font-size: var(--t-0); letter-spacing: 0.1em; color: var(--green); }
+    & .mono { font-size: var(--t-0); letter-spacing: 0.1em; color: var(--accent); }
     & strong { font-weight: 500; font-size: var(--t-5); min-width: 0; }
-    &::after { content: "→"; color: var(--green); transition: translate var(--fast) var(--ease); }
+    &::after { content: "→"; color: var(--accent); transition: translate var(--fast) var(--ease); }
     &:hover::after { translate: 3px 0; }
   }
 
   .target[data-done] {
-    border-color: color-mix(in oklab, var(--green) 40%, var(--hairline));
-    background: var(--green-soft);
+    border-color: color-mix(in oklab, var(--accent) 40%, var(--hairline));
+    background: var(--accent-soft);
   }
   .target-actions, .saved-actions {
     display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-4);
@@ -1312,7 +1320,7 @@
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
 
     &:focus {
-      outline: 0; border-color: var(--green);
+      outline: 0; border-color: var(--accent);
       box-shadow: var(--focus-ring);
     }
   }
@@ -1334,7 +1342,7 @@
       border: 1px solid var(--hairline); border-radius: var(--radius-sm);
     }
     & input:focus, & select:focus {
-      outline: 0; border-color: var(--green);
+      outline: 0; border-color: var(--accent);
       box-shadow: var(--focus-ring);
     }
   }
@@ -1373,7 +1381,7 @@
       border: 1px solid var(--hairline); border-radius: var(--radius-sm);
     }
     & input:focus {
-      outline: 0; border-color: var(--green);
+      outline: 0; border-color: var(--accent);
       box-shadow: var(--focus-ring);
     }
   }
@@ -1476,7 +1484,7 @@
   .acc-avatar {
     width: 38px; height: 38px; border-radius: 50%;
     display: grid; place-items: center;
-    background: var(--green); color: #fff;
+    background: var(--accent); color: var(--accent-ink);
     font-family: var(--font-serif); font-size: var(--t-7); line-height: 1;
   }
   .acc-who-text {
@@ -1511,9 +1519,9 @@
   }
   .acc-ico {
     width: 30px; height: 30px; display: grid; place-items: center;
-    border-radius: 9px;
-    color: var(--green);
-    background: color-mix(in oklab, var(--green) 12%, transparent);
+    border-radius: var(--radius-sm);
+    color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
 
     & svg { width: 17px; height: 17px; }
   }
@@ -1575,14 +1583,14 @@
                 background var(--fast) var(--ease);
 
     & svg { width: 15px; height: 15px; }
-    &:hover { color: var(--green); border-color: var(--green); }
+    &:hover { color: var(--accent); border-color: var(--accent); }
     &:focus-visible {
-      outline: 0; border-color: var(--green);
+      outline: 0; border-color: var(--accent);
       box-shadow: var(--focus-ring);
     }
     &[data-on] {
-      color: var(--green); border-color: var(--green);
-      background: var(--green-soft);
+      color: var(--accent); border-color: var(--accent);
+      background: var(--accent-soft);
     }
     /* Filled once it is kept, so the state is legible without
        reading the word beside it. */
@@ -1610,7 +1618,7 @@
     field-sizing: content; min-height: 6lh; max-height: 60vh;
 
     &:focus {
-      outline: 0; border-color: var(--green);
+      outline: 0; border-color: var(--accent);
       box-shadow: var(--focus-ring);
     }
   }
@@ -1682,11 +1690,11 @@
     padding: 13px 16px;
     background: var(--paper-sunk);
     border: 1px solid var(--hairline);
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
   }
   .acct-tile strong {
     font-family: var(--font-serif); font-size: 1.5rem; font-weight: 500;
-    color: var(--green); font-variant-numeric: tabular-nums; line-height: 1.15;
+    color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1.15;
   }
   .acct-tile span { font-size: var(--t-3); color: var(--ink-soft); }
 
@@ -1715,12 +1723,12 @@
   }
   .heat-week { display: grid; grid-auto-rows: var(--cell); gap: 3px; }
   .heat-cell {
-    display: block; border-radius: 2px;
+    display: block; border-radius: var(--radius-xs);
     background: color-mix(in oklab, var(--ink) 8%, transparent);
 
-    &[data-on] { background: var(--green); }
+    &[data-on] { background: var(--accent); }
     &[data-off] { background: transparent; }
-    &[data-today] { outline: 1px solid var(--gold); outline-offset: 1px; }
+    &[data-today] { outline: 1px solid var(--accent); outline-offset: 1px; }
   }
 
   /* ---------- kept pages, and notes on them ---------- */
@@ -1739,11 +1747,11 @@
 
     & h3 { margin: 0; font-size: var(--t-5); font-weight: 500; }
     & h3 a { color: var(--ink); text-decoration: none; }
-    & h3 a:hover { color: var(--green); }
+    & h3 a:hover { color: var(--accent); }
   }
   .kept-kind {
     font-size: var(--t-0); letter-spacing: 0.11em; text-transform: uppercase;
-    color: var(--gold);
+    color: var(--accent);
   }
   /* The note as it was typed, newlines and all, and never as
      markup. It is the one field on this site whose author and
@@ -1753,7 +1761,7 @@
     white-space: pre-wrap; overflow-wrap: anywhere;
     max-width: var(--measure);
     padding-inline-start: 11px;
-    border-inline-start: 2px solid color-mix(in oklab, var(--green) 45%, transparent);
+    border-inline-start: 2px solid color-mix(in oklab, var(--accent) 45%, transparent);
   }
   .kept-when { font-size: var(--t-1); color: var(--ink-soft); }
   .kept-actions { display: flex; flex-wrap: wrap; gap: var(--s-4); }
@@ -1800,15 +1808,15 @@
     & strong { font-weight: 500; font-size: var(--t-4); }
     & small { color: var(--ink-soft); font-size: var(--t-2); }
 
-    &:hover { border-color: color-mix(in oklab, var(--green) 45%, var(--hairline)); }
+    &:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline)); }
     &:focus-visible {
-      outline: 0; border-color: var(--green);
+      outline: 0; border-color: var(--accent);
       box-shadow: var(--focus-ring);
     }
     &[data-on] {
-      border-color: var(--green); background: var(--green-soft);
+      border-color: var(--accent); background: var(--accent-soft);
 
-      & strong { color: var(--green); }
+      & strong { color: var(--accent); }
     }
   }
 
@@ -1848,7 +1856,7 @@
     pointer-events: none;
   }
 
-  .eyebrow { color: var(--gold); display: block; margin-bottom: 18px; }
+  .eyebrow { color: var(--accent); display: block; margin-bottom: 18px; }
   .hero h1 { font-size: clamp(2.2rem, 5.8vw, 3.8rem); max-width: 18ch; }
   .hero p.lede {
     margin-top: 20px; max-width: 56ch;
@@ -1883,7 +1891,7 @@
     display: flex; flex-direction: column; gap: var(--s-6);
     container-type: inline-size;   /* children can size to the cell */
 
-    & .tag { color: var(--gold); }
+    & .tag { color: var(--accent); }
     & h2 { font-size: 1.5rem; }
     & h3 { font-size: var(--t-7); }
     & p { color: var(--ink-soft); font-size: var(--t-5); }
@@ -1947,7 +1955,7 @@
     display: grid; grid-template-columns: 210px 1fr; gap: var(--s-7);
     padding-block: 15px; border-bottom: 1px solid var(--hairline);
 
-    & .k { color: var(--gold); padding-top: 3px; }
+    & .k { color: var(--accent); padding-top: 3px; }
     & .v { color: var(--ink); }
     & .v small { color: var(--ink-soft); display: block; }
   }
@@ -1972,8 +1980,8 @@
 
   /* ---------- notes & callouts ---------- */
   .note {
-    background: var(--green-soft);
-    border-left: 3px solid var(--gold);
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     padding: 14px 18px; margin-block: 30px;
     font-size: var(--t-5); color: var(--ink-soft);
@@ -1981,17 +1989,17 @@
   }
 
   .ex {
-    background: var(--green-soft);
+    background: var(--accent-soft);
     border: 1px solid var(--hairline);
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
     padding: 16px 18px; margin-block: 22px;
     font-size: var(--t-5); max-width: var(--measure);
 
-    & b { color: var(--green); }
+    & b { color: var(--accent); }
   }
 
   .pill {
-    border: 1px solid var(--hairline); border-radius: 20px;
+    border: 1px solid var(--hairline); border-radius: var(--radius-lg);
     padding: 1px 9px; font-size: var(--t-1);
   }
 
@@ -2011,8 +2019,8 @@
       font-size: var(--t-3); color: var(--ink);
     }
   }
-  .pill-bd     { color: var(--green); border-color: var(--green); }
-  .pill-global { color: var(--gold);  border-color: var(--gold); }
+  .pill-bd     { color: var(--accent); border-color: var(--accent); }
+  .pill-global { color: var(--accent);  border-color: var(--accent); }
 
   /* ---------- FAQ / disclosure ---------- */
   details.faq {
@@ -2026,7 +2034,7 @@
 
       &::-webkit-details-marker { display: none; }
       &::before {
-        content: "+"; color: var(--green);
+        content: "+"; color: var(--accent);
         font-family: var(--font-mono); font-size: var(--t-7);
         transition: rotate var(--fast) var(--ease);
       }
@@ -2043,8 +2051,8 @@
     margin: 12vh auto auto;
     padding: 0;
     border: 1px solid var(--hairline);
-    border-radius: calc(var(--radius) + 2px);
-    background: color-mix(in oklab, var(--panel) 94%, var(--green-soft));
+    border-radius: calc(var(--radius) + var(--radius-xs));
+    background: color-mix(in oklab, var(--panel) 94%, var(--accent-soft));
     color: var(--ink);
     box-shadow: 0 28px 80px oklch(18% 0.02 var(--h-green) / 0.28),
                 0 2px 0 oklch(100% 0 0 / 0.25) inset;
@@ -2086,7 +2094,7 @@
   .palette-panel {
     width: 100%; max-width: 560px;
     background: var(--panel); color: var(--ink);
-    border: 1px solid var(--hairline); border-radius: 14px;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
     box-shadow: 0 24px 60px oklch(0% 0 0 / 0.28);
     overflow: clip;
   }
@@ -2106,11 +2114,11 @@
   .palette-search-mark {
     flex: 0 0 auto; width: 38px; height: 38px;
     display: grid; place-items: center; border-radius: 50%;
-    color: var(--green); background: var(--green-soft);
+    color: var(--accent); background: var(--accent-soft);
     font-family: var(--font-serif); font-size: 1.5rem; line-height: 1;
   }
   .palette-search-copy { min-width: 0; flex: 1; display: grid; gap: var(--s-1); }
-  .palette-kicker { color: var(--gold); font-size: var(--t-0); }
+  .palette-kicker { color: var(--accent); font-size: var(--t-0); }
   .palette-slash { color: var(--ink-soft); }
   .palette-meta {
     display: flex; justify-content: space-between; gap: var(--s-6); align-items: center;
@@ -2131,7 +2139,7 @@
                   border-color var(--fast) var(--ease);
     }
     & .hint { color: var(--ink-soft); font-family: var(--font-mono); font-size: var(--t-1); letter-spacing: 0.04em; text-transform: uppercase; }
-    & li.active a, & a:hover { background: var(--green-soft); border-inline-start-color: var(--green); color: var(--green); }
+    & li.active a, & a:hover { background: var(--accent-soft); border-inline-start-color: var(--accent); color: var(--accent); }
   }
   /* Group headings inside the results list. Not options: the arrow
      keys skip them and aria-hidden keeps them out of the listbox. */
@@ -2146,7 +2154,7 @@
   .palette-empty {
     min-height: 178px; display: grid; align-content: center; justify-items: start; gap: 5px;
     padding: 24px 20px; color: var(--ink-soft); font-size: var(--t-5);
-    & > span { color: var(--gold); font-family: var(--font-serif); font-size: 1.55rem; line-height: 1; }
+    & > span { color: var(--accent); font-family: var(--font-serif); font-size: 1.55rem; line-height: 1; }
     & strong { color: var(--ink); font-family: var(--font-serif); font-size: var(--t-7); font-weight: 500; }
     & small { font-size: var(--t-4); }
   }
@@ -2183,7 +2191,7 @@
     height: min(82vh, 900px);
     background: var(--paper);
     border: 1px solid var(--hairline);
-    border-radius: 18px 18px 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     display: flex; flex-direction: column;
     box-shadow: 0 -18px 60px oklch(0% 0 0 / 0.3);
   }
@@ -2195,7 +2203,7 @@
     padding: 12px 18px;
     border-bottom: 1px solid var(--hairline);
 
-    & #reader-full { margin-inline-start: auto; color: var(--green); text-decoration: none; }
+    & #reader-full { margin-inline-start: auto; color: var(--accent); text-decoration: none; }
     & #reader-full:hover { text-decoration: underline; }
   }
   .reader-body {
@@ -2214,7 +2222,7 @@
     display: grid; gap: 14px; padding: 26px 0 10px;
 
     & .sk {
-      display: block; border-radius: 6px;
+      display: block; border-radius: var(--radius-xs);
       background: linear-gradient(90deg,
         var(--paper-sunk) 0%, var(--panel-hover) 50%, var(--paper-sunk) 100%);
       background-size: 200% 100%;
@@ -2232,7 +2240,7 @@
 
   @media (width >= 700px) {
     #reader { align-items: center; padding: 4vh 20px; }
-    .reader-panel { border-radius: 18px; }
+    .reader-panel { border-radius: var(--radius-lg); }
   }
 
   /* ---------- CONTACT FORM ---------- */
@@ -2247,17 +2255,17 @@
       border: 1px solid var(--hairline); border-radius: var(--radius-sm);
       transition: border-color var(--fast) var(--ease);
     }
-    & input:focus, & textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--green); }
+    & input:focus, & textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--accent); }
     /* grow with the text instead of scrolling inside a fixed box */
     & textarea { min-height: 150px; resize: vertical; field-sizing: content; }
     & button {
       align-self: flex-start; cursor: pointer; border: 0;
-      background: var(--green); color: light-dark(#fff, oklch(16.5% 0.012 var(--h-green)));
+      background: var(--accent); color: var(--accent-ink);
       padding: 12px 24px; border-radius: var(--radius-sm);
       font-family: var(--font-mono); font-size: var(--t-4);
       letter-spacing: 0.05em; text-transform: uppercase;
 
-      &:hover { background: color-mix(in oklab, var(--green) 82%, var(--ink)); }
+      &:hover { background: color-mix(in oklab, var(--accent) 82%, var(--ink)); }
       &:disabled { opacity: 0.6; cursor: wait; }
     }
     /* :has(), flag an invalid field only once the user has typed in it */
@@ -2265,7 +2273,7 @@
     & label:has(input:user-invalid) input { border-color: var(--danger); }
   }
   #form-status { font-size: var(--t-5); min-height: 1.4em; }
-  #form-status.ok { color: var(--green); }
+  #form-status.ok { color: var(--accent); }
   #form-status.err { color: var(--danger); }
 
   /* ---------- MARKET PULSE ---------- */
@@ -2306,8 +2314,8 @@ it collapsed to the width of the word "Bangladesh". */
     transition: border-color var(--fast) var(--ease),
                 box-shadow var(--fast) var(--ease);
 
-    &:hover { border-color: var(--green); box-shadow: var(--shadow-lift); }
-    &:hover .news-card-title { color: var(--green); }
+    &:hover { border-color: var(--accent); box-shadow: var(--shadow-lift); }
+    &:hover .news-card-title { color: var(--accent); }
   }
 
   .news-card-top {
@@ -2338,7 +2346,7 @@ it collapsed to the width of the word "Bangladesh". */
   .news-card-src { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .news-card-go {
     margin-inline-start: auto; font-size: var(--t-3); line-height: 1;
-    color: var(--green); opacity: 0;
+    color: var(--accent); opacity: 0;
     transition: opacity var(--fast) var(--ease), translate var(--fast) var(--ease);
   }
   .news-card:hover .news-card-go { translate: 3px 0; }
@@ -2378,7 +2386,7 @@ it collapsed to the width of the word "Bangladesh". */
     display: flex; align-items: center; gap: var(--s-6);
     padding: 12px 16px; border-bottom: 1px solid var(--hairline);
 
-    & .news-window-meta { color: var(--gold); }
+    & .news-window-meta { color: var(--accent); }
   }
   .news-window-body {
     padding: 22px 26px 6px; overflow-y: auto; overscroll-behavior: contain;
@@ -2421,7 +2429,7 @@ it collapsed to the width of the word "Bangladesh". */
   @keyframes sweep { to { background-position: -200% 0; } }
 
   /* ---------- portfolio bits ---------- */
-  .sample-card .tag { color: var(--gold); }
+  .sample-card .tag { color: var(--accent); }
   .sample-card h3 { font-size: var(--t-7); }
   /* ---------- topic chips ----------
      A piece can be about several things, and three surfaces now say
@@ -2520,17 +2528,17 @@ it collapsed to the width of the word "Bangladesh". */
     transition: border-color var(--fast) var(--ease),
                 background var(--fast) var(--ease);
 
-    &:hover { border-color: var(--green); }
+    &:hover { border-color: var(--accent); }
     &[aria-selected="true"] {
-      border-color: var(--green);
-      background: var(--green-soft);
+      border-color: var(--accent);
+      background: var(--accent-soft);
     }
   }
   .tool-tab-en {
     font-family: var(--font-mono); font-size: var(--t-2);
     letter-spacing: 0.05em; text-transform: uppercase;
   }
-  .tool-tab[aria-selected="true"] .tool-tab-en { color: var(--green); }
+  .tool-tab[aria-selected="true"] .tool-tab-en { color: var(--accent); }
   .tool-tab-bn { font-size: var(--t-3); color: var(--ink-soft); }
 
   /* With one calculator on screen the card no longer needs to be
@@ -2578,7 +2586,7 @@ it collapsed to the width of the word "Bangladesh". */
     display: flex; justify-content: space-between; align-items: baseline; gap: var(--s-5);
   }
   .tool-inputs .val {
-    font-family: var(--font-mono); font-size: var(--t-4); color: var(--green);
+    font-family: var(--font-mono); font-size: var(--t-4); color: var(--accent);
     font-variant-numeric: tabular-nums;
   }
   .tool-inputs input[type="number"], .tool-inputs select {
@@ -2589,26 +2597,26 @@ it collapsed to the width of the word "Bangladesh". */
     font-variant-numeric: tabular-nums;
   }
   .tool-inputs input:focus, .tool-inputs select:focus {
-    outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--green);
+    outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--accent);
   }
 
   /* range sliders, themed both sides */
   .tool-inputs input[type="range"] {
     -webkit-appearance: none; appearance: none;
     width: 100%; height: 4px; border-radius: var(--radius-pill);
-    background: linear-gradient(var(--green), var(--green)) 0 / var(--pct, 50%) 100% no-repeat,
+    background: linear-gradient(var(--accent), var(--accent)) 0 / var(--pct, 50%) 100% no-repeat,
                 var(--hairline);
     cursor: pointer;
   }
   .tool-inputs input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
     width: 17px; height: 17px; border-radius: 50%;
-    background: var(--green); border: 2px solid var(--panel);
+    background: var(--accent); border: 2px solid var(--panel);
     box-shadow: 0 1px 5px oklch(0% 0 0 / 0.28);
   }
   .tool-inputs input[type="range"]::-moz-range-thumb {
     width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--panel);
-    background: var(--green);
+    background: var(--accent);
   }
 
   .tool-out { display: flex; flex-direction: column; gap: var(--s-7); }
@@ -2620,20 +2628,20 @@ it collapsed to the width of the word "Bangladesh". */
   .stat {
     background: var(--paper-sunk);
     border: 1px solid var(--hairline);
-    border-radius: 12px; padding: 14px 16px;
+    border-radius: var(--radius-sm); padding: 14px 16px;
 
     & .k { display: block; font-family: var(--font-mono); font-size: var(--t-0);
-           letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+           letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
     & .v { display: block; font-family: var(--font-serif); font-size: clamp(1.25rem, 3.4cqi, 1.7rem);
            margin-top: 5px; font-variant-numeric: tabular-nums; }
     & .n { display: block; font-size: var(--t-3); color: var(--ink-soft); margin-top: 2px; }
   }
-  .stat-lead { background: var(--green-soft); border-color: color-mix(in oklab, var(--green) 35%, transparent); }
-  .stat-lead .v { color: var(--green); }
+  .stat-lead { background: var(--accent-soft); border-color: color-mix(in oklab, var(--accent) 35%, transparent); }
+  .stat-lead .v { color: var(--accent); }
 
   .chart-box {
     border: 1px solid var(--hairline);
-    border-radius: 12px; padding: 14px;
+    border-radius: var(--radius-sm); padding: 14px;
     background: var(--paper-sunk);
   }
   .chart-box svg { display: block; width: 100%; height: auto; overflow: visible; }
@@ -2651,7 +2659,7 @@ it collapsed to the width of the word "Bangladesh". */
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
   }
   .versus .side {
-    border: 1px solid var(--hairline); border-radius: 12px; padding: 16px;
+    border: 1px solid var(--hairline); border-radius: var(--radius-sm); padding: 16px;
     background: var(--paper-sunk);
   }
   .versus .side h3 { font-size: var(--t-6); margin-bottom: 4px; }
@@ -2659,12 +2667,12 @@ it collapsed to the width of the word "Bangladesh". */
   .versus .side dl { display: grid; grid-template-columns: 1fr auto; gap: var(--s-3) 10px; font-size: var(--t-5); }
   .versus .side dt { color: var(--ink-soft); }
   .versus .side dd { margin: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-  .versus .winner { border-color: var(--green); background: var(--green-soft); }
-  .versus .winner h3 { color: var(--green); }
+  .versus .winner { border-color: var(--accent); background: var(--accent-soft); }
+  .versus .winner h3 { color: var(--accent); }
 
   .verdict {
-    border-left: 3px solid var(--green);
-    background: var(--green-soft);
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     padding: 14px 16px; font-size: var(--t-5);
   }
@@ -2698,10 +2706,10 @@ it collapsed to the width of the word "Bangladesh". */
   }
   .live-fill {
     display: block; height: 100%;
-    background: var(--gold); border-radius: var(--radius-pill);
+    background: var(--accent); border-radius: var(--radius-pill);
   }
   .live-weight, .live-return { text-align: right; font-variant-numeric: tabular-nums; }
-  .live-up { color: var(--green); }
+  .live-up { color: var(--accent); }
   .live-down { color: var(--danger); }
   .live-soft { color: var(--ink-soft); font-size: var(--t-3); }
   .live-warn { color: var(--danger); font-size: var(--t-5); }
@@ -2782,7 +2790,7 @@ it collapsed to the width of the word "Bangladesh". */
     align-items: center; gap: 4px; height: 100%; }
   .live-col-fill {
     display: block; width: min(100%, 26px);
-    background: var(--gold); border-radius: 4px 4px 0 0;
+    background: var(--accent); border-radius: var(--radius-xs) var(--radius-xs) 0 0;
   }
   .live-col-m { font-size: var(--t-0); color: var(--ink-soft); }
 
@@ -2826,7 +2834,7 @@ it collapsed to the width of the word "Bangladesh". */
     color: var(--ink); background: var(--panel);
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
 
-    &:focus { outline: 2px solid var(--green); outline-offset: 2px; }
+    &:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   }
 
   /* ---------- shared article shell ----------
@@ -2864,20 +2872,20 @@ it collapsed to the width of the word "Bangladesh". */
     & ul, & ol { padding-left: 22px; margin-bottom: 15px; }
     & blockquote {
       margin: 26px 0; padding-left: 18px;
-      border-left: 3px solid var(--green);
+      border-left: 3px solid var(--accent);
       font-family: var(--font-serif); font-size: 1.15em;
       color: var(--ink); max-width: 60ch;
     }
     & hr { border: 0; border-top: 1px solid var(--hairline); margin-block: 34px; }
     & code {
       font-family: var(--font-mono); font-size: 0.88em;
-      background: var(--green-soft); border-radius: var(--radius-xs); padding: 1px 5px;
+      background: var(--accent-soft); border-radius: var(--radius-xs); padding: 1px 5px;
     }
     & table {
       width: 100%; border-collapse: collapse; margin-bottom: 22px; font-size: 0.95em;
     }
     & th, & td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--hairline); }
-    & th { color: var(--gold); font-family: var(--font-mono); font-size: 0.72em;
+    & th { color: var(--accent); font-family: var(--font-mono); font-size: 0.72em;
            letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500; }
   }
   /* tables get their own scroller on narrow screens */
@@ -2905,13 +2913,13 @@ it collapsed to the width of the word "Bangladesh". */
      are standing over a hot pan, or in a queue with thirty
      seconds and a form in your hand. */
   .at-a-glance {
-    border: 1px solid var(--gold); border-radius: var(--radius);
+    border: 1px solid var(--accent); border-radius: var(--radius);
     background: var(--paper-sunk); padding: 20px 22px;
     margin-block: 28px; max-width: var(--measure);
 
     & .at-a-glance-label {
       display: block; margin-bottom: 12px;
-      font-family: var(--font-mono); color: var(--gold);
+      font-family: var(--font-mono); color: var(--accent);
       font-size: var(--t-1); letter-spacing: 0.08em; text-transform: uppercase;
     }
     & ul { margin: 0; padding-left: 0; list-style: none; display: grid; gap: var(--s-4); }
@@ -2923,7 +2931,7 @@ it collapsed to the width of the word "Bangladesh". */
        instructions, and a bullet reads as a step to be done. */
     & li::before {
       content: ""; position: absolute; left: 4px; top: 0.72em;
-      width: 6px; height: 6px; border-radius: 50%; background: var(--gold);
+      width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
     }
   }
 
@@ -2931,14 +2939,14 @@ it collapsed to the width of the word "Bangladesh". */
      The thing everyone gets wrong, at the end of the part that
      explains it. */
   .side-note {
-    border-left: 3px solid var(--green);
+    border-left: 3px solid var(--accent);
     background: var(--panel);
     padding: 16px 18px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     margin-block: 26px; max-width: var(--measure);
 
     & .side-note-label {
       display: block; margin-bottom: 8px;
-      font-family: var(--font-mono); color: var(--green);
+      font-family: var(--font-mono); color: var(--accent);
       font-size: var(--t-1); letter-spacing: 0.08em; text-transform: uppercase;
     }
     & p { margin: 0; max-width: none; font-size: var(--t-5); }
@@ -2967,7 +2975,7 @@ it collapsed to the width of the word "Bangladesh". */
       position: absolute; left: 0; top: 0.1em;
       width: 30px; height: 30px; display: grid; place-items: center;
       border: 1px solid var(--hairline); border-radius: 50%;
-      background: var(--panel); color: var(--green);
+      background: var(--panel); color: var(--accent);
       font-family: var(--font-mono); font-size: var(--t-3);
     }
   }
@@ -2988,8 +2996,8 @@ it collapsed to the width of the word "Bangladesh". */
       content: "✓";
       position: absolute; left: 0; top: 0.05em;
       width: 20px; height: 20px; display: grid; place-items: center;
-      border: 1px solid var(--green); border-radius: 5px;
-      color: var(--green); font-size: var(--t-2); line-height: 1;
+      border: 1px solid var(--accent); border-radius: var(--radius-xs);
+      color: var(--accent); font-size: var(--t-2); line-height: 1;
     }
   }
 
@@ -3026,18 +3034,18 @@ it collapsed to the width of the word "Bangladesh". */
       content: "✓";
       width: 20px; height: 20px; margin-top: 0.05em;
       display: grid; place-items: center;
-      border: 1px solid var(--green); border-radius: 5px;
+      border: 1px solid var(--accent); border-radius: var(--radius-xs);
       color: transparent; font-size: var(--t-2); line-height: 1;
       transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
     }
-    &:hover { background: var(--green-soft); }
+    &:hover { background: var(--accent-soft); }
     &:focus-visible {
       outline: 0;
       box-shadow: var(--focus-ring);
     }
   }
   .checklist li[data-done] .checkpoint::before {
-    background: var(--green); color: var(--panel);
+    background: var(--accent); color: var(--panel);
   }
   .checklist li[data-done] .checkpoint { color: var(--ink-soft); }
 
@@ -3048,7 +3056,7 @@ it collapsed to the width of the word "Bangladesh". */
     letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--ink-soft);
 
-    &[data-state="all"] { color: var(--green); }
+    &[data-state="all"] { color: var(--accent); }
   }
 
   /* ---------- the two or three numbers that matter ----------
@@ -3075,7 +3083,7 @@ it collapsed to the width of the word "Bangladesh". */
 
   .term-article .one-liner {
     margin: 16px 0 26px; font-size: var(--t-7); color: var(--ink-soft);
-    border-left: 3px solid var(--gold); padding-left: 14px; max-width: 60ch;
+    border-left: 3px solid var(--accent); padding-left: 14px; max-width: 60ch;
   }
   .term-article .backlink { margin-top: 30px; }
 
@@ -3099,7 +3107,7 @@ it collapsed to the width of the word "Bangladesh". */
          a 600x900 photo was drawn 100% wide and exactly 900px
          tall, which is a stretched photo on every article that has
          one. It also lets aspect-ratio below do the cropping. */
-      width: 100%; height: auto; border-radius: 12px;
+      width: 100%; height: auto; border-radius: var(--radius-sm);
       border: 1px solid var(--hairline);
       background: var(--paper-sunk);
     }
@@ -3167,7 +3175,7 @@ it collapsed to the width of the word "Bangladesh". */
   @supports (animation-timeline: scroll()) {
     .read-progress {
       position: fixed; inset-block-start: 0; inset-inline: 0; z-index: 60;
-      height: 2px; background: var(--green);
+      height: 2px; background: var(--accent);
       transform-origin: left; scale: 0 1;
       animation: progress linear;
       animation-timeline: scroll(root block);
@@ -3186,8 +3194,8 @@ it collapsed to the width of the word "Bangladesh". */
     padding: 18px 20px; background: var(--panel);
     transition: border-color var(--fast) var(--ease);
 
-    &:hover { border-color: var(--green); }
-    & .mono { color: var(--gold); display: block; margin-bottom: 6px; }
+    &:hover { border-color: var(--accent); }
+    & .mono { color: var(--accent); display: block; margin-bottom: 6px; }
     & strong { font-family: var(--font-serif); font-weight: 500; font-size: var(--t-6); }
   }
 
@@ -3261,7 +3269,7 @@ it collapsed to the width of the word "Bangladesh". */
     }
     & textarea { resize: vertical; field-sizing: content; min-height: 3lh; }
     & input:focus, & select:focus, & textarea:focus {
-      outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--green);
+      outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--accent);
     }
   }
   .field-row {
@@ -3278,7 +3286,7 @@ it collapsed to the width of the word "Bangladesh". */
     outline: 0;
     line-height: 1.7;
 
-    &:focus-visible { outline: 0; box-shadow: inset 0 0 0 2px var(--green); }
+    &:focus-visible { outline: 0; box-shadow: inset 0 0 0 2px var(--accent); }
     &:empty::before {
       content: attr(data-placeholder);
       color: var(--ink-soft); opacity: 0.8;
@@ -3289,11 +3297,11 @@ it collapsed to the width of the word "Bangladesh". */
     & h3 { font-size: var(--t-6); margin-block: 18px 6px; }
     & ul, & ol { padding-left: 22px; margin-bottom: 14px; }
     & blockquote {
-      border-left: 3px solid var(--green); padding-left: 14px;
+      border-left: 3px solid var(--accent); padding-left: 14px;
       margin-block: 16px; color: var(--ink-soft);
     }
     & img {
-      display: block; max-width: 100%; height: auto; border-radius: 10px;
+      display: block; max-width: 100%; height: auto; border-radius: var(--radius-sm);
       border: 1px solid var(--hairline); margin-block: 14px;
     }
     & figure { margin-block: 18px; }
@@ -3301,7 +3309,7 @@ it collapsed to the width of the word "Bangladesh". */
       font-size: var(--t-4); color: var(--ink-soft); margin-top: 6px;
       border-bottom: 1px dashed var(--hairline); padding-bottom: 3px;
     }
-    &.drop-target { box-shadow: inset 0 0 0 2px var(--green); background: var(--green-soft); }
+    &.drop-target { box-shadow: inset 0 0 0 2px var(--accent); background: var(--accent-soft); }
   }
 
   /* live preview renders in the real article styles */
@@ -3383,7 +3391,7 @@ it collapsed to the width of the word "Bangladesh". */
 
     & li { padding-inline-start: 14px; position: relative; }
     & li::before {
-      content: "·"; position: absolute; inset-inline-start: 2px; color: var(--green);
+      content: "·"; position: absolute; inset-inline-start: 2px; color: var(--accent);
     }
   }
 
@@ -3397,7 +3405,7 @@ it collapsed to the width of the word "Bangladesh". */
     background: var(--hairline); overflow: clip;
   }
   .studio-meter .bar i {
-    display: block; height: 100%; background: var(--green);
+    display: block; height: 100%; background: var(--accent);
     transition: width var(--slow) var(--ease), background var(--fast) var(--ease);
   }
   .studio-meter[data-state="warn"] .bar i { background: var(--gold); }
@@ -3444,7 +3452,7 @@ it collapsed to the width of the word "Bangladesh". */
       text-transform: uppercase; letter-spacing: 0.05em;
     }
     &:hover { background: var(--paper-sunk); }
-    &[aria-selected="true"] { background: var(--green-soft); color: var(--green); }
+    &[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); }
   }
 
   /* A photo set to break the measure breaks it on the article
@@ -3474,8 +3482,8 @@ it collapsed to the width of the word "Bangladesh". */
     max-width: min(94vw, 640px);
 
     & .chip[aria-pressed="true"] {
-      border-color: var(--green); color: var(--green);
-      background: var(--green-soft);
+      border-color: var(--accent); color: var(--accent);
+      background: var(--accent-soft);
     }
   }
   .fig-group {
@@ -3508,7 +3516,7 @@ it collapsed to the width of the word "Bangladesh". */
 
     & .k { font-size: var(--t-1); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
     & .v { font-size: 1.7rem; font-family: var(--font-sans); color: var(--ink); }
-    &:hover { border-color: var(--green); }
+    &:hover { border-color: var(--accent); }
     /* Only the two that mean a person is waiting for a reply, and
        only when the number isn't zero. */
     &.urgent { border-inline-start: 3px solid var(--gold); }
@@ -3525,12 +3533,12 @@ it collapsed to the width of the word "Bangladesh". */
 
     &:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   }
-  .pill-new { border-color: var(--gold); color: var(--gold); }
+  .pill-new { border-color: var(--accent); color: var(--accent); }
   /* Not an error, and not nothing: something that will look wrong
      to a reader until it is published again. */
   .pill-warn {
-    border-color: var(--gold); color: var(--gold);
-    background: color-mix(in oklch, var(--gold) 12%, transparent);
+    border-color: var(--accent); color: var(--accent);
+    background: color-mix(in oklch, var(--accent) 12%, transparent);
   }
 
   /* ---------- pre-flight ---------- */
@@ -3743,7 +3751,7 @@ it collapsed to the width of the word "Bangladesh". */
     transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
 
     &:focus-within {
-      border-color: var(--green);
+      border-color: var(--accent);
       box-shadow: var(--focus-ring);
     }
     & input {
@@ -3758,7 +3766,7 @@ it collapsed to the width of the word "Bangladesh". */
     display: inline-flex; align-items: center; gap: var(--s-3);
     padding: 3px 4px 3px 10px;
     border-radius: var(--radius-pill);
-    background: var(--green-soft); color: var(--green);
+    background: var(--accent-soft); color: var(--accent);
     font-size: var(--t-3);
 
     & .topic-x {
@@ -3766,11 +3774,11 @@ it collapsed to the width of the word "Bangladesh". */
       color: inherit; opacity: 0.6; font-size: var(--t-2);
       padding: 2px 5px; border-radius: var(--radius-pill); line-height: 1;
     }
-    & .topic-x:hover { opacity: 1; background: color-mix(in oklab, var(--green) 18%, transparent); }
+    & .topic-x:hover { opacity: 1; background: color-mix(in oklab, var(--accent) 18%, transparent); }
   }
   /* Six is the cap. Saying so only when it is reached keeps the
      field quiet the rest of the time. */
-  .topic-field[data-count="6"] input::placeholder { color: var(--gold); }
+  .topic-field[data-count="6"] input::placeholder { color: var(--accent); }
 
   /* ============================================================
      THE LIBRARY BAR
@@ -3887,13 +3895,9 @@ it collapsed to the width of the word "Bangladesh". */
   }
 
   .section-pill {
-    border-color: color-mix(in oklab, var(--green) 40%, var(--hairline));
-    color: var(--green);
+    border-color: color-mix(in oklab, var(--accent) 40%, var(--hairline));
+    color: var(--accent);
   }
-  .section-pill.section-cooking { color: var(--gold);
-    border-color: color-mix(in oklab, var(--gold) 45%, var(--hairline)); }
-  .section-pill.section-travel { color: var(--ink);
-    border-color: var(--hairline); }
 
   .move-field {
     display: inline-flex; align-items: center; gap: var(--s-3);
@@ -3951,11 +3955,11 @@ it collapsed to the width of the word "Bangladesh". */
       font-family: var(--font-mono); font-size: var(--t-2);
       width: 22px; height: 22px; border-radius: 50%;
       display: grid; place-items: center;
-      border: 1px solid var(--green); color: var(--green);
+      border: 1px solid var(--accent); color: var(--accent);
     }
     & code {
       font-family: var(--font-mono); font-size: 0.86em;
-      background: var(--green-soft); border-radius: var(--radius-xs); padding: 1px 5px;
+      background: var(--accent-soft); border-radius: var(--radius-xs); padding: 1px 5px;
     }
   }
 
@@ -3967,11 +3971,11 @@ it collapsed to the width of the word "Bangladesh". */
     cursor: pointer; letter-spacing: 0.05em; text-transform: uppercase;
     transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
 
-    &:hover { border-color: var(--green); color: var(--green); }
+    &:hover { border-color: var(--accent); color: var(--accent); }
     /* aria-pressed is the toggle-button state, aria-selected the tab
        one. The dashboard uses real tabs now and both appear here. */
     &[aria-pressed="true"], &[aria-selected="true"] {
-      border-color: var(--green); color: var(--green); background: var(--green-soft);
+      border-color: var(--accent); color: var(--accent); background: var(--accent-soft);
     }
   }
 
@@ -3980,10 +3984,10 @@ it collapsed to the width of the word "Bangladesh". */
      already pressed, because there are only ever a handful of these
      and they should be the thing your eye lands on in the list. */
   .chip-move {
-    border-color: var(--gold); color: var(--gold);
-    background: color-mix(in oklab, var(--gold) 10%, transparent);
+    border-color: var(--accent); color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 10%, transparent);
 
-    &:hover { border-color: var(--gold); color: var(--ink); }
+    &:hover { border-color: var(--accent); color: var(--ink); }
   }
 
   /* How many things are waiting behind a tab, so it doesn't take a
@@ -3992,7 +3996,7 @@ it collapsed to the width of the word "Bangladesh". */
     display: inline-grid; place-items: center;
     min-width: 16px; height: 16px; margin-inline-start: 6px; padding-inline: 4px;
     border-radius: var(--radius-pill);
-    background: var(--green); color: var(--paper);
+    background: var(--accent); color: var(--paper);
     font-size: var(--t-0); line-height: 1;
   }
 
@@ -4030,7 +4034,7 @@ it collapsed to the width of the word "Bangladesh". */
   .strip div .n {
     display: block; font-family: var(--font-serif);
     font-size: clamp(1.7rem, 4vw, 2.4rem); line-height: 1;
-    color: var(--green); font-variant-numeric: tabular-nums;
+    color: var(--accent); font-variant-numeric: tabular-nums;
   }
   .strip div .l {
     display: block; margin-top: 8px; color: var(--ink-soft); font-size: var(--t-5);
@@ -4045,9 +4049,9 @@ it collapsed to the width of the word "Bangladesh". */
     text-decoration: none; color: var(--ink);
     transition: background var(--fast) var(--ease), padding-inline var(--fast) var(--ease);
 
-    &:hover { background: var(--green-soft); padding-inline: 14px 6px; }
-    &:hover .go { translate: 4px 0; color: var(--green); }
-    & .num { font-family: var(--font-mono); font-size: var(--t-2); color: var(--gold); }
+    &:hover { background: var(--accent-soft); padding-inline: 14px 6px; }
+    &:hover .go { translate: 4px 0; color: var(--accent); }
+    & .num { font-family: var(--font-mono); font-size: var(--t-2); color: var(--accent); }
     & .t { font-family: var(--font-serif); font-size: clamp(1.05rem, 2.2vw, 1.3rem); }
     & .d { grid-column: 2; color: var(--ink-soft); font-size: var(--t-5); max-width: 60ch; }
     & .go { font-family: var(--font-mono); color: var(--ink-soft);
@@ -4065,11 +4069,11 @@ it collapsed to the width of the word "Bangladesh". */
     &::before {
       content: ""; position: absolute; left: -5px; top: 7px;
       width: 9px; height: 9px; border-radius: 50%;
-      background: var(--paper); border: 2px solid var(--green);
+      background: var(--paper); border: 2px solid var(--accent);
     }
     &:last-child { padding-bottom: 0; }
     & .when { font-family: var(--font-mono); font-size: var(--t-2);
-              letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); }
+              letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
     & .what { font-family: var(--font-serif); font-size: var(--t-7); margin-top: 3px; }
     & p { color: var(--ink-soft); font-size: var(--t-5); margin-top: 4px; max-width: 60ch; }
   }
@@ -4092,10 +4096,10 @@ it collapsed to the width of the word "Bangladesh". */
   .az a, .az span {
     font-family: var(--font-mono); font-size: var(--t-2);
     min-width: 30px; text-align: center;
-    padding: 5px 7px; border-radius: 7px;
+    padding: 5px 7px; border-radius: var(--radius-xs);
     border: 1px solid var(--hairline); text-decoration: none; color: var(--ink);
   }
-  .az a:hover { border-color: var(--green); color: var(--green); }
+  .az a:hover { border-color: var(--accent); color: var(--accent); }
   .az span { opacity: 0.35; }
 
   .glossary { border-top: 1px solid var(--hairline); }
@@ -4116,7 +4120,7 @@ it collapsed to the width of the word "Bangladesh". */
     flex: 1; max-width: 260px; height: 5px; border-radius: var(--radius-pill);
     background: var(--hairline); overflow: clip;
   }
-  .progress-line .track i { display: block; height: 100%; background: var(--green); width: 0; }
+  .progress-line .track i { display: block; height: 100%; background: var(--accent); width: 0; }
 
   /* ---------- pull quote / principle ---------- */
   .principles {
@@ -4124,7 +4128,7 @@ it collapsed to the width of the word "Bangladesh". */
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   }
   .principle {
-    border-inline-start: 3px solid var(--gold);
+    border-inline-start: 3px solid var(--accent);
     padding: 4px 0 4px 18px;
 
     & h3 { font-size: var(--t-6); }
@@ -4148,9 +4152,9 @@ it collapsed to the width of the word "Bangladesh". */
     margin-block: 8px 30px; max-width: var(--measure);
     padding: 20px 22px;
     border: 1px solid var(--hairline);
-    border-inline-start: 3px solid var(--gold);
+    border-inline-start: 3px solid var(--accent);
     border-radius: var(--radius-sm);
-    background: var(--green-soft);
+    background: var(--accent-soft);
 
     & b {
       font-family: var(--font-bn-serif); font-weight: 600;
@@ -4164,7 +4168,7 @@ it collapsed to the width of the word "Bangladesh". */
     & .pledge-en {
       font-family: var(--font-mono); font-size: var(--t-2);
       letter-spacing: 0.07em; text-transform: uppercase;
-      color: var(--green); margin-top: 2px;
+      color: var(--accent); margin-top: 2px;
     }
   }
 
@@ -4175,7 +4179,7 @@ it collapsed to the width of the word "Bangladesh". */
     color: var(--ink-soft); font-size: var(--t-5); align-items: start;
   }
   .checks li::before {
-    content: "✓"; color: var(--green); font-family: var(--font-mono); font-size: var(--t-4);
+    content: "✓"; color: var(--accent); font-family: var(--font-mono); font-size: var(--t-4);
     line-height: 1.7;
   }
 
@@ -4210,11 +4214,11 @@ it collapsed to the width of the word "Bangladesh". */
     padding: 8px 16px; font-size: var(--t-4); cursor: pointer;
     transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
 
-    & .ic { font-family: var(--font-mono); color: var(--green); }
-    & b { font-family: var(--font-mono); font-size: var(--t-3); color: var(--gold); }
-    &:hover { border-color: var(--green); color: var(--ink); }
+    & .ic { font-family: var(--font-mono); color: var(--accent); }
+    & b { font-family: var(--font-mono); font-size: var(--t-3); color: var(--accent); }
+    &:hover { border-color: var(--accent); color: var(--ink); }
     &[aria-pressed="true"] {
-      border-color: var(--green); background: var(--green-soft); color: var(--green);
+      border-color: var(--accent); background: var(--accent-soft); color: var(--accent);
     }
   }
 
@@ -4223,11 +4227,11 @@ it collapsed to the width of the word "Bangladesh". */
     border-left: 2px solid var(--hairline); padding-left: 16px;
 
     & .who {
-      display: block; color: var(--gold); font-size: var(--t-1); margin-bottom: 4px;
+      display: block; color: var(--accent); font-size: var(--t-1); margin-bottom: 4px;
     }
     & .q { font-family: var(--font-serif); font-size: var(--t-6); margin-bottom: 0; }
     & .a { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--hairline); }
-    & .a .who { color: var(--green); }
+    & .a .who { color: var(--accent); }
     & .a p { color: var(--ink-soft); margin-bottom: 0; }
   }
 
@@ -4243,7 +4247,7 @@ it collapsed to the width of the word "Bangladesh". */
       field-sizing: content;
     }
     & textarea:focus, & input:focus {
-      outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--green);
+      outline: 2px solid var(--accent); outline-offset: 2px; border-color: var(--accent);
     }
     & button { align-self: flex-start; }
   }
@@ -4263,14 +4267,14 @@ it collapsed to the width of the word "Bangladesh". */
 
   /* ---------- the admin dashboard ---------- */
   .admin-panel { margin-top: 18px; }
-  .admin-count { color: var(--gold); margin-bottom: 14px; display: block; }
+  .admin-count { color: var(--accent); margin-bottom: 14px; display: block; }
   .admin-row {
     border: 1px solid var(--hairline); border-left-width: 3px;
     border-radius: var(--radius-sm);
     padding: 16px; margin-bottom: 14px; background: var(--panel);
   }
-  .admin-row.status-new { border-left-color: var(--green); }
-  .admin-row.status-replied { border-left-color: var(--gold); }
+  .admin-row.status-new { border-left-color: var(--accent); }
+  .admin-row.status-replied { border-left-color: var(--accent); }
   .admin-row.status-closed { opacity: 0.62; }
   .admin-meta {
     display: flex; gap: var(--s-5); flex-wrap: wrap; align-items: center;
@@ -4314,7 +4318,7 @@ it collapsed to the width of the word "Bangladesh". */
   .gate-card .lock {
     width: 46px; height: 46px; margin-inline: auto;
     display: grid; place-items: center; border-radius: 50%;
-    background: var(--green-soft); color: var(--green); font-size: var(--t-8);
+    background: var(--accent-soft); color: var(--accent); font-size: var(--t-8);
   }
   .gate-card h1 { font-size: 1.5rem; }
   .gate-card p { color: var(--ink-soft); font-size: var(--t-5); }
@@ -4328,7 +4332,7 @@ it collapsed to the width of the word "Bangladesh". */
   .gate-card input:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
   .gate-msg { font-size: var(--t-4); min-height: 1.3em; }
   .gate-msg.err { color: var(--danger); }
-  .gate-msg.ok { color: var(--green); }
+  .gate-msg.ok { color: var(--accent); }
   .gate-or {
     display: flex; align-items: center; gap: var(--s-6);
     color: var(--ink-soft); font-family: var(--font-mono); font-size: var(--t-1);
@@ -4363,17 +4367,17 @@ it collapsed to the width of the word "Bangladesh". */
                 box-shadow var(--fast) var(--ease);
 
     &:hover, &:focus-visible {
-      border-color: var(--green);
+      border-color: var(--accent);
       transform: translateY(-3px);
       box-shadow: var(--shadow-lift);
     }
-    & .more { margin-top: auto; color: var(--green); }
+    & .more { margin-top: auto; color: var(--accent); }
     /* a quiet sheen that sweeps once on hover, signals "this opens"
        without the card jumping about */
     &::after {
       content: ""; position: absolute; inset: 0;
       background: linear-gradient(115deg, transparent 40%,
-        color-mix(in oklab, var(--green) 12%, transparent) 50%, transparent 60%);
+        color-mix(in oklab, var(--accent) 12%, transparent) 50%, transparent 60%);
       translate: -100% 0; transition: translate var(--slow) var(--ease);
       pointer-events: none;
     }
@@ -4405,7 +4409,7 @@ it collapsed to the width of the word "Bangladesh". */
 
     & li { display: flex; align-items: center; gap: var(--s-4); }
     & li::before {
-      content: "✓"; color: var(--green);
+      content: "✓"; color: var(--accent);
       font-size: var(--t-3); line-height: 1;
     }
   }
@@ -4447,21 +4451,21 @@ it collapsed to the width of the word "Bangladesh". */
     transition: border-color var(--fast) var(--ease);
   }
   a.work-card:hover .work-art, a.work-card:focus-visible .work-art {
-    border-color: color-mix(in oklab, var(--green) 45%, var(--hairline));
+    border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline));
   }
   .wa-grid { stroke: var(--hairline); stroke-width: 1; }
-  .wa-zero { stroke: var(--gold); stroke-width: 1; stroke-dasharray: 4 3; }
-  .wa-bar { fill: var(--green); opacity: 0.3; }
-  .wa-bar-gold { fill: var(--gold); opacity: 0.4; }
-  .wa-line { fill: none; stroke: var(--green); stroke-width: 2; }
+  .wa-zero { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 4 3; }
+  .wa-bar { fill: var(--accent); opacity: 0.3; }
+  .wa-bar-gold { fill: var(--accent); opacity: 0.4; }
+  .wa-line { fill: none; stroke: var(--accent); stroke-width: 2; }
   .wa-line-dash {
-    fill: none; stroke: var(--gold); stroke-width: 1.4; stroke-dasharray: 4 3;
+    fill: none; stroke: var(--accent); stroke-width: 1.4; stroke-dasharray: 4 3;
   }
-  .wa-fill { fill: var(--green); opacity: 0.12; }
+  .wa-fill { fill: var(--accent); opacity: 0.12; }
   .wa-band { fill: var(--danger); opacity: 0.12; }
-  .wa-ci { stroke: var(--green); stroke-width: 3; stroke-linecap: round; }
-  .wa-dot { fill: var(--gold); }
-  .wa-point { fill: var(--green); }
+  .wa-ci { stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+  .wa-dot { fill: var(--accent); }
+  .wa-point { fill: var(--accent); }
 
   /* The checkable facts: horizon, sample size, number of views.
      Kept short enough to stay one line each, because the point of
@@ -4477,7 +4481,7 @@ it collapsed to the width of the word "Bangladesh". */
     & li { display: flex; align-items: center; gap: 7px; }
     & li::before {
       content: ""; flex-shrink: 0;
-      width: 5px; height: 5px; border-radius: 50%; background: var(--gold);
+      width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
     }
   }
 
@@ -4575,7 +4579,7 @@ it collapsed to the width of the word "Bangladesh". */
   .cred-kit .chips li { background: var(--paper-sunk); }
   .cred-group { display: grid; gap: 9px; }
   .cred-k {
-    color: var(--gold); font-size: var(--t-0);
+    color: var(--accent); font-size: var(--t-0);
     letter-spacing: 0.1em; text-transform: uppercase;
   }
 
@@ -4609,9 +4613,9 @@ it collapsed to the width of the word "Bangladesh". */
     letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink);
     transition: border-color var(--fast) var(--ease);
 
-    &:hover { border-color: var(--green); }
+    &:hover { border-color: var(--accent); }
     &[aria-pressed="true"] {
-      border-color: var(--green); background: var(--green-soft); color: var(--green);
+      border-color: var(--accent); background: var(--accent-soft); color: var(--accent);
     }
   }
   .scenario-blurb { color: var(--ink-soft); font-size: var(--t-5); margin: 0; }
@@ -4622,13 +4626,13 @@ it collapsed to the width of the word "Bangladesh". */
   .balance-check {
     display: flex; gap: 14px; align-items: flex-start;
     padding: 16px 20px; margin-bottom: 18px;
-    border-radius: var(--radius); border: 1px solid var(--green);
-    background: var(--green-soft);
+    border-radius: var(--radius); border: 1px solid var(--accent);
+    background: var(--accent-soft);
 
     & strong { display: block; font-family: var(--font-serif); font-size: var(--t-6); }
     & .check-detail { color: var(--ink-soft); font-size: var(--t-5); }
     & .check-mark {
-      font-size: var(--t-7); line-height: 1.4; color: var(--green);
+      font-size: var(--t-7); line-height: 1.4; color: var(--accent);
       font-family: var(--font-mono);
     }
     &[data-state="bad"] {
@@ -4651,9 +4655,9 @@ it collapsed to the width of the word "Bangladesh". */
     background: var(--panel); padding: 16px 18px;
     display: grid; gap: 3px; align-content: start;
 
-    & .mono { color: var(--gold); }
+    & .mono { color: var(--accent); }
     & small { color: var(--ink-soft); font-size: var(--t-3); }
-    &[data-tone="good"] .tile-value { color: var(--green); }
+    &[data-tone="good"] .tile-value { color: var(--accent); }
     &[data-tone="warn"] .tile-value { color: var(--gold); }
     &[data-tone="bad"]  .tile-value { color: var(--danger); }
   }
@@ -4695,7 +4699,7 @@ it collapsed to the width of the word "Bangladesh". */
   .driver-group + .driver-group {
     margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--hairline);
   }
-  .driver-group h3 { color: var(--gold); margin: 0 0 10px; font-weight: 500; }
+  .driver-group h3 { color: var(--accent); margin: 0 0 10px; font-weight: 500; }
 
   .driver {
     display: block; margin-bottom: 16px;
@@ -4705,31 +4709,31 @@ it collapsed to the width of the word "Bangladesh". */
       gap: var(--s-5); font-size: var(--t-4);
     }
     & .val {
-      font-family: var(--font-mono); font-size: var(--t-3); color: var(--green);
+      font-family: var(--font-mono); font-size: var(--t-3); color: var(--accent);
       font-variant-numeric: tabular-nums; white-space: nowrap;
     }
     & small {
       display: block; color: var(--ink-soft); font-size: var(--t-2);
       margin-top: 5px; line-height: 1.45;
     }
-    &[data-edited] .val::after { content: " ·edited"; color: var(--gold); }
+    &[data-edited] .val::after { content: " ·edited"; color: var(--accent); }
   }
   .driver input[type="range"] {
     -webkit-appearance: none; appearance: none;
     width: 100%; height: 4px; border-radius: var(--radius-pill); margin-top: 9px;
-    background: linear-gradient(var(--green), var(--green)) 0 / var(--pct, 50%) 100% no-repeat,
+    background: linear-gradient(var(--accent), var(--accent)) 0 / var(--pct, 50%) 100% no-repeat,
                 var(--hairline);
     cursor: pointer;
   }
   .driver input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
     width: 16px; height: 16px; border-radius: 50%;
-    background: var(--green); border: 2px solid var(--paper);
+    background: var(--accent); border: 2px solid var(--paper);
     box-shadow: 0 1px 4px oklch(0% 0 0 / 0.3);
   }
   .driver input[type="range"]::-moz-range-thumb {
     width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--paper);
-    background: var(--green);
+    background: var(--accent);
   }
 
   .model-charts { display: grid; gap: var(--gap); grid-template-columns: minmax(0, 1fr); }
@@ -4745,39 +4749,39 @@ it collapsed to the width of the word "Bangladesh". */
     & figcaption .mono { color: var(--ink-soft); display: flex; gap: var(--s-6); align-items: center; }
   }
   .key {
-    display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+    display: inline-block; width: 10px; height: 10px; border-radius: var(--radius-xs);
     margin-inline-end: 4px; vertical-align: -1px;
   }
-  .key-revenue { background: var(--green); opacity: 0.28; }
-  .key-ebitda { background: var(--green); }
-  .key-cash { background: var(--green); }
-  .key-netdebt { background: var(--gold); }
+  .key-revenue { background: var(--accent); opacity: 0.28; }
+  .key-ebitda { background: var(--accent); }
+  .key-cash { background: var(--accent); }
+  .key-netdebt { background: var(--accent); }
 
   .fin-chart { width: 100%; height: auto; display: block; }
-  .bar-revenue { fill: var(--green); opacity: 0.28; }
-  .bar-ebitda { fill: var(--green); }
+  .bar-revenue { fill: var(--accent); opacity: 0.28; }
+  .bar-ebitda { fill: var(--accent); }
   .chart-label {
     font-family: var(--font-mono); font-size: 10px; fill: var(--ink-soft);
   }
   .chart-value {
-    font-family: var(--font-mono); font-size: 9px; fill: var(--green);
+    font-family: var(--font-mono); font-size: 9px; fill: var(--accent);
   }
   .chart-zero { stroke: var(--hairline); stroke-width: 1; }
-  .line-cash { stroke: var(--green); stroke-width: 2; }
-  .line-cash-dot { fill: var(--green); }
-  .line-netdebt { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 4 3; }
-  .line-netdebt-dot { fill: var(--gold); }
+  .line-cash { stroke: var(--accent); stroke-width: 2; }
+  .line-cash-dot { fill: var(--accent); }
+  .line-netdebt { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 4 3; }
+  .line-netdebt-dot { fill: var(--accent); }
 
   /* ---------- the DCF's verdict ---------- */
   .verdict-card {
     display: grid; gap: var(--s-2);
     padding: 20px 24px; margin-bottom: 18px;
-    border-radius: var(--radius); border: 1px solid var(--green);
-    background: var(--green-soft);
+    border-radius: var(--radius); border: 1px solid var(--accent);
+    background: var(--accent-soft);
 
-    & .mono { color: var(--gold); }
+    & .mono { color: var(--accent); }
     & .verdict-detail { color: var(--ink-soft); font-size: var(--t-5); margin: 0; }
-    &[data-state="down"] { border-color: var(--gold); }
+    &[data-state="down"] { border-color: var(--accent); }
     &[data-state="bad"] {
       border-color: var(--danger);
       background: color-mix(in oklab, var(--danger) 8%, transparent);
@@ -4786,9 +4790,9 @@ it collapsed to the width of the word "Bangladesh". */
   .verdict-main { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
   .verdict-value {
     font-family: var(--font-mono); font-size: 2rem; line-height: 1.1;
-    font-variant-numeric: tabular-nums; color: var(--green);
+    font-variant-numeric: tabular-nums; color: var(--accent);
   }
-  .verdict-card[data-state="down"] .verdict-value { color: var(--gold); }
+  .verdict-card[data-state="down"] .verdict-value { color: var(--accent); }
   .verdict-card[data-state="bad"] .verdict-value { color: var(--danger); }
 
   /* ---------- method switches ---------- */
@@ -4807,7 +4811,7 @@ it collapsed to the width of the word "Bangladesh". */
       padding: 6px 12px; font-family: var(--font-mono); font-size: var(--t-1);
       letter-spacing: 0.04em; text-transform: uppercase;
     }
-    & button[aria-pressed="true"] { background: var(--green-soft); color: var(--green); }
+    & button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
     & button + button { border-inline-start: 1px solid var(--hairline); }
   }
   .toggle {
@@ -4817,7 +4821,7 @@ it collapsed to the width of the word "Bangladesh". */
     letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft);
 
     &[aria-pressed="true"] {
-      border-color: var(--green); background: var(--green-soft); color: var(--green);
+      border-color: var(--accent); background: var(--accent-soft); color: var(--accent);
     }
   }
   .driver[data-inactive] { opacity: 0.4; }
@@ -4829,7 +4833,7 @@ it collapsed to the width of the word "Bangladesh". */
     grid-template-columns: minmax(0, 150px) minmax(0, 1fr) auto;
 
     &[data-kind="total"] { font-weight: 600; }
-    &[data-kind="total"] .bridge-track i { background: var(--green); }
+    &[data-kind="total"] .bridge-track i { background: var(--accent); }
     &[data-kind="sub"] .bridge-track i { background: var(--danger); opacity: 0.65; }
   }
   .bridge-label { font-size: var(--t-4); }
@@ -4838,7 +4842,7 @@ it collapsed to the width of the word "Bangladesh". */
     display: block; overflow: clip;
 
     & i {
-      display: block; height: 100%; background: var(--green); opacity: 0.4;
+      display: block; height: 100%; background: var(--accent); opacity: 0.4;
       transition: width var(--slow) var(--ease);
     }
   }
@@ -4865,14 +4869,14 @@ it collapsed to the width of the word "Bangladesh". */
   .grid-cell {
     cursor: pointer;
     background: color-mix(in oklab,
-      var(--green) calc(var(--heat, 0) * 26%), var(--panel));
+      var(--accent) calc(var(--heat, 0) * 26%), var(--panel));
     transition: outline-color var(--fast) var(--ease);
     outline: 2px solid transparent; outline-offset: -2px;
 
-    &:hover, &:focus-visible { outline-color: var(--green); }
+    &:hover, &:focus-visible { outline-color: var(--accent); }
     &[data-side="down"] {
       background: color-mix(in oklab,
-        var(--gold) calc((1 - var(--heat, 0)) * 20%), var(--panel));
+        var(--accent) calc((1 - var(--heat, 0)) * 20%), var(--panel));
     }
     &[data-base] {
       outline-color: var(--ink);
@@ -4892,7 +4896,7 @@ it collapsed to the width of the word "Bangladesh". */
     background: var(--paper-sunk);
     transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
 
-    &[data-over] { border-color: var(--green); background: var(--green-soft); }
+    &[data-over] { border-color: var(--accent); background: var(--accent-soft); }
     & h2 { font-size: var(--t-7); margin-bottom: 6px; }
     & p { color: var(--ink-soft); font-size: var(--t-5); max-width: 70ch; }
   }
@@ -4918,17 +4922,17 @@ it collapsed to the width of the word "Bangladesh". */
   .csv-status {
     margin-top: 10px; font-size: var(--t-4); color: var(--ink-soft);
 
-    &[data-state="ok"] { color: var(--green); }
+    &[data-state="ok"] { color: var(--accent); }
     &[data-state="bad"] { color: var(--danger); }
     &:empty { display: none; }
   }
 
   /* a warn state for the simulated-data banner, alongside ok/bad */
   .balance-check[data-state="warn"] {
-    border-color: var(--gold);
-    background: color-mix(in oklab, var(--gold) 10%, transparent);
+    border-color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 10%, transparent);
 
-    & .check-mark { color: var(--gold); }
+    & .check-mark { color: var(--accent); }
   }
 
   /* ---------- charts that want the full width ---------- */
@@ -4936,18 +4940,18 @@ it collapsed to the width of the word "Bangladesh". */
   .vol-controls { max-width: 420px; margin-bottom: 6px; }
 
   .chart-grid { stroke: var(--hairline); stroke-width: 1; }
-  .chart-mean { stroke: var(--gold); stroke-width: 1; stroke-dasharray: 4 3; }
+  .chart-mean { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 4 3; }
   .chart-label-sm {
     font-family: var(--font-mono); font-size: 8px; fill: var(--ink-soft);
   }
   .dd-band { fill: var(--danger); opacity: 0.08; }
-  .line-index { stroke: var(--green); stroke-width: 1.6; }
-  .line-vol { stroke: var(--green); stroke-width: 1.6; }
+  .line-index { stroke: var(--accent); stroke-width: 1.6; }
+  .line-vol { stroke: var(--accent); stroke-width: 1.6; }
   .area-underwater { fill: var(--danger); opacity: 0.18; }
   .line-underwater { stroke: var(--danger); stroke-width: 1.3; }
-  .bar-hist { fill: var(--green); opacity: 0.45; }
-  .line-normal { stroke: var(--gold); stroke-width: 1.8; }
-  .bar-horizon { fill: var(--green); opacity: 0.75; }
+  .bar-hist { fill: var(--accent); opacity: 0.45; }
+  .line-normal { stroke: var(--accent); stroke-width: 1.8; }
+  .bar-horizon { fill: var(--accent); opacity: 0.75; }
 
   .horizon-picker {
     display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap;
@@ -4960,13 +4964,13 @@ it collapsed to the width of the word "Bangladesh". */
       font-family: var(--font-mono); font-size: var(--t-1);
       letter-spacing: 0.04em; text-transform: uppercase;
     }
-    & button:hover { border-color: var(--green); }
+    & button:hover { border-color: var(--accent); }
     & button[aria-pressed="true"] {
-      border-color: var(--green); background: var(--green-soft); color: var(--green);
+      border-color: var(--accent); background: var(--accent-soft); color: var(--accent);
     }
   }
 
-  .fin-table td.is-positive { color: var(--green); }
+  .fin-table td.is-positive { color: var(--accent); }
 
   /* ---------- the statements ----------
      minmax(0, 1fr) again, and for the third time in this file, so
@@ -5006,7 +5010,7 @@ it collapsed to the width of the word "Bangladesh". */
       letter-spacing: 0.06em; text-transform: uppercase; font-weight: 500;
       color: var(--ink-soft); border-bottom: 1px solid var(--hairline);
     }
-    & thead th.col-actual { color: var(--gold); }
+    & thead th.col-actual { color: var(--accent); }
     /* the row label column stays put while the years scroll */
     & tbody th, & thead th:first-child {
       text-align: left; font-weight: 400; color: var(--ink);
@@ -5046,7 +5050,7 @@ it collapsed to the width of the word "Bangladesh". */
   .art {
     width: 1.6em; height: 1.6em; flex-shrink: 0;
     vertical-align: -0.35em;
-    color: var(--green);
+    color: var(--accent);
   }
   h1 > .art, h1 .art { width: 1.1em; height: 1.1em; margin-inline-end: 0.3em; }
 
@@ -5065,7 +5069,7 @@ it collapsed to the width of the word "Bangladesh". */
        never be left with a dangling arrow after it. */
     & li + li::before { content: "›"; margin-inline: 7px; opacity: 0.5; }
     & a { color: var(--ink-soft); text-decoration: none; }
-    & a:hover { color: var(--green); }
+    & a:hover { color: var(--accent); }
     & [aria-current="page"] {
       color: var(--ink);
       /* a long Bangla lesson title must not push the row off-screen */
@@ -5144,12 +5148,12 @@ and an intro that needs them in step is an intro that breaks
   .resume {
     display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
     margin-block: 26px 4px; padding: 18px 22px;
-    border: 1px solid var(--green); border-radius: var(--radius);
-    background: var(--green-soft);
+    border: 1px solid var(--accent); border-radius: var(--radius);
+    background: var(--accent-soft);
   }
   .resume-art .art { width: 34px; height: 34px; }
   .resume-text { flex: 1 1 240px; display: grid; gap: var(--s-1); }
-  .resume-label { color: var(--gold); }
+  .resume-label { color: var(--accent); }
   .resume-text strong { font-size: var(--t-7); }
   .resume-where { color: var(--ink-soft); font-size: var(--t-4); }
   .resume-actions { display: flex; align-items: center; gap: var(--s-6); flex-wrap: wrap; }
@@ -5184,9 +5188,9 @@ and an intro that needs them in step is an intro that breaks
     & > div {
       border-radius: var(--radius-sm); padding: 16px 18px;
       background: var(--paper-sunk);
-      border-inline-start: 3px solid var(--green);
+      border-inline-start: 3px solid var(--accent);
     }
-    & > .others { border-inline-start-color: var(--gold); }
+    & > .others { border-inline-start-color: var(--accent); }
     & ul { margin: 0; padding-left: 18px; }
     & li { font-size: var(--t-5); color: var(--ink-soft); }
   }
@@ -5206,8 +5210,8 @@ and an intro that needs them in step is an intro that breaks
     border: 1px solid var(--hairline); border-radius: var(--radius);
     background: var(--panel); overflow: clip;
 
-    &[data-state="now"] { border-color: var(--green); }
-    &[data-state="done"] { background: color-mix(in oklab, var(--green-soft) 40%, var(--panel)); }
+    &[data-state="now"] { border-color: var(--accent); }
+    &[data-state="done"] { background: color-mix(in oklab, var(--accent-soft) 40%, var(--panel)); }
     &[data-soon] .rung-title { opacity: 0.85; }
   }
 
@@ -5220,7 +5224,7 @@ and an intro that needs them in step is an intro that breaks
   .rung-art { display: flex; flex-shrink: 0; }
   .rung-art .art { width: 30px; height: 30px; }
   .rung-head { flex: 1 1 220px; display: grid; gap: 3px; min-width: 0; }
-  .rung-kicker { color: var(--gold); }
+  .rung-kicker { color: var(--accent); }
   .rung-title { font-size: var(--t-7); display: flex; gap: 9px; align-items: baseline; flex-wrap: wrap; }
   .rung-who { color: var(--ink-soft); font-size: var(--t-4); }
 
@@ -5231,9 +5235,9 @@ and an intro that needs them in step is an intro that breaks
     border-radius: var(--radius-pill); padding: 3px 10px; font-size: var(--t-0);
     border: 1px solid var(--hairline); color: var(--ink-soft);
   }
-  .rung[data-state="now"] .state-pill { border-color: var(--green); color: var(--green); }
-  .rung[data-state="done"] .state-pill { border-color: var(--green); color: var(--green); }
-  .rung[data-state="next"] .state-pill { border-color: var(--gold); color: var(--gold); }
+  .rung[data-state="now"] .state-pill { border-color: var(--accent); color: var(--accent); }
+  .rung[data-state="done"] .state-pill { border-color: var(--accent); color: var(--accent); }
+  .rung[data-state="next"] .state-pill { border-color: var(--accent); color: var(--accent); }
 
   /* The ring is `@layer deck`'s, and only deck's. This layer had
      its own copy at 34px and a hardcoded green, deck's is 44px
@@ -5285,10 +5289,10 @@ and an intro that needs them in step is an intro that breaks
      what you can do at the end of it. */
   .rung-can {
     margin: 10px 0 0; color: var(--ink);
-    border-left: 3px solid var(--gold); padding-left: 12px;
+    border-left: 3px solid var(--accent); padding-left: 12px;
     max-width: 62ch; font-size: var(--t-5);
 
-    & .mono { color: var(--gold); }
+    & .mono { color: var(--accent); }
   }
 
   /* The static list the ladder replaces. It has to be a decent
@@ -5328,7 +5332,7 @@ and an intro that needs them in step is an intro that breaks
     list-style: none; padding: 0; margin: 18px 0 22px; display: grid; gap: var(--s-5);
 
     & li { display: grid; grid-template-columns: 62px 1fr; gap: var(--s-6); align-items: baseline; }
-    & .mono { color: var(--gold); font-size: var(--t-2); }
+    & .mono { color: var(--accent); font-size: var(--t-2); }
   }
 
   /* ---------- THE CONTENTS PAGE THAT WAS ----------
@@ -5347,11 +5351,11 @@ and an intro that needs them in step is an intro that breaks
      article classes and did not catch here, which is what the
      new check at the end of that file is for. */
 
-  .glossary .g-row[data-read] a::before { content: "✓ "; color: var(--green); }
+  .glossary .g-row[data-read] a::before { content: "✓ "; color: var(--accent); }
 
   /* ---------- stage pages ---------- */
   .stage-hero .lede { max-width: 62ch; }
-  .stage-art { color: var(--green); }
+  .stage-art { color: var(--accent); }
 
   .stage-facts {
     display: grid; gap: 14px; margin-block: 26px 20px;
@@ -5362,7 +5366,7 @@ and an intro that needs them in step is an intro that breaks
     }
     & dt {
       font-family: var(--font-mono); font-size: var(--t-0);
-      letter-spacing: 0.07em; text-transform: uppercase; color: var(--gold);
+      letter-spacing: 0.07em; text-transform: uppercase; color: var(--accent);
       margin-bottom: 4px;
     }
     & dd { margin: 0; color: var(--ink-soft); font-size: var(--t-5); }
@@ -5377,11 +5381,11 @@ and an intro that needs them in step is an intro that breaks
       background: var(--hairline); overflow: clip;
     }
     & .track i {
-      display: block; height: 100%; width: 0; background: var(--green);
+      display: block; height: 100%; width: 0; background: var(--accent);
       transition: width var(--slow) var(--ease);
     }
     & .count { color: var(--ink-soft); }
-    &[data-state="done"] .count { color: var(--green); }
+    &[data-state="done"] .count { color: var(--accent); }
   }
 
   .lesson-grid {
@@ -5396,24 +5400,24 @@ and an intro that needs them in step is an intro that breaks
     background: var(--panel);
     transition: border-color var(--fast) var(--ease), transform var(--fast) var(--ease);
 
-    &:hover { border-color: var(--green); transform: translateY(-2px); }
+    &:hover { border-color: var(--accent); transform: translateY(-2px); }
     & h3 { font-size: var(--t-6); }
     & p { color: var(--ink-soft); font-size: var(--t-5); }
     &.is-soon { opacity: 0.6; }
   }
-  .lesson-card-art .art { width: 24px; height: 24px; color: var(--gold); }
+  .lesson-card-art .art { width: 24px; height: 24px; color: var(--accent); }
   .lesson-card-foot { color: var(--ink-soft); font-size: var(--t-0); }
   .lesson-card[data-read]::after {
     content: "✓";
     position: absolute; top: 14px; right: 16px;
-    color: var(--green); font-family: var(--font-mono); font-size: var(--t-3);
+    color: var(--accent); font-family: var(--font-mono); font-size: var(--t-3);
   }
 
   /* ---------- lesson pages ---------- */
-  .lesson-art { color: var(--green); }
+  .lesson-art { color: var(--accent); }
   .lesson-meta { color: var(--ink-soft); margin-bottom: 26px; }
   .soon-note {
-    border-inline-start: 3px solid var(--gold);
+    border-inline-start: 3px solid var(--accent);
     padding-inline-start: 14px; color: var(--ink-soft);
   }
 
@@ -5503,7 +5507,7 @@ German for day, and .tag is what the site has always called
 
   .hut {
     font-family: var(--font-mono); font-size: 0.86em; font-weight: 500;
-    border-radius: 5px; padding: 1px 6px; white-space: nowrap;
+    border-radius: var(--radius-xs); padding: 1px 6px; white-space: nowrap;
   }
   .hut[data-hut="der"] { color: var(--hut-der); background: var(--hut-der-soft); }
   .hut[data-hut="die"] { color: var(--hut-die); background: var(--hut-die-soft); }
@@ -5527,21 +5531,21 @@ German for day, and .tag is what the site has always called
   body.deutsch :is(b, strong)[lang="de"] { font-weight: 600; }
 
   /* ---------- the hub ---------- */
-  .deutsch-hero .lede [lang="de"] { color: var(--gold); }
+  .deutsch-hero .lede [lang="de"] { color: var(--accent); }
 
   .ein-regel {
     margin-top: var(--gap);
-    border: 1px solid var(--gold); border-radius: var(--radius);
+    border: 1px solid var(--accent); border-radius: var(--radius);
     background: var(--paper-sunk); padding: 20px 22px;
 
-    & .mono { color: var(--gold); display: block; margin-bottom: 8px; }
+    & .mono { color: var(--accent); display: block; margin-bottom: 8px; }
     & p { margin: 0; max-width: var(--measure); }
   }
 
   /* ---------- a Stufe page ---------- */
   .stufe-hero .stufe-can {
     margin-top: 16px; color: var(--ink);
-    border-left: 3px solid var(--green); padding-left: 14px; max-width: 60ch;
+    border-left: 3px solid var(--accent); padding-left: 14px; max-width: 60ch;
   }
   /* A Teil's German name rides inline in the heading as .en-sub:
      the same slot, the same mono grey, the same rhythm the Learn
@@ -5554,11 +5558,11 @@ German for day, and .tag is what the site has always called
     display: grid; grid-template-columns: auto 1fr auto; gap: 18px;
     align-items: center; text-decoration: none; color: var(--ink);
 
-    & .buch-art { color: var(--gold); }
+    & .buch-art { color: var(--accent); }
     & .buch-art svg { width: 30px; height: 30px; }
     & strong { display: block; font-size: var(--t-7); margin-bottom: 4px; }
     & .buch-text span { color: var(--ink-soft); font-size: var(--t-5); }
-    & .more { color: var(--green); white-space: nowrap; font-family: var(--font-mono);
+    & .more { color: var(--accent); white-space: nowrap; font-family: var(--font-mono);
               font-size: var(--t-3); }
   }
   @media (width <= 640px) {
@@ -5571,19 +5575,19 @@ German for day, and .tag is what the site has always called
      alone, before any explanation of it. It is deliberately the
      loudest thing on a lesson page. */
   body.deutsch .muster {
-    border: 1px solid var(--green); border-radius: var(--radius);
-    background: var(--green-soft); padding: 20px 22px;
+    border: 1px solid var(--accent); border-radius: var(--radius);
+    background: var(--accent-soft); padding: 20px 22px;
     margin-block: 26px;
 
     & .muster-label {
-      display: block; color: var(--green); font-size: var(--t-1);
+      display: block; color: var(--accent); font-size: var(--t-1);
       letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;
     }
     & .muster-shape {
       font-family: var(--font-sans); font-size: clamp(1.15rem, 3vw, 1.5rem);
       font-weight: 500; color: var(--ink); margin-bottom: 10px; max-width: none;
 
-      & i { font-style: normal; color: var(--gold); letter-spacing: 0.05em; }
+      & i { font-style: normal; color: var(--accent); letter-spacing: 0.05em; }
       & b { font-weight: 600; }
     }
     & .muster-why, & .muster-tipp { margin-bottom: 0; color: var(--ink-soft); font-size: var(--t-5); }
@@ -5618,7 +5622,7 @@ German for day, and .tag is what the site has always called
 
   /* ---------- the one line worth remembering ---------- */
   .merke {
-    border-left: 3px solid var(--gold);
+    border-left: 3px solid var(--accent);
     background: var(--paper-sunk);
     padding: 14px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     margin-block: 22px; max-width: var(--measure); font-size: var(--t-5);
@@ -5637,7 +5641,7 @@ German for day, and .tag is what the site has always called
       display: grid; gap: var(--s-1);
     }
     & b { font-size: var(--t-6); }
-    & .lautschrift { color: var(--gold); font-size: var(--t-5); }
+    & .lautschrift { color: var(--accent); font-size: var(--t-5); }
     & span:last-child { color: var(--ink-soft); font-size: var(--t-4); }
   }
 
@@ -5669,8 +5673,8 @@ German for day, and .tag is what the site has always called
      and a green column headed "haben" would be teaching a gender
      that does not exist. */
   body.deutsch .hut-spalte:not([data-hut="der"], body.deutsch [data-hut="die"], body.deutsch [data-hut="das"]) {
-    border-top-color: var(--green);
-    & .hut-kopf { color: var(--green); }
+    border-top-color: var(--accent);
+    & .hut-kopf { color: var(--accent); }
   }
 
   /* ---------- small grids: 30 verbs, 20 numbers ---------- */
@@ -5690,9 +5694,9 @@ German for day, and .tag is what the site has always called
   /* ---------- right/wrong pairs ---------- */
   .paar-tabelle td:first-child { color: var(--ink); }
   .paar-tabelle tr td:nth-child(2) { color: var(--ink-soft); }
-  .laut-key td:nth-child(2) { color: var(--gold); font-weight: 500; }
-  .platz-tabelle td:nth-child(2) { color: var(--green); }
-  .konjugation td:nth-child(2) b { color: var(--green); }
+  .laut-key td:nth-child(2) { color: var(--accent); font-weight: 500; }
+  .platz-tabelle td:nth-child(2) { color: var(--accent); }
+  .konjugation td:nth-child(2) b { color: var(--accent); }
 
   /* ============================================================
      THE PRACTICE BOOK
@@ -5712,11 +5716,11 @@ German for day, and .tag is what the site has always called
       background: var(--hairline); border-radius: var(--radius-pill); overflow: hidden;
     }
     & .track i {
-      display: block; height: 100%; width: 0; background: var(--green);
+      display: block; height: 100%; width: 0; background: var(--accent);
       transition: width var(--slow) var(--ease);
     }
     & .count { color: var(--ink-soft); font-size: var(--t-3); }
-    &[data-state="done"] .track i { background: var(--gold); }
+    &[data-state="done"] .track i { background: var(--accent); }
   }
 
   /* ---------- the thirty squares ---------- */
@@ -5753,11 +5757,11 @@ German for day, and .tag is what the site has always called
       color: var(--ink-soft); font-family: var(--font-mono); font-size: var(--t-3);
       transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
     }
-    & .tracker-tag:hover { border-color: var(--green); }
+    & .tracker-tag:hover { border-color: var(--accent); }
     & .tracker-tag[data-done] {
-      background: var(--green-soft); border-color: var(--green); color: var(--green);
+      background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
     }
-    & .tracker-tag[data-current] { outline: 2px solid var(--gold); outline-offset: 1px; }
+    & .tracker-tag[data-current] { outline: 2px solid var(--accent); outline-offset: 1px; }
   }
 
   /* ---------- the sound key, folded away ---------- */
@@ -5771,7 +5775,7 @@ German for day, and .tag is what the site has always called
       padding: 8px 12px; background: var(--panel); font-size: var(--t-5);
     }
     & b { font-weight: 500; }
-    & span { color: var(--gold); }
+    & span { color: var(--accent); }
   }
 
   /* ---------- the noun collection ---------- */
@@ -5821,7 +5825,7 @@ German for day, and .tag is what the site has always called
   body.deutsch .tag-kopf {
     border-bottom: 1px solid var(--hairline); padding-bottom: 14px; margin-bottom: 18px;
 
-    & .tag-num { color: var(--gold); font-size: var(--t-2); letter-spacing: 0.08em; }
+    & .tag-num { color: var(--accent); font-size: var(--t-2); letter-spacing: 0.08em; }
     & h2 { font-size: clamp(1.2rem, 3vw, 1.5rem); margin: 6px 0 4px; }
     & .tag-bn { color: var(--ink-soft); margin: 0; }
   }
@@ -5832,7 +5836,7 @@ German for day, and .tag is what the site has always called
 
     & h3 {
       font-size: var(--t-2); letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--green); margin-bottom: 10px;
+      color: var(--accent); margin-bottom: 10px;
     }
   }
   body.deutsch .tag-hinweis { color: var(--ink-soft); font-size: var(--t-4); margin-top: 10px; }
@@ -5845,7 +5849,7 @@ German for day, and .tag is what the site has always called
   body.deutsch .feld, body.deutsch .sag-zeile {
     display: grid; grid-template-columns: 26px 1fr; gap: var(--s-4); align-items: start;
   }
-  body.deutsch .feld-num { color: var(--gold); font-size: var(--t-3); padding-top: 9px; }
+  body.deutsch .feld-num { color: var(--accent); font-size: var(--t-3); padding-top: 9px; }
 
   /* resize/overflow are deliberately the no-JavaScript values.
      arbeitsbuch.js sets overflow:hidden on the boxes it takes over
@@ -5887,7 +5891,7 @@ German for day, and .tag is what the site has always called
   body.deutsch .sag-zeile textarea { grid-column: 2; }
   body.deutsch .sag-antwort {
     grid-column: 2; display: none;
-    color: var(--green); font-size: var(--t-5); padding-top: 2px;
+    color: var(--accent); font-size: var(--t-5); padding-top: 2px;
   }
   body.deutsch .buch-tag[data-antworten] .sag-antwort { display: block; }
   body.deutsch .antwort-schalter { margin-top: 14px; }
@@ -5905,7 +5909,7 @@ German for day, and .tag is what the site has always called
 
     & .tag-fuss-note { color: var(--ink-soft); font-size: var(--t-2); }
   }
-  body.deutsch .tag-fertig[aria-pressed="true"] { color: var(--green); border-color: var(--green); }
+  body.deutsch .tag-fertig[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 
   /* Printing the book should give you the book, not one day of it
      and a navigation bar.
@@ -5999,7 +6003,7 @@ German for day, and .tag is what the site has always called
   body.quran .dars-day {
     display: inline-block; margin-bottom: 6px;
     font-size: var(--t-3); letter-spacing: 0.04em;
-    color: var(--green);
+    color: var(--accent);
   }
 
   /* ---------- an ayah, set as an ayah ---------- */
@@ -6076,14 +6080,14 @@ German for day, and .tag is what the site has always called
      rule to learn but a thing to enjoy. */
   .tothyo {
     margin-block: 22px; padding: 16px 18px;
-    border: 1px solid var(--hairline); border-left: 3px solid var(--gold);
+    border: 1px solid var(--hairline); border-left: 3px solid var(--accent);
     border-radius: var(--radius-sm); background: var(--panel);
     font-size: var(--t-5);
 
     & .tothyo-label {
       display: block; margin-bottom: 6px;
       font-family: var(--font-mono); font-size: var(--t-3);
-      letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold);
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent);
     }
     & p { margin: 0; max-width: none; }
   }
@@ -6094,12 +6098,12 @@ German for day, and .tag is what the site has always called
   .mukhe {
     margin-block: 20px; padding: 14px 18px;
     border-radius: var(--radius-sm);
-    background: var(--green-soft); color: var(--ink);
+    background: var(--accent-soft); color: var(--ink);
     display: flex; flex-wrap: wrap; gap: var(--s-3) 14px; align-items: baseline;
 
     & .mukhe-label {
       font-family: var(--font-mono); font-size: var(--t-3);
-      letter-spacing: 0.06em; text-transform: uppercase; color: var(--green);
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent);
     }
     & p { margin: 0; max-width: none; }
   }
@@ -6107,8 +6111,8 @@ German for day, and .tag is what the site has always called
   /* A letter or mark being pointed at inside running text, the
      ة at the end of a word, the shadda in the middle of one. */
   .chinho {
-    padding: 1px 5px; border-radius: 5px;
-    background: var(--green-soft); color: var(--green); font-weight: 700;
+    padding: 1px 5px; border-radius: var(--radius-xs);
+    background: var(--accent-soft); color: var(--accent); font-weight: 700;
   }
 
   /* ---------- print ---------- */
@@ -6159,19 +6163,19 @@ German for day, and .tag is what the site has always called
   body.english :is(b, strong)[lang="en"] { font-weight: 600; }
 
   /* ---------- the hub ---------- */
-  .english-hero .lede [lang="en"] { color: var(--gold); }
+  .english-hero .lede [lang="en"] { color: var(--accent); }
 
   /* ---------- a term page ---------- */
   .term-hero .term-can {
     margin-top: 16px; color: var(--ink);
-    border-left: 3px solid var(--green); padding-left: 14px; max-width: 60ch;
+    border-left: 3px solid var(--accent); padding-left: 14px; max-width: 60ch;
   }
   /* The part number on a card. The deck numbers its parts and a
      learner with the deck open should be able to match the two
      without counting, which is the whole reason `n` is in the
      curriculum at all. */
   .lesson-card .part-num {
-    display: block; color: var(--gold); font-size: var(--t-1);
+    display: block; color: var(--accent); font-size: var(--t-1);
     letter-spacing: 0.08em; margin-bottom: 6px;
   }
 
@@ -6179,11 +6183,11 @@ German for day, and .tag is what the site has always called
     display: grid; grid-template-columns: auto 1fr auto; gap: 18px;
     align-items: center; text-decoration: none; color: var(--ink);
 
-    & .wb-cta-art { color: var(--gold); }
+    & .wb-cta-art { color: var(--accent); }
     & .wb-cta-art svg { width: 30px; height: 30px; }
     & strong { display: block; font-size: var(--t-7); margin-bottom: 4px; }
     & .wb-cta-text span { color: var(--ink-soft); font-size: var(--t-5); }
-    & .more { color: var(--green); white-space: nowrap; font-family: var(--font-mono);
+    & .more { color: var(--accent); white-space: nowrap; font-family: var(--font-mono);
               font-size: var(--t-3); }
   }
   @media (width <= 640px) {
@@ -6197,19 +6201,19 @@ German for day, and .tag is what the site has always called
      shape, alone, before any explanation of it. It is
      deliberately the loudest thing on the page. */
   .shape {
-    border: 1px solid var(--green); border-radius: var(--radius);
-    background: var(--green-soft); padding: 20px 22px;
+    border: 1px solid var(--accent); border-radius: var(--radius);
+    background: var(--accent-soft); padding: 20px 22px;
     margin-block: 26px;
 
     & .shape-label {
-      display: block; color: var(--green); font-size: var(--t-1);
+      display: block; color: var(--accent); font-size: var(--t-1);
       letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px;
     }
     & .shape-line {
       font-family: var(--font-sans); font-size: clamp(1.1rem, 3vw, 1.45rem);
       font-weight: 500; color: var(--ink); margin-bottom: 10px; max-width: none;
 
-      & i { font-style: normal; color: var(--gold); letter-spacing: 0.05em; }
+      & i { font-style: normal; color: var(--accent); letter-spacing: 0.05em; }
       & b { font-weight: 600; }
     }
     & .shape-why, & .shape-tip { margin-bottom: 0; color: var(--ink-soft); font-size: var(--t-5); }
@@ -6244,7 +6248,7 @@ German for day, and .tag is what the site has always called
 
   /* ---------- the one line worth remembering ---------- */
   .mone {
-    border-left: 3px solid var(--gold);
+    border-left: 3px solid var(--accent);
     background: var(--paper-sunk);
     padding: 14px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     margin-block: 22px; max-width: var(--measure); font-size: var(--t-5);
@@ -6258,12 +6262,12 @@ German for day, and .tag is what the site has always called
      silent reading is worth nothing, so no page in this school
      ends on something you only read. */
   .bolo {
-    border: 1px solid var(--gold); border-radius: var(--radius);
+    border: 1px solid var(--accent); border-radius: var(--radius);
     background: var(--paper-sunk); padding: 16px 18px; margin-block: 26px;
     max-width: var(--measure);
 
     & .bolo-label {
-      display: block; font-family: var(--font-mono); color: var(--gold);
+      display: block; font-family: var(--font-mono); color: var(--accent);
       font-size: var(--t-1); letter-spacing: 0.08em; text-transform: uppercase;
       margin-bottom: 8px;
     }
@@ -6301,11 +6305,11 @@ German for day, and .tag is what the site has always called
       background: var(--hairline); border-radius: var(--radius-pill); overflow: hidden;
     }
     & .track i {
-      display: block; height: 100%; width: 0; background: var(--green);
+      display: block; height: 100%; width: 0; background: var(--accent);
       transition: width var(--slow) var(--ease);
     }
     & .count { color: var(--ink-soft); font-size: var(--t-3); }
-    &[data-state="done"] .track i { background: var(--gold); }
+    &[data-state="done"] .track i { background: var(--accent); }
   }
 
   /* ---------- the thirty squares ----------
@@ -6332,11 +6336,11 @@ German for day, and .tag is what the site has always called
       color: var(--ink-soft); font-family: var(--font-mono); font-size: var(--t-3);
       transition: border-color var(--fast) var(--ease), background var(--fast) var(--ease);
     }
-    & .wb-chip:hover { border-color: var(--green); }
+    & .wb-chip:hover { border-color: var(--accent); }
     & .wb-chip[data-done] {
-      background: var(--green-soft); border-color: var(--green); color: var(--green);
+      background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
     }
-    & .wb-chip[data-current] { outline: 2px solid var(--gold); outline-offset: 1px; }
+    & .wb-chip[data-current] { outline: 2px solid var(--accent); outline-offset: 1px; }
   }
 
   /* ---------- the sounds Bangla does not have ---------- */
@@ -6350,7 +6354,7 @@ German for day, and .tag is what the site has always called
       font-size: var(--t-5);
     }
     & .wb-sound b { font-weight: 600; }
-    & .wb-sound [lang="en"] { color: var(--gold); }
+    & .wb-sound [lang="en"] { color: var(--accent); }
     & .wb-sound-how { color: var(--ink-soft); font-size: var(--t-4); }
   }
 
@@ -6360,13 +6364,13 @@ German for day, and .tag is what the site has always called
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
 
     & .wb-collect-col {
-      border: 1px solid var(--hairline); border-top: 3px solid var(--green);
+      border: 1px solid var(--hairline); border-top: 3px solid var(--accent);
       border-radius: var(--radius-sm); background: var(--panel);
       padding: 14px 16px; display: grid;
     }
     & .wb-collect-head {
       display: block; font-family: var(--font-mono); font-size: var(--t-5);
-      font-weight: 600; color: var(--green); margin-bottom: 10px;
+      font-weight: 600; color: var(--accent); margin-bottom: 10px;
     }
     & textarea {
       width: 100%; resize: vertical; min-height: 120px;
@@ -6409,7 +6413,7 @@ German for day, and .tag is what the site has always called
   .wb-day-head {
     border-bottom: 1px solid var(--hairline); padding-bottom: 14px; margin-bottom: 18px;
 
-    & .wb-day-num { color: var(--gold); font-size: var(--t-2); letter-spacing: 0.08em; }
+    & .wb-day-num { color: var(--accent); font-size: var(--t-2); letter-spacing: 0.08em; }
     & h2 { font-size: clamp(1.2rem, 3vw, 1.5rem); margin: 6px 0 4px; }
     & .wb-day-bn { color: var(--ink-soft); margin: 0; }
   }
@@ -6420,7 +6424,7 @@ German for day, and .tag is what the site has always called
 
     & h3 {
       font-size: var(--t-2); letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--green); margin-bottom: 10px;
+      color: var(--accent); margin-bottom: 10px;
     }
   }
   .wb-hint { color: var(--ink-soft); font-size: var(--t-4); margin-top: 10px; }
@@ -6433,7 +6437,7 @@ German for day, and .tag is what the site has always called
   .wb-field, .wb-say-row {
     display: grid; grid-template-columns: 26px 1fr; gap: var(--s-4); align-items: start;
   }
-  .wb-num { color: var(--gold); font-size: var(--t-3); padding-top: 9px; }
+  .wb-num { color: var(--accent); font-size: var(--t-3); padding-top: 9px; }
 
   /* resize/overflow are deliberately the no-JavaScript values.
      workbook.js sets overflow:hidden on the boxes it takes over
@@ -6473,7 +6477,7 @@ German for day, and .tag is what the site has always called
   .wb-say-row textarea { grid-column: 2; }
   .wb-say-a {
     grid-column: 2; display: none;
-    color: var(--green); font-size: var(--t-5); padding-top: 2px;
+    color: var(--accent); font-size: var(--t-5); padding-top: 2px;
   }
   .wb-day[data-answers] .wb-say-a { display: block; }
   .wb-answer-toggle { margin-top: 14px; }
@@ -6491,7 +6495,7 @@ German for day, and .tag is what the site has always called
 
     & .wb-foot-note { color: var(--ink-soft); font-size: var(--t-2); }
   }
-  .wb-done[aria-pressed="true"] { color: var(--green); border-color: var(--green); }
+  .wb-done[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 
   /* Printing the book should give you the book, not one day of it
      and a navigation bar. Every selector is under body.english,
@@ -6562,11 +6566,11 @@ German for day, and .tag is what the site has always called
                 box-shadow var(--fast) var(--ease);
 
     &:hover {
-      border-color: var(--green); box-shadow: var(--shadow-lift);
-      & .more { color: var(--green); }
+      border-color: var(--accent); box-shadow: var(--shadow-lift);
+      & .more { color: var(--accent); }
     }
   }
-  .read-art { color: var(--gold); }
+  .read-art { color: var(--accent); }
   .read-art .art { width: 30px; height: 30px; }
   .read-meta {
     display: flex; flex-wrap: wrap; gap: var(--s-3) 14px; align-items: baseline;
@@ -6637,17 +6641,17 @@ German for day, and .tag is what the site has always called
      page speaks in good/warn/bad, so without this a verdict capped
      down to Hold kept the green ground it had not earned. */
   .verdict-card[data-state="warn"] {
-    border-color: var(--gold);
-    background: color-mix(in oklab, var(--gold) 8%, transparent);
+    border-color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 8%, transparent);
 
-    & .verdict-value { color: var(--gold); }
+    & .verdict-value { color: var(--accent); }
   }
   .verdict-card[data-state="bad"] .verdict-value { color: var(--danger); }
 
   .verdict-cap {
     justify-self: start; padding: 3px 10px; border-radius: var(--radius-pill);
-    background: color-mix(in oklab, var(--gold) 18%, transparent);
-    color: var(--gold); font-size: var(--t-0);
+    background: color-mix(in oklab, var(--accent) 18%, transparent);
+    color: var(--accent); font-size: var(--t-0);
   }
   .verdict-headroom {
     color: var(--ink-soft); font-size: var(--t-3);
@@ -6660,7 +6664,7 @@ German for day, and .tag is what the site has always called
               text-transform: uppercase; }
     & strong {
       font-family: var(--font-mono); font-size: 1.4rem;
-      font-variant-numeric: tabular-nums; color: var(--gold);
+      font-variant-numeric: tabular-nums; color: var(--accent);
     }
   }
   @media (width <= 780px) { .verdict-aside { justify-items: start; text-align: start; } }
@@ -6669,7 +6673,7 @@ German for day, and .tag is what the site has always called
   .dial { width: 148px; height: auto; display: block; }
   .dial-track { fill: none; stroke: var(--hairline); stroke-width: 9; stroke-linecap: round; }
   .dial-fill {
-    fill: none; stroke-width: 9; stroke-linecap: round; stroke: var(--green);
+    fill: none; stroke-width: 9; stroke-linecap: round; stroke: var(--accent);
     transition: stroke-dasharray var(--slow) var(--ease);
 
     &[data-tone="warn"] { stroke: var(--gold); }
@@ -6678,7 +6682,7 @@ German for day, and .tag is what the site has always called
   .dial-tick { stroke: var(--paper); stroke-width: 2; }
   .dial-value {
     text-anchor: middle; font-family: var(--font-mono); font-size: 30px;
-    fill: var(--green); font-variant-numeric: tabular-nums;
+    fill: var(--accent); font-variant-numeric: tabular-nums;
 
     &[data-tone="warn"] { fill: var(--gold); }
     &[data-tone="bad"] { fill: var(--danger); }
@@ -6689,10 +6693,10 @@ German for day, and .tag is what the site has always called
   }
 
   /* ---------- grade colours, used by every bar and chip ---------- */
-  [data-grade="strong"] { --grade: var(--green); }
-  [data-grade="good"]   { --grade: var(--green); }
-  [data-grade="fair"]   { --grade: var(--gold); }
-  [data-grade="weak"]   { --grade: var(--gold); }
+  [data-grade="strong"] { --grade: var(--accent); }
+  [data-grade="good"]   { --grade: var(--accent); }
+  [data-grade="fair"]   { --grade: var(--accent); }
+  [data-grade="weak"]   { --grade: var(--accent); }
   [data-grade="poor"]   { --grade: var(--danger); }
   [data-grade="na"]     { --grade: var(--hairline); }
 
@@ -6702,7 +6706,7 @@ German for day, and .tag is what the site has always called
 
     & i {
       display: block; height: 100%; border-radius: var(--radius-pill);
-      background: var(--grade, var(--green));
+      background: var(--grade, var(--accent));
       opacity: 0.85;
       transition: width var(--slow) var(--ease);
     }
@@ -6738,15 +6742,15 @@ German for day, and .tag is what the site has always called
       padding: 13px 2px; list-style: none;
     }
     & > summary::-webkit-details-marker { display: none; }
-    & > summary:hover .pillar-name { color: var(--green); }
-    &[open] > summary .pillar-name { color: var(--green); }
+    & > summary:hover .pillar-name { color: var(--accent); }
+    &[open] > summary .pillar-name { color: var(--accent); }
   }
   @media (width <= 620px) {
     .pillar > summary { grid-template-columns: minmax(0, 1fr) auto auto; }
     .pillar > summary .score-bar { grid-column: 1 / -1; }
   }
   .pillar-name { font-family: var(--font-serif); font-size: var(--t-6); }
-  .pillar-weight { color: var(--gold); font-size: var(--t-2); white-space: nowrap; }
+  .pillar-weight { color: var(--accent); font-size: var(--t-2); white-space: nowrap; }
   .pillar[data-muted] {
     & .pillar-weight { color: var(--ink-soft); }
     & .pillar-name, & .pillar-score { opacity: 0.45; }
@@ -6820,7 +6824,7 @@ German for day, and .tag is what the site has always called
     & h3 { font-size: var(--t-5); margin: 0 0 6px; }
     & p { margin: 0; font-size: var(--t-4); color: var(--ink-soft); line-height: 1.6; }
 
-    &[data-tone="good"] { border-inline-start-color: var(--green); background: var(--green-soft); }
+    &[data-tone="good"] { border-inline-start-color: var(--accent); background: var(--accent-soft); }
     &[data-tone="warn"] { border-inline-start-color: var(--gold); }
     &[data-tone="bad"] {
       border-inline-start-color: var(--danger);
@@ -6838,17 +6842,17 @@ German for day, and .tag is what the site has always called
   }
   .fv-band {
     position: absolute; inset-block: 0; border-radius: var(--radius-pill);
-    background: var(--green); opacity: 0.3;
+    background: var(--accent); opacity: 0.3;
   }
   .fv-tick {
     position: absolute; top: 50%; translate: -50% -50%;
-    width: 2px; height: 14px; background: var(--green);
+    width: 2px; height: 14px; background: var(--accent);
   }
   .fv-median, .fv-price {
     position: absolute; top: 50%; translate: -50% 0;
 
     & i { display: block; width: 3px; height: 22px; margin-inline: auto;
-          background: var(--green); translate: 0 -50%; }
+          background: var(--accent); translate: 0 -50%; }
     & span {
       position: absolute; left: 50%; translate: -50% 0;
       display: grid; gap: 1px; text-align: center; white-space: nowrap;
@@ -6858,9 +6862,9 @@ German for day, and .tag is what the site has always called
   }
   .fv-median span { top: 14px; }
   .fv-price {
-    & i { height: 30px; background: var(--gold); }
-    & span { bottom: 28px; color: var(--gold); }
-    & b { color: var(--gold); }
+    & i { height: 30px; background: var(--accent); }
+    & span { bottom: 28px; color: var(--accent); }
+    & b { color: var(--accent); }
   }
   .fv-ends {
     display: flex; justify-content: space-between; gap: var(--s-6);
@@ -6873,10 +6877,10 @@ German for day, and .tag is what the site has always called
      page emits the five grade names. Without these the P/E and
      margin-of-safety tiles rendered in plain ink whatever they
      said, which is precisely the information a glance is for. */
-  .tile[data-tone="strong"] .tile-value { color: var(--green); }
-  .tile[data-tone="good"] .tile-value { color: var(--green); }
+  .tile[data-tone="strong"] .tile-value { color: var(--accent); }
+  .tile[data-tone="good"] .tile-value { color: var(--accent); }
   .tile[data-tone="fair"] .tile-value { color: var(--ink); }
-  .tile[data-tone="weak"] .tile-value { color: var(--gold); }
+  .tile[data-tone="weak"] .tile-value { color: var(--accent); }
   .tile[data-tone="poor"] .tile-value { color: var(--danger); }
   .tile[data-tone="na"] .tile-value { color: var(--ink-soft); }
 
@@ -6887,7 +6891,7 @@ German for day, and .tag is what the site has always called
   }
   .rng-fill {
     position: absolute; inset-block: 0; inset-inline-start: 0; border-radius: var(--radius-pill);
-    background: var(--green); opacity: 0.25;
+    background: var(--accent); opacity: 0.25;
   }
   .rng-mark {
     position: absolute; top: 50%; translate: -50% 0;
@@ -6899,8 +6903,8 @@ German for day, and .tag is what the site has always called
       font-size: var(--t-0); color: var(--ink-soft);
     }
     & b { font-family: var(--font-mono); font-size: var(--t-2); color: var(--ink); }
-    &.is-price i { width: 3px; height: 26px; background: var(--gold); }
-    &.is-price span, &.is-price b { color: var(--gold); }
+    &.is-price i { width: 3px; height: 26px; background: var(--accent); }
+    &.is-price span, &.is-price b { color: var(--accent); }
     &.is-ma200 span { bottom: 30px; }
   }
   .rng-ends {
@@ -6928,10 +6932,10 @@ German for day, and .tag is what the site has always called
     height: 16px; border-radius: var(--radius-xs); background: var(--paper-sunk); overflow: clip;
 
     & i {
-      display: block; height: 100%; background: var(--green); opacity: 0.55;
+      display: block; height: 100%; background: var(--accent); opacity: 0.55;
       transition: width var(--slow) var(--ease);
     }
-    & i[data-tone="gold"] { background: var(--gold); }
+    & i[data-tone="gold"] { background: var(--accent); }
     & i[data-tone="danger"] { background: var(--danger); }
   }
   .yield-value {
@@ -6959,7 +6963,7 @@ German for day, and .tag is what the site has always called
   .dupont-track {
     height: 18px; border-radius: var(--radius-xs); background: var(--paper-sunk); overflow: clip;
 
-    & i { display: block; height: 100%; background: var(--green); opacity: 0.45;
+    & i { display: block; height: 100%; background: var(--accent); opacity: 0.45;
           transition: width var(--slow) var(--ease); }
   }
   .dupont-v {
@@ -6981,7 +6985,7 @@ German for day, and .tag is what the site has always called
     display: flex; align-items: baseline; gap: var(--s-5); margin: 12px 0 14px;
 
     & b {
-      font-family: var(--font-mono); font-size: 1.7rem; color: var(--green);
+      font-family: var(--font-mono); font-size: 1.7rem; color: var(--accent);
       font-variant-numeric: tabular-nums;
     }
     & span { color: var(--ink-soft); font-size: var(--t-3); }
@@ -7002,7 +7006,7 @@ German for day, and .tag is what the site has always called
     font-size: 11px; line-height: 1;
   }
   .checks li[data-state="pass"] .check-box {
-    background: var(--green); border-color: var(--green);
+    background: var(--accent); border-color: var(--accent);
   }
   .checks li[data-state="pass"] .check-box::before { content: "✓"; color: var(--paper); }
   .checks li[data-state="fail"] .check-box { border-color: var(--danger); }
@@ -7016,8 +7020,8 @@ German for day, and .tag is what the site has always called
     letter-spacing: 0.04em; text-transform: uppercase;
     border: 1px solid var(--danger); color: var(--danger);
 
-    &[data-pass="true"] { border-color: var(--green); color: var(--green);
-                          background: var(--green-soft); }
+    &[data-pass="true"] { border-color: var(--accent); color: var(--accent);
+                          background: var(--accent-soft); }
   }
 
   /* ---------- what's holding the score down ---------- */
@@ -7032,7 +7036,7 @@ German for day, and .tag is what the site has always called
     & small { display: block; color: var(--ink-soft); font-size: var(--t-2); }
   }
   .drag-track {
-    height: 12px; border-radius: 3px; background: var(--paper-sunk); overflow: clip;
+    height: 12px; border-radius: var(--radius-xs); background: var(--paper-sunk); overflow: clip;
 
     & i { display: block; height: 100%; background: var(--danger); opacity: 0.45;
           transition: width var(--slow) var(--ease); }
@@ -7076,8 +7080,8 @@ German for day, and .tag is what the site has always called
       content: "+"; font-family: var(--font-mono); color: var(--ink-soft);
     }
     &[open] > summary::after { content: "–"; }
-    & > summary h3 { margin: 0; color: var(--gold); font-weight: 500; font-size: var(--t-5); }
-    & > summary:hover h3 { color: var(--green); }
+    & > summary h3 { margin: 0; color: var(--accent); font-weight: 500; font-size: var(--t-5); }
+    & > summary:hover h3 { color: var(--accent); }
   }
   details.driver-group + details.driver-group { margin-top: 0; }
   #weights { margin-bottom: 20px; }
@@ -7098,12 +7102,12 @@ German for day, and .tag is what the site has always called
     gap: var(--s-5);
 
     & h2 { font-size: 1.4rem; margin: 0; }
-    & > .mono { color: var(--gold); font-size: var(--t-1);
+    & > .mono { color: var(--accent); font-size: var(--t-1);
                 letter-spacing: 0.08em; text-transform: uppercase; }
     & p { color: var(--ink-soft); max-width: 74ch; margin: 0; font-size: var(--t-5); }
     & .more { margin-top: 4px; }
   }
-  .advanced-langs { color: var(--green) !important; font-family: var(--font-bn); }
+  .advanced-langs { color: var(--accent) !important; font-family: var(--font-bn); }
 
   @media (prefers-reduced-motion: reduce) {
     .score-bar i, .yield-track i, .dupont-track i, .drag-track i, .dial-fill {
@@ -7142,7 +7146,7 @@ German for day, and .tag is what the site has always called
   }
   .about-thesis {
     color: var(--ink-soft); max-width: 58ch; margin-top: 14px;
-    padding-inline-start: 16px; border-inline-start: 2px solid var(--green);
+    padding-inline-start: 16px; border-inline-start: 2px solid var(--accent);
   }
 
   .id-card {
@@ -7167,7 +7171,7 @@ German for day, and .tag is what the site has always called
   .id-mark {
     display: grid; place-items: center;
     width: 54px; height: 54px; margin-bottom: 12px;
-    border-radius: 14px; background: var(--green-soft); color: var(--green);
+    border-radius: var(--radius); background: var(--accent-soft); color: var(--accent);
     position: relative;
 
     & svg { width: 32px; height: 32px; }
@@ -7178,7 +7182,7 @@ German for day, and .tag is what the site has always called
   }
   .id-role { color: var(--ink-soft); font-size: var(--t-5); position: relative; }
   .id-place {
-    color: var(--gold); font-size: var(--t-2); letter-spacing: 0.06em;
+    color: var(--accent); font-size: var(--t-2); letter-spacing: 0.06em;
     margin-top: 8px; position: relative;
   }
 
@@ -7199,7 +7203,7 @@ German for day, and .tag is what the site has always called
                   background var(--fast) var(--ease);
     }
     & a:hover, & a:focus-visible {
-      color: var(--green); border-color: var(--green); background: var(--green-soft);
+      color: var(--accent); border-color: var(--accent); background: var(--accent-soft);
     }
     & svg { width: 15px; height: 15px; flex: none; }
   }
@@ -7226,7 +7230,7 @@ German for day, and .tag is what the site has always called
     & small { color: var(--ink-soft); font-size: var(--t-3); }
   }
   .glance-k {
-    color: var(--gold); font-size: var(--t-0);
+    color: var(--accent); font-size: var(--t-0);
     letter-spacing: 0.1em; text-transform: uppercase;
   }
 
@@ -7244,12 +7248,12 @@ German for day, and .tag is what the site has always called
 
     & b {
       font-family: var(--font-mono); font-size: 2.1rem; line-height: 1.05;
-      color: var(--green); font-variant-numeric: tabular-nums;
+      color: var(--accent); font-variant-numeric: tabular-nums;
     }
     & span { color: var(--ink-soft); font-size: var(--t-4); }
 
     &:hover, &:focus-visible {
-      border-color: var(--green); transform: translateY(-2px);
+      border-color: var(--accent); transform: translateY(-2px);
     }
   }
 
@@ -7281,8 +7285,8 @@ German for day, and .tag is what the site has always called
       background: var(--ink-soft);
       box-shadow: 0 0 0 4px var(--paper);
     }
-    &[data-kind="edu"]::after { background: var(--green); }
-    &[data-kind="work"]::after { background: var(--gold); }
+    &[data-kind="edu"]::after { background: var(--accent); }
+    &[data-kind="work"]::after { background: var(--accent); }
   }
   .cv-year {
     color: var(--ink-soft); font-size: var(--t-2);
@@ -7298,12 +7302,12 @@ German for day, and .tag is what the site has always called
     & h3 em {
       font-style: normal; font-family: var(--font-mono);
       font-size: var(--t-1); letter-spacing: 0.06em; text-transform: uppercase;
-      color: var(--green); border: 1px solid var(--green);
+      color: var(--accent); border: 1px solid var(--accent);
       border-radius: var(--radius-pill); padding: 2px 8px;
     }
     & p { color: var(--ink-soft); font-size: var(--t-5); margin: 8px 0 0; max-width: 64ch; }
   }
-  .cv-org { color: var(--gold); font-size: var(--t-4); }
+  .cv-org { color: var(--accent); font-size: var(--t-4); }
 
   @media (width <= 620px) {
     .cv-item {
@@ -7324,13 +7328,13 @@ German for day, and .tag is what the site has always called
   .res {
     padding: 22px 24px; border-radius: var(--radius);
     border: 1px solid var(--hairline); background: var(--panel);
-    border-block-start: 3px solid var(--green);
+    border-block-start: 3px solid var(--accent);
 
     & h3 { font-size: var(--t-7); margin: 8px 0 8px; }
     & p { color: var(--ink-soft); font-size: var(--t-5); margin: 0; }
   }
   .res-tag {
-    color: var(--gold); font-size: var(--t-0);
+    color: var(--accent); font-size: var(--t-0);
     letter-spacing: 0.1em; text-transform: uppercase;
   }
 
@@ -7350,10 +7354,10 @@ German for day, and .tag is what the site has always called
       content: "Read more →";
       display: block; margin-top: 12px;
       font-family: var(--font-mono); font-size: var(--t-1);
-      letter-spacing: 0.06em; text-transform: uppercase; color: var(--green);
+      letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent);
     }
     &:hover, &:focus-visible {
-      border-color: var(--green);
+      border-color: var(--accent);
       transform: translateY(-2px);
       box-shadow: var(--shadow-lift);
     }
@@ -7378,7 +7382,7 @@ German for day, and .tag is what the site has always called
   }
   .kit-group { display: grid; gap: var(--s-5); align-content: start; }
   .kit-k {
-    color: var(--gold); font-size: var(--t-0);
+    color: var(--accent); font-size: var(--t-0);
     letter-spacing: 0.1em; text-transform: uppercase;
   }
   /* .chips used to live here. It is now in `components`, because
@@ -7502,11 +7506,11 @@ German for day, and .tag is what the site has always called
     }
     & a::before {
       content: counter(toc, decimal-leading-zero) " ";
-      font-family: var(--font-mono); font-size: var(--t-2); color: var(--gold);
+      font-family: var(--font-mono); font-size: var(--t-2); color: var(--accent);
       margin-inline-end: 7px;
     }
     & a:hover { color: var(--ink); }
-    & a[aria-current="true"] { color: var(--green); border-bottom-color: var(--green); }
+    & a[aria-current="true"] { color: var(--accent); border-bottom-color: var(--accent); }
   }
 
   /* ---------- prose inside the model section ---------- */
@@ -7514,12 +7518,12 @@ German for day, and .tag is what the site has always called
   .statement p.prose + .grid-2 { margin-block: 6px 18px; }
 
   .callout {
-    border: 1px solid var(--gold); border-radius: var(--radius);
-    background: color-mix(in oklab, var(--gold) 8%, transparent);
+    border: 1px solid var(--accent); border-radius: var(--radius);
+    background: color-mix(in oklab, var(--accent) 8%, transparent);
     padding: 18px 22px; margin-block: 22px;
     display: grid; gap: var(--s-3);
 
-    & .mono { color: var(--gold); font-size: var(--t-1);
+    & .mono { color: var(--accent); font-size: var(--t-1);
       letter-spacing: 0.06em; text-transform: uppercase; }
     & p { max-width: var(--measure); margin: 0; }
     & .statement-note { margin-top: 2px; }
@@ -7535,7 +7539,7 @@ German for day, and .tag is what the site has always called
     background: var(--panel); padding: 22px 24px;
     display: grid; gap: var(--s-5); align-content: start;
 
-    & > .mono { color: var(--gold); font-size: var(--t-1);
+    & > .mono { color: var(--accent); font-size: var(--t-1);
       letter-spacing: 0.06em; text-transform: uppercase; }
     & h3 { font-size: var(--t-7); margin: 0; }
     & p { color: var(--ink-soft); font-size: var(--t-5); margin: 0; }
@@ -7546,7 +7550,7 @@ German for day, and .tag is what the site has always called
      disappeared off the edge of its own card. */
   .formula {
     background: var(--paper-sunk); border-radius: var(--radius-sm);
-    border-inline-start: 2px solid var(--green);
+    border-inline-start: 2px solid var(--accent);
     padding: 10px 14px; line-height: 1.75;
     font-size: var(--t-3) !important; color: var(--ink) !important;
   }
@@ -7560,12 +7564,12 @@ German for day, and .tag is what the site has always called
     & td { white-space: normal; text-align: left;
       font-family: var(--font-sans); font-size: var(--t-4); }
     & tbody th { min-width: 190px; }
-    & tr.is-self th, & tr.is-self td { background: var(--green-soft); font-weight: 500; }
+    & tr.is-self th, & tr.is-self td { background: var(--accent-soft); font-weight: 500; }
     & td.evidence-note {
       min-width: 280px; color: var(--ink-soft);
       border-inline-start: 3px solid var(--hairline);
     }
-    & td.evidence-note[data-finding="better"] { border-inline-start-color: var(--green); }
+    & td.evidence-note[data-finding="better"] { border-inline-start-color: var(--accent); }
     & td.evidence-note[data-finding="same"]   { border-inline-start-color: var(--ink-soft); }
     & td.evidence-note[data-finding="mixed"]  { border-inline-start-color: var(--gold); }
     & td.evidence-note[data-finding="worse"]  { border-inline-start-color: var(--danger); }
@@ -7579,7 +7583,7 @@ German for day, and .tag is what the site has always called
     & summary {
       cursor: pointer; font-family: var(--font-mono);
       font-size: var(--t-2); letter-spacing: 0.06em;
-      text-transform: uppercase; color: var(--gold);
+      text-transform: uppercase; color: var(--accent);
     }
   }
   .ref-list {
@@ -7591,22 +7595,22 @@ German for day, and .tag is what the site has always called
   }
 
   /* ---------- the two-group colour convention ---------- */
-  .key-conv { background: var(--green); }
-  .key-isl  { background: var(--gold); }
+  .key-conv { background: var(--accent); }
+  .key-isl  { background: var(--accent); }
 
-  .line-conventional { stroke: var(--green); stroke-width: 1.8; }
-  .line-islamic { stroke: var(--gold); stroke-width: 1.8; stroke-dasharray: 5 3; }
-  .area-conventional { fill: var(--green); opacity: 0.1; }
-  .line-diff { stroke: var(--gold); stroke-width: 1.8; }
-  .area-diff { fill: var(--gold); opacity: 0.14; }
-  .dot-conventional { fill: var(--green); opacity: 0.8; }
-  .dot-islamic { fill: var(--gold); }
-  .chart-tag-conv { font-family: var(--font-mono); font-size: 9px; fill: var(--green); }
-  .chart-tag-isl  { font-family: var(--font-mono); font-size: 9px; fill: var(--gold); }
-  .chart-label-conv { font-family: var(--font-mono); font-size: 9px; fill: var(--green); }
-  .chart-label-isl  { font-family: var(--font-mono); font-size: 9px; fill: var(--gold); }
-  .mark-conv { stroke: var(--green); stroke-width: 1.2; stroke-dasharray: 3 2; }
-  .mark-isl  { stroke: var(--gold);  stroke-width: 1.2; stroke-dasharray: 3 2; }
+  .line-conventional { stroke: var(--accent); stroke-width: 1.8; }
+  .line-islamic { stroke: var(--accent); stroke-width: 1.8; stroke-dasharray: 5 3; }
+  .area-conventional { fill: var(--accent); opacity: 0.1; }
+  .line-diff { stroke: var(--accent); stroke-width: 1.8; }
+  .area-diff { fill: var(--accent); opacity: 0.14; }
+  .dot-conventional { fill: var(--accent); opacity: 0.8; }
+  .dot-islamic { fill: var(--accent); }
+  .chart-tag-conv { font-family: var(--font-mono); font-size: 9px; fill: var(--accent); }
+  .chart-tag-isl  { font-family: var(--font-mono); font-size: 9px; fill: var(--accent); }
+  .chart-label-conv { font-family: var(--font-mono); font-size: 9px; fill: var(--accent); }
+  .chart-label-isl  { font-family: var(--font-mono); font-size: 9px; fill: var(--accent); }
+  .mark-conv { stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 3 2; }
+  .mark-isl  { stroke: var(--accent);  stroke-width: 1.2; stroke-dasharray: 3 2; }
 
   /* ---------- shared chart furniture ---------- */
   .chart-event { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0.55; }
@@ -7615,28 +7619,28 @@ German for day, and .tag is what the site has always called
   .chart-row-label { font-family: var(--font-sans); font-size: 11px; fill: var(--ink); }
   .chart-coef { font-family: var(--font-mono); font-size: 10px; fill: var(--ink); }
   .chart-p { font-family: var(--font-mono); font-size: 9px; fill: var(--ink-soft); }
-  .chart-p-sig { font-family: var(--font-mono); font-size: 9px; fill: var(--green); }
+  .chart-p-sig { font-family: var(--font-mono); font-size: 9px; fill: var(--accent); }
   .chart-count { font-family: var(--font-mono); font-size: 12px; fill: var(--ink); }
 
   /* ---------- forest plot ---------- */
-  .ci-sig { stroke: var(--green); stroke-width: 2; }
+  .ci-sig { stroke: var(--accent); stroke-width: 2; }
   .ci-null { stroke: var(--ink-soft); stroke-width: 2; opacity: 0.45; }
-  .dot-sig { fill: var(--green); }
+  .dot-sig { fill: var(--accent); }
   .dot-null { fill: var(--ink-soft); opacity: 0.7; }
-  .forest-focus { fill: var(--gold); opacity: 0.09; }
+  .forest-focus { fill: var(--accent); opacity: 0.09; }
 
   /* ---------- dumbbells ---------- */
   .dumbbell-link { stroke: var(--hairline); stroke-width: 3; }
 
   /* ---------- box plot and strip ---------- */
-  .box-body { fill: var(--green); fill-opacity: 0.2; stroke: var(--green); stroke-width: 1.2; }
-  .box-median { stroke: var(--green); stroke-width: 2.4; }
-  .box-whisker { stroke: var(--green); stroke-width: 1.2; opacity: 0.7; }
+  .box-body { fill: var(--accent); fill-opacity: 0.2; stroke: var(--accent); stroke-width: 1.2; }
+  .box-median { stroke: var(--accent); stroke-width: 2.4; }
+  .box-whisker { stroke: var(--accent); stroke-width: 1.2; opacity: 0.7; }
   .strip-dot { fill: var(--ink-soft); opacity: 0.45; }
   .strip-outlier { fill: var(--danger); opacity: 0.8; }
 
   /* ---------- the evidence split ---------- */
-  .finding-better { fill: var(--green); }
+  .finding-better { fill: var(--accent); }
   .finding-same   { fill: var(--ink-soft); opacity: 0.55; }
   .finding-mixed  { fill: var(--gold); }
   .finding-worse  { fill: var(--danger); }
@@ -7679,7 +7683,7 @@ German for day, and .tag is what the site has always called
       color: var(--ink-soft); display: flex; align-items: center;
     }
   }
-  .finding-key-better { background: var(--green); }
+  .finding-key-better { background: var(--accent); }
   .finding-key-same   { background: var(--ink-soft); opacity: 0.55; }
   .finding-key-mixed  { background: var(--gold); }
   .finding-key-worse  { background: var(--danger); }
@@ -7755,13 +7759,13 @@ German for day, and .tag is what the site has always called
     }
   }
   .chart-base-line { stroke: var(--hairline); stroke-width: 1; stroke-dasharray: 3 3; }
-  .line-macro { stroke: var(--green); stroke-width: 1.6; }
-  .dot-macro { fill: var(--gold); }
-  .chart-tag-worst { font-family: var(--font-mono); font-size: 9px; fill: var(--gold); }
+  .line-macro { stroke: var(--accent); stroke-width: 1.6; }
+  .dot-macro { fill: var(--accent); }
+  .chart-tag-worst { font-family: var(--font-mono); font-size: 9px; fill: var(--accent); }
 
   /* ---------- the capital path ---------- */
-  .line-capital { stroke: var(--green); stroke-width: 2.2; }
-  .dot-capital { fill: var(--green); opacity: 0.75; }
+  .line-capital { stroke: var(--accent); stroke-width: 2.2; }
+  .dot-capital { fill: var(--accent); opacity: 0.75; }
   .dot-trough { fill: var(--danger); }
   .chart-req { stroke: var(--danger); stroke-width: 1.4; stroke-dasharray: 5 3; }
   .chart-min { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0.7; }
@@ -7799,7 +7803,7 @@ German for day, and .tag is what the site has always called
     display: flex; flex-wrap: wrap; gap: var(--s-3); margin-block: 4px 12px;
   }
   .vintage-controls .chip[aria-pressed="true"] {
-    border-color: var(--green); color: var(--green); background: var(--green-soft);
+    border-color: var(--accent); color: var(--accent); background: var(--accent-soft);
   }
   .line-vintage { stroke-width: 1.8; fill: none; }
   .line-vintage.is-projected { stroke-dasharray: 4 3; opacity: 0.9; }
@@ -7819,23 +7823,23 @@ German for day, and .tag is what the site has always called
   .chart-seg-label[data-v="6"] { fill: var(--seg-6); }
 
   /* ---------- the two engines ---------- */
-  .line-merton { stroke: var(--green); stroke-width: 2; fill: none; }
-  .line-vintage-engine { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
-  .engine-gap { fill: var(--gold); opacity: 0.14; }
-  .key-merton { background: var(--green); }
-  .key-vintage { background: var(--gold); }
+  .line-merton { stroke: var(--accent); stroke-width: 2; fill: none; }
+  .line-vintage-engine { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
+  .engine-gap { fill: var(--accent); opacity: 0.14; }
+  .key-merton { background: var(--accent); }
+  .key-vintage { background: var(--accent); }
 
   /* ---------- the double whammy ---------- */
   .line-el { stroke: var(--danger); stroke-width: 2.2; fill: none; }
-  .line-lgd { stroke: var(--gold); stroke-width: 1.6; stroke-dasharray: 4 3; fill: none; }
+  .line-lgd { stroke: var(--accent); stroke-width: 1.6; stroke-dasharray: 4 3; fill: none; }
 
   /* ---------- IFRS 9 staging ---------- */
-  .area-stage1 { fill: var(--green); opacity: 0.18; }
-  .area-stage2 { fill: var(--gold); opacity: 0.38; }
+  .area-stage1 { fill: var(--accent); opacity: 0.18; }
+  .area-stage2 { fill: var(--accent); opacity: 0.38; }
   .area-stage3 { fill: var(--danger); opacity: 0.42; }
   .line-ecl { stroke: var(--ink); stroke-width: 1.8; fill: none; }
-  .key-stage1 { background: var(--green); opacity: 0.5; }
-  .key-stage2 { background: var(--gold); }
+  .key-stage1 { background: var(--accent); opacity: 0.5; }
+  .key-stage2 { background: var(--accent); }
   .key-stage3 { background: var(--danger); }
 
   /* ---------- the severity axis ---------- */
@@ -7846,9 +7850,9 @@ German for day, and .tag is what the site has always called
 
   /* ---------- attribution and tornado ---------- */
   .attrib-bad { fill: var(--danger); opacity: 0.7; }
-  .attrib-good { fill: var(--green); opacity: 0.7; }
+  .attrib-good { fill: var(--accent); opacity: 0.7; }
   .attrib-total { fill: var(--ink-soft); opacity: 0.55; }
-  .bar-tornado { fill: var(--green); opacity: 0.6; }
+  .bar-tornado { fill: var(--accent); opacity: 0.6; }
 
   /* ---------- the views that lag on purpose ----------
      Seventy full runs of the model cannot happen between two
@@ -7857,8 +7861,8 @@ German for day, and .tag is what the site has always called
      letting a stale grid look live. */
   [data-stale] { opacity: 0.45; transition: opacity var(--fast) var(--ease); }
 
-  .csv-panel[data-over] { border-color: var(--green); background: var(--green-soft); }
-  .csv-status[data-state="good"] { color: var(--green); }
+  .csv-panel[data-over] { border-color: var(--accent); background: var(--accent-soft); }
+  .csv-status[data-state="good"] { color: var(--accent); }
   .csv-status[data-state="warn"] { color: var(--gold); }
   .csv-status[data-state="bad"] { color: var(--danger); }
 
@@ -7882,52 +7886,52 @@ German for day, and .tag is what the site has always called
     display: flex; flex-wrap: wrap; gap: var(--s-3); margin-block: 4px 14px;
 
     & .chip[aria-pressed="true"] {
-      border-color: var(--green); color: var(--green); background: var(--green-soft);
+      border-color: var(--accent); color: var(--accent); background: var(--accent-soft);
     }
   }
 
   /* ---------- the two models ---------- */
-  .line-logit { stroke: var(--green); stroke-width: 2; fill: none; }
-  .line-gbm { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
-  .dot-logit { fill: var(--green); }
-  .dot-gbm { fill: var(--gold); }
-  .key-logit { background: var(--green); }
-  .key-gbm { background: var(--gold); }
+  .line-logit { stroke: var(--accent); stroke-width: 2; fill: none; }
+  .line-gbm { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
+  .dot-logit { fill: var(--accent); }
+  .dot-gbm { fill: var(--accent); }
+  .key-logit { background: var(--accent); }
+  .key-gbm { background: var(--accent); }
 
   /* ---------- outcomes ---------- */
-  .dot-good { fill: var(--green); opacity: 0.42; }
+  .dot-good { fill: var(--accent); opacity: 0.42; }
   .dot-bad { fill: var(--danger); opacity: 0.72; }
-  .bar-good { fill: var(--green); opacity: 0.42; }
+  .bar-good { fill: var(--accent); opacity: 0.42; }
   .bar-bad { fill: var(--danger); opacity: 0.62; }
 
   /* ---------- the reference a curve is judged against ---------- */
   .chart-diagonal { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.5; }
 
   /* ---------- information value ---------- */
-  .bar-iv { fill: var(--green); opacity: 0.55; }
+  .bar-iv { fill: var(--accent); opacity: 0.55; }
   /* Protected characteristics are marked rather than hidden. The
      page's argument is about what they are worth, so they have to
      be visible and obviously different. */
-  .bar-iv-protected { fill: var(--gold); opacity: 0.6; }
+  .bar-iv-protected { fill: var(--accent); opacity: 0.6; }
 
   /* ---------- learning curve ---------- */
   .line-train { stroke: var(--ink-soft); stroke-width: 1.6; fill: none; }
-  .line-valid { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-valid { stroke: var(--accent); stroke-width: 2; fill: none; }
   .key-train { background: var(--ink-soft); }
-  .key-valid { background: var(--green); }
+  .key-valid { background: var(--accent); }
 
   /* ---------- calibration ---------- */
   .line-uncal { stroke: var(--danger); stroke-width: 1.6; stroke-dasharray: 4 3; fill: none; }
-  .line-cal { stroke: var(--green); stroke-width: 2; fill: none; }
+  .line-cal { stroke: var(--accent); stroke-width: 2; fill: none; }
   .dot-uncal { fill: var(--danger); }
-  .dot-cal { fill: var(--green); }
+  .dot-cal { fill: var(--accent); }
 
   /* ---------- contributions to one decision ---------- */
-  .bar-better { fill: var(--green); opacity: 0.62; }
+  .bar-better { fill: var(--accent); opacity: 0.62; }
   .bar-worse { fill: var(--danger); opacity: 0.62; }
 
   /* ---------- approval rates ---------- */
-  .bar-approval { fill: var(--green); opacity: 0.5; }
+  .bar-approval { fill: var(--accent); opacity: 0.5; }
 
   /* ---------- the confusion matrix ----------
      Four cells, and the two that are mistakes do not cost the
@@ -7943,7 +7947,7 @@ German for day, and .tag is what the site has always called
     & strong { font-family: var(--font-mono); font-size: var(--t-8); }
     & span { font-size: var(--t-3); color: var(--ink-soft); line-height: 1.35; }
 
-    &[data-tone="good"] { border-inline-start: 3px solid var(--green); }
+    &[data-tone="good"] { border-inline-start: 3px solid var(--accent); }
     &[data-tone="warn"] { border-inline-start: 3px solid var(--gold); }
     &[data-tone="bad"] {
       border-inline-start: 3px solid var(--danger);
@@ -7965,38 +7969,38 @@ German for day, and .tag is what the site has always called
      the individual holdings are neutral dots that never compete
      with either.
      ============================================================ */
-  .line-frontier { stroke: var(--green); stroke-width: 2; fill: none; }
-  .line-chosen { stroke: var(--green); stroke-width: 2; fill: none; }
-  .line-equal { stroke: var(--gold); stroke-width: 1.8; stroke-dasharray: 5 3; fill: none; }
-  .line-hold { stroke: var(--green); stroke-width: 2; fill: none; }
-  .line-rebal { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
-  .key-chosen { background: var(--green); }
-  .key-equal { background: var(--gold); }
+  .line-frontier { stroke: var(--accent); stroke-width: 2; fill: none; }
+  .line-chosen { stroke: var(--accent); stroke-width: 2; fill: none; }
+  .line-equal { stroke: var(--accent); stroke-width: 1.8; stroke-dasharray: 5 3; fill: none; }
+  .line-hold { stroke: var(--accent); stroke-width: 2; fill: none; }
+  .line-rebal { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 3; fill: none; }
+  .key-chosen { background: var(--accent); }
+  .key-equal { background: var(--accent); }
   .key-bench { background: var(--ink-soft); }
   .key-risk { background: var(--gold); }
 
   .dot-asset { fill: var(--ink-soft); opacity: 0.55; }
-  .dot-named { fill: var(--gold); }
-  .dot-equal { fill: var(--gold); }
-  .dot-chosen { fill: var(--green); stroke: var(--paper); stroke-width: 1.5; }
+  .dot-named { fill: var(--accent); }
+  .dot-equal { fill: var(--accent); }
+  .dot-chosen { fill: var(--accent); stroke: var(--paper); stroke-width: 1.5; }
   .chart-tag-asset { font-family: var(--font-mono); font-size: 8.5px; fill: var(--ink-soft); }
-  .chart-tag-held { font-family: var(--font-mono); font-size: 9px; fill: var(--green); }
+  .chart-tag-held { font-family: var(--font-mono); font-size: 9px; fill: var(--accent); }
 
-  .bar-weight { fill: var(--green); opacity: 0.6; }
+  .bar-weight { fill: var(--accent); opacity: 0.6; }
   .bar-risk { fill: var(--gold); opacity: 0.65; }
-  .bar-chosen { fill: var(--green); opacity: 0.7; }
+  .bar-chosen { fill: var(--accent); opacity: 0.7; }
   .bar-bench { fill: var(--ink-soft); opacity: 0.45; }
 
   /* ---------- the correlation matrix ----------
      One hue for positive, another for negative, and the opacity
      carries the size. A rainbow scale would read as five
      categories rather than one number. */
-  .corr-pos { fill: var(--green); opacity: calc(var(--v) * 0.85 + 0.05); }
+  .corr-pos { fill: var(--accent); opacity: calc(var(--v) * 0.85 + 0.05); }
   .corr-neg { fill: var(--danger); opacity: calc(var(--v) * 0.85 + 0.05); }
 
   /* A candidate that was screened in but not held. */
   .fin-table tr.is-dropped { opacity: 0.55; }
-  .fin-table td.is-capped { color: var(--gold); font-weight: 500; }
+  .fin-table td.is-capped { color: var(--accent); font-weight: 500; }
 
   @media (width <= 620px) {
     #hindsight-chart .fin-chart { min-width: 620px; }
@@ -8189,7 +8193,7 @@ German for day, and .tag is what the site has always called
        padding is doing. */
     width: 28px; height: 28px; flex: 0 0 28px;
     padding: 1px;
-    color: var(--green);
+    color: var(--accent);
   }
   .rail-wordmark { display: grid; min-width: 0; line-height: 1.2; gap: 1px; }
   .rail-wordmark-name {
@@ -8201,7 +8205,7 @@ German for day, and .tag is what the site has always called
     margin-block-start: -1px;
   }
   .rail-wordmark-sub {
-    color: var(--gold); font-size: var(--t-0); letter-spacing: 0.1em;
+    color: var(--accent); font-size: var(--t-0); letter-spacing: 0.1em;
     white-space: nowrap; overflow: hidden;
   }
 
@@ -8269,31 +8273,53 @@ German for day, and .tag is what the site has always called
     white-space: nowrap; overflow: hidden;
   }
 
+  /* A row is a pill and its icon is a disc.
+
+     Both were rounded rectangles, 10px and 9px, which at this
+     size is a square with the corners taken off: the rail read as
+     a stack of boxes rather than as a list of places. A row that
+     is a pill and a disc inside it is the one shape combination
+     that cannot be mistaken for a table cell.
+
+     The row is also glass now, and only on hover, which is where
+     the cost is worth paying: a wash of accent under 30-odd
+     resting rows is a wall of colour, and the same wash under the
+     one row you are pointing at is the answer to "am I about to
+     click this". */
   .rail-item {
     display: flex; align-items: center; gap: 11px;
     padding: 6px var(--rail-pad);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-pill);
     color: var(--ink);
     text-decoration: none;
     position: relative;
     min-height: 38px;
     scroll-margin-block: 18px;
-    transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+    border: 1px solid transparent;
+    transition: background var(--fast) var(--ease), color var(--fast) var(--ease),
+                border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
   }
   .rail-item:hover {
-    background: color-mix(in oklab, var(--accent) 12%, transparent);
+    background: var(--glass-bg);
+    border-color: color-mix(in oklab, var(--accent) 26%, transparent);
+    box-shadow: inset 0 1px 0 var(--pane-top);
   }
 
   .rail-ico {
     flex: 0 0 28px; height: 28px;
     display: grid; place-items: center;
-    border-radius: 9px;
+    border-radius: var(--radius-pill);
     color: var(--accent);
     background: color-mix(in oklab, var(--accent) 13%, var(--panel));
     border: 1px solid color-mix(in oklab, var(--accent) 22%, transparent);
-    transition: background var(--fast) var(--ease), transform var(--fast) var(--ease);
+    box-shadow: inset 0 1px 0 var(--pane-top);
+    transition: background var(--fast) var(--ease), transform var(--fast) var(--ease),
+                box-shadow var(--fast) var(--ease);
   }
-  .rail-item:hover .rail-ico { transform: translateY(-1px); }
+  .rail-item:hover .rail-ico {
+    transform: translateY(-1px);
+    box-shadow: inset 0 1px 0 var(--pane-top), var(--shadow);
+  }
 
   .rail-text { display: grid; min-width: 0; line-height: 1.2; }
   .rail-item-label {
@@ -8310,13 +8336,15 @@ German for day, and .tag is what the site has always called
      hidden when the rail is folded, so the mark has to survive
      without it. */
   .rail-item[aria-current="page"] {
-    background: color-mix(in oklab, var(--accent) 15%, transparent);
+    background: var(--glass-solid);
+    border-color: var(--pane-edge);
+    box-shadow: var(--pane-lift);
     font-weight: 600;
   }
   .rail-item[aria-current="page"]::before {
     content: "";
     position: absolute; left: calc(var(--rail-pad) * -1); top: 50%; translate: 0 -50%;
-    width: 3px; height: 22px; border-radius: 0 3px 3px 0;
+    width: 3px; height: 22px; border-radius: var(--radius-pill);
     background: var(--accent);
   }
   .rail-item[aria-current="page"] .rail-ico {
@@ -8328,7 +8356,7 @@ German for day, and .tag is what the site has always called
   .rail-item[data-soon] .rail-item-label::after {
     content: "আসছে";
     font-family: var(--font-bn); font-size: var(--t-1);
-    color: var(--gold); margin-left: 8px;
+    color: var(--accent); margin-left: 8px;
   }
 
   .rail-foot {
@@ -8479,12 +8507,12 @@ German for day, and .tag is what the site has always called
     top: 3px; bottom: 3px; left: 3px;
     width: calc(50% - 3px);
     border-radius: var(--radius-pill);
-    background: var(--green);
+    background: var(--accent);
     transition: translate var(--slow) var(--ease), background var(--fast) var(--ease);
   }
   html[data-audience="work"] .audience-slider {
     translate: 100% 0;
-    background: var(--gold);
+    background: var(--accent);
   }
   /* Nobody has answered yet: neither half is claimed, so the
      lozenge is not there to claim one. */
@@ -8528,7 +8556,7 @@ German for day, and .tag is what the site has always called
     cursor: pointer;
     transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
   }
-  .top-btn:hover { color: var(--green); border-color: var(--green); }
+  .top-btn:hover { color: var(--accent); border-color: var(--accent); }
   .top-btn .kbd-hint { font-size: var(--t-0); opacity: 0.8; }
 
   /* The burger, which only exists where the rail does not, and
@@ -8542,7 +8570,7 @@ German for day, and .tag is what the site has always called
     align-items: center; gap: var(--s-4); min-width: 0;
     color: var(--ink); text-decoration: none;
 
-    & svg { width: 24px; height: 24px; flex: 0 0 24px; color: var(--green); }
+    & svg { width: 24px; height: 24px; flex: 0 0 24px; color: var(--accent); }
     & span {
       font-family: var(--font-serif); font-size: var(--t-5);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -9060,7 +9088,7 @@ German for day, and .tag is what the site has always called
   .card-art {
     flex: 0 0 38px; height: 38px;
     display: grid; place-items: center;
-    border-radius: 11px;
+    border-radius: var(--radius-sm);
     color: var(--accent);
     background: color-mix(in oklab, var(--accent) 12%, transparent);
     border: 1px solid color-mix(in oklab, var(--accent) 24%, transparent);
@@ -9113,13 +9141,13 @@ German for day, and .tag is what the site has always called
 
   /* ---------- ticked, for anything a reader finishes ---------- */
 
-  .card[data-done] { border-color: color-mix(in oklab, var(--green) 40%, var(--hairline)); }
+  .card[data-done] { border-color: color-mix(in oklab, var(--accent) 40%, var(--hairline)); }
   .card-tick {
     position: absolute; top: 12px; right: 12px; z-index: 2;
     width: 22px; height: 22px;
     display: grid; place-items: center;
     border-radius: 50%;
-    background: var(--green); color: var(--panel);
+    background: var(--accent); color: var(--panel);
     font-size: var(--t-2);
   }
 
@@ -9133,7 +9161,7 @@ German for day, and .tag is what the site has always called
   .meter > i {
     display: block; height: 100%;
     border-radius: var(--radius-pill);
-    background: linear-gradient(90deg, var(--green), var(--gold));
+    background: linear-gradient(90deg, var(--accent), var(--accent));
     transition: width var(--slow) var(--ease);
   }
   .meter-line {
@@ -9203,7 +9231,7 @@ German for day, and .tag is what the site has always called
     border-bottom: 1px solid var(--hairline);
     margin-bottom: var(--step);
   }
-  .hub-eyebrow { color: var(--gold); }
+  .hub-eyebrow { color: var(--accent); }
   .hub-hero h1 {
     font-size: clamp(1.9rem, 4.4vw, 3rem);
     margin: 0; max-width: 20ch;
@@ -9227,13 +9255,13 @@ German for day, and .tag is what the site has always called
     margin-bottom: var(--step);
     padding: 20px 22px;
     border-radius: var(--radius);
-    background: var(--green-soft);
-    border: 1px solid color-mix(in oklab, var(--green) 26%, transparent);
+    background: var(--accent-soft);
+    border: 1px solid color-mix(in oklab, var(--accent) 26%, transparent);
     font-family: var(--font-bn);
   }
   .hub-pledge .pledge-en {
     font-family: var(--font-mono); font-size: var(--t-1);
-    letter-spacing: 0.14em; text-transform: uppercase; color: var(--green);
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent);
   }
 
   /* The starter guide's cards each carry the anchor the old hub's
@@ -9243,12 +9271,12 @@ German for day, and .tag is what the site has always called
 
   .risk-chip {
     padding: 2px 8px; border-radius: var(--radius-pill);
-    background: color-mix(in oklab, var(--green) 14%, transparent);
-    color: var(--green);
+    background: color-mix(in oklab, var(--accent) 14%, transparent);
+    color: var(--accent);
     font-family: var(--font-bn); letter-spacing: 0; text-transform: none;
   }
   .risk-chip[data-risk="mid"] {
-    background: color-mix(in oklab, var(--gold) 16%, transparent); color: var(--gold);
+    background: color-mix(in oklab, var(--accent) 16%, transparent); color: var(--accent);
   }
   .risk-chip[data-risk="high"] {
     background: color-mix(in oklab, var(--danger) 14%, transparent); color: var(--danger);
@@ -9264,7 +9292,7 @@ German for day, and .tag is what the site has always called
 
   .contents-h { margin: 0; font-size: 1.4rem; }
   .contents-h a { color: inherit; text-decoration: none; }
-  .contents-h a:hover { color: var(--green); }
+  .contents-h a:hover { color: var(--accent); }
 
   .contents-list {
     list-style: none; padding: 0; margin: 0;
@@ -9289,7 +9317,7 @@ German for day, and .tag is what the site has always called
   .contents-min { margin-left: auto; color: var(--ink-soft); flex: 0 0 auto; }
   .contents-soon {
     margin-left: auto; font-family: var(--font-bn);
-    font-size: var(--t-3); color: var(--gold);
+    font-size: var(--t-3); color: var(--accent);
   }
   .contents-list li:not([data-ready]) > span { opacity: 0.6; }
   .contents-list .card-tick { position: static; margin-left: 8px; }
@@ -9309,15 +9337,15 @@ German for day, and .tag is what the site has always called
     transition: background var(--fast) var(--ease), color var(--fast) var(--ease),
                 border-color var(--fast) var(--ease);
   }
-  .tick-btn:hover { border-color: var(--green); color: var(--green); }
+  .tick-btn:hover { border-color: var(--accent); color: var(--accent); }
   .tick-btn[data-done] {
-    background: var(--green); border-color: var(--green); color: #fff;
+    background: var(--accent); border-color: var(--accent); color: var(--accent-ink);
   }
 
   .resume { margin-top: 6px; max-width: 480px; }
   .resume-done {
     margin: 6px 0 0; max-width: 60ch;
-    font-family: var(--font-bn); color: var(--green);
+    font-family: var(--font-bn); color: var(--accent);
   }
   .stage-progress-react { max-width: 420px; margin-block: 14px; }
 
@@ -9338,7 +9366,7 @@ German for day, and .tag is what the site has always called
      pseudo-elements and lang-driven type and classes a script
      selects on keep a name. */
 
-  .gate-eyebrow { color: var(--gold); }
+  .gate-eyebrow { color: var(--accent); }
   .gate-h1 {
     margin: 0;
     font-size: clamp(1.9rem, 4.4vw, 3.4rem);
@@ -9354,8 +9382,8 @@ German for day, and .tag is what the site has always called
     font-style: normal;
     background: linear-gradient(
       transparent 62%,
-      color-mix(in oklab, var(--gold) 28%, transparent) 62%);
-    border-radius: 3px;
+      color-mix(in oklab, var(--accent) 28%, transparent) 62%);
+    border-radius: var(--radius-xs);
     padding-inline: 2px;
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
@@ -9380,7 +9408,7 @@ German for day, and .tag is what the site has always called
   }
   .gate-facts li:first-child { padding-inline-start: 0; border-inline-start: 0; }
   .gate-facts b {
-    font-family: var(--font-bn-serif); font-size: 1.5rem; color: var(--green);
+    font-family: var(--font-bn-serif); font-size: 1.5rem; color: var(--accent);
     font-weight: 500;
   }
   .gate-facts span { font-family: var(--font-bn); font-size: var(--t-4); color: var(--ink-soft); }
@@ -9394,7 +9422,7 @@ German for day, and .tag is what the site has always called
   .gate-hint kbd {
     font-family: var(--font-mono); font-size: var(--t-0);
     border: 1px solid var(--hairline); border-bottom-width: 2px;
-    border-radius: 5px; padding: 1px 6px;
+    border-radius: var(--radius-xs); padding: 1px 6px;
     background: var(--panel);
   }
 
@@ -9443,7 +9471,7 @@ German for day, and .tag is what the site has always called
   .gt-disc {
     flex: none; display: grid; place-items: center;
     width: 34px; height: 34px;
-    border-radius: 11px;
+    border-radius: var(--radius-sm);
     color: var(--accent);
     background: color-mix(in oklab, var(--accent) 12%, transparent);
     border: 1px solid color-mix(in oklab, var(--accent) 24%, transparent);
@@ -9496,7 +9524,7 @@ German for day, and .tag is what the site has always called
     align-items: center; gap: 12px;
     padding-block: 10px;
   }
-  .gate-slim .gt-disc { width: 30px; height: 30px; border-radius: 9px; }
+  .gate-slim .gt-disc { width: 30px; height: 30px; border-radius: var(--radius-sm); }
   .gate-slim .gt-title {
     font-size: var(--t-6);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -9505,8 +9533,8 @@ German for day, and .tag is what the site has always called
   .gate-slim .gt-go { margin-top: 0; padding-top: 0; }
   .gt-live {
     width: 7px; height: 7px; border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--green) 22%, transparent);
+    background: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 22%, transparent);
   }
 
   /* The pulse card's swap: the incoming piece rises half a line.
@@ -9592,10 +9620,10 @@ German for day, and .tag is what the site has always called
     font-family: var(--font-serif); font-size: var(--t-6); line-height: 1;
     white-space: nowrap; flex: 0 0 auto;
   }
-  .slimbar-mark:hover { color: var(--green); }
+  .slimbar-mark:hover { color: var(--accent); }
   .slimbar-mark svg {
     width: 24px; height: 24px; flex: 0 0 24px;
-    color: var(--green); translate: 0 -1px;
+    color: var(--accent); translate: 0 -1px;
   }
 
   .slimbar-nav {
@@ -9606,7 +9634,7 @@ German for day, and .tag is what the site has always called
     color: var(--ink-soft); text-decoration: none; font-size: var(--t-4);
     white-space: nowrap;
   }
-  .slimbar-nav a:hover { color: var(--green); }
+  .slimbar-nav a:hover { color: var(--accent); }
 
   .slimbar .top-tools { margin-left: auto; }
 
@@ -9663,7 +9691,7 @@ German for day, and .tag is what the site has always called
 
   .course-rail {
     border: 1px solid var(--hairline);
-    border-radius: 14px;
+    border-radius: var(--radius);
     background: var(--panel);
     overflow: hidden;
   }
@@ -9763,7 +9791,7 @@ German for day, and .tag is what the site has always called
   /* Where you are, and it is a border rather than a background so
      that it survives the hover state of the row above it. */
   .course-lesson[data-here] a {
-    border-left-color: var(--accent, var(--green));
+    border-left-color: var(--accent, var(--accent));
     background: var(--hairline);
     font-weight: 600;
   }
@@ -9773,7 +9801,7 @@ German for day, and .tag is what the site has always called
   .course-tick {
     flex: none;
     width: 1rem;
-    color: var(--green);
+    color: var(--accent);
     font-size: var(--t-4);
   }
 
@@ -9795,7 +9823,7 @@ German for day, and .tag is what the site has always called
     margin: 1.5rem 0;
     aspect-ratio: 16 / 9;
     border: 1px solid var(--hairline);
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
     overflow: hidden;
     background: #000;
   }
@@ -10049,7 +10077,7 @@ German for day, and .tag is what the site has always called
     margin: 1.5rem 0;
     padding: 0.9rem 1.1rem;
     border: 1px dashed var(--hairline);
-    border-radius: 12px;
+    border-radius: var(--radius-sm);
     color: var(--ink-soft);
   }
 
