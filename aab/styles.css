@@ -691,29 +691,55 @@
    ============================================================ */
 @layer components {
 
-  /* ---------- buttons ---------- */
+  /* ---------- buttons ----------
+
+     One shape for every button on the site, said once, and the
+     shape is a pill, because the site's other controls already
+     are: the audience switch, the chips, the search field, the
+     account button. A rectangle among those read as a stranger,
+     which is exactly how three people described it.
+
+     The rest of the story: flex, so an icon sits on the label's
+     line without per-page fixes; a visible focus ring, because
+     half of these used to rely on the browser's default and the
+     other half had none; and rest/hover/press that matches the
+     cards': quiet, then a shadow, then a settle. */
   .btn {
-    display: inline-block; text-decoration: none;
-    padding: 11px 20px; border-radius: var(--radius-sm);
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: var(--s-4); text-decoration: none;
+    padding: 10px 20px; border-radius: var(--radius-pill);
     font-family: var(--font-mono);
-    font-size: var(--t-3); letter-spacing: 0.05em; text-transform: uppercase;
+    font-size: var(--t-3); letter-spacing: 0.06em; text-transform: uppercase;
+    line-height: 1.2;
     border: 1px solid transparent; cursor: pointer;
     transition: background var(--fast) var(--ease),
                 border-color var(--fast) var(--ease),
                 color var(--fast) var(--ease),
+                box-shadow var(--fast) var(--ease),
                 translate var(--fast) var(--ease);
 
-    &:active { translate: 0 1px; }
+    &:active { translate: 0 1px; box-shadow: none; }
+    &:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    &:disabled { opacity: 0.45; pointer-events: none; }
   }
   .btn-solid {
     background: var(--green); color: light-dark(#fff, oklch(16.5% 0.012 var(--h-green)));
+    border-color: color-mix(in oklab, var(--green) 80%, var(--ink));
 
-    &:hover { background: color-mix(in oklab, var(--green) 82%, var(--ink)); }
+    &:hover {
+      background: color-mix(in oklab, var(--green) 82%, var(--ink));
+      box-shadow: var(--shadow);
+    }
   }
   .btn-ghost {
-    border-color: var(--hairline); color: var(--ink); background: transparent;
+    border-color: var(--hairline); color: var(--ink); background: var(--panel);
 
-    &:hover { border-color: var(--green); color: var(--green); }
+    &:hover {
+      border-color: color-mix(in oklab, var(--green) 45%, var(--hairline));
+      color: var(--green);
+      background: var(--green-soft);
+      box-shadow: var(--shadow);
+    }
   }
 
   .icon-btn {
@@ -1367,6 +1393,28 @@
     color: var(--ink-soft); font-size: var(--t-5); max-width: var(--measure);
   }
 
+  /* The four numbers above the account's fold. account-page.ts
+     writes them into #account-tiles, so they are a named class
+     like everything else that module builds, and they wear the
+     stat tile's own recipe: sunk ground, hairline, the number in
+     the site's green. This rule was simply MISSING for a day:
+     the module wrote `.acct-tile` and nothing anywhere styled
+     it, so the account opened on four bare lines of text, which
+     is the sort of gap the Stage 14 conversion note two comments
+     up warns about. */
+  .acct-tile {
+    display: grid; gap: 2px; align-content: start;
+    padding: 13px 16px;
+    background: var(--paper-sunk);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+  }
+  .acct-tile strong {
+    font-family: var(--font-serif); font-size: 1.5rem; font-weight: 500;
+    color: var(--green); font-variant-numeric: tabular-nums; line-height: 1.15;
+  }
+  .acct-tile span { font-size: var(--t-3); color: var(--ink-soft); }
+
   /* ---------- a year of days ----------
 
      `days-active`, drawn. Fifty-three columns of seven, and the
@@ -1589,7 +1637,12 @@
   @media (hover: hover) and (pointer: fine) {
     @media (prefers-reduced-motion: no-preference) {
       .tilt-scene { perspective: 1100px; }
-      .tilt-scene :is(.cell, .news-card) {
+      /* The deck's cards and the front door's tiles are in this
+         list as of the front-door deck: their hover lift is gone
+         (see @layer deck), so the lean is no longer a second
+         answer to the same gesture. The lists here and in
+         tilt.js have to agree. */
+      .tilt-scene :is(.cell, .news-card, .card, .gate-tile) {
         transition: rotate var(--enter) var(--ease),
                     border-color var(--fast) var(--ease),
                     box-shadow var(--fast) var(--ease);
@@ -2415,11 +2468,22 @@ it collapsed to the width of the word "Bangladesh". */
   .live-admin-form { border-top: 1px dashed var(--hairline);
     padding-top: var(--s-7); margin-top: var(--s-7); }
 
-  /* the dashboard proper */
-  .live-dash { display: grid; gap: var(--gap); margin-top: var(--s-6); }
+  /* the dashboard proper
+
+     `minmax(0, 1fr)` and the min-width chain are not decoration:
+     a grid item's min-width is `auto`, so the holdings table was
+     setting the WHOLE column's width and pushing the stat tiles
+     off the right edge of the page. Zeroing the minimum is what
+     lets .live-table be narrower than its table, which is the
+     only state in which its own overflow-x has anything to do. */
+  .live-dash {
+    display: grid; grid-template-columns: minmax(0, 1fr);
+    gap: var(--gap); margin-top: var(--s-6);
+  }
+  .live-dash > *, .live-block, .live-activity > * { min-width: 0; }
   .live-block h3 { font-size: var(--t-6); margin-bottom: 10px; }
-  .live-table { overflow-x: auto; }
-  .live-table table { width: 100%; border-collapse: collapse; font-size: var(--t-4); }
+  .live-table { overflow-x: auto; max-width: 100%; }
+  .live-table table { width: 100%; min-width: 620px; border-collapse: collapse; font-size: var(--t-4); }
   .live-table th {
     text-align: left; font-family: var(--font-mono); font-weight: 500;
     font-size: var(--t-1); letter-spacing: 0.07em; text-transform: uppercase;
@@ -2440,10 +2504,15 @@ it collapsed to the width of the word "Bangladesh". */
     display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
     gap: 6px; align-items: end; height: 120px; padding-top: 6px;
   }
-  .live-col { display: grid; align-content: end; justify-items: center;
-    gap: 4px; height: 100%; }
+  /* Flex rather than grid, and not for taste: the fill's height
+     is a percentage, and a percentage inside an auto grid track
+     is indefinite and collapses to nothing. A flex column whose
+     own height comes from .live-cols is a definite chain all the
+     way down, so 40% is forty percent of something. */
+  .live-col { display: flex; flex-direction: column; justify-content: flex-end;
+    align-items: center; gap: 4px; height: 100%; }
   .live-col-fill {
-    display: block; width: min(100%, 26px); align-self: end;
+    display: block; width: min(100%, 26px);
     background: var(--gold); border-radius: 4px 4px 0 0;
   }
   .live-col-m { font-size: var(--t-0); color: var(--ink-soft); }
@@ -8647,7 +8716,12 @@ German for day, and .tag is what the site has always called
 
   .card[data-kind="go"] {
     padding-left: 22px;
-    transition: transform var(--fast) var(--ease), box-shadow var(--fast) var(--ease),
+    /* `rotate` is /tilt.js's channel. It has to be in THIS list
+       and not only in the tilt rule in @layer components,
+       because this layer wins and a transition list is not
+       merged: without it the lean snaps instead of easing. */
+    transition: rotate var(--enter) var(--ease),
+                box-shadow var(--fast) var(--ease),
                 border-color var(--fast) var(--ease);
   }
   /* The rail. Three pixels of the card's own accent down the
@@ -8668,9 +8742,13 @@ German for day, and .tag is what the site has always called
     opacity: 0;
     transition: opacity var(--fast) var(--ease);
   }
+  /* No translate here any more: the lean towards the pointer
+     comes from /tilt.js as of the front-door deck, on these
+     cards and the door's tiles alike, and a lift under a lean
+     was two answers to one gesture. The shadow and the border
+     stay, and are the whole of hover where nothing hovers. */
   a.card[data-kind="go"]:hover,
   a.card[data-kind="go"]:focus-visible {
-    transform: translateY(-2px);
     box-shadow: var(--shadow-lift);
     border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline));
   }
@@ -8963,70 +9041,213 @@ German for day, and .tag is what the site has always called
   }
   .stage-progress-react { max-width: 420px; margin-block: 14px; }
 
-  /* ---------- the front door ---------- */
+  /* ---------- the front door, and the deck under it ----------
 
-  .gate {
-    display: flex; flex-direction: column;
-    padding: clamp(16px, 3vh, 40px) clamp(18px, 3vw, 44px);
-    min-height: 0;
-  }
-  .gate-grid {
-    flex: 1 1 auto; min-height: 0;
-    display: grid; gap: clamp(20px, 4vw, 56px);
-    grid-template-columns: 1.1fr 0.9fr;
-    align-items: center;
-    max-width: 1240px; margin-inline: auto; width: 100%;
-  }
+     The door is the first screen: the question, the answer back,
+     and where to go. Under it the page is a deck of cards from
+     every part of the site, built to grow downwards as the site
+     does.
 
-  .gate-say { display: grid; gap: clamp(10px, 1.6vh, 18px); align-content: center; }
+     What is HERE is what a tile and the door's type ARE: the
+     accent rail, the wash, the chip and disc recipes, the marked
+     words, the Bangla faces, and the class /tilt.js leans. The
+     page's LAYOUT (the grid, the spans, the gaps, the responsive
+     folds) is Tailwind utilities in `next/app/(home)/page.tsx`
+     and the two client cards beside it, per the split the
+     Tailwind section of CLAUDE.md draws: JSX gets utilities,
+     pseudo-elements and lang-driven type and classes a script
+     selects on keep a name. */
+
   .gate-eyebrow { color: var(--gold); }
   .gate-h1 {
     margin: 0;
-    font-size: clamp(2rem, 4.6vw, 3.6rem);
-    max-width: 16ch;
+    font-size: clamp(1.9rem, 4.4vw, 3.4rem);
+    max-width: 18ch;
   }
   .gate-h1[lang="bn"] { font-family: var(--font-bn-serif); line-height: 1.3; }
+
+  /* The marked words. A marker stroke under the half of the
+     sentence that is the promise, in the calculators' gold so it
+     is an underline of the site rather than a colour of one
+     school. The ink does not change, so no contrast pair moves. */
+  .gate-mark {
+    font-style: normal;
+    background: linear-gradient(
+      transparent 62%,
+      color-mix(in oklab, var(--gold) 28%, transparent) 62%);
+    border-radius: 3px;
+    padding-inline: 2px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
   .gate-lede {
-    margin: 0; max-width: 52ch; color: var(--ink-soft);
+    margin: 0; max-width: 56ch; color: var(--ink-soft);
     font-size: clamp(0.95rem, 1.3vw, 1.08rem);
   }
   .gate-lede[lang="bn"] { font-family: var(--font-bn); }
 
+  /* The three counts, as one strip with hairline dividers rather
+     than three floating pairs: a row reads as one statement. */
   .gate-facts {
-    list-style: none; padding: 0; margin: 6px 0 0;
-    display: flex; flex-wrap: wrap; gap: var(--s-5) 26px;
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-wrap: wrap; align-items: stretch;
   }
-  .gate-facts li { display: flex; align-items: baseline; gap: var(--s-4); }
+  .gate-facts li {
+    display: flex; align-items: baseline; gap: var(--s-4);
+    padding-inline: clamp(12px, 1.6vw, 22px);
+    border-inline-start: 1px solid var(--hairline);
+  }
+  .gate-facts li:first-child { padding-inline-start: 0; border-inline-start: 0; }
   .gate-facts b {
     font-family: var(--font-bn-serif); font-size: 1.5rem; color: var(--green);
     font-weight: 500;
   }
   .gate-facts span { font-family: var(--font-bn); font-size: var(--t-4); color: var(--ink-soft); }
 
-  .gate-picks {
-    display: grid; gap: var(--s-5); align-content: center;
-    min-height: 0;
-  }
-  .gate-picks .card { padding: 14px 18px; gap: var(--s-3); }
-  .gate-picks .card-title { font-size: var(--t-6); }
-  .gate-picks .card-dek { font-size: var(--t-4); }
-
   .gate-hint {
     display: flex; align-items: center; gap: var(--s-4);
-    margin: 4px 0 0; color: var(--ink-soft);
+    margin: 0; color: var(--ink-soft);
     font-size: var(--t-0);
   }
   .gate-hint span { letter-spacing: 0.06em; }
+  .gate-hint kbd {
+    font-family: var(--font-mono); font-size: var(--t-0);
+    border: 1px solid var(--hairline); border-bottom-width: 2px;
+    border-radius: 5px; padding: 1px 6px;
+    background: var(--panel);
+  }
 
-  /* Under 1000px the two columns stack, and a stacked door is
-     taller than a screen. It is the one page allowed to scroll
-     when it cannot fit, because the alternative is a door with
-     its handle cut off. */
-  @media (max-width: 1000px), (max-height: 620px) {
-    body.shell-fixed, body.shell-fixed .shell-col { height: auto; overflow: visible; }
-    body.shell-fixed .shell-col { min-height: 100dvh; }
-    body.shell-fixed main { overflow: visible; }
-    .gate-grid { grid-template-columns: 1fr; align-items: start; }
+  /* ---- the tile ----
+
+     The deck's language on the front page: the same accent rail
+     down the left edge, the same pill chip and tinted disc, the
+     same arrow that slides, the same wash out of the arrow's
+     corner. The lean towards the pointer comes from /tilt.js,
+     which is why `rotate` is in the transition list and no
+     translate is: one gesture, one answer. */
+
+  .gate-tile {
+    --accent: var(--green);
+    position: relative; isolation: isolate; overflow: hidden;
+    display: grid; gap: 7px;
+    align-content: start;
+    padding: clamp(14px, 1.8vw, 20px) 18px clamp(14px, 1.8vw, 20px) 21px;
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: linear-gradient(150deg, var(--accent-soft), var(--panel) 55%);
+    text-decoration: none; color: var(--ink);
+    min-width: 0;
+    transition: rotate var(--enter) var(--ease),
+                box-shadow var(--fast) var(--ease),
+                border-color var(--fast) var(--ease);
+  }
+  .gate-tile > * { position: relative; z-index: 1; }
+  .gate-tile::before {
+    content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; z-index: 0;
+    background: var(--accent);
+  }
+  .gate-tile::after {
+    content: ""; position: absolute; inset: 0; z-index: 0;
+    background: radial-gradient(120% 100% at 100% 100%,
+      color-mix(in oklab, var(--accent) 14%, transparent), transparent 60%);
+    opacity: 0;
+    transition: opacity var(--fast) var(--ease);
+  }
+  .gate-tile:hover, .gate-tile:focus-visible {
+    box-shadow: var(--shadow-lift);
+    border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline));
+  }
+  .gate-tile:hover::after { opacity: 1; }
+  .gate-tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .gt-disc {
+    flex: none; display: grid; place-items: center;
+    width: 34px; height: 34px;
+    border-radius: 11px;
+    color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+    border: 1px solid color-mix(in oklab, var(--accent) 24%, transparent);
+  }
+  .gt-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 9px; border-radius: var(--radius-pill);
+    font-size: var(--t-0); letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent);
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+  }
+  .gt-title {
+    font-family: var(--font-serif); font-size: var(--t-7);
+    line-height: 1.25;
+  }
+  .gate-tile[lang="bn"] .gt-title, .gt-title[lang="bn"] { font-family: var(--font-bn-serif); }
+  .gt-dek {
+    color: var(--ink-soft); font-size: var(--t-4);
+    max-width: 52ch;
+  }
+  .gt-go {
+    display: flex; align-items: center; gap: 6px;
+    margin-top: auto; padding-top: 6px;
+    font-family: var(--font-mono); font-size: var(--t-2);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .gt-arrow { display: inline-flex; transition: translate var(--fast) var(--ease); }
+  .gate-tile:hover .gt-arrow { translate: 4px 0; }
+
+  /* The featured card's one flourish: an oversized drawing in
+     the corner, under the wash, in the accent, at an opacity
+     that reads as a watermark rather than as a picture. */
+  .gate-feat {
+    min-height: clamp(200px, 24vw, 280px);
+    padding: clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) clamp(18px, 2.4vw, 28px) 24px;
+    gap: 10px;
+  }
+  .gate-feat .gt-title { font-size: clamp(1.3rem, 2.4vw, 1.8rem); max-width: 22ch; }
+  .gate-feat .gt-dek { font-size: var(--t-5); max-width: 58ch; }
+  .gt-bg {
+    position: absolute; right: -22px; bottom: -30px; z-index: 0;
+    color: var(--accent); opacity: 0.08;
+    transform: rotate(-8deg);
+  }
+
+  /* The slim form: one line tall, a handle not a card. */
+  .gate-slim {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center; gap: 12px;
+    padding-block: 10px;
+  }
+  .gate-slim .gt-disc { width: 30px; height: 30px; border-radius: 9px; }
+  .gate-slim .gt-title {
+    font-size: var(--t-6);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  .gate-slim .gt-go { margin-top: 0; padding-top: 0; }
+  .gt-live {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--green) 22%, transparent);
+  }
+
+  /* The pulse card's swap: the incoming piece rises half a line.
+     The class is written by pulse-card.tsx on a keyed span, so
+     replacing the piece replays it. */
+  .gp-piece { animation: gate-swap var(--slow) var(--ease); }
+  @keyframes gate-swap {
+    from { opacity: 0; translate: 0 6px; }
+    to   { opacity: 1; translate: 0 0; }
+  }
+  .gp-dots { display: flex; gap: 5px; }
+  .gp-dots i {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: color-mix(in oklab, var(--accent) 30%, var(--hairline));
+    transition: background var(--fast) var(--ease), scale var(--fast) var(--ease);
+  }
+  .gp-dots i[data-on] { background: var(--accent); scale: 1.25; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gate-tile, .gt-arrow, .gp-dots i { transition: none; }
+    .gp-piece { animation: none; }
   }
 }
 

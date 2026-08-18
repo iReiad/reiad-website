@@ -31,6 +31,19 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v92: The front door became a deck, and every button became a
+        pill. /styles.css: the door's one-screen layout gave way
+        to a deck of accent-washed tiles that grows downwards,
+        the deck's GoCards lost their hover lift, and /tilt.js
+        now leans every clickable card on the site, the deck and
+        the door included, which is why both lost the competing
+        translate. /tailwind.css grew the utilities the new home
+        markup wears. The buttons: one pill shape sitewide, with
+        a focus ring and a press. And the live portfolio's
+        holdings table was setting its whole column's width (a
+        grid item's min-width is auto), pushing the stat tiles
+        off the page edge; it scrolls inside its own box now.
+
    v91: The footer, which said the same thing twice and was
         half again as tall as it needed to be.
 
@@ -880,7 +893,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v91";
+const VERSION = "v92";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

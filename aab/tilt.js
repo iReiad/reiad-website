@@ -62,14 +62,19 @@
    what a card is on this site and gets an answer that has been
    wrong since Stage 11.
 
-   `.deck` and its `.card` are deliberately NOT here. A GoCard
-   already lifts and slides its arrow on hover, and that is the
-   deck's own language; a tilt on top of it would be two answers
-   to one gesture. The rule in `@layer components` names the same
-   two things this does, and the two lists have to agree. */
-const SCENES = [".cards", ".news-grid", ".grid-2", ".grid-3", ".path"];
+   `.deck` and its `.card` are IN the list as of the front-door
+   deck, which reverses the note that used to sit here. The
+   GoCard's hover lift was the reason they were out: a lift under
+   a lean was two answers to one gesture. The lift is gone from
+   `@layer deck` now, precisely so that every clickable card on
+   the site answers the pointer the same way, and the tile the
+   front page is built from (`.gate-tile`) leans with them. The
+   rule in `@layer components` names the same selectors this
+   does, and the two lists have to agree. */
+const SCENES = [".cards", ".news-grid", ".grid-2", ".grid-3", ".path",
+  ".deck", ".gate-deck"];
 
-const CARD = [".cell", ".news-card"].join(",");
+const CARD = [".cell", ".news-card", ".card[data-kind=\"go\"]", ".gate-tile"].join(",");
 
 const MAX_DEG = 2.6;   // the whole effect, corner to corner
 
@@ -168,8 +173,15 @@ function attach(scene) {
       prefers-reduced-motion, and never on a device that hovers.
    ============================================================ */
 
-/** Every card, expressed as a child of every scene. */
-const CARDS_IN_SCENES = SCENES.map((sel) => `${sel} > *`).join(",");
+/** Every card, expressed as a child of every scene.
+
+    `> :is(CARD)` rather than the `> *` this used to be, and the
+    change is what let the deck join SCENES: a deck holds info
+    cards and a front-door deck holds a wrapper column, and "any
+    child of a scene" would have leaned a paragraph card and a
+    layout `<aside>` along with the doors. Only the things a
+    pointer would tilt sway in the hand. */
+const CARDS_IN_SCENES = SCENES.map((sel) => `${sel} > :is(${CARD})`).join(",");
 
 const PHONE_DEG = 1.4;     // half the pointer tilt, and for a reason
 const PHONE_RANGE = 26;    // degrees of handset tilt for the full lean

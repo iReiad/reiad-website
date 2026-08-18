@@ -155,8 +155,13 @@ function Section({ id, title, blurb, children }: {
                         target:[&>div:first-child]:border-green
                         target:[&>div:first-child]:ps-3">
       <div className="grid gap-1">
+        {/* A short green stroke over every section head: the same
+            rhythm device the section rail's active chip uses, so
+            eight sections read as one page rather than as eight
+            features that arrived separately. */}
+        <span className="mb-1 h-[3px] w-7 rounded-full bg-green/70" aria-hidden="true" />
         <h2 className="m-0 font-serif text-[clamp(1.2rem,3.4vw,1.5rem)]">{title}</h2>
-        <p className="m-0 max-w-[var(--measure)] text-[0.9rem] text-ink-soft">{blurb}</p>
+        <p className="m-0 max-w-[var(--measure)] text-t5 text-ink-soft">{blurb}</p>
       </div>
       {children}
     </section>
@@ -177,9 +182,10 @@ function Card({ id, className = "", children }: {
   return (
     <div id={id}
          className={`@container/acct grid content-start gap-2.5 rounded-card
-                     border border-hairline bg-panel p-[clamp(14px,3vw,20px)]
-                     [&>h3]:m-0 [&>h3]:text-[1.02rem] [&>h3]:font-medium
-                     [&>p]:m-0 [&>p]:text-[0.88rem] [&>p]:text-ink-soft
+                     border border-hairline bg-panel shadow-card
+                     p-[clamp(14px,3vw,20px)]
+                     [&>h3]:m-0 [&>h3]:font-serif [&>h3]:text-t6
+                     [&>p]:m-0 [&>p]:text-t4 [&>p]:text-ink-soft
                      [&>.btn]:justify-self-start ${className}`}>
       {children}
     </div>

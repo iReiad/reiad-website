@@ -36,11 +36,19 @@ export function ContinueCard() {
   /* The snapshot is the four stored strings joined, not the
      object built from them: React compares snapshots by identity
      and a fresh object every read would loop. */
+  /* The STORAGE keys, not the school ids: the money school's
+     bookmark has been filed under `learn-last` since before the
+     school moved, and the rule in CLAUDE.md is that those
+     strings never change. This list said `money-last` for a
+     while, which is a key nothing has ever written, so the
+     gate below judged the money school's reader to have no
+     bookmark and the card never showed for exactly the readers
+     the biggest school has. */
   const raw = useSyncExternalStore(
     subscribe,
     () => {
       try {
-        return ["money", "deutsch", "quran", "english"]
+        return ["learn", "deutsch", "quran", "english"]
           .map((s) => localStorage.getItem(`${s}-last`) ?? "")
           .join("|");
       } catch { return ""; }
@@ -54,15 +62,20 @@ export function ContinueCard() {
 
   const words = WORDS[mark.school] ?? { school: mark.school, go: "চালিয়ে যান" };
 
+  /* The same tile the rest of the door is built from, in its slim
+     row form: a returning reader knows where they were going, so
+     this is a handle rather than a card, one line tall. */
   return (
-    <a className="card gate-continue" data-kind="go" href={mark.url}
+    <a className="gate-tile gate-slim" href={mark.url}
        style={{ ["--accent" as string]: "var(--gold)" }}>
-      <span className="card-chip">
-        <Icon name="spark" size={13} /> যেখানে ছিলেন
+      <span className="gt-disc"><Icon name="spark" size={16} /></span>
+      <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1 min-w-0">
+        <span className="gt-chip mono" lang="bn">যেখানে ছিলেন · {words.school}</span>
+        <span className="gt-title" lang="bn">{mark.title}</span>
       </span>
-      <h3 className="card-title" lang="bn">{mark.title}</h3>
-      <p className="card-dek" lang="bn">{words.school}</p>
-      <span className="card-go">{words.go}</span>
+      <span className="gt-go" lang="bn">{words.go}
+        <span className="gt-arrow"><Icon name="arrow" size={14} /></span>
+      </span>
     </a>
   );
 }

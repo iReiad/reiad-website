@@ -120,12 +120,22 @@
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
 
-  /* accents */
+  /* accents. All seven, plus the contextual pair: `--accent` is
+     whatever the nearest container declared, so `text-accent` in
+     a component follows the accent the component was given,
+     which is how the deck's cards have always worked. */
   --color-green: var(--green);
   --color-green-soft: var(--green-soft);
   --color-green-strong: var(--green-strong);
   --color-gold: var(--gold);
+  --color-teal: var(--teal);
+  --color-blue: var(--blue);
+  --color-violet: var(--violet);
+  --color-plum: var(--plum);
+  --color-rose: var(--rose);
   --color-danger: var(--danger);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
 
   /* lines and depth */
   --color-hairline: var(--hairline);
@@ -141,6 +151,22 @@
   --font-serif: var(--font-serif);
   --font-mono: var(--font-mono);
   --font-bn: var(--font-bn);
+  --font-bn-serif: var(--font-bn-serif);
+
+  /* the type scale, so a utility is a step and not a guess.
+     `text-[0.82rem]` in a component is the fifty-first font size
+     arriving by the same road it arrived in styles.css; these
+     are the same nine steps scripts/check-scale.mjs holds the
+     stylesheet to. */
+  --text-t0: var(--t-0);
+  --text-t1: var(--t-1);
+  --text-t2: var(--t-2);
+  --text-t3: var(--t-3);
+  --text-t4: var(--t-4);
+  --text-t5: var(--t-5);
+  --text-t6: var(--t-6);
+  --text-t7: var(--t-7);
+  --text-t8: var(--t-8);
 
   /* motion. Named for what they are rather than for a number,
      because `duration-fast` is the site's own 0.18s and a

@@ -4,9 +4,11 @@
 
    Two things are this page's alone.
 
-   **It does not scroll.** `fixed` puts the shell into its
-   one-screen mode and leaves the footer off: see the note at the
-   top of `page.tsx`.
+   **It scrolls again, on purpose.** The door was one fixed
+   screen for a day; the front page is a deck now, built to grow
+   downwards as the site does, so it is an ordinary scrolling
+   page with the footer back on. See the note at the top of
+   `page.tsx` for what the first screen still promises.
 
    **It picks which introduction to show, before the first
    paint.** Three, and only one of them is the reader's. The rule
@@ -47,16 +49,24 @@ const PICK = `(function(){var d=document.documentElement;var pick="open";try{`
 /* One of the three shows. The rule hangs off `[data-hl]`, which
    the script above sets and nothing else does, so a reader with
    no JavaScript matches none of it and the <noscript> rule below
-   is what they get instead. */
-const WHEN = `[data-hl] [data-when]{display:none}`
-  + `[data-hl="open"] [data-when="open"],`
-  + `[data-hl="learn"] [data-when="learn"],`
-  + `[data-hl="work"] [data-when="work"]{display:revert}`;
+   is what they get instead.
+
+   Written as "hide the two that do not match" rather than "hide
+   all three, then show one", and the difference is not style. A
+   rule in this inline sheet is unlayered, and unlayered author
+   CSS beats every @layer in styles.css; the old `display:revert`
+   on the winner therefore pinned the shown lede's display from
+   here, and the door's own compact rules (the line clamp on a
+   phone, the step-out on a phone held sideways) silently lost to
+   it. Saying nothing about the winner hands it back to the
+   stylesheet, which is where its layout belongs. */
+const WHEN = `[data-hl="open"] [data-when]:not([data-when="open"]),`
+  + `[data-hl="learn"] [data-when]:not([data-when="learn"]),`
+  + `[data-hl="work"] [data-when]:not([data-when="work"]){display:none}`;
 
 export default siteLayout({
   lang: "bn",
   current: "home",
-  fixed: true,
   skip: "মূল অংশে যান",
   beforeMain: (
     <>
