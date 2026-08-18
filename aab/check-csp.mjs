@@ -46,6 +46,13 @@ const ROOT = dirname(fileURLToPath(import.meta.url));
    script names it again, which is the point of the list. */
 const NOT_FETCHED = {
   "https://reiad.co.uk": "canonical links, og:url and JSON-LD, never fetched",
+  /* /skills/courses/ frames a Drive video and links to Drive
+     files. Neither is a fetch, so connect-src is the wrong line
+     and adding it there would be a permission this site does not
+     need: an <iframe> is frame-src's, and a link is nobody's.
+     `aab/_headers` carries the frame-src, and check-headers.mjs
+     holds it and shared/headers.ts to saying the same thing. */
+  "https://drive.google.com": "an iframe and some links on /skills/courses/, see frame-src",
   "https://schema.org": "the JSON-LD vocabulary, an identifier and not an address",
   "https://www.linkedin.com": "a link in the footer",
   "https://www.tbsnews.net": "a source credited in an article",

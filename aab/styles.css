@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, deutsch, quran, english, reads, check, about, shell, deck, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, deutsch, quran, english, reads, check, about, shell, deck, courses, utilities;
 
 /* ============================================================
    TOKENS
@@ -9333,4 +9333,295 @@ German for day, and .tag is what the site has always called
   @media (width <= 620px) {
     .slimbar-nav { display: none; }
   }
+}
+
+/* ============================================================
+   @layer courses: the third-party course player.
+
+   `/skills/courses/`, drawn by `aab/src/courses.ts` rather than
+   by the server, for the reason at the top of that file. Every
+   class here is prefixed `course-`, which is not decoration: this
+   layer sits above `deck`, so an unprefixed name would restyle
+   the whole site from a section one person can open. That is the
+   exact bug `check-css.mjs` was written for, one layer along.
+
+   What it does NOT define is the furniture it borrows. The bar is
+   `.meter`, the cards are `.card`, the buttons are `.btn` and
+   `.tick-btn`, the pager is `.prev-next`, the head is `.hub-hero`.
+   A course page should look like the rest of this site because it
+   IS the rest of this site, so the only new thing here is the
+   two-column shape and the rail down the left of it.
+   ============================================================ */
+@layer courses {
+
+  /* ---------- the shape ---------- */
+
+  .course .course-shell {
+    display: grid;
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: start;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding: clamp(1rem, 3vw, 2.5rem);
+  }
+
+  /* One column until there is room for two. The rail comes FIRST
+     in the markup, so on a phone the reader meets the contents
+     before the lesson, which is the right order for somebody
+     deciding where to go and the wrong one for somebody who is
+     already reading. `order` fixes the second case without moving
+     the first out of the tab order. */
+  @media (min-width: 60rem) {
+    .course .course-shell:has(.course-rail) {
+      grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+    }
+  }
+
+  .course-body { min-width: 0; }
+
+  /* ---------- the rail ---------- */
+
+  .course-rail {
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+
+  @media (min-width: 60rem) {
+    .course-rail {
+      position: sticky;
+      top: 5rem;
+      /* Its own scroll, so a 250-lesson course does not make the
+         page 40 screens long beside a lesson that is one. */
+      max-height: calc(100dvh - 7rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+  }
+
+  .course-rail-top {
+    display: block;
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--hairline);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .course-rail-top .mono {
+    display: block;
+    font-size: var(--t-2);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .course-rail-top strong { font-size: var(--t-5); line-height: 1.3; }
+  .course-rail-top:hover strong { text-decoration: underline; }
+
+  /* ---------- a module in the rail ---------- */
+
+  .course-mod { border-bottom: 1px solid var(--hairline); }
+  .course-mod:last-child { border-bottom: 0; }
+
+  .course-mod > summary {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    padding: 0.7rem 1rem;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .course-mod > summary::-webkit-details-marker { display: none; }
+  .course-mod > summary:hover { background: var(--hairline); }
+
+  .course-mod-n {
+    flex: none;
+    min-width: 1.4rem;
+    font-size: var(--t-2);
+    color: var(--ink-soft);
+  }
+
+  .course-mod-name { flex: 1 1 auto; font-size: var(--t-5); line-height: 1.35; }
+
+  .course-mod-pct {
+    flex: none;
+    font-size: var(--t-2);
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .course-mod .meter-line { padding: 0 1rem 0.6rem; }
+
+  /* ---------- lessons in the rail ---------- */
+
+  .course-lessons { margin: 0; padding: 0 0 0.5rem; list-style: none; }
+
+  .course-section {
+    padding: 0.6rem 1rem 0.2rem;
+    font-size: var(--t-1);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .course-lesson a {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    padding: 0.4rem 1rem 0.4rem 0.75rem;
+    border-left: 3px solid transparent;
+    text-decoration: none;
+    color: inherit;
+    font-size: var(--t-4);
+    line-height: 1.4;
+  }
+
+  .course-lesson a:hover { background: var(--hairline); }
+
+  /* Where you are, and it is a border rather than a background so
+     that it survives the hover state of the row above it. */
+  .course-lesson[data-here] a {
+    border-left-color: var(--accent, var(--green));
+    background: var(--hairline);
+    font-weight: 600;
+  }
+
+  .course-lesson a[data-done] .course-lesson-name { color: var(--ink-soft); }
+
+  .course-tick {
+    flex: none;
+    width: 1rem;
+    color: var(--green);
+    font-size: var(--t-4);
+  }
+
+  .course-lesson-name { flex: 1 1 auto; min-width: 0; }
+
+  .course-lesson-kind {
+    flex: none;
+    font-size: var(--t-1);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- the lesson itself ---------- */
+
+  /* 16:9, and `aspect-ratio` rather than the padding-top trick
+     because the only thing inside it is one iframe. */
+  .course-video {
+    margin: 1.5rem 0;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .course-video iframe { display: block; width: 100%; height: 100%; border: 0; }
+
+  .course-open { margin: 1.25rem 0; }
+
+  .course-files { margin: 2rem 0; }
+  .course-files h2 {
+    margin: 0 0 0.5rem;
+    font-size: var(--t-2);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .course-files ul { margin: 0; padding: 0; list-style: none; }
+  .course-files li {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .course-files li .mono {
+    font-size: var(--t-1);
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- the two buttons ----------
+
+     The order is the point. "Mark complete and continue" is what
+     a reader who has finished the video wants and it is first and
+     solid; the plain tick beside it is for correcting a mistake,
+     and it is quieter because un-ticking is rare. */
+  .course-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin: 2rem 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .course-continue { flex: 0 1 auto; }
+
+  /* ---------- the other three views ---------- */
+
+  .course-modules {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+    margin-top: 2rem;
+  }
+
+  .course-mod-link {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: var(--t-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .course-summary-list { margin: 2rem 0; padding: 0; list-style: none; }
+
+  .course-summary-list > li > a {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--hairline);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .course-summary-list > li > a:hover .course-lesson-name { text-decoration: underline; }
+
+  .course-card .meter-line { margin-top: 0.75rem; }
+
+  .course-finished {
+    margin: 1.5rem 0;
+    padding: 0.9rem 1.1rem;
+    border: 1px dashed var(--hairline);
+    border-radius: 12px;
+    color: var(--ink-soft);
+  }
+
+  .course-empty {
+    padding: 0.5rem 1rem 0.9rem;
+    font-size: var(--t-3);
+    color: var(--ink-soft);
+  }
+
+  /* ---------- nothing to show ---------- */
+
+  .course-note {
+    max-width: 34rem;
+    margin: clamp(3rem, 12vh, 8rem) auto;
+    padding: 0 1.25rem;
+    text-align: center;
+  }
+
+  .course-note h1 { margin: 0 0 0.75rem; }
+  .course-note p { color: var(--ink-soft); }
+  .course-note .btn { margin-top: 1.25rem; }
 }

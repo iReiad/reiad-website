@@ -180,7 +180,7 @@ export function Sidebar({ current }: { current: Current }) {
           <div className="rail-group" key={group.id} data-group={group.id}
                style={{ "--accent": group.accent } as React.CSSProperties}>
             <span className="rail-label mono">{group.label}</span>
-            {group.items.map((item) => (
+            {group.items.filter((item) => !item.unlisted).map((item) => (
               <Item key={item.href} item={item} current={current} />
             ))}
           </div>

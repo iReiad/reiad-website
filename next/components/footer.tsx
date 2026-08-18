@@ -74,7 +74,7 @@ export function SiteFooter({
                    style={{ "--accent": group.accent } as React.CSSProperties}>
                 <span className="deck-foot-label mono">{group.label}</span>
                 <ul>
-                  {group.items.map((item) => (
+                  {group.items.filter((item) => !item.unlisted).map((item) => (
                     <li key={item.href}>
                       <a href={item.href}>
                         {item.label}

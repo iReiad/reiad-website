@@ -56,6 +56,13 @@ export const MODULES = [
      reason to throw the declarations away: the desk is the next
      thing that will want to know what a saved scenario is. */
   "prefs", "saved", "checkpoints", "keep", "sync", "signin", "account-page",
+  /* The third-party course player, added with the section it
+     draws. It is a browser module rather than a React component
+     for the reason at the top of `aab/src/courses.ts`: the
+     catalogue is admin-only, so the server must not render it
+     into a page, and a `<SiteScripts>` module runs after
+     hydration where nothing React does can undo it. */
+  "courses",
   /* The first module served from a subdirectory: the live
      portfolio's page module, at /tools/live.js beside the plain
      JavaScript calculators. The name here is the served path

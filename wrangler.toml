@@ -119,6 +119,12 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   # mount prefixes above already carry them, and naming them as well
   # is the overlap wrangler rejects.
   "/about.html", "/contact.html", "/account.html", "/skills/index.html",
+  # The third-party course section. One star covers all four of its
+  # shapes, and nothing else lives under that prefix, so there is no
+  # fall-through to pay for: unlike the schools, this section has no
+  # files beside it. It does not overlap /skills/index.html, which is
+  # a different path and not a prefix of this one.
+  "/skills/courses/*",
   "/tools/index.html", "/tools/stock.html", "/tools/live.html", "/portfolio.html", "/portfolio/*", "/",
   "/desk/index.html", "/studio/index.html",
   # The four schools, Stage 11.7. 247 pages left aab/ in the same

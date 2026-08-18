@@ -43,6 +43,21 @@ export interface NavItem {
   key?: string;
   /** A school still being written. It appears, and it says so. */
   soon?: boolean;
+  /** In the table, and not in the menus.
+
+      The rail and the footer are seen by everybody, so a link in
+      them is a promise that the address opens. `/skills/courses/`
+      does not: it is one person's own copy of third-party
+      material behind `isAdmin()`, and a reader who followed a
+      link from the footer would meet a refusal the site had
+      invited them into.
+
+      It is still HERE rather than written straight into the
+      skills page, because the rule this file opens with is that
+      the menu is said once. `/skills/index.html` reads the flag
+      and gives it a card of its own, which is the one place the
+      person who can open it will look. */
+  unlisted?: boolean;
   /** One Bangla sentence: what you would actually get. Only the
       six learning entries carry one, because only they are listed
       on a page that has room for a sentence. */
@@ -108,6 +123,12 @@ export const NAV: NavGroup[] = [
         label: "Travel", sub: "ভ্রমণ", href: "/travel/index.html",
         icon: "compass", key: "travel", kind: "লেখা", accent: "var(--plum)",
         blurb: "ভিসা, কাগজপত্র আর প্রথমবার দেশের বাইরে যাওয়ার পুরো ধাপ।",
+      },
+      {
+        label: "Courses", sub: "কোর্স", href: "/skills/courses/index.html",
+        icon: "cap", key: "courses", kind: "নিজের", unlisted: true,
+        accent: "var(--gold)",
+        blurb: "বাইরের কোর্স, নিজের পড়ার জন্য রাখা। কোনোটাই প্রকাশ করা হয়নি।",
       },
       {
         label: "Reviews", sub: "রিভিউ", href: "/skills/index.html#reviews",

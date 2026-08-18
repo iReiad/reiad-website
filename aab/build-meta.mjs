@@ -127,6 +127,11 @@ Disallow: /studio/
 Disallow: /desk/
 Disallow: /insights/_template.html
 
+# One person's own copy of a third-party course, behind the admin
+# check. A crawler cannot sign in, so what it would index is the
+# same "loading" shell under every address in the section.
+Disallow: /skills/courses/
+
 Sitemap: ${SITE.origin}/sitemap.xml
 `;
 
