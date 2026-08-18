@@ -1081,6 +1081,12 @@
     display: inline-flex; align-items: center; justify-content: center;
     gap: var(--s-4); text-decoration: none;
     padding: 10px 20px; border-radius: var(--radius-pill);
+    /* `--tap` is described above as one height for anything you
+       press, and this did not use it, which is why no two controls
+       in a row ever lined up: `.btn` came out around 39px and
+       `.tick-btn` around 37, and beside each other in
+       `.course-actions` the difference was the whole complaint. */
+    min-height: var(--tap);
     font-family: var(--font-mono);
     font-size: var(--t-3); letter-spacing: 0.06em; text-transform: uppercase;
     line-height: 1.2;
@@ -9240,9 +9246,15 @@ German for day, and .tag is what the site has always called
 
   /* ---------- the tick, on a lesson ---------- */
 
+  /* Spacing is the container's, not the control's. This carried
+     `margin-block: 28px 6px` for the school lesson it was written
+     for, and a top margin on a flex item is a top margin wherever
+     that item lands: inside `.course-actions`, which centres its
+     row, it pushed this 28px down past the button beside it. The
+     school's own wrapper owns that gap now. */
   .tick-btn {
-    display: inline-flex; align-items: center; gap: 9px;
-    margin-block: 28px 6px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    min-height: var(--tap);
     padding: 9px 18px;
     border-radius: var(--radius-pill);
     border: 1px solid var(--hairline);

@@ -1,9 +1,9 @@
 {
-  "version": "v110",
+  "version": "v111",
   "hashes": {
     "/offline.html": "55bcf02529d11190",
-    "/styles.css": "d0c21ab2e00db0bf",
-    "/tailwind.css": "8a643226a1e2ee07",
+    "/styles.css": "16dd7686fed523d4",
+    "/tailwind.css": "3efd4a2e9c711f15",
     "/app.js": "f56b8c5eed9e972d",
     "/content.js": "3c535dcbbd7173be",
     "/api.js": "fb43503e1326fabe",

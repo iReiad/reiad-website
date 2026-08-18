@@ -31,6 +31,24 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v111: Two alignments that were reported first and fixed last.
+
+        The course breadcrumb sat against the window edge because
+        `crumbs.js` mounts into `main > .wrap` and falls back to
+        bare `main`, and the course shell has no wrap. It is
+        `<Crumbs>` now, rendered by the route inside the same
+        column `.course-shell` uses, so the two line up by
+        construction rather than by being told the same number.
+
+        `.btn` did not use `--tap`, the token whose own note says
+        it is one height for anything you press. So `.btn` came out
+        near 39px and `.tick-btn` near 37, and beside each other
+        they were visibly off. Both are `--tap` now. `.tick-btn`
+        also carried `margin-block: 28px 6px` for the one school
+        lesson it was written for and took it everywhere else,
+        which pushed it down out of a centred row; that spacing
+        belongs to the caller and is there now.
+
    v110: The four practice books stopped being files when they
         became routes, and nobody told the rest of the repository.
         2.2 MB of generated HTML sat in `aab/` shadowed, the two
@@ -1079,7 +1097,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v110";
+const VERSION = "v111";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
