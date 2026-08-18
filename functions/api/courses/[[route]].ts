@@ -178,9 +178,15 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
   });
 }
 
+/* Only an admin ever reads this, which is the one place on this
+   site where naming the missing secret in a response is the right
+   thing to do rather than a leak. It names the Worker too: there
+   are two, and secrets set on the wrong one look exactly like
+   secrets that were never set. */
 const notConnected = (): Response => fail("drive-not-connected", 503, {
-  message: "This site cannot read the course files yet: the Google credential is not "
-    + "set. See GOOGLE_SA_EMAIL in CLAUDE.md.",
+  message: "This site cannot read the course files yet: GOOGLE_SA_EMAIL and "
+    + "GOOGLE_SA_KEY are not set on the reiad-website Worker. The Drive folder "
+    + "also has to be shared with that service account. See CLAUDE.md.",
 });
 
 /** Stream one file through, without holding it.

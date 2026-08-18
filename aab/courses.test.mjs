@@ -154,7 +154,9 @@ const READING_HTML = '<h2>What you will do</h2><p>Read the syllabus.</p>';
     hand back the document. `store` persists across calls inside
     one scenario so that a tick made on one page is visible on the
     next, which is the whole point of the ticks. */
-async function visit(path, store, { reader = { id: "admin" }, status = 200 } = {}) {
+async function visit(
+  path, store, { reader = { id: "admin" }, status = 200, ticketFails = null } = {},
+) {
   const { window, document } = parseHTML(SHELL);
   const listeners = new Map();
   const asked = [];
@@ -179,6 +181,18 @@ async function visit(path, store, { reader = { id: "admin" }, status = 200 } = {
     fetch: async (url) => {
       const path = String(url).replace(/^.*\/api\/courses/, "");
       asked.push(path);
+
+      /* One route can be made to fail while the rest answer, which
+         is the shape every real failure here has had: the page
+         loads, the catalogue loads, and the one call that needed
+         the Google credential is the one that did not. */
+      if (path.startsWith("/ticket/") && ticketFails) {
+        return {
+          ok: false,
+          status: ticketFails.status,
+          json: async () => ({ ok: false, message: ticketFails.message }),
+        };
+      }
 
       let body = { ok: true, courses: SUMMARIES };
       if (path.startsWith("/ticket/")) {
@@ -359,6 +373,30 @@ console.log("\n--- the lesson page ---");
 
   ok("a transcript is offered",
     all(doc, ".course-files a").some((a) => a.textContent === "Transcript"));
+
+  /* ---- when the pass is refused ----
+
+     The page said "that video could not be opened, if you have
+     just signed in, reload" for every failure there is. One of
+     them was a Worker with no Google credential, which was saying
+     so in the response, in a sentence naming the secret to set.
+     Reloading could never fix that, and the page recommended it,
+     so the real reason went unread for an afternoon while the
+     obvious suspects were checked instead.
+
+     The rule this asserts: whatever the server said is what the
+     reader is shown. */
+  {
+    const { document: sad } = await visit(
+      "/skills/courses/foundations/week-one/welcome.html", new Map(),
+      { ticketFails: { status: 503, message: "The Google credential is not set." } });
+
+    const said = sad.querySelector(".course-video")?.textContent ?? "";
+    ok("a refused pass shows the server's own reason", said.includes("credential"), said);
+    ok("and does not tell the reader to reload instead", !/reload/i.test(said), said);
+    ok("and there is no player pretending to work",
+      !sad.querySelector(".course-video video"));
+  }
 
   ok("opening moves the bookmark",
     JSON.parse(store.get("courses-last") ?? "{}").id === "foundations/week-one/welcome");
