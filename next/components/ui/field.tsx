@@ -41,7 +41,11 @@ import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "rea
 const BOX = [
   "w-full block",
   "bg-panel text-ink",
-  "border border-pane-edge rounded-[var(--radius-sm)]",
+  /* Not a pill: a box a reader types more than a word into wants
+     a corner rather than a capsule, and a textarea as a capsule
+     crops its own first line. `--radius` is the card's, which is
+     what a field sits among. */
+  "border border-pane-edge rounded-[var(--radius-card)]",
   "px-3.5 py-2.5 text-t3 font-[inherit]",
   "transition-[border-color,box-shadow,background-color]",
   "duration-[var(--fast)] ease-[var(--ease)]",

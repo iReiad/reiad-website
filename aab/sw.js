@@ -31,6 +31,29 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v109: The site stops being square, and the textures exist.
+
+        Tailwind owns the `--radius-*` namespace and so does this
+        site, and `@theme` carried `--radius-sm: var(--radius-sm)`.
+        `@theme` emits its keys into `:root`, so the browser saw a
+        custom property defined as itself: a cycle, invalid at
+        computed value time, and every `border-radius:
+        var(--radius-sm)` on the site fell back to nothing. That is
+        the square button, the square text box, the square stat
+        tile and the square box drawn round the progress ring.
+        Tailwind's own scale was also overriding `--radius-xs` and
+        `--radius-lg` from `@layer base`. `--radius-*: initial`
+        clears the namespace so `styles.css` is the only thing that
+        says what a corner is.
+
+        `--weave` and `--sheen` were named by the Tailwind theme
+        and declared nowhere, so `bg-weave` and `bg-sheen` did
+        nothing in all seven components that asked, and every
+        surface was flat colour. Both exist now, plus `--grain`,
+        and all three take the page's accent. `check-css.mjs`
+        reads the Tailwind source too, which is where it could not
+        see any of this.
+
    v108: The three hand-written school hubs are components. They
         were an HTML string each inside `school-hubs.ts`, so the
         page around them was React and everything inside them was
@@ -1042,7 +1065,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v108";
+const VERSION = "v109";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
