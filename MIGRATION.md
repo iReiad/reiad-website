@@ -14,8 +14,9 @@ Built from `aab/src/*.ts` to `aab/*.js` by `scripts/build-modules.mjs`. The
 built file is committed because the site deploys by uploading `aab/` with no
 build step.
 
-**Done (13):** `account-page` `api` `checkpoints` `courses` `crumbs` `keep`
+**Done (14):** `account-page` `api` `checkpoints` `courses` `crumbs` `keep`
 `photo` `prefs` `saved` `share-card` `signin` `sync` `tools/live`
+`tools/tools`
 
 **Left (20),** largest first:
 

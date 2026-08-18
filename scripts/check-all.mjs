@@ -43,6 +43,8 @@ const STAGES = [
     "scripts/check-rows.mjs",
     "scripts/check-api.mjs",
     "scripts/check-contrast.mjs",
+    "scripts/check-surfaces.mjs",
+    "scripts/check-components.mjs",
     "scripts/check-scale.mjs",
     "scripts/check-next.mjs",
     "scripts/check-courses.mjs",

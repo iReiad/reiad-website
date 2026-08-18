@@ -107,6 +107,8 @@ jobs:
           node scripts/check-rows.mjs
           node scripts/check-api.mjs
           node scripts/check-contrast.mjs
+          node scripts/check-surfaces.mjs
+          node scripts/check-components.mjs
           node scripts/check-scale.mjs
           node scripts/check-next.mjs
           node scripts/check-courses.mjs

@@ -129,72 +129,105 @@
        page's own ground rather than words. The overlay tier is
        the one that needs a blur, because it is the only tier with
        moving content underneath it. */
-    --tint-page:    light-dark( 2.5%,  6%);
-    --tint-sunk:    light-dark( 5%,   11%);
-    --tint-panel:   light-dark( 8%,   17%);
-    --tint-edge:    light-dark(30%,   38%);
+    /* ---- the surfaces, and the two rules that shape them ----
 
-    --paper-base:   light-dark(oklch(98.4% 0.008 var(--h-paper)), oklch(16.5% 0.012 var(--h-green)));
-    --paper:        color-mix(in oklab, var(--accent) var(--tint-page), var(--paper-base));
+       BOTH OF THESE WERE LEARNED FROM A BROWSER after a change
+       that every check passed and that broke every card on the
+       site. `scripts/preview.mjs` exists because of it.
 
-    --paper-sunk-base: light-dark(oklch(96.4% 0.011 var(--h-paper)), oklch(14% 0.012 var(--h-green)));
-    --paper-sunk:   color-mix(in oklab, var(--accent) var(--tint-sunk), var(--paper-sunk-base));
+       1. NO `light-dark()` INSIDE `color-mix()`. It does not
+          compute: the property comes out as an unsubstituted
+          token stream, the background lands at rgba(0,0,0,0) and
+          the border shorthand is dropped entirely. That is why
+          the cards lost their outlines. So each mode declares its
+          own mixes, below, out of plain `oklch()`.
 
-    --panel-base:   light-dark(oklch(99.5% 0.004 var(--h-paper)), oklch(21%   0.014 var(--h-green)));
-    --panel:        color-mix(in oklab, var(--accent) var(--tint-panel),
-                      color-mix(in srgb, var(--panel-base) 86%, transparent));
-    --panel-hover:  color-mix(in oklab, var(--accent) calc(var(--tint-panel) + 6%),
-                      light-dark(oklch(98% 0.012 var(--h-paper)), oklch(24% 0.016 var(--h-green))));
+       2. A DERIVED TOKEN MUST BE RE-DERIVED WHERE THE ACCENT IS
+          SET. `--panel` written once on `:root` freezes the
+          `--accent` that `:root` had, and a descendant setting
+          its own accent inherits the frozen value: a German card
+          computed `--accent: blue` and `--panel: green` at the
+          same time. So the derived set is repeated on the
+          selectors that can scope an accent, and nowhere else,
+          which is three selectors rather than a universal rule.
 
-    /* The edge and the lift a pane carries. A light hairline
-       along the top of a surface is what reads as a pane of
-       something rather than a rectangle of paint. */
-    --pane-edge:    color-mix(in oklab, var(--accent) var(--tint-edge), var(--hairline));
-    --pane-top:     light-dark(oklch(100% 0 0 / 0.55), oklch(100% 0 0 / 0.06));
+       ---- how much, and why the numbers differ by mode ----
 
-    /* --- texture ---
+       An accent here sits near 44% lightness, so mixing it into a
+       near-white surface DARKENS it, and there is no amount that
+       tints without darkening: that is the colour space, not a
+       setting. Push 8% into a panel in light mode and the panel
+       lands BELOW the page it sits on, which reads as a hole
+       rather than a card.
 
-       Colour alone makes a page tinted; texture makes it a
-       material. Three of them, and each is a gradient rather than
-       an image: no request, no data URI for the CSP to think
-       about, and they resample at any zoom instead of going soft.
+       So light keeps its surfaces near-neutral and puts the
+       colour where colour reads: edges, rails, chips, icons and
+       type. Dark has the opposite problem and the opposite
+       answer: the accent LIFTS a dark surface, so it carries
+       three times the tint and needs less on the edges.
 
-       All three are drawn IN THE ACCENT, so the grain on a German
-       page is blue grain. That is the point of having them at all
-       rather than a flat wash: two surfaces at the same lightness
-       read as different materials, and a reader can tell a ground
-       from a card without either carrying a border.
+       `check-surfaces.mjs` measures that a panel stays above the
+       page and a sunk ground below it, in both modes and all
+       seven sections. */
 
-       The alphas are low on purpose, between 2% and 6%. A texture
-       you can name while reading is a texture that is too strong;
-       what these do is stop a large area reading as flat paint.
+    --paper-base:      oklch(98.4% 0.008 var(--h-paper));
+    --paper-sunk-base: oklch(96.4% 0.011 var(--h-paper));
+    --panel-base:      oklch(100%  0.003 var(--h-paper));
+    --hairline-base:   oklch(88.5% 0.012 var(--h-paper));
+    --pane-top:        oklch(100% 0 0 / 0.55);
+    --glass-base:      oklch(99% 0.004 var(--h-paper) / 0.72);
+    --glass-solid-base: oklch(99% 0.004 var(--h-paper));
+    --accent-ink:      oklch(99% 0.004 var(--h-paper));
+    --accent-mate:     oklch(20% 0.02 var(--h-green));
+    --tex-base:        oklch(45% 0.04 var(--h-green));
+    --tex-a: 0.035;
+    --tex-b: 0.028;
 
-       `--grain`   the page. A dot grid at 3px, which at any real
-                   viewing distance is tooth rather than dots.
-       `--weave`   a sunk ground. Diagonal, so it does not line up
-                   with the text baseline and shimmer.
-       `--sheen`   a panel. One soft diagonal highlight, which is
-                   what makes glass read as lit from somewhere. */
-    --tex-ink:      color-mix(in oklab, var(--accent) 60%,
-                      light-dark(oklch(45% 0.04 var(--h-green)), oklch(85% 0.04 var(--h-green))));
-    --tex-a:        light-dark(0.035, 0.05);
-    --tex-b:        light-dark(0.028, 0.042);
+    /* ---- the derived set ----
 
-    --grain:
-      radial-gradient(circle at 50% 50%,
-        color-mix(in oklab, var(--tex-ink) calc(var(--tex-a) * 100%), transparent) 0.5px,
-        transparent 0.6px);
-    --grain-size: 3px 3px;
+       Repeated below on every selector that can scope an accent,
+       for the reason in the note above: a token derived here and
+       inherited carries the accent THIS element had, not the one
+       the descendant set. Three selectors rather than a universal
+       rule, because those are the only three ways an accent is
+       ever scoped on this site: the root, an element given one
+       inline, and a section. */
+    --accent-soft:   color-mix(in oklab, var(--accent) 11%, var(--paper));
+    --accent-line:   color-mix(in oklab, var(--accent) 28%, transparent);
+    --accent-ring:   color-mix(in oklab, var(--accent) 30%, transparent);
+    --accent-strong: color-mix(in oklab, var(--accent) 88%, var(--accent-mate));
 
-    --weave:
-      repeating-linear-gradient(135deg,
-        color-mix(in oklab, var(--tex-ink) calc(var(--tex-b) * 100%), transparent) 0 1px,
-        transparent 1px 7px);
+    --paper:        color-mix(in oklab, var(--accent) 1.5%, var(--paper-base));
+    --paper-sunk:   color-mix(in oklab, var(--accent) 2.5%, var(--paper-sunk-base));
+    --panel:        color-mix(in oklab, var(--accent) 2%, var(--panel-base));
+    --panel-hover:  color-mix(in oklab, var(--accent) 3.5%, var(--panel-base));
+    --hairline:     color-mix(in oklab, var(--accent) 12%, var(--hairline-base));
+    --pane-edge:    color-mix(in oklab, var(--accent) 34%, var(--hairline-base));
+    --glass-bg:     color-mix(in oklab, var(--accent) 4%, var(--glass-base));
+    --glass-solid:  color-mix(in oklab, var(--accent) 4%, var(--glass-solid-base));
+    --tex-ink:      color-mix(in oklab, var(--accent) 60%, var(--tex-base));
 
-    --sheen:
-      linear-gradient(147deg,
-        color-mix(in oklab, var(--pane-top) 90%, transparent) 0%,
-        transparent 34%);
+    /* The two lines on a chart.
+
+       A chart with two series needs two colours a reader can tell
+       apart, and naming them `--green` and `--gold` opted every
+       calculator out of its own page's theme: the compounding
+       chart drew Insights green on a page wearing the tools gold.
+
+       So the highlighted series is the page's accent and the
+       other one is neutral. Neutral rather than a second hue
+       because a second hue has to stay distinguishable from all
+       seven accents, and there is no hue that does; a grey is
+       telling apart from every one of them by being the only
+       thing on the chart without a colour.
+
+       Here as well as on `:root` for the reason the block says at
+       the top: `var(--accent)` freezes at the declaration site,
+       so a token that names it has to be written wherever an
+       accent can be set. Neither varies by mode, because both
+       name tokens that already do. */
+    --series-1:     var(--accent);
+    --series-2:     var(--ink-soft);
 
     /* --- text --- */
     --ink:          light-dark(oklch(24%   0.012 var(--h-green)), oklch(93.5% 0.008 var(--h-green)));
@@ -254,16 +287,11 @@
        and a card can sit on any surface without the ground
        underneath showing through it. */
     --accent: var(--green);
-    --accent-soft: color-mix(in oklab, var(--accent) 11%, var(--paper));
-    --accent-line: color-mix(in oklab, var(--accent) 28%, transparent);
-    --accent-ring: color-mix(in oklab, var(--accent) 30%, transparent);
     /* The accent at full strength, for a surface that IS the
        accent rather than one tinted by it: a solid button, a
        filled chip. And the ink that reads on it, which is the
        paper in light and stays the paper in dark, because a
        solid accent is dark enough in both. */
-    --accent-strong: color-mix(in oklab, var(--accent) 88%,
-                       light-dark(oklch(20% 0.02 var(--h-green)), oklch(96% 0.01 var(--h-paper))));
     --accent-ink:   light-dark(oklch(99% 0.004 var(--h-paper)), oklch(14% 0.012 var(--h-green)));
 
     /* --- lines, glass, depth ---
@@ -286,7 +314,6 @@
        this site's chroma is a hue you notice only next to another
        section's. */
     --hairline-base: light-dark(oklch(88.5% 0.012 var(--h-paper)), oklch(28%   0.015 var(--h-green)));
-    --hairline:     color-mix(in oklab, var(--accent) var(--tint-sunk), var(--hairline-base));
     /* --- glass ---
 
        These existed and were used in exactly one place, at an
@@ -310,10 +337,6 @@
        state this must never be in. */
     --glass-base:   light-dark(oklch(99% 0.004 var(--h-paper) / 0.72),
                                oklch(23% 0.014 var(--h-green) / 0.72));
-    --glass-bg:     color-mix(in oklab, var(--accent) 5%, var(--glass-base));
-    --glass-solid:  color-mix(in oklab, var(--accent) 5%,
-                      light-dark(oklch(99% 0.004 var(--h-paper)),
-                                 oklch(23% 0.014 var(--h-green))));
     --glass-edge:   light-dark(oklch(100% 0 0 / 0.7), oklch(100% 0 0 / 0.1));
     /* The lit top edge that reads as a pane rather than a
        rectangle of paint. One shadow, so a surface can carry it
@@ -501,6 +524,132 @@
     /* Let height/width animate to and from keyword sizes
        (auto, min-content…), powers the accordions below. */
     interpolate-size: allow-keywords;
+  }
+
+  /* ============================================================
+     Dark, and the accent's scope
+
+     ---- why dark is a media query and a selector, not
+          `light-dark()` ----
+
+     `light-dark()` cannot be used inside `color-mix()`: the
+     property does not compute at all, and what reaches the page
+     is a background of rgba(0,0,0,0) and no border. Every surface
+     on this site is a mix now, so every surface has to be
+     declared per mode instead. `--accent` itself and the plain
+     colours above still use `light-dark()`, because nothing mixes
+     them.
+
+     ---- and why the derived set is repeated ----
+
+     A token derived on `:root` freezes the accent `:root` had.
+     Set `--accent: var(--blue)` on a card and the card computes a
+     blue accent and a green panel at the same moment, because
+     what it inherits is the already-substituted value.
+
+     So the derived set is declared again on the two selectors
+     that can scope an accent: an element given one inline, which
+     is how `<Surface accent>` and the deck's cards work, and a
+     `[data-section]`, which is what `<html>` carries. Two
+     selectors rather than `*`, because those are the only two
+     ways it is ever scoped.
+     ============================================================ */
+
+  [style*="--accent"], [data-section] {
+    --accent-soft:   color-mix(in oklab, var(--accent) 11%, var(--paper));
+    --accent-line:   color-mix(in oklab, var(--accent) 28%, transparent);
+    --accent-ring:   color-mix(in oklab, var(--accent) 30%, transparent);
+    --accent-strong: color-mix(in oklab, var(--accent) 88%, var(--accent-mate));
+
+    --paper:        color-mix(in oklab, var(--accent) 1.5%, var(--paper-base));
+    --paper-sunk:   color-mix(in oklab, var(--accent) 2.5%, var(--paper-sunk-base));
+    --panel:        color-mix(in oklab, var(--accent) 2%, var(--panel-base));
+    --panel-hover:  color-mix(in oklab, var(--accent) 3.5%, var(--panel-base));
+    --hairline:     color-mix(in oklab, var(--accent) 12%, var(--hairline-base));
+    --pane-edge:    color-mix(in oklab, var(--accent) 34%, var(--hairline-base));
+    --glass-bg:     color-mix(in oklab, var(--accent) 4%, var(--glass-base));
+    --glass-solid:  color-mix(in oklab, var(--accent) 4%, var(--glass-solid-base));
+    --tex-ink:      color-mix(in oklab, var(--accent) 60%, var(--tex-base));
+
+    /* The two lines on a chart.
+
+       A chart with two series needs two colours a reader can tell
+       apart, and naming them `--green` and `--gold` opted every
+       calculator out of its own page's theme: the compounding
+       chart drew Insights green on a page wearing the tools gold.
+
+       So the highlighted series is the page's accent and the
+       other one is neutral. Neutral rather than a second hue
+       because a second hue has to stay distinguishable from all
+       seven accents, and there is no hue that does; a grey is
+       telling apart from every one of them by being the only
+       thing on the chart without a colour.
+
+       Here as well as on `:root` for the reason the block says at
+       the top: `var(--accent)` freezes at the declaration site,
+       so a token that names it has to be written wherever an
+       accent can be set. Neither varies by mode, because both
+       name tokens that already do. */
+    --series-1:     var(--accent);
+    --series-2:     var(--ink-soft);
+  }
+
+  /* The dark bases, and the stronger mixes that go with them. A
+     dark surface is far below the accent's lightness, so the
+     accent LIFTS it: a tint that would be garish at 98% reads as
+     a warm dark at 21%. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]), 
+    :root:not([data-theme="light"]) [style*="--accent"],
+    :root:not([data-theme="light"]) [data-section] {
+    --paper-base:      oklch(16.5% 0.012 var(--h-green));
+    --paper-sunk-base: oklch(14%   0.012 var(--h-green));
+    --panel-base:      oklch(23%   0.016 var(--h-green));
+    --hairline-base:   oklch(28%   0.015 var(--h-green));
+    --pane-top:        oklch(100% 0 0 / 0.06);
+    --glass-base:      oklch(23% 0.014 var(--h-green) / 0.72);
+    --glass-solid-base: oklch(23% 0.014 var(--h-green));
+    --accent-ink:      oklch(14% 0.012 var(--h-green));
+    --accent-mate:     oklch(96% 0.01 var(--h-paper));
+    --tex-base:        oklch(85% 0.04 var(--h-green));
+    --tex-a: 0.05;
+    --tex-b: 0.042;
+
+    --paper:        color-mix(in oklab, var(--accent) 7%,  var(--paper-base));
+    --paper-sunk:   color-mix(in oklab, var(--accent) 8%,  var(--paper-sunk-base));
+    --panel:        color-mix(in oklab, var(--accent) 16%, var(--panel-base));
+    --panel-hover:  color-mix(in oklab, var(--accent) 22%, var(--panel-base));
+    --hairline:     color-mix(in oklab, var(--accent) 18%, var(--hairline-base));
+    --pane-edge:    color-mix(in oklab, var(--accent) 40%, var(--hairline-base));
+    --glass-bg:     color-mix(in oklab, var(--accent) 9%,  var(--glass-base));
+    --glass-solid:  color-mix(in oklab, var(--accent) 9%,  var(--glass-solid-base));
+    }
+  }
+
+  :root[data-theme="dark"],
+  :root[data-theme="dark"] [style*="--accent"],
+  :root[data-theme="dark"] [data-section] {
+    --paper-base:      oklch(16.5% 0.012 var(--h-green));
+    --paper-sunk-base: oklch(14%   0.012 var(--h-green));
+    --panel-base:      oklch(23%   0.016 var(--h-green));
+    --hairline-base:   oklch(28%   0.015 var(--h-green));
+    --pane-top:        oklch(100% 0 0 / 0.06);
+    --glass-base:      oklch(23% 0.014 var(--h-green) / 0.72);
+    --glass-solid-base: oklch(23% 0.014 var(--h-green));
+    --accent-ink:      oklch(14% 0.012 var(--h-green));
+    --accent-mate:     oklch(96% 0.01 var(--h-paper));
+    --tex-base:        oklch(85% 0.04 var(--h-green));
+    --tex-a: 0.05;
+    --tex-b: 0.042;
+
+    --paper:        color-mix(in oklab, var(--accent) 7%,  var(--paper-base));
+    --paper-sunk:   color-mix(in oklab, var(--accent) 8%,  var(--paper-sunk-base));
+    --panel:        color-mix(in oklab, var(--accent) 16%, var(--panel-base));
+    --panel-hover:  color-mix(in oklab, var(--accent) 22%, var(--panel-base));
+    --hairline:     color-mix(in oklab, var(--accent) 18%, var(--hairline-base));
+    --pane-edge:    color-mix(in oklab, var(--accent) 40%, var(--hairline-base));
+    --glass-bg:     color-mix(in oklab, var(--accent) 9%,  var(--glass-base));
+    --glass-solid:  color-mix(in oklab, var(--accent) 9%,  var(--glass-solid-base));
   }
 
   :root[data-theme="light"] { color-scheme: light; }
@@ -2488,12 +2637,6 @@ it collapsed to the width of the word "Bangladesh". */
     background: var(--paper-sunk);
   }
   .chart-box svg { display: block; width: 100%; height: auto; overflow: visible; }
-  .chart-legend {
-    display: flex; gap: var(--s-7); flex-wrap: wrap; margin-top: 10px;
-    font-family: var(--font-mono); font-size: var(--t-1);
-    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft);
-  }
-  .chart-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: 6px; }
 
   .tool-note {
     font-size: var(--t-4); color: var(--ink-soft);

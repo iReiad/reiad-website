@@ -250,6 +250,19 @@ export function accentStyle(
   return accent ? { "--accent": accent } : undefined;
 }
 
+/** The schools' colours, in the order the rail lists them.
+
+    For the one tile that wears all six rather than one: the
+    skills card on the home page opens the list they name, so it
+    shows the list. The home page kept its own copy of these six
+    strings, which is the failure this whole table exists to stop,
+    one level down from the menu itself. A seventh school is one
+    edit above and appears here by itself. */
+export const SCHOOL_ACCENTS: string[] =
+  NAV.find((g) => g.id === "learn")?.items
+    .filter((i) => i.accent && !i.unlisted && !i.soon)
+    .map((i) => i.accent as string) ?? [];
+
 /** The attributes `<html>` carries, as a string, for a renderer
     that is not React.
 

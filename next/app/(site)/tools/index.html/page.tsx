@@ -26,6 +26,7 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
+import { Legend, Key } from "../../../../components/ui/legend";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/index.html",
@@ -211,14 +212,10 @@ export default function ToolsPage() {
                   </div>
                 </div>
                 <div className="chart-box" />
-                <div className="chart-legend">
-                  <span>
-                    <i style={{ background: "var(--green)" }} />Total value
-                  </span>
-                  <span>
-                    <i style={{ background: "var(--gold)" }} />Your own money
-                  </span>
-                </div>
+                <Legend>
+                  <Key series={1}>Total value</Key>
+                  <Key series={2}>Your own money</Key>
+                </Legend>
                 <p className="verdict" />
                 <p className="tool-note">
                   Assumes the return arrives evenly and gets reinvested, and that you
@@ -423,14 +420,10 @@ export default function ToolsPage() {
                   </div>
                 </div>
                 <div className="chart-box" />
-                <div className="chart-legend">
-                  <span>
-                    <i style={{ background: "var(--gold)" }} />On paper
-                  </span>
-                  <span>
-                    <i style={{ background: "var(--green)" }} />In real buying power
-                  </span>
-                </div>
+                <Legend>
+                  <Key series={2}>On paper</Key>
+                  <Key series={1}>In real buying power</Key>
+                </Legend>
                 <p className="verdict" />
                 <p className="tool-note">
                   Real return uses the Fisher relation, (1 + return) ÷ (1 + inflation)
@@ -504,14 +497,10 @@ export default function ToolsPage() {
                   </div>
                 </div>
                 <div className="chart-box" />
-                <div className="chart-legend">
-                  <span>
-                    <i style={{ background: "var(--green)" }} />Balance left
-                  </span>
-                  <span>
-                    <i style={{ background: "var(--danger)" }} />Interest paid so far
-                  </span>
-                </div>
+                <Legend>
+                  <Key series={1}>Balance left</Key>
+                  <Key series="danger">Interest paid so far</Key>
+                </Legend>
                 <p className="verdict" />
                 <p className="tool-note">
                   Standard reducing-balance EMI at a fixed rate. Processing fees,

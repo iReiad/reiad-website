@@ -31,6 +31,18 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v104: The surfaces compute again. `color-mix()` cannot contain
+        `light-dark()`: the property does not compute at all, so
+        every card's background came out at rgba(0,0,0,0) and the
+        border shorthand was dropped with it, which is what "all
+        things lost outlining" was. The per-mode values are two
+        blocks now. A derived token is also re-derived where the
+        accent is set, because one written on `:root` freezes the
+        accent `:root` had, and a German card was computing a blue
+        accent and a green panel at the same time. Hover was
+        darkening a card below the page it sits on; check-surfaces
+        is the new guard for all of it.
+
    v103: Five more components, so /tailwind.css carries the
         utilities they need: chip, stat tile, note, section label
         and meter. Each replaces a pattern the routes were writing
@@ -984,7 +996,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v103";
+const VERSION = "v104";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
