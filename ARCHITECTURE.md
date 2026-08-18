@@ -80,16 +80,37 @@ shared/                    what more than one runtime must agree on
 aab/                       sw.js, 404.html, offline.html, fallback.css
 ```
 
-`aab/` ends at four files. Not zero, and the four are the point:
+`aab/` ends at four files, and `fallback.css` is the one that
+already arrived. Not zero, and the four are the point:
 they have to answer when the Worker, the route and the network are
 all unavailable, which is exactly when a route cannot.
 
 ## The order, and why each step is where it is
 
-### Stage A. The stylesheet moves into Next
+### Stage A. The stylesheet moves into Next  **done**
 
 The one the question was about, and the one everything else is
 easier after.
+
+Done on 18 August 2026. `aab/styles.css` is
+`next/styles/site.css`, `aab/src/styles/tailwind.css` is
+`next/styles/tailwind.css`, and `next/styles/globals.css` imports
+them in that order, which is where the cascade order lives now:
+it was two `<link>` tags whose sequence was the whole of it, kept
+by a comment. `components/shell.tsx` imports the one file and Next
+emits a hashed stylesheet.
+
+Tailwind is compiled by Next, through `@tailwindcss/postcss`.
+`scripts/build-styles.mjs` and the committed `aab/tailwind.css`
+are both gone: a build step and a check that guarded somebody
+editing its output, for a compiler the framework already has.
+
+`aab/fallback.css` answers the question this stage was blocked
+on, and it is the whole stylesheet with its comments removed
+rather than the subset first attempted: 248 KB against the 416
+those two pages loaded before. A subset was wrong four times over
+before it was looked at, and `scripts/build-fallback.mjs` says
+how at length.
 
 `next/styles/globals.css` imports the tokens, the article layer and
 Tailwind in that order, and the root layout imports it. Next emits
@@ -105,12 +126,17 @@ hand-written stylesheet for `404.html` and `offline.html`, which
 cannot use a hashed asset. It carries the tokens and the type, and
 nothing else. `sw.js` precaches that instead of the two big ones.
 
-| moves | to |
+| moved | to |
 | --- | --- |
-| `aab/src/styles/tailwind.css` | `next/styles/globals.css` |
-| the `@layer tokens` block | `next/styles/tokens.css` |
-| the `@layer article` block | `next/styles/article.css` |
-| the rest of `aab/styles.css` | `next/styles/`, split by layer |
+| `aab/styles.css` | `next/styles/site.css` |
+| `aab/src/styles/tailwind.css` | `next/styles/tailwind.css` |
+| the two `<link>` tags | one `@import` list in `next/styles/globals.css` |
+| `aab/tailwind.css`, built and committed | nothing: Next compiles it |
+
+Splitting `site.css` into a file per layer is worth doing and is
+not this stage. It is 10,449 lines in one file and it was 10,449
+lines in one file before it moved; doing both at once would have
+made the move unreviewable.
 
 ### Stage B. The browser modules
 

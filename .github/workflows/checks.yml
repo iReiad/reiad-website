@@ -122,7 +122,7 @@ jobs:
       - name: Check the generated files match their sources
         run: |
           node scripts/build-modules.mjs --check
-          node scripts/build-styles.mjs --check
+          node scripts/build-fallback.mjs --check
           node scripts/build-school-icons.mjs --check
           # The course catalogue is generated too, and its source is a
           # Drive folder nothing in CI can reach. The committed crawl in

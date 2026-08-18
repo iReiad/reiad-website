@@ -52,7 +52,7 @@ const STAGES = [
   ]],
   ["generated", [
     ["scripts/build-modules.mjs", "--check"],
-    ["scripts/build-styles.mjs", "--check"],
+    ["scripts/build-fallback.mjs", "--check"],
     ["scripts/build-school-icons.mjs", "--check"],
     ["scripts/import-courses.mjs", "--crawl", "scripts/fixtures/course-crawl", "--check"],
   ]],

@@ -31,6 +31,18 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v123: The stylesheet is Next's. `/styles.css` and
+        `/tailwind.css` are not served any more: every route links
+        a hashed stylesheet Next emits, which no service worker
+        can precache by name and none needs to, because the
+        runtime cache picks it up on the first visit.
+
+        `404.html` and `offline.html` cannot link a hashed name
+        and are the two pages that must answer when nothing else
+        does, so they link `/fallback.css`, which is the same
+        stylesheet with its comments removed and is precached in
+        place of the two.
+
    v122: Seven rules that style nothing on this site are gone,
         and `check-css.js` counts them now so no eighth arrives
         quietly. `.card-sub`, `.news-meta`, `.palette-panel`,
@@ -1259,7 +1271,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v122";
+const VERSION = "v123";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -1272,13 +1284,21 @@ const RUNTIME = `runtime-${VERSION}`;
    picks up the ones a reader actually opens. */
 const PRECACHE = [
   "/offline.html",
-  "/styles.css",
-  /* The second stylesheet, archive/TRANSITION.md Stage 14. Small (about
-     1.7 KB gzipped against 72 for styles.css) and precached
-     beside it for the same reason: a page that comes back offline
-     with one of its two stylesheets missing is a page that looks
-     broken rather than plain. */
-  "/tailwind.css",
+  /* The stylesheet, for the two pages that are files.
+
+     It was `/styles.css` and `/tailwind.css` here, and both are
+     gone: the stylesheet is `next/styles/` now and Next emits it
+     under a content hash, which a service worker cannot precache
+     because it cannot know the name. Every route links the hashed
+     one and the runtime cache picks it up on the first visit,
+     which is what stale-while-revalidate is for.
+
+     `404.html` and `offline.html` cannot link a hashed name, and
+     they are exactly the pages that have to answer when nothing
+     else does, so they link this: the same stylesheet with its
+     comments taken out, written by `scripts/build-fallback.mjs`.
+     248 KB against the 416 they were loading. */
+  "/fallback.css",
   "/app.js",
   "/content.js",
   "/api.js",
