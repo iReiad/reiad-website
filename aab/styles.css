@@ -5353,7 +5353,7 @@ German for day, and .tag is what the site has always called
      The single most important object in the course: the shape,
      alone, before any explanation of it. It is deliberately the
      loudest thing on a lesson page. */
-  .muster {
+  body.deutsch .muster {
     border: 1px solid var(--green); border-radius: var(--radius);
     background: var(--green-soft); padding: 20px 22px;
     margin-block: 26px;
@@ -5377,7 +5377,7 @@ German for day, and .tag is what the site has always called
   }
 
   /* ---------- German line beside its meaning ---------- */
-  .satz-list {
+  body.deutsch .satz-list {
     display: grid; gap: var(--s-1); margin-block: 14px 20px;
 
     & .satz {
@@ -5391,7 +5391,7 @@ German for day, and .tag is what the site has always called
     & .satz span { color: var(--ink-soft); }
   }
   @media (width <= 560px) {
-    .satz-list .satz { grid-template-columns: 1fr; gap: var(--s-1); }
+    body.deutsch .satz-list .satz { grid-template-columns: 1fr; gap: var(--s-1); }
   }
   /* the English-bridge list on the first page is short pairs, so
      it can run several to a row instead of one per line */
@@ -5429,7 +5429,7 @@ German for day, and .tag is what the site has always called
     display: grid; gap: var(--gap); margin-block: 20px 26px;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
   }
-  .hut-spalte {
+  body.deutsch .hut-spalte {
     border: 1px solid var(--hairline); border-top-width: 3px;
     border-radius: var(--radius-sm); background: var(--panel); padding: 14px 16px;
 
@@ -5441,9 +5441,9 @@ German for day, and .tag is what the site has always called
     & li { margin: 0; max-width: none; font-size: var(--t-5); }
     & li span { color: var(--ink-soft); font-size: var(--t-4); }
   }
-  .hut-spalte[data-hut="der"] { border-top-color: var(--hut-der); & .hut-kopf { color: var(--hut-der); } }
-  .hut-spalte[data-hut="die"] { border-top-color: var(--hut-die); & .hut-kopf { color: var(--hut-die); } }
-  .hut-spalte[data-hut="das"] { border-top-color: var(--hut-das); & .hut-kopf { color: var(--hut-das); } }
+  body.deutsch .hut-spalte[data-hut="der"] { border-top-color: var(--hut-der); & .hut-kopf { color: var(--hut-der); } }
+  body.deutsch .hut-spalte[data-hut="die"] { border-top-color: var(--hut-die); & .hut-kopf { color: var(--hut-die); } }
+  body.deutsch .hut-spalte[data-hut="das"] { border-top-color: var(--hut-das); & .hut-kopf { color: var(--hut-das); } }
 
   /* Stufe 2 and 3 collect Partizip pairs and the three verb forms
      rather than hats, so their columns take the site's own accent.
@@ -5451,7 +5451,7 @@ German for day, and .tag is what the site has always called
      those mean der, die and das everywhere else in this school,
      and a green column headed "haben" would be teaching a gender
      that does not exist. */
-  .hut-spalte:not([data-hut="der"], [data-hut="die"], [data-hut="das"]) {
+  body.deutsch .hut-spalte:not([data-hut="der"], body.deutsch [data-hut="die"], body.deutsch [data-hut="das"]) {
     border-top-color: var(--green);
     & .hut-kopf { color: var(--green); }
   }
@@ -5481,12 +5481,12 @@ German for day, and .tag is what the site has always called
      THE PRACTICE BOOK
      ============================================================ */
 
-  .buch-warnung {
+  body.deutsch .buch-warnung {
     margin-top: 14px; max-width: var(--measure);
     color: var(--ink-soft); font-size: var(--t-5);
   }
 
-  .buch-fortschritt {
+  body.deutsch .buch-fortschritt {
     display: flex; align-items: center; gap: var(--s-6); flex-wrap: wrap;
     margin-block: 20px;
 
@@ -5525,7 +5525,7 @@ German for day, and .tag is what the site has always called
     & .tracker { max-width: none; }
   }
 
-  .tracker {
+  body.deutsch .tracker {
     display: grid; gap: 5px; margin-top: 14px;
     grid-template-columns: repeat(auto-fit, minmax(34px, 1fr));
 
@@ -5544,7 +5544,7 @@ German for day, and .tag is what the site has always called
   }
 
   /* ---------- the sound key, folded away ---------- */
-  .laut-gitter {
+  body.deutsch .laut-gitter {
     display: grid; gap: var(--s-3); margin-top: 14px;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
 
@@ -5558,7 +5558,7 @@ German for day, and .tag is what the site has always called
   }
 
   /* ---------- the noun collection ---------- */
-  .hut-sammlung {
+  body.deutsch .hut-sammlung {
     display: grid; gap: var(--gap); margin-top: 16px;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
 
@@ -5596,21 +5596,21 @@ German for day, and .tag is what the site has always called
   }
 
   /* ---------- one day ---------- */
-  .buch-tag {
+  body.deutsch .buch-tag {
     border: 1px solid var(--hairline); border-radius: var(--radius);
     background: var(--panel); padding: clamp(18px, 3vw, 30px);
     margin-bottom: var(--gap);
   }
-  .tag-kopf {
+  body.deutsch .tag-kopf {
     border-bottom: 1px solid var(--hairline); padding-bottom: 14px; margin-bottom: 18px;
 
     & .tag-num { color: var(--gold); font-size: var(--t-2); letter-spacing: 0.08em; }
     & h2 { font-size: clamp(1.2rem, 3vw, 1.5rem); margin: 6px 0 4px; }
     & .tag-bn { color: var(--ink-soft); margin: 0; }
   }
-  .buch-tag .muster { margin-top: 0; }
+  body.deutsch .buch-tag .muster { margin-top: 0; }
 
-  .tag-teil {
+  body.deutsch .tag-teil {
     margin-top: 26px;
 
     & h3 {
@@ -5618,17 +5618,17 @@ German for day, and .tag is what the site has always called
       color: var(--green); margin-bottom: 10px;
     }
   }
-  .tag-hinweis { color: var(--ink-soft); font-size: var(--t-4); margin-top: 10px; }
+  body.deutsch .tag-hinweis { color: var(--ink-soft); font-size: var(--t-4); margin-top: 10px; }
 
   /* the eight boxes you fill in yourself */
-  .felder {
+  body.deutsch .felder {
     display: grid; gap: var(--s-4);
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   }
-  .feld, .sag-zeile {
+  body.deutsch .feld, body.deutsch .sag-zeile {
     display: grid; grid-template-columns: 26px 1fr; gap: var(--s-4); align-items: start;
   }
-  .feld-num { color: var(--gold); font-size: var(--t-3); padding-top: 9px; }
+  body.deutsch .feld-num { color: var(--gold); font-size: var(--t-3); padding-top: 9px; }
 
   /* resize/overflow are deliberately the no-JavaScript values.
      arbeitsbuch.js sets overflow:hidden on the boxes it takes over
@@ -5636,14 +5636,14 @@ German for day, and .tag is what the site has always called
      resizable, scrollable textareas. They used to ship as
      rows="1" with overflow:hidden, which, with scripts off, is a
      one-line box you can type into and never read back. */
-  .buch-tag textarea[data-schrift] {
+  body.deutsch .buch-tag textarea[data-schrift] {
     width: 100%; resize: vertical; overflow: auto;
     border: 0; border-bottom: 1px solid var(--hairline);
     background: transparent; color: var(--ink);
     font-family: var(--font-sans); font-size: var(--t-5); line-height: 1.8;
     padding: 6px 2px;
   }
-  .buch-tag textarea[data-schrift]:focus-visible {
+  body.deutsch .buch-tag textarea[data-schrift]:focus-visible {
     /* A ring, not just a colour.
 
        This was `outline: none` with a green underline and a
@@ -5661,34 +5661,34 @@ German for day, and .tag is what the site has always called
     border-bottom-color: var(--accent);
     background: var(--accent-soft);
   }
-  .buch-tag textarea[data-schrift]::placeholder { color: var(--ink-soft); opacity: 0.55; }
+  body.deutsch .buch-tag textarea[data-schrift]::placeholder { color: var(--ink-soft); opacity: 0.55; }
 
   /* the six to translate, with the answer hidden until asked for */
-  .sag-liste { display: grid; gap: var(--s-6); }
-  .sag-zeile { grid-template-columns: 26px 1fr; }
-  .sag-frage { grid-column: 2; font-size: var(--t-5); }
-  .sag-zeile textarea { grid-column: 2; }
-  .sag-antwort {
+  body.deutsch .sag-liste { display: grid; gap: var(--s-6); }
+  body.deutsch .sag-zeile { grid-template-columns: 26px 1fr; }
+  body.deutsch .sag-frage { grid-column: 2; font-size: var(--t-5); }
+  body.deutsch .sag-zeile textarea { grid-column: 2; }
+  body.deutsch .sag-antwort {
     grid-column: 2; display: none;
     color: var(--green); font-size: var(--t-5); padding-top: 2px;
   }
-  .buch-tag[data-antworten] .sag-antwort { display: block; }
-  .antwort-schalter { margin-top: 14px; }
+  body.deutsch .buch-tag[data-antworten] .sag-antwort { display: block; }
+  body.deutsch .antwort-schalter { margin-top: 14px; }
 
-  .herz-aufgabe { margin-bottom: 2px; }
-  .herz-en { color: var(--ink-soft); font-size: var(--t-3); margin-bottom: 10px; }
-  .herzen textarea[data-schrift] {
+  body.deutsch .herz-aufgabe { margin-bottom: 2px; }
+  body.deutsch .herz-en { color: var(--ink-soft); font-size: var(--t-3); margin-bottom: 10px; }
+  body.deutsch .herzen textarea[data-schrift] {
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
     padding: 10px 12px; min-height: 96px; resize: vertical; overflow: auto;
   }
 
-  .tag-fuss {
+  body.deutsch .tag-fuss {
     display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
     margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--hairline);
 
     & .tag-fuss-note { color: var(--ink-soft); font-size: var(--t-2); }
   }
-  .tag-fertig[aria-pressed="true"] { color: var(--green); border-color: var(--green); }
+  body.deutsch .tag-fertig[aria-pressed="true"] { color: var(--green); border-color: var(--green); }
 
   /* Printing the book should give you the book, not one day of it
      and a navigation bar.
@@ -5705,7 +5705,7 @@ German for day, and .tag is what the site has always called
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .buch-fortschritt .track i { transition: none; }
+    body.deutsch .buch-fortschritt .track i { transition: none; }
   }
 }
 

@@ -108,7 +108,17 @@ So the target is JSX and route markup, not the whole stylesheet.
 **Nothing new is built as a hand-written or string-generated page.** A page
 is a Next.js route; a piece of interface is a component. See CLAUDE.md.
 
-**Left:** the four practice books, generated as template literals by
+**In flight:** the German book is a route (`arbeitsbuch.html`), sharing
+`components/workbook.tsx` with a data shape that already covers both schools.
+
+**The English book is blocked on a decision, not on work.** The two books are
+the same page structurally and two different designs visually: German uses
+`buch-tag`, `tag-teil`, `muster` in `@layer deutsch`; English uses `wb-day`,
+`wb-block`, `wb-field` in `@layer english`. One component cannot serve both
+until somebody decides they should look the same. Unifying them is a
+redesign and wants saying out loud rather than doing halfway through a port.
+
+**Left:** the English book, generated as a template literal by
 `aab/deutsch/build-deutsch.mjs` and `aab/english/build-english.mjs`. They
 are the last real pages on the old method, and being on it is why they
 carry `.slimbar` and lose the rail. Porting them to routes gives them the

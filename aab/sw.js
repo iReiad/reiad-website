@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v101: The German practice book is a route. /styles.css anchors
+        37 of @layer deutsch's selectors with body.deutsch, which
+        they always should have been: they were safe only while
+        nothing outside aab/deutsch/ used those class names, and a
+        shared component does.
+
    v100: Glass everywhere, and it follows the accent. --panel and
         --hairline are a mix now rather than flat colours, so all
         75 surfaces and all 269 borders carry a trace of the
@@ -964,7 +970,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v100";
+const VERSION = "v101";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
