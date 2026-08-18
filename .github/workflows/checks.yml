@@ -93,6 +93,7 @@ jobs:
           node scripts/check-contrast.mjs
           node scripts/check-scale.mjs
           node scripts/check-next.mjs
+          node scripts/check-courses.mjs
 
       # Generated files are committed here, so a build is not run:
       # what matters is that what was committed still matches its
@@ -104,6 +105,12 @@ jobs:
           node scripts/build-modules.mjs --check
           node scripts/build-styles.mjs --check
           node scripts/build-school-icons.mjs --check
+          # The course catalogue is generated too, and its source is a
+          # Drive folder nothing in CI can reach. The committed crawl in
+          # scripts/fixtures/ is what makes it reproducible here: without
+          # this step, shared/courses.data.json is the one generated file
+          # in the repository that nobody could regenerate.
+          node scripts/import-courses.mjs --crawl scripts/fixtures/course-crawl --check
 
       # The tests, which had never run here at all. Fourteen files
       # and about 1,200 checks, none of which needs a network, a
@@ -136,6 +143,7 @@ jobs:
           node aab/schools/progress.test.mjs
           node next/progress.test.mjs
           node aab/schools/hub.test.mjs
+          node aab/courses.test.mjs
           node aab/portfolio/stress.test.mjs
           node aab/portfolio/scorecard.test.mjs
           node aab/portfolio/frontier.test.mjs

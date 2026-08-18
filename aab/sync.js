@@ -96,6 +96,19 @@ const KEYS = {
     "deutsch-checks": ["set", "deutsch:progress"],
     "english-checks": ["set", "english:progress"],
     "quran-checks": ["set", "quran:progress"],
+    /* The third-party course section, /skills/courses/. A `set` of
+       `<course>/<module>/<lesson>` and a bookmark, exactly like a
+       school's, because a tick is a tick whoever wrote the lesson.
+  
+       It is here rather than left to the browser alone even though
+       the whole section is admin-only and therefore always signed
+       in: that is the reason it belongs here, not a reason to skip
+       it. A reader who ticks forty lessons on a laptop and opens
+       the course on a phone is the case this table exists for, and
+       an admin has more devices than anybody. See
+       `aab/src/courses.ts`. */
+    "courses-read": ["set", "courses:progress"],
+    "courses-last": ["mark", "courses:progress"],
     /* Which days this person turned up, from streak.js. A set for
        the obvious reason: a phone on the bus and a laptop at a desk
        are the same Tuesday, and either one alone under-counts. */

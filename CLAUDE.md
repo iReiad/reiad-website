@@ -456,6 +456,10 @@ node scripts/check-schools.mjs # a ladder the browser and the builders disagree 
 node scripts/check-rows.mjs # a description of the database that has stopped
                             # being true, or a handler keeping its own copy
                             # of a vocabulary
+node scripts/check-courses.mjs # a Drive id that is not one, the private course
+                            # catalogue leaking into a public bundle, or the
+                            # Worker and the browser disagreeing about where
+                            # a lesson lives
 node scripts/check-api.mjs  # the browser asking for an endpoint the Worker
                             # stopped routing, which breaks nothing and
                             # quietly switches a feature off
@@ -498,6 +502,10 @@ node next/progress.test.mjs         # a page that costs a reader their ticks jus
 node aab/schools/progress.test.mjs  # a school's ticks filed under a key that is
                                    # not the one in somebody's browser, and the
                                    # three schools' shared engine (119 checks)
+node aab/courses.test.mjs          # the third-party course player: the sidebar, the
+                                   # ticks, the per-module bars, mark-complete-and-
+                                   # continue, the deep link, and the timers it must
+                                   # never grow (74 checks, needs linkedom)
 node aab/schools/hub.test.mjs      # a school hub that renders and is not finished:
                                    # the ladder, the ring, the bar and the resume
                                    # card, built against the markup the route
@@ -914,6 +922,86 @@ of "What a reader has read" is the whole reason: renaming a key
 does not move somebody's ticks, it loses them. `next/lib/progress.ts`
 maps the school `money` on to the key `learn-read` deliberately,
 and says so where it does it.
+
+## Third-party courses, which are nobody's to publish
+
+`/skills/courses/`, and it is the one section of this site that
+breaks the rule every other section follows. Everywhere else **the
+ladder is the server's**: the route reads the rows and renders
+them, and a crawler is welcome to the result. Here the server
+renders nothing.
+
+The reason is what the content is. These are not lessons written
+here. They are one person's own copy of a bought course, sitting
+in a private Google Drive folder, and this repository holds a
+CATALOGUE of it and not a byte of the material: which courses,
+which modules, which lessons, and the Drive id behind each one.
+Publishing that catalogue would be redistributing somebody else's
+course, so the pages are empty and the catalogue is behind
+`isAdmin()`.
+
+| | |
+| --- | --- |
+| `shared/courses.data.json` | the catalogue. **Generated.** |
+| `scripts/import-courses.mjs` | what generates it, out of Drive |
+| `shared/courses.ts` | the types, the counts and every address |
+| `functions/api/courses/` | the only thing that ever sends it |
+| `aab/src/courses.ts` | the browser's half: all four pages |
+| `next/app/(site)/skills/courses/` | four shells with nothing in them |
+
+**Do not import the value half of `shared/courses.ts` from
+anything under `next/`.** A page that did would put the whole
+catalogue into a JavaScript bundle anybody can fetch, and the page
+would look identical. `import type` is fine and is erased before
+bundling. `check-courses.mjs` fails on the other kind.
+
+**The catalogue is generated and must stay generated.** It is a
+list of things that exist elsewhere, which is the rule at the top
+of this file: a hand-edited copy is right on the day it is typed
+and wrong the first time the Drive folder changes. Refresh it
+with a Drive OAuth token, which a private file needs and an API
+key will not do:
+
+```sh
+node scripts/import-courses.mjs --drive <folderId> --token ya29....
+node scripts/import-courses.mjs --check          # has it drifted
+```
+
+**The Drive player has no events, and nothing here pretends
+otherwise.** A lesson's video is a `https://drive.google.com/file/d/<id>/preview`
+iframe. That player exposes no play, no pause, no ended and no
+useful `postMessage`, so there is no timer, no watch-percentage
+and no heuristic anywhere in `courses.ts`: a lesson is complete
+when the reader presses "Mark complete & continue", and the last
+lesson of a module goes to the module summary rather than into
+the next module. `aab/courses.test.mjs` asserts the absence as
+well as the presence, because the tempting bug here is a timer
+that marks a lesson done for somebody who opened it and left.
+
+**One line of CSP, and it is `frame-src`.** `default-src 'self'`
+refuses the Drive iframe, and `check-csp.mjs` cannot see it: that
+check is about `connect-src` and an iframe is not a fetch. So
+`frame-src https://drive.google.com` is in `aab/_headers` and in
+`shared/headers.ts`, and `check-headers.mjs` holds the two to
+agreeing. `frame-ancestors` is unchanged and still `'none'`:
+this site frames Drive, and nothing frames this site.
+
+**Progress is a tick like any other.** `courses-read` and
+`courses-last`, a set of `<course>/<module>/<lesson>` ids and a
+bookmark, in `aab/sync.js` beside the six schools' keys and
+carried to `public.progress` in Supabase under the same row-level
+security. The section needs an account anyway, which is the
+argument FOR putting the keys in that table rather than against
+it: one person with an admin account has more devices than
+anybody.
+
+**Nothing in the rail or the footer links to it.** `unlisted` in
+`next/lib/nav.ts` is that flag, and it exists so the menu can
+still be said once: the entry is in the one table like everything
+else, the two menus skip it, and `/skills/index.html` gives it a
+card of its own under a heading that says it is not published. A
+link in the footer to a page that answers 403 is a promise the
+site cannot keep.
 
 ## The live portfolio, and who is an admin
 

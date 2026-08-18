@@ -31,6 +31,22 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v93: The third-party course section landed at /skills/courses/.
+        /styles.css grew `@layer courses`, the two-column shape
+        and the rail that section draws, and /sync.js grew two
+        keys, `courses-read` and `courses-last`, so a tick made
+        on a laptop reaches the phone. A visitor holding the v92
+        copy of sync.js would go on ticking lessons that never
+        left the browser, which is the silent half of this bump
+        and the reason it is not optional.
+
+        /courses.js is NOT in PRECACHE, on the same grounds as
+        /tools/live.js at v90: it is useless without the network,
+        because everything it draws comes from /api/courses and
+        every video it plays comes from Drive. Precaching it would
+        put an admin-only module on every visitor's disk to do
+        nothing.
+
    v92: The front door became a deck, and every button became a
         pill. /styles.css: the door's one-screen layout gave way
         to a deck of accent-washed tiles that grows downwards,
@@ -893,7 +909,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v92";
+const VERSION = "v93";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

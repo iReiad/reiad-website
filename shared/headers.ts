@@ -43,6 +43,12 @@ export const SECURITY_HEADERS = {
     + "img-src 'self' data:; "
     + "connect-src 'self' https://api.web3forms.com "
     + "https://market-pulse.i-reiad.workers.dev https://wvjarqnnmkkuxyrndtya.supabase.co; "
+    /* The one thing this site frames: a Drive video on
+       /skills/courses/. Without it `default-src 'self'` refuses
+       the iframe and the lesson page shows an empty box. It is
+       not `frame-ancestors`, three lines down, which is the
+       opposite direction and still 'none'. */
+    + "frame-src https://drive.google.com; "
     + "form-action 'self' https://api.web3forms.com; "
     + "frame-ancestors 'none'; "
     + "base-uri 'self'; "

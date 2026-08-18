@@ -57,6 +57,10 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://reiad.co.uk/tools/live.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://reiad.co.uk/insights.html</loc>
     <priority>0.8</priority>
   </url>

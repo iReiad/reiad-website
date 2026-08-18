@@ -1,0 +1,836 @@
+{
+  "root": "1dyYLbVa2lS9o7oRAEZOpQgZMpUtd15La",
+  "source": "Google Drive",
+  "courses": [
+    {
+      "slug": "foundations-data-data-everywhere",
+      "n": 1,
+      "title": "Foundations Data, Data, Everywhere",
+      "drive": "1ngzqQutRTWiz2XA7ETQt5OHFADTm7mmw",
+      "modules": [
+        {
+          "slug": "introducing-data-analytics",
+          "n": 1,
+          "title": "Introducing data analytics",
+          "drive": "10i2RlQN6emD26ixRsOKYLVFMLYVLNhnP",
+          "lessons": [
+            {
+              "slug": "glossary-terms-and-definitions",
+              "title": "Glossary terms and definitions",
+              "kind": "reading",
+              "reading": "1mmbIVShN3CNqqxiv9rR45VdFMv4Arhfq",
+              "files": [
+                {
+                  "name": "Course 1 Week 1 Glossary: DA terms and definitions",
+                  "ext": "docx",
+                  "drive": "1dFgRUVBJKZYn3lbL86V7erQlF4IjnreY"
+                }
+              ],
+              "section": "Weekly challenge 1",
+              "position": 1
+            },
+            {
+              "slug": "weekly-challenge-1",
+              "title": "Weekly challenge 1",
+              "kind": "exam",
+              "exam": "174VbDjYVBa7EmdcAdDZdLxfJdS_LnkWQ",
+              "section": "Weekly challenge 1",
+              "position": 2
+            }
+          ]
+        },
+        {
+          "slug": "all-about-analytical-thinking",
+          "n": 2,
+          "title": "All about analytical thinking",
+          "drive": "1qPx4iuo9dedZOkeKWzAF4YCkeUI6ylhw",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "the-wonderful-world-of-data",
+          "n": 3,
+          "title": "The wonderful world of data",
+          "drive": "1z_-VZuxZeSLOQwmyFoikR8qqzcGjros3",
+          "lessons": [
+            {
+              "slug": "learning-about-data-phases-and-tools",
+              "title": "Learning about data phases and tools",
+              "kind": "video",
+              "video": "1WthtR_B4Bo8a3ZVl5_0nNKgxNZGwhlhE",
+              "transcript": "1TTKpx--KF5FOp147-lhw2R-Koombm06i",
+              "section": "Follow the data life cycle",
+              "position": 1
+            },
+            {
+              "slug": "stages-of-the-data-life-cycle",
+              "title": "Stages of the data life cycle",
+              "kind": "video",
+              "video": "1LSPFbEf71ONZXYhJb3B7SW9YPvXinSh1",
+              "transcript": "1TUJqu2gDgJHq29Kpyxyw6CIf0OGrbr7r",
+              "section": "Follow the data life cycle",
+              "position": 2
+            },
+            {
+              "slug": "variations-of-the-data-life-cycle",
+              "title": "Variations of the data life cycle",
+              "kind": "reading",
+              "reading": "1e8mHknvDqeoaMeL3O6pGaAqP1H74ObGU",
+              "section": "Follow the data life cycle",
+              "position": 3
+            },
+            {
+              "slug": "self-reflection-collecting-data",
+              "title": "Self reflection collecting data",
+              "kind": "quiz",
+              "quiz": "1e6zJSz1nCw4Fvhb1gY-xFbKXDBkpTwIa",
+              "section": "Follow the data life cycle",
+              "position": 4
+            },
+            {
+              "slug": "test-your-knowledge-on-the-data-life-cycle",
+              "title": "Test your knowledge on the data life cycle",
+              "kind": "quiz",
+              "quiz": "1TKMGad5HLcdy1xJJFQC-pH-KRzsmF3gO",
+              "section": "Follow the data life cycle",
+              "position": 5
+            }
+          ]
+        },
+        {
+          "slug": "set-up-your-toolbox",
+          "n": 4,
+          "title": "Set up your toolbox",
+          "drive": "1ublLhPELqiR5uh7HaLuanfQ4HeXp6YoV",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "endless-career-possibilities",
+          "n": 5,
+          "title": "Endless career possibilities",
+          "drive": "1G3z2p4CioLS8mbSlbOG0wnia5vlC71eU",
+          "lessons": [
+            {
+              "slug": "the-power-of-data-in-business",
+              "title": "The power of data in business",
+              "kind": "video",
+              "video": "13OMoQtaFti0Sqaw4RmBQT0niFUE8sBwE",
+              "transcript": "13K-gcZSwuyyz0XpdQiDELkFbHvvLpYYh",
+              "section": "The importance of fair business decisions",
+              "position": 1
+            },
+            {
+              "slug": "rachel-data-detectives",
+              "title": "Rachel data detectives",
+              "kind": "video",
+              "video": "14_ez_0F23GfgTaAuPbSaAwVqUoJfEUJD",
+              "transcript": "162T8wmx3EArs2gl85Rt8WMaGJcmh-nY8",
+              "section": "The importance of fair business decisions",
+              "position": 2
+            },
+            {
+              "slug": "understanding-data-and-fairness",
+              "title": "Understanding data and fairness",
+              "kind": "video",
+              "video": "1KC10Cvqj0mAtyDNlhis9ywru7jXAMDXi",
+              "transcript": "1ROxhIC8kHCdZ1ywQ-8E5ek1zImnj94_g",
+              "section": "The importance of fair business decisions",
+              "position": 3
+            },
+            {
+              "slug": "self-reflection-business-cases",
+              "title": "Self reflection business cases",
+              "kind": "quiz",
+              "quiz": "1wSsF4rzsbe-uO-XtlNSIvP_M_-YLAVQh",
+              "section": "The importance of fair business decisions",
+              "position": 4
+            },
+            {
+              "slug": "alex-fair-and-ethical-data-decisions",
+              "title": "Alex fair and ethical data decisions",
+              "kind": "video",
+              "video": "1UFqinnxAPckdTUP2kbcdfXeQa3Q7eu3X",
+              "transcript": "1b15FROkvFFH7fZ4MrHDO2qxrNScgkdF0",
+              "section": "The importance of fair business decisions",
+              "position": 5
+            },
+            {
+              "slug": "test-your-knowledge-on-making-fair-business-decisions",
+              "title": "Test your knowledge on making fair business decisions",
+              "kind": "quiz",
+              "quiz": "1BWI41fl6wCg8LZFmYMw0KZzCfJijZlzE",
+              "section": "The importance of fair business decisions",
+              "position": 6
+            }
+          ]
+        },
+        {
+          "slug": "Resources",
+          "n": 6,
+          "title": "Resources",
+          "drive": "1nGJUt_3Rf7-mNGv0pD3sR18BsM0p7ZDn",
+          "lessons": [],
+          "pending": true
+        }
+      ]
+    },
+    {
+      "slug": "ask-questions-to-make-data-driven-decisions",
+      "n": 2,
+      "title": "Ask Questions to Make Data-Driven Decisions",
+      "drive": "1mXJwQ-UeM9_kc2XACX17O1HnfAzxNVSR",
+      "modules": [
+        {
+          "slug": "effective-questions",
+          "n": 1,
+          "title": "Effective questions",
+          "drive": "1dCfEcVoVaKEvzPhpMGDVx73ntVlDVlGJ",
+          "lessons": [
+            {
+              "slug": "smart-questions",
+              "title": "Smart questions",
+              "kind": "video",
+              "video": "131yyQLf1WqBoniXVpdjb0jQL_TA_zgnt",
+              "transcript": "1qa30F1f-6R5_5JRGc9scwOHXTpC6Fz3W",
+              "section": "Craft effective questions",
+              "position": 1
+            },
+            {
+              "slug": "more-about-smart-questions",
+              "title": "More about smart questions",
+              "kind": "reading",
+              "reading": "1BjC8fGgbIxzmZSzR8_WYLq4IZGWdXS_-",
+              "section": "Craft effective questions",
+              "position": 2
+            },
+            {
+              "slug": "self-reflection-data-analyst-scenarios",
+              "title": "Self reflection data analyst scenarios",
+              "kind": "quiz",
+              "quiz": "1wmSTg9aTKhp5Rk57s5KrNw0rAycEXmZ8",
+              "section": "Craft effective questions",
+              "position": 3
+            },
+            {
+              "slug": "evan-data-opens-doors",
+              "title": "Evan data opens doors",
+              "kind": "video",
+              "video": "1O_fzcK_Mt42gr9x5ixiBgjVprh2onsjv",
+              "transcript": "1bigSLoIsOu-hM0-rZ0L7Fit5bu5mF4J-",
+              "section": "Craft effective questions",
+              "position": 4
+            },
+            {
+              "slug": "self-reflection-ask-your-own-smart-questions",
+              "title": "Self reflection ask your own smart questions",
+              "kind": "quiz",
+              "quiz": "1XRkYry9Zcgku_Kkzrv1K9FxGCtqJ7DuN",
+              "section": "Craft effective questions",
+              "position": 5
+            },
+            {
+              "slug": "test-your-knowledge-on-crafting-effective-questions",
+              "title": "Test your knowledge on crafting effective questions",
+              "kind": "quiz",
+              "quiz": "13sRsQsx307V8AtcQb0KjISxRwFt61hjv",
+              "section": "Craft effective questions",
+              "position": 6
+            }
+          ]
+        },
+        {
+          "slug": "data-driven-decisions",
+          "n": 2,
+          "title": "Data driven decisions",
+          "drive": "1hJ_xSnEom5HzFJkExJnjxzNMpkRnoP5P",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "more-spreadsheet-basics",
+          "n": 3,
+          "title": "More spreadsheet basics",
+          "drive": "1d3qA-8BN24a7Po-QaXR72rbGnCRLKcgu",
+          "lessons": [
+            {
+              "slug": "the-amazing-spreadsheet",
+              "title": "The amazing spreadsheet",
+              "kind": "video",
+              "video": "1tsljiaxYhaYv9jd76e8DnoXVe4FBVWg-",
+              "transcript": "1wg5ry6BA7qVvcqmATm0uuITvPVr3qSWo",
+              "section": "Working with spreadsheets",
+              "position": 1
+            },
+            {
+              "slug": "get-to-work-with-spreadsheets",
+              "title": "Get to work with spreadsheets",
+              "kind": "video",
+              "video": "1uzep6jm-jspQfMAMpmejGnQBOHII7Jtz",
+              "transcript": "19A1-CFyfzF8SWEJJVHJ6xWrM_hYA4h-O",
+              "section": "Working with spreadsheets",
+              "position": 2
+            },
+            {
+              "slug": "spreadsheets-and-the-data-life-cycle",
+              "title": "Spreadsheets and the data life cycle",
+              "kind": "reading",
+              "reading": "1egLboIffektBwUg4ga-dRJFJA4sko8Vl",
+              "section": "Working with spreadsheets",
+              "position": 3
+            },
+            {
+              "slug": "hands-on-activity-introduction-to-google-sheets",
+              "title": "Hands on activity introduction to Google sheets",
+              "kind": "quiz",
+              "quiz": "1XRlaM4WF8DndtkUWA3nQydFVdDCy5P5O",
+              "section": "Working with spreadsheets",
+              "position": 4
+            },
+            {
+              "slug": "step-by-step-in-spreadsheets",
+              "title": "Step by step in spreadsheets",
+              "kind": "video",
+              "video": "1YtireXEg4CFG51xJiMWGBEL9Sejz3oXJ",
+              "transcript": "1b75k4IOUD-94vZybSdaUT401SCh2k2VN",
+              "section": "Working with spreadsheets",
+              "position": 5
+            },
+            {
+              "slug": "learn-more-about-spreadsheet-basics",
+              "title": "Learn more about spreadsheet basics",
+              "kind": "reading",
+              "reading": "1yJdpk39RPWpcsrOsnCvkXsl0I3yCC_Yd",
+              "section": "Working with spreadsheets",
+              "position": 6
+            },
+            {
+              "slug": "test-your-knowledge-on-working-with-spreadsheets",
+              "title": "Test your knowledge on working with spreadsheets",
+              "kind": "quiz",
+              "quiz": "1fij80Yp3IhfNSXuXJfMSodFLGMvDs-Ac",
+              "section": "Working with spreadsheets",
+              "position": 7
+            }
+          ]
+        },
+        {
+          "slug": "always-remember-the-stakeholder",
+          "n": 4,
+          "title": "Always remember the stakeholder",
+          "drive": "1pOJ6uOJ2U3JUQKJ7klgRjjSxzzIJwCuy",
+          "lessons": [
+            {
+              "slug": "communicating-with-your-team",
+              "title": "Communicating with your team",
+              "kind": "video",
+              "video": "18Rj8b_x6kyKUVu90hXAA2XTIw4-fa1P5",
+              "transcript": "1PySQFRth5YleI3QS8KYkZ8GGee3z1LwJ",
+              "section": "Balance team and stakeholder needs",
+              "position": 1
+            },
+            {
+              "slug": "balancing-needs-and-expectations-across-your-team",
+              "title": "Balancing needs and expectations across your team",
+              "kind": "video",
+              "video": "1Cb821oF_UlySyxy8MtD5lqQ7r6F3FqZd",
+              "transcript": "18uc6u9fu0tlBXkmOcFbnmofAIrrUCw0b",
+              "section": "Balance team and stakeholder needs",
+              "position": 2
+            },
+            {
+              "slug": "working-with-stakeholders",
+              "title": "Working with stakeholders",
+              "kind": "reading",
+              "reading": "11TNTkZdGTstGiQ6iPXT5j20zhoRJAf7q",
+              "section": "Balance team and stakeholder needs",
+              "position": 3
+            },
+            {
+              "slug": "focus-on-what-matters",
+              "title": "Focus on what matters",
+              "kind": "video",
+              "video": "1AHqBLLYYQU_vM4MH3M2G_JZWZ0hNkByU",
+              "transcript": "1-2aLw1venFwbCI6Muv6L8HlGPFsZcH6Q",
+              "section": "Balance team and stakeholder needs",
+              "position": 4
+            },
+            {
+              "slug": "test-your-knowledge-on-balancing-team-and-stakeholder-needs",
+              "title": "Test your knowledge on balancing team and stakeholder needs",
+              "kind": "quiz",
+              "quiz": "1i39hd4ygyU7wMeetWQLBEjKboHpU478C",
+              "section": "Balance team and stakeholder needs",
+              "position": 5
+            }
+          ]
+        },
+        {
+          "slug": "Resources",
+          "n": 5,
+          "title": "Resources",
+          "drive": "19WMeny3wrGIzUbyCfdMW5v3yec9Dw0ij",
+          "lessons": [],
+          "pending": true
+        }
+      ]
+    },
+    {
+      "slug": "prepare-data-for-exploration",
+      "n": 3,
+      "title": "Prepare Data for Exploration",
+      "drive": "1gl2G1GgZ4kVg29-3_6hAeFW7JuXMP7wp",
+      "modules": [
+        {
+          "slug": "data-types-and-structures",
+          "n": 1,
+          "title": "Data types and structures",
+          "drive": "1dR6KnToJPURdBocD_nnbSh5N8SeqXUSG",
+          "lessons": [
+            {
+              "slug": "glossary-terms-and-definitions",
+              "title": "Glossary terms and definitions",
+              "kind": "reading",
+              "reading": "1SAABXAazAL9uEELccv6fwkoy4cDrCIMv",
+              "files": [
+                {
+                  "name": "Course 3 Week 1 Glossary: DA terms and definitions",
+                  "ext": "docx",
+                  "drive": "1kxORRxYto4LIJmttxKtURLadbpAAXFv-"
+                }
+              ],
+              "section": "Weekly challenge 1",
+              "position": 1
+            },
+            {
+              "slug": "weekly-challenge-1",
+              "title": "Weekly challenge 1",
+              "kind": "exam",
+              "exam": "1KljqWIzAqF1fMB1TIEah0EPZ-RlMX1Eb",
+              "section": "Weekly challenge 1",
+              "position": 2
+            }
+          ]
+        },
+        {
+          "slug": "bias-credibility-privacy-ethics-and-access",
+          "n": 2,
+          "title": "Bias credibility privacy ethics and access",
+          "drive": "16yrbRVLY2GYQ4Ps6wkrKGx8oGmOXyvRx",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "databases-where-data-lives",
+          "n": 3,
+          "title": "Databases where data lives",
+          "drive": "1doxKbvwmIGKF8Prss3DBHnzkoY-LCumz",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "organizing-and-protecting-your-data",
+          "n": 4,
+          "title": "Organizing and protecting your data",
+          "drive": "1lnIV9C37gfMmIKjNG7QIak_KtL4aUNqy",
+          "lessons": [
+            {
+              "slug": "security-features-in-spreadsheets",
+              "title": "Security features in spreadsheets",
+              "kind": "video",
+              "video": "16Frh-pDy_YDBw2iQwiDNFnd5kIx0oQy5",
+              "transcript": "11r_HIHA5gP8fyyPngRsvIAxvGB-PghAw",
+              "section": "Securing data",
+              "position": 1
+            },
+            {
+              "slug": "balancing-security-and-analytics",
+              "title": "Balancing security and analytics",
+              "kind": "reading",
+              "reading": "1gnMZXw3nfYkaX8tXv129nyJeSzWsCagk",
+              "section": "Securing data",
+              "position": 2
+            },
+            {
+              "slug": "self-reflection-protecting-your-resources",
+              "title": "Self reflection protecting your resources",
+              "kind": "quiz",
+              "quiz": "1EUAqaZXBON5gk24e8u7JLGzoltwJlwJI",
+              "section": "Securing data",
+              "position": 3
+            },
+            {
+              "slug": "test-your-knowledge-on-securing-your-data",
+              "title": "Test your knowledge on securing your data",
+              "kind": "quiz",
+              "quiz": "1x-sIHdZLygkDciDzxywJxWomY4x_5ajI",
+              "section": "Securing data",
+              "position": 4
+            }
+          ]
+        },
+        {
+          "slug": "optional-engaging-in-the-data-community",
+          "n": 5,
+          "title": "Optional engaging in the data community",
+          "drive": "1oQjNQxr8DumkxbXVxgb3E5BlkNXZuvnr",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "course-challenge",
+          "n": 6,
+          "title": "Course challenge",
+          "drive": "1BWxsUm1wwckM_l0NejpgcrD4vpnSbNPo",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "Resources",
+          "n": 7,
+          "title": "Resources",
+          "drive": "1gUyRSrCEFzEFaQunRZoh_tGtHhK3bpSz",
+          "lessons": [],
+          "pending": true
+        }
+      ]
+    },
+    {
+      "slug": "process-data-from-dirty-to-clean",
+      "n": 4,
+      "title": "Process Data from Dirty to Clean",
+      "drive": "1I0FHsihEhMgy7q68UDnvAmT2qAw5syMd",
+      "modules": [
+        {
+          "slug": "the-importance-of-integrity",
+          "n": 1,
+          "title": "The importance of integrity",
+          "drive": "12hAnpOvAwWoY95IUr6bUFD-aICNGc7Zd",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "sparkling-clean-data",
+          "n": 2,
+          "title": "Sparkling clean data",
+          "drive": "1F3GadkVHnt9zp6uG7lOI6Z6p4-y5hm8y",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "cleaning-data-with-sql",
+          "n": 3,
+          "title": "Cleaning data with SQL",
+          "drive": "14qs7aOZxbwDx8CGq5Zp0wRA7KtGevexo",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "verify-and-report-on-your-cleaning-results",
+          "n": 4,
+          "title": "Verify and report on your cleaning results",
+          "drive": "1heUeNLTLvnz68dSswYvZYX6Op_qiw-Ss",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "optional-adding-data-to-your-resume",
+          "n": 5,
+          "title": "Optional adding data to your resume",
+          "drive": "11FzUjNXCTjN_9CcpO0gU3E9qypdsxJHx",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "course-challenge",
+          "n": 6,
+          "title": "Course challenge",
+          "drive": "1JlR9wweOe38J8CzfF8CrSRd86BxKcgr0",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "Resources",
+          "n": 7,
+          "title": "Resources",
+          "drive": "11LFD8-t0pk9qXJljVB96rsor0CsvoWDb",
+          "lessons": [],
+          "pending": true
+        }
+      ]
+    },
+    {
+      "slug": "analyze-data-to-answer-questions",
+      "n": 5,
+      "title": "Analyze Data to Answer Questions",
+      "drive": "1EL9OOWVXdSE3MIjprb-ad8_CiBNCp6Zi",
+      "modules": [
+        {
+          "slug": "organizing-data-to-begin-analysis",
+          "n": 1,
+          "title": "Organizing data to begin analysis",
+          "drive": "1hAEH9pZODZ4whgjC-udcQtjFmXV7Swcf",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "formatting-and-adjusting-data",
+          "n": 2,
+          "title": "Formatting and adjusting data",
+          "drive": "1dblIZsyn0K5VBsHLunR94JkFvWkQj-Mm",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "aggregating-data-for-analysis",
+          "n": 3,
+          "title": "Aggregating data for analysis",
+          "drive": "1FjLWP8oe5zu6Wf9G2rSjKQRahTZxHCpZ",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "performing-data-calculations",
+          "n": 4,
+          "title": "Performing data calculations",
+          "drive": "1XNJAJTHCf1xzBV0R4EM9KlYnLJPeMnOy",
+          "lessons": [
+            {
+              "slug": "course-challenge",
+              "title": "Course challenge",
+              "kind": "exam",
+              "exam": "1jrBrD-RWL45zaovPXJoMlYHFoeyeYXjP",
+              "section": "Course challenge",
+              "position": 1
+            },
+            {
+              "slug": "congratulations",
+              "title": "Congratulations",
+              "kind": "video",
+              "video": "1ULOuX9DsNMPaXL5uKlEfi-l0CNLvrkZM",
+              "transcript": "117xZxz1spHd_LRbygswI4FaXjl44kYJf",
+              "section": "Course challenge",
+              "position": 2
+            },
+            {
+              "slug": "coming-up-next",
+              "title": "Coming up next",
+              "kind": "reading",
+              "reading": "1EqVn9Oo5qM4eZG1iZ9G4wWg9mFBYRb4g",
+              "section": "Course challenge",
+              "position": 3
+            }
+          ]
+        },
+        {
+          "slug": "Resources",
+          "n": 5,
+          "title": "Resources",
+          "drive": "1ul2dtlyzDuXbSfS3E_nQ_WEAlrS_rXtG",
+          "lessons": [],
+          "pending": true
+        }
+      ]
+    },
+    {
+      "slug": "share-data-through-the-art-of-visualization",
+      "n": 6,
+      "title": "Share Data Through the Art of Visualization",
+      "drive": "1rEjn7lZ-6g4LHojlE78uVA1wQJ8dtzmS",
+      "modules": [
+        {
+          "slug": "visualizing-data",
+          "n": 1,
+          "title": "Visualizing data",
+          "drive": "1G-N_bH2VPyhJkhftlu9iVVrEizhZ5yqN",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "creating-data-visualizations-with-tableau",
+          "n": 2,
+          "title": "Creating data visualizations with Tableau",
+          "drive": "1kb0zQZTDAY3JgL-CRz_qMUp7KU0eUGGM",
+          "lessons": [
+            {
+              "slug": "the-good-the-bad-and-the-ugly",
+              "title": "The good the bad and the ugly",
+              "kind": "video",
+              "video": "10gGKmkhgu-fAfyBVcSJ-jR6UBfBsg2y0",
+              "transcript": "1ANYjH9BYWPBSHbDiavSPULhYt7okJSnG",
+              "section": "Create visualizations in Tableau",
+              "position": 1
+            },
+            {
+              "slug": "bonus-guide-additional-insights-on-selecting-the-right-data-visualization",
+              "title": "Bonus guide additional insights on selecting the right data visualization",
+              "kind": "reading",
+              "reading": "1vtdPUFnjXUqhjpW1zcnEThgPoZ4oU_nr",
+              "files": [
+                {
+                  "name": "How to choose a data visualization",
+                  "ext": "pdf",
+                  "drive": "1E7FtmrGj7T_su4rULAmeepvavYYB9xBI"
+                }
+              ],
+              "section": "Create visualizations in Tableau",
+              "position": 2
+            },
+            {
+              "slug": "self-reflection-selecting-visuals-and-charts",
+              "title": "Self reflection selecting visuals and charts",
+              "kind": "quiz",
+              "quiz": "1vH4_yszjz-eK0RddjcaUMlgKl-wXEgsL",
+              "section": "Create visualizations in Tableau",
+              "position": 3
+            },
+            {
+              "slug": "getting-creative",
+              "title": "Getting creative",
+              "kind": "video",
+              "video": "1MdihCcSYpY4IxJvOrJv0rNFAByS14ZuD",
+              "transcript": "1lo-KqcDDDJB7sgh6A9OesulYO2DFWzow",
+              "section": "Create visualizations in Tableau",
+              "position": 4
+            },
+            {
+              "slug": "test-your-knowledge-on-creating-visualizations-in-tableau",
+              "title": "Test your knowledge on creating visualizations in Tableau",
+              "kind": "quiz",
+              "quiz": "1bThXqoIJXRpmp_unLKA0PsQrGLfo9SYC",
+              "section": "Create visualizations in Tableau",
+              "position": 5
+            }
+          ]
+        },
+        {
+          "slug": "crafting-data-stories",
+          "n": 3,
+          "title": "Crafting data stories",
+          "drive": "1mWAAqCGyqGjF1hYt9GDRuTKv6H254VOW",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "developing-presentations-and-slideshows",
+          "n": 4,
+          "title": "Developing presentations and slideshows",
+          "drive": "19sf1PNFk4bQ1KLWAsNziBy0mZ7i1aJZZ",
+          "lessons": [],
+          "pending": true
+        }
+      ]
+    },
+    {
+      "slug": "data-analysis-with-r-programming",
+      "n": 7,
+      "title": "Data Analysis with R Programming",
+      "drive": "1KUh0dQEYNXukUEqHPrLFXx46mx_B3myl",
+      "modules": [
+        {
+          "slug": "programming-and-data-analytics",
+          "n": 1,
+          "title": "Programming and data analytics",
+          "drive": "1TMs_s2mzYX81_K8PAYiMXTWkHQDnd47h",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "programming-using-rstudio",
+          "n": 2,
+          "title": "Programming using RStudio",
+          "drive": "12F3BMD5ysT7csjbi9c33OkCkD_CdyVoT",
+          "lessons": [
+            {
+              "slug": "glossary-terms-and-definitions",
+              "title": "Glossary terms and definitions",
+              "kind": "reading",
+              "reading": "1K2VKPCDE1-Up7tG4e2Pkm_AJx9OMKmEX",
+              "files": [
+                {
+                  "name": "Course 7 Week 2 Glossary: DA terms and definitions",
+                  "ext": "docx",
+                  "drive": "1U4bmZ5tZoePHCXleWOvL2BaFpCJswRd0"
+                }
+              ],
+              "section": "Weekly challenge 2",
+              "position": 1
+            },
+            {
+              "slug": "weekly-challenge-2",
+              "title": "Weekly challenge 2",
+              "kind": "exam",
+              "exam": "1tVWFuHP4Gaj0hYpASKXQQ7Xl7GZu3xps",
+              "section": "Weekly challenge 2",
+              "position": 2
+            }
+          ]
+        },
+        {
+          "slug": "working-with-data-in-r",
+          "n": 3,
+          "title": "Working with data in R",
+          "drive": "15ddl21jlZo-gbgmZh17bxGNau3-ZCamy",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "more-about-visualizations-aesthetics-and-annotations",
+          "n": 4,
+          "title": "More about visualizations aesthetics and annotations",
+          "drive": "19VwswwU21pW0A2Z7US_XpjLYvKniNNsO",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "documentation-and-reports",
+          "n": 5,
+          "title": "Documentation and reports",
+          "drive": "1xIE6k2_2495A4OGD_JIcyNo5zpnpac1O",
+          "lessons": [],
+          "pending": true
+        }
+      ]
+    },
+    {
+      "slug": "google-data-analytics-capstone-complete-a-case-study",
+      "n": 8,
+      "title": "Google Data Analytics Capstone Complete a Case Study",
+      "drive": "1wF4qg_I6crTGbRXj0W4tywtdqA2k5ZQS",
+      "modules": [
+        {
+          "slug": "learn-about-capstone-basics",
+          "n": 1,
+          "title": "Learn about capstone basics",
+          "drive": "1ZT3KMGlDBNjlqSBMBEwh74FR2GZcH8mA",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "optional-building-your-portfolio",
+          "n": 2,
+          "title": "Optional building your portfolio",
+          "drive": "1LV0VK6kL0UlzG4pbKCtJ1jGQnIXpGLy0",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "optional-using-your-portfolio",
+          "n": 3,
+          "title": "Optional using your portfolio",
+          "drive": "1_CshdhSCzHaEzdvy1RR8-rdGlJXGuGt3",
+          "lessons": [],
+          "pending": true
+        },
+        {
+          "slug": "putting-your-certificate-to-work",
+          "n": 4,
+          "title": "Putting your certificate to work",
+          "drive": "1_cfjawz2e9pVVHvPlMQPxvbk_nSIp5At",
+          "lessons": [],
+          "pending": true
+        }
+      ]
+    }
+  ]
+}

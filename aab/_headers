@@ -33,9 +33,18 @@
   # fetch, which made it look stranger still. check-csp.mjs now
   # fails if the code names a host this line does not allow.
   #
+  # frame-src is drive.google.com and only that. /skills/courses/
+  # embeds a Drive video with an <iframe>, which default-src would
+  # otherwise refuse: an iframe is frame-src's business, not
+  # connect-src's, so check-csp.mjs cannot see this one and the
+  # failure would be a player that never appears. Nothing else on
+  # this site frames anything.
+  #
+  # frame-ancestors below is the other direction and is unchanged:
+  # this site still refuses to BE framed.
   # The Supabase host must match SUPABASE_URL in aab/account.js.
   # If that project is ever recreated, this line changes with it.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.web3forms.com https://market-pulse.i-reiad.workers.dev https://wvjarqnnmkkuxyrndtya.supabase.co; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.web3forms.com https://market-pulse.i-reiad.workers.dev https://wvjarqnnmkkuxyrndtya.supabase.co; frame-src https://drive.google.com; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
 
 # Fingerprint-free assets change in place, so they must revalidate.
 /styles.css

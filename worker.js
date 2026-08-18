@@ -48,6 +48,7 @@ import { onRequest as backup } from "./functions/api/backup/[[route]].js";
 import { onRequest as comments } from "./functions/api/comments/[[id]].js";
 import { onRequest as broker } from "./functions/api/broker/[[route]].js";
 import { onRequest as schools } from "./functions/api/schools/[[route]].js";
+import { onRequest as courses } from "./functions/api/courses/[[route]].js";
 import { onRequest as insight } from "./functions/insights/[slug].js";
 import { onRequest as feeds } from "./functions/feeds/[kind].js";
 import { db } from "./functions/_lib/db.js";
@@ -71,6 +72,7 @@ const API_ROUTES = [
   ["/api/comments", comments, "id"],
   ["/api/broker", broker, "route"],
   ["/api/schools", schools, "route"],
+  ["/api/courses", courses, "route"],
 ];
 
 /* The Cron schedules, as strings, because `event.cron` hands back
@@ -186,6 +188,19 @@ export const NEXT_ROUTES = [
      three above it have to come first: `/money/contents.html`
      would otherwise be read as a lesson called `contents` in a
      stage called `money`, and 404. */
+  /* The third-party course section, /skills/courses/. Four
+     shapes, longest first for the same reason the school block
+     below needs its order: the lesson pattern would otherwise
+     read `<course>/<module>/index.html` as a lesson called
+     `index` and 404 it.
+
+     Every one of these serves an EMPTY page: the catalogue is
+     admin-only and arrives from /api/courses. See
+     `next/components/course-shell.tsx`. */
+  /^\/skills\/courses\/index\.html$/i,
+  /^\/skills\/courses\/[a-z0-9-]+\/index\.html$/i,
+  /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/index\.html$/i,
+  /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+\.html$/i,
   /^\/(money|deutsch|quran|english)\/index\.html$/i,
   /^\/money\/contents\.html$/i,
   /^\/(money|deutsch|quran|english)\/[a-z0-9-]+\/index\.html$/i,

@@ -50,8 +50,15 @@ const bn = (n: number) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬
 export default function SkillsPage() {
   /* Everything in the learning group except the link back to this
      page, which is where the reader already is. */
-  const skills = (NAV.find((g) => g.id === "learn")?.items ?? [])
+  const learn = (NAV.find((g) => g.id === "learn")?.items ?? [])
     .filter((item) => item.key !== "skills");
+
+  /* The unlisted ones are not skills this site teaches, so they
+     are out of the list AND out of the number above it. They get
+     their own band at the foot, which is the whole reason the
+     flag exists: see `lib/nav.ts`. */
+  const skills = learn.filter((item) => !item.unlisted);
+  const mine = learn.filter((item) => item.unlisted);
 
   const live = skills.filter((s) => !s.soon);
 
@@ -136,6 +143,31 @@ export default function SkillsPage() {
             />
           </div>
         </section>
+
+        {mine.length ? (
+          <section className="hub-section" id="mine">
+            <div className="hub-section-head">
+              <span className="section-label mono">
+                আমার নিজের · <span lang="en">Mine, and not published</span>
+              </span>
+            </div>
+
+            <div className="deck deck-2">
+              {mine.map((item) => (
+                <GoCard
+                  key={item.href} href={item.href} accent={item.accent ?? "var(--gold)"}
+                  icon={item.icon} chip={item.kind} lang="bn"
+                  title={item.sub ?? item.label} dek={item.blurb}
+                  go="খুলুন"
+                >
+                  <span className="card-meta">
+                    <span lang="en">{item.label} · admin only</span>
+                  </span>
+                </GoCard>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <div className="hub-pledge" lang="bn">
           <b className="bn-h">শিক্ষা বিনামূল্যে হওয়া উচিত।</b>
