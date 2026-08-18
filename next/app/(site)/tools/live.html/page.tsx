@@ -21,6 +21,7 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
+import { Button, ButtonLink } from "../../../../components/ui/button";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/live.html",
@@ -119,7 +120,7 @@ export default function LivePortfolioPage() {
           <div id="live-signin">
             <p>This half needs an account, so your key belongs to you and not
               to a browser somebody else might sit at.&nbsp;
-              <a className="btn btn-solid" href="/account.html">Sign in first</a>
+              <ButtonLink kind="solid" href="/account.html">Sign in first</ButtonLink>
             </p>
           </div>
 
@@ -148,7 +149,7 @@ export default function LivePortfolioPage() {
                 gone when the tab goes.</span>
             </label>
             <div className="live-actions">
-              <button type="submit" className="btn btn-solid" id="live-connect">Connect</button>
+              <Button kind="solid" type="submit" id="live-connect">Connect</Button>
               <span className="mono live-form-note" id="live-key-note" hidden></span>
             </div>
           </form>

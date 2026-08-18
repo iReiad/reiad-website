@@ -31,6 +31,23 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v118: A button is one object. `ui/button.tsx` was Tailwind
+        utilities, which made it a FIFTH way of making one rather
+        than the one: `.btn-solid` in the stylesheet was `--accent`
+        with an 80%-ink border, the component was `--accent-strong`
+        with a transparent one, and a converted page grew visibly
+        different buttons from the page beside it. Eighteen browser
+        modules build `.btn .btn-ghost` nodes by hand, so a button
+        has to mean one thing whichever half of the site made it.
+
+        The stylesheet gained the two kinds it was missing and the
+        on-accent set, so the component now writes class names and
+        adds nothing. The on-accent set is a CLASS the caller opts
+        into rather than a `.band .btn-ghost` descendant rule: that
+        ties the ink to where a button sits, and it broke twice
+        when a band changed its ground and the buttons did not
+        follow.
+
    v117: The small line above a heading is two components, and
         they are two because they are two things: a
         `<SectionLabel>` closes with a rule, because it separates
@@ -1191,7 +1208,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v117";
+const VERSION = "v118";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -17,7 +17,7 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
-import { ButtonLink } from "../../../../components/ui/button";
+import { Button, ButtonLink } from "../../../../components/ui/button";
 import { StatTile } from "../../../../components/ui/stat";
 import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
@@ -72,10 +72,10 @@ export default function Page() {
               <p className="scenario-blurb" id="scenario-blurb">–
               </p>
               <div className="model-actions">
-                <button className="btn btn-ghost" type="button" id="download-csv">Download CSV
-                </button>
-                <button className="btn btn-ghost" type="button" id="copy-link">Copy this run's link
-                </button>
+                <Button kind="ghost" id="download-csv">Download CSV
+                </Button>
+                <Button kind="ghost" id="copy-link">Copy this run's link
+                </Button>
               </div>
             </div>
             {/* ============ THE ANSWER ============ */}
@@ -535,8 +535,7 @@ export default function Page() {
                 </label>
                 <span className="mono">or drag one here, or paste below
                 </span>
-                <button className="btn btn-ghost" type="button" id="csv-reset" hidden>Back to the shipped book
-                </button>
+                <Button kind="ghost" id="csv-reset" hidden>Back to the shipped book</Button>
               </div>
               <label className="csv-paste-label">
                 <span className="mono">Paste rows

@@ -37,6 +37,7 @@
 import type { WorkbookBook, WorkbookDay } from "../lib/workbook";
 import { bn, targetLang } from "../lib/workbook";
 import { SectionLabel } from "./ui/label";
+import { Button } from "./ui/button";
 
 /** The key a textarea saves under.
 
@@ -145,14 +146,10 @@ export function WorkbookDayCard(
             </div>
           ))}
         </div>
-        <button
-          type="button"
-          className="btn btn-ghost antwort-schalter"
-          data-antwort={day.n}
-          aria-expanded="false"
-        >
+        <Button kind="ghost" className="antwort-schalter"
+                data-antwort={day.n} aria-expanded="false">
           উত্তর দেখুন
-        </button>
+        </Button>
         <p className="tag-hinweis">
           আগে নিজে চেষ্টা, তারপর মিলাও। ছাঁচ ঠিক থাকলে আলাদা বাক্যও সঠিক, ছাঁচটাই আসল।
         </p>
@@ -171,9 +168,9 @@ export function WorkbookDayCard(
       </section>
 
       <footer className="tag-fuss">
-        <button type="button" className="btn btn-solid tag-fertig" data-fertig={day.n}>
+        <Button kind="solid" className="tag-fertig" data-fertig={day.n}>
           আজকের পাতা শেষ ✓
-        </button>
+        </Button>
         <span className="tag-fuss-note mono">সব জোরে বলেছি · {book.foot}</span>
       </footer>
     </article>

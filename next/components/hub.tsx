@@ -25,6 +25,7 @@ import { SOON, type ReadHubCopy } from "../lib/hub";
 import type { Piece } from "../lib/pieces";
 import { InfoCard } from "./deck";
 import { Eyebrow, SectionLabel } from "./ui/label";
+import { Button, ButtonLink } from "./ui/button";
 
 /* ---------- the kitchen and the travel desk ---------- */
 
@@ -48,9 +49,9 @@ export function ReadHub({ copy, pieces }: { copy: ReadHubCopy; pieces: Piece[] |
 
           <div className="hero-actions">
             {first ? (
-              <a className="btn btn-solid" href={first.url}>{copy.first.label}</a>
+              <ButtonLink kind="solid" href={first.url}>{copy.first.label}</ButtonLink>
             ) : null}
-            <a className="btn btn-ghost" href="/skills/index.html">{copy.more}</a>
+            <ButtonLink kind="ghost" href="/skills/index.html">{copy.more}</ButtonLink>
           </div>
         </div>
 
@@ -247,7 +248,7 @@ export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
                      placeholder="you@example.com" autoComplete="email" />
               <input type="text" name="website" tabIndex={-1} autoComplete="off"
                      aria-hidden="true" className="honeypot" />
-              <button className="btn btn-solid" type="submit">Email me new pieces</button>
+              <Button kind="solid" type="submit">Email me new pieces</Button>
             </form>
             <p className="gate-msg mono" id="sub-msg" role="status" style={{ marginTop: "8px" }} />
 

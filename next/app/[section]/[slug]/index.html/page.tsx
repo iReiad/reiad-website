@@ -35,6 +35,7 @@ import { schoolIcon } from "../../../../lib/school-icons";
 import { SiteScripts } from "../../../../components/scripts";
 import { LadderMeter, Resume } from "../../../../components/progress";
 import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
+import { Button, ButtonLink } from "../../../../components/ui/button";
 
 type Params = Promise<{ section: string; slug: string }>;
 
@@ -147,8 +148,8 @@ export default async function StagePage({ params }: { params: Params }) {
                 <div className="hero-actions">
                   <Resume school={school} lessons={ladderIds}
                           words={{ label: "যেখানে ছিলেন", go: "পড়া চালিয়ে যান" }} />
-                  <a className="btn btn-solid" href={lessons[0].url}>শুরু করুন →</a>
-                  <a className="btn btn-ghost" href={shape.back.url}>{shape.back.label}</a>
+                  <ButtonLink kind="solid" href={lessons[0].url}>শুরু করুন →</ButtonLink>
+                  <ButtonLink kind="ghost" href={shape.back.url}>{shape.back.label}</ButtonLink>
                 </div>
               </>
             ) : (
@@ -161,9 +162,9 @@ export default async function StagePage({ params }: { params: Params }) {
                   {/* Where "continue" goes with no progress stored. The
                       school's own script moves it to wherever the
                       reader actually stopped. */}
-                  <a className="btn btn-solid" href={lessons[0].url}
-                     {...{ [shape.continueAttr]: stage.slug }}>শুরু করুন →</a>
-                  <a className="btn btn-ghost" href={shape.back.url}>{shape.back.label}</a>
+                  <ButtonLink kind="solid" href={lessons[0].url}
+                              {...{ [shape.continueAttr]: stage.slug }}>শুরু করুন →</ButtonLink>
+                  <ButtonLink kind="ghost" href={shape.back.url}>{shape.back.label}</ButtonLink>
                 </div>
               </>
             )}

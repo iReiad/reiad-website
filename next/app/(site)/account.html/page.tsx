@@ -85,6 +85,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "../../../lib/pageMeta";
 import { PageNav, Tab } from "../../../components/ui/tabs";
 import { Eyebrow } from "../../../components/ui/label";
+import { Button, ButtonLink } from "../../../components/ui/button";
 
 export const metadata: Metadata = {
   ...pageMeta({
@@ -216,8 +217,8 @@ export default function AccountPage() {
             page on this site is readable without one.
           </p>
           <div className="hero-actions">
-            <button className="btn btn-solid" id="account-signin">Sign in</button>
-            <a className="btn btn-ghost" href="/index.html">Back to the site</a>
+            <Button kind="solid" id="account-signin">Sign in</Button>
+            <ButtonLink kind="ghost" href="/index.html">Back to the site</ButtonLink>
           </div>
         </div>
       </div>
@@ -320,7 +321,7 @@ export default function AccountPage() {
                 <div className="choice-row" id="target-kind" />
                 <div className="target-fields" id="target-fields" />
                 <Actions>
-                  <button className="btn btn-solid" type="submit">Add it</button>
+                  <Button kind="solid" type="submit">Add it</Button>
                   <span className="signin-note" id="target-note" />
                 </Actions>
               </form>
@@ -374,9 +375,8 @@ export default function AccountPage() {
                 <div className="choice-row" id="account-pace" />
               </fieldset>
               <Actions>
-                <button className="btn btn-solid" type="submit">Save</button>
-                <button className="btn btn-ghost" type="button" id="settings-skip"
-                        hidden>Not now</button>
+                <Button kind="solid" type="submit">Save</Button>
+                <Button kind="ghost" id="settings-skip" hidden>Not now</Button>
                 <span className="signin-note" id="settings-note" />
               </Actions>
             </form>
@@ -395,9 +395,9 @@ export default function AccountPage() {
                    in every course, your checkpoints, your reading list, your
                    notes, your targets, your saved scenarios and your
                    preferences. Plain JSON, readable in any text editor.</p>
-                <button className="btn btn-ghost" id="account-export">
+                <Button kind="ghost" id="account-export">
                   Download everything
-                </button>
+                </Button>
               </Card>
               <Card>
                 <h3>Sign out</h3>
@@ -405,18 +405,18 @@ export default function AccountPage() {
                    copy of your progress off it, so the next person at this
                    machine does not inherit your ticks. Nothing on the account
                    is touched.</p>
-                <button className="btn btn-ghost" id="account-signout">
+                <Button kind="ghost" id="account-signout">
                   Sign out
-                </button>
+                </Button>
               </Card>
               <Card className="border-danger/35 bg-danger/5 [&_.btn:hover]:border-danger [&_.btn:hover]:text-danger">
                 <h3>Erase everything</h3>
                 <p>Removes all of it from the account: position, checkpoints,
                    reading list, notes, targets and scenarios. This cannot be
                    undone, so take a copy first if you want one.</p>
-                <button className="btn btn-ghost" id="account-forget">
+                <Button kind="ghost" id="account-forget">
                   Erase it
-                </button>
+                </Button>
               </Card>
             </div>
             <p className="signin-note" id="exit-note" />

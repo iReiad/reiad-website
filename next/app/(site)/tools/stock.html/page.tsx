@@ -15,7 +15,7 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
-import { ButtonLink } from "../../../../components/ui/button";
+import { Button, ButtonLink } from "../../../../components/ui/button";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/stock.html",
@@ -94,12 +94,12 @@ export default function StockPage() {
               <div id="weights" />
               <div id="drivers" />
               <div className="model-actions">
-                <button className="btn btn-ghost" id="copy-link" type="button" data-i18n="a.copyLink">Copy link
-                </button>
-                <button className="btn btn-ghost" id="download-csv" type="button" data-i18n="a.download">Download CSV
-                </button>
-                <button className="btn btn-ghost" id="reset" type="button" data-i18n="a.reset">Reset
-                </button>
+                <Button kind="ghost" id="copy-link" data-i18n="a.copyLink">Copy link
+                </Button>
+                <Button kind="ghost" id="download-csv" data-i18n="a.download">Download CSV
+                </Button>
+                <Button kind="ghost" id="reset" data-i18n="a.reset">Reset
+                </Button>
               </div>
               {/* Saving a filled-in check belongs to an account and
                   to nothing else, so this whole block is hidden
@@ -111,8 +111,8 @@ export default function StockPage() {
                 </label>
                 <div className="save-scenario-row">
                   <input type="text" id="scenario-name" maxLength={80} placeholder="Square Pharma, Q2" />
-                  <button className="btn btn-solid" id="save-scenario-go" type="button" data-i18n="a.save">Save
-                  </button>
+                  <Button kind="solid" id="save-scenario-go" data-i18n="a.save">Save
+                  </Button>
                 </div>
                 <p className="tool-note" id="scenario-note" />
                 <div className="saved-list" id="scenario-list" />

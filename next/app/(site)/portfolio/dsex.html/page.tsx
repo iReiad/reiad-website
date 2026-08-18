@@ -18,7 +18,7 @@ import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
-import { ButtonLink } from "../../../../components/ui/button";
+import { Button, ButtonLink } from "../../../../components/ui/button";
 import { StatTile } from "../../../../components/ui/stat";
 import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
@@ -76,8 +76,8 @@ export default function Page() {
             number on this page becomes about your series.
               </p>
               <div className="model-actions">
-                <button className="btn btn-ghost" type="button" id="download-csv">Download the analysis
-                </button>
+                <Button kind="ghost" id="download-csv">Download the analysis
+                </Button>
               </div>
             </div>
             {/* ============ LOAD YOUR OWN ============ */}

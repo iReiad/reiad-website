@@ -17,6 +17,7 @@ import { SiteScripts } from "./scripts";
 import { WorkbookCollection, WorkbookDayCard, WorkbookTracker } from "./workbook";
 import { bn, bnWord, bookFor, targetLang } from "../lib/workbook";
 import { Eyebrow, SectionLabel } from "./ui/label";
+import { Button, ButtonLink } from "./ui/button";
 
 /** The module that makes the page work: it restores what was
     written, grows the textareas, reveals an answer when asked,
@@ -78,9 +79,9 @@ export async function WorkbookPage(
             </div>
 
             <div className="hero-actions">
-              <a className="btn btn-solid" href="#tag-1" data-buch-heute>
+              <ButtonLink kind="solid" href="#tag-1" data-buch-heute>
                 আজকের পাতা খুলুন →
-              </a>
+              </ButtonLink>
             </div>
           </div>
 

@@ -1188,25 +1188,106 @@
     &:focus-visible { outline: none; box-shadow: var(--focus-ring); }
     &:disabled { opacity: 0.45; pointer-events: none; }
   }
-  .btn-solid {
-    background: var(--accent); color: var(--accent-ink);
-    border-color: color-mix(in oklab, var(--accent) 80%, var(--ink));
+  /* ---------- the four kinds, and the ladder between them ----------
 
-    &:hover {
-      background: color-mix(in oklab, var(--accent) 82%, var(--ink));
-      box-shadow: var(--shadow);
-    }
+     Loudness rather than importance: `solid` for the one action a
+     page is for, `soft` for the ones beside it, `ghost` for a
+     choice that is not an action, `quiet` for something that
+     should not draw the eye until it is looked for.
+
+     `ui/button.tsx` writes these class names and adds nothing of
+     its own, which is the point: eighteen browser modules build
+     `.btn .btn-ghost` nodes by hand, and until they are components
+     a button has to mean one thing whichever half of the site
+     made it. It did not: the component was Tailwind utilities at
+     `--accent-strong` with a transparent border, the class was
+     `--accent` with an 80%-ink border, and a page that had been
+     converted grew different buttons from the page beside it. */
+  .btn-solid {
+    background: var(--accent-strong); color: var(--accent-ink);
+    border-color: transparent;
+    box-shadow: var(--shadow);
+
+    &:hover { filter: brightness(1.1); box-shadow: var(--shadow-lift); }
+  }
+  .btn-soft {
+    background-color: var(--accent-soft); color: var(--accent);
+    background-image: var(--sheen);
+    border-color: var(--accent-line);
+
+    &:hover { background-color: var(--panel-hover); border-color: var(--accent); }
   }
   .btn-ghost {
-    border-color: var(--hairline); color: var(--ink); background: var(--panel);
+    background-color: var(--panel); color: var(--ink);
+    background-image: var(--sheen);
+    border-color: var(--pane-edge);
 
-    &:hover {
-      border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline));
-      color: var(--accent);
-      background: var(--accent-soft);
-      box-shadow: var(--shadow);
+    &:hover { background-color: var(--panel-hover); border-color: var(--accent-line); }
+  }
+  .btn-quiet {
+    background: transparent; color: var(--ink-soft);
+    border-color: transparent;
+
+    &:hover { background: var(--panel); color: var(--ink); border-color: var(--pane-edge); }
+  }
+
+  /* ---------- the same four, standing ON the accent ----------
+
+     A button inside a filled block cannot use the palette above:
+     `solid` is an accent fill, and an accent fill on an accent
+     ground is a button you cannot see.
+
+     This was `.band .btn-ghost` overrides once and it broke twice,
+     both times the same way: `.band.soft` turned the ground back
+     to paper without undoing them, so a ghost button on a light
+     band was white text on a near-white fill, and the other never
+     reset the ghost's background at all. A descendant selector
+     ties the ink to where the button SITS; this ties it to what
+     the caller says the ground IS, and `<Button onAccent>` sets
+     both at once so neither can be set without the other. */
+  .btn-on-accent {
+    &.btn-solid {
+      background: var(--accent-ink); color: var(--accent-strong);
+      border-color: transparent;
+
+      &:hover { filter: brightness(0.95); box-shadow: var(--shadow-lift); }
+    }
+    &.btn-soft {
+      background: color-mix(in oklab, var(--accent-ink) 16%, transparent);
+      color: var(--accent-ink);
+      border-color: color-mix(in oklab, var(--accent-ink) 28%, transparent);
+
+      &:hover { background: color-mix(in oklab, var(--accent-ink) 24%, transparent); }
+    }
+    &.btn-ghost {
+      background: transparent; color: var(--accent-ink);
+      border-color: color-mix(in oklab, var(--accent-ink) 32%, transparent);
+
+      &:hover {
+        background: color-mix(in oklab, var(--accent-ink) 10%, transparent);
+        border-color: var(--accent-ink);
+      }
+    }
+    &.btn-quiet {
+      background: transparent; border-color: transparent;
+      color: color-mix(in oklab, var(--accent-ink) 72%, transparent);
+
+      &:hover {
+        color: var(--accent-ink);
+        background: color-mix(in oklab, var(--accent-ink) 10%, transparent);
+      }
     }
   }
+
+  /* ---------- the other two sizes ----------
+
+     `.btn` above is the middle one, so there is no `.btn-md`. The
+     small one is `.btn-small` and it is defined further down,
+     where it has been since before any of this: eighteen browser
+     modules write that name and it is not worth a second spelling
+     to make three sizes read alike. */
+  .btn-lg { padding: 12px 24px; font-size: var(--t-4); min-height: 48px; }
+  .btn-block { width: 100%; }
 
   .icon-btn {
     border: 1px solid var(--hairline);

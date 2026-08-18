@@ -17,7 +17,7 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
-import { ButtonLink } from "../../../../components/ui/button";
+import { Button, ButtonLink } from "../../../../components/ui/button";
 import { StatTile } from "../../../../components/ui/stat";
 import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
@@ -71,10 +71,10 @@ export default function Page() {
               <p className="scenario-blurb" id="scenario-blurb">–
               </p>
               <div className="model-actions">
-                <button className="btn btn-ghost" type="button" id="download-csv">Download CSV
-                </button>
-                <button className="btn btn-ghost" type="button" id="copy-link">Copy this model's link
-                </button>
+                <Button kind="ghost" id="download-csv">Download CSV
+                </Button>
+                <Button kind="ghost" id="copy-link">Copy this model's link
+                </Button>
               </div>
             </div>
             {/* ============ THE BALANCE CHECK ============ */}

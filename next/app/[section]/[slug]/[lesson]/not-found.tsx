@@ -10,6 +10,7 @@
    real state: a stage's ladder can name a lesson that has not
    been written, and a link somebody saved can outlive one. */
 import { Eyebrow } from "../../../../components/ui/label";
+import { Button, ButtonLink } from "../../../../components/ui/button";
 
 export default function NotFound() {
   return (
@@ -20,7 +21,7 @@ export default function NotFound() {
         <p className="lede">
           লেখাটা হয়তো সরে গেছে, বা লিংকে টাইপো আছে।
         </p>
-        <p><a className="btn btn-ghost" href="/skills/index.html">সব শেখার জায়গা →</a></p>
+        <p><ButtonLink kind="ghost" href="/skills/index.html">সব শেখার জায়গা →</ButtonLink></p>
       </div>
     </main>
   );

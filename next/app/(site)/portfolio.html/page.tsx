@@ -17,7 +17,7 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../lib/pageMeta";
 import { Band } from "../../../components/ui/band";
-import { ButtonLink } from "../../../components/ui/button";
+import { Button, ButtonLink } from "../../../components/ui/button";
 import { InfoCard } from "../../../components/deck";
 import { Eyebrow, SectionLabel } from "../../../components/ui/label";
 
@@ -57,10 +57,10 @@ export default function Page() {
         
             </p>
             <div className="hero-actions">
-              <a className="btn btn-solid" href="/contact.html">Start a project
-              </a>
-              <a className="btn btn-ghost" href="#work">See the work
-              </a>
+              <ButtonLink kind="solid" href="/contact.html">Start a project
+              </ButtonLink>
+              <ButtonLink kind="ghost" href="#work">See the work
+              </ButtonLink>
             </div>
             <ul className="terms-row" aria-label="Terms, in brief">
               <li>Fixed price per project

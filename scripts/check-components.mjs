@@ -67,6 +67,12 @@ const UPDATE = process.argv.includes("--update");
    these are literal class strings rather than a shape. `use` is
    what the message tells somebody to reach for instead. */
 const OWNED = [
+  /* Two of these will never reach zero and should not: the CSV
+     pickers on two case studies are a `<label>` wrapping a hidden
+     file input, styled as a button. `<Button>` is a button and
+     `<ButtonLink>` is an anchor, and a third that renders a label
+     would be the "one component with a tag prop" mistake this
+     library exists to avoid. */
   { id: "button", find: 'className="btn', use: "<Button> or <ButtonLink> from ui/button" },
   { id: "icon-button", find: "icon-btn", use: "<Button kind=\"quiet\"> from ui/button" },
   { id: "section-label", find: 'className="section-label mono"', use: "<SectionLabel> from ui/label" },
