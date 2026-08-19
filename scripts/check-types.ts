@@ -40,6 +40,20 @@
    deploy with two missing modules. They are excluded there and
    checked here, which is where a check on our own source belongs.
 
+   ---- and that one needs `next/node_modules`, which CI has not ----
+
+   `checks.yml` runs `npm ci` at the ROOT and nowhere else, for
+   the reason written beside it: the root package.json is not a
+   dependency of the site, it is there for the three `--check`
+   steps and for linkedom. So `@cloudflare/workers-types` and
+   every React type the components lean on are absent, and this
+   config cannot be run there.
+
+   It says so and moves on, rather than failing on a runner that
+   was never going to have them or passing quietly as if it had
+   looked. A SKIP IS NOT A PASS: the line names what to run and
+   where, the same way every optional test in `CLAUDE.md` does.
+
    ---- and the second half: no JavaScript here at all ----
 
    `tsconfig.json` cannot say that. `checkJs` would, but it
@@ -67,7 +81,7 @@
    ============================================================ */
 
 import { execFileSync } from "node:child_process";
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -77,9 +91,22 @@ const HERE = join(ROOT, "scripts");
 /** Every config covering TypeScript that node runs directly and
     no build compiles. What `next build` already checks is
     deliberately absent: one check per thing. */
-const CONFIGS: Array<[what: string, config: string]> = [
-  ["scripts/", join(HERE, "tsconfig.json")],
-  ["next/ (the browser tests)", join(ROOT, "next", "tsconfig.test.json")],
+interface Config {
+  what: string;
+  config: string;
+  /** A directory whose `node_modules` this config needs. Absent
+      for one that leans on the root install, which is the only
+      one CI does. */
+  needs?: string;
+}
+
+const CONFIGS: Config[] = [
+  { what: "scripts/", config: join(HERE, "tsconfig.json") },
+  {
+    what: "next/ (the browser tests)",
+    config: join(ROOT, "next", "tsconfig.test.json"),
+    needs: join(ROOT, "next"),
+  },
 ];
 
 /* `fixtures/` is captured data rather than code: the Drive
@@ -108,7 +135,13 @@ if (javascript.length) {
   process.exit(1);
 }
 
-for (const [what, config] of CONFIGS) {
+const skipped: string[] = [];
+
+for (const { what, config, needs } of CONFIGS) {
+  if (needs && !existsSync(join(needs, "node_modules"))) {
+    skipped.push(what);
+    continue;
+  }
   try {
     execFileSync("npx", ["tsc", "-p", config], { cwd: ROOT, stdio: "pipe" });
   } catch (err) {
@@ -123,5 +156,11 @@ for (const [what, config] of CONFIGS) {
   }
 }
 
+const ran = CONFIGS.length - skipped.length;
 console.log("types: no JavaScript in scripts/, and every .ts file node runs"
-  + `\n       directly typechecks, under ${CONFIGS.length} config(s).`);
+  + `\n       directly typechecks, under ${ran} of ${CONFIGS.length} config(s).`);
+for (const what of skipped) {
+  console.log(`       SKIPPED ${what}: no node_modules there, so the types it`
+    + `\n       needs are absent. This is not a pass. Run it where they are:`
+    + `\n         cd next && npm install && cd .. && node scripts/check-types.ts`);
+}

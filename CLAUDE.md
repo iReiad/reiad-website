@@ -766,6 +766,9 @@ node next/parity.test.mjs          # the Next.js route saying something the
                                    # reading hub that has stopped agreeing with
                                    # the database
                                    # (114 checks, needs the build, skips without)
+node scripts/check-types.ts        # and again here, because it SKIPS the browser
+                                   # tests' config where next/node_modules is
+                                   # absent, which is every CI runner
 node next/article.test.ts          # the article page, on the real Worker with a
                                    # real database: the thread filling, a comment
                                    # body that stopped being text, and anything
