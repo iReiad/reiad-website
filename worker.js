@@ -113,21 +113,24 @@ export const ARTICLE = /^\/(insights|cooking|travel)\/([a-z0-9-]+)(?:\.html)?$/i
    exactly as it is today, and the route turns on by itself the
    moment the binding is added.
 
-   ---- the three reading hubs ----
+   ---- no address here ends in .html ----
 
-   Stage 11.1. `/insights.html`, `/cooking/index.html` and
-   `/travel/index.html` are the addresses every link on this site
-   uses and the ones the canonical links name. They are also the
-   addresses Cloudflare's asset router redirects AWAY from: with a
-   file at `aab/cooking/index.html` it 308s that URL to
-   `/cooking/`, which is why the canonical link on that page has
-   pointed at a redirect for as long as the page has existed.
+   Task #28. A page of this site is `/about`, `/skills`,
+   `/money/basics-1`, and every `.html` spelling of one is a 301
+   in `aab/_redirects`. The suffix was never a fact about a route:
+   it was a fact about a file, and there are two files left.
 
-   Listing the path in `run_worker_first` takes it away from the
-   asset router altogether, so the canonical address answers 200
-   and the pretty forms are sent to it by `_redirects` instead of
-   the other way round. That is the first time the site and its
-   own canonical links have agreed.
+   An article and a school lesson are the exception and stay as
+   they are, because their `.html` is part of a slug rather than
+   part of a route: it is in the rows, in every link inside a
+   lesson body, and in the `public.library` row of everybody who
+   has saved a piece.
+
+   A path listed in `run_worker_first` never reaches the asset
+   router, so a redirect for its old spelling only fires because
+   that spelling is NOT listed. Keep the two halves in step:
+   `wrangler.toml` names the new address and `_redirects` answers
+   for the old one.
 
    ---- and /_next/, which is not a page ----
 
@@ -157,61 +160,74 @@ export const NEXT_ROUTES = [
      the parity test holds it to refusing a piece asked for at the
      wrong one. */
   ARTICLE,
-  /^\/insights\.html$/i,
-  /^\/(cooking|travel)\/index\.html$/i,
+  /^\/(insights|cooking|travel)$/i,
   /* The hand-written pages, one at a time, Stage 11.5. Each one
      is here the moment its route exists, which is the same
      moment its file leaves aab/: there is no window in which
      both answer, because run_worker_first takes the address away
      from the asset router in the same commit. */
-  /^\/(about|contact|account)\.html$/i,
-  /^\/skills\/index\.html$/i,
-  /^\/tools\/(index|stock|live)\.html$/i,
+  /^\/(about|contact|account|skills|tools|portfolio)$/i,
+  /^\/tools\/(stock|live)$/i,
   /* The two private shells. Their bundles are NOT here: those are
      files in aab/desk/ and aab/studio/, and the asset router
      answers them as it always has. */
-  /^\/(desk|studio)\/index\.html$/i,
-  /^\/portfolio\.html$/i,
-  /^\/portfolio\/[a-z-]+\.html$/i,
+  /^\/(desk|studio)$/i,
+  /^\/portfolio\/[a-z-]+$/i,
   /* The home page, at the address its canonical link has always
      named. `/index.html` is not here: it 301s to this one, which
      is what the asset router did for it before. */
   /^\/$/,
-  /* The four schools, Stage 11.7, and the largest of these by a
-     long way: 251 committed pages leave `aab/` in the same commit
-     that adds these three lines, which is the rule the whole of
-     Stage 11 has followed. There is no window in which both
-     answer.
+  /* The third-party course section, /skills/courses/. Its four
+     shapes are built a second time in `aab/src/courses.ts`, which
+     reads `location.pathname` to decide which of them it is on,
+     and `check-courses.ts` fails if the two disagree. Move both
+     or neither.
 
-     A hub, the money school's full index, a stage's ladder and a
-     lesson. The lesson pattern is last and is the loosest, so the
-     three above it have to come first: `/money/contents.html`
-     would otherwise be read as a lesson called `contents` in a
-     stage called `money`, and 404. */
-  /* The third-party course section, /skills/courses/. Four
-     shapes, longest first for the same reason the school block
-     below needs its order: the lesson pattern would otherwise
-     read `<course>/<module>/index.html` as a lesson called
-     `index` and 404 it.
+     The `.html` forms are still here, after task #28 took that
+     suffix off every address on the site, and they are the one
+     place it is TOLERATED rather than redirected.
+     `shared/courses.ts` says why beside `lessonOf`: 845 addresses
+     generated out of a Drive folder cannot be one redirect rule
+     each without going stale the first time that folder changes,
+     and the whole section is behind `isAdmin()` and unlisted, so
+     there is no canonical to split and no crawler to confuse.
+
+     Longest first in each pair, because the lesson pattern would
+     otherwise read `<course>/<module>/index.html` as a lesson
+     called `index` and 404 it.
 
      Every one of these serves an EMPTY page: the catalogue is
      admin-only and arrives from /api/courses. See
      `next/components/course-shell.tsx`. */
+  /^\/skills\/courses\/?$/i,
+  /^\/skills\/courses\/[a-z0-9-]+$/i,
+  /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+$/i,
+  /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+$/i,
+  /* and the addresses from before #28 */
   /^\/skills\/courses\/index\.html$/i,
   /^\/skills\/courses\/[a-z0-9-]+\/index\.html$/i,
   /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/index\.html$/i,
   /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+\.html$/i,
-  /^\/(money|deutsch|quran|english)\/index\.html$/i,
-  /^\/money\/contents\.html$/i,
-  /^\/(money|deutsch|quran|english)\/[a-z0-9-]+\/index\.html$/i,
+  /* The four schools, Stage 11.7, and the largest of these by a
+     long way: 251 committed pages left `aab/` in the same commit
+     that added them.
+
+     A hub, then one pattern covering a stage's ladder AND the
+     money school's full index, then a lesson twice. A dot cannot
+     get into `[a-z0-9-]+`, which is what keeps every school's own
+     modules out of all four: `/money/reader.js` matches none of
+     them and falls through to the file. */
+  /^\/(money|deutsch|quran|english)$/i,
+  /^\/(money|deutsch|quran|english)\/[a-z0-9-]+$/i,
   /^\/(money|deutsch|quran|english)\/[a-z0-9-]+\/[a-z0-9-]+\.html$/i,
-  /* And the same address without the suffix, which nothing on
-     this site links but the asset router used to answer: while
-     these were files, `html_handling` served `dsex.html` for
+  /* The lesson without its suffix, which nothing on this site
+     links but the asset router used to answer: while these were
+     files, `html_handling` served `dsex.html` for
      `/money/terms/dsex`, and a reader who saved that form would
      have found it dead the day the file left. The route strips
      the suffix before it looks anything up, so both forms find
-     the same row. */
+     the same row. It is also the shape the two practice books
+     now have. */
   /^\/(money|deutsch|quran|english)\/[a-z0-9-]+\/[a-z0-9-]+$/i,
   /^\/_next\//,
 ];

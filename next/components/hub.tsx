@@ -54,7 +54,7 @@ export function ReadHub({ copy, pieces }: { copy: ReadHubCopy; pieces: Piece[] |
             {first ? (
               <ButtonLink kind="solid" href={first.url}>{copy.first.label}</ButtonLink>
             ) : null}
-            <ButtonLink kind="ghost" href="/skills/index.html">{copy.more}</ButtonLink>
+            <ButtonLink kind="ghost" href="/skills">{copy.more}</ButtonLink>
           </div>
         </div>
 
@@ -175,7 +175,7 @@ export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
               <p>&quot;11% return&quot; means nothing on its own. Against what inflation? Over
                  how long? After what tax at source? A rate quoted without those
                  three is marketing, not information; the{" "}
-                 <a href="/tools/index.html#inflation">inflation calculator</a> exists
+                 <a href="/tools#inflation">inflation calculator</a> exists
                  to make that comparison automatic.</p>
             </details>
             <details className="faq">
@@ -215,8 +215,8 @@ export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
             <SubscribeBox />
 
             <p><a href="/feed.xml">RSS feed →</a> &nbsp;·&nbsp;
-               <a href="/money/index.html">শেখার লাইব্রেরি</a> &nbsp;·&nbsp;
-               <a href="/tools/index.html">Calculators</a></p>
+               <a href="/money">শেখার লাইব্রেরি</a> &nbsp;·&nbsp;
+               <a href="/tools">Calculators</a></p>
           </div>
         </section>
 

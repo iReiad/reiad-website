@@ -118,7 +118,7 @@ export interface LadderLesson extends Lesson {
    `start/<slug>` and moving somebody's ticks is not a thing a
    restructure is allowed to do. The hub still carries an anchor
    per step so that a link somebody saved to
-   /money/index.html#step-papers lands where it named.
+   /money#step-papers lands where it named.
    ------------------------------------------------------------ */
 const STARTER_STEPS: Omit<Lesson, "status">[] = [
   {
@@ -654,8 +654,8 @@ export const schoolFor = (path: string = "/money/"): School =>
 /** Every stage of the money school, in ladder order. */
 export const STAGES: Stage[] = MONEY_STAGES;
 
-/** A stage's folder URL. */
-export const stageUrl = (stage: Stage): string => `/money/${stage.slug}/index.html`;
+/** A stage's ladder URL. */
+export const stageUrl = (stage: Stage): string => `/money/${stage.slug}`;
 
 /** Where a stage's lessons live, `base` wins, so basics-1 keeps /money/terms/. */
 export const lessonBase = (stage: Stage): string => stage.base ?? `/money/${stage.slug}/`;

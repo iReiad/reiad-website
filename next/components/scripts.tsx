@@ -11,7 +11,7 @@
    module even ran: the compounding tool computed ৳41.63 lakh and
    wrote it into the page about fifty milliseconds after load, and
    then the number went back to being a dash. Every stat on
-   /tools/index.html, the whole verdict on /tools/stock.html and
+   /tools, the whole verdict on /tools/stock and
    five of the seven case studies, all of them showing the empty
    markup a reader is meant to see for an instant.
 

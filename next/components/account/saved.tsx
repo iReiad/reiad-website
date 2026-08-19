@@ -39,11 +39,11 @@ export const savedModule = () => runtimeModule<SavedModule>("/saved.js");
    entry, and the fallback is the calculators' own index rather
    than a broken link, because a tool can be renamed out of this
    table and its rows outlive it. */
-const TOOL_PAGE: Record<string, string> = { stock: "/tools/stock.html" };
+const TOOL_PAGE: Record<string, string> = { stock: "/tools/stock" };
 const TOOL_NAME: Record<string, string> = { stock: "The stock check" };
 
 const openAt = (row: Scenario): string => {
-  const page = TOOL_PAGE[row.tool] ?? "/tools/index.html";
+  const page = TOOL_PAGE[row.tool] ?? "/tools";
   const query = typeof row.inputs?.query === "string" ? row.inputs.query : "";
   return query ? `${page}?${query.replace(/^\?/, "")}` : page;
 };

@@ -1,5 +1,5 @@
 /* ============================================================
-   auth-config.js, who is allowed into /studio.html.
+   auth-config.ts, who is allowed into /studio/.
 
    RIGHT NOW THIS IS UNCONFIGURED, so the first visit to the
    Studio shows a one-time setup screen: pick a passphrase, and
@@ -19,17 +19,14 @@
    page's code, because every static site's code is public. Do
    not put anything genuinely confidential behind it.
    ============================================================ */
-
 export const AUTH = {
-  // Replace this whole object with the block the setup screen gives you.
-  configured: false,
-  salt: "",
-  hash: "",
-  iterations: 600000,
-
-  // How long an unlock lasts before it asks again.
-  rememberDays: 30,
-
-  // Shown on the lock screen so you know you're on the right site.
-  label: "Reiad's Library · Article Studio",
+    // Replace this whole object with the block the setup screen gives you.
+    configured: false,
+    salt: "",
+    hash: "",
+    iterations: 600000,
+    // How long an unlock lasts before it asks again.
+    rememberDays: 30,
+    // Shown on the lock screen so you know you're on the right site.
+    label: "Reiad's Library · Article Studio",
 };

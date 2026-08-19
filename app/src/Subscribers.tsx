@@ -16,8 +16,9 @@ import { useMemo, useState } from "react";
 import type { Subscriber } from "./api.ts";
 import { listSubscribers } from "./api.ts";
 import { useRows } from "./useRows.ts";
+import { Button, ButtonLink } from "../../next/components/ui/button.tsx";
 import {
-  Broken, Btn, Count, Empty, Loading, SearchBox, Stat, StatRow, when,
+  Broken, Count, Empty, Loading, SearchBox, Stat, StatRow, when,
 } from "./bits.tsx";
 
 /* The endpoint sends five hundred at most and the browser shows
@@ -63,14 +64,15 @@ export function Subscribers() {
       </StatRow>
 
       <div style={{ marginTop: "18px" }}>
-        <SearchBox placeholder="Search addresses" onSearch={search} />
+        <SearchBox id="search-subscribers"
+                   placeholder="Search addresses" onSearch={search} />
       </div>
 
       <div className="row-flex" style={{ margin: "16px 0" }}>
         {/* A real link, not a fetch: the browser saves the file the
             Worker streams, and nothing has to hold five hundred
             addresses in memory to do it. */}
-        <a className="btn btn-ghost" href="/api/subscribers/export">Download CSV</a>
+        <ButtonLink href="/api/subscribers/export">Download CSV</ButtonLink>
       </div>
 
       {matched.length ? (
@@ -94,9 +96,9 @@ export function Subscribers() {
 
           {rest > 0 ? (
             <div className="row-flex" style={{ marginTop: "16px" }}>
-              <Btn onClick={() => setShown((n) => n + PAGE)}>
+              <Button onClick={() => setShown((n) => n + PAGE)}>
                 Show {Math.min(PAGE, rest)} more of {matched.length}
-              </Btn>
+              </Button>
             </div>
           ) : null}
         </>

@@ -57,7 +57,7 @@ const PORT = 8996;
    wired at the foot of it. */
 const ITEMS = [
   {
-    href: "/portfolio/dissertation.html",
+    href: "/portfolio/dissertation",
     label: "Open the dissertation case study",
     tag: "Dissertation · 15,000 words",
     title: "Do Islamic funds actually carry less risk?",
@@ -69,7 +69,7 @@ const ITEMS = [
     ],
   },
   {
-    href: "/portfolio/frontier.html",
+    href: "/portfolio/frontier",
     label: "Open the fund",
     tag: "Python",
     title: "An Islamic fund portfolio, built and tested",
@@ -77,7 +77,7 @@ const ITEMS = [
     detail: ["Ten FTSE 250 holdings chosen by a screen that runs before any price."],
   },
   {
-    href: "/portfolio/scorecard.html",
+    href: "/portfolio/scorecard",
     label: "Open the credit models",
     tag: "Credit",
     title: "A credit-risk case, worked as a bank would",
@@ -329,7 +329,7 @@ console.log("the research window on the About page");
   ok("on this site, so it is not opened away from it", w.outTarget === null,
     w.outTarget ?? "none");
   ok("and the second button is the way to all of them",
-    w.allHref === "/portfolio.html" && w.allText === "All the case studies",
+    w.allHref === "/portfolio" && w.allText === "All the case studies",
     `${w.allHref ?? "none"} / ${w.allText}`);
 
   ok("the way out of the window is a real button", w.closeTag === "BUTTON");
@@ -502,7 +502,7 @@ console.log("the research window on the About page");
     existsSync(join(ROOT, "archive", "modules", "about.js"))
     && existsSync(join(ROOT, "archive", "modules", "news.js")));
   ok("and the About page does not ask for a script that is gone",
-    !read("next", "app", "(site)", "about.html", "layout.tsx").includes("about.js"));
+    !read("next", "app", "(site)", "about", "layout.tsx").includes("about.js"));
 
   /* The animation was written twice while both existed: once in
      the module and once in `news.tsx`, which copied it rather than
@@ -526,7 +526,7 @@ console.log("the research window on the About page");
      is long on purpose and one paragraph of it names the very
      thing this is looking for. `check-components.ts` reads a
      source the same way and says why. */
-  const route = read("next", "app", "(site)", "about.html", "page.tsx")
+  const route = read("next", "app", "(site)", "about", "page.tsx")
     .replace(/\/\*[\s\S]*?\*\//g, "");
   ok("the route renders the component", route.includes("<Research items={RESEARCH} />"));
   ok("and hands it the page's own words rather than a template to clone",

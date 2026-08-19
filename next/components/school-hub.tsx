@@ -1,7 +1,7 @@
 /* ============================================================
    school-hub.tsx: a school's front page, out of its rows.
 
-   archive/TRANSITION.md Stage 11.8. `/money/index.html` was 832 lines of
+   archive/TRANSITION.md Stage 11.8. `/money` was 832 lines of
    hand-written HTML: the eight starter steps written out as
    accordions, the ladder written out as eight cards, and a
    sentence saying how many lessons there were. All three were
@@ -48,7 +48,7 @@ import { SectionLabel } from "./ui/label";
    declaration `--accent: var(--accent)`: a cycle, thrown out, and
    `--accent` invalid on the card and everything inside it. Since
    `--panel` is mixed from the accent, fourteen cards on
-   /money/index.html had no ground, no rail, no icon tile and no
+   /money had no ground, no rail, no icon tile and no
    chip. `scripts/check-selfref.ts` fails on it now.
 
    `soon` is a state and is deliberately not the accent: a rung
@@ -130,7 +130,7 @@ export function MoneyHub({ school }: { school: School }) {
               {first.lessons.map((lesson, i) => (
                 /* The id is what the old hub's accordions carried,
                    so a link somebody saved to
-                   `/money/index.html#step-papers` still lands on
+                   `/money#step-papers` still lands on
                    the thing it named. The page it points at is a
                    real page now; the anchor is the courtesy. */
                 <div key={lesson.slug} id={`step-${lesson.slug}`} className="hub-step">
@@ -255,14 +255,14 @@ export function MoneyHub({ school }: { school: School }) {
         <section className="hub-section" id="ekhon">
           <div className="deck deck-2">
             <GoCard
-              href="/money/contents.html" accent="var(--green)" icon="book" lang="bn"
+              href="/money/contents" accent="var(--green)" icon="book" lang="bn"
               chip="পুরো তালিকা"
               title="সব লেখার তালিকা"
               dek="এক পাতায় প্রতিটা ধাপের প্রতিটা লেখা, নাম ধরে ধরে।"
               go="তালিকা দেখুন"
             />
             <GoCard
-              href="/tools/index.html" accent="var(--gold)" icon="calculator" lang="bn"
+              href="/tools" accent="var(--gold)" icon="calculator" lang="bn"
               chip="ক্যালকুলেটর"
               title="নিজের সংখ্যা বসিয়ে দেখুন"
               dek="চক্রবৃদ্ধি, কিস্তি, মূল্যস্ফীতি আর সঞ্চয়পত্র: পড়া জিনিসটা নিজের টাকায় মিলিয়ে নেওয়া।"

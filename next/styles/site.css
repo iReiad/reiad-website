@@ -854,7 +854,7 @@
      The three materials
 
      `data-glass` on <html>, written before the first paint, and
-     the reader chooses it on /account.html. Each block says what
+     the reader chooses it on /account. Each block says what
      the surface is MADE of; the two knobs above then move
      whichever one is on. Nothing here is a selector on a surface,
      which is the point: a seventh glass surface written tomorrow
@@ -1675,7 +1675,7 @@
      `.welcome-note`, `.welcome-back` and `.account-exits`: about
      eighty lines of layout for a page whose markup is Tailwind
      now. Everything they did is a utility on the element itself
-     in `next/app/(site)/account.html/page.tsx`, which is what
+     in `next/app/(site)/account/page.tsx`, which is what
      Stage 14 chose that page for.
 
      `.choice`, `.choice-grid`, `.choice-row` and `.link-btn`
@@ -2123,7 +2123,7 @@
      The account page's own markup is Tailwind as of 17 August
      2026: the banded top, the sticky rail, the sections, the
      cards, the form and the exits are utilities in
-     `next/app/(site)/account.html/page.tsx`, and about 240 lines
+     `next/app/(site)/account/page.tsx`, and about 240 lines
      of rules that used to be here went with them.
 
      What is left below is the part a utility could not say. The
@@ -3207,7 +3207,7 @@ it collapsed to the width of the word "Bangladesh". */
     padding: 14px 16px; font-size: var(--t-5);
   }
 
-  /* ---------- the live portfolio, /tools/live.html ----------
+  /* ---------- the live portfolio, /tools/live ----------
 
      One drawing vocabulary for both faces of the page: the
      public weight list and the reader's own dashboard. Two
@@ -3751,7 +3751,7 @@ it collapsed to the width of the word "Bangladesh". */
 }
 
 /* ============================================================
-   ARTICLE STUDIO  (/studio.html)
+   ARTICLE STUDIO  (/studio)
    ============================================================ */
 @layer studio {
 
@@ -5903,7 +5903,7 @@ and an intro that needs them in step is an intro that breaks
 
      Eighty lines: `.contents-cta`, `.contents-jump`,
      `.contents-stage`, `.contents-row` and the rest of a
-     hand-written /money/contents.html. The contents page is a
+     hand-written /money/contents. The contents page is a
      route now, `next/components/school-contents.tsx`, and
      `@layer deck` styles what it renders.
 
@@ -6962,7 +6962,7 @@ German for day, and .tag is what the site has always called
    preset buttons refused to wrap, and their unwrapped width
    pushed the whole sidebar to 784px inside a 390px phone.
 
-   Everything below is for /tools/stock.html: the score dial, the
+   Everything below is for /tools/stock: the score dial, the
    pillar accordions and the five charts drawn without a library.
    ============================================================ */
 @layer check {

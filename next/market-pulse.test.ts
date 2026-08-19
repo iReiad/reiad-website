@@ -22,7 +22,7 @@
    None of it exists until React has hydrated and an effect has
    run: the server sends an empty live region and nothing else, on
    purpose, because what a reader has cached and whether a feed
-   answers are facts about one browser. `/insights.html` is
+   answers are facts about one browser. `/insights` is
    `force-dynamic`, so `interactive.test.ts` cannot serve it, and
    `hydrate-fixture.ts` is the smaller way in.
 
@@ -441,7 +441,7 @@ console.log("the market pulse on the Insights hub");
   ok("and is never prerendered, because somebody else's site is not "
     + "ours to fetch on a hover", w.outNoPrerender === true);
   ok("the second button is the way back to all of them",
-    w.allHref === "/insights.html", w.allHref ?? "none");
+    w.allHref === "/insights", w.allHref ?? "none");
 
   const animated = await page.evaluate(() =>
     (window as unknown as { __animated: Array<{ cls: string;
@@ -703,7 +703,7 @@ console.log("the market pulse on the Insights hub");
   ok("and it is readable in archive/, which is where a replaced file goes",
     existsSync(join(ROOT, "archive", "modules", "pulse.js")));
   ok("the Insights layout does not load it",
-    !readFileSync(join(ROOT, "next", "app", "insights.html", "layout.tsx"), "utf8")
+    !readFileSync(join(ROOT, "next", "app", "insights", "layout.tsx"), "utf8")
       .includes("pulse.js"));
   const precached = Object.keys(
     (JSON.parse(readFileSync(join(ROOT, "aab", "sw-manifest.json"), "utf8")) as

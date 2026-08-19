@@ -1,5 +1,5 @@
 /* ============================================================
-   tilt.js, cards lean very slightly towards the pointer.
+   tilt.ts, cards lean very slightly towards the pointer.
 
    The effect, in one sentence: a card rotates a couple of
    degrees about the axis perpendicular to wherever the pointer
@@ -46,7 +46,6 @@
    made of. A tilt that works everywhere beats a tilt plus a lift
    that works in half the places.
    ============================================================ */
-
 /* Every card-like thing on the site. Matched at the container so
    that one listener serves a whole grid, rather than one per
    card, a home page has fourteen of these and an Insights page
@@ -72,12 +71,9 @@
    rule in `@layer components` names the same selectors this
    does, and the two lists have to agree. */
 const SCENES = [".cards", ".news-grid", ".grid-2", ".grid-3", ".path",
-  ".deck", ".gate-deck"];
-
+    ".deck", ".gate-deck"];
 const CARD = [".cell", ".news-card", ".card[data-kind=\"go\"]", ".gate-tile"].join(",");
-
-const MAX_DEG = 2.6;   // the whole effect, corner to corner
-
+const MAX_DEG = 2.6; // the whole effect, corner to corner
 /** The rotation that leans a card towards (nx, ny), where both
     are −1…1 from the card's centre.
 
@@ -89,46 +85,47 @@ const MAX_DEG = 2.6;   // the whole effect, corner to corner
     perpendicular to the pointer direction in the card's plane,
     and the angle is how far off centre the pointer is. */
 function axisFor(nx, ny) {
-  const mag = Math.min(1, Math.hypot(nx, ny));
-  if (!mag) return null;
-  // perpendicular to (nx, ny), with the sign that leans towards it
-  return { x: ny / mag, y: nx / mag, deg: mag * MAX_DEG };
+    const mag = Math.min(1, Math.hypot(nx, ny));
+    if (!mag)
+        return null;
+    // perpendicular to (nx, ny), with the sign that leans towards it
+    return { x: ny / mag, y: nx / mag, deg: mag * MAX_DEG };
 }
-
 function attach(scene) {
-  if (scene.dataset.tiltScene) return;
-  scene.dataset.tiltScene = "on";
-  scene.classList.add("tilt-scene");
-
-  let held = null;
-
-  const clear = (card) => {
-    if (card) card.style.removeProperty("rotate");
-  };
-
-  scene.addEventListener("pointermove", (e) => {
-    if (e.pointerType === "touch") return;
-    const card = e.target.closest(CARD);
-    if (card !== held) { clear(held); held = card; }
-    if (!card || !scene.contains(card)) return;
-
-    const r = card.getBoundingClientRect();
-    if (!r.width || !r.height) return;
-
-    const nx = ((e.clientX - r.left) / r.width - 0.5) * 2;
-    const ny = ((e.clientY - r.top) / r.height - 0.5) * 2;
-    const a = axisFor(nx, ny);
-    if (!a) return;
-
-    card.style.rotate = `${a.x.toFixed(3)} ${a.y.toFixed(3)} 0 ${a.deg.toFixed(2)}deg`;
-  }, { passive: true });
-
-  /* Leaving the grid unwinds whatever was leaning. Without this a
-     card keeps its lean for as long as the page is open, which
-     reads as a rendering fault rather than as a gesture. */
-  scene.addEventListener("pointerleave", () => { clear(held); held = null; });
+    if (scene.dataset.tiltScene)
+        return;
+    scene.dataset.tiltScene = "on";
+    scene.classList.add("tilt-scene");
+    let held = null;
+    const clear = (card) => {
+        if (card)
+            card.style.removeProperty("rotate");
+    };
+    scene.addEventListener("pointermove", (e) => {
+        if (e.pointerType === "touch")
+            return;
+        const card = e.target instanceof Element ? e.target.closest(CARD) : null;
+        if (card !== held) {
+            clear(held);
+            held = card;
+        }
+        if (!card || !scene.contains(card))
+            return;
+        const r = card.getBoundingClientRect();
+        if (!r.width || !r.height)
+            return;
+        const nx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+        const ny = ((e.clientY - r.top) / r.height - 0.5) * 2;
+        const a = axisFor(nx, ny);
+        if (!a)
+            return;
+        card.style.rotate = `${a.x.toFixed(3)} ${a.y.toFixed(3)} 0 ${a.deg.toFixed(2)}deg`;
+    }, { passive: true });
+    /* Leaving the grid unwinds whatever was leaning. Without this a
+       card keeps its lean for as long as the page is open, which
+       reads as a rendering fault rather than as a gesture. */
+    scene.addEventListener("pointerleave", () => { clear(held); held = null; });
 }
-
 /* ============================================================
    THE SAME GESTURE ON A PHONE
 
@@ -172,7 +169,6 @@ function attach(scene) {
    5. Every guard the pointer version has, this has too:
       prefers-reduced-motion, and never on a device that hovers.
    ============================================================ */
-
 /** Every card, expressed as a child of every scene.
 
     `> :is(CARD)` rather than the `> *` this used to be, and the
@@ -182,101 +178,108 @@ function attach(scene) {
     layout `<aside>` along with the doors. Only the things a
     pointer would tilt sway in the hand. */
 const CARDS_IN_SCENES = SCENES.map((sel) => `${sel} > :is(${CARD})`).join(",");
-
-const PHONE_DEG = 1.4;     // half the pointer tilt, and for a reason
-const PHONE_RANGE = 26;    // degrees of handset tilt for the full lean
-const GIVE_UP_MS = 3000;   // no event by then: this device cannot do it
-
+const PHONE_DEG = 1.4; // half the pointer tilt, and for a reason
+const PHONE_RANGE = 26; // degrees of handset tilt for the full lean
+const GIVE_UP_MS = 3000; // no event by then: this device cannot do it
 let phoneStarted = false;
-
 function initPhoneTilt() {
-  if (phoneStarted) return;
-  phoneStarted = true;
-
-  if (matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (typeof DeviceOrientationEvent === "undefined") return;
-
-  let frame = 0;
-  let heard = false;
-  let beta = null;    // front-to-back, degrees
-  let gamma = null;   // left-to-right, degrees
-  let base = null;    // how the handset was held when we started
-
-  const apply = () => {
-    frame = 0;
-    /* `SCENES.join(",") + " > *"` would have bound the child
-       combinator to the LAST selector in the list only, which is
-       how this shipped broken the first time: one scene tilted
-       and the other twelve did not. Build the descendant list
-       properly. */
-    const cards = document.querySelectorAll(CARDS_IN_SCENES);
-    if (!cards.length) return;
-
-    /* Normalised to -1…1 the same way the pointer version reads a
-       position across a card, so both ends of this module speak
-       the same language to axisFor. */
-    const nx = clamp((gamma - base.gamma) / PHONE_RANGE);
-    const ny = clamp((beta - base.beta) / PHONE_RANGE);
-    const a = axisFor(nx, ny);
-
-    for (const card of cards) {
-      /* Only what is on screen. A long page has forty of these
-         and thirty-eight of them are nowhere near the reader. */
-      const r = card.getBoundingClientRect();
-      if (r.bottom < 0 || r.top > innerHeight || !r.width) {
-        card.style.removeProperty("rotate");
-        continue;
-      }
-      if (!a) card.style.removeProperty("rotate");
-      else card.style.rotate =
-        `${a.x.toFixed(3)} ${a.y.toFixed(3)} 0 ${(a.deg * PHONE_DEG / MAX_DEG).toFixed(2)}deg`;
-    }
-  };
-
-  const onOrient = (e) => {
-    if (e.beta == null || e.gamma == null) return;
-    heard = true;
-    beta = e.beta;
-    gamma = e.gamma;
-    /* The first reading is the rest position. Someone reading in
-       bed holds a phone at sixty degrees and is not tilting it;
-       measuring from where they started means the cards are level
-       when the handset is still, whatever "still" happens to be. */
-    base ??= { beta, gamma };
-    if (!frame) frame = requestAnimationFrame(apply);
-  };
-
-  addEventListener("deviceorientation", onOrient, { passive: true });
-
-  setTimeout(() => {
-    if (heard) {
-      // Scenes need the perspective the pointer version's class carries.
-      document.querySelectorAll(SCENES.join(",")).forEach((s) => s.classList.add("tilt-scene"));
-      return;
-    }
-    removeEventListener("deviceorientation", onOrient);
-  }, GIVE_UP_MS);
+    if (phoneStarted)
+        return;
+    phoneStarted = true;
+    if (matchMedia("(hover: hover) and (pointer: fine)").matches)
+        return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches)
+        return;
+    if (typeof DeviceOrientationEvent === "undefined")
+        return;
+    let frame = 0;
+    let heard = false;
+    let beta = null; // front-to-back, degrees
+    let gamma = null; // left-to-right, degrees
+    /** How the handset was held when we started. */
+    let base = null;
+    const apply = () => {
+        frame = 0;
+        /* Unreachable: nothing schedules this until onOrient has set
+           all three. Written out because the alternative is asserting
+           they are set, and an assertion stops being true the day
+           something else calls this. */
+        if (beta === null || gamma === null || base === null)
+            return;
+        /* `SCENES.join(",") + " > *"` would have bound the child
+           combinator to the LAST selector in the list only, which is
+           how this shipped broken the first time: one scene tilted
+           and the other twelve did not. Build the descendant list
+           properly. */
+        const cards = document.querySelectorAll(CARDS_IN_SCENES);
+        if (!cards.length)
+            return;
+        /* Normalised to -1…1 the same way the pointer version reads a
+           position across a card, so both ends of this module speak
+           the same language to axisFor. */
+        const nx = clamp((gamma - base.gamma) / PHONE_RANGE);
+        const ny = clamp((beta - base.beta) / PHONE_RANGE);
+        const a = axisFor(nx, ny);
+        for (const card of cards) {
+            /* Only what is on screen. A long page has forty of these
+               and thirty-eight of them are nowhere near the reader. */
+            const r = card.getBoundingClientRect();
+            if (r.bottom < 0 || r.top > innerHeight || !r.width) {
+                card.style.removeProperty("rotate");
+                continue;
+            }
+            if (!a)
+                card.style.removeProperty("rotate");
+            else
+                card.style.rotate =
+                    `${a.x.toFixed(3)} ${a.y.toFixed(3)} 0 ${(a.deg * PHONE_DEG / MAX_DEG).toFixed(2)}deg`;
+        }
+    };
+    const onOrient = (e) => {
+        if (e.beta == null || e.gamma == null)
+            return;
+        heard = true;
+        beta = e.beta;
+        gamma = e.gamma;
+        /* The first reading is the rest position. Someone reading in
+           bed holds a phone at sixty degrees and is not tilting it;
+           measuring from where they started means the cards are level
+           when the handset is still, whatever "still" happens to be. */
+        base ??= { beta, gamma };
+        if (!frame)
+            frame = requestAnimationFrame(apply);
+    };
+    addEventListener("deviceorientation", onOrient, { passive: true });
+    setTimeout(() => {
+        if (heard) {
+            // Scenes need the perspective the pointer version's class carries.
+            document.querySelectorAll(SCENES.join(",")).forEach((s) => s.classList.add("tilt-scene"));
+            return;
+        }
+        removeEventListener("deviceorientation", onOrient);
+    }, GIVE_UP_MS);
 }
-
 const clamp = (n) => Math.max(-1, Math.min(1, n));
-
 export function initTilt() {
-  /* The phone half first, because it is the one that has to
-     decide whether this device can do it at all. */
-  initPhoneTilt();
-
-  if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  document.querySelectorAll(SCENES.join(",")).forEach(attach);
+    /* The phone half first, because it is the one that has to
+       decide whether this device can do it at all. */
+    initPhoneTilt();
+    if (!matchMedia("(hover: hover) and (pointer: fine)").matches)
+        return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches)
+        return;
+    document.querySelectorAll(SCENES.join(",")).forEach(attach);
 }
-
 /** For content built after load, the Insights grid, the home
     page's news slot, so a card that arrives late tilts too. */
 export function tiltIn(root) {
-  if (!matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (!root) return;
-  if (root.matches?.(SCENES.join(","))) attach(root);
-  root.querySelectorAll?.(SCENES.join(",")).forEach(attach);
+    if (!matchMedia("(hover: hover) and (pointer: fine)").matches)
+        return;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches)
+        return;
+    if (!root)
+        return;
+    if (root instanceof HTMLElement && root.matches?.(SCENES.join(",")))
+        attach(root);
+    root.querySelectorAll?.(SCENES.join(",")).forEach(attach);
 }

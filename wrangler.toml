@@ -18,7 +18,7 @@
 #     → copy the database_id it prints into this file
 #   npx wrangler deploy
 #
-# Then set the admin passphrase by visiting /studio.html once.
+# Then set the admin passphrase by visiting /studio once.
 # The tables create themselves on the first request that needs
 # them (see functions/_lib/db.js), so there is no schema step.
 # ============================================================
@@ -83,14 +83,10 @@ not_found_handling = "404-page"
 #                piece published from the Studio is actually
 #                findable. Assets would otherwise win and the merge
 #                would never run.
-#   the three    /insights.html, /cooking/index.html and
-#   hubs         /travel/index.html are rendered by the Next.js
-#                Worker as of Stage 11.1. They have to be listed
-#                for two reasons rather than one: the files are
-#                still there for now and would win, and the asset
-#                router redirects a .html address to its pretty
-#                form before the Worker is ever called, so the
-#                canonical URL would 308 rather than render.
+#   the three    /insights, /cooking and /travel are rendered by
+#   hubs         the Next.js Worker as of Stage 11.1. Each is one
+#                segment and so is not covered by its own mount
+#                star above, which is why all three are named.
 #   /_next/*     the Next.js Worker's own JavaScript, once the NEXT
 #                service binding exists. Nothing in aab/ matches, so
 #                with not_found_handling set the asset router would
@@ -113,45 +109,48 @@ not_found_handling = "404-page"
 # built nothing while the site carried on serving the last good
 # upload. `check-routes.ts` now runs the same overlap test the
 # deploy does, so the next one fails on a laptop instead.
+#
+# NO ENTRY HERE ENDS IN .html, as of task #28, and that is what
+# makes the redirects work. A listed path never reaches the asset
+# router, and `aab/_redirects` IS the asset router, so the old
+# spelling of an address has to be absent from this list for its
+# 301 to fire. `/about` is here and `/about.html` deliberately is
+# not.
 run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/*", "/_next/*",
-  "/feed.xml", "/sitemap.xml", "/insights.html",
-  # /cooking/index.html and /travel/index.html are not listed: the two
-  # mount prefixes above already carry them, and naming them as well
-  # is the overlap wrangler rejects.
-  "/about.html", "/contact.html", "/account.html", "/skills/index.html",
-  # The third-party course section. One star covers all four of its
-  # shapes, and nothing else lives under that prefix, so there is no
-  # fall-through to pay for: unlike the schools, this section has no
-  # files beside it. It does not overlap /skills/index.html, which is
-  # a different path and not a prefix of this one.
+  "/feed.xml", "/sitemap.xml",
+  # The three reading hubs. Their own mounts above carry everything
+  # under them; a hub is one segment and is not covered by its own
+  # star, so it is named.
+  "/insights", "/cooking", "/travel",
+  "/about", "/contact", "/account", "/skills",
+  # The third-party course section, and the one prefix here still
+  # answering `.html` addresses: its four shapes are duplicated in
+  # `aab/src/courses.ts` and `check-courses.ts` holds the two to
+  # each other. One star covers all four, nothing else lives under
+  # that prefix, and it does not overlap "/skills", which is a
+  # different path and not a prefix of this one.
   "/skills/courses/*",
-  "/tools/index.html", "/tools/stock.html", "/tools/live.html", "/portfolio.html", "/portfolio/*", "/",
-  "/desk/index.html", "/studio/index.html",
+  "/tools", "/tools/stock", "/tools/live", "/portfolio", "/portfolio/*", "/",
+  "/desk", "/studio",
   # The four schools, Stage 11.7. 247 pages left aab/ in the same
   # commit that added these, so with not_found_handling set the asset
   # router would answer every one of them with 404.html and the Worker
   # would never be called: the whole of /money/, /deutsch/, /quran/
   # and /english/ would 404 at once.
   #
-  # Deliberately NOT "/money/*". That would take every module of every
-  # school through the Worker as well, /money/reader.js and
-  # /quran/curriculum.js among them, only to fall straight back to the
-  # assets: a hop on every script of every page for nothing.
-  #
-  # The fall-through still matters, and no longer for the practice
-  # books. They were files, and this comment said so for a fortnight
-  # after they stopped being any: /deutsch/stufe-1/arbeitsbuch.html
-  # matches the pattern below and the ROUTE answers it now, so the
-  # four generated pages sat in aab/ shadowed, 2.2 MB nothing could
-  # reach. What still falls through is every school's own modules,
-  # which is what the star above is deliberately not.
-  "/money/index.html", "/deutsch/index.html", "/quran/index.html", "/english/index.html",
-  "/money/contents.html",
-  # One pattern per school, not two. The suffixless form already
-  # matches the .html one, so listing both is the overlap above: a
-  # star matches a dot as readily as anything else, and /money/*/*
-  # covers /money/stage/lesson.html as well as /money/stage/lesson.
-  "/money/*/*", "/deutsch/*/*", "/quran/*/*", "/english/*/*"]
+  # This was "/money/*/*" and its three siblings, deliberately, so
+  # that a school's own modules were left to the asset router. A
+  # stage's ladder is `/money/basics-1` now rather than
+  # `/money/basics-1/index.html`, and a two-segment path cannot be
+  # named without a star at the second segment. The alternative was
+  # seventeen stage slugs typed into this file, which is data in a
+  # config nothing checks: a stage added in the Studio would 404
+  # until somebody remembered to come here. So the star is wider
+  # and the cost is one binding hop on /money/reader.js and the
+  # twenty-four other school modules, which worker.js answers by
+  # falling straight through to the file.
+  "/money", "/deutsch", "/quran", "/english",
+  "/money/*", "/deutsch/*", "/quran/*", "/english/*"]
 
 # ---------- D1: the database everything dynamic runs on ----------
 # Articles, reader questions, subscribers, enquiries, view counts and
@@ -279,7 +278,7 @@ ADMIN_READERS = "f8278696-caa3-4321-938c-ead22d86d144"
 #
 #   npx wrangler secret put T212_PUBLIC_TOKEN
 #     The site's own Trading 212 API key, read-scoped, behind the
-#     public percentages on /tools/live.html. An admin can instead
+#     public percentages on /tools/live. An admin can instead
 #     set (and rotate) the same thing from the dashboard itself,
 #     sealed into D1 settings; this secret wins where both exist.
 

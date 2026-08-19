@@ -249,11 +249,11 @@ function setLast(entry: Omit<Bookmark, "ts">) {
    browser's and that one is the Worker's package.
    ============================================================ */
 
-const courseUrl = (course: string) => `/skills/courses/${course}/index.html`;
+const courseUrl = (course: string) => `/skills/courses/${course}`;
 const moduleUrl = (course: string, mod: string) =>
-  `/skills/courses/${course}/${mod}/index.html`;
+  `/skills/courses/${course}/${mod}`;
 const lessonUrl = (course: string, mod: string, lesson: string) =>
-  `/skills/courses/${course}/${mod}/${lesson}.html`;
+  `/skills/courses/${course}/${mod}/${lesson}`;
 const lessonId = (course: string, mod: string, lesson: string) =>
   `${course}/${mod}/${lesson}`;
 
@@ -497,7 +497,7 @@ function sidebar(course: Course, here: Rung | null, open?: Set<string>): HTMLEle
    The four views
    ============================================================ */
 
-/** `/skills/courses/index.html` */
+/** `/skills/courses` */
 function drawCatalogue(root: HTMLElement, courses: CourseSummary[]) {
   const read = readSet();
 
@@ -544,7 +544,7 @@ function drawCatalogue(root: HTMLElement, courses: CourseSummary[]) {
   root.append(deck);
 }
 
-/** `/skills/courses/<course>/index.html`
+/** `/skills/courses/<course>`
 
     The deep link is the point of this page. A reader coming back
     to a course wants the lesson they have not done, not a table
@@ -558,7 +558,7 @@ function drawCourse(root: HTMLElement, course: Course) {
 
   root.append(el("header", { class: "hub-hero" }, [
     el("span", { class: "hub-eyebrow mono" }, [
-      el("a", { href: "/skills/courses/index.html" }, ["Courses"]),
+      el("a", { href: "/skills/courses" }, ["Courses"]),
       ` · Course ${course.n}`,
     ]),
     el("h1", {}, [course.title]),
@@ -614,7 +614,7 @@ function drawCourse(root: HTMLElement, course: Course) {
   root.append(list);
 }
 
-/** `/skills/courses/<course>/<module>/index.html`
+/** `/skills/courses/<course>/<module>`
 
     Where the last lesson of a module lands. It is a stopping
     place: what was in the module, what is ticked, and the way on
@@ -683,7 +683,7 @@ function drawModule(root: HTMLElement, course: Course, mod: Module) {
   root.append(main);
 }
 
-/** `/skills/courses/<course>/<module>/<lesson>.html` */
+/** `/skills/courses/<course>/<module>/<lesson>` */
 function drawLesson(root: HTMLElement, course: Course, mod: Module, lesson: Lesson) {
   const rungs = laddered(course);
   const id = lessonId(course.slug, mod.slug, lesson.slug);
@@ -1139,9 +1139,30 @@ interface Where {
 export function whereAmI(path: string): Where | null {
   const parts = path.replace(/^\/skills\/courses\/?/, "").split("/").filter(Boolean);
 
+  /* THE SEGMENT COUNT DECIDES, and the `index.html` clauses are
+     what still answers an address from before task #28.
+
+     Dropping `.html` made the counts distinct, which is why the
+     new spellings read as a plain list: one segment is a course,
+     two a module, three a lesson. The old spellings needed the
+     suffix to tell a course hub from a lesson, both of which were
+     three segments.
+
+     They are read here rather than redirected in
+     `aab/_redirects`, and `shared/courses.ts` says why beside
+     `lessonOf`: 845 addresses generated out of a Drive folder
+     cannot be one rule each without going stale the first time
+     that folder changes, and this section is admin-only and
+     unlisted, so there is no canonical to split and no crawler to
+     confuse. The routes are shells, so the URL is the only thing
+     that ever said which view this is. */
   if (!parts.length || parts[0] === "index.html") return { view: "catalogue" };
+  if (parts.length === 1) return { view: "course", course: parts[0] };
   if (parts.length === 2 && parts[1] === "index.html") {
     return { view: "course", course: parts[0] };
+  }
+  if (parts.length === 2) {
+    return { view: "module", course: parts[0], module: parts[1] };
   }
   if (parts.length === 3 && parts[2] === "index.html") {
     return { view: "module", course: parts[0], module: parts[1] };
@@ -1185,7 +1206,7 @@ export async function start(root: HTMLElement) {
       "This section is private",
       "It holds one person's own copy of a third-party course, so it is not published. "
       + "Sign in to open it.",
-      el("a", { class: "btn btn-solid", href: "/account.html" }, ["Sign in"]));
+      el("a", { class: "btn btn-solid", href: "/account" }, ["Sign in"]));
     return;
   }
 
@@ -1233,7 +1254,7 @@ function refuse(root: HTMLElement, answer: Answer<unknown>) {
   }
   if (answer.status === 401) {
     note(root, "Signed out", "Your session has expired. Sign in again to carry on.",
-      el("a", { class: "btn btn-solid", href: "/account.html" }, ["Sign in"]));
+      el("a", { class: "btn btn-solid", href: "/account" }, ["Sign in"]));
     return;
   }
   note(root, "That did not load", answer.message);

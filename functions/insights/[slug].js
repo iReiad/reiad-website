@@ -121,15 +121,15 @@ export function render(article, origin) {
         Reiad's Library
       </a>
       <nav aria-label="Main">
-        <a href="/money/index.html" data-keep>Learn</a>
-        <a href="/skills/index.html" data-nav-skills${
+        <a href="/money" data-keep>Learn</a>
+        <a href="/skills" data-nav-skills${
           look === LOOK.insights ? "" : ' aria-current="true"'}>Skills</a>
-        <a href="/tools/index.html">Tools</a>
-        <a href="/insights.html"${
+        <a href="/tools">Tools</a>
+        <a href="/insights"${
           look === LOOK.insights ? ' aria-current="page"' : ""}>Insights</a>
-        <a href="/portfolio.html">Portfolio</a>
-        <a href="/about.html">About</a>
-        <a href="/contact.html" data-keep>Contact</a>
+        <a href="/portfolio">Portfolio</a>
+        <a href="/about">About</a>
+        <a href="/contact" data-keep>Contact</a>
       </nav>
       <button class="icon-btn" id="open-menu" aria-label="Open the menu"><span class="burger" aria-hidden="true"></span>Menu</button>
       <button class="icon-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">⌕ <span class="kbd-hint">Ctrl K</span></button>

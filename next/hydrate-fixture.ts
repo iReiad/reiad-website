@@ -20,7 +20,7 @@
 
    ---- why a fixture rather than the route ----
 
-   `/insights.html` and an article are both `force-dynamic`, so
+   `/insights` and an article are both `force-dynamic`, so
    neither is in `.next/server/app/` and `interactive.test.ts`
    cannot serve either. The other way in is `dev-worker.ts`, which
    is the OpenNext build on workerd with a database under it, and

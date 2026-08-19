@@ -71,7 +71,8 @@ export function Comments() {
   return (
     <>
       <Filters options={FILTERS} active={status} onPick={setStatus} />
-      <SearchBox placeholder="Search comments, names, articles" onSearch={setQ} />
+      <SearchBox id="search-comments"
+                 placeholder="Search comments, names, articles" onSearch={setQ} />
 
       {loading ? <Loading /> : failed ? <Broken what="comments" /> : (
         <>

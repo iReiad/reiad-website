@@ -62,7 +62,7 @@ export const SCHOOL_HUBS: Record<string, SchoolHub> = {
     head: {
           "title": "জার্মান, বাংলায় · Deutsch von Herzen · Reiad's Library",
           "description": "বাংলা থেকে জার্মান, একদম শুরু থেকে: চারটা স্তর, রোজ একটা পাতার অনুশীলন। শব্দ মুখস্থ নয়, কাঠামো শেখা। বাংলায়, বিনামূল্যে।",
-          "canonical": "https://reiad.co.uk/deutsch/index.html",
+          "canonical": "https://reiad.co.uk/deutsch",
           "ogImage": "https://reiad.co.uk/og/deutsch.png",
           "ogType": "website"
     },
@@ -72,7 +72,7 @@ export const SCHOOL_HUBS: Record<string, SchoolHub> = {
     head: {
           "title": "কুরআনের আরবি, অন্তর থেকে, Reiad's Library",
           "description": "তিন ধাপে ষাট দিন: কুরআনের শব্দ চেনা, বাক্য বোঝা, তারপর গোটা সূরা খুলে পড়া। বাংলায়, বিনামূল্যে, কোনো লেখা ছাড়াই।",
-          "canonical": "https://reiad.co.uk/quran/index.html",
+          "canonical": "https://reiad.co.uk/quran",
           "ogImage": "https://reiad.co.uk/og/quran.png",
           "ogType": "website"
     },
@@ -82,7 +82,7 @@ export const SCHOOL_HUBS: Record<string, SchoolHub> = {
     head: {
           "title": "মন থেকে ইংরেজি, বাংলাভাষীর জন্য, Reiad's Library",
           "description": "দুই টার্মে ইংরেজি: শব্দের ক্রম থেকে দুই মিনিট টানা বলা পর্যন্ত। মুখস্থ নয়, কাঠামো। সাথে ৩০ দিনের অনুশীলন খাতা, বাংলায়, বিনামূল্যে।",
-          "canonical": "https://reiad.co.uk/english/index.html",
+          "canonical": "https://reiad.co.uk/english",
           "ogImage": "https://reiad.co.uk/og/english.png",
           "ogType": "website"
     },

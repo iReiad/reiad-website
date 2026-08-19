@@ -391,12 +391,20 @@ const meta = (html: string, key: string, attr = "property"): string | null => {
     comparison below are normalised through here. What that leaves
     being checked is the part worth checking: that the route says
     the same THING at its new address, rung for rung and link for
-    link. Real drift still fails. */
+    link. Real drift still fails.
+
+    The second half is task #28, which took `.html` off every route
+    address. A hub, a ladder and a practice book all lost it and a
+    LESSON deliberately did not, so only those three shapes are
+    normalised: stripping the suffix everywhere would stop this
+    test noticing if a lesson link lost one. */
 const moved = (v: string | null): string | null => {
   if (typeof v !== "string") return v;
   return v
     .replaceAll("/learn/learn.js", "/money/reader.js")
-    .replaceAll("/learn/", "/money/");
+    .replaceAll("/learn/", "/money/")
+    .replace(/\/index\.html\b/g, "")
+    .replace(/(\/(?:arbeitsbuch|workbook|contents))\.html\b/g, "$1");
 };
 
 const renamed = (v: string | null): string | null =>
@@ -684,11 +692,11 @@ const says = (name: string, want: string, got: string | null): void => ok(name, 
   `wanted ${JSON.stringify(want)}\n      got    ${JSON.stringify(got)}`);
 
 {
-  const insights = await hub("/insights.html");
-  ok("the Insights hub answers at /insights.html", insights.status === 200,
+  const insights = await hub("/insights");
+  ok("the Insights hub answers at /insights", insights.status === 200,
     `status ${insights.status}`);
   says("its title", "Insights · Reiad's Library", tagText(insights.html, "title"));
-  says("its canonical link", "https://reiad.co.uk/insights.html",
+  says("its canonical link", "https://reiad.co.uk/insights",
     attr(insights.html, /<link rel="canonical" href="([^"]+)"/));
 
   ok("the live piece has a card, at its own address",
@@ -707,12 +715,12 @@ const says = (name: string, want: string, got: string | null): void => ok(name, 
 }
 
 {
-  const kitchen = await hub("/cooking/index.html");
-  ok("the kitchen answers at /cooking/index.html", kitchen.status === 200,
+  const kitchen = await hub("/cooking");
+  ok("the kitchen answers at /cooking", kitchen.status === 200,
     `status ${kitchen.status}`);
   says("its title", "রান্নাঘর: উপকরণ ধরে ধরে রান্না বোঝা, Reiad's Library",
     tagText(kitchen.html, "title"));
-  says("its canonical link", "https://reiad.co.uk/cooking/index.html",
+  says("its canonical link", "https://reiad.co.uk/cooking",
     attr(kitchen.html, /<link rel="canonical" href="([^"]+)"/));
   says("the page is in Bangla", "bn", attr(kitchen.html, /<html lang="([^"]+)"/));
 
@@ -721,18 +729,49 @@ const says = (name: string, want: string, got: string | null): void => ok(name, 
     kitchen.html.includes("এখন পর্যন্ত ১টি লেখা"));
   ok("nothing from another section is on it", !kitchen.html.includes(ARTICLE.slug));
 
-  const desk = await hub("/travel/index.html");
+  const desk = await hub("/travel");
   ok("the travel desk answers too", desk.status === 200, `status ${desk.status}`);
   ok("with its own piece", desk.html.includes(`href="/travel/${DESK.slug}.html"`));
   ok("and its own share card",
     meta(desk.html, "og:image") === "https://reiad.co.uk/og/travel.png");
 
   /* An address this site has never produced. The hub lives at
-     /insights.html, one segment up, and `[section]/index.html`
-     must not answer for a section that has no hub there. */
+     /insights, one segment up, and `[section]/[slug]` must read
+     this as an article called `index` rather than as a hub. */
   const nowhere = await hub("/insights/index.html");
   ok("and /insights/index.html is handed back to the asset router",
     nowhere.status === 404, `status ${nowhere.status}`);
+}
+
+/* ---------- the addresses task #28 moved, which only decline ----------
+
+   A rule in `aab/_redirects` fires because the Worker DECLINES,
+   and `fromNext()` in worker.js falls through on 404 and on
+   nothing else. Most old addresses match no route at all, so
+   there is nothing to ask; these are the ones a route pattern
+   still claims and a lookup then has to refuse, one per shape.
+
+   404 rather than 500 is the whole assertion. `getArticle` and
+   `getLesson` both reach D1, and a route that threw instead of
+   returning null would answer 500, which falls through to
+   nothing: the reader would get the error rather than the
+   redirect, and every check in this repository would still pass.
+   It cannot be asked anywhere but here, because it needs the
+   binding. */
+{
+  console.log("\nthe old addresses, which have to decline rather than throw");
+  for (const [path, what] of [
+    ["/cooking/index.html", "a reading hub's old address"],
+    ["/travel/index.html", "the other one"],
+    ["/money/basics-1/index.html", "a stage ladder's"],
+    ["/deutsch/stufe-1/index.html", "a Stufe's"],
+    ["/deutsch/stufe-1/arbeitsbuch.html", "a practice book's"],
+    ["/english/term-1/workbook.html", "the other book's"],
+  ] as Array<[string, string]>) {
+    const gone = await hub(path);
+    ok(`${path} declines with a 404 (${what})`, gone.status === 404,
+      `status ${gone.status}, so _redirects never fires and the reader keeps it`);
+  }
 }
 
 /* ---------- the hand-written pages ----------
@@ -747,21 +786,21 @@ const says = (name: string, want: string, got: string | null): void => ok(name, 
    page's own: the stock check has its own item under Tools since
    Stage 11.8, and before that it marked the Tools link. */
 const HAND_WRITTEN: Array<[path: string, title: string, nav: string | null]> = [
-  ["/about.html", "About · Reiad's Library", "/about.html"],
-  ["/contact.html", "Contact · Reiad's Library", "/contact.html"],
-  ["/skills/index.html", "দক্ষতা · Skills · Reiad's Library", "/skills/index.html"],
-  ["/tools/index.html", "Tools & calculators · Reiad's Library", "/tools/index.html"],
-  ["/tools/stock.html", "Stock check · buy, hold or sell · Reiad's Library", "/tools/stock.html"],
-  ["/tools/live.html", "Live portfolio · a real account, live from the broker · Reiad's Library", "/tools/live.html"],
+  ["/about", "About · Reiad's Library", "/about"],
+  ["/contact", "Contact · Reiad's Library", "/contact"],
+  ["/skills", "দক্ষতা · Skills · Reiad's Library", "/skills"],
+  ["/tools", "Tools & calculators · Reiad's Library", "/tools"],
+  ["/tools/stock", "Stock check · buy, hold or sell · Reiad's Library", "/tools/stock"],
+  ["/tools/live", "Live portfolio · a real account, live from the broker · Reiad's Library", "/tools/live"],
   /* The home page marks nothing: it is not in the rail. */
   ["/", "Reiad's Library · বাংলায় টাকা, দক্ষতা আর কাজ", null],
-  ["/portfolio.html", "Portfolio & Services · Reiad's Library", "/portfolio.html"],
-  ["/portfolio/dcf.html",
+  ["/portfolio", "Portfolio & Services · Reiad's Library", "/portfolio"],
+  ["/portfolio/dcf",
     "DCF with sensitivity tables · DSE-listed manufacturer · Reiad's Library",
-    "/portfolio.html"],
-  ["/portfolio/dissertation.html",
+    "/portfolio"],
+  ["/portfolio/dissertation",
     "Islamic vs conventional funds in the UK · MSc dissertation · Reiad's Library",
-    "/portfolio.html"],
+    "/portfolio"],
 ];
 for (const [path, title, nav] of HAND_WRITTEN) {
   const page = await hub(path);
@@ -792,8 +831,8 @@ for (const [path, title, nav] of HAND_WRITTEN) {
    `check-content.ts` watches from the other side; this is the
    half that can only be seen once the pages are being served. */
 {
-  const index = await hub("/portfolio.html");
-  const cards = [...index.html.matchAll(/href="(\/portfolio\/[a-z-]+\.html)"/g)]
+  const index = await hub("/portfolio");
+  const cards = [...index.html.matchAll(/href="(\/portfolio\/[a-z-]+)"/g)]
     .map((m) => m[1]);
   const studies = [...new Set(cards)];
   ok("the portfolio index links seven case studies", studies.length === 7,
@@ -808,8 +847,8 @@ for (const [path, title, nav] of HAND_WRITTEN) {
 /* The account page marks no nav link, because it is in no nav,
    and it is the one page here that must not be indexed. */
 {
-  const account = await hub("/account.html");
-  ok("/account.html answers", account.status === 200, `status ${account.status}`);
+  const account = await hub("/account");
+  ok("/account answers", account.status === 200, `status ${account.status}`);
   ok("and tells search engines to leave it alone",
     /<meta name="robots" content="noindex/.test(account.html),
     "no robots tag: this page is somebody's name and their progress");
@@ -990,13 +1029,13 @@ for (const [path, title, nav] of HAND_WRITTEN) {
      be a page telling a reader there are fourteen lessons where
      the ladder shows thirteen. */
   for (const [path, file, note] of [
-    ["/money/basics-2/index.html", "learn/basics-2/index.html",
+    ["/money/basics-2", "learn/basics-2/index.html",
       "a stage of the money school"],
-    ["/deutsch/stufe-1/index.html", "deutsch/stufe-1/index.html",
+    ["/deutsch/stufe-1", "deutsch/stufe-1/index.html",
       "a Stufe, with a practice book above the cards"],
-    ["/quran/dhap-1/index.html", "quran/dhap-1/index.html",
+    ["/quran/dhap-1", "quran/dhap-1/index.html",
       "a dhap, counted in days"],
-    ["/english/term-1/index.html", "english/term-1/index.html",
+    ["/english/term-1", "english/term-1/index.html",
       "a term, with a book and a nightly range"],
   ]) {
     const page = await hub(path);
@@ -1082,12 +1121,12 @@ for (const [path, title, nav] of HAND_WRITTEN) {
   /* The practice book's band, which only two schools have and
      which sits above the cards rather than under them. */
   {
-    const stufe = await hub("/deutsch/stufe-1/index.html");
+    const stufe = await hub("/deutsch/stufe-1");
     ok("a Stufe with a book links it above the cards",
       stufe.html.indexOf("buch-cta") > 0
       && stufe.html.indexOf("buch-cta") < stufe.html.indexOf("lesson-card"),
       "the practice book is not above the lesson cards");
-    const dhap = await hub("/quran/dhap-1/index.html");
+    const dhap = await hub("/quran/dhap-1");
     ok("and a school with no book draws no band at all",
       !dhap.html.includes("buch-cta") && !dhap.html.includes("wb-cta"));
   }
@@ -1139,9 +1178,9 @@ for (const [path, title, nav] of HAND_WRITTEN) {
      Next writes, the shell around the writing, and the scripts
      that make the ladder live. */
   for (const [path, file] of [
-    ["/deutsch/index.html", "deutsch/index.html"],
-    ["/quran/index.html", "quran/index.html"],
-    ["/english/index.html", "english/index.html"],
+    ["/deutsch", "deutsch/index.html"],
+    ["/quran", "quran/index.html"],
+    ["/english", "english/index.html"],
   ]) {
     const page = await hub(path);
     ok(`${path} answers`, page.status === 200, `status ${page.status}`);
@@ -1241,8 +1280,8 @@ for (const [path, title, nav] of HAND_WRITTEN) {
   /* ---- the money school's own two pages, out of the rows ---- */
 
   {
-    const hubPage = await hub("/money/index.html");
-    ok("/money/index.html answers", hubPage.status === 200, `status ${hubPage.status}`);
+    const hubPage = await hub("/money");
+    ok("/money answers", hubPage.status === 200, `status ${hubPage.status}`);
 
     if (hubPage.status === 200) {
       const h = hubPage.html;
@@ -1256,7 +1295,7 @@ for (const [path, title, nav] of HAND_WRITTEN) {
       const stages = snapshot.stages.filter((r) => r.school === "money");
       for (const stage of stages.slice(1)) {
         ok(`/money/ links its ${stage.slug} rung`,
-          h.includes(`href="/money/${stage.slug}/index.html"`),
+          h.includes(`href="/money/${stage.slug}"`),
           `no card for ${stage.slug}`);
       }
       const steps = snapshot.lessons
@@ -1276,8 +1315,8 @@ for (const [path, title, nav] of HAND_WRITTEN) {
         "the page has only one kind of card on it");
     }
 
-    const contents = await hub("/money/contents.html");
-    ok("/money/contents.html answers", contents.status === 200,
+    const contents = await hub("/money/contents");
+    ok("/money/contents answers", contents.status === 200,
       `status ${contents.status}`);
 
     if (contents.status === 200) {
@@ -1292,7 +1331,7 @@ for (const [path, title, nav] of HAND_WRITTEN) {
       const written = snapshot.lessons
         .filter((r) => r.school === "money" && r.body && SEEDED.includes(String(r.stage)));
       const missing = written.filter((r) => !contents.html.includes(`>${r.title}<`));
-      ok(`/money/contents.html names all ${written.length} written lessons`,
+      ok(`/money/contents names all ${written.length} written lessons`,
         missing.length === 0,
         `missing: ${missing.slice(0, 4).map((r) => r.slug).join(", ")}`);
     }

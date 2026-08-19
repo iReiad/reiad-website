@@ -15,7 +15,7 @@
         var t = localStorage.getItem("theme");
         if (t === "dark" || t === "light") d.setAttribute("data-theme", t);
         var a = localStorage.getItem("audience");
-        if (a === "money" || a === "work") d.setAttribute("data-audience", a);
+        if (a === "learn" || a === "work") d.setAttribute("data-audience", a);
       } catch (e) {}
     })();
   </script>
@@ -61,10 +61,10 @@
       Reiad's Library
     </a>
     <nav class="slimbar-nav" aria-label="Main">
-      <a href="/skills/index.html">Skills</a>
-      <a href="/tools/index.html">Tools</a>
-      <a href="/insights.html">Insights</a>
-      <a href="/portfolio.html">Portfolio</a>
+      <a href="/skills">Skills</a>
+      <a href="/tools">Tools</a>
+      <a href="/insights">Insights</a>
+      <a href="/portfolio">Portfolio</a>
     </nav>
     <div class="top-tools">
       <button class="top-btn" id="open-palette" aria-label="Search the site (Ctrl+K)">&#8981; <span class="kbd-hint mono">Ctrl K</span></button>
@@ -84,8 +84,8 @@
         </p>
         <div class="hero-actions">
           <button class="btn btn-solid" onclick="location.reload()">Try again</button>
-          <a class="btn btn-ghost" href="/tools/index.html">Calculators (work offline)</a>
-          <a class="btn btn-ghost" href="/money/index.html">শেখার লাইব্রেরি</a>
+          <a class="btn btn-ghost" href="/tools">Calculators (work offline)</a>
+          <a class="btn btn-ghost" href="/money">শেখার লাইব্রেরি</a>
         </div>
       </div>
     </div>

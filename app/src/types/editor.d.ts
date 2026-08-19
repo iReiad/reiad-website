@@ -1,95 +1,82 @@
-/* `/editor.js`, the writing surface. See ./README.md.
-
-   Everything here used to live inside `aab/studio.js`. It is a
-   module because the React Studio needs the same one: a
-   contenteditable with a sanitiser, a slash menu, markdown rules
-   and a figure toolbar is the last thing on this site that should
-   exist twice, and each of those has already been the site of a
-   bug nobody would have found by reading. */
-
-/** The article's class allowlist, as the browser enforces it.
-    `check-css.ts` reads this out of editor.js by name and fails
-    if it disagrees with the server's. */
-export const KEEP_CLASSES: Set<string>;
-
-/** Arbitrary pasted HTML, reduced to the small set of tags the
-    site styles. Used on the way in from a paste and again on the
-    way out to the database. */
-export function sanitize(html: string): string;
-
-export function textToHtml(text: string): string;
-export function escapeHtml(s: unknown): string;
-
-/** A headline turned into a URL: lower case, hyphens, and it stops
-    at about forty characters but never mid-word. */
-export function slugify(s: string): string;
-
-export function readingStats(html: string): { words: number; photos: number; minutes: number };
-
-/** The placeholder a fresh figure's caption carries. */
-export const CAPTION_HINT: string;
-
-/** The `<figure>` a photo goes into, with the caption prompt
-    `dropUntouchedCaptions` looks for and a paragraph after it to
-    carry on typing in. */
-export function figureHtml(
-  image: { url: string; width: number; height: number },
-  alt?: string,
-): string;
-
-/** A file the writer chose, downscaled and re-encoded into a data:
-    URL for the editor's own preview. Publishing turns that into a
-    /media path. */
-export function processImage(file: Blob): Promise<{
-  url: string; width: number; height: number; type: string;
-}>;
-
-/** Captions the writer never touched should not ship. */
-export function dropUntouchedCaptions(html: string): string;
-
-/** The copy inside a block, in the language the piece is written
-    in. A Bangla piece with an English "At a glance" over its
-    Bangla facts is a piece with an English word in it. */
-export const WORDS: Record<"en" | "bn", Record<string, string>>;
-
+export declare const KEEP_CLASSES: Set<string>;
+/** Turn arbitrary HTML into the small set of tags the site styles. */
+export declare function sanitize(html: string): string;
+/** Plain text → paragraphs, keeping blank-line breaks. */
+export declare function textToHtml(text: string): string;
+export declare function escapeHtml(s: unknown): string;
+export declare function slugify(s: string): string;
+export interface ReadingStats {
+    words: number;
+    photos: number;
+    minutes: number;
+}
+export declare function readingStats(html: string): ReadingStats;
+export declare const CAPTION_HINT: string;
+/** Captions the writer never touched shouldn't ship. */
+export declare function dropUntouchedCaptions(html: string): string;
+export declare const WORDS: Record<"en" | "bn", Record<string, string>>;
+/** Build the <figure> that goes into the editor. */
+export declare function figureHtml({ url, width, height }: {
+    url: string;
+    width: number;
+    height: number;
+}, alt?: string): string;
+export interface ProcessedImage {
+    url: string;
+    width: number;
+    height: number;
+    type: string;
+}
+/** File/Blob → a downscaled WebP as a data URL, for the editor's
+    own preview. Publishing turns it into a /media path. */
+export declare function processImage(file: Blob): Promise<ProcessedImage>;
 /** One of the blocks a long read is made of. `key` is present only
-    for the ones a toolbar button can name. */
+    for the ones a toolbar button can name, and every block carries
+    exactly one of `run` and `html`. */
 export interface Block {
-  label: string;
-  hint: string;
-  key?: string;
-  run?: () => void;
-  html?: () => string;
+    label: string;
+    hint: string;
+    key?: string;
+    run?: () => void;
+    html?: () => string;
 }
-
+export interface EditorOptions {
+    /** The contenteditable. Handed in rather than looked up, which
+        is the whole of what made this file possible. */
+    root: HTMLElement;
+    /** Something changed, redraw. */
+    onChange?: () => void;
+    /** "en" or "bn", for the copy inside a block. */
+    lang?: () => string | undefined;
+    toast?: (message: string) => void;
+    /** Open the file picker. */
+    pickPhoto?: () => void;
+    /** Ctrl+S. */
+    onSave?: () => void;
+    /** Ctrl+Enter. */
+    onPublish?: () => void;
+}
+/** What the page is handed. Named, because both Studios import
+    this type by name from `/editor.js`. */
 export interface EditorHandle {
-  blocks: Block[];
-  run(block: Block): void;
-  byKey(key: string): Block | undefined;
-
-  insertImages(files: FileList | File[]): Promise<void>;
-  insertHtmlAtCaret(html: string): void;
-  insertBlockHtml(html: string): void;
-  /** Ask for a URL and wrap the selection in it. */
-  link(): void;
-  /** A formatting command straight through to the browser. */
-  command(cmd: string, value?: string | null): void;
-
-  html(): string;
-  setHtml(value: string): void;
-  clear(): void;
-  focus(): void;
-  /** Take every listener, the slash menu and the figure bar back
-      off the page. React unmounts; the old Studio never did. */
-  destroy(): void;
+    /** The blocks, for a toolbar that wants to draw its own buttons. */
+    blocks: Block[];
+    run(block: Block): void;
+    byKey(key: string): Block | undefined;
+    insertImages(files: FileList | File[]): Promise<void>;
+    insertHtmlAtCaret(html: string): void;
+    insertBlockHtml(html: string): void;
+    /** Ask for a URL and wrap the selection in it. */
+    link(): void;
+    /** A formatting command straight through to the browser. */
+    command(cmd: string, value?: string | null): void;
+    html(): string;
+    setHtml(value: string): void;
+    clear(): void;
+    focus(): void;
+    /** Take every listener, the slash menu and the figure bar back
+        off the page. React unmounts; the old Studio never did. */
+    destroy(): void;
 }
-
-export function createEditor(options: {
-  root: HTMLElement;
-  onChange?: () => void;
-  lang?: () => string | undefined;
-  toast?: (message: string) => void;
-  pickPhoto?: () => void;
-  onSave?: () => void;
-  onPublish?: () => void;
-}): EditorHandle;
+/** Wire a contenteditable into a writing surface. */
+export declare function createEditor({ root, onChange, lang, toast, pickPhoto, onSave, onPublish, }: EditorOptions): EditorHandle;

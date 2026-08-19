@@ -14,7 +14,7 @@
    The list comes from /api/articles after hydration. Until it
    arrives, and wherever it never does (the database not bound, a
    bad connection, a test rig with no Worker), the card is a
-   plain door to /insights.html that says what Insights is. The
+   plain door to /insights that says what Insights is. The
    server renders exactly that fallback, so a reader with no
    JavaScript keeps a working card and hydration adopts it
    unchanged.
@@ -73,7 +73,7 @@ export function PulseCard() {
   }, [pieces.length]);
 
   const piece = pieces[at] ?? null;
-  const href = piece ? `/${piece.section}/${piece.slug}.html` : "/insights.html";
+  const href = piece ? `/${piece.section}/${piece.slug}.html` : "/insights";
 
   return (
     <a className="gate-tile min-h-[150px] col-span-2 lg:col-span-6" href={href}

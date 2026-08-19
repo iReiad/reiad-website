@@ -47,13 +47,24 @@ const OUT = join(ROOT, "app", "build-stamp.json");
    `tsconfig.json` are in here because a change to either changes
    the output without touching a line of `src/`. `next/lib/nav.ts`
    is in here because `app/src/Published.tsx` imports it, which is
-   how this drift became visible in the first place. */
+   how this drift became visible in the first place.
+
+   ANYTHING app/src IMPORTS OUT OF next/ BELONGS HERE. The two
+   pages take their buttons and their labels from the site's own
+   component library rather than keeping a second copy, and a
+   change to one of those files changes what these bundles render
+   with no file under `app/` touched. Add the file the day you add
+   the import; a source this cannot see is the exact staleness the
+   note above describes. */
 const SOURCES = [
   "app/src",
   "app/vite.config.ts",
   "app/tsconfig.json",
   "app/package.json",
   "next/lib/nav.ts",
+  "next/components/ui/button.tsx",
+  "next/components/ui/field.tsx",
+  "next/components/ui/label.tsx",
 ];
 
 /** Every file under a path, or the file itself, repo-relative and

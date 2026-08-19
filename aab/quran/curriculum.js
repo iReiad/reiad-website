@@ -765,8 +765,8 @@ export const SCHOOL = {
    one day, so adding a fourth is a matter of adding it to the
    array above.
    ------------------------------------------------------------ */
-/** A ধাপ's folder URL. */
-export const dhapUrl = (dhap) => `/quran/${dhap.slug}/index.html`;
+/** A ধাপ's ladder URL. */
+export const dhapUrl = (dhap) => `/quran/${dhap.slug}`;
 /** A lesson's page URL. */
 export const lessonUrl = (dhap, lesson) => `/quran/${dhap.slug}/${lesson.slug}.html`;
 /** Progress is stored per lesson under a stable id. */

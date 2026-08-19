@@ -1,20 +1,21 @@
-/* `/streak.js`: a year of days, and how many of them were active.
-   Served at that path and imported at runtime. */
-
-/** Every day the reader opened something, as `YYYY-MM-DD`,
-    sorted and deduplicated. An ARRAY: callers count it with
-    `.length` and wrap it in a `Set` when they want lookups, and
-    this file said `Set` for one commit, which typechecks
-    `.length` as an error and `new Set(...)` as pointless. */
-export function activeDays(): string[];
-
-/** How many days that set holds inside the last `n`. */
-export function daysIn(n: number): number;
-
-/** The current run of consecutive active days. */
-export function run(): number;
-
-/** A date as `YYYY-MM-DD`, in the reader's own timezone.
-    Defaults to today, and takes any `Date` so a caller drawing a
-    year of squares can key each one the same way. */
-export function today(at?: Date): string;
+/** Local YYYY-MM-DD, which is what a person means by a date. */
+export declare function today(at?: Date): string;
+/** Every day this person has done something, oldest first. */
+export declare const activeDays: () => string[];
+/** Today, recorded once. Returns whether it was new. */
+export declare function markToday(): boolean;
+/**
+ * How many of the last `span` days had something on them, counted
+ * back from today inclusive. Seven is a week the way a person
+ * means it: the last seven days, not since Monday.
+ */
+export declare function daysIn(span?: number): number;
+/**
+ * Consecutive days up to today, or up to yesterday if today is
+ * still empty. Counting from yesterday matters: at nine in the
+ * morning a run of eleven days is not over, and telling somebody
+ * it has reset before they have had breakfast is just wrong.
+ */
+export declare function run(): number;
+/** Wired once by app.js, on every page, signed in or not. */
+export declare function initStreak(): void;

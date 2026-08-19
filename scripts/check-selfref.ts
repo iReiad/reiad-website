@@ -13,7 +13,7 @@
    `--accent`. The declaration was `--accent: var(--accent)`: a
    cycle, thrown out, so `--accent` was the guaranteed-invalid
    value on the card and everything inside it. `--panel` is mixed
-   from `--accent`, so fourteen cards on /money/index.html
+   from `--accent`, so fourteen cards on /money
    computed a background of `rgba(0, 0, 0, 0)`, and the rail, the
    icon tile and the chip lost their grounds with it. Wanting the
    page's accent means NOT SETTING the property.

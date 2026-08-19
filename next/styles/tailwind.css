@@ -10,7 +10,7 @@
    markup is almost entirely layout, which is what utilities are
    good at; the parts of it that are not, the popover menu and the
    year grid, stayed in `styles.css` and the note at the top of
-   `next/app/(site)/account.html/page.tsx` says why each did.
+   `next/app/(site)/account/page.tsx` says why each did.
 
    ---- where its utilities sit in the cascade ----
 

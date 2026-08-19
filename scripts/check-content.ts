@@ -108,9 +108,13 @@ const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
    the manifest has never heard of it or because the portfolio
    page does not link it. */
 const NEXT_PAGES = "../next/app/(site)";
-const caseFiles = readdirSync(join(ROOT, NEXT_PAGES, "portfolio"))
-  .filter((f) => f.endsWith(".html"))
-  .map((f) => `/portfolio/${f}`);
+/* One directory per case study, and the parenthesised one is not
+   a case study: `(hub)` is the route group holding the portfolio
+   page itself, which sits at `/portfolio` and would otherwise
+   wrap every study below it in a second shell. */
+const caseFiles = readdirSync(join(ROOT, NEXT_PAGES, "portfolio"), { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && !entry.name.startsWith("("))
+  .map((entry) => `/portfolio/${entry.name}`);
 
 /* `flatMap` rather than `filter().map()`: the loop below compares
    urls to file names, and an entry with an empty one is section
@@ -118,7 +122,7 @@ const caseFiles = readdirSync(join(ROOT, NEXT_PAGES, "portfolio"))
 const listed = new Set(
   PAGES.flatMap((p) => (p.group === "case" && p.url ? [p.url] : []))
 );
-const portfolioHtml = read(`${NEXT_PAGES}/portfolio.html/page.tsx`);
+const portfolioHtml = read(`${NEXT_PAGES}/portfolio/(hub)/page.tsx`);
 
 for (const url of caseFiles) {
   if (!listed.has(url)) {
@@ -279,9 +283,9 @@ const CLAIMS: Claim[] = [
   /* The stock check's page is a Next.js route as of Stage 11.4,
      and the two sentences are the same two sentences. A claim
      follows its words rather than its file. */
-  { file: "../next/app/(site)/tools/stock.html/page.tsx",
+  { file: "../next/app/(site)/tools/stock/page.tsx",
     text: "forty-odd ratios across six pillars", key: "ratios", approx: true },
-  { file: "../next/app/(site)/tools/stock.html/page.tsx",
+  { file: "../next/app/(site)/tools/stock/page.tsx",
     text: "Forty-odd ratios across six pillars", key: "ratios", approx: true },
   { file: "tools/stock.i18n.js", text: "Forty-odd ratios, six pillars", key: "ratios", approx: true },
   { file: "tools/stock.model.js", text: "forty-odd ratios grouped into six", key: "ratios", approx: true },

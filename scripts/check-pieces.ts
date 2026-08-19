@@ -164,7 +164,7 @@ if (rows) {
   if (remaining.length) {
     console.log(`Stage 3: ${remaining.length} piece(s) still only a file.`);
     for (const p of remaining) {
-      console.log(`  /studio.html?file=${p.section}:${p.slug}`);
+      console.log(`  /studio?file=${p.section}:${p.slug}`);
     }
   } else {
     console.log("Stage 3: every listed piece has a database row.");

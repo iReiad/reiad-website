@@ -14,6 +14,14 @@
    ============================================================ */
 
 import { useEffect, useState } from "react";
+/* The site's own components, across the workspace boundary, the
+   same way `Published.tsx` reads `next/lib/nav.ts`. Two things
+   hold it up and both are easy to leave out: a file imported from
+   here has to be in `SOURCES` in `scripts/build-stamp.ts`, or the
+   day it changes nothing rebuilds these bundles; and `dedupe` in
+   `vite.config.ts` is what keeps one React in them. */
+import { ButtonLink } from "../../next/components/ui/button.tsx";
+import { Eyebrow } from "../../next/components/ui/label.tsx";
 import { Comments } from "./Comments.tsx";
 import { Questions } from "./Questions.tsx";
 import { Enquiries } from "./Enquiries.tsx";
@@ -22,6 +30,7 @@ import { Stats } from "./Stats.tsx";
 import { Published } from "./Published.tsx";
 import { Overview, type Waiting } from "./Overview.tsx";
 import { markSeen } from "./seen.ts";
+import { Chip } from "./bits.tsx";
 import { listQuestions, listEnquiries, listSubscribers, readStats } from "./api.ts";
 
 const PANELS = {
@@ -115,7 +124,7 @@ export function Desk() {
   return (
     <>
       <div className="hero">
-        <span className="eyebrow mono">The desk · private</span>
+        <Eyebrow>The desk · private</Eyebrow>
         <h1 style={{ fontSize: "clamp(1.9rem,4.4vw,2.8rem)" }}>The site, answering back.</h1>
         <p className="lede">
           Everything readers have sent, and what they are actually reading.
@@ -124,7 +133,7 @@ export function Desk() {
       </div>
 
       <div className="studio-bar">
-        <a className="btn btn-ghost" href="/studio/index.html">← The Studio</a>
+        <ButtonLink href="/studio/index.html">← The Studio</ButtonLink>
         {/* There is no link back to the old desk any more, because
             there is no old desk: `desk.html` and `desk.js` are in
             `archive/` as of 16 August 2026 and are not deployed.
@@ -150,20 +159,18 @@ export function Desk() {
         onKeyDown={onKey}
       >
         {KEYS.map((key) => (
-          <button
+          <Chip
             key={key}
-            type="button"
             role="tab"
             id={`desk-tab-${key}`}
             aria-selected={String(key === panel) as "true" | "false"}
             aria-controls="desk-panel"
             tabIndex={key === panel ? 0 : -1}
-            className="chip"
             onClick={() => show(key)}
           >
             {PANELS[key].label}
             {badge(key) ? <span className="tab-count">{badge(key)}</span> : null}
-          </button>
+          </Chip>
         ))}
       </div>
 

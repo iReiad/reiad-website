@@ -212,12 +212,12 @@ export const LOOKS: Record<string, SchoolLook> = {
       ],
       minutes,
     },
-    alt: () => ({ url: "/money/contents.html", label: "সব বিষয় এক নজরে →" }),
+    alt: () => ({ url: "/money/contents", label: "সব বিষয় এক নজরে →" }),
     /* The money school's lesson pages have never pointed anywhere
        past the end of a stage, and that is its own arrangement
        rather than an oversight: its stages are not a course you
        walk through in order, they are six ladders you pick from,
-       and `contents.html` is the page that shows all of them. */
+       and `/money/contents` is the page that shows all of them. */
     tail: () => null,
     stage: {
       hero: "",
@@ -229,7 +229,7 @@ export const LOOKS: Record<string, SchoolLook> = {
         { dt: "কতগুলো লেখা", dd: `${bnNum(c.total)}টি${c.live < c.total ? ` (${bnNum(c.live)}টি তৈরি)` : ""}` },
         { dt: "মোট সময়", dd: `প্রায় ${bnNum(c.minutes)} মিনিট` },
       ],
-      back: { url: "/money/index.html", label: "সব ধাপ দেখুন" },
+      back: { url: "/money", label: "সব ধাপ দেখুন" },
       ladder: { label: "ধাপের ক্রম", prev: "← আগের ধাপ", next: "পরের ধাপ →" },
       note: "এই লাইব্রেরির সবকিছু সাধারণ শিক্ষামূলক তথ্য: বিনিয়োগ পরামর্শ না। "
         + "নিয়ম, হার আর ফি সময়ে সময়ে বদলায়; সিদ্ধান্তের আগে সংশ্লিষ্ট প্রতিষ্ঠানের "
@@ -277,7 +277,7 @@ export const LOOKS: Record<string, SchoolLook> = {
             label: `${bnNum(Number(stage.workbook?.days))} দিনের খাতা`,
           }
         : {
-            url: "/deutsch/index.html",
+            url: "/deutsch",
             kicker: "শেষ Teil ✓",
             label: "চারটা স্তর একসাথে দেখুন",
           };
@@ -303,7 +303,7 @@ export const LOOKS: Record<string, SchoolLook> = {
             ? [{ dt: "অনুশীলন", dd: String(stage.uebung) }]
             : []),
       ],
-      back: { url: "/deutsch/index.html", label: "চারটা স্তর দেখুন" },
+      back: { url: "/deutsch", label: "চারটা স্তর দেখুন" },
       ladder: { label: "স্তরের ক্রম", prev: "← আগের স্তর", next: "পরের স্তর →" },
       note: "এই কোর্সটা বাংলাভাষীদের জন্য লেখা, আর ধরে নেওয়া হয়েছে আপনি ইংরেজি একবার "
         + "শিখেছেন। কোনো পরীক্ষার প্রস্তুতি নয়, কোনো সার্টিফিকেট নয়: লক্ষ্য শুধু "
@@ -360,7 +360,7 @@ export const LOOKS: Record<string, SchoolLook> = {
             label: `${next.kicker} · ${next.bn}`,
           }
         : {
-            url: "/quran/index.html",
+            url: "/quran",
             kicker: "ষাট দিন শেষ ✓",
             label: "তিনটা ধাপ একসাথে দেখুন",
           };
@@ -385,7 +385,7 @@ export const LOOKS: Record<string, SchoolLook> = {
         { dt: "রোজ কতক্ষণ", dd: nightly(stage) },
         { dt: "মোট পড়ার সময়", dd: `প্রায় ${bnNum(c.minutes)} মিনিট` },
       ],
-      back: { url: "/quran/index.html", label: "তিনটা ধাপ দেখুন" },
+      back: { url: "/quran", label: "তিনটা ধাপ দেখুন" },
       ladder: { label: "ধাপের ক্রম", prev: "← আগের ধাপ", next: "পরের ধাপ →" },
       note: "এই কোর্সটা তাঁদের জন্য যাঁরা আরবি পড়তে পারেন কিন্তু মানে বোঝেন না। "
         + "কোনো লেখা নেই, কোনো পরীক্ষা নেই: শুধু রোজ একটু করে চেনা, শোনা আর অনুভব করা।",
@@ -439,7 +439,7 @@ export const LOOKS: Record<string, SchoolLook> = {
             label: `${next.kicker} · ${next.bn}`,
           }
         : {
-            url: "/english/index.html",
+            url: "/english",
             kicker: "শেষ পর্ব ✓",
             label: "দুটো টার্ম একসাথে দেখুন",
           };
@@ -464,7 +464,7 @@ export const LOOKS: Record<string, SchoolLook> = {
             }]
           : []),
       ],
-      back: { url: "/english/index.html", label: "দুটো টার্ম দেখুন" },
+      back: { url: "/english", label: "দুটো টার্ম দেখুন" },
       ladder: { label: "টার্মের ক্রম", prev: "← আগের টার্ম", next: "পরের টার্ম →" },
       note: "এই কোর্সটা বাংলাভাষীদের জন্য লেখা। কোনো পরীক্ষার প্রস্তুতি নয়, কোনো "
         + "সার্টিফিকেট নয়: লক্ষ্য একটাই, যেন আপনি মুখ খুলে বলতে পারেন। ভুল হলেও।",

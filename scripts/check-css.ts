@@ -373,6 +373,107 @@ if (studioClasses.length && serverClasses.length) {
   }
 }
 
+/* ============================================================
+   The same two sanitisers, and the other half of their vocabulary
+
+   The check above compares the CLASSES they allow. They also each
+   carry a table of the ATTRIBUTES an element may keep, and nothing
+   compared those, so they had drifted:
+
+     aab/editor.js              IMG: src, alt, width, height
+     functions/_lib/sanitise.ts img: src, alt, width, height,
+                                     loading, decoding
+
+   `hostPhotosIn` in `aab/src/photo.ts` sets `loading="lazy"` and
+   `decoding="async"` on every photo it hosts. The browser's own
+   sanitiser stripped both on the way out, so neither had ever
+   reached the database and every photo in every article loaded
+   eagerly while the markup said it should not. Two dead lines in
+   one file and a server allowlist supporting something nothing
+   could produce, which is the class version of this bug written
+   out one paragraph up.
+
+   A class check cannot see it. `class` is not in either table in
+   the same sense: it is governed by the lists above.
+   ============================================================ */
+
+/** One table of tag to attributes, by variable name, lowercased so
+    the browser's `IMG` and the server's `img` are one key. */
+const attrTable = (file: string, name: string): Map<string, string[]> => {
+  const src = readFileSync(join(ROOT, file), "utf8");
+  const block = src.match(
+    new RegExp(`${name}\\s*(?::[^=]+)?=\\s*\\{([\\s\\S]*?)\\n\\}`));
+  if (!block) {
+    console.error(`no ${name} in ${file}: this check cannot see the vocabulary any more`);
+    failures++;
+    return new Map();
+  }
+  const out = new Map<string, string[]>();
+  for (const m of block[1].matchAll(/(\w+)\s*:\s*\[([^\]]*)\]/g)) {
+    out.set(m[1].toLowerCase(), [...m[2].matchAll(/"([\w-]+)"/g)].map((a) => a[1]));
+  }
+  return out;
+};
+
+/* The two asymmetries that are deliberate, each with the reason.
+   Anything not here is drift. Keyed by tag and attribute, for the
+   same reason `GONE` in check-pointers.ts is keyed by two things:
+   "the server allows class" is a true sentence and a NEW
+   disagreement about class somewhere else is not. */
+const AGREED: Record<string, string> = {
+  "a/class": "governed by the class lists above, not by these tables",
+  "figure/class": "the same",
+  "div/class": "the same",
+  "a/rel": "the browser does not ALLOW rel, it WRITES it: editor.js sets"
+    + " rel=noopener on every external link after sanitising",
+};
+
+const browserAttrs = attrTable("editor.js", "ATTRS");
+const serverAttrs = attrTable("../functions/_lib/sanitise.ts", "ALLOWED");
+
+if (browserAttrs.size && serverAttrs.size) {
+  for (const [tag, kept] of browserAttrs) {
+    const theirs = serverAttrs.get(tag);
+    if (!theirs) {
+      failures++;
+      console.error(`\nthe server has no rule for <${tag}> and the browser keeps`
+        + ` ${kept.join(", ")} on it.`);
+      continue;
+    }
+    const gap = (a: string[], b: string[]): string[] =>
+      a.filter((x) => !b.includes(x) && !(`${tag}/${x}` in AGREED));
+    const strips = gap(theirs, kept);
+    const keeps = gap(kept, theirs);
+    if (strips.length) {
+      failures++;
+      console.error(`\nthe two sanitisers disagree about <${tag}>: the server keeps`
+        + ` ${strips.join(", ")} and the browser strips ${strips.length > 1 ? "them" : "it"}.`);
+      console.error("        The browser's is the stricter one, so the server ends up");
+      console.error("        allowing something nothing can produce. ATTRS in");
+      console.error("        aab/editor.js, ALLOWED in functions/_lib/sanitise.ts.");
+    }
+    if (keeps.length) {
+      failures++;
+      console.error(`\nthe two sanitisers disagree about <${tag}>: the browser keeps`
+        + ` ${keeps.join(", ")} and the server strips ${keeps.length > 1 ? "them" : "it"}.`);
+      console.error("        A writer sees it work and it is gone once published.");
+    }
+  }
+  /* A reason that has stopped describing a real difference reads as
+     a live constraint to the next person. */
+  for (const key of Object.keys(AGREED)) {
+    const [tag, attr] = key.split("/");
+    const mine = browserAttrs.get(tag);
+    const theirs = serverAttrs.get(tag);
+    if (!mine || !theirs) continue;
+    if (mine.includes(attr) === theirs.includes(attr)) {
+      failures++;
+      console.error(`\n<${tag}> ${attr} is in AGREED in this file and the two`
+        + " sanitisers now say the same thing about it. Remove the entry.");
+    }
+  }
+}
+
 /** The selectors a layer states unconditionally: depth zero, and
     NOT inside an `@media`, `@supports` or `@container`.
 

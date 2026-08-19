@@ -19,6 +19,7 @@
    ============================================================ */
 
 import { useId, useMemo, useState } from "react";
+import { Chip } from "../bits.tsx";
 import { SECTIONS, findSection } from "/content.js";
 import { slugify } from "/editor.js";
 import { toast } from "../site.ts";
@@ -77,11 +78,12 @@ export function Fields({
       <fieldset className="seg-field" id="section-field">
         <legend>Where it goes</legend>
         <div className="seg" id="f-section-seg" role="radiogroup" aria-label="Where it goes">
+          {/* A radio, not a toggle, so no `pressed`: the group answers
+              "which one", and `.seg .chip[data-on]` is what draws the
+              chosen one. */}
           {SECTIONS.map((s) => (
-            <button
+            <Chip
               key={s.id}
-              type="button"
-              className="chip"
               role="radio"
               data-section={s.id}
               aria-checked={s.id === sec.id}
@@ -90,7 +92,7 @@ export function Fields({
               onClick={() => setFields({ section: s.id })}
             >
               {s.id === "insights" ? s.en : s.bn}
-            </button>
+            </Chip>
           ))}
         </div>
         <span className="field-hint" id="section-hint">
@@ -202,8 +204,7 @@ export function Fields({
           <span className="mono">Already in use</span>
           <span className="topic-known" id="topic-known">
             {offer.map((t) => (
-              <button className="chip" type="button" key={t}
-                      onClick={() => addTopics(t)}>{t}</button>
+              <Chip key={t} onClick={() => addTopics(t)}>{t}</Chip>
             ))}
           </span>
         </div>

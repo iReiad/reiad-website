@@ -84,5 +84,5 @@
   Content-Type: application/rss+xml; charset=utf-8
 
 # The publishing tool is not for search engines.
-/studio.html
+/studio
   X-Robots-Tag: noindex, nofollow

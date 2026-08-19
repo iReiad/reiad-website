@@ -125,7 +125,7 @@ if (read("next/lib/school-icons.ts") !== wanted) {
 
    The stages are the header's tree, so a school that gains one
    and is not regenerated shows a header one stage short of the
-   hub it links to. The lessons are `/account.html`, so a school
+   hub it links to. The lessons are `/account`, so a school
    that gains one and is not regenerated draws a bar against a
    denominator nobody can reach: 60 of 59 finished.
    ------------------------------------------------------------ */
@@ -145,7 +145,7 @@ for (const [name, wanted] of [
 
 /* And that the two agree about which schools have one.
 
-   `ladder: true` in NAV is what `/account.html` reads to know
+   `ladder: true` in NAV is what `/account` reads to know
    there is a bar to draw, and the generated file is where the
    denominator comes from. A school that gains a ladder and not
    the flag never appears on that page; a flag with no ladder
@@ -167,7 +167,7 @@ if (flagged.join() !== generated.join()) {
 for (const [school, lessons] of Object.entries(SCHOOL_LADDERS)) {
   if (!lessons.length) {
     fail(`next/lib/school-ladders.ts holds no lessons for ${school}.`,
-      "Its bar on /account.html reads 0 of 0 and its resume card says"
+      "Its bar on /account reads 0 of 0 and its resume card says"
       + " nothing is written.",
       "Refresh the snapshot and regenerate:",
       "  npx wrangler d1 export reiad --remote --output schools.db",
@@ -323,6 +323,64 @@ for (const rung of [...STUFEN, ...TERMS] as Rung[]) {
       `next/lib/workbooks/${file}.ts is the days themselves; workbook.days is what`,
       "the hub draws its progress bar from. A reader would be told they are on day",
       `${rung.workbook.days} of a book that has ${days.length}.`);
+  }
+}
+
+/* ============================================================
+   The pre-paint boot, said three times
+
+   `shell.tsx` writes it into every route. `404.html` and
+   `offline.html` carry their own copy, and they have to: they are
+   files, they answer when the Worker and the routes cannot, and
+   there is nothing to render one for them.
+
+   So the vocabulary is written out three times, and it drifted.
+   The two file pages tested `a === "money"` where the stored
+   value is `learn` or `work`, which is `AUDIENCES` in
+   `next/lib/nav.ts`, what `shell.tsx` writes, and what
+   `html[data-audience="learn"]` in the stylesheet answers to. The
+   money school moved from `/learn/` to `/money/` on 17 August
+   2026 and this comparison moved with it, which is the one thing
+   that move was not supposed to touch.
+
+   A reader who chose Learning therefore got no `data-audience` on
+   those two pages, so the rail's groups came out in the other
+   order, on exactly the two pages that answer when everything
+   else is down. Nothing could see it: both pages render
+   perfectly.
+
+   This compares the ATTRIBUTE VALUES each copy tests for, not the
+   text, because the two are written differently on purpose:
+   `shell.tsx` minifies its copy into one line and the files
+   space theirs out to be read. */
+{
+  const values = (src: string, attr: string): string[] => {
+    /* Every `a === "x"` (or `t === "x"`) in the same statement as
+       a `setAttribute` for this attribute. */
+    const line = src.split("\n").find((l) => l.includes(`"${attr}"`) && l.includes("==="))
+      ?? src.split(/;\s*/).find((l) => l.includes(`"${attr}"`) && l.includes("===")) ?? "";
+    return [...line.matchAll(/===\s*"([a-z-]+)"/g)].map((m) => m[1]).sort();
+  };
+
+  const shell = read("next/components/shell.tsx");
+  for (const attr of ["data-audience", "data-theme"]) {
+    const want = values(shell, attr);
+    if (!want.length) {
+      fail(`check-next.ts cannot find the ${attr} test in shell.tsx any more.`,
+        "This check compares the two file pages against it, so it is now",
+        "comparing them against nothing. Point it at the boot script again.");
+      continue;
+    }
+    for (const page of ["aab/404.html", "aab/offline.html"]) {
+      const got = values(read(page), attr);
+      if (got.join() === want.join()) continue;
+      fail(`${page} tests ${attr} for ${got.join(", ") || "nothing"} and `
+        + `shell.tsx tests ${want.join(", ")}.`,
+        "The boot script is written three times because these two pages are",
+        "files and cannot render one. A value only one of them knows is a",
+        "reader whose choice is dropped on the two pages that answer when",
+        "the Worker and the routes cannot.");
+    }
   }
 }
 

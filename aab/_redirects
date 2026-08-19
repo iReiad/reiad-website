@@ -1,36 +1,124 @@
 # ============================================================
-# _redirects: Cloudflare Pages. First match wins.
+# _redirects: the asset router's rules. First match wins.
 # 301 = permanent (search engines move the ranking across).
 #
-# DO NOT add "pretty URL" rules like `/about  /about.html`.
-# Cloudflare Pages already serves /about.html at /about, and it
-# redirects /about.html → /about on its own. A rule pointing the
-# other way makes an infinite loop:
+# A path listed in `run_worker_first` in wrangler.toml never
+# reaches this file: it is answered by a Worker, and the asset
+# router only gets it if that Worker declines. So the two files
+# are one mechanism, and the split is exact:
 #
-#     /about → (this file) → /about.html → (Pages) → /about → …
+#     wrangler.toml    the address that answers
+#     this file        every address that used to
 #
-# which browsers show as ERR_TOO_MANY_REDIRECTS, the page simply
-# never loads. That is exactly what a previous version of this
-# file did to about, insights, portfolio, colophon, contact,
-# tools and learn. Every destination below is therefore
-# extensionless, so Pages has nothing left to rewrite.
+# Which means an entry here must NOT also be in that list, and
+# the addresses this file sends readers TO must all be in it.
+# `check-routes.ts` walks both and fails on a loop or a dead end.
+#
+# ---- one rule per old address, and no splats ----
+#
+# Everything is written out, including seventeen stage ladders,
+# because a redirect is a fact about an address that WAS live and
+# that set does not grow: a stage written after this file cannot
+# have an `index.html` form, so there is nothing here to keep in
+# step with the data. A placeholder rule would be four lines
+# instead of twenty-three and would buy that staleness back, and
+# it would also be invisible to `check-routes.ts`, which traces
+# every source below to whatever finally answers it.
+#
+# ONE SET OF OLD ADDRESSES IS NOT HERE: `/skills/courses/`. That
+# set DOES grow, 845 of them generated out of a Drive folder, so
+# `worker.js` answers both spellings instead and `shared/courses.ts`
+# says why beside `lessonOf`. Nothing else on this site may borrow
+# that argument: it rests on the section being admin-only and
+# unlisted, so there is no canonical to split.
+#
+# ---- the loop this file used to make ----
+#
+# Cloudflare serves `/about.html` at `/about` and redirects the
+# first to the second on its own, so a rule pointing the other way
+# bounces for ever:
+#
+#     /about → (this file) → /about.html → (Cloudflare) → /about → …
+#
+# which browsers show as ERR_TOO_MANY_REDIRECTS. Every rule below
+# points from the `.html` spelling to the extensionless one, which
+# is the direction Cloudflare itself would go, so there is no
+# other side to bounce off.
 # ============================================================
 
-# Retired pages that still have links pointing at them.
-# Both spellings of the source, because a visitor may arrive at either.
-#
-# The two admin pages are the React ones now, and the pages they
-# replaced are in archive/, out of the deploy, as of 16 August
-# 2026. These two lines are what stops a bookmark landing on the
-# 404 page. Both destinations end in index.html deliberately: the
-# extensionless form would be rewritten by Cloudflare and the note
-# at the top of this file is about exactly that loop.
-/studio.html          /studio/index.html    301
-/desk.html            /desk/index.html      301
-/studio               /studio/index.html    301
-/studio/              /studio/index.html    301
-/desk                 /desk/index.html      301
-/desk/                /desk/index.html      301
+# ---------- the pages ----------
+# Task #28. Every route under `next/app/` lost its `.html`, and
+# these are the addresses that were live before it. They are in
+# lesson bodies and article bodies in D1, which this repository
+# cannot rewrite, so these rules are not a courtesy: they are how
+# those links keep working.
+/index.html           /                     301
+/about.html           /about                301
+/account.html         /account              301
+/contact.html         /contact              301
+/insights.html        /insights             301
+/portfolio.html       /portfolio            301
+/portfolio/dcf.html            /portfolio/dcf              301
+/portfolio/dissertation.html   /portfolio/dissertation     301
+/portfolio/dsex.html           /portfolio/dsex             301
+/portfolio/frontier.html       /portfolio/frontier         301
+/portfolio/scorecard.html      /portfolio/scorecard        301
+/portfolio/stress.html         /portfolio/stress           301
+/portfolio/three-statement.html /portfolio/three-statement 301
+/skills/index.html    /skills               301
+/tools/index.html     /tools                301
+/tools/stock.html     /tools/stock          301
+/tools/live.html      /tools/live           301
+/desk/index.html      /desk                 301
+/studio/index.html    /studio               301
+/cooking/index.html   /cooking              301
+/travel/index.html    /travel               301
+
+# The four schools: a hub, the money school's full index, and one
+# ladder per stage. Seventeen stages, written out, for the reason
+# at the top of this file.
+/money/index.html     /money                301
+/deutsch/index.html   /deutsch              301
+/quran/index.html     /quran                301
+/english/index.html   /english              301
+/money/contents.html  /money/contents       301
+/money/start/index.html      /money/start        301
+/money/basics-1/index.html   /money/basics-1     301
+/money/basics-2/index.html   /money/basics-2     301
+/money/basics-3/index.html   /money/basics-3     301
+/money/inter-1/index.html    /money/inter-1      301
+/money/inter-2/index.html    /money/inter-2      301
+/money/inter-3/index.html    /money/inter-3      301
+/money/advanced/index.html   /money/advanced     301
+/deutsch/stufe-1/index.html  /deutsch/stufe-1    301
+/deutsch/stufe-2/index.html  /deutsch/stufe-2    301
+/deutsch/stufe-3/index.html  /deutsch/stufe-3    301
+/deutsch/stufe-4/index.html  /deutsch/stufe-4    301
+/quran/dhap-1/index.html     /quran/dhap-1       301
+/quran/dhap-2/index.html     /quran/dhap-2       301
+/quran/dhap-3/index.html     /quran/dhap-3       301
+/english/term-1/index.html   /english/term-1     301
+/english/term-2/index.html   /english/term-2     301
+
+# The practice books. A learner opens one of these every evening
+# and has it bookmarked, which is the whole argument for a rule
+# rather than a tidy-up.
+/deutsch/stufe-1/arbeitsbuch.html  /deutsch/stufe-1/arbeitsbuch  301
+/deutsch/stufe-2/arbeitsbuch.html  /deutsch/stufe-2/arbeitsbuch  301
+/deutsch/stufe-3/arbeitsbuch.html  /deutsch/stufe-3/arbeitsbuch  301
+/deutsch/stufe-4/arbeitsbuch.html  /deutsch/stufe-4/arbeitsbuch  301
+/english/term-1/workbook.html      /english/term-1/workbook      301
+/english/term-2/workbook.html      /english/term-2/workbook      301
+
+# ---------- retired pages that still have links pointing at them ----------
+# Both spellings of the source, because a visitor may arrive at
+# either. The two admin pages are the React ones now, and the
+# pages they replaced are in archive/, out of the deploy, as of 16
+# August 2026.
+/studio.html          /studio               301
+/studio/              /studio               301
+/desk.html            /desk                 301
+/desk/                /desk                 301
 /work.html            /portfolio            301
 /work                 /portfolio            301
 /services.html        /portfolio            301
@@ -43,48 +131,24 @@
 # the question it was answering.
 /colophon.html        /about                301
 /colophon             /about                301
-# The .html is not decoration as of Stage 11.7. That term used to
-# be a committed file and the asset router added the extension for
-# an extensionless target; it is a Worker route now, and a route
-# answers at the address the canonical link names.
+# A term that moved from Insights to the money school. Both
+# spellings of the source, and the destination keeps its `.html`
+# because it is a LESSON.
+#
+# Two kinds of address kept the suffix through task #28 and both
+# are a slug rather than a route: a school lesson,
+# `/money/terms/dsex.html`, and an article, `/insights/<slug>.html`.
+# The suffix is in the rows, in every link inside every lesson body
+# in D1, and in the `public.library` row of everybody who has saved
+# a piece. Do not "finish the job" on either.
 /insights/dsex.html   /money/terms/dsex.html   301
 /insights/dsex        /money/terms/dsex.html   301
-
-
-# The three reading hubs, pointing at the canonical address rather
-# than away from it (TRANSITION.md Stage 11.1).
-#
-# This is the one place the warning at the top does not apply, and
-# the reason is worth reading before touching it. That warning is
-# about Cloudflare rewriting /about.html to /about behind your back,
-# so a rule pointing the other way bounces for ever. These three
-# addresses are in `run_worker_first` in wrangler.toml, which takes
-# them away from the asset router altogether: nothing rewrites them,
-# the Next.js Worker answers them, and there is no other side to the
-# bounce. `check-routes.ts` reads that list and models it, so if the
-# entry in wrangler.toml is ever removed, these six lines become the
-# loop it has always been able to catch.
-/about                 /about.html           301
-/account               /account.html         301
-/skills                /skills/index.html    301
-/skills/               /skills/index.html    301
-/tools                 /tools/index.html     301
-/tools/                /tools/index.html     301
-/tools/stock           /tools/stock.html     301
-/tools/live            /tools/live.html      301
-/portfolio             /portfolio.html       301
-# The home page answers at "/", which is what its canonical link
-# has always said and what the asset router used to send
-# /index.html to. Every school page's site-name link still says
-# /index.html, so this is the rule that keeps them one hop away
-# rather than broken.
-/index.html            /                     301
-/contact               /contact.html         301
-/insights              /insights.html        301
-/cooking               /cooking/index.html   301
-/cooking/              /cooking/index.html   301
-/travel                /travel/index.html    301
-/travel/               /travel/index.html    301
+# The trailing-slash forms of the two hubs and the skills index,
+# which the asset router used to answer and nothing links now.
+/skills/              /skills               301
+/tools/               /tools                301
+/cooking/             /cooking              301
+/travel/              /travel               301
 
 # Feed aliases: .xml isn't touched by the HTML handling, so these are safe.
 /rss                  /feed.xml             301

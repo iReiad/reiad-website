@@ -153,10 +153,9 @@ const get = (path: string, init: RequestInit = {}): Promise<Response> =>
 const advertised = [...new Set(
   (await (await get("/sitemap.xml")).text()).match(/<loc>([^<]+)<\/loc>/g) ?? [])]
   .map((tag) => tag.replace(/<\/?loc>/g, ""))
-  /* A piece, not a hub: `/cooking/index.html` is at the same depth
-     and is the kitchen's front page. */
-  .filter((url) => /\/(insights|cooking|travel)\/[^/]+$/.test(url))
-  .filter((url) => !/\/index\.html$/.test(url));
+  /* A piece, and only a piece. A hub is one segment now
+     (`/cooking`), so the depth test is the whole of it. */
+  .filter((url) => /\/(insights|cooking|travel)\/[^/]+$/.test(url));
 
 const found = advertised.find((url) => url.endsWith(`/${DB_SLUG}.html`));
 ok(`the sitemap advertises ${DB_SLUG}`, Boolean(found),
@@ -340,17 +339,25 @@ for (const [path, what] of [
   same(`${what} answers 200`, 200, res.status);
 }
 
-/* `/insights` is asked for separately because it is the one of
-   these that is deliberately a redirect. `_redirects` has sent it
-   to `/insights.html` since Stage 11.1, where the Next route
-   renders the hub; before that the file was an asset and the
-   extensionless form was served directly, which is why this used
-   to sit in the list above and started failing on the first deploy
-   that carried Stage 11.1. Followed, so what is asserted is that a
-   reader typing the short address arrives at the hub. */
-{
-  const index = await ask(`${origin}/insights`);
-  same("the Insights index answers, after its redirect", 200, index.status);
+/* The `.html` spellings, which task #28 turned into redirects and
+   which nothing in this repository can prove on its own: a rule in
+   `_redirects` only fires because the path is absent from
+   `run_worker_first` AND the Next Worker declines it, and both of
+   those are settings on a deployed Worker.
+
+   Followed rather than asked for once, so what is asserted is that
+   a reader arriving at an address that was live for a year lands
+   on the page rather than on `404.html`. One per shape: a page, a
+   hub, a school, a stage's ladder and a practice book. */
+for (const [was, what] of [
+  ["/about.html", "a page"],
+  ["/insights.html", "a reading hub"],
+  ["/money/index.html", "a school"],
+  ["/money/basics-1/index.html", "a stage's ladder"],
+  ["/deutsch/stufe-1/arbeitsbuch.html", "a practice book"],
+]) {
+  const landed = await ask(`${origin}${was}`);
+  same(`${was} still lands somewhere (${what})`, 200, landed.status);
 }
 
 /* ---------- 7. every piece the site advertises can be read ----------

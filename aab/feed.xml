@@ -2,11 +2,11 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Reiad&apos;s Library · Insights</title>
-    <link>https://reiad.co.uk/insights.html</link>
+    <link>https://reiad.co.uk/insights</link>
     <atom:link href="https://reiad.co.uk/feed.xml" rel="self" type="application/rss+xml"/>
     <description>Explainers and analysis on Bangladesh and global finance, in English and Bangla.</description>
     <language>en-gb</language>
-    <lastBuildDate>Wed, 19 Aug 2026 09:08:11 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 19 Aug 2026 10:57:09 GMT</lastBuildDate>
     <ttl>720</ttl>
 
   </channel>

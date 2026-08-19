@@ -1,0 +1,165 @@
+/* ============================================================
+   pieces.ts: what has been written, wherever it is kept.
+
+   THE SPLIT THIS CLOSES
+
+   A piece of writing on this site exists as a committed HTML file
+   with an entry in content.js, or as a row in D1 written by the
+   Studio, or both. At its own URL that is settled: the worker
+   serves the row if there is one and falls back to the file.
+
+   The lists that point AT the URL were another matter. The
+   Insights page merged the database in; the kitchen and travel
+   hubs did not, so a piece published through the Studio into the
+   kitchen was readable at its address and invisible on the one
+   page a reader would use to find it. The counts came from
+   content.js, so a hub could say one number and show another. And
+   three separate places built the link as `/insights/<slug>.html`
+   whatever section the piece was actually in, which is a card
+   pointing at a 404.
+
+   One question, one answer, one place. Everything that lists
+   writing calls this file, and the shape it returns is the same
+   whichever store the piece came from.
+
+   archive/TRANSITION.md, Stage 1.
+   ============================================================ */
+
+import { SECTIONS, findSection, livePieces, pieceUrl, type FilePiece, type Section } from "/content.js";
+import { getArticles } from "/api.js";
+
+/* ---------- one shape ----------
+
+   A row and a manifest entry describe the same thing with
+   different words. Everything downstream reads the shape below,
+   and `from` is kept because the desk shows it and because a
+   reader of this code should be able to see which store answered.
+
+   `date` is the published date in both cases: a row calls it
+   published_at, a file entry calls it date. */
+
+/** What everything downstream reads, whichever store answered.
+
+    Six fields are optional because a FILE entry may carry none of
+    them: `fromFile` spreads a `FilePiece` and overrides four
+    things, where `fromRow` fills every column with a default.
+    Widening them to required here would be a claim about the
+    manifest that the manifest does not make. */
+export interface Piece {
+  slug: string;
+  title: string;
+  /** A Bangla piece's English title, for the palette. Manifest
+      entries only: the database has no such column. */
+  en?: string;
+  dek?: string;
+  tag?: string;
+  topics: string[];
+  lang: string;
+  minutes?: number;
+  status?: string;
+  note?: string;
+  section: string;
+  date: string;
+  cover?: string;
+  from: "database" | "file";
+}
+
+/** One row of `GET /api/articles`: the public columns of an
+    article with `topics` already split out of the pipe-separated
+    column it is stored in. That splitting is `shape()` in
+    `functions/api/articles/[[slug]].js`, which is the one place
+    this shape is decided, so it is asserted at this one boundary
+    the way `saved.ts` asserts its three tables. */
+interface ArticleCard {
+  slug: string;
+  title: string;
+  dek?: string;
+  tag?: string;
+  topics?: string[];
+  lang?: string;
+  minutes?: number;
+  status?: string;
+  section?: string;
+  published_at?: string | null;
+  updated_at?: string | null;
+  cover?: string;
+}
+
+const fromRow = (row: ArticleCard): Piece => ({
+  slug: row.slug,
+  title: row.title,
+  dek: row.dek ?? "",
+  tag: row.tag ?? "",
+  topics: row.topics ?? [],
+  lang: row.lang ?? "en",
+  minutes: row.minutes ?? 1,
+  status: row.status ?? "live",
+  section: findSection(row.section).id,
+  date: (row.published_at ?? row.updated_at ?? "").slice(0, 10),
+  cover: row.cover ?? "",
+  from: "database",
+});
+
+const fromFile = (entry: FilePiece, section: Section): Piece => ({
+  ...entry,
+  topics: entry.topics ?? [],
+  lang: entry.lang ?? section.lang,
+  section: section.id,
+  date: entry.date ?? "",
+  from: "file",
+});
+
+/** Newest first. Anything without a date sorts last, which is
+    where a piece with no date belongs on a page about writing. */
+const newestFirst = (a: Piece, b: Piece) =>
+  String(b.date ?? "").localeCompare(String(a.date ?? ""));
+
+/* ---------- the list ----------
+
+   Fetched once per page load. `getArticles()` in api.js already
+   caches its promise, so several lists on one page share a single
+   request, and a page with no lists makes none. */
+
+let merged: Promise<Piece[]> | undefined;
+
+/**
+ * Every live piece the site has, database first.
+ *
+ * A slug in the database wins: publishing through the Studio is
+ * how a file piece gets taken over, and the row is the newer of
+ * the two by definition.
+ *
+ * The database being unreachable is not an error here. It is a
+ * site that falls back to exactly what it did before any of this
+ * existed, which is the whole reason content.js still holds the
+ * pieces at all.
+ */
+export function allPieces(): Promise<Piece[]> {
+  merged ??= (async () => {
+    const rows = ((await getArticles()) ?? []) as ArticleCard[];
+    const live = rows.filter((row) => (row.status ?? "live") === "live").map(fromRow);
+    const known = new Set(live.map((p) => p.slug));
+
+    const files = SECTIONS.flatMap((section) =>
+      livePieces(section)
+        .map((entry) => fromFile(entry, section))
+        .filter((p) => !known.has(p.slug)));
+
+    return [...live, ...files].sort(newestFirst);
+  })();
+  return merged;
+}
+
+/** Where a piece can be read. Never build this by hand: the whole
+    point of carrying `section` around is that this is the only
+    line that turns a piece into an address. */
+export const pieceHref = (piece: Piece): string =>
+  pieceUrl(findSection(piece.section), piece.slug);
+
+/* `piecesIn()` and `filePieces()` were here and are gone with
+   `#article-cards`, which was the only caller of either. Every
+   list of writing on this site is rendered on the server now:
+   `next/lib/hub.ts` for the three hubs, `next/lib/pieces.ts` for
+   the home page. What is left here is the two things a BROWSER
+   still needs, and both are the palette's: every live piece, and
+   the one line that turns a piece into an address. */

@@ -34,6 +34,8 @@
    ============================================================ */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Button, ButtonLink } from "../../../next/components/ui/button.tsx";
+import { Eyebrow } from "../../../next/components/ui/label.tsx";
 import type { EditorHandle } from "/editor.js";
 import { toast } from "../site.ts";
 import { Editor } from "./Editor.tsx";
@@ -210,7 +212,7 @@ export function Lessons() {
   return (
     <>
       <div className="hero">
-        <span className="eyebrow mono">Lesson Studio · private tool</span>
+        <Eyebrow>Lesson Studio · private tool</Eyebrow>
         <h1 style={{ fontSize: "clamp(1.9rem,4.4vw,2.8rem)" }}>
           The schools, edited where they live.
         </h1>
@@ -224,8 +226,8 @@ export function Lessons() {
 
       <div className="studio-bar">
         <span className="bar-group">
-          <a className="btn btn-ghost" href="/studio/">← The Article Studio</a>
-          <a className="btn btn-ghost" href="/desk/index.html">The desk →</a>
+          <ButtonLink href="/studio/">← The Article Studio</ButtonLink>
+          <ButtonLink href="/desk/index.html">The desk →</ButtonLink>
         </span>
         <span className="studio-now">
           {open
@@ -271,10 +273,14 @@ export function Lessons() {
 
           {open ? (
             <div className="pane-bar">
-              <button className="btn" type="button" disabled={!dirty || Boolean(busy)}
+              {/* `kind="solid"`, where this was a bare `.btn`: that
+                  is not one of the four, so it drew a transparent
+                  border on no fill and read as a label rather than
+                  as the one action this pane has. */}
+              <Button kind="solid" disabled={!dirty || Boolean(busy)}
                       onClick={() => void save()}>
                 {busy || (dirty ? "Save this lesson" : "Saved")}
-              </button>
+              </Button>
               <span className="mono" style={{ fontSize: "0.66rem" }}>
                 Saving writes the row. The page a reader gets is rebuilt by{" "}
                 <code>node aab/{open.school === "money" ? "learn/build-lessons" : `${open.school}/build-${open.school}`}.mjs</code>.

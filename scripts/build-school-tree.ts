@@ -9,7 +9,7 @@
    Two files out, one level deep each:
 
      next/lib/school-stages.ts    the stages, for the header tree
-     next/lib/school-ladders.ts   the live lessons, for /account.html
+     next/lib/school-ladders.ts   the live lessons, for /account
 
    The header's tree shows every school's stages under the school
    (`next/components/nav-tree.tsx`). That list belongs to the
@@ -21,7 +21,7 @@
    Chrome renders on every page, and half this site's routes are
    prerendered at build time, where there is no D1 binding. So the
    query answered on the school pages and answered nothing on
-   `/about.html`, `/tools/stock.html` and thirteen others: the
+   `/about`, `/tools/stock` and thirteen others: the
    same menu, two levels deep on some pages and one on the rest.
    A component that renders differently depending on which Worker
    phase drew it is the drift this repository keeps returning to,
@@ -40,7 +40,7 @@
 
    ---- and why the account page is here too ----
 
-   `/account.html` draws a bar per school, and a bar needs a
+   `/account` draws a bar per school, and a bar needs a
    denominator: how many lessons that school actually holds. It
    used to import all four `curriculum.js` modules in the browser
    to find out, 150 KB of them, which is the exact shape
@@ -160,7 +160,7 @@ ${lines.join("\n")}
 }
 
 /* ------------------------------------------------------------
-   The lessons, for /account.html
+   The lessons, for /account
    ------------------------------------------------------------ */
 
 /** Every live lesson of every school, in ladder order.
@@ -204,7 +204,7 @@ export async function generateLadders(): Promise<string> {
    Every live lesson of the four schools, in ladder order, out of
    content/schools.backup.json. ${count} of them.
 
-   /account.html draws a bar per school and a bar needs a denominator.
+   /account draws a bar per school and a bar needs a denominator.
    That route is prerendered, so it has no D1 binding and the server
    that reads the rows is the generator rather than the request. The
    rule is unchanged and is the one next/lib/progress.ts states: the

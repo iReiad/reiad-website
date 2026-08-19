@@ -585,8 +585,8 @@ export const SCHOOL: School = {
    array above.
    ------------------------------------------------------------ */
 
-/** A term's folder URL. */
-export const termUrl = (term: Term): string => `/english/${term.slug}/index.html`;
+/** A term's ladder URL. */
+export const termUrl = (term: Term): string => `/english/${term.slug}`;
 
 /** A part's page URL. */
 export const partUrl = (term: Term, part: Part): string =>
@@ -600,7 +600,7 @@ export const dayId = (term: Term, n: number): string => `${term.slug}/day-${n}`;
 
 /** The practice book's URL, or null for a term without one. */
 export const workbookUrl = (term: Term): string | null =>
-  term?.workbook ? `/english/${term.slug}/${term.workbook.slug}.html` : null;
+  term?.workbook ? `/english/${term.slug}/${term.workbook.slug}` : null;
 
 /** Bangla numerals, for a page that is Bangla throughout. */
 export const bnNum = (n: number | string): string =>

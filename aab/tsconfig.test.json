@@ -53,11 +53,9 @@
     /* The served paths these tests name, and `paths` REPLACES
        rather than merges, so every one of them is written out.
 
-       `/account.js` points at the SOURCE rather than at a
-       description of it, the way `aab/src/tsconfig.json` does:
-       one file, so the two cannot drift. `/editor.js` has no
-       TypeScript source yet, so it points at the hand-written
-       declaration `app/src/types/` holds for it.
+       Both point at the SOURCE rather than at a description of
+       it, the way `aab/src/tsconfig.json` does: one file, so the
+       two cannot drift.
 
        Playwright is a devDependency of `app/`, which is the same
        entry `next/tsconfig.json` and `scripts/tsconfig.json`
@@ -66,7 +64,8 @@
     "paths": {
       "playwright": ["../app/node_modules/playwright"],
       "/account.js": ["./src/account.ts"],
-      "/editor.js": ["../app/src/types/editor.d.ts"]
+      "/editor.js": ["./src/editor.ts"],
+      "/photo.js": ["./src/photo.ts"]
     }
   },
   "include": ["*.test.ts", "schools/*.test.ts", "portfolio/*.test.ts",

@@ -213,7 +213,7 @@ export const stageBase = (school: string, stage: SchoolStage): string =>
   stage.base ?? `/${school}/${stage.slug}/`;
 
 export const stageUrl = (school: string, stage: SchoolStage): string =>
-  `/${school}/${stage.slug}/index.html`;
+  `/${school}/${stage.slug}`;
 
 export const lessonUrl = (school: string, stage: SchoolStage, lesson: SchoolLesson): string =>
   `${stageBase(school, stage)}${lesson.slug}.html`;
@@ -253,7 +253,7 @@ export const workbookUrl = (school: string, stage: SchoolStage): string | null =
   if (!stage?.workbook) return null;
   if (school === "deutsch" && stage.status !== "live") return null;
   if (school !== "deutsch" && school !== "english") return null;
-  return `/${school}/${stage.slug}/${stage.workbook.slug}.html`;
+  return `/${school}/${stage.slug}/${stage.workbook.slug}`;
 };
 
 export const laddered = (school: string, stage: SchoolStage): LadderedLesson[] => {

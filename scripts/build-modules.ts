@@ -47,6 +47,11 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = join(ROOT, "aab", "src");
 
+/** Where that config's `rootDir` puts this directory's output.
+    It is the repo root, so every emitted file carries its path
+    from there. `aab/src/tsconfig.json` says why. */
+const SRC_UNDER_ROOT = "aab/src";
+
 /** Every module that has moved, by the name it is served under.
 
     Listed rather than globbed, so that adding one is a line
@@ -97,6 +102,43 @@ export const MODULES = [
      `--series-2` now, and the legend beside them reads the same
      two. */
   "tools/tools",
+  /* The Studio's gate and the one constant it reads. `auth-config`
+     is the block the setup screen prints, so it is a file meant to
+     be replaced wholesale: nothing in it is `as const`. */
+  "auth-config", "auth",
+  /* Whether the dynamic layer is reachable. It declares
+     `document.prerendering` and `PerformanceNavigationTiming.
+     activationStart` globally, because neither is in the DOM
+     library and both are the browser this file exists for. */
+  "activation",
+  /* What has been written, wherever it is kept. The first module
+     here to import `/content.js`, which is why that config's
+     `rootDir` is the repo root and why the reads below carry a
+     prefix. */
+  "pieces",
+  /* `days-active`, which four things count. Converting it emptied
+     `aab/src/types/`: both declarations it held described modules
+     that describe themselves now. */
+  "streak",
+  /* The learn/work switch. Typing its two vocabularies as unions
+     is what found three comparisons against "money", a word this
+     module has never stored: `data-track` was never set, the
+     footer's switcher could not take a recruiter back to the
+     library, and the track switcher was hidden everywhere. */
+  "audience",
+  /* The pointer effect on cards. */
+  "tilt",
+  /* The shell's browser half: the theme, the palette, the
+     shortcut sheet, the counts, speculation rules and the service
+     worker registration. `noUnusedLocals` found six bindings it
+     imported from `/content.js` and never read. */
+  "app",
+  /* The contenteditable, and the last of them. It stays a served
+     module permanently: CLAUDE.md says why a second copy inside a
+     component is the bug. `check-css.ts` reads `ATTRS` and
+     `KEEP_CLASSES` out of the OUTPUT by name, so neither may stop
+     being an object literal or a `new Set([...])`. */
+  "editor",
 ];
 
 /** The five served modules whose source is in `shared/` rather
@@ -106,9 +148,12 @@ export const MODULES = [
     them needs a file at a URL.
 
     They are compiled on their own, by
-    `scripts/tsconfig.shared.json`, because `aab/src/tsconfig.json`
-    has `rootDir` set to that directory and a source outside it
-    cannot be added to that run.
+    `scripts/tsconfig.shared.json`, and that is the compile whose
+    output is read here even though `pieces.ts` now drags
+    `shared/content.ts` through the other one as well. Two reasons
+    it has to be this one: it is the only run whose `rootDir` puts
+    a ladder at the path `SHARED.files` names, and `rebase` below
+    is applied to its output alone.
 
     No declaration is emitted for any of them and none should be.
     Anything that wants the types maps the served path on to the
@@ -153,19 +198,32 @@ export function compile() {
       "--outDir", out, "--declarationDir", join(out, "types"),
     ], { cwd: ROOT, stdio: "pipe" });
 
-    /* Repo-relative path to the text that belongs at it. */
+    /* Repo-relative path to the text that belongs at it.
+
+       `aab/src/` is a PREFIX on everything this compile emits, and
+       that is not cosmetic: `pieces.ts` imports `/content.js`, so
+       `shared/content.ts` is an input, so that config's `rootDir`
+       is the repo root and every output carries its path from
+       there. Change `rootDir` and these three joins are what has
+       to change with it. */
     const built: Record<string, string> = {};
     for (const name of MODULES) {
-      built[`aab/${name}.js`] = readFileSync(join(out, `${name}.js`), "utf8");
-      built[`app/src/types/${name}.d.ts`] = readFileSync(join(out, "types", `${name}.d.ts`), "utf8");
+      built[`aab/${name}.js`] = readFileSync(join(out, SRC_UNDER_ROOT, `${name}.js`), "utf8");
+      built[`app/src/types/${name}.d.ts`] =
+        readFileSync(join(out, "types", SRC_UNDER_ROOT, `${name}.d.ts`), "utf8");
     }
-    /* Anything else tsc produced. A module added to `aab/src/`
-       and not to MODULES would otherwise be compiled and
-       silently thrown away. Recursive since `tools/live` moved
-       in: a stray in a subdirectory is still a stray. */
+    /* Anything else tsc produced FROM THIS DIRECTORY. A module
+       added to `aab/src/` and not to MODULES would otherwise be
+       compiled and silently thrown away. Recursive since
+       `tools/live` moved in: a stray in a subdirectory is still a
+       stray. `shared/` is emitted here too and is not a stray:
+       those five are read out of their own compile below, because
+       only that one applies `rebase`. */
     const strays = readdirSync(out, { recursive: true })
       .map((f) => String(f).replaceAll("\\", "/"))
-      .filter((f) => f.endsWith(".js") && !f.startsWith("types/"))
+      .filter((f) => f.startsWith(`${SRC_UNDER_ROOT}/`))
+      .map((f) => f.slice(SRC_UNDER_ROOT.length + 1))
+      .filter((f) => f.endsWith(".js"))
       .filter((f) => !MODULES.includes(f.replace(/\.js$/, "")));
 
     /* And the manifest and the four ladders, out of `shared/`.

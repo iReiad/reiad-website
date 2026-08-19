@@ -909,8 +909,8 @@ export const SCHOOL: School = {
    array above.
    ------------------------------------------------------------ */
 
-/** A ধাপ's folder URL. */
-export const dhapUrl = (dhap: Dhap): string => `/quran/${dhap.slug}/index.html`;
+/** A ধাপ's ladder URL. */
+export const dhapUrl = (dhap: Dhap): string => `/quran/${dhap.slug}`;
 
 /** A lesson's page URL. */
 export const lessonUrl = (dhap: Dhap, lesson: Lesson): string =>

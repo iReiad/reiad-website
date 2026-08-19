@@ -80,9 +80,9 @@ if (!PREVIEW) {
 const ROUTES = [
   { path: "/insights/dse-basics", what: "an article, switched on" },
   { path: "/insights/tiny-experiments", what: "another article" },
-  { path: "/insights.html", what: "the Insights hub", section: "insights" },
-  { path: "/cooking/index.html", what: "the kitchen", section: "cooking" },
-  { path: "/travel/index.html", what: "the travel desk", section: "travel" },
+  { path: "/insights", what: "the Insights hub", section: "insights" },
+  { path: "/cooking", what: "the kitchen", section: "cooking" },
+  { path: "/travel", what: "the travel desk", section: "travel" },
 ];
 
 /* fetch has no timeout of its own, and a check that hangs is

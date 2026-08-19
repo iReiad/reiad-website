@@ -807,8 +807,8 @@ export const SCHOOL = {
    the written one, so adding Stufe 5 is a matter of adding it to
    the array above.
    ------------------------------------------------------------ */
-/** A Stufe's folder URL. */
-export const stufeUrl = (stufe) => `/deutsch/${stufe.slug}/index.html`;
+/** A Stufe's ladder URL. */
+export const stufeUrl = (stufe) => `/deutsch/${stufe.slug}`;
 /** A Teil's page URL. */
 export const teilUrl = (stufe, teil) => `/deutsch/${stufe.slug}/${teil.slug}.html`;
 /** A Stufe's practice book, or null.
@@ -819,7 +819,7 @@ export const teilUrl = (stufe, teil) => `/deutsch/${stufe.slug}/${teil.slug}.htm
     letting it name a page that has not been generated is how a
     course ends up advertising a 404. */
 export const workbookUrl = (stufe) => stufe.workbook && stufe.status === "live"
-    ? `/deutsch/${stufe.slug}/${stufe.workbook.slug}.html`
+    ? `/deutsch/${stufe.slug}/${stufe.workbook.slug}`
     : null;
 /** Progress is stored per Teil under a stable id. */
 export const teilId = (stufe, teil) => `${stufe.slug}/${teil.slug}`;

@@ -231,7 +231,7 @@ Open `https://reiad.co.uk/api/auth/me`.
 
 ## Setting the Studio passphrase
 
-Open `https://reiad.co.uk/studio.html`. You'll get a "Set up Studio access"
+Open `https://reiad.co.uk/studio`. You'll get a "Set up Studio access"
 screen.
 
 What you type is stretched **in your browser**, PBKDF2-SHA256, 210,000

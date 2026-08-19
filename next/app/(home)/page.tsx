@@ -185,29 +185,29 @@ export default function HomePage() {
             className="col-span-2 lg:col-span-4 grid
               gap-[clamp(10px,1.4vw,16px)] sm:grid-cols-2 lg:grid-cols-1 lg:auto-rows-fr">
             <ContinueCard />
-            <SlimTile href="/money/index.html" accent="var(--green)" icon="coins"
+            <SlimTile href="/money" accent="var(--green)" icon="coins"
               chip="সবচেয়ে বড়টা" title="টাকা ও শেয়ার" />
-            <SlimTile href="/account.html" accent="var(--green)" icon="user"
+            <SlimTile href="/account" accent="var(--green)" icon="user"
               chip="আপনার" title="অ্যাকাউন্ট, টিক আর লক্ষ্য" />
-            <SlimTile href="/tools/live.html" accent="var(--gold)" icon="wallet"
+            <SlimTile href="/tools/live" accent="var(--gold)" icon="wallet"
               chip="Live" title="লাইভ পোর্টফোলিও" live />
           </aside>
 
-          <Tile span="col-span-1 lg:col-span-3" href="/skills/index.html"
+          <Tile span="col-span-1 lg:col-span-3" href="/skills"
             accent="var(--green)" icon="skills" chip="শেখা" lang="bn" dots
             title="ছয়টা কোর্স, সবটাই বাংলায়"
             go="তালিকা দেখুন" />
-          <Tile span="col-span-1 lg:col-span-3" href="/deutsch/index.html"
+          <Tile span="col-span-1 lg:col-span-3" href="/deutsch"
             accent="var(--blue)" icon="book" chip="কোর্স" lang="bn"
             title="জার্মান, বাংলা দিয়ে"
             dek="চারটা স্তর, রোজ এক পাতার অনুশীলন খাতা।"
             go="শুরু করুন" />
-          <Tile span="col-span-1 lg:col-span-3" href="/tools/stock.html"
+          <Tile span="col-span-1 lg:col-span-3" href="/tools/stock"
             accent="var(--gold)" icon="gauge" chip="Tool"
             title="Stock check: buy, hold or sell?"
             dek="Forty-odd ratios, a verdict that shows its arithmetic."
             go="Check a share" />
-          <Tile span="col-span-1 lg:col-span-3" href="/portfolio.html"
+          <Tile span="col-span-1 lg:col-span-3" href="/portfolio"
             accent="var(--plum)" icon="briefcase" chip="Work"
             title="The case studies"
             dek="Valuation, stress testing, portfolio construction."
@@ -215,12 +215,12 @@ export default function HomePage() {
 
           <PulseCard />
 
-          <Tile span="col-span-1 lg:col-span-3" href="/tools/index.html"
+          <Tile span="col-span-1 lg:col-span-3" href="/tools"
             accent="var(--gold)" icon="calculator" chip="Tools" lang="bn"
             title="পাঁচটা ক্যালকুলেটর"
             dek="চক্রবৃদ্ধি, সঞ্চয়পত্র, মূল্যস্ফীতি, কিস্তি, পজিশন।"
             go="হিসাব করুন" />
-          <Tile span="col-span-1 lg:col-span-3" href="/quran/index.html"
+          <Tile span="col-span-1 lg:col-span-3" href="/quran"
             accent="var(--teal)" icon="scroll" chip="কোর্স" lang="bn"
             title="কুরআনের আরবি"
             dek="তিন ধাপে ষাট দিন, শব্দ চেনা থেকে সূরা পড়া।"

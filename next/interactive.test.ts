@@ -57,23 +57,23 @@ const CASES: Case[] = [
      rule rather than a script. What holds the door now is the
      block at the foot of this file, which checks that it shows
      one introduction and fits one screen. */
-  ["/tools/index.html", "tools/index.html.html", '[data-stat="final"] .v',
+  ["/tools", "tools.html", '[data-stat="final"] .v',
    "what a monthly habit becomes, computed by /tools/tools.js", "–"],
-  ["/tools/stock.html", "tools/stock.html.html", "#pillars .pillar",
+  ["/tools/stock", "tools/stock.html", "#pillars .pillar",
    "the six pillars, built by /tools/stock.js"],
-  ["/portfolio/dcf.html", "portfolio/dcf.html.html", "#drivers *",
+  ["/portfolio/dcf", "portfolio/dcf.html", "#drivers *",
    "the valuation's drivers, built by /portfolio/dcf.js"],
-  ["/portfolio/dsex.html", "portfolio/dsex.html.html", "#chart-index *",
+  ["/portfolio/dsex", "portfolio/dsex.html", "#chart-index *",
    "the index chart, drawn by /portfolio/dsex.js"],
-  ["/portfolio/stress.html", "portfolio/stress.html.html", "#drivers *",
+  ["/portfolio/stress", "portfolio/stress.html", "#drivers *",
    "the stress test's drivers, built by /portfolio/stress.js"],
-  ["/portfolio/three-statement.html", "portfolio/three-statement.html.html", "#drivers *",
+  ["/portfolio/three-statement", "portfolio/three-statement.html", "#drivers *",
    "the model's drivers, built by /portfolio/three-statement.js"],
-  ["/portfolio/dissertation.html", "portfolio/dissertation.html.html", "#chart-evidence *",
+  ["/portfolio/dissertation", "portfolio/dissertation.html", "#chart-evidence *",
    "the evidence chart, drawn by /portfolio/dissertation.js"],
-  ["/portfolio/frontier.html", "portfolio/frontier.html.html", "#frontier-chart *",
+  ["/portfolio/frontier", "portfolio/frontier.html", "#frontier-chart *",
    "the frontier itself, drawn by /portfolio/frontier.js"],
-  ["/portfolio/scorecard.html", "portfolio/scorecard.html.html", "#roc-chart *",
+  ["/portfolio/scorecard", "portfolio/scorecard.html", "#roc-chart *",
    "the ROC curve, drawn by /portfolio/scorecard.js"],
   /* Both of these were here for `/app.js`, which every page loads
      and no page's markup held any of: the hover panel it built
@@ -85,9 +85,9 @@ const CASES: Case[] = [
      why it cannot be the witness here. `#app-toast` is app.js's
      now: the toast host is appended by the module and by nothing
      else, and it is on every page. */
-  ["/portfolio.html", "portfolio.html.html", "#palette",
+  ["/portfolio", "portfolio.html", "#palette",
    "the Ctrl+K palette, built by /app.js"],
-  ["/skills/index.html", "skills/index.html.html", "#palette",
+  ["/skills", "skills.html", "#palette",
    "the Ctrl+K palette, built by /app.js"],
 ];
 
@@ -185,7 +185,7 @@ const PRERENDERED: Record<string, string> = {
   /* Not one of the cases either: what the contact form proves is
      not "a module drew something" but "pressing Send reaches
      somebody", which is the block at the foot of this file. */
-  "/contact.html": "contact.html.html",
+  "/contact": "contact.html",
 };
 
 const server = createServer(async (req, res) => {
@@ -295,8 +295,8 @@ for (const [who, audience, track, expected] of READERS) {
   }));
   ok(`the deck stands under the hero for ${who}`, deck.tiles.length >= 8,
     `${deck.tiles.length} tiles`);
-  const featured: Record<string, string> = { open: "/tools/live.html",
-    learn: "/money/index.html", work: "/portfolio.html" };
+  const featured: Record<string, string> = { open: "/tools/live",
+    learn: "/money", work: "/portfolio" };
   const wantFeatured = featured[expected];
   ok(`and the featured card answers ${who}`, deck.featured === wantFeatured,
     `featured ${deck.featured}, expected ${wantFeatured}`);
@@ -332,7 +332,7 @@ for (const [who, audience, track, expected] of READERS) {
 for (const width of [360, 390, 412]) {
   const page = await browser.newPage({ viewport: { width, height: 780 } });
   await page.route("https://fonts.googleapis.com/**", (r) => r.abort());
-  await page.goto(`http://localhost:${PORT}/skills/index.html`, { waitUntil: "load" });
+  await page.goto(`http://localhost:${PORT}/skills`, { waitUntil: "load" });
   await page.waitForTimeout(900);
 
   const box = (sel: string) => page.evaluate((s: string) => {
@@ -437,7 +437,7 @@ for (const width of [360, 390, 412]) {
 {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   await page.route("https://fonts.googleapis.com/**", (r) => r.abort());
-  await page.goto(`http://localhost:${PORT}/skills/index.html`, { waitUntil: "load" });
+  await page.goto(`http://localhost:${PORT}/skills`, { waitUntil: "load" });
   await page.waitForTimeout(900);
   const state = await page.evaluate(() => {
     const shown = (s: string) => { const e = document.querySelector(s);
@@ -495,7 +495,7 @@ for (const [label, api, web3, expected] of SENDING) {
       body: JSON.stringify({ success: web3, message: "x" }) });
   });
 
-  await page.goto(`http://localhost:${PORT}/contact.html`, { waitUntil: "load" });
+  await page.goto(`http://localhost:${PORT}/contact`, { waitUntil: "load" });
   await page.waitForTimeout(700);
 
   ok(`${label}: the form still posts on its own`,

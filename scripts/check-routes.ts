@@ -4,12 +4,13 @@
 
        node scripts/check-routes.ts
 
-   Cloudflare Pages' routing is the one part of this site that
+   Cloudflare's asset routing is the one part of this site that
    can't be tested with a local file server, and it has already
-   broken the site once: a "pretty URL" rule in _redirects
-   pointed /about → /about.html while Pages itself redirects
-   /about.html → /about, so the two bounced off each other
-   forever and the page never loaded in any browser.
+   broken the site once: a "pretty URL" rule in _redirects sent
+   the extensionless spelling of an address to the `.html` one
+   while Cloudflare itself redirects the `.html` one back, so the
+   two bounced off each other forever and the page never loaded in
+   any browser. Every rule in that file points one way now.
 
    This walks every public URL through the same rules Pages
    applies and fails loudly on a loop, a dead end, or a link
@@ -61,11 +62,11 @@ const MAX_HOPS = 10;
    A `*` there matches any number of characters, including slashes.
 
    The comment lines inside that array are stripped first, and they
-   have to be. They quote patterns in prose, and the longest of them
-   says which pattern is deliberately absent: "/money/*". Reading
-   the block without stripping them picked that up as a rule, so
-   this file believed the Worker answered every path under /money/
-   when wrangler had been told no such thing. */
+   have to be. They quote patterns in prose, and one of them once
+   named a pattern that was deliberately ABSENT. Reading the block
+   without stripping them picked that up as a rule, so this file
+   believed the Worker answered paths wrangler had been told
+   nothing about. */
 const WORKER_FIRST = (
   readFileSync(join(ROOT, "wrangler.toml"), "utf8")
     .match(/run_worker_first\s*=\s*\[([\s\S]*?)\]/)?.[1] ?? ""
@@ -193,7 +194,7 @@ const targets = new Set(["/", ...pages, ...rules.map((r) => r.from)]);
    a route, passed; the same link in `404.html` failed.
 
    A route writes its links as JSX, so only the literal ones can
-   be read: `href="/money/index.html"` is checkable and
+   be read: `href="/money"` is checkable and
    `href={lesson.url}` is not, and pretending otherwise would mean
    a check that guesses. The literals are most of them, and the
    computed ones are computed by `shared/schools.ts`, which

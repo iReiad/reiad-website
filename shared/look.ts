@@ -55,9 +55,9 @@ export interface Article {
 }
 
 const HUB = {
-  insights: "/insights.html",
-  cooking: "/cooking/index.html",
-  travel: "/travel/index.html",
+  insights: "/insights",
+  cooking: "/cooking",
+  travel: "/travel",
 };
 
 export const LOOK: Record<string, Look> = {
@@ -72,7 +72,7 @@ export const LOOK: Record<string, Look> = {
       + "fees change: confirm the current details with the relevant institution "
       + "before acting on anything here.",
     back: { url: HUB.insights, kicker: "All insights", label: "Back to the index →" },
-    side: { url: "/money/index.html", kicker: "টাকা ও শেয়ার", label: "টাকার স্কুল, বাংলায় →" },
+    side: { url: "/money", kicker: "টাকা ও শেয়ার", label: "টাকার স্কুল, বাংলায় →" },
     footer: "Everything on this site is general education, not investment advice. "
       + "Do your own research before putting money anywhere.",
   },
@@ -86,7 +86,7 @@ export const LOOK: Record<string, Look> = {
     note: "রান্নাঘরের লেখাগুলো রেসিপি নয়, বোঝার জন্য। নিজের রান্নাঘর, নিজের চুলা আর নিজের "
       + "স্বাদ অনুযায়ী মাপ আর সময় একটু এদিক-ওদিক হবেই।",
     back: { url: HUB.cooking, kicker: "রান্নাঘর", label: "সব লেখা এক জায়গায় →" },
-    side: { url: "/skills/index.html", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
+    side: { url: "/skills", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
     footer: "রান্নাঘরের লেখাগুলো বিনামূল্যে, বাংলায়।",
   },
   travel: {
@@ -99,7 +99,7 @@ export const LOOK: Record<string, Look> = {
     note: "এই লেখাটা সাধারণ তথ্য, আইনি পরামর্শ নয়। ভিসার নিয়ম আর ফি বদলায়, তাই আবেদনের "
       + "আগে অফিসিয়াল গাইডেন্স একবার দেখে নিন।",
     back: { url: HUB.travel, kicker: "ভ্রমণ", label: "সব লেখা এক জায়গায় →" },
-    side: { url: "/skills/index.html", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
+    side: { url: "/skills", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
     footer: "ভ্রমণের লেখাগুলো বিনামূল্যে, বাংলায়।",
   },
 };
@@ -178,7 +178,7 @@ export function headFacts(article: Article, origin: string): HeadFacts {
       datePublished: article.published_at,
       dateModified: article.updated_at,
       inLanguage: article.lang,
-      author: { "@type": "Person", name: "Rony Reiad", url: `${origin}/about.html` },
+      author: { "@type": "Person", name: "Rony Reiad", url: `${origin}/about` },
       mainEntityOfPage: url,
       image: `${origin}${cover}`,
     }).replace(/</g, "\\u003c"),

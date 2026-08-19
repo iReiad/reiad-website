@@ -96,12 +96,12 @@ export const HUB_CONTENT: Record<string, HubContent> = {
       "resetLabel": "রিসেট",
       "actions": [
         {
-          "href": "/deutsch/stufe-1/index.html",
+          "href": "/deutsch/stufe-1",
           "label": "Stufe ১ শুরু করুন →",
           "kind": "solid"
         },
         {
-          "href": "/deutsch/stufe-1/arbeitsbuch.html",
+          "href": "/deutsch/stufe-1/arbeitsbuch",
           "label": "রোজকার খাতা",
           "kind": "ghost"
         }
@@ -141,10 +141,10 @@ export const HUB_CONTENT: Record<string, HubContent> = {
         "ladder": {
           "listId": "leiter-list",
           "fallback": [
-            "<a href=\"/deutsch/stufe-1/index.html\"><b>Stufe 1 · একদম শুরু থেকে</b></a> ধ্বনি, বাক্যের ইঞ্জিন, <span lang=\"de\">sein</span> ও <span lang=\"de\">haben</span>, তিন টুপি, ক্রিয়ার মেশিন, না-বলা, প্রশ্ন, বন্ধনী, সংখ্যা।",
-            "<a href=\"/deutsch/stufe-2/index.html\"><b>Stufe 2 · সেতু গড়া</b></a> <span lang=\"de\">Akkusativ</span> ও <span lang=\"de\">Dativ</span>, কাতাপল্ট-ক্রিয়া, আঠা-শব্দ, <span lang=\"de\">Perfekt</span> দিয়ে গতকালের কথা, আর <span lang=\"de\">weil</span>।",
-            "<a href=\"/deutsch/stufe-3/index.html\"><b>Stufe 3 · নদীটা খুঁজে পাওয়া</b></a> <span lang=\"de\">Präteritum</span>, বিশেষণের লেজ, সম্বন্ধ-বাক্য, <span lang=\"de\">Konjunktiv II</span>, তুলনা, ভবিষ্যৎ আর তর্ক।",
-            "<a href=\"/deutsch/stufe-4/index.html\"><b>Stufe 4 · সূক্ষ্ম সুর</b></a> কর্মবাচ্য, অতীতের-অতীত, আক্ষেপ, <span lang=\"de\">Modalpartikeln</span>, কূটনৈতিক সুর, আনুষ্ঠানিক লেখা।"
+            "<a href=\"/deutsch/stufe-1\"><b>Stufe 1 · একদম শুরু থেকে</b></a> ধ্বনি, বাক্যের ইঞ্জিন, <span lang=\"de\">sein</span> ও <span lang=\"de\">haben</span>, তিন টুপি, ক্রিয়ার মেশিন, না-বলা, প্রশ্ন, বন্ধনী, সংখ্যা।",
+            "<a href=\"/deutsch/stufe-2\"><b>Stufe 2 · সেতু গড়া</b></a> <span lang=\"de\">Akkusativ</span> ও <span lang=\"de\">Dativ</span>, কাতাপল্ট-ক্রিয়া, আঠা-শব্দ, <span lang=\"de\">Perfekt</span> দিয়ে গতকালের কথা, আর <span lang=\"de\">weil</span>।",
+            "<a href=\"/deutsch/stufe-3\"><b>Stufe 3 · নদীটা খুঁজে পাওয়া</b></a> <span lang=\"de\">Präteritum</span>, বিশেষণের লেজ, সম্বন্ধ-বাক্য, <span lang=\"de\">Konjunktiv II</span>, তুলনা, ভবিষ্যৎ আর তর্ক।",
+            "<a href=\"/deutsch/stufe-4\"><b>Stufe 4 · সূক্ষ্ম সুর</b></a> কর্মবাচ্য, অতীতের-অতীত, আক্ষেপ, <span lang=\"de\">Modalpartikeln</span>, কূটনৈতিক সুর, আনুষ্ঠানিক লেখা।"
           ]
         }
       },
@@ -177,7 +177,7 @@ export const HUB_CONTENT: Record<string, HubContent> = {
           ],
           "actions": [
             {
-              "href": "/deutsch/stufe-1/arbeitsbuch.html",
+              "href": "/deutsch/stufe-1/arbeitsbuch",
               "label": "আজকের পাতা খুলুন →",
               "kind": "solid"
             },
@@ -211,11 +211,11 @@ export const HUB_CONTENT: Record<string, HubContent> = {
           },
           {
             "q": "এটা কি কোনো পরীক্ষার প্রস্তুতি?",
-            "html": "<p>না। লক্ষ্য একটাই: আপনি যেন মুখ খুলে বলতে পারেন। কোনো সার্টিফিকেট নেই, কোনো পরীক্ষার ছক নেই। তবে পথটা মোটামুটি A1 থেকে C1 পর্যন্ত যায়, তাই Goethe বা telc দিতে চাইলে <a href=\"/deutsch/stufe-4/index.html\">Stufe ৪</a> পর্যন্ত শেষ করার পরে আলাদা করে শুধু পরীক্ষার ধরনটা অভ্যাস করলেই চলবে।</p>"
+            "html": "<p>না। লক্ষ্য একটাই: আপনি যেন মুখ খুলে বলতে পারেন। কোনো সার্টিফিকেট নেই, কোনো পরীক্ষার ছক নেই। তবে পথটা মোটামুটি A1 থেকে C1 পর্যন্ত যায়, তাই Goethe বা telc দিতে চাইলে <a href=\"/deutsch/stufe-4\">Stufe ৪</a> পর্যন্ত শেষ করার পরে আলাদা করে শুধু পরীক্ষার ধরনটা অভ্যাস করলেই চলবে।</p>"
           },
           {
             "q": "টাকা আর বাজারের লেখাগুলো কোথায় গেল?",
-            "html": "<p>সেগুলো আলাদা জায়গায়, <a href=\"/money/index.html\">শেখার লাইব্রেরিতে</a>। দুইটা একদম আলাদা বিষয়, তাই আলাদা পথে রাখা হয়েছে: বিনিয়োগ খুঁজতে এসে <span lang=\"de\">Akkusativ</span> পেরোতে হবে না, আর জার্মান খুঁজতে এসে ব্রোকার পেরোতে হবে না।</p>"
+            "html": "<p>সেগুলো আলাদা জায়গায়, <a href=\"/money\">শেখার লাইব্রেরিতে</a>। দুইটা একদম আলাদা বিষয়, তাই আলাদা পথে রাখা হয়েছে: বিনিয়োগ খুঁজতে এসে <span lang=\"de\">Akkusativ</span> পেরোতে হবে না, আর জার্মান খুঁজতে এসে ব্রোকার পেরোতে হবে না।</p>"
           }
         ]
       }
@@ -226,12 +226,12 @@ export const HUB_CONTENT: Record<string, HubContent> = {
       "html": "এই সাইটের অন্য শেখার জায়গাটা বাংলাদেশে বিনিয়োগ নিয়ে: একদম শুরু থেকে গবেষণা পর্যন্ত আট ধাপ, সবটাই সহজ বাংলায়। দুটো জায়গা আলাদা, কিন্তু নিয়ম এক: ব্যাখ্যা আপনার ভাষায়, সিদ্ধান্ত আপনার।",
       "actions": [
         {
-          "href": "/money/index.html",
+          "href": "/money",
           "label": "শেখার লাইব্রেরি →",
           "kind": "solid"
         },
         {
-          "href": "/tools/index.html",
+          "href": "/tools",
           "label": "ক্যালকুলেটর",
           "kind": "ghost"
         }
@@ -254,7 +254,7 @@ export const HUB_CONTENT: Record<string, HubContent> = {
           "kind": "solid"
         },
         {
-          "href": "/quran/dhap-1/index.html",
+          "href": "/quran/dhap-1",
           "label": "ধাপ ১ দেখুন",
           "kind": "ghost"
         }
@@ -290,9 +290,9 @@ export const HUB_CONTENT: Record<string, HubContent> = {
         "ladder": {
           "listId": "dhap-list",
           "fallback": [
-            "<a href=\"/quran/dhap-1/index.html\"><b>ধাপ ১ · ভিত্তি</b></a> ১০ দিন। নাম-শব্দ, সর্বনাম, পুরুষ ও স্ত্রী, ছোট জোড়া-শব্দ, <span lang=\"ar\" dir=\"rtl\">الـ</span>, আর প্রথম তিনটি আয়াত।",
-            "<a href=\"/quran/dhap-2/index.html\"><b>ধাপ ২ · শব্দ থেকে বাক্য</b></a> ২০ দিন। মূল ও ছাঁচ, ক্রিয়ার তিন কাল, নাম-বাক্য ও কাজ-বাক্য, ইদাফা, শব্দের শেষের চিহ্ন, আর হারাকাত ছাড়া পড়া।",
-            "<a href=\"/quran/dhap-3/index.html\"><b>ধাপ ৩ · বাক্য থেকে সূরা</b></a> ৩০ দিন। ক্রিয়ার রূপ, ভাঙা বহুবচন, কর্মবাচ্য, বাক্যের হাতিয়ার, আর চারটে সূরা শব্দ ধরে ধরে।"
+            "<a href=\"/quran/dhap-1\"><b>ধাপ ১ · ভিত্তি</b></a> ১০ দিন। নাম-শব্দ, সর্বনাম, পুরুষ ও স্ত্রী, ছোট জোড়া-শব্দ, <span lang=\"ar\" dir=\"rtl\">الـ</span>, আর প্রথম তিনটি আয়াত।",
+            "<a href=\"/quran/dhap-2\"><b>ধাপ ২ · শব্দ থেকে বাক্য</b></a> ২০ দিন। মূল ও ছাঁচ, ক্রিয়ার তিন কাল, নাম-বাক্য ও কাজ-বাক্য, ইদাফা, শব্দের শেষের চিহ্ন, আর হারাকাত ছাড়া পড়া।",
+            "<a href=\"/quran/dhap-3\"><b>ধাপ ৩ · বাক্য থেকে সূরা</b></a> ৩০ দিন। ক্রিয়ার রূপ, ভাঙা বহুবচন, কর্মবাচ্য, বাক্যের হাতিয়ার, আর চারটে সূরা শব্দ ধরে ধরে।"
           ]
         }
       },
@@ -359,7 +359,7 @@ export const HUB_CONTENT: Record<string, HubContent> = {
           },
           {
             "q": "জার্মান শেখার অংশটা কোথায় গেল?",
-            "html": "<p>সেটা আলাদা জায়গায়, <a href=\"/deutsch/index.html\">জার্মান স্কুলে</a>। দুটো একদম আলাদা বিষয়, তাই আলাদা পথে রাখা হয়েছে। দুটোরই পুরো তালিকা <a href=\"/skills/index.html\">দক্ষতার পাতায়</a>।</p>"
+            "html": "<p>সেটা আলাদা জায়গায়, <a href=\"/deutsch\">জার্মান স্কুলে</a>। দুটো একদম আলাদা বিষয়, তাই আলাদা পথে রাখা হয়েছে। দুটোরই পুরো তালিকা <a href=\"/skills\">দক্ষতার পাতায়</a>।</p>"
           }
         ]
       }
@@ -381,7 +381,7 @@ export const HUB_CONTENT: Record<string, HubContent> = {
           "kind": "solid"
         },
         {
-          "href": "/english/term-1/workbook.html",
+          "href": "/english/term-1/workbook",
           "label": "৩০ দিনের খাতা",
           "kind": "ghost"
         }
@@ -426,8 +426,8 @@ export const HUB_CONTENT: Record<string, HubContent> = {
         "ladder": {
           "listId": "term-list",
           "fallback": [
-            "<a href=\"/english/term-1/index.html\"><b>টার্ম ১ · শুরু থেকে</b></a> ১৩টি পর্ব। শব্দের ক্রম, <span lang=\"en\">am/is/are</span>, <span lang=\"en\">have</span>, তিন কাল, সাহায্যকারী শব্দ, প্রশ্ন, আঠা-শব্দ আর রোজকার বাক্যভাণ্ডার। সাথে ৩০ দিনের অনুশীলন খাতা।",
-            "<a href=\"/english/term-2/index.html\"><b>টার্ম ২ · ভাব বহন</b></a> ১৭টি পর্ব। ভাব জোড়া দেওয়া, <span lang=\"en\">perfect</span> কাল, সময়ের স্তর, <span lang=\"en\">if</span>, নিশ্চয়তা, <span lang=\"en\">passive</span>, reported speech, phrasal verb, সুর আর দুই মিনিট ধরে বলা।"
+            "<a href=\"/english/term-1\"><b>টার্ম ১ · শুরু থেকে</b></a> ১৩টি পর্ব। শব্দের ক্রম, <span lang=\"en\">am/is/are</span>, <span lang=\"en\">have</span>, তিন কাল, সাহায্যকারী শব্দ, প্রশ্ন, আঠা-শব্দ আর রোজকার বাক্যভাণ্ডার। সাথে ৩০ দিনের অনুশীলন খাতা।",
+            "<a href=\"/english/term-2\"><b>টার্ম ২ · ভাব বহন</b></a> ১৭টি পর্ব। ভাব জোড়া দেওয়া, <span lang=\"en\">perfect</span> কাল, সময়ের স্তর, <span lang=\"en\">if</span>, নিশ্চয়তা, <span lang=\"en\">passive</span>, reported speech, phrasal verb, সুর আর দুই মিনিট ধরে বলা।"
           ]
         }
       },
@@ -460,7 +460,7 @@ export const HUB_CONTENT: Record<string, HubContent> = {
           ],
           "actions": [
             {
-              "href": "/english/term-1/workbook.html",
+              "href": "/english/term-1/workbook",
               "label": "আজকের পাতা খুলুন →",
               "kind": "solid"
             },
@@ -490,7 +490,7 @@ export const HUB_CONTENT: Record<string, HubContent> = {
           },
           {
             "q": "খাতাটা কি ছাপাতে হবে?",
-            "html": "<p>না। <a href=\"/english/term-1/workbook.html\">৩০ দিনের খাতা</a> ব্রাউজারেই ভরা যায়, আর যা লেখেন সেটা আপনার নিজের ডিভাইসেই জমা থাকে। চাইলে ছাপাতেও পারেন: পাতাটা ছাপার জন্যই বানানো, আর ছাপলে পুরো তিরিশ দিনই আসে।</p>"
+            "html": "<p>না। <a href=\"/english/term-1/workbook\">৩০ দিনের খাতা</a> ব্রাউজারেই ভরা যায়, আর যা লেখেন সেটা আপনার নিজের ডিভাইসেই জমা থাকে। চাইলে ছাপাতেও পারেন: পাতাটা ছাপার জন্যই বানানো, আর ছাপলে পুরো তিরিশ দিনই আসে।</p>"
           },
           {
             "q": "আমার হিসাব কোথায় জমা থাকে?",
@@ -498,7 +498,7 @@ export const HUB_CONTENT: Record<string, HubContent> = {
           },
           {
             "q": "অন্য ভাষাগুলো কোথায়?",
-            "html": "<p>জার্মান আছে <a href=\"/deutsch/index.html\">জার্মান স্কুলে</a>, আর কুরআনের আরবি <a href=\"/quran/index.html\">এখানে</a>। সবগুলোর তালিকা <a href=\"/skills/index.html\">দক্ষতার পাতায়</a>।</p>"
+            "html": "<p>জার্মান আছে <a href=\"/deutsch\">জার্মান স্কুলে</a>, আর কুরআনের আরবি <a href=\"/quran\">এখানে</a>। সবগুলোর তালিকা <a href=\"/skills\">দক্ষতার পাতায়</a>।</p>"
           }
         ]
       }

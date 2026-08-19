@@ -63,7 +63,7 @@ const skip: (why: string) => never = (why) => {
 
 const exists = (path: string): Promise<boolean> => stat(path).then(() => true, () => false);
 
-if (!await exists(join(BUILD, "server/app/account.html.html"))) {
+if (!await exists(join(BUILD, "server/app/account.html"))) {
   skip("next/.next holds no prerendered account page. Run `npx next build` in next/ first.");
 }
 
@@ -105,7 +105,7 @@ const TYPES: Record<string, string> = {
   ".ico": "image/x-icon",
 };
 
-const PRERENDERED: Record<string, string> = { "/account.html": "account.html.html" };
+const PRERENDERED: Record<string, string> = { "/account": "account.html" };
 
 /* The real policy, read out of `aab/_headers` rather than copied,
    because a copy is a second list and this repository has been
@@ -357,7 +357,7 @@ async function open(
 
 console.log("the account menu");
 {
-  const { page, context, errors } = await open("/account.html");
+  const { page, context, errors } = await open("/account");
 
   const button = page.locator(".account-btn");
   is("the button says who is signed in", await button.textContent(), "R");
@@ -373,6 +373,10 @@ console.log("the account menu");
   is("and the button says so", await button.getAttribute("aria-expanded"), "true");
   is("it names the account", await menu.locator(".acc-who-text strong").textContent(), "Rony Reiad");
   is("six places to go", await menu.locator(".acc-item[href]").count(), 6);
+  /* The menu is `aab/src/signin.ts`, which still writes the
+     `.html` spelling: the browser modules were not part of task
+     #28 and `_redirects` answers for it. Asserted as the module
+     writes it, so this fails the day the two part company. */
   ok("including the reading list",
     (await menu.locator('.acc-item[href="/account.html#reading-list"]').count()) === 1);
   ok("and a way out", (await menu.locator(".acc-out").count()) === 1);
@@ -399,7 +403,7 @@ console.log("the account menu");
 
 console.log("\nthe menu when nobody is signed in");
 {
-  const { page, context, errors } = await open("/account.html", { signedIn: false });
+  const { page, context, errors } = await open("/account", { signedIn: false });
 
   is("the button asks", await page.locator(".account-btn").textContent(), "Sign in");
   await page.locator(".account-btn").click();
@@ -420,7 +424,7 @@ console.log("\nthe menu when nobody is signed in");
 
 console.log("\nthe account page");
 {
-  const { page, context, errors } = await open("/account.html", {
+  const { page, context, errors } = await open("/account", {
     rows: {
       library: [
         { id: "l1", url: "/insights/dse-basics", title: "How the DSE works",
@@ -599,7 +603,7 @@ console.log("\nthe account page");
 
 console.log("\nreading preferences");
 {
-  const { page, context, errors } = await open("/account.html");
+  const { page, context, errors } = await open("/account");
 
   await page.getByRole("tab", { name: "Preferences" }).click();
   await page.waitForTimeout(200);
@@ -701,7 +705,7 @@ console.log("\nreading preferences");
 
 console.log("\nadding a target");
 {
-  const { page, context, state, errors } = await open("/account.html");
+  const { page, context, state, errors } = await open("/account");
 
   await page.getByRole("tab", { name: "Targets" }).click();
   await page.waitForTimeout(200);
@@ -735,7 +739,7 @@ console.log("\nadding a target");
 
 console.log("\nthe strip, and what it switches");
 {
-  const { page, context, errors } = await open("/account.html#notes");
+  const { page, context, errors } = await open("/account#notes");
 
   /* A deep link is the case this has to get right: the account
      menu in the header links straight to `#reading-list` and
@@ -804,7 +808,7 @@ console.log("\nthe strip, and what it switches");
 
 console.log("\nsetting the account up, then changing it");
 {
-  const { page, context, state, errors } = await open("/account.html", {
+  const { page, context, state, errors } = await open("/account", {
     rows: {
       profile: { display_name: "", following: [], pace: "", setup_at: null },
       progress: { "learn-read": ["share"] },
@@ -873,7 +877,7 @@ console.log("\nsetting the account up, then changing it");
 
 console.log("\nerasing everything");
 {
-  const { page, context, errors } = await open("/account.html", {
+  const { page, context, errors } = await open("/account", {
     rows: {
       targets: [{ id: "t1", kind: "habit", subject: "week", label: "Read on 4 days a week",
         target: 4, reached: 0, unit: "days", done_at: null,
@@ -913,7 +917,7 @@ console.log("\nerasing everything");
 
 console.log("\ntaking a copy of everything");
 {
-  const { page, context, errors } = await open("/account.html", {
+  const { page, context, errors } = await open("/account", {
     rows: {
       library: [{ id: "l1", url: "/insights/x", title: "X", kind: "piece",
         saved: true, note: "", updated_at: new Date().toISOString() }],
