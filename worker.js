@@ -50,6 +50,7 @@ import { onRequest as broker } from "./functions/api/broker/[[route]].js";
 import { onRequest as schools } from "./functions/api/schools/[[route]].js";
 import { onRequest as courses } from "./functions/api/courses/[[route]].ts";
 import { onRequest as routine } from "./functions/api/routine/[[route]].ts";
+import { onRequest as admin } from "./functions/api/admin/[[route]].ts";
 import { onRequest as insight } from "./functions/insights/[slug].js";
 import { onRequest as feeds } from "./functions/feeds/[kind].js";
 import { db } from "./functions/_lib/db.js";
@@ -75,6 +76,7 @@ const API_ROUTES = [
   ["/api/schools", schools, "route"],
   ["/api/courses", courses, "route"],
   ["/api/routine", routine, "route"],
+  ["/api/admin", admin, "route"],
 ];
 
 /* The Cron schedules, as strings, because `event.cron` hands back
@@ -171,6 +173,9 @@ export const NEXT_ROUTES = [
   /^\/(about|contact|account|skills|tools|portfolio)$/i,
   /^\/tools\/(stock|live|routine)$/i,
   /^\/tools\/routine\/(settings|print|day|year)$/i,
+  /* The admin panel. ADMIN.md is the plan; it is `unlisted` in
+     lib/nav.ts for the reason the course section is. */
+  /^\/admin$/i,
   /* The two private shells. Their bundles are NOT here: those are
      files in aab/desk/ and aab/studio/, and the asset router
      answers them as it always has. */

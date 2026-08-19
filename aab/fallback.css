@@ -6,7 +6,7 @@
    a stylesheet whose name carries a hash. Edit the source and run
    the generator. */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, glow, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, admin, glow, utilities;
 
 @layer tokens {
 
@@ -8180,4 +8180,42 @@
   @media (prefers-reduced-motion: reduce) {
     [data-glow] { --gx: 50%; --gy: 50%; transition: none; }
   }
+}
+
+@layer admin {
+  .ad-page-wrap { padding-block: var(--step) var(--step); }
+  .ad-page { display: grid; gap: var(--gap); }
+  .ad-gates {
+    display: grid; gap: var(--gap);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  }
+  .ad-panel, .ad-gate {
+    display: grid; gap: var(--s-5); justify-items: start;
+    padding: var(--s-6); border-radius: var(--radius-card);
+  }
+  .ad-panel h3, .ad-gate h3 {
+    display: flex; align-items: center; gap: var(--s-4);
+    margin: 0; font-family: var(--font-bn); font-size: var(--t-3);
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft);
+  }
+  .ad-quiet { margin: 0; color: var(--ink-soft); max-inline-size: var(--measure); }
+
+  .ad-rows { display: grid; gap: var(--s-4); inline-size: 100%; }
+  .ad-row {
+    display: grid; align-items: center; gap: var(--s-4);
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .ad-row-label { min-inline-size: 0; }
+  .ad-row-note { font-size: var(--t-2); color: var(--ink-soft); text-align: end; }
+
+  .ad-dot {
+    inline-size: 9px; block-size: 9px; border-radius: var(--radius-pill);
+    background: var(--hairline); flex: none;
+  }
+  :is(.ad-row, .ad-dot)[data-state="up"] .ad-dot,
+  .ad-dot[data-state="up"] { background: var(--accent); }
+  :is(.ad-row, .ad-dot)[data-state="down"] .ad-dot,
+  .ad-dot[data-state="down"] { background: var(--danger); }
+  .ad-row[data-state="up"] .ad-dot { background: var(--accent); }
+  .ad-row[data-state="down"] .ad-dot { background: var(--danger); }
 }

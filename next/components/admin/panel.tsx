@@ -1,0 +1,169 @@
+"use client";
+
+/* ============================================================
+   admin/panel.tsx: one page, two credentials.
+
+   `ADMIN.md` §1 is the reasoning and it is worth not restating
+   here, except for the one sentence everything in this file
+   depends on:
+
+     The passphrase and the account are NOT two ways of proving
+     the same thing. They authorise different data, held in
+     different places, reachable only by different means.
+
+   The passphrase (`functions/_lib/auth.js`, a session cookie over
+   D1) opens the site's own content. The account
+   (`functions/_lib/admins.ts`, a reader id) opens rows in
+   Supabase that row-level security answers with the reader's own
+   JWT. A cookie is not a JWT and D1 has no notion of a Supabase
+   reader, so neither can stand in for the other, and that is a
+   fact about the storage rather than a policy.
+
+   So this page shows what the credentials in hand can honestly
+   reach, and names what the missing one would add.
+
+   ---- the two rules it must not break ----
+
+   1. NEVER MINT ONE FROM THE OTHER. A button that turned an
+      account sign-in into a passphrase session would make the
+      passphrase pointless, and one going the other way would be a
+      service-role key by another name. This project holds no
+      service-role key and this panel is not a reason to start.
+
+   2. NEVER SHOW A LOCKED PANEL AS AN EMPTY ONE. A panel missing
+      its credential says so, with the one thing to press. An
+      empty list where a credential is missing looks exactly like
+      a working panel with nothing in it, which is the failure
+      `app/desk.test.ts` exists for.
+
+   Stage 1 of ADMIN.md §6: the route, the shell, the two sign-ins
+   and Health. The panels themselves arrive in stages 3 to 7, each
+   one shipping on its own.
+   ============================================================ */
+
+import { useEffect, useState } from "react";
+import { runtimeModule } from "../account/runtime";
+import { AdminHealth } from "./health";
+import { ButtonLink } from "../ui/button";
+import { Surface } from "../ui/surface";
+
+type AccountModule = typeof import("/account.js");
+const accountModule = () => runtimeModule<AccountModule>("/account.js");
+
+/** What each credential is, said once, so the two cards below and
+    every future panel's locked state read the same words. */
+const CREDENTIALS = {
+  pass: {
+    name: "The passphrase",
+    opens: "the site's own writing: pieces, comments, questions, enquiries, "
+      + "subscribers, media and the backups.",
+    where: "/studio",
+    press: "Sign in at the Studio",
+  },
+  account: {
+    name: "Your account",
+    opens: "what belongs to a reader: the course section, the live portfolio's "
+      + "admin half, and the private routine templates.",
+    where: "/account",
+    press: "Sign in to your account",
+  },
+} as const;
+
+function Gate({ which, held }: { which: keyof typeof CREDENTIALS; held: boolean }) {
+  const c = CREDENTIALS[which];
+  return (
+    <Surface material="pane" className="ad-gate" data-held={held ? "" : undefined}>
+      <h3>
+        <span className="ad-dot" aria-hidden="true" data-state={held ? "up" : "unset"} />
+        {c.name}
+      </h3>
+      <p className="ad-quiet">{held ? "Held. It opens " : "Not held. It would open "}{c.opens}</p>
+      {held ? null : <ButtonLink kind="ghost" size="sm" href={c.where}>{c.press}</ButtonLink>}
+    </Surface>
+  );
+}
+
+export function AdminPanel() {
+  const [ready, setReady] = useState(false);
+  const [pass, setPass] = useState(false);
+  const [account, setAccount] = useState(false);
+
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        /* The passphrase half asks the Worker, because the
+           session is an httpOnly cookie and the browser
+           deliberately cannot read it. */
+        const seen = fetch("/api/auth/me", { headers: { accept: "application/json" } })
+          .then(async (r): Promise<{ signedIn?: boolean }> => (r.ok ? r.json() : {}))
+          .then((d) => Boolean(d.signedIn))
+          .catch(() => false);
+
+        /* The account half asks whether this reader is an admin,
+           and it asks by requesting something only an admin gets
+           rather than by keeping a second list: `isAdmin()` is
+           the Worker's answer and nothing here should hold a
+           copy of it. An empty list means not an admin, which is
+           the same answer /api/routine/templates gives the page
+           that uses it. */
+        const acc = await accountModule();
+        const mine = acc.current()
+          ? await fetch("/api/routine/templates", {
+            headers: { accept: "application/json" },
+          })
+            .then(async (r): Promise<{ templates?: unknown[] }> => (r.ok ? r.json() : {}))
+            .then((d) => Array.isArray(d.templates) && d.templates.length > 0)
+            .catch(() => false)
+          : false;
+
+        const held = await seen;
+        if (!live) return;
+        setPass(held);
+        setAccount(mine);
+      } finally { if (live) setReady(true); }
+    })();
+    return () => { live = false; };
+  }, []);
+
+  if (!ready) return <p className="ad-quiet" role="status">এক মুহূর্ত…</p>;
+
+  return (
+    <div className="ad-page">
+      {/* Health first and always, because it is the panel that has
+          to work on the day a credential is what is broken. */}
+      <AdminHealth />
+
+      <div className="ad-gates">
+        <Gate which="pass" held={pass} />
+        <Gate which="account" held={account} />
+      </div>
+
+      {pass && account ? (
+        <Surface material="pane" className="ad-panel">
+          <h3>Both</h3>
+          <p className="ad-quiet">
+            One panel needs the two at once and it is the reason this page asks
+            for both: a person here is a Supabase account and a set of rows in
+            D1 written under their name, and neither store knows about the
+            other. ADMIN.md §3 D is what it will show, and what it will not.
+          </p>
+        </Surface>
+      ) : null}
+
+      <Surface material="pane" className="ad-panel">
+        <h3>Not built yet</h3>
+        <p className="ad-quiet">
+          Twelve panels, in ADMIN.md. Nothing on this page is a placeholder for
+          one of them: an empty panel that will one day hold something reads
+          exactly like a broken panel that holds nothing, which is the whole
+          reason that file exists.
+        </p>
+        <p className="ad-quiet">
+          The desk at <a href="/desk">/desk</a> is the passphrase half today and
+          keeps answering until its last panel has moved here.
+        </p>
+      </Surface>
+    </div>
+  );
+}

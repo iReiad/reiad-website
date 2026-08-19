@@ -189,6 +189,15 @@ export const NAV: NavGroup[] = [
     accent: "var(--green)",
     items: [
       { label: "Account", sub: "অ্যাকাউন্ট", href: "/account", icon: "user", key: "account" },
+      /* Unlisted, exactly as the course section is: the entry is
+         in this one table so the menu is still said once, the
+         rail and the footer skip it, and a link in the chrome to
+         a page that answers 403 is a promise the site cannot
+         keep. ADMIN.md is the plan. */
+      {
+        label: "Admin", sub: "অ্যাডমিন", href: "/admin", icon: "gauge",
+        key: "admin", unlisted: true,
+      },
     ],
   },
 ];
