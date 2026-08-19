@@ -1583,35 +1583,19 @@
   .target-actions, .saved-actions {
     display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-4);
   }
-  .target-input {
-    width: 110px; padding: 7px 10px; font: inherit; font-size: var(--t-5);
-    color: var(--ink); background: var(--paper);
-    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-
-    &:focus {
-      outline: 0; border-color: var(--accent);
-      box-shadow: var(--focus-ring);
-    }
-  }
-
   /* The form under the list. Its fields change with the kind of
      target being set, so they are laid out on a grid that does
-     not care how many there are. */
+     not care how many there are.
+
+     `.target-field` and `.target-input` were here and are gone:
+     the form is `components/account/targets.tsx` and its boxes
+     are `<Field>` and `<Select>` from `ui/field`, which wire the
+     label to the control and style nothing, because `@layer base`
+     already styles every box on this site on one line. */
   .target-fields {
     display: grid; gap: var(--s-6); margin-top: 4px;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
   }
-  .target-field {
-    display: grid; gap: 5px; align-content: start;
-
-    & > span { font-size: var(--t-3); color: var(--ink-soft); }
-    & input, & select { width: 100%; }
-    & input:focus, & select:focus {
-      outline: 0; border-color: var(--accent);
-      box-shadow: var(--focus-ring);
-    }
-  }
-
   .saved-row {
     grid-template-columns: 1fr auto;
     align-items: center; gap: var(--s-5) 16px;

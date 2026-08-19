@@ -202,9 +202,26 @@ export function announce() {
 export function subscribe(fn: () => void): () => void {
   window.addEventListener(EVENT, fn);
   window.addEventListener("storage", fn);
+  /* And when the account's rows land on the device.
+
+     `aab/sync.js` writes the mirror straight into localStorage,
+     which fires neither of the two above: `storage` only fires in
+     OTHER tabs, and `announce()` is only called by the functions
+     in this file. So for a signed-in reader every meter on the
+     page was drawn against whatever storage held BEFORE the
+     exchange, and stayed there.
+
+     It looked fine most of the time, because the exchange usually
+     finishes before the first paint, and it looked broken on
+     exactly the pages that fetch something of their own first:
+     `/account.html` drew a course target at "0 of 60" beside a
+     bar of the same school reading "2 of 60". Two answers to one
+     question, on one screen. */
+  document.addEventListener("sync:done", fn);
   return () => {
     window.removeEventListener(EVENT, fn);
     window.removeEventListener("storage", fn);
+    document.removeEventListener("sync:done", fn);
   };
 }
 

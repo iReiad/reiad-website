@@ -308,15 +308,17 @@ export const liveSkills = () => SKILLS.filter((s) => s.status === "live");
    `english-last`, `quran-done`. One name for one course, from
    localStorage through to the `following` column in Postgres.
    ============================================================ */
+/* The four schools with a ladder, derived from SKILLS.
+
+   The money school was WRITTEN OUT here as well until 18 August
+   2026, under "টাকা ও বিনিয়োগ · The money ladder", a name it
+   stopped using when it moved to /money/. SKILLS had gained its
+   own entry by then, so this array held money twice: two
+   checkboxes carrying one `id` on the account page, two identical
+   options in the target form's select, and a bar labelled with
+   the old name. Nobody typed a wrong name. The list simply grew
+   past the copy, which is the failure at the top of CLAUDE.md. */
 export const COURSES = [
-  {
-    id: "money",
-    bn: "টাকা ও বিনিয়োগ",
-    en: "The money ladder",
-    url: "/money/index.html",
-    icon: "seed",
-    blurb: "শেয়ার, সঞ্চয়পত্র, ঝুঁকি: একদম শুরু থেকে।",
-  },
   ...SKILLS.filter((s) => s.course).map((s) => ({
     id: s.slug,
     bn: s.bn,

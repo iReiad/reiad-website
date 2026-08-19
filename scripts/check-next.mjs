@@ -53,7 +53,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { icon } from "../aab/money/icons.js";
 import { SCHOOL_ICONS } from "../next/lib/school-icons.ts";
-import { NAV } from "../next/lib/nav.ts";
+import { NAV, LADDER_SCHOOLS } from "../next/lib/nav.ts";
+import { SCHOOL_LADDERS } from "../next/lib/school-ladders.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
@@ -100,20 +101,62 @@ if (read("next/lib/school-icons.ts") !== wanted) {
 }
 
 /* ------------------------------------------------------------
-   2b. The four ladders the header's tree shows
+   2b. The four ladders, the two depths of them
 
    Same arrangement as the drawings above: generated out of
    `content/schools.backup.json`, committed, and compared here.
-   A school that gains a stage and is not regenerated shows a
-   header one stage short of the hub it links to.
+
+   The stages are the header's tree, so a school that gains one
+   and is not regenerated shows a header one stage short of the
+   hub it links to. The lessons are `/account.html`, so a school
+   that gains one and is not regenerated draws a bar against a
+   denominator nobody can reach: 60 of 59 finished.
    ------------------------------------------------------------ */
 
-const { generate: ladder } = await import("./build-school-tree.mjs");
+const { generate: stages, generateLadders } = await import("./build-school-tree.mjs");
 
-if (read("next/lib/school-stages.ts") !== ladder()) {
-  fail("next/lib/school-stages.ts is not what content/schools.backup.json holds.",
-    "Regenerate it and commit the result:",
-    "  node scripts/build-school-tree.mjs");
+for (const [name, wanted] of [
+  ["next/lib/school-stages.ts", stages()],
+  ["next/lib/school-ladders.ts", await generateLadders()],
+]) {
+  if (read(name) !== wanted) {
+    fail(`${name} is not what content/schools.backup.json holds.`,
+      "Regenerate it and commit the result:",
+      "  node scripts/build-school-tree.mjs");
+  }
+}
+
+/* And that the two agree about which schools have one.
+
+   `ladder: true` in NAV is what `/account.html` reads to know
+   there is a bar to draw, and the generated file is where the
+   denominator comes from. A school that gains a ladder and not
+   the flag never appears on that page; a flag with no ladder
+   behind it draws 0 of 0. Neither looks broken. */
+
+const flagged = LADDER_SCHOOLS.map((s) => s.key).sort();
+const generated = Object.keys(SCHOOL_LADDERS).sort();
+
+if (flagged.join() !== generated.join()) {
+  fail("the schools flagged `ladder: true` in next/lib/nav.ts are not the"
+    + " schools next/lib/school-ladders.ts holds a ladder for.",
+    `nav.ts:            ${flagged.join(", ") || "(none)"}`,
+    `school-ladders.ts: ${generated.join(", ") || "(none)"}`);
+}
+
+/* And that each one has lessons in it, because an empty array is
+   what a snapshot refreshed against the wrong database looks
+   like, and it draws a bar reading 0 of 0 rather than failing. */
+for (const [school, lessons] of Object.entries(SCHOOL_LADDERS)) {
+  if (!lessons.length) {
+    fail(`next/lib/school-ladders.ts holds no lessons for ${school}.`,
+      "Its bar on /account.html reads 0 of 0 and its resume card says"
+      + " nothing is written.",
+      "Refresh the snapshot and regenerate:",
+      "  npx wrangler d1 export reiad --remote --output schools.db",
+      "  node scripts/export-schools.mjs --db schools.db",
+      "  node scripts/build-school-tree.mjs");
+  }
 }
 
 /* ------------------------------------------------------------

@@ -34,7 +34,9 @@
    looks it.
    ============================================================ */
 
-import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
+import type {
+  InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes,
+} from "react";
 
 /* The box itself is `@layer base`, and this adds nothing to it.
 
@@ -113,6 +115,33 @@ export function Field({
         aria-describedby={describedBy}
         {...rest}
       />
+    </Wrap>
+  );
+}
+
+/** A menu of answers, when there is a fixed list of them.
+
+    Here rather than in its own file because it is the same three
+    things a `<Field>` is: a label wired to a control by id, a
+    hint, and an error that announces itself. `@layer base` styles
+    `select` on the same line it styles `input`, so this adds
+    nothing to the box either. */
+export function Select({
+  label, hint, error, hideLabel, className, id, children, ...rest
+}: Shared & Omit<SelectHTMLAttributes<HTMLSelectElement>, "id">) {
+  const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
+
+  return (
+    <Wrap label={label} hint={hint} error={error} hideLabel={hideLabel} id={id}>
+      <select
+        id={id}
+        className={[BOX, className].filter(Boolean).join(" ")}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy}
+        {...rest}
+      >
+        {children}
+      </select>
     </Wrap>
   );
 }
