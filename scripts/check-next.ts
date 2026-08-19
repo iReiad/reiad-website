@@ -27,6 +27,20 @@
       school pages stop being files, they move properly and both
       this and the generator go.
 
+   3. THE PRACTICE BOOKS' LENGTH. `next/lib/workbooks/*.ts` holds
+      the days a book is made of and `curriculum.js` DECLARES how
+      many there are, in `workbook.days`, because the hub draws a
+      progress bar from that number and must not pull five
+      thousand lines of days down to count them.
+
+      Nothing held the two together, and two comments said
+      something did: `next/lib/workbook.ts` and
+      `next/components/workbook.tsx` both named a
+      `check-workbook.mjs` that has never existed under any
+      extension. A declaration that drifts from its days is a
+      learner told they are on day 30 of 60 in a book that has 90,
+      which nothing else would report.
+
    There was a third copy here for the length of one commit, and
    it is worth saying why it went. Stage 11.7 lifted the four
    schools' hand-written hubs and the money school's full index
@@ -55,6 +69,8 @@ import { icon } from "../aab/money/icons.js";
 import { SCHOOL_ICONS } from "../next/lib/school-icons.ts";
 import { NAV, LADDER_SCHOOLS } from "../next/lib/nav.ts";
 import { SCHOOL_LADDERS } from "../next/lib/school-ladders.ts";
+import { STUFEN } from "../aab/deutsch/curriculum.js";
+import { TERMS } from "../aab/english/curriculum.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
@@ -268,9 +284,60 @@ if (empty.length) {
     + " like a missing icon and reports as nothing at all.");
 }
 
+/* ------------------------------------------------------------
+   3. A practice book is as long as its curriculum says
+   ------------------------------------------------------------ */
+
+/** A rung of a ladder that may carry a book. Both schools spell
+    the rung differently and the book identically, which is why
+    this takes the two arrays and not the two schools. */
+interface Rung {
+  slug: string;
+  workbook?: { slug: string; days: number };
+}
+
+/** The file under `next/lib/workbooks/` a rung's book lives in.
+    `next/lib/workbook.ts` maps the same four by hand; this reads
+    them off disk because the point is to compare the two. */
+const BOOK_FILE: Record<string, string> = {
+  "stufe-1": "deutsch-stufe-1",
+  "stufe-2": "deutsch-stufe-2",
+  "stufe-3": "deutsch-stufe-3",
+  "term-1": "english-term-1",
+};
+
+let books = 0;
+for (const rung of [...STUFEN, ...TERMS] as Rung[]) {
+  if (!rung.workbook) continue;               // Stufe 4 has none, on purpose
+  const file = BOOK_FILE[rung.slug];
+  if (!file) {
+    fail(`${rung.slug} declares a workbook and next/lib/workbooks/ has no file for it.`,
+      `Add it to BOOK_FILE in this check, or the hub draws a bar over nothing.`);
+    continue;
+  }
+  const loaded = await import(join(ROOT, "next", "lib", "workbooks", `${file}.ts`)) as
+    { default?: { days?: unknown[] } | unknown[] };
+  const book = loaded.default;
+  const days = Array.isArray(book) ? book : book?.days;
+  if (!Array.isArray(days)) {
+    fail(`next/lib/workbooks/${file}.ts does not export a list of days.`,
+      "The default export is what next/lib/workbook.ts reads.");
+    continue;
+  }
+  books += 1;
+  if (days.length !== rung.workbook.days) {
+    fail(`${rung.slug}: the book is ${days.length} days and curriculum.js says `
+      + `${rung.workbook.days}.`,
+      `next/lib/workbooks/${file}.ts is the days themselves; workbook.days is what`,
+      "the hub draws its progress bar from. A reader would be told they are on day",
+      `${rung.workbook.days} of a book that has ${days.length}.`);
+  }
+}
+
 console.log(failures
   ? `\n${failures} copy(ies) in next/ have drifted from the original.\n`
   : `next/ holds 3 drawings copied out of aab/ by hand and ${drawings}\n`
     + `generated, every one still matches what icons.js draws, and all\n`
-    + `${asked.size} names a card asks for come back with a drawing in them.\n`);
+    + `${asked.size} names a card asks for come back with a drawing in them,\n`
+    + `and ${books} practice book(s) are as long as curriculum.js says.\n`);
 process.exit(failures ? 1 : 0);
