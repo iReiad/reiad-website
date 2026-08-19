@@ -84,8 +84,8 @@ const renderedBlock = sw.match(/const RENDERED = \[([\s\S]*?)\];/)?.[1] ?? "";
 const rendered = [...renderedBlock.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
 
 if (rendered.length) {
-  const { NEXT_ROUTES } = await import("../worker.js");
-  const orphans = rendered.filter((p) => !NEXT_ROUTES.some((re) => re.test(p)));
+  const { nextOwns } = await import("../worker.js");
+  const orphans = rendered.filter((p) => !nextOwns(p));
   if (orphans.length) {
     console.error(`sw.js precaches ${orphans.length} address(es) that no route `
       + "in worker.js answers:");

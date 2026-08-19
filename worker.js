@@ -232,9 +232,52 @@ export const NEXT_ROUTES = [
   /^\/_next\//,
 ];
 
+/** A trailing slash off the path, so that the table above is
+    written once rather than twice.
+
+    THE BUG. Every one of these pages was a file called
+    `index.html`, and Cloudflare's `html_handling` serves
+    `deutsch/index.html` at `/deutsch/`, WITH the slash. So the
+    directory form was the canonical address of all 21 school hubs
+    and stage ladders for as long as they existed: it is what the
+    sitemap resolved to, what a crawler indexed, and what anybody
+    who bookmarked one has.
+
+    Task #28 dropped `.html` from every address and added a 301
+    for `/deutsch/index.html`, which is the OTHER spelling of the
+    same page. Nothing covered `/deutsch/`. It matches no pattern
+    above, so it fell to the asset router, whose copy of the file
+    had left in the same commit, and 21 addresses 404ed on a site
+    where every internal link still worked perfectly.
+
+    Stripping it here rather than writing `\/?` into twenty
+    regexes is the difference between a rule and a habit: a route
+    added next week gets this for free, and cannot be the
+    twenty-first that forgot. The request is forwarded UNCHANGED, so
+    Next sees the slash and answers with its own 308 to the
+    canonical form. One address, one page, one spelling in the
+    bar.
+
+    `/` is left alone, because "" is not a path. */
+const bare = (path) => (path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path);
+
+/** Is this an address a Next.js route renders?
+
+    Exported because four checks ask exactly this question, and
+    each one used to answer it with its own copy of
+    `NEXT_ROUTES.some(...)`. Two of the four also wrote
+    `ARTICLE.test(path) ||` in front of it, which has been
+    redundant since ARTICLE became the first entry of the table.
+
+    A copy is fine while the answer is one line. It stops being
+    fine the moment the line grows a `bare()`: the Worker starts
+    forwarding `/deutsch/` and four checks go on reporting on a
+    site that does not exist. One vocabulary, one place, which is
+    the rule `check-rows.ts` already applies to the database. */
+export const nextOwns = (path) => NEXT_ROUTES.some((re) => re.test(bare(path)));
+
 /** Is this a path the Next.js Worker owns, and is it reachable? */
-const goesToNext = (path, env) =>
-  Boolean(env.NEXT) && NEXT_ROUTES.some((re) => re.test(path));
+const goesToNext = (path, env) => Boolean(env.NEXT) && nextOwns(path);
 
 /** Ask the Next.js Worker, and answer from the assets if it
     declines.
