@@ -164,21 +164,45 @@ const CONFIGS: Config[] = [
    listing `import-courses.ts` rebuilds the catalogue from. */
 const NOT_CODE = new Set(["fixtures", "node_modules"]);
 
-const javascript: string[] = [];
-(function walk(dir: string): void {
+
+/** What must not exist in each, and why the two differ.
+
+    `scripts/`: any JavaScript. Node strips the types with no build
+    step, so a `.js` here typechecks nowhere and there is nothing
+    to trade for keeping one.
+
+    `shared/`: JavaScript AND declarations, because both are
+    COMPILED OUTPUT there. Those files are read directly by three
+    runtimes, Next through `transpilePackages`, the Worker through
+    wrangler's esbuild, and plain node through type stripping, so
+    nothing needs a compile step. It was briefly the other way
+    round: four sources with a committed `.js` and `.d.ts` beside
+    each, twelve files where there are four, plus a build script
+    and a check to catch somebody editing the output instead of
+    the input.
+
+    A stray `tsc` with no `--noEmit` puts them straight back, in
+    place and untracked, where the next `git add -A` commits them.
+    `.gitignore` stops that by accident; this stops it on purpose. */
+const TYPESCRIPT_ONLY: Array<{ dir: string; bad: RegExp; what: string }> = [
+  { dir: "scripts", bad: /\.(js|mjs|cjs|jsx)$/, what: "JavaScript" },
+  { dir: "shared", bad: /\.(js|mjs|cjs|jsx)$|\.d\.ts$/, what: "compiled output" },
+];
+
+const stray: string[] = [];
+const walk = (dir: string, bad: RegExp): void => {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.name.startsWith(".") || NOT_CODE.has(entry.name)) continue;
     const full = join(dir, entry.name);
-    if (entry.isDirectory()) walk(full);
-    else if (/\.(js|mjs|cjs|jsx)$/.test(entry.name)) {
-      javascript.push(relative(ROOT, full));
-    }
+    if (entry.isDirectory()) walk(full, bad);
+    else if (bad.test(entry.name)) stray.push(relative(ROOT, full));
   }
-})(HERE);
+};
+for (const { dir, bad } of TYPESCRIPT_ONLY) walk(join(ROOT, dir), bad);
 
-if (javascript.length) {
-  console.error(`${javascript.length} JavaScript file(s) in scripts/:`);
-  for (const file of javascript) console.error(`   ${file}`);
+if (stray.length) {
+  console.error(`${stray.length} file(s) where only TypeScript belongs:`);
+  for (const file of stray) console.error(`   ${file}`);
   console.error("\nEverything here is TypeScript, and node strips the types"
     + " with no build step,\nso there is nothing to trade for keeping one."
     + " Rename it and give it real types;\nthis check is what says the"
@@ -212,7 +236,8 @@ for (const { what, config, needs } of CONFIGS) {
 }
 
 const ran = CONFIGS.length - skipped.length;
-console.log("types: no JavaScript in scripts/, and every .ts file node runs"
+console.log(`types: no stray output in ${TYPESCRIPT_ONLY.map((t) => `${t.dir}/`).join(" or ")},`
+  + " and every .ts file node runs"
   + `\n       directly typechecks, under ${ran} of ${CONFIGS.length} config(s).`);
 for (const { what, where } of skipped) {
   /* One `npm install` per directory, joined, because a skip whose

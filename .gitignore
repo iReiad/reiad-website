@@ -26,3 +26,25 @@ aab/preview.html
 # scripts/tsconfig.shared.json's scratch outDir, which only a hand
 # run reaches: scripts/build-modules.ts overrides it with a temp dir.
 .content-build/
+
+# Compiled output beside a shared/ source, which must never exist.
+#
+# `shared/` is TypeScript that three runtimes read directly: Next
+# through transpilePackages, the Worker through wrangler's esbuild,
+# and plain node through type stripping. Nothing there needs a
+# compile step, and `shared/README.md` says so at length.
+#
+# It WAS the other way round once: four sources with a committed
+# `.js` and `.d.ts` beside each, which is twelve files where there
+# are four, plus a build script and a check to catch somebody
+# editing the output instead of the input. All of it served a
+# compile step no runtime needed.
+#
+# A stray `tsc` run with no `--noEmit` puts them back, in place,
+# untracked, where the next `git add -A` commits them. This is what
+# stops that, and `scripts/check-types.ts` fails if one is tracked
+# anyway.
+shared/*.js
+shared/*.d.ts
+shared/curricula/*.js
+shared/curricula/*.d.ts
