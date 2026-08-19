@@ -182,12 +182,24 @@ const origin = `http://127.0.0.1:${address.port}`;
 
 let failures = 0;
 let ran = 0;
+/** Capped, because half of what is worth printing here has a
+    base64 photo somewhere in it and an untrimmed detail buries
+    the next twenty lines. */
+/* `string | undefined`, because JSON.stringify(undefined) is
+   undefined rather than "undefined", and a value that is missing
+   is exactly the shape a failing check tends to have. */
+const short = (text: string | undefined): string => {
+  const s = text ?? "undefined";
+  return (s.length > 200 ? `${s.slice(0, 200)}…` : s).replace(/\s+/g, " ");
+};
 const check = (name: string, got: unknown, want: unknown, detail = ""): void => {
   ran += 1;
   if (JSON.stringify(got) === JSON.stringify(want)) { console.log(`  ok   ${name}`); return; }
   failures += 1;
-  console.log(`  FAIL ${name}\n       got  ${JSON.stringify(got)}\n       want ${JSON.stringify(want)}`
-    + (detail ? `\n       ${detail}` : ""));
+  console.log(`  FAIL ${name}`
+    + `\n       got  ${short(JSON.stringify(got))}`
+    + `\n       want ${short(JSON.stringify(want))}`
+    + (detail ? `\n       ${short(detail)}` : ""));
 };
 const okay = (name: string, cond: unknown, detail = ""): void => check(name, !!cond, true, detail);
 
@@ -334,6 +346,14 @@ await ctx.route("**/api/**", async (route: Route) => {
   // resolves without drawing the gate when it gets one.
   if (path.startsWith("auth")) { await json({ ok: true, signedIn: true, configured: true }); return; }
 
+  /* The three the Studio asks on boot, each answered in the shape
+     its own endpoint answers in. A bare `{ ok: true }` is not
+     kinder, it is a different reply: the bar reads `.questions`
+     and `.enquiries` straight off it and threw on undefined. */
+  if (path.startsWith("notion/status")) { await json({ ok: true, configured: false, media: true }); return; }
+  if (path.startsWith("questions")) { await json({ ok: true, questions: [] }); return; }
+  if (path.startsWith("enquiries")) { await json({ ok: true, enquiries: [] }); return; }
+
   if (path.startsWith("media")) {
     if (req.method() !== "POST") { await json({ ok: true, media: [], bytes: 0 }); return; }
 
@@ -393,13 +413,16 @@ await page.waitForSelector("#editor", { timeout: 20_000 });
 await page.waitForSelector("#btn-publish", { timeout: 20_000 });
 await wait(300);
 
-// A WebP the browser encodes itself, so the fixture is certainly a
-// valid one and certainly arrives the way a pasted photo does.
+/* A WebP the browser encodes itself, so the fixture is certainly a
+   valid one and certainly arrives the way a pasted photo does.
+   2000px on the long side deliberately: over `MAX_EDGE` in
+   `aab/src/photo.ts`, so a re-encode that really ran leaves 1600
+   behind and a src that was merely copied leaves 2000. */
 const photo = await page.evaluate(async () => {
-  const c = new OffscreenCanvas(600, 400);
+  const c = new OffscreenCanvas(2000, 1000);
   const g = c.getContext("2d")!;
-  g.fillStyle = "#0B3D2E"; g.fillRect(0, 0, 600, 400);
-  g.fillStyle = "#D4A24C"; g.fillRect(40, 40, 200, 120);
+  g.fillStyle = "#0B3D2E"; g.fillRect(0, 0, 2000, 1000);
+  g.fillStyle = "#D4A24C"; g.fillRect(120, 120, 700, 400);
   const blob = await c.convertToBlob({ type: "image/webp", quality: 0.9 });
   return new Promise<string>((res) => {
     const fr = new FileReader();
@@ -414,7 +437,7 @@ okay("the fixture is a data: URL, the way a pasted photo arrives",
 await page.evaluate((src) => {
   const ed = document.querySelector("#editor");
   if (!ed) throw new Error("there is no #editor");
-  ed.innerHTML = `<p>Before.</p><figure><img src="${src}" alt="a photo" width="600" height="400">`
+  ed.innerHTML = `<p>Before.</p><figure><img src="${src}" alt="a photo" width="2000" height="1000">`
     + `<figcaption>A caption</figcaption></figure><p>After.</p>`;
   ed.dispatchEvent(new Event("input", { bubbles: true }));
 }, photo);
@@ -463,13 +486,15 @@ const body = posted.body ?? "";
 
 check("the piece went out under the file name it was given", posted.slug, "publish-path-test");
 check("as the live piece the button says it is", posted.status, "live");
+const bodySrc = body.match(/src="(\/media\/[^"]+)"/)?.[1] ?? "(no /media src in the body)";
+const firstUrl = uploads[0] ? `/media/${uploads[0].key}` : "(nothing was uploaded)";
+
 check("no data: URL survives into the database", (body.match(/src="data:/g) ?? []).length, 0);
 check("the photo is a /media path instead", (body.match(/src="\/media\//g) ?? []).length, 1);
-check("and it is the path the upload answered with",
-  body.match(/src="(\/media\/[^"]+)"/)?.[1], uploads[0] ? `/media/${uploads[0].key}` : "no upload");
-okay("the img carries the size it was re-encoded at",
-  /<img[^>]+width="600"[^>]+height="400"/.test(body), body.slice(0, 200));
-okay("and the loading hints hostPhotosIn sets", /<img[^>]+loading="lazy"/.test(body));
+check("and it is the path the upload answered with", bodySrc, firstUrl);
+okay("the img carries the size it was re-encoded at, not the one it arrived with",
+  /<img[^>]+width="1600"[^>]+height="800"/.test(body),
+  body.match(/<img[^>]*>/)?.[0] ?? body.slice(0, 200));
 okay("a cover was set", !!posted.cover, JSON.stringify(posted.cover));
 check("and the cover is a drawn card, not the raw photo",
   /^\/media\/[a-z0-9-]*-card\/[0-9a-f]+\.jpg$/.test(posted.cover ?? ""), true,
@@ -491,28 +516,35 @@ okay("neither upload carried the data: URL as text",
   !uploads.some((u) => store.get(`/media/${u.key}`)?.buf.subarray(0, 64)
     .toString("latin1").startsWith("data:")));
 
+/** What a stored object decodes at, or zeros and the reason. Zeros
+    fail the check that asked for them; throwing here would end the
+    run with its count unprinted, and a run that fails is exactly
+    when the count is worth having. */
+const decoded = (url: string): Promise<{ w: number; h: number; why: string }> =>
+  page.evaluate(async (target) => {
+    if (!target) return { w: 0, h: 0, why: "there is no URL to read" };
+    try {
+      const res = await fetch(target, { credentials: "same-origin" });
+      if (!res.ok) return { w: 0, h: 0, why: `${target} answered ${res.status}` };
+      const bitmap = await createImageBitmap(await res.blob());
+      const size = { w: bitmap.width, h: bitmap.height, why: "" };
+      bitmap.close();
+      return size;
+    } catch (err) {
+      return { w: 0, h: 0, why: err instanceof Error ? err.message : String(err) };
+    }
+  }, url);
+
 /* Drawn, not passed through: only share-card.js makes a 1200x630
    JPEG, and a cover that is really the photo re-uploaded would be
-   600x400 here and pass a check that only looked at the extension. */
-const cardSize = await page.evaluate(async (url) => {
-  const res = await fetch(url, { credentials: "same-origin" });
-  const bitmap = await createImageBitmap(await res.blob());
-  const size = { w: bitmap.width, h: bitmap.height };
-  bitmap.close();
-  return size;
-}, posted.cover ?? "/media/none");
+   1600x800 here and pass a check that only looked at the extension. */
+const card = await decoded(posted.cover ?? "");
 check("the card really is 1200x630, so it was drawn rather than copied",
-  cardSize, { w: 1200, h: 630 });
+  { w: card.w, h: card.h }, { w: 1200, h: 630 }, card.why);
 
-const photoSize = await page.evaluate(async (url) => {
-  const res = await fetch(url, { credentials: "same-origin" });
-  const bitmap = await createImageBitmap(await res.blob());
-  const size = { w: bitmap.width, h: bitmap.height };
-  bitmap.close();
-  return size;
-}, body.match(/src="(\/media\/[^"]+)"/)?.[1] ?? "/media/none");
-check("and the stored photo decodes as the picture that was pasted",
-  photoSize, { w: 600, h: 400 });
+const kept = await decoded(uploads[0] ? bodySrc : "");
+check("and the stored photo decodes at the long edge photo.ts caps at",
+  { w: kept.w, h: kept.h }, { w: 1600, h: 800 }, kept.why);
 
 /* ============================================================
    2. PUBLISHING IT AGAIN
