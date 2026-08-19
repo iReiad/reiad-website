@@ -67,6 +67,40 @@ The two exceptions are `404.html` and `offline.html`, and they are
 exceptions on purpose: they have to answer when the Worker, the route and
 the network are all unavailable, which is exactly when a route cannot.
 
+## An address has no `.html`, and the two files that do are not routes
+
+A page of this site is `/about`, `/skills`, `/money/basics-1`.
+Task #28 took the suffix off every route directory under
+`next/app/` that carried one, and every old spelling is a 301 in
+`aab/_redirects`. The suffix was never a fact about a route: it was
+a fact about a file, and there are two files left.
+
+Three places have to agree or the address is dead, and each one
+fails differently:
+
+| | |
+| --- | --- |
+| the directory under `next/app/` | which IS the address |
+| `run_worker_first` in `wrangler.toml` | takes it off the asset router. Missing: the router answers `404.html` and the Worker is never called |
+| `NEXT_ROUTES` in `worker.js` | forwards it to the Next Worker. Missing: it falls through to a file that is not there |
+
+The OLD spelling has to be absent from `run_worker_first`, because
+`aab/_redirects` is the asset router: a path a Worker answers first
+never reaches the rules file. `check-routes.ts` walks all of it and
+fails on a loop or a dead end.
+
+**Two kinds of address keep their `.html` and it is not an
+oversight.** An article is `/insights/<slug>.html` and a school
+lesson is `/<school>/<stage>/<lesson>.html`, where the suffix is
+part of a slug rather than part of a route: it is in the rows, in
+every link inside every lesson body in D1, and in the
+`public.library` row of everybody who has saved a piece.
+`/skills/courses/` is still on the old spelling for a smaller
+reason: `aab/src/courses.ts` builds those four addresses a second
+time and reads `location.pathname` to decide which of them it is
+on, and `check-courses.ts` fails if the two disagree. Move both or
+neither.
+
 ## Convert what you touch
 
 Three migrations are part-done and `MIGRATION.md` tracks them. The rule is
@@ -249,7 +283,7 @@ Every page of this site is a rail down the left, a bar across the
 top and a footer. All three are rendered on the server by
 `next/components/`, and all three read **one** table:
 `next/lib/nav.ts`. Add a school there and it appears in the rail,
-in the footer and on `/skills/index.html` at once.
+in the footer and on `/skills` at once.
 
 That is not tidiness. The menu used to be said in four places: the
 seven links written into every page's header, `buildMenu()` in
@@ -345,7 +379,7 @@ stays there.
 
 That is invisible almost always, because the exchange usually
 finishes before the first paint. It showed up on the one page that
-fetches something of its own first: `/account.html` drew a course
+fetches something of its own first: `/account` drew a course
 target at "0 of 60" beside a bar of the same school reading
 "9 of 60". A component that reads one of these keys ONCE, on mount,
 has the same bug whether or not it also redraws.
@@ -452,7 +486,7 @@ against a routed Supabase.
 
 ### Eight sections, one on screen
 
-`/account.html` was one long page with a strip of links down
+`/account` was one long page with a strip of links down
 it, and reaching the last of eight sections was eight screens
 of scrolling. `next/components/ui/tab-panels.tsx` is the
 calculators' arrangement in React, and the four decisions in
@@ -1157,7 +1191,7 @@ carries a content hash. `scripts/build-fallback.ts` writes it and
 
 **Tailwind is live as of 17 August 2026, on one page.** Stage 14 set
 the arrangement up and deliberately left it unused so the first
-conversion would be a change to one component. `/account.html` is
+conversion would be a change to one component. `/account` is
 that component, because its markup is almost entirely layout.
 `@theme` in `aab/src/styles/tailwind.css` names the site's own
 tokens, so `bg-panel` means `var(--panel)` in both themes.
@@ -1611,14 +1645,14 @@ anybody.
 **Nothing in the rail or the footer links to it.** `unlisted` in
 `next/lib/nav.ts` is that flag, and it exists so the menu can
 still be said once: the entry is in the one table like everything
-else, the two menus skip it, and `/skills/index.html` gives it a
+else, the two menus skip it, and `/skills` gives it a
 card of its own under a heading that says it is not published. A
 link in the footer to a page that answers 403 is a promise the
 site cannot keep.
 
 ## The live portfolio, and who is an admin
 
-`/tools/live.html` shows one real Trading 212 account, live, three
+`/tools/live` shows one real Trading 212 account, live, three
 ways. A stranger gets the site's own portfolio in percentages: a
 weight and a return teach a lesson, a balance only says how much
 money somebody else has. A signed-in reader who connects their own

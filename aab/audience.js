@@ -1,5 +1,5 @@
 /* ============================================================
-   audience.js: the front door.
+   audience.ts: the front door.
 
    Three completely different people arrive at this site:
 
@@ -46,68 +46,84 @@
    script in each page's <head>, next to the theme. This module
    handles the behaviour on top of them.
    ============================================================ */
-
 const KEY = "audience";
 const TRACK_KEY = "track";
-const VALID = new Set(["learn", "work"]);
-const TRACKS = new Set(["finance", "skills"]);
-
+/* The two vocabularies, said once. `AUDIENCES` in
+   `next/lib/nav.ts` is the same pair and the boot script in
+   `shell.tsx` accepts the same pair: a third value written here
+   and nowhere else would be an attribute the stylesheet has no
+   rule for. The unions below are derived rather than written out
+   again, and the guards read these lists, so there is one copy of
+   each word. */
+const VALID = ["learn", "work"];
+const TRACKS = ["finance", "skills"];
+const isAudience = (v) => VALID.some((a) => a === v);
+const isTrack = (v) => TRACKS.some((t) => t === v);
 export const getAudience = () => {
-  try {
-    const v = localStorage.getItem(KEY);
-    return VALID.has(v) ? v : null;
-  } catch {
-    return null;
-  }
+    try {
+        const v = localStorage.getItem(KEY);
+        return isAudience(v) ? v : null;
+    }
+    catch {
+        return null;
+    }
 };
-
 export const getTrack = () => {
-  try {
-    const v = localStorage.getItem(TRACK_KEY);
-    return TRACKS.has(v) ? v : null;
-  } catch {
-    return null;
-  }
+    try {
+        const v = localStorage.getItem(TRACK_KEY);
+        return isTrack(v) ? v : null;
+    }
+    catch {
+        return null;
+    }
 };
-
 export function setAudience(value, track) {
-  if (!VALID.has(value)) return;
-  try {
-    localStorage.setItem(KEY, value);
-    /* A recruiter has no track. Clearing it rather than leaving
-       the last one lying around means the work half is never
-       described as "finance" or "skills"– it is neither. */
-    if (value === "work") localStorage.removeItem(TRACK_KEY);
-    else if (TRACKS.has(track)) localStorage.setItem(TRACK_KEY, track);
-  } catch { /* private mode */ }
-  apply(value, value === "work" ? null : (track ?? getTrack()));
-  dispatchEvent(new CustomEvent("audience:change", { detail: value }));
+    if (!isAudience(value))
+        return;
+    try {
+        localStorage.setItem(KEY, value);
+        /* A recruiter has no track. Clearing it rather than leaving
+           the last one lying around means the work half is never
+           described as "finance" or "skills": it is neither. */
+        if (value === "work")
+            localStorage.removeItem(TRACK_KEY);
+        else if (isTrack(track))
+            localStorage.setItem(TRACK_KEY, track);
+    }
+    catch { /* private mode */ }
+    apply(value, value === "work" ? null : (track ?? getTrack()));
+    dispatchEvent(new CustomEvent("audience:change", { detail: value }));
 }
-
 export function setTrack(track) {
-  if (!TRACKS.has(track)) return;
-  setAudience("learn", track);
+    if (!isTrack(track))
+        return;
+    setAudience("learn", track);
 }
-
 export function clearAudience() {
-  try {
-    localStorage.removeItem(KEY);
-    localStorage.removeItem(TRACK_KEY);
-  } catch { /* ignore */ }
-  document.documentElement.removeAttribute("data-audience");
-  document.documentElement.removeAttribute("data-track");
-  dispatchEvent(new CustomEvent("audience:change", { detail: null }));
+    try {
+        localStorage.removeItem(KEY);
+        localStorage.removeItem(TRACK_KEY);
+    }
+    catch { /* ignore */ }
+    document.documentElement.removeAttribute("data-audience");
+    document.documentElement.removeAttribute("data-track");
+    dispatchEvent(new CustomEvent("audience:change", { detail: null }));
 }
-
 function apply(value, track = getTrack()) {
-  const root = document.documentElement;
-  if (value) root.setAttribute("data-audience", value);
-  else root.removeAttribute("data-audience");
-
-  if (value === "money" && TRACKS.has(track)) root.setAttribute("data-track", track);
-  else root.removeAttribute("data-track");
+    const root = document.documentElement;
+    if (value)
+        root.setAttribute("data-audience", value);
+    else
+        root.removeAttribute("data-audience");
+    /* "learn", not "money". The audience is one of the two words in
+       VALID above and the school's move to /money/ did not rename
+       it, so this read "money" and could not be true: `data-track`
+       was never set on any page. */
+    if (value === "learn" && isTrack(track))
+        root.setAttribute("data-track", track);
+    else
+        root.removeAttribute("data-track");
 }
-
 /* ------------------------------------------------------------
    the doorway on the home page
 
@@ -117,19 +133,22 @@ function apply(value, track = getTrack()) {
    the two halves of the site.
    ------------------------------------------------------------ */
 function initDoorway() {
-  const doorway = document.getElementById("doorway");
-  if (!doorway) return;
-
-  doorway.addEventListener("click", (e) => {
-    const door = e.target.closest("[data-audience-pick]");
-    if (!door) return;
-    // Let a modified click open a tab without silently setting a preference
-    if (e.metaKey || e.ctrlKey || e.shiftKey) return;
-    setAudience(door.dataset.audiencePick, door.dataset.trackPick);
-    // the href carries on to the destination on its own
-  });
+    const doorway = document.getElementById("doorway");
+    if (!doorway)
+        return;
+    doorway.addEventListener("click", (e) => {
+        const door = e.target instanceof Element
+            ? e.target.closest("[data-audience-pick]")
+            : null;
+        if (!door)
+            return;
+        // Let a modified click open a tab without silently setting a preference
+        if (e.metaKey || e.ctrlKey || e.shiftKey)
+            return;
+        setAudience(door.dataset.audiencePick, door.dataset.trackPick);
+        // the href carries on to the destination on its own
+    });
 }
-
 /* ------------------------------------------------------------
    the switcher
 
@@ -160,77 +179,78 @@ function initDoorway() {
    rearranging itself rather than as a navigation.
    ------------------------------------------------------------ */
 function reload() {
-  /* Guarded: a reload loop is the worst possible failure mode for
-     this, and a browser that refuses the write above would give
-     us one. If the value did not stick, do not reload. */
-  try {
-    if (localStorage.getItem(KEY) === document.documentElement.dataset.audience) {
-      location.reload();
+    /* Guarded: a reload loop is the worst possible failure mode for
+       this, and a browser that refuses the write above would give
+       us one. If the value did not stick, do not reload. */
+    try {
+        if (localStorage.getItem(KEY) === document.documentElement.dataset.audience) {
+            location.reload();
+        }
     }
-  } catch { /* private mode: the ordering still changed, live with it */ }
+    catch { /* private mode: the ordering still changed, live with it */ }
 }
-
 function switcherLabel(current) {
-  return current === "work"
-    ? "আমি শিখতে এসেছি: switch to the Bangla library"
-    : "I'm hiring / need work done: switch";
+    return current === "work"
+        ? "আমি শিখতে এসেছি: switch to the Bangla library"
+        : "I'm hiring / need work done: switch";
 }
-
 function buildSwitcher() {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "audience-switch";
-  const paint = () => {
-    const current = getAudience();
-    button.textContent = switcherLabel(current);
-    button.dataset.to = current === "work" ? "money" : "work";
-  };
-  paint();
-  button.addEventListener("click", () => {
-    /* Going back to the library keeps whichever half of it they
-       last read. Someone who came for German and wandered into a
-       CV should land back in German, not in a savings lesson. */
-    setAudience(button.dataset.to, getTrack() ?? "finance");
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "audience-switch";
+    const paint = () => {
+        const current = getAudience();
+        button.textContent = switcherLabel(current);
+        /* "learn", not "money": setAudience() takes one of the two
+           words in VALID and dropped everything else, so this button
+           switched a recruiter to nothing at all and then reloaded. */
+        button.dataset.to = current === "work" ? "learn" : "work";
+    };
     paint();
-    reload();
-  });
-  addEventListener("audience:change", paint);
-  return button;
+    button.addEventListener("click", () => {
+        /* Going back to the library keeps whichever half of it they
+           last read. Someone who came for German and wandered into a
+           CV should land back in German, not in a savings lesson. */
+        setAudience(button.dataset.to, getTrack() ?? "finance");
+        paint();
+        reload();
+    });
+    addEventListener("audience:change", paint);
+    return button;
 }
-
 /** Finance ↔ skills, shown only to someone who is here to learn. */
 function buildTrackSwitcher() {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "audience-switch track-switch";
-  const paint = () => {
-    const who = getAudience();
-    const track = getTrack();
-    button.hidden = who !== "money";
-    button.dataset.to = track === "skills" ? "finance" : "skills";
-    button.textContent = track === "skills"
-      ? "টাকা ও বিনিয়োগে ফিরে যান"
-      : "দক্ষতার অংশে যান";
-  };
-  paint();
-  button.addEventListener("click", () => {
-    setTrack(button.dataset.to);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "audience-switch track-switch";
+    const paint = () => {
+        const who = getAudience();
+        const track = getTrack();
+        // "learn", not "money", so this was hidden on every page.
+        button.hidden = who !== "learn";
+        button.dataset.to = track === "skills" ? "finance" : "skills";
+        button.textContent = track === "skills"
+            ? "টাকা ও বিনিয়োগে ফিরে যান"
+            : "দক্ষতার অংশে যান";
+    };
     paint();
-    reload();
-  });
-  addEventListener("audience:change", paint);
-  return button;
+    button.addEventListener("click", () => {
+        setTrack(button.dataset.to);
+        paint();
+        reload();
+    });
+    addEventListener("audience:change", paint);
+    return button;
 }
-
 function initSwitcher() {
-  const foot = document.querySelector("footer .wrap");
-  if (!foot || foot.querySelector(".audience-switch")) return;
-  const row = document.createElement("p");
-  row.className = "audience-row";
-  row.append(buildSwitcher(), buildTrackSwitcher());
-  foot.append(row);
+    const foot = document.querySelector("footer .wrap");
+    if (!foot || foot.querySelector(".audience-switch"))
+        return;
+    const row = document.createElement("p");
+    row.className = "audience-row";
+    row.append(buildSwitcher(), buildTrackSwitcher());
+    foot.append(row);
 }
-
 /* ------------------------------------------------------------
    ranking help for the command palette
 
@@ -240,42 +260,42 @@ function initSwitcher() {
 const WORK_HINTS = new Set(["Page", "Article"]);
 const WORK_URLS = ["/portfolio", "/about", "/contact"];
 const SKILL_URLS = ["/skills", "/deutsch"];
-
 export function audienceBoost(item) {
-  const who = getAudience();
-  if (!who) return 0;
-  const isSkill = SKILL_URLS.some((u) => item.url.startsWith(u));
-  const isMoney =
-    item.url.startsWith("/money") ||
-    item.url.startsWith("/tools") ||
-    item.hint === "Learn" ||
-    item.hint === "Tool";
-  const isLearn = isMoney || isSkill;
-  const isWork = WORK_URLS.some((u) => item.url.startsWith(u)) ||
-    (WORK_HINTS.has(item.hint) && !isLearn);
-
-  if (who === "work") return isWork ? 220 : 0;
-  if (!isLearn) return 0;
-
-  /* Inside the library the track is a nudge, not a second wall:
-     the half they came for goes above the half they didn't, and
-     both stay well above the CV. */
-  const track = getTrack();
-  if (track === "skills") return isSkill ? 260 : 180;
-  if (track === "finance") return isMoney ? 260 : 180;
-  return 220;
+    const who = getAudience();
+    if (!who)
+        return 0;
+    const isSkill = SKILL_URLS.some((u) => item.url.startsWith(u));
+    const isMoney = item.url.startsWith("/money") ||
+        item.url.startsWith("/tools") ||
+        item.hint === "Learn" ||
+        item.hint === "Tool";
+    const isLearn = isMoney || isSkill;
+    const isWork = WORK_URLS.some((u) => item.url.startsWith(u)) ||
+        (item.hint !== undefined && WORK_HINTS.has(item.hint) && !isLearn);
+    if (who === "work")
+        return isWork ? 220 : 0;
+    if (!isLearn)
+        return 0;
+    /* Inside the library the track is a nudge, not a second wall:
+       the half they came for goes above the half they didn't, and
+       both stay well above the CV. */
+    const track = getTrack();
+    if (track === "skills")
+        return isSkill ? 260 : 180;
+    if (track === "finance")
+        return isMoney ? 260 : 180;
+    return 220;
 }
-
 /** Menu column order, so the overlay leads with the right half. */
 export function menuOrder(titles) {
-  const who = getAudience();
-  if (who !== "work") return titles;
-  // recruiters get pages and writing first, the library after
-  return [...titles].sort((a, b) => Number(b.work ?? 0) - Number(a.work ?? 0));
+    const who = getAudience();
+    if (who !== "work")
+        return titles;
+    // recruiters get pages and writing first, the library after
+    return [...titles].sort((a, b) => Number(b.work ?? 0) - Number(a.work ?? 0));
 }
-
 export function initAudience() {
-  apply(getAudience());
-  initDoorway();
-  initSwitcher();
+    apply(getAudience());
+    initDoorway();
+    initSwitcher();
 }

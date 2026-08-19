@@ -34,7 +34,7 @@ const CARDS: Record<Pick, {
   title: string; dek: string; go: string; lang?: string;
 }> = {
   open: {
-    href: "/tools/live.html", accent: "var(--gold)", icon: "wallet",
+    href: "/tools/live", accent: "var(--gold)", icon: "wallet",
     chip: "Live · লাইভ",
     title: "One real portfolio, live",
     dek: "The site's own Trading 212 account, straight from the broker as "
@@ -43,7 +43,7 @@ const CARDS: Record<Pick, {
     go: "Open the dashboard",
   },
   learn: {
-    href: "/money/index.html", accent: "var(--green)", icon: "coins",
+    href: "/money", accent: "var(--green)", icon: "coins",
     chip: "সবচেয়ে বড়টা", lang: "bn",
     title: "টাকা ও শেয়ার",
     dek: "হাতেখড়ি থেকে গবেষণা পর্যন্ত, ধাপে ধাপে। বিও অ্যাকাউন্ট খোলা থেকে "
@@ -51,7 +51,7 @@ const CARDS: Record<Pick, {
     go: "শুরু করুন",
   },
   work: {
-    href: "/portfolio.html", accent: "var(--plum)", icon: "briefcase",
+    href: "/portfolio", accent: "var(--plum)", icon: "briefcase",
     chip: "Work",
     title: "Seven case studies, all of them open",
     dek: "Three-statement models, a DCF, a stress test and a frontier "

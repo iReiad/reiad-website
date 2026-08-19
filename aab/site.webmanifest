@@ -3,7 +3,7 @@
   "short_name": "Reiad's Library",
   "description": "Plain-Bangla investment education, finance calculators, and writing on Bangladesh and global markets.",
   "id": "/",
-  "start_url": "/index.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -21,19 +21,19 @@
       "name": "Calculators",
       "short_name": "Tools",
       "description": "Compounding, sanchayapatra vs FDR, inflation, EMI, position sizing",
-      "url": "/tools/index.html"
+      "url": "/tools"
     },
     {
       "name": "শেখার লাইব্রেরি",
       "short_name": "Learn",
       "description": "Money terms explained in plain Bangla",
-      "url": "/learn/index.html"
+      "url": "/money"
     },
     {
       "name": "Insights",
       "short_name": "Insights",
       "description": "Articles and the market pulse",
-      "url": "/insights.html"
+      "url": "/insights"
     }
   ]
 }

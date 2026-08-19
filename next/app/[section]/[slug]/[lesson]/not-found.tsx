@@ -21,7 +21,7 @@ export default function NotFound() {
         <p className="lede">
           লেখাটা হয়তো সরে গেছে, বা লিংকে টাইপো আছে।
         </p>
-        <p><ButtonLink kind="ghost" href="/skills/index.html">সব শেখার জায়গা →</ButtonLink></p>
+        <p><ButtonLink kind="ghost" href="/skills">সব শেখার জায়গা →</ButtonLink></p>
       </div>
     </main>
   );

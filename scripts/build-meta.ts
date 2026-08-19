@@ -61,7 +61,7 @@ const feed = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${esc(SITE.name)} · Insights</title>
-    <link>${SITE.origin}/insights.html</link>
+    <link>${SITE.origin}/insights</link>
     <atom:link href="${SITE.origin}/feed.xml" rel="self" type="application/rss+xml"/>
     <description>Explainers and analysis on Bangladesh and global finance, in English and Bangla.</description>
     <language>en-gb</language>
@@ -134,7 +134,7 @@ const urls: SitemapUrl[] = [
   ...PAGES.filter((p) => !p.private && p.url)
     .map((p) => ({ loc: p.url as string, priority: "0.8" })),
   ...articles.map((a) => ({ loc: `/insights/${a.slug}.html`, lastmod: a.date, priority: "0.9" })),
-  ...STAGES.map((s) => ({ loc: `/money/${s.slug}/index.html`, priority: "0.8" })),
+  ...STAGES.map((s) => ({ loc: `/money/${s.slug}`, priority: "0.8" })),
   ...lessons.map((l) => ({ loc: l.url, priority: "0.7" })),
   ...STUFEN.map((s) => ({ loc: stufeUrl(s), priority: "0.8" })),
   ...workbooks.map((loc) => ({ loc, priority: "0.8" })),
@@ -162,8 +162,10 @@ User-agent: *
 Allow: /
 
 # The publishing tool and what it collected are mine, not content.
-Disallow: /studio/
-Disallow: /desk/
+# No trailing slash: the two pages are /studio and /desk now, and
+# "Disallow: /studio/" is a prefix that no longer covers either.
+Disallow: /studio
+Disallow: /desk
 Disallow: /insights/_template.html
 
 # One person's own copy of a third-party course, behind the admin

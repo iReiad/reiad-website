@@ -305,7 +305,7 @@ export function NewsWindow({ story, onClose }: { story: Story; onClose: () => vo
                     data-no-prerender="">
           {item.source ? `Read it at ${item.source} →` : "Read it at the source →"}
         </ButtonLink>
-        <ButtonLink kind="ghost" href="/insights.html">All the headlines</ButtonLink>
+        <ButtonLink kind="ghost" href="/insights">All the headlines</ButtonLink>
       </div>
     </dialog>
   );

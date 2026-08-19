@@ -20,7 +20,7 @@
    click and the other is an effect. Reading the markup would show
    a chip row and a hidden form and say nothing about either, which
    is exactly the shape `interactive.test.ts` exists for, and
-   `/insights.html` is `force-dynamic` so that file cannot serve
+   `/insights` is `force-dynamic` so that file cannot serve
    it. `hydrate-fixture.ts` is the smaller way in: the components,
    server-rendered and hydrated, on a page of their own.
 
@@ -367,7 +367,7 @@ const send = async (page: Page, address: string): Promise<void> => {
   ok("and it is readable in archive/, which is where a replaced file goes",
     existsSync(join(ROOT, "archive", "modules", "hub.js")));
   ok("no route loads it",
-    !readFileSync(join(ROOT, "next", "app", "insights.html", "layout.tsx"), "utf8")
+    !readFileSync(join(ROOT, "next", "app", "insights", "layout.tsx"), "utf8")
       .includes("/hub.js"));
   ok("nothing precaches it",
     !readFileSync(join(ROOT, "aab", "sw.js"), "utf8").includes('"/hub.js"'),

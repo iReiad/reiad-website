@@ -406,7 +406,7 @@ Tailwind is compiled by Next, through `@tailwindcss/postcss`.
 output. `@theme` maps the site's own tokens, so `bg-panel` means
 `var(--panel)` in both themes.
 
-**Done:** `/account.html`, and the component library under
+**Done:** `/account`, and the component library under
 `next/components/ui/`.
 
 That library is the mechanism for the rest of it. Eight components, each
@@ -454,7 +454,7 @@ is a Next.js route; a piece of interface is a component. See CLAUDE.md.
 **In flight:** the German book is a route (`arbeitsbuch.html`), sharing
 `components/workbook.tsx` with a data shape that already covers both schools.
 
-**Done: `/account.html`.** The route was rendered by Next from the day
+**Done: `/account`.** The route was rendered by Next from the day
 it was ported and every section of it was still DRAWN by
 `/account-page.js`, which is the shape this whole tracker is about:
 correct HTML with a browser module building the contents of it in a

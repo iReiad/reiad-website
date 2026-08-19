@@ -1,7 +1,7 @@
 /* ============================================================
    _lib/broker.js: talking to Trading 212, and keeping its keys.
 
-   The dashboard at /tools/live.html never speaks to the broker
+   The dashboard at /tools/live never speaks to the broker
    itself, for three reasons that all point the same way. The
    browser's CSP does not allow the host and should not: an API
    key in a page is an API key in every extension and every bit

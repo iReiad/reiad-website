@@ -1,5 +1,5 @@
 /* ============================================================
-   auth.js: the Studio's front door.
+   auth.ts: the Studio's front door.
 
    This used to do the checking itself, in the browser, and I was
    careful to describe that honestly: with no server there was
@@ -17,22 +17,17 @@
    browser-side gate so the Studio still opens on a purely static
    deployment, with a line on screen saying which mode you're in.
    ============================================================ */
-
 import { auth } from "/api.js";
 import { AUTH } from "/auth-config.js";
-
 const KEY_LOCAL = "studio-unlocked-local";
-
 /* ============================================================
    The lock screen
    ============================================================ */
-
 function screen({ mode, server }) {
-  const setup = mode === "setup";
-
-  const wrap = document.createElement("div");
-  wrap.className = "gate";
-  wrap.innerHTML = `
+    const setup = mode === "setup";
+    const wrap = document.createElement("div");
+    wrap.className = "gate";
+    wrap.innerHTML = `
     <div class="gate-card">
       <span class="lock" aria-hidden="true">${setup ? "✦" : "⌘"}</span>
       <h1>${setup ? "Set up Studio access" : "Is this you?"}</h1>
@@ -59,158 +54,155 @@ function screen({ mode, server }) {
 
       <p class="gate-fine">${server
         ? "Your passphrase is stretched here (PBKDF2-SHA256, 210,000 iterations), and "
-          + "never sent. The server checks the result, and the session is an HttpOnly "
-          + "cookie this page cannot read. Wrong guesses are rate-limited."
+            + "never sent. The server checks the result, and the session is an HttpOnly "
+            + "cookie this page cannot read. Wrong guesses are rate-limited."
         : "The database isn't connected yet, so this check is running in your browser: "
-          + "it keeps the Studio away from passers-by, but it is not a vault. Connect D1 "
-          + "(see wrangler.toml) and this becomes a real server-side login."}</p>
+            + "it keeps the Studio away from passers-by, but it is not a vault. Connect D1 "
+            + "(see wrangler.toml) and this becomes a real server-side login."}</p>
     </div>`;
-  return wrap;
+    return wrap;
 }
-
 /* ============================================================
    Fallback: the old browser-side check, for a static deployment
    ============================================================ */
-
 const enc = new TextEncoder();
+/* Both a derived-bits ArrayBuffer and a salt that is already a
+   Uint8Array reach this, and `new Uint8Array()` copies either. */
 const toB64 = (b) => btoa(String.fromCharCode(...new Uint8Array(b)));
 const fromB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
-
 async function deriveLocal(passphrase, salt, iterations) {
-  const base = await crypto.subtle.importKey(
-    "raw", enc.encode(passphrase), "PBKDF2", false, ["deriveBits"]);
-  return toB64(await crypto.subtle.deriveBits(
-    { name: "PBKDF2", salt, iterations, hash: "SHA-256" }, base, 256));
+    const base = await crypto.subtle.importKey("raw", enc.encode(passphrase), "PBKDF2", false, ["deriveBits"]);
+    return toB64(await crypto.subtle.deriveBits({ name: "PBKDF2", salt, iterations, hash: "SHA-256" }, base, 256));
 }
-
 async function checkLocal(passphrase) {
-  if (!AUTH.configured) return null;                 // nothing to check against
-  const hash = await deriveLocal(passphrase, fromB64(AUTH.salt), AUTH.iterations);
-  return hash === AUTH.hash;
+    if (!AUTH.configured)
+        return null; // nothing to check against
+    const hash = await deriveLocal(passphrase, fromB64(AUTH.salt), AUTH.iterations);
+    return hash === AUTH.hash;
 }
-
 /* ============================================================
    Entry point
    ============================================================ */
-
+const keyParams = (reply) => typeof reply.scheme === "string"
+    && typeof reply.salt === "string"
+    && typeof reply.iterations === "number"
+    ? { scheme: reply.scheme, salt: reply.salt, iterations: reply.iterations }
+    : null;
 export function requireOwner(protectedRoot) {
-  return new Promise(async (resolve) => {
-    const me = await auth.me();
-    const server = !!me?.ok;
-
-    // Already signed in, either way?
-    if (server && me.signedIn) return resolve({ server: true });
-    if (!server && sessionStorage.getItem(KEY_LOCAL) === "1") return resolve({ server: false });
-
-    const mode = server
-      ? (me.configured ? "signin" : "setup")
-      : (AUTH.configured ? "signin" : "setup");
-
-    protectedRoot.hidden = true;
-    const gate = screen({ mode, server });
-    protectedRoot.before(gate);
-
-    const msg = gate.querySelector("#gate-msg");
-    const form = gate.querySelector("#gate-form");
-    const say = (text, cls = "") => {
-      msg.textContent = text;
-      msg.className = `gate-msg mono ${cls}`;
-    };
-
-    const letIn = () => {
-      gate.remove();
-      protectedRoot.hidden = false;
-      resolve({ server });
-    };
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const pass = gate.querySelector("#gate-pass").value;
-      const go = gate.querySelector("#gate-go");
-      go.disabled = true;
-
-      try {
-        if (mode === "setup" && gate.querySelector("#gate-pass2")?.value !== pass) {
-          say("Those two don't match.", "err");
-          return;
-        }
-        say("Checking…");
-
-        /* ---------- the real path ---------- */
-        if (server) {
-          if (mode === "setup" && pass.length < 12) {
-            say("Twelve characters minimum.", "err");
-            return;
-          }
-
-          // The 210,000 PBKDF2 iterations happen here, in the browser.
-          // The server only ever sees the derived key, because deriving
-          // it there costs about 30ms of CPU and a Worker on the free
-          // plan is killed at 10ms, which is what "couldn't reach the
-          // server" used to mean.
-          const p = await auth.params();
-          if (!p?.ok) {
-            say("Couldn't reach the server.", "err");
-            return;
-          }
-
-          let result;
-          if (p.scheme === "pbkdf2c") {
-            say("Securing your passphrase…");
-            const dk = await deriveLocal(pass, fromB64(p.salt), p.iterations);
-            result = mode === "setup"
-              ? await auth.setup({ salt: p.salt, iterations: p.iterations, dk })
-              : await auth.login({ dk });
-          } else {
-            // A Studio set up by an older deploy still verifies
-            // server-side. Sign in, then set a new passphrase.
-            say("Checking…");
-            result = await auth.login({ password: pass });
-          }
-
-          if (result?.ok) return letIn();
-          const reason = result?.reason ?? "unreachable";
-          say({
-            "password-too-short": "Twelve characters minimum.",
-            "weak-iterations": "Twelve characters minimum.",
-            "bad-password": "Not quite. Try again.",
-            "too-many-attempts": "Too many tries: wait a few minutes.",
-            "already-configured": "Already set up: sign in instead.",
-            "server-error": "The server errored on that. Try again in a moment.",
-          }[reason] ?? "Couldn't reach the server.", "err");
-          if (reason === "already-configured") setTimeout(() => location.reload(), 1200);
-          return;
-        }
-
-        /* ---------- the static fallback ---------- */
-        if (mode === "setup") {
-          const salt = crypto.getRandomValues(new Uint8Array(16));
-          const hash = await deriveLocal(pass, salt, AUTH.iterations);
-          sessionStorage.setItem(KEY_LOCAL, "1");
-          say("Unlocked here. Connect the database for a real login.", "ok");
-          console.info("auth-config.js block:\n" +
-            `export const AUTH = {\n  configured: true,\n  salt: ${JSON.stringify(toB64(salt))},\n` +
-            `  hash: ${JSON.stringify(hash)},\n  iterations: ${AUTH.iterations},\n` +
-            `  rememberDays: ${AUTH.rememberDays},\n  label: ${JSON.stringify(AUTH.label)},\n};`);
-          setTimeout(letIn, 500);
-          return;
-        }
-        if (await checkLocal(pass)) {
-          sessionStorage.setItem(KEY_LOCAL, "1");
-          return letIn();
-        }
-        say("Not quite. Try again.", "err");
-      } finally {
-        go.disabled = false;
-      }
+    return new Promise(async (resolve) => {
+        const me = await auth.me();
+        const server = !!me?.ok;
+        // Already signed in, either way?
+        if (me?.ok && me.signedIn)
+            return resolve({ server: true });
+        if (!server && sessionStorage.getItem(KEY_LOCAL) === "1")
+            return resolve({ server: false });
+        const mode = server
+            ? (me?.configured ? "signin" : "setup")
+            : (AUTH.configured ? "signin" : "setup");
+        protectedRoot.hidden = true;
+        const gate = screen({ mode, server });
+        protectedRoot.before(gate);
+        /* Non-null because `screen()` above wrote both of them into
+           the markup this line is querying. */
+        const msg = gate.querySelector("#gate-msg");
+        const form = gate.querySelector("#gate-form");
+        const say = (text, cls = "") => {
+            msg.textContent = text;
+            msg.className = `gate-msg mono ${cls}`;
+        };
+        const letIn = () => {
+            gate.remove();
+            protectedRoot.hidden = false;
+            resolve({ server });
+        };
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const pass = gate.querySelector("#gate-pass").value;
+            const go = gate.querySelector("#gate-go");
+            go.disabled = true;
+            try {
+                if (mode === "setup" && gate.querySelector("#gate-pass2")?.value !== pass) {
+                    say("Those two don't match.", "err");
+                    return;
+                }
+                say("Checking…");
+                /* ---------- the real path ---------- */
+                if (server) {
+                    if (mode === "setup" && pass.length < 12) {
+                        say("Twelve characters minimum.", "err");
+                        return;
+                    }
+                    // The 210,000 PBKDF2 iterations happen here, in the browser.
+                    // The server only ever sees the derived key, because deriving
+                    // it there costs about 30ms of CPU and a Worker on the free
+                    // plan is killed at 10ms, which is what "couldn't reach the
+                    // server" used to mean.
+                    const p = await auth.params();
+                    if (!p?.ok) {
+                        say("Couldn't reach the server.", "err");
+                        return;
+                    }
+                    let result;
+                    const params = keyParams(p);
+                    if (params?.scheme === "pbkdf2c") {
+                        say("Securing your passphrase…");
+                        const dk = await deriveLocal(pass, fromB64(params.salt), params.iterations);
+                        result = mode === "setup"
+                            ? await auth.setup({ salt: params.salt, iterations: params.iterations, dk })
+                            : await auth.login({ dk });
+                    }
+                    else {
+                        // A Studio set up by an older deploy still verifies
+                        // server-side. Sign in, then set a new passphrase.
+                        say("Checking…");
+                        result = await auth.login({ password: pass });
+                    }
+                    if (result?.ok)
+                        return letIn();
+                    const reason = result?.reason ?? "unreachable";
+                    const said = {
+                        "password-too-short": "Twelve characters minimum.",
+                        "weak-iterations": "Twelve characters minimum.",
+                        "bad-password": "Not quite. Try again.",
+                        "too-many-attempts": "Too many tries: wait a few minutes.",
+                        "already-configured": "Already set up: sign in instead.",
+                        "server-error": "The server errored on that. Try again in a moment.",
+                    };
+                    say(said[reason] ?? "Couldn't reach the server.", "err");
+                    if (reason === "already-configured")
+                        setTimeout(() => location.reload(), 1200);
+                    return;
+                }
+                /* ---------- the static fallback ---------- */
+                if (mode === "setup") {
+                    const salt = crypto.getRandomValues(new Uint8Array(16));
+                    const hash = await deriveLocal(pass, salt, AUTH.iterations);
+                    sessionStorage.setItem(KEY_LOCAL, "1");
+                    say("Unlocked here. Connect the database for a real login.", "ok");
+                    console.info("aab/src/auth-config.ts block:\n" +
+                        `export const AUTH = {\n  configured: true,\n  salt: ${JSON.stringify(toB64(salt))},\n` +
+                        `  hash: ${JSON.stringify(hash)},\n  iterations: ${AUTH.iterations},\n` +
+                        `  rememberDays: ${AUTH.rememberDays},\n  label: ${JSON.stringify(AUTH.label)},\n};`);
+                    setTimeout(letIn, 500);
+                    return;
+                }
+                if (await checkLocal(pass)) {
+                    sessionStorage.setItem(KEY_LOCAL, "1");
+                    return letIn();
+                }
+                say("Not quite. Try again.", "err");
+            }
+            finally {
+                go.disabled = false;
+            }
+        });
     });
-  });
 }
-
 /** Sign out, server session if there is one, local flag either way. */
 export async function lock() {
-  sessionStorage.removeItem(KEY_LOCAL);
-  localStorage.removeItem("studio-unlocked");
-  await auth.logout();
-  location.reload();
+    sessionStorage.removeItem(KEY_LOCAL);
+    localStorage.removeItem("studio-unlocked");
+    await auth.logout();
+    location.reload();
 }

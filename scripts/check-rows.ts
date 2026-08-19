@@ -226,7 +226,7 @@ for (const file of HANDLERS) {
    stopped being called that on 17 August 2026 when it moved to
    /money/. The settings form sends the whole patch at once with
    `following` in it, PostgREST refused the row, and every save on
-   /account.html answered "Could not save that (400)" for as long
+   /account answered "Could not save that (400)" for as long
    as that was true. Nothing here noticed, because nothing here
    had ever read a migration.
 

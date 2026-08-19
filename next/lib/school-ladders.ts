@@ -3,7 +3,7 @@
    Every live lesson of the four schools, in ladder order, out of
    content/schools.backup.json. 204 of them.
 
-   /account.html draws a bar per school and a bar needs a denominator.
+   /account draws a bar per school and a bar needs a denominator.
    That route is prerendered, so it has no D1 binding and the server
    that reads the rows is the generator rather than the request. The
    rule is unchanged and is the one next/lib/progress.ts states: the

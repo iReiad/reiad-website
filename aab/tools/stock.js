@@ -248,8 +248,8 @@ function localiseCrumbs() {
   if (!nav) return;
   nav.setAttribute("aria-label", lang === "bn" ? "পথ" : "Breadcrumb");
   const labels = {
-    "/index.html": { en: "Home", bn: "হোম" },
-    "/tools/index.html": { en: "Tools", bn: "টুল" },
+    "/": { en: "Home", bn: "হোম" },
+    "/tools": { en: "Tools", bn: "টুল" },
   };
   for (const a of $$("a", nav)) {
     const m = labels[a.getAttribute("href")];
@@ -1036,7 +1036,7 @@ function toCsv() {
   const a = last;
   const q = (s) => `"${String(s).replace(/"/g, '""')}"`;
   const lines = [];
-  lines.push("STOCK CHECK: reiad.co.uk/tools/stock.html");
+  lines.push("STOCK CHECK: reiad.co.uk/tools/stock");
   lines.push(q(t("disc.body", "en")));
   lines.push(q(t("disc.units", "en")));
   lines.push("");

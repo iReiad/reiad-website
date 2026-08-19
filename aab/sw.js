@@ -31,6 +31,22 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v143: most of the list, and for two reasons at once.
+
+        Task #28 took `.html` off every address on the site, so
+        every module that writes a link writes a different one:
+        `/app.js`, `/pieces.js`, `/tools/stock.js`, the four
+        `curriculum.js` and `/offline.html`.
+
+        And task #24 converted the last of the hand-written
+        browser modules to TypeScript, so `/streak.js`,
+        `/audience.js`, `/activation.js` and `/tilt.js` are built
+        from `aab/src/` now. Same addresses, same exports,
+        different bytes.
+
+        An old shell would serve a reader modules that link to
+        addresses this deploy has redirected.
+
    v142: `/account.js`. `refreshUser()` could write a null user
         over a live session: an answer from `/auth/v1/user` with
         no id in it took `current()` to null, so `saveProfile`
@@ -1453,7 +1469,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v142";
+const VERSION = "v143";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -1638,12 +1654,12 @@ const PRECACHE = [
    the ones a reader actually opens, which is the same arrangement
    they had as files. */
 const RENDERED = [
-  "/money/index.html",
-  "/money/contents.html",
-  "/deutsch/index.html",
-  "/deutsch/stufe-1/index.html",
-  "/quran/index.html",
-  "/english/index.html",
+  "/money",
+  "/money/contents",
+  "/deutsch",
+  "/deutsch/stufe-1",
+  "/quran",
+  "/english",
 ];
 
 self.addEventListener("install", (event) => {

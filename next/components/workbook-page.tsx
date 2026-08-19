@@ -3,9 +3,10 @@
 
    Two routes render this and the only difference between them is
    the folder they sit in: the German school calls its book
-   `arbeitsbuch.html` and the English one `workbook.html`, and
-   those addresses were published before either school had a
-   route. A URL a learner has bookmarked is not a thing to tidy.
+   `arbeitsbuch` and the English one `workbook`, and both words
+   were published before either school had a route. A URL a
+   learner has bookmarked is not a thing to tidy, so `_redirects`
+   still answers for the `.html` spelling of each.
 
    Everything below is school-agnostic. Which book this is comes
    from the slug, and the words on the furniture come from the

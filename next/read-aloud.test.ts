@@ -89,7 +89,7 @@ const PAGE = `
       h("ul", { className: "qa-list" }, h("li", null, "A question somebody asked")),
       h("div", { className: "prev-next" },
         h("p", null, "Read next"),
-        h("a", { href: "/insights.html" }, "Back to Insights"))));
+        h("a", { href: "/insights" }, "Back to Insights"))));
 `;
 
 interface Server {

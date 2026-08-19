@@ -19,7 +19,7 @@ export default function NotFound() {
         <p className="lede">
           The piece may have moved, or the link may have a typo in it.
         </p>
-        <p><ButtonLink kind="ghost" href="/insights.html">Back to the index →</ButtonLink></p>
+        <p><ButtonLink kind="ghost" href="/insights">Back to the index →</ButtonLink></p>
       </div>
     </main>
   );

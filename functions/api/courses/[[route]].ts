@@ -38,7 +38,7 @@
    gets 403 and a shell that says so, which is the truth rather
    than a 404 pretending the section does not exist.
 
-   That is the same arrangement `/tools/live.html` uses for the
+   That is the same arrangement `/tools/live` uses for the
    broker's admin half, and the argument is the one in
    `_lib/admins.js`: anything that wants to know whether somebody
    is an admin asks `isAdmin()`, and nothing keeps a second list.

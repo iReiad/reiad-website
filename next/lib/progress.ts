@@ -214,7 +214,7 @@ export function subscribe(fn: () => void): () => void {
      It looked fine most of the time, because the exchange usually
      finishes before the first paint, and it looked broken on
      exactly the pages that fetch something of their own first:
-     `/account.html` drew a course target at "0 of 60" beside a
+     `/account` drew a course target at "0 of 60" beside a
      bar of the same school reading "2 of 60". Two answers to one
      question, on one screen. */
   document.addEventListener("sync:done", fn);

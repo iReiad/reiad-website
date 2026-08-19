@@ -125,7 +125,7 @@ if (read("next/lib/school-icons.ts") !== wanted) {
 
    The stages are the header's tree, so a school that gains one
    and is not regenerated shows a header one stage short of the
-   hub it links to. The lessons are `/account.html`, so a school
+   hub it links to. The lessons are `/account`, so a school
    that gains one and is not regenerated draws a bar against a
    denominator nobody can reach: 60 of 59 finished.
    ------------------------------------------------------------ */
@@ -145,7 +145,7 @@ for (const [name, wanted] of [
 
 /* And that the two agree about which schools have one.
 
-   `ladder: true` in NAV is what `/account.html` reads to know
+   `ladder: true` in NAV is what `/account` reads to know
    there is a bar to draw, and the generated file is where the
    denominator comes from. A school that gains a ladder and not
    the flag never appears on that page; a flag with no ladder
@@ -167,7 +167,7 @@ if (flagged.join() !== generated.join()) {
 for (const [school, lessons] of Object.entries(SCHOOL_LADDERS)) {
   if (!lessons.length) {
     fail(`next/lib/school-ladders.ts holds no lessons for ${school}.`,
-      "Its bar on /account.html reads 0 of 0 and its resume card says"
+      "Its bar on /account reads 0 of 0 and its resume card says"
       + " nothing is written.",
       "Refresh the snapshot and regenerate:",
       "  npx wrangler d1 export reiad --remote --output schools.db",

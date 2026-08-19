@@ -64,10 +64,10 @@ const NOT_FETCHED = {
   /* The profile links on the About page, beside the LinkedIn one
      that has been here since before the page was a route. `rel="me"`
      on every one of them: an anchor, never a fetch. */
-  "https://x.com": "a profile link on /about.html",
-  "https://www.facebook.com": "a profile link on /about.html",
-  "https://www.instagram.com": "a profile link on /about.html",
-  "https://github.com": "a link to this repository on /about.html",
+  "https://x.com": "a profile link on /about",
+  "https://www.facebook.com": "a profile link on /about",
+  "https://www.instagram.com": "a profile link on /about",
+  "https://github.com": "a link to this repository on /about",
   /* Links, never fetched: the anchors in `aab/editor.test.ts`'s
      sanitiser fixtures and the URL its Ctrl+K check is handed. The
      reserved documentation host, so it is the one entry here that

@@ -62,7 +62,7 @@ function paintAll() {
         button.href = book.getAttribute("href");
         button.textContent = "অনুশীলন শুরু করুন →";
       } else {
-        button.href = "/deutsch/index.html#leiter";
+        button.href = "/deutsch#leiter";
         button.textContent = "পরের স্তরে যান →";
       }
     } else if (stats.started) {

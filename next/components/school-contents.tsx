@@ -1,7 +1,7 @@
 /* ============================================================
    school-contents.tsx: every lesson of a school, on one page.
 
-   `/money/contents.html`. Not a hub and not a ladder: its entire
+   `/money/contents`. Not a hub and not a ladder: its entire
    job is being a complete list, so that a reader who knows what
    they are looking for does not have to open four stages to find
    it, and so that a search engine sees every title.

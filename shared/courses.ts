@@ -28,7 +28,7 @@
    itself reaches the browser exactly one way: a signed-in admin
    asks `/api/courses`, `functions/_lib/admins.js` says yes, and
    the Worker answers with JSON. That is the same shape
-   `/tools/live.html` uses for the broker, and for the same
+   `/tools/live` uses for the broker, and for the same
    reason: the one place that can be trusted to check is the one
    place the reader cannot edit.
 
@@ -129,6 +129,22 @@ export const courseOf = (slug: string): Course | null =>
 export const moduleOf = (course: Course, slug: string): CourseModule | null =>
   course.modules.find((m) => m.slug === slug) ?? null;
 
+/* The `.html` strip stays, and this section is the one place on
+   the site where an old address is TOLERATED rather than
+   redirected.
+
+   `aab/_redirects` writes one rule per old address and argues
+   against placeholders, because a rule per address is a fact
+   about a set that does not grow. This set does: 8 courses, 43
+   modules and 794 lessons, all GENERATED from a Drive folder, so
+   845 rules would need regenerating every time that folder
+   changed, which is the staleness that file exists to avoid.
+
+   Tolerating costs nothing here that it would cost anywhere else.
+   The whole section is behind `isAdmin()`, it is `unlisted` in
+   `next/lib/nav.ts`, no crawler can reach it and nothing links to
+   it, so the only holder of an old address is one person's
+   browser history. There is no canonical to split. */
 export const lessonOf = (
   mod: CourseModule, slug: string
 ): CourseLesson | null =>
@@ -142,13 +158,13 @@ export const lessonOf = (
    agree, and the way they agree is by asking here. */
 
 export const courseUrl = (course: string): string =>
-  `/skills/courses/${course}/index.html`;
+  `/skills/courses/${course}`;
 
 export const moduleUrl = (course: string, mod: string): string =>
-  `/skills/courses/${course}/${mod}/index.html`;
+  `/skills/courses/${course}/${mod}`;
 
 export const lessonUrl = (course: string, mod: string, lesson: string): string =>
-  `/skills/courses/${course}/${mod}/${lesson}.html`;
+  `/skills/courses/${course}/${mod}/${lesson}`;
 
 /** What a tick is filed under.
 

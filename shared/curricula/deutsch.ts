@@ -964,8 +964,8 @@ export const SCHOOL: School = {
    the array above.
    ------------------------------------------------------------ */
 
-/** A Stufe's folder URL. */
-export const stufeUrl = (stufe: Stufe): string => `/deutsch/${stufe.slug}/index.html`;
+/** A Stufe's ladder URL. */
+export const stufeUrl = (stufe: Stufe): string => `/deutsch/${stufe.slug}`;
 
 /** A Teil's page URL. */
 export const teilUrl = (stufe: Stufe, teil: Teil): string =>
@@ -980,7 +980,7 @@ export const teilUrl = (stufe: Stufe, teil: Teil): string =>
     course ends up advertising a 404. */
 export const workbookUrl = (stufe: Stufe): string | null =>
   stufe.workbook && stufe.status === "live"
-    ? `/deutsch/${stufe.slug}/${stufe.workbook.slug}.html`
+    ? `/deutsch/${stufe.slug}/${stufe.workbook.slug}`
     : null;
 
 /** Progress is stored per Teil under a stable id. */

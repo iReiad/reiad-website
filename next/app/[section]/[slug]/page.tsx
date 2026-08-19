@@ -1,5 +1,15 @@
 /* ============================================================
-   The article itself.
+   Two pages answer at `/<first>/<second>`, and this file is the
+   one route Next can be given for them.
+
+   A section is insights, cooking or travel and the page is an
+   article; a school is money, deutsch, quran or english and the
+   page is a stage's ladder. `isSchool()` is the whole test and the
+   two can never collide. The ladder's body is
+   `components/stage-page.tsx`, which was a route of its own while
+   its address ended in `index.html`.
+
+   ---- the article ----
 
    A server component, and only a server component: there is no
    "use client" anywhere in this app and there should not be one on
@@ -28,11 +38,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { dateLabel, headFacts, lookFor } from "@reiad/shared/look";
+import { isSchool } from "@reiad/shared/schools";
 import { getArticle, siteOrigin } from "../../../lib/article";
 import { Comments } from "@/components/comments";
 import { Engage } from "@/components/engage";
 import { Keep } from "@/components/keep";
 import { ReadAloud } from "@/components/read-aloud";
+import { StagePage, stageMeta } from "@/components/stage-page";
 import { Eyebrow } from "../../../components/ui/label";
 
 type Params = { params: Promise<{ section: string; slug: string }> };
@@ -43,6 +55,8 @@ type Params = { params: Promise<{ section: string; slug: string }> };
    next/parity.test.ts, tag by tag. */
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { section, slug } = await params;
+  if (isSchool(section)) return stageMeta(section, slug);
+
   const article = await getArticle(section, slug);
   if (!article) return {};
 
@@ -72,8 +86,10 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-export default async function ArticlePage({ params }: Params) {
+export default async function ReadingPage({ params }: Params) {
   const { section, slug } = await params;
+  if (isSchool(section)) return <StagePage section={section} slug={slug} />;
+
   const article = await getArticle(section, slug);
   if (!article) notFound();
 

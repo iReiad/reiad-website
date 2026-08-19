@@ -3,8 +3,10 @@ User-agent: *
 Allow: /
 
 # The publishing tool and what it collected are mine, not content.
-Disallow: /studio/
-Disallow: /desk/
+# No trailing slash: the two pages are /studio and /desk now, and
+# "Disallow: /studio/" is a prefix that no longer covers either.
+Disallow: /studio
+Disallow: /desk
 Disallow: /insights/_template.html
 
 # One person's own copy of a third-party course, behind the admin

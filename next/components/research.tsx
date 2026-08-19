@@ -121,7 +121,7 @@ function ResearchWindow({ opened, onClose }:
 
       <div className="news-window-foot">
         <ButtonLink kind="solid" href={item.href}>{`${item.label} →`}</ButtonLink>
-        <ButtonLink kind="ghost" href="/portfolio.html">All the case studies</ButtonLink>
+        <ButtonLink kind="ghost" href="/portfolio">All the case studies</ButtonLink>
       </div>
     </dialog>
   );

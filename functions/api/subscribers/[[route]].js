@@ -57,7 +57,7 @@ const page = (title, message, tone = "ok") =>
 <span class="eyebrow mono">${tone === "ok" ? "Done" : "Hmm"}</span>
 <h1 style="font-size:2rem">${title}</h1>
 <p class="lede">${message}</p>
-<p style="margin-top:26px"><a class="btn btn-solid" href="/insights.html">Read something →</a></p>
+<p style="margin-top:26px"><a class="btn btn-solid" href="/insights">Read something →</a></p>
 </div></main></body></html>`,
     { cache: "no-store" }
   );

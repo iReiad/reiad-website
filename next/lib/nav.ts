@@ -42,7 +42,7 @@ export interface NavItem {
   /** Which `Current` value marks this item as where you are. */
   key?: string;
   /** A school with a ladder: stages, lessons, and a tick per
-      lesson. `/account.html` draws a bar for each of these and
+      lesson. `/account` draws a bar for each of these and
       the settings form offers them as things to follow, so the
       flag is what says "this is a course" rather than a Bangla
       word in `kind` being read as one.
@@ -65,7 +65,7 @@ export interface NavItem {
 
       It is still HERE rather than written straight into the
       skills page, because the rule this file opens with is that
-      the menu is said once. `/skills/index.html` reads the flag
+      the menu is said once. `/skills` reads the flag
       and gives it a card of its own, which is the one place the
       person who can open it will look. */
   unlisted?: boolean;
@@ -102,36 +102,36 @@ export const NAV: NavGroup[] = [
     label: "শেখা · Learning",
     accent: "var(--green)",
     items: [
-      { label: "All skills", sub: "দক্ষতা", href: "/skills/index.html", icon: "skills", key: "skills" },
+      { label: "All skills", sub: "দক্ষতা", href: "/skills", icon: "skills", key: "skills" },
       {
-        label: "Money", sub: "টাকা ও শেয়ার", href: "/money/index.html",
+        label: "Money", sub: "টাকা ও শেয়ার", href: "/money",
         icon: "coins", key: "money", kind: "কোর্স", ladder: true, accent: "var(--green)",
         blurb: "বিও অ্যাকাউন্ট খোলা থেকে নিজে একটা কোম্পানি যাচাই করা পর্যন্ত, "
           + "ধাপে ধাপে সাজানো। সবচেয়ে বড় স্কুল, আর শুরুটা একদম শূন্য থেকে।",
       },
       {
-        label: "German", sub: "জার্মান", href: "/deutsch/index.html",
+        label: "German", sub: "জার্মান", href: "/deutsch",
         icon: "book", key: "deutsch", kind: "কোর্স", ladder: true, accent: "var(--blue)",
         blurb: "চারটা স্তরে জার্মান, বাংলা দিয়ে বোঝানো, আর রোজ এক পাতার অনুশীলন খাতা।",
       },
       {
-        label: "Qur'anic Arabic", sub: "কুরআনের আরবি", href: "/quran/index.html",
+        label: "Qur'anic Arabic", sub: "কুরআনের আরবি", href: "/quran",
         icon: "scroll", key: "quran", kind: "কোর্স", ladder: true, accent: "var(--teal)",
         blurb: "তিন ধাপে ষাট দিন: শব্দ চেনা, বাক্য বোঝা, তারপর গোটা সূরা খুলে পড়া।",
       },
       {
-        label: "English", sub: "মন থেকে ইংরেজি", href: "/english/index.html",
+        label: "English", sub: "মন থেকে ইংরেজি", href: "/english",
         icon: "signpost", key: "english", kind: "কোর্স", ladder: true, accent: "var(--violet)",
         blurb: "দুই টার্মে ইংরেজি: শব্দের ক্রম থেকে দুই মিনিট টানা বলা পর্যন্ত, সাথে ৩০ দিনের খাতা।",
       },
       {
-        label: "Cooking", sub: "রান্না", href: "/cooking/index.html",
+        label: "Cooking", sub: "রান্না", href: "/cooking",
         icon: "cart", key: "cooking", kind: "লেখা", accent: "var(--rose)",
         blurb: "মাপ, তাপ আর সময়: রেসিপি মুখস্থ না করে রান্নাটা বোঝা। কোর্স নয়, "
           + "একেকটা উপকরণ নিয়ে পুরো একটা লেখা।",
       },
       {
-        label: "Travel", sub: "ভ্রমণ", href: "/travel/index.html",
+        label: "Travel", sub: "ভ্রমণ", href: "/travel",
         icon: "compass", key: "travel", kind: "লেখা", accent: "var(--plum)",
         blurb: "ভিসা, কাগজপত্র আর প্রথমবার দেশের বাইরে যাওয়ার পুরো ধাপ।",
       },
@@ -142,7 +142,7 @@ export const NAV: NavGroup[] = [
         blurb: "বাইরের কোর্স, নিজের পড়ার জন্য রাখা। কোনোটাই প্রকাশ করা হয়নি।",
       },
       {
-        label: "Reviews", sub: "রিভিউ", href: "/skills/index.html#reviews",
+        label: "Reviews", sub: "রিভিউ", href: "/skills#reviews",
         icon: "magnifier", key: "reviews", kind: "আসছে", soon: true,
         blurb: "বই, কোর্স, অ্যাপ আর যন্ত্রপাতি: কেনার আগে সৎ একটা মতামত।",
       },
@@ -153,9 +153,9 @@ export const NAV: NavGroup[] = [
     label: "কাজে লাগান · Tools",
     accent: "var(--gold)",
     items: [
-      { label: "Calculators", sub: "ক্যালকুলেটর", href: "/tools/index.html", icon: "calculator", key: "tools" },
-      { label: "Stock check", sub: "শেয়ার যাচাই", href: "/tools/stock.html", icon: "gauge", key: "stock" },
-      { label: "Live portfolio", sub: "লাইভ পোর্টফোলিও", href: "/tools/live.html", icon: "wallet", key: "live" },
+      { label: "Calculators", sub: "ক্যালকুলেটর", href: "/tools", icon: "calculator", key: "tools" },
+      { label: "Stock check", sub: "শেয়ার যাচাই", href: "/tools/stock", icon: "gauge", key: "stock" },
+      { label: "Live portfolio", sub: "লাইভ পোর্টফোলিও", href: "/tools/live", icon: "wallet", key: "live" },
     ],
   },
   {
@@ -163,7 +163,7 @@ export const NAV: NavGroup[] = [
     label: "পড়া · Reading",
     accent: "var(--green)",
     items: [
-      { label: "Insights", href: "/insights.html", icon: "pen", key: "insights" },
+      { label: "Insights", href: "/insights", icon: "pen", key: "insights" },
     ],
   },
   {
@@ -171,9 +171,9 @@ export const NAV: NavGroup[] = [
     label: "Work",
     accent: "var(--plum)",
     items: [
-      { label: "Portfolio", href: "/portfolio.html", icon: "briefcase", key: "portfolio" },
-      { label: "About", href: "/about.html", icon: "person", key: "about" },
-      { label: "Contact", href: "/contact.html", icon: "mail", key: "contact" },
+      { label: "Portfolio", href: "/portfolio", icon: "briefcase", key: "portfolio" },
+      { label: "About", href: "/about", icon: "person", key: "about" },
+      { label: "Contact", href: "/contact", icon: "mail", key: "contact" },
     ],
   },
   {
@@ -181,7 +181,7 @@ export const NAV: NavGroup[] = [
     label: "আপনার · Yours",
     accent: "var(--green)",
     items: [
-      { label: "Account", sub: "অ্যাকাউন্ট", href: "/account.html", icon: "user", key: "account" },
+      { label: "Account", sub: "অ্যাকাউন্ট", href: "/account", icon: "user", key: "account" },
     ],
   },
 ];
@@ -277,7 +277,7 @@ export const SCHOOL_ACCENTS: string[] =
 /** The four schools with a ladder, in the order the rail lists
     them.
 
-    `/account.html` reads this twice: once for the bar it draws
+    `/account` reads this twice: once for the bar it draws
     per school, and once for the courses the settings form offers
     to follow. Both used `COURSES` in `aab/content.js`, which held
     the money school TWICE, once by hand under a name it stopped

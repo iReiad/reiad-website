@@ -78,8 +78,8 @@ export default async function ReadingLayout({
 /** The shell a school's pages carry.
 
     Exported, because the school's front page answers one segment
-    up at `[section]/index.html` and needs the same one. A second
-    copy of it is how a school ends up with two footers that
+    up at `[section]/(hub)` and needs the same one. A second copy
+    of it is how a school ends up with two footers that
     disagree.
 
     Everything here is a fact about the school rather than about

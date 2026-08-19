@@ -458,8 +458,8 @@ export const SCHOOL = {
    a workbook, so adding a third is a matter of adding it to the
    array above.
    ------------------------------------------------------------ */
-/** A term's folder URL. */
-export const termUrl = (term) => `/english/${term.slug}/index.html`;
+/** A term's ladder URL. */
+export const termUrl = (term) => `/english/${term.slug}`;
 /** A part's page URL. */
 export const partUrl = (term, part) => `/english/${term.slug}/${part.slug}.html`;
 /** Progress is stored per part under a stable id. */
@@ -467,7 +467,7 @@ export const partId = (term, part) => `${term.slug}/${part.slug}`;
 /** And per workbook day, under one that cannot collide with it. */
 export const dayId = (term, n) => `${term.slug}/day-${n}`;
 /** The practice book's URL, or null for a term without one. */
-export const workbookUrl = (term) => term?.workbook ? `/english/${term.slug}/${term.workbook.slug}.html` : null;
+export const workbookUrl = (term) => term?.workbook ? `/english/${term.slug}/${term.workbook.slug}` : null;
 /** Bangla numerals, for a page that is Bangla throughout. */
 export const bnNum = (n) => String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]);
 /** "পর্ব ৫", the label on a card and in a page's eyebrow. */
