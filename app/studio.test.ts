@@ -493,7 +493,7 @@ const type = async (page: Page, text: string): Promise<void> => {
     const editor = document.querySelector("#editor");
     if (!editor) throw new Error("there is no #editor");
     editor.innerHTML =
-      '<p>Text</p><figure><img src="https://lh3.googleusercontent.com/x.png" alt="a chart"></figure>';
+      '<p>Text</p><figure><img src="https://lh3.googleusercontent.com/x.png"></figure>';
     editor.dispatchEvent(new Event("input", { bubbles: true }));
   });
   await page.waitForTimeout(600);
@@ -503,7 +503,25 @@ const type = async (page: Page, text: string): Promise<void> => {
       issues.some((t) => /hosted elsewhere/.test(t)), issues.join(" | "));
     check("and names where it is hosted",
       issues.some((t) => t.includes("googleusercontent.com")), issues.join(" | "));
+    check("and asks for the alt text this one has not got",
+      issues.some((t) => /alt text/i.test(t)), issues.join(" | "));
   }
+  /* Alt text had no way in at all until the figure toolbar grew a
+     chip for it, which is why pre-flight could warn about it and
+     offer nothing to do about it. `aab/editor.test.ts` drives the
+     chip; this is the warning going away. */
+  await page.evaluate(() => {
+    const editor = document.querySelector("#editor");
+    const image = editor?.querySelector("img");
+    if (!editor || !image) throw new Error("there is no photo in the editor");
+    image.setAttribute("alt", "A chart of DSEX returns");
+    editor.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await page.waitForTimeout(600);
+  check("and stops asking once the photo has some",
+    !(await page.locator("#preflight-list li").allTextContents())
+      .some((t) => /alt text/i.test(t)),
+    (await page.locator("#preflight-list li").allTextContents()).join(" | "));
 
   /* ---- drafts, and Open ---- */
   await page.fill("#f-title", "The first draft");

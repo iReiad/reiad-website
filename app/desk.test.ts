@@ -665,6 +665,48 @@ check("leaving a panel does not carry its typed text into the next one",
 
 check("nothing threw", pageErrors.length === 0, pageErrors.join("\n    "));
 
+/* ---------- and with no database at all ----------
+
+   Every panel on this page reads the database, so the one thing
+   worth checking without one is that it degrades honestly. The
+   old desk drew an empty list, which reads as "nothing here" and
+   is a different and much more alarming statement.
+
+   A second context rather than a flag on the one above: the 75
+   checks before this drove a page that was loaded once, and the
+   answer to "what does it do with no database" is what it does
+   from the first paint. */
+{
+  const bare = await browser.newContext({
+    viewport: { width: 1400, height: 1100 },
+    serviceWorkers: "block",
+  });
+  /* Signed in, and every panel's endpoint answering 503
+     not-configured, which is what a site with no database answers
+     and what api.js turns into null. The gate is answered because
+     it has to be: a desk that never got past `requireOwner()` is
+     a blank page with nothing to say, which is a different check
+     and not this one. */
+  await bare.route("**/api/**", (route) => {
+    const configured = route.request().url().includes("/api/auth/me");
+    route.fulfill({
+      status: configured ? 200 : 503,
+      contentType: "application/json",
+      body: JSON.stringify(configured
+        ? { ok: true, signedIn: true, configured: true }
+        : { ok: false, reason: "not-configured" }),
+    });
+  });
+  const quiet = await bare.newPage();
+  await quiet.goto(`http://127.0.0.1:${PORT}/desk/index.html`, { waitUntil: "domcontentloaded" });
+  await quiet.waitForSelector("#desk-root", { timeout: 10_000 });
+  await quiet.waitForTimeout(800);
+  check("the desk says so when there is no database",
+    /database may not be reachable/.test(said(await quiet.locator("#desk-root").textContent())),
+    said(await quiet.locator("#desk-root").textContent()).slice(0, 200));
+  await bare.close();
+}
+
 /* ---------- done ---------- */
 
 await browser.close();
