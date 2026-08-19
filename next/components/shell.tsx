@@ -240,14 +240,15 @@ export function SiteShell({
           <TopBar
             tree={<NavTree current={current} />}
             bare={trail.length < 2}
-            /* `slice(1)` because the mark to its left IS the home
+            /* `skip={1}` because the mark to its left IS the home
                crumb, and a bar reading "Reiad's Library > Home >
-               Skills" says the first thing twice. The home crumb
-               stays in the trail rather than being left out of it,
-               so that a route reading the same array for anything
-               else gets a complete one. */
-            crumbs={<Crumbs trail={trail.slice(1)}
-                            label="পথ" className="crumbs-bar" min={1} />}
+               Skills" says the first thing twice. The whole trail
+               goes in and the component draws from the second, so
+               that the first crumb it DOES draw still knows it has
+               a level in front of it and keeps the arrow that
+               opens its siblings. Slicing here lost that. */
+            crumbs={<Crumbs trail={trail} skip={1}
+                            label="পথ" className="crumbs-bar" min={2} />}
           />
           {beforeMain}
           {children}

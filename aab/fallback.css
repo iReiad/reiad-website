@@ -3861,9 +3861,7 @@
       display: flex; flex-wrap: wrap; align-items: center;
       gap: var(--s-2) 2px; padding: 0; margin: 0; list-style: none;
     }
-    & li { display: flex; align-items: center; color: var(--ink-soft); }
-
-    & li + li::before { content: "›"; margin-inline: 7px; opacity: 0.5; }
+    & li { display: flex; align-items: center; color: var(--ink-soft); min-width: 0; }
     & a { color: var(--ink-soft); text-decoration: none; }
     & a:hover { color: var(--accent); }
     & [aria-current="page"] {
@@ -3872,6 +3870,7 @@
       max-width: 46ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
   }
+
   html[lang="bn"] .crumbs { font-family: var(--font-bn); letter-spacing: 0; font-size: var(--t-3); }
 
   .section-intro { color: var(--ink-soft); margin-block: 6px 20px; }
@@ -7009,7 +7008,7 @@
     view-transition-name: site-topbar;
   }
 
-  .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .tabs-nav[data-sticky] {
+  .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu, .tabs-nav[data-sticky] {
     background-color: var(--glass-fill);
     background-image: var(--sheen), var(--glass-grain);
     background-size: auto, var(--glass-grain-size, auto);
@@ -7026,21 +7025,136 @@
 
     & ol { flex-wrap: nowrap; }
     & li { min-width: 0; }
-    & li + li::before { margin-inline: 8px; opacity: 0.45; }
-    & li span, & li a {
+
+    & li > a, & li > span {
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      min-width: 2.5ch;
     }
 
     & [aria-current="page"] {
-      max-width: none; color: var(--ink);
+      flex: 0 1 auto; max-width: none; color: var(--ink);
       font-size: var(--t-3); font-weight: 500;
     }
-    & li:not([aria-current="page"]) { font-size: var(--t-2); }
+    & li:not([aria-current="page"]) {
+      font-size: var(--t-2);
+
+      flex: 0 2 auto;
+    }
+
+    & .crumb-sep { flex: 0 0 auto; }
+  }
+
+  .crumb-sep {
+    flex: 0 0 auto;
+    display: grid; place-items: center;
+    inline-size: 1.35em; block-size: 1.35em;
+    margin-inline: 1px;
+    line-height: 1;
+    color: var(--ink-soft); opacity: 0.5;
+  }
+
+  .crumb-step {
+
+    -webkit-appearance: none;
+
+    appearance: none; border: 0; padding: 0; background: none;
+    font: inherit; color: inherit;
+    opacity: 0.55;
+    cursor: pointer;
+    border-radius: var(--radius-pill);
+    transition: opacity var(--fast), background var(--fast), color var(--fast);
+  }
+  .crumb-step:hover, .crumb-step:focus-visible {
+    opacity: 1; color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .crumb-step:has(+ [popover]:popover-open) {
+    opacity: 1; color: var(--accent); background: var(--accent-soft);
+    rotate: 90deg;
+  }
+
+  .crumb-menu {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    z-index: 90;
+    inline-size: min(21rem, calc(100vw - 2rem));
+    max-block-size: min(26rem, 78dvh);
+    overflow-y: auto; overscroll-behavior: contain;
+    padding: 6px;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+    color: var(--ink);
+    box-shadow: var(--glass-lift-hi);
+
+    inset-block-start: 64px;
+    inset-inline-start: 12px;
+
+    transition: opacity var(--fast) var(--ease),
+                translate var(--fast) var(--ease),
+                overlay var(--fast) allow-discrete,
+                display var(--fast) allow-discrete;
+    opacity: 1; translate: 0 0;
+    @starting-style { opacity: 0; translate: 0 -6px; }
+    &:not(:popover-open) { opacity: 0; translate: 0 -6px; }
+  }
+  .crumb-menu::backdrop { background: none; }
+
+  .crumb-menu ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+  .crumb-menu li { display: block; }
+
+  .crumb-menu a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    color: var(--ink); text-decoration: none;
+    transition: background var(--fast), color var(--fast);
+  }
+  .crumb-menu a:hover, .crumb-menu a:focus-visible {
+    background: var(--accent-soft); color: var(--accent);
+  }
+
+  .crumb-menu a[aria-current="page"] {
+    background: var(--accent-soft); color: var(--accent); font-weight: 500;
+  }
+  .crumb-menu-text { display: grid; gap: 1px; min-width: 0; flex: 1 1 auto; }
+  .crumb-menu-kicker {
+    font-size: var(--t-1); letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-soft); opacity: 0.8;
+  }
+  .crumb-menu-label {
+    font-size: var(--t-3);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .crumb-menu-n { font-size: var(--t-1); color: var(--ink-soft); flex: 0 0 auto; }
+
+  .crumb-menu-go {
+    flex: 0 0 auto; opacity: 0;
+    transition: opacity var(--fast), translate var(--fast);
+  }
+  .crumb-menu a:hover .crumb-menu-go,
+  .crumb-menu a:focus-visible .crumb-menu-go { opacity: 0.7; translate: 2px 0; }
+
+  @supports (anchor-name: --a) {
+    .crumb-step { anchor-name: --crumb-anchor; }
+    .crumb-menu {
+      position-anchor: --crumb-anchor;
+      inset-block-start: anchor(bottom);
+      inset-inline-start: anchor(start);
+      margin-block-start: 8px;
+      position-try-fallbacks: flip-inline, flip-block;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .crumb-step, .crumb-menu-go, .crumb-menu { transition: none; }
+    .crumb-step:has(+ [popover]:popover-open) { rotate: none; }
   }
 
   @media (max-width: 900px) {
     .crumbs-bar li:first-child::before {
-      content: "›"; margin-inline: 8px; opacity: 0.45;
+      content: "›"; margin-inline: 6px; opacity: 0.45; flex: 0 0 auto;
     }
   }
 
@@ -7050,8 +7164,13 @@
 
   .topbar[data-trail="none"] .topbar-mark { display: flex; }
   .topbar[data-trail="none"] .topbar-mark span { display: inline; }
+
   @media (max-width: 760px) {
-    .crumbs-bar li:not(:last-child) { display: none; }
+    .crumbs-bar li:not([aria-current="page"]) > a { max-inline-size: 8ch; }
+    .crumbs-bar .crumb-sep { inline-size: 1.1em; margin-inline: 0; }
+  }
+  @media (max-width: 520px) {
+    .crumbs-bar li:not([aria-current="page"]) > a { max-inline-size: 4.5ch; }
   }
 
   .slimbar-mark {
