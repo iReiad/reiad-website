@@ -154,3 +154,72 @@ export function ButtonLink({
     </a>
   );
 }
+
+/**
+ * The same thing, when pressing it opens a file picker.
+ *
+ * A third element rather than a prop on the other two, for the
+ * reason `<ButtonLink>` is a third: a file input has to be INSIDE
+ * a `<label>` for the label to open it, and neither a `<button>`
+ * nor an `<a>` can be that label. Every attempt to fake it ends
+ * in a click handler reaching for a hidden input by id, which is
+ * the same control said in two places.
+ *
+ * The input goes in as `children` and carries `hidden`, so the
+ * label is the whole of what a reader sees and a keyboard reaches
+ * the input through it.
+ */
+export function ButtonLabel({
+  kind = "ghost", size = "md", block = false, onAccent = false,
+  className, children, ...rest
+}: {
+  kind?: ButtonKind; size?: ButtonSize; block?: boolean; onAccent?: boolean;
+  className?: string; children: ReactNode;
+} & React.LabelHTMLAttributes<HTMLLabelElement>) {
+  return (
+    <label
+      className={classes(kind, size, block, onAccent, className)}
+      data-glow="control"
+      {...rest}
+    >
+      {children}
+    </label>
+  );
+}
+
+/**
+ * A control that is one glyph, and is square.
+ *
+ * `.icon-btn` and not `.btn`: they are different shapes on
+ * purpose. A `.btn` is a pill with uppercase mono, twenty pixels
+ * of padding either side and a word in it; this is a 34px square
+ * holding a single mark, and the two do not substitute for each
+ * other. The stylesheet draws a 44px tap box in `::before`, which
+ * is why the visible square may be smaller than the thing a
+ * thumb has to hit.
+ *
+ * `label` is required rather than optional. A button whose whole
+ * content is an arrow or a cross says nothing at all to a screen
+ * reader, and every one of the ten hand-written call sites this
+ * replaces had to remember `aria-label` on its own.
+ */
+export function IconButton({
+  label, className, type = "button", children, ...rest
+}: {
+  /** What it does, in words. Becomes `aria-label`. */
+  label: string;
+  className?: string;
+  children: ReactNode;
+} & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "aria-label">) {
+  return (
+    <button
+      type={type}
+      className={["icon-btn", className].filter(Boolean).join(" ")}
+      aria-label={label}
+      data-glow="control"
+      {...rest}
+    >
+      {children}
+    </button>
+  );
+}

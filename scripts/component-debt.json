@@ -1,10 +1,10 @@
 {
-  "button": 2,
-  "icon-button": 2,
+  "button": 0,
+  "icon-button": 0,
   "section-label": 0,
   "chip": 12,
   "chip-class": 19,
   "stat-tile": 0,
   "input": 7,
-  "textarea": 2
+  "textarea": 0
 }

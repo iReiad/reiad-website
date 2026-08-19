@@ -31,6 +31,7 @@
    ============================================================ */
 
 import type { ReactNode } from "react";
+import { IconButton } from "../../../components/ui/button";
 import { notFound } from "next/navigation";
 import { lookFor } from "@reiad/shared/look";
 import { isSchool } from "@reiad/shared/schools";
@@ -153,11 +154,11 @@ function ModalReader() {
     <div id="reader" hidden role="dialog" aria-modal="true" aria-label="Term reader">
       <div className="reader-panel">
         <div className="reader-bar">
-          <button className="icon-btn" id="reader-back" hidden aria-label="আগের লেখায় ফিরুন">
+          <IconButton id="reader-back" hidden label="আগের লেখায় ফিরুন">
             ← ফিরুন
-          </button>
+          </IconButton>
           <a id="reader-full" className="mono" href="#">পুরো পেজে পড়ুন ↗</a>
-          <button className="icon-btn" id="reader-close" aria-label="বন্ধ করুন">✕</button>
+          <IconButton id="reader-close" label="বন্ধ করুন">✕</IconButton>
         </div>
         <div className="reader-body" id="reader-body" />
       </div>

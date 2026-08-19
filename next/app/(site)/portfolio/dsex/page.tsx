@@ -18,7 +18,8 @@ import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
-import { Button, ButtonLink } from "../../../../components/ui/button";
+import { Button, ButtonLink, ButtonLabel } from "../../../../components/ui/button";
+import { TextArea } from "../../../../components/ui/field";
 import { StatTile } from "../../../../components/ui/stat";
 import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
@@ -94,19 +95,20 @@ export default function Page() {
                 </p>
               </div>
               <div className="csv-controls">
-                <label className="btn btn-ghost csv-file-label">
+                <ButtonLabel className="csv-file-label">
                   Choose a CSV
               
                   <input type="file" id="csv-file" accept=".csv,.txt,text/csv" hidden />
-                </label>
+                </ButtonLabel>
                 <span className="mono">or drag one here, or paste below
                 </span>
               </div>
-              <label className="csv-paste-label">
-                <span className="mono">Paste rows
-                </span>
-                <textarea id="csv-paste" rows={3} spellCheck="false" placeholder={"2024-01-01,6120.55\n2024-01-02,6180.10\n2024-01-03,6099.00"} />
-              </label>
+              {/* `<TextArea>` and not a bare one: the label, the
+                  described-by wiring and the focus ring come with
+                  it, and the id stays what the CSV reader looks
+                  for. */}
+              <TextArea id="csv-paste" label="Paste rows" rows={3} spellCheck="false"
+                        placeholder={"2024-01-01,6120.55\n2024-01-02,6180.10\n2024-01-03,6099.00"} />
               <p className="csv-status" id="csv-status" />
             </div>
             {/* ============ HEADLINES ============ */}
