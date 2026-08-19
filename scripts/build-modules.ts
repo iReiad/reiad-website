@@ -54,17 +54,17 @@ const SRC = join(ROOT, "aab", "src");
     without guessing. */
 export const MODULES = [
   "share-card", "api", "photo",
-  /* The account's own four, moved 17 August 2026 with the work
-     that added them. They are the first modules here that import
-     each other: `keep` imports `saved`, and `tsconfig.json` maps
-     `/saved.js` at the SOURCE rather than at a declaration, so
-     there is one description of that module and it is the module.
+  /* The account's own, moved 17 August 2026 with the work that
+     added them. They are the first modules here that import each
+     other, and `tsconfig.json` maps `/saved.js` at the SOURCE
+     rather than at a declaration, so there is one description of
+     that module and it is the module.
 
      They emit declarations into `app/src/types/` like the three
      above. Nothing in `app/` imports them today, which is not a
      reason to throw the declarations away: the desk is the next
      thing that will want to know what a saved scenario is. */
-  "prefs", "saved", "checkpoints", "keep", "sync", "signin", "account-page",
+  "prefs", "saved", "checkpoints", "sync", "signin", "account-page",
   /* The third-party course player, added with the section it
      draws. It is a browser module rather than a React component
      for the reason at the top of `aab/src/courses.ts`: the

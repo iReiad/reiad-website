@@ -1,5 +1,5 @@
 {
-  "version": "v136",
+  "version": "v137",
   "hashes": {
     "/offline.html": "a18e4f2c69892632",
     "/fallback.css": "2b86f5a541298ad7",
@@ -14,13 +14,11 @@
     "/streak.js": "25830604a1fca932",
     "/photo.js": "2ff939a5d971d6e2",
     "/saved.js": "a19be7d350dc2498",
-    "/keep.js": "72957ee6132be7e2",
     "/prefs.js": "833cad34b4e1dd1b",
     "/checkpoints.js": "8903c0d041e563b3",
     "/audience.js": "638ceb49784d808c",
     "/activation.js": "3d0a5d2317d6d8dc",
     "/tilt.js": "31fb2d9138644e3a",
-    "/news.js": "15aeb0a218a1bc28",
     "/money/reader.js": "4abf83585f45cfbb",
     "/money/curriculum.js": "b40a69bca06d59aa",
     "/money/icons.js": "ce344b09ef1b1c5e",

@@ -196,7 +196,7 @@ const open = async (
   /* THE OTHER HALF OF THE SITE, off disk.
 
      `wrangler dev` here is running the NEXT Worker, and that is
-     one of two. `/app.js`, `/keep.js` and every other served
+     one of two. `/app.js`, `/saved.js` and every other served
      module live in `aab/`, which the front-door Worker
      answers with `[assets] directory = "./aab"`. Without this the
      page loads and every one of them 404s, and a 404 for a

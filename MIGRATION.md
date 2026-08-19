@@ -14,7 +14,7 @@ Built from `aab/src/*.ts` to `aab/*.js` by `scripts/build-modules.ts`. The
 built file is committed because the site deploys by uploading `aab/` with no
 build step.
 
-**Done (14):** `account-page` `api` `checkpoints` `courses` `crumbs` `keep`
+**Done (13):** `account-page` `api` `checkpoints` `courses` `crumbs`
 `photo` `prefs` `saved` `share-card` `signin` `sync` `tools/live`
 `tools/tools`
 
@@ -56,9 +56,9 @@ loaded by something not counted here, and both were worth checking.
 | `signin.js` | 347 | ts | **interface.** The account menu, which is a `popover` |
 | `tilt.js` | 282 | | **interface.** A pointer effect on cards |
 | `audience.js` | 281 | | **shell.** The learn/work switch, whose markup is already `sidebar.tsx`'s |
-| `news.js` | 246 | | **interface**, and half done: the fetching, the card and the mini window are `components/news.tsx`. What is still served is `el` and `flip`, which `about.js` imports for the research window, so the file stays until that page is a component rather than breaking it. Cutting it down to those two is an edit to a precached file, which is a `VERSION` bump in `sw.js` |
+| `news.js` | 246 | ✔ | **interface**, and done: `components/news.tsx` and `components/market-pulse.tsx`, with the FLIP both mini windows share in `next/lib/flip.ts`. It outlived the pulse port by a day because `about.js` imported `el` and `flip` from it; archiving that page's window archived this. The module is in `archive/modules/`, and it is the one entry here whose last step is somebody else's file: `/news.js` is still in `PRECACHE` in `aab/sw.js`, which is a line, a comment above it and a `VERSION` bump |
 | `saved.js` | 240 | ts | **service.** Scenarios, targets and the library |
-| `keep.js` | 220 | ts | **interface.** The Save and Add a note under a byline |
+| `keep.js` | 220 | ✔ | **interface**, and done: `components/keep.tsx`, rendered by the piece route and the lesson route. The module read the address, the title and the kind back out of the DOM it had just been rendered into; all three are props now, and the address is the canonical one, so a page reached at both of its two forms is still one row. The module is in `archive/modules/` |
 | `comments.js` | 219 | ✔ | **interface**, and done: `components/comments.tsx`. The module is in `archive/modules/` and the first precached entry to leave this list rather than change |
 | `auth.js` | 216 | | **service.** The Studio's gate |
 | `checkpoints.js` | 209 | ts | **service.** The ticks inside a lesson, filed under a school's own key |
@@ -67,7 +67,7 @@ loaded by something not counted here, and both were worth checking.
 | `prefs.js` | 181 | ts | **service.** Applied before the first paint by `shell.tsx`, carried by `sync.ts` |
 | `read-aloud.js` | 150 | ✔ | **interface**, and done: `components/read-aloud.tsx`. It built a toolbar with `createElement` and appended a `<style>` to the head, which is the pair of things `components/scripts.tsx` exists to stop. The module is in `archive/modules/` |
 | `photo.js` | 144 | ts | **service.** Decoding a pasted photo. Never a fetch: `CLAUDE.md` says what that cost |
-| `about.js` | 107 | | **interface.** A research window, and no longer a tally: the four numbers are the route's, out of `COUNTS`, since the ladders moved to `shared/` and a route could import the manifest. It is the only importer of `news.js` left, so porting the window is what archives that file |
+| `about.js` | 107 | ✔ | **interface**, and done: `components/research.tsx`, with the words as a prop from the route because they are that page's copy. The `<template data-detail>` the module cloned had been rendered EMPTY since the page became a route, so every window opened on nothing; a port is finished when it does what the thing it replaced did. The module is in `archive/modules/` |
 | `api.js` | 133 | ts | **service.** Every endpoint this site has |
 | `share-card.js` | 123 | ts | **service.** Draws the 1200×630 JPEG a pasted link shows |
 | `streak.js` | 122 | | **service.** `days-active`, which four things count |
@@ -100,8 +100,8 @@ second table: a list of fourteen filenames with their line counts beside
 the same fourteen filenames with their line counts is the failure at the
 top of `CLAUDE.md`, in a file about migrations.
 
-**Still JS (13):** `about` `app` `account` `activation` `audience`
-`auth` `auth-config` `editor` `news` `pieces` `streak` `sw`
+**Still JS (11):** `app` `account` `activation` `audience`
+`auth` `auth-config` `editor` `pieces` `streak` `sw`
 `tilt`
 
 That is `ls aab/*.js` minus what `aab/src/` and `shared/` build, and
@@ -282,11 +282,11 @@ kept growing: five `.mjs` test files are five neighbours to copy,
 and the first thing written after `scripts/` finished was a sixth
 and a seventh.
 
-**Done (7):** `comments.test.ts` `article.test.ts` `dev-worker.ts`
+**Done (8):** `comments.test.ts` `article.test.ts` `dev-worker.ts`
 `insights-hub.test.ts` `read-aloud.test.ts` `market-pulse.test.ts`
-`hydrate-fixture.ts`.
+`hydrate-fixture.ts` `research.test.ts`.
 
-The last four are new rather than converted, and the harness is
+The last five are new rather than converted, and the harness is
 the point of them. `hydrate-fixture.ts` renders one component the
 way a route renders it, serves that markup with a script that
 hydrates it, and opens a browser on the result. Both dynamic routes

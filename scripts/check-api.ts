@@ -104,6 +104,16 @@ const walk = (dir: string, skip: string[] = []): void => {
 };
 walk(join(ROOT, "aab"), ["og", "node_modules", "desk", "studio"]);
 walk(join(ROOT, "app", "src"), ["node_modules"]);
+/* And the routes and components, because that is where the
+   browser's half of this site is going. `aab/news.js` was the
+   only caller of `/api/news` until the market pulse became
+   `components/news.tsx`, and archiving the module left a live
+   endpoint reading as dead. The three shipped directories only:
+   a mount that just a test asks for is a mount nothing asks
+   for. */
+for (const dir of ["app", "components", "lib"]) {
+  walk(join(ROOT, "next", dir), ["node_modules"]);
+}
 
 /** An endpoint's mount, to the files that ask for it. */
 const asked = new Map<string, Set<string>>();

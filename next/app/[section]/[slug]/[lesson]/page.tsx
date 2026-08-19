@@ -39,6 +39,7 @@ import { getLesson } from "../../../../lib/school";
 import { siteOrigin } from "../../../../lib/article";
 import { schoolIcon } from "../../../../lib/school-icons";
 import { SiteScripts } from "../../../../components/scripts";
+import { Keep } from "../../../../components/keep";
 import { LessonTick } from "../../../../components/progress";
 import { Eyebrow } from "../../../../components/ui/label";
 
@@ -138,6 +139,16 @@ export default async function LessonPage({ params }: { params: Params }) {
           <p className="one-liner">{String(it.blurb ?? "")}</p>
           <p className="lesson-meta mono">{meta}</p>
 
+          {/* The same row a piece carries under its byline, and
+              the same two questions, so a reader who learned them
+              on an article does not have to find them again here.
+              Nothing is rendered signed out, and nothing at all
+              on a lesson that has not been written: there is
+              nothing to keep. */}
+          {soon ? null : (
+            <Keep url={it.url} title={String(it.bn)} kind="lesson" />
+          )}
+
           {soon ? (
             <>
               <p className="soon-note">{look.words.soon[0]}</p>
@@ -207,7 +218,7 @@ export default async function LessonPage({ params }: { params: Params }) {
           which React renders and does not own. */}
       <SiteScripts srcs={[
         ...(look.script ? [look.script] : []),
-        ...(soon ? [] : ["/checkpoints.js", "/keep.js"]),
+        ...(soon ? [] : ["/checkpoints.js"]),
       ]} />
     </>
   );

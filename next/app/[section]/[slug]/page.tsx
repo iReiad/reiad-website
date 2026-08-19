@@ -31,8 +31,8 @@ import { dateLabel, headFacts, lookFor } from "@reiad/shared/look";
 import { getArticle, siteOrigin } from "../../../lib/article";
 import { Comments } from "@/components/comments";
 import { Engage } from "@/components/engage";
+import { Keep } from "@/components/keep";
 import { ReadAloud } from "@/components/read-aloud";
-import { SiteScripts } from "../../../components/scripts";
 import { Eyebrow } from "../../../components/ui/label";
 
 type Params = { params: Promise<{ section: string; slug: string }> };
@@ -96,6 +96,18 @@ export default async function ArticlePage({ params }: Params) {
           <span>{look.minutes(article.minutes)}</span>
         </p>
 
+        {/* Keeping this piece, and writing a note on it. It
+            renders nothing at all unless somebody is signed in,
+            which is the whole of how this feature announces
+            itself.
+
+            The address is the canonical one rather than the one
+            the reader happens to be at: this route answers at
+            both forms of it, and `public.library` is one row per
+            person per PAGE. */}
+        <Keep url={`${look.mount}${article.slug}.html`}
+              title={article.title} kind="piece" />
+
         {/* Under the byline, which is where `/read-aloud.js`
             inserted itself. It renders nothing at all unless the
             browser can speak, so this line adds nothing to the
@@ -141,17 +153,6 @@ export default async function ArticlePage({ params }: Params) {
       <section className="wrap wrap-narrow comments" id="comments">
         <Comments slug={article.slug} section={article.section} />
       </section>
-
-      {/* Keeping this piece, and writing a note on it. Loaded
-          through SiteScripts rather than as a tag for the reason
-          `components/scripts.tsx` is entirely about: it appends
-          nodes to markup React has just adopted, and a module
-          that runs before hydration has its work undone by it.
-
-          It appends nothing at all when nobody is signed in,
-          which is the whole of how this feature announces
-          itself. */}
-      <SiteScripts srcs={["/keep.js"]} />
     </main>
   );
 }

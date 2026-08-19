@@ -2796,8 +2796,10 @@ it collapsed to the width of the word "Bangladesh". */
 
   /* ---------- the mini window ----------
      One <dialog>, reused. The growing-out-of-the-card movement is
-     a FLIP animated in news.js, because it needs the card's real
-     rectangle; everything static about the window is here. */
+     a FLIP animated in `next/lib/flip.ts`, because it needs the
+     card's real rectangle; everything static about the window is
+     here. Both windows that use it are components now: the news
+     card's and the About page's research card's. */
   .news-window {
     width: min(620px, calc(100vw - 32px));
     max-height: min(78dvh, 720px);
@@ -7669,8 +7671,9 @@ German for day, and .tag is what the site has always called
     letter-spacing: 0.1em; text-transform: uppercase;
   }
 
-  /* A research card that opens. .res-live is added by about.js, so
-     a card only looks clickable once something is listening: a
+  /* A research card that opens. `.res-live` is added by
+     `components/research.tsx` in an effect, so a card only looks
+     clickable once something is listening: a
      pointer cursor over a card that does nothing is worse than no
      cursor at all. The plain link inside is the no-JavaScript
      path and is removed at the same moment this class arrives. */
