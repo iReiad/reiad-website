@@ -205,6 +205,8 @@
     --pane-edge:    color-mix(in oklab, var(--accent) 34%, var(--hairline-base));
     --glass-bg:     color-mix(in oklab, var(--accent) 4%, var(--glass-base));
     --glass-solid:  color-mix(in oklab, var(--accent) 4%, var(--glass-solid-base));
+    --glass-soft:   color-mix(in oklab, var(--accent) 10%, var(--glass-base));
+    --glass-quiet:  color-mix(in oklab, var(--accent) 4%,  var(--glass-base));
     --tex-ink:      color-mix(in oklab, var(--accent) 60%, var(--tex-base));
 
     /* ---- the two textures, which did not exist ----
@@ -438,6 +440,27 @@
        copy of the same fallback and a seventh would have been
        written without one. */
     --glass-fill:  var(--glass-bg);
+    /* And the same for the two smaller jobs. A control is not a
+       bar: it is small, there are many of them, and what shows
+       through it is a card rather than an article going past. So
+       it takes the tint, the edge and the grain at the thin
+       radius, and `--glass-quiet` takes no filter at all, because
+       forty chips each blurring their own backdrop is a real cost
+       for something a reader cannot see. */
+    --glass-fill-soft:  var(--glass-soft);
+    --glass-fill-quiet: var(--glass-quiet);
+
+    /* A filled accent button has nothing to blur: it is opaque by
+       definition. What makes it read as the same material is the
+       pair of inset lines, and they are fixed rather than
+       `--pane-top`, which is 55% white and would blow out on a
+       pale accent. */
+    --glass-lift-solid: inset 0 1px 0 oklch(100% 0 0 / 0.3),
+                        inset 0 -1px 0 oklch(0% 0 0 / 0.16),
+                        var(--shadow);
+    --glass-lift-solid-hi: inset 0 1px 0 oklch(100% 0 0 / 0.3),
+                           inset 0 -1px 0 oklch(0% 0 0 / 0.16),
+                           var(--shadow-lift);
 
     /* Lit from above and seated below: the pair of inset lines
        that make a pane read as having thickness rather than
@@ -684,6 +707,8 @@
     --pane-edge:    color-mix(in oklab, var(--accent) 34%, var(--hairline-base));
     --glass-bg:     color-mix(in oklab, var(--accent) 4%, var(--glass-base));
     --glass-solid:  color-mix(in oklab, var(--accent) 4%, var(--glass-solid-base));
+    --glass-soft:   color-mix(in oklab, var(--accent) 10%, var(--glass-base));
+    --glass-quiet:  color-mix(in oklab, var(--accent) 4%,  var(--glass-base));
     --tex-ink:      color-mix(in oklab, var(--accent) 60%, var(--tex-base));
 
     /* ---- the two textures, which did not exist ----
@@ -788,6 +813,8 @@
     --pane-edge:    color-mix(in oklab, var(--accent) 40%, var(--hairline-base));
     --glass-bg:     color-mix(in oklab, var(--accent) 9%,  var(--glass-base));
     --glass-solid:  color-mix(in oklab, var(--accent) 9%,  var(--glass-solid-base));
+    --glass-soft:   color-mix(in oklab, var(--accent) 18%, var(--glass-base));
+    --glass-quiet:  color-mix(in oklab, var(--accent) 9%,  var(--glass-base));
     }
   }
 
@@ -816,6 +843,8 @@
     --pane-edge:    color-mix(in oklab, var(--accent) 40%, var(--hairline-base));
     --glass-bg:     color-mix(in oklab, var(--accent) 9%,  var(--glass-base));
     --glass-solid:  color-mix(in oklab, var(--accent) 9%,  var(--glass-solid-base));
+    --glass-soft:   color-mix(in oklab, var(--accent) 18%, var(--glass-base));
+    --glass-quiet:  color-mix(in oklab, var(--accent) 9%,  var(--glass-base));
   }
 
   :root[data-theme="light"] { color-scheme: light; }
@@ -872,6 +901,8 @@
      reader who has asked for less transparency, and printing. */
   :root[data-glass="plain"] {
     --glass-fill:  var(--glass-solid);
+    --glass-fill-soft:  var(--accent-soft);
+    --glass-fill-quiet: var(--panel);
     --glass-thin:  none;
     --glass-blur:  none;
     --glass-thick: none;
@@ -885,6 +916,8 @@
   @media (prefers-reduced-transparency: reduce), print {
     :root, :root[data-glass] {
       --glass-fill:  var(--glass-solid);
+      --glass-fill-soft:  var(--accent-soft);
+      --glass-fill-quiet: var(--panel);
       --glass-thin:  none;
       --glass-blur:  none;
       --glass-thick: none;
@@ -894,6 +927,8 @@
   @supports not (backdrop-filter: blur(1px)) {
     :root, :root[data-glass] {
       --glass-fill:  var(--glass-solid);
+      --glass-fill-soft:  var(--accent-soft);
+      --glass-fill-quiet: var(--panel);
       --glass-grain: none;
     }
   }
@@ -1353,24 +1388,40 @@
      `--accent-strong` with a transparent border, the class was
      `--accent` with an 80%-ink border, and a page that had been
      converted grew different buttons from the page beside it. */
+  /* ---------- and all four are the same material ----------
+
+     `data-glass` is one switch and it has to reach the smallest
+     control, not only the six surfaces that float. What differs
+     is the JOB: a filled accent button is opaque and gets the two
+     inset lines that give it thickness; the two translucent kinds
+     get the reader's veil, the thin radius and the grain, because
+     what shows through a button is the card under it. A chip
+     below gets the tint and no filter, for the reason above
+     `--glass-fill-quiet`. */
   .btn-solid {
     background: var(--accent-strong); color: var(--accent-ink);
     border-color: transparent;
-    box-shadow: var(--shadow);
+    box-shadow: var(--glass-lift-solid);
 
-    &:hover { filter: brightness(1.1); box-shadow: var(--shadow-lift); }
+    &:hover { filter: brightness(1.1); box-shadow: var(--glass-lift-solid-hi); }
   }
   .btn-soft {
-    background-color: var(--accent-soft); color: var(--accent);
-    background-image: var(--sheen);
+    background-color: var(--glass-fill-soft); color: var(--accent);
+    background-image: var(--sheen), var(--glass-grain);
+    background-size: auto, var(--glass-grain-size, auto);
+    backdrop-filter: var(--glass-thin);
     border-color: var(--accent-line);
+    box-shadow: inset 0 1px 0 var(--pane-top);
 
     &:hover { background-color: var(--panel-hover); border-color: var(--accent); }
   }
   .btn-ghost {
-    background-color: var(--panel); color: var(--ink);
-    background-image: var(--sheen);
+    background-color: var(--glass-fill-quiet); color: var(--ink);
+    background-image: var(--sheen), var(--glass-grain);
+    background-size: auto, var(--glass-grain-size, auto);
+    backdrop-filter: var(--glass-thin);
     border-color: var(--pane-edge);
+    box-shadow: inset 0 1px 0 var(--pane-top);
 
     &:hover { background-color: var(--panel-hover); border-color: var(--accent-line); }
   }
@@ -1396,6 +1447,10 @@
      the caller says the ground IS, and `<Button onAccent>` sets
      both at once so neither can be set without the other. */
   .btn-on-accent {
+    /* Nothing to blur: the ground under it is one flat accent, and
+       blurring a flat colour is the cost with none of the effect. */
+    backdrop-filter: none;
+
     &.btn-solid {
       background: var(--accent-ink); color: var(--accent-strong);
       border-color: transparent;
@@ -2193,7 +2248,10 @@
     display: grid; gap: 1px; text-align: start;
     padding: 8px 13px; min-height: 42px;
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-    background: var(--paper); color: var(--ink);
+    background-color: var(--glass-fill-quiet); color: var(--ink);
+    background-image: var(--glass-grain);
+    background-size: var(--glass-grain-size, auto);
+    box-shadow: inset 0 1px 0 var(--pane-top);
     font: inherit; cursor: pointer;
     transition: border-color var(--fast) var(--ease),
                 background var(--fast) var(--ease);
@@ -2904,8 +2962,10 @@ it collapsed to the width of the word "Bangladesh". */
     min-height: var(--tap-sm);
     border-radius: var(--radius-pill);
     border: 1px solid var(--pane-edge);
-    background-color: var(--glass-solid);
-    background-image: var(--sheen);
+    background-color: var(--glass-fill-quiet);
+    background-image: var(--sheen), var(--glass-grain);
+    background-size: auto, var(--glass-grain-size, auto);
+    backdrop-filter: var(--glass-thin);
     box-shadow: inset 0 1px 0 var(--pane-top);
     text-decoration: none; color: var(--ink);
     transition: border-color var(--fast) var(--ease),
@@ -4401,7 +4461,10 @@ it collapsed to the width of the word "Bangladesh". */
   .chip-row { display: flex; flex-wrap: wrap; gap: var(--s-4); }
   .chip {
     border: 1px solid var(--hairline); border-radius: var(--radius-pill);
-    background: var(--panel); color: var(--ink-soft);
+    background-color: var(--glass-fill-quiet); color: var(--ink-soft);
+    background-image: var(--glass-grain);
+    background-size: var(--glass-grain-size, auto);
+    box-shadow: inset 0 1px 0 var(--pane-top);
     padding: 5px 12px; font-family: var(--font-mono); font-size: var(--t-2);
     cursor: pointer; letter-spacing: 0.05em; text-transform: uppercase;
     transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
@@ -8978,12 +9041,19 @@ German for day, and .tag is what the site has always called
      the same place, or the menu moves under the thumb. It is named
      here rather than given a second copy of these declarations,
      which is what it had. */
+  /* A control inside a glass surface takes the tint and the lit
+     edge and NOT a filter: the bar behind it has already blurred
+     that backdrop, and blurring the blur is cost for a difference
+     nobody can see. It was `--panel`, opaque, which is what made
+     these read as three solid pills sitting on a pane rather than
+     as part of it. */
   :is(.top-btn, .drawer-close) {
     display: inline-flex; align-items: center; gap: var(--s-4);
     height: 36px; padding-inline: 10px;
     border: 1px solid var(--hairline);
     border-radius: var(--radius-pill);
-    background: var(--panel);
+    background: var(--glass-fill-quiet);
+    box-shadow: inset 0 1px 0 var(--pane-top);
     color: var(--ink-soft);
     cursor: pointer;
     transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);

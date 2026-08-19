@@ -55,6 +55,8 @@
     --pane-edge:    color-mix(in oklab, var(--accent) 34%, var(--hairline-base));
     --glass-bg:     color-mix(in oklab, var(--accent) 4%, var(--glass-base));
     --glass-solid:  color-mix(in oklab, var(--accent) 4%, var(--glass-solid-base));
+    --glass-soft:   color-mix(in oklab, var(--accent) 10%, var(--glass-base));
+    --glass-quiet:  color-mix(in oklab, var(--accent) 4%,  var(--glass-base));
     --tex-ink:      color-mix(in oklab, var(--accent) 60%, var(--tex-base));
 
     --weave:
@@ -113,6 +115,16 @@
                    blur(calc(var(--glass-r) * 2 * var(--glass-amount)));
 
     --glass-fill:  var(--glass-bg);
+
+    --glass-fill-soft:  var(--glass-soft);
+    --glass-fill-quiet: var(--glass-quiet);
+
+    --glass-lift-solid: inset 0 1px 0 oklch(100% 0 0 / 0.3),
+                        inset 0 -1px 0 oklch(0% 0 0 / 0.16),
+                        var(--shadow);
+    --glass-lift-solid-hi: inset 0 1px 0 oklch(100% 0 0 / 0.3),
+                           inset 0 -1px 0 oklch(0% 0 0 / 0.16),
+                           var(--shadow-lift);
 
     --glass-under: oklch(0% 0 0 / 0.06);
     --glass-lift:  inset 0 1px 0 var(--pane-top),
@@ -197,6 +209,8 @@
     --pane-edge:    color-mix(in oklab, var(--accent) 34%, var(--hairline-base));
     --glass-bg:     color-mix(in oklab, var(--accent) 4%, var(--glass-base));
     --glass-solid:  color-mix(in oklab, var(--accent) 4%, var(--glass-solid-base));
+    --glass-soft:   color-mix(in oklab, var(--accent) 10%, var(--glass-base));
+    --glass-quiet:  color-mix(in oklab, var(--accent) 4%,  var(--glass-base));
     --tex-ink:      color-mix(in oklab, var(--accent) 60%, var(--tex-base));
 
     --weave:
@@ -243,6 +257,8 @@
     --pane-edge:    color-mix(in oklab, var(--accent) 40%, var(--hairline-base));
     --glass-bg:     color-mix(in oklab, var(--accent) 9%,  var(--glass-base));
     --glass-solid:  color-mix(in oklab, var(--accent) 9%,  var(--glass-solid-base));
+    --glass-soft:   color-mix(in oklab, var(--accent) 18%, var(--glass-base));
+    --glass-quiet:  color-mix(in oklab, var(--accent) 9%,  var(--glass-base));
     }
   }
 
@@ -271,6 +287,8 @@
     --pane-edge:    color-mix(in oklab, var(--accent) 40%, var(--hairline-base));
     --glass-bg:     color-mix(in oklab, var(--accent) 9%,  var(--glass-base));
     --glass-solid:  color-mix(in oklab, var(--accent) 9%,  var(--glass-solid-base));
+    --glass-soft:   color-mix(in oklab, var(--accent) 18%, var(--glass-base));
+    --glass-quiet:  color-mix(in oklab, var(--accent) 9%,  var(--glass-base));
   }
 
   :root[data-theme="light"] { color-scheme: light; }
@@ -304,6 +322,8 @@
 
   :root[data-glass="plain"] {
     --glass-fill:  var(--glass-solid);
+    --glass-fill-soft:  var(--accent-soft);
+    --glass-fill-quiet: var(--panel);
     --glass-thin:  none;
     --glass-blur:  none;
     --glass-thick: none;
@@ -313,6 +333,8 @@
   @media (prefers-reduced-transparency: reduce), print {
     :root, :root[data-glass] {
       --glass-fill:  var(--glass-solid);
+      --glass-fill-soft:  var(--accent-soft);
+      --glass-fill-quiet: var(--panel);
       --glass-thin:  none;
       --glass-blur:  none;
       --glass-thick: none;
@@ -322,6 +344,8 @@
   @supports not (backdrop-filter: blur(1px)) {
     :root, :root[data-glass] {
       --glass-fill:  var(--glass-solid);
+      --glass-fill-soft:  var(--accent-soft);
+      --glass-fill-quiet: var(--panel);
       --glass-grain: none;
     }
   }
@@ -538,21 +562,29 @@
   .btn-solid {
     background: var(--accent-strong); color: var(--accent-ink);
     border-color: transparent;
-    box-shadow: var(--shadow);
+    box-shadow: var(--glass-lift-solid);
 
-    &:hover { filter: brightness(1.1); box-shadow: var(--shadow-lift); }
+    &:hover { filter: brightness(1.1); box-shadow: var(--glass-lift-solid-hi); }
   }
   .btn-soft {
-    background-color: var(--accent-soft); color: var(--accent);
-    background-image: var(--sheen);
+    background-color: var(--glass-fill-soft); color: var(--accent);
+    background-image: var(--sheen), var(--glass-grain);
+    background-size: auto, var(--glass-grain-size, auto);
+    -webkit-backdrop-filter: var(--glass-thin);
+    backdrop-filter: var(--glass-thin);
     border-color: var(--accent-line);
+    box-shadow: inset 0 1px 0 var(--pane-top);
 
     &:hover { background-color: var(--panel-hover); border-color: var(--accent); }
   }
   .btn-ghost {
-    background-color: var(--panel); color: var(--ink);
-    background-image: var(--sheen);
+    background-color: var(--glass-fill-quiet); color: var(--ink);
+    background-image: var(--sheen), var(--glass-grain);
+    background-size: auto, var(--glass-grain-size, auto);
+    -webkit-backdrop-filter: var(--glass-thin);
+    backdrop-filter: var(--glass-thin);
     border-color: var(--pane-edge);
+    box-shadow: inset 0 1px 0 var(--pane-top);
 
     &:hover { background-color: var(--panel-hover); border-color: var(--accent-line); }
   }
@@ -564,6 +596,11 @@
   }
 
   .btn-on-accent {
+
+    -webkit-backdrop-filter: none;
+
+    backdrop-filter: none;
+
     &.btn-solid {
       background: var(--accent-ink); color: var(--accent-strong);
       border-color: transparent;
@@ -1131,7 +1168,10 @@
     display: grid; gap: 1px; text-align: start;
     padding: 8px 13px; min-height: 42px;
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-    background: var(--paper); color: var(--ink);
+    background-color: var(--glass-fill-quiet); color: var(--ink);
+    background-image: var(--glass-grain);
+    background-size: var(--glass-grain-size, auto);
+    box-shadow: inset 0 1px 0 var(--pane-top);
     font: inherit; cursor: pointer;
     transition: border-color var(--fast) var(--ease),
                 background var(--fast) var(--ease);
@@ -1699,8 +1739,11 @@
     min-height: var(--tap-sm);
     border-radius: var(--radius-pill);
     border: 1px solid var(--pane-edge);
-    background-color: var(--glass-solid);
-    background-image: var(--sheen);
+    background-color: var(--glass-fill-quiet);
+    background-image: var(--sheen), var(--glass-grain);
+    background-size: auto, var(--glass-grain-size, auto);
+    -webkit-backdrop-filter: var(--glass-thin);
+    backdrop-filter: var(--glass-thin);
     box-shadow: inset 0 1px 0 var(--pane-top);
     text-decoration: none; color: var(--ink);
     transition: border-color var(--fast) var(--ease),
@@ -2856,7 +2899,10 @@
   .chip-row { display: flex; flex-wrap: wrap; gap: var(--s-4); }
   .chip {
     border: 1px solid var(--hairline); border-radius: var(--radius-pill);
-    background: var(--panel); color: var(--ink-soft);
+    background-color: var(--glass-fill-quiet); color: var(--ink-soft);
+    background-image: var(--glass-grain);
+    background-size: var(--glass-grain-size, auto);
+    box-shadow: inset 0 1px 0 var(--pane-top);
     padding: 5px 12px; font-family: var(--font-mono); font-size: var(--t-2);
     cursor: pointer; letter-spacing: 0.05em; text-transform: uppercase;
     transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
@@ -6231,7 +6277,8 @@
     height: 36px; padding-inline: 10px;
     border: 1px solid var(--hairline);
     border-radius: var(--radius-pill);
-    background: var(--panel);
+    background: var(--glass-fill-quiet);
+    box-shadow: inset 0 1px 0 var(--pane-top);
     color: var(--ink-soft);
     cursor: pointer;
     transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
