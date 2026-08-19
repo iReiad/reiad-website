@@ -44,7 +44,7 @@ loaded by something not counted here, and both were worth checking.
 | `app.js` | 605 | | **shell.** Eight jobs; the theme and the boot are already `shell.tsx`'s. What is left that a route cannot do: the palette, the shortcut sheet, speculation rules and the service-worker registration |
 | `sync.js` | 513 | ts | **service.** The account is the record and this is the mirror. Nothing about it is a page |
 | `account.js` | 417 | | **service.** The session. Eighteen importers, more than anything else here |
-| `crumbs.js` | 351 | ts | **interface**, and half converted: `<Crumbs>` exists and only the course pages use it. The other 250 pages still get their trail from here |
+| `crumbs.js` | 351 | ✔ | **interface**, and done: `next/lib/crumbs.ts` builds the trail out of `lib/nav.ts` and the top bar draws it, JSON-LD included. The module is in `archive/modules/` |
 | `signin.js` | 347 | ts | **interface.** The account menu, which is a `popover` |
 | `tilt.js` | 282 | | **interface.** A pointer effect on cards |
 | `audience.js` | 281 | | **shell.** The learn/work switch, whose markup is already `sidebar.tsx`'s |

@@ -1248,16 +1248,29 @@
      appends that button, into `.top-tools` now, and its rule is in
      @layer menu with the rest of the account panel. */
 
-  /* ---------- FOOTER ---------- */
-  body > footer {
-    margin-top: 56px;
-    background: var(--accent-strong);
-    color: var(--accent-ink);
-    padding-block: 44px;
+  /* ---------- FOOTER ----------
 
-    & a { color: #fff; }
-    & .mono { color: oklch(78% 0.03 var(--h-green)); display: block; margin-bottom: 12px; }
-    & p { max-width: 60ch; }
+     `404.html` and `offline.html`, which are files and carry a
+     bare `<footer>` rather than the `.deck-foot` every route
+     renders. It was `--accent-strong` on `--accent-ink`, and in
+     dark mode `--accent-mate` is a near-white, so the mix came
+     out a bright green slab with dark text on it: the two pages
+     a reader reaches when something has gone wrong were the two
+     loudest on the site. Same ground as the real footer, same
+     hairline above it, same quiet ink. */
+  body > footer {
+    margin-top: calc(var(--step) * 0.35);
+    background: var(--paper-sunk);
+    border-top: 1px solid var(--hairline);
+    color: var(--ink-soft);
+    padding-block: clamp(14px, 1.7vw, 22px);
+
+    & a { color: var(--accent); }
+    & .mono {
+      color: var(--ink); display: block; margin-bottom: 8px;
+      font-size: var(--t-2);
+    }
+    & p { max-width: 60ch; font-size: var(--t-2); margin: 0; }
   }
 
   /* The address line under the disclaimer. It was an inline
@@ -10145,6 +10158,12 @@ German for day, and .tag is what the site has always called
   @media (max-width: 1100px) {
     .topbar-mark span { display: none; }
   }
+  /* The mark stands in for the trail where there is none, at every
+     width, name included. The home page is the page that has one:
+     without this the bar is three controls at the right end of a
+     wide pill and nothing at the left. */
+  .topbar[data-trail="none"] .topbar-mark { display: flex; }
+  .topbar[data-trail="none"] .topbar-mark span { display: inline; }
   @media (max-width: 760px) {
     .crumbs-bar li:not(:last-child) { display: none; }
   }
