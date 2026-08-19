@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v150: `/fallback.css`. The year: twelve weeks, the mood
+        ribbon under them, the jar, the birds, the garden, the
+        six seasons and everything she has written.
+
    v149: `/fallback.css`. The routine's second surface, at
         `/tools/routine/settings`: the list, the templates and
         the copy.
@@ -1508,7 +1512,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v149";
+const VERSION = "v150";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -420,3 +420,306 @@ export function mergeDays(
 
 /** `routine-2026-08-19.json`. */
 export const exportName = (day: string): string => `routine-${day}.json`;
+
+/* ============================================================
+   The year: what a stretch of days has to say
+
+   Every function below obeys ROUTINE.md §0. None of them has a
+   "current" anything, none resets, and none can go down when the
+   history grows. If a `since` argument ever appears in the three
+   counters, that is the moment this stopped being a gift.
+   ============================================================ */
+
+/** One cell of the heatmap.
+
+    `fraction` is `null` for a day with nothing on it, which the
+    drawing renders as PAPER rather than as an empty slot: an
+    unmarked day is not a hole and must not read as one. */
+export interface Cell {
+  date: string;
+  fraction: number | null;
+  mood: string | null;
+}
+
+/** The last `weeks` weeks, oldest first, one cell per day.
+
+    `today` is passed in rather than read from the clock, for the
+    reason `toExport` gives: a function that reads the clock
+    cannot be tested. */
+export function heat(
+  shape: RoutineShape, entries: Entry[], today: string, weeks = 12,
+): Cell[] {
+  const by = new Map(entries.map((e) => [e.entry_date, e]));
+  const out: Cell[] = [];
+  const end = new Date(`${today}T12:00:00Z`);
+  for (let i = weeks * 7 - 1; i >= 0; i -= 1) {
+    const d = new Date(end);
+    d.setUTCDate(d.getUTCDate() - i);
+    const date = d.toISOString().slice(0, 10);
+    const entry = by.get(date);
+    out.push({ date, fraction: done(shape, entry), mood: entry?.mood ?? null });
+  }
+  return out;
+}
+
+export interface TaskTally {
+  task: Task;
+  marked: number;
+  of: number;
+}
+
+/**
+ * How often each task was marked over the last `days` days.
+ *
+ * The most actionable panel in the tool: it shows which parts of
+ * a routine are real and which were aspirational. Sorted by
+ * frequency, and the tasks at the BOTTOM are the point.
+ */
+export function consistency(
+  shape: RoutineShape, entries: Entry[], today: string, days = 28,
+): TaskTally[] {
+  const from = new Date(`${today}T12:00:00Z`);
+  from.setUTCDate(from.getUTCDate() - (days - 1));
+  const since = from.toISOString().slice(0, 10);
+  const window = entries.filter((e) => e.entry_date >= since && e.entry_date <= today);
+
+  return shape.tasks
+    .filter((t) => !t.archived)
+    .map((task) => ({
+      task,
+      marked: window.filter((e) => (e.marks[task.id] ?? 0) > 0).length,
+      of: days,
+    }))
+    .sort((a, b) => b.marked - a.marked || a.task.order - b.task.order);
+}
+
+/**
+ * The tasks never marked, ever.
+ *
+ * THE MOST IMPORTANT FEATURE IN THE TOOL, and it is four lines. A
+ * routine full of aspirational tasks is what makes a tracker feel
+ * bad, and the fix is taking them out rather than trying harder.
+ * The interface lists them with an Archive beside each and says
+ * nothing else: no nagging, no count, no suggestion that they
+ * ought to have been done.
+ */
+export function neverMarked(shape: RoutineShape, entries: Entry[]): Task[] {
+  const seen = new Set<string>();
+  for (const e of entries) {
+    for (const [id, m] of Object.entries(e.marks)) if (m > 0) seen.add(id);
+  }
+  return shape.tasks.filter((t) => !t.archived && !seen.has(t.id));
+}
+
+/**
+ * What has changed, factually.
+ *
+ * In place of a streak: "marked on 11 of the last 14 days, and 4
+ * of the 14 before that". Two numbers, no arrow, no colour, no
+ * verdict. It is the honest version of what streaks reach for,
+ * and it CANNOT punish anybody: both halves are the same length,
+ * so a quiet fortnight makes a smaller number rather than a
+ * broken chain.
+ */
+export function changed(
+  entries: Entry[], taskId: string, today: string, window = 14,
+): { now: number; before: number; of: number } {
+  const at = (back: number): string => {
+    const d = new Date(`${today}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() - back);
+    return d.toISOString().slice(0, 10);
+  };
+  const count = (from: string, to: string): number => entries.filter(
+    (e) => e.entry_date >= from && e.entry_date <= to && (e.marks[taskId] ?? 0) > 0,
+  ).length;
+  return {
+    now: count(at(window - 1), today),
+    before: count(at(window * 2 - 1), at(window)),
+    of: window,
+  };
+}
+
+/** How a typical day divides across the bands, as fractions that
+    sum to 1. Empty where there is nothing yet. */
+export function balance(
+  shape: RoutineShape, entries: Entry[],
+): Array<{ band: Band; share: number }> {
+  const per = new Map<string, number>();
+  let all = 0;
+  for (const e of entries) {
+    for (const [id, m] of Object.entries(e.marks)) {
+      if (!(m > 0)) continue;
+      const task = shape.tasks.find((t) => t.id === id);
+      if (!task) continue;
+      per.set(task.band, (per.get(task.band) ?? 0) + m);
+      all += m;
+    }
+  }
+  if (all === 0) return [];
+  return [...shape.bands]
+    .sort((a, b) => a.order - b.order)
+    .map((band) => ({ band, share: (per.get(band.id) ?? 0) / all }))
+    .filter((x) => x.share > 0);
+}
+
+/* ============================================================
+   The things that only ever grow
+   ============================================================ */
+
+/**
+ * How many times a task has been marked, ever.
+ *
+ * The birds and the garden are this number. No window, no
+ * "recently", no reset: a person who stops for a fortnight and
+ * comes back finds the flock exactly as they left it. That is
+ * §0, and `scripts/routine.test.ts` feeds this a history with a
+ * dead fortnight in it and asserts it never falls.
+ */
+export const everMarked = (entries: Entry[], taskId: string): number =>
+  entries.filter((e) => (e.marks[taskId] ?? 0) > 0).length;
+
+/** How many birds are on the page.
+
+    Thresholds rather than a ratio, so the flock grows in visible
+    steps and then stops growing rather than becoming a crowd.
+    Nothing announces the next one: a named threshold is a target,
+    and there are none of those here. */
+export const flock = (times: number): number =>
+  (times >= 200 ? 7 : times >= 100 ? 6 : times >= 50 ? 5
+    : times >= 25 ? 4 : times >= 10 ? 3 : times >= 3 ? 2 : times >= 1 ? 1 : 0);
+
+/** The garden, in the order things arrive in it.
+
+    Bangladeshi plants, because this is a Bangladeshi garden.
+    NOTHING WILTS: the list only ever gets longer, and a plant
+    that could die would be a streak with leaves on. */
+export const GARDEN = [
+  { at: 1, bn: "তুলসী", en: "Tulsi" },
+  { at: 5, bn: "জবা", en: "Hibiscus" },
+  { at: 20, bn: "বেলি", en: "Beli" },
+  { at: 60, bn: "কামিনী", en: "Kamini" },
+  { at: 150, bn: "শিউলি", en: "Shiuli" },
+] as const;
+
+export const garden = (times: number): Array<{ bn: string; en: string }> =>
+  GARDEN.filter((p) => times >= p.at).map((p) => ({ bn: p.bn, en: p.en }));
+
+/* ============================================================
+   Six seasons, because Bangladesh has six
+   ============================================================ */
+
+/** ষড়ঋতু. Almost no software knows there are six rather than
+    four, and the page in বর্ষা should not look like the page in
+    শীত.
+
+    Each is two Bengali months and each begins around the middle
+    of a Gregorian one, which is close enough for a colour and a
+    word and is not pretending to be a calendar conversion. */
+export const SEASONS = [
+  { id: "grishmo", bn: "গ্রীষ্ম", en: "Summer", from: [4, 15], colour: "#C4711F" },
+  { id: "barsha", bn: "বর্ষা", en: "Monsoon", from: [6, 15], colour: "#4C61A8" },
+  { id: "sharat", bn: "শরৎ", en: "Autumn", from: [8, 15], colour: "#2F8A64" },
+  { id: "hemanta", bn: "হেমন্ত", en: "Late autumn", from: [10, 15], colour: "#A2790B" },
+  { id: "sheet", bn: "শীত", en: "Winter", from: [12, 15], colour: "#6E52A8" },
+  { id: "bosonto", bn: "বসন্ত", en: "Spring", from: [2, 15], colour: "#B45570" },
+] as const;
+
+export type Season = (typeof SEASONS)[number];
+
+/** Which of the six a date falls in. */
+export function seasonOf(iso: string): Season {
+  const [, m, d] = iso.split("-").map(Number);
+  const after = (month: number, day: number): boolean =>
+    m > month || (m === month && d >= day);
+  /* Newest boundary first, and winter wraps the year: mid
+     December to mid February is one season with January inside
+     it, so anything before mid February is winter rather than
+     falling off the end of the list. */
+  if (after(12, 15)) return SEASONS[4];
+  if (after(10, 15)) return SEASONS[3];
+  if (after(8, 15)) return SEASONS[2];
+  if (after(6, 15)) return SEASONS[1];
+  if (after(4, 15)) return SEASONS[0];
+  if (after(2, 15)) return SEASONS[5];
+  return SEASONS[4];
+}
+
+/** সুপ্রভাত, শুভ দুপুর, শুভ সন্ধ্যা, শুভ রাত্রি. */
+export const greeting = (hour: number): { bn: string; en: string } =>
+  (hour < 5 ? { bn: "শুভ রাত্রি", en: "Good night" }
+    : hour < 12 ? { bn: "সুপ্রভাত", en: "Good morning" }
+      : hour < 16 ? { bn: "শুভ দুপুর", en: "Good afternoon" }
+        : hour < 20 ? { bn: "শুভ সন্ধ্যা", en: "Good evening" }
+          : { bn: "শুভ রাত্রি", en: "Good night" });
+
+/* ============================================================
+   A year ago today
+   ============================================================ */
+
+export interface Echo {
+  entry: Entry;
+  /** "এক বছর আগে আজ" and its English. */
+  bn: string;
+  en: string;
+}
+
+/**
+ * Something written on this date before.
+ *
+ * Nothing else in this tool will be as good as reading "the birds
+ * ate from my hand" twelve months later on a Tuesday, and it
+ * costs one lookup.
+ *
+ * A year first, then six months, then a month: the further back
+ * it reaches the more it is worth, so it prefers the oldest it
+ * can find rather than the nearest.
+ */
+export function echo(entries: Entry[], today: string): Echo | null {
+  const by = new Map(entries.map((e) => [e.entry_date, e]));
+  const shift = (years: number, months: number): string => {
+    const d = new Date(`${today}T12:00:00Z`);
+    d.setUTCFullYear(d.getUTCFullYear() - years);
+    d.setUTCMonth(d.getUTCMonth() - months);
+    return d.toISOString().slice(0, 10);
+  };
+  const tries: Array<[string, string, string]> = [
+    [shift(1, 0), "এক বছর আগে আজ", "A year ago today"],
+    [shift(0, 6), "ছয় মাস আগে আজ", "Six months ago today"],
+    [shift(0, 1), "এক মাস আগে আজ", "A month ago today"],
+  ];
+  for (const [date, bn, en] of tries) {
+    const entry = by.get(date);
+    /* Only where something was WRITTEN. A day with ticks and no
+       words has nothing to say back. */
+    if (entry && String(entry.note ?? "").trim()) return { entry, bn, en };
+  }
+  return null;
+}
+
+/** The four moods, and there are deliberately no more.
+
+    NONE OF THEM IS BAD. "Heavy" is the honest bottom of this
+    scale and it is a description rather than a failure, which is
+    the difference between this and every mood tracker that
+    offers a frowning face. So none of the four is red, and heavy
+    is the quiet violet rather than a warning.
+
+    The colours are DATA and travel with the mood, the same way a
+    band's colour does. A stylesheet naming them would be naming
+    section tokens, which `check-accents.ts` rightly refuses: a
+    rule that says `--green` paints green on a page wearing blue. */
+export const MOODS = [
+  { id: "light", bn: "হালকা", en: "Light", colour: "#2F8A64" },
+  { id: "steady", bn: "শান্ত", en: "Steady", colour: "#4C61A8" },
+  { id: "full", bn: "ভরা", en: "Full", colour: "#A2790B" },
+  { id: "heavy", bn: "ভারী", en: "Heavy", colour: "#6E52A8" },
+] as const;
+
+export const moodColour = (id: string | null | undefined): string =>
+  MOODS.find((m) => m.id === id)?.colour ?? "";
+
+/** Every line she has written, newest first, for the jar and the
+    reflection log. */
+export const written = (entries: Entry[]): Entry[] => entries
+  .filter((e) => String(e.note ?? "").trim())
+  .sort((a, b) => b.entry_date.localeCompare(a.entry_date));

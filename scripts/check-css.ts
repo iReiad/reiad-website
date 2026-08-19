@@ -656,11 +656,30 @@ if (existsSync(tw)) {
   for (const m of theme.matchAll(/var\(\s*(--[a-z0-9-]+)/g)) used.add(m[1]);
 }
 
-/* Every `setProperty("--x", ...)` this site ships, from the
-   sources rather than the built copies. */
+/* Every custom property this site sets from code, from the
+   sources rather than the built copies.
+
+   TWO SPELLINGS, and only one of them was here. A browser module
+   writes `setProperty("--x", ...)`; a React component writes it
+   as an inline style, `style={{ "--x": value }}`, and that is
+   how half of this site sets one now: the deck's accent, a
+   school's colour, a band's colour, the fill of a heatmap cell.
+
+   Reading only the first spelling made this check report a
+   property React sets as one nothing sets, which is a false
+   alarm, and false alarms are how a check gets ignored. It also
+   meant the check could never see the other half: a component
+   setting `--typo` would have gone unnoticed either way. */
 const scriptSet = new Set();
 for (const [, src] of markup) {
   for (const m of src.matchAll(/setProperty\(\s*["'`](--[a-z0-9-]+)["'`]/g)) {
+    scriptSet.add(m[1]);
+  }
+  /* The inline form. A quoted key starting `--` inside an object
+     literal is a custom property and cannot be much else: an
+     ordinary CSS property in a React style object is camelCase
+     and unquoted. */
+  for (const m of src.matchAll(/["'`](--[a-z0-9-]+)["'`]\s*:/g)) {
     scriptSet.add(m[1]);
   }
 }

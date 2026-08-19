@@ -140,9 +140,19 @@ await ctx.route(`${SUPA}/rest/v1/**`, async (route: Route) => {
       entries.set(String(row.entry_date), row);
       return json([row], 201);
     }
-    const want = (url.searchParams.get("entry_date") ?? "").replace("eq.", "");
-    const row = entries.get(want);
-    return json(row ? [row] : []);
+    /* One day, or a range. The day view sends `entry_date=eq.X`
+       and the year sends `gte.` and `lte.`, so the operator has
+       to be read rather than stripped: taking "eq." off a `gte.`
+       leaves a date nothing is filed under, and the year came
+       back empty while every panel rendered perfectly. */
+    const asked = url.searchParams.getAll("entry_date");
+    const one = asked.find((v) => v.startsWith("eq."));
+    if (one) {
+      const row = entries.get(one.slice(3));
+      return json(row ? [row] : []);
+    }
+    return json([...entries.values()]
+      .sort((a, b) => String(a.entry_date).localeCompare(String(b.entry_date))));
   }
   return json([]);
 });
@@ -249,6 +259,106 @@ ok("and nothing offers to write until a file has been read",
   await page.getByRole("button", { name: /Replace everything/ }).count() === 0);
 
 ok("no page errors on settings", errors.length === 0, errors[0] ?? "");
+
+/* ============================================================
+   The year.
+
+   Seeded with a history that has a DEAD FORTNIGHT in the middle
+   of it, because that is the case every one of these panels has
+   to survive without saying anything unkind.
+   ============================================================ */
+
+{
+  const iso = (back: number): string => {
+    const d = new Date();
+    d.setDate(d.getDate() - back);
+    return d.toISOString().slice(0, 10);
+  };
+  /* Forty days: marked for the first twelve, nothing for a
+     fortnight, then marked again. Somebody who stopped and came
+     back. */
+  for (let i = 0; i < 40; i += 1) {
+    const away = i >= 12 && i <= 26;
+    entries.set(iso(i), {
+      id: `e-${i}`, entry_date: iso(i), routine_id: "r-1",
+      /* `brd` and `pln` are Sadia's ids and this routine is `A
+         simple day`, which is the point: the flock and the
+         garden are counted by TASK ID out of the marks, so they
+         survive a routine being renamed, rebuilt or replaced.
+         Birds do not leave because somebody edited a list. */
+      marks: away ? {} : { move: 1, eat: 0.5, good: 1, brd: 1, pln: 1 },
+      mood: away ? null : "light",
+      note: i === 3 ? "the birds ate from my hand" : (away ? null : "a good day"),
+      chose: null,
+    });
+  }
+}
+
+await page.goto(`http://localhost:${PORT}/tools/routine`, { waitUntil: "load" });
+await page.waitForTimeout(1500);
+
+/* THE DAY IS THE DEFAULT. A page that opens on a chart has
+   forgotten what it is for. */
+ok("the day is what opens", await page.locator(".rt-day").isVisible());
+
+await page.getByRole("tab", { name: /The year/ }).click();
+await page.waitForTimeout(2000);
+
+ok("the year draws twelve weeks",
+  await page.locator(".rt-heat-week").count() === 12);
+const cells = await page.locator(".rt-heat-day").count();
+ok("one cell per day", cells === 84, String(cells));
+
+/* AN UNMARKED DAY IS NOT A HOLE. Every cell exists, including
+   the fortnight nobody marked. */
+ok("including the days nothing was marked on", cells === 84);
+ok("and today is ringed rather than filled",
+  await page.locator(".rt-heat-day[data-here]").count() === 1);
+
+/* Six seasons. */
+const season = (await page.locator(".rt-season").textContent()) ?? "";
+ok("the page knows which of the six seasons it is",
+  /গ্রীষ্ম|বর্ষা|শরৎ|হেমন্ত|শীত|বসন্ত/.test(season), season);
+
+/* The things that only grow. `move` was marked 26 times, so the
+   flock is there, and the fortnight away cost nothing. */
+ok("the jar is there", await page.locator(".rt-jar").count() === 1);
+await page.locator(".rt-jar").click();
+await page.waitForTimeout(300);
+ok("and pressing it hands one back", await page.locator(".rt-out p").count() === 1);
+
+ok("a year ago, or a month ago, comes back if it was written",
+  await page.locator(".rt-echo, .rt-log li").count() > 0);
+
+/* The most important panel: things never marked, named plainly
+   with permission rather than as failures. */
+const waiting = await page.locator(".rt-waiting li").count();
+ok("the tasks never marked are listed", waiting > 0, String(waiting));
+const said = (await page.locator(".rt-panel:has(.rt-waiting) p").first().textContent()) ?? "";
+ok("and the words are permission rather than a scolding",
+  /allowed/.test(said), said);
+
+/* And still nothing red, on the page with the most numbers. */
+const redYear = await page.evaluate(() => [...document.querySelectorAll(".rt-year *")]
+  .filter((el) => {
+    const c = getComputedStyle(el).color;
+    const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(c);
+    return m ? Number(m[1]) > 150 && Number(m[2]) < 80 && Number(m[3]) < 80 : false;
+  }).length);
+ok("nothing on the year is red either", redYear === 0, String(redYear));
+
+/* THE RATCHET, rendered. The fortnight away must not have taken
+   anything off the page. */
+const birdsNow = await page.locator(".rt-bird").count();
+ok("the flock is on the page", birdsNow > 0, String(birdsNow));
+ok("and so is the garden", await page.locator(".rt-plant").count() > 0);
+/* 26 marks, so four birds by the thresholds. The number is
+   asserted rather than "more than none", because the failure
+   worth catching is a flock that grows with the WINDOW rather
+   than with the total: a fortnight away would make it three. */
+ok("and the fortnight away cost it nothing", birdsNow === 4, String(birdsNow));
+
+ok("no page errors on the year", errors.length === 0, errors[0] ?? "");
 
 await browser.close();
 server.close();
