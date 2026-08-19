@@ -1,7 +1,7 @@
 /* ============================================================
-   scripts/reader.test.mjs: the signature check, and the attacks.
+   scripts/reader.test.ts: the signature check, and the attacks.
 
-     node scripts/reader.test.mjs
+     node scripts/reader.test.ts
 
    `readerFrom()` is the only thing standing between "a comment
    signed by this reader" and "a comment signed by whoever typed
@@ -21,27 +21,33 @@ if (!globalThis.crypto) globalThis.crypto = webcrypto;
 const { readerFrom, forgetKeys } = await import("../functions/_lib/reader.js");
 
 let failures = 0;
-const check = (name, got, want) => {
+const check = (name: string, got: unknown, want: unknown): void => {
   if (JSON.stringify(got) === JSON.stringify(want)) { console.log(`  ok   ${name}`); return; }
   failures += 1;
   console.log(`  FAIL ${name}\n       got  ${JSON.stringify(got)}\n       want ${JSON.stringify(want)}`);
 };
-const okay = (name, cond) => check(name, !!cond, true);
+/* `okay()` was here and nothing called it: the whole of this file
+   compares a value against another, which is what `check` is for.
+   The compiler is what noticed. */
 
 /** Did it refuse, and roughly why? */
-async function refuses(name, request, env) {
+async function refuses(name: string, request: Request, env: unknown): Promise<void> {
   try {
     const who = await readerFrom(request, env);
     failures += 1;
     console.log(`  FAIL ${name}\n       it ACCEPTED and returned ${JSON.stringify(who)}`);
   } catch (err) {
-    console.log(`  ok   ${name}  (${err.message})`);
+    console.log(`  ok   ${name}  (${(err as Error).message})`);
   }
 }
 
-const b64url = (bytes) =>
+const b64url = (bytes: ArrayBuffer): string =>
   Buffer.from(bytes).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-const enc = (obj) => b64url(Buffer.from(JSON.stringify(obj)));
+const bytes = (s: string): ArrayBuffer => {
+  const b = Buffer.from(s);
+  return b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength) as ArrayBuffer;
+};
+const enc = (obj: unknown): string => b64url(bytes(JSON.stringify(obj)));
 
 const SUPABASE_URL = "https://project.supabase.co";
 const ISS = `${SUPABASE_URL}/auth/v1`;
@@ -52,7 +58,13 @@ const soon = () => Math.floor(Date.now() / 1000) + 3600;
 const pair = await webcrypto.subtle.generateKey(
   { name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]
 );
-const publicJwk = await webcrypto.subtle.exportKey("jwk", pair.publicKey);
+/* The exported JWK, widened so `kid` can be set on it. `kid` is
+   optional in the spec and the lib type leaves it off, and this
+   is the JWKS the stubbed fetch serves: a key with no `kid` is
+   one `reader.js` cannot pick, so the field is not optional
+   here. */
+const publicJwk = await webcrypto.subtle.exportKey("jwk", pair.publicKey) as
+  Record<string, unknown> & { kid?: string; alg?: string };
 publicJwk.kid = "key-1";
 publicJwk.alg = "ES256";
 
@@ -60,7 +72,12 @@ const other = await webcrypto.subtle.generateKey(
   { name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]
 );
 
-async function signES(claims, { kid = "key-1", alg = "ES256", key = pair.privateKey } = {}) {
+async function signES(
+  claims: unknown,
+  { kid = "key-1", alg = "ES256", key = pair.privateKey }: {
+    kid?: string; alg?: string; key?: CryptoKey;
+  } = {},
+): Promise<string> {
   const head = enc({ alg, typ: "JWT", kid });
   const body = enc(claims);
   const sig = await webcrypto.subtle.sign(
@@ -71,18 +88,20 @@ async function signES(claims, { kid = "key-1", alg = "ES256", key = pair.private
 }
 
 /* The network, replaced by exactly one answer. */
-const served = [];
-globalThis.fetch = async (url) => {
+/** Every URL the code under test asked for, so a check can say
+    it went to the network once rather than per request. */
+const served: string[] = [];
+globalThis.fetch = (async (url: unknown) => {
   served.push(String(url));
   if (String(url).endsWith("/auth/v1/.well-known/jwks.json")) {
     return new Response(JSON.stringify({ keys: [publicJwk] }),
       { status: 200, headers: { "Content-Type": "application/json" } });
   }
   return new Response("no", { status: 404 });
-};
+}) as typeof fetch;
 
 const env = { SUPABASE_URL };
-const req = (token) => new Request("https://reiad.co.uk/api/comments", {
+const req = (token?: string): Request => new Request("https://reiad.co.uk/api/comments", {
   headers: token ? { Authorization: `Bearer ${token}` } : {},
 });
 
@@ -103,7 +122,7 @@ console.log("verifying a reader");
 
 /* ---------- 2. no token is not an error ---------- */
 {
-  check("no Authorization header is simply nobody", await readerFrom(req(null), env), null);
+  check("no Authorization header is simply nobody", await readerFrom(req(), env), null);
   check("an empty Bearer is nobody too",
     await readerFrom(new Request("https://x/", { headers: { Authorization: "Bearer " } }), env), null);
 }

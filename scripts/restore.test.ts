@@ -1,7 +1,7 @@
 /* ============================================================
-   scripts/restore.test.mjs: the backup round trip, for real.
+   scripts/restore.test.ts: the backup round trip, for real.
 
-     node scripts/restore.test.mjs
+     node scripts/restore.test.ts
 
    Stage 2 of archive/TRANSITION.md says a restore is only done when it
    "has been run once and produced the same rows". This is that
@@ -20,17 +20,17 @@
    ============================================================ */
 
 import { DatabaseSync } from "node:sqlite";
-import { toSQL, literal, insertFor } from "./restore.mjs";
+import { toSQL, literal, insertFor } from "./restore.ts";
 
 let failures = 0;
-const check = (name, got, want) => {
+const check = (name: string, got: unknown, want: unknown): void => {
   const a = JSON.stringify(got);
   const b = JSON.stringify(want);
   if (a === b) { console.log(`  ok   ${name}`); return; }
   failures += 1;
   console.log(`  FAIL ${name}\n       got  ${a}\n       want ${b}`);
 };
-const okay = (name, cond) => check(name, !!cond, true);
+const okay = (name: string, cond: unknown): void => check(name, !!cond, true);
 
 /* The two tables this exercises, in the shape db.js creates them.
    Copied rather than imported because db.js is written for the
@@ -52,8 +52,15 @@ CREATE TABLE questions (
 CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 `;
 
-const fresh = () => { const d = new DatabaseSync(":memory:"); d.exec(SCHEMA); return d; };
-const rows = (d, sql) => d.prepare(sql).all();
+const fresh = (): DatabaseSync => {
+  const d = new DatabaseSync(":memory:");
+  d.exec(SCHEMA);
+  return d;
+};
+
+/** A row as SQLite hands it back, read by column name. */
+type Row = Record<string, unknown>;
+const rows = (d: DatabaseSync, sql: string): Row[] => d.prepare(sql).all() as Row[];
 
 /* ---------- a database worth losing ---------- */
 
@@ -80,8 +87,8 @@ const SEED = [
     created_at: now, updated_at: now, notion_page_id: null, notion_synced_at: null },
 ];
 
-function seed(d) {
-  const cols = Object.keys(SEED[0]);
+function seed(d: DatabaseSync): void {
+  const cols = Object.keys(SEED[0]) as Array<keyof typeof SEED[0]>;
   const stmt = d.prepare(
     `INSERT INTO articles (${cols.join(",")}) VALUES (${cols.map(() => "?").join(",")})`
   );
@@ -190,7 +197,7 @@ console.log("restore round trip");
   // --replace, which is the one that does delete.
   live.exec(toSQL(backup, { replace: true }));
   check("--replace makes the backup the whole truth",
-    rows(live, `SELECT slug FROM articles ORDER BY slug`).map((r) => r.slug),
+    rows(live, `SELECT slug FROM articles ORDER BY slug`).map((r: Row) => r.slug),
     ["dse-basics", "half-written", "peyaj"]);
 }
 
@@ -203,7 +210,7 @@ console.log("restore round trip");
   check("NaN cannot become a bare NaN token", literal(NaN), "NULL");
   check("newline stays inside the quotes", literal("a\nb"), "'a\nb'");
   okay("a key-only table becomes DO NOTHING",
-    insertFor("reactions", { slug: "x", kind: "y" }).includes("DO NOTHING"));
+    insertFor("reactions", { slug: "x", kind: "y" })?.includes("DO NOTHING"));
   okay("an unknown table refuses rather than guessing", (() => {
     try { insertFor("mystery", { a: 1 }); return false; } catch { return true; }
   })());

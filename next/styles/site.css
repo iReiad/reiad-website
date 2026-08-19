@@ -133,7 +133,7 @@
 
        BOTH OF THESE WERE LEARNED FROM A BROWSER after a change
        that every check passed and that broke every card on the
-       site. `scripts/preview.mjs` exists because of it.
+       site. `scripts/preview.ts` exists because of it.
 
        1. NO `light-dark()` INSIDE `color-mix()`. It does not
           compute: the property comes out as an unsubstituted

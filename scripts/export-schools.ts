@@ -1,14 +1,14 @@
 /* ============================================================
-   export-schools.mjs: the schools out of D1 and into git.
+   export-schools.ts: the schools out of D1 and into git.
 
-     node scripts/export-schools.mjs --db schools.db
-     node scripts/export-schools.mjs --from-files
+     node scripts/export-schools.ts --db schools.db
+     node scripts/export-schools.ts --from-files
 
    archive/TRANSITION.md Stage 8, step 4. The other direction from
-   `import-schools.mjs`, and the one that runs often: the prose is
+   `import-schools.ts`, and the one that runs often: the prose is
    edited at `/studio/?lessons` now, and this is what carries a
    change from the row it was saved into to the file the builders
-   read. See the note at the top of `schools-snapshot.mjs` for why
+   read. See the note at the top of `schools-snapshot.ts` for why
    there is a file in the middle at all.
 
    ---- getting the database onto a disk ----
@@ -40,17 +40,23 @@
 
 import { existsSync } from "node:fs";
 import { relative } from "node:path";
-import { SNAPSHOT, countsOf, writeSnapshot } from "./schools-snapshot.mjs";
+import { SNAPSHOT, countsOf, writeSnapshot } from "./schools-snapshot.ts";
 import { SCHOOL_IDS } from "../shared/schools.ts";
 
 /* ---------- out of a SQLite copy of the database ---------- */
 
-async function fromDatabase(path) {
+/** A row as SQLite hands it back: every column, unread. */
+type Row = Record<string, unknown>;
+
+async function fromDatabase(path: string): Promise<{
+  stages: Row[]; sections: Row[]; lessons: Row[];
+}> {
   const { DatabaseSync } = await import("node:sqlite");
   if (!existsSync(path)) throw new Error(`no such database: ${path}`);
   const db = new DatabaseSync(path);
 
-  const all = (table) => db.prepare(`SELECT * FROM ${table}`).all();
+  const all = (table: string): Row[] =>
+    db.prepare(`SELECT * FROM ${table}`).all() as Row[];
   const rows = {
     stages: all("school_stages"),
     sections: all("school_sections"),
@@ -83,7 +89,7 @@ async function fromDatabase(path) {
 /* ---------- out of the curriculum files ---------- */
 
 async function fromFiles() {
-  const { readAll } = await import("./import-schools.mjs");
+  const { readAll } = await import("./import-schools.ts");
   return readAll();
 }
 

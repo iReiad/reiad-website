@@ -1,8 +1,8 @@
 /* ============================================================
-   scripts/comments.test.mjs: the endpoint, against real SQLite
+   scripts/comments.test.ts: the endpoint, against real SQLite
    and real signatures.
 
-     node scripts/comments.test.mjs
+     node scripts/comments.test.ts
 
    The two rules this whole stage exists to enforce are the two
    that are easiest to get subtly wrong, so they are tested
@@ -13,7 +13,7 @@
                                     request body
      nothing appears until approved including from me
 
-   `readerFrom()` has its own suite in reader.test.mjs, which does
+   `readerFrom()` has its own suite in reader.test.ts, which does
    the attacks. This one checks the endpoint that uses it: that it
    refuses to write without a good token, that it writes the
    author from the token rather than the body, that a pending
@@ -23,16 +23,17 @@
 
 import { DatabaseSync } from "node:sqlite";
 import { webcrypto } from "node:crypto";
+import { d1Over } from "./sqlite-d1.ts";
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
 let failures = 0;
-const check = (name, got, want) => {
+const check = (name: string, got: unknown, want: unknown): void => {
   if (JSON.stringify(got) === JSON.stringify(want)) { console.log(`  ok   ${name}`); return; }
   failures += 1;
   console.log(`  FAIL ${name}\n       got  ${JSON.stringify(got)}\n       want ${JSON.stringify(want)}`);
 };
-const okay = (name, cond) => check(name, !!cond, true);
+const okay = (name: string, cond: unknown): void => check(name, !!cond, true);
 
 /* ---------- a database with the real schema ---------- */
 
@@ -52,39 +53,33 @@ CREATE TABLE sessions (token TEXT PRIMARY KEY, label TEXT NOT NULL DEFAULT '',
   created_at TEXT NOT NULL, expires_at TEXT NOT NULL);
 `);
 
-/* The D1 shape, over node:sqlite. prepare().bind().all()/first()/run() */
-const D1 = {
-  prepare(sql) {
-    const make = (args) => ({
-      all: async () => ({ results: db.prepare(sql).all(...args) }),
-      first: async () => db.prepare(sql).get(...args) ?? null,
-      run: async () => { db.prepare(sql).run(...args); return { success: true }; },
-    });
-    return { bind: (...args) => make(args), ...make([]) };
-  },
-  /* db() applies the schema through batch() on first use, so this
-     runs it for real. That makes the migrations themselves part of
-     what this test covers. */
-  batch: async (statements) => {
-    for (const st of statements) await st.run();
-    return [];
-  },
-};
+/* The D1 binding over it, from `sqlite-d1.ts`. Shared with the
+   builders rather than stubbed here, so what this test drives is
+   the interface the Worker really hands a handler. db() applies
+   the schema through batch() on first use, so the migrations
+   themselves are part of what this covers. */
+const D1 = d1Over(db);
 
 /* ---------- a signing key, and the JWKS behind it ---------- */
 
 const pair = await webcrypto.subtle.generateKey(
   { name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]
 );
-const jwk = await webcrypto.subtle.exportKey("jwk", pair.publicKey);
+/* The exported JWK, widened so `kid` can be set on it. `kid` is
+   optional in the spec and the lib type leaves it off, and this is
+   the JWKS the stubbed fetch serves: a key with no `kid` is one
+   `reader.js` cannot pick, so it is not optional here. */
+const jwk = await webcrypto.subtle.exportKey("jwk", pair.publicKey) as
+  Record<string, unknown> & { kid?: string; alg?: string };
 jwk.kid = "k1"; jwk.alg = "ES256";
 
 const SUPABASE_URL = "https://project.supabase.co";
-const b64url = (b) => Buffer.from(b).toString("base64")
-  .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-const enc = (o) => b64url(Buffer.from(JSON.stringify(o)));
+const b64url = (b: ArrayBuffer | Uint8Array): string =>
+  Buffer.from(b as Uint8Array).toString("base64")
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const enc = (o: unknown): string => b64url(Buffer.from(JSON.stringify(o)));
 
-async function tokenFor(sub, name) {
+async function tokenFor(sub: string, name: string): Promise<string> {
   const head = enc({ alg: "ES256", typ: "JWT", kid: "k1" });
   const body = enc({
     sub, iss: `${SUPABASE_URL}/auth/v1`, exp: Math.floor(Date.now() / 1000) + 3600,
@@ -95,10 +90,10 @@ async function tokenFor(sub, name) {
   return `${head}.${body}.${b64url(sig)}`;
 }
 
-globalThis.fetch = async (url) =>
+globalThis.fetch = (async (url: unknown) =>
   String(url).endsWith("/auth/v1/.well-known/jwks.json")
     ? new Response(JSON.stringify({ keys: [jwk] }), { status: 200 })
-    : new Response("no", { status: 404 });
+    : new Response("no", { status: 404 })) as typeof fetch;
 
 /* ---------- the handler ----------
 
@@ -111,20 +106,54 @@ globalThis.fetch = async (url) =>
 const { onRequest } = await import("../functions/api/comments/[[id]].js");
 
 const env = { DB: D1, SUPABASE_URL };
-const ctx = (request, params = {}) => ({ request, env, params, data: {} });
+const ctx = (request: Request, params: Record<string, string[]> = {}) =>
+  ({ request, env, params, data: {} });
 
-const call = async (method, path, { token, body: payload } = {}) => {
-  const headers = { "Content-Type": "application/json" };
+/** What this endpoint answers, across all six of its shapes, and
+    every field is optional because which of them is present is
+    exactly what the checks below are about: `ok` on a write that
+    was taken, `reason` on one that was refused, `comments` on a
+    read. Named once so that reading a reply is reading a field
+    rather than an `unknown`. */
+interface Reply {
+  ok?: boolean;
+  reason?: string;
+  comments?: Comment[];
+}
+
+interface Comment {
+  id?: number;
+  author_id?: string;
+  author_name?: string;
+  body?: string;
+  replies?: Comment[];
+}
+
+const call = async (
+  method: string, path: string,
+  { token, body: payload }: { token?: string; body?: unknown } = {},
+): Promise<{ status: number; body: Reply }> => {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (token) headers.Authorization = `Bearer ${token}`;
   const request = new Request(`https://reiad.co.uk/api/comments${path}`, {
     method, headers, body: payload ? JSON.stringify(payload) : undefined,
   });
   const id = path.match(/^\/(\d+)/)?.[1];
   const res = await onRequest(ctx(request, { id: id ? [id] : [] }));
-  return { status: res.status, body: await res.json() };
+  return { status: res.status, body: await res.json() as Reply };
 };
 
-const rows = (sql) => db.prepare(sql).all();
+/** The comments in a read, when the check expects some. A read
+    that answered a refusal instead fails here with a sentence,
+    rather than three lines later as "undefined has no length". */
+const commentsIn = (reply: Reply): Comment[] => {
+  if (!reply.comments) throw new Error(`expected comments, got ${JSON.stringify(reply)}`);
+  return reply.comments;
+};
+
+/** One row of the comments table, as SQLite hands it back. */
+type Row = Record<string, unknown>;
+const rows = (sql: string): Row[] => db.prepare(sql).all() as Row[];
 
 console.log("comments");
 
@@ -168,10 +197,10 @@ const rony = await tokenFor("user-b", "Rony");
   check("a pending comment shows to nobody", out.body.comments, []);
 
   db.prepare(`UPDATE comments SET status='live' WHERE id=1`).run();
-  const after = await call("GET", "?slug=dse-basics");
-  check("approved, it shows", after.body.comments.length, 1);
-  check("with the author's name", after.body.comments[0].author_name, "Ayesha Rahman");
-  okay("and never the author's id", after.body.comments[0].author_id === undefined);
+  const after = commentsIn((await call("GET", "?slug=dse-basics")).body);
+  check("approved, it shows", after.length, 1);
+  check("with the author's name", after[0].author_name, "Ayesha Rahman");
+  okay("and never the author's id", after[0].author_id === undefined);
 }
 
 /* ---------- 4. replies are one level, on the right piece ---------- */
@@ -192,9 +221,9 @@ const rony = await tokenFor("user-b", "Rony");
   });
   check("and replies do not nest twice", deep.body.reason, "replies-are-one-level");
 
-  const thread = await call("GET", "?slug=dse-basics");
+  const thread = commentsIn((await call("GET", "?slug=dse-basics")).body);
   check("the thread is one comment with one reply",
-    [thread.body.comments.length, thread.body.comments[0].replies.length], [1, 1]);
+    [thread.length, thread[0].replies?.length], [1, 1]);
 }
 
 /* ---------- 5. moderation needs the admin, not a reader ---------- */

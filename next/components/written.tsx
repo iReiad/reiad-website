@@ -5,8 +5,8 @@
    prose. They were written by hand, they say what a course asks
    of a learner every evening, and nothing about them comes out of
    a database. `lib/school-hubs.ts` holds each one's body exactly
-   as the committed page has it, and `scripts/build-school-hubs.mjs`
-   explains at length why it is copied rather than rewritten as
+   as the committed page had it, and the head of that file explains
+   at length why it is copied rather than rewritten as
    JSX: eight hundred lines of hand-converted Bangla is eight
    hundred chances to change a word that nobody reviewing the diff
    would catch, and the reader who would is the one this site is

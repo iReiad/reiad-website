@@ -36,7 +36,7 @@ Generated output is generated. Edit the source and rebuild:
 
 ```sh
 node scripts/build-modules.ts        # aab/*.js from aab/src/
-node scripts/build-styles.mjs         # aab/tailwind.css
+node scripts/build-fallback.ts       # aab/fallback.css from next/styles/
 node scripts/build-school-icons.ts   # next/lib/school-icons.ts
 cd app && npm run build               # aab/desk/, aab/studio/
 ```

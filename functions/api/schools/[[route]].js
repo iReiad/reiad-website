@@ -19,7 +19,7 @@
    ---- why the write side is a PUT of whole rows ----
 
    The importer is a browser away from the files, not a server
-   with a copy of them. `scripts/import-schools.mjs` reads the
+   with a copy of them. `scripts/import-schools.ts` reads the
    four curricula and writes SQL, which is one `wrangler d1
    execute` and is the fastest way in; this endpoint is the other
    way, and the one that survives the files being deleted. It

@@ -1,7 +1,7 @@
 /* ============================================================
-   schools.test.mjs: does a curriculum survive the round trip?
+   schools.test.ts: does a curriculum survive the round trip?
 
-     node scripts/schools.test.mjs
+     node scripts/schools.test.ts
 
    archive/TRANSITION.md Stage 8. Before any page is rendered from these
    rows, the rows have to be provably the same thing the files
@@ -31,17 +31,17 @@ import { DatabaseSync } from "node:sqlite";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { SCHOOLS, readAll, readSchool, toSql } from "./import-schools.mjs";
+import { SCHOOLS, readAll, readSchool, toSql } from "./import-schools.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 let passed = 0;
-const failures = [];
-const ok = (name, condition, detail = "") => {
+const failures: string[] = [];
+const ok = (name: string, condition: unknown, detail = ""): void => {
   if (condition) { passed++; return; }
   failures.push(detail ? `${name}\n      ${detail}` : name);
 };
-const same = (name, a, b) =>
+const same = (name: string, a: unknown, b: unknown): void =>
   ok(name, a === b, `expected ${JSON.stringify(a)}, got ${JSON.stringify(b)}`);
 
 /* ---------- the schema, out of the file the Worker also uses ----------
@@ -67,7 +67,7 @@ const db = new DatabaseSync(":memory:");
    And trailing comments, not just whole comment lines, for the
    same reason. `--` inside a quoted string would be a false
    positive, so the scan tracks whether it is inside one. */
-const withoutComments = (line) => {
+const withoutComments = (line: string): string => {
   let quoted = false;
   for (let i = 0; i < line.length; i++) {
     if (line[i] === "'") quoted = !quoted;
@@ -134,7 +134,8 @@ ok("and none of them opens a transaction",
 for (const statement of statements) db.exec(statement);
 
 ok("every row inserted",
-  db.prepare("SELECT COUNT(*) n FROM school_lessons").get().n === fromFiles.lessons.length);
+  (db.prepare("SELECT COUNT(*) n FROM school_lessons").get() as { n: number } | undefined)?.n
+    === fromFiles.lessons.length);
 
 /* ---------- and back out again ---------- */
 
@@ -188,8 +189,9 @@ for (const school of SCHOOLS) {
       failures.push(`${school.id}/${expected.slug}: the title changed`);
       break;
     }
-    const meta = JSON.parse(got.meta);
-    for (const [key, value] of Object.entries(expected.meta)) {
+    const meta = JSON.parse(String(got.meta)) as Record<string, unknown>;
+    for (const [key, value] of
+      Object.entries(expected.meta as Record<string, unknown>)) {
       stageFields++;
       if (JSON.stringify(meta[key]) !== JSON.stringify(value)) {
         failures.push(`${school.id}/${expected.slug}: "${key}" did not survive`);
@@ -218,8 +220,9 @@ for (const school of SCHOOLS) {
       break;
     }
     if (got.body) bodies++;
-    const meta = JSON.parse(got.meta);
-    for (const [key, value] of Object.entries(expected.meta)) {
+    const meta = JSON.parse(String(got.meta)) as Record<string, unknown>;
+    for (const [key, value] of
+      Object.entries(expected.meta as Record<string, unknown>)) {
       lessonFields++;
       if (JSON.stringify(meta[key]) !== JSON.stringify(value)) {
         failures.push(`${school.id}/${expected.slug}: "${key}" did not survive`);

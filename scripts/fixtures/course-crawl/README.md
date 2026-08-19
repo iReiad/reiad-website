@@ -4,7 +4,7 @@ Two tab-separated files, exactly as the Drive API answers:
 `tree.tsv` is `id, parent, kind, name` for the 221 folders and
 `files.tsv` is `id, parent, name` for the 1,579 files.
 
-`scripts/import-courses.mjs --crawl scripts/fixtures/course-crawl`
+`scripts/import-courses.ts --crawl scripts/fixtures/course-crawl`
 turns them into `shared/courses.data.json`, and CI runs the same
 command with `--check`, so the committed catalogue is always
 reproducible from something in this repository rather than being a
@@ -15,7 +15,7 @@ file only one laptop with a credential could have produced.
 Both files are written by the importer itself, so a refresh is one
 command and never hand-editing:
 
-    node scripts/import-courses.mjs \
+    node scripts/import-courses.ts \
       --drive <folderId> --token ya29.... \
       --dump scripts/fixtures/course-crawl
 

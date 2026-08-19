@@ -188,7 +188,7 @@ CREATE INDEX IF NOT EXISTS idx_comments_queue
 --
 -- So the columns are what every school has and what anything
 -- actually queries on, and `meta` is that school's own fields as
--- JSON, round-tripped exactly. `scripts/schools.test.mjs` fails
+-- JSON, round-tripped exactly. `scripts/schools.test.ts` fails
 -- if a single field goes missing on the way in or out, which is
 -- the guarantee that makes a JSON column safe rather than lazy.
 --

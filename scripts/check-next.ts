@@ -154,7 +154,7 @@ for (const [school, lessons] of Object.entries(SCHOOL_LADDERS)) {
       + " nothing is written.",
       "Refresh the snapshot and regenerate:",
       "  npx wrangler d1 export reiad --remote --output schools.db",
-      "  node scripts/export-schools.mjs --db schools.db",
+      "  node scripts/export-schools.ts --db schools.db",
       "  node scripts/build-school-tree.ts");
   }
 }

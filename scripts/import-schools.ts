@@ -1,13 +1,13 @@
 /* ============================================================
-   import-schools.mjs: the four curricula, as SQL.
+   import-schools.ts: the four curricula, as SQL.
 
-     node scripts/import-schools.mjs --out schools.sql
+     node scripts/import-schools.ts --out schools.sql
      npx wrangler d1 execute reiad --local  --file=schools.sql
      npx wrangler d1 execute reiad --remote --file=schools.sql
 
    ---- use --out, not a `>` redirect ----
 
-   `node scripts/import-schools.mjs > schools.sql` looks like the
+   `node scripts/import-schools.ts > schools.sql` looks like the
    same thing and has one bad property: the shell creates the file
    BEFORE node runs. Run it from the wrong directory and node
    exits with "Cannot find module", the shell has already left an
@@ -28,7 +28,7 @@
    migration is the one where the importer, the schema and the
    readers all land together and the first thing anybody sees is a
    lesson page that lost a paragraph. So: import, prove the round
-   trip (`scripts/schools.test.mjs`), and only then let a builder
+   trip (`scripts/schools.test.ts`), and only then let a builder
    read from the database.
 
    ---- the four schools are not one school ----
@@ -48,12 +48,13 @@
    ---- what goes in `meta`, and why nothing is dropped ----
 
    Everything the file said that is not one of the columns. It is
-   round-tripped exactly, and `schools.test.mjs` compares what
+   round-tripped exactly, and `schools.test.ts` compares what
    comes back out against the file field by field, so a lost
    `can:` or a dropped Arabic title fails a check rather than a
    reader.
    ============================================================ */
 
+import type { Rows as SnapshotRows, Row } from "./schools-snapshot.ts";
 import { existsSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -71,20 +72,48 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
    These files stay readable rather than deleted for the reason
    `archive/README.md` gives for everything in there: whoever has
    to check that the replacement really does what the thing it
-   replaced did needs to be able to read both. `schools.test.mjs`
+   replaced did needs to be able to read both. `schools.test.ts`
    is that check, and it still runs against these. */
 const ARCHIVE = join(ROOT, "archive", "schools");
 const AAB = join(ROOT, "aab");
 
 /* ---------- the four schools, and what is different ---------- */
 
-export const SCHOOLS = [
+/** The three tables, as `schools-snapshot.ts` writes them.
+    Imported rather than restated: two descriptions of one shape
+    is two things to keep true, which is what this whole file is
+    about not doing to a curriculum. */
+type Rows = SnapshotRows;
+
+/** One curriculum module, of the four exports this reads. They
+    are plain JavaScript with no declaration beside them, and each
+    school names the same idea differently, which is what the
+    table below is for. */
+type Curriculum = Record<string, unknown>;
+
+/** A stage, a section or a lesson as a `curriculum.js` writes it:
+    a few known fields and whatever else the school put there,
+    which becomes `meta`. */
+export type Node = Record<string, unknown>;
+
+/** One school, and the four things that differ between them. */
+export interface School {
+  id: string;
+  dir: string;
+  stages: (m: Curriculum) => Node[];
+  /** What a section calls its children: `lessons`, `teile` or
+      `parts`. */
+  within: string;
+  bodies: (stage: Node) => string;
+}
+
+export const SCHOOLS: School[] = [
   {
     id: "money",
     dir: "money",
     /* The money school's stages. `MONEY_STAGES` is the array;
        `STAGES` is the export that names it. */
-    stages: (m) => m.STAGES,
+    stages: (m) => m.STAGES as Node[],
     /* What a section calls its children. Four schools, three
        words: /money/ and /quran/ say `lessons`, /deutsch/ says
        `teile` and /english/ says `parts`, because each one is
@@ -98,28 +127,28 @@ export const SCHOOLS = [
        later; this one was first and nobody went back to rename
        it, which is a good reason to read it from a table rather
        than to guess. */
-    bodies: (stage) => join(ARCHIVE, "money", `${stage.slug}.js`),
+    bodies: (stage) => join(ARCHIVE, "money", `${String(stage.slug)}.js`),
   },
   {
     id: "deutsch",
     dir: "deutsch",
-    stages: (m) => m.STUFEN,
+    stages: (m) => m.STUFEN as Node[],
     within: "teile",
-    bodies: (stage) => join(ARCHIVE, "deutsch", `${stage.slug}.js`),
+    bodies: (stage) => join(ARCHIVE, "deutsch", `${String(stage.slug)}.js`),
   },
   {
     id: "quran",
     dir: "quran",
-    stages: (m) => m.DHAPS,
+    stages: (m) => m.DHAPS as Node[],
     within: "lessons",
-    bodies: (stage) => join(ARCHIVE, "quran", `${stage.slug}.js`),
+    bodies: (stage) => join(ARCHIVE, "quran", `${String(stage.slug)}.js`),
   },
   {
     id: "english",
     dir: "english",
-    stages: (m) => m.TERMS,
+    stages: (m) => m.TERMS as Node[],
     within: "parts",
-    bodies: (stage) => join(ARCHIVE, "english", `${stage.slug}.js`),
+    bodies: (stage) => join(ARCHIVE, "english", `${String(stage.slug)}.js`),
   },
 ];
 
@@ -130,8 +159,8 @@ const SECTION_COLUMNS = new Set(["id", "lessons", "teile", "parts"]);
 const LESSON_COLUMNS = new Set(["slug", "minutes", "status"]);
 
 /** Everything else the file said, in the order it said it. */
-const restOf = (object, columns, titleKey) => {
-  const meta = {};
+const restOf = (object: Node, columns: Set<string>, titleKey: string): Node => {
+  const meta: Node = {};
   for (const [key, value] of Object.entries(object)) {
     if (columns.has(key) || key === titleKey) continue;
     meta[key] = value;
@@ -141,18 +170,19 @@ const restOf = (object, columns, titleKey) => {
 
 /** The title column: Bangla is the site's learning language, so
     `bn` is the title of a lesson and everything else is `meta`. */
-const titleOf = (object) => String(object.bn ?? object.en ?? object.title ?? "");
+const titleOf = (object: Node): string =>
+  String(object.bn ?? object.en ?? object.title ?? "");
 
 /* ---------- reading one school ---------- */
 
-export async function readSchool(school) {
-  const module = await import(join(AAB, school.dir, "curriculum.js"));
+export async function readSchool(school: School): Promise<Rows> {
+  const module = await import(join(AAB, school.dir, "curriculum.js")) as Curriculum;
   const stages = school.stages(module);
   if (!Array.isArray(stages) || stages.length === 0) {
     throw new Error(`${school.id}: no stages found, the export moved`);
   }
 
-  const rows = { stages: [], sections: [], lessons: [] };
+  const rows: Rows = { stages: [], sections: [], lessons: [] };
 
   for (const [stageIndex, stage] of stages.entries()) {
     rows.stages.push({
@@ -168,7 +198,8 @@ export async function readSchool(school) {
     const bodies = existsSync(file) ? (await import(file)).default ?? {} : {};
 
     let lessonIndex = 0;
-    for (const [sectionIndex, section] of (stage.sections ?? []).entries()) {
+    for (const [sectionIndex, section] of
+      ((stage.sections ?? []) as Node[]).entries()) {
       rows.sections.push({
         school: school.id,
         stage: stage.slug,
@@ -178,7 +209,7 @@ export async function readSchool(school) {
         meta: restOf(section, SECTION_COLUMNS, "bn"),
       });
 
-      const within = section[school.within] ?? [];
+      const within = (section[school.within] ?? []) as Node[];
       if (within.length === 0) {
         throw new Error(
           `${school.id}/${stage.slug}: section "${section.id}" has no `
@@ -206,7 +237,7 @@ export async function readSchool(school) {
           /* An empty body is not a failure: the builders already
              draw a "coming soon" page for a lesson nobody has
              written, and that has to keep working. */
-          body: bodies[lesson.slug] ?? "",
+          body: bodies[String(lesson.slug)] ?? "",
         });
       }
     }
@@ -215,8 +246,8 @@ export async function readSchool(school) {
   return rows;
 }
 
-export async function readAll() {
-  const all = { stages: [], sections: [], lessons: [] };
+export async function readAll(): Promise<Rows> {
+  const all: Rows = { stages: [], sections: [], lessons: [] };
   for (const school of SCHOOLS) {
     const rows = await readSchool(school);
     all.stages.push(...rows.stages);
@@ -253,19 +284,19 @@ export async function readAll() {
     `CAST(... AS TEXT)` because a bare `x'...'` is a BLOB, and a
     BLOB in a TEXT column comes back as bytes rather than as the
     string that went in. */
-const q = (value) => {
+const q = (value: unknown): string => {
   const hex = Buffer.from(String(value), "utf8").toString("hex");
   return hex ? `CAST(x'${hex}' AS TEXT)` : `''`;
 };
-const json = (value) => q(JSON.stringify(value));
+const json = (value: unknown): string => q(JSON.stringify(value));
 
-export function toSql(all, now) {
+export function toSql(all: Rows, now: string): string {
   /* No BEGIN TRANSACTION and no COMMIT. D1's import does not take
      them: it applies the file itself and an explicit transaction
      in the middle of that is either refused or ignored, and
      neither is a thing to find out about afterwards. */
   const lines = [
-    "-- Written by scripts/import-schools.mjs. Do not edit by hand.",
+    "-- Written by scripts/import-schools.ts. Do not edit by hand.",
     "-- The four curricula, as rows. See archive/TRANSITION.md Stage 8.",
     "-- Every statement is one line: D1's import reads them line by line.",
     /* Replaced wholesale rather than merged. While the files are
@@ -326,7 +357,7 @@ export function toSql(all, now) {
    running. */
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   const all = await readAll();
-  const written = all.lessons.filter((l) => l.body).length;
+  const written = all.lessons.filter((l: Row) => l.body).length;
   const sql = toSql(all, new Date().toISOString());
 
   const flag = process.argv.indexOf("--out");

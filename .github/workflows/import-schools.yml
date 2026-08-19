@@ -91,7 +91,7 @@ jobs:
           fi
 
       - name: Build the SQL
-        run: node scripts/import-schools.mjs --out schools.sql
+        run: node scripts/import-schools.ts --out schools.sql
 
       # The failure this whole file exists for: an empty file that
       # imports perfectly and writes nothing. 314 statements is

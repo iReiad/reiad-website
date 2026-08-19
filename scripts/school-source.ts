@@ -1,5 +1,5 @@
 /* ============================================================
-   school-source.mjs: where a builder gets its curriculum.
+   school-source.ts: where a builder gets its curriculum.
 
    archive/TRANSITION.md Stage 8, step 3. The builders read the four
    `curriculum.js` modules today. This is the switch that lets one
@@ -30,45 +30,24 @@
 
    A builder is a generator somebody runs on a laptop, and it has
    to work with no network and no Worker. `shared/schools.ts` is
-   written against the D1 interface, and the shim below is that
+   written against the D1 interface, and `sqlite-d1.ts` is that
    interface over `node:sqlite`, the same one every server test in
    this repository uses. Against the live database the same code
    runs unchanged with a real D1 handle.
    ============================================================ */
 
 import { WITHIN, stagesOf } from "../shared/schools.ts";
-import { d1FromSnapshot } from "./schools-snapshot.mjs";
+import { d1FromSnapshot } from "./schools-snapshot.ts";
+import { d1Open, type SqliteD1 } from "./sqlite-d1.ts";
 
-/* ---------- the database ---------- */
+/* ---------- the two sources ----------
 
-/** The D1 interface, over node:sqlite.
+   `sqlite-d1.ts` is the D1 interface over node:sqlite, shared with
+   the snapshot loader and with the server tests, so what a builder
+   reads is read by the same code that reads the live database. */
 
-    `shared/schools.ts` is written against D1 because that is what
-    the Worker and the Next route hand it. A builder has neither,
-    so it gets the same interface over a local file, and the code
-    under test is the same code in all three places. */
-async function d1Over(path) {
-  const { DatabaseSync } = await import("node:sqlite");
-  const db = new DatabaseSync(path);
-  return {
-    handle: db,
-    prepare(sql) {
-      const make = (args) => ({
-        all: async () => ({ results: db.prepare(sql).all(...args) }),
-        first: async () => db.prepare(sql).get(...args) ?? null,
-        run: async () => { db.prepare(sql).run(...args); return { success: true }; },
-      });
-      return { bind: (...args) => make(args), ...make([]) };
-    },
-    batch: async (statements) => {
-      for (const st of statements) await st.run();
-      return [];
-    },
-  };
-}
-
-async function fromSqlite(id, path) {
-  return fromD1(id, await d1Over(path), "database");
+async function fromSqlite(id: string, path: string) {
+  return fromD1(id, await d1Open(path), "database");
 }
 
 /** The snapshot, which is what a builder uses when nobody has
@@ -79,13 +58,19 @@ async function fromSqlite(id, path) {
     database and going through `shared/schools.ts` exactly as the
     live one does. So there is one implementation of "what is a
     ladder", and a build from the file runs the same code as a
-    build from D1. The note at the top of `schools-snapshot.mjs`
+    build from D1. The note at the top of `schools-snapshot.ts`
     says why the file exists at all. */
-async function fromSnapshot(id) {
+async function fromSnapshot(id: string) {
   return fromD1(id, await d1FromSnapshot(id), "snapshot");
 }
 
-async function fromD1(id, d1, from) {
+/** One lesson's body, as the row comes back. */
+interface BodyRow {
+  slug?: unknown;
+  body?: unknown;
+}
+
+async function fromD1(id: string, d1: SqliteD1, from: string) {
   const stages = await stagesOf(d1, id);
   const within = WITHIN[id];
 
@@ -93,20 +78,20 @@ async function fromD1(id, d1, from) {
      `bodies[stageSlug][lessonSlug]` is the HTML. They are fetched
      per stage rather than with the ladder, because a ladder page
      names every lesson and needs none of their text. */
-  const bodies = {};
+  const bodies: Record<string, Record<string, string>> = {};
   for (const stage of stages) {
     bodies[stage.slug] = {};
     const rows = await d1.prepare(
       `SELECT slug, body FROM school_lessons
         WHERE school = ? AND stage = ? ORDER BY position`
     ).bind(id, stage.slug).all();
-    for (const row of rows.results ?? []) {
+    for (const row of (rows.results ?? []) as BodyRow[]) {
       /* An empty body is left out rather than written in as an
          empty string, because that is what a missing key in
          content/<stage>.js means and the builders already draw a
          "coming soon" page for it. Handing them "" instead would
          produce a page with an empty article in it. */
-      if (row.body) bodies[stage.slug][row.slug] = row.body;
+      if (row.body) bodies[stage.slug][String(row.slug)] = String(row.body);
     }
   }
 
@@ -132,8 +117,10 @@ async function fromD1(id, d1, from) {
     whatever was last saved in the Studio, which is the whole
     reason they stopped being the source. Its only caller was
     `schools-build.test.mjs`, archived beside them. */
-export async function sourceFor(id, { sqlite = process.env.SCHOOL_DB } = {}) {
+export async function sourceFor(
+  id: string, { sqlite = process.env.SCHOOL_DB }: { sqlite?: string } = {},
+) {
   return sqlite ? fromSqlite(id, sqlite) : fromSnapshot(id);
 }
 
-export { fromSqlite, fromSnapshot, d1Over };
+export { fromSqlite, fromSnapshot };

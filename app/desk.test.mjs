@@ -271,7 +271,7 @@ await context.route("**/api/**", async (route) => {
   /* Anything that writes answers yes without changing a fixture.
      What is being checked here is that the button sends the right
      request, not that D1 can update a row: that is what
-     scripts/comments.test.mjs and the API tests are for. */
+     scripts/comments.test.ts and the API tests are for. */
   if (route.request().method() !== "GET") {
     await route.fulfill({ status: 200, contentType: "application/json",
       body: JSON.stringify({ ok: true }) });

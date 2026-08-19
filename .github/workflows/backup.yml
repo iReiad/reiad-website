@@ -19,7 +19,7 @@
 # written by the Worker's own cron. See wrangler.toml.
 #
 # To restore:
-#   node scripts/restore.mjs content/articles.backup.json > restore.sql
+#   node scripts/restore.ts content/articles.backup.json > restore.sql
 #   npx wrangler d1 execute reiad --remote --file=restore.sql
 # ============================================================
 
@@ -119,7 +119,7 @@ jobs:
             git commit -m "Nightly article backup: ${COUNT} live article(s)
 
           Written by .github/workflows/backup.yml. Do not edit by hand.
-          To restore: node scripts/restore.mjs $FILE > restore.sql"
+          To restore: node scripts/restore.ts $FILE > restore.sql"
             git push
           }
 

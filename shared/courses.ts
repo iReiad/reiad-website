@@ -35,7 +35,7 @@
    ---- the data is generated ----
 
    `courses.data.json` beside this file is written by
-   `scripts/import-courses.mjs` out of the Drive folder. Do not
+   `scripts/import-courses.ts` out of the Drive folder. Do not
    edit it by hand. The rule at the top of `CLAUDE.md` is exactly
    this rule: a list of things that exist elsewhere is derived,
    never remembered, because it was right on the day it was typed
