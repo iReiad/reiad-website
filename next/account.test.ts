@@ -163,6 +163,26 @@ const session = (sub: string) => JSON.stringify({
   user: { id: sub, email: "i@reiad.co.uk", name: "Rony Reiad", avatar: AVATAR },
 });
 
+/** Who this test signs in as. */
+const ME = "u-1";
+
+/** SOMEBODY ELSE'S PROFILE, and the reason it is here.
+    `profiles` is the one table whose select policy is
+    `using (true)`, so a read with no `id=eq.` filter returns
+    whichever row the planner reaches first out of the WHOLE
+    table. This fixture used to answer every GET with the
+    reader's own row, which made it kinder than Postgres and
+    therefore blind: `getProfile()` shipped with no filter, and
+    all 117 checks here passed while the live account page drew a
+    stranger's answers.
+    It is deliberately the row a fresh account has, because that
+    is what made the bug so hard to read from the outside: no
+    pace, no `setup_at`, so the setup form came back after every
+    single save. */
+const STRANGER = {
+  display_name: "somebody else", following: [], pace: "", setup_at: null,
+};
+
 /* A real 1x1 PNG. `naturalWidth` is the only thing that separates
    an image that loaded from an `<img>` the policy refused, and a
    refused one looks identical in the DOM. */
@@ -233,6 +253,10 @@ interface Account {
   scenarios: ListRow[];
   profile: Record<string, unknown>;
   sent: Sent[];
+  /** Every REST GET, whole URL. `sent` records the writes; a read
+      has no body, so the only thing worth keeping about one is
+      what it asked for, which is exactly where the bug was. */
+  reads: string[];
 }
 
 /** One load of the account page, and everything it left behind. */
@@ -273,6 +297,7 @@ async function open(
     library: rows.library ?? [],
     targets: rows.targets ?? [],
     scenarios: rows.scenarios ?? [],
+    reads: [],
     profile: rows.profile ?? {
       display_name: "Rony Reiad", following: ["money"], pace: "often",
       setup_at: new Date().toISOString(),
@@ -289,13 +314,25 @@ async function open(
 
     const posted = req.postData();
     const body: unknown = posted ? JSON.parse(posted) : null;
-    if (req.method() !== "GET") state.sent.push({ table, method: req.method(), body });
+    if (req.method() === "GET") state.reads.push(url.pathname + url.search);
+    else state.sent.push({ table, method: req.method(), body });
 
     if (table === "profiles") {
       if (req.method() === "PATCH") {
         state.profile = { ...state.profile, ...(isObject(body) ? body : {}) };
         return route.fulfill({ status: 204, body: "" });
       }
+      /* Every other table here is owner-scoped by its own policy,
+         so an unfiltered read returns your rows and this fixture
+         can ignore the question. Not this one. `id=eq.<me>` is
+         the only thing separating a reader from a stranger, so
+         the fake answers exactly as the database would: filtered,
+         your row; unfiltered, the heap, and the stranger is at
+         the front of it because saving yours moved it to the
+         back. */
+      const want = url.searchParams.get("id");
+      if (!want) return json([STRANGER, state.profile]);
+      if (want !== `eq.${ME}`) return json([STRANGER]);
       return json([state.profile]);
     }
     if (table === "progress") {
@@ -340,7 +377,7 @@ async function open(
   await context.route("https://lh3.googleusercontent.com/**", (r: Route) =>
     r.fulfill({ status: 200, contentType: "image/png", body: PIXEL }));
 
-  const start: [boolean, string, Record<string, string>] = [signedIn, session("u-1"), seed];
+  const start: [boolean, string, Record<string, string>] = [signedIn, session(ME), seed];
   await page.addInitScript(([on, who, extra]: [boolean, string, Record<string, string>]) => {
     if (on) localStorage.setItem("reiad-session", who);
     for (const [k, v] of Object.entries(extra)) localStorage.setItem(k, v);
@@ -817,6 +854,20 @@ console.log("\nsetting the account up, then changing it");
 
   await page.getByRole("tab", { name: "Preferences" }).click();
   await page.waitForTimeout(200);
+
+  /* THE READ NAMES THE READER. Everything below this line reads
+     the reader's own answers back, and every one of them passed
+     for a fortnight against a profile that was somebody else's,
+     because the fixture answered any GET with the right row and
+     the real database does not. Said out loud and first, so that
+     a missing filter fails as itself rather than as eleven
+     confusing assertions about a name. */
+  const asked = state.reads.filter((u) => u.includes("/profiles?"));
+  ok("the profile is read at all", asked.length > 0);
+  ok("and every read of it names the reader",
+    asked.every((u) => u.includes(`id=eq.${ME}`)),
+    asked.find((u) => !u.includes(`id=eq.${ME}`)) ?? "");
+
   is("a reader who has never answered is asked",
     await page.locator("#settings-label").textContent(), "Set up your account");
   ok("and is offered a way out of being asked",

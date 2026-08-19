@@ -428,6 +428,43 @@ throw and stops sync pushing ticks, and four of its sections went
 red at once without anybody seeing it. A test that needs a server
 started by hand is a test that does not run.
 
+### One table is readable by anyone, so its read names the reader
+
+`public.profiles` is the only table here whose select policy is
+`using (true)`, and that is deliberate: a comment shows its
+author's name to somebody who is not signed in, and the name is
+the whole of what the table holds. Every other table is
+`auth.uid() = user_id`, so a read with no filter returns your own
+rows and nothing else.
+
+**That makes `profiles` the one read where the filter is load
+bearing rather than a second lock**, and it was the one read that
+did not have it. `getProfile()` asked for
+`profiles?select=...&limit=1`, so PostgREST answered with
+whichever row the planner reached first out of the whole table.
+With one account that was always the right one. With two it was
+worse than a coin toss: a non-HOT update moves a row to the end of
+the heap, so SAVING your profile is what made the next read return
+somebody else's. The account page drew a stranger's name, courses
+and pace, `setup_at` came back null so the setup form reappeared,
+and pressing Save again wrote the right row and guaranteed the same
+wrong read. "It saves and goes back to how it was", for ever, by
+construction.
+
+The reverse is written out beside `saveProfile`, which carries
+`id=eq.<me>` and explains that it does so even though the policy
+already makes it impossible to touch anyone else's row. Two locks
+on the door that is never meant to open, and none on the one that
+is.
+
+`next/account.test.ts` is the guard, and the reason it was not is
+worth more than the fix. Its fake answered every GET on `profiles`
+with the reader's own row, which is kinder than Postgres, so 117
+checks passed against a page that was drawing the wrong person.
+A fixture that is more forgiving than the thing it stands in for
+is not a test. It holds a second row now, returns it first when
+the filter is missing, and says so.
+
 ### The two things an account holds that are not a tick
 
 `aab/saved.js`, and two tables in
