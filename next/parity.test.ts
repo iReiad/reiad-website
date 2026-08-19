@@ -1131,6 +1131,39 @@ for (const [path, title, nav] of HAND_WRITTEN) {
       !dhap.html.includes("buch-cta") && !dhap.html.includes("wb-cta"));
   }
 
+  /* ---- the trail says every level, on the pages that have most ----
+
+     A school page is the deepest thing on this site and had the
+     shortest trail: the bar read Home > Skills > German three
+     levels down, so the ladder a reader had walked was not in it
+     and the only way back up was the rail. `[slug]` IS the stage
+     and the layout that reads it is the deepest one that can,
+     because a layout cannot see a child's params.
+
+     Only this file can check it. The 251 school routes are
+     dynamic and need the database, so the browser test that
+     covers the trail everywhere else serves prerendered HTML and
+     cannot reach one. */
+  {
+    const stage = await hub("/deutsch/stufe-1");
+    ok("a stage page names the stage in the trail",
+      stage.html.includes("Stufe 1") && stage.html.includes("crumbs-bar"),
+      "no stage crumb in the bar");
+    ok("and the arrow before it opens the ladder",
+      stage.html.includes("crumb-step") && stage.html.includes("crumb-menu"),
+      "no menu on the trail");
+    /* Every rung, not just the one you are on: the menu IS the
+       ladder, which is what makes the trail a way sideways. */
+    const rungs = ["stufe-1", "stufe-2", "stufe-3", "stufe-4"]
+      .filter((r) => stage.html.includes(`/deutsch/${r}"`));
+    ok("and lists every stage of the school", rungs.length === 4, rungs.join(", "));
+
+    const lesson = await hub("/deutsch/stufe-1/anfang.html");
+    ok("a lesson three levels down carries the same trail",
+      lesson.html.includes("Stufe 1") && lesson.html.includes("crumb-menu"),
+      "the lesson lost the stage crumb");
+  }
+
   /* ---- the eighteen originals, which are a different thing ----
 
      `/money/terms/*.html` is not a generated page and never has

@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v146: `/fallback.css`. The trail in the bar gained an arrow
+        that opens what else is at that level, and the two pages
+        that are files link the fallback stylesheet by name. A
+        precached copy of the old one draws the new markup with
+        no rule for it, which is an unstyled row rather than a
+        missing one.
+
    v145: `/account.js`. `getProfile()` read `profiles` with no
         `id=eq.<me>` on it, and that is the one table whose select
         policy is `using (true)`, so PostgREST answered with
@@ -1486,7 +1493,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v145";
+const VERSION = "v146";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -522,6 +522,94 @@ for (const [label, api, web3, expected] of SENDING) {
   await page.close();
 }
 
+/* ============================================================
+   The trail in the bar, and the arrows that open it.
+
+   Three things this cannot be checked without a browser for. The
+   arrow is a `<button>` and the panel is `[popover]`, so whether
+   it OPENS is the browser's own behaviour and not this site's;
+   whether Escape closes it is the same; and whether it needs any
+   JavaScript of ours to do either is the whole design claim,
+   which only a page with our scripts blocked can settle.
+
+   Only prerendered pages here, because that is what this file's
+   server can hold: the 251 school pages are dynamic and their
+   trail is `next/parity.test.ts`'s to check.
+   ============================================================ */
+console.log("\nthe trail, and what its arrows open");
+{
+  const { page, errors } = await open("/skills");
+
+  ok("the trail is in the bar", await page.locator(".topbar .crumbs-bar").count() === 1);
+
+  /* The mark is the home crumb, so the first crumb the row draws
+     is the second of the trail and still has a level in front of
+     it. It lost its arrow for a while by being sliced off the
+     front of the array instead of skipped. */
+  const arrows = page.locator(".crumbs-bar .crumb-step");
+  ok("and the crumb after the mark keeps its arrow", await arrows.count() >= 1,
+    `${await arrows.count()} arrow(s)`);
+
+  ok("which is a real button", await arrows.first().evaluate(
+    (el: Element) => el.tagName === "BUTTON" && (el as HTMLButtonElement).type === "button"));
+  ok("with a label a screen reader can read",
+    ((await arrows.first().getAttribute("aria-label")) ?? "").length > 3);
+
+  /* Nothing is open until something is pressed. A panel that
+     renders open is a panel the reader has to dismiss. */
+  ok("nothing is open to begin with",
+    await page.locator(".crumb-menu:popover-open").count() === 0);
+
+  await arrows.first().click();
+  await page.waitForTimeout(300);
+  const open1 = page.locator(".crumb-menu:popover-open");
+  ok("pressing it opens the menu", await open1.count() === 1);
+
+  const rows = await open1.locator("a").count();
+  ok("which lists where else you could be", rows > 1, `${rows} row(s)`);
+  ok("and marks the one you are on",
+    await open1.locator('a[aria-current="page"]').count() === 1);
+
+  /* On screen and inside the window. A panel positioned off the
+     edge is a panel that opened and cannot be read, which looks
+     identical in the DOM to one that worked. */
+  const box = await open1.boundingBox();
+  const view = page.viewportSize();
+  ok("the panel is on screen", Boolean(box) && (box?.width ?? 0) > 80 && (box?.height ?? 0) > 40,
+    JSON.stringify(box));
+  ok("and inside the window",
+    Boolean(box && view && box.x >= 0 && box.y >= 0 && box.x + box.width <= view.width + 1),
+    JSON.stringify({ box, view }));
+
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(250);
+  ok("Escape closes it, which is the browser's job and not ours",
+    await page.locator(".crumb-menu:popover-open").count() === 0);
+
+  ok("no page errors", errors.length === 0, errors[0]);
+  await page.close();
+}
+
+/* And the half that has to keep working with no JavaScript at
+   all, because that is the reason it is a popover rather than a
+   component: this is chrome on 251 pages. */
+{
+  const page = await browser.newPage();
+  await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
+  await page.route("**/*.js", (r: Route) => r.abort());
+  await page.goto(`http://localhost:${PORT}/skills`, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(400);
+
+  ok("with every script blocked, the trail is still drawn",
+    await page.locator(".crumbs-bar li").count() >= 1);
+  const arrow = page.locator(".crumbs-bar .crumb-step").first();
+  await arrow.click();
+  await page.waitForTimeout(300);
+  ok("and the arrow still opens its menu",
+    await page.locator(".crumb-menu:popover-open").count() === 1);
+  await page.close();
+}
+
 await browser.close();
 server.close();
 

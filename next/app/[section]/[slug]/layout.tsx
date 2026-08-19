@@ -48,7 +48,14 @@ export default async function ReadingLayout({
 }) {
   const { section, slug } = await params;
 
-  if (isSchool(section)) return <SchoolShell school={section}>{children}</SchoolShell>;
+  /* `slug` IS the stage, and this is the deepest segment that
+     knows it: a lesson is one below and a layout cannot read a
+     child's params. Handing it down is what completes the trail
+     for the 251 pages inside a ladder, which said
+     Home > Skills > German three levels deep before. */
+  if (isSchool(section)) {
+    return <SchoolShell school={section} stage={slug}>{children}</SchoolShell>;
+  }
 
   const article = await getArticle(section, slug);
   if (!article) notFound();
@@ -88,7 +95,15 @@ export default async function ReadingLayout({
     turns on, which nav link is marked, the footer note and the
     school's own script. `LOOKS` in `lib/school.ts` holds all
     five, beside the wording the page itself uses. */
-export function SchoolShell({ school, children }: { school: string; children: ReactNode }) {
+export function SchoolShell({ school, stage, children }: {
+  school: string;
+  /** The stage this page is inside, where there is one. The hub
+      one segment up passes nothing, because a hub is not inside a
+      stage; a stage page and every lesson under it pass the slug,
+      and that is the crumb the trail was missing. */
+  stage?: string;
+  children: ReactNode;
+}) {
   const look = LOOKS[school];
 
   return (
@@ -98,6 +113,7 @@ export function SchoolShell({ school, children }: { school: string; children: Re
       current={look.current}
       footer={look.footer}
       skip="মূল লেখায় যান"
+      crumbs={trailFor(look.current, [], stage)}
       /* Only the script every page of the school loads. The one
          a particular KIND of page loads is not here and cannot
          be: a lesson loads `/quran/dars.js` and its stage's
