@@ -4,7 +4,9 @@ A plan, in the shape `ROUTINE.md` is in: the constraints first,
 then what each panel shows and where every number comes from,
 then what it deliberately will not do, then the order to build it.
 
-Written 19 August 2026. Nothing in this file has been built yet.
+Written 19 August 2026. **Stage 1 of §6 is built**: the route, the
+shell, the two sign-ins and Health, plus the two checks in §5.
+Everything else here is still a plan.
 
 ## 0. The rule this whole plan is under
 
@@ -235,12 +237,25 @@ Each one exists because the failure it catches is invisible.
   exists because adding a route and forgetting the gate produces a
   working endpoint, and the only symptom is that it works for
   everybody.
-- **`next/admin.test.ts`.** The panel driven in a real browser
-  with each credential and with neither: with none it offers two
-  ways in and shows Health; with one it shows that half and names
-  what the other needs; with both it shows everything. Plus the
-  rule from `app/desk.test.ts`: **a panel that cannot reach its
-  data says so rather than drawing an empty list.**
+- **`scripts/admin.test.ts`.** The parts of this plan that can be
+  broken silently, written down: the route has a layout and is
+  noindex and unlisted, the health endpoint returns no secret's
+  value, the panel mints neither credential from the other and
+  keeps no second admin list, and a missing credential names what
+  it would open rather than drawing an empty list, which is the
+  rule `app/desk.test.ts` was written for.
+
+  Node rather than a browser, and deliberately: every claim there
+  is a claim about SOURCE, and all of it is true of a page that
+  renders perfectly. The browser half is `app/desk.test.ts`
+  already, and it moves across panel by panel with §6 stage 5.
+
+  It also asserts that every path this file names exists, which
+  is `check-pointers.ts` again, said a second time for the one
+  file most likely to name something ahead of itself. It caught
+  this plan naming two checks that had not been written, which is
+  the failure `CLAUDE.md` records: twenty-five stale names in one
+  sweep, two of which promised a check nobody had ever written.
 - The component debt ledger. Every panel is built from
   `next/components/ui/`, so `check-components.ts` does not move.
 

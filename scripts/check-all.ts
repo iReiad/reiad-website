@@ -95,6 +95,11 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        old system is a recorded list now and the list may only
        get shorter. */
     "scripts/check-closed.ts",
+    /* Every endpoint under functions/api/ is gated or is public
+       on purpose and says why. Forgetting a gate produces an
+       endpoint that answers, returns the right shape, passes
+       every other check, and works for everybody. */
+    "scripts/check-admin.ts",
     /* The extension rule, which was a paragraph in CLAUDE.md
        until 19 August 2026 and was broken anyway: the
        neighbours are the pattern, so somebody adding a test
@@ -118,6 +123,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/restore.test.ts",
     "scripts/snapshot.test.ts",
     "scripts/routine.test.ts",
+    "scripts/admin.test.ts",
     "scripts/schools.test.ts",
     "scripts/schools-api.test.ts",
     "functions/_lib/notion.test.ts",
