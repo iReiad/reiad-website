@@ -1,7 +1,7 @@
 /* ============================================================
-   comments.test.mjs: the thread under a piece, as markup.
+   comments.test.ts: the thread under a piece, as markup.
 
-     node next/comments.test.mjs
+     node next/comments.test.ts
 
    `aab/comments.js` was 219 lines of `document.createElement` and
    it is `components/comments.tsx` now. A port is finished when it
@@ -76,8 +76,8 @@ const { Comments, CommentCard, renderToStaticMarkup: render } = await import(
 const { createElement: h } = await import("react");
 
 let passed = 0;
-const failures = [];
-const ok = (name, condition, detail = "") => {
+const failures: string[] = [];
+const ok = (name: string, condition: unknown, detail = ""): void => {
   if (condition) { passed += 1; return; }
   failures.push(detail ? `${name}\n      ${detail}` : name);
 };

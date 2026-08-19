@@ -257,6 +257,26 @@ production. `scripts/sqlite-d1.ts` is the one copy, and it is the
 interface the Worker really hands a handler rather than a stub
 written to be convenient.
 
+### next/
+
+The routes and components were always TypeScript. What was not is
+the node-side files beside them, and they are the reason the debt
+kept growing: five `.mjs` test files are five neighbours to copy,
+and the first thing written after `scripts/` finished was a sixth
+and a seventh.
+
+**Done (3):** `comments.test.ts` `article.test.ts` `dev-worker.ts`.
+
+**Left (4):** `parity.test.mjs` (1,222 lines and the most valuable
+test here, so it goes last), `interactive.test.mjs`,
+`account.test.mjs`, `progress.test.mjs`. `postcss.config.mjs` is
+not one of them: a PostCSS config is read by the tool, not by us.
+
+Nothing extra is needed to hold these to their types.
+`next build` typechecks everything in `next/tsconfig.json` and
+fails on an error, which is how the three above were caught with
+44 of them between them, all of which a rename would have left.
+
 ### Worker
 
 `functions/` is compiled by wrangler's esbuild, which type-strips with no

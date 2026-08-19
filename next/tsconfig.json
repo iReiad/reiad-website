@@ -25,6 +25,17 @@
       "@/*": [
         "./*"
       ],
+      /* For the browser tests, which `tsconfig.test.json` checks
+         and this config deliberately excludes. It lives here
+         because `paths` REPLACES rather than merges: a child
+         config that adds one entry loses the seven below, which
+         is 23 errors and twenty minutes.
+
+         Costs the app nothing. Nothing under `app/` imports
+         playwright, so this maps a specifier no route resolves. */
+      "playwright": [
+        "../app/node_modules/playwright"
+      ],
       "/account.js": [
         "../app/src/types/account.d.ts"
       ],
@@ -62,7 +73,21 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
+  /* THE TEST FILES ARE NOT THE APP'S, and this line is load-bearing.
+
+     `next build` typechecks everything this config includes, so a
+     `*.test.ts` in here makes the PRODUCTION BUILD depend on
+     whatever the tests import: playwright is a devDependency of
+     `app/`, and Cloudflare's build installs `next/` and nothing
+     else. It compiled on a laptop that happened to have `app/`
+     installed and failed on the deploy, which is the shape
+     `aab/schools/workbook.test.mjs` warns about at length.
+
+     `tsconfig.test.json` is what typechecks them, and
+     `scripts/check-types.ts` runs it. */
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "*.test.ts",
+    "dev-worker.ts"
   ]
 }

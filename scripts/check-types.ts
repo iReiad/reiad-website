@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-types.ts: the checks and the generators, typechecked.
+   check-types.ts: the node-side TypeScript, typechecked.
 
        node scripts/check-types.ts
 
@@ -24,6 +24,35 @@
 
    `scripts/tsconfig.json` is the settings and says why each is
    what it is.
+
+   ---- and the same trap one directory along ----
+
+   `next/tsconfig.test.json` is here for the same reason and it
+   took a red deploy to find. The browser tests beside the app
+   were in `next/tsconfig.json` at first, which sounded better than
+   a second config: `next build` typechecks that one, so the build
+   would hold them to their types for free.
+
+   It holds the PRODUCTION BUILD to the tests' imports as well.
+   Playwright is a devDependency of `app/` and Cloudflare's build
+   installs `next/` and nothing else, so `next build` compiled
+   here, where `app/` happens to be installed, and failed on the
+   deploy with two missing modules. They are excluded there and
+   checked here, which is where a check on our own source belongs.
+
+   ---- and that one needs `next/node_modules`, which CI has not ----
+
+   `checks.yml` runs `npm ci` at the ROOT and nowhere else, for
+   the reason written beside it: the root package.json is not a
+   dependency of the site, it is there for the three `--check`
+   steps and for linkedom. So `@cloudflare/workers-types` and
+   every React type the components lean on are absent, and this
+   config cannot be run there.
+
+   It says so and moves on, rather than failing on a runner that
+   was never going to have them or passing quietly as if it had
+   looked. A SKIP IS NOT A PASS: the line names what to run and
+   where, the same way every optional test in `CLAUDE.md` does.
 
    ---- and the second half: no JavaScript here at all ----
 
@@ -52,13 +81,33 @@
    ============================================================ */
 
 import { execFileSync } from "node:child_process";
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const HERE = join(ROOT, "scripts");
-const CONFIG = join(HERE, "tsconfig.json");
+
+/** Every config covering TypeScript that node runs directly and
+    no build compiles. What `next build` already checks is
+    deliberately absent: one check per thing. */
+interface Config {
+  what: string;
+  config: string;
+  /** A directory whose `node_modules` this config needs. Absent
+      for one that leans on the root install, which is the only
+      one CI does. */
+  needs?: string;
+}
+
+const CONFIGS: Config[] = [
+  { what: "scripts/", config: join(HERE, "tsconfig.json") },
+  {
+    what: "next/ (the browser tests)",
+    config: join(ROOT, "next", "tsconfig.test.json"),
+    needs: join(ROOT, "next"),
+  },
+];
 
 /* `fixtures/` is captured data rather than code: the Drive
    listing `import-courses.ts` rebuilds the catalogue from. */
@@ -86,18 +135,32 @@ if (javascript.length) {
   process.exit(1);
 }
 
-try {
-  execFileSync("npx", ["tsc", "-p", CONFIG], { cwd: ROOT, stdio: "pipe" });
-} catch (err) {
-  /* tsc writes its complaints to stdout, not stderr, which is
-     why this prints the one and not the other. A check that
-     failed and said nothing is a check nobody can act on. */
-  const out = (err as { stdout?: Buffer }).stdout?.toString() ?? "";
-  console.error(out.trim() || "tsc failed and said nothing.");
-  console.error("\nscripts/ does not typecheck. Node strips these types without"
-    + " reading them,\nso nothing else would have told you.\n");
-  process.exit(1);
+const skipped: string[] = [];
+
+for (const { what, config, needs } of CONFIGS) {
+  if (needs && !existsSync(join(needs, "node_modules"))) {
+    skipped.push(what);
+    continue;
+  }
+  try {
+    execFileSync("npx", ["tsc", "-p", config], { cwd: ROOT, stdio: "pipe" });
+  } catch (err) {
+    /* tsc writes its complaints to stdout, not stderr, which is
+       why this prints the one and not the other. A check that
+       failed and said nothing is a check nobody can act on. */
+    const out = (err as { stdout?: Buffer }).stdout?.toString() ?? "";
+    console.error(out.trim() || "tsc failed and said nothing.");
+    console.error(`\n${what} does not typecheck. Node strips these types without`
+      + " reading them,\nso nothing else would have told you.\n");
+    process.exit(1);
+  }
 }
 
-console.log("scripts: no JavaScript, and every .ts file typechecks under"
-  + " scripts/tsconfig.json.");
+const ran = CONFIGS.length - skipped.length;
+console.log("types: no JavaScript in scripts/, and every .ts file node runs"
+  + `\n       directly typechecks, under ${ran} of ${CONFIGS.length} config(s).`);
+for (const what of skipped) {
+  console.log(`       SKIPPED ${what}: no node_modules there, so the types it`
+    + `\n       needs are absent. This is not a pass. Run it where they are:`
+    + `\n         cd next && npm install && cd .. && node scripts/check-types.ts`);
+}
