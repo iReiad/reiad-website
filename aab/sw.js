@@ -1479,8 +1479,6 @@ const PRECACHE = [
      imports it too, so a shell without it is an account page that
      does not load and a stock check with no Save button. */
   "/saved.js",
-  /* The Save and the note under the byline of every piece and
-     every lesson. */
   /* How the reader wants to be read to. The boot script in the
      shell applies the same values before the first paint without
      this file, so a stale shell is a preferences panel that does
