@@ -300,7 +300,14 @@ for (const pattern of WORKER_FIRST) {
    the failure is exactly the kind this repository writes down:
    silent, and only wrong later. Every path below has to be
    covered by a rule in that file. */
-const DEV_ONLY = /(^|\/)(check-[^/]*\.mjs|build-[^/]*\.mjs|[^/]*\.test\.mjs)$|^src\/|\.sql$|scorecard\.fetch\.mjs$/;
+/* `.mjs` OR `.ts`, and the second half is not hypothetical. The
+   checks and the tests are being converted to TypeScript, which
+   node runs directly, and a rule that only knew `.mjs` would go
+   quiet at exactly the moment the files it guards changed name.
+   The whole point of this block is that the failure is silent. */
+const DEV_ONLY = new RegExp(
+  "(^|/)(check-[^/]*\\.(mjs|ts)|build-[^/]*\\.(mjs|ts)|[^/]*\\.test\\.(mjs|ts))$"
+  + "|^src/|\\.sql$|scorecard\\.fetch\\.(mjs|ts)$");
 
 const IGNORED = readFileSync(join(AAB, ".assetsignore"), "utf8")
   .split("\n")

@@ -29,7 +29,7 @@
    ---- this file is TypeScript, and the .js beside it is built ----
 
    archive/TRANSITION.md Stage 13, and the first module to move. Edit
-   `aab/src/share-card.ts`; `node scripts/build-modules.mjs`
+   `aab/src/share-card.ts`; `node scripts/build-modules.ts`
    writes `aab/share-card.js`, which is what the browser fetches
    and what is committed. `scripts/check-modules.mjs` rebuilds and
    compares, so an edit to the output alone fails a check rather

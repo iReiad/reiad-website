@@ -4,13 +4,13 @@ Four moves, all part-done. The rule is **convert what you touch**: any file
 you edit for another reason gets converted in the same change, wired up
 properly, with its checks passing. No separate "migration sprint".
 
-Updated 18 August 2026.
+Updated 19 August 2026.
 
 ## 1. JavaScript to TypeScript
 
 ### Browser modules
 
-Built from `aab/src/*.ts` to `aab/*.js` by `scripts/build-modules.mjs`. The
+Built from `aab/src/*.ts` to `aab/*.js` by `scripts/build-modules.ts`. The
 built file is committed because the site deploys by uploading `aab/` with no
 build step.
 
@@ -18,32 +18,137 @@ build step.
 `photo` `prefs` `saved` `share-card` `signin` `sync` `tools/live`
 `tools/tools`
 
-**Left (20),** largest first:
+### The 31 served modules, classified
 
-| File | Lines | Notes |
-| --- | ---: | --- |
-| `sw.js` | 1211 | service worker. Convert last: it is precached and a mistake logs nobody out but serves stale everything |
-| `editor.js` | 953 | the contenteditable. Two Studios import it |
-| `content.js` | 825 | menu, palette, `COUNTS`. Imported by checks that run in node |
-| `app.js` | 649 | theme, palette, prerender, service-worker registration |
-| `account.js` | 418 | Supabase session. `token()` is imported by most of `aab/src/` |
-| `tilt.js` | 283 | |
-| `audience.js` | 282 | |
-| `news.js` | 247 | |
-| `comments.js` | 220 | |
-| `auth.js` | 217 | the Studio's gate |
-| `engage.js` | 187 | |
-| `read-aloud.js` | 151 | |
-| `about.js` | 145 | |
-| `streak.js` | 123 | writes `days-active` |
-| `pieces.js` | 121 | |
-| `hub.js` | 98 | |
-| `pulse.js` | 84 | |
-| `contact-form.js` | 65 | |
-| `activation.js` | 62 | |
-| `auth-config.js` | 36 | |
+Every module in `aab/` read, and asked one question: **what is this
+for?** Four answers, and the answer decides where it goes rather than
+its size.
+
+| | |
+| --- | --- |
+| **interface** | a page's own behaviour. It becomes a React component and the file goes |
+| **service** | something more than one page needs at run time: the session, the mirror, storage, the API. It stays a served module, read through `runtimeModule()` |
+| **shell** | what every page loads. It goes into `next/components/` piece by piece, and what is left of it is what a Next route genuinely cannot do |
+| **infrastructure** | the service worker, which is not a module a page loads at all |
+
+`loads` is how many routes name it in `SiteScripts`; `imports` is how
+many other modules import it. A file with neither is either dead or
+loaded by something not counted here, and both were worth checking.
+
+| File | Lines | | Verdict |
+| --- | ---: | --- | --- |
+| `sw.js` | 1628 | | **infrastructure.** Convert last, and to TypeScript rather than to a component. A mistake here logs nobody out and serves stale everything |
+| `courses.js` | 999 | ts | **interface.** All four pages of `/skills/courses/`. The largest single conversion left |
+| `editor.js` | 952 | | **service, permanently.** A `contenteditable` is a piece of the DOM the browser and the writer are both editing behind React's back. `CLAUDE.md` says why a second copy is the bug |
+| `content.js` | 826 | | **service**, and the one that unblocks the most. `COUNTS`, `PAGES` and `SECTIONS` are read by ten modules and by three checks that run in node. It wants to be `shared/`, not a component |
+| `app.js` | 605 | | **shell.** Eight jobs; the theme and the boot are already `shell.tsx`'s. What is left that a route cannot do: the palette, the shortcut sheet, speculation rules and the service-worker registration |
+| `sync.js` | 513 | ts | **service.** The account is the record and this is the mirror. Nothing about it is a page |
+| `account.js` | 417 | | **service.** The session. Eighteen importers, more than anything else here |
+| `crumbs.js` | 351 | ts | **interface**, and half converted: `<Crumbs>` exists and only the course pages use it. The other 250 pages still get their trail from here |
+| `signin.js` | 347 | ts | **interface.** The account menu, which is a `popover` |
+| `tilt.js` | 282 | | **interface.** A pointer effect on cards |
+| `audience.js` | 281 | | **shell.** The learn/work switch, whose markup is already `sidebar.tsx`'s |
+| `news.js` | 246 | | **interface.** The headline card and the mini window, shared by `pulse.js` and `about.js` |
+| `saved.js` | 240 | ts | **service.** Scenarios, targets and the library |
+| `keep.js` | 220 | ts | **interface.** The Save and Add a note under a byline |
+| `comments.js` | 219 | | **interface.** The thread under a piece |
+| `auth.js` | 216 | | **service.** The Studio's gate |
+| `checkpoints.js` | 209 | ts | **service.** The ticks inside a lesson, filed under a school's own key |
+| `account-page.js` | 203 | ts | **shell**, and finished: four jobs left and the section above says why each stays |
+| `engage.js` | 186 | | **interface.** Reactions and reader questions |
+| `prefs.js` | 181 | ts | **service.** Applied before the first paint by `shell.tsx`, carried by `sync.ts` |
+| `read-aloud.js` | 150 | | **interface.** The speech control on a piece |
+| `photo.js` | 144 | ts | **service.** Decoding a pasted photo. Never a fetch: `CLAUDE.md` says what that cost |
+| `about.js` | 144 | | **interface.** A tally and a research window. The tally wants server rendering, which needs `content.js` in `shared/` first |
+| `api.js` | 133 | ts | **service.** Every endpoint this site has |
+| `share-card.js` | 123 | ts | **service.** Draws the 1200×630 JPEG a pasted link shows |
+| `streak.js` | 122 | | **service.** `days-active`, which four things count |
+| `pieces.js` | 116 | | **service**, and smaller than it was: see below |
+| `hub.js` | 97 | | **interface.** The filter row on the three reading hubs |
+| `pulse.js` | 83 | | **interface.** The market pulse on the Insights hub. Not `pulse-card.tsx`, which is the home page's card of WRITING: two things with one name |
+| `activation.js` | 61 | | **service.** Whether the dynamic layer is reachable |
+| `auth-config.js` | 35 | | **service.** One constant the gate reads |
+
+**Done: `contact-form.js`**, 64 lines, the first one moved.
+`components/contact-form.tsx` renders the `<form>` around markup the
+route still writes, so the third of its three ways still works: with
+no JavaScript at all the form POSTs to Web3Forms on its own. That
+matters more here than anywhere else on the site, because this is the
+page a reader with a broken script is using to reach a person.
+
+**And what the survey found dead.** `initArticleCards()` in `app.js`
+filled `#article-cards`, and nothing renders that id: the hubs draw
+their own cards on the server from `next/lib/hub.ts` and the home page
+has `<FeaturedCard>`, `<ContinueCard>` and `<PulseCard>`. The only two
+documents left carrying it are in `archive/`, which nothing serves. It
+took `piecesIn` and `filePieces` off `pieces.js` with it, and four
+imports off `app.js`. `allPieces()` stays: it feeds the palette, which
+is on every page.
+
+### Which of them are still JavaScript
+
+The `ts` column above is the whole answer, and it is deliberately not a
+second table: a list of nineteen filenames with their line counts beside
+the same nineteen filenames with their line counts is the failure at the
+top of `CLAUDE.md`, in a file about migrations.
+
+**Still JS (19):** `about` `app` `account` `activation` `audience`
+`auth` `auth-config` `comments` `content` `editor` `engage` `hub`
+`news` `pieces` `pulse` `read-aloud` `streak` `sw` `tilt`
+
+The two lists are not the same job and are not done in the same order.
+A module that becomes a component does not need converting first: it
+is rewritten in TSX and the `.js` is archived, which is one change
+rather than two. A module that stays a **service** is the one worth
+converting, because it is the one that is going to be read by
+TypeScript at the other end.
 
 Also `aab/schools/*.js` (the three-school engine) and `aab/*/curriculum.js`.
+
+### The checks and the generators
+
+`scripts/` was 35 files of `.mjs`, which is JavaScript with a
+different extension. Node has stripped TypeScript types on its own
+since 22.18, so `node scripts/check-css.ts` runs with no build step,
+no loader and no configuration: converting is a rename plus the
+types.
+
+**IT IS THE RENAME THAT IS THE TRAP.** Stripping is not checking. A
+`.ts` file nothing typechecks is a `.js` file wearing annotations,
+and it is worse than the `.mjs` was, because a reader believes them.
+So `scripts/tsconfig.json` and `scripts/check-types.ts` landed with
+the first chunk, and that check is in `check-all.mjs`: a file is not
+converted until it typechecks under `strict`.
+
+**Done (6):** `build-fallback` `build-modules` `build-school-icons`
+`build-school-tree` `lib/coursera` `lib/css-tokens`
+
+**Left (29):** the seventeen `check-*.mjs`, the seven `*.test.mjs`,
+and `export-schools` `import-courses` `import-schools` `preview`
+`restore` `school-source` `schools-snapshot`.
+
+Two things came out of the first chunk that were not the types.
+
+`kindOf()` in `lib/coursera.ts` returned `"file"`, and no file in a
+Coursera export is ever a `file`: `splitName()` answers `attachment`
+for one. Two vocabularies with four words in common, conflated under
+one name, and the arrow between them was a function whose return
+type nothing checked. A LESSON is one of five kinds and a FILE is
+one of seven; `LessonKind` in `shared/courses.ts` is imported now
+rather than written out a second time.
+
+And `.github/workflows/checks.yml` kept its own copy of the check
+list. Renaming four generators updated `check-all.mjs` and every
+document that named them, and not the workflow, so CI would have
+failed on files that no longer existed for a rename that was
+correct. It calls `check-all.mjs --stage=<name>` now, once per step,
+so the steps stay separate in the interface and the list stays in
+one place.
+
+`scripts/check-routes.js` and `aab/.assetsignore` widened to `.ts`
+before any file in `aab/` converts, rather than after: a `.ts` test
+beside the others would otherwise be published at its own public
+URL, and the rule that catches that only knew `.mjs`.
 
 ### Worker
 
@@ -152,7 +257,7 @@ not been got to:
 Four things came out of it that are not about where code lives.
 
 **The ladder each bar counts against comes down from the ROUTE**, out
-of `next/lib/school-ladders.ts`, which `scripts/build-school-tree.mjs`
+of `next/lib/school-ladders.ts`, which `scripts/build-school-tree.ts`
 generates from `content/schools.backup.json`. The page used to import
 all four schools' `curriculum.js` in the browser to find the
 denominator, 150 KB of modules for 20 KB of facts, and it is the exact

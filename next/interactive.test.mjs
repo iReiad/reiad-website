@@ -169,6 +169,10 @@ const TYPES = {
 const PRERENDERED = {
   ...Object.fromEntries(CASES.map(([url, file]) => [url, file])),
   "/": "index.html",
+  /* Not one of the cases either: what the contact form proves is
+     not "a module drew something" but "pressing Send reaches
+     somebody", which is the block at the foot of this file. */
+  "/contact.html": "contact.html.html",
 };
 
 const server = createServer(async (req, res) => {
@@ -405,6 +409,70 @@ for (const width of [360, 390, 412]) {
   ok("on a laptop the menu is a rail, not a drawer",
     !state.burger && !state.close && state.railMark && !state.barMark
     && !state.barSwitch && state.railSwitch && state.tree, JSON.stringify(state));
+  await page.close();
+}
+
+/* ============================================================
+   The contact form, and the three ways sending it can go
+
+   `components/contact-form.tsx` replaced `/contact-form.js` at
+   Stage B, and the thing worth checking is not that it renders.
+   It is that the fallbacks still fall back: this is the one page
+   on the site where somebody with a broken script is trying to
+   reach a person, so the form has to work three ways and say
+   which happened.
+
+   The third way is not driven here and cannot be: it is the
+   browser posting the form itself with no JavaScript, and what
+   makes it true is the `action` and the hidden fields being in
+   the markup rather than in a handler. That IS checked, because
+   the component could have swallowed them into state and the
+   page would look identical.
+   ============================================================ */
+for (const [label, api, web3, expect] of [
+  ["the site's own endpoint answers", true, true, /^Sent/],
+  ["it does not, and Web3Forms catches it", false, true, /^Sent/],
+  ["neither does, and it says so", false, false, /^Couldn't send/],
+]) {
+  const page = await browser.newPage({ viewport: { width: 1180, height: 900 } });
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.route("https://fonts.googleapis.com/**", (r) => r.abort());
+
+  let posted = 0;
+  await page.route("**/api/**", (r) => r.fulfill({
+    status: 200, contentType: "application/json", body: JSON.stringify({ ok: api }),
+  }));
+  await page.route("https://api.web3forms.com/**", (r) => {
+    posted += 1;
+    return r.fulfill({ status: 200, contentType: "application/json",
+      body: JSON.stringify({ success: web3, message: "x" }) });
+  });
+
+  await page.goto(`http://localhost:${PORT}/contact.html`, { waitUntil: "load" });
+  await page.waitForTimeout(700);
+
+  ok(`${label}: the form still posts on its own`,
+    await page.locator("form").getAttribute("action") === "https://api.web3forms.com/submit");
+  ok(`${label}: with its key and its honeypot in the markup`,
+    await page.locator('input[name="access_key"]').count() === 1
+    && await page.locator('input[name="botcheck"]').count() === 1);
+  /* Empty until there is something to say, so a live region is
+     not read out on load. */
+  ok(`${label}: and says nothing before it is used`,
+    (await page.locator("#form-status").textContent()) === "");
+
+  await page.fill("#contact-name", "A Reader");
+  await page.fill("#contact-email", "a@example.com");
+  await page.fill("#contact-message", "Hello, this is a message.");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await page.waitForTimeout(1200);
+
+  const said = await page.locator("#form-status").textContent();
+  ok(`${label}: it says what happened`, expect.test(said ?? ""), said);
+  ok(`${label}: and falls through only when it has to`,
+    api ? posted === 0 : posted === 1, `web3 posts: ${posted}`);
+  ok(`${label}: no page errors`, errors.length === 0, errors[0]);
   await page.close();
 }
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /* ============================================================
-   build-school-icons.mjs: the schools' drawings, where `next/`
+   build-school-icons.ts: the schools' drawings, where `next/`
    can reach them.
 
-       node scripts/build-school-icons.mjs           # write it
-       node scripts/build-school-icons.mjs --check   # or compare
+       node scripts/build-school-icons.ts           # write it
+       node scripts/build-school-icons.ts --check   # or compare
 
    archive/TRANSITION.md Stage 11.7. A lesson page puts a small drawing in
    its heading, and the four sets of them are browser modules
@@ -42,9 +42,21 @@ const SCHOOLS = ["money", "deutsch", "quran", "english"];
     answers for a name, so the names are found by looking and then
     confirmed by asking. A key that is not a drawing fails the
     second step and is left out. */
-async function namesOf(school) {
+/** What `aab/<school>/icons.js` exports, of the two things this
+    file asks it. They are plain JavaScript modules with no
+    declaration beside them, so the shape is stated here, where it
+    is used. */
+interface IconModule {
+  hasIcon(name: string): boolean;
+  icon(name: string): string;
+}
+
+const iconsOf = (school: string): Promise<IconModule> =>
+  import(join(ROOT, "aab", school, "icons.js")) as Promise<IconModule>;
+
+async function namesOf(school: string): Promise<string[]> {
   const src = readFileSync(join(ROOT, "aab", school, "icons.js"), "utf8");
-  const mod = await import(join(ROOT, "aab", school, "icons.js"));
+  const mod = await iconsOf(school);
   return [...src.matchAll(/^\s{2}([a-zA-Z][\w-]*):/gm)]
     .map((m) => m[1])
     .filter((name) => mod.hasIcon(name));
@@ -54,12 +66,12 @@ async function namesOf(school) {
     HTML. The wrapper is JSX in the component and carries the same
     attributes either way, exactly as `next/components/cards.tsx`
     already does for the three reading-card drawings. */
-async function innerOf(school, name) {
-  const mod = await import(join(ROOT, "aab", school, "icons.js"));
+async function innerOf(school: string, name: string): Promise<string> {
+  const mod = await iconsOf(school);
   return mod.icon(name).replace(/^<svg[^>]*>|<\/svg>$/g, "");
 }
 
-export async function generate() {
+export async function generate(): Promise<string> {
   const blocks = [];
   let count = 0;
 
@@ -76,7 +88,7 @@ export async function generate() {
   return `/* ============================================================
    school-icons.ts: GENERATED. Do not edit.
 
-       node scripts/build-school-icons.mjs
+       node scripts/build-school-icons.ts
 
    The drawings the four schools put in a lesson's heading, copied
    out of \`aab/<school>/icons.js\` because \`next/\` cannot import
@@ -121,7 +133,7 @@ if (CHECK) {
   })();
   if (have !== wanted) {
     console.error("next/lib/school-icons.ts is not what the four icons.js "
-      + "modules draw.\nRegenerate it:\n  node scripts/build-school-icons.mjs\n");
+      + "modules draw.\nRegenerate it:\n  node scripts/build-school-icons.ts\n");
     process.exit(1);
   }
   console.log("next/lib/school-icons.ts matches aab/*/icons.js.");

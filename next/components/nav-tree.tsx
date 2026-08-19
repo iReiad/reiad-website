@@ -9,7 +9,7 @@
    This is the same table read as a tree: five groups, sixteen
    destinations, and under each school the stages it is actually
    made of. `lib/school-stages.ts` is that second level, counted
-   out of the schools' own rows by `scripts/build-school-tree.mjs`
+   out of the schools' own rows by `scripts/build-school-tree.ts`
    rather than listed by hand, and generated rather than queried
    because half this site's routes are prerendered where there is
    no database to ask. Its header says the rest.

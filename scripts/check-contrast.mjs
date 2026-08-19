@@ -50,9 +50,9 @@
    that will be.
    ============================================================ */
 
-import { ratio, over, resolve, tokens } from "./lib/css-tokens.mjs";
+import { ratio, over, resolve, tokens } from "./lib/css-tokens.ts";
 
-/* The palette, resolved in both modes. `lib/css-tokens.mjs` is the
+/* The palette, resolved in both modes. `lib/css-tokens.ts` is the
    parser and it is shared with `check-surfaces.mjs`, so a token
    that stops resolving stops resolving for both rather than for
    one. */

@@ -1,7 +1,7 @@
 /* ============================================================
    school-icons.ts: GENERATED. Do not edit.
 
-       node scripts/build-school-icons.mjs
+       node scripts/build-school-icons.ts
 
    The drawings the four schools put in a lesson's heading, copied
    out of `aab/<school>/icons.js` because `next/` cannot import

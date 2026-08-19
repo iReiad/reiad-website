@@ -41,20 +41,30 @@
 # `build-meta.mjs` and `build-og.mjs` are still here. PLAN.md
 # Phase 6 is what retires them: a sitemap and an OpenGraph image
 # are both things Next has a better idiom for than a script.
+# Both extensions, because these are being converted to
+# TypeScript, which node runs directly. A rule that knew only
+# `.mjs` would go quiet at the moment the files changed name, and
+# `scripts/check-routes.js` widened with it.
 check-*.mjs
+check-*.ts
 build-*.mjs
+build-*.ts
 */build-*.mjs
+*/build-*.ts
 
 # The tests. Same.
 *.test.mjs
+*.test.ts
 */*.test.mjs
+*/*.test.ts
 
 # One-off data fetchers, run by hand when a model needs refreshing.
 portfolio/scorecard.fetch.mjs
+portfolio/scorecard.fetch.ts
 
 # The TypeScript that /api.js, /share-card.js, /photo.js and
 # /tailwind.css are compiled from. The built files are served; the
-# sources are not, and `scripts/build-modules.mjs --check` is what
+# sources are not, and `scripts/build-modules.ts --check` is what
 # keeps the two honest.
 src/
 

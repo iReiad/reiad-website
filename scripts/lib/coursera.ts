@@ -37,7 +37,43 @@
     and comes back null. That is now the ONLY thing that is
     dropped, and it took a full walk of a real export to find out
     how much the earlier rule was throwing away. */
-export function splitName(title) {
+/** What ONE FILE in the export turns out to be.
+
+    Not the same vocabulary as a LESSON's kind, and the difference
+    is easy to miss because four of the words are shared. A lesson
+    is one of five things (`LessonKind` in `shared/courses.ts`, and
+    imported below rather than written out again); a file is one of
+    these seven. A transcript is a file and never a lesson; a
+    lesson is a `file` when every part of it is an attachment.
+
+    `kindOf()` is the one place that turns the second into the
+    first, and typing them as one is what let `"file"` be returned
+    from a function whose parts could never carry it. */
+import type { LessonKind } from "../../shared/courses.ts";
+
+export type PartKind =
+  | "video" | "reading" | "quiz" | "exam"
+  | "transcript" | "captions" | "attachment";
+
+/** One file, read out of its name. */
+export interface Part {
+  n: number;
+  slug: string;
+  kind: PartKind;
+  /** What was matched off the end: `.mp4`, `_quiz.html`. */
+  suffix?: string;
+  /** The extension alone, lower case and without the dot. */
+  ext?: string;
+  /** An attachment's own document name, which a lesson part has
+      and a lesson does not. */
+  name?: string;
+  /** This slug is the FILE's name rather than a lesson title, so
+      it is not unique inside its module and the importer has to
+      qualify it with the group it came from. */
+  bare?: boolean;
+}
+
+export function splitName(title: string): Part | null {
   const match = /^(\d{2})_(.+)$/.exec(title);
   if (!match) return null;
 
@@ -106,7 +142,7 @@ export function splitName(title) {
 }
 
 /** Longest first, so `.en.txt` never loses to `.txt`. */
-const SUFFIXES = [
+const SUFFIXES: Array<[suffix: string, kind: PartKind]> = [
   [".en.txt", "transcript"],
   [".en.srt", "captions"],
   ["_instructions.html", "reading"],
@@ -142,7 +178,7 @@ const ATTACHMENT_EXT = new Set([
     its prefix. A video wins over a reading wins over a quiz: a
     step with a video in it is a video lesson whatever else came
     with it. */
-export function kindOf(parts) {
+export function kindOf(parts: Part[]): LessonKind {
   if (parts.some((p) => p.kind === "video")) return "video";
   if (parts.some((p) => p.kind === "reading")) return "reading";
   if (parts.some((p) => p.kind === "exam")) return "exam";
@@ -157,7 +193,7 @@ export function kindOf(parts) {
     so title-casing them would be this site editing somebody
     else's words. The exceptions are the handful of names that are
     wrong in lower case. */
-export function titleOf(slug) {
+export function titleOf(slug: string): string {
   const words = slug.replace(/^\d{2}_/, "").split("-").filter(Boolean);
   if (!words.length) return "";
   const said = words.map((w, i) => {
@@ -168,7 +204,7 @@ export function titleOf(slug) {
   return said.join(" ");
 }
 
-const ACRONYMS = {
+const ACRONYMS: Record<string, string> = {
   sql: "SQL", r: "R", bi: "BI", csv: "CSV", api: "API", ai: "AI",
   google: "Google", tableau: "Tableau", rstudio: "RStudio", excel: "Excel",
   bigquery: "BigQuery", kaggle: "Kaggle", tidyverse: "tidyverse",
@@ -189,7 +225,7 @@ const ACRONYMS = {
     change later: a slug is the tick's id as well, so moving one
     after somebody has ticked it loses their progress. Cheap now,
     not cheap in a month. */
-export const slugify = (name) =>
+export const slugify = (name: string): string =>
   String(name)
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -198,7 +234,7 @@ export const slugify = (name) =>
 /** A course folder is `4. Process Data from Dirty to Clean`, and
     both halves of that are wanted: the number orders the eight,
     and the rest is the title with the numbering taken off. */
-export function splitCourse(title) {
+export function splitCourse(title: string): { n: number; title: string } | null {
   const match = /^(\d+)\.\s*(.+)$/.exec(title);
   if (!match) return null;
   return { n: Number(match[1]), title: match[2].trim() };

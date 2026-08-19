@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* ============================================================
-   build-modules.mjs: the site's own modules, from TypeScript.
+   build-modules.ts: the site's own modules, from TypeScript.
 
-       node scripts/build-modules.mjs           # write them
-       node scripts/build-modules.mjs --check   # or compare
+       node scripts/build-modules.ts           # write them
+       node scripts/build-modules.ts --check   # or compare
 
    archive/TRANSITION.md Stage 13, and section 7 for why the output is
    committed rather than built in CI: the site deploys by
@@ -96,7 +96,8 @@ export function compile() {
       "--outDir", out, "--declarationDir", join(out, "types"),
     ], { cwd: ROOT, stdio: "pipe" });
 
-    const built = {};
+    /* Repo-relative path to the text that belongs at it. */
+    const built: Record<string, string> = {};
     for (const name of MODULES) {
       built[`aab/${name}.js`] = readFileSync(join(out, `${name}.js`), "utf8");
       built[`app/src/types/${name}.d.ts`] = readFileSync(join(out, "types", `${name}.d.ts`), "utf8");
@@ -122,7 +123,7 @@ if (RUN) {
   if (strays.length) {
     console.error(`aab/src/ has ${strays.length} module(s) that MODULES does not name:`);
     for (const s of strays) console.error(`   ${s.replace(/\.js$/, ".ts")}`);
-    console.error("\nAdd them to MODULES in scripts/build-modules.mjs, or they compile\n"
+    console.error("\nAdd them to MODULES in scripts/build-modules.ts, or they compile\n"
       + "to nothing anybody serves.\n");
     process.exit(1);
   }
@@ -137,7 +138,7 @@ if (RUN) {
       console.error(`${wrong.length} built file(s) are not what aab/src/ compiles to:`);
       for (const [rel] of wrong) console.error(`   ${rel}`);
       console.error("\nEdit the TypeScript, not the output:\n"
-        + "  node scripts/build-modules.mjs\n");
+        + "  node scripts/build-modules.ts\n");
       process.exit(1);
     }
     console.log(`modules: ${MODULES.length} built file(s) match aab/src/.`);

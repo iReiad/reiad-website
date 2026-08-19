@@ -74,7 +74,7 @@ same change**, wired up properly, with its checks passing.
 
 | From | To |
 | --- | --- |
-| a hand-written `aab/*.js` | `aab/src/*.ts`, built by `build-modules.mjs` |
+| a hand-written `aab/*.js` | `aab/src/*.ts`, built by `build-modules.ts` |
 | a `functions/**/*.js` | `.ts`. Wrangler's esbuild type-strips with no config |
 | a `<style>` block or new component markup | Tailwind utilities |
 
@@ -114,8 +114,15 @@ conversation, no asking whether it should go in.
 node scripts/check-all.mjs      # every check and fast test, about 18s
 ```
 
-That is the same list `.github/workflows/checks.yml` runs, in the same order,
-so green here is green there. The browser and network tests are listed under
+**That file IS the list.** `.github/workflows/checks.yml` calls it, once
+per stage, rather than keeping a second copy: it kept one until 19
+August 2026 and the copy went stale the first time a generator was
+renamed, which is the failure at the top of this file happening to
+the thing that catches that failure.
+
+```sh
+node scripts/check-all.mjs --stage=checks     # or generated, or tests
+``` The browser and network tests are listed under
 "Before deploying" and still have to be run by hand.
 
 **`checks.yml` runs on `push`, and that is deliberate.** On 18 August 2026
@@ -627,12 +634,14 @@ node scripts/check-courses.mjs # a Drive id that is not one, the private course
 node scripts/check-api.mjs  # the browser asking for an endpoint the Worker
                             # stopped routing, which breaks nothing and
                             # quietly switches a feature off
-node scripts/build-modules.mjs --check # a served module edited in its built
+node scripts/build-modules.ts --check # a served module edited in its built
                                        # form rather than in aab/src/
-node scripts/build-fallback.mjs --check # /fallback.css, which the two pages that
+node scripts/build-fallback.ts --check # /fallback.css, which the two pages that
                                        # are files link, no longer matching the
                                        # stylesheet it is drawn from
-node scripts/build-school-icons.mjs --check   # a school drawing next/ copied
+node scripts/check-types.ts  # scripts/ that node strips the types out of
+                            # without ever reading them
+node scripts/build-school-icons.ts --check   # a school drawing next/ copied
 node scripts/check-next.mjs # a copy inside next/ that has drifted from the
                             # thing it was copied from
 ```
@@ -724,9 +733,10 @@ node next/parity.test.mjs          # the Next.js route saying something the
                                    # the database
                                    # (114 checks, needs the build, skips without)
 node next/interactive.test.mjs     # a calculator that renders and computes
-                                   # nothing, because hydration undid it
-                                   # (28 checks, needs `npx next build` and a
-                                   # browser, skips without)
+                                   # nothing, because hydration undid it, and a
+                                   # contact form that looks sent and reached
+                                   # nobody (80 checks, needs `npx next build`
+                                   # and a browser, skips without)
 ```
 
 It really does run in a container, as of 16 August 2026, and the
@@ -947,9 +957,9 @@ Generated pages are generated. Edit the source, never the output:
 ```sh
 node aab/deutsch/build-deutsch.mjs   # the three German practice books
 node aab/english/build-english.mjs   # the English practice book
-node scripts/build-modules.mjs       # aab/share-card.js and aab/api.js from aab/src/
-node scripts/build-fallback.mjs     # aab/fallback.css from next/styles/site.css
-node scripts/build-school-icons.mjs  # next/lib/school-icons.ts from aab/*/icons.js
+node scripts/build-modules.ts       # aab/share-card.js and aab/api.js from aab/src/
+node scripts/build-fallback.ts     # aab/fallback.css from next/styles/site.css
+node scripts/build-school-icons.ts  # next/lib/school-icons.ts from aab/*/icons.js
 node aab/build-meta.mjs              # feed.xml, sitemap.xml, robots.txt
 
 cd app && npm run build             # aab/desk/**   from app/src/** (React)
@@ -981,7 +991,7 @@ nothing is served at `/styles.css` any more.
 
 `aab/fallback.css` is that stylesheet with its comments removed,
 for `404.html` and `offline.html`, which cannot link a name that
-carries a content hash. `scripts/build-fallback.mjs` writes it and
+carries a content hash. `scripts/build-fallback.ts` writes it and
 `check-next.mjs` fails if it has drifted.
 
 **Tailwind is live as of 17 August 2026, on one page.** Stage 14 set

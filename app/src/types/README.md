@@ -8,7 +8,7 @@ says so at the top of the file it came from; the rest are still
 hand-written and still describe plain JavaScript. This directory
 is done when it holds only this README.
 
-**Do not edit a generated one.** `node scripts/build-modules.mjs`
+**Do not edit a generated one.** `node scripts/build-modules.ts`
 writes it and `--check` fails if what is committed differs.
 
 

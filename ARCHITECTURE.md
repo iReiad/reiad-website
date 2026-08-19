@@ -109,7 +109,7 @@ editing its output, for a compiler the framework already has.
 on, and it is the whole stylesheet with its comments removed
 rather than the subset first attempted: 248 KB against the 416
 those two pages loaded before. A subset was wrong four times over
-before it was looked at, and `scripts/build-fallback.mjs` says
+before it was looked at, and `scripts/build-fallback.ts` says
 how at length.
 
 `next/styles/globals.css` imports the tokens, the article layer and

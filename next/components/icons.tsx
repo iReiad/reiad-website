@@ -4,7 +4,7 @@
    ---- where the paths come from ----
 
    Most of them are already in this repository. The four schools
-   each keep an `icons.js`, and `scripts/build-school-icons.mjs`
+   each keep an `icons.js`, and `scripts/build-school-icons.ts`
    copies those into `lib/school-icons.ts` because `next/` cannot
    import above its own directory. So anything the money school
    already draws is taken from there rather than redrawn: a

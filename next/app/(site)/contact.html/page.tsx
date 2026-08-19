@@ -8,12 +8,14 @@
    The form still POSTs to Web3Forms with no JavaScript at all,
    which is the third of the three ways this can go and the reason
    the action and the hidden fields are in the markup rather than
-   in a handler. `/contact-form.js` is the other two.
+   in a handler. `components/contact-form.tsx` is the other two,
+   and it renders the `<form>` around what is written here: take
+   the component off the page and the markup below still posts.
    ============================================================ */
 
 import type { Metadata } from "next";
 import { Field, TextArea } from "../../../components/ui/field";
-import { Button } from "../../../components/ui/button";
+import { ContactForm } from "../../../components/contact-form";
 import { pageMeta } from "../../../lib/pageMeta";
 import { GoCard } from "../../../components/deck";
 import { Eyebrow, SectionLabel } from "../../../components/ui/label";
@@ -54,12 +56,7 @@ export default function ContactPage() {
              designed to be public: it can only send TO you, never read
              anything. "botcheck" is a hidden honeypot: humans never see
              it, spam bots fill it, Web3Forms drops those submissions. */}
-            <form
-              className="flex flex-col gap-4"
-              id="contact-form"
-              action="https://api.web3forms.com/submit"
-              method="POST"
-            >
+            <ContactForm action="https://api.web3forms.com/submit">
               <input type="hidden" name="access_key" defaultValue="015ff92f-3694-4e74-bd19-e1c7e62e422b" />
               <input type="hidden" name="subject" defaultValue="New message from reiad.co.uk" />
               <input type="hidden" name="from_name" defaultValue="reiad.co.uk contact form" />
@@ -99,17 +96,7 @@ export default function ContactPage() {
                 rows={5}
                 placeholder="A few lines about what you need: a role, a project brief, or a question."
               />
-
-              <Button type="submit" id="form-submit" kind="solid" size="lg">
-                Send message
-              </Button>
-
-              {/* `contact-form.js` writes into this. Kept as an
-                  id and a live region, because that module finds
-                  it by id and a reader needs the result announced
-                  rather than only shown. */}
-              <p id="form-status" role="status" aria-live="polite" className="text-t2 text-ink-soft" />
-            </form>
+            </ContactForm>
           </section>
           <section>
             <SectionLabel>Elsewhere

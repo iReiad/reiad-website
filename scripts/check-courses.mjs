@@ -72,7 +72,7 @@ import {
   courseUrl, moduleUrl, lessonUrl, ID_FIELDS,
 } from "../shared/courses.ts";
 import { NEXT_ROUTES } from "../worker.js";
-import { splitName } from "./lib/coursera.mjs";
+import { splitName } from "./lib/coursera.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const problems = [];
