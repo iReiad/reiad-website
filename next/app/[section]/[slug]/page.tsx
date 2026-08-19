@@ -31,6 +31,7 @@ import { dateLabel, headFacts, lookFor } from "@reiad/shared/look";
 import { getArticle, siteOrigin } from "../../../lib/article";
 import { Comments } from "@/components/comments";
 import { Engage } from "@/components/engage";
+import { ReadAloud } from "@/components/read-aloud";
 import { SiteScripts } from "../../../components/scripts";
 import { Eyebrow } from "../../../components/ui/label";
 
@@ -94,6 +95,12 @@ export default async function ArticlePage({ params }: Params) {
           <span className="dot" />
           <span>{look.minutes(article.minutes)}</span>
         </p>
+
+        {/* Under the byline, which is where `/read-aloud.js`
+            inserted itself. It renders nothing at all unless the
+            browser can speak, so this line adds nothing to the
+            HTML a reader who cannot use it is sent. */}
+        <ReadAloud />
 
         <div dangerouslySetInnerHTML={{ __html: article.body }} />
 

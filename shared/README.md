@@ -7,7 +7,13 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is four files:
+Today that is five files:
+
+- **`content.ts`** the site's own manifest: `SITE`, `SECTIONS`,
+  `SKILLS`, `TOOLS`, `PAGES`, `COUNTS` and the palette's index.
+  Every number this site says about itself is derived here rather
+  than typed into a sentence, which is the rule `check-content.ts`
+  enforces. It is the one file here with an output: see below.
 
 - **`look.ts`** the per-section table. What mount a piece is
   served at, the class on its body, the card it falls back to, how
@@ -37,6 +43,16 @@ Today that is four files:
 These are `.ts` files and there is no `.js` next to them, no build
 script in this directory and nothing to keep in step. Both
 consumers compile them:
+
+`content.ts` has one more consumer, and it is the reason for the
+only output any of these has. The BROWSER reads the manifest too,
+at `/content.js`, which is a URL `sw.js` precaches by name and
+three browser modules import. It cannot reach this directory, so
+`scripts/build-modules.ts` compiles this one file to
+`aab/content.js` the same way it compiles `aab/src/*.ts`. Edit the
+source; the output is checked against it by
+`node scripts/build-modules.ts --check`.
+
 
 - **Next** through `transpilePackages: ["@reiad/shared"]` in
   `next/next.config.ts`, which it needs because the package
@@ -79,6 +95,15 @@ files.
 
 The Worker imports them by relative path, because esbuild has no
 such restriction.
+
+**`content.ts` is deliberately not in the `exports` map**, and
+that is a fact about `next/` rather than about the file. It reads
+the four `curriculum.js` ladders, which are still the browser's
+files under `aab/`, so the copy in `next/node_modules` would
+resolve `../aab/` to something that is not the repository. Left
+out, `import … from "@reiad/shared/content"` fails at the import
+rather than at the build. The ladders moving here is what lifts
+it, and `MIGRATION.md` is where that is tracked.
 
 ## Editing one of these, and the copy that does not notice
 

@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && TARGET=desk vite build && TARGET=studio vite build",
+    "build": "tsc -b && TARGET=desk vite build && TARGET=studio vite build && node ../scripts/build-stamp.ts",
     "check": "tsc -b --noEmit",
     "build:desk": "tsc -b && TARGET=desk vite build",
     "build:studio": "tsc -b && TARGET=studio vite build"

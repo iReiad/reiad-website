@@ -47,13 +47,14 @@
 
 import { useEffect } from "react";
 
-/** A module at a path, or a classic script that is not one.
+/** A module at a path, and `crossOrigin` for the two the Vite
+    builds emit, which are fetched with the attribute set and must
+    be preloaded the same way or the browser fetches them twice.
 
-    `/read-aloud.js` is the only classic one an article loads, and
-    it stays classic: a file written for a `<script>` tag is not
-    always a file that survives being loaded as a module, and this
-    is not the change to find that out in. */
-export type ScriptSpec = string | { src: string; classic?: boolean; crossOrigin?: boolean };
+    Every one of these is a module. The option for a classic script
+    went with `/read-aloud.js`, the only file that ever used it,
+    which is `components/read-aloud.tsx` now. */
+export type ScriptSpec = string | { src: string; crossOrigin?: boolean };
 
 const spec = (s: ScriptSpec) => (typeof s === "string" ? { src: s } : s);
 
@@ -65,9 +66,9 @@ export function SiteScripts({ srcs }: { srcs: ScriptSpec[] }) {
 
   useEffect(() => {
     const added = srcs.map((entry) => {
-      const { src, classic, crossOrigin } = spec(entry);
+      const { src, crossOrigin } = spec(entry);
       const el = document.createElement("script");
-      if (!classic) el.type = "module";
+      el.type = "module";
       if (crossOrigin) el.crossOrigin = "";
       el.src = src;
       /* Appended scripts are async by default, which would run
@@ -91,12 +92,11 @@ export function SiteScripts({ srcs }: { srcs: ScriptSpec[] }) {
   return (
     <>
       {srcs.map((entry) => {
-        const { src, classic, crossOrigin } = spec(entry);
+        const { src, crossOrigin } = spec(entry);
         return (
           <link
             key={src}
-            rel={classic ? "preload" : "modulepreload"}
-            as={classic ? "script" : undefined}
+            rel="modulepreload"
             href={src}
             crossOrigin={crossOrigin ? "" : undefined}
           />

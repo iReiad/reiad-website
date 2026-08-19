@@ -171,7 +171,7 @@ exists.
 ## Numbers and lists come from the data, never from a sentence
 
 **If a page says how many of something there are, it must count them.**
-Not remember them. `COUNTS` in `aab/content.js` derives every such number
+Not remember them. `COUNTS` in `shared/content.ts` derives every such number
 from the data the site already holds, and `app.js` fills any element
 carrying `data-count`:
 
@@ -185,10 +185,10 @@ number left in the markup is the no-JavaScript fallback, so keep it
 roughly right; `check-content.ts` fails the build if it drifts.
 
 The same rule covers lists. A list of things that exist elsewhere on the
-site (case studies, articles, tools) is built from `content.js` by
+site (case studies, articles, tools) is built from `shared/content.ts` by
 `home.js` or `app.js`, and the markup in the page is a fallback, not the
-source. Adding a case study should require editing `content.js` and
-nothing else.
+source. Adding a case study should require editing `shared/content.ts`
+and nothing else.
 
 This exists because it went wrong, twice in one file. The portfolio page
 listed four case studies while seven existed, and three finished pieces of
@@ -200,11 +200,11 @@ forty-four. Nobody typed a wrong number. Each was right on the day it was
 written, and then the thing it counted grew.
 
 Two counts (`ratios`, `pillars`) are typed into `COUNTS` because they
-belong to `tools/stock.model.js`, which `content.js` deliberately does not
-import. They are asserted against that model by the check below.
+belong to `tools/stock.model.js`, which `shared/content.ts` deliberately
+does not import. They are asserted against that model by the check below.
 
 A sentence that genuinely cannot hold a slot (a `<meta>` description, a
-blurb inside `content.js`) goes in the `CLAIMS` table in
+blurb inside `shared/content.ts`) goes in the `CLAIMS` table in
 `scripts/check-content.ts`, so the next data change fails a check rather than a
 reader.
 
@@ -219,7 +219,7 @@ in the footer and on `/skills/index.html` at once.
 That is not tidiness. The menu used to be said in four places: the
 seven links written into every page's header, `buildMenu()` in
 `aab/app.js` which drew the overlay at runtime, the `SKILLS` list
-in `content.js`, and the footer. They agreed because somebody
+in `content.ts`, and the footer. They agreed because somebody
 remembered, which is the failure this file opens with, one level up
 from counting. The overlay also did not exist for a reader with
 JavaScript off, or for a crawler.
@@ -601,7 +601,7 @@ replacement really does what it did.
 
 Two conditions, both literal: **nothing serves it and nothing
 imports it.** So before the move, follow every reference: a
-`PAGES` entry in `content.js`, the prerender rules in `app.js`,
+`PAGES` entry in `shared/content.ts`, the prerender rules in `app.js`,
 the `Disallow` block `build-meta.mjs` writes, the `PRIVATE` set in
 `build-og.mjs`, any test that drives the page, and any link in
 `app/src/**`. Add a line to `_redirects` for the old URL. If a
@@ -679,6 +679,9 @@ node scripts/check-types.ts  # scripts/ that node strips the types out of
 node scripts/check-pointers.ts # a comment sending a reader to a file that
                             # does not exist
 node scripts/build-school-icons.ts --check   # a school drawing next/ copied
+node scripts/build-stamp.ts --check  # aab/desk/** and aab/studio/** built from
+                            # an app/src/ that is not the one committed beside
+                            # them
 node scripts/check-next.ts # a copy inside next/ that has drifted from the
                             # thing it was copied from
 ```
@@ -713,6 +716,15 @@ node next/progress.test.mjs         # a page that costs a reader their ticks jus
 node next/comments.test.ts        # a comment body that stopped being text, a reply
                                    # two levels deep, or a thread that draws itself
                                    # signed in on the server (28 checks, no browser)
+node next/insights-hub.test.ts     # the Insights hub's own two: a topic chip that
+                                   # presses and hides nothing, and an email box
+                                   # offered where there is no database to put an
+                                   # address in (46 checks, needs Playwright and a
+                                   # browser, skips without)
+node next/read-aloud.test.ts       # the speech control on a piece: what it reads,
+                                   # what it steps over, what it marks, and whether
+                                   # Stop stops (51 checks, needs Playwright and a
+                                   # browser, skips without)
 node aab/schools/progress.test.mjs  # a school's ticks filed under a key that is
                                    # not the one in somebody's browser, and the
                                    # three schools' shared engine (119 checks)
@@ -1004,13 +1016,16 @@ both ladders, `shared/schools.ts` and `aab/learn/curriculum.js`.
 Generated pages are generated. Edit the source, never the output:
 
 ```sh
-node scripts/build-modules.ts       # aab/share-card.js and aab/api.js from aab/src/
+node scripts/build-modules.ts       # aab/share-card.js and aab/api.js from aab/src/,
+                                    # and aab/content.js from shared/content.ts
 node scripts/build-fallback.ts     # aab/fallback.css from next/styles/site.css
 node scripts/build-school-icons.ts  # next/lib/school-icons.ts from aab/*/icons.js
 node aab/build-meta.mjs              # feed.xml, sitemap.xml, robots.txt
 
 cd app && npm run build             # aab/desk/**   from app/src/** (React)
                                     # aab/studio/** from app/src/studio/**
+                                    # and app/build-stamp.json, which is what
+                                    # holds the two to their own source
 ```
 
 `app/` is the React workspace: Vite, React and TypeScript, building to
@@ -1022,6 +1037,17 @@ generated page here is: the site deploys by uploading `aab/`, with no
 build step in CI, and adding one would mean a build command in a
 dashboard that cannot be seen from the repository. So the rule is the
 rule: edit `app/src/**`, run the build, commit both.
+
+**Nothing held anybody to the second half of that until 19 August
+2026.** `aab/desk/app.js` and `aab/studio/app.js` were last built at
+#105 while `app/src/**` changed in #143, #147 and #149, so the desk
+and the Studio served a build from before `accentStyle` existed, for
+four pull requests, and every check passed: a stale generated file
+looks exactly like a correct one. `scripts/build-stamp.ts` hashes the
+sources and `npm run build` writes the hash, so the day they part
+company a check fails. It hashes the SOURCES rather than the output,
+because Vite's output is not reproducible across versions and the
+thing that actually goes wrong is that nobody re-ran the build.
 
 The stylesheet was not part of it, and now partly is. `aab/styles.css`
 is still the design system: the rule that a port must not also be a
@@ -1062,21 +1088,36 @@ Neither are the site's own modules. `/app.js`, `/api.js`, `/auth.js`,
 `/content.js`, `/share-card.js`, `/photo.js` and `/editor.js` are left
 external by `vite.config.ts` and imported at runtime, so the desk shares one copy
 of each with every other page instead of carrying a second that can
-drift. They are plain JavaScript, so each one is described by a
+drift. Most are plain JavaScript, so each is described by a
 declaration in `app/src/types/` that `tsconfig.json` maps the runtime
-path to. Do not answer an untyped import with a `@ts-expect-error`:
+path to; `/content.js` is TypeScript, so the mapping points at
+`shared/content.ts` itself and there is no declaration to keep in
+step. Do not answer an untyped import with a `@ts-expect-error`:
 that silences the complaint without describing anything, and it
 silences the next complaint too.
 
 ## What more than one runtime has to agree on
 
 `shared/` is for anything the Worker, the browser and the Next.js
-route must all say the same way. Four files today: `look.ts`, the
-per-section table and the head facts every article page states;
-`headers.ts`, the security headers a response has to carry when it
-was not served as a static file; `schools.ts`, the four curricula
-and the ladder's arithmetic; and `rows.ts`, what a row of this
-database is.
+route must all say the same way. Five files today: `content.ts`,
+the site's own manifest and every number the site states about
+itself; `look.ts`, the per-section table and the head facts every
+article page states; `headers.ts`, the security headers a response
+has to carry when it was not served as a static file; `schools.ts`,
+the four curricula and the ladder's arithmetic; and `rows.ts`, what
+a row of this database is.
+
+**`content.ts` is the one with an output, and the one `next/`
+cannot import.** The browser reads the manifest at `/content.js`,
+a URL `sw.js` precaches by name, and it cannot reach `shared/`, so
+`scripts/build-modules.ts` compiles this one file to
+`aab/content.js` beside the modules it builds out of `aab/src/`.
+Edit the source, never the output. It is absent from the `exports`
+map deliberately: it reads the four `curriculum.js` ladders by a
+relative path into `aab/`, which is not the repository once the
+package has been copied into `next/node_modules`, so a route that
+imported it would fail at the build. Moving those four here is
+what lifts that.
 
 **They are TypeScript, and nothing is compiled beside them.** Both
 consumers have a compiler and use it: Next through
@@ -1536,7 +1577,7 @@ The failure this list exists for is a finished case study that nobody can
 reach. In order:
 
 1. Write the page into `aab/portfolio/`.
-2. Add it to `PAGES` in `content.js` with `group: "case"`, plus `kind`
+2. Add it to `PAGES` in `shared/content.ts` with `group: "case"`, plus `kind`
    (`model`, `analysis` or `research`) and a `short` title. That one entry
    puts it in the menu, the Ctrl+K palette, the sitemap, the home page
    rotation and the portfolio count.
@@ -1546,9 +1587,9 @@ reach. In order:
 ## Where an article lives
 
 In D1, written through the Studio, and rendered by a Next.js route.
-There is no file half any more and no fallback to one: `content.js`
-holds the menu, the palette and the site's own furniture, and the
-writing is rows.
+There is no file half any more and no fallback to one:
+`shared/content.ts` holds the menu, the palette and the site's own
+furniture, and the writing is rows.
 
 `archive/TRANSITION.md` is how it got there, and it is **history
 rather than a plan**. It ran from the 15th to the 17th of August

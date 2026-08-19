@@ -124,9 +124,9 @@ const html = await article.text();
 
 /* The one fact that says Next is in front of this route rather
    than the Worker's own renderer. The Worker's page loads
-   /app.js and /read-aloud.js and nothing else; a page from the
-   App Router carries its own chunks whatever the tree contains,
-   which is the 170 KB Stage 10 measured and accepted. */
+   /app.js and nothing else; a page from the App Router carries
+   its own chunks whatever the tree contains, which is the 170 KB
+   Stage 10 measured and accepted. */
 const chunks = [...new Set(html.match(/\/_next\/static\/[^"']+\.js/g) ?? [])];
 ok("the piece is rendered by the Next.js Worker",
   chunks.length > 0,
@@ -145,8 +145,37 @@ const loads = (src: string): boolean =>
   || new RegExp(`<link[^>]*rel="(?:modulepreload|preload)"[^>]*href="${src}"`).test(html)
   || new RegExp(`<link[^>]*href="${src}"[^>]*rel="(?:modulepreload|preload)"`).test(html);
 
-ok("the site's own scripts are still loaded",
-  loads("\\/app\\.js") && loads("\\/read-aloud\\.js"));
+ok("the site's own script is still loaded", loads("\\/app\\.js"));
+
+/* Every module the live page asks for, fetched.
+
+   This asked something it could not answer: "the live page does
+   not load `/read-aloud.js`", written the day that module was
+   archived. Production had not been deployed yet, so it was false
+   on every branch until the merge that made it true, which is a
+   check that must fail by construction rather than because
+   anything is wrong. This file runs against the LIVE site, so it
+   can only honestly ask about the live site's own consistency.
+
+   That is the better question anyway, and it is the failure the
+   other version was reaching for: a page asking for a module the
+   site does not serve. It catches the shape whatever the module
+   is called, on the deploy where it happens, rather than naming
+   one file. */
+{
+  const asked = [...new Set([
+    ...(html.matchAll(/<script[^>]*src="(\/[a-z0-9/-]+\.js)"/g)),
+    ...(html.matchAll(/<link[^>]*href="(\/[a-z0-9/-]+\.js)"[^>]*rel="(?:module)?preload"/g)),
+    ...(html.matchAll(/<link[^>]*rel="(?:module)?preload"[^>]*href="(\/[a-z0-9/-]+\.js)"/g)),
+  ].map((m) => m[1]))];
+  const gone: string[] = [];
+  for (const src of asked) {
+    const answer = await fetch(`${origin}${src}`, { method: "HEAD" });
+    if (!answer.ok) gone.push(`${src} (${answer.status})`);
+  }
+  ok(`every module the page asks for is served (${asked.length})`,
+    gone.length === 0, gone.join(", "));
+}
 ok("the comment thread is on the page", /id="comments"/.test(html));
 ok("the canonical link is the piece's own address",
   html.includes(`<link rel="canonical" href="${origin}${DB_PIECE}"`)

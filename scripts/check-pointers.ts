@@ -132,7 +132,6 @@ const GONE: Gone[] = [
      visitor a refetch of the whole shell. Free to fix on the day
      each becomes aab/src/*.ts, and that is when they will be. */
   { file: "aab/app.js", name: "check-content.mjs", why: "precached; see MIGRATION.md" },
-  { file: "aab/content.js", name: "check-content.mjs", why: "precached; see MIGRATION.md" },
   { file: "aab/deutsch/curriculum.js", name: "build-deutsch.mjs", why: "precached" },
   { file: "aab/english/curriculum.js", name: "build-english.mjs", why: "precached" },
   { file: "aab/tools/stock.model.js", name: "stock.test.mjs", why: "precached" },

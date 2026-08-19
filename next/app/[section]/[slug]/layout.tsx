@@ -69,7 +69,6 @@ export default async function ReadingLayout({
          one level `lib/nav.ts` cannot know: a piece is a row. */
       crumbs={trailFor(current, [{ label: article.title }])}
       beforeMain={<div className="read-progress" aria-hidden="true" />}
-      scripts={<SiteScripts srcs={[{ src: "/read-aloud.js", classic: true }]} />}
     >
       {children}
     </SiteShell>

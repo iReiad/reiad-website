@@ -32,8 +32,13 @@ So each one is declared here instead, and `tsconfig.json` maps the
 runtime path to the declaration:
 
 ```json
-"paths": { "/content.js": ["./src/types/content.d.ts"] }
+"paths": { "/app.js": ["./src/types/app.d.ts"] }
 ```
+
+A module that has become TypeScript loses its declaration in the
+same change and the mapping points at the module instead, which is
+one description rather than two: `/content.js` is
+`../shared/content.ts`.
 
 A `paths` entry is a compile-time claim about a file the browser
 fetches at runtime, so the two can disagree, and nothing here would

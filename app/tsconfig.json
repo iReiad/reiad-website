@@ -16,15 +16,22 @@
     "skipLibCheck": true,
 
     /* The site's own modules, which this app imports at the paths
-       the browser fetches them from and Vite leaves external. They
-       are plain JavaScript; each one is described by a declaration
-       in src/types, and src/types/README.md says why that is a
-       better answer than a @ts-expect-error above each import. */
+       the browser fetches them from and Vite leaves external. Most
+       are plain JavaScript and are described by a declaration in
+       src/types, and src/types/README.md says why that is a better
+       answer than a @ts-expect-error above each import.
+
+       /content.js is the exception and the direction the rest are
+       going: its source is shared/content.ts, so this maps the
+       served path on to the module itself rather than on to a
+       description of it. That is what allowJs below is for, since
+       that source reads the four curriculum.js ladders. */
+    "allowJs": true,
     "paths": {
       "/auth.js": ["./src/types/auth.d.ts"],
       "/app.js": ["./src/types/app.d.ts"],
       "/api.js": ["./src/types/api.d.ts"],
-      "/content.js": ["./src/types/content.d.ts"],
+      "/content.js": ["../shared/content.ts"],
       "/share-card.js": ["./src/types/share-card.d.ts"],
       "/photo.js": ["./src/types/photo.d.ts"],
       "/editor.js": ["./src/types/editor.d.ts"]

@@ -388,10 +388,16 @@ for (const width of [360, 390, 412]) {
    and is what this used to assert the opposite of. It was in the
    bar on a laptop, so "what brings you here" sat across the top
    of every page somebody read; it is asked once and then never
-   again, so it belongs with the menu. What the bar carries
-   instead is the tree, and that is asserted here too, because a
-   bar with neither is what this change would look like if the
-   component failed to render. */
+   again, so it belongs with the menu.
+
+   What the bar carries instead is the TRAIL, and that is asserted
+   here too, because a bar with neither is what this change would
+   look like if the component failed to render. It was the site
+   tree until 19 August 2026: `TREE_IN_BAR` in `topbar.tsx` is
+   false, the tree is still built and still passed in, and "where
+   am I" is the question a reader arriving from a search result
+   has. The rail down the left already answers "what else is
+   there". */
 {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   await page.route("https://fonts.googleapis.com/**", (r) => r.abort());
@@ -404,11 +410,13 @@ for (const width of [360, 390, 412]) {
              railMark: shown(".rail-mark"), barMark: shown(".topbar-mark"),
              barSwitch: shown(".topbar > .audience-switch"),
              railSwitch: shown(".rail-audience"),
-             tree: shown(".topbar .tree-btn") };
+             tree: shown(".topbar .tree-btn"),
+             trail: document.querySelectorAll(".topbar .crumbs-bar li").length };
   });
   ok("on a laptop the menu is a rail, not a drawer",
     !state.burger && !state.close && state.railMark && !state.barMark
-    && !state.barSwitch && state.railSwitch && state.tree, JSON.stringify(state));
+    && !state.barSwitch && state.railSwitch && !state.tree && state.trail > 0,
+    JSON.stringify(state));
   await page.close();
 }
 

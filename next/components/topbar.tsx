@@ -98,7 +98,12 @@ export function AudienceSwitch() {
     a circle, and it is written out twice rather than shared
     through a component because it is nine attributes and a
     component boundary would be the larger thing. If it grows a
-    fifth shape, that is the moment to make it one. */
+    fifth shape, that is the moment to make it one.
+
+    It also stands in for the trail on the one page that has no
+    trail. The bar is a wide pill and the alternative was three
+    controls floating at the right end of it with nothing at the
+    left, which reads as a bar that failed to load. */
 function BarMark() {
   return (
     <a className="topbar-mark" href="/" aria-label="Reiad's Library, home">
@@ -124,9 +129,15 @@ function BarMark() {
    nothing dead is shipped to 250 pages while it is off. */
 const TREE_IN_BAR = false;
 
-export function TopBar({ tree, crumbs }: { tree: ReactNode; crumbs: ReactNode }) {
+export function TopBar({ tree, crumbs, bare }: {
+  tree: ReactNode;
+  crumbs: ReactNode;
+  /** No trail to show: the home page, and any page the nav table
+      does not list that gave the shell no crumbs of its own. */
+  bare?: boolean;
+}) {
   return (
-    <div className="topbar">
+    <div className="topbar" data-trail={bare ? "none" : undefined}>
       <DrawerButton />
       <BarMark />
       {/* The switch used to be here and is in the rail's foot

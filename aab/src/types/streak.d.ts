@@ -1,5 +1,5 @@
 /* `/streak.js`, described just enough for the modules that have
-   moved. See `content.d.ts` beside it for the arrangement. */
+   moved. See `activation.d.ts` beside it for the arrangement. */
 
 /** Local YYYY-MM-DD, which is what a person means by a date.
     Local and not UTC on purpose: somebody in Dhaka reading at 1am

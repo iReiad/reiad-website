@@ -77,7 +77,11 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
      and is there for one reason: `metaOf` runs the whole body
      through the sanitiser, and doing that on every keystroke of a
      two-thousand-word piece is work nobody asked for. */
-  const bumpTimer = useRef<number | undefined>(undefined);
+  /* `ReturnType<typeof setTimeout>` rather than `number`: this
+     file compiles with node's types in scope as well as the DOM's,
+     and node's `setTimeout` returns a `Timeout`. Writing the
+     return type down is what makes it right under either. */
+  const bumpTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const bump = useCallback(() => {
     clearTimeout(bumpTimer.current);
     bumpTimer.current = setTimeout(() => setRev((n) => n + 1), 200);
@@ -498,7 +502,7 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
             that route is unavailable. */}
         {dynamic ? (
           <ol className="studio-steps measure" id="steps-dynamic">
-            <li>Press <strong>Publish to the site</strong>. Photos are uploaded to
+            <li>Press <strong>Publish to the site</strong>. Photos are uploaded to{" "}
               <code>/media</code> first, so the article itself stays small and the
               same photo pasted twice is only stored once.</li>
             <li>That&apos;s it: the piece is live, the Insights page picks it up, and

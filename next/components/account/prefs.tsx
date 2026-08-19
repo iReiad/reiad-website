@@ -89,10 +89,11 @@ export function Preferences() {
         {
           id: "glass",
           heading: "What the glass is made of",
-          why: "The bar at the top, the rail and the cards float on "
-            + "translucent surfaces. Pick the material first: the two "
-            + "below move whichever one is on, and Plain has no blur "
-            + "for them to move.",
+          why: "The bar, the rail, the menus and every button, tab and "
+            + "chip are made of the same translucent stuff, each scaled "
+            + "to its job. Pick the material first: the two below move "
+            + "whichever one is on, and Plain has no blur for them to "
+            + "move.",
           rows: [
             { key: "glass", label: "Finish", options: m.GLASSES },
             { key: "blur", label: "Blur", options: m.BLURS },

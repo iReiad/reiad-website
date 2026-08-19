@@ -191,8 +191,12 @@ ${article.body}
     </div>
   </footer>
 
-  <!-- Read-aloud script: served from the static assets -->
-  <script src="/read-aloud.js" defer></script>
+  <!-- NO READ-ALOUD CONTROL, for the reason the thread is absent
+       above. It is next/components/read-aloud.tsx now and this
+       renderer cannot mount a React component; /read-aloud.js is
+       in archive/modules/, so a script tag here would fetch a 404
+       on the one path that only answers when the service binding
+       to the Next Worker is gone. -->
   <script type="module" src="/app.js"></script>
 </body>
 </html>`;

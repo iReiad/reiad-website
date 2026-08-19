@@ -230,6 +230,13 @@ const tsx = [];
   try { entries = readdirSync(dir); } catch { return; }
   for (const entry of entries) {
     if (entry === "node_modules" || entry === ".next") continue;
+    /* The node-side files beside the app are not pages, and the
+       addresses in them are a fixture's rather than this site's:
+       `hydrate-fixture.ts` serves one component on a server of its
+       own, at paths nothing here answers. Same line
+       `next/tsconfig.json` draws in its `exclude`. */
+    if (entry.endsWith(".test.ts") || entry === "dev-worker.ts"
+      || entry === "hydrate-fixture.ts") continue;
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) walkTsx(full);
     else if (entry.endsWith(".tsx") || entry.endsWith(".ts")) tsx.push(full);

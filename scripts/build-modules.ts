@@ -27,6 +27,14 @@
    its own, and the hand-written one is deleted in the same
    commit. Stage 13 is done when that directory holds only its
    README, because every module describes itself.
+
+   ---- and one that comes from shared/ instead ----
+
+   `/content.js` is the site's manifest and three runtimes read
+   it, so its source is `shared/content.ts` and this writes the
+   browser's copy. Two things follow from the source living one
+   directory along: its own compile, and one specifier rebased.
+   `SHARED` and `rebase` below are where each is stated.
    ============================================================ */
 
 import { execFileSync } from "node:child_process";
@@ -82,6 +90,37 @@ export const MODULES = [
   "tools/tools",
 ];
 
+/** The one served module whose source is in `shared/` rather than
+    in `aab/src/`, because the Worker, the checks under `scripts/`
+    and the browser all read the same manifest and only the last of
+    them needs a file at a URL.
+
+    It is compiled on its own, by `scripts/tsconfig.content.json`,
+    because `aab/src/tsconfig.json` has `rootDir` set to that
+    directory and a source outside it cannot be added to that run.
+
+    No declaration is emitted for it and none should be. Anything
+    that wants the types maps `/content.js` on to the source, which
+    is what `app/tsconfig.json`, `aab/src/tsconfig.json` and
+    `next/tsconfig.json` do: one description, and it is the module. */
+const SHARED = {
+  config: "scripts/tsconfig.content.json",
+  /** Where that config's `rootDir` puts the output. */
+  from: "shared/content.js",
+  to: "aab/content.js",
+};
+
+/** The one thing here that is not tsc's output verbatim.
+
+    The source sits in `shared/` and the output in `aab/`, so a
+    specifier reaching from the first into the second has to be
+    rebased: `../aab/money/curriculum.js` is `./money/curriculum.js`
+    seen from `aab/content.js`, which is what the browser resolves
+    at `/money/curriculum.js` AND what node resolves when a check
+    imports the built file. tsc never rewrites a specifier, so
+    nothing else was going to do this. */
+const rebase = (js: string): string => js.replaceAll('from "../aab/', 'from "./');
+
 /** Compile into a temporary directory and read the results back.
 
     Not straight into `aab/`, because `--check` has to be able to
@@ -109,6 +148,23 @@ export function compile() {
       .map((f) => String(f).replaceAll("\\", "/"))
       .filter((f) => f.endsWith(".js") && !f.startsWith("types/"))
       .filter((f) => !MODULES.includes(f.replace(/\.js$/, "")));
+
+    /* And the manifest, out of `shared/`. Its own directory,
+       because that run's `rootDir` is the repository: `allowJs` is
+       on so the four ladders resolve, and tsc refuses an input
+       above `rootDir`. It writes copies of those four beside the
+       one file wanted here, which is why nothing walks this
+       output looking for strays. */
+    const sharedOut = mkdtempSync(join(tmpdir(), "reiad-content-"));
+    try {
+      execFileSync("npx", [
+        "tsc", "-p", join(ROOT, SHARED.config), "--outDir", sharedOut,
+      ], { cwd: ROOT, stdio: "pipe" });
+      built[SHARED.to] = rebase(readFileSync(join(sharedOut, SHARED.from), "utf8"));
+    } finally {
+      rmSync(sharedOut, { recursive: true, force: true });
+    }
+
     return { built, strays };
   } finally {
     rmSync(out, { recursive: true, force: true });
@@ -140,7 +196,8 @@ if (RUN) {
         + "  node scripts/build-modules.ts\n");
       process.exit(1);
     }
-    console.log(`modules: ${MODULES.length} built file(s) match aab/src/.`);
+    console.log(`modules: ${MODULES.length} built file(s) match aab/src/, `
+      + `and ${SHARED.to} matches shared/content.ts.`);
   } else {
     for (const [rel, text] of Object.entries(built)) {
       mkdirSync(dirname(join(ROOT, rel)), { recursive: true });

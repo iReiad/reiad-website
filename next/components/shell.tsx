@@ -239,6 +239,7 @@ export function SiteShell({
         <div className="shell-col">
           <TopBar
             tree={<NavTree current={current} />}
+            bare={trail.length < 2}
             /* `slice(1)` because the mark to its left IS the home
                crumb, and a bar reading "Reiad's Library > Home >
                Skills" says the first thing twice. The home crumb

@@ -22,3 +22,7 @@ next/tsconfig.test.tsbuildinfo
 
 # The design harness, written by scripts/preview.ts and looked at, not kept.
 aab/preview.html
+
+# scripts/tsconfig.content.json's scratch outDir, which only a hand
+# run reaches: scripts/build-modules.ts overrides it with a temp dir.
+.content-build/

@@ -29,7 +29,7 @@ export default function InsightsHubLayout({ children }: { children: ReactNode })
       skip="Skip to the main content"
       footer={look.footer}
       current="insights"
-      scripts={<SiteScripts srcs={["/pulse.js", "/hub.js"]} />}
+      scripts={<SiteScripts srcs={["/pulse.js"]} />}
     >
       {children}
     </SiteShell>

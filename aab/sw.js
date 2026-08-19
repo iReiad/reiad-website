@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v135: `/content.js` is generated from `shared/content.ts` now
+        rather than hand-written, with the same 24 exports, and
+        `/hub.js` and `/read-aloud.js` are gone: both are React
+        components and an old shell would import two modules that
+        are not served. `/desk/app.js` and `/studio/app.js` are a
+        fresh build for the first time since #105, so a cached
+        shell has been serving a desk from before `accentStyle`
+        existed.
+
    v134: three things a cached shell would go on getting wrong.
         `/app.js` no longer imports `/crumbs.js`: the trail is
         rendered by the server into the top bar now, so an old
@@ -1396,7 +1405,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v134";
+const VERSION = "v135";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
