@@ -1,12 +1,12 @@
 {
-  "version": "v128",
+  "version": "v129",
   "hashes": {
     "/offline.html": "a18e4f2c69892632",
     "/fallback.css": "be1ed5df16dcde15",
-    "/app.js": "f56b8c5eed9e972d",
+    "/app.js": "e13a222a9225267b",
     "/content.js": "f9d26573667a4a51",
     "/api.js": "fb43503e1326fabe",
-    "/pieces.js": "5722a2dcbf3eade1",
+    "/pieces.js": "2a797d3be504fbd4",
     "/signin.js": "020867ee35ca4d5d",
     "/account.js": "750be2410c75791b",
     "/sync.js": "58b60e86e5ac7709",

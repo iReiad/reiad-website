@@ -724,9 +724,10 @@ node next/parity.test.mjs          # the Next.js route saying something the
                                    # the database
                                    # (114 checks, needs the build, skips without)
 node next/interactive.test.mjs     # a calculator that renders and computes
-                                   # nothing, because hydration undid it
-                                   # (28 checks, needs `npx next build` and a
-                                   # browser, skips without)
+                                   # nothing, because hydration undid it, and a
+                                   # contact form that looks sent and reached
+                                   # nobody (80 checks, needs `npx next build`
+                                   # and a browser, skips without)
 ```
 
 It really does run in a container, as of 16 August 2026, and the

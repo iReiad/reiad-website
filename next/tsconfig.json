@@ -45,6 +45,9 @@
       ],
       "/content.js": [
         "../app/src/types/content.d.ts"
+      ],
+      "/api.js": [
+        "../app/src/types/api.d.ts"
       ]
     },
     "isolatedModules": true,

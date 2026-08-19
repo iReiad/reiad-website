@@ -102,19 +102,15 @@ export function allPieces() {
   return merged;
 }
 
-/** The live pieces in one section, newest first. */
-export async function piecesIn(sectionId) {
-  const id = findSection(sectionId).id;
-  return (await allPieces()).filter((p) => p.section === id);
-}
-
 /** Where a piece can be read. Never build this by hand: the whole
     point of carrying `section` around is that this is the only
     line that turns a piece into an address. */
 export const pieceHref = (piece) => pieceUrl(findSection(piece.section), piece.slug);
 
-/** What content.js alone knows, for the no-database case and for
-    anything that has to answer without awaiting. */
-export const filePieces = () =>
-  SECTIONS.flatMap((section) =>
-    livePieces(section).map((entry) => fromFile(entry, section)));
+/* `piecesIn()` and `filePieces()` were here and are gone with
+   `#article-cards`, which was the only caller of either. Every
+   list of writing on this site is rendered on the server now:
+   `next/lib/hub.ts` for the three hubs, `next/lib/pieces.ts` for
+   the home page. What is left here is the two things a BROWSER
+   still needs, and both are the palette's: every live piece, and
+   the one line that turns a piece into an address. */

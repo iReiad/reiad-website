@@ -10,13 +10,12 @@
    4. Speculation  <script type="speculationrules"> prerenders the
                    link you're about to click, so navigation is
                    instant.
-   5. Cards        the Insights list renders from content.js.
-
    What left, August 2026: the overlay menu, the Skills hover
    panel, the measured header height and the kinetic headline.
    All four belonged to a header bar this site no longer has; the
    menu is a rail rendered on the server by
-   `next/components/sidebar.tsx`. See section 2b.
+   `next/components/sidebar.tsx`. See section 2b. The Insights
+   card list went the same way and section 5 says where to.
 
    Loaded with <script type="module" src="/app.js">, so it defers
    automatically and never blocks paint.
@@ -25,15 +24,15 @@
    ============================================================ */
 
 import {
-  searchIndex, formatDate,
+  searchIndex,
   PAGES, TOOLS, STAGES, STUFEN, stufeUrl, SITE, SEARCH_GROUPS,
   COUNTS,
 } from "/content.js";
 import { countView } from "/api.js";
-import { allPieces, piecesIn, filePieces, pieceHref } from "/pieces.js";
+import { allPieces, pieceHref } from "/pieces.js";
 import { initCrumbs } from "/crumbs.js";
 import { initAudience, audienceBoost } from "/audience.js";
-import { initTilt, tiltIn } from "/tilt.js";
+import { initTilt } from "/tilt.js";
 import { initStreak } from "/streak.js";
 /* Imported for its side effect, which is the point of it: reading
    `reader-prefs` and putting the type scale and the measure on
@@ -481,67 +480,26 @@ function initSpeculation() {
 }
 
 /* ============================================================
-   5. INSIGHTS CARDS, rendered from content.js
+   5. THE INSIGHTS CARDS ARE GONE, AND SO IS THEIR HOST
+
+   `#article-cards` was filled here, from `pieces.js`, on the
+   Insights index and on the home page. Neither exists as a file
+   any more and neither route renders that id: the hub draws its
+   own cards on the server from `next/lib/hub.ts`, and the home
+   page has `<FeaturedCard>`, `<ContinueCard>` and `<PulseCard>`.
+   `archive/insights.html` and `archive/index.html` are the last
+   two documents on this site that carry the id, and nothing
+   serves them.
+
+   So this built cards into an element that is never on the page,
+   which costs nothing and reads as a live feature. What it took
+   with it: `piecesIn` and `pieceHref` off `pieces.js`, `tiltIn`
+   off `tilt.js` and `formatDate` off `content.js`, none of which
+   this file has another use for.
+
+   `allPieces()` stays and is imported below. It feeds the
+   palette, which is on every page.
    ============================================================ */
-async function initArticleCards() {
-  const host = document.getElementById("article-cards");
-  if (!host) return;
-
-  const limit = Number(host.dataset.limit) || Infinity;
-
-  /* One list, whichever store each piece came from, and only the
-     section this page is about: the merged list used to be every
-     live row in the database, so a kitchen piece appeared on the
-     Insights index. */
-  /* Every card here is a published piece. The teasers for the
-     ones still being written were the Insights index's, and that
-     page is a Next.js route as of Stage 11.1: it renders its own,
-     from `next/lib/hub.ts`, on the server. What is left is the
-     home page's two-card strip, which only ever showed what
-     exists. */
-  const live = (await piecesIn(host.dataset.section ?? "insights")).slice(0, limit);
-
-  const card = (a) => {
-    const el = document.createElement("a");
-    el.className = "cell sample-card";
-    el.dataset.topics = (a.topics ?? []).join("|");
-    el.href = pieceHref(a);
-    el.style.textDecoration = "none";
-    el.style.color = "inherit";
-
-    const tag = document.createElement("span");
-    tag.className = "tag mono";
-    tag.textContent = a.tag;
-
-    const h = document.createElement("h3");
-    h.textContent = a.title;
-
-    const p = document.createElement("p");
-    p.textContent = a.dek;
-
-    const foot = document.createElement("span");
-    foot.className = "more";
-    const bits = [formatDate(a.date, a.lang), a.minutes ? `${a.minutes} min read` : ""]
-      .filter(Boolean)
-      .join(" · ");
-    foot.textContent = bits ? `${bits}  →` : "Read →";
-
-    el.append(tag, h, p, foot);
-    return el;
-  };
-
-  host.replaceChildren(...live.map(card));
-  tiltIn(host);   // these arrive after initTilt has already run
-}
-
-/* The topic chips are not here any more.
-
-   They belonged to the Insights index, which is a Next.js route
-   as of Stage 11.1: the chips arrive in the HTML, counted from
-   the cards on the server, and `/hub.js` binds the one listener
-   they need. This built them in the browser, from a list, after a
-   fetch, which is a row of nothing for a reader with no
-   JavaScript and for every crawler that runs none. */
 
 /* ============================================================
    Small shared helpers (the Studio imports these)
@@ -632,7 +590,6 @@ initShortcuts();
 initCounts();
 initTilt();
 initSpeculation();
-initArticleCards();
 initStreak();
 
 /* Reader accounts, before the service worker rather than after it.

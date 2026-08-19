@@ -31,6 +31,20 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v129: Stage B opens. Every module in aab/ read and classified in
+        MIGRATION.md, and two things came out of it.
+
+        `/contact-form.js` is gone: the form is
+        `components/contact-form.tsx`, which renders the <form>
+        around markup the route still writes, so with no JavaScript
+        at all it still POSTs to Web3Forms on its own.
+
+        `initArticleCards()` in `/app.js` filled `#article-cards`,
+        and nothing has rendered that id since the hubs and the home
+        page became routes. It took `piecesIn` and `filePieces` off
+        `/pieces.js` with it. `allPieces()` stays: the palette is on
+        every page and reads it.
+
    v128: Eight sections, one on screen. `/account.html` was one long
         page with a strip of links down it, and reaching the last
         of them was eight screens of scrolling.
@@ -1331,7 +1345,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v128";
+const VERSION = "v129";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
