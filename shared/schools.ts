@@ -229,7 +229,7 @@ export const lessonId = (stage: SchoolStage, lesson: SchoolLesson): string =>
     of this function retyped the string and produced the
     Devanagari digits instead, U+0966 to U+096F, which look close
     enough in a diff to survive review and put every number on a
-    Bangla page into the wrong script. scripts/check-schools.mjs
+    Bangla page into the wrong script. scripts/check-schools.ts
     caught it by comparing a label computed here against the same
     label computed by the school's own curriculum.js. */
 const BN_DIGITS = Array.from({ length: 10 }, (_, i) => String.fromCharCode(0x09e6 + i)).join("");

@@ -1,8 +1,8 @@
 /* ============================================================
-   check-preview.mjs: does the Next.js Worker's branch preview
+   check-preview.ts: does the Next.js Worker's branch preview
    render what the live site renders?
 
-     node scripts/check-preview.mjs \
+     node scripts/check-preview.ts \
        --preview https://<branch>-reiad-next.i-reiad.workers.dev
 
    archive/TRANSITION.md Stage 11. This is `next/parity.test.mjs`'s
@@ -42,13 +42,13 @@
    regression, and a route not switched on yet is being checked
    for existence and shape before it is.
 
-   It is not part of `Before deploying`. Like `check-live.mjs` it
+   It is not part of `Before deploying`. Like `check-live.ts` it
    describes deployed things, and it wants a push to have happened
    first.
    ============================================================ */
 
 const args = process.argv.slice(2);
-const argOf = (name, fallback) => {
+const argOf = (name: string, fallback = ""): string => {
   const at = args.indexOf(name);
   return at === -1 ? fallback : args[at + 1];
 };
@@ -58,7 +58,7 @@ const LIVE = argOf("--against", "https://reiad.co.uk");
 
 if (!PREVIEW) {
   console.error("Say which preview to ask:\n"
-    + "  node scripts/check-preview.mjs --preview https://<branch>-reiad-next.i-reiad.workers.dev\n"
+    + "  node scripts/check-preview.ts --preview https://<branch>-reiad-next.i-reiad.workers.dev\n"
     + "\nThe URL is in the Cloudflare bot's comment on the pull request.\n");
   process.exit(2);
 }
@@ -86,25 +86,27 @@ const ROUTES = [
 ];
 
 /* fetch has no timeout of its own, and a check that hangs is
-   worse than one that fails. check-live.mjs learned this on a
+   worse than one that fails. check-live.ts learned this on a
    runner, six minutes into a request nothing was answering. */
-const get = async (url) => {
+const get = async (url: string): Promise<{
+  status: number; html: string; error?: string;
+}> => {
   const stop = AbortSignal.timeout(15000);
   try {
     const res = await fetch(url, { redirect: "follow", signal: stop });
     return { status: res.status, html: await res.text() };
   } catch (err) {
-    return { status: 0, html: "", error: String(err?.message ?? err) };
+    return { status: 0, html: "", error: String((err as Error)?.message ?? err) };
   }
 };
 
 let failures = 0;
-const check = (name, got, want) => {
+const check = (name: string, got: unknown, want: unknown): void => {
   if (got === want) { console.log(`  ok   ${name}`); return; }
   failures += 1;
   console.log(`  FAIL ${name}\n       preview: ${got}\n       live   : ${want}`);
 };
-const okay = (name, cond, detail = "") => {
+const okay = (name: string, cond: unknown, detail = ""): void => {
   if (cond) { console.log(`  ok   ${name}`); return; }
   failures += 1;
   console.log(`  FAIL ${name}${detail ? `\n       ${detail}` : ""}`);
@@ -115,15 +117,17 @@ const okay = (name, cond, detail = "") => {
    apostrophe as `&#x27;`, a hand-written page writes it as
    itself, and "Reiad's Library" would otherwise fail against
    "Reiad&#x27;s Library" on every hub in this list. */
-const ENTITIES = {
+const ENTITIES: Record<string, string> = {
   "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"',
   "&#x27;": "'", "&#39;": "'", "&apos;": "'", "&#x2F;": "/",
 };
-const text = (value) => value === null || value === undefined ? value
-  : String(value).replace(/&(?:amp|lt|gt|quot|apos|#x27|#39|#x2F);/g, (e) => ENTITIES[e]);
+const text = (value: string | null | undefined): string | null | undefined =>
+  value === null || value === undefined ? value
+    : String(value).replace(/&(?:amp|lt|gt|quot|apos|#x27|#39|#x2F);/g, (e) => ENTITIES[e]);
 
-const attr = (html, re) => text((html.match(re) ?? [])[1] ?? null);
-const meta = (html, key) =>
+const attr = (html: string, re: RegExp): string | null | undefined =>
+  text((html.match(re) ?? [])[1] ?? null);
+const meta = (html: string, key: string): string | null | undefined =>
   attr(html, new RegExp(`<meta[^>]*property="${key}"[^>]*content="([^"]*)"`))
   ?? attr(html, new RegExp(`<meta[^>]*content="([^"]*)"[^>]*property="${key}"`));
 
@@ -132,16 +136,24 @@ const meta = (html, key) =>
     live site rather than the preview: the preview is the thing
     being checked, and a page marking its own homework is the
     failure this repository has written up twice. */
-async function livePieces(section) {
+/** One row of `/api/articles`, of the two fields this reads. */
+interface LiveRow {
+  slug: string;
+  status?: string;
+  section?: string;
+  [key: string]: unknown;
+}
+
+async function livePieces(section: string): Promise<LiveRow[]> {
   const stop = AbortSignal.timeout(15000);
   const res = await fetch(`${LIVE}/api/articles`, { signal: stop });
-  const body = await res.json();
+  const body = await res.json() as { articles?: LiveRow[] };
   /* `{ ok, articles }`, and only the live ones without `?all=1`,
      which needs the admin session this script does not have and
      should not want. */
   return (body?.articles ?? [])
-    .filter((row) => (row.status ?? "live") === "live")
-    .filter((row) => (row.section || "insights") === section);
+    .filter((row: LiveRow) => (row.status ?? "live") === "live")
+    .filter((row: LiveRow) => (row.section || "insights") === section);
 }
 
 console.log(`\npreview: ${PREVIEW}\nagainst: ${LIVE}\n`);
@@ -222,7 +234,8 @@ for (const route of ROUTES) {
 
   /* The prose itself, as a string. This is the half that has to
      be identical rather than merely equivalent. */
-  const body = (html) => (html.match(/<article[\s\S]*?<\/article>/) ?? [])[0] ?? null;
+  const body = (html: string): string | null =>
+    (html.match(/<article[\s\S]*?<\/article>/) ?? [])[0] ?? null;
   okay("the article HTML is identical", body(pre.html) === body(live.html),
     body(pre.html) === null ? "no <article> in one of them"
       : `${(body(pre.html) ?? "").length} chars vs ${(body(live.html) ?? "").length}`);
@@ -234,3 +247,8 @@ console.log(failures
   ? `${failures} difference(s) between the preview and the live site.\n`
   : `the preview renders what the live site renders, on ${ROUTES.length} route(s).\n`);
 process.exit(failures ? 1 : 0);
+
+/* This file has no import and no export of its own: it asks a URL
+   and reads what comes back. `export {}` is what makes it a
+   module all the same, which top-level `await` requires. */
+export {};

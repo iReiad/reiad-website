@@ -27,7 +27,7 @@
    school address, so every one of the 251 files still answers and
    this route is reachable only on the branch preview Cloudflare
    builds for the pull request. That is the arrangement Stage 11
-   has used since 11.1 and the reason `check-preview.mjs` exists:
+   has used since 11.1 and the reason `check-preview.ts` exists:
    a route can be written, deployed against the real database and
    asked real questions before anything forwards a reader to it.
    ============================================================ */

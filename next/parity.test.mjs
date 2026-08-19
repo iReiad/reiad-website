@@ -276,7 +276,7 @@ if (start !== "ready") {
   console.log(`SKIPPED: ${start}, so nothing was compared.\n`);
   console.log("This test is optional, and a skip is not a pass. If it skips\n"
     + "everywhere, the routes it covers have no offline check at all:\n"
-    + "scripts/check-preview.mjs asks the same questions of a deployed\n"
+    + "scripts/check-preview.ts asks the same questions of a deployed\n"
     + "branch preview instead.\n");
   console.log(log.split("\n").slice(-15).join("\n"));
   stop();
@@ -558,7 +558,7 @@ const CHUNK_BUDGET = 8;
    nowhere, and a piece does not appear on another section's
    index. All of it in the HTML, before any JavaScript runs.
 
-   `scripts/check-preview.mjs` asks the same questions of a
+   `scripts/check-preview.ts` asks the same questions of a
    deployed branch preview, for the environments where this file
    cannot run. */
 
@@ -1015,7 +1015,7 @@ for (const [path, title, nav] of [
 
      The three that remain are prose, copied verbatim into
      `lib/school-hubs.ts` rather than rewritten as JSX.
-     `check-next.mjs` holds the copy to the original, so what is
+     `check-next.ts` holds the copy to the original, so what is
      worth checking here is the part that is NOT copied: the head
      Next writes, the shell around the writing, and the scripts
      that make the ladder live. */

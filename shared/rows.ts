@@ -30,7 +30,7 @@
    what a bad REQUEST looks like, which is not the same question as
    what a stored row looks like.
 
-   `scripts/check-rows.mjs` reads this file and fails if an
+   `scripts/check-rows.ts` reads this file and fails if an
    interface stops naming the columns its table has, or if a
    handler keeps its own copy of one of the vocabularies below.
    ============================================================ */

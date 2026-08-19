@@ -106,7 +106,7 @@ Two things learned from the first attempt, which was reverted:
 - **Do not rewrite the wrapper.** An auto-close heuristic for
   `.tiles` mangled a file. Convert the leaves, leave the container.
 
-`scripts/check-components.mjs` records the count and only lets it
+`scripts/check-components.ts` records the count and only lets it
 fall. 245 at the start, 223 now, and zero is what "the design is
 consistent" means here.
 
@@ -222,7 +222,7 @@ Audited on the two questions that matter for a test rather than
 for a check, and both came back clean.
 
 **Does it run, or does it skip and look like a pass?** Every test
-in `check-all.mjs` runs. Every test that needs a browser or a
+in `check-all.ts` runs. Every test that needs a browser or a
 build says so and exits, loudly: `studio`, `studio-publish`, the
 desk's and the Studio's own. `interactive` and `account` find a
 browser here and run.

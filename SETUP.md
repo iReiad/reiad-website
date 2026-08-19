@@ -67,7 +67,7 @@ how busy a build queue is.
 
 `reiad-next` keeps its Workers Build and should keep it. It has a real
 build step, OpenNext, and it gives every push a branch preview URL with the
-real database binding, which is what `check-preview.mjs` reads and what
+real database binding, which is what `check-preview.ts` reads and what
 Stage 11 verified routes against before anything forwarded a reader to
 them.
 

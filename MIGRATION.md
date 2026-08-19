@@ -117,17 +117,18 @@ types.
 `.ts` file nothing typechecks is a `.js` file wearing annotations,
 and it is worse than the `.mjs` was, because a reader believes them.
 So `scripts/tsconfig.json` and `scripts/check-types.ts` landed with
-the first chunk, and that check is in `check-all.mjs`: a file is not
+the first chunk, and that check is in `check-all.ts`: a file is not
 converted until it typechecks under `strict`.
 
-**Done (6):** `build-fallback` `build-modules` `build-school-icons`
-`build-school-tree` `lib/coursera` `lib/css-tokens`
+**Done (22):** the four generators, both libraries under
+`scripts/lib/`, and every one of the sixteen checks plus the runner
+`check-all`.
 
-**Left (29):** the seventeen `check-*.mjs`, the seven `*.test.mjs`,
-and `export-schools` `import-courses` `import-schools` `preview`
-`restore` `school-source` `schools-snapshot`.
+**Left (13):** the seven `*.test.mjs`, and `export-schools`
+`import-courses` `import-schools` `preview` `restore`
+`school-source` `schools-snapshot`.
 
-Two things came out of the first chunk that were not the types.
+Four things came out of it that were not the types.
 
 `kindOf()` in `lib/coursera.ts` returned `"file"`, and no file in a
 Coursera export is ever a `file`: `splitName()` answers `attachment`
@@ -138,10 +139,10 @@ one of seven; `LessonKind` in `shared/courses.ts` is imported now
 rather than written out a second time.
 
 And `.github/workflows/checks.yml` kept its own copy of the check
-list. Renaming four generators updated `check-all.mjs` and every
+list. Renaming four generators updated `check-all.ts` and every
 document that named them, and not the workflow, so CI would have
 failed on files that no longer existed for a rename that was
-correct. It calls `check-all.mjs --stage=<name>` now, once per step,
+correct. It calls `check-all.ts --stage=<name>` now, once per step,
 so the steps stay separate in the interface and the list stays in
 one place.
 
@@ -149,6 +150,27 @@ one place.
 before any file in `aab/` converts, rather than after: a `.ts` test
 beside the others would otherwise be published at its own public
 URL, and the rule that catches that only knew `.mjs`.
+
+**`check-next.ts` was checking none of the rail's icons.** It walks
+`NAV` collecting the names a card asks for, and it read
+`group.icon` and `group.links`. A `NavGroup` has never had either:
+it has a label, an accent and `items`. So `group.links ?? []` was
+an empty array on every group and the loop added nothing, while the
+check went on printing "all 16 names a card asks for come back with
+a drawing in them". It is 24 now, and all 24 do resolve, so nothing
+was broken; the check was reporting on a smaller set than it
+claimed, which is the harder failure to see.
+
+**Three files named a file that does not exist.** `share-card.ts`
+sent a reader to `scripts/check-modules.mjs`, which has never
+existed under any extension, and `courses.ts` and `sw.js` to
+`check-csp.mjs` and `check-css.mjs`, which are `.js`. Converting
+`scripts/` is what made them visible.
+
+And `check-accents.ts` printed `aab/styles.css` in three of its
+messages, which moved to `next/styles/site.css` on 18 August 2026:
+the check reads the right file and told you to go and edit the
+wrong one.
 
 ### Worker
 

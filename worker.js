@@ -78,7 +78,7 @@ const API_ROUTES = [
 /* The Cron schedules, as strings, because `event.cron` hands back
    the exact text from wrangler.toml and there is no binding that
    names them. They are here rather than inline in scheduled() so
-   that scripts/check-crons.mjs can compare these two against that
+   that scripts/check-crons.ts can compare these two against that
    file and fail the build when they drift. Drift here is silent:
    the job simply stops running, and nothing anywhere says so. */
 export const CRON = {

@@ -175,7 +175,7 @@ const targets = new Set(["/", ...pages, ...rules.map((r) => r.from)]);
    `href={lesson.url}` is not, and pretending otherwise would mean
    a check that guesses. The literals are most of them, and the
    computed ones are computed by `shared/schools.ts`, which
-   `check-schools.mjs` already holds to the ladder.
+   `check-schools.ts` already holds to the ladder.
    ---------------------------------------------------------- */
 
 const linkSources = new Map();

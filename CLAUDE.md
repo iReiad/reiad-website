@@ -89,7 +89,7 @@ it was written is the failure this file opens with.
 output. Editing it looks like it works, passes every check, and is discarded
 by the next build. That happened to `courses-answers` in `sync.js`: the key
 was added to the output, the next `build-modules` run dropped it, and quiz
-answers saved on one device and reached no other. `check-courses.mjs` now
+answers saved on one device and reached no other. `check-courses.ts` now
 fails if this section writes a storage key the account does not carry.
 
 ## Comments carry the constraint, not the story
@@ -111,7 +111,7 @@ Open the pull request, wait for the checks, squash merge. No second
 conversation, no asking whether it should go in.
 
 ```sh
-node scripts/check-all.mjs      # every check and fast test, about 18s
+node scripts/check-all.ts      # every check and fast test, about 18s
 ```
 
 **That file IS the list.** `.github/workflows/checks.yml` calls it, once
@@ -121,7 +121,7 @@ renamed, which is the failure at the top of this file happening to
 the thing that catches that failure.
 
 ```sh
-node scripts/check-all.mjs --stage=checks     # or generated, or tests
+node scripts/check-all.ts --stage=checks     # or generated, or tests
 ``` The browser and network tests are listed under
 "Before deploying" and still have to be run by hand.
 
@@ -159,7 +159,7 @@ carrying `data-count`:
 
 Bangla digits are used automatically inside a `[lang="bn"]` element. The
 number left in the markup is the no-JavaScript fallback, so keep it
-roughly right; `check-content.mjs` fails the build if it drifts.
+roughly right; `check-content.js` fails the build if it drifts.
 
 The same rule covers lists. A list of things that exist elsewhere on the
 site (case studies, articles, tools) is built from `content.js` by
@@ -617,21 +617,21 @@ node scripts/check-content.js # a page that has stopped counting the site
                             # correctly
 node scripts/check-csp.js   # code calling a host the browser is not allowed to
                             # reach, from a route as well as from a module
-node scripts/check-contrast.mjs # an accent that has drifted under the WCAG
+node scripts/check-contrast.ts # an accent that has drifted under the WCAG
                             # threshold for the size it is set at
-node scripts/check-scale.mjs # a fifty-first font size
-node scripts/check-crons.mjs # a scheduled job the Worker is no longer listening for
-node scripts/check-pieces.mjs # a written piece nothing on the site links to
-node scripts/check-headers.mjs # a page a Worker built, served with no CSP
-node scripts/check-schools.mjs # a ladder the browser and the builders disagree about
-node scripts/check-rows.mjs # a description of the database that has stopped
+node scripts/check-scale.ts # a fifty-first font size
+node scripts/check-crons.ts # a scheduled job the Worker is no longer listening for
+node scripts/check-pieces.ts # a written piece nothing on the site links to
+node scripts/check-headers.ts # a page a Worker built, served with no CSP
+node scripts/check-schools.ts # a ladder the browser and the builders disagree about
+node scripts/check-rows.ts # a description of the database that has stopped
                             # being true, or a handler keeping its own copy
                             # of a vocabulary
-node scripts/check-courses.mjs # a Drive id that is not one, the private course
+node scripts/check-courses.ts # a Drive id that is not one, the private course
                             # catalogue leaking into a public bundle, or the
                             # Worker and the browser disagreeing about where
                             # a lesson lives
-node scripts/check-api.mjs  # the browser asking for an endpoint the Worker
+node scripts/check-api.ts  # the browser asking for an endpoint the Worker
                             # stopped routing, which breaks nothing and
                             # quietly switches a feature off
 node scripts/build-modules.ts --check # a served module edited in its built
@@ -642,11 +642,11 @@ node scripts/build-fallback.ts --check # /fallback.css, which the two pages that
 node scripts/check-types.ts  # scripts/ that node strips the types out of
                             # without ever reading them
 node scripts/build-school-icons.ts --check   # a school drawing next/ copied
-node scripts/check-next.mjs # a copy inside next/ that has drifted from the
+node scripts/check-next.ts # a copy inside next/ that has drifted from the
                             # thing it was copied from
 ```
 
-`check-pieces.mjs --live` also asks the database and prints where every
+`check-pieces.ts --live` also asks the database and prints where every
 piece actually lives, which is the one question `archive/TRANSITION.md` Stage 3
 turns on.
 
@@ -752,15 +752,15 @@ One check describes what is live rather than what is committed, so
 it belongs after the upload and not before it:
 
 ```sh
-node scripts/check-live.mjs        # the service binding, the second Worker's
+node scripts/check-live.ts        # the service binding, the second Worker's
                                    # own scripts, and the pieces that fall
                                    # through to a file
-node scripts/check-preview.mjs --preview <branch-preview-url>
+node scripts/check-preview.ts --preview <branch-preview-url>
                                    # does the Next Worker's branch preview
                                    # render what the live site renders
 ```
 
-`check-preview.mjs` is how a Stage 11 route gets verified before
+`check-preview.ts` is how a Stage 11 route gets verified before
 anything forwards a reader to it. The two Workers deploy
 separately and Cloudflare gives `reiad-next` a branch preview URL
 on every push, with the real database binding, so a route can be
@@ -889,7 +889,7 @@ node scripts/export-schools.mjs --db schools.db   # content/schools.backup.json
 **Why there is a file at all, now that no page is built from it.**
 Three reasons, and none of them is the pages any more. It is the
 schools' half of the nightly backup, on the same footing as
-`content/articles.backup.json`. It is what `check-schools.mjs`
+`content/articles.backup.json`. It is what `check-schools.ts`
 compares the four `curriculum.js` modules against. And it is the
 only copy of the lesson prose that a check running on a laptop
 with no network can read, which is how `check-css.js` knows that
@@ -911,7 +911,7 @@ beside the two builders whose whole output it watched, and
 `next/parity.test.mjs` asks that question against the route
 instead.
 
-`check-schools.mjs` stays and does two things: it compares the
+`check-schools.ts` stays and does two things: it compares the
 ladder in `curriculum.js` against the ladder in the snapshot, and
 it computes every lesson's URL, progress id and label both through
 `shared/schools.ts` and through the school's own `curriculum.js`
@@ -920,7 +920,7 @@ and fails on any pair that disagree.
 **The ladder is still `curriculum.js`,** and still read by the
 browser: forty files import from one of the four, and Stage 11.7
 is what replaces them. So two files describe the same four
-schools, and `check-schools.mjs` fails if they stop agreeing about
+schools, and `check-schools.ts` fails if they stop agreeing about
 which lessons exist, in what order, in which section. Titles and
 prose are not compared: those are the Studio's now.
 
@@ -939,7 +939,7 @@ split, a risk badge and a call-to-action, using the classes
 `split`, `do`, `others`, `warn`, `bn-h` and `btn`, none of which is
 in the article allowlist, and widening the allowlist would not have
 fixed it: those classes belonged to the starter guide's own layer
-and `check-css.mjs` fails a class two layers both define.
+and `check-css.js` fails a class two layers both define.
 
 They were rewritten into the article's own vocabulary instead. The
 split became a `checklist` and a `side-note`, the warnings became
@@ -992,7 +992,7 @@ nothing is served at `/styles.css` any more.
 `aab/fallback.css` is that stylesheet with its comments removed,
 for `404.html` and `offline.html`, which cannot link a name that
 carries a content hash. `scripts/build-fallback.ts` writes it and
-`check-next.mjs` fails if it has drifted.
+`check-next.ts` fails if it has drifted.
 
 **Tailwind is live as of 17 August 2026, on one page.** Stage 14 set
 the arrangement up and deliberately left it unused so the first
@@ -1077,7 +1077,7 @@ served with no Content-Security-Policy, no HSTS and no
 file-based articles that had all three, and the page renders the
 same either way. Anything that returns HTML from a Worker goes
 through `htmlResponse()` in `shared/headers.ts`, and
-`check-headers.mjs` fails if that list and `_headers` drift.
+`check-headers.ts` fails if that list and `_headers` drift.
 
 ## The writing surface is one module
 
@@ -1199,7 +1199,7 @@ course, so the pages are empty and the catalogue is behind
 anything under `next/`.** A page that did would put the whole
 catalogue into a JavaScript bundle anybody can fetch, and the page
 would look identical. `import type` is fine and is erased before
-bundling. `check-courses.mjs` fails on the other kind.
+bundling. `check-courses.ts` fails on the other kind.
 
 **The catalogue is generated and must stay generated.** It is a
 list of things that exist elsewhere, which is the rule at the top
@@ -1348,10 +1348,10 @@ button, exactly as it is for a video.
 
 **`ID_FIELDS` in `shared/courses.ts` is the list of lesson fields
 holding a Drive id**, and it is exported because more than one
-thing walks it. `check-courses.mjs` kept its own copy, and the day
+thing walks it. `check-courses.ts` kept its own copy, and the day
 `captions` was added it went on reporting every id well formed
 while never looking at 298 of them. One vocabulary, one place: the
-rule `check-rows.mjs` already enforces for the database.
+rule `check-rows.ts` already enforces for the database.
 
 **The credential is a SERVICE ACCOUNT, and that is not a
 convenience.** Two wrangler secrets, and the site works without

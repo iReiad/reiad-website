@@ -166,7 +166,7 @@
        answer: the accent LIFTS a dark surface, so it carries
        three times the tint and needs less on the edges.
 
-       `check-surfaces.mjs` measures that a panel stays above the
+       `check-surfaces.ts` measures that a panel stays above the
        page and a sunk ground below it, in both modes and all
        seven sections. */
 
@@ -299,7 +299,7 @@
        The comment that used to live here recorded gold slipping
        to 4.45 when the paper turned warm, and it was caught by
        somebody looking. Moving the hue from 85 to 75 lets gold
-       sit at 44% with the rest, and `scripts/check-contrast.mjs`
+       sit at 44% with the rest, and `scripts/check-contrast.ts`
        is what looks now: it measures all seven against all three
        grounds in both themes, and fails the build under 4.5.
 
@@ -415,7 +415,7 @@
        was nothing to reach for, so everybody reached for a
        number. These are the things to reach for. A value not on
        a scale is an argued exception now rather than a Tuesday
-       afternoon, and `check-scale.mjs` is what makes that true
+       afternoon, and `check-scale.ts` is what makes that true
        rather than aspirational.
 
        THE SCALE DESCRIBES THIS DESIGN, it does not correct it.
@@ -436,7 +436,7 @@
        scale below, spacing here is genuinely contextual: a 1px
        rule between rows is not a small version of a 44px band,
        it is a different thing. So the scale covers the common
-       case, `check-scale.mjs` does not police it, and a literal
+       case, `check-scale.ts` does not police it, and a literal
        gap is allowed to mean "this one is deliberate". */
     --s-1: 2px;
     --s-2: 4px;
@@ -494,7 +494,7 @@
     /* --- the corners ---
 
        Four rungs and a pill, and every corner on the site is one
-       of them. `check-scale.mjs` fails on a literal `px` radius
+       of them. `check-scale.ts` fails on a literal `px` radius
        for the same reason it fails on a fifty-first font size:
        thirty-three of them had accumulated across fourteen
        different values, which is not a design with a soft corner,
@@ -8176,7 +8176,7 @@ German for day, and .tag is what the site has always called
      nobody had added the sixth. A colour said in two places is
      the failure this repository opens with.
 
-     `check-accents.mjs` fails if they come back. */
+     `check-accents.ts` fails if they come back. */
 
   :root {
     --rail-open: 268px;

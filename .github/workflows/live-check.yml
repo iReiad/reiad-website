@@ -1,7 +1,7 @@
 # ============================================================
 # The live smoke test.
 #
-# `scripts/check-live.mjs` asks the deployed site the handful of
+# `scripts/check-live.ts` asks the deployed site the handful of
 # questions that cannot be answered from a file: whether the NEXT
 # service binding is really in effect, whether the second Worker's
 # own JavaScript is really being served, and whether the pieces
@@ -49,4 +49,4 @@ jobs:
           node-version: "22"
 
       - name: Ask the live site
-        run: node scripts/check-live.mjs
+        run: node scripts/check-live.ts

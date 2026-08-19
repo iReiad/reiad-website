@@ -10,7 +10,7 @@
    table it wrote itself.
 
    `shared/schools.ts` is the typed version of the same ladders and
-   `check-schools.mjs` holds the two to agreeing. This file exists
+   `check-schools.ts` holds the two to agreeing. This file exists
    because these modules are what the BROWSER loads, by the path it
    fetches them from. */
 

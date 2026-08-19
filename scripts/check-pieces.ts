@@ -1,8 +1,8 @@
 /* ============================================================
-   check-pieces.mjs: where every written piece actually lives.
+   check-pieces.ts: where every written piece actually lives.
 
-     node scripts/check-pieces.mjs          offline, and a gate
-     node scripts/check-pieces.mjs --live   asks the database too
+     node scripts/check-pieces.ts          offline, and a gate
+     node scripts/check-pieces.ts --live   asks the database too
 
    A piece on this site can be a committed HTML file, a row in D1,
    or both, and the row wins at the URL. That is the whole of
@@ -39,13 +39,31 @@ import { dirname, join } from "node:path";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const aab = join(root, "aab");
 
-const { SECTIONS, livePieces } = await import(`file://${join(aab, "content.js")}`);
+/* `content.js` is a browser module with no declaration beside
+   it, so the two things this file asks of it are stated here. The
+   dynamic import stays: it is plain JavaScript at a path, and a
+   static one would need a `.d.ts` in `aab/src/types/` that only
+   this check would read. */
+interface Section {
+  id: string;
+  dir: string;
+  [key: string]: unknown;
+}
+
+interface Piece {
+  slug: string;
+  [key: string]: unknown;
+}
+
+const { SECTIONS, livePieces } = await import(
+  `file://${join(aab, "content.js")}`
+) as { SECTIONS: Section[]; livePieces: (section: Section) => Piece[] };
 
 const live = process.argv.includes("--live");
 const ORIGIN = process.env.SITE_ORIGIN ?? "https://reiad.co.uk";
 
 let problems = 0;
-const bad = (msg) => { problems += 1; console.error(`  ${msg}`); };
+const bad = (msg: string): void => { problems += 1; console.error(`  ${msg}`); };
 
 /* ---------- what _redirects keeps alive ---------- */
 const redirectsFile = join(aab, "_redirects");
@@ -64,17 +82,29 @@ if (live) {
   try {
     const res = await fetch(`${ORIGIN}/api/backup/articles`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    const data = await res.json() as { articles: Array<Record<string, unknown>> };
     rows = new Map(data.articles.map((a) => [`${a.section}/${a.slug}`, a]));
   } catch (err) {
-    console.error(`  (could not reach the database: ${err.message})`);
+    console.error(`  (could not reach the database: ${(err as Error).message})`);
     console.error("  Reporting what is on disk only.\n");
   }
 }
 
 /* ---------- the survey ---------- */
 
-const state = [];
+/** Where one piece actually lives, said in the words the report
+    prints. `inDb` is null when the database was not reachable,
+    which is a different answer from "no row" and must not be
+    printed as one. */
+interface Where {
+  section: string;
+  slug: string;
+  onDisk: boolean;
+  inList: boolean;
+  inDb: boolean | null;
+}
+
+const state: Where[] = [];
 
 for (const section of SECTIONS) {
   const dir = join(aab, section.id);
@@ -86,7 +116,7 @@ for (const section of SECTIONS) {
       .map((f) => f.replace(/\.html$/, ""))
   );
 
-  const listed = new Set(livePieces(section).map((p) => p.slug));
+  const listed = new Set(livePieces(section).map((p: Piece) => p.slug));
 
   // Every slug either side knows about.
   const slugs = new Set([
@@ -125,7 +155,7 @@ for (const section of SECTIONS) {
 
 /* ---------- the report ---------- */
 
-const where = (p) => {
+const where = (p: Where): string => {
   if (p.inDb === null) return p.onDisk ? "file" : "listed, no file";
   if (p.inDb && p.onDisk) return "BOTH (row wins)";
   if (p.inDb) return "database";

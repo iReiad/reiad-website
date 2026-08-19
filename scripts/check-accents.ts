@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-accents.mjs: one table decides what colour a page wears.
+   check-accents.ts: one table decides what colour a page wears.
 
-       node scripts/check-accents.mjs
+       node scripts/check-accents.ts
 
    `next/lib/nav.ts` says which colour each destination owns, and
    `--accent` is the single property every component reads. The
    whole design rests on that mapping existing once.
 
-   It did not. `aab/styles.css` carried five rules of the shape
+   It did not. `next/styles/site.css` carried five rules of the shape
    `body.deutsch { --accent: var(--blue) }`, covering five of the
    sixteen destinations, and they agreed with the rail only
    because nobody had added the sixth. This fails if they come
@@ -22,10 +22,10 @@ import { fileURLToPath } from "node:url";
 import { NAV, ACCENTS, accentFor, htmlAttrs } from "../next/lib/nav.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
+const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
 
-const problems = [];
-const say = (m) => problems.push(m);
+const problems: string[] = [];
+const say = (m: string): void => { problems.push(m); };
 
 /* ============================================================
    1. Nothing else sets --accent per section
@@ -38,7 +38,7 @@ const css = read("next/styles/site.css");
    default and a component setting it on itself is scoping, not
    mapping, so neither of those counts. */
 for (const m of css.matchAll(/^\s*(body\.[a-z-]+|\[data-section[^\]]*\])[^{]*\{[^}]*--accent\s*:/gmi)) {
-  say(`aab/styles.css maps a section to a colour: \`${m[1].trim()}\`.\n`
+  say(`next/styles/site.css maps a section to a colour: \`${m[1].trim()}\`.\n`
     + "        That mapping belongs in next/lib/nav.ts and nowhere else.");
 }
 
@@ -60,7 +60,7 @@ for (const [key, value] of Object.entries(ACCENTS)) {
     continue;
   }
   if (!defined.has(name)) {
-    say(`${key} names \`${name}\`, which aab/styles.css does not define`);
+    say(`${key} names \`${name}\`, which next/styles/site.css does not define`);
   }
 }
 
@@ -152,7 +152,9 @@ const OK = [
    so they stay and this counts them rather than forgetting
    them. */
 let gold = 0;
-const painted = [];
+/** Where a rule names a section's colour instead of reading
+    `var(--accent)`, as `<file>:<line>  <the rule>`. */
+const painted: string[] = [];
 {
   const lines = css.split("\n");
   let inComment = false;
@@ -168,7 +170,7 @@ const painted = [];
     if (OK.some((re) => re.test(code))) return;
     for (const [, name] of code.matchAll(NAMED)) {
       if (name === "gold") { gold += 1; continue; }
-      painted.push(`aab/styles.css:${i + 1}  ${code.trim().slice(0, 74)}`);
+      painted.push(`next/styles/site.css:${i + 1}  ${code.trim().slice(0, 74)}`);
     }
   });
 }

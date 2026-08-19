@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-components.mjs: a component only updates the pages that
+   check-components.ts: a component only updates the pages that
    use it.
 
-       node scripts/check-components.mjs
-       node scripts/check-components.mjs --list    where they are
-       node scripts/check-components.mjs --update  re-record
+       node scripts/check-components.ts
+       node scripts/check-components.ts --list    where they are
+       node scripts/check-components.ts --update  re-record
 
    ---- the problem this exists for ----
 
@@ -72,7 +72,17 @@ const UPDATE = process.argv.includes("--update");
    generalises: a check that reports work which cannot be done is
    a check that gets ignored, and an ignored check is the same as
    a deleted one. */
-const OWNED = [
+/** A pattern a component owns: the plain text to look for, what
+    to reach for instead, and a line this pattern matches that the
+    component cannot cover. */
+interface Owned {
+  id: string;
+  find: string;
+  use: string;
+  skip?: RegExp;
+}
+
+const OWNED: Owned[] = [
   /* Two of these will never reach zero and should not: the CSV
      pickers on two case studies are a `<label>` wrapping a hidden
      file input, styled as a button. `<Button>` is a button and
@@ -153,7 +163,7 @@ const EXEMPT = [
    only `<button>` on the list. `icons.tsx` is exempt for the
    colour rule for the same kind of reason: a drawing is allowed
    to be a drawing. */
-function walk(dir, out = []) {
+function walk(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
     const path = join(dir, name);
     if (statSync(path).isDirectory()) {
@@ -172,9 +182,16 @@ const files = [...walk(join(ROOT, "next", "app")), ...walk(join(ROOT, "next", "c
 
 /* ---------- count ---------- */
 
-const counts = Object.fromEntries(OWNED.map((o) => [o.id, 0]));
-const where = Object.fromEntries(OWNED.map((o) => [o.id, []]));
-const colours = [];
+/** How many hand-written call sites each pattern still has. */
+const counts: Record<string, number> =
+  Object.fromEntries(OWNED.map((o) => [o.id, 0]));
+
+/** And where each one is, as `<file>:<line>`, for `--list`. */
+const where: Record<string, string[]> =
+  Object.fromEntries(OWNED.map((o) => [o.id, []]));
+
+/** Where a route names a colour instead of reading `--accent`. */
+const colours: string[] = [];
 
 for (const file of files) {
   const src = readFileSync(file, "utf8");
@@ -209,9 +226,11 @@ for (const file of files) {
 
 /* ---------- compare against the ledger ---------- */
 
-let ledger = {};
+/** What was recorded last time, per pattern. The ratchet: this
+    check fails when a count goes UP, never when it goes down. */
+let ledger: Record<string, number> = {};
 try {
-  ledger = JSON.parse(readFileSync(LEDGER, "utf8"));
+  ledger = JSON.parse(readFileSync(LEDGER, "utf8")) as Record<string, number>;
 } catch {
   ledger = {};
 }
@@ -232,7 +251,7 @@ if (LIST) {
   process.exit(0);
 }
 
-const problems = [];
+const problems: string[] = [];
 
 for (const owned of OWNED) {
   const was = ledger[owned.id];

@@ -31,7 +31,7 @@
    archive/TRANSITION.md Stage 13, and the first module to move. Edit
    `aab/src/share-card.ts`; `node scripts/build-modules.ts`
    writes `aab/share-card.js`, which is what the browser fetches
-   and what is committed. `scripts/check-modules.mjs` rebuilds and
+   and what is committed. `scripts/build-modules.ts` rebuilds and
    compares, so an edit to the output alone fails a check rather
    than being quietly overwritten by the next build.
 

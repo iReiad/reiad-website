@@ -38,7 +38,7 @@ without permission on the folder itself.
 Two files of the 1,579 are not part of any lesson and are skipped:
 the `About The content.txt` at the root of the download, and one
 saved link named `grow.with.google`, whose last dot is a domain
-rather than an extension. `check-courses.mjs` measures that drop
+rather than an extension. `check-courses.ts` measures that drop
 rate and fails if it goes over one per cent, because a dropped file
 is not a visible failure: the lesson still renders, with one fewer
 thing under it. The first version of the parser dropped 133 of

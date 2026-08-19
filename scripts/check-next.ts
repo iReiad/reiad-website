@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-next.mjs: the things `next/` has a second copy of.
+   check-next.ts: the things `next/` has a second copy of.
 
-       node scripts/check-next.mjs
+       node scripts/check-next.ts
 
    The Next.js app is a package with its own root, and two things
    it renders live outside that root. Both are copied in,
@@ -57,10 +57,10 @@ import { NAV, LADDER_SCHOOLS } from "../next/lib/nav.ts";
 import { SCHOOL_LADDERS } from "../next/lib/school-ladders.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
+const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
 
 let failures = 0;
-const fail = (line, ...detail) => {
+const fail = (line: string, ...detail: string[]): void => {
   failures += 1;
   console.error(`FAIL  ${line}`);
   detail.forEach((d) => console.error(`      ${d}`));
@@ -75,7 +75,7 @@ const cards = read("next/components/cards.tsx");
 /** The inside of the <svg>, which is the part `cards.tsx` holds
     as a string and hands to React as HTML. The wrapper around it
     is JSX in that file and the same attributes either way. */
-const inner = (name) => icon(name).replace(/^<svg[^>]*>|<\/svg>$/g, "");
+const inner = (name: string): string => icon(name).replace(/^<svg[^>]*>|<\/svg>$/g, "");
 
 for (const name of ["cart", "book", "compass"]) {
   if (!cards.includes(inner(name))) {
@@ -229,13 +229,33 @@ const shellNames = new Set(
 
 const cardIcons = keyed ? (SCHOOL_ICONS[keyed[1]] ?? {}) : {};
 
-const { STAGES, allLessons } = await import("../aab/money/curriculum.js");
-const asked = new Set();
+/* The money school's ladder, for the icon names its cards ask
+   for. `curriculum.js` is plain JavaScript with a declaration in
+   `aab/src/types/`, and what this needs of it is one optional
+   field, so it is stated here rather than widened there. */
+interface Drawn { icon?: string }
+
+const { STAGES, allLessons } = await import("../aab/money/curriculum.js") as {
+  STAGES: Drawn[];
+  allLessons: () => Drawn[];
+};
+const asked = new Set<string>();
 for (const stage of STAGES) if (stage.icon) asked.add(stage.icon);
 for (const lesson of allLessons()) if (lesson.icon) asked.add(lesson.icon);
+/* `group.items`, and it read `group.links` until 19 August 2026.
+
+   A `NavGroup` has never had a `links` and has never had an
+   `icon` of its own: it has a label, an accent and `items`. So
+   `group.links ?? []` was an empty array on every group, the loop
+   added nothing, and not one of the rail's seventeen icons was
+   ever checked. The check went on reporting a number, which is
+   what made it invisible: it was counting the money school's and
+   saying "all N names a card asks for come back with a drawing".
+
+   Nothing here found it. TypeScript did, on the day this file
+   stopped being `.mjs`. */
 for (const group of NAV) {
-  if (group.icon) asked.add(group.icon);
-  for (const link of group.links ?? []) if (link.icon) asked.add(link.icon);
+  for (const item of group.items) if (item.icon) asked.add(item.icon);
 }
 
 const empty = [...asked].filter(

@@ -206,7 +206,7 @@
   /* the type scale, so a utility is a step and not a guess.
      `text-[0.82rem]` in a component is the fifty-first font size
      arriving by the same road it arrived in styles.css; these
-     are the same nine steps scripts/check-scale.mjs holds the
+     are the same nine steps scripts/check-scale.ts holds the
      stylesheet to. */
   --text-t0: var(--t-0);
   --text-t1: var(--t-1);

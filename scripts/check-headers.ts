@@ -1,8 +1,8 @@
 /* ============================================================
-   check-headers.mjs: do the two places that set security headers
+   check-headers.ts: do the two places that set security headers
    still say the same thing?
 
-     node scripts/check-headers.mjs
+     node scripts/check-headers.ts
 
    `aab/_headers` is read by Cloudflare's static asset server and
    applies to every file in `aab/`. A response a Worker builds is
@@ -29,18 +29,26 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+/* A static import rather than `await import(join(ROOT, ...))`.
+
+   The dynamic form was how a `.mjs` file reached a `.ts` one, and
+   it is invisible to the compiler: `SECURITY_HEADERS` came back
+   as `any`, so this check compared a table it knew nothing about
+   against a file it had parsed by hand. Node resolves the
+   relative path the same way and now the table is typed. */
+import { SECURITY_HEADERS, securityEntries } from "../shared/headers.ts";
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-const { SECURITY_HEADERS } = await import(join(ROOT, "shared/headers.ts"));
 
 /* ---------- what _headers says for every file ---------- */
 
 /** The headers in the `/*` block, which is the one that applies to
     every page. Later blocks are per-path Cache-Control and are not
     what this is about. */
-function starBlock() {
+function starBlock(): Record<string, string> {
   const lines = readFileSync(join(ROOT, "aab/_headers"), "utf8").split("\n");
-  const found = {};
+  const found: Record<string, string> = {};
   let inside = false;
 
   for (const raw of lines) {
@@ -64,12 +72,16 @@ function starBlock() {
 
 /** Whitespace inside a CSP is not meaning: `a; b` and `a;  b` are
     one policy written twice. Everything else is compared as typed. */
-const tidy = (value) => value.replace(/\s+/g, " ").trim();
+const tidy = (value: string): string => value.replace(/\s+/g, " ").trim();
 
 const fromFile = starBlock();
-const failures = [];
+const failures: string[] = [];
 
-for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+/* `Object.entries` widens the values to `unknown` under
+   `strict`, and every one of them is a header value. `shared/`
+   exports the pairs already typed, so this asks for those rather
+   than asserting its way past the widening. */
+for (const [key, value] of securityEntries()) {
   if (!(key in fromFile)) {
     failures.push(`${key} is in shared/headers.ts and not in aab/_headers`);
     continue;

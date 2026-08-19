@@ -29,7 +29,7 @@ import { lookFor } from "@reiad/shared/look";
 
 /** Everything the head of a hub states about itself, taken
     verbatim from the page it replaces. Byte-faithful on purpose:
-    `scripts/check-preview.mjs` compares these tags against the
+    `scripts/check-preview.ts` compares these tags against the
     live site's, so a rewritten description is a failed check
     rather than a silent change to a search result. */
 export type HubMeta = {

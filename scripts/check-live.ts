@@ -1,9 +1,9 @@
 /* ============================================================
-   check-live.mjs: is the site that is actually deployed doing
+   check-live.ts: is the site that is actually deployed doing
    what the repository thinks it is?
 
-     node scripts/check-live.mjs
-     node scripts/check-live.mjs --origin https://reiad.co.uk
+     node scripts/check-live.ts
+     node scripts/check-live.ts --origin https://reiad.co.uk
 
    Every other check in this repository reads files, and that is
    the right thing for almost everything: a check that needs the
@@ -26,7 +26,7 @@
    ---- what it does not do ----
 
    It does not check content. `check-content.mjs` and
-   `check-pieces.mjs` do that from the data, offline, and they are
+   `check-pieces.ts` do that from the data, offline, and they are
    the ones to reach for. This asks the deployed site a small
    number of questions whose answers cannot be known from here.
 
@@ -65,14 +65,14 @@ const DB_SLUG = "tiny-experiments";
 const WORKER_PIECE = "/cooking/onions.html";
 
 let passed = 0;
-const failures = [];
+const failures: string[] = [];
 
-const ok = (name, condition, detail = "") => {
+const ok = (name: string, condition: unknown, detail = ""): void => {
   if (condition) { passed++; return; }
   failures.push(detail ? `${name}: ${detail}` : name);
 };
 
-const same = (name, expected, actual) =>
+const same = (name: string, expected: unknown, actual: unknown): void =>
   ok(name, expected === actual, `expected ${expected}, got ${actual}`);
 
 /** Every response is asked for without the cache, because a check
@@ -86,17 +86,17 @@ const same = (name, expected, actual) =>
     fails because nobody reads a job that never finishes. Fifteen
     seconds is far longer than any page here takes and far shorter
     than anybody's patience. */
-const ask = (url, init = {}) =>
+const ask = (url: string, init: RequestInit = {}): Promise<Response> =>
   fetch(url, {
     signal: AbortSignal.timeout(15_000),
-    headers: { "Cache-Control": "no-cache", ...(init.headers || {}) },
+    headers: { "Cache-Control": "no-cache", ...(init.headers ?? {}) },
     ...init,
   });
 
 /** The same, at a path on the site, and without following what
     comes back: several of the checks below are about which
     redirect is served, and a followed redirect hides it. */
-const get = (path, init = {}) =>
+const get = (path: string, init: RequestInit = {}): Promise<Response> =>
   ask(`${origin}${path}`, { redirect: "manual", ...init });
 
 /* The sitemap, read once and used twice: here, to find that piece
@@ -140,7 +140,7 @@ ok("the piece is rendered by the Next.js Worker",
    `next/components/scripts.tsx`. Either spelling counts, because
    the question here is whether the page loads the site's own
    scripts at all, not which tag says so. */
-const loads = (src) =>
+const loads = (src: string): boolean =>
   new RegExp(`<script[^>]*src="${src}"`).test(html)
   || new RegExp(`<link[^>]*rel="(?:modulepreload|preload)"[^>]*href="${src}"`).test(html)
   || new RegExp(`<link[^>]*href="${src}"[^>]*rel="(?:modulepreload|preload)"`).test(html);
@@ -294,11 +294,12 @@ for (const [path, what] of [
        useful thing when this fails is which piece, and a loop that
        prints nothing until the end tells you only that something
        did not answer. */
-    let status;
+    let status: number | string;
     try {
       status = (await ask(url)).status;
     } catch (err) {
-      status = err?.name === "TimeoutError" ? "no answer in 15s" : `failed: ${err}`;
+      status = (err as Error)?.name === "TimeoutError"
+        ? "no answer in 15s" : `failed: ${err}`;
     }
     console.log(`    ${String(status).padEnd(16)} ${url.replace(origin, "")}`);
     if (status !== 200) bad.push(`${url.replace(origin, "")} answered ${status}`);

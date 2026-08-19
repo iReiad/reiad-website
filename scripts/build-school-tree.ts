@@ -36,7 +36,7 @@
    Titles and prose are the Studio's and change often; a STAGE
    list changes when a school gains a stage, which has happened
    four times in a year. That is what makes this safe to commit
-   and `check-next.mjs` is what keeps it honest.
+   and `check-next.ts` is what keeps it honest.
 
    ---- and why the account page is here too ----
 
@@ -141,7 +141,7 @@ export function generate(): string {
      node scripts/export-schools.mjs --db schools.db
      node scripts/build-school-tree.ts
 
-   scripts/check-next.mjs fails if this file and the snapshot disagree. */
+   scripts/check-next.ts fails if this file and the snapshot disagree. */
 
 export interface TreeStage {
   slug: string;
@@ -216,7 +216,7 @@ export async function generateLadders(): Promise<string> {
      node scripts/export-schools.mjs --db schools.db
      node scripts/build-school-tree.ts
 
-   scripts/check-next.mjs fails if this file and the snapshot disagree. */
+   scripts/check-next.ts fails if this file and the snapshot disagree. */
 
 export interface LadderLesson {
   /** What this lesson's tick is filed under, and the only field
@@ -233,7 +233,7 @@ ${lines.join("\n")}
 `;
 }
 
-/* Only when run, never when imported: `check-next.mjs` imports
+/* Only when run, never when imported: `check-next.ts` imports
    both generators to compare, and a generator that wrote its
    output on import would make that check pass by fixing what it
    found. */

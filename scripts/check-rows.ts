@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-rows.mjs: does `shared/rows.ts` still describe this
+   check-rows.ts: does `shared/rows.ts` still describe this
    database, and do the handlers still agree with it?
 
-       node scripts/check-rows.mjs
+       node scripts/check-rows.ts
 
    archive/TRANSITION.md Stage 12, step 1. `shared/rows.ts` is the one
    description of what a row of this database is, and a
@@ -42,10 +42,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
+const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
 
 let failures = 0;
-const fail = (line, ...detail) => {
+const fail = (line: string, ...detail: string[]): void => {
   failures += 1;
   console.error(`FAIL  ${line}`);
   detail.forEach((d) => console.error(`      ${d}`));
@@ -63,7 +63,7 @@ const { TABLES, ...vocab } = await import("../shared/rows.ts");
     them. Deliberately dumb: the block between the parentheses,
     split on commas that are not inside brackets, first word of
     each line that is not a constraint. */
-function columnsOf(table) {
+function columnsOf(table: string): string[] | null {
   const re = new RegExp(`CREATE TABLE IF NOT EXISTS ${table} \\(([\\s\\S]*?)\\n\\);`, "i");
   const block = schema.match(re)?.[1];
   if (!block) return null;
@@ -105,7 +105,7 @@ for (const table of Object.keys(TABLES)) {
 const types = read("shared/rows.ts");
 
 /** The property names of one interface, as written. */
-function propsOf(name) {
+function propsOf(name: string): string[] | null {
   const block = types.match(new RegExp(`export interface ${name} \\{([\\s\\S]*?)\\n\\}`))?.[1];
   if (block === undefined) return null;
   return [...block.matchAll(/^\s{2}(\w+)\??:/gm)].map((m) => m[1]);

@@ -31,6 +31,18 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v131: The checks are TypeScript too, all sixteen and the runner.
+        `/share-card.js` and `/courses.js` changed only in a header
+        comment: each named a check by a filename that does not
+        exist, `scripts/check-modules.mjs` in one case having never
+        existed under any extension.
+
+        The types found a live one on the way. `check-next.ts`
+        walked NAV reading `group.links` and `group.icon`, and a
+        NavGroup has neither: it has `items`. So none of the rail's
+        seventeen icons was ever checked, while the check printed a
+        number and looked finished.
+
    v130: The generators are TypeScript. `/api.js`, `/photo.js` and
         `/share-card.js` changed only in a header comment naming
         the script that builds them, which is now
@@ -340,7 +352,7 @@
         and declared nowhere, so `bg-weave` and `bg-sheen` did
         nothing in all seven components that asked, and every
         surface was flat colour. Both exist now, plus `--grain`,
-        and all three take the page's accent. `check-css.mjs`
+        and all three take the page's accent. `check-css.js`
         reads the Tailwind source too, which is where it could not
         see any of this.
 
@@ -374,7 +386,7 @@
         whole declaration invalid at computed value time, so
         picking an answer did nothing visible. `--header-h` was
         the same, left behind when `body > header` was removed.
-        `check-css.mjs` now fails on a token nothing defines and
+        `check-css.js` now fails on a token nothing defines and
         no script sets.
 
    v105: The theming actually reaches the page. `--accent` was set
@@ -382,7 +394,7 @@
         named `var(--green)` or `var(--gold)`, so a German page
         carried a blue accent on <html> and drew a green button, a
         green section label and a gold eyebrow. They read
-        `var(--accent)` now, and check-accents.mjs fails on a rule
+        `var(--accent)` now, and check-accents.ts fails on a rule
         that names one of the seven. Twenty golds stay, because
         they mean warn, risk and not-written-yet rather than a
         section. The corners are a five-rung ladder instead of
@@ -452,7 +464,7 @@
         added to the BUILT /sync.js rather than to its source, so
         the next build silently dropped it and answers saved on
         one device and nowhere else. It is in aab/src/sync.ts now,
-        and check-courses.mjs fails if a key this section writes
+        and check-courses.ts fails if a key this section writes
         is one the account does not carry.
 
    v95: A quiz became something a reader can answer.
@@ -578,7 +590,7 @@
         v87 copy would get the old bar under the new markup.
 
         The palette is measured now rather than believed:
-        scripts/check-contrast.mjs reads the tokens out of this
+        scripts/check-contrast.ts reads the tokens out of this
         stylesheet, converts OKLCH to a WCAG luminance and fails
         on any pair below the threshold for the size it is used
         at. That is what moved gold: at hue 85 it measured
@@ -609,7 +621,7 @@
         and 1.4s, none of them wrong alone and no two agreeing.
         And fifty distinct font sizes became nine, with the
         largest single change under a pixel, guarded by
-        scripts/check-scale.mjs.
+        scripts/check-scale.ts.
 
         The one a reader will actually notice: `a:hover` faded
         every link on the site to 0.85 opacity, including whole
@@ -1355,7 +1367,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v130";
+const VERSION = "v131";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

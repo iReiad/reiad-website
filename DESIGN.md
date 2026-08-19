@@ -22,13 +22,13 @@ faintly blue.
 
 **Corners are a ladder, never a number.** `--radius-xs` 5,
 `--radius-sm` 12, `--radius` 18, `--radius-lg` 24, `--radius-pill`.
-`check-scale.mjs` fails on a literal px radius. A row and a control
+`check-scale.ts` fails on a literal px radius. A row and a control
 are pills; a card is `--radius`; a field is the card's, because a
 box you type a paragraph into wants a corner and not a capsule.
 
 **The page wears its section's colour.** `--accent` is set on
 `<html>` from the one table in `next/lib/nav.ts`, and every
-component reads it. `check-accents.mjs` fails on any rule that
+component reads it. `check-accents.ts` fails on any rule that
 names one of the seven directly. Twenty golds survive because they
 mean warn, risk and not-written-yet rather than a section.
 
@@ -57,7 +57,7 @@ written down. A stat is `.tile`, `.stat` and `<StatTile>`. A text
 box is `ui/field.tsx`, the input rules in `@layer components`, the
 Studio's own, and `textarea[data-schrift]` in the practice book.
 
-`scripts/check-components.mjs` counts the hand-written ones and
+`scripts/check-components.ts` counts the hand-written ones and
 only lets the number fall. It stood at 245 and is at 223. That
 number reaching zero is what "the design is consistent" means
 here, and nothing else does.

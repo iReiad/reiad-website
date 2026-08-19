@@ -23,7 +23,7 @@
    archive/TRANSITION.md Stage 11.7. These five were `aab/money/index.html`
    and its four neighbours until 16 August 2026, and they are in
    `archive/schools-pages/` now. `archive/schools-builders/build-school-hubs.mjs`
-   lifted them out verbatim, and `check-next.mjs` compared the copy
+   lifted them out verbatim, and `check-next.ts` compared the copy
    against the original for as long as there was an original.
 
    They were copied rather than rewritten as JSX because a port is

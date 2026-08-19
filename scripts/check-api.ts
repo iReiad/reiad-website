@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-api.mjs: does the browser call routes that exist?
+   check-api.ts: does the browser call routes that exist?
 
-       node scripts/check-api.mjs
+       node scripts/check-api.ts
 
    archive/TRANSITION.md Stage 12, step 4. `aab/api.js` knows every
    endpoint by string:
@@ -47,7 +47,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 let failures = 0;
-const fail = (line, ...detail) => {
+const fail = (line: string, ...detail: string[]): void => {
   failures += 1;
   console.error(`FAIL  ${line}`);
   detail.forEach((d) => console.error(`      ${d}`));
@@ -92,8 +92,8 @@ const mounts = [...table.matchAll(/\["\/api\/([a-z-]+)"/g)].map((m) => m[1]);
 const CALL = /\bapi(?:<[^>()]*>)?\(\s*(["'`])([a-z-]+)(?=[/?`"']|\$\{)/g;
 const FETCH = /["'`]\/api\/([a-z-]+)(?=[/?`"']|\$\{)/g;
 
-const files = [];
-const walk = (dir, skip = []) => {
+const files: string[] = [];
+const walk = (dir: string, skip: string[] = []): void => {
   for (const entry of readdirSync(dir)) {
     if (skip.includes(entry)) continue;
     const full = join(dir, entry);
@@ -104,13 +104,14 @@ const walk = (dir, skip = []) => {
 walk(join(ROOT, "aab"), ["og", "node_modules", "desk", "studio"]);
 walk(join(ROOT, "app", "src"), ["node_modules"]);
 
-const asked = new Map(); // mount -> the files that ask for it
+/** An endpoint's mount, to the files that ask for it. */
+const asked = new Map<string, Set<string>>();
 
 for (const file of files) {
   const src = readFileSync(file, "utf8");
-  const note = (mount) => {
+  const note = (mount: string): void => {
     if (!asked.has(mount)) asked.set(mount, new Set());
-    asked.get(mount).add(relative(ROOT, file));
+    asked.get(mount)!.add(relative(ROOT, file));
   };
   for (const [, , mount] of src.matchAll(CALL)) note(mount);
   for (const [, mount] of src.matchAll(FETCH)) note(mount);

@@ -13,7 +13,7 @@
 # question. `live-check.yml` runs on every push and asks the LIVE
 # site how it is doing, which on a branch is a question about the
 # last deploy rather than about the branch. A pull request that
-# broke check-content.mjs showed green on both, merged, and then
+# broke check-content.js showed green on both, merged, and then
 # failed at the top of deploy.yml with main already carrying it.
 #
 # That is the shape of failure this repository has been bitten by
@@ -88,7 +88,7 @@ jobs:
       - name: Install the build tools
         run: npm ci
 
-      # THE LIST IS scripts/check-all.mjs, AND IT IS THE ONLY ONE.
+      # THE LIST IS scripts/check-all.ts, AND IT IS THE ONLY ONE.
       #
       # These three steps each ran their own hand-written copy of
       # it until 19 August 2026, which is a second copy of a list
@@ -100,7 +100,7 @@ jobs:
       #
       # `--stage` is what keeps them three steps: the headings stay
       # separate in the interface here and the list stays in one
-      # place there. A check added to check-all.mjs runs here by
+      # place there. A check added to check-all.ts runs here by
       # itself.
       #
       # Every one of them exists because something shipped broken
@@ -109,7 +109,7 @@ jobs:
       # run_worker_first overlap test wrangler runs, and wrangler
       # runs it before it reads a line of worker.js.
       - name: Run the checks
-        run: node scripts/check-all.mjs --stage=checks
+        run: node scripts/check-all.ts --stage=checks
 
       # Generated files are committed here, so a build is not run:
       # what matters is that what was committed still matches its
@@ -123,7 +123,7 @@ jobs:
       # without it, shared/courses.data.json is the one generated
       # file in the repository that nobody could regenerate.
       - name: Check the generated files match their sources
-        run: node scripts/check-all.mjs --stage=generated
+        run: node scripts/check-all.ts --stage=generated
 
       # The tests. Nineteen files and about 1,200 checks, none of
       # which needs a network, a browser, a database or a running
@@ -144,7 +144,7 @@ jobs:
       # laptop until this job is given a browser, and CLAUDE.md
       # says which ones and what each needs.
       - name: Run the tests
-        run: node scripts/check-all.mjs --stage=tests
+        run: node scripts/check-all.ts --stage=tests
 
       # A guard on the one rule this repository opens with. The
       # character is not written out anywhere here on purpose: a

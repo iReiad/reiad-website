@@ -29,7 +29,7 @@ cd next && npm run dev           # the Next routes, on :3000
 ## Before you commit
 
 ```sh
-node scripts/check-all.mjs       # every check, in order
+node scripts/check-all.ts       # every check, in order
 ```
 
 Generated output is generated. Edit the source and rebuild:
