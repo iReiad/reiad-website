@@ -109,7 +109,7 @@ export type Current =
   | "money" | "skills" | "tools" | "stock" | "live" | "routine" | "insights"
   | "portfolio"
   | "about" | "contact" | "account" | "deutsch" | "quran" | "english"
-  | "cooking" | "travel" | "home"
+  | "cooking" | "travel" | "home" | "admin"
   /* Kept because four routes still pass it: a piece in the
      kitchen or on the travel desk is inside the skills half, and
      said so before the money school joined that list. */
