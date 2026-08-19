@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v145: `/account.js`. `getProfile()` read `profiles` with no
+        `id=eq.<me>` on it, and that is the one table whose select
+        policy is `using (true)`, so PostgREST answered with
+        whichever row it reached first out of the whole table. A
+        precached copy of the old module would go on drawing a
+        stranger's name, courses and pace as the reader's own, and
+        go on losing every save, until this number moved.
+
    v144: `/offline.html`, and `/404.html` beside it, for a word.
         Both boot scripts tested `a === "money"` where the stored
         audience is `learn` or `work`, so a reader who chose
@@ -1478,7 +1486,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v144";
+const VERSION = "v145";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

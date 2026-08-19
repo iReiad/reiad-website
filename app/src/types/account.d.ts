@@ -65,6 +65,39 @@ export declare function refreshUser(): Promise<Reader | null>;
 export declare function signOut(): Promise<void>;
 /** What this device last knew, without asking anyone. */
 export declare function cachedProfile(): Profile | null;
+/**
+ * This reader's profile, out of Postgres.
+ *
+ * THE FILTER IS THE WHOLE FUNCTION, and it was missing.
+ *
+ * `profiles` is the ONE table on this project whose select policy
+ * is `using (true)`, and deliberately: a comment shows its
+ * author's name to people who are not signed in. Every other
+ * table is `auth.uid() = user_id`, so an unfiltered read there
+ * returns your own rows and nothing else, which is why this was
+ * the only call that could go wrong and did.
+ *
+ * Without `id=eq.<me>`, PostgREST returned whichever row the
+ * planner reached first out of the whole table. With one account
+ * that was always the right one. With two it was a coin toss, and
+ * worse than a coin toss: a non-HOT update moves a row to the end
+ * of the heap, so SAVING your profile was the thing that made the
+ * next read return somebody else's. The account page painted
+ * their answers as yours, `setup_at` came back null so the setup
+ * form reappeared, and pressing Save again wrote the right row and
+ * guaranteed the same wrong read. "It saves and goes back to how
+ * it was", forever, by construction.
+ *
+ * It cached that row as this device's profile too, and
+ * `saveProfile` merges its patch on to the cache, so the next
+ * partial save could have written another person's answers into
+ * your row.
+ *
+ * The irony is worth keeping: `saveProfile` below carries
+ * `id=eq.<me>` and explains at length that it does so even though
+ * the policy makes it unnecessary. Here the policy genuinely does
+ * not protect you, and there was no filter at all.
+ */
 export declare function getProfile(): Promise<Profile | null>;
 /**
  * Write some of the profile. Takes the same column names the row
