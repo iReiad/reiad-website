@@ -20,7 +20,8 @@
    nothing to keep in step, because there is only one list.
    ============================================================ */
 
-import { ReadCard, SoonCard, bn } from "./cards";
+import { ReadCard, bn } from "./cards";
+import { SoonCard } from "./deck";
 import { SOON, type ReadHubCopy } from "../lib/hub";
 import type { Piece } from "../lib/pieces";
 import { InfoCard } from "./deck";
@@ -109,7 +110,8 @@ export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
      on its own and the teasers belong in both. They are the only
      cards here that are not a row, so the filter never hides one. */
   const soon = SOON.map((teaser) => (
-    <SoonCard key={teaser.title} title={teaser.title} dek={teaser.dek} />
+    <SoonCard key={teaser.title} title={teaser.title} dek={teaser.dek}
+              soon="Coming soon" />
   ));
 
   return (

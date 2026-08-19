@@ -8,15 +8,33 @@
 
    ---- a chip that goes nowhere is not a link ----
 
-   That is the whole reason there are two exports rather than one
-   with an `href`. `<SoonCard>` in `deck.tsx` exists for the same
-   reason and the note there is worth repeating: a reader finds
-   out whether something is clickable by moving the mouse, and a
-   design where half the chips are links and half are not teaches
-   them to try every one.
+   That is the whole reason there are three exports rather than
+   one with an `href`. `<SoonCard>` in `deck.tsx` exists for the
+   same reason and the note there is worth repeating: a reader
+   finds out whether something is clickable by moving the mouse,
+   and a design where half the chips are links and half are not
+   teaches them to try every one.
+
+   ---- and a chip you press is a third thing again ----
+
+   `<ChipButton>` was the hole this file left, and it is why
+   nothing had ever imported the two exports above. Every `.chip`
+   on this site is a CONTROL: the topic filters, the Reset on
+   five calculators, the copy-link on the tools hub, the figure
+   toolbar in the editor. All of them are `<button>` elements,
+   and both exports here render a `<span>` and an `<a>`, so the
+   component that `check-components.ts` told thirty-four call
+   sites to use could not replace a single one of them.
+
+   `app/src/bits.tsx` says the same thing from the other side and
+   names the condition for its own removal: "`.chip` on these two
+   pages is a CONTROL you press ... so this one stays here until
+   the library has a pressable chip."
    ============================================================ */
 
-import type { AnchorHTMLAttributes, ReactNode } from "react";
+import type {
+  AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode,
+} from "react";
 
 /* Four tones, named for what they say rather than for a colour.
    `accent` follows the page; the other three are fixed because
@@ -45,6 +63,35 @@ export function Chip(
     <span className={[BASE, TONES[tone], className].filter(Boolean).join(" ")}>
       {children}
     </span>
+  );
+}
+
+/** The same chip, when pressing it does something here.
+
+    It writes `.chip` rather than the utilities above, because
+    that is the class the stylesheet already styles as a control,
+    the class four browser modules build by hand, and the class
+    `aria-pressed` is already keyed on. A second look for a
+    pressed chip is the drift this library exists to stop.
+
+    `pressed` is `aria-pressed`, so what a screen reader
+    announces and what a reader sees are one attribute. */
+export function ChipButton({
+  pressed, className, type = "button", children, ...rest
+}: {
+  /** Undefined for a chip that acts and does not latch: a Reset,
+      a Copy link. `aria-pressed` on one of those would promise a
+      state it does not have. */
+  pressed?: boolean;
+  className?: string;
+  children: ReactNode;
+} & ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button type={type} aria-pressed={pressed}
+            className={["chip", className].filter(Boolean).join(" ")}
+            {...rest}>
+      {children}
+    </button>
   );
 }
 

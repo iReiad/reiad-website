@@ -31,6 +31,7 @@
    ============================================================ */
 
 import { useState, type ReactNode } from "react";
+import { ChipButton } from "./ui/chip";
 import { SampleCard } from "./cards";
 import type { Piece } from "../lib/pieces";
 
@@ -63,16 +64,14 @@ export function TopicFilter(
             writes one text node. Two come out as
             `Everything · <!-- -->5`, which reads the same and is a
             label with a comment in the middle of it. */}
-        <button className="chip" type="button" aria-pressed={chosen === ""}
-                onClick={() => setChosen("")}>
+        <ChipButton pressed={chosen === ""} onClick={() => setChosen("")}>
           {`Everything · ${pieces.length}`}
-        </button>
+        </ChipButton>
         {tally(pieces).map(([topic, count]) => (
-          <button className="chip" type="button" key={topic}
-                  aria-pressed={chosen === topic}
-                  onClick={() => setChosen(topic)}>
+          <ChipButton key={topic} pressed={chosen === topic}
+                      onClick={() => setChosen(topic)}>
             {`${topic} · ${count}`}
-          </button>
+          </ChipButton>
         ))}
       </div>
 

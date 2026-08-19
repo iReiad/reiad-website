@@ -92,20 +92,12 @@ export function SampleCard({ piece, hidden }: { piece: Piece; hidden?: boolean }
   );
 }
 
-/** A piece that has been promised and not written. The only card
-    on either hub that is not a row: there is nothing in the
-    database to be a teaser for something nobody has written yet.
-    It is a `div` rather than an `a` for the same reason a chip
-    that goes nowhere is not a link. */
-export function SoonCard({ title, dek }: { title: string; dek: string }) {
-  return (
-    <div className="cell sample-card placeholder">
-      <span className="tag mono">Coming soon</span>
-      <h3>{title}</h3>
-      <p><em>{dek}</em></p>
-    </div>
-  );
-}
+/* `SoonCard` was here too, and that is the whole reason this note
+   is: a second export of the same name, with the same defending
+   comment copied into both files, rendering different markup.
+   `deck.tsx` has the one, `.cell sample-card placeholder` is not
+   a card the deck draws, and a reader who reached for the wrong
+   import got a card that looked nothing like its neighbours. */
 
 /** The Bangla card, as `pieceCard()` in reads.js builds it. */
 export function ReadCard({ piece, icon }: { piece: Piece; icon: string }) {
