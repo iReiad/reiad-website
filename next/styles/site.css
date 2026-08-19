@@ -5998,7 +5998,7 @@ and an intro that needs them in step is an intro that breaks
 
    Declared AFTER `learn`, because it reuses that layer's
    furniture, .rung, .lesson-card, .stage-hero, .resume,
-   .progress-line, .ring, and adjusts a few pieces of it. A rule
+   .progress-line, .progress-ring, and adjusts a few pieces of it. A rule
    sitting in `learn` would otherwise beat these on layer order
    however specific they were.
 
@@ -9738,8 +9738,21 @@ German for day, and .tag is what the site has always called
 
   /* ---------- the ring, for a stage or a school ---------- */
 
-  .ring { display: grid; place-items: center; width: 44px; height: 44px; }
-  .ring svg { grid-area: 1 / 1; rotate: -90deg; width: 44px; height: 44px; }
+  /* `.progress-ring`, and it was `.ring` until 19 August 2026.
+
+     `ring` is a TAILWIND UTILITY, `box-shadow: 0 0 0 1px`, and
+     Tailwind's scanner reads `aab/*.js` and `next/**` as sources,
+     so writing the class anywhere generated it. Layer order did
+     not save this: the rule below never sets `box-shadow`, so
+     there was nothing to win, and every progress ring on the four
+     school hubs wore a 1px square exactly 44px across.
+
+     Renamed rather than patched with `box-shadow: none`, on the
+     same grounds as `--radius-*` above it: a name this site shares
+     with the framework is a collision waiting to happen again, and
+     the one that already happened cost a redesign nobody made. */
+  .progress-ring { display: grid; place-items: center; width: 44px; height: 44px; }
+  .progress-ring svg { grid-area: 1 / 1; rotate: -90deg; width: 44px; height: 44px; }
   .ring-track { stroke: color-mix(in oklab, var(--ink) 12%, transparent); }
   .ring-fill {
     stroke: var(--accent);

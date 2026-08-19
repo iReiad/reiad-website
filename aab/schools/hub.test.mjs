@@ -151,17 +151,20 @@ for (const school of ["deutsch", "english", "quran"]) {
   const rungs = [...document.querySelectorAll("details.rung")];
   ok(`${school}: the ladder built its rungs (${rungs.length})`, rungs.length > 0);
 
-  /* `span.ring > svg`, which is `<Ring>` in components/deck.tsx node
-     for node. It was `svg.ring` with the rotation on a transform
-     attribute, and that shape existed only because two layers both
-     defined `.ring` and the school's copy lost: `.ring svg` does not
-     match an SVG that is itself the `.ring`, so the schools' ring was
-     never rotated twice by accident. One shape now, and the rotation
-     is the stylesheet's in both places. */
-  const rings = document.querySelectorAll("span.ring > svg").length;
+  /* `span.progress-ring > svg`, which is `<Ring>` in
+     components/deck.tsx node for node. It was `svg.ring` with the
+     rotation on a transform attribute, and that shape existed only
+     because two layers both defined `.ring` and the school's copy
+     lost. One shape now, and the rotation is the stylesheet's in
+     both places.
+
+     `progress-ring` rather than `ring` because `ring` is a Tailwind
+     utility, and this test is what says the rename reached the
+     module as well as the component. */
+  const rings = document.querySelectorAll("span.progress-ring > svg").length;
   ok(`${school}: the shared ring drew one per rung (${rings})`, rings === rungs.length && rings > 0);
 
-  const fills = [...document.querySelectorAll("span.ring > svg circle.ring-fill")];
+  const fills = [...document.querySelectorAll("span.progress-ring > svg circle.ring-fill")];
   /* `.every()` on an empty list is true, so the count is asserted
      first. This check passed for three schools while the selector
      above it was returning nothing at all. */

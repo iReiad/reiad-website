@@ -53,12 +53,16 @@ export const el = (tag, props = {}, ...kids) => {
 
     Relying on a selector not matching is not a design. One
     shape, one rule, and the rotation is the stylesheet's in both
-    places now. */
+    places now.
+
+    The class is `progress-ring`, not `ring`: `ring` is a Tailwind
+    utility and this file is one of the sources its scanner reads,
+    so the name drew a 1px square around every ring on the site. */
 export function ring(pct) {
   const r = 19;
   const c = 2 * Math.PI * r;
   const wrap = document.createElement("span");
-  wrap.className = "ring";
+  wrap.className = "progress-ring";
   wrap.setAttribute("aria-hidden", "true");
   wrap.innerHTML =
     `<svg viewBox="0 0 44 44">` +

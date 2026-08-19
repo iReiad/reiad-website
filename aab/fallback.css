@@ -6665,8 +6665,8 @@
   }
   .meter-line .meter { flex: 1 1 auto; }
 
-  .ring { display: grid; place-items: center; width: 44px; height: 44px; }
-  .ring svg { grid-area: 1 / 1; rotate: -90deg; width: 44px; height: 44px; }
+  .progress-ring { display: grid; place-items: center; width: 44px; height: 44px; }
+  .progress-ring svg { grid-area: 1 / 1; rotate: -90deg; width: 44px; height: 44px; }
   .ring-track { stroke: color-mix(in oklab, var(--ink) 12%, transparent); }
   .ring-fill {
     stroke: var(--accent);

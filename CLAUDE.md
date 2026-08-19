@@ -653,6 +653,8 @@ node scripts/check-prefixes.ts # a hand-written vendor prefix, which DELETES the
                             # standard property it is written beside
 node scripts/check-selfref.ts # a custom property set to itself, which is nothing
                             # on that element and everything inside it
+node scripts/check-utility-clash.ts # a class this site styles that Tailwind also
+                            # generates, which no layer order can win back
 node scripts/check-jsx-space.ts # a sentence running into the link inside it,
                             # because JSX ate the line break before the element
 node scripts/check-crons.ts # a scheduled job the Worker is no longer listening for

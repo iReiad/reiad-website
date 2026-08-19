@@ -83,6 +83,11 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/check-scale.ts",
     "scripts/check-prefixes.ts",
     "scripts/check-selfref.ts",
+    /* The other half of check-selfref.ts: that one guards the
+       TOKEN namespaces Tailwind owns, this one guards the class
+       names. `.ring` is a utility and was also this site's
+       progress ring, and layer order cannot help. */
+    "scripts/check-utility-clash.ts",
     "scripts/check-next.ts",
     "scripts/check-courses.ts",
     "scripts/check-accents.ts",

@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v139: `/fallback.css` and `/schools/hub.js`. `.ring` was a
+        Tailwind utility as well as this site's progress ring, so
+        every ring on the four school hubs wore a 1px square 44px
+        across. It is `.progress-ring` now, in the stylesheet and
+        in the markup, and both have to move together or the ring
+        loses its stroke instead.
+
    v138: `/fallback.css` again, for the top bar. The mark was
         `flex: 1 1 auto` and grew to 490px of a 785px bar, so the
         trail showing where you are was squeezed into 44px against
@@ -1426,7 +1433,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v138";
+const VERSION = "v139";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
