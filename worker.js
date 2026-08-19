@@ -168,7 +168,7 @@ export const NEXT_ROUTES = [
      from the asset router in the same commit. */
   /^\/(about|contact|account|skills|tools|portfolio)$/i,
   /^\/tools\/(stock|live|routine)$/i,
-  /^\/tools\/routine\/settings$/i,
+  /^\/tools\/routine\/(settings|print)$/i,
   /* The two private shells. Their bundles are NOT here: those are
      files in aab/desk/ and aab/studio/, and the asset router
      answers them as it always has. */

@@ -14,6 +14,12 @@ app/tsconfig.tsbuildinfo
 # `.open-next/` is a Worker bundle that only the deploy needs, and
 # unlike aab/desk/ it is not something the site serves as a file.
 next/.next/
+# And the one at the ROOT, which is not the same path and was not
+# covered. `npx next build` run from the repository root rather
+# than from `next/` writes here, and twenty-two files of Turbopack
+# cache went in at #149 and stayed: nothing serves them, so
+# nothing complained.
+/.next/
 next/.open-next/
 next/next-env.d.ts
 next/tsconfig.tsbuildinfo

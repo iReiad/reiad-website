@@ -360,6 +360,53 @@ ok("and the fortnight away cost it nothing", birdsNow === 4, String(birdsNow));
 
 ok("no page errors on the year", errors.length === 0, errors[0] ?? "");
 
+/* ============================================================
+   The week on paper.
+
+   The BLANK sheet is the point of it: a routine that only works
+   on a screen is a routine that stops on the day the screen is
+   flat, which for a fourteen-year-old's phone is often.
+   ============================================================ */
+
+await page.goto(`http://localhost:${PORT}/tools/routine/print`, { waitUntil: "load" });
+await page.waitForTimeout(1800);
+
+ok("the sheet is drawn", await page.locator(".rt-sheet").count() === 1);
+ok("seven columns", await page.locator(".rt-grid thead th").count() === 8);
+
+/* Blank first, because it is the sheet somebody prints in a
+   hurry and the keepsake is the one they choose. */
+ok("it opens blank", await page.locator(".rt-sheet[data-filled]").count() === 0);
+ok("so no mark is printed", await page.locator(".rt-grid-mark").count() === 0);
+/* And no date, so one blank sheet does for any week, which is
+   what makes it worth printing more than once. */
+ok("and no date on it", await page.locator(".rt-grid-num").count() === 0);
+
+/* A row with nothing in it, on both sheets: a week always has
+   something the list did not know about. */
+ok("there is a spare row for whatever the list did not know about",
+  await page.locator(".rt-grid-spare").count() === 1);
+
+await page.getByRole("button", { name: "this week" }).click();
+await page.waitForTimeout(500);
+ok("the filled sheet has the marks in it",
+  await page.locator(".rt-grid-mark").count() > 0);
+ok("and the dates", await page.locator(".rt-grid-num").count() === 7);
+ok("and a few lines out of the jar",
+  await page.locator(".rt-sheet-notes li").count() > 0);
+
+/* NO PERCENTAGE ON PAPER. A sheet is read once and kept, and a
+   number on it can only ever be a verdict on a week that is
+   already over. */
+const paper = (await page.locator(".rt-sheet").textContent()) ?? "";
+ok("and no score anywhere on it", !paper.includes("%"), paper.slice(0, 120));
+
+/* The controls are not part of the sheet. */
+ok("the controls are outside the sheet",
+  await page.locator(".rt-sheet .rt-print-controls").count() === 0);
+
+ok("no page errors on paper", errors.length === 0, errors[0] ?? "");
+
 await browser.close();
 server.close();
 
