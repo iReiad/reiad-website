@@ -50,12 +50,12 @@
    a dashboard nobody opens twice.
    ============================================================ */
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   done, hours, hoursDone, series, momentum, runs, weekdays, bandRates,
   heat, consistency, balance, moodRibbon, written, neverMarked,
   everMarked, flock, garden, seasonOf, greeting, moodColour, bandTasks,
-  exportName, toExport, readImport, summarise,
+  exportName, toExport,
   type Band, type Task, type RoutineShape, type Entry,
 } from "@reiad/shared/routine";
 import { runtimeModule } from "../account/runtime";
@@ -161,7 +161,6 @@ export function RoutineDashboard() {
   const [today, setToday] = useState("");
   const [saving, setSaving] = useState(false);
   const [said, setSaid] = useState("");
-  const file = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -228,11 +227,6 @@ export function RoutineDashboard() {
     setSaid("Saved to your device.");
   }, [shape, entries, name, today]);
 
-  const upload = useCallback(async (f: File) => {
-    const read = readImport(await f.text());
-    if (read.ok !== true) { setSaid(read.why); return; }
-    setSaid(summarise(read.file));
-  }, []);
 
   if (!ready) return <p className="rt-quiet" role="status">এক মুহূর্ত…</p>;
 
@@ -484,9 +478,15 @@ export function RoutineDashboard() {
           <ButtonLink kind="ghost" size="sm" href="/tools/routine/settings">Settings and templates</ButtonLink>
           <ButtonLink kind="ghost" size="sm" href="/tools/routine/print">Print a week</ButtonLink>
           <Button kind="ghost" size="sm" onClick={download}>Download everything</Button>
-          <Button kind="ghost" size="sm" onClick={() => file.current?.click()}>Upload a saved one</Button>
-          <input ref={file} type="file" accept="application/json" hidden
-                 onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f); }} />
+          {/* One importer, and it is on the settings page. Putting
+              a second here would mean two places deciding what to
+              do with a file that already holds days: keep both,
+              keep mine, keep theirs. `mergeDays()` answers that
+              once and the page that asks it is the one with the
+              question on it. */}
+          <ButtonLink kind="ghost" size="sm" href="/tools/routine/settings#data">
+            Upload a saved one
+          </ButtonLink>
         </div>
         {said ? <p className="rt-quiet" role="status">{said}</p> : null}
         <p className="rt-quiet">

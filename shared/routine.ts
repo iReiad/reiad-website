@@ -224,13 +224,6 @@ export interface Template {
  */
 export const TEMPLATES: Template[] = [
   {
-    slug: "sadias-day",
-    name: "Sadia's day",
-    description: "A full home day: study, kitchen, plants and birds, "
-      + "time that's yours, and rest.",
-    data: { bands: BANDS, tasks: SADIA },
-  },
-  {
     slug: "a-simple-day",
     name: "A simple day",
     description: "Six things, and none of them anybody else's idea of a good day.",
@@ -247,6 +240,32 @@ export const TEMPLATES: Template[] = [
       bands: [{ id: "day", en: "My day", bn: "আমার দিন", colour: "#2F8A64", order: 1 }],
       tasks: [],
     },
+  },
+];
+
+/**
+ * The one that is somebody's, and is not the site's to hand out.
+ *
+ * It is a real person's day rather than a suggestion, so it is
+ * offered to an admin and to nobody else. It is NOT in `TEMPLATES`
+ * above, which is the list every reader is shown, and the gate is
+ * not a filter in a component: `GET /api/routine/templates` in
+ * the Worker answers this list when `isAdmin()` says yes and an
+ * empty one otherwise, so a reader who is not an admin is never
+ * told there is something they cannot have.
+ *
+ * `check-courses.ts` fails on anything under `next/` importing
+ * this by value, for the reason it already fails on the course
+ * catalogue: an import would put it in a bundle anybody can
+ * fetch and the page would look identical.
+ */
+export const PRIVATE_TEMPLATES: Template[] = [
+  {
+    slug: "sadias-day",
+    name: "Sadia's day",
+    description: "A full home day: study, kitchen, plants and birds, "
+      + "time that's yours, and rest.",
+    data: { bands: BANDS, tasks: SADIA },
   },
 ];
 

@@ -46,7 +46,7 @@ import { fileURLToPath } from "node:url";
    package specifier is the route a BUILD takes and a relative
    path is the route plain node takes. */
 import {
-  TEMPLATES, FIRST_RUN, SCHEMA, done, hours, bandTasks,
+  TEMPLATES, PRIVATE_TEMPLATES, FIRST_RUN, SCHEMA, done, hours, bandTasks,
   toExport, readImport, summarise, mergeDays, exportName,
   hoursDone, series, momentum, weekdays, bandRates, moodRibbon, runs,
   type Task, type RoutineShape, type Entry,
@@ -64,8 +64,14 @@ const is = (what: string, got: unknown, want: unknown): void =>
   ok(what, JSON.stringify(got) === JSON.stringify(want),
     `got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`);
 
+/* Both lists, because `sadias-day` is not in `TEMPLATES` any
+   more: it is one real person's day and it is served by
+   `/api/routine/templates` behind `isAdmin()`. It stays in
+   `shared/` and stays asserted here, because its hours are the
+   arithmetic the whole tool is built on and a fixture would be a
+   second copy of the numbers. */
 const shapeOf = (slug: string): RoutineShape => {
-  const t = TEMPLATES.find((x) => x.slug === slug);
+  const t = [...TEMPLATES, ...PRIVATE_TEMPLATES].find((x) => x.slug === slug);
   if (!t) throw new Error(`no template ${slug}`);
   return t.data;
 };
@@ -79,11 +85,20 @@ const day = (marks: Record<string, number>): Entry =>
   ({ entry_date: TODAY, marks });
 
 /* ============================================================
-   1. The templates the site ships
+   1. The templates the site ships, and the one it does not
    ============================================================ */
-console.log("\nthe three templates");
+console.log("\nthe templates");
 {
-  is("three of them", TEMPLATES.length, 3);
+  /* Two offered to everybody, and one that is not. Sadia's day
+     is a real person's rather than a suggestion, so it lives in
+     `PRIVATE_TEMPLATES` and reaches a browser only through
+     `/api/routine/templates` behind `isAdmin()`. Counted
+     separately here so that moving one between the lists fails
+     this rather than passing quietly. */
+  is("two offered to everybody", TEMPLATES.length, 2);
+  is("and one that is not", PRIVATE_TEMPLATES.length, 1);
+  ok("the private one is not in the public list",
+    !TEMPLATES.some((t) => t.slug === "sadias-day"), "absent");
   ok("and the first run is one of them",
     TEMPLATES.some((t) => t.slug === FIRST_RUN), FIRST_RUN);
   /* Not Sadia's, deliberately. A first run should not be a wall
