@@ -1,5 +1,5 @@
 {
-  "version": "v131",
+  "version": "v132",
   "hashes": {
     "/offline.html": "a18e4f2c69892632",
     "/fallback.css": "2e8481193525e93e",
@@ -17,7 +17,6 @@
     "/keep.js": "72957ee6132be7e2",
     "/prefs.js": "84bbd206848e1dbc",
     "/checkpoints.js": "8903c0d041e563b3",
-    "/comments.js": "fc3e807e43622e9d",
     "/crumbs.js": "caa70b9cd0a89fec",
     "/audience.js": "638ceb49784d808c",
     "/activation.js": "3d0a5d2317d6d8dc",

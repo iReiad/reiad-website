@@ -103,6 +103,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "functions/_lib/quiz.test.mjs",
     "aab/schools/progress.test.mjs",
     "next/progress.test.mjs",
+    "next/comments.test.mjs",
     "aab/schools/hub.test.mjs",
     "aab/schools/workbook.test.mjs",
     "aab/courses.test.mjs",

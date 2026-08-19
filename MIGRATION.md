@@ -51,7 +51,7 @@ loaded by something not counted here, and both were worth checking.
 | `news.js` | 246 | | **interface.** The headline card and the mini window, shared by `pulse.js` and `about.js` |
 | `saved.js` | 240 | ts | **service.** Scenarios, targets and the library |
 | `keep.js` | 220 | ts | **interface.** The Save and Add a note under a byline |
-| `comments.js` | 219 | | **interface.** The thread under a piece |
+| `comments.js` | 219 | ✔ | **interface**, and done: `components/comments.tsx`. The module is in `archive/modules/` and the first precached entry to leave this list rather than change |
 | `auth.js` | 216 | | **service.** The Studio's gate |
 | `checkpoints.js` | 209 | ts | **service.** The ticks inside a lesson, filed under a school's own key |
 | `account-page.js` | 203 | ts | **shell**, and finished: four jobs left and the section above says why each stays |

@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v132: `/comments.js` is GONE from this list, which is the first
+        precached module to leave rather than change. The thread
+        under a piece is `next/components/comments.tsx` now, and a
+        component is not a file with an address. A cached copy of
+        the old one would be served to a returning reader forever
+        and imported by nothing, which is a wasted 6 KB rather than
+        a bug, but the entry has to go or this file precaches a
+        404 and an install that fetches one caches it.
+
    v131: The checks are TypeScript too, all sixteen and the runner.
         `/share-card.js` and `/courses.js` changed only in a header
         comment: each named a check by a filename that does not
@@ -1367,7 +1376,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v131";
+const VERSION = "v132";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -1440,7 +1449,6 @@ const PRECACHE = [
   "/checkpoints.js",
   /* Loaded lazily by an article page. Precached so a thread still
      draws for somebody reading offline. */
-  "/comments.js",
   "/crumbs.js",
   "/audience.js",
   "/activation.js",

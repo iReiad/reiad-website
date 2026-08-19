@@ -29,6 +29,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { dateLabel, headFacts, lookFor } from "@reiad/shared/look";
 import { getArticle, siteOrigin } from "../../../lib/article";
+import { Comments } from "@/components/comments";
 import { SiteScripts } from "../../../components/scripts";
 import { Eyebrow } from "../../../components/ui/label";
 
@@ -109,22 +110,18 @@ export default async function ArticlePage({ params }: Params) {
         </div>
       </article>
 
-      {/* The thread. Empty in the markup and filled by comments.js,
-          which is loaded lazily and allowed to fail: a piece with a
-          broken thread reads perfectly and has no thread, which is
-          rule 8 in archive/TRANSITION.md. Approved comments are readable by
-          anybody; signing in is only needed to add one. */}
-      <section className="wrap wrap-narrow comments" id="comments"
-               data-slug={article.slug} data-section={article.section} />
+      {/* The thread. A client component as of #147, where it was
+          an empty section filled by `/comments.js` through an
+          inline module at the bottom of this file.
 
-      <script
-        type="module"
-        dangerouslySetInnerHTML={{ __html:
-          `const host=document.getElementById("comments");`
-          + `if(host){import("/comments.js")`
-          + `.then((m)=>m.mountComments(host,{slug:host.dataset.slug,`
-          + `section:host.dataset.section})).catch(()=>{})}` }}
-      />
+          Still allowed to fail and still allowed to be empty: a
+          piece with a broken thread reads perfectly and has no
+          thread, which is rule 8 in archive/TRANSITION.md. Approved
+          comments are readable by anybody; signing in is only
+          needed to add one. */}
+      <section className="wrap wrap-narrow comments" id="comments">
+        <Comments slug={article.slug} section={article.section} />
+      </section>
 
       {/* Keeping this piece, and writing a note on it. Loaded
           through SiteScripts rather than as a tag for the reason
