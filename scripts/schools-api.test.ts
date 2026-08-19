@@ -1,9 +1,9 @@
 /* ============================================================
-   scripts/schools-api.test.mjs: /api/schools, against real SQLite.
+   scripts/schools-api.test.ts: /api/schools, against real SQLite.
 
-     node scripts/schools-api.test.mjs
+     node scripts/schools-api.test.ts
 
-   archive/TRANSITION.md Stage 8. `schools.test.mjs` proves the rows are
+   archive/TRANSITION.md Stage 8. `schools.test.ts` proves the rows are
    the same thing the files say. This proves the door they are
    read and written through: that a ladder comes back in ladder
    order, that a lesson comes back with its text, that the write
@@ -19,42 +19,80 @@
 
 import { DatabaseSync } from "node:sqlite";
 import { webcrypto } from "node:crypto";
+import { d1Over } from "./sqlite-d1.ts";
 import { onRequest } from "../functions/api/schools/[[route]].js";
 import { WITHIN } from "../shared/schools.ts";
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
 let failures = 0;
-const check = (name, got, want) => {
+const check = (name: string, got: unknown, want: unknown): void => {
   if (JSON.stringify(got) === JSON.stringify(want)) { console.log(`  ok   ${name}`); return; }
   failures += 1;
   console.log(`  FAIL ${name}\n       got  ${JSON.stringify(got)}\n       want ${JSON.stringify(want)}`);
 };
-const okay = (name, cond) => check(name, !!cond, true);
+const okay = (name: string, cond: unknown): void => check(name, !!cond, true);
 
 /* ---------- the D1 shape, over node:sqlite ---------- */
 
 const db = new DatabaseSync(":memory:");
-const D1 = {
-  prepare(sql) {
-    const make = (args) => ({
-      all: async () => ({ results: db.prepare(sql).all(...args) }),
-      first: async () => db.prepare(sql).get(...args) ?? null,
-      run: async () => { db.prepare(sql).run(...args); return { success: true }; },
-    });
-    return { bind: (...args) => make(args), ...make([]) };
-  },
-  batch: async (statements) => {
-    for (const st of statements) await st.run();
-    return [];
-  },
-};
+const D1 = d1Over(db);
 
 const env = { DB: D1 };
 
 /* ---------- calling it the way the Worker does ---------- */
 
-const call = async (method, path, { json, cookie } = {}) => {
+/** A stage as the ladder answers it: its own fields spread back
+    out of `meta`, with its sections under it. */
+interface Stage {
+  slug?: string;
+  bn?: string;
+  kicker?: string;
+  sections?: Section[];
+}
+
+/** A section, and the index signature is the point rather than a
+    loosening: what its children are called is the school's, and
+    `WITHIN` is the table that says which word. */
+interface Section {
+  ident?: string;
+  bn?: string;
+  [within: string]: unknown;
+}
+
+interface Lesson {
+  slug?: string;
+  bn?: string;
+  icon?: string;
+  body?: string;
+  written?: boolean;
+}
+
+/** What a read answers. Which fields are present is decided by how
+    deep the address went: a school gets `stages` and `counts`, a
+    stage gets `lessons`, a lesson gets `lesson`. */
+interface Read {
+  stages?: Stage[];
+  counts?: { total: number; written: number };
+  lessons?: Lesson[];
+  lesson?: Lesson;
+}
+
+/** What a write answers: how much of it landed. `stages` is a
+    COUNT here and a list on a read, which is why the two shapes
+    are named separately rather than folded into one optional
+    everything. */
+interface Wrote {
+  stages?: number;
+  sections?: number;
+  lessons?: number;
+  written?: number;
+}
+
+const call = async <T = Read>(
+  method: string, path: string,
+  { json, cookie }: { json?: unknown; cookie?: string } = {},
+): Promise<{ status: number; body: T }> => {
   const url = new URL(`https://reiad.co.uk/api/schools${path}`);
   const request = new Request(url, {
     method,
@@ -69,8 +107,31 @@ const call = async (method, path, { json, cookie } = {}) => {
     request, env, params: { route },
     waitUntil: () => {}, next: async () => new Response("next"), data: {},
   });
-  return { status: res.status, body: await res.json() };
+  return { status: res.status, body: await res.json() as T };
 };
+
+/* The three readers below say what a check expected when the
+   endpoint answered something else. Without them a read that
+   started refusing fails as "undefined has no length", three
+   lines away from the thing that broke. */
+const stagesIn = (body: Read): Stage[] => {
+  if (!body.stages) throw new Error(`expected stages, got ${JSON.stringify(body)}`);
+  return body.stages;
+};
+const lessonsIn = (body: Read): Lesson[] => {
+  if (!body.lessons) throw new Error(`expected lessons, got ${JSON.stringify(body)}`);
+  return body.lessons;
+};
+const lessonIn = (body: Read): Lesson => {
+  if (!body.lesson) throw new Error(`expected a lesson, got ${JSON.stringify(body)}`);
+  return body.lesson;
+};
+
+/** The things inside a section, under the key this school uses for
+    them. Read through a function so that the check below is about
+    the key rather than about the index signature. */
+const within = (section: Section | undefined, key: string): Lesson[] =>
+  ((section?.[key] ?? []) as Lesson[]);
 
 /* ---------- a school to write ----------
 
@@ -115,8 +176,9 @@ console.log("/api/schools");
 {
   const res = await call("PUT", "", { json: PAYLOAD });
   check("a stranger cannot write a curriculum", res.status, 401);
-  const after = db.prepare("SELECT COUNT(*) n FROM school_lessons").get();
-  check("and nothing was written", after.n, 0);
+  const after = db.prepare("SELECT COUNT(*) n FROM school_lessons").get() as
+    { n: number } | undefined;
+  check("and nothing was written", after?.n, 0);
 }
 
 /* ---------- a session, the way the Worker makes one ---------- */
@@ -125,7 +187,8 @@ console.log("/api/schools");
    dump of the sessions table is not a set of working logins. The
    fixture has to do the same thing or it is testing a session
    shape the site does not have. */
-const toB64 = (buf) => Buffer.from(new Uint8Array(buf)).toString("base64");
+const toB64 = (buf: ArrayBuffer): string =>
+  Buffer.from(new Uint8Array(buf)).toString("base64");
 const hashed = toB64(await webcrypto.subtle.digest(
   "SHA-256", new TextEncoder().encode("t-admin")));
 
@@ -136,7 +199,7 @@ db.prepare(
 const ADMIN = "reiad_session=t-admin";
 
 {
-  const res = await call("PUT", "", { json: PAYLOAD, cookie: ADMIN });
+  const res = await call<Wrote>("PUT", "", { json: PAYLOAD, cookie: ADMIN });
   check("an admin can write one", res.status, 200);
   check("and is told what landed",
     [res.body.stages, res.body.sections, res.body.lessons, res.body.written],
@@ -148,12 +211,13 @@ const ADMIN = "reiad_session=t-admin";
 {
   const res = await call("GET", "/money");
   check("the ladder answers", res.status, 200);
+  const ladder = stagesIn(res.body);
   check("in ladder order, not alphabetical",
-    res.body.stages.map((s) => s.slug), ["start", "basics-1"]);
+    ladder.map((s) => s.slug), ["start", "basics-1"]);
   check("and counts what is written rather than remembering it",
     res.body.counts, { total: 3, written: 2 });
 
-  const first = res.body.stages[0];
+  const first = ladder[0];
   check("a stage keeps its own fields out of meta", first.kicker, "ধাপ ০");
   check("and its title", first.bn, "শুরু");
 
@@ -162,29 +226,28 @@ const ADMIN = "reiad_session=t-admin";
      hand /deutsch/ and /english/ something empty. */
   const key = WITHIN.money;
   check("the lessons are under the key this school uses", key, "lessons");
+  const inside = within(first.sections?.[0], key);
   check("and they are there",
-    first.sections[0][key].map((l) => l.slug), ["money-first", "emergency"]);
-  check("with their own fields spread back out",
-    first.sections[0][key][0].icon, "coin");
+    inside.map((l) => l.slug), ["money-first", "emergency"]);
+  check("with their own fields spread back out", inside[0].icon, "coin");
 
   /* The ladder is 89 lessons in the real money school and their
      bodies are most of a megabyte. A page that lists them needs
      none of that text. */
-  okay("and without their bodies",
-    first.sections[0][key].every((l) => l.body === undefined));
+  okay("and without their bodies", inside.every((l) => l.body === undefined));
 }
 
 {
   const res = await call("GET", "/money/start");
   check("a stage's lessons answer in page order",
-    res.body.lessons.map((l) => l.slug), ["money-first", "emergency"]);
+    lessonsIn(res.body).map((l) => l.slug), ["money-first", "emergency"]);
 }
 
 {
   const res = await call("GET", "/money/start/money-first");
   check("one lesson answers", res.status, 200);
-  check("with its text", res.body.lesson.body, "<p>প্রথমে বাজেট।</p>");
-  check("and its title", res.body.lesson.bn, "টাকাটা আগে ঠিক করুন");
+  check("with its text", lessonIn(res.body).body, "<p>প্রথমে বাজেট।</p>");
+  check("and its title", lessonIn(res.body).bn, "টাকাটা আগে ঠিক করুন");
 }
 
 {
@@ -198,7 +261,7 @@ const ADMIN = "reiad_session=t-admin";
 {
   const res = await call("GET", "/money/start/emergency");
   check("a lesson nobody has written is a row, not a 404", res.status, 200);
-  check("and its body is empty rather than absent", res.body.lesson.body, "");
+  check("and its body is empty rather than absent", lessonIn(res.body).body, "");
 }
 
 {
@@ -238,11 +301,12 @@ const ADMIN = "reiad_session=t-admin";
      the Studio's picker greys out, and sending the bodies to
      answer it would be most of a megabyte for the money school. */
   const res = await call("GET", "/money/start");
-  const flags = res.body.lessons.map((l) => [l.slug, l.written]);
-  check("a lesson list says which are written", flags,
+  const listed = lessonsIn(res.body);
+  check("a lesson list says which are written",
+    listed.map((l) => [l.slug, l.written]),
     [["money-first", true], ["emergency", false]]);
   okay("and carries no bodies to say it",
-    res.body.lessons.every((l) => l.body === undefined));
+    listed.every((l) => l.body === undefined));
 }
 
 /* ---------- one lesson, which is what the editor saves ---------- */
@@ -254,7 +318,7 @@ const ADMIN = "reiad_session=t-admin";
   check("a stranger cannot write one lesson either", res.status, 401);
   const after = await call("GET", "/money/start/money-first");
   check("and the lesson it would have overwritten is untouched",
-    after.body.lesson.body, "<p>প্রথমে বাজেট।</p>");
+    lessonIn(after.body).body, "<p>প্রথমে বাজেট।</p>");
 }
 
 {
@@ -262,12 +326,13 @@ const ADMIN = "reiad_session=t-admin";
     json: { body: "<p>নতুন কথা।</p>" }, cookie: ADMIN,
   });
   check("one lesson's prose can be written", res.status, 200);
-  check("and comes back written", res.body.lesson.body, "<p>নতুন কথা।</p>");
+  check("and comes back written", lessonIn(res.body).body, "<p>নতুন কথা।</p>");
 
   const again = await call("GET", "/money/start/money-first");
-  check("and is what the next reader gets", again.body.lesson.body, "<p>নতুন কথা।</p>");
+  check("and is what the next reader gets",
+    lessonIn(again.body).body, "<p>নতুন কথা।</p>");
   check("its title was not asked about, so it did not change",
-    again.body.lesson.bn, "টাকাটা আগে ঠিক করুন");
+    lessonIn(again.body).bn, "টাকাটা আগে ঠিক করুন");
 }
 
 {
@@ -280,7 +345,7 @@ const ADMIN = "reiad_session=t-admin";
   });
   check("a lesson body is sanitised on the way in", res.status, 200);
   okay("and the script does not survive it",
-    !res.body.lesson.body.includes("<script"));
+    !(lessonIn(res.body).body ?? "").includes("<script"));
 }
 
 {

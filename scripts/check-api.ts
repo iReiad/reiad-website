@@ -134,7 +134,7 @@ for (const [mount, where] of asked) {
    Listed rather than inferred, so that adding a fourth is a
    decision somebody wrote down. */
 const SERVER_ONLY = {
-  backup: "a cron writes it to R2, and scripts/restore.mjs reads the file",
+  backup: "a cron writes it to R2, and scripts/restore.ts reads the file",
 };
 
 for (const mount of mounts) {

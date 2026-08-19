@@ -160,7 +160,7 @@ for (const article of [ARTICLE, KITCHEN, DESK, DRAFT]) {
    stage by pointing at a practice book, and the Quranic Arabic
    school labels its lessons by day and puts Arabic under the
    title. */
-const { readSnapshot } = await import("../scripts/schools-snapshot.mjs");
+const { readSnapshot } = await import("../scripts/schools-snapshot.ts");
 const snapshot = readSnapshot();
 
 /* `basics-2` is the money school's first GENERATED stage and is

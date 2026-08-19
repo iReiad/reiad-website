@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* ============================================================
-   preview.mjs: every surface this site has, on one page.
+   preview.ts: every surface this site has, on one page.
 
-       node scripts/preview.mjs           write it
-       node scripts/preview.mjs --serve   and serve it on :4321
+       node scripts/preview.ts           write it
+       node scripts/preview.ts --serve   and serve it on :4321
 
    ---- why this exists ----
 
@@ -121,9 +121,15 @@ writeFileSync(OUT, page);
 console.log(`preview: aab/preview.html, ${SECTIONS.length} sections.`);
 
 if (process.argv.includes("--serve")) {
-  const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript" };
+  const types: Record<string, string> = {
+    ".html": "text/html", ".css": "text/css", ".js": "text/javascript",
+  };
   createServer((req, res) => {
-    const path = req.url === "/" ? "/preview.html" : req.url.split("?")[0];
+    /* `req.url` is optional on the type and set on every request a
+       server actually receives. Defaulted rather than asserted, so
+       the one path that would crash the harness serves the page. */
+    const asked = req.url ?? "/";
+    const path = asked === "/" ? "/preview.html" : asked.split("?")[0];
     try {
       const body = readFileSync(join(ROOT, "aab", path));
       const ext = path.slice(path.lastIndexOf("."));

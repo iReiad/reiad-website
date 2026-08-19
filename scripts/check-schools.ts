@@ -52,38 +52,13 @@
    the arithmetic lives.
    ============================================================ */
 
-import { SCHOOLS, readSchool } from "./import-schools.mjs";
-import { readSnapshot } from "./schools-snapshot.mjs";
-import { fromSnapshot } from "./school-source.mjs";
+import { SCHOOLS, readSchool } from "./import-schools.ts";
+import { readSnapshot, type Rows } from "./schools-snapshot.ts";
+import { fromSnapshot } from "./school-source.ts";
 import { laddered, stageUrl, workbookUrl } from "../shared/schools.ts";
 
 const snapshot = readSnapshot();
 const problems: string[] = [];
-
-/* The rows both sides are reduced from, as the snapshot writes
-   them. `readSchool()` in `import-schools.mjs` answers the same
-   shape out of the `curriculum.js` modules, which is the whole
-   point of comparing them. */
-interface StageRow {
-  school: string;
-  slug: string;
-  position: number;
-  status: string;
-}
-
-interface LessonRow {
-  school: string;
-  stage: string;
-  slug: string;
-  section: string;
-  position: number;
-  status: string;
-}
-
-interface Rows {
-  stages: StageRow[];
-  lessons: LessonRow[];
-}
 
 /** A ladder reduced to two lists of strings, so that a difference
     is a line rather than a diff of objects. */
@@ -92,17 +67,28 @@ interface Shape {
   lessons: string[];
 }
 
+/* Both sides are rows keyed by column name and nothing narrower,
+   which is what `Rows` says and what each of them really carries:
+   the snapshot's come back out of JSON, and `readSchool()` builds
+   its own out of four `curriculum.js` modules that have no
+   declaration between them. So the two coercions below are the
+   comparison's, not a cast hiding a shape somebody knows. */
+const str = (v: unknown): string => String(v ?? "");
+const num = (v: unknown): number => Number(v) || 0;
+
 /** The shape of a school that both sides can be reduced to: the
     ladder, and nothing that anybody edits. */
 const shapeOf = (rows: Rows, id: string): Shape => ({
   stages: rows.stages
     .filter((s) => s.school === id)
-    .sort((a, b) => a.position - b.position)
-    .map((s) => `${s.position}:${s.slug}:${s.status}`),
+    .sort((a, b) => num(a.position) - num(b.position))
+    .map((s) => `${num(s.position)}:${str(s.slug)}:${str(s.status)}`),
   lessons: rows.lessons
     .filter((l) => l.school === id)
-    .sort((a, b) => (a.stage < b.stage ? -1 : a.stage > b.stage ? 1 : a.position - b.position))
-    .map((l) => `${l.stage}/${l.position}:${l.slug}:${l.section}:${l.status}`),
+    .sort((a, b) => (str(a.stage) < str(b.stage) ? -1
+      : str(a.stage) > str(b.stage) ? 1 : num(a.position) - num(b.position)))
+    .map((l) => `${str(l.stage)}/${num(l.position)}`
+      + `:${str(l.slug)}:${str(l.section)}:${str(l.status)}`),
 });
 
 let checked = 0;
@@ -252,10 +238,10 @@ if (problems.length) {
   console.error("\nThe curriculum files and the snapshot disagree:\n");
   for (const line of problems) console.error(`  ${line}`);
   console.error("\nIf the ladder changed, import it and export it again:");
-  console.error("  node scripts/import-schools.mjs --out schools.sql");
+  console.error("  node scripts/import-schools.ts --out schools.sql");
   console.error("  npx wrangler d1 execute reiad --remote --file=schools.sql");
   console.error("  npx wrangler d1 export reiad --remote --output schools.db");
-  console.error("  node scripts/export-schools.mjs --db schools.db\n");
+  console.error("  node scripts/export-schools.ts --db schools.db\n");
   process.exit(1);
 }
 

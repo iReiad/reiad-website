@@ -86,7 +86,7 @@ export const SCHOOL_STATUS = ["live", "soon"] as const;
 
     The same list `shared/schools.ts` exports, and it is here as
     well because a row's `school` column is one of these and a
-    description of the row should say so. `schools.test.mjs`
+    description of the row should say so. `schools.test.ts`
     fails if the two ever disagree. */
 export const SCHOOLS = ["money", "deutsch", "quran", "english"] as const;
 
@@ -303,7 +303,7 @@ export interface SchoolLessonRow {
 
 /** Every table this database has, and what it is for.
 
-    Written down because `restore.mjs`, `backup.js` and
+    Written down because `restore.ts`, `backup.js` and
     `snapshot.mjs` each hold their own list of tables and the
     three have disagreed before: the schools' three tables were in
     the nightly R2 snapshot and in neither of the other two for a

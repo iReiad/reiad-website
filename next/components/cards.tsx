@@ -50,7 +50,7 @@ const dateLabel = (piece: Piece) =>
    three paths would be the larger mistake.
 
    Each string is the inside of the `<svg>` exactly as `icon()`
-   writes it, so that `scripts/check-icons.mjs` can hold the two
+   writes it, so that `scripts/check-next.ts` can hold the two
    copies together: it renders each name out of icons.js and fails
    if the result is not in this file, character for character.
    That is why they are strings set as HTML rather than JSX. */

@@ -71,7 +71,7 @@ src/
 # The database's shape, applied with wrangler from a clone.
 schema.sql
 
-# The design harness. `scripts/preview.mjs` writes it: one of every
+# The design harness. `scripts/preview.ts` writes it: one of every
 # surface, button, chip and field in all seven sections, against
 # the real stylesheets, so a change to the palette can be LOOKED
 # at rather than reasoned about. It is generated, it is not a page

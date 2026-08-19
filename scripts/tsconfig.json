@@ -19,9 +19,11 @@
     "and they have to be: node resolves the real filename and has",
     "no opinion about what TypeScript would have preferred.",
     "",
-    "`checkJs` is off. Half of scripts/ is still .mjs and is being",
-    "converted a chunk at a time; turning it on would report every",
-    "unconverted file at once, which is a list nobody reads."
+    "`checkJs` is off, and there are five files left that it is off",
+    "for: check-content, check-csp, check-css, check-routes and",
+    "check-sw, which were always .js rather than .mjs. Turn it on",
+    "with the last of them, not before: on today it reports five",
+    "files at once, which is a list nobody reads."
   ],
   "compilerOptions": {
     "target": "ES2023",

@@ -653,12 +653,12 @@ turns on.
 And when anything under `functions/` or `scripts/` changed:
 
 ```sh
-node scripts/restore.test.mjs      # a backup that would not restore
-node scripts/reader.test.mjs       # somebody posting as somebody else
-node scripts/comments.test.mjs     # a comment appearing without approval
-node scripts/input.test.mjs        # a rule that stopped rejecting, in the one
+node scripts/restore.test.ts       # a backup that would not restore
+node scripts/reader.test.ts        # somebody posting as somebody else
+node scripts/comments.test.ts      # a comment appearing without approval
+node scripts/input.test.ts         # a rule that stopped rejecting, in the one
                                    # place three endpoints read (36 checks)
-node scripts/snapshot.test.mjs     # a nightly snapshot that leaks, or that throws
+node scripts/snapshot.test.ts      # a nightly snapshot that leaks, or that throws
                                    # at 03:17 where nobody is watching
 node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the
                                    # real CSP (needs Playwright, skips without)
@@ -694,10 +694,10 @@ node functions/_lib/drive.test.mjs   # a JWT Google would refuse, and a pass tha
                                      # opens more than the one file it names
 node functions/_lib/quiz.test.mjs    # a quiz rendered with its questions and none
                                      # of its answers, which looks finished
-node scripts/schools.test.mjs        # a curriculum that lost a field, a lesson
+node scripts/schools.test.ts         # a curriculum that lost a field, a lesson
                                      # body that changed, or a ladder that came
                                      # back in the wrong order (32 checks)
-node scripts/schools-api.test.mjs    # a school readable by anyone, writable by
+node scripts/schools-api.test.ts     # a school readable by anyone, writable by
                                      # somebody else, half-written, or a lesson
                                      # edited into existence (43 checks)
                                      # Both page-comparing checks are archived
@@ -858,7 +858,7 @@ as one.
 To restore, read the SQL before you run it:
 
 ```sh
-node scripts/restore.mjs content/articles.backup.json > restore.sql
+node scripts/restore.ts content/articles.backup.json > restore.sql
 npx wrangler d1 execute reiad --local  --file=restore.sql   # practise
 npx wrangler d1 execute reiad --remote --file=restore.sql
 ```
@@ -883,7 +883,7 @@ every test read it and it is the schools' committed backup:
 
 ```sh
 npx wrangler d1 export reiad --remote --output schools.db
-node scripts/export-schools.mjs --db schools.db   # content/schools.backup.json
+node scripts/export-schools.ts --db schools.db   # content/schools.backup.json
 ```
 
 **Why there is a file at all, now that no page is built from it.**
@@ -1184,7 +1184,7 @@ course, so the pages are empty and the catalogue is behind
 | | |
 | --- | --- |
 | `shared/courses.data.json` | the catalogue. **Generated.** 8 courses, 43 modules, 794 lessons, 1629 Drive ids |
-| `scripts/import-courses.mjs` | what generates it, out of Drive |
+| `scripts/import-courses.ts` | what generates it, out of Drive |
 | `scripts/fixtures/course-crawl/` | the Drive listing it is built from, so CI can rebuild it with no credential |
 | `shared/courses.ts` | the types, the counts and every address |
 | `functions/api/courses/` | the only thing that ever sends it |
@@ -1220,9 +1220,9 @@ gcloud auth application-default login \
   --scopes=https://www.googleapis.com/auth/drive.metadata.readonly
 export GOOGLE_OAUTH_TOKEN=$(gcloud auth application-default print-access-token)
 
-node scripts/import-courses.mjs --drive <folderId> \
+node scripts/import-courses.ts --drive <folderId> \
   --dump scripts/fixtures/course-crawl
-node scripts/import-courses.mjs --crawl scripts/fixtures/course-crawl --check
+node scripts/import-courses.ts --crawl scripts/fixtures/course-crawl --check
 ```
 
 **Always pass `--dump` on a `--drive` run.** It writes the Drive
@@ -1235,7 +1235,7 @@ Export it rather than passing `--token`: an argument goes into the
 shell history and a token is a bearer credential for the hour it
 lives. Nothing is written until the whole walk succeeds, so a
 token that expires halfway leaves the committed catalogue alone.
-The head of `import-courses.mjs` says all of this again where
+The head of `import-courses.ts` says all of this again where
 somebody running it will see it.
 
 **The browser never talks to Drive. The Worker does.** That is
@@ -1294,7 +1294,7 @@ reading instead of watching. The second is the same words with
 timings on them, which is the only thing a `<track>` can use.
 
 `coursera.mjs` classified both correctly from the first import and
-`import-courses.mjs` carried only the transcript, so for a while
+`import-courses.ts` carried only the transcript, so for a while
 every lesson had a player with a captions button that turned
 nothing on. The lesson looked finished, which is the failure mode
 this whole file keeps returning to.
@@ -1383,7 +1383,7 @@ That is also what makes `isCourseFile()` a second lock rather than
 the only real one.
 
 The scope is still `drive.readonly`: read, never write.
-`drive.metadata.readonly`, which `import-courses.mjs` uses, is not
+`drive.metadata.readonly`, which `import-courses.ts` uses, is not
 enough here, because it deliberately cannot read file content.
 
 `functions/_lib/drive.test.mjs` generates a throwaway RSA key and

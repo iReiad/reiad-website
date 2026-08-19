@@ -30,7 +30,7 @@
    `content/schools.backup.json` is the committed export of those
    rows and is already read by two checks for exactly this reason:
    it is the only copy of the ladder that a build with no network
-   can see. Refreshed by `scripts/export-schools.mjs`, which is in
+   can see. Refreshed by `scripts/export-schools.ts`, which is in
    `CLAUDE.md` under "Where a lesson's words live".
 
    Titles and prose are the Studio's and change often; a STAGE
@@ -138,7 +138,7 @@ export function generate(): string {
    Refresh it with the snapshot:
 
      npx wrangler d1 export reiad --remote --output schools.db
-     node scripts/export-schools.mjs --db schools.db
+     node scripts/export-schools.ts --db schools.db
      node scripts/build-school-tree.ts
 
    scripts/check-next.ts fails if this file and the snapshot disagree. */
@@ -173,7 +173,7 @@ ${lines.join("\n")}
     against the live database would. A second implementation of
     that grouping is how the two quietly stop agreeing. */
 export async function generateLadders(): Promise<string> {
-  const { d1FromSnapshot, readSnapshot } = await import("./schools-snapshot.mjs");
+  const { d1FromSnapshot, readSnapshot } = await import("./schools-snapshot.ts");
   const { stagesOf, laddered } = await import("../shared/schools.ts");
 
   const snap = readSnapshot(SNAPSHOT);
@@ -213,7 +213,7 @@ export async function generateLadders(): Promise<string> {
    Refresh it with the snapshot:
 
      npx wrangler d1 export reiad --remote --output schools.db
-     node scripts/export-schools.mjs --db schools.db
+     node scripts/export-schools.ts --db schools.db
      node scripts/build-school-tree.ts
 
    scripts/check-next.ts fails if this file and the snapshot disagree. */

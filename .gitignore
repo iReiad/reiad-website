@@ -18,5 +18,5 @@ next/.open-next/
 next/next-env.d.ts
 next/tsconfig.tsbuildinfo
 
-# The design harness, written by scripts/preview.mjs and looked at, not kept.
+# The design harness, written by scripts/preview.ts and looked at, not kept.
 aab/preview.html

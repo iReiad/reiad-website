@@ -85,7 +85,7 @@ const MIGRATIONS = [
      both, because half of a lesson in a database and half in a
      file is two sources for whether a lesson exists. The `meta`
      column holds each school's own fields as JSON, and
-     scripts/schools.test.mjs fails if one goes missing: the long
+     scripts/schools.test.ts fails if one goes missing: the long
      version of that reasoning is in aab/schema.sql. */
   `CREATE TABLE IF NOT EXISTS school_stages (
      school TEXT NOT NULL, slug TEXT NOT NULL, position INTEGER NOT NULL,

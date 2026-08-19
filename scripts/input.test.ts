@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* ============================================================
-   input.test.mjs: what a bad request looks like, tested.
+   input.test.ts: what a bad request looks like, tested.
 
-       node scripts/input.test.mjs
+       node scripts/input.test.ts
 
    archive/TRANSITION.md Stage 12, step 2. `functions/_lib/input.js` is
    now the one place that decides whether a request body is good
@@ -19,25 +19,49 @@
 
 import { read, safeId, safeSlug } from "../functions/_lib/input.js";
 
-let passed = 0;
-const failures = [];
+/* `input.js` is the one place three endpoints read a request
+   body, and it has no declaration beside it. What it answers is
+   either the cleaned fields or a Response saying why not, never
+   both and never neither, and that union is inferred from the
+   source rather than restated here: a second description of a
+   shape is a second thing to keep true. */
+type Read = Awaited<ReturnType<typeof read>>;
 
-const ok = (name, condition, detail = "") => {
+/** The cleaned fields, when the check under test expects them.
+    Reading `.value.body` off a possibly-absent `value` is what
+    this stops: a rule that started refusing would otherwise fail
+    as `undefined !== "..."` rather than as "it refused". */
+const fields = (r: Read): Record<string, unknown> => {
+  if (!r.value) throw new Error("expected fields, got a refusal");
+  return r.value as Record<string, unknown>;
+};
+
+let passed = 0;
+const failures: string[] = [];
+
+const ok = (name: string, condition: unknown, detail = ""): void => {
   if (condition) { passed += 1; return; }
   failures.push(name + (detail ? `\n      ${detail}` : ""));
 };
-const eq = (name, got, want) =>
+const eq = (name: string, got: unknown, want: unknown): void =>
   ok(name, got === want, `wanted ${JSON.stringify(want)}, got ${JSON.stringify(got)}`);
 
 /** A POST with a JSON body, which is every caller this has. */
-const post = (data) => new Request("https://reiad.co.uk/api/x", {
+const post = (data: unknown): Request => new Request("https://reiad.co.uk/api/x", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: typeof data === "string" ? data : JSON.stringify(data),
 });
 
+/** The refusal, when the check under test expects one. */
+const refusal = (r: Read): Response => {
+  if (!r.bad) throw new Error("expected a refusal, got fields");
+  return r.bad;
+};
+
 /** The reason inside a failure Response. */
-const reasonOf = async (res) => (await res.json()).reason;
+const reasonOf = async (res: Response): Promise<unknown> =>
+  (await res.json() as { reason?: unknown }).reason;
 
 /* ---------- the two helpers ---------- */
 
@@ -61,11 +85,11 @@ eq("a word is not an id", safeId("twelve"), 0);
 
   const short = await read(post({ body: "hello" }), spec);
   ok("a body under the minimum fails", Boolean(short.bad));
-  eq("  with the reason the declaration named", await reasonOf(short.bad), "too-short");
+  eq("  with the reason the declaration named", await reasonOf(refusal(short)), "too-short");
 
   const fine = await read(post({ body: "a body long enough to pass" }), spec);
   ok("a body over the minimum passes", !fine.bad);
-  eq("  and comes back trimmed", fine.value.body, "a body long enough to pass");
+  eq("  and comes back trimmed", fields(fine).body, "a body long enough to pass");
 
   /* The cap is applied BEFORE the minimum, which is the one
      ordering decision in the file. A 5000 character body capped
@@ -74,7 +98,7 @@ eq("a word is not an id", safeId("twelve"), 0);
      is the same outcome by luck rather than on purpose. */
   const long = await read(post({ body: "x".repeat(5000) }), spec);
   ok("a body over the cap passes", !long.bad);
-  eq("  and is truncated to the cap", long.value.body.length, 4000);
+  eq("  and is truncated to the cap", String(fields(long).body).length, 4000);
 
   /* Whitespace is trimmed before it is measured, so nine
      characters and a newline is nine characters. */
@@ -88,16 +112,16 @@ eq("a word is not an id", safeId("twelve"), 0);
   const spec = { slug: { slug: true, required: "slug-required" } };
   const missing = await read(post({}), spec);
   ok("a required slug that is absent fails", Boolean(missing.bad));
-  eq("  with its own reason", await reasonOf(missing.bad), "slug-required");
+  eq("  with its own reason", await reasonOf(refusal(missing)), "slug-required");
 
   const bad = await read(post({ slug: "../etc/passwd" }), spec);
   ok("a required slug that is not a slug fails the same way", Boolean(bad.bad));
   eq("  and does not smuggle a path through",
-    await reasonOf(bad.bad), "slug-required");
+    await reasonOf(refusal(bad)), "slug-required");
 
   const optional = await read(post({}), { slug: { slug: true } });
   ok("an optional slug that is absent does not fail", !optional.bad);
-  eq("  and comes back empty", optional.value.slug, "");
+  eq("  and comes back empty", fields(optional).slug, "");
 }
 
 /* ---------- email, where absent and wrong are different ---------- */
@@ -105,12 +129,12 @@ eq("a word is not an id", safeId("twelve"), 0);
 {
   const spec = { email: { email: true, required: "bad-email", invalid: "bad-email" } };
   eq("an absent required email fails",
-    await reasonOf((await read(post({}), spec)).bad), "bad-email");
+    await reasonOf(refusal(await read(post({}), spec))), "bad-email");
   eq("a malformed email fails",
-    await reasonOf((await read(post({ email: "not-an-email" }), spec)).bad), "bad-email");
+    await reasonOf(refusal(await read(post({ email: "not-an-email" }), spec))), "bad-email");
   const good = await read(post({ email: "  i@reiad.co.uk " }), spec);
   ok("a good email passes", !good.bad);
-  eq("  and is trimmed", good.value.email, "i@reiad.co.uk");
+  eq("  and is trimmed", fields(good).email, "i@reiad.co.uk");
 
   /* Optional, and this is the shape the questions endpoint
      wants: a reader who typed their address wrongly still gets
@@ -119,7 +143,7 @@ eq("a word is not an id", safeId("twelve"), 0);
      optional. */
   const loose = await read(post({ email: "nonsense" }), { email: { email: true } });
   ok("an optional email that is wrong does not fail the request", !loose.bad);
-  eq("  and is dropped rather than stored", loose.value.email, "");
+  eq("  and is dropped rather than stored", fields(loose).email, "");
 }
 
 /* ---------- oneOf ---------- */
@@ -127,13 +151,13 @@ eq("a word is not an id", safeId("twelve"), 0);
 {
   const spec = { kind: { oneOf: ["hiring", "project"] } };
   eq("a listed value passes through",
-    (await read(post({ kind: "hiring" }), spec)).value.kind, "hiring");
+    fields(await read(post({ kind: "hiring" }), spec)).kind, "hiring");
   eq("an unlisted value is dropped, not accepted",
-    (await read(post({ kind: "admin" }), spec)).value.kind, "");
+    fields(await read(post({ kind: "admin" }), spec)).kind, "");
   const strict = await read(post({ kind: "admin" }),
     { kind: { oneOf: ["hiring"], invalid: "bad-kind" } });
   eq("and fails when the declaration says it should",
-    await reasonOf(strict.bad), "bad-kind");
+    await reasonOf(refusal(strict)), "bad-kind");
 }
 
 /* ---------- a body that is not JSON at all ---------- */
@@ -141,7 +165,7 @@ eq("a word is not an id", safeId("twelve"), 0);
 {
   const spec = { body: { text: true, required: "empty" } };
   eq("a body that is not JSON is an empty object, and required catches it",
-    await reasonOf((await read(post("not json at all"), spec)).bad), "empty");
+    await reasonOf(refusal(await read(post("not json at all"), spec))), "empty");
 
   const nothing = await read(post("null"), spec);
   ok("and so is a literal null", Boolean(nothing.bad));
@@ -152,8 +176,12 @@ eq("a word is not an id", safeId("twelve"), 0);
 {
   const got = await read(post({ body: "x", website: "a bot filled this in" }),
     { body: { text: true } });
+  /* `input` is the untouched body, present on exactly the branch
+     that did not refuse. `fields()` first, so the day this starts
+     refusing the failure says so rather than reading undefined. */
+  fields(got);
   eq("a field the declaration does not name is still readable",
-    got.input.website, "a bot filled this in");
+    got.input?.website, "a bot filled this in");
 }
 
 /* ---------- done ---------- */

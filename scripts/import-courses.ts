@@ -1,5 +1,5 @@
 /* ============================================================
-   import-courses.mjs: the third-party course catalogue, from the
+   import-courses.ts: the third-party course catalogue, from the
    Drive folder it actually lives in.
 
    `shared/courses.data.json` is GENERATED. Do not hand-edit it,
@@ -76,7 +76,7 @@
    bearer credential for the hour it lives:
 
      export GOOGLE_OAUTH_TOKEN=ya29....
-     node scripts/import-courses.mjs --drive 1dyYLbVa2lS9o7oRAEZOpQgZMpUtd15La
+     node scripts/import-courses.ts --drive 1dyYLbVa2lS9o7oRAEZOpQgZMpUtd15La
 
    NOTHING IS WRITTEN UNTIL THE WHOLE WALK SUCCEEDS, so a token
    that expires halfway leaves the committed catalogue exactly as
@@ -84,15 +84,15 @@
 
    ---- the three ways to run it ----
 
-     node scripts/import-courses.mjs --drive 1dyYL...    refresh
-     node scripts/import-courses.mjs --crawl <dir>       from a listing
-     node scripts/import-courses.mjs --crawl <dir> --check   has it drifted
+     node scripts/import-courses.ts --drive 1dyYL...    refresh
+     node scripts/import-courses.ts --crawl <dir>       from a listing
+     node scripts/import-courses.ts --crawl <dir> --check   has it drifted
 
    Add `--dump <dir>` to a `--drive` run to write the listing back
    out as TSV. Do that whenever the catalogue is refreshed, so the
    fixture CI reads stays in step with it:
 
-     node scripts/import-courses.mjs --drive 1dyYL... \
+     node scripts/import-courses.ts --drive 1dyYL... \
        --dump scripts/fixtures/course-crawl
    ============================================================ */
 
@@ -100,8 +100,11 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  splitName, splitCourse, kindOf, titleOf, slugify,
+  splitName, splitCourse, kindOf, titleOf, slugify, type Part, type PartKind,
 } from "./lib/coursera.ts";
+import type {
+  Catalogue, Course, CourseLesson, CourseModule,
+} from "../shared/courses.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "shared", "courses.data.json");
@@ -109,11 +112,11 @@ const OUT = join(ROOT, "shared", "courses.data.json");
 /* ---------- arguments ---------- */
 
 const argv = process.argv.slice(2);
-const flag = (name) => {
+const flag = (name: string): string | null => {
   const at = argv.indexOf(name);
   return at === -1 ? null : (argv[at + 1] ?? "");
 };
-const has = (name) => argv.includes(name);
+const has = (name: string): boolean => argv.includes(name);
 
 const CHECK = has("--check");
 const DUMP = flag("--dump");
@@ -151,12 +154,28 @@ const AT_ONCE = 8;
    genuinely broken call fails in seconds rather than minutes. */
 const RETRIES = 5;
 
-const sleep = (ms) => new Promise((go) => { setTimeout(go, ms); });
+const sleep = (ms: number): Promise<void> =>
+  new Promise((go) => { setTimeout(go, ms); });
 
-async function askDrive(url, parent) {
+/** One file as Drive lists it, which is the three fields the
+    query asks for and nothing else. `mimeType` is how a folder is
+    told from a file, and it is the ONLY difference between the two
+    front ends below: the TSV carries the same fact as a column. */
+interface DriveFile {
+  id: string;
+  name: string;
+  mimeType: string;
+}
+
+interface DriveListing {
+  files?: DriveFile[];
+  nextPageToken?: string;
+}
+
+async function askDrive(url: URL, parent: string): Promise<DriveListing> {
   for (let attempt = 0; ; attempt += 1) {
     const res = await fetch(url, { headers: { Authorization: `Bearer ${TOKEN}` } });
-    if (res.ok) return res.json();
+    if (res.ok) return await res.json() as DriveListing;
 
     const said = await res.text();
 
@@ -189,8 +208,8 @@ async function askDrive(url, parent) {
   }
 }
 
-async function listChildren(parent) {
-  const rows = [];
+async function listChildren(parent: string): Promise<DriveFile[]> {
+  const rows: DriveFile[] = [];
   let pageToken = "";
 
   do {
@@ -211,8 +230,8 @@ async function listChildren(parent) {
 
 /** Run `job` over every item, `AT_ONCE` at a time, keeping the
     results in the order the items came in. */
-async function pooled(items, job) {
-  const out = new Array(items.length);
+async function pooled<T, R>(items: T[], job: (item: T) => Promise<R>): Promise<R[]> {
+  const out: R[] = new Array(items.length);
   let next = 0;
 
   const worker = async () => {
@@ -230,10 +249,22 @@ async function pooled(items, job) {
 
 const FOLDER = "application/vnd.google-apps.folder";
 
+/** One entry of the tree, and it is what both front ends produce.
+    A row read from Drive and a row read from the TSV have to be
+    the same object or the two would drift, which is the whole
+    reason the fixture exists. */
+interface Node {
+  parent: string;
+  name: string;
+  folder: boolean;
+}
+
+type Tree = Map<string, Node>;
+
 /** Breadth-first, a level at a time, so the progress line means
     something and so the pool above has a whole level to work
     through rather than one folder's children. */
-async function walkDrive(root) {
+async function walkDrive(root: string): Promise<Tree> {
   if (!TOKEN) {
     throw new Error(
       "No credential. These files are private, so an API key will not open them.\n"
@@ -241,13 +272,13 @@ async function walkDrive(root) {
       + "  See the head of this file for the two ways to get one.");
   }
 
-  const tree = new Map();
+  const tree: Tree = new Map();
   let level = [root];
   let depth = 0;
 
   while (level.length) {
     const listings = await pooled(level, listChildren);
-    const next = [];
+    const next: string[] = [];
 
     level.forEach((parent, i) => {
       for (const row of listings[i]) {
@@ -276,10 +307,10 @@ async function walkDrive(root) {
    tree read from the API are the same object.
    ============================================================ */
 
-function walkCrawl(dir) {
-  const tree = new Map();
+function walkCrawl(dir: string): Tree {
+  const tree: Tree = new Map();
 
-  const rows = (file) => {
+  const rows = (file: string): string[][] => {
     const path = join(dir, file);
     if (!existsSync(path)) return [];
     return readFileSync(path, "utf8").split("\n").filter(Boolean).map((l) => l.split("\t"));
@@ -300,20 +331,23 @@ function walkCrawl(dir) {
    The transform: a tree of Drive rows becomes a catalogue
    ============================================================ */
 
-const childrenOf = (tree, parent, folder) =>
+/** A folder's children of one kind, by name. */
+const childrenOf = (
+  tree: Tree, parent: string, folder: boolean,
+): Array<{ id: string; name: string }> =>
   [...tree.entries()]
     .filter(([, row]) => row.parent === parent && row.folder === folder)
     .map(([id, row]) => ({ id, name: row.name }))
     .sort((a, b) => a.name.localeCompare(b.name, "en"));
 
-function build(tree, root) {
-  const courses = [];
+function build(tree: Tree, root: string): { courses: Course[] } {
+  const courses: Course[] = [];
 
   for (const folder of childrenOf(tree, root, true)) {
     const said = splitCourse(folder.name);
     if (!said) continue;                       // not `N. Title`: not a course
 
-    const course = {
+    const course: Course = {
       slug: slugOf(said.title),
       n: said.n,
       title: said.title,
@@ -325,7 +359,7 @@ function build(tree, root) {
       const parsed = /^(\d{2})_(.+)$/.exec(modFolder.name);
       if (!parsed) continue;
 
-      const mod = {
+      const mod: CourseModule = {
         slug: slugify(parsed[2]),
         n: Number(parsed[1]),
         title: titleOf(parsed[2]),
@@ -376,15 +410,17 @@ function build(tree, root) {
     A lesson is a `NN_` prefix, and everything sharing that prefix
     belongs to it: the video, the transcript, the reading, the
     quiz and any attachments. */
-function lessonsIn(tree, group, groupSlug) {
-  const byPrefix = new Map();
+function lessonsIn(tree: Tree, group: string, groupSlug: string): NewLesson[] {
+  const byPrefix = new Map<string, FilePart[]>();
 
   for (const file of childrenOf(tree, group, false)) {
     const part = splitName(file.name);
     if (!part) continue;
     const key = `${String(part.n).padStart(2, "0")}_${part.slug}`;
-    if (!byPrefix.has(key)) byPrefix.set(key, []);
-    byPrefix.get(key).push({ ...part, id: file.id, name: file.name });
+    const filed = byPrefix.get(key);
+    const one: FilePart = { ...part, id: file.id, name: file.name };
+    if (filed) filed.push(one);
+    else byPrefix.set(key, [one]);
   }
 
   return [...byPrefix.entries()]
@@ -392,9 +428,24 @@ function lessonsIn(tree, group, groupSlug) {
     .map(([, parts]) => oneLesson(parts, groupSlug));
 }
 
-function oneLesson(parts, groupSlug) {
+/** One file of a lesson: what its name says it is, plus where it
+    sits in Drive. `Part` is the reading of the name and knows
+    nothing about Drive; the id is what turns it into something
+    the catalogue can point at. */
+interface FilePart extends Part {
+  id: string;
+  name: string;
+}
+
+/** A lesson before the module has placed it. `section` and
+    `position` are the module's to decide, because the numbering
+    runs across the groups rather than restarting inside each. */
+type NewLesson = Omit<CourseLesson, "section" | "position">;
+
+function oneLesson(parts: FilePart[], groupSlug: string): NewLesson {
   const first = parts[0];
-  const pick = (kind) => parts.find((p) => p.kind === kind)?.id ?? null;
+  const pick = (kind: PartKind): string | null =>
+    parts.find((p) => p.kind === kind)?.id ?? null;
 
   /* A `bare` page is named after its file rather than after
      itself, and the same file name recurs across groups, so it
@@ -404,7 +455,7 @@ function oneLesson(parts, groupSlug) {
      module would be a URL that moved and a tick that was lost. */
   const slug = slugify(first.bare ? `${groupSlug}-${first.slug}` : first.slug);
 
-  const lesson = {
+  const lesson: NewLesson = {
     slug,
     title: titleOf(slug),
     kind: kindOf(parts),
@@ -418,7 +469,7 @@ function oneLesson(parts, groupSlug) {
      because the lesson SAYS which it is, and "quiz" and "reading"
      are different promises to somebody deciding whether they have
      twenty minutes. */
-  for (const kind of ["reading", "quiz", "exam"]) {
+  for (const kind of ["reading", "quiz", "exam"] as const) {
     const id = pick(kind);
     if (id) lesson[kind] = id;
   }
@@ -432,14 +483,14 @@ function oneLesson(parts, groupSlug) {
      Only the first was carried for a while. Every video had both
      in Drive, `coursera.mjs` classified both correctly, and the
      player had no captions because the id stopped here. */
-  for (const kind of ["transcript", "captions"]) {
+  for (const kind of ["transcript", "captions"] as const) {
     const id = pick(kind);
     if (id) lesson[kind] = id;
   }
 
   const files = parts
     .filter((p) => p.kind === "attachment")
-    .map((p) => ({ name: attachmentName(p), ext: p.ext, drive: p.id }));
+    .map((p) => ({ name: attachmentName(p), ext: p.ext ?? "", drive: p.id }));
   if (files.length) lesson.files = files;
 
   return lesson;
@@ -450,10 +501,13 @@ function oneLesson(parts, groupSlug) {
     Coursera writes a double underscore where the original title
     had a colon, and single underscores for its spaces. Both are
     reversible and neither is a guess. */
-const attachmentName = (part) =>
-  part.suffix
+const attachmentName = (part: FilePart): string =>
+  /* `suffix` and `ext` are optional on a `Part` because a video
+     and a transcript have neither, and every part reaching here
+     is an attachment, which `splitName` gives both to. */
+  (part.suffix ?? "")
     .replace(/^_/, "")
-    .replace(new RegExp(`\\.${part.ext}$`, "i"), "")
+    .replace(new RegExp(`\\.${part.ext ?? ""}$`, "i"), "")
     .replace(/__/g, ": ")
     .replace(/_/g, " ")
     .replace(/\s+/g, " ")
@@ -475,11 +529,11 @@ if (!root) {
 /* A tool somebody runs by hand, so a failure is a sentence rather
    than a stack trace: every throw above is written to be read,
    and a trace would bury the one line that says what to do. */
-let tree;
+let tree: Tree;
 try {
   tree = CRAWL ? walkCrawl(join(ROOT, CRAWL)) : await walkDrive(root);
 } catch (err) {
-  console.error(`\n${err?.message ?? err}\n`);
+  console.error(`\n${err instanceof Error ? err.message : String(err)}\n`);
   process.exit(1);
 }
 
@@ -494,7 +548,7 @@ if (DUMP) {
   mkdirSync(dir, { recursive: true });
 
   const rows = [...tree.entries()];
-  const line = (cols) => `${cols.join("\t")}\n`;
+  const line = (cols: string[]): string => `${cols.join("\t")}\n`;
 
   writeFileSync(join(dir, "tree.tsv"), rows
     .filter(([, r]) => r.folder)
@@ -512,7 +566,7 @@ if (DUMP) {
 
 const built = build(tree, root);
 
-const catalogue = {
+const catalogue: Catalogue = {
   /* Where this came from, so a refresh needs no argument and a
      reader of the file can go and look at the folder. */
   root,

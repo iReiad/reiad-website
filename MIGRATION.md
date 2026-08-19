@@ -120,15 +120,19 @@ So `scripts/tsconfig.json` and `scripts/check-types.ts` landed with
 the first chunk, and that check is in `check-all.ts`: a file is not
 converted until it typechecks under `strict`.
 
-**Done (22):** the four generators, both libraries under
-`scripts/lib/`, and every one of the sixteen checks plus the runner
-`check-all`.
+**Done (36):** every `.mjs` in `scripts/`. The four generators,
+both libraries under `scripts/lib/`, the sixteen checks and the
+runner `check-all`, then the seven `*.test` files and
+`export-schools` `import-courses` `import-schools` `preview`
+`restore` `school-source` `schools-snapshot`, plus the new
+`sqlite-d1`.
 
-**Left (13):** the seven `*.test.mjs`, and `export-schools`
-`import-courses` `import-schools` `preview` `restore`
-`school-source` `schools-snapshot`.
+**Left (5):** `check-content.js` `check-csp.js` `check-css.js`
+`check-routes.js` `check-sw.js`, which were never `.mjs` and are the
+only JavaScript in the directory.
 
-Four things came out of it that were not the types.
+Seven things came out of it that were not the types, and the
+previous count of them was wrong too.
 
 `kindOf()` in `lib/coursera.ts` returned `"file"`, and no file in a
 Coursera export is ever a `file`: `splitName()` answers `attachment`
@@ -161,16 +165,39 @@ a drawing in them". It is 24 now, and all 24 do resolve, so nothing
 was broken; the check was reporting on a smaller set than it
 claimed, which is the harder failure to see.
 
-**Three files named a file that does not exist.** `share-card.ts`
+**Seven files named a file that does not exist.** `share-card.ts`
 sent a reader to `scripts/check-modules.mjs`, which has never
 existed under any extension, and `courses.ts` and `sw.js` to
-`check-csp.mjs` and `check-css.mjs`, which are `.js`. Converting
-`scripts/` is what made them visible.
+`check-csp.mjs` and `check-css.mjs`, which are `.js`. Then
+`README.md` told anybody regenerating the site to run
+`scripts/build-styles.mjs`, and this file said `aab/tailwind.css`
+was built by it, three days after both were deleted for a compiler
+Next already has. `cards.tsx` named `check-icons.mjs` where the
+check is `check-next.ts`, and `written.tsx` named
+`build-school-hubs.mjs`, which is in `archive/schools-builders/`.
+
+Converting `scripts/` is what made all seven visible, and the shape
+they share is worth naming: **a stale pointer costs nothing until
+somebody follows it,** so nothing fails and nobody notices. Four of
+the seven were in the comments this repository writes at length on
+purpose, which is the argument for the length rather than against
+it: the ones that said only what a thing was for stayed true.
 
 And `check-accents.ts` printed `aab/styles.css` in three of its
 messages, which moved to `next/styles/site.css` on 18 August 2026:
 the check reads the right file and told you to go and edit the
 wrong one.
+
+**There were four copies of the D1 binding over `node:sqlite`,**
+and typing them is what showed it: `schools-snapshot.ts`,
+`school-source.ts`, `comments.test.ts` and `schools-api.test.ts`
+each carried the same twelve lines. They had already drifted. Two
+narrowed what they bound and two passed values straight through,
+and node:sqlite throws on an `undefined` where D1 stores NULL, so a
+handler that binds an absent field failed in a test and worked in
+production. `scripts/sqlite-d1.ts` is the one copy, and it is the
+interface the Worker really hands a handler rather than a stub
+written to be convenient.
 
 ### Worker
 
@@ -206,9 +233,11 @@ rather than with this work.
 
 ## 2. Stylesheet to Tailwind
 
-`aab/tailwind.css` is built from `aab/src/styles/` by
-`scripts/build-styles.mjs`. `@theme` maps the site's own tokens, so
-`bg-panel` means `var(--panel)` in both themes.
+Tailwind is compiled by Next, through `@tailwindcss/postcss`.
+`next/styles/tailwind.css` is the theme and the utilities and
+`globals.css` imports it; there is no build step and no committed
+output. `@theme` maps the site's own tokens, so `bg-panel` means
+`var(--panel)` in both themes.
 
 **Done:** `/account.html`, and the component library under
 `next/components/ui/`.

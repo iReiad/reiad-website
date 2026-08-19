@@ -1,7 +1,7 @@
 {
   "format": 1,
   "kind": "schools",
-  "note": "The four curricula and their prose, exported from D1. Generated; do not edit by hand. Every byte of it is already served at a public URL: see the note at the top of scripts/schools-snapshot.mjs. Refresh it with scripts/export-schools.mjs.",
+  "note": "The four curricula and their prose, exported from D1. Generated; do not edit by hand. Every byte of it is already served at a public URL: see the note at the top of scripts/schools-snapshot.ts. Refresh it with scripts/export-schools.ts.",
   "counts": {
     "stages": 17,
     "sections": 61,

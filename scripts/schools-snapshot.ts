@@ -1,5 +1,5 @@
 /* ============================================================
-   schools-snapshot.mjs: the schools' rows, as a file a builder
+   schools-snapshot.ts: the schools' rows, as a file a builder
    can read with no network.
 
    archive/TRANSITION.md Stage 8, step 4. The prose of a lesson lives in
@@ -11,7 +11,7 @@
    ---- why not straight from the database ----
 
    A builder is a generator somebody runs on a laptop, and
-   `school-source.mjs` says at the top that it has to work with no
+   `school-source.ts` says at the top that it has to work with no
    network and no Worker. A build that needs credentials is a
    build that cannot be run by the person checking whether their
    own change came out right, and it is a build CI cannot do
@@ -50,6 +50,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SCHOOL_IDS } from "../shared/schools.ts";
+import { bindable, d1Open, type SqliteD1 } from "./sqlite-d1.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -67,7 +68,25 @@ export const SNAPSHOT = join(ROOT, "content/schools.backup.json");
     it: `stagesOf()` builds a stage out of slug, title, status and
     `meta`, and a column that is in none of those never reaches a
     page. */
-const COLUMNS = {
+/** A row of any of the three tables, as SQLite or the importer
+    hands it over. Untyped per table on purpose: `tidy()` reads it
+    by the column list below, which is the one place the shape is
+    written down. */
+export type Row = Record<string, unknown>;
+
+/** The three tables, together. Everything here takes and returns
+    this. */
+export interface Rows {
+  stages: Row[];
+  sections: Row[];
+  lessons: Row[];
+}
+
+/** Which table, for the three tables that have a column list, an
+    order and a tidier each. */
+type Table = "stages" | "sections" | "lessons";
+
+const COLUMNS: Record<Table, string[]> = {
   stages: ["school", "slug", "position", "title", "status", "meta"],
   sections: ["school", "stage", "ident", "position", "title", "meta"],
   lessons: ["school", "stage", "slug", "section", "position", "title",
@@ -79,15 +98,18 @@ const COLUMNS = {
     database felt like returning is a snapshot that produces a
     diff for no reason. School, then ladder position, then slug as
     the tie-break that cannot itself tie. */
-const ORDER = {
-  stages: (a, b) => cmp(a.school, b.school) || a.position - b.position || cmp(a.slug, b.slug),
+const ORDER: Record<Table, (a: Row, b: Row) => number> = {
+  stages: (a, b) => cmp(a.school, b.school)
+    || num(a.position) - num(b.position) || cmp(a.slug, b.slug),
   sections: (a, b) => cmp(a.school, b.school) || cmp(a.stage, b.stage)
-    || a.position - b.position || cmp(a.ident, b.ident),
+    || num(a.position) - num(b.position) || cmp(a.ident, b.ident),
   lessons: (a, b) => cmp(a.school, b.school) || cmp(a.stage, b.stage)
-    || a.position - b.position || cmp(a.slug, b.slug),
+    || num(a.position) - num(b.position) || cmp(a.slug, b.slug),
 };
 
-const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+const cmp = (a: unknown, b: unknown): number =>
+  (String(a) < String(b) ? -1 : String(a) > String(b) ? 1 : 0);
+const num = (v: unknown): number => Number(v) || 0;
 
 /** `meta` as a string, whichever way it arrived.
 
@@ -96,11 +118,11 @@ const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
     the first and the initial snapshot was taken from the second.
     Storing the string is what makes the two agree, and it is what
     goes back into the column. */
-const metaText = (value) =>
+const metaText = (value: unknown): string =>
   typeof value === "string" ? value : JSON.stringify(value ?? {});
 
-const tidy = (row, columns) => {
-  const out = {};
+const tidy = (row: Row, columns: string[]): Row => {
+  const out: Row = {};
   for (const key of columns) {
     out[key] = key === "meta" ? metaText(row[key])
       : key === "position" || key === "minutes" ? Number(row[key]) || 0
@@ -113,15 +135,15 @@ const tidy = (row, columns) => {
 
 /** Rows in, file out. Returns what it wrote, so a caller can say
     how much rather than guess. */
-export function writeSnapshot(rows, file = SNAPSHOT) {
+export function writeSnapshot(rows: Rows, file = SNAPSHOT) {
   const out = {
     format: 1,
     kind: "schools",
     note: "The four curricula and their prose, exported from D1. "
       + "Generated; do not edit by hand. Every byte of it is already "
       + "served at a public URL: see the note at the top of "
-      + "scripts/schools-snapshot.mjs. Refresh it with "
-      + "scripts/export-schools.mjs.",
+      + "scripts/schools-snapshot.ts. Refresh it with "
+      + "scripts/export-schools.ts.",
     counts: countsOf(rows),
     stages: [...rows.stages].sort(ORDER.stages).map((r) => tidy(r, COLUMNS.stages)),
     sections: [...rows.sections].sort(ORDER.sections).map((r) => tidy(r, COLUMNS.sections)),
@@ -131,11 +153,30 @@ export function writeSnapshot(rows, file = SNAPSHOT) {
   return out;
 }
 
+/** What the snapshot says about itself, all of it counted rather
+    than carried. `bySchool` was assigned on to an object literal
+    after it was built, which is legal JavaScript and left the
+    field off the inferred type: `export-schools.ts` read
+    `counts.bySchool[id]` and TypeScript said there is no such
+    property. Declared here, and the assignment moved into the
+    literal where it belongs. */
+export interface Counts {
+  stages: number;
+  sections: number;
+  lessons: number;
+  written: number;
+  bySchool: Record<string, { lessons: number; written: number }>;
+}
+
 /** Counted from the rows, never carried alongside them. */
-export function countsOf(rows) {
-  const counts = { stages: rows.stages.length, sections: rows.sections.length,
-    lessons: rows.lessons.length, written: rows.lessons.filter((l) => l.body).length };
-  counts.bySchool = {};
+export function countsOf(rows: Rows): Counts {
+  const counts: Counts = {
+    stages: rows.stages.length,
+    sections: rows.sections.length,
+    lessons: rows.lessons.length,
+    written: rows.lessons.filter((l) => l.body).length,
+    bySchool: {},
+  };
   for (const id of SCHOOL_IDS) {
     const lessons = rows.lessons.filter((l) => l.school === id);
     counts.bySchool[id] = {
@@ -148,7 +189,16 @@ export function countsOf(rows) {
 
 /* ---------- reading ---------- */
 
-export function readSnapshot(file = SNAPSHOT) {
+/** The file, as it is on disk: the three tables plus what it says
+    about itself. */
+export interface Snapshot extends Rows {
+  format: number;
+  kind: string;
+  note: string;
+  counts: Counts;
+}
+
+export function readSnapshot(file = SNAPSHOT): Snapshot {
   const snapshot = JSON.parse(readFileSync(file, "utf8"));
   if (snapshot.format !== 1 || snapshot.kind !== "schools") {
     throw new Error(`${file}: not a schools snapshot`);
@@ -166,9 +216,11 @@ export function readSnapshot(file = SNAPSHOT) {
     build from this file is running the same code as a build from
     the live database. A second implementation of that grouping is
     how the two quietly stop agreeing. */
-export async function d1FromSnapshot(school, snapshot = readSnapshot()) {
-  const { DatabaseSync } = await import("node:sqlite");
-  const db = new DatabaseSync(":memory:");
+export async function d1FromSnapshot(
+  school: string, snapshot: Snapshot = readSnapshot(),
+): Promise<SqliteD1> {
+  const d1 = await d1Open();
+  const db = d1.handle;
 
   db.exec(`
     CREATE TABLE school_stages (school TEXT, slug TEXT, position INTEGER,
@@ -186,21 +238,11 @@ export async function d1FromSnapshot(school, snapshot = readSnapshot()) {
       `INSERT INTO ${name} (${columns.join(", ")}) `
       + `VALUES (${columns.map(() => "?").join(", ")})`
     );
-    for (const row of snapshot[table]) {
+    for (const row of snapshot[table as Table]) {
       if (row.school !== school) continue;
-      insert.run(...columns.map((k) => row[k]));
+      insert.run(...columns.map((k) => bindable(row[k])));
     }
   }
 
-  return {
-    handle: db,
-    prepare(sql) {
-      const make = (args) => ({
-        all: async () => ({ results: db.prepare(sql).all(...args) }),
-        first: async () => db.prepare(sql).get(...args) ?? null,
-        run: async () => { db.prepare(sql).run(...args); return { success: true }; },
-      });
-      return { bind: (...args) => make(args), ...make([]) };
-    },
-  };
+  return d1;
 }
