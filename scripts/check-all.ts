@@ -60,6 +60,11 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        below without reading them: a check whose own annotations
        are wrong reports on the site rather than on itself. */
     "scripts/check-types.ts",
+    /* Second, and beside it for the same reason: it is a check on
+       this repository's own writing rather than on the site, and
+       what it catches is a comment sending a reader somewhere
+       that is not there. */
+    "scripts/check-pointers.ts",
     "scripts/check-routes.ts",
     "scripts/check-css.ts",
     "scripts/check-sw.ts",
