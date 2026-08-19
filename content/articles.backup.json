@@ -1,7 +1,7 @@
 {
   "format": 1,
   "kind": "articles",
-  "taken_at": "2026-08-18T03:25:06.255Z",
+  "taken_at": "2026-08-19T03:27:22.315Z",
   "note": "Live articles only. Generated nightly; do not edit by hand. Drafts, anything belonging to a reader, and any identifier of a system outside this site are deliberately absent: see functions/_lib/backup.js.",
   "count": 6,
   "articles": [
@@ -71,7 +71,7 @@
     },
     {
       "slug": "tiny-experiments",
-      "section": "travel",
+      "section": "insights",
       "title": "Tiny Experiments: How to Live Freely in a Hyper-Goal-Oriented World (২০২৫)",
       "dek": "বই রিভিউ -\nনন-ফিকশন: ক্যারিয়ার, মাইন্ডসেট, প্রোডাক্টিভিটি",
       "tag": "Book · Review",
@@ -83,7 +83,7 @@
       "cover": "/media/tiny-experiments-card/fac70a25c5302721.jpg",
       "published_at": "2026-08-10",
       "created_at": "2026-08-10T16:41:58.370Z",
-      "updated_at": "2026-08-16T19:33:27.932Z"
+      "updated_at": "2026-08-18T07:32:03.920Z"
     },
     {
       "slug": "uk-visit-visa",
