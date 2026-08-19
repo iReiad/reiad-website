@@ -701,6 +701,46 @@ the module's name and its own surface.
 `archive/README.md` has the reasoning and the table of what
 replaced what.
 
+## An address that was live stays live, and a directory is an address
+
+A page that moves leaves a rule in `_redirects` behind it. That was
+already the rule here and it was still not enough, because it
+covers the spelling somebody typed into a link and not the spelling
+Cloudflare served.
+
+`html_handling` serves `deutsch/index.html` at `/deutsch/`, WITH
+the slash. So the directory form was the canonical address of every
+page that was an `index.html`: it is what the old sitemap resolved
+to, what a crawler indexed, and what a reader who bookmarked one
+has. Task #28 dropped `.html` from every address, wrote a 301 for
+`/deutsch/index.html`, and left `/deutsch/` matching no route
+pattern at all. Twenty-one addresses 404ed: four school hubs and
+seventeen stage ladders. Every check passed and every internal link
+worked, because nothing on this site links the directory form. The
+readers who had it were the ones who had been here longest.
+
+Two things hold it now, and they are deliberately not a list of
+twenty-one paths:
+
+- **`bare()` in `worker.js`**, which takes one trailing slash off
+  the path before the route table is consulted. A route added next
+  week gets this without knowing about it, which is the difference
+  between a rule and a habit; the request is forwarded unchanged,
+  so Next answers with its own 308 to the canonical form.
+- **`check-routes.ts`**, which reads `_redirects` for the answer
+  rather than being told it. A rule whose source ends
+  `/index.html` IS the statement that the page was a directory, so
+  the file names them and the next one is checked without anybody
+  remembering to come here.
+
+**`nextOwns()` is exported from `worker.js` for the same reason.**
+Four checks each asked "does a Next route render this" with their
+own copy of `NEXT_ROUTES.some(...)`, and two wrote a redundant
+`ARTICLE.test()` in front of it. A copy is fine while the answer is
+one line and stops being fine the moment the line grows a `bare()`:
+the Worker starts forwarding `/deutsch/` and four checks go on
+reporting on a site that does not exist.
+
 ## Before deploying
 
 Run the checks. They are fast and each one exists because something
@@ -723,7 +763,10 @@ at all:
 ```sh
 node scripts/check-routes.ts # redirect loops, dead links in routes as well
                             # as in files, a live article whose slug cannot be a
-                            # URL, and a check or a test published as a page
+                            # URL, a check or a test published as a page, a
+                            # redirect pointing at a practice book no stage
+                            # declares, and a page that was a directory losing
+                            # its directory address
 node scripts/check-css.ts   # a school's layer styling the whole site, a block
                             # class that means two things at once, and a rule
                             # that styles nothing on the site at all

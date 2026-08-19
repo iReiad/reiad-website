@@ -71,7 +71,7 @@ import {
   COURSES, CATALOGUE, forBrowser, laddered, catalogueCounts,
   courseUrl, moduleUrl, lessonUrl, ID_FIELDS,
 } from "../shared/courses.ts";
-import { NEXT_ROUTES } from "../worker.js";
+import { nextOwns } from "../worker.js";
 import { splitName } from "./lib/coursera.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -255,7 +255,7 @@ for (const name of RULES) {
     }
   }
 
-  const missed = urls.filter((url) => !NEXT_ROUTES.some((re) => re.test(url)));
+  const missed = urls.filter((url) => !nextOwns(url));
   if (missed.length) {
     say(`${missed.length} of ${urls.length} address(es) are not in NEXT_ROUTES, so the `
       + `Worker would hand them to the asset router and they would 404:`);

@@ -62,7 +62,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PAGES, COUNTS } from "../shared/content.ts";
-import { NEXT_ROUTES, ARTICLE } from "../worker.js";
+import { nextOwns } from "../worker.js";
 import { METRICS, PILLARS } from "../aab/tools/stock.model.js";
 
 /* `ROOT` was this file's own directory, which was `aab/`. It moved
@@ -77,13 +77,6 @@ import { METRICS, PILLARS } from "../aab/tools/stock.model.js";
    what `ROOT` keeps meaning. */
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "aab");
 let failures = 0;
-
-/** Is this an address a Worker renders rather than a file? The
-    allowlist in worker.js, read rather than copied. Whether the
-    asset router lets it through is check-routes.ts's question,
-    and it asks it of the same two lists. */
-const workerAnswers = (url: string): boolean =>
-  ARTICLE.test(url) || NEXT_ROUTES.some((route) => route.test(url));
 
 const fail = (line: string, ...detail: string[]): void => {
   failures++;
@@ -173,7 +166,12 @@ for (const page of PAGES) {
   }
   const rel = page.url.replace(/^\//, "");
   if (existsSync(join(ROOT, rel))) continue;
-  if (workerAnswers(page.url)) continue;
+  /* A Worker renders it, so there is no file to look for.
+     `nextOwns` is worker.js's own predicate rather than a copy of
+     it; whether the asset router lets the path through before the
+     Worker sees it is check-routes.ts's question, not this
+     file's. */
+  if (nextOwns(page.url)) continue;
   fail(`no-file   ${page.url}`,
     `PAGES calls this "${page.title}", and there is neither a file`,
     "nor a Worker route that answers it.");

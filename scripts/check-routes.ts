@@ -34,7 +34,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { NEXT_ROUTES, ARTICLE } from "../worker.js";
+import { nextOwns } from "../worker.js";
 /* The four ladders, for the practice-book check at the end: a
    stage has a book only if it declares one, which no route
    pattern can tell. */
@@ -92,8 +92,7 @@ const globs = (pattern: string, path: string): boolean =>
     answered by a file; a path the Worker would claim that is not
     in `run_worker_first` never reaches it. */
 const workerAnswers = (path: string): boolean =>
-  WORKER_FIRST.some((pattern) => globs(pattern, path))
-  && (ARTICLE.test(path) || NEXT_ROUTES.some((route) => route.test(path)));
+  WORKER_FIRST.some((pattern) => globs(pattern, path)) && nextOwns(path);
 
 /* ---------- the rules ---------- */
 
@@ -480,6 +479,45 @@ for (const url of [...targets].sort()) {
     console.error("        No stage in shared/curricula/ declares that practice book,");
     console.error("        so the destination has no page and the source never had one.");
     console.error("        A redirect is a fact about an address that WAS live.");
+  }
+}
+
+/* ============================================================
+   A PAGE THAT WAS A DIRECTORY IS STILL AT ITS DIRECTORY ADDRESS.
+
+   Cloudflare's `html_handling` serves `deutsch/index.html` at
+   `/deutsch/`, WITH the slash. So for every page that was a file
+   called `index.html`, the directory form was its canonical
+   address: it is what the sitemap resolved to, what a crawler
+   indexed, and what anybody who bookmarked one has.
+
+   Task #28 dropped `.html` from every address and wrote a 301 for
+   `/deutsch/index.html`, which is the other spelling of the same
+   page. Nothing covered `/deutsch/`. It matched no route pattern,
+   fell to the asset router, whose copy of the file had left in the
+   same commit, and 21 addresses 404ed on a site where every
+   internal link still worked: four school hubs and seventeen
+   stage ladders. Every check here passed, because nothing on this
+   site links the directory form. The readers who had it were the
+   ones who had been here longest.
+
+   The list is not typed out. A rule whose source ends
+   `/index.html` IS the statement that the page was a directory,
+   so `_redirects` names them, and the next one added gets checked
+   without anybody remembering to come here.
+   ============================================================ */
+{
+  for (const rule of rules) {
+    const dir = /^(.*)\/index\.html$/.exec(rule.from);
+    if (!dir) continue;
+    const path = `${dir[1]}/`;
+    const got = trace(path);
+    if (got.status === "ok") continue;
+    failures++;
+    console.error(`SLASH    ${path} is not answered (${got.status})`);
+    console.error(`        ${rule.from} says this page was a directory, so ${path} was`);
+    console.error("        its canonical address and is what a bookmark or a crawler holds.");
+    console.error(`        ${got.chain.join(" \u2192 ")}`);
   }
 }
 
