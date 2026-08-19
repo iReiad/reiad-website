@@ -146,11 +146,36 @@ const loads = (src: string): boolean =>
   || new RegExp(`<link[^>]*href="${src}"[^>]*rel="(?:modulepreload|preload)"`).test(html);
 
 ok("the site's own script is still loaded", loads("\\/app\\.js"));
-/* The speech control was `/read-aloud.js` and is
-   `next/components/read-aloud.tsx`. A live page still asking for
-   the module is a deploy that has not caught up, and it would be
-   a 404 on every article. */
-ok("and the archived one is not", !loads("\\/read-aloud\\.js"));
+
+/* Every module the live page asks for, fetched.
+
+   This asked something it could not answer: "the live page does
+   not load `/read-aloud.js`", written the day that module was
+   archived. Production had not been deployed yet, so it was false
+   on every branch until the merge that made it true, which is a
+   check that must fail by construction rather than because
+   anything is wrong. This file runs against the LIVE site, so it
+   can only honestly ask about the live site's own consistency.
+
+   That is the better question anyway, and it is the failure the
+   other version was reaching for: a page asking for a module the
+   site does not serve. It catches the shape whatever the module
+   is called, on the deploy where it happens, rather than naming
+   one file. */
+{
+  const asked = [...new Set([
+    ...(html.matchAll(/<script[^>]*src="(\/[a-z0-9/-]+\.js)"/g)),
+    ...(html.matchAll(/<link[^>]*href="(\/[a-z0-9/-]+\.js)"[^>]*rel="(?:module)?preload"/g)),
+    ...(html.matchAll(/<link[^>]*rel="(?:module)?preload"[^>]*href="(\/[a-z0-9/-]+\.js)"/g)),
+  ].map((m) => m[1]))];
+  const gone: string[] = [];
+  for (const src of asked) {
+    const answer = await fetch(`${origin}${src}`, { method: "HEAD" });
+    if (!answer.ok) gone.push(`${src} (${answer.status})`);
+  }
+  ok(`every module the page asks for is served (${asked.length})`,
+    gone.length === 0, gone.join(", "));
+}
 ok("the comment thread is on the page", /id="comments"/.test(html));
 ok("the canonical link is the piece's own address",
   html.includes(`<link rel="canonical" href="${origin}${DB_PIECE}"`)

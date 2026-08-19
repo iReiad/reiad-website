@@ -2,7 +2,7 @@
    hydrate-fixture.ts: one component, server-rendered and then
    hydrated, in a real browser.
 
-   Not a test. `topic-filter.test.ts` and `read-aloud.test.ts` both
+   Not a test. `insights-hub.test.ts` and `read-aloud.test.ts` both
    need the same four things before they can ask anything: the
    component rendered to HTML the way a route renders it, that HTML
    served with a script that hydrates it, a browser pointed at the
