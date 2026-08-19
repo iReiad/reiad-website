@@ -14,9 +14,9 @@ Built from `aab/src/*.ts` to `aab/*.js` by `scripts/build-modules.ts`. The
 built file is committed because the site deploys by uploading `aab/` with no
 build step.
 
-**Done (13):** `account-page` `api` `checkpoints` `courses` `crumbs`
-`photo` `prefs` `saved` `share-card` `signin` `sync` `tools/live`
-`tools/tools`
+**Done (14):** `account` `account-page` `api` `checkpoints` `courses`
+`crumbs` `photo` `prefs` `saved` `share-card` `signin` `sync`
+`tools/live` `tools/tools`
 
 **And five from `shared/`:** `/content.js` and the four
 `/<school>/curriculum.js` ladders are written by the same
@@ -51,7 +51,7 @@ loaded by something not counted here, and both were worth checking.
 | `content.js` | 826 | ✔ | **service**, and done: `shared/content.ts` is the manifest and `build-modules.ts` writes `/content.js` from it. The one module built out of `shared/` rather than `aab/src/`, because the Worker and the checks read the source and only the browser needs a file at a URL |
 | `app.js` | 605 | | **shell.** Eight jobs; the theme and the boot are already `shell.tsx`'s. What is left that a route cannot do: the palette, the shortcut sheet, speculation rules and the service-worker registration |
 | `sync.js` | 513 | ts | **service.** The account is the record and this is the mirror. Nothing about it is a page |
-| `account.js` | 417 | | **service.** The session. Eighteen importers, more than anything else here |
+| `account.js` | 417 | ts | **service.** The session. Eighteen importers, more than anything else here. Converted with the change that brought the Google picture through, and it took TWO hand-written declarations with it: `aab/src/types/` and `app/src/types/` each described this file and they disagreed about what `saveProfile` answers |
 | `crumbs.js` | 351 | ✔ | **interface**, and done: `next/lib/crumbs.ts` builds the trail out of `lib/nav.ts` and the top bar draws it, JSON-LD included. The module is in `archive/modules/` |
 | `signin.js` | 347 | ts | **interface.** The account menu, which is a `popover` |
 | `tilt.js` | 282 | | **interface.** A pointer effect on cards |

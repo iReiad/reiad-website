@@ -402,7 +402,7 @@ at.
   Leaving should be as easy as arriving.
 - **Erase everything**, which means the account and the mirror.
 
-`next/account.test.mjs` is the guard: 128 checks in a real browser
+`next/account.test.mjs` is the guard: 117 checks in a real browser
 against a routed Supabase.
 
 ### Eight sections, one on screen
@@ -705,8 +705,10 @@ node scripts/snapshot.test.ts      # a nightly snapshot that leaks, or that thro
                                    # at 03:17 where nobody is watching
 node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the
                                    # real CSP (needs Playwright, skips without)
-node next/account.test.mjs        # the account's five features and the popover
-                                  # menu (112 checks, needs the Next build and a
+node next/account.test.mjs        # the account's five features, the popover
+                                  # menu, the Save under a byline and the picture
+                                  # a Google sign-in brings, under the real CSP
+                                  # (117 checks, needs the Next build and a
                                   # browser, skips without)
 node aab/sync.test.mjs             # a browser's own progress getting into an
                                    # account, resetting, signing out, and two

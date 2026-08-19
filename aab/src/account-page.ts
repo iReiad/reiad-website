@@ -64,7 +64,25 @@ function paintIdentity(): void {
   $("#account-email")!.textContent = user.email ?? "";
 
   const face = $("#account-face");
-  if (face) face.textContent = (user.name ?? "?").trim().charAt(0).toUpperCase() || "?";
+  if (!face) return;
+
+  /* The initial always, and the provider's picture over it when
+     there is one. Two children of one grid cell rather than one
+     or the other, so a picture that fails to load falls back to
+     the letter instead of to an empty circle: an avatar URL
+     outlives nothing, and Google rotates them.
+
+     `referrerPolicy` because the host serving the picture has no
+     business being told which page of this site it is on. */
+  face.replaceChildren((user.name ?? "?").trim().charAt(0).toUpperCase() || "?");
+  if (!user.avatar) return;
+  const img = document.createElement("img");
+  img.src = user.avatar;
+  img.alt = "";
+  img.decoding = "async";
+  img.referrerPolicy = "no-referrer";
+  img.addEventListener("error", () => img.remove());
+  face.append(img);
 }
 
 /* ============================================================

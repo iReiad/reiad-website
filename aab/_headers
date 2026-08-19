@@ -22,7 +22,10 @@
   # fonts. 'unsafe-inline' covers the pre-paint theme script, the
   # speculation rules, the JSON-LD blocks and the handful of inline
   # style attributes. img-src needs data: for the photos the Studio
-  # embeds.
+  # embeds, and one Google host for the avatar that comes with a
+  # Google sign-in: public bytes, no credential, and the reader's
+  # own picture on their own page, which is none of the things
+  # that made the course section route Drive through the Worker.
   #
   # connect-src is the list of hosts this site's JavaScript may talk
   # to, and it is the one line here that breaks a feature silently.
@@ -50,7 +53,7 @@
   # this site still refuses to BE framed.
   # The Supabase host must match SUPABASE_URL in aab/account.js.
   # If that project is ever recreated, this line changes with it.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.web3forms.com https://market-pulse.i-reiad.workers.dev https://wvjarqnnmkkuxyrndtya.supabase.co; media-src 'self'; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://lh3.googleusercontent.com; connect-src 'self' https://api.web3forms.com https://market-pulse.i-reiad.workers.dev https://wvjarqnnmkkuxyrndtya.supabase.co; media-src 'self'; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
 
 # Fingerprint-free assets change in place, so they must revalidate.
 # /styles.css was here until 19 August 2026 and nothing has been

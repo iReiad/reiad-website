@@ -1552,6 +1552,13 @@
     justify-content: center; border-radius: 50%;
     background: var(--accent-soft); border-color: var(--accent);
     color: var(--accent); font-size: var(--t-3);
+    position: relative; overflow: hidden;
+
+    /* Same arrangement as `.acc-avatar`, and the same reason. */
+    & > img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover;
+    }
   }
 
   .signin {
@@ -1934,6 +1941,22 @@
     display: grid; place-items: center;
     background: var(--accent); color: var(--accent-ink);
     font-family: var(--font-serif); font-size: var(--t-7); line-height: 1;
+
+    /* The picture sits ON the initial rather than instead of it,
+       so one that fails to load leaves the letter behind rather
+       than an empty circle. Google's avatar URLs do rot: the
+       account survives, the photo's address does not.
+
+       Taken out of flow rather than stacked in a grid cell,
+       because the initial is a bare text node: an anonymous grid
+       item, and auto-placement puts it in the next free cell
+       beside an image pinned to the first. */
+    position: relative; overflow: hidden;
+
+    & > img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover;
+    }
   }
   .acc-who-text {
     display: grid; min-width: 0;

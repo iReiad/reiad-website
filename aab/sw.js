@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v140: `/account.js`, `/signin.js`, `/account-page.js` and
+        `/fallback.css`. The picture a Google sign-in brings comes
+        through to the page now, and `account.js` is TypeScript:
+        same address, same exports, one more field on the reader.
+        An old shell serving the old three would draw the initial
+        and never the photo.
+
    v139: `/fallback.css` and `/schools/hub.js`. `.ring` was a
         Tailwind utility as well as this site's progress ring, so
         every ring on the four school hubs wore a 1px square 44px
@@ -1433,7 +1440,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v139";
+const VERSION = "v140";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

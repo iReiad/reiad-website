@@ -97,6 +97,17 @@ const TYPES = {
 
 const PRERENDERED = { "/account.html": "account.html.html" };
 
+/* The real policy, read out of `aab/_headers` rather than copied,
+   because a copy is a second list and this repository has been
+   bitten by one of those more than once.
+
+   It is here because a harness that drops the CSP cannot tell you
+   whether an image, a font or a fetch is allowed: the page looks
+   identical either way, which is exactly the shape of the bug
+   `scripts/check-csp.ts` was written for. */
+const CSP = (await readFile(join(AAB, "_headers"), "utf8"))
+  .match(/Content-Security-Policy: (.+)/)[1].trim();
+
 const server = createServer(async (req, res) => {
   const path = new URL(req.url, "http://x").pathname;
   const file = PRERENDERED[path]
@@ -106,7 +117,10 @@ const server = createServer(async (req, res) => {
       : join(AAB, path.replace(/^\//, ""));
   try {
     const body = await readFile(file);
-    res.writeHead(200, { "Content-Type": TYPES[extname(file)] || "application/octet-stream" });
+    const type = TYPES[extname(file)] || "application/octet-stream";
+    res.writeHead(200, type.startsWith("text/html")
+      ? { "Content-Type": type, "Content-Security-Policy": CSP }
+      : { "Content-Type": type });
     res.end(body);
   } catch {
     res.writeHead(404, { "Content-Type": "text/plain" });
@@ -121,13 +135,24 @@ const browser = await chromium.launch(browserPath ? { executablePath: browserPat
 
 const SUPA = "https://wvjarqnnmkkuxyrndtya.supabase.co";
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString("base64url");
+/* The picture a Google sign-in brings with it. Routed below to a
+   1x1 image, so the check is about the markup and the policy
+   rather than about Google being up. */
+const AVATAR = "https://lh3.googleusercontent.com/a/A-PICTURE";
 const jwt = (sub) => [b64({ alg: "HS256" }),
   b64({ sub, email: "i@reiad.co.uk", exp: Math.floor(Date.now() / 1000) + 3600,
-        user_metadata: { full_name: "Rony Reiad" } }), "s"].join(".");
+        user_metadata: { full_name: "Rony Reiad", avatar_url: AVATAR } }), "s"].join(".");
 const session = (sub) => JSON.stringify({
   access_token: jwt(sub), refresh_token: "r", expires_at: Date.now() + 3600e3,
-  user: { id: sub, email: "i@reiad.co.uk", name: "Rony Reiad" },
+  user: { id: sub, email: "i@reiad.co.uk", name: "Rony Reiad", avatar: AVATAR },
 });
+
+/* A real 1x1 PNG. `naturalWidth` is the only thing that separates
+   an image that loaded from an `<img>` the policy refused, and a
+   refused one looks identical in the DOM. */
+const PIXEL = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+  "base64");
 
 const DAYS = (() => {
   /* Ten of the last fourteen, so the heatmap has something to
@@ -221,6 +246,13 @@ async function open(path, { signedIn = true, rows = {}, seed = {} } = {}) {
 
   await context.route(`${SUPA}/auth/v1/**`, (r) =>
     r.fulfill({ status: 200, contentType: "application/json", body: "{}" }));
+
+  /* The avatar, served from here rather than from Google. The
+     request still leaves as `https://lh3.googleusercontent.com`,
+     so the page's policy decides whether it is made at all, which
+     is the half of this worth checking. */
+  await context.route("https://lh3.googleusercontent.com/**", (r) =>
+    r.fulfill({ status: 200, contentType: "image/png", body: PIXEL }));
 
   await page.addInitScript(([on, who, extra]) => {
     if (on) localStorage.setItem("reiad-session", who);
@@ -329,6 +361,24 @@ console.log("\nthe account page");
 
   ok("it greets the reader",
     (await page.locator("#account-hello").textContent())?.includes("Rony Reiad"));
+
+  /* ---- the picture a Google sign-in brings with it ----
+
+     Three facts, and the third is the one worth a browser: the
+     tag is there, the letter is still under it, and the image
+     actually LOADED. `img-src` in `_headers` had to be widened
+     for this one host, and a policy that refuses it leaves an
+     `<img>` in the DOM with `naturalWidth` of 0 and nothing in
+     the console a test reads. */
+  const faceImg = page.locator("#account-face img");
+  is("the account's face carries the picture", await faceImg.count(), 1);
+  is("and it is the one the session names", await faceImg.getAttribute("src"), AVATAR);
+  ok("and the browser was allowed to fetch it",
+    await faceImg.evaluate((el) => el.naturalWidth > 0));
+  ok("the initial is still under it, for a picture that will not load",
+    (await page.locator("#account-face").textContent())?.trim() === "R");
+  is("and the host is not told which page it is on",
+    await faceImg.getAttribute("referrerpolicy"), "no-referrer");
   /* By id and by role rather than by class. Every section here
      already needs an id, because the account menu in the header
      links straight into them by fragment. A class hook would be a
@@ -469,7 +519,7 @@ console.log("\nreading preferences");
   is("seven rows of them", await page.locator(".pref-row").count(), 7);
   is("every one of them is labelled",
     await page.locator("#account-prefs .pref-label").allTextContents(),
-    ["Type size", "Line width", "Theme", "Calculators open in", "Finish", "Blur", "Tint"]);
+    ["Type size", "Line width", "Theme", "Calculators open in", "Finish", "Blur", "Transparency"]);
   is("normal is the one chosen",
     await page.locator('.pref-chips .pref-chip[data-on] strong').first().textContent(),
     "Normal");
