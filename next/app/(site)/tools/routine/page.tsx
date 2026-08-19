@@ -22,7 +22,7 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
-import { RoutineDay } from "../../../../components/routine/day";
+import { RoutineHome } from "../../../../components/routine/home";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/routine",
@@ -44,7 +44,7 @@ export default function RoutinePage() {
   return (
     <main id="main" className="wrap rt-page">
       <h1 className="rt-title">রুটিন</h1>
-      <RoutineDay />
+      <RoutineHome />
     </main>
   );
 }

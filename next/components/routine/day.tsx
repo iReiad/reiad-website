@@ -42,7 +42,7 @@ import {
   useCallback, useEffect, useMemo, useRef, useState,
 } from "react";
 import {
-  TEMPLATES, FIRST_RUN, done, bandTasks,
+  TEMPLATES, FIRST_RUN, MOODS, done, bandTasks,
   type Band, type Task, type RoutineShape,
 } from "@reiad/shared/routine";
 import { runtimeModule } from "../account/runtime";
@@ -61,19 +61,6 @@ const routineModule = () => runtimeModule<RoutineModule>("/routine.js");
    because this site is bilingual and the answer for most people
    is "show me both". */
 type Locale = "both" | "en" | "bn";
-
-/** The four moods, and there are deliberately no more.
-
-    None of them is bad. "Heavy" is the honest bottom of this
-    scale and it is a description rather than a failure, which is
-    the difference between this and every mood tracker that
-    offers a frowning face. */
-const MOODS = [
-  { id: "light", en: "Light", bn: "হালকা" },
-  { id: "steady", en: "Steady", bn: "শান্ত" },
-  { id: "full", en: "Full", bn: "ভরা" },
-  { id: "heavy", en: "Heavy", bn: "ভারী" },
-] as const;
 
 /** Bengali digits, from their code points rather than typed.
 
