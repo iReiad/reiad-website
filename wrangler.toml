@@ -126,10 +126,23 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   # The third-party course section, and the one prefix here still
   # answering `.html` addresses: its four shapes are duplicated in
   # `aab/src/courses.ts` and `check-courses.ts` holds the two to
-  # each other. One star covers all four, nothing else lives under
-  # that prefix, and it does not overlap "/skills", which is a
-  # different path and not a prefix of this one.
-  "/skills/courses/*",
+  # each other.
+  #
+  # BOTH, and the star alone was wrong. A `*` matches what comes
+  # AFTER the slash, so "/skills/courses/*" covers the hub's
+  # trailing-slash form and everything under it and does NOT cover
+  # "/skills/courses" itself. That is the address in `lib/nav.ts`,
+  # the one the rail links, and it 404ed: the asset router
+  # answered it, there is no file, and the reader got the site's
+  # 404 page while the Worker sat behind a route it was never
+  # asked to run. `/skills/courses/` made it worse by 308ing
+  # straight into it.
+  #
+  # "/insights" and "/insights/*" are both listed above for the
+  # same reason and are the proof this pair does not overlap: a
+  # bare path and its own star are two rules, not one covering the
+  # other.
+  "/skills/courses", "/skills/courses/*",
   "/tools", "/tools/stock", "/tools/live", "/portfolio", "/portfolio/*", "/",
   "/desk", "/studio",
   # The four schools, Stage 11.7. 247 pages left aab/ in the same
