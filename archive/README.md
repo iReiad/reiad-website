@@ -51,6 +51,7 @@ what anybody is served.
 | `crumbs.js`, `crumbs.ts` | `next/lib/crumbs.ts`, out of `lib/nav.ts`, drawn in the top bar | 19 August 2026 |
 | `hub.js` | `next/components/topic-filter.tsx` and `next/components/subscribe.tsx` | 19 August 2026 |
 | `read-aloud.js` | `next/components/read-aloud.tsx` | 19 August 2026 |
+| `pulse.js` | `next/components/market-pulse.tsx`, over `news.tsx` | 19 August 2026 |
 
 `work.html` and `services.html` were early placeholders that still
 carried template text ("[Your Name]", "hello@yourdomain.com"), kept

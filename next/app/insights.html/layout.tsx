@@ -16,7 +16,6 @@
 import type { ReactNode } from "react";
 import { lookFor } from "@reiad/shared/look";
 import { SiteShell } from "../../components/shell";
-import { SiteScripts } from "../../components/scripts";
 import { HUB_META } from "../../lib/hub";
 
 export default function InsightsHubLayout({ children }: { children: ReactNode }) {
@@ -29,7 +28,6 @@ export default function InsightsHubLayout({ children }: { children: ReactNode })
       skip="Skip to the main content"
       footer={look.footer}
       current="insights"
-      scripts={<SiteScripts srcs={["/pulse.js"]} />}
     >
       {children}
     </SiteShell>

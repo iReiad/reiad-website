@@ -38,7 +38,7 @@
    lesson and carries Arabic beside every Bangla line. /english/
    has terms and parts and a workbook of its own. They were
    written separately on purpose, and each one says so at the top
-   of its own curriculum.js.
+   of its own file in `shared/curricula/`.
 
    So this file has a small adapter per school rather than one
    clever generic reader. Four objects, each naming its export and
@@ -75,7 +75,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
    replaced did needs to be able to read both. `schools.test.ts`
    is that check, and it still runs against these. */
 const ARCHIVE = join(ROOT, "archive", "schools");
-const AAB = join(ROOT, "aab");
+const CURRICULA = join(ROOT, "shared", "curricula");
 
 /* ---------- the four schools, and what is different ---------- */
 
@@ -85,20 +85,23 @@ const AAB = join(ROOT, "aab");
     about not doing to a curriculum. */
 type Rows = SnapshotRows;
 
-/** One curriculum module, of the four exports this reads. They
-    are plain JavaScript with no declaration beside them, and each
-    school names the same idea differently, which is what the
-    table below is for. */
+/** One curriculum module, of the one export this reads from it.
+    Each school names its ladder differently, which is what the
+    table below is for, and the rows this writes are the database's
+    vocabulary rather than any school's: it walks the shape rather
+    than reading the school's typed view of it. */
 type Curriculum = Record<string, unknown>;
 
-/** A stage, a section or a lesson as a `curriculum.js` writes it:
-    a few known fields and whatever else the school put there,
-    which becomes `meta`. */
+/** A stage, a section or a lesson as a ladder writes it: a few
+    known fields and whatever else the school put there, which
+    becomes `meta`. */
 export type Node = Record<string, unknown>;
 
 /** One school, and the four things that differ between them. */
 export interface School {
   id: string;
+  /** The file in `shared/curricula/`, and the folder in `aab/`
+      its compiled copy is served from. */
   dir: string;
   stages: (m: Curriculum) => Node[];
   /** What a section calls its children: `lessons`, `teile` or
@@ -176,7 +179,7 @@ const titleOf = (object: Node): string =>
 /* ---------- reading one school ---------- */
 
 export async function readSchool(school: School): Promise<Rows> {
-  const module = await import(join(AAB, school.dir, "curriculum.js")) as Curriculum;
+  const module = await import(join(CURRICULA, `${school.dir}.ts`)) as Curriculum;
   const stages = school.stages(module);
   if (!Array.isArray(stages) || stages.length === 0) {
     throw new Error(`${school.id}: no stages found, the export moved`);

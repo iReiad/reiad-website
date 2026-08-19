@@ -1,26 +1,25 @@
 /* ============================================================
    check-schools.ts: does the snapshot still describe the same
-   four schools the curriculum files do?
+   four schools the ladders do?
 
      node scripts/check-schools.ts
 
    archive/TRANSITION.md Stage 8, step 4. Two files now say what a ladder
    is, and they are read by different people:
 
-   - `aab/<school>/curriculum.js` is read by the BROWSER. Forty
-     files import from one of the four, and every hub, ladder,
-     breadcrumb, palette entry and precache list comes out of
-     them. They stay until Stage 11.7 replaces the pages that
-     read them.
-   - `content/schools.backup.json` is read by the BUILDERS, and
-     through them by every generated page.
+   - `shared/curricula/<school>.ts` is the ladder itself. Every
+     hub, breadcrumb, palette entry and precache list comes out of
+     one of the four, and `build-modules.ts` compiles each to the
+     `/money/curriculum.js` the browser fetches.
+   - `content/schools.backup.json` is the schools' committed
+     backup, and it is what a check running with no network reads.
 
-   Adding a lesson to `curriculum.js` and not to the database
-   gives a ladder with a rung that leads to a page nobody built.
-   Taking one out of the database and not the file gives a link
-   to a page that is no longer written. Neither is an error
-   anywhere: both render, both deploy, and the first person to
-   find out is a reader following a link.
+   Adding a lesson to a ladder and not to the database gives a
+   rung that leads to a page nobody wrote. Taking one out of the
+   database and not the ladder gives a link to a page that is no
+   longer written. Neither is an error anywhere: both render, both
+   deploy, and the first person to find out is a reader following
+   a link.
 
    So this compares them, and it compares the things a reader
    would notice: which lessons exist, in which order, in which
@@ -30,12 +29,11 @@
 
    ---- and a second question, added for Stage 11.7 ----
 
-   There is now a third place the ladder's arithmetic is written:
-   `shared/schools.ts`, which is where it had to go for a Next.js
-   route to reach it, because `next/` cannot import out of its own
-   directory. It holds `lessonUrl`, `lessonId`, `lessonLabel` and
-   the rest, and while the four `curriculum.js` modules survive it
-   is a second implementation of each.
+   The ladder's arithmetic is written twice. `shared/schools.ts`
+   holds `lessonUrl`, `lessonId`, `lessonLabel` and the rest over a
+   ladder read out of the DATABASE; each school's own file holds
+   the same functions over the ladder it declares, under the names
+   that school uses for them.
 
    Two spellings of a URL that agree today and drift tomorrow is
    how a link goes dead without an error anywhere, so the second
@@ -47,9 +45,8 @@
    eighteen terms did so for a year before that stage existed.
    Neither is guessable from the shape of the data.
 
-   When the school pages stop being files, the modules go, this
-   half goes with them, and `shared/schools.ts` is simply where
-   the arithmetic lives.
+   The day a school's own spellings go, this half goes with them
+   and `shared/schools.ts` is simply where the arithmetic lives.
    ============================================================ */
 
 import { SCHOOLS, readSchool } from "./import-schools.ts";
@@ -69,10 +66,10 @@ interface Shape {
 
 /* Both sides are rows keyed by column name and nothing narrower,
    which is what `Rows` says and what each of them really carries:
-   the snapshot's come back out of JSON, and `readSchool()` builds
-   its own out of four `curriculum.js` modules that have no
-   declaration between them. So the two coercions below are the
-   comparison's, not a cast hiding a shape somebody knows. */
+   the snapshot's come back out of JSON, and `readSchool()` walks
+   four ladders whose own types are four different vocabularies.
+   So the two coercions below are the comparison's, not a cast
+   hiding a shape somebody knows. */
 const str = (v: unknown): string => String(v ?? "");
 const num = (v: unknown): number => Number(v) || 0;
 
@@ -107,11 +104,11 @@ for (const school of SCHOOLS) {
 
     for (const line of onlyFile) {
       problems.push(`${school.id}: ${part.slice(0, -1)} "${line}" is in `
-        + `aab/${school.dir}/curriculum.js and not in the snapshot`);
+        + `shared/curricula/${school.dir}.ts and not in the snapshot`);
     }
     for (const line of onlySnap) {
       problems.push(`${school.id}: ${part.slice(0, -1)} "${line}" is in the `
-        + `snapshot and not in aab/${school.dir}/curriculum.js`);
+        + `snapshot and not in shared/curricula/${school.dir}.ts`);
     }
   }
 }
@@ -121,12 +118,11 @@ for (const school of SCHOOLS) {
 
    `shared/schools.ts` is handed a ladder read out of the snapshot
    and asked for each lesson's URL, id and label. The school's own
-   `curriculum.js` is handed the same ladder and asked the same
-   thing through whichever names it uses for them. Every school
-   spells the flattening differently (`stageLessons`,
-   `stufeTeile`, `dhapLessons`, `termParts`) and that is the
-   point: four spellings of one function is what the shared one
-   replaces.
+   file is handed the same ladder and asked the same thing through
+   whichever names it uses for them. Every school spells the
+   flattening differently (`stageLessons`, `stufeTeile`,
+   `dhapLessons`, `termParts`) and that is the point: four
+   spellings of one function is what the shared one replaces.
 
    `days` is compared only where the file computes it, which is
    the Quranic Arabic school alone: it is the only one whose
@@ -136,12 +132,12 @@ for (const school of SCHOOLS) {
    their lessons and two do not.
    ============================================================ */
 
-/** One school's `curriculum.js`, of the parts asked for below.
-    They are plain JavaScript modules and each names the same four
-    ideas differently, which is what the tables under this are
-    for. Indexed rather than declared field by field, because the
-    names are the schools' own and the tables are where they are
-    written down. */
+/** One school's ladder module, of the parts asked for below.
+    Each names the same four ideas differently, which is what the
+    tables under this are for, and each declares its own stage
+    type while the ladder handed in here came out of the DATABASE.
+    Indexed rather than imported by name, because that boundary is
+    exactly what this half is checking across. */
 type Curriculum = Record<string, (...args: never[]) => unknown>;
 
 /** A lesson as a school's own module hands it back. Compared
@@ -179,7 +175,7 @@ const LABEL: Record<string, (m: Curriculum, lesson: TheirLesson) => string> = {
 let agreed = 0;
 
 for (const school of SCHOOLS) {
-  const mod = await import(`../aab/${school.dir}/curriculum.js`) as Curriculum;
+  const mod = await import(`../shared/curricula/${school.dir}.ts`) as Curriculum;
   const { stages } = await fromSnapshot(school.id);
 
   for (const stage of stages) {
@@ -189,7 +185,7 @@ for (const school of SCHOOLS) {
     if (mine.length !== theirs.length) {
       problems.push(`${school.id}: stage "${stage.slug}" flattens to `
         + `${mine.length} lessons through shared/schools.ts and `
-        + `${theirs.length} through aab/${school.dir}/curriculum.js`);
+        + `${theirs.length} through shared/curricula/${school.dir}.ts`);
       continue;
     }
 
@@ -197,7 +193,8 @@ for (const school of SCHOOLS) {
     const there = STAGE_URL[school.id](mod, stage);
     if (here !== there) {
       problems.push(`${school.id}: stage "${stage.slug}" is at "${here}" `
-        + `through shared/schools.ts and "${there}" through curriculum.js`);
+        + `through shared/schools.ts and "${there}" through `
+        + `shared/curricula/${school.dir}.ts`);
     }
 
     const bookHere = workbookUrl(school.id, stage) || "";
@@ -206,7 +203,8 @@ for (const school of SCHOOLS) {
     if (bookHere !== bookThere) {
       problems.push(`${school.id}: the practice book of "${stage.slug}" is `
         + `"${bookHere || "(none)"}" through shared/schools.ts and `
-        + `"${bookThere || "(none)"}" through curriculum.js`);
+        + `"${bookThere || "(none)"}" through `
+        + `shared/curricula/${school.dir}.ts`);
     }
 
     mine.forEach((lesson, i) => {
@@ -216,7 +214,7 @@ for (const school of SCHOOLS) {
       const say = (what: string, a: unknown, b: unknown): number => problems.push(
         `${school.id}: the ${what} of "${stage.slug}/${lesson.slug}" is `
         + `"${a}" through shared/schools.ts and "${b}" through `
-        + `aab/${school.dir}/curriculum.js`);
+        + `shared/curricula/${school.dir}.ts`);
 
       if (lesson.url !== other.url) say("URL", lesson.url, other.url);
       if (lesson.id !== other.id) say("progress id", lesson.id, other.id);
@@ -235,7 +233,7 @@ for (const school of SCHOOLS) {
 }
 
 if (problems.length) {
-  console.error("\nThe curriculum files and the snapshot disagree:\n");
+  console.error("\nThe ladders and the snapshot disagree:\n");
   for (const line of problems) console.error(`  ${line}`);
   console.error("\nIf the ladder changed, import it and export it again:");
   console.error("  node scripts/import-schools.ts --out schools.sql");
@@ -245,6 +243,7 @@ if (problems.length) {
   process.exit(1);
 }
 
-console.log(`schools: ${checked} ladder entries, the files and the snapshot agree.`);
+console.log(`schools: ${checked} ladder entries, the ladders and the snapshot agree.`);
 console.log(`         ${agreed} lessons address and identify themselves the same `
-  + `way\n         through shared/schools.ts and through curriculum.js.`);
+  + `way\n         through shared/schools.ts and through `
+  + `shared/curricula/.`);

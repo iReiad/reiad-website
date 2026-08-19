@@ -18,11 +18,13 @@ build step.
 `photo` `prefs` `saved` `share-card` `signin` `sync` `tools/live`
 `tools/tools`
 
-**And one from `shared/`:** `/content.js` is written by the same
-generator out of `shared/content.ts`, because the Worker and the
-checks read the manifest as TypeScript and only the browser needs
-a file at a URL. `SHARED` in `build-modules.ts` is that one entry,
-and the one specifier it rebases.
+**And five from `shared/`:** `/content.js` and the four
+`/<school>/curriculum.js` ladders are written by the same
+generator out of `shared/content.ts` and `shared/curricula/*.ts`,
+because the Worker, the routes and the checks read them as
+TypeScript and only the browser needs a file at a URL. `SHARED` in
+`build-modules.ts` is those five entries and the four specifiers
+it rebases.
 
 ### The 31 served modules, classified
 
@@ -54,7 +56,7 @@ loaded by something not counted here, and both were worth checking.
 | `signin.js` | 347 | ts | **interface.** The account menu, which is a `popover` |
 | `tilt.js` | 282 | | **interface.** A pointer effect on cards |
 | `audience.js` | 281 | | **shell.** The learn/work switch, whose markup is already `sidebar.tsx`'s |
-| `news.js` | 246 | | **interface.** The headline card and the mini window, shared by `pulse.js` and `about.js` |
+| `news.js` | 246 | | **interface**, and half done: the fetching, the card and the mini window are `components/news.tsx`. What is still served is `el` and `flip`, which `about.js` imports for the research window, so the file stays until that page is a component rather than breaking it. Cutting it down to those two is an edit to a precached file, which is a `VERSION` bump in `sw.js` |
 | `saved.js` | 240 | ts | **service.** Scenarios, targets and the library |
 | `keep.js` | 220 | ts | **interface.** The Save and Add a note under a byline |
 | `comments.js` | 219 | ✔ | **interface**, and done: `components/comments.tsx`. The module is in `archive/modules/` and the first precached entry to leave this list rather than change |
@@ -65,13 +67,13 @@ loaded by something not counted here, and both were worth checking.
 | `prefs.js` | 181 | ts | **service.** Applied before the first paint by `shell.tsx`, carried by `sync.ts` |
 | `read-aloud.js` | 150 | ✔ | **interface**, and done: `components/read-aloud.tsx`. It built a toolbar with `createElement` and appended a `<style>` to the head, which is the pair of things `components/scripts.tsx` exists to stop. The module is in `archive/modules/` |
 | `photo.js` | 144 | ts | **service.** Decoding a pasted photo. Never a fetch: `CLAUDE.md` says what that cost |
-| `about.js` | 144 | | **interface.** A tally and a research window. The tally wants server rendering, which needs the four ladders in `shared/` too: the manifest is there and still reaches into `aab/` for them |
+| `about.js` | 107 | | **interface.** A research window, and no longer a tally: the four numbers are the route's, out of `COUNTS`, since the ladders moved to `shared/` and a route could import the manifest. It is the only importer of `news.js` left, so porting the window is what archives that file |
 | `api.js` | 133 | ts | **service.** Every endpoint this site has |
 | `share-card.js` | 123 | ts | **service.** Draws the 1200×630 JPEG a pasted link shows |
 | `streak.js` | 122 | | **service.** `days-active`, which four things count |
 | `pieces.js` | 116 | | **service**, and smaller than it was: see below |
 | `hub.js` | 97 | ✔ | **interface**, and done: `components/topic-filter.tsx` and `components/subscribe.tsx`. Two things under one name, and the Insights hub was the only page loading either. The module is in `archive/modules/` |
-| `pulse.js` | 83 | | **interface.** The market pulse on the Insights hub. Not `pulse-card.tsx`, which is the home page's card of WRITING: two things with one name |
+| `pulse.js` | 83 | ✔ | **interface**, and done: `components/market-pulse.tsx` over `components/news.tsx`. Still not `pulse-card.tsx`, which is the home page's card of WRITING: two things with one name, and neither was renamed. The module is in `archive/modules/` |
 | `activation.js` | 61 | | **service.** Whether the dynamic layer is reachable |
 | `auth-config.js` | 35 | | **service.** One constant the gate reads |
 
@@ -98,8 +100,8 @@ second table: a list of fourteen filenames with their line counts beside
 the same fourteen filenames with their line counts is the failure at the
 top of `CLAUDE.md`, in a file about migrations.
 
-**Still JS (14):** `about` `app` `account` `activation` `audience`
-`auth` `auth-config` `editor` `news` `pieces` `pulse` `streak` `sw`
+**Still JS (13):** `about` `app` `account` `activation` `audience`
+`auth` `auth-config` `editor` `news` `pieces` `streak` `sw`
 `tilt`
 
 That is `ls aab/*.js` minus what `aab/src/` and `shared/` build, and
@@ -114,7 +116,9 @@ rather than two. A module that stays a **service** is the one worth
 converting, because it is the one that is going to be read by
 TypeScript at the other end.
 
-Also `aab/schools/*.js` (the three-school engine) and `aab/*/curriculum.js`.
+Also `aab/schools/*.js`, the three-school engine. The four
+`aab/*/curriculum.js` are off this list: they are generated from
+`shared/curricula/*.ts` now, like `content.js`.
 
 ### The checks and the generators
 
@@ -235,14 +239,14 @@ gave opposite answers:
   `check-next.ts` holds it now, as the third copy inside `next/`
   that it watches.
 
-Four are deliberately left, and the reason is the service worker:
-`aab/app.js`, the two `curriculum.js` modules and
-`aab/tools/stock.model.js` are precached, so editing a comment in
-one costs every returning visitor a refetch of the whole 50-file
-shell. They are free to fix on the day those modules become
-TypeScript, and that is when they will be. `aab/content.js` was the
-fifth and is one of those days: it is generated now, and its
-comments are `shared/content.ts`'s.
+Two are deliberately left, and the reason is the service worker:
+`aab/app.js` and `aab/tools/stock.model.js` are precached, so
+editing a comment in one costs every returning visitor a refetch
+of the whole 50-file shell. They are free to fix on the day those
+modules become TypeScript, and that is when they will be.
+`aab/content.js` and the two `curriculum.js` modules were the
+other three and have had that day: all three are generated now,
+and their comments are `shared/`'s.
 
 And `check-accents.ts` printed `aab/styles.css` in three of its
 messages, which moved to `next/styles/site.css` on 18 August 2026:
@@ -278,10 +282,11 @@ kept growing: five `.mjs` test files are five neighbours to copy,
 and the first thing written after `scripts/` finished was a sixth
 and a seventh.
 
-**Done (6):** `comments.test.ts` `article.test.ts` `dev-worker.ts`
-`insights-hub.test.ts` `read-aloud.test.ts` `hydrate-fixture.ts`.
+**Done (7):** `comments.test.ts` `article.test.ts` `dev-worker.ts`
+`insights-hub.test.ts` `read-aloud.test.ts` `market-pulse.test.ts`
+`hydrate-fixture.ts`.
 
-The last three are new rather than converted, and the harness is
+The last four are new rather than converted, and the harness is
 the point of them. `hydrate-fixture.ts` renders one component the
 way a route renders it, serves that markup with a script that
 hydrates it, and opens a browser on the result. Both dynamic routes
@@ -330,33 +335,36 @@ same from any check that greps a source file.
 
 ### Shared
 
-`shared/` is already all TypeScript. It is five files now:
-`content.ts` joined it on 19 August 2026 and is the only one with
-an output, `aab/content.js`, because the browser cannot reach this
-directory and `/content.js` is a URL `sw.js` precaches by name.
+`shared/` is already all TypeScript. It is six files and
+`curricula/`, which is four more: the schools' ladders joined it on
+19 August 2026, and with them `content.ts` went into the `exports`
+map, because the reach into `aab/` that kept it out was the four
+imports those ladders answered.
 
-**It is also the only one `next/` cannot import**, which is why it
-is not in the `exports` map: it reads the four `curriculum.js`
-ladders by a relative path into `aab/`, and `next/.npmrc` copies
-the package into `next/node_modules`, where that path is not the
-repository. Moving those four here is what lifts it, and it is the
-same move that would let a route render the About page's tally.
+Five of the ten have an output under `aab/`, and it is the same
+argument each time: the browser cannot reach this directory and
+`/content.js`, `/money/curriculum.js` and its three siblings are
+URLs `sw.js` precaches by name.
+
+The first thing that reads the manifest from a route is the About
+page's tally, which was four dashes and a browser module.
 
 ### The declarations are the slow part
 
 `aab/src/types/` is what a converted module leans on, and it was
 written thin: `curriculum.d.ts` described four exports where `crumbs`
 needed fifteen, and `content.d.ts` had no `SITE`, `PAGES` or `READS`
-at all. The ladder one is filled in now, so the next conversion of
-anything that reads a ladder starts with real types rather than with
-this work.
+at all.
 
-The manifest's two went instead, one in `aab/src/types/` and one in
-`app/src/types/`, because a module that becomes TypeScript needs no
-description of it: `aab/src/tsconfig.json`, `app/tsconfig.json` and
-`next/tsconfig.json` all map `/content.js` on to
-`shared/content.ts`. That is the end state for every file in those
-two directories.
+All three are gone now, because a module that becomes TypeScript
+needs no description of it: `aab/src/tsconfig.json`,
+`app/tsconfig.json` and `next/tsconfig.json` map `/content.js` on
+to `shared/content.ts`, and the first of them maps
+`/<school>/curriculum.js` on to `shared/curricula/<school>.ts`.
+The hand-written ladder declaration was wrong as well as
+duplicated: it had `uebung` as a `{ slug, days }` where every
+Stufe that carries one carries a sentence. That is the end state
+for every file in those two directories.
 
 ## 2. Stylesheet to Tailwind
 

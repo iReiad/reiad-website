@@ -13,8 +13,8 @@
    section, topics, a share card and a pre-flight panel, and none
    of that applies here: a lesson's title, its order and the stage
    it belongs to are the ladder, and the ladder is
-   `curriculum.js`. So this page edits one thing, the prose, and
-   the picker beside it is read-only.
+   `shared/curricula/<school>.ts`. So this page edits one thing,
+   the prose, and the picker beside it is read-only.
 
    It is also not a second editor. `createEditor()` from
    `/editor.js` is the writing surface for the whole site and
@@ -217,8 +217,8 @@ export function Lessons() {
         <p className="lede">
           Every lesson of the four schools is a row in the database. Pick one and
           write it here. The ladder itself (which lessons exist, what order they
-          come in) stays in each school&apos;s <code>curriculum.js</code>, so this
-          page changes prose and nothing else.
+          come in) stays in <code>shared/curricula/</code>, so this page changes
+          prose and nothing else.
         </p>
       </div>
 

@@ -7,6 +7,7 @@
     "./look": "./look.ts",
     "./headers": "./headers.ts",
     "./schools": "./schools.ts",
-    "./rows": "./rows.ts"
+    "./rows": "./rows.ts",
+    "./content": "./content.ts"
   }
 }

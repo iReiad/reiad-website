@@ -7,11 +7,11 @@
    and there is no build step here that writes one.
 
    That is deliberate and it replaced the opposite arrangement.
-   Compiling these four modules to committed .js beside their own
-   source meant twelve files where there are now four, a build
-   script, and a check to notice when somebody edited the output
-   instead of the input. Every one of those exists to serve a
-   compile step that neither runtime needs.
+   Compiling these modules to committed .js beside their own source
+   meant three files where there is now one, a build script, and a
+   check to notice when somebody edited the output instead of the
+   input. Every one of those exists to serve a compile step that
+   neither runtime needs.
 
    What this file is for is `npx tsc -p shared/tsconfig.json`,
    which answers "does shared/ typecheck on its own" without
@@ -21,11 +21,13 @@
    `lib` carries DOM because headers.ts constructs a `Response`.
    Both runtimes have one; neither is a browser.
 
-   `allowJs` is for content.ts, which reads the four curriculum
-   ladders under `aab/`: they are the browser's files and are still
-   JavaScript, so the shapes here are inferred from them rather
-   than described a second time. `checkJs` stays off, because this
-   config is not the one converting those four. */
+   `allowImportingTsExtensions` because that is how the imports in
+   here are written, `./curricula/money.ts`, and they have to be:
+   node reads these files with no build step and resolves the real
+   filename. The two configs that COMPILE content.ts and the
+   curricula to `aab/` pair it with
+   `rewriteRelativeImportExtensions`, which is what turns the
+   specifier back into a `.js` a browser can fetch. */
 {
   "compilerOptions": {
     "target": "ES2022",
@@ -33,14 +35,14 @@
     "moduleResolution": "bundler",
     "lib": ["ES2022", "DOM"],
     "strict": true,
-    "allowJs": true,
-    "checkJs": false,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
     "noEmit": true,
     "isolatedModules": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["*.ts"],
+  "include": ["*.ts", "curricula/*.ts"],
   "exclude": ["node_modules"]
 }

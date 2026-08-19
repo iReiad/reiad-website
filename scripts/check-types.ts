@@ -58,10 +58,10 @@
 
    `tsconfig.json` cannot say that. `checkJs` would, but it
    applies to every `.js` the imports REACH, and the checks import
-   `aab/content.js`, `worker.js` and four `curriculum.js` modules,
-   and through worker.js most of `functions/`. Turning it on
-   reports 194 errors in `aab/tools/stock.model.js` alone: files
-   this config is not the one converting, and a list nobody reads.
+   `worker.js`, the stock model and the money school's icons, and
+   through worker.js most of `functions/`. Turning it on reports
+   194 errors in `aab/tools/stock.model.js` alone: files this
+   config is not the one converting, and a list nobody reads.
 
    So the directory is walked here instead. It is a smaller
    question and it is the one worth asking: a `.js` in `scripts/`

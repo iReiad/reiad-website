@@ -199,16 +199,16 @@ for (const file of files) {
   let inComment = false;
 
   src.split("\n").forEach((line, i) => {
-    for (const owned of OWNED) {
-      if (!line.includes(owned.find)) continue;
-      if (owned.skip?.test(line)) continue;
-      counts[owned.id] += 1;
-      where[owned.id].push(`${rel}:${i + 1}`);
-    }
+    /* Prose is not code, and this used to be BELOW the loop over
+       OWNED rather than above it, so that loop read comments. It
+       is a substring search, so a comment saying why a control
+       stopped being `.icon-btn` counted as one more `.icon-btn`,
+       and the ratchet went up for a line explaining that it had
+       gone down. The comments here are long and explanatory on
+       purpose, which makes that certain rather than unlucky.
 
-    /* Prose is not code. The comments in this repository are long
-       and explanatory, and one of them mentions React error #418,
-       which is a hex as far as a regex is concerned. */
+       One of them also mentions React error #418, which is a hex
+       as far as a regex is concerned. */
     if (inComment) {
       if (line.includes("*/")) inComment = false;
       return;
@@ -217,6 +217,14 @@ for (const file of files) {
     if (/\/\*/.test(line) && !/\*\//.test(line)) { inComment = true; return; }
 
     const code = line.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/, "");
+
+    for (const owned of OWNED) {
+      if (!code.includes(owned.find)) continue;
+      if (owned.skip?.test(code)) continue;
+      counts[owned.id] += 1;
+      where[owned.id].push(`${rel}:${i + 1}`);
+    }
+
     if (!NAMED_COLOUR.test(code)) return;
     if (EXEMPT.some((re) => re.test(code))) return;
 
