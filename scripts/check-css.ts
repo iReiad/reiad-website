@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-css.js, catch a school's styles leaking into the
+   check-css.ts, catch a school's styles leaking into the
    whole site.
 
-       node scripts/check-css.js
+       node scripts/check-css.ts
 
    THE BUG THIS EXISTS FOR
 
@@ -63,10 +63,9 @@ import { fileURLToPath } from "node:url";
 /* `AAB` is the served directory and `ROOT` is the repository.
    They were the same until this file moved out: every file in
    `aab/` is uploaded and answers at a public URL, so a check
-   living there was a check published at `/check-css.mjs`, kept
-   private only by a line in `.assetsignore`. A check outside the
-   served directory cannot be served. The extension went with it:
-   the root declares `"type": "module"`. */
+   living there is a check published, kept private only by a line
+   in `.assetsignore`. A check outside the served directory cannot
+   be served. */
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 const ROOT = join(REPO, "aab");
 
@@ -120,7 +119,7 @@ const css = readFileSync(join(REPO, "next", "styles", "site.css"), "utf8");
 }
 
 /** The body of `@layer <name> { … }`, brace-matched. */
-function layerBody(name) {
+function layerBody(name: string): string | null {
   const open = css.indexOf(`@layer ${name} {`);
   if (open === -1) return null;
   let depth = 0;
@@ -136,7 +135,7 @@ function layerBody(name) {
 /** Selectors at the top level of a layer body, including inside a
     top-level @media, those match just as widely. Nested rules are
     skipped: `& .foo` inside `.bar { … }` can only match in .bar. */
-function topLevelSelectors(body) {
+function topLevelSelectors(body: string): string[] {
   const clean = body.replace(/\/\*[\s\S]*?\*\//g, "");
   const out = [];
   let depth = 0, buf = "", mediaAt = -1;
@@ -159,8 +158,8 @@ function topLevelSelectors(body) {
 }
 
 /* every file that can carry a class name */
-const files = [];
-function walk(dir) {
+const files: string[] = [];
+function walk(dir: string): void {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) {
@@ -191,7 +190,7 @@ for (const outside of ["../next/app", "../next/components", "../next/lib"]) {
 if (existsSync(join(ROOT, "../app/src"))) walk(join(ROOT, "../app/src"));
 
 const markup = new Map(
-  files.filter((f) => f !== "check-css.js").map((f) => [f, readFileSync(join(ROOT, f), "utf8")])
+  files.filter((f) => f !== "check-css.ts").map((f) => [f, readFileSync(join(ROOT, f), "utf8")])
 );
 
 /* And the schools' prose, which is not a file any more.
@@ -212,11 +211,14 @@ const markup = new Map(
 {
   /* `usedIn()` walks `files` and looks the name up in `markup`, so
      a source has to be in both. */
-  const add = (name, html) => { files.push(name); markup.set(name, html); };
+  const add = (name: string, html: string): void => {
+    files.push(name); markup.set(name, html);
+  };
 
   const snapshot = join(ROOT, "..", "content", "schools.backup.json");
   if (existsSync(snapshot)) {
-    const rows = JSON.parse(readFileSync(snapshot, "utf8"));
+    const rows = JSON.parse(readFileSync(snapshot, "utf8")) as
+      { lessons?: Array<{ school?: string; body?: string }> };
     /* One entry PER SCHOOL rather than one for the file, because
        ownership here is decided by the path a class was found
        under: a class in one file holding all four schools' prose
@@ -246,9 +248,12 @@ const markup = new Map(
 
 /** Files using a class in a class attribute, not in prose or a
     selector string, which say nothing about what is on the page. */
-function usedIn(cls) {
+function usedIn(cls: string): string[] {
   const re = new RegExp(`class(?:Name)?\\s*[=:]\\s*["'\`][^"'\`]*(?<![\\w-])${cls}(?![\\w-])`);
-  return files.filter((f) => markup.has(f) && re.test(markup.get(f)));
+  return files.filter((f) => {
+    const html = markup.get(f);
+    return html !== undefined && re.test(html);
+  });
 }
 
 let failures = 0;
@@ -262,7 +267,7 @@ for (const { layer, owns } of SCHOOLS) {
   }
 
   const mine = new Map(); // class → is it this school's alone?
-  const isMine = (cls) => {
+  const isMine = (cls: string): boolean => {
     if (!mine.has(cls)) {
       /* A class NAMED for the school is the school's, whoever
          writes it. That used to be the same question as "which
@@ -330,7 +335,7 @@ for (const { layer, owns } of SCHOOLS) {
         pages, which is the same bug this whole file exists for.
    ============================================================ */
 
-const classList = (file, name) => {
+const classList = (file: string, name: string): string[] => {
   const src = readFileSync(join(ROOT, file), "utf8");
   /* `: Set<string>` may sit between the name and the `=` now that
      these files are TypeScript. Optional, so this reads both. */
@@ -351,11 +356,15 @@ const studioClasses = classList("editor.js", "KEEP_CLASSES");
 const serverClasses = classList("../functions/_lib/sanitise.ts", "ALLOWED_CLASSES");
 
 if (studioClasses.length && serverClasses.length) {
-  const only = (a, b) => a.filter((c) => !b.includes(c));
-  for (const [side, missing] of [
+  const only = (a: string[], b: string[]): string[] =>
+    a.filter((c) => !b.includes(c));
+  /* Tuples rather than a bare array literal, so that destructuring
+     gives a sentence and a list rather than one union of the two. */
+  const disagreements: Array<[string, string[]]> = [
     ["the server strips what the Studio keeps", only(studioClasses, serverClasses)],
     ["the Studio strips what the server keeps", only(serverClasses, studioClasses)],
-  ]) {
+  ];
+  for (const [side, missing] of disagreements) {
     if (!missing.length) continue;
     failures++;
     console.error(`\nthe two sanitisers disagree, ${side}: ${missing.join(", ")}`);
@@ -379,9 +388,9 @@ if (studioClasses.length && serverClasses.length) {
 
     is an adjustment to somebody else's ring, and counting it as a
     definition made three layers look like they each owned one. */
-function bareSelectors(body) {
+function bareSelectors(body: string): string[] {
   const clean = body.replace(/\/\*[\s\S]*?\*\//g, "");
-  const out = [];
+  const out: string[] = [];
   let depth = 0, buf = "";
   for (const ch of clean) {
     if (ch === "{") {
@@ -399,8 +408,8 @@ function bareSelectors(body) {
 /** Every layer that gives a class a rule of its own: `.cls { … }`
     on its own, which is the shape that says "this is what this
     class is", as opposed to `.cls .child` or `.other.cls`. */
-function definedIn(cls) {
-  const layers = [];
+function definedIn(cls: string): string[] {
+  const layers: string[] = [];
   for (const name of [...css.matchAll(/@layer ([a-z]+) \{/g)].map((m) => m[1])) {
     const body = layerBody(name);
     if (!body) continue;
@@ -474,7 +483,11 @@ const ALLOWED = new Map([
   [".resume", "money+deck, deck adjusts the card money defines"],
 ]);
 
-const everyClass = new Set();
+/** Every class the stylesheet gives a rule of its own, with no
+    leading dot. Two sections read it: the one below, which fails
+    on a class two layers both define, and the dead-class ledger at
+    the end. */
+const everyClass = new Set<string>();
 for (const name of [...css.matchAll(/@layer ([a-z]+) \{/g)].map((m) => m[1])) {
   const body = layerBody(name);
   if (!body) continue;
@@ -519,7 +532,7 @@ for (const cls of [...everyClass].sort()) {
    `aab/`. Five do. Nothing else gets the benefit of the doubt.
    ============================================================ */
 
-const strip = (t) => t.replace(/\/\*[\s\S]*?\*\//g, "");
+const strip = (t: string): string => t.replace(/\/\*[\s\S]*?\*\//g, "");
 const noComments = strip(css);
 const declared = new Set([...noComments.matchAll(/(--[a-z0-9-]+)\s*:/g)].map((m) => m[1]));
 const used = new Set([...noComments.matchAll(/var\(\s*(--[a-z0-9-]+)/g)].map((m) => m[1]));
@@ -595,7 +608,7 @@ for (const token of [...used].sort()) {
      the site writes `className={plain ? "art" : "art stage-art"}`,
      and a pattern anchored to the quotes calls every one of those
      dead. Both false positives it produced were that shape. */
-  const mentions = (cls) =>
+  const mentions = (cls: string): boolean =>
     new RegExp(`["'\`][^"'\`]*(?<![\\w-])${cls}(?![\\w-])[^"'\`]*["'\`]`).test(anywhere)
     || new RegExp(`\\.${cls}(?![\\w-])`).test(anywhere);
 

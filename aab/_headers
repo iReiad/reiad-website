@@ -30,7 +30,7 @@
   # refused every request to the auth API before it left: "Failed to
   # fetch", which reads as the server being down. Google sign-in
   # still worked, because a redirect is a navigation rather than a
-  # fetch, which made it look stranger still. check-csp.mjs now
+  # fetch, which made it look stranger still. check-csp.ts now
   # fails if the code names a host this line does not allow.
   #
   # frame-src is GONE, and its absence is the fix rather than an

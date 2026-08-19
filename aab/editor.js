@@ -75,7 +75,7 @@ const ATTRS = {
    tool that writes to it, and every callout imported from Notion
    arrived flattened.
 
-   check-css.mjs reads this list out of this file by name. Renaming
+   check-css.ts reads this list out of this file by name. Renaming
    the constant is fine; moving it somewhere the check cannot see is
    how the two lists drift apart again. */
 export const KEEP_CLASSES = new Set([

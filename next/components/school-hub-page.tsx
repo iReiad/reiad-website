@@ -46,7 +46,7 @@ import { Eyebrow, SectionLabel } from "./ui/label";
 
    `` `hero ${school}-hero` `` reads fine and is invisible: the
    literal `deutsch-hero` then exists nowhere in the source, so
-   Tailwind's scanner cannot see it and `check-css.mjs` reports
+   Tailwind's scanner cannot see it and `check-css.ts` reports
    the rule that uses it as styling nothing, which is how a
    school's layer gets reported as leaking into the whole site.
    A map is three lines and it is three strings that exist. */

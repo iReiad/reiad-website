@@ -23,8 +23,21 @@
    than being something somebody remembers to do.
 
    `scripts/tsconfig.json` is the settings and says why each is
-   what it is. `checkJs` is off there: half of `scripts/` is still
-   `.mjs` and is being converted a chunk at a time.
+   what it is.
+
+   ---- and the second half: no JavaScript here at all ----
+
+   `tsconfig.json` cannot say that. `checkJs` would, but it
+   applies to every `.js` the imports REACH, and the checks import
+   `aab/content.js`, `worker.js` and four `curriculum.js` modules,
+   and through worker.js most of `functions/`. Turning it on
+   reports 194 errors in `aab/tools/stock.model.js` alone: files
+   this config is not the one converting, and a list nobody reads.
+
+   So the directory is walked here instead. It is a smaller
+   question and it is the one worth asking: a `.js` in `scripts/`
+   typechecks nowhere, and the whole of the four chunks was
+   getting rid of them.
 
    ---- what it has already caught ----
 
@@ -39,11 +52,39 @@
    ============================================================ */
 
 import { execFileSync } from "node:child_process";
-import { dirname, join } from "node:path";
+import { readdirSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const CONFIG = join(ROOT, "scripts", "tsconfig.json");
+const HERE = join(ROOT, "scripts");
+const CONFIG = join(HERE, "tsconfig.json");
+
+/* `fixtures/` is captured data rather than code: the Drive
+   listing `import-courses.ts` rebuilds the catalogue from. */
+const NOT_CODE = new Set(["fixtures", "node_modules"]);
+
+const javascript: string[] = [];
+(function walk(dir: string): void {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith(".") || NOT_CODE.has(entry.name)) continue;
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) walk(full);
+    else if (/\.(js|mjs|cjs|jsx)$/.test(entry.name)) {
+      javascript.push(relative(ROOT, full));
+    }
+  }
+})(HERE);
+
+if (javascript.length) {
+  console.error(`${javascript.length} JavaScript file(s) in scripts/:`);
+  for (const file of javascript) console.error(`   ${file}`);
+  console.error("\nEverything here is TypeScript, and node strips the types"
+    + " with no build step,\nso there is nothing to trade for keeping one."
+    + " Rename it and give it real types;\nthis check is what says the"
+    + " second half happened.\n");
+  process.exit(1);
+}
 
 try {
   execFileSync("npx", ["tsc", "-p", CONFIG], { cwd: ROOT, stdio: "pipe" });
@@ -58,4 +99,5 @@ try {
   process.exit(1);
 }
 
-console.log("scripts: every .ts file typechecks under scripts/tsconfig.json.");
+console.log("scripts: no JavaScript, and every .ts file typechecks under"
+  + " scripts/tsconfig.json.");

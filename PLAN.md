@@ -6,7 +6,7 @@ says what they look like. This says what happens next and how.
 
 ## The method, which applies to every phase
 
-Proven on `check-content.mjs` on 18 August 2026, and it found a
+Proven on `check-content.ts` on 18 August 2026, and it found a
 real hole in twenty minutes.
 
 1. **Read what it claims.** These files state, in their own
@@ -285,11 +285,11 @@ permanent 301 and keeps answering forever:
 | every `<a href>` in a lesson body | in D1, so one UPDATE and a re-export |
 | the canonicals, `sitemap.xml`, `feed.xml`, `og:url` | `build-meta.mjs` writes these |
 | `aab/_redirects` | one line per old address |
-| `check-routes.mjs` | a new rule: no internal link ends in `.html` |
+| `check-routes.ts` | a new rule: no internal link ends in `.html` |
 
 Two things make this safe to leave until here. It touches nothing
 structural, so it can happen at any point without changing what
-any other phase does. And `check-routes.mjs` already walks every
+any other phase does. And `check-routes.ts` already walks every
 link on the site, so the rule that proves it finished is nine
 lines in a check that exists.
 

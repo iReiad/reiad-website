@@ -341,7 +341,7 @@ export function Lessons() {
                   here invents a class: `.steps` was the first thing
                   this list wanted and it already belongs to the
                   Learn hub, which is exactly the collision
-                  check-css.mjs exists to catch. */}
+                  check-css.ts exists to catch. */}
               {/* A stage whose prose is not in these rows says so
                   rather than showing 18 lessons marked unwritten,
                   which is true of the rows and false about the

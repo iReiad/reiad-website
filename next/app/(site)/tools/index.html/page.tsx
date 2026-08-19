@@ -15,7 +15,7 @@
    `/tools/stock.model.js` with its own tests. Turbopack will not
    resolve above `next/`, so making those components means moving
    the models into `shared/` first, and moving a model that
-   `check-content.mjs` asserts against and that has 1,931 lines
+   `check-content.ts` asserts against and that has 1,931 lines
    of tests pinned to it is its own change with its own way of
    going wrong.
 

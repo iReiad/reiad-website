@@ -217,7 +217,7 @@
        invalid at computed value time, so all seven quietly got
        nothing and every surface on this site was flat colour.
 
-       `check-css.mjs` could not see it because it reads
+       `check-css.ts` could not see it because it reads
        `styles.css` and these are named from the Tailwind source.
        It reads both now.
 
@@ -636,7 +636,7 @@
        invalid at computed value time, so all seven quietly got
        nothing and every surface on this site was flat colour.
 
-       `check-css.mjs` could not see it because it reads
+       `check-css.ts` could not see it because it reads
        `styles.css` and these are named from the Tailwind source.
        It reads both now.
 
@@ -5408,7 +5408,7 @@ it collapsed to the width of the word "Bangladesh". */
 
      names no class at all, and it sat inside a feature layer, so
      it matched the site's header on every page rather than the
-     money school's. It is the shape `check-css.mjs` was written
+     money school's. It is the shape `check-css.ts` was written
      for, and it escaped that check only because `money` is
      deliberately not one of the school layers it inspects.
 
@@ -5455,7 +5455,7 @@ and an intro that needs them in step is an intro that breaks
      They are also why the new ones are called `gate`: `.door` was
      still defined here, in a layer the new page's rules had to win
      against selector by selector, and a class that means two
-     things is the bug `check-css.mjs` exists for one level up. */
+     things is the bug `check-css.ts` exists for one level up. */
 
   /* ---------- THE WELCOME-BACK BAND THAT WAS ----------
 
@@ -5631,7 +5631,7 @@ and an intro that needs them in step is an intro that breaks
 
   /* ---------- the rest of a school's hub ----------
      These three lived in @layer deutsch until the Quran school
-     wanted all four of them, at which point check-css.mjs was
+     wanted all four of them, at which point check-css.ts was
      right to call them German rules styling a page that is not
      German. They are not German or Arabic; they are what a school
      hub is made of, so they sit here with the ladder they belong
@@ -5668,7 +5668,7 @@ and an intro that needs them in step is an intro that breaks
      deck comes later, so `.contents-list`, `.contents-en` and
      `.contents-min` were already being drawn by deck's rules on
      every school's contents page while these sat here winning
-     nothing. That is the failure `check-css.mjs` catches for
+     nothing. That is the failure `check-css.ts` catches for
      article classes and did not catch here, which is what the
      new check at the end of that file is for. */
 
@@ -5808,7 +5808,7 @@ German for day, and .tag is what the site has always called
    it, because every check the site has looks at routes, caches
    and links, and none of them look at CSS.
 
-   check-css.mjs now does, and runs with the others.
+   check-css.ts now does, and runs with the others.
    ============================================================ */
 @layer workbook {
   /* ============================================================
@@ -6273,7 +6273,7 @@ German for day, and .tag is what the site has always called
    NAME EVERYTHING IN THIS LAYER SO IT COULD ONLY EVER MEAN THIS
    SCHOOL, for the reason spelled out at the top of the deutsch
    layer: a bare class here beats `components` on every page of
-   the site, not just this one. check-css.mjs enforces it.
+   the site, not just this one. check-css.ts enforces it.
 
    ------------------------------------------------------------
    THE PROBLEM THIS LAYER EXISTS FOR
@@ -6331,7 +6331,7 @@ German for day, and .tag is what the site has always called
      and did not need to be while this school's ladder was a
      generated page under /quran/. archive/TRANSITION.md Stage 11.7 made
      it a route, and the component that draws a lesson card is one
-     component for all four schools: `check-css.mjs` decides which
+     component for all four schools: `check-css.ts` decides which
      school a class belongs to by where its markup lives, and the
      markup for this one now lives in a file shared with three
      schools that must never get this rule. The anchor says out
@@ -6467,7 +6467,7 @@ German for day, and .tag is what the site has always called
    pages, and it must lose to nothing but the utilities.
 
    Every selector here is anchored on a class that only /english/
-   uses, or on body.english. check-css.mjs enforces that, and it
+   uses, or on body.english. check-css.ts enforces that, and it
    exists because the German school once called a workbook day
    `.tag` and put a bordered box around every article label on
    the site.
@@ -6647,7 +6647,7 @@ German for day, and .tag is what the site has always called
    sites. Both bodies carry class="read" as well as their own
    section name, which is what the print block below hangs off.
 
-   Same rule as the schools, and check-css.mjs enforces it: every
+   Same rule as the schools, and check-css.ts enforces it: every
    selector is anchored on a class only these two folders use.
    Nothing here has any business styling the home page.
    ============================================================ */
@@ -8143,7 +8143,7 @@ German for day, and .tag is what the site has always called
    those rules are still there for as long as anything still
    renders a `body > header`. Sitting after `about` means nothing
    below can reach up and restyle the shell by accident, which is
-   the failure `check-css.mjs` exists for one level down.
+   the failure `check-css.ts` exists for one level down.
 
    ---- three attributes on <html>, all set before paint ----
 
@@ -9996,7 +9996,7 @@ German for day, and .tag is what the site has always called
    class here is prefixed `course-`, which is not decoration: this
    layer sits above `deck`, so an unprefixed name would restyle
    the whole site from a section one person can open. That is the
-   exact bug `check-css.mjs` was written for, one layer along.
+   exact bug `check-css.ts` was written for, one layer along.
 
    What it does NOT define is the furniture it borrows. The bar is
    `.meter`, the cards are `.card`, the buttons are `.btn` and
@@ -10301,7 +10301,7 @@ German for day, and .tag is what the site has always called
      defines and never has been, so the declaration was invalid
      at computed value time and dropped: picking an answer
      highlighted nothing, and the only feedback was the native
-     dot. `check-css.mjs` fails on a token nothing defines now. */
+     dot. `check-css.ts` fails on a token nothing defines now. */
   .quiz-option:has(input:checked) {
     background: var(--accent-soft);
     border-color: var(--accent-line);

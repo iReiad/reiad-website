@@ -6,7 +6,7 @@
 # public URL. Every file: the checks, the tests, the two school
 # builders and the TypeScript the served modules are compiled
 # from were all live on reiad.co.uk, about 300 KB of them, at
-# addresses like /check-routes.mjs and /schema.sql.
+# addresses like /check-routes.ts and /schema.sql.
 #
 # Nothing in them is secret. schema.sql is the shape of a database
 # nobody can reach, the tests describe behaviour the site performs
@@ -20,7 +20,7 @@
 # how the site is built and checked, which is a question for a
 # clone rather than for the edge.
 #
-# `scripts/check-routes.js` reads this file and fails if a file
+# `scripts/check-routes.ts` reads this file and fails if a file
 # matching one of these shapes is missing from it, so a new check
 # or a new test cannot start being published by accident. It used
 # to live here itself, which is why the first rule below exists
@@ -34,7 +34,7 @@
 # `check-*.mjs` rule below now guards nothing that is here. It
 # stays because the rule is cheap and the mistake is not: a check
 # written beside these files again would be published by the next
-# commit, and `scripts/check-routes.js` fails on a build-or-test
+# commit, and `scripts/check-routes.ts` fails on a build-or-test
 # shape no rule covers, so the two together mean it cannot happen
 # quietly either way.
 #
@@ -44,7 +44,7 @@
 # Both extensions, because these are being converted to
 # TypeScript, which node runs directly. A rule that knew only
 # `.mjs` would go quiet at the moment the files changed name, and
-# `scripts/check-routes.js` widened with it.
+# `scripts/check-routes.ts` widened with it.
 check-*.mjs
 check-*.ts
 build-*.mjs

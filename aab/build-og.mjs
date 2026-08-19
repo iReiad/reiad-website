@@ -209,7 +209,7 @@ const ASSIGN = [
   [/^skills\//, "skills.png"],
   /* Every practice book, before the per-Stufe rule below, which
      would otherwise claim them for their Stufe's card. This has
-     to agree with the `og` that build-deutsch.mjs writes into the
+     to agree with the `og` the German book's route renders into the
      workbook pages, or the two generators take turns overwriting
      each other's tags. */
   ...STUFEN.filter((st) => st.workbook).map((st) => [
@@ -235,7 +235,7 @@ const ASSIGN = [
   /* The English school. The workbook first, before the per-term
      rule that would otherwise claim it, then the hub, then one
      rule per term, then a catch-all. These have to agree with the
-     `og` values build-english.mjs writes. */
+     `og` values the English book's route renders. */
   ...TERMS.filter((t) => t.workbook).map((t) => [
     new RegExp(`^english\\/${t.slug}\\/${t.workbook.slug}\\.html$`),
     "english-workbook.png",

@@ -11,7 +11,7 @@
    dropped, tags and attributes alike.
 
    ALLOWED_CLASSES is the twin of KEEP_CLASSES in aab/editor.js and
-   the two must agree. `check-css.mjs` fails if they drift, or if a
+   the two must agree. `check-css.ts` fails if they drift, or if a
    class is allowed here and styled nowhere. */
 
 /* `class` is allowed on most of these because the article blocks

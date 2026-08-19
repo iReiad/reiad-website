@@ -13,7 +13,7 @@
 # question. `live-check.yml` runs on every push and asks the LIVE
 # site how it is doing, which on a branch is a question about the
 # last deploy rather than about the branch. A pull request that
-# broke check-content.js showed green on both, merged, and then
+# broke check-content.ts showed green on both, merged, and then
 # failed at the top of deploy.yml with main already carrying it.
 #
 # That is the shape of failure this repository has been bitten by
@@ -80,7 +80,7 @@ jobs:
       # Tailwind CLI, and for linkedom, which is the DOM the
       # school hub test builds three hubs in.
       #
-      # Leaving this out does not fail loudly. `build-modules.mjs`
+      # Leaving this out does not fail loudly. `build-modules.ts`
       # runs `npx tsc`, and with no node_modules npx goes to the
       # registry, where `tsc` is not TypeScript: a deploy once
       # died inside `tsc@2.0.4`, a package nothing here has ever
@@ -104,7 +104,7 @@ jobs:
       # itself.
       #
       # Every one of them exists because something shipped broken
-      # once. check-routes.js is the one that would have caught the
+      # once. check-routes.ts is the one that would have caught the
       # outage deploy.yml was written for: it runs the same
       # run_worker_first overlap test wrangler runs, and wrangler
       # runs it before it reads a line of worker.js.

@@ -63,7 +63,8 @@ export const bookFor = (stufe) => BOOKS[stufe?.slug] ?? null;
     curriculum.js declares the same number in `workbook.days`,
     because the browser needs it to draw a progress bar and must
     not pull five thousand lines of days down to count them.
-    build-deutsch.mjs asserts the two against each other, so a
+    Nothing asserts the two against each other now: build-deutsch.mjs
+    did, and went with the generated books (#129). So a
     declaration that drifts from the data fails a build rather
     than a reader. */
 export const dayCount = (stufe) => bookFor(stufe)?.days.length ?? 0;

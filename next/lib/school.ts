@@ -9,8 +9,9 @@
 
    ---- why a table rather than four routes ----
 
-   The four builders write the same page. Compare `lessonPage()`
-   in `aab/money/build-lessons.mjs` with `teilPage()`,
+   The four builders wrote the same page, and are in
+   `archive/schools-builders/`. Compare `lessonPage()` in
+   `archive/schools-builders/build-lessons.mjs` with `teilPage()`,
    `partPage()` and the Quran school's `lessonPage()`: one
    article, one eyebrow, one heading with a drawing in it, one
    blurb, one meta line, the body, a backlink and a prev/next

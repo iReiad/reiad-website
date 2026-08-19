@@ -120,16 +120,17 @@ So `scripts/tsconfig.json` and `scripts/check-types.ts` landed with
 the first chunk, and that check is in `check-all.ts`: a file is not
 converted until it typechecks under `strict`.
 
-**Done (36):** every `.mjs` in `scripts/`. The four generators,
-both libraries under `scripts/lib/`, the sixteen checks and the
-runner `check-all`, then the seven `*.test` files and
-`export-schools` `import-courses` `import-schools` `preview`
-`restore` `school-source` `schools-snapshot`, plus the new
-`sqlite-d1`.
+**Done: all of it.** Every file in `scripts/` is TypeScript, and
+`checkJs` is on, so a `.js` appearing there again is a failing
+check rather than a thing somebody notices later.
 
-**Left (5):** `check-content.js` `check-csp.js` `check-css.js`
-`check-routes.js` `check-sw.js`, which were never `.mjs` and are the
-only JavaScript in the directory.
+It went in four chunks: the four generators and both libraries
+under `scripts/lib/`, then the sixteen checks and the runner
+`check-all`, then the seven `*.test` files and `export-schools`
+`import-courses` `import-schools` `preview` `restore`
+`school-source` `schools-snapshot`, then the five that were never
+`.mjs` at all: `check-content` `check-csp` `check-css`
+`check-routes` `check-sw`. `sqlite-d1` was written along the way.
 
 Seven things came out of it that were not the types, and the
 previous count of them was wrong too.
@@ -150,7 +151,7 @@ correct. It calls `check-all.ts --stage=<name>` now, once per step,
 so the steps stay separate in the interface and the list stays in
 one place.
 
-`scripts/check-routes.js` and `aab/.assetsignore` widened to `.ts`
+`scripts/check-routes.ts` and `aab/.assetsignore` widened to `.ts`
 before any file in `aab/` converts, rather than after: a `.ts` test
 beside the others would otherwise be published at its own public
 URL, and the rule that catches that only knew `.mjs`.
@@ -165,10 +166,10 @@ a drawing in them". It is 24 now, and all 24 do resolve, so nothing
 was broken; the check was reporting on a smaller set than it
 claimed, which is the harder failure to see.
 
-**Seven files named a file that does not exist.** `share-card.ts`
+**Nineteen files named a file that does not exist.** `share-card.ts`
 sent a reader to `scripts/check-modules.mjs`, which has never
 existed under any extension, and `courses.ts` and `sw.js` to
-`check-csp.mjs` and `check-css.mjs`, which are `.js`. Then
+`check-csp.ts` and `check-css.ts`, which are `.js`. Then
 `README.md` told anybody regenerating the site to run
 `scripts/build-styles.mjs`, and this file said `aab/tailwind.css`
 was built by it, three days after both were deleted for a compiler
@@ -176,17 +177,50 @@ Next already has. `cards.tsx` named `check-icons.mjs` where the
 check is `check-next.ts`, and `written.tsx` named
 `build-school-hubs.mjs`, which is in `archive/schools-builders/`.
 
-Converting `scripts/` is what made all seven visible, and the shape
-they share is worth naming: **a stale pointer costs nothing until
-somebody follows it,** so nothing fails and nobody notices. Four of
-the seven were in the comments this repository writes at length on
-purpose, which is the argument for the length rather than against
-it: the ones that said only what a thing was for stayed true.
+Converting `scripts/` is what made them visible, and the shape they
+share is worth naming: **a stale pointer costs nothing until
+somebody follows it,** so nothing fails and nobody notices. Most
+were in the comments this repository writes at length on purpose,
+which is the argument for the length rather than against it: the
+ones that said only what a thing was for stayed true.
+
+The last chunk scanned for the rest of them rather than waiting to
+trip over one. Every tracked file, every string shaped like a
+`check-*`, `build-*`, `import-*`, `export-*` or `*.test.*` of ours,
+against whether that file exists: **25 names resolved to nothing.**
+Twelve were a rename nobody followed, `check-css.mjs` in ten places
+among them, and `SETUP.md` had `node aab/check-routes.mjs`, wrong
+in the directory AND the extension, as an instruction to run.
+
+Two were worse than a stale pointer. `next/lib/workbook.ts` said
+"`check-workbook.mjs` asserts the two against each other, so a
+declaration that drifts fails a check rather than a reader", and
+`next/components/workbook.tsx` said it "holds the two to being
+identical". There has never been such a file. A comment promising a
+guarantee nobody wrote is worse than no comment, because the next
+person reads it and stops looking. Both say what is true now.
+
+Five are deliberately left, and the reason is the service worker:
+`aab/app.js`, `aab/content.js`, the two `curriculum.js` modules and
+`aab/tools/stock.model.js` are precached, so editing a comment in
+one costs every returning visitor a refetch of the whole 50-file
+shell. They are free to fix on the day those modules become
+`aab/src/*.ts`, and that is when they will be.
 
 And `check-accents.ts` printed `aab/styles.css` in three of its
 messages, which moved to `next/styles/site.css` on 18 August 2026:
 the check reads the right file and told you to go and edit the
 wrong one.
+
+**CLAUDE.md described a site that no longer exists**, in four
+places, and one of them was a command. It said to run
+`node aab/deutsch/build-deutsch.mjs` and `build-english.mjs` to
+regenerate the practice books; both files were deleted when #129
+made the books routes, and they are not even in `archive/`. It also
+called the four books "the last real pages", said "six pages are
+not routes and cannot be", and gave the wrong reason for the three
+schools still needing a browser module. `aab/*.html` is `404.html`
+and `offline.html` and nothing else.
 
 **There were four copies of the D1 binding over `node:sqlite`,**
 and typing them is what showed it: `schools-snapshot.ts`,
@@ -213,7 +247,7 @@ handlers under `functions/api/`, `functions/feeds/`, `functions/insights/`.
 
 `_lib/db.js` is the remaining one nearly everything imports, so it is next.
 
-Converting `sanitise` broke `check-css.mjs`, which read `ALLOWED_CLASSES` with
+Converting `sanitise` broke `check-css.ts`, which read `ALLOWED_CLASSES` with
 a regex that had no room for `: Set<string>` between the name and the `=`.
 The check was right to fail and its parser now reads both forms. Expect the
 same from any check that greps a source file.
@@ -348,7 +382,8 @@ until somebody decides they should look the same. Unifying them is a
 redesign and wants saying out loud rather than doing halfway through a port.
 
 **Left:** the English book, generated as a template literal by
-`aab/deutsch/build-deutsch.mjs` and `aab/english/build-english.mjs`. They
+the two practice-book builders, which are gone with the books they
+emitted (#129). They
 are the last real pages on the old method, and being on it is why they
 carry `.slimbar` and lose the rail. Porting them to routes gives them the
 rail, the drawer, the audience switch and the accent for free, and deletes

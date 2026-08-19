@@ -60,11 +60,11 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        below without reading them: a check whose own annotations
        are wrong reports on the site rather than on itself. */
     "scripts/check-types.ts",
-    "scripts/check-routes.js",
-    "scripts/check-css.js",
-    "scripts/check-sw.js",
-    "scripts/check-content.js",
-    "scripts/check-csp.js",
+    "scripts/check-routes.ts",
+    "scripts/check-css.ts",
+    "scripts/check-sw.ts",
+    "scripts/check-content.ts",
+    "scripts/check-csp.ts",
     "scripts/check-crons.ts",
     "scripts/check-pieces.ts",
     "scripts/check-headers.ts",

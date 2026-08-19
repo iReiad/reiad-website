@@ -8,7 +8,7 @@
    bug nobody would have found by reading. */
 
 /** The article's class allowlist, as the browser enforces it.
-    `check-css.mjs` reads this out of editor.js by name and fails
+    `check-css.ts` reads this out of editor.js by name and fails
     if it disagrees with the server's. */
 export const KEEP_CLASSES: Set<string>;
 

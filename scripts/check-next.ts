@@ -31,8 +31,8 @@
    it is worth saying why it went. Stage 11.7 lifted the four
    schools' hand-written hubs and the money school's full index
    into `next/lib/school-hubs.ts`, and while the pages they came
-   from were still committed, `build-school-hubs.mjs` regenerated
-   them and this compared. Those pages are in
+   from were still committed, a `build-school-hubs` generator
+   regenerated them and this compared. Those pages are in
    `archive/schools-pages/` now: the copy is the original, there
    is nothing left to compare it to, and the generator is in
    `archive/schools-builders/` beside the two builders it

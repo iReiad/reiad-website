@@ -43,8 +43,10 @@ import { Button } from "./ui/button";
 
     `<stufe slug>/<name>`, and the name carries the day number, so
     "tag-1-tausche-1" is a name and not a description. The builder
-    made this string and so does this: `check-workbook.mjs` holds
-    the two to being identical while both exist. */
+    made this string and so does this. The builder is gone with
+    the generated books (#129), so there is one maker of the string
+    again and nothing to hold to anything: `check-workbook.mjs` was
+    named here and never existed. */
 export const schriftKey = (slug: string, name: string): string => `${slug}/${name}`;
 
 /** How many of their own sentences a learner writes per day. Eight

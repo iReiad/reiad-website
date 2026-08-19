@@ -61,7 +61,8 @@ export const bookFor = (term) => BOOKS[term?.slug] ?? null;
     curriculum.js declares the same number in `workbook.days`,
     because the browser needs it to draw a progress bar and must
     not pull a thousand lines of days down to count them.
-    build-english.mjs asserts the two against each other, so a
+    Nothing asserts the two against each other now: build-english.mjs
+    did, and went with the generated books (#129). So a
     declaration that drifts from the data fails a build rather
     than a reader. */
 export const dayCount = (term) => bookFor(term)?.days.length ?? 0;

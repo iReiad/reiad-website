@@ -39,7 +39,7 @@
    The four school layers, `reads`, `check` and `about` sit above
    `article` and therefore above `tw` as well. That is the
    existing order and this does not disturb it: a school's own
-   layer has always been allowed to win, and `check-css.mjs` is
+   layer has always been allowed to win, and `check-css.ts` is
    what stops it winning outside the school.
 
    ---- and the theme comes from the tokens that exist ----
