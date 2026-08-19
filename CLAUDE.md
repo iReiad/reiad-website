@@ -369,8 +369,40 @@ at.
   Leaving should be as easy as arriving.
 - **Erase everything**, which means the account and the mirror.
 
-`next/account.test.mjs` is the guard: 81 checks in a real browser
+`next/account.test.mjs` is the guard: 117 checks in a real browser
 against a routed Supabase.
+
+### Eight sections, one on screen
+
+`/account.html` was one long page with a strip of links down
+it, and reaching the last of eight sections was eight screens
+of scrolling. `next/components/ui/tab-panels.tsx` is the
+calculators' arrangement in React, and the four decisions in
+it are the four that make a `role="tablist"` honest:
+
+| | |
+| --- | --- |
+| the fragment chooses | a link from the account menu straight to `#reading-list` opens that panel rather than scrolling to it, and `hashchange` keeps that true |
+| `replaceState`, never `location.hash =` | assigning pushes an entry per press, so Back walks the strip, and it scrolls the panel under the sticky bar every time |
+| arrows, Home and End | with a roving tabindex, so the strip is one tab stop |
+| **nothing hides until it has run** | the panels render open and the first effect closes them. Hiding in CSS alone is a page that shows one section and seven buttons that do nothing |
+
+The strip is `.topbar` again: the same pill, the same glass,
+the same edge and shadow, one `--top-gap` below it and inside
+the page's own column. A reader who has learnt that the thing
+floating at the top is the site's controls reads a second
+floating thing as this page's.
+
+`[data-panels="on"]` is how the stylesheet knows a section is
+the only one on screen, so it drops the `--step` leading that
+separates sections on a long page. `body[data-tool-tabs="on"]`
+is the calculators saying the same thing one level down.
+
+**The panels are built on the server and handed over as a
+prop.** A client component's children are serialised into the
+payload rather than re-rendered in the browser, so making the
+strip interactive does not make eight sections of markup the
+browser's job.
 
 ### The account menu is a popover, not a dialog
 
@@ -623,7 +655,7 @@ node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the
                                    # real CSP (needs Playwright, skips without)
 node next/account.test.mjs        # the account's five features, the popover
                                   # menu and the Save under a byline
-                                  # (81 checks, needs the Next build and a
+                                  # (117 checks, needs the Next build and a
                                   # browser, skips without)
 node aab/sync.test.mjs             # a browser's own progress getting into an
                                    # account, resetting, signing out, and two

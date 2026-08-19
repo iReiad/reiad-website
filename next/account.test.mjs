@@ -331,14 +331,24 @@ console.log("\nthe account page");
     (await page.locator("#account-hello").textContent())?.includes("Rony Reiad"));
   /* By id and by role rather than by class. Every section here
      already needs an id, because the account menu in the header
-     links straight into them by fragment, and the rail is a
-     `<nav>` with a label on it. A class hook would be a third
-     name for a thing that has two. */
+     links straight into them by fragment. A class hook would be a
+     third name for a thing that has two. */
   is("the eight sections are all there",
     await page.locator("#account-in section[id]").count(), 8);
-  is("and the rail links to each",
-    await page.getByRole("navigation", { name: "This page" }).getByRole("link").count(), 8);
+  is("and the strip offers each",
+    await page.getByRole("tablist", { name: "This page" }).getByRole("tab").count(), 8);
+  /* `role="tablist"` is only true while something is hiding the
+     other panels, which is the argument at the top of
+     `components/ui/tabs.tsx`. This is what says it is true. */
+  is("one panel on screen",
+    await page.locator('[role="tabpanel"]:not([hidden])').count(), 1);
+  is("and seven are not", await page.locator('[role="tabpanel"][hidden]').count(), 7);
   is("four numbers above the fold", await page.locator(".acct-tile").count(), 4);
+
+  /* The tiles and the greeting are above the strip and belong to
+     no panel: they are who you are, not a section of the page. */
+  ok("the tiles are not inside a panel",
+    await page.locator('[role="tabpanel"] .acct-tile').count() === 0);
 
   /* A year of days, drawn from `days-active`. 53 weeks of seven
      is the grid; what matters is that the days in the account are
@@ -348,6 +358,9 @@ console.log("\nthe account page");
     `${cells} filled, ${DAYS.length} in the account`);
   ok("and says how the week went",
     (await page.locator("#account-week").textContent())?.includes("of the last seven days"));
+
+  await page.getByRole("tab", { name: "Courses" }).click();
+  await page.waitForTimeout(250);
 
   /* The ladders. The denominator comes down from the ROUTE, out
      of `next/lib/school-ladders.ts`, and the ticks are read here,
@@ -399,17 +412,23 @@ console.log("\nthe account page");
     await page.locator(".ladder-row").evaluateAll((rows) =>
       [...new Set(rows.map((r) => r.style.getPropertyValue("--accent")))].length), 4);
 
+  await page.getByRole("tab", { name: "Reading list" }).click();
+  await page.waitForTimeout(200);
   is("the reading list holds what was kept",
     await page.locator("#account-kept-list .kept-row").count(), 1);
   is("and names it",
     await page.locator("#account-kept-list .kept-body h3 a").textContent(),
     "How the DSE works");
+  await page.getByRole("tab", { name: "Notes" }).click();
+  await page.waitForTimeout(200);
   is("the notes hold what was written",
     await page.locator("#account-notes .kept-row").count(), 1);
   is("as typed, and not as markup",
     await page.locator("#account-notes .kept-note").textContent(),
     "Read this again before the exam.");
 
+  await page.getByRole("tab", { name: "Targets" }).click();
+  await page.waitForTimeout(200);
   is("both targets are drawn", await page.locator(".target").count(), 2);
   /* A habit reads `days-active`; a course reads the reader's own
      ticks against the ladder the route handed down. Neither is a
@@ -429,6 +448,8 @@ console.log("\nthe account page");
       (await page.locator(".target").nth(1).locator(".target-line").textContent()) ?? ""),
     await page.locator(".target").nth(1).locator(".target-line").textContent());
 
+  await page.getByRole("tab", { name: "Scenarios" }).click();
+  await page.waitForTimeout(200);
   is("the scenario is listed", await page.locator(".saved-row").count(), 1);
 
   is("no page errors", errors.length ? errors[0] : "none", "none");
@@ -443,6 +464,8 @@ console.log("\nreading preferences");
 {
   const { page, context, errors } = await open("/account.html");
 
+  await page.getByRole("tab", { name: "Preferences" }).click();
+  await page.waitForTimeout(200);
   is("four rows of them", await page.locator(".pref-row").count(), 4);
   is("normal is the one chosen",
     await page.locator('.pref-chips .pref-chip[data-on] strong').first().textContent(),
@@ -482,6 +505,8 @@ console.log("\nadding a target");
 {
   const { page, context, state, errors } = await open("/account.html");
 
+  await page.getByRole("tab", { name: "Targets" }).click();
+  await page.waitForTimeout(200);
   await page.locator("#target-more summary").click();
   await page.getByLabel("Turn up n days a week").check();
   await page.waitForTimeout(200);
@@ -498,6 +523,189 @@ console.log("\nadding a target");
   await context.close();
 }
 
+/* ============================================================
+   4a. The strip, which is what makes `role="tablist"` true
+
+   Eight sections and eight screens of scrolling became eight
+   sections and one on screen. The four decisions that took, from
+   `components/ui/tab-panels.tsx`, are the four checked here: the
+   fragment chooses, the address follows, a link from elsewhere on
+   the site opens the panel rather than scrolling to it, and the
+   arrows move within the strip.
+   ============================================================ */
+
+console.log("\nthe strip, and what it switches");
+{
+  const { page, context, errors } = await open("/account.html#notes");
+
+  /* A deep link is the case this has to get right: the account
+     menu in the header links straight to `#reading-list` and
+     `#data`, and before the strip switched anything those were
+     scroll targets on one long page. */
+  is("a link straight to a section opens that panel",
+    await page.locator('[role="tabpanel"]:not([hidden])').getAttribute("id"), "panel-notes");
+  is("and the strip says which", await page.locator('[role="tab"][aria-selected="true"]')
+    .textContent(), "Notes");
+
+  /* The section keeps its own id, because that is what the menu
+     links to and what `:target` answers, and the panel wrapper
+     carries its own: two elements cannot share one. */
+  is("the section inside still owns the fragment",
+    await page.locator("#panel-notes section").getAttribute("id"), "notes");
+
+  await page.getByRole("tab", { name: "Scenarios" }).click();
+  await page.waitForTimeout(250);
+  is("pressing one shows it",
+    await page.locator('[role="tabpanel"]:not([hidden])').getAttribute("id"), "panel-scenarios");
+  is("and the address carries which, so it can be shared",
+    await page.evaluate(() => location.hash), "#scenarios");
+  is("still one panel on screen",
+    await page.locator('[role="tabpanel"]:not([hidden])').count(), 1);
+
+  /* replaceState, never a hash assignment: assigning would push an
+     entry per press, so Back would walk the strip instead of
+     leaving the page, and it would scroll the panel under the
+     sticky bar every time. */
+  const before = await page.evaluate(() => history.length);
+  for (const name of ["Targets", "Notes", "Courses"]) {
+    await page.getByRole("tab", { name }).click();
+    await page.waitForTimeout(120);
+  }
+  is("without piling up history", await page.evaluate(() => history.length), before);
+
+  /* One tab stop for the whole strip, and the arrows move within
+     it. That is what a tablist owes a keyboard. */
+  await page.locator('[role="tab"][aria-selected="true"]').press("ArrowRight");
+  await page.waitForTimeout(250);
+  is("an arrow moves to the next", await page.locator('[role="tab"][aria-selected="true"]')
+    .textContent(), "Reading list");
+  await page.locator('[role="tab"][aria-selected="true"]').press("Home");
+  await page.waitForTimeout(250);
+  is("and Home goes back to the first",
+    await page.locator('[role="tab"][aria-selected="true"]').textContent(), "Overview");
+  is("only the chosen tab is a tab stop",
+    await page.locator('[role="tab"][tabindex="0"]').count(), 1);
+
+  /* The identity above the strip belongs to no panel: who you are
+     is not a section of the page. */
+  ok("the greeting stays whichever panel is open",
+    await page.locator("#account-hello").isVisible());
+  is("no page errors", errors.length ? errors[0] : "none", "none");
+  await context.close();
+}
+
+/* ============================================================
+   4b. The three settings questions, and the two framings
+
+   One form serves setup and settings, decided by whether the
+   profile carries a `setup_at`. Two forms would be two save
+   handlers and two places for a label to drift, and this is what
+   says the one form really does both.
+   ============================================================ */
+
+console.log("\nsetting the account up, then changing it");
+{
+  const { page, context, state, errors } = await open("/account.html", {
+    rows: {
+      profile: { display_name: "", following: [], pace: "", setup_at: null },
+      progress: { "learn-read": ["share"] },
+    },
+  });
+
+  await page.getByRole("tab", { name: "Preferences" }).click();
+  await page.waitForTimeout(200);
+  is("a reader who has never answered is asked",
+    await page.locator("#settings-label").textContent(), "Set up your account");
+  ok("and is offered a way out of being asked",
+    await page.getByRole("button", { name: "Not now" }).isVisible());
+
+  /* Started is not the same as followed, and the box says which.
+     A course with ticks in it arrives ticked, because a reader who
+     has read a lesson of it has answered this question already. */
+  ok("a course already started arrives ticked",
+    await page.locator("#course-money").isChecked());
+  is("and says why", await page.locator('label[for="course-money"] small').textContent(),
+    "you have already started this");
+  ok("a course never opened does not", !await page.locator("#course-quran").isChecked());
+
+  /* Four boxes, not five. `COURSES` in content.js held the money
+     school twice until 18 August 2026, once by hand under a name
+     it stopped using when it moved to /money/, so this rendered
+     two checkboxes carrying one id. */
+  is("one box per school with a ladder",
+    await page.locator("#account-courses input").count(), 4);
+
+  await page.locator('label[for="course-deutsch"]').click();
+  await page.locator('label[for="pace-often"]').click();
+  await page.fill("#account-name", "Rony");
+  await page.locator("#settings-form button[type=submit]").click();
+  await page.waitForTimeout(700);
+
+  const sent = state.sent.find((x) => x.table === "profiles" && x.method === "PATCH");
+  ok("the answers reach the account", Boolean(sent));
+  is("the name", sent?.body?.display_name, "Rony");
+  is("the pace", sent?.body?.pace, "often");
+  /* Union, not replacement: the school they follow and the school
+     they have already started, both. */
+  is("and both courses", [...(sent?.body?.following ?? [])].sort(), ["deutsch", "money"]);
+  ok("answered, so it stops asking", Boolean(sent?.body?.setup_at));
+
+  is("and the form reframes at once, without a reload",
+    await page.locator("#settings-label").textContent(), "Your settings");
+  is("no page errors", errors.length ? errors[0] : "none", "none");
+  await context.close();
+}
+
+/* ============================================================
+   4c. Erasing everything, which has to empty the page too
+
+   `forgetOnAccount()` clears the mirror, and until 19 August 2026
+   `clearMirror()` fired the school events and not `sync:done`.
+   Every React meter on this page is behind `subscribe()` in
+   `next/lib/progress.ts`, which hears the second, so the numbers
+   of the account that had just been erased stayed on screen.
+   ============================================================ */
+
+console.log("\nerasing everything");
+{
+  const { page, context, errors } = await open("/account.html", {
+    rows: {
+      targets: [{ id: "t1", kind: "habit", subject: "week", label: "Read on 4 days a week",
+        target: 4, reached: 0, unit: "days", done_at: null,
+        created_at: new Date().toISOString() }],
+    },
+  });
+
+  ok("there is something to erase", (await page.locator(".acct-tile strong").first()
+    .textContent()) !== "0");
+  is("and a target", await page.locator(".target").count(), 1);
+
+  await page.getByRole("tab", { name: "Your data" }).click();
+  await page.waitForTimeout(200);
+  page.on("dialog", (d) => d.accept());
+  await page.locator("#account-forget").click();
+  await page.waitForTimeout(1400);
+
+  ok("it says so", (await page.locator("#exit-note").textContent())?.startsWith("Erased"),
+    await page.locator("#exit-note").textContent());
+  is("the chapters read go back to nothing",
+    await page.locator(".acct-tile strong").first().textContent(), "0");
+  await page.getByRole("tab", { name: "Overview" }).click();
+  await page.waitForTimeout(200);
+  /* At most today, and today is not a leak: `streak.js` marks the
+     day on the first interaction with the page, and the click that
+     erased everything is one. Being here now is not something an
+     erase can undo. */
+  ok("the year is emptied down to today",
+    (await page.locator(".heat-cell[data-on]").count()) <= 1,
+    String(await page.locator(".heat-cell[data-on]").count()));
+  is("nothing is listed as kept",
+    await page.locator("#data .cell").count(), 0);
+  is("and the targets are gone", await page.locator(".target").count(), 0);
+  is("no page errors", errors.length ? errors[0] : "none", "none");
+  await context.close();
+}
+
 console.log("\ntaking a copy of everything");
 {
   const { page, context, errors } = await open("/account.html", {
@@ -507,6 +715,8 @@ console.log("\ntaking a copy of everything");
     },
   });
 
+  await page.getByRole("tab", { name: "Your data" }).click();
+  await page.waitForTimeout(200);
   const download = page.waitForEvent("download", { timeout: 10000 });
   await page.locator("#account-export").click();
   const file = await download;

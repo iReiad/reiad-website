@@ -31,6 +31,26 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v128: Eight sections, one on screen. `/account.html` was one long
+        page with a strip of links down it, and reaching the last
+        of them was eight screens of scrolling.
+        `components/ui/tab-panels.tsx` is the calculators'
+        arrangement in React, and the strip is `.topbar` again: the
+        same pill, the same glass, the same shadow, one gap below
+        it. `/fallback.css` carries the rule.
+
+   v127: The last four painters go. The four numbers, the year of
+        days, the per-course cards and the three settings questions
+        are `account/year.tsx`, `kept.tsx` and `settings.tsx`, and
+        `/account-page.js` is 1155 lines down to 226: which half of
+        the page shows, the exchange, take a copy, and leaving.
+
+        `/sync.js` changed with it. `clearMirror()` fired the school
+        events and not `sync:done`, so erasing an account, or a
+        second person signing in on the same browser, left every
+        React meter on the page showing the numbers that had just
+        been taken away.
+
    v126: Where you are, and what you are aiming for, are components:
         `account/paths.tsx` and `account/targets.tsx`. The ladder
         each bar counts against comes down from the ROUTE now, out
@@ -1311,7 +1331,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v126";
+const VERSION = "v128";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

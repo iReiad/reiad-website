@@ -131,41 +131,58 @@ is a Next.js route; a piece of interface is a component. See CLAUDE.md.
 **In flight:** the German book is a route (`arbeitsbuch.html`), sharing
 `components/workbook.tsx` with a data shape that already covers both schools.
 
-**In flight: `/account.html`.** The route was rendered by Next from the day
+**Done: `/account.html`.** The route was rendered by Next from the day
 it was ported and every section of it was still DRAWN by
-`/account-page.js`, which is the shape this whole tracker is about: correct
-HTML with a browser module building the contents of it in a loop.
+`/account-page.js`, which is the shape this whole tracker is about:
+correct HTML with a browser module building the contents of it in a
+loop.
 
-Six of the nine sections are components under `next/components/account/`
-now, and `aab/src/account-page.ts` is 1155 lines down to 699:
+Nine sections are components under `next/components/account/` now, and
+`aab/src/account-page.ts` is 1155 lines down to 226. What is left is
+four jobs, and each is there for a reason rather than because it has
+not been got to:
 
-| Section | |
+| | |
 | --- | --- |
-| reading preferences | `prefs.tsx` |
-| saved scenarios | `saved.tsx` |
-| reading list, notes | `library.tsx`, one component for both |
-| where you are | `paths.tsx` |
-| targets, and the form | `targets.tsx` |
-| **left** | the year grid, the four tiles, the kept-keys cards, the identity header, the three settings questions, take-a-copy and erase |
+| which half of the page shows | signed in or not is a token in this browser, and both halves ship hidden |
+| the exchange | `sync()` writes the account's rows on to the device, and every component redraws on the `sync:done` it fires. Something has to start it once |
+| take a copy | one button, one blob, and it needs the whole account at once, which no single component has |
+| leaving | sign out, and erase everything |
 
-Two things came out of it that are not about where code lives.
+Four things came out of it that are not about where code lives.
 
-The ladder each bar counts against comes down from the ROUTE now, out of
-`next/lib/school-ladders.ts`, which `scripts/build-school-tree.mjs`
-generates from `content/schools.backup.json`. The page used to import all
-four schools' `curriculum.js` in the browser to find the denominator, 150 KB
-of modules for 20 KB of facts, and it is the exact thing
-`next/lib/progress.ts` is written against: **the ladder is the server's and
-the ticks are the browser's.**
+**The ladder each bar counts against comes down from the ROUTE**, out
+of `next/lib/school-ladders.ts`, which `scripts/build-school-tree.mjs`
+generates from `content/schools.backup.json`. The page used to import
+all four schools' `curriculum.js` in the browser to find the
+denominator, 150 KB of modules for 20 KB of facts, and it is the exact
+thing `next/lib/progress.ts` is written against: **the ladder is the
+server's and the ticks are the browser's.**
 
-And `subscribe()` in `progress.ts` now hears `sync:done`. `aab/sync.js`
-writes the account's rows straight into localStorage, which fires neither
-the same-tab event nor `storage`, so for a signed-in reader every meter on
+**`subscribe()` in `progress.ts` now hears `sync:done`**, and so does
+`clearMirror()` in `sync.ts` now fire it. `aab/sync.js` writes the
+account's rows straight into localStorage, which fires neither the
+same-tab event nor `storage`, so for a signed-in reader every meter on
 every page was drawn against what storage held BEFORE the exchange and
 stayed there. It looked right most of the time, because the exchange
-usually finishes before the first paint. It looked wrong on the one page
-that fetches something of its own first: a course target reading "0 of 60"
-beside a bar of the same school reading "9 of 60".
+usually finishes before the first paint. It looked wrong on the one
+page that fetches something of its own first: a course target reading
+"0 of 60" beside a bar of the same school reading "9 of 60".
+
+**Eight sections, one on screen.** `components/ui/tab-panels.tsx` is
+the calculators' arrangement in React: the fragment chooses the panel,
+`replaceState` carries which, and a link from the account menu straight
+to `#reading-list` opens that panel rather than scrolling to it. The
+strip is `.topbar` again, the same pill and the same glass, one gap
+below it. Nothing is hidden until the component has run, so a reader
+with no JavaScript gets the long page rather than one section and seven
+buttons that do nothing.
+
+**And the table it reads is `nav.ts`.** `COURSES` in `content.js` held
+the money school twice, once written out by hand under a name it
+stopped using when it moved to `/money/` and once through `SKILLS`: two
+checkboxes with one `id`, a duplicate in the target form's menu, and a
+bar labelled with the old name.
 
 **The English book is blocked on a decision, not on work.** The two books are
 the same page structurally and two different designs visually: German uses

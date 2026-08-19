@@ -83,7 +83,7 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../lib/pageMeta";
-import { PageNav, Tab } from "../../../components/ui/tabs";
+import { TabPanels, type Panel } from "../../../components/ui/tab-panels";
 import { Eyebrow } from "../../../components/ui/label";
 import { Button, ButtonLink } from "../../../components/ui/button";
 import { Preferences } from "../../../components/account/prefs";
@@ -91,6 +91,9 @@ import { Scenarios } from "../../../components/account/saved";
 import { ReadingList, Notes } from "../../../components/account/library";
 import { Paths } from "../../../components/account/paths";
 import { Targets } from "../../../components/account/targets";
+import { Tiles, Week, Year } from "../../../components/account/year";
+import { Kept } from "../../../components/account/kept";
+import { Settings } from "../../../components/account/settings";
 import { SCHOOL_LADDERS } from "../../../lib/school-ladders";
 
 export const metadata: Metadata = {
@@ -104,45 +107,18 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-/* The section rail. One entry per `<section>` below, in the order
-   they appear, and the ids are the same strings the account menu
-   in `aab/signin.js` links to. Written out here rather than
-   derived, because a rail built by walking the DOM is a rail that
-   is empty until a script runs and that jumps when it does. */
-const SECTIONS = [
-  { id: "you", label: "Overview" },
-  { id: "ladders", label: "Courses" },
-  { id: "reading-list", label: "Reading list" },
-  { id: "notes", label: "Notes" },
-  { id: "targets", label: "Targets" },
-  { id: "scenarios", label: "Scenarios" },
-  { id: "preferences", label: "Preferences" },
-  { id: "data", label: "Your data" },
-];
+/* ---------- the two shapes this page repeats ----------
 
-/* ---------- the four shapes this page repeats ----------
+   A section and a card, written as components rather than as a
+   class name each, because that is what a utility framework gives
+   you instead of a class: the place the decision lives moves from
+   the stylesheet to here, and it is still one place.
 
-   A section, a card, a row of actions and a form. Written as
-   components rather than as a class name each, because that is
-   what a utility framework gives you instead of a class: the
-   place the decision lives moves from the stylesheet to here,
-   and it is still one place.
-
-   `FORM` is a string rather than a component because it is
-   applied to two `<form>` elements that differ in everything
-   else, and a component wrapping a form would have to forward an
-   id, a submit handler and children to earn its keep. */
-const FORM = "grid max-w-[620px] gap-[22px] "
-  + "[&_fieldset]:m-0 [&_fieldset]:grid [&_fieldset]:gap-[9px] [&_fieldset]:border-0 [&_fieldset]:p-0 "
-  + "[&_legend]:p-0 [&_legend]:font-serif [&_legend]:text-[1.04rem] [&_legend]:text-ink "
-  + "[&_.field-note]:m-0 [&_.field-note]:-mt-[3px] [&_.field-note]:mb-0.5 "
-  + "[&_.field-note]:max-w-[var(--measure)] [&_.field-note]:text-[0.85rem] [&_.field-note]:text-ink-soft "
-  + "[&_input[type=text]]:max-w-[340px] [&_input[type=text]]:rounded-sm "
-  + "[&_input[type=text]]:border [&_input[type=text]]:border-hairline "
-  + "[&_input[type=text]]:bg-paper [&_input[type=text]]:px-[13px] [&_input[type=text]]:py-[11px] "
-  + "[&_input[type=text]]:text-[0.95rem] "
-  + "[&_input[type=text]:focus]:border-green [&_input[type=text]:focus]:outline-none "
-  + "[&_input[type=text]:focus]:ring-2 [&_input[type=text]:focus]:ring-green/20";
+   There were four. `FORM` and `Actions` went with the two forms
+   that used them: both are components under
+   `components/account/` now and each carries its own layout,
+   which is shorter than the `[&_fieldset]:` selectors that had to
+   reach into markup a script was building. */
 
 function Section({ id, title, blurb, children }: {
   id: string;
@@ -201,9 +177,173 @@ function Card({ id, className = "", children }: {
   );
 }
 
-const Actions = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex flex-wrap items-center gap-3">{children}</div>
-);
+/* The eight sections, in the order they are offered.
+
+   ONE TABLE, and it was two: a `SECTIONS` list of ids and labels
+   for the rail, and the eight `<Section>`s underneath it, which
+   agreed because somebody remembered. That is the failure at the
+   top of `CLAUDE.md`, and the rail is exactly where this site has
+   already been bitten by it once.
+
+   The `id` is the fragment. The account menu in
+   `aab/src/signin.ts` links straight to `#reading-list` and
+   `#data`, so these strings are shared with that file and are not
+   free to change. */
+const PANELS: Panel[] = [
+    {
+      id: "you",
+      label: "Overview",
+      node: (
+        <Section id="you" title="Your year"
+                 blurb="Every day you opened something here. Nothing else is counted, and none of it is shown to anybody but you.">
+          <Card>
+            {/* The grid itself stays a stylesheet rule: 53
+                columns sized by a custom property is one line of
+                CSS and would be one arbitrary value per axis. */}
+            <div className="heat"><Year /></div>
+            <p id="account-week" className="m-0 text-[0.82rem] text-ink-soft">
+              <Week />
+            </p>
+          </Card>
+        </Section>
+      ),
+    },
+    {
+      id: "ladders",
+      label: "Courses",
+      /* ============ THE LADDERS ============ */
+      node: (
+        <Section id="ladders" title="Where you are"
+                 blurb="Your position in each course, the chapters you have finished and the checkpoints you have ticked inside them. This is the account's copy, so it is the same on every device.">
+          {/* The ladder comes down from here, out of the
+              generated snapshot, and the ticks are read in the
+              browser. That split is the rule
+              `next/lib/progress.ts` states, and this section
+              broke it until 18 August 2026: it imported all
+              four schools' `curriculum.js` at run time to find
+              out what a bar's denominator was. */}
+          <div className="ladder-list"><Paths ladders={SCHOOL_LADDERS} /></div>
+          <p className="m-0 text-[0.82rem] text-ink-soft" id="account-synced" />
+        </Section>
+      ),
+    },
+    {
+      id: "reading-list",
+      label: "Reading list",
+      /* ============ KEPT, AND WRITTEN ON ============ */
+      node: (
+        <Section id="reading-list" title="Reading list"
+                 blurb="Pages you kept for later. Save one from the row under its title, on any piece or lesson.">
+          <div className="kept-list" id="account-kept-list"><ReadingList /></div>
+        </Section>
+      ),
+    },
+    {
+      id: "notes",
+      label: "Notes",
+      node: (
+        <Section id="notes" title="Your notes"
+                 blurb="What you wrote in the margin. Private, stored against your account, and shown to nobody, including me.">
+          <div className="kept-list" id="account-notes"><Notes /></div>
+        </Section>
+      ),
+    },
+    {
+      id: "targets",
+      label: "Targets",
+      /* ============ TARGETS ============ */
+      node: (
+        <Section id="targets" title="What you are aiming for"
+                 blurb="Set a target and this page measures it. Nothing is sent to you about it: there are no notifications on this site and there will not be any.">
+          <Targets ladders={SCHOOL_LADDERS} />
+        </Section>
+      ),
+    },
+    {
+      id: "scenarios",
+      label: "Scenarios",
+      /* ============ SAVED SCENARIOS ============ */
+      node: (
+        <Section id="scenarios" title="Saved scenarios"
+                 blurb="A filled-in calculator, kept under a name. Open one and the tool comes back exactly as you left it.">
+          <div className="saved-list" id="account-scenarios">
+            <Scenarios />
+          </div>
+        </Section>
+      ),
+    },
+    {
+      id: "preferences",
+      label: "Preferences",
+      /* ============ PREFERENCES, AND THE THREE QUESTIONS ============
+         
+         One section, because they are one thing from the
+         reader's side: how this site behaves for them. The
+         reading preferences act on every page immediately
+         and are applied before the first paint on the next
+         one; the three below them are what the site is
+         allowed to do with what it knows. */
+      node: (
+        <Section id="preferences" title="How you like to read"
+                 blurb="These take effect as you press them, on every page, and follow you to your other devices.">
+          {/* The one section of this page that is a component
+              rather than a slot a script fills in. `account-page.ts`
+              painted it and no longer does: see the note at the top
+              of `components/account/prefs.tsx`. */}
+          <Card className="prefs gap-[18px]" id="account-prefs">
+            <Preferences />
+          </Card>
+
+          <Settings />
+        </Section>
+      ),
+    },
+    {
+      id: "data",
+      label: "Your data",
+      /* ============ WHAT IS KEPT, AND LEAVING ============ */
+      node: (
+        <Section id="data" title="Your data"
+                 blurb="Only what is listed here, and only because it is useful to you. There is no analytics profile behind any of it.">
+          <div className="cards grid-2"><Kept /></div>
+
+          <div className="grid gap-[var(--gap)]
+                          grid-cols-[repeat(auto-fit,minmax(min(100%,250px),1fr))]">
+            <Card>
+              <h3>Take a copy</h3>
+              <p>One file with everything this account holds: your position
+                 in every course, your checkpoints, your reading list, your
+                 notes, your targets, your saved scenarios and your
+                 preferences. Plain JSON, readable in any text editor.</p>
+              <Button kind="ghost" id="account-export">
+                Download everything
+              </Button>
+            </Card>
+            <Card>
+              <h3>Sign out</h3>
+              <p>Ends the session on this device and takes the account&apos;s
+                 copy of your progress off it, so the next person at this
+                 machine does not inherit your ticks. Nothing on the account
+                 is touched.</p>
+              <Button kind="ghost" id="account-signout">
+                Sign out
+              </Button>
+            </Card>
+            <Card className="border-danger/35 bg-danger/5 [&_.btn:hover]:border-danger [&_.btn:hover]:text-danger">
+              <h3>Erase everything</h3>
+              <p>Removes all of it from the account: position, checkpoints,
+                 reading list, notes, targets and scenarios. This cannot be
+                 undone, so take a copy first if you want one.</p>
+              <Button kind="ghost" id="account-forget">
+                Erase it
+              </Button>
+            </Card>
+          </div>
+          <p className="signin-note" id="exit-note" />
+        </Section>
+      ),
+    },
+];
 
 export default function AccountPage() {
   return (
@@ -250,178 +390,31 @@ export default function AccountPage() {
                 columns, because two-by-two is the right shape on
                 a phone and one row is right on a laptop, and
                 neither needs saying. */}
-            <div id="account-tiles"
-                 className="col-span-full grid gap-2.5
-                            grid-cols-[repeat(auto-fit,minmax(min(45%,130px),1fr))]" />
+            <div className="col-span-full grid gap-2.5
+                            grid-cols-[repeat(auto-fit,minmax(min(45%,130px),1fr))]">
+              <Tiles />
+            </div>
           </div>
         </header>
 
-        {/* The one piece of navigation on this page, and it is a
-            `<PageNav>` rather than a `<TabBar>` because nothing
-            here is hidden: a reader who lands on `#reading-list`
-            from a link should find the page scrolled to their
-            reading list with everything else still above and
-            below it. `ui/tabs.tsx` says why that is two
-            components rather than one with a role prop.
+        {/* Eight sections, one on screen.
 
-            It was twelve Tailwind arbitrary values written
-            inline, naming `green` where every component on this
-            site names `--accent`, at a font size that is not on
-            the scale. */}
-        <PageNav label="This page" sticky>
-          {SECTIONS.map((s) => (
-            <Tab key={s.id} href={`#${s.id}`} label={s.label} />
-          ))}
-        </PageNav>
+            It was one long page with a strip of links down it,
+            and it was eight screens of scrolling to reach the
+            last of them. `<TabPanels>` is the calculators'
+            arrangement, in React: pressing one shows it and hides
+            the rest, the address carries which, and a link from
+            the account menu straight to `#reading-list` opens
+            that panel rather than scrolling to it.
 
-        <div className="wrap grid gap-[clamp(34px,5vw,56px)]
-                        pt-[clamp(26px,4vw,44px)] pb-[var(--step)]">
-
-          <Section id="you" title="Your year"
-                   blurb="Every day you opened something here. Nothing else is counted, and none of it is shown to anybody but you.">
-            <Card>
-              {/* The grid itself stays a stylesheet rule: 53
-                  columns sized by a custom property is one line of
-                  CSS and would be one arbitrary value per axis. */}
-              <div className="heat" id="account-heat" />
-              <p className="m-0 text-[0.82rem] text-ink-soft" id="account-week" />
-            </Card>
-          </Section>
-
-          {/* ============ THE LADDERS ============ */}
-          <Section id="ladders" title="Where you are"
-                   blurb="Your position in each course, the chapters you have finished and the checkpoints you have ticked inside them. This is the account's copy, so it is the same on every device.">
-            {/* The ladder comes down from here, out of the
-                generated snapshot, and the ticks are read in the
-                browser. That split is the rule
-                `next/lib/progress.ts` states, and this section
-                broke it until 18 August 2026: it imported all
-                four schools' `curriculum.js` at run time to find
-                out what a bar's denominator was. */}
-            <div className="ladder-list"><Paths ladders={SCHOOL_LADDERS} /></div>
-            <p className="m-0 text-[0.82rem] text-ink-soft" id="account-synced" />
-          </Section>
-
-          {/* ============ KEPT, AND WRITTEN ON ============ */}
-          <Section id="reading-list" title="Reading list"
-                   blurb="Pages you kept for later. Save one from the row under its title, on any piece or lesson.">
-            <div className="kept-list" id="account-kept-list"><ReadingList /></div>
-          </Section>
-
-          <Section id="notes" title="Your notes"
-                   blurb="What you wrote in the margin. Private, stored against your account, and shown to nobody, including me.">
-            <div className="kept-list" id="account-notes"><Notes /></div>
-          </Section>
-
-          {/* ============ TARGETS ============ */}
-          <Section id="targets" title="What you are aiming for"
-                   blurb="Set a target and this page measures it. Nothing is sent to you about it: there are no notifications on this site and there will not be any.">
-            <Targets ladders={SCHOOL_LADDERS} />
-          </Section>
-
-          {/* ============ SAVED SCENARIOS ============ */}
-          <Section id="scenarios" title="Saved scenarios"
-                   blurb="A filled-in calculator, kept under a name. Open one and the tool comes back exactly as you left it.">
-            <div className="saved-list" id="account-scenarios">
-              <Scenarios />
-            </div>
-          </Section>
-
-          {/* ============ PREFERENCES, AND THE THREE QUESTIONS ============
-
-              One section, because they are one thing from the
-              reader's side: how this site behaves for them. The
-              reading preferences act on every page immediately
-              and are applied before the first paint on the next
-              one; the three below them are what the site is
-              allowed to do with what it knows. */}
-          <Section id="preferences" title="How you like to read"
-                   blurb="These take effect as you press them, on every page, and follow you to your other devices.">
-            {/* The one section of this page that is a component
-                rather than a slot a script fills in. `account-page.ts`
-                painted it and no longer does: see the note at the top
-                of `components/account/prefs.tsx`. */}
-            <Card className="prefs gap-[18px]" id="account-prefs">
-              <Preferences />
-            </Card>
-
-            <div className="mt-3 grid gap-1 border-t border-hairline pt-5">
-              <h3 id="settings-label" className="m-0 text-[1.08rem]">Your settings</h3>
-              <p id="settings-intro" className="m-0 max-w-[var(--measure)] text-[0.9rem] text-ink-soft">
-                Three things, none of them required. You can change any of them
-                whenever you like.
-              </p>
-            </div>
-            <form className={FORM} id="settings-form">
-              <fieldset>
-                <legend>Your name</legend>
-                <p className="field-note">What appears beside anything you
-                   write. Nothing else about you is shown to anyone.</p>
-                <input type="text" id="account-name" maxLength={40}
-                       autoComplete="name" placeholder="Your name" />
-              </fieldset>
-              <fieldset>
-                <legend>What are you here to learn?</legend>
-                <p className="field-note">The home page offers these first when
-                   you come back, and a course you pick here shows up even
-                   before you have opened it.</p>
-                <div className="choice-grid" id="account-courses" />
-              </fieldset>
-              <fieldset>
-                <legend>How often do you want to practise?</legend>
-                <p className="field-note">Only so this page can tell you how
-                   the last week went.</p>
-                <div className="choice-row" id="account-pace" />
-              </fieldset>
-              <Actions>
-                <Button kind="solid" type="submit">Save</Button>
-                <Button kind="ghost" id="settings-skip" hidden>Not now</Button>
-                <span className="signin-note" id="settings-note" />
-              </Actions>
-            </form>
-          </Section>
-
-          {/* ============ WHAT IS KEPT, AND LEAVING ============ */}
-          <Section id="data" title="Your data"
-                   blurb="Only what is listed here, and only because it is useful to you. There is no analytics profile behind any of it.">
-            <div className="cards grid-2" id="account-kept" />
-
-            <div className="grid gap-[var(--gap)]
-                            grid-cols-[repeat(auto-fit,minmax(min(100%,250px),1fr))]">
-              <Card>
-                <h3>Take a copy</h3>
-                <p>One file with everything this account holds: your position
-                   in every course, your checkpoints, your reading list, your
-                   notes, your targets, your saved scenarios and your
-                   preferences. Plain JSON, readable in any text editor.</p>
-                <Button kind="ghost" id="account-export">
-                  Download everything
-                </Button>
-              </Card>
-              <Card>
-                <h3>Sign out</h3>
-                <p>Ends the session on this device and takes the account&apos;s
-                   copy of your progress off it, so the next person at this
-                   machine does not inherit your ticks. Nothing on the account
-                   is touched.</p>
-                <Button kind="ghost" id="account-signout">
-                  Sign out
-                </Button>
-              </Card>
-              <Card className="border-danger/35 bg-danger/5 [&_.btn:hover]:border-danger [&_.btn:hover]:text-danger">
-                <h3>Erase everything</h3>
-                <p>Removes all of it from the account: position, checkpoints,
-                   reading list, notes, targets and scenarios. This cannot be
-                   undone, so take a copy first if you want one.</p>
-                <Button kind="ghost" id="account-forget">
-                  Erase it
-                </Button>
-              </Card>
-            </div>
-            <p className="signin-note" id="exit-note" />
-          </Section>
-
-        </div>
+            The panels are built HERE, on the server, and handed
+            over as a prop. A client component's children are
+            serialised into the payload rather than re-rendered in
+            the browser, so making the strip interactive does not
+            make eight sections of markup the browser's job. */}
+        <TabPanels label="This page" panels={PANELS}
+                   className="wrap grid gap-[clamp(20px,3vw,30px)]
+                              pt-[clamp(16px,2.5vw,24px)] pb-[var(--step)]" />
       </div>
     </main>
   );
