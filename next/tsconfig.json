@@ -8,6 +8,12 @@
     ],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    /* For the node-side files beside this config: `article.test.ts`
+       imports `./dev-worker.ts` by its real filename, because node
+       resolves the file on disk and has no opinion about what
+       TypeScript would have preferred. `noEmit` below is what makes
+       this legal. */
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "strict": true,
     "noEmit": true,
@@ -24,6 +30,20 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      /* Where playwright really is: a devDependency of `app/`, and
+         the browser tests beside this config import it from there
+         at run time because node resolves a real path. This is so
+         that they can also have its types. */
+      "playwright": [
+        "../app/node_modules/playwright"
+      ],
+      /* And the same package by the path node resolves it at. A
+         `paths` entry is matched against the specifier as
+         written, so the type-only name above does not cover the
+         runtime one. */
+      "../app/node_modules/playwright/index.mjs": [
+        "../app/node_modules/playwright"
       ],
       "/account.js": [
         "../app/src/types/account.d.ts"

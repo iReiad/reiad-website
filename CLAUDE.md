@@ -107,6 +107,14 @@ by the file AND the name, with the reason. Keyed by both because
 "`build-styles.mjs` is gone" is a true sentence and a NEW comment
 naming it somewhere else is not.
 
+**Nothing new here is `.mjs`.** `next/` had five test files with
+that extension and they are the reason a sixth kept getting
+written: the neighbours are the pattern, and a pattern that is
+waiting to be ported is not one to copy. A `.ts` runs under node
+with no build step, and `next build` typechecks everything in
+`next/tsconfig.json`, so the build is what holds a file here to
+its own annotations. There is nothing to trade.
+
 ## Comments carry the constraint, not the story
 
 Keep what a reader needs in order not to break something: what will fail,
@@ -696,7 +704,7 @@ node aab/sync.test.mjs             # a browser's own progress getting into an
 node aab/studio.test.mjs           # the editor, end to end (68 checks)
 node next/progress.test.mjs         # a page that costs a reader their ticks just
                                    # by being read (23 checks, no browser)
-node next/comments.test.mjs        # a comment body that stopped being text, a reply
+node next/comments.test.ts        # a comment body that stopped being text, a reply
                                    # two levels deep, or a thread that draws itself
                                    # signed in on the server (28 checks, no browser)
 node aab/schools/progress.test.mjs  # a school's ticks filed under a key that is
@@ -758,6 +766,12 @@ node next/parity.test.mjs          # the Next.js route saying something the
                                    # reading hub that has stopped agreeing with
                                    # the database
                                    # (114 checks, needs the build, skips without)
+node next/article.test.ts          # the article page, on the real Worker with a
+                                   # real database: the thread filling, a comment
+                                   # body that stopped being text, and anything
+                                   # hydrating wrongly on the one kind of route
+                                   # nothing else can reach (27 checks, needs the
+                                   # OpenNext build and a browser, skips without)
 node next/interactive.test.mjs     # a calculator that renders and computes
                                    # nothing, because hydration undid it, and a
                                    # contact form that looks sent and reached
