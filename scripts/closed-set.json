@@ -80,7 +80,6 @@
   "aab/tools/stock.js",
   "aab/tools/stock.model.js",
   "aab/tools/tools.js",
-  "functions/_lib/admins.js",
   "functions/_lib/auth.js",
   "functions/_lib/backup.js",
   "functions/_lib/broker.js",

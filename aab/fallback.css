@@ -3793,18 +3793,7 @@
     & .mono { color: var(--ink-soft); }
   }
   .csv-file-label { cursor: pointer; }
-  .csv-paste-label {
-    display: grid; gap: var(--s-3);
 
-    & .mono { color: var(--ink-soft); }
-    & textarea {
-      width: 100%; resize: vertical;
-      font-family: var(--font-mono); font-size: var(--t-3);
-      padding: 10px 12px; border-radius: var(--radius-sm);
-      border: 1px solid var(--hairline); background: var(--paper); color: var(--ink);
-    }
-    & textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-  }
   .csv-status {
     margin-top: 10px; font-size: var(--t-4); color: var(--ink-soft);
 
