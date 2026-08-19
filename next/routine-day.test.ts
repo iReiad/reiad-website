@@ -193,7 +193,62 @@ const reds = await page.evaluate(() => [...document.querySelectorAll(".rt-day *"
   }).length);
 ok("nothing on the page is red", reds === 0, String(reds));
 
-ok("no page errors", errors.length === 0, errors[0] ?? "");
+ok("no page errors on the day", errors.length === 0, errors[0] ?? "");
+
+/* ============================================================
+   And the other surface: settings.
+   ============================================================ */
+
+await page.goto(`http://localhost:${PORT}/tools/routine/settings`, { waitUntil: "load" });
+await page.waitForTimeout(2200);
+
+ok("the settings page opens", await page.locator(".rt-builder, .rt-templates").count() > 0);
+
+/* THE ONE USEFUL SENTENCE, and it has to be a real number rather
+   than a placeholder: `A simple day` is 9.75 planned hours. */
+const line = (await page.locator(".rt-hours-line").textContent()) ?? "";
+ok("the builder says how full the day is", /Planned to [\d.]+ hours of 24/.test(line), line);
+ok("and how much is left", /[\d.]+ free/.test(line), line);
+/* Never a warning and never a negative: an over-planned day is a
+   plan rather than a mistake. */
+ok("and it is never a negative number", !line.includes("-"), line);
+
+/* Taking something off the list archives it rather than deleting
+   it, which is the visible half of "ids are never removed". */
+const before = await page.locator(".rt-build-task").count();
+await page.getByRole("button", { name: /Take .* off the list/ }).first().click();
+await page.waitForTimeout(400);
+ok("taking one off shortens the list",
+  await page.locator(".rt-build-band:not(.rt-archived) .rt-build-task").count() === before - 1);
+ok("and it is still there, under Off the list",
+  await page.locator(".rt-archived .rt-build-task").count() === 1);
+ok("with a way back", await page.getByRole("button", { name: "put it back" }).count() === 1);
+await page.getByRole("button", { name: "put it back" }).click();
+await page.waitForTimeout(400);
+ok("which works", await page.locator(".rt-archived").count() === 0);
+
+/* Templates: a preview before loading, because Sadia's day is
+   eighteen tasks and somebody should see them before they
+   arrive. */
+await page.getByRole("tab", { name: "Templates" }).click();
+await page.waitForTimeout(300);
+ok("all three templates are offered", await page.locator(".rt-template").count() === 3);
+ok("nothing is previewed until it is asked for",
+  await page.locator(".rt-preview").count() === 0);
+await page.getByRole("button", { name: "have a look" }).first().click();
+await page.waitForTimeout(300);
+const shown = await page.locator(".rt-preview li").count();
+ok("a preview lists what is in it", shown === 18, String(shown));
+
+/* Your data: the summary before anything is written. */
+await page.getByRole("tab", { name: "Your data" }).click();
+await page.waitForTimeout(300);
+ok("there is a way to take a copy",
+  await page.getByRole("button", { name: /Download/ }).count() === 1);
+ok("and nothing offers to write until a file has been read",
+  await page.getByRole("button", { name: /Replace everything/ }).count() === 0);
+
+ok("no page errors on settings", errors.length === 0, errors[0] ?? "");
 
 await browser.close();
 server.close();

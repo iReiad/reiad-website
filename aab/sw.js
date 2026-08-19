@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v149: `/fallback.css`. The routine's second surface, at
+        `/tools/routine/settings`: the list, the templates and
+        the copy.
+
    v148: `/fallback.css` and `/routine.js`. The routine's first
         page, `@layer routine` with it, and one new face:
         `Caveat`, loaded for exactly one thing, which is what a
@@ -1504,7 +1508,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v148";
+const VERSION = "v149";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

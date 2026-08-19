@@ -256,3 +256,167 @@ export const TEMPLATES: Template[] = [
     should not be a wall of somebody else's life, which is the
     spec's own phrase and the right one. */
 export const FIRST_RUN = "a-simple-day";
+
+/* ============================================================
+   Taking a copy, and putting it back
+   ============================================================ */
+
+/** The one version this site writes and the only one it reads.
+
+    A file with anything else in this field is REFUSED rather than
+    guessed at. That is the whole point of the field: a format
+    that tries its best with a file it does not understand is a
+    format that silently loses half of somebody's year. */
+export const SCHEMA = "reiad.routine/1";
+
+export interface ExportFile {
+  schema: string;
+  exported_at: string;
+  routine: { name: string } & RoutineShape;
+  entries: Entry[];
+}
+
+/** Everything, as one file.
+
+    `exported_at` is passed in rather than read from the clock,
+    because a function that reads the clock cannot be tested
+    against a fixed string and this is the file somebody's whole
+    year comes back out of. */
+export function toExport(
+  routine: { name: string } & RoutineShape,
+  entries: Entry[],
+  when: string,
+): ExportFile {
+  return {
+    schema: SCHEMA,
+    exported_at: when,
+    routine: { name: routine.name, bands: routine.bands, tasks: routine.tasks },
+    /* Oldest first, so the file reads like a diary rather than
+       like a database. Nobody will ever open it, and if they do
+       it should make sense. */
+    entries: [...entries].sort((a, b) => a.entry_date.localeCompare(b.entry_date)),
+  };
+}
+
+export type ReadResult =
+  | { ok: true; file: ExportFile }
+  | { ok: false; why: string };
+
+/**
+ * A file somebody chose, read carefully.
+ *
+ * NEVER TRUST IT, and say why rather than throwing: this is the
+ * one place a reader hands the site something and the site has to
+ * explain itself in words they can act on. "That did not work" is
+ * not an error message.
+ *
+ * Every failure below is a sentence somebody could fix.
+ */
+export function readImport(text: string): ReadResult {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    return { ok: false, why: "That file is not JSON. A routine export is a .json file." };
+  }
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return { ok: false, why: "That file does not hold a routine." };
+  }
+
+  const file = raw as Record<string, unknown>;
+  if (typeof file.schema !== "string") {
+    return { ok: false, why: "That file does not say what it is, so it is not a routine export." };
+  }
+  if (file.schema !== SCHEMA) {
+    return {
+      ok: false,
+      why: `That file says it is "${file.schema}" and this reads "${SCHEMA}". `
+        + "Nothing was changed.",
+    };
+  }
+
+  const routine = file.routine as Record<string, unknown> | undefined;
+  if (!routine || !Array.isArray(routine.tasks) || !Array.isArray(routine.bands)) {
+    return { ok: false, why: "That file has no routine in it." };
+  }
+
+  const entries = Array.isArray(file.entries) ? file.entries : [];
+  /* A date that is not a date would land in the database as one
+     and come back as an empty day for ever. Checked here, where
+     it can still be explained. */
+  const bad = (entries as Entry[]).find(
+    (e) => !e || typeof e.entry_date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(e.entry_date),
+  );
+  if (bad) {
+    return { ok: false, why: "One of the days in that file has no date on it." };
+  }
+
+  return {
+    ok: true,
+    file: {
+      schema: SCHEMA,
+      exported_at: String(file.exported_at ?? ""),
+      routine: {
+        name: String(routine.name ?? "Imported routine"),
+        bands: routine.bands as Band[],
+        tasks: routine.tasks as Task[],
+      },
+      entries: (entries as Entry[]).map((e) => ({
+        entry_date: e.entry_date,
+        marks: (e.marks && typeof e.marks === "object") ? e.marks : {},
+        mood: e.mood ?? null,
+        note: e.note ?? null,
+        chose: e.chose ?? null,
+      })),
+    },
+  };
+}
+
+/**
+ * What is in a file, in one sentence, BEFORE anything is written.
+ *
+ * The spec asks for this and it is the difference between an
+ * import and a leap: nobody should press Replace everything
+ * without being told what everything is about to become.
+ */
+export function summarise(file: ExportFile): string {
+  const n = file.entries.length;
+  if (n === 0) return `This file has 1 routine and no days in it.`;
+  const dates = file.entries.map((e) => e.entry_date).sort();
+  const day = (iso: string) => new Intl.DateTimeFormat("en-GB", {
+    day: "numeric", month: "long", timeZone: "UTC",
+  }).format(new Date(`${iso}T12:00:00Z`));
+  const from = day(dates[0]);
+  const to = day(dates[dates.length - 1]);
+  const days = n === 1 ? "1 day" : `${n} days`;
+  return from === to
+    ? `This file has 1 routine and ${days}, on ${from}.`
+    : `This file has 1 routine and ${days}, from ${from} to ${to}.`;
+}
+
+/**
+ * Two sets of days, one answer.
+ *
+ * `replace` is what it says. `merge` keeps everything and lets
+ * the imported day win where both have one, which is the spec's
+ * rule and the right way round: somebody importing is restoring,
+ * and a restore that loses to what is already there is not one.
+ *
+ * NOTHING IS EVER DROPPED SILENTLY in either mode. Replace is
+ * destructive and the interface says so twice before it happens;
+ * merge cannot lose a day at all.
+ */
+export function mergeDays(
+  mine: Entry[], theirs: Entry[], how: "merge" | "replace",
+): Entry[] {
+  if (how === "replace") {
+    return [...theirs].sort((a, b) => a.entry_date.localeCompare(b.entry_date));
+  }
+  const by = new Map<string, Entry>();
+  for (const e of mine) by.set(e.entry_date, e);
+  for (const e of theirs) by.set(e.entry_date, e);
+  return [...by.values()].sort((a, b) => a.entry_date.localeCompare(b.entry_date));
+}
+
+/** `routine-2026-08-19.json`. */
+export const exportName = (day: string): string => `routine-${day}.json`;
