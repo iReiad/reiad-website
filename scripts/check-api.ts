@@ -82,7 +82,8 @@ const mounts = [...table.matchAll(/\["\/api\/([a-z-]+)"/g)].map((m) => m[1]);
    check that could not see it would go blind exactly as the work
    lands.
 
-   And `aab/comments.js` calls `fetch("/api/comments")` directly.
+   And `next/components/comments.tsx` calls `fetch("/api/comments")`
+   directly, as `aab/comments.js` did before it was a component.
    That is not an oversight to tidy here: a comment thread wants
    the status code and the error body, and `api()` deliberately
    flattens both into `null` so that every other caller can have a

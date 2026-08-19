@@ -478,9 +478,20 @@ check("and the machine-readable date on it",
 ok("the reading time", fromNext.includes("9 min read"));
 ok("the piece carries its slug for the scripts",
   fromNext.includes(`data-slug="${ARTICLE.slug}"`));
-ok("the comment thread is there, empty",
-  /id="comments"[^>]*data-section="insights"/.test(fromNext)
-  || /data-section="insights"[^>]*id="comments"/.test(fromNext));
+/* The thread, and it asks MORE than it did. It was an empty
+   `<section id="comments" data-slug data-section>` that an inline
+   module read those two attributes off and filled, so all this
+   could check was that the empty box had the attributes on it.
+
+   `components/comments.tsx` takes them as props, so they are not
+   in the markup any more and there is something better to ask
+   for: the thread's own heading, server-rendered, which is the
+   client component's first paint arriving in the HTML rather than
+   a tick after it. */
+ok("the comment thread is there", /id="comments"/.test(fromNext));
+ok("and its heading is server-rendered rather than written in later",
+  /class="comment-title"[^>]*>Comments</.test(fromNext),
+  "no <h2 class=comment-title> in the HTML the route served");
 ok("the section's own footer line",
   fromNext.includes("not investment advice"));
 

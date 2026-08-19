@@ -33,6 +33,17 @@ export interface Reader {
     session this module already holds and asks nobody. */
 export function current(): Reader | null;
 
+/** The access token to send as a bearer, or null when nobody is
+    signed in or the refresh failed.
+
+    Not the same question as `current()` and it is worth not
+    confusing them: `current()` says who this device thinks it is
+    and answers instantly, while this may REFRESH first, and a
+    session that has quietly expired answers null here and a
+    reader there. Anything about to write on somebody's behalf
+    asks this one. */
+export function token(): Promise<string | null>;
+
 /** Ends the session and takes the mirror off this device. */
 export function signOut(): Promise<void>;
 
