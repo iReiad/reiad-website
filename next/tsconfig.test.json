@@ -1,7 +1,8 @@
 {
   "//": [
     "The node-side files beside the app: the browser tests and the",
-    "wrangler-dev harness they share.",
+    "two harnesses they share, dev-worker.ts for the built Worker",
+    "and hydrate-fixture.ts for one component in a browser.",
     "",
     "They are excluded from tsconfig.json because `next build`",
     "typechecks that one, and a test in it makes the production",
@@ -33,6 +34,7 @@
        in the parent for that reason and says so. */
     "allowImportingTsExtensions": true
   },
-  "include": ["*.test.ts", "dev-worker.ts", "components/**/*.tsx", "lib/**/*.ts"],
+  "include": ["*.test.ts", "dev-worker.ts", "hydrate-fixture.ts",
+              "components/**/*.tsx", "lib/**/*.ts"],
   "exclude": ["node_modules"]
 }

@@ -16,7 +16,7 @@
 
    That mattered the moment the comment thread became a component
    (#147) and again when the reactions and the question box did
-   (#149). `read-aloud.js` is the one left on this page.
+   (#149), and again when the read-aloud control did.
 
    ---- why the Worker rather than a deployed preview ----
 
@@ -196,8 +196,8 @@ const open = async (
   /* THE OTHER HALF OF THE SITE, off disk.
 
      `wrangler dev` here is running the NEXT Worker, and that is
-     one of two. `/app.js`, `/read-aloud.js` and every other
-     served module live in `aab/`, which the front-door Worker
+     one of two. `/app.js`, `/keep.js` and every other served
+     module live in `aab/`, which the front-door Worker
      answers with `[assets] directory = "./aab"`. Without this the
      page loads and every one of them 404s, and a 404 for a
      `<script type="module">` is not a quiet thing: it is a

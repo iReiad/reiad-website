@@ -8,7 +8,7 @@
    THE BUG THIS EXISTS FOR
 
    Three case studies were written, given their own pages, added
-   to content.js, and published. The portfolio page kept listing
+   to the manifest, and published. The portfolio page kept listing
    four, because its cards are markup and markup does not know
    that a fourth, fifth and sixth file appeared next to it. The
    same week, the stock check was described as "thirty-eight
@@ -40,13 +40,13 @@
       the computed value, in Latin or Bangla digits.
 
    4. TYPED COUNTS AGREE WITH THE DATA. Some numbers cannot be a
-      slot: a <meta> description, a blurb inside content.js, a
+      slot: a <meta> description, a blurb inside the manifest, a
       sentence in a comment. Those are listed in CLAIMS below with
       the count they encode, and checked against COUNTS.
 
-   5. THE TWO COUNTS content.js CANNOT COMPUTE. `ratios` and
-      `pillars` describe /tools/stock.model.js, which content.js
-      deliberately does not import: it would pull a thousand lines
+   5. THE TWO COUNTS shared/content.ts CANNOT COMPUTE. `ratios`
+      and `pillars` describe /tools/stock.model.js, which the
+      manifest does not import: it would pull a thousand lines
       of scoring maths into every page on the site to print one
       number. They are typed in COUNTS and asserted here instead.
 
@@ -61,7 +61,7 @@
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PAGES, COUNTS } from "../aab/content.js";
+import { PAGES, COUNTS } from "../shared/content.ts";
 import { NEXT_ROUTES, ARTICLE } from "../worker.js";
 import { METRICS, PILLARS } from "../aab/tools/stock.model.js";
 
@@ -105,19 +105,16 @@ const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
 
    The two failures this section exists for are unchanged, and so
    is the answer: a case study nobody can reach, either because
-   `content.js` has never heard of it or because the portfolio
+   the manifest has never heard of it or because the portfolio
    page does not link it. */
 const NEXT_PAGES = "../next/app/(site)";
 const caseFiles = readdirSync(join(ROOT, NEXT_PAGES, "portfolio"))
   .filter((f) => f.endsWith(".html"))
   .map((f) => `/portfolio/${f}`);
 
-/* `flatMap` rather than `filter().map()`, and not for tidiness: a
-   PAGES entry's url can be null, because the two workbook groups
-   are built from `workbookUrl()`, which answers null for a stage
-   with no book. The filter that drops those is invisible to a
-   type, and the loop below compares urls to file names. Section 2
-   is where a null one is reported. */
+/* `flatMap` rather than `filter().map()`: the loop below compares
+   urls to file names, and an entry with an empty one is section
+   2's to report rather than something to match against. */
 const listed = new Set(
   PAGES.flatMap((p) => (p.group === "case" && p.url ? [p.url] : []))
 );
@@ -126,7 +123,7 @@ const portfolioHtml = read(`${NEXT_PAGES}/portfolio.html/page.tsx`);
 for (const url of caseFiles) {
   if (!listed.has(url)) {
     fail(`unlisted  ${url}`,
-      "this page exists but has no PAGES entry in content.js, so it is in",
+      "this page exists but has no PAGES entry in shared/content.ts, so it is in",
       "neither the menu, the Ctrl+K palette nor the sitemap.",
       'Add: { title: "…", url: "' + url + '", hint: "Case study", group: "case", blurb: "…" }');
   }
@@ -158,17 +155,16 @@ for (const url of listed) {
    always been for.
    ------------------------------------------------------------ */
 for (const page of PAGES) {
-  /* An entry with no address at all, which the two workbook groups
-     can produce: `workbookUrl()` answers null for a stage with no
-     book, and the `.filter()` in front of it is the only thing
-     stopping one reaching here. Asked where it can be answered,
-     because a manifest entry with no url is a menu item and a
-     palette entry that go nowhere. */
+  /* An entry with no address at all. `Page.url` is a string since
+     the manifest became TypeScript, so the two workbook groups can
+     no longer produce a null one: they build the url first and skip
+     the stage when `workbookUrl()` answers null for a book that
+     does not exist. An empty one is still a menu item and a palette
+     entry that go nowhere, and this is where that is said. */
   if (!page.url) {
     fail(`no-url    ${page.title}`,
       "this PAGES entry has no url, so it is in the menu and in the palette",
-      "and neither goes anywhere. The workbook entries are built from",
-      "workbookUrl(), which answers null for a stage with no book.");
+      "and neither goes anywhere.");
     continue;
   }
   const rel = page.url.replace(/^\//, "");
@@ -245,7 +241,7 @@ for (const file of htmlFiles) {
     const value = COUNT[key];
     if (value === undefined) {
       fail(`bad-key   ${file}`,
-        `data-count="${key}" is not a key of COUNTS in content.js.`,
+        `data-count="${key}" is not a key of COUNTS in shared/content.ts.`,
         `Known keys: ${Object.keys(COUNT).join(", ")}`);
       continue;
     }
@@ -277,9 +273,9 @@ type Claim =
   | { file: string; text: string; key: string; approx: true; word?: never };
 
 const CLAIMS: Claim[] = [
-  { file: "content.js", text: "Forty-odd ratios across six pillars", key: "ratios", approx: true },
-  { file: "content.js", text: "eight stages deep", key: "stages", word: "eight" },
-  { file: "content.js", text: "German from Bangla in four stages", key: "stufen", word: "four" },
+  { file: "../shared/content.ts", text: "Forty-odd ratios across six pillars", key: "ratios", approx: true },
+  { file: "../shared/content.ts", text: "eight stages deep", key: "stages", word: "eight" },
+  { file: "../shared/content.ts", text: "German from Bangla in four stages", key: "stufen", word: "four" },
   /* The stock check's page is a Next.js route as of Stage 11.4,
      and the two sentences are the same two sentences. A claim
      follows its words rather than its file. */
@@ -333,15 +329,15 @@ for (const claim of CLAIMS) {
 }
 
 /* ------------------------------------------------------------
-   5. The two counts content.js has to be told
+   5. The two counts the manifest has to be told
    ------------------------------------------------------------ */
 if (COUNTS.ratios !== METRICS.length) {
-  fail("drifted   content.js",
+  fail("drifted   shared/content.ts",
     `COUNTS.ratios is ${COUNTS.ratios}, but stock.model.js scores ${METRICS.length} metrics.`,
     "Set COUNTS.ratios to the new number; every page that prints it follows.");
 }
 if (COUNTS.pillars !== PILLARS.length) {
-  fail("drifted   content.js",
+  fail("drifted   shared/content.ts",
     `COUNTS.pillars is ${COUNTS.pillars}, but stock.model.js has ${PILLARS.length} pillars.`);
 }
 

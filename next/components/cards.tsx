@@ -69,14 +69,20 @@ function Art({ name }: { name: string }) {
   );
 }
 
-/** The English card, as `initArticleCards()` in app.js builds it. */
-export function SampleCard({ piece }: { piece: Piece }) {
+/** The English card, as `initArticleCards()` in app.js builds it.
+
+    `hidden` is the topic filter's, and it is a prop rather than an
+    attribute a script reads off the card: the chosen topic is one
+    piece of state in `topic-filter.tsx` and this is one of the two
+    things drawn from it. The card carried a `data-topics` list for
+    `aab/hub.js` to match against, and nothing needs it now that
+    the component filtering these has the rows. */
+export function SampleCard({ piece, hidden }: { piece: Piece; hidden?: boolean }) {
   const meta = [dateLabel(piece), piece.minutes ? `${piece.minutes} min read` : ""]
     .filter(Boolean).join(" · ");
 
   return (
-    <a className="cell sample-card" href={piece.url}
-       data-topics={piece.topics.join("|")}
+    <a className="cell sample-card" href={piece.url} hidden={hidden}
        style={{ textDecoration: "none", color: "inherit" }}>
       <span className="tag mono">{piece.tag}</span>
       <h3>{piece.title}</h3>

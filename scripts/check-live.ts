@@ -124,9 +124,9 @@ const html = await article.text();
 
 /* The one fact that says Next is in front of this route rather
    than the Worker's own renderer. The Worker's page loads
-   /app.js and /read-aloud.js and nothing else; a page from the
-   App Router carries its own chunks whatever the tree contains,
-   which is the 170 KB Stage 10 measured and accepted. */
+   /app.js and nothing else; a page from the App Router carries
+   its own chunks whatever the tree contains, which is the 170 KB
+   Stage 10 measured and accepted. */
 const chunks = [...new Set(html.match(/\/_next\/static\/[^"']+\.js/g) ?? [])];
 ok("the piece is rendered by the Next.js Worker",
   chunks.length > 0,
@@ -145,8 +145,12 @@ const loads = (src: string): boolean =>
   || new RegExp(`<link[^>]*rel="(?:modulepreload|preload)"[^>]*href="${src}"`).test(html)
   || new RegExp(`<link[^>]*href="${src}"[^>]*rel="(?:modulepreload|preload)"`).test(html);
 
-ok("the site's own scripts are still loaded",
-  loads("\\/app\\.js") && loads("\\/read-aloud\\.js"));
+ok("the site's own script is still loaded", loads("\\/app\\.js"));
+/* The speech control was `/read-aloud.js` and is
+   `next/components/read-aloud.tsx`. A live page still asking for
+   the module is a deploy that has not caught up, and it would be
+   a 404 on every article. */
+ok("and the archived one is not", !loads("\\/read-aloud\\.js"));
 ok("the comment thread is on the page", /id="comments"/.test(html));
 ok("the canonical link is the piece's own address",
   html.includes(`<link rel="canonical" href="${origin}${DB_PIECE}"`)

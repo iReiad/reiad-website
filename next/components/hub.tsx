@@ -20,12 +20,14 @@
    nothing to keep in step, because there is only one list.
    ============================================================ */
 
-import { ReadCard, SampleCard, SoonCard, bn } from "./cards";
+import { ReadCard, SoonCard, bn } from "./cards";
 import { SOON, type ReadHubCopy } from "../lib/hub";
 import type { Piece } from "../lib/pieces";
 import { InfoCard } from "./deck";
 import { Eyebrow, SectionLabel } from "./ui/label";
-import { Button, ButtonLink } from "./ui/button";
+import { ButtonLink } from "./ui/button";
+import { TopicFilter } from "./topic-filter";
+import { SubscribeBox } from "./subscribe";
 
 /* ---------- the kitchen and the travel desk ---------- */
 
@@ -101,40 +103,14 @@ export function ReadHub({ copy, pieces }: { copy: ReadHubCopy; pieces: Piece[] |
 
 /* ---------- Insights ---------- */
 
-/** The chips above the article cards, counted from the pieces
-    actually on the page. `initTopicFilter()` in app.js built these
-    in the browser from the same counts; what it cannot do is have
-    them in the HTML, so a reader with no JavaScript saw an empty
-    row where the filter should be. `/hub.js` wires up the
-    clicking, and does nothing else. */
-function TopicChips({ pieces }: { pieces: Piece[] }) {
-  const counts = new Map<string, number>();
-  for (const piece of pieces) {
-    for (const topic of piece.topics) counts.set(topic, (counts.get(topic) ?? 0) + 1);
-  }
-  const chips = [...counts.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-
-  return (
-    /* `data-filter-ready` is how /hub.js tells the two hubs apart:
-       here the chips are in the HTML and want a listener, and on
-       the hand-written page app.js builds them and binds its own.
-       Without it, that page would toggle every card twice. */
-    <div className="filter-row" id="topic-filter" role="group" aria-label="Filter by topic"
-         data-filter-ready>
-      <button className="chip" type="button" data-topic="" aria-pressed="true">
-        Everything · {pieces.length}
-      </button>
-      {chips.map(([name, count]) => (
-        <button className="chip" type="button" data-topic={name} aria-pressed="false" key={name}>
-          {name} · {count}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
+  /* Built once, because the grid is drawn either by the filter or
+     on its own and the teasers belong in both. They are the only
+     cards here that are not a row, so the filter never hides one. */
+  const soon = SOON.map((teaser) => (
+    <SoonCard key={teaser.title} title={teaser.title} dek={teaser.dek} />
+  ));
+
   return (
     <main id="main">
       <div className="wrap">
@@ -175,21 +151,14 @@ export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
             <SectionLabel className="flex-1">Articles</SectionLabel>
           </div>
 
-          {pieces ? <TopicChips pieces={pieces} /> : null}
-
-          <div className="cards grid-2">
-            {pieces
-              ? pieces.map((piece) => <SampleCard key={piece.slug} piece={piece} />)
-              : null}
-            {SOON.map((soon) => (
-              <SoonCard key={soon.title} title={soon.title} dek={soon.dek} />
-            ))}
-          </div>
-          {pieces ? null : (
-            <p className="measure">
-              The list of pieces could not be loaded just now. <a href="/feed.xml">The feed</a> has
-              all of them.
-            </p>
+          {pieces ? <TopicFilter pieces={pieces}>{soon}</TopicFilter> : (
+            <>
+              <div className="cards grid-2">{soon}</div>
+              <p className="measure">
+                The list of pieces could not be loaded just now.{" "}
+                <a href="/feed.xml">The feed</a> has all of them.
+              </p>
+            </>
           )}
         </section>
 
@@ -239,18 +208,10 @@ export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
             <p>No newsletter, no tracking, no &quot;sign up to continue reading&quot;. If you
                want to know when something new appears, the feed is the honest way:
                it works in any reader, and it doesn&apos;t tell me who you are.</p>
-            {/* The email box only appears if the site has a database to
-                put an address in; otherwise the RSS line stands alone.
-                `/hub.js` is what asks and what unhides it. */}
-            <form className="subscribe-form" id="subscribe-form" hidden>
-              <label className="visually-hidden" htmlFor="sub-email">Email address</label>
-              <input type="email" id="sub-email" name="email" required
-                     placeholder="you@example.com" autoComplete="email" />
-              <input type="text" name="website" tabIndex={-1} autoComplete="off"
-                     aria-hidden="true" className="honeypot" />
-              <Button kind="solid" type="submit">Email me new pieces</Button>
-            </form>
-            <p className="gate-msg mono" id="sub-msg" role="status" style={{ marginTop: "8px" }} />
+            {/* The email box only appears if the site has a database
+                to put an address in; otherwise the RSS line stands
+                alone. `components/subscribe.tsx` is what asks. */}
+            <SubscribeBox />
 
             <p><a href="/feed.xml">RSS feed →</a> &nbsp;·&nbsp;
                <a href="/money/index.html">শেখার লাইব্রেরি</a> &nbsp;·&nbsp;

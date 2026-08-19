@@ -91,6 +91,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     ["scripts/build-modules.ts", "--check"],
     ["scripts/build-fallback.ts", "--check"],
     ["scripts/build-school-icons.ts", "--check"],
+    ["scripts/build-stamp.ts", "--check"],
     ["scripts/import-courses.ts", "--crawl", "scripts/fixtures/course-crawl", "--check"],
   ]],
   ["tests", [

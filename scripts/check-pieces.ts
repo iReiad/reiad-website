@@ -15,7 +15,7 @@
    Every `.html` in a section directory has to be one of three
    things, and it has to be obvious which:
 
-     an entry in content.js       a piece the site lists
+     an entry in SECTIONS         a piece the site lists
      a redirect in _redirects     a URL kept alive after a move
      the section template         _template.html
 
@@ -39,25 +39,10 @@ import { dirname, join } from "node:path";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const aab = join(root, "aab");
 
-/* `content.js` is a browser module with no declaration beside
-   it, so the two things this file asks of it are stated here. The
-   dynamic import stays: it is plain JavaScript at a path, and a
-   static one would need a `.d.ts` in `aab/src/types/` that only
-   this check would read. */
-interface Section {
-  id: string;
-  dir: string;
-  [key: string]: unknown;
-}
-
-interface Piece {
-  slug: string;
-  [key: string]: unknown;
-}
-
-const { SECTIONS, livePieces } = await import(
-  `file://${join(aab, "content.js")}`
-) as { SECTIONS: Section[]; livePieces: (section: Section) => Piece[] };
+/* The manifest itself rather than the module built from it. Both
+   answer the same, and this one carries its own types: it is
+   `shared/content.ts`, which node reads directly. */
+import { SECTIONS, livePieces } from "../shared/content.ts";
 
 const live = process.argv.includes("--live");
 const ORIGIN = process.env.SITE_ORIGIN ?? "https://reiad.co.uk";
@@ -116,7 +101,7 @@ for (const section of SECTIONS) {
       .map((f) => f.replace(/\.html$/, ""))
   );
 
-  const listed = new Set(livePieces(section).map((p: Piece) => p.slug));
+  const listed = new Set(livePieces(section).map((p) => p.slug));
 
   // Every slug either side knows about.
   const slugs = new Set([
@@ -147,7 +132,7 @@ for (const section of SECTIONS) {
     }
 
     if (inList && !onDisk && inDb === false) {
-      bad(`content.js lists ${section.id}/${slug}, but there is no file `
+      bad(`the manifest lists ${section.id}/${slug}, but there is no file `
         + `and no database row. That link is dead.`);
     }
   }

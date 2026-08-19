@@ -373,6 +373,50 @@ const moved = (v) => {
 const renamed = (v) =>
   (typeof v === "string" ? v.replaceAll("\u09b6\u09c7\u0996\u09be\u09b0 \u09b2\u09be\u0987\u09ac\u09cd\u09b0\u09c7\u09b0\u09bf", "\u099f\u09be\u0995\u09be \u0993 \u09b6\u09c7\u09af\u09bc\u09be\u09b0") : v);
 
+/* ---------- sentences that were changed on purpose ----------
+
+   The committed pages are what the site said on 16 August 2026,
+   and holding today's copy to them word for word means the copy
+   can never change again, which is not what this test is for: it
+   is for a PORT that changed the words without meaning to.
+
+   So a deliberate change is written down here, keyed by what the
+   old page said, and every other word is still held exactly. Two
+   claims were narrowed on 19 August 2026 and both were wrong
+   rather than merely wordy:
+
+     "\u09ac\u09bf\u09a8\u09be\u09ae\u09c2\u09b2\u09cd\u09af\u09c7, \u09b2\u0997\u0987\u09a8 \u099b\u09be\u09dc\u09be" promised a whole site free forever
+     where only the education is, and every "\u0986\u09aa\u09a8\u09be\u09b0 \u09a8\u09bf\u099c\u09c7\u09b0
+     \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7\u0987 \u09a5\u09be\u0995\u09c7" told a reader their progress lives in
+     this browser, which stopped being true when the account
+     became the record.
+
+   A pair whose left side no longer appears anywhere is dead
+   weight and should be deleted, not kept. */
+const REWRITTEN = [
+  ["\u09ac\u09bf\u09a8\u09be\u09ae\u09c2\u09b2\u09cd\u09af\u09c7, \u09ac\u09be\u0982\u09b2\u09be\u09af\u09bc, \u0986\u09b0 \u0995\u09cb\u09a8\u09cb \u09b2\u0997\u0987\u09a8 \u099b\u09be\u09dc\u09be\u0964",
+   "\u09ac\u09bf\u09a8\u09be\u09ae\u09c2\u09b2\u09cd\u09af\u09c7, \u09ac\u09be\u0982\u09b2\u09be\u09af\u09bc\u0964"],
+  ["\u09ac\u09bf\u09a8\u09be\u09ae\u09c2\u09b2\u09cd\u09af\u09c7, \u09b2\u0997\u0987\u09a8 \u099b\u09be\u09dc\u09be\u0964", "\u09ac\u09be\u0982\u09b2\u09be\u09af\u09bc, \u09ac\u09bf\u09a8\u09be\u09ae\u09c2\u09b2\u09cd\u09af\u09c7\u0964"],
+  ["\u0986\u09aa\u09a8\u09be\u09b0 \u0985\u0997\u09cd\u09b0\u0997\u09a4\u09bf \u0986\u09aa\u09a8\u09be\u09b0 \u09a8\u09bf\u099c\u09c7\u09b0 \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7\u0987 \u09a5\u09be\u0995\u09c7\u0964",
+   "\u0986\u09aa\u09a8\u09be\u09b0 \u0985\u0997\u09cd\u09b0\u0997\u09a4\u09bf \u099c\u09ae\u09be \u09a5\u09be\u0995\u09c7 \u0986\u09aa\u09a8\u09be\u09b0 \u0985\u09cd\u09af\u09be\u0995\u09be\u0989\u09a8\u09cd\u099f\u09c7\u0964"],
+  ["\u0995\u09cb\u09a8\u09cb \u09b2\u0997\u0987\u09a8 \u09a8\u09c7\u0987, \u0995\u09cb\u09a8\u09cb \u09a6\u09be\u09ae \u09a8\u09c7\u0987 \u0985\u09cd\u09af\u09be\u0995\u09be\u0989\u09a8\u09cd\u099f \u09b2\u09be\u0997\u09c7 \u09a8\u09be, \u0987\u09ae\u09c7\u0987\u09b2 \u09b2\u09be\u0997\u09c7 \u09a8\u09be, \u0985\u09cd\u09af\u09be\u09aa \u09a8\u09be\u09ae\u09be\u09a4\u09c7 \u09b9\u09af\u09bc \u09a8\u09be\u0964 \u0986\u09aa\u09a8\u09be\u09b0 \u0985\u0997\u09cd\u09b0\u0997\u09a4\u09bf \u0986\u09b0 \u0986\u09aa\u09a8\u09be\u09b0 \u09b2\u09c7\u0996\u09be \u0995\u09a5\u09be\u0997\u09c1\u09b2\u09cb \u098f\u0987 \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7\u0987 \u099c\u09ae\u09be \u09a5\u09be\u0995\u09c7, \u0995\u09cb\u09a5\u09be\u0993 \u09aa\u09be\u09a0\u09be\u09a8\u09cb \u09b9\u09af\u09bc \u09a8\u09be\u0964",
+   "\u09aa\u09a1\u09bc\u09a4\u09c7 \u0995\u09cb\u09a8\u09cb \u099f\u09be\u0995\u09be \u09b2\u09be\u0997\u09c7 \u09a8\u09be \u099c\u09be\u09b0\u09cd\u09ae\u09be\u09a8\u09c7\u09b0 \u09b8\u09ac \u09aa\u09be\u09a0 \u09ab\u09cd\u09b0\u09bf, \u09ac\u09be\u0982\u09b2\u09be\u09af\u09bc\u0964 \u0995\u09cb\u09a8 \u09aa\u09be\u09a0\u099f\u09be \u09aa\u09a1\u09bc\u09be \u09b9\u09af\u09bc\u09c7\u099b\u09c7 \u09b8\u09c7\u099f\u09be \u099c\u09ae\u09be \u09a5\u09be\u0995\u09c7 \u0986\u09aa\u09a8\u09be\u09b0 \u0985\u09cd\u09af\u09be\u0995\u09be\u0989\u09a8\u09cd\u099f\u09c7, \u09a4\u09be\u0987 \u09ab\u09cb\u09a8\u09c7 \u09af\u09c7\u0996\u09be\u09a8\u09c7 \u09a5\u09be\u09ae\u09ac\u09c7\u09a8 \u09b2\u09cd\u09af\u09be\u09aa\u099f\u09aa\u09c7 \u09b8\u09c7\u0996\u09be\u09a8 \u09a5\u09c7\u0995\u09c7\u0987 \u09b6\u09c1\u09b0\u09c1 \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09ac\u09c7\u09a8\u0964 \u0996\u09be\u09a4\u09be\u09af\u09bc \u09af\u09be \u09b2\u09c7\u0996\u09c7\u09a8 \u09b8\u09c7\u099f\u09be \u09a5\u09be\u0995\u09c7 \u098f\u0987 \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7\u0987, \u0995\u09cb\u09a5\u09be\u0993 \u09aa\u09be\u09a0\u09be\u09a8\u09cb \u09b9\u09af\u09bc \u09a8\u09be\u0964"],
+  ["\u0995\u09cb\u09a8\u09cb \u09b2\u0997\u0987\u09a8 \u09a8\u09c7\u0987, \u0995\u09cb\u09a8\u09cb \u09a6\u09be\u09ae \u09a8\u09c7\u0987 \u0985\u09cd\u09af\u09be\u0995\u09be\u0989\u09a8\u09cd\u099f \u09b2\u09be\u0997\u09c7 \u09a8\u09be, \u0987\u09ae\u09c7\u0987\u09b2 \u09b2\u09be\u0997\u09c7 \u09a8\u09be, \u0985\u09cd\u09af\u09be\u09aa \u09a8\u09be\u09ae\u09be\u09a4\u09c7 \u09b9\u09af\u09bc \u09a8\u09be\u0964 \u0995\u09cb\u09a8 \u09a6\u09bf\u09a8\u0997\u09c1\u09b2\u09cb \u09b9\u09af\u09bc\u09c7\u099b\u09c7 \u09b8\u09c7\u0987 \u09b9\u09bf\u09b8\u09be\u09ac \u0986\u09aa\u09a8\u09be\u09b0 \u098f\u0987 \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7\u0987 \u099c\u09ae\u09be \u09a5\u09be\u0995\u09c7, \u0995\u09cb\u09a5\u09be\u0993 \u09aa\u09be\u09a0\u09be\u09a8\u09cb \u09b9\u09af\u09bc \u09a8\u09be\u0964",
+   "\u09aa\u09a1\u09bc\u09a4\u09c7 \u0995\u09cb\u09a8\u09cb \u099f\u09be\u0995\u09be \u09b2\u09be\u0997\u09c7 \u09a8\u09be \u0995\u09c1\u09b0\u0986\u09a8\u09c7\u09b0 \u0986\u09b0\u09ac\u09bf\u09b0 \u09b8\u09ac \u09aa\u09be\u09a0 \u09ab\u09cd\u09b0\u09bf, \u09ac\u09be\u0982\u09b2\u09be\u09af\u09bc\u0964 \u0995\u09cb\u09a8 \u09a6\u09bf\u09a8\u0997\u09c1\u09b2\u09cb \u09b9\u09af\u09bc\u09c7\u099b\u09c7 \u09b8\u09c7\u0987 \u09b9\u09bf\u09b8\u09be\u09ac \u099c\u09ae\u09be \u09a5\u09be\u0995\u09c7 \u0986\u09aa\u09a8\u09be\u09b0 \u0985\u09cd\u09af\u09be\u0995\u09be\u0989\u09a8\u09cd\u099f\u09c7, \u09a4\u09be\u0987 \u09ab\u09cb\u09a8\u09c7 \u09af\u09c7\u0996\u09be\u09a8\u09c7 \u09a5\u09be\u09ae\u09ac\u09c7\u09a8 \u09b2\u09cd\u09af\u09be\u09aa\u099f\u09aa\u09c7 \u09b8\u09c7\u0996\u09be\u09a8 \u09a5\u09c7\u0995\u09c7\u0987 \u09b6\u09c1\u09b0\u09c1 \u0995\u09b0\u09a4\u09c7 \u09aa\u09be\u09b0\u09ac\u09c7\u09a8\u0964"],
+  ["\u09a8\u09bf\u099c\u09c7\u09b0 \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7, \u0986\u09aa\u09a8\u09be\u09b0 \u09a1\u09bf\u09ad\u09be\u0987\u09b8\u09c7\u0987\u0964 \u0995\u09cb\u09a5\u09be\u0993 \u09aa\u09be\u09a0\u09be\u09a8\u09cb \u09b9\u09af\u09bc \u09a8\u09be, \u0995\u09cb\u09a8\u09cb \u0985\u09cd\u09af\u09be\u0995\u09be\u0989\u09a8\u09cd\u099f \u09b2\u09be\u0997\u09c7 \u09a8\u09be\u0964 \u0985\u09a8\u09cd\u09af \u09ab\u09cb\u09a8\u09c7 \u0996\u09c1\u09b2\u09b2\u09c7 \u09a8\u09a4\u09c1\u09a8 \u0995\u09b0\u09c7 \u09b6\u09c1\u09b0\u09c1 \u09b9\u09ac\u09c7, \u0986\u09b0 \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7\u09b0 \u09a1\u09c7\u099f\u09be \u09ae\u09c1\u099b\u09b2\u09c7 \u09b9\u09bf\u09b8\u09be\u09ac\u099f\u09be\u0993 \u099a\u09b2\u09c7 \u09af\u09be\u09ac\u09c7\u0964",
+   "\u0985\u09cd\u09af\u09be\u0995\u09be\u0989\u09a8\u09cd\u099f\u09c7\u0964 \u09af\u09c7 \u09a1\u09bf\u09ad\u09be\u0987\u09b8 \u09a5\u09c7\u0995\u09c7\u0987 \u0996\u09c1\u09b2\u09c1\u09a8 \u09b9\u09bf\u09b8\u09be\u09ac\u099f\u09be \u098f\u0995 \u09a5\u09be\u0995\u09c7: \u09ab\u09cb\u09a8\u09c7 \u099f\u09bf\u0995 \u09a6\u09bf\u09b2\u09c7 \u09b2\u09cd\u09af\u09be\u09aa\u099f\u09aa\u09c7\u0993 \u09a6\u09c7\u0996\u09be\u09ac\u09c7\u0964"],
+  ["\u0986\u09aa\u09a8\u09be\u09b0 \u09a8\u09bf\u099c\u09c7\u09b0 \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7, \u0986\u09aa\u09a8\u09be\u09b0 \u09a1\u09bf\u09ad\u09be\u0987\u09b8\u09c7\u0987\u0964 \u0995\u09cb\u09a5\u09be\u0993 \u09aa\u09be\u09a0\u09be\u09a8\u09cb \u09b9\u09af\u09bc \u09a8\u09be, \u0995\u09cb\u09a8\u09cb \u0985\u09cd\u09af\u09be\u0995\u09be\u0989\u09a8\u09cd\u099f \u09b2\u09be\u0997\u09c7 \u09a8\u09be, \u0995\u09cb\u09a8\u09cb \u09b2\u0997\u0987\u09a8 \u09a8\u09c7\u0987\u0964 \u0985\u09a8\u09cd\u09af \u09ab\u09cb\u09a8\u09c7 \u0996\u09c1\u09b2\u09b2\u09c7 \u09a8\u09a4\u09c1\u09a8 \u0995\u09b0\u09c7 \u09b6\u09c1\u09b0\u09c1 \u09b9\u09ac\u09c7, \u0986\u09b0 \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7\u09b0 \u09a1\u09c7\u099f\u09be \u09ae\u09c1\u099b\u09b2\u09c7 \u09b2\u09c7\u0996\u09be\u0997\u09c1\u09b2\u09cb\u0993 \u099a\u09b2\u09c7 \u09af\u09be\u09ac\u09c7, \u09a4\u09be\u0987 \u0997\u09c1\u09b0\u09c1\u09a4\u09cd\u09ac\u09aa\u09c2\u09b0\u09cd\u09a3 \u0995\u09bf\u099b\u09c1 \u09b2\u09bf\u0996\u09b2\u09c7 \u09a8\u09bf\u099c\u09c7\u09b0 \u0996\u09be\u09a4\u09be\u09a4\u09c7\u0993 \u09b2\u09bf\u0996\u09c7 \u09b0\u09be\u0996\u09c1\u09a8\u0964",
+   "\u0996\u09be\u09a4\u09be\u09af\u09bc \u09af\u09be \u09b2\u09c7\u0996\u09c7\u09a8 \u09b8\u09c7\u099f\u09be \u09a5\u09be\u0995\u09c7 \u0986\u09aa\u09a8\u09be\u09b0 \u09a8\u09bf\u099c\u09c7\u09b0 \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7, \u0986\u09aa\u09a8\u09be\u09b0 \u09a1\u09bf\u09ad\u09be\u0987\u09b8\u09c7\u0987\u0964 \u0995\u09cb\u09a5\u09be\u0993 \u09aa\u09be\u09a0\u09be\u09a8\u09cb \u09b9\u09af\u09bc \u09a8\u09be\u0964 \u0985\u09a8\u09cd\u09af \u09ab\u09cb\u09a8\u09c7 \u0996\u09c1\u09b2\u09b2\u09c7 \u0998\u09b0\u0997\u09c1\u09b2\u09cb \u0996\u09be\u09b2\u09bf \u09aa\u09be\u09ac\u09c7\u09a8, \u0986\u09b0 \u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7\u09b0 \u09a1\u09c7\u099f\u09be \u09ae\u09c1\u099b\u09b2\u09c7 \u09b2\u09c7\u0996\u09be\u0997\u09c1\u09b2\u09cb\u0993 \u099a\u09b2\u09c7 \u09af\u09be\u09ac\u09c7, \u09a4\u09be\u0987 \u0997\u09c1\u09b0\u09c1\u09a4\u09cd\u09ac\u09aa\u09c2\u09b0\u09cd\u09a3 \u0995\u09bf\u099b\u09c1 \u09b2\u09bf\u0996\u09b2\u09c7 \u09a8\u09bf\u099c\u09c7\u09b0 \u0996\u09be\u09a4\u09be\u09a4\u09c7\u0993 \u09b2\u09bf\u0996\u09c7 \u09b0\u09be\u0996\u09c1\u09a8\u0964 \u0995\u09cb\u09a8 \u09a6\u09bf\u09a8\u0997\u09c1\u09b2\u09cb \u09b9\u09af\u09bc\u09c7\u099b\u09c7, \u09b8\u09c7\u0987 \u09b9\u09bf\u09b8\u09be\u09ac\u099f\u09be \u0986\u09b2\u09be\u09a6\u09be: \u09b8\u09c7\u099f\u09be \u099c\u09ae\u09be \u09a5\u09be\u0995\u09c7 \u0986\u09aa\u09a8\u09be\u09b0 \u0985\u09cd\u09af\u09be\u0995\u09be\u0989\u09a8\u09cd\u099f\u09c7\u0964"],
+];
+
+/* NFC on both sides before the substitution, because Bangla has
+   two spellings of the same letter: `\u09dc` is one code point and
+   `\u09a1\u09bc` is two, they render identically, and a table written
+   in one form matches nothing written in the other. */
+const rewritten = (v) => (typeof v !== "string" ? v
+  : REWRITTEN.reduce((s, [was, now]) => s.replaceAll(was.normalize("NFC"), now),
+                     v.normalize("NFC")));
+
 const tagText = (html, tag) => html.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "i"))?.[1] ?? null;
 const attr = (html, re) => html.match(re)?.[1] ?? null;
 
@@ -511,7 +555,13 @@ const loads = (html, src) =>
   || new RegExp(`<link[^>]*href="${src}"[^>]*rel="(?:modulepreload|preload)"`).test(html);
 
 ok("the site's own script is loaded", loads(fromNext, "\\/app\\.js"));
-ok("read-aloud too", loads(fromNext, "\\/read-aloud\\.js"));
+/* No `/read-aloud.js`. The speech control is
+   `components/read-aloud.tsx` as of the day this line changed, so
+   there is nothing to load and the Worker's own renderer does not
+   offer one either: it cannot mount a component, which is the same
+   trade it already takes for the comment thread. */
+ok("and nothing asks for a module that has been archived",
+  !loads(fromNext, "\\/read-aloud\\.js") && !loads(fromWorker, "\\/read-aloud\\.js"));
 /* ---- the cost, which was measured and then accepted ----
 
    The App Router ships its own runtime and router to every page,
@@ -828,10 +878,11 @@ for (const [path, title, nav] of [
        article and a wrong one here: the thing on the other side
        of this comparison is a committed file. */
     const same = (what, extract) => {
-      const a = moved(decode(extract(was)));
+      const a = rewritten(moved(decode(extract(was))));
       const b = moved(decode(extract(now)));
-      ok(`${path}: ${what}`, a === b,
-        `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(b)}`);
+      const bn = typeof b === "string" ? b.normalize("NFC") : b;
+      ok(`${path}: ${what}`, a === bn,
+        `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(bn)}`);
     };
 
     /* `renamed` on the two that carry the school's own name: see
@@ -918,10 +969,11 @@ for (const [path, title, nav] of [
     const was = committed(file);
     const now = page.html;
     const same = (what, extract) => {
-      const a = moved(decode(extract(was)));
+      const a = rewritten(moved(decode(extract(was))));
       const b = moved(decode(extract(now)));
-      ok(`${path}: ${what}`, a === b,
-        `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(b)}`);
+      const bn = typeof b === "string" ? b.normalize("NFC") : b;
+      ok(`${path}: ${what}`, a === bn,
+        `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(bn)}`);
     };
 
     /* The school's own name is the third clause of the title, and
@@ -1061,10 +1113,11 @@ for (const [path, title, nav] of [
     const was = committed(file);
     const now = page.html;
     const same = (what, extract) => {
-      const a = moved(decode(extract(was)));
+      const a = rewritten(moved(decode(extract(was))));
       const b = moved(decode(extract(now)));
-      ok(`${path}: ${what}`, a === b,
-        `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(b)}`);
+      const bn = typeof b === "string" ? b.normalize("NFC") : b;
+      ok(`${path}: ${what}`, a === bn,
+        `page:  ${JSON.stringify(a)}\n      route: ${JSON.stringify(bn)}`);
     };
 
     same("the title", (h) => tagText(h, "title"));
@@ -1101,9 +1154,23 @@ for (const [path, title, nav] of [
       .replace(/&nbsp;/g, " ")
       .replace(/\s+/g, " ")
       .trim();
-    ok(`${path}: the writing is the page's, word for word`,
-      body(was) !== null && prose(moved(body(was))) === prose(moved(body(now))),
-      "a word of the writing differs from the committed page");
+    /* Both sides, and WHERE they part. "a word of the writing
+       differs" was the whole message, which tells you that
+       something is wrong and nothing about what: on a hub of
+       nine hundred words that is a bisection by hand. */
+    {
+      const a = rewritten(prose(moved(body(was))));
+      const b = prose(moved(body(now))).normalize("NFC");
+      const wa = a.split(" ");
+      const wb = b.split(" ");
+      let i = 0;
+      while (i < wa.length && i < wb.length && wa[i] === wb[i]) i += 1;
+      ok(`${path}: the writing is the page's, word for word`,
+        body(was) !== null && a === b,
+        `they part at word ${i} of ${wa.length}:`
+        + `\n      page:  ${JSON.stringify(wa.slice(i, i + 14).join(" "))}`
+        + `\n      route: ${JSON.stringify(wb.slice(i, i + 14).join(" "))}`);
+    }
 
     /* The ladder's fallback list survives, which is the half a
        reader with no JavaScript gets and the half a search engine

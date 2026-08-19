@@ -3688,6 +3688,19 @@ it collapsed to the width of the word "Bangladesh". */
     @keyframes progress { to { scale: 1 1; } }
   }
 
+  /* The paragraph being read aloud. `components/read-aloud.tsx`
+     adds this with `classList` on a node inside an article body,
+     which is HTML out of a database, so it is a class rather than
+     a utility. It was one hard-coded gold `rgba` on every page,
+     whatever the section's colour. */
+  .read-aloud-highlight {
+    outline: 3px solid color-mix(in oklab, var(--accent) 18%, transparent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--accent) 6%, transparent);
+    transition: background var(--fast) var(--ease);
+  }
+
   /* ---------- article footer nav ---------- */
   .prev-next {
     display: grid; gap: var(--gap); margin-top: 46px;
