@@ -380,9 +380,19 @@ emptying it, an absent key is an empty set, and subtraction takes
 the account down with it. The old file needed a timestamp per key
 to get that right and got it wrong for a year.
 
-`aab/sync.test.ts` is the guard, 27 checks in a real browser
+`aab/sync.test.ts` is the guard, 36 checks in a real browser
 against a routed Supabase, and it drives `/404.html` because that
-is one of the six pages still served as a file.
+is one of the two pages still served as a file.
+
+**It starts its own server, and that is the whole reason it is
+worth anything.** It asked for one on :8899 and exited 0 when
+there was none, so it skipped on every machine where nobody had
+read that line, which is every machine. It skipped through a real
+regression: `refreshUser()` began writing a null user over a live
+session, which takes `current()` to null, makes `saveProfile`
+throw and stops sync pushing ticks, and four of its sections went
+red at once without anybody seeing it. A test that needs a server
+started by hand is a test that does not run.
 
 ### The two things an account holds that are not a tick
 
@@ -642,9 +652,17 @@ the `Disallow` block `build-meta.ts` writes, the `PRIVATE` set in
 `build-og.ts`, any test that drives the page, and any link in
 `app/src/**`. Add a line to `_redirects` for the old URL. If a
 test was the only thing checking a module the page happened to
-host, repoint the test rather than losing it: `aab/studio.test.ts`
-is 68 checks of `aab/editor.js` and it survived `studio.html` by
-being pointed at `/studio/`.
+host, repoint the test rather than losing it.
+
+**Repointing at a second page is not repointing.**
+`aab/studio.test.ts` was 68 checks of `aab/editor.js` and it
+survived `studio.html` by being aimed at `/studio/`, which
+stopped existing too when the Studio's shell became a route. It
+spent that time failing on a 404 rather than on the module it was
+written for. It is `aab/editor.test.ts` now, it mounts
+`createEditor()` into a shell it writes itself, and an address
+cannot go stale under it. A test whose subject is a module gets
+the module's name and its own surface.
 
 `archive/README.md` has the reasoning and the table of what
 replaced what.
@@ -741,17 +759,25 @@ node scripts/input.test.ts         # a rule that stopped rejecting, in the one
 node scripts/snapshot.test.ts      # a nightly snapshot that leaks, or that throws
                                    # at 03:17 where nobody is watching
 node aab/studio-publish.test.ts   # a photo that never reaches R2, under the
-                                   # real CSP (needs Playwright, skips without)
+                                   # real CSP, in a shell it mounts itself
+                                   # (39 checks, needs Playwright and a browser,
+                                   # skips without)
 node next/account.test.ts        # the account's five features, the popover
                                   # menu, the Save under a byline and the picture
                                   # a Google sign-in brings, under the real CSP
                                   # (117 checks, needs the Next build and a
                                   # browser, skips without)
 node aab/sync.test.ts             # a browser's own progress getting into an
-                                   # account, resetting, signing out, and two
-                                   # signed-in devices (27 checks, needs a
-                                   # server on :8899 and Playwright)
-node aab/studio.test.ts           # the editor, end to end (68 checks)
+                                   # account, resetting, signing out, two
+                                   # signed-in devices, and a refresh that
+                                   # signs somebody out by accident
+                                   # (36 checks, needs Playwright and a
+                                   # browser; it starts its own server)
+node aab/editor.test.ts           # the sanitiser, the markdown rules, the slash
+                                   # menu, the figure toolbar and the paste, in a
+                                   # shell it mounts itself under the real CSP
+                                   # (172 checks, needs Playwright and a browser,
+                                   # skips without)
 node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read (23 checks, no browser)
 node next/comments.test.ts        # a comment body that stopped being text, a reply

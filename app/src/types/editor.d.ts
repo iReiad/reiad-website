@@ -29,6 +29,21 @@ export function readingStats(html: string): { words: number; photos: number; min
 /** The placeholder a fresh figure's caption carries. */
 export const CAPTION_HINT: string;
 
+/** The `<figure>` a photo goes into, with the caption prompt
+    `dropUntouchedCaptions` looks for and a paragraph after it to
+    carry on typing in. */
+export function figureHtml(
+  image: { url: string; width: number; height: number },
+  alt?: string,
+): string;
+
+/** A file the writer chose, downscaled and re-encoded into a data:
+    URL for the editor's own preview. Publishing turns that into a
+    /media path. */
+export function processImage(file: Blob): Promise<{
+  url: string; width: number; height: number; type: string;
+}>;
+
 /** Captions the writer never touched should not ship. */
 export function dropUntouchedCaptions(html: string): string;
 

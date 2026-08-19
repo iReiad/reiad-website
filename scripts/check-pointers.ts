@@ -66,6 +66,13 @@ interface Gone {
 }
 
 const GONE: Gone[] = [
+  /* Named in the past tense, in the paragraph explaining why a
+     test whose subject is a module should not be named after a
+     page: it was `aab/studio.test.ts`, it spent its life failing
+     on a 404, and it is `aab/editor.test.ts` now. Saying the old
+     name is the whole of what that paragraph is for. */
+  { file: "CLAUDE.md", name: "aab/studio.test.ts",
+    why: "renamed to aab/editor.test.ts; the prose is about the rename" },
   /* Two files say this one never existed, which is the point of
      saying it: `share-card.ts` sent a reader to it for a year. */
   { file: "MIGRATION.md", name: "scripts/check-modules.mjs",

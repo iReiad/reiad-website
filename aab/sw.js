@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v142: `/account.js`. `refreshUser()` could write a null user
+        over a live session: an answer from `/auth/v1/user` with
+        no id in it took `current()` to null, so `saveProfile`
+        threw "Not signed in." and sync stopped pushing ticks with
+        nothing on screen to say so. A refresh never downgrades
+        now. An old shell keeps serving the version that does.
+
    v141: `/content.js`, `/photo.js` and `/schools/workbook.js`,
         and all three changed only in their comments: the last
         `.mjs` in this repository became `.ts`, and every comment
@@ -1446,7 +1453,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v141";
+const VERSION = "v142";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

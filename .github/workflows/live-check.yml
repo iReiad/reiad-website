@@ -18,12 +18,29 @@
 # here does not mean the push broke something; it means the site
 # is not doing what the repository says, which is worth a red
 # tick either way.
+#
+# ---- except on main, and that is not a weakening ----
+#
+# On main this RACED the deploy and lost. deploy.yml uploads and
+# then asks the same questions, in a step whose comment says why;
+# this workflow starts at the same moment and has no upload to
+# wait for, so it answered in 12 seconds about a site the deploy
+# spent 45 more seconds replacing. #153 merged with a widened
+# img-src, deploy went green, and this went red for a header
+# production had not been given yet.
+#
+# So main is excluded, for the same reason and in the same words
+# checks.yml is: deploy.yml already runs it there, after the
+# upload, which is the only moment the answer is about what was
+# just deployed. Everywhere else this is the only thing asking,
+# and it stays.
 # ============================================================
 
 name: Live site check
 
 on:
   push:
+    branches-ignore: [main]
   workflow_dispatch:
 
 permissions:
