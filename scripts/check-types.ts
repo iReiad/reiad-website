@@ -104,18 +104,38 @@ const HERE = join(ROOT, "scripts");
 interface Config {
   what: string;
   config: string;
-  /** A directory whose `node_modules` this config needs. Absent
-      for one that leans on the root install, which is the only
-      one CI does. */
-  needs?: string;
+  /** Every directory whose `node_modules` this config needs, and
+      it is a LIST because two of them need more than one.
+
+      `next/tsconfig.json` maps the bare `playwright` specifier
+      into `app/node_modules`, so the browser tests beside the app
+      need both installs. Declaring only `next/` made this FAIL,
+      loudly and about the wrong thing, on a machine that had one
+      and not the other: forty errors reading "Cannot find module
+      'playwright'" for an install nobody had said was required.
+      CI never saw it because CI has neither. */
+  needs?: string[];
 }
 
 const CONFIGS: Config[] = [
   { what: "scripts/", config: join(HERE, "tsconfig.json") },
+  /* `build-og.ts` alone, because it is the one generator here
+     that drives a browser and playwright is a devDependency of
+     `app/`. It is excluded from the config above so that one
+     keeps running on the root install, which is the only one
+     CI does. */
+  {
+    what: "scripts/ (the share-card generator)",
+    config: join(HERE, "tsconfig.browser.json"),
+    needs: [join(ROOT, "app")],
+  },
   {
     what: "next/ (the browser tests)",
     config: join(ROOT, "next", "tsconfig.test.json"),
-    needs: join(ROOT, "next"),
+    /* Both: React and the Worker's types from `next/`, and
+       playwright from `app/`, which `next/tsconfig.json` maps the
+       bare specifier on to. */
+    needs: [join(ROOT, "next"), join(ROOT, "app")],
   },
   /* No `needs`: the Worker's tests import nothing but each other,
      the modules under test and @types/node, so this one runs on
@@ -127,17 +147,16 @@ const CONFIGS: Config[] = [
   {
     what: "app/ (the desk and the Studio in a browser)",
     config: join(ROOT, "app", "tsconfig.test.json"),
-    needs: join(ROOT, "app"),
+    needs: [join(ROOT, "app")],
   },
-  /* The one entry whose `needs` is not its own directory. Four of
-     these seven run in linkedom off the root install; the other
-     three drive a real browser, and playwright is a devDependency
-     of `app/`, so the config cannot resolve it without that
-     install. */
+  /* The one entry whose `needs` is not its own directory. Most of
+     these run in linkedom off the root install; three drive a real
+     browser, and playwright is a devDependency of `app/`, so the
+     config cannot resolve it without that install. */
   {
     what: "aab/ (the browser-side tests)",
     config: join(ROOT, "aab", "tsconfig.test.json"),
-    needs: join(ROOT, "app"),
+    needs: [join(ROOT, "app")],
   },
 ];
 
@@ -167,14 +186,15 @@ if (javascript.length) {
   process.exit(1);
 }
 
-/** A skipped config, and the directory to install in. The second
-    is what makes the line actionable: two of these need a
-    different one. */
-const skipped: Array<{ what: string; where: string }> = [];
+/** A skipped config, and every directory still to install in.
+    The second is what makes the line actionable: two of these
+    need a directory that is not their own, and one needs two. */
+const skipped: Array<{ what: string; where: string[] }> = [];
 
 for (const { what, config, needs } of CONFIGS) {
-  if (needs && !existsSync(join(needs, "node_modules"))) {
-    skipped.push({ what, where: relative(ROOT, needs) });
+  const missing = (needs ?? []).filter((d) => !existsSync(join(d, "node_modules")));
+  if (missing.length) {
+    skipped.push({ what, where: missing.map((d) => relative(ROOT, d)) });
     continue;
   }
   try {
@@ -195,7 +215,13 @@ const ran = CONFIGS.length - skipped.length;
 console.log("types: no JavaScript in scripts/, and every .ts file node runs"
   + `\n       directly typechecks, under ${ran} of ${CONFIGS.length} config(s).`);
 for (const { what, where } of skipped) {
-  console.log(`       SKIPPED ${what}: no node_modules there, so the types it`
-    + `\n       needs are absent. This is not a pass. Run it where they are:`
-    + `\n         cd ${where} && npm install && cd .. && node scripts/check-types.ts`);
+  /* One `npm install` per directory, joined, because a skip whose
+     remedy is not a command you can paste is a skip nobody acts
+     on: "cd next and app" was the line this printed before, for
+     the one config that needs two installs. */
+  const install = where.map((d) => `(cd ${d} && npm install)`).join(" && ");
+  console.log(`       SKIPPED ${what}: ${where.join(" and ")} `
+    + `${where.length > 1 ? "have" : "has"} no node_modules, so the types`
+    + `\n       it needs are absent. This is not a pass. Run it where they are:`
+    + `\n         ${install} && node scripts/check-types.ts`);
 }

@@ -1,8 +1,9 @@
 {
   "//": [
-    "The browser-side tests, typechecked. Seven files: the three",
+    "Every test that lives in `aab/`, typechecked: the three",
     "schools' engines and the course player, driven in linkedom,",
-    "and the three that drive a real browser through Playwright.",
+    "the three that drive a real browser through Playwright, and",
+    "the four case-study models beside `portfolio/`.",
     "",
     "They are here rather than in `aab/src/tsconfig.json` because",
     "that config COMPILES. It emits every module in `aab/src/` to",
@@ -19,11 +20,12 @@
     "That check runs this config, so the rename and the types",
     "arrive together or the build says so.",
     "",
-    "It is listed there with `needs: app/`, because three of the",
-    "seven import `playwright` and it is a devDependency of that",
-    "workspace rather than of the root. CI runs `npm ci` at the",
-    "root and nowhere else, so this config skips there, loudly:",
-    "a skip is not a pass."
+    "It is listed there with `needs: app/`, which is the one entry",
+    "whose directory is not its own: three of these import",
+    "`playwright`, and that is a devDependency of `app/` rather",
+    "than of the root. CI runs `npm ci` at the root and nowhere",
+    "else, so this config skips there, loudly: a skip is not a",
+    "pass."
   ],
   "compilerOptions": {
     "target": "ES2023",
