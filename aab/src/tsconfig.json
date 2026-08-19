@@ -49,7 +49,7 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "paths": {
-      "/activation.js": ["./types/activation.d.ts"],
+      "/activation.js": ["./activation.ts"],
       "/account.js": ["./account.ts"],
       "/saved.js": ["./saved.ts"],
       "/prefs.js": ["./prefs.ts"],

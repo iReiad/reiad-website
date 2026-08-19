@@ -58,9 +58,16 @@ const RENAME = {
   DIV: "P", SECTION: "P", ARTICLE: "P", SPAN: "P", FONT: "P", PRE: "P",
 };
 
+/* The attributes an element may keep. This table and `ALLOWED` in
+   `functions/_lib/sanitise.ts` are one vocabulary written twice,
+   and `check-css.ts` compares them, because they had drifted:
+   `hostPhotosIn` in `aab/src/photo.ts` sets `loading` and
+   `decoding` on every photo it hosts, this list stripped both on
+   the way out, and neither had ever reached the database. Widen
+   both or neither. */
 const ATTRS = {
   A: ["href", "title"],
-  IMG: ["src", "alt", "width", "height"],
+  IMG: ["src", "alt", "width", "height", "loading", "decoding"],
   TD: ["colspan", "rowspan"],
   TH: ["colspan", "rowspan"],
 };
@@ -569,12 +576,30 @@ export function createEditor({
     insertImages(e.dataTransfer.files);
   });
 
-  // caption fields shouldn't inherit the caption text when you type
-  on(root, "focusin", (e) => {
-    const cap = e.target.closest?.("figcaption");
+  /* A caption still holding the prompt is selected whole, so the
+     first thing typed replaces it rather than joining it.
+
+     TWO EVENTS, and `focusin` alone was the bug. It fires on
+     mousedown, and the browser then puts the caret where the
+     pointer landed on mouseup, which collapses the selection this
+     just made. So clicking into a caption, which is how everybody
+     reaches one, left the prompt in place and the writer typed
+     into the middle of it. `focusin` is still here because it is
+     the one that serves Tab and programmatic focus.
+
+     A drag is left alone: a selection that is not collapsed was
+     chosen on purpose. */
+  const takeCaption = (node) => {
+    const cap = node?.closest?.("figcaption");
     if (cap && cap.textContent.startsWith(CAPTION_HINT)) {
       getSelection().selectAllChildren(cap);
     }
+  };
+  on(root, "focusin", (e) => takeCaption(e.target));
+  on(root, "mouseup", (e) => {
+    const sel = getSelection();
+    if (sel && !sel.isCollapsed) return;
+    takeCaption(e.target);
   });
 
   on(root, "input", changed);

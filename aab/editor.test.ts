@@ -942,6 +942,49 @@ await set("<p><br></p>");
   check("and one the writer wrote is left alone", selected.theirs === "", selected.theirs);
 }
 
+/* AND THE SAME THING WITH A REAL CLICK, which is how everybody
+   actually reaches a caption.
+
+   The two checks above dispatch `focusin` themselves, so they pass
+   whether or not the handler survives a click, and they did while
+   it did not: `focusin` fires on mousedown, and the browser then
+   places the caret where the pointer landed on mouseup, collapsing
+   the selection the handler had just made. The prompt stayed put
+   and the writer typed into the middle of it.
+
+   A check that synthesises the event it is testing cannot see
+   that. This one presses the mouse. */
+{
+  await page.evaluate(async () => {
+    const m = await import("/editor.js");
+    const root = document.querySelector<HTMLElement>("#editor")!;
+    root.innerHTML = m.figureHtml({ url: "/media/x.webp", width: 10, height: 10 }, "alt words");
+    getSelection()!.removeAllRanges();
+  });
+  await page.click("#editor figcaption");
+  await settle(120);
+  const clicked = await page.evaluate(() => String(getSelection()));
+  check("clicking an untouched caption selects it too", clicked.length > 0, clicked);
+
+  /* And what the selection is FOR: the first thing typed replaces
+     the prompt instead of landing inside it. */
+  await page.keyboard.type("Dhaka at dawn");
+  await settle(120);
+  const after = await page.evaluate(() =>
+    document.querySelector("#editor figcaption")?.textContent ?? "");
+  check("so typing replaces the prompt rather than joining it",
+    after.trim() === "Dhaka at dawn", after);
+
+  /* A caption the writer has already written is not taken over on
+     a click either, or every visit to one would wipe it. */
+  await page.evaluate(() => { getSelection()!.removeAllRanges(); });
+  await page.click("#editor figcaption");
+  await settle(120);
+  const written = await page.evaluate(() => String(getSelection()));
+  check("and a written caption is still left alone on a click",
+    written === "", written);
+}
+
 /* ============================================================
    10. THE KEYBOARD
    ============================================================ */

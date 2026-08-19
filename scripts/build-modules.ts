@@ -97,6 +97,15 @@ export const MODULES = [
      `--series-2` now, and the legend beside them reads the same
      two. */
   "tools/tools",
+  /* The Studio's gate and the one constant it reads. `auth-config`
+     is the block the setup screen prints, so it is a file meant to
+     be replaced wholesale: nothing in it is `as const`. */
+  "auth-config",
+  /* Whether the dynamic layer is reachable. It declares
+     `document.prerendering` and `PerformanceNavigationTiming.
+     activationStart` globally, because neither is in the DOM
+     library and both are the browser this file exists for. */
+  "activation",
 ];
 
 /** The five served modules whose source is in `shared/` rather
