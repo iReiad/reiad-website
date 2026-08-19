@@ -1,5 +1,5 @@
 /* ============================================================
-   lib/css-tokens.mjs: what a token in `styles.css` actually is,
+   lib/css-tokens.ts: what a token in `styles.css` actually is,
    as a colour, in one mode.
 
    Two checks ask that question and they used to ask it with two
@@ -38,7 +38,21 @@ const CSS = readFileSync(join(ROOT, "next", "styles", "site.css"), "utf8")
    OKLCH to a luminance
    ============================================================ */
 
-const cube = (x) => x * x * x;
+/** A colour in OKLab with an alpha, which is the one shape
+    everything below passes around. Held in OKLab rather than
+    OKLCH because that is what `color-mix(in oklab, ...)`
+    interpolates in, and the stylesheet mixes. */
+export interface Lab {
+  L: number;
+  a: number;
+  b: number;
+  alpha: number;
+}
+
+/** Linear sRGB, three channels 0..1, clamped to gamut. */
+type Rgb = [r: number, g: number, b: number];
+
+const cube = (x: number): number => x * x * x;
 
 /** OKLCH (L 0..1, C, H degrees) to OKLab, which is the space
     everything below works in.
@@ -49,31 +63,33 @@ const cube = (x) => x * x * x;
     of the page's accent in it. Mixing in polar coordinates would
     take the long way round the hue circle and give a different
     answer from the browser's. */
-const oklchToLab = (L, C, H) => {
+const oklchToLab = (L: number, C: number, H: number): Lab => {
   const h = (H * Math.PI) / 180;
   return { L, a: C * Math.cos(h), b: C * Math.sin(h), alpha: 1 };
 };
 
 /** OKLab to linear sRGB, clamped to gamut. */
-function oklabToLinear({ L, a, b }) {
+function oklabToLinear({ L, a, b }: Lab): Rgb {
   const l = cube(L + 0.3963377774 * a + 0.2158037573 * b);
   const m = cube(L - 0.1055613458 * a - 0.0638541728 * b);
   const s = cube(L - 0.0894841775 * a - 1.2914855480 * b);
 
+  const clamp = (v: number): number => Math.min(1, Math.max(0, v));
   return [
-    4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
-    -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
-    -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s,
-  ].map((v) => Math.min(1, Math.max(0, v)));
+    clamp(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s),
+    clamp(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
+    clamp(-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s),
+  ];
 }
 
 /** WCAG relative luminance. The coefficients are the sRGB ones
     and the input is already linear, which is the whole reason
     the conversion above stops where it does. */
-const luminance = ([r, g, b]) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
+const luminance = ([r, g, b]: Rgb): number =>
+  0.2126 * r + 0.7152 * g + 0.0722 * b;
 
 /** Two colours in OKLab, as a WCAG contrast ratio. */
-function ratio(fg, bg) {
+function ratio(fg: Lab, bg: Lab): number {
   const a = luminance(oklabToLinear(fg));
   const b = luminance(oklabToLinear(bg));
   const [hi, lo] = a > b ? [a, b] : [b, a];
@@ -86,7 +102,7 @@ function ratio(fg, bg) {
     A panel is 86% opaque over the page, so measuring the panel's
     own colour would measure something nobody sees. What is on
     screen is the panel composited over the ground beneath it. */
-const over = (a, b) => (a.alpha >= 1 ? a : {
+const over = (a: Lab, b: Lab): Lab => (a.alpha >= 1 ? a : {
   L: a.L * a.alpha + b.L * (1 - a.alpha),
   a: a.a * a.alpha + b.a * (1 - a.alpha),
   b: a.b * a.alpha + b.b * (1 - a.alpha),
@@ -103,7 +119,7 @@ const over = (a, b) => (a.alpha >= 1 ? a : {
     at the panel's own colour with 0.86 alpha. That is a 5.67:1
     pair reading 3.87:1, which is what it did until this was
     fixed. */
-function mix(a, b, p) {
+function mix(a: Lab, b: Lab, p: number): Lab {
   const q = 1 - p;
   const alpha = a.alpha * p + b.alpha * q;
   if (alpha === 0) return { L: 0, a: 0, b: 0, alpha: 0 };
@@ -126,8 +142,8 @@ function mix(a, b, p) {
    ============================================================ */
 
 /** `--h-green: 162;` and friends. */
-function hues() {
-  const out = {};
+function hues(): Record<string, number> {
+  const out: Record<string, number> = {};
   for (const [, name, value] of CSS.matchAll(/--h-([a-z-]+):\s*([\d.]+);/g)) {
     out[`--h-${name}`] = Number(value);
   }
@@ -137,7 +153,7 @@ function hues() {
 const HUES = hues();
 
 /** `oklch(41% 0.08 var(--h-green))`, with an optional `/ alpha`. */
-function parseOklch(text) {
+function parseOklch(text: string): Lab | null {
   const m = text.trim().match(
     /^oklch\(\s*([\d.]+)%\s+([\d.]+)\s+(?:var\(\s*(--h-[a-z-]+)\s*\)|([\d.]+))\s*(?:\/\s*([\d.]+)\s*)?\)$/);
   if (!m) return null;
@@ -149,6 +165,14 @@ function parseOklch(text) {
 }
 
 /* ---------- the declarations, as written ---------- */
+
+/** Which theme a token is being read in. */
+export type Mode = "light" | "dark";
+
+/** `--name` to the text on the right of the colon, unresolved:
+    `var(...)`, `color-mix(...)` and `oklch(...)` are all still
+    strings here. `resolve()` is what turns one into a colour. */
+type Decls = Record<string, string>;
 
 /** Every `--name: <value>;` in the stylesheet, as text, split into
     the two modes.
@@ -173,9 +197,9 @@ function parseOklch(text) {
     So: which region a declaration is in decides which map it goes
     into, and dark starts as a copy of light because a token the
     dark blocks do not mention keeps its value. */
-function declarations() {
-  const light = {};
-  const darkOnly = {};
+function declarations(): { light: Decls; dark: Decls } {
+  const light: Decls = {};
+  const darkOnly: Decls = {};
 
   /* Balanced to three levels of brackets, which is what
      `color-mix(in oklab, var(--accent) 4%, color-mix(in srgb,
@@ -231,11 +255,12 @@ function declarations() {
 const DECLS_BY_MODE = declarations();
 
 /** The declarations that apply in one mode. */
-const decls = (mode) => (mode === "dark" ? DECLS_BY_MODE.dark : DECLS_BY_MODE.light);
+const decls = (mode: Mode): Decls =>
+  (mode === "dark" ? DECLS_BY_MODE.dark : DECLS_BY_MODE.light);
 
 /** Split `a, b` at the top level, ignoring commas inside brackets. */
-function parts(text) {
-  const out = [];
+function parts(text: string): string[] {
+  const out: string[] = [];
   let depth = 0;
   let at = 0;
   for (let i = 0; i < text.length; i += 1) {
@@ -267,7 +292,9 @@ function parts(text) {
     `calc(var(--tint-panel) + 6%)`, which is how a hover state
     says "a little more than a panel" without repeating the
     ladder. */
-function percent(text, mode, depth = 0) {
+function percent(
+  text: string | undefined, mode: Mode, depth = 0,
+): number | null {
   const t = String(text ?? "").trim();
   if (depth > 8) return null;
 
@@ -297,7 +324,12 @@ function percent(text, mode, depth = 0) {
   return null;
 }
 
-function resolve(value, mode, seen = new Set(), accent = null) {
+function resolve(
+  value: string | undefined,
+  mode: Mode,
+  seen = new Set<string>(),
+  accent: string | null = null,
+): Lab | null {
   const text = String(value ?? "").trim();
   if (!text) return null;
 
@@ -357,8 +389,15 @@ function resolve(value, mode, seen = new Set(), accent = null) {
     another, or a `color-mix()`. It used to read `light-dark(oklch,
     oklch)` and nothing else, which is why ten pairs stopped being
     measured the day `--panel` became a mix. */
-function tokens() {
-  const out = {};
+/** One token, resolved in both themes. Every check that measures
+    a colour reads this shape. */
+export interface TokenPair {
+  light: Lab;
+  dark: Lab;
+}
+
+function tokens(): Record<string, TokenPair> {
+  const out: Record<string, TokenPair> = {};
   for (const name of new Set([...Object.keys(DECLS_BY_MODE.light), ...Object.keys(DECLS_BY_MODE.dark)])) {
     const light = resolve(`var(${name})`, "light");
     const dark = resolve(`var(${name})`, "dark");

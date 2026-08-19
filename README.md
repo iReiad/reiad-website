@@ -35,9 +35,9 @@ node scripts/check-all.mjs       # every check, in order
 Generated output is generated. Edit the source and rebuild:
 
 ```sh
-node scripts/build-modules.mjs        # aab/*.js from aab/src/
+node scripts/build-modules.ts        # aab/*.js from aab/src/
 node scripts/build-styles.mjs         # aab/tailwind.css
-node scripts/build-school-icons.mjs   # next/lib/school-icons.ts
+node scripts/build-school-icons.ts   # next/lib/school-icons.ts
 cd app && npm run build               # aab/desk/, aab/studio/
 ```
 

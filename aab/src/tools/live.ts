@@ -2,7 +2,7 @@
    /tools/live.js: the live portfolio page, all three faces.
 
    This file is TypeScript and compiles to the served module:
-   edit aab/src/tools/live.ts, run scripts/build-modules.mjs,
+   edit aab/src/tools/live.ts, run scripts/build-modules.ts,
    commit both. It is the first module served from a
    subdirectory; the MODULES list in that script names it as
    "tools/live".

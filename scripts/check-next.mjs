@@ -20,7 +20,7 @@
    2. THE SCHOOLS' DRAWINGS, all 103 of them, in
       `next/lib/school-icons.ts`. Same wall, four times the size,
       so it is generated rather than kept by hand:
-      `scripts/build-school-icons.mjs` writes it and this
+      `scripts/build-school-icons.ts` writes it and this
       regenerates it and compares. Promoting four icon sets to
       `shared/` to draw a heading would be the larger mistake
       while forty files in `aab/` still import them; when the
@@ -90,14 +90,14 @@ for (const name of ["cart", "book", "compass"]) {
    2. The schools' 103 drawings, generated
    ------------------------------------------------------------ */
 
-const { generate } = await import("./build-school-icons.mjs");
+const { generate } = await import("./build-school-icons.ts");
 const wanted = await generate();
 const drawings = (wanted.match(/^\s{4}"/gm) ?? []).length;
 
 if (read("next/lib/school-icons.ts") !== wanted) {
   fail("next/lib/school-icons.ts is not what aab/*/icons.js draws.",
     "Regenerate it and commit the result:",
-    "  node scripts/build-school-icons.mjs");
+    "  node scripts/build-school-icons.ts");
 }
 
 /* ------------------------------------------------------------
@@ -113,7 +113,7 @@ if (read("next/lib/school-icons.ts") !== wanted) {
    denominator nobody can reach: 60 of 59 finished.
    ------------------------------------------------------------ */
 
-const { generate: stages, generateLadders } = await import("./build-school-tree.mjs");
+const { generate: stages, generateLadders } = await import("./build-school-tree.ts");
 
 for (const [name, wanted] of [
   ["next/lib/school-stages.ts", stages()],
@@ -122,7 +122,7 @@ for (const [name, wanted] of [
   if (read(name) !== wanted) {
     fail(`${name} is not what content/schools.backup.json holds.`,
       "Regenerate it and commit the result:",
-      "  node scripts/build-school-tree.mjs");
+      "  node scripts/build-school-tree.ts");
   }
 }
 
@@ -155,7 +155,7 @@ for (const [school, lessons] of Object.entries(SCHOOL_LADDERS)) {
       "Refresh the snapshot and regenerate:",
       "  npx wrangler d1 export reiad --remote --output schools.db",
       "  node scripts/export-schools.mjs --db schools.db",
-      "  node scripts/build-school-tree.mjs");
+      "  node scripts/build-school-tree.ts");
   }
 }
 
@@ -165,17 +165,17 @@ for (const [school, lessons] of Object.entries(SCHOOL_LADDERS)) {
    `404.html` and `offline.html` cannot link the stylesheet Next
    emits, because its name carries a content hash. They link
    `aab/fallback.css`, which is the same file with its comments
-   removed, written by `scripts/build-fallback.mjs`. A stylesheet
+   removed, written by `scripts/build-fallback.ts`. A stylesheet
    edited and not regenerated is those two pages drifting from the
    other 250, and they are the two nobody looks at.
    ------------------------------------------------------------ */
 
-const { generate: fallback } = await import("./build-fallback.mjs");
+const { generate: fallback } = await import("./build-fallback.ts");
 
 if (read("aab/fallback.css") !== fallback()) {
   fail("aab/fallback.css is not next/styles/site.css with its comments out.",
     "Regenerate it and commit the result:",
-    "  node scripts/build-fallback.mjs");
+    "  node scripts/build-fallback.ts");
 }
 
 /* ------------------------------------------------------------

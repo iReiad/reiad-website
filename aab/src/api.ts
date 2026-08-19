@@ -12,7 +12,7 @@
 
    archive/TRANSITION.md Stage 13. Edit `aab/src/api.ts`; the committed
    `aab/api.js` is what the browser fetches, and
-   `node scripts/build-modules.mjs --check` fails if it is edited
+   `node scripts/build-modules.ts --check` fails if it is edited
    in its built form.
 
    ---- what api() returns, and why it is `unknown` ----

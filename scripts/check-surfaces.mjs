@@ -47,7 +47,7 @@
    where a card is.
    ============================================================ */
 
-import { resolve } from "./lib/css-tokens.mjs";
+import { resolve } from "./lib/css-tokens.ts";
 
 const TABLE = process.argv.includes("--table");
 

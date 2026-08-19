@@ -10,7 +10,7 @@ Updated 19 August 2026.
 
 ### Browser modules
 
-Built from `aab/src/*.ts` to `aab/*.js` by `scripts/build-modules.mjs`. The
+Built from `aab/src/*.ts` to `aab/*.js` by `scripts/build-modules.ts`. The
 built file is committed because the site deploys by uploading `aab/` with no
 build step.
 
@@ -104,6 +104,51 @@ converting, because it is the one that is going to be read by
 TypeScript at the other end.
 
 Also `aab/schools/*.js` (the three-school engine) and `aab/*/curriculum.js`.
+
+### The checks and the generators
+
+`scripts/` was 35 files of `.mjs`, which is JavaScript with a
+different extension. Node has stripped TypeScript types on its own
+since 22.18, so `node scripts/check-css.ts` runs with no build step,
+no loader and no configuration: converting is a rename plus the
+types.
+
+**IT IS THE RENAME THAT IS THE TRAP.** Stripping is not checking. A
+`.ts` file nothing typechecks is a `.js` file wearing annotations,
+and it is worse than the `.mjs` was, because a reader believes them.
+So `scripts/tsconfig.json` and `scripts/check-types.ts` landed with
+the first chunk, and that check is in `check-all.mjs`: a file is not
+converted until it typechecks under `strict`.
+
+**Done (6):** `build-fallback` `build-modules` `build-school-icons`
+`build-school-tree` `lib/coursera` `lib/css-tokens`
+
+**Left (29):** the seventeen `check-*.mjs`, the seven `*.test.mjs`,
+and `export-schools` `import-courses` `import-schools` `preview`
+`restore` `school-source` `schools-snapshot`.
+
+Two things came out of the first chunk that were not the types.
+
+`kindOf()` in `lib/coursera.ts` returned `"file"`, and no file in a
+Coursera export is ever a `file`: `splitName()` answers `attachment`
+for one. Two vocabularies with four words in common, conflated under
+one name, and the arrow between them was a function whose return
+type nothing checked. A LESSON is one of five kinds and a FILE is
+one of seven; `LessonKind` in `shared/courses.ts` is imported now
+rather than written out a second time.
+
+And `.github/workflows/checks.yml` kept its own copy of the check
+list. Renaming four generators updated `check-all.mjs` and every
+document that named them, and not the workflow, so CI would have
+failed on files that no longer existed for a rename that was
+correct. It calls `check-all.mjs --stage=<name>` now, once per step,
+so the steps stay separate in the interface and the list stays in
+one place.
+
+`scripts/check-routes.js` and `aab/.assetsignore` widened to `.ts`
+before any file in `aab/` converts, rather than after: a `.ts` test
+beside the others would otherwise be published at its own public
+URL, and the rule that catches that only knew `.mjs`.
 
 ### Worker
 
@@ -212,7 +257,7 @@ not been got to:
 Four things came out of it that are not about where code lives.
 
 **The ladder each bar counts against comes down from the ROUTE**, out
-of `next/lib/school-ladders.ts`, which `scripts/build-school-tree.mjs`
+of `next/lib/school-ladders.ts`, which `scripts/build-school-tree.ts`
 generates from `content/schools.backup.json`. The page used to import
 all four schools' `curriculum.js` in the browser to find the
 denominator, 150 KB of modules for 20 KB of facts, and it is the exact

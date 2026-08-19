@@ -31,6 +31,16 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v130: The generators are TypeScript. `/api.js`, `/photo.js` and
+        `/share-card.js` changed only in a header comment naming
+        the script that builds them, which is now
+        `scripts/build-modules.ts`.
+
+        Worth the bump anyway: a precached file that changed and
+        did not get one is served stale forever, and "it was only
+        a comment" is exactly the reasoning that would have to be
+        right every time.
+
    v129: Stage B opens. Every module in aab/ read and classified in
         MIGRATION.md, and two things came out of it.
 
@@ -1345,7 +1355,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v129";
+const VERSION = "v130";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -1370,7 +1380,7 @@ const PRECACHE = [
      `404.html` and `offline.html` cannot link a hashed name, and
      they are exactly the pages that have to answer when nothing
      else does, so they link this: the same stylesheet with its
-     comments taken out, written by `scripts/build-fallback.mjs`.
+     comments taken out, written by `scripts/build-fallback.ts`.
      248 KB against the 416 they were loading. */
   "/fallback.css",
   "/app.js",

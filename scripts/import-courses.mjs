@@ -23,7 +23,7 @@
 
    Both produce the same tree and hand it to the same builder, so
    the seed and every later refresh cannot disagree about what a
-   lesson is. `scripts/lib/coursera.mjs` is that agreement.
+   lesson is. `scripts/lib/coursera.ts` is that agreement.
 
    ---- the credential ----
 
@@ -101,7 +101,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   splitName, splitCourse, kindOf, titleOf, slugify,
-} from "./lib/coursera.mjs";
+} from "./lib/coursera.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "shared", "courses.data.json");

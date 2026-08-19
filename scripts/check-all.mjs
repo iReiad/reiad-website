@@ -2,12 +2,23 @@
 /* ============================================================
    check-all.mjs: every check and every fast test, in one command.
 
-       node scripts/check-all.mjs           checks, then tests
-       node scripts/check-all.mjs --checks  checks only
-       node scripts/check-all.mjs --quiet   one line per failure
+       node scripts/check-all.mjs             checks, then tests
+       node scripts/check-all.mjs --checks    checks only
+       node scripts/check-all.mjs --stage=X   one stage: checks,
+                                              generated or tests
+       node scripts/check-all.mjs --quiet     one line per failure
 
-   The list is the same one `.github/workflows/checks.yml` runs and
-   in the same order, so a green run here is a green run there.
+   THE LIST BELOW IS THE ONLY LIST. `.github/workflows/checks.yml`
+   ran its own copy of it in three hand-written steps until 19
+   August 2026, and it was a second copy of a list, which is the
+   failure the top of `CLAUDE.md` is about. It bit exactly the way
+   that file predicts: renaming four generators to `.ts` updated
+   this file, every document that named them and nothing in the
+   workflow, so CI would have failed on a file that no longer
+   existed, for a rename that was correct.
+
+   The workflow calls `--stage` now, once per step, so the steps
+   stay separate in the GitHub interface and the list stays here.
 
    Independent within a stage, so they run together rather than one
    after another: the whole suite is a few seconds instead of most
@@ -28,9 +39,15 @@ import { cpus } from "node:os";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const QUIET = process.argv.includes("--quiet");
 const ONLY_CHECKS = process.argv.includes("--checks");
+/** One stage by name, for a CI step that wants its own heading. */
+const STAGE = process.argv.find((a) => a.startsWith("--stage="))?.slice(8);
 
 const STAGES = [
   ["checks", [
+    /* First, because node strips the types in every other file
+       below without reading them: a check whose own annotations
+       are wrong reports on the site rather than on itself. */
+    "scripts/check-types.ts",
     "scripts/check-routes.js",
     "scripts/check-css.js",
     "scripts/check-sw.js",
@@ -51,9 +68,9 @@ const STAGES = [
     "scripts/check-accents.mjs",
   ]],
   ["generated", [
-    ["scripts/build-modules.mjs", "--check"],
-    ["scripts/build-fallback.mjs", "--check"],
-    ["scripts/build-school-icons.mjs", "--check"],
+    ["scripts/build-modules.ts", "--check"],
+    ["scripts/build-fallback.ts", "--check"],
+    ["scripts/build-school-icons.ts", "--check"],
     ["scripts/import-courses.mjs", "--crawl", "scripts/fixtures/course-crawl", "--check"],
   ]],
   ["tests", [
@@ -113,7 +130,14 @@ const started = process.hrtime.bigint();
 const failures = [];
 let ran = 0;
 
+if (STAGE && !STAGES.some(([name]) => name === STAGE)) {
+  console.error(`No stage called "${STAGE}". They are: `
+    + `${STAGES.map(([name]) => name).join(", ")}.`);
+  process.exit(1);
+}
+
 for (const [stage, entries] of STAGES) {
+  if (STAGE && stage !== STAGE) continue;
   if (ONLY_CHECKS && stage === "tests") continue;
 
   const results = await pool(entries);
