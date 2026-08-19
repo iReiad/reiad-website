@@ -89,6 +89,7 @@ export function ChipButton({
   return (
     <button type={type} aria-pressed={pressed}
             className={["chip", className].filter(Boolean).join(" ")}
+            data-glow="chip"
             {...rest}>
       {children}
     </button>

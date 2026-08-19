@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, glow, utilities;
 
 /* ============================================================
    TOKENS
@@ -29,6 +29,31 @@
   @property --i        { syntax: "<number>";  initial-value: 0;   inherits: false; }
   @property --shine    { syntax: "<angle>";   initial-value: 0deg; inherits: false; }
   @property --reveal   { syntax: "<number>";  initial-value: 1;   inherits: false; }
+
+  /* Where the light is and how bright, for `@layer glow`. All
+     three are typed so they can be TRANSITIONED: a plain custom
+     property jumps, and a light that jumps is a light nobody
+     believes. `/glow.js` writes the first two; the third is the
+     stylesheet's own, 0 at rest and 1 under the pointer.
+
+     `--gx`/`--gy` default to the centre, which is what a surface
+     reached by the keyboard gets: there is no pointer to follow,
+     so the light sits in the middle of it rather than nowhere. */
+  @property --gx       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
+  @property --gy       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
+  @property --glow-a   { syntax: "<number>";  initial-value: 0;   inherits: false; }
+
+  /* How wide the light spreads and how bright, which is what
+     makes a chip a chip and a pane a pane. Registered for a
+     second reason as well as animation, and it is the one that
+     matters most: `inherits: false` with an initial value of
+     zero is what lets `glow.js` ASK an element whether it is a
+     glowing surface, instead of carrying its own copy of the
+     list of every class that is. Nothing glows at 0px, so a
+     non-zero `--glow-w` IS the membership test, and the
+     stylesheet stays the only place that says what glows. */
+  @property --glow-w   { syntax: "<length>"; initial-value: 0px; inherits: false; }
+  @property --glow-i   { syntax: "<percentage>"; initial-value: 0%; inherits: false; }
 
   :root {
     /* Follow the OS by default; the theme toggle writes
@@ -1410,6 +1435,11 @@
      below gets the tint and no filter, for the reason above
      `--glass-fill-quiet`. */
   .btn-solid {
+    /* Opaque accent, and nothing over it but the light: the
+       sheen would repeat the inset line `--glass-lift-solid`
+       already draws, and a stipple on a filled button reads as
+       dirt rather than as texture. */
+    --surface-image: none;
     background: var(--accent-strong); color: var(--accent-ink);
     border-color: transparent;
     box-shadow: var(--glass-lift-solid);
@@ -1437,6 +1467,9 @@
     &:hover { background-color: var(--panel-hover); border-color: var(--accent-line); }
   }
   .btn-quiet {
+    /* Nothing but the light, which is the whole of what makes a
+       quiet button feel pressable without giving it a surface. */
+    --surface-image: none;
     background: transparent; color: var(--ink-soft);
     border-color: transparent;
 
@@ -2367,6 +2400,10 @@
   .pref-chips { display: flex; flex-wrap: wrap; gap: 7px; }
   .pref-chip {
     display: grid; gap: 1px; text-align: start;
+    /* No sheen. The lit top edge is the inset line below, and the
+       gradient as well would be that highlight said twice. */
+    --surface-image: var(--glass-grain);
+    --surface-size: var(--glass-grain-size, auto);
     padding: 8px 13px; min-height: 42px;
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
     background-color: var(--glass-fill-quiet); color: var(--ink);
@@ -4597,6 +4634,10 @@ it collapsed to the width of the word "Bangladesh". */
   .chip-row { display: flex; flex-wrap: wrap; gap: var(--s-4); }
   .chip {
     border: 1px solid var(--hairline); border-radius: var(--radius-pill);
+    /* No sheen. The lit top edge is the inset line below, and the
+       gradient as well would be that highlight said twice. */
+    --surface-image: var(--glass-grain);
+    --surface-size: var(--glass-grain-size, auto);
     background-color: var(--glass-fill-quiet); color: var(--ink-soft);
     background-image: var(--glass-grain);
     background-size: var(--glass-grain-size, auto);
@@ -10144,7 +10185,14 @@ German for day, and .tag is what the site has always called
     align-content: start;
     padding: clamp(14px, 1.8vw, 20px) 18px clamp(14px, 1.8vw, 20px) 21px;
     border: 1px solid var(--hairline); border-radius: var(--radius);
-    background: linear-gradient(150deg, var(--accent-soft), var(--panel) 55%);
+    /* Its own wash, as `--surface-image` rather than as a
+       `background` shorthand: `@layer glow` is later and sets
+       `background-image`, which would take a shorthand's
+       gradient away and leave the tile flat. The ground stays a
+       background-color, which nothing here touches. */
+    background-color: var(--panel);
+    --surface-image: linear-gradient(150deg, var(--accent-soft), var(--panel) 55%);
+    --surface-size: auto;
     text-decoration: none; color: var(--ink);
     min-width: 0;
     transition: rotate var(--enter) var(--ease),
@@ -11594,5 +11642,247 @@ German for day, and .tag is what the site has always called
     .rt-grid tbody td { block-size: 30px; }
     .rt-grid th, .rt-grid td { border-color: #999; }
     .rt-grid-band th { background: none; border-block-end-width: 2px; }
+  }
+}
+
+/* ============================================================
+   GLOW: the light inside the glass, said once
+
+   Every button, chip, card and pane on this site is a piece of
+   glass with a light in it, and the light follows the pointer.
+   This layer is the whole of what that looks like. `/glow.js`
+   writes two numbers on whatever the pointer is over, `--gx` and
+   `--gy`, and everything below is the stylesheet answering.
+
+   ---- why it is a background layer and not a pseudo-element ----
+
+   `::after` was the obvious way and it is taken: the front-door
+   tile draws its accent wash in one and the deck's GoCard draws
+   its arrow wash in another. A material that needs a free
+   pseudo-element on every surface collides with the next thing
+   anybody writes.
+
+   A background layer collides with nothing, and it is UNDER the
+   element's content for free, because a background always is.
+
+   ---- and it is the LAST background layer, which is the point ----
+
+   Later background layers paint further back, so putting the
+   light last puts it behind the weave, the stipple and the lit
+   top edge: the texture is on the surface and the light is
+   coming through it from behind. That is what "from inwards"
+   means, and it is why this reads as a material rather than as a
+   spotlight following a cursor.
+
+   ---- `--surface-image` is how a surface keeps its own ----
+
+   A later layer REPLACES a background-image, it does not merge
+   with one, so this rule cannot simply add a layer to what a
+   surface already declared: it would take the sheen and the
+   grain off every glass control on the site.
+
+   So the composition point is a token. A surface that wants its
+   own gradients sets `--surface-image` and they compose in
+   front of the light; a surface that wants nothing sets nothing
+   and gets the light alone, which is what `.btn-quiet` wants and
+   is the reason this is opt-in rather than restated.
+
+   `--surface-size` travels with it, for the one texture that has
+   a size: the frost finish's 3px stipple. A background-size list
+   shorter than the image list repeats, so the light gets `auto`
+   without anybody writing it.
+
+   ---- what "thicker" means here, and what it does not ----
+
+   The reader's finish (`data-glass`) already owns the blur and
+   the grain, and those already vary by surface: a chip is
+   `--glass-thin` and the top bar is `--glass-blur`. What varies
+   HERE is the light, because that is what actually tells a
+   reader how thick a thing is. A small piece of glass carries a
+   tight bright spot; a thick one diffuses it wide and dim.
+
+   So `--glow-w` is a LENGTH rather than a percentage of the box:
+   one light source at a physical size, spreading further the
+   more material it has to cross. A percentage would make the
+   light an ellipse the shape of whatever it is in, which is a
+   sticker rather than a light.
+
+   Blur is deliberately not part of the ladder. A backdrop-filter
+   under opaque paint is a compositing layer that renders
+   nothing, and most cards on this site are `var(--panel)`, which
+   is opaque.
+
+   ---- the four kinds ----
+
+   | chip    | small, tight, brightest  |  70px | 40% |
+   | control | a button                 | 110px | 34% |
+   | card    | something you can enter  | 240px | 26% |
+   | pane    | a bar, a rail, a dialog  | 420px | 16% |
+
+   The second column is how much of the page's accent sits at
+   the centre of the light. They read as high numbers and are
+   not: the value is mixed with `transparent`, so 26% on a card
+   is a wash a quarter of the way to the accent at the ONE point
+   the pointer is, falling to nothing by the edge of the circle.
+   At 15% it was a rumour.
+
+   A component sets `data-glow` and gets all of it, which is why
+   the attribute lives in `next/components/ui/` rather than at
+   each call site: a page that uses `<Button>` cannot be missing
+   this, and a page that hand-writes `class="btn"` is missing it
+   by exactly the amount `check-components.ts` already counts.
+   ============================================================ */
+@layer glow {
+
+  [data-glow] {
+    --glow-w: 110px;
+    --glow-i: 34%;
+
+    /* Every var() carries its own fallback, and that is not belt
+       and braces. An unregistered `--glow-a` is a string, the
+       multiply inside color-mix is then invalid at computed
+       value time, and an invalid background-image does not fall
+       back to the previous layer's: it falls back to `none` and
+       takes `--surface-image` down with it. */
+    background-image:
+      var(--surface-image, var(--sheen), var(--glass-grain)),
+      radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
+        color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent),
+        transparent 100%);
+    background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
+
+    /* ---- why the whole transition list is restated ----
+
+       A transition list is not merged across cascade layers: the
+       winning declaration replaces it. `@layer glow` is late by
+       design, so declaring `--glow-a` alone would silently take
+       the lean off every card and the hover off every button.
+       `.card[data-kind="go"]` in `@layer deck` carries a comment
+       saying exactly this, having been bitten once.
+
+       So the design language owns the transition for anything
+       that glows, and these are the ten channels this site
+       animates on a control or a card. `transform` is in the
+       list for `.work-card` alone, `filter` for `.btn-solid`'s
+       brightness on hover, and `translate` and `rotate` are
+       separate properties rather than parts of `transform`,
+       which is what lets the tilt compose with a lift.
+       Something transitioning an eleventh adds it here, which
+       is the cost of saying it once. */
+    transition: --glow-a var(--enter) var(--ease),
+                rotate var(--enter) var(--ease),
+                background-color var(--fast) var(--ease),
+                border-color var(--fast) var(--ease),
+                color var(--fast) var(--ease),
+                box-shadow var(--fast) var(--ease),
+                translate var(--fast) var(--ease),
+                transform var(--fast) var(--ease),
+                filter var(--fast) var(--ease),
+                opacity var(--fast) var(--ease);
+
+    /* `focus-within` as well as `focus-visible`, because a card
+       holding a control lights when the control inside it is
+       reached: the light says where you are, and where you are
+       is the card. */
+    &:hover, &:focus-visible, &:focus-within { --glow-a: 1; }
+  }
+
+  [data-glow="chip"]    { --glow-w:  70px; --glow-i: 40%; }
+  [data-glow="control"] { --glow-w: 110px; --glow-i: 34%; }
+  [data-glow="card"]    { --glow-w: 240px; --glow-i: 26%; }
+  [data-glow="pane"]    { --glow-w: 420px; --glow-i: 16%; }
+
+  /* ============================================================
+     AND THE SURFACES THAT ARE NOT COMPONENTS YET
+
+     Three lists, one per kind, and they are here for the same
+     reason `SCENES` and `CARD` are lists in `tilt.ts`: most of
+     what a reader touches on this site is still a class in a
+     stylesheet rather than a component, and 251 lesson cards are
+     built in a loop by a browser module. Waiting for every one
+     of them to become a `<GoCard>` would mean the material
+     arrives on a tenth of the site.
+
+     So a name here is the same statement `data-glow` makes, one
+     level down, and the two are meant to trade places: as a
+     class becomes a component the component carries the
+     attribute and the name comes OUT of this list.
+     `check-components.ts` counts what is left.
+
+     A name in the wrong list is the one way to get this wrong,
+     and the test is not what the thing looks like, it is what
+     happens when you press it. A chip latches, a control acts, a
+     card takes you in, a pane holds other things.
+     ============================================================ */
+
+  /* Small, and mostly latching: a filter, a segment, a tick. */
+  :is(.chip, .scenario, .toggle, .tick-btn, .keep-btn, .pref-chip,
+      .topic-chip, .quiz-option, .checkpoint, .choice,
+      .rt-mark, .rt-heat-day, button.react) {
+    --glow-w: 70px; --glow-i: 40%;
+  }
+
+  /* Pressed to do something, or to go somewhere. */
+  :is(.btn, .tab, .icon-btn, .link-btn, .acc-item, .tree-btn,
+      .audience-opt, .crumb-step, .top-btn, .drawer-close,
+      .rail-item, .slash-item, .quiz-reset, .rt-jar, .big-link) {
+    --glow-w: 110px; --glow-i: 34%;
+  }
+
+  /* Something you go into, or read. */
+  :is(.cell, .card, .gate-tile, .news-card, .chart-card, .tile,
+      .lesson-card, .work-card, .rung, .tally-item, .res,
+      .desk-tile, .acct-tile, .kept-row, .ladder-row, .target,
+      .saved-row, .gate-card, .resume, .hub-pledge, .rt-template) {
+    --glow-w: 240px; --glow-i: 26%;
+  }
+
+  /* Holds other things. */
+  :is(.topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
+      .tabs-nav[data-sticky], .tool, .studio-pane, .band, .rt-sheet) {
+    --glow-w: 420px; --glow-i: 16%;
+  }
+
+  /* And the one rule that turns the light on for all of them.
+     Written apart from the four above so that the sizes read as
+     a table: those set what KIND of glass a thing is, this is
+     the light every kind carries. */
+  :is(.chip, .scenario, .toggle, .tick-btn, .keep-btn, .pref-chip,
+      .topic-chip, .quiz-option, .checkpoint, .choice,
+      .rt-mark, .rt-heat-day, button.react,
+      .btn, .tab, .icon-btn, .link-btn, .acc-item, .tree-btn,
+      .audience-opt, .crumb-step, .top-btn, .drawer-close,
+      .rail-item, .slash-item, .quiz-reset, .rt-jar, .big-link,
+      .cell, .card, .gate-tile, .news-card, .chart-card, .tile,
+      .lesson-card, .work-card, .rung, .tally-item, .res,
+      .desk-tile, .acct-tile, .kept-row, .ladder-row, .target,
+      .saved-row, .gate-card, .resume, .hub-pledge, .rt-template,
+      .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
+      .tabs-nav[data-sticky], .tool, .studio-pane, .band, .rt-sheet) {
+    background-image:
+      var(--surface-image, var(--sheen), var(--glass-grain)),
+      radial-gradient(var(--glow-w, 110px) circle at var(--gx, 50%) var(--gy, 50%),
+        color-mix(in oklab, var(--accent) calc(var(--glow-i, 34%) * var(--glow-a, 0)), transparent),
+        transparent 100%);
+    background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
+
+    &:hover, &:focus-visible, &:focus-within { --glow-a: 1; }
+  }
+
+  /* ---- a reader who asked for less motion keeps the light ----
+
+     And loses only the following. A glow that tracks a cursor is
+     small, but it is motion tied to the reader's own hand, which
+     is the kind a vestibular disorder answers worst. Pinned to
+     the centre the material survives: the surface still lights
+     under the pointer, it just does not chase it.
+
+     `glow.ts` makes the same check and writes nothing, and it
+     has to: an inline style beats a media query, so one write
+     from that file would undo this on every surface. Two places
+     say this because either one alone can be undone by the
+     other. */
+  @media (prefers-reduced-motion: reduce) {
+    [data-glow] { --gx: 50%; --gy: 50%; transition: none; }
   }
 }

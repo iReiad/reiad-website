@@ -37,6 +37,7 @@ import "../styles/globals.css";
 import type { CSSProperties, ReactNode } from "react";
 import { FONTS, LOOK } from "@reiad/shared/look";
 import { SiteScripts } from "./scripts";
+import { Glow } from "./glow";
 import { Sidebar, DrawerBackdrop } from "./sidebar";
 import { TopBar } from "./topbar";
 import { NavTree } from "./nav-tree";
@@ -265,6 +266,13 @@ export function SiteShell({
             one. */}
         {scripts}
         <SiteScripts srcs={["/app.js"]} />
+        {/* The pointer's position, for `@layer glow`. A component
+            rather than a served module because nothing outside
+            this shell ever needed it, and because `aab/` is a
+            closed set: `scripts/check-closed.ts`. It renders
+            nothing and its effect is one document listener, so
+            it costs a page one element in the tree. */}
+        <Glow />
       </body>
     </html>
   );

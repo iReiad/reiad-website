@@ -6,6 +6,18 @@ properly, with its checks passing. No separate "migration sprint".
 
 Updated 19 August 2026.
 
+**The door is shut, and `scripts/check-closed.ts` is what shuts it.**
+`scripts/closed-set.json` records every file still on the old system by
+name, and the list may only get shorter: converting one and running
+`--update` records the shorter list, and a NEW file there fails the check
+naming what to build instead. This tracker says what is left; that check
+stops the total growing while somebody works through it.
+
+```sh
+node scripts/check-closed.ts --list      # the 106 that are left
+node scripts/check-closed.ts --update    # after converting one
+```
+
 ## 1. JavaScript to TypeScript
 
 ### Browser modules

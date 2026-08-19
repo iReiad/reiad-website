@@ -89,6 +89,12 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        names. `.ring` is a utility and was also this site's
        progress ring, and layer order cannot help. */
     "scripts/check-utility-clash.ts",
+    /* The migration rule, which was a paragraph in CLAUDE.md
+       and was broken the same day it was quoted: `glow.ts` was
+       written into `aab/src/` because `tilt.ts` is there. The
+       old system is a recorded list now and the list may only
+       get shorter. */
+    "scripts/check-closed.ts",
     /* The extension rule, which was a paragraph in CLAUDE.md
        until 19 August 2026 and was broken anyway: the
        neighbours are the pattern, so somebody adding a test

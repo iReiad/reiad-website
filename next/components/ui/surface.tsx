@@ -36,19 +36,19 @@ export type Material = "pane" | "sunk" | "glass" | "bare";
 
 const MATERIALS: Record<Material, string> = {
   pane: [
-    "bg-panel bg-sheen",
+    "bg-panel bg-sheen [--surface-image:var(--sheen)]",
     "border border-pane-edge rounded-[var(--radius-card)]",
     "shadow-[inset_0_1px_0_var(--pane-top),var(--shadow)]",
   ].join(" "),
 
   sunk: [
-    "bg-paper-sunk bg-weave",
+    "bg-paper-sunk bg-weave [--surface-image:var(--weave)]",
     "border border-hairline rounded-[var(--radius-card)]",
     "shadow-[inset_0_1px_2px_rgb(0_0_0/0.04)]",
   ].join(" "),
 
   glass: [
-    "bg-glass bg-sheen",
+    "bg-glass bg-sheen [--surface-image:var(--sheen)]",
     "backdrop-blur-[14px] backdrop-saturate-[1.7]",
     "border border-glass-edge rounded-[var(--radius-card)]",
     "shadow-[var(--shadow-lift)]",
@@ -59,7 +59,7 @@ const MATERIALS: Record<Material, string> = {
     "supports-[not_(backdrop-filter:blur(1px))]:bg-glass-solid",
   ].join(" "),
 
-  bare: "",
+  bare: "[--surface-image:none]",
 };
 
 export interface SurfaceProps {
@@ -89,6 +89,16 @@ export function Surface({
           : "",
         className,
       ].filter(Boolean).join(" ")}
+      /* The light, for a surface that answers a pointer at all.
+         An overlay gets the widest and dimmest of the four
+         because it is the thickest thing on the page; a surface
+         that is itself the target gets a card's. A plain pane
+         gets none, for the reason `<InfoCard>` gets none.
+
+         `--surface-image` travels in MATERIALS above rather than
+         here, so each material keeps its own texture under the
+         light instead of every one of them getting a pane's. */
+      data-glow={interactive ? "card" : material === "glass" ? "pane" : undefined}
       /* Cast for the reason `footer.tsx` casts: React's
          CSSProperties cannot express a custom property. */
       style={accent

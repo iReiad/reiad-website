@@ -120,6 +120,7 @@ export function Button({
       type={type}
       className={classes(kind, size, block, onAccent, className)}
       aria-pressed={pressed}
+      data-glow="control"
       {...rest}
     >
       {children}
@@ -146,6 +147,7 @@ export function ButtonLink({
   return (
     <a
       className={classes(kind, size, block, onAccent, className)}
+      data-glow="control"
       {...rest}
     >
       {children}
