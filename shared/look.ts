@@ -137,10 +137,25 @@ export const dateLabel = (article: Pick<Article, "lang" | "published_at">): stri
     day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
   }).format(new Date(`${article.published_at || "2026-01-01"}T00:00:00Z`));
 
+/** One stylesheet, one request, every face this site uses.
+ *
+ * `Caveat` is the newest and the narrowest: it is loaded for
+ * exactly one thing, which is WHAT A READER WROTE THEMSELVES. The
+ * note on a routine day and the line beside "something I chose",
+ * and nothing else, ever. Handwriting everywhere is a theme;
+ * handwriting on the one handwritten thing is the difference
+ * between a page that looks like a notebook and a page that has
+ * your writing in it.
+ *
+ * One weight of it, because a handwritten note has one. The
+ * fallback in `--font-hand` is the serif rather than the sans, so
+ * a blocked webfont is a quieter page rather than a broken one.
+ */
 export const FONTS =
   "https://fonts.googleapis.com/css2?family=Spectral:wght@400;500;600"
   + "&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500"
   + "&family=Noto+Sans+Bengali:wght@400;500&family=Noto+Serif+Bengali:wght@500;600"
+  + "&family=Caveat:wght@500"
   + "&display=swap";
 
 export interface HeadFacts {

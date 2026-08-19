@@ -6,7 +6,7 @@
    a stylesheet whose name carries a hash. Edit the source and run
    the generator. */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, utilities;
 
 @layer tokens {
 
@@ -143,6 +143,8 @@
     --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
     --font-bn: "Noto Sans Bengali", var(--font-sans);
     --font-bn-serif: "Noto Serif Bengali", var(--font-serif);
+
+    --font-hand: "Caveat", var(--font-serif);
 
     --s-1: 2px;
     --s-2: 4px;
@@ -7622,4 +7624,134 @@
   .course-note h1 { margin: 0 0 0.75rem; }
   .course-note p { color: var(--ink-soft); }
   .course-note .btn { margin-top: 1.25rem; }
+}
+
+@layer routine {
+
+  .rt-page { padding-block: var(--step) var(--step); }
+  .rt-title {
+    font-family: var(--font-bn-serif);
+    margin-block-end: var(--s-6);
+  }
+
+  .rt-quiet, .rt-invite p { color: var(--ink-soft); }
+  .rt-invite {
+    display: grid; gap: var(--s-6);
+    max-width: var(--measure);
+  }
+  .rt-invite h2 { font-family: var(--font-bn-serif); margin: 0; }
+  .rt-invite p { margin: 0; }
+  .rt-invite .btn { justify-self: start; }
+
+  .rt-head {
+    display: flex; flex-wrap: wrap; align-items: center;
+    justify-content: space-between; gap: var(--s-5);
+    margin-block-end: var(--s-9);
+    padding-block-end: var(--s-5);
+    border-block-end: 1px solid var(--hairline);
+  }
+  .rt-when { display: flex; align-items: center; gap: var(--s-4); }
+  .rt-date {
+    font-family: var(--font-bn-serif); font-size: var(--t-6);
+    min-inline-size: 12ch;
+  }
+
+  .rt-figure {
+    margin: 0; font-family: var(--font-mono); font-size: var(--t-5);
+    color: var(--ink-soft); letter-spacing: 0.04em;
+  }
+
+  .rt-band { margin-block-end: var(--s-9); }
+  .rt-band-name {
+    font-family: var(--font-bn); font-size: var(--t-3);
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 var(--s-4);
+  }
+  .rt-tasks { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+
+  .rt-mark {
+    -webkit-appearance: none;
+    appearance: none; border: 0; background: none; font: inherit;
+    inline-size: 100%; text-align: start; cursor: pointer;
+    display: flex; align-items: center; gap: var(--s-5);
+    padding: 10px 12px;
+    min-block-size: var(--tap);
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    transition: background var(--fast) var(--ease);
+
+    &:hover { background: var(--accent-soft); }
+    &:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+  }
+  .rt-task-name {
+    flex: 1 1 auto; min-inline-size: 0;
+    font-family: var(--font-bn);
+  }
+
+  .rt-mark[data-state="1"] .rt-task-name { color: var(--ink-soft); }
+
+  .rt-key, .rt-hours {
+    flex: 0 0 auto; font-size: var(--t-1); color: var(--ink-soft);
+    opacity: 0.55;
+  }
+  .rt-key {
+    inline-size: 1.4em; text-align: center;
+    border: 1px solid var(--hairline); border-radius: var(--radius-xs);
+  }
+
+  @media (hover: none) { .rt-key { display: none; } }
+
+  .rt-tick {
+    flex: 0 0 auto; display: grid; place-items: center;
+    inline-size: 24px; block-size: 24px;
+    border: 1.5px solid var(--pane-edge); border-radius: var(--radius-xs);
+    color: var(--accent);
+    transition: border-color var(--fast) var(--ease),
+                background var(--fast) var(--ease);
+  }
+  .rt-tick svg { inline-size: 17px; block-size: 17px; overflow: visible; }
+
+  .rt-tick path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 380ms var(--ease);
+  }
+  .rt-tick[data-state="1"] { border-color: var(--accent); background: var(--accent-soft); }
+  .rt-tick[data-state="1"] path { stroke-dashoffset: 0; }
+
+  .rt-tick[data-state="0.5"] { border-color: var(--accent); }
+  .rt-tick[data-state="0.5"] path { stroke-dashoffset: 0.55; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rt-tick path { transition: none; }
+    .rt-mark { transition: none; }
+  }
+
+  .rt-note textarea, .rt-chose input {
+    font-family: var(--font-hand);
+    font-size: var(--t-6);
+    line-height: 1.7;
+  }
+
+  .rt-chose { max-inline-size: 32rem; margin-block-end: var(--s-9); }
+
+  .rt-mood { margin-block-end: var(--s-9); }
+  .rt-mood h2 {
+    font-family: var(--font-bn); font-size: var(--t-3);
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 var(--s-4);
+  }
+  .rt-moods { display: flex; flex-wrap: wrap; gap: var(--s-4); }
+
+  .rt-note { max-inline-size: var(--measure); }
+
+  .rt-saved {
+    margin-block-start: var(--s-5); min-block-size: 1.4em;
+    font-family: var(--font-mono); font-size: var(--t-2);
+    color: var(--ink-soft); opacity: 0;
+    transition: opacity var(--fast) var(--ease);
+  }
+  .rt-saved[data-state="ok"], .rt-saved[data-state="later"] { opacity: 0.75; }
+  .rt-saved[data-state="saving"] { opacity: 0.4; }
 }

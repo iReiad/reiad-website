@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, utilities;
 
 /* ============================================================
    TOKENS
@@ -483,6 +483,17 @@
     --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
     --font-bn: "Noto Sans Bengali", var(--font-sans);
     --font-bn-serif: "Noto Serif Bengali", var(--font-serif);
+    /* THE ONE HANDWRITTEN FACE, and it is loaded for exactly one
+       thing: what a reader wrote themselves. The note on a
+       routine day, and the line beside "something I chose".
+
+       Handwriting everywhere is a theme; handwriting on the one
+       handwritten thing is the difference between a page that
+       looks like a notebook and a page that has your writing in
+       it. The fallback is the serif rather than the sans, so a
+       blocked webfont is a quieter page rather than a broken
+       one, and `shell.tsx` is where the link lives. */
+    --font-hand: "Caveat", var(--font-serif);
 
     /* --- the scales ---
 
@@ -11061,4 +11072,196 @@ German for day, and .tag is what the site has always called
   .course-note h1 { margin: 0 0 0.75rem; }
   .course-note p { color: var(--ink-soft); }
   .course-note .btn { margin-top: 1.25rem; }
+}
+
+/* ============================================================
+   @layer routine: a day of somebody's own.
+
+   `ROUTINE.md` is the plan. Every class here is prefixed `rt-`,
+   which is not decoration: this layer sits above `deck`, so an
+   unprefixed name would restyle the whole site from one tool.
+   That is the exact bug `check-css.ts` was written for, one
+   layer along, and `@layer courses` carries the same note.
+
+   What it does NOT define is the furniture it borrows. The
+   buttons are `.btn`, the mood chips are `.chip`, the text boxes
+   are the site's. A day should look like the rest of this site
+   because it IS the rest of this site.
+
+   ---- nothing here is red, and there is no zero ----
+
+   Not an omission. An unmarked task is neutral and reads as "not
+   today": no failure state, no overdue, no colour that means
+   somebody let themselves down. `scripts/routine.test.ts` is
+   what says so out loud.
+   ============================================================ */
+@layer routine {
+
+  .rt-page { padding-block: var(--step) var(--step); }
+  .rt-title {
+    font-family: var(--font-bn-serif);
+    margin-block-end: var(--s-6);
+  }
+
+  .rt-quiet, .rt-invite p { color: var(--ink-soft); }
+  .rt-invite {
+    display: grid; gap: var(--s-6);
+    max-width: var(--measure);
+  }
+  .rt-invite h2 { font-family: var(--font-bn-serif); margin: 0; }
+  .rt-invite p { margin: 0; }
+  .rt-invite .btn { justify-self: start; }
+
+  /* ---------- the head: which day, and how much of it ---------- */
+
+  .rt-head {
+    display: flex; flex-wrap: wrap; align-items: center;
+    justify-content: space-between; gap: var(--s-5);
+    margin-block-end: var(--s-9);
+    padding-block-end: var(--s-5);
+    border-block-end: 1px solid var(--hairline);
+  }
+  .rt-when { display: flex; align-items: center; gap: var(--s-4); }
+  .rt-date {
+    font-family: var(--font-bn-serif); font-size: var(--t-6);
+    min-inline-size: 12ch;
+  }
+  /* The figure, and it is deliberately quiet. It describes what
+     happened; it is not a score and nothing is chasing it. */
+  .rt-figure {
+    margin: 0; font-family: var(--font-mono); font-size: var(--t-5);
+    color: var(--ink-soft); letter-spacing: 0.04em;
+  }
+
+  /* ---------- a band, wearing its own colour ---------- */
+
+  .rt-band { margin-block-end: var(--s-9); }
+  .rt-band-name {
+    font-family: var(--font-bn); font-size: var(--t-3);
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 var(--s-4);
+  }
+  .rt-tasks { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+
+  /* ---------- one task ---------- */
+
+  /* THE WHOLE ROW IS THE BUTTON, and that is the difference
+     between a list that works with a thumb and one that does
+     not: the target is the line rather than the 24px tick at the
+     end of it. */
+  .rt-mark {
+    appearance: none; border: 0; background: none; font: inherit;
+    inline-size: 100%; text-align: start; cursor: pointer;
+    display: flex; align-items: center; gap: var(--s-5);
+    padding: 10px 12px;
+    min-block-size: var(--tap);
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    transition: background var(--fast) var(--ease);
+
+    &:hover { background: var(--accent-soft); }
+    &:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+  }
+  .rt-task-name {
+    flex: 1 1 auto; min-inline-size: 0;
+    font-family: var(--font-bn);
+  }
+  /* Marked, and the words go quiet rather than getting a line
+     through them. A struck-through task reads as cancelled. */
+  .rt-mark[data-state="1"] .rt-task-name { color: var(--ink-soft); }
+
+  .rt-key, .rt-hours {
+    flex: 0 0 auto; font-size: var(--t-1); color: var(--ink-soft);
+    opacity: 0.55;
+  }
+  .rt-key {
+    inline-size: 1.4em; text-align: center;
+    border: 1px solid var(--hairline); border-radius: var(--radius-xs);
+  }
+  /* The shortcut hint only where there is a pointer to have
+     learnt it from. A phone has no number keys and the hint is
+     noise on one. */
+  @media (hover: none) { .rt-key { display: none; } }
+
+  /* ---------- the tick, which is the only motion ---------- */
+
+  .rt-tick {
+    flex: 0 0 auto; display: grid; place-items: center;
+    inline-size: 24px; block-size: 24px;
+    border: 1.5px solid var(--pane-edge); border-radius: var(--radius-xs);
+    color: var(--accent);
+    transition: border-color var(--fast) var(--ease),
+                background var(--fast) var(--ease);
+  }
+  .rt-tick svg { inline-size: 17px; block-size: 17px; overflow: visible; }
+
+  /* IT STROKES ITSELF ON, like a pen. `pathLength="1"` on the
+     path normalises the arithmetic, so this animates from 1 to 0
+     without anybody measuring the curve. */
+  .rt-tick path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 380ms var(--ease);
+  }
+  .rt-tick[data-state="1"] { border-color: var(--accent); background: var(--accent-soft); }
+  .rt-tick[data-state="1"] path { stroke-dashoffset: 0; }
+
+  /* Half is half of the stroke, which reads as a tick somebody
+     started. It is a real answer and not a lesser nothing. */
+  .rt-tick[data-state="0.5"] { border-color: var(--accent); }
+  .rt-tick[data-state="0.5"] path { stroke-dashoffset: 0.55; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rt-tick path { transition: none; }
+    .rt-mark { transition: none; }
+  }
+
+  /* ---------- what she wrote ---------- */
+
+  /* HER HANDWRITING, and it is the one exception to the site's
+     type. Handwriting everywhere is a theme; handwriting on the
+     one handwritten thing is the difference between a page that
+     looks like a notebook and a page that has your writing in
+     it. `--font-hand` is loaded in `shell.tsx` and falls back to
+     the serif, so a blocked webfont is a quieter page rather
+     than a broken one. */
+  .rt-note textarea, .rt-chose input {
+    font-family: var(--font-hand);
+    font-size: var(--t-6);
+    line-height: 1.7;
+  }
+
+  /* Both of these wrap `<Field>` and `<TextArea>` rather than a
+     raw control, which is what `check-components.ts` is for and
+     what it caught here. So the layout is the wrapper's and the
+     look is the library's: all this adds is the width, and the
+     one thing the library cannot know, which is that what goes
+     in it is handwriting. */
+  .rt-chose { max-inline-size: 32rem; margin-block-end: var(--s-9); }
+
+  .rt-mood { margin-block-end: var(--s-9); }
+  .rt-mood h2 {
+    font-family: var(--font-bn); font-size: var(--t-3);
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 var(--s-4);
+  }
+  .rt-moods { display: flex; flex-wrap: wrap; gap: var(--s-4); }
+
+  .rt-note { max-inline-size: var(--measure); }
+
+  /* ---------- saying it saved ---------- */
+
+  /* Quiet, never a modal, never over the content, and the
+     failure is a promise rather than an apology. There is no
+     `danger` here on purpose: not saving yet is not the reader's
+     mistake and nothing on this page turns red. */
+  .rt-saved {
+    margin-block-start: var(--s-5); min-block-size: 1.4em;
+    font-family: var(--font-mono); font-size: var(--t-2);
+    color: var(--ink-soft); opacity: 0;
+    transition: opacity var(--fast) var(--ease);
+  }
+  .rt-saved[data-state="ok"], .rt-saved[data-state="later"] { opacity: 0.75; }
+  .rt-saved[data-state="saving"] { opacity: 0.4; }
 }

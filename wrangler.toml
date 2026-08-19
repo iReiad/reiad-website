@@ -143,7 +143,8 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   # bare path and its own star are two rules, not one covering the
   # other.
   "/skills/courses", "/skills/courses/*",
-  "/tools", "/tools/stock", "/tools/live", "/portfolio", "/portfolio/*", "/",
+  "/tools", "/tools/stock", "/tools/live", "/tools/routine",
+  "/portfolio", "/portfolio/*", "/",
   "/desk", "/studio",
   # The four schools, Stage 11.7. 247 pages left aab/ in the same
   # commit that added these, so with not_found_handling set the asset
