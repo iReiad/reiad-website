@@ -28,9 +28,9 @@
       this and the generator go.
 
    3. THE PRACTICE BOOKS' LENGTH. `next/lib/workbooks/*.ts` holds
-      the days a book is made of and `curriculum.js` DECLARES how
-      many there are, in `workbook.days`, because the hub draws a
-      progress bar from that number and must not pull five
+      the days a book is made of and the school's ladder DECLARES
+      how many there are, in `workbook.days`, because the hub draws
+      a progress bar from that number and must not pull five
       thousand lines of days down to count them.
 
       Nothing held the two together, and two comments said
@@ -69,8 +69,9 @@ import { icon } from "../aab/money/icons.js";
 import { SCHOOL_ICONS } from "../next/lib/school-icons.ts";
 import { NAV, LADDER_SCHOOLS } from "../next/lib/nav.ts";
 import { SCHOOL_LADDERS } from "../next/lib/school-ladders.ts";
-import { STUFEN } from "../aab/deutsch/curriculum.js";
-import { TERMS } from "../aab/english/curriculum.js";
+import { STAGES, allLessons } from "../shared/curricula/money.ts";
+import { STUFEN } from "../shared/curricula/deutsch.ts";
+import { TERMS } from "../shared/curricula/english.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
@@ -245,16 +246,7 @@ const shellNames = new Set(
 
 const cardIcons = keyed ? (SCHOOL_ICONS[keyed[1]] ?? {}) : {};
 
-/* The money school's ladder, for the icon names its cards ask
-   for. `curriculum.js` is plain JavaScript with a declaration in
-   `aab/src/types/`, and what this needs of it is one optional
-   field, so it is stated here rather than widened there. */
-interface Drawn { icon?: string }
-
-const { STAGES, allLessons } = await import("../aab/money/curriculum.js") as {
-  STAGES: Drawn[];
-  allLessons: () => Drawn[];
-};
+/* The icon names the money school's cards ask for. */
 const asked = new Set<string>();
 for (const stage of STAGES) if (stage.icon) asked.add(stage.icon);
 for (const lesson of allLessons()) if (lesson.icon) asked.add(lesson.icon);
@@ -326,7 +318,7 @@ for (const rung of [...STUFEN, ...TERMS] as Rung[]) {
   }
   books += 1;
   if (days.length !== rung.workbook.days) {
-    fail(`${rung.slug}: the book is ${days.length} days and curriculum.js says `
+    fail(`${rung.slug}: the book is ${days.length} days and the ladder says `
       + `${rung.workbook.days}.`,
       `next/lib/workbooks/${file}.ts is the days themselves; workbook.days is what`,
       "the hub draws its progress bar from. A reader would be told they are on day",
@@ -339,5 +331,5 @@ console.log(failures
   : `next/ holds 3 drawings copied out of aab/ by hand and ${drawings}\n`
     + `generated, every one still matches what icons.js draws, and all\n`
     + `${asked.size} names a card asks for come back with a drawing in them,\n`
-    + `and ${books} practice book(s) are as long as curriculum.js says.\n`);
+    + `and ${books} practice book(s) are as long as their ladder says.\n`);
 process.exit(failures ? 1 : 0);

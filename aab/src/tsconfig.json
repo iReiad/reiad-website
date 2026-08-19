@@ -21,10 +21,12 @@
     "the real types rather than a description of them, and the two",
     "cannot drift because there is only one. /content.js is that",
     "second kind reaching outside this directory: its source is",
-    "shared/content.ts, which scripts/build-modules.ts compiles to",
-    "aab/content.js. A module here that imports it will also need",
-    "allowJs, because that source reads the four curriculum.js",
-    "ladders.",
+    "shared/content.ts, and a ladder's is shared/curricula/<school>.ts,",
+    "both of which scripts/build-modules.ts compiles into aab/.",
+    "Nothing here imports one yet, and the first module that does",
+    "needs two more things: rootDir widened, since tsc refuses an",
+    "input above it, and allowImportingTsExtensions, since",
+    "content.ts names its four ladders by their real filenames.",
     "",
     "declaration: true is the point of the exercise. app/src/types/",
     "holds hand-written .d.ts files describing these modules, and",
@@ -58,7 +60,7 @@
       "/account-page.js": ["./account-page.ts"],
       "/content.js": ["../../shared/content.ts"],
       "/streak.js": ["./types/streak.d.ts"],
-      "*/curriculum.js": ["./types/curriculum.d.ts"]
+      "/*/curriculum.js": ["../../shared/curricula/*.ts"]
     }
   },
   "include": ["*.ts", "tools/*.ts"],

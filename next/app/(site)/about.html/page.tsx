@@ -4,21 +4,17 @@
    Ported out of `aab/about.html` with archive/TRANSITION.md Stage 11.5,
    words unchanged.
 
-   ---- the tally, and why it is still filled in the browser ----
+   ---- the tally ----
 
-   The four numbers under the glance are counted from
-   `content.js` and the four `curriculum.js` modules by
-   `/about.js`, which runs here exactly as it did on the page this
-   replaces. They could be counted on the server, and they are not,
-   because those modules are served out of `aab/` and Turbopack
-   will not resolve above `next/`: the wall `shared/` exists to
-   get round, and the one Stage 11.7 takes down for good when the
-   curricula stop being files. Until then the dash in the markup is
-   what a reader with no JavaScript sees, which is what they saw
-   before.
+   The four numbers under the glance are counted on the server out
+   of `@reiad/shared/content`, which is the same manifest the
+   browser reads at `/content.js`. They were `/about.js`'s until
+   the four ladders moved into `shared/`, and a reader with no
+   JavaScript saw a dash where each number should have been.
    ============================================================ */
 
 import type { Metadata } from "next";
+import { COUNTS } from "@reiad/shared/content";
 import { pageMeta } from "../../../lib/pageMeta";
 import { Band } from "../../../components/ui/band";
 import { ButtonLink } from "../../../components/ui/button";
@@ -177,30 +173,33 @@ export default function AboutPage() {
             </div>
           </section>
           {/* ============ WHAT HE HAS BUILT HERE ============
-           Counted from curriculum.js and content.js by about.js, so
-           the figures cannot drift from the site they describe. */}
+           Counted out of the manifest, so the figures cannot drift
+           from the site they describe. `lessons` is the ones
+           WRITTEN rather than the ones planned: counting the whole
+           ladder had this page advertising 89 while the home page
+           said 60 about the same shelf. */}
           <section className="no-label">
             <div className="tally" id="tally">
               <a className="tally-item" href="/money/index.html" data-keep>
-                <b data-tally="lessons">–
+                <b>{COUNTS.lessons}
                 </b>
                 <span>lessons in the Bangla library
                 </span>
               </a>
               <a className="tally-item" href="/money/index.html" data-keep>
-                <b data-tally="stages">–
+                <b>{COUNTS.stages}
                 </b>
                 <span>stages, starter to research level
                 </span>
               </a>
               <a className="tally-item" href="/tools/index.html">
-                <b data-tally="tools">–
+                <b>{COUNTS.calculators}
                 </b>
                 <span>calculators, each linkable
                 </span>
               </a>
               <a className="tally-item" href="/portfolio.html">
-                <b data-tally="models">–
+                <b>{COUNTS.models}
                 </b>
                 <span>interactive models to open
                 </span>

@@ -24,8 +24,8 @@
        /content.js is the exception and the direction the rest are
        going: its source is shared/content.ts, so this maps the
        served path on to the module itself rather than on to a
-       description of it. That is what allowJs below is for, since
-       that source reads the four curriculum.js ladders. */
+       description of it. allowJs below is for the rest of them,
+       which are still plain JavaScript. */
     "allowJs": true,
     "paths": {
       "/auth.js": ["./src/types/auth.d.ts"],

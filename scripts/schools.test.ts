@@ -7,7 +7,7 @@
    rows, the rows have to be provably the same thing the files
    say. This runs the real SQL against real SQLite through
    `node:sqlite`, reads it back, rebuilds the shape
-   `curriculum.js` exports, and compares the two field by field.
+   the ladder exports, and compares the two field by field.
 
    ---- why field by field, and not a row count ----
 

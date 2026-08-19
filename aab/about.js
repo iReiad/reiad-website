@@ -1,60 +1,23 @@
 /* ============================================================
-   about.js: the two things on the About page that must not be
-   typed by hand.
+   about.js: the research window on the About page.
 
-   1. THE TALLY. The page claims a number of lessons, stages,
-      calculators and models. Written as literals, those go stale
-      the first time a stage is added and nobody remembers the
-      About page exists, and a page whose own arithmetic is out of
-      date is a poor advertisement for someone who models for a
-      living. They come from COUNTS in content.js, which counts
-      the data rather than remembering it.
+   Each research card became a case study you can open and drive.
+   The cards did not say so for a while: they described the work
+   in the past tense and led nowhere, while the interactive
+   version of the same work sat two clicks away in the portfolio.
+   Now a card opens a mini window, the same one the market-pulse
+   cards open on the Insights page, and the window is the way into
+   the case study.
 
-   2. THE RESEARCH WINDOW. Each research card became a case study
-      you can open and drive. The cards did not say so for a
-      while: they described the work in the past tense and led
-      nowhere, while the interactive version of the same work sat
-      two clicks away in the portfolio. Now a card opens a mini
-      window, the same one the market-pulse cards open on the
-      Insights page, and the window is the way into the case
-      study.
+   The tally under the glance was this file's too, out of COUNTS.
+   It is the route's now, rendered on the server, so a reader with
+   no JavaScript gets the numbers instead of four dashes.
    ============================================================ */
 
-import { COUNTS, PAGES } from "/content.js";
 import { el, flip } from "/news.js";
 
 /* ------------------------------------------------------------
-   1. the tally
-   ------------------------------------------------------------ */
-const set = (key, value) => {
-  const node = document.querySelector(`[data-tally="${key}"]`);
-  if (node) node.textContent = value;
-};
-
-try {
-  /* Lessons WRITTEN, not lessons planned. This used to count
-     allLessons(), which includes everything still marked "soon",
-     so the About page advertised 89 while the home page, counting
-     the same library properly, said 60. The two pages were
-     describing the same shelf. */
-  set("lessons", COUNTS.lessons);
-  set("stages", COUNTS.stages);
-  set("tools", COUNTS.calculators);
-
-  /* "Models" means the things you can open and drive: the case
-     studies plus the stock check. They are the pages tagged
-     `case` or `tool` in the manifest, which is the same tagging
-     the menu and the palette group by, so publishing another one
-     updates this line without anyone editing it. */
-  set("models", PAGES.filter((p) => !p.private
-    && (p.group === "case" || p.group === "tool")).length);
-} catch {
-  /* The dashes already in the markup are the fallback: a failed
-     count leaves a tidy page, not a page full of NaN. */
-}
-
-/* ------------------------------------------------------------
-   2. the research window
+   the research window
 
    Same component as the news window, deliberately. Two mini
    windows on one site that opened differently would be two

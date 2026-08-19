@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v136: the four ladders are `shared/curricula/*.ts` and the four
+        `/<school>/curriculum.js` are generated from them. Same
+        addresses, same exports, verified 58 of them against the
+        originals with no difference, but different bytes, and an
+        old shell holds the old copy of the biggest data on this
+        site until this moves. `/content.js` changed with them,
+        because it imports all four.
+
    v135: `/content.js` is generated from `shared/content.ts` now
         rather than hand-written, with the same 24 exports, and
         `/hub.js` and `/read-aloud.js` are gone: both are React
@@ -1405,7 +1413,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v135";
+const VERSION = "v136";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -1482,8 +1490,10 @@ const PRECACHE = [
   "/activation.js",
   /* app.js imports this one directly, so a cached app.js without
      it is an app.js whose import 404s, which is worse than no
-     app.js at all. news.js belongs to the Insights page and is
-     listed with it.
+     app.js at all. news.js was the Insights page's and is the
+     About page's: the market pulse is `components/market-pulse.tsx`
+     now and `about.js` is the only importer left, which is what
+     shrinking news.js to its two surviving exports is waiting on.
 
      Six names left this list in August 2026 and none of them is
      coming back: /recent.js, /home.js, /skills/skills.js,

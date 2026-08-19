@@ -28,6 +28,7 @@ import { Eyebrow, SectionLabel } from "./ui/label";
 import { ButtonLink } from "./ui/button";
 import { TopicFilter } from "./topic-filter";
 import { SubscribeBox } from "./subscribe";
+import { MarketPulse } from "./market-pulse";
 
 /* ---------- the kitchen and the travel desk ---------- */
 
@@ -129,7 +130,7 @@ export function InsightsHub({ pieces }: { pieces: Piece[] | null }) {
           <div className="pulse-head">
             <SectionLabel className="flex-1">Market pulse · auto-updating</SectionLabel>
           </div>
-          <div id="pulse" aria-live="polite" />
+          <MarketPulse />
           {/* The caveats matter, but they shouldn't outweigh the thing they
               describe, folded away until someone wants them. */}
           <details className="faq" style={{ marginTop: "14px" }}>

@@ -725,6 +725,11 @@ node next/read-aloud.test.ts       # the speech control on a piece: what it read
                                    # what it steps over, what it marks, and whether
                                    # Stop stops (51 checks, needs Playwright and a
                                    # browser, skips without)
+node next/market-pulse.test.ts     # the Insights hub's board of headlines: two
+                                   # endpoints raced, the device as the last resort,
+                                   # a square per story and a window that grows out
+                                   # of the one that was pressed (91 checks, needs
+                                   # Playwright and a browser, skips without)
 node aab/schools/progress.test.mjs  # a school's ticks filed under a key that is
                                    # not the one in somebody's browser, and the
                                    # three schools' shared engine (119 checks)
@@ -951,7 +956,7 @@ node scripts/export-schools.ts --db schools.db   # content/schools.backup.json
 Three reasons, and none of them is the pages any more. It is the
 schools' half of the nightly backup, on the same footing as
 `content/articles.backup.json`. It is what `check-schools.ts`
-compares the four `curriculum.js` modules against. And it is the
+compares the four ladders against. And it is the
 only copy of the lesson prose that a check running on a laptop
 with no network can read, which is how `check-css.ts` knows that
 `.shobdo-list` and thirty-one other rules are styling something
@@ -973,14 +978,16 @@ output it watched, and `next/parity.test.mjs` asks that question
 against the route instead.
 
 `check-schools.ts` stays and does two things: it compares the
-ladder in `curriculum.js` against the ladder in the snapshot, and
-it computes every lesson's URL, progress id and label both through
-`shared/schools.ts` and through the school's own `curriculum.js`
-and fails on any pair that disagree.
+ladder in `shared/curricula/<school>.ts` against the ladder in the
+snapshot, and it computes every lesson's URL, progress id and
+label both through `shared/schools.ts` and through the school's
+own file, and fails on any pair that disagree.
 
-**The ladder is still `curriculum.js`,** and still read by the
-browser: forty files import from one of the four, and Stage 11.7
-is what replaces them. So two files describe the same four
+**The ladder is `shared/curricula/<school>.ts`,** as of 19 August
+2026, and the browser still reads it: eleven modules import
+`/deutsch/curriculum.js` or one of its three siblings, which
+`scripts/build-modules.ts` writes from those four sources the same
+way it writes `/content.js`. So two files describe the same four
 schools, and `check-schools.ts` fails if they stop agreeing about
 which lessons exist, in what order, in which section. Titles and
 prose are not compared: those are the Studio's now.
@@ -1011,13 +1018,14 @@ bodies since Stage 8 have prose in them, and `/learn/start/` is
 eight pages like every other stage.
 
 No stage on this site is `inline` now, and the branch is gone from
-both ladders, `shared/schools.ts` and `aab/learn/curriculum.js`.
+both ladders, `shared/schools.ts` and `shared/curricula/money.ts`.
 
 Generated pages are generated. Edit the source, never the output:
 
 ```sh
 node scripts/build-modules.ts       # aab/share-card.js and aab/api.js from aab/src/,
-                                    # and aab/content.js from shared/content.ts
+                                    # and aab/content.js plus the four
+                                    # aab/*/curriculum.js from shared/
 node scripts/build-fallback.ts     # aab/fallback.css from next/styles/site.css
 node scripts/build-school-icons.ts  # next/lib/school-icons.ts from aab/*/icons.js
 node aab/build-meta.mjs              # feed.xml, sitemap.xml, robots.txt
@@ -1099,25 +1107,32 @@ silences the next complaint too.
 ## What more than one runtime has to agree on
 
 `shared/` is for anything the Worker, the browser and the Next.js
-route must all say the same way. Five files today: `content.ts`,
-the site's own manifest and every number the site states about
-itself; `look.ts`, the per-section table and the head facts every
-article page states; `headers.ts`, the security headers a response
-has to carry when it was not served as a static file; `schools.ts`,
-the four curricula and the ladder's arithmetic; and `rows.ts`, what
-a row of this database is.
+route must all say the same way. Six files and a directory:
+`content.ts`, the site's own manifest and every number the site
+states about itself; `curricula/`, the four schools' ladders, one
+file each; `look.ts`, the per-section table and the head facts
+every article page states; `headers.ts`, the security headers a
+response has to carry when it was not served as a static file;
+`schools.ts`, the same four curricula read out of D1, plus the
+ladder's arithmetic; `rows.ts`, what a row of this database is;
+and `courses.ts`, the third-party catalogue, which is the one
+`next/` may not import for its values.
 
-**`content.ts` is the one with an output, and the one `next/`
-cannot import.** The browser reads the manifest at `/content.js`,
-a URL `sw.js` precaches by name, and it cannot reach `shared/`, so
-`scripts/build-modules.ts` compiles this one file to
-`aab/content.js` beside the modules it builds out of `aab/src/`.
-Edit the source, never the output. It is absent from the `exports`
-map deliberately: it reads the four `curriculum.js` ladders by a
-relative path into `aab/`, which is not the repository once the
-package has been copied into `next/node_modules`, so a route that
-imported it would fail at the build. Moving those four here is
-what lifts that.
+**Five of them have an output, and it is one argument.** The
+browser reads the manifest at `/content.js` and a ladder at
+`/money/curriculum.js` or one of its three siblings, five URLs
+`sw.js` precaches by name, and it cannot reach `shared/`, so
+`scripts/build-modules.ts` compiles those five into `aab/` beside
+the modules it builds out of `aab/src/`. Edit the source, never
+the output.
+
+**An import inside `shared/` carries the `.ts` extension**, because
+node reads these files with no build step and resolves the real
+filename. Every tsconfig that sees one sets
+`allowImportingTsExtensions`, and `scripts/tsconfig.shared.json`,
+the one that compiles them, pairs it with
+`rewriteRelativeImportExtensions` so the browser gets a `.js` it
+can fetch.
 
 **They are TypeScript, and nothing is compiled beside them.** Both
 consumers have a compiler and use it: Next through

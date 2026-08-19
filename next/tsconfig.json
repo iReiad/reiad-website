@@ -12,6 +12,13 @@
     "strict": true,
     "noEmit": true,
     "allowJs": true,
+    /* `shared/content.ts` names its four ladders by their real
+       filenames, `./curricula/money.ts`, because node reads that
+       file with no build step and resolves what is on disk.
+       `noEmit` above is what makes this legal here; the config
+       that COMPILES those five to `aab/` pairs it with
+       `rewriteRelativeImportExtensions`. */
+    "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -56,10 +63,9 @@
       ],
       /* The source rather than a description of it: `/content.js`
          is `shared/content.ts` compiled by `build-modules.ts`. A
-         ROUTE still cannot import it, only a browser module named
-         in `SiteScripts` can, because that source reaches into
-         `aab/` for the four ladders and `next/node_modules` is not
-         the repository. `shared/README.md` says what lifts that. */
+         route reaches the same file as `@reiad/shared/content`;
+         this entry is for a browser module named in `SiteScripts`,
+         which imports it by the path it is served from. */
       "/content.js": [
         "../shared/content.ts"
       ],

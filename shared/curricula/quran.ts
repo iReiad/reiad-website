@@ -1,0 +1,988 @@
+/* ============================================================
+   quran.ts: the Quranic Arabic school's ladder, in one file.
+
+   THIS IS THE ONE FILE YOU EDIT to add, rename or reorder
+   anything under /quran/. Everything else reads from it: the hub,
+   the day routes, the breadcrumb, the palette, the menu and the
+   sitemap.
+
+   ---- and it is served as well as imported ----
+
+   `scripts/build-modules.ts` compiles this file to
+   `aab/quran/curriculum.js`, which is the address the browser has
+   always fetched it from and which `sw.js` precaches by name.
+   Edit this file, never that one.
+
+   ------------------------------------------------------------
+   WHY THIS IS A THIRD SCHOOL AND NOT A THIRD STUFE
+
+   /money/ is about money, /deutsch/ is about German. This is
+   about reading the Quran with understanding, and it shares no
+   vocabulary with either. It is mounted at /quran/, built from
+   the same parts as the German school so that anyone who has
+   used one already knows how to use this one, and nothing here
+   can break anything there.
+
+   ------------------------------------------------------------
+   WHAT IS DIFFERENT FROM THE GERMAN SCHOOL, AND WHY
+
+   1. THE UNIT IS A DAY, NOT A CHAPTER. German had fourteen Teile
+      per Stufe and, separately, a practice book of thirty to
+      ninety days. Here the day IS the lesson: the course says
+      "একদিনে একটা দিন" and means it. So there is no separate
+      workbook, and progress is ticked per day.
+
+   2. THERE IS NOTHING TO WRITE. The method is stated on the very
+      first slide: কোনো লেখা নয়, only reading, saying aloud and
+      feeling. So no page here has a text box, and the German
+      workbook's boxes-you-type-into have no equivalent.
+
+   3. THE COMPANION IS PART OF THE DAY. Each of the first two
+      ধাপ ships a সহায়িকা that explains the same days in more
+      words, with an example table, a fact about the Quran and a
+      say-it-aloud drill. It is not a second book to navigate to;
+      it is the second half of each day's page.
+
+   4. SOME DAYS SHARE A LESSON. The decks occasionally teach two
+      days together (দিন ৫–৬, দিন ২০–২১). A lesson therefore
+      carries a day RANGE rather than a number, and the stage's
+      day count is the sum of the ranges, not the lesson count.
+
+   ------------------------------------------------------------
+   THE SHAPE
+
+   DHAPS[]               three stages, letters to a whole surah.
+                         A ধাপ is a folder and a page of its own.
+
+     .sections[]         a segment inside a stage. Never a page.
+
+       .lessons[]        one page each. A "দিন" is what the course
+                         itself calls them, so that is what they
+                         are called here.
+
+   ============================================================ */
+
+/** Live, or promised and not yet written. */
+export type Status = "live" | "soon";
+
+/** One page, which is one দিন or two. `to` is omitted when the
+    lesson is a single day, and the stage's day count is the sum of
+    the ranges rather than the lesson count. */
+export interface Lesson {
+  slug: string;
+  from: number;
+  to?: number;
+  bn: string;
+  /** The title in Arabic, because this is an Arabic course. */
+  ar: string;
+  /** A key in `aab/quran/icons.js`. */
+  icon: string;
+  minutes: number;
+  blurb: string;
+  status?: Status;
+}
+
+/** A segment inside a ধাপ. Never a page. */
+export interface Section {
+  /** The anchor on the stage page. */
+  id: string;
+  bn: string;
+  ar: string;
+  lessons: Lesson[];
+}
+
+/** One rung of the ladder. */
+export interface Dhap {
+  slug: string;
+  /** The tiny label above the name, "ধাপ ১". */
+  kicker: string;
+  bn: string;
+  ar: string;
+  /** A key in `aab/quran/icons.js`. */
+  icon: string;
+  /** Who this stage is for, in one line. */
+  who: string;
+  blurb: string;
+  /** What you will be able to DO at the end of it. */
+  can: string;
+  /** The daily sitting this stage asks for, [from, to]. */
+  minutes: [number, number];
+  status: Status;
+  sections: Section[];
+}
+
+/** The school itself: what it is called and where it is mounted. */
+export interface School {
+  id: string;
+  mount: string;
+  bn: string;
+  ar: string;
+  en: string;
+  tagline: string;
+}
+
+/** A lesson with the rung it hangs off attached, as every caller
+    that walks the ladder wants it. */
+export interface LadderLesson extends Lesson {
+  dhap: Dhap;
+  section: Section;
+  id: string;
+  url: string;
+  label: string;
+  days: number;
+  status: Status;
+}
+
+/* ------------------------------------------------------------
+   ধাপ ১: the foundation. Ten days, no verbs yet.
+   ------------------------------------------------------------ */
+const DHAP_1_SECTIONS: Section[] = [
+  {
+    id: "shobdo",
+    bn: "শব্দ ও তার লিঙ্গ",
+    ar: "الكَلِمَةُ وَنَوْعُهَا",
+    lessons: [
+      {
+        slug: "tin-prokar",
+        from: 1,
+        bn: "শব্দের তিন প্রকার",
+        ar: "أَقْسَامُ الكَلِمَةِ",
+        icon: "three",
+        minutes: 7,
+        blurb:
+          "প্রতিটি আরবি শব্দ তিনটির একটি: নাম, কাজ, বা ছোট শব্দ। এইটুকু চিনলেই বাক্যের কাঠামো চোখে পড়তে শুরু করে।",
+      },
+      {
+        slug: "sorbonam",
+        from: 2,
+        bn: "আলাদা সর্বনাম: সে, তুমি, আমি",
+        ar: "الضَّمَائِرُ المُنْفَصِلَةُ",
+        icon: "person",
+        minutes: 7,
+        blurb:
+          "هُوَ আর هِيَ দিয়ে শুরু। ছেলে আর মেয়ের জন্য আলাদা শব্দ, আর এটাই আরবির নিয়ম।",
+      },
+      {
+        slug: "purush-stri",
+        from: 3,
+        bn: "পুরুষ ও স্ত্রী: ة চেনা",
+        ar: "المُذَكَّرُ وَالمُؤَنَّثُ",
+        icon: "pair",
+        minutes: 7,
+        blurb:
+          "শব্দের শেষে গোল ة থাকলে বেশির ভাগ সময় সেটা স্ত্রী-লিঙ্গ। আপাতত শুধু চিহ্নটা চিনে রাখা।",
+      },
+    ],
+  },
+  {
+    id: "kar-konta",
+    bn: "কার জিনিস, কোনটা",
+    ar: "الإِضَافَةُ وَالإِشَارَةُ",
+    lessons: [
+      {
+        slug: "jukto-sorbonam",
+        from: 4,
+        bn: "যুক্ত সর্বনাম: তার, তোমার, আমার",
+        ar: "الضَّمَائِرُ المُتَّصِلَةُ",
+        icon: "link",
+        minutes: 8,
+        blurb:
+          "رَبُّهُ, رَبُّكَ, رَبِّي। ছোট একটা অংশ শব্দের শেষে জুড়ে বসে, আর আলাদা শব্দ লাগে না।",
+      },
+      {
+        slug: "ei-oi",
+        from: 5,
+        bn: "এই / ঐ",
+        ar: "أَسْمَاءُ الإِشَارَةِ",
+        icon: "hand",
+        minutes: 6,
+        blurb:
+          "কাছের জিনিসে هٰذَا, দূরের জিনিসে ذٰلِكَ। কুরআনের সবচেয়ে বেশি আসা শব্দগুলোর একটা এখানেই।",
+      },
+    ],
+  },
+  {
+    id: "jora",
+    bn: "জোড়া-শব্দ",
+    ar: "حُرُوفُ الجَرِّ",
+    lessons: [
+      {
+        slug: "chhoto-jora",
+        from: 6,
+        bn: "ছোট জোড়া-শব্দ: ভেতরে, থেকে, উপরে",
+        ar: "حُرُوفُ الجَرِّ",
+        icon: "bridge",
+        minutes: 7,
+        blurb:
+          "নিজে বড় কিছু নয়, কিন্তু কুরআনের প্রায় প্রতিটি লাইনে আছে। দশটা শব্দ, আর পথের অর্ধেক।",
+      },
+      {
+        slug: "jora-sorbonam",
+        from: 7,
+        bn: "জোড়া-শব্দ + সর্বনাম: তার জন্য, এতে",
+        ar: "الجَرُّ مَعَ الضَّمِيرِ",
+        icon: "merge",
+        minutes: 7,
+        blurb:
+          "لَـ আর ـهُ মিলে لَهُ, فِي আর ـهِ মিলে فِيهِ। গতকালের দুই জিনিস আজ মিশে যাচ্ছে।",
+      },
+    ],
+  },
+  {
+    id: "prothom-ayat",
+    bn: "শব্দভাণ্ডার ও প্রথম আয়াত",
+    ar: "الكَلِمَاتُ وَالآيَاتُ",
+    lessons: [
+      {
+        slug: "beshi-asha-shobdo",
+        from: 8,
+        bn: "বেশি আসা শব্দ ও আল্লাহর নাম",
+        ar: "كَلِمَاتٌ كَثِيرَةُ الوُرُودِ",
+        icon: "star",
+        minutes: 8,
+        blurb:
+          "কুরআনে অল্প কিছু নাম-শব্দই বারবার ফিরে আসে। সেই চৌদ্দটা, আর আল্লাহর আটটা সুন্দর নাম।",
+      },
+      {
+        slug: "al",
+        from: 9,
+        bn: "\"আল\": নির্দিষ্ট করা",
+        ar: "أَلْ التَّعْرِيفِ",
+        icon: "ring",
+        minutes: 7,
+        blurb:
+          "الـ বসলে 'একটা' হয়ে যায় 'সেই', ঠিক বাংলার 'বই' আর 'বইটি'। আর কখনো 'ল' শোনা যায় না।",
+      },
+      {
+        slug: "shob-ekshathe",
+        from: 10,
+        bn: "সব একসাথে: তিনটি আয়াত",
+        ar: "كُلُّ شَيْءٍ مَعًا",
+        icon: "open-book",
+        minutes: 9,
+        blurb:
+          "বিসমিল্লাহ, আলহামদু লিল্লাহ, আর কুল হুওয়াল্লাহু আহাদ। দশ দিনের সব টুকরো তিনটি আয়াতে।",
+      },
+    ],
+  },
+];
+
+/* ------------------------------------------------------------
+   ধাপ ২: from a word to a sentence. Twenty days.
+   ------------------------------------------------------------ */
+const DHAP_2_SECTIONS: Section[] = [
+  {
+    id: "muul-chanch",
+    bn: "মূল ও ছাঁচ",
+    ar: "الجَذْرُ وَالوَزْنُ",
+    lessons: [
+      {
+        slug: "muul",
+        from: 1,
+        bn: "মূল কী?",
+        ar: "الجَذْرُ",
+        icon: "root",
+        minutes: 8,
+        blurb:
+          "বেশির ভাগ আরবি শব্দ তিন অক্ষরের একটা মূল থেকে জন্মায়। মূল চিনলে অচেনা শব্দও আন্দাজ করা যায়।",
+      },
+      {
+        slug: "chanch",
+        from: 2,
+        bn: "ছাঁচ কী?",
+        ar: "الوَزْنُ",
+        icon: "mould",
+        minutes: 8,
+        blurb:
+          "শব্দের আকার মাপতে আরবি ব্যবহার করে ف · ع · ل। একই মূল, আলাদা ছাঁচ, আলাদা মানে।",
+      },
+      {
+        slug: "dorkari-chanch",
+        from: 3,
+        bn: "সবচেয়ে দরকারি ছাঁচগুলো",
+        ar: "أَشْهَرُ الأَوْزَانِ",
+        icon: "mould",
+        minutes: 9,
+        blurb:
+          "কর্তা, কর্ম, জায়গা, যন্ত্র। আর আল্লাহর যে নামগুলো তুমি চেনো, সেগুলোও আসলে ছাঁচেই বসানো।",
+      },
+    ],
+  },
+  {
+    id: "kriya",
+    bn: "কাজ-শব্দ",
+    ar: "الفِعْلُ",
+    lessons: [
+      {
+        slug: "tin-kal",
+        from: 4,
+        bn: "তিন কালের ক্রিয়া",
+        ar: "أَزْمِنَةُ الفِعْلِ",
+        icon: "clock",
+        minutes: 8,
+        blurb:
+          "একই মূল থেকে তিন রকম ক্রিয়া: সে করল, সে করে, আর করো। কখন হলো, তার তিন চেহারা।",
+      },
+      {
+        slug: "otit",
+        from: 5,
+        bn: "অতীত কাল: কে করল",
+        ar: "الفِعْلُ المَاضِي",
+        icon: "back",
+        minutes: 9,
+        blurb:
+          "চেনা সর্বনামগুলোই ফিরে এলো, এবার ক্রিয়ার শেষে জুড়ে। فَعَلَ, فَعَلْتَ, فَعَلْتُ।",
+      },
+      {
+        slug: "bortoman",
+        from: 6,
+        bn: "বর্তমান কাল: সে করে",
+        ar: "الفِعْلُ المُضَارِعُ",
+        icon: "forward",
+        minutes: 9,
+        blurb:
+          "এবার চিহ্নটা সামনে বসে: أ · ن · ي · ت। সামনে দেখলেই বুঝবে এটা বর্তমান।",
+      },
+      {
+        slug: "adesh",
+        from: 7,
+        bn: "আদেশ: করো!",
+        ar: "فِعْلُ الأَمْرِ",
+        icon: "call",
+        minutes: 7,
+        blurb:
+          "قُلْ, اقْرَأْ, اذْكُرْ। কুরআনের অনেক আয়াত এই এক শব্দ দিয়েই শুরু হয়।",
+      },
+      {
+        slug: "na-bodhok",
+        from: 8,
+        bn: "না-বোধক ক্রিয়া",
+        ar: "النَّفْيُ",
+        icon: "no",
+        minutes: 7,
+        blurb:
+          "ছোট একটা শব্দ সামনে বসিয়ে ক্রিয়াকে 'না' করে দেওয়া: لَا, مَا, لَمْ, لَنْ।",
+      },
+      {
+        slug: "korta-vitore",
+        from: 9,
+        bn: "কর্তা ক্রিয়ার ভেতরেই",
+        ar: "الفَاعِلُ فِي الفِعْلِ",
+        icon: "seed",
+        minutes: 7,
+        blurb:
+          "আরবির একটা সুন্দর মিতব্যয়িতা: কে করছে সেটা ক্রিয়ার ভেতরেই লেখা থাকে, আলাদা শব্দ লাগে না।",
+      },
+    ],
+  },
+  {
+    id: "bakko",
+    bn: "বাক্য গড়া",
+    ar: "بِنَاءُ الجُمْلَةِ",
+    lessons: [
+      {
+        slug: "dui-rokom-bakko",
+        from: 10,
+        bn: "দুই রকম বাক্য",
+        ar: "نَوْعَا الجُمْلَةِ",
+        icon: "two",
+        minutes: 7,
+        blurb:
+          "নাম দিয়ে শুরু হলে নাম-বাক্য, কাজ দিয়ে শুরু হলে কাজ-বাক্য। পুরো আরবি এই দুই ভাগে।",
+      },
+      {
+        slug: "nam-bakko",
+        from: 11,
+        bn: "নাম-বাক্য: 'হয়' লাগে না",
+        ar: "الجُمْلَةُ الاسْمِيَّةُ",
+        icon: "equals",
+        minutes: 8,
+        blurb:
+          "اللهُ غَفُورٌ। দুটো শব্দ পাশাপাশি বসলেই বাক্য, মাঝখানে কোনো ক্রিয়া লাগে না। বাংলার মতোই।",
+      },
+      {
+        slug: "kaj-bakko",
+        from: 12,
+        bn: "কাজ-বাক্য: কে করল কী করল",
+        ar: "الجُمْلَةُ الفِعْلِيَّةُ",
+        icon: "engine",
+        minutes: 8,
+        blurb:
+          "প্রথমে ক্রিয়া, তারপর কর্তা, তারপর কর্ম। বাংলার উল্টো, আর অভ্যাস হয়ে গেলে সহজ।",
+      },
+      {
+        slug: "idafa",
+        from: 13,
+        bn: "ইদাফা: কার জিনিস",
+        ar: "الإِضَافَةُ",
+        icon: "link",
+        minutes: 8,
+        blurb:
+          "দুটো নাম-শব্দ পাশাপাশি বসিয়ে 'X-এর Y' বোঝানো: رَبُّ العَالَمِينَ।",
+      },
+      {
+        slug: "bisheshon",
+        from: 14,
+        bn: "গুণ-শব্দ, আর এক-দুই-অনেক",
+        ar: "الصِّفَةُ وَالعَدَدُ",
+        icon: "pair",
+        minutes: 9,
+        blurb:
+          "বিশেষণ নাম-শব্দের পরে বসে আর তার সাথে মিল রাখে। সঙ্গে একবচন, দ্বিবচন আর বহুবচনের চেহারা।",
+      },
+    ],
+  },
+  {
+    id: "tupi",
+    bn: "শব্দের শেষের চিহ্ন",
+    ar: "الإِعْرَابُ",
+    lessons: [
+      {
+        slug: "tin-tupi",
+        from: 15,
+        bn: "তিনটি টুপি",
+        ar: "الرَّفْعُ وَالنَّصْبُ وَالجَرُّ",
+        icon: "cap",
+        minutes: 9,
+        blurb:
+          "শব্দের শেষে ـُ, ـَ বা ـِ। কে কর্তা, কে কর্ম, কে জোড়া-শব্দের পরে, সব ওই এক চিহ্নে।",
+      },
+      {
+        slug: "tanvin",
+        from: 16,
+        bn: "তানভীন: একটা, অনির্দিষ্ট",
+        ar: "التَّنْوِينُ",
+        icon: "ring",
+        minutes: 7,
+        blurb:
+          "শেষের চিহ্ন দুবার হলে (ـٌ ـً ـٍ) শেষে একটা ن-এর আওয়াজ আসে, আর মানে দাঁড়ায় 'একটা'।",
+      },
+      {
+        slug: "chinho-mane",
+        from: 17,
+        bn: "চিহ্নই মানে বলে দেয়",
+        ar: "الحَرَكَةُ تَدُلُّ عَلَى المَعْنَى",
+        icon: "key",
+        minutes: 8,
+        blurb:
+          "চিহ্নই কাজ বলে দেয় বলে আরবি শব্দের ক্রম বদলাতে পারে, আর মানে বদলায় না।",
+      },
+    ],
+  },
+  {
+    id: "harakat-chara",
+    bn: "হারাকাত ছাড়া পড়া",
+    ar: "القِرَاءَةُ بِلَا حَرَكَاتٍ",
+    lessons: [
+      {
+        slug: "keno-chinho-chara",
+        from: 18,
+        bn: "কেন চিহ্ন ছাড়া, আর তিনটি সূত্র",
+        ar: "لِمَاذَا بِلَا حَرَكَاتٍ",
+        icon: "eye",
+        minutes: 8,
+        blurb:
+          "বেশির ভাগ ছাপা আরবিতে যের-যবর থাকে না। তিনটা সূত্র জানলে আওয়াজ নিজেই বসে যায়।",
+      },
+      {
+        slug: "ek-line-dui-vabe",
+        from: 19,
+        bn: "একই লাইন, দুইভাবে",
+        ar: "سَطْرٌ وَاحِدٌ بِوَجْهَيْنِ",
+        icon: "two",
+        minutes: 8,
+        blurb:
+          "উপরে চিহ্নসহ, নিচে চিহ্ন ছাড়া। চেনা শব্দ চিহ্ন ছাড়াও চেনা লাগে, সেটাই প্রমাণ।",
+      },
+      {
+        slug: "nije-poro",
+        from: 20,
+        bn: "নিজে পড়ে দেখো",
+        ar: "اِقْرَأْ بِنَفْسِكَ",
+        icon: "open-book",
+        minutes: 8,
+        blurb:
+          "চিহ্ন ছাড়া একটা লাইন। আগে নিজে চেষ্টা করো, তারপর মিলিয়ে নাও।",
+      },
+    ],
+  },
+];
+
+/* ------------------------------------------------------------
+   ধাপ ৩: from a sentence to a whole surah. Thirty days.
+   ------------------------------------------------------------ */
+const DHAP_3_SECTIONS: Section[] = [
+  {
+    id: "rup",
+    bn: "ক্রিয়ার রূপ",
+    ar: "أَبْوَابُ الفِعْلِ",
+    lessons: [
+      {
+        slug: "ek-muul-onek-rup",
+        from: 1,
+        bn: "এক মূল, অনেক রূপ",
+        ar: "جَذْرٌ وَاحِدٌ وَأَبْوَابٌ كَثِيرَةٌ",
+        icon: "root",
+        minutes: 9,
+        blurb:
+          "কুরআনের বেশির ভাগ ক্রিয়াই মূল রূপ নয়। কোন রূপ, সেটা চিনলে মানে আন্দাজ করা যায়।",
+      },
+      {
+        slug: "rup-chena",
+        from: 2,
+        bn: "রূপ চেনার চিহ্ন",
+        ar: "عَلَامَاتُ الأَبْوَابِ",
+        icon: "eye",
+        minutes: 8,
+        blurb:
+          "মাঝে জোর? সামনে أ? সামনে اسْت? চিহ্ন তিনটা, আর তাতেই বেশির ভাগ রূপ ধরা পড়ে।",
+      },
+      {
+        slug: "rup-dui",
+        from: 3,
+        bn: "রূপ ২: মাঝে জোর",
+        ar: "فَعَّلَ",
+        icon: "strong",
+        minutes: 8,
+        blurb:
+          "মাঝের অক্ষরে শাদ্দা বসে, আর মানে দাঁড়ায় জোর দিয়ে করা বা কাউকে দিয়ে করানো।",
+      },
+      {
+        slug: "rup-char",
+        from: 4,
+        bn: "রূপ ৪: সামনে أ",
+        ar: "أَفْعَلَ",
+        icon: "forward",
+        minutes: 8,
+        blurb:
+          "সামনে একটা أ যোগ হয়, আর কাজটা অন্যের উপর গিয়ে পড়ে: أَنْزَلَ, أَخْرَجَ।",
+      },
+      {
+        slug: "rup-at-dosh",
+        from: 5,
+        to: 6,
+        bn: "রূপ ৮ ও ১০",
+        ar: "اِفْتَعَلَ وَاسْتَفْعَلَ",
+        icon: "merge",
+        minutes: 9,
+        blurb:
+          "ভেতরে একটা ت, আর সামনে اسْت। দ্বিতীয়টা মানে দাঁড়ায় 'চাওয়া': اسْتَغْفَرَ।",
+      },
+      {
+        slug: "chena-line",
+        from: 7,
+        bn: "চেনা লাইনেই লুকানো রূপ",
+        ar: "الأَبْوَابُ فِي الفَاتِحَةِ",
+        icon: "open-book",
+        minutes: 8,
+        blurb:
+          "সূরা ফাতিহায় তুমি রোজ যা পড়ো, তার ভেতরেই এই রূপগুলো বসে আছে।",
+      },
+      {
+        slug: "rup-chine-nao",
+        from: 8,
+        bn: "নিজে চিনে নাও: কোন রূপ?",
+        ar: "تَمْرِينٌ",
+        icon: "check",
+        minutes: 7,
+        blurb:
+          "আটটা শব্দ, আর একটাই প্রশ্ন: চিহ্নটা কোথায়। আগে নিজে বলো, তারপর মিলিয়ে নাও।",
+      },
+    ],
+  },
+  {
+    id: "bohuboton",
+    bn: "ভাঙা বহুবচন",
+    ar: "جَمْعُ التَّكْسِيرِ",
+    lessons: [
+      {
+        slug: "dui-bohuboton",
+        from: 9,
+        bn: "দুই রকম বহুবচন",
+        ar: "نَوْعَا الجَمْعِ",
+        icon: "two",
+        minutes: 8,
+        blurb:
+          "সহজ বহুবচনে শেষে ـُونَ বা ـَاتٌ জোড়ে। ভাঙা বহুবচনে শব্দটাই ভেঙে নতুন করে গড়া হয়।",
+      },
+      {
+        slug: "bhanga-bohuboton",
+        from: 10,
+        bn: "বেশি আসা ভাঙা বহুবচন",
+        ar: "أَشْهَرُ جُمُوعِ التَّكْسِيرِ",
+        icon: "star",
+        minutes: 9,
+        blurb:
+          "قَلْب থেকে قُلُوب, كِتَاب থেকে كُتُب। মূলের তিন অক্ষর থাকে, শুধু আওয়াজ বদলায়।",
+      },
+      {
+        slug: "bohuboton-quran",
+        from: 11,
+        bn: "কুরআনে দেখো: ভাঙা বহুবচন",
+        ar: "فِي القُرْآنِ",
+        icon: "open-book",
+        minutes: 7,
+        blurb:
+          "চেনা আয়াতের ভেতরে ভাঙা বহুবচন খুঁজে বের করা: قُلُوبِهِمْ, السَّمَاوَات।",
+      },
+      {
+        slug: "bohuboton-chine-nao",
+        from: 12,
+        bn: "নিজে চিনে নাও: কোনটার বহুবচন?",
+        ar: "تَمْرِينٌ",
+        icon: "check",
+        minutes: 7,
+        blurb:
+          "বহুবচন শব্দের মূল অক্ষর ধরে বলো এটা কোন একবচন থেকে এসেছে।",
+      },
+    ],
+  },
+  {
+    id: "kormobachcho",
+    bn: "কর্মবাচ্য",
+    ar: "المَبْنِيُّ لِلْمَجْهُولِ",
+    lessons: [
+      {
+        slug: "ke-korlo-ki-holo",
+        from: 13,
+        bn: "কে করল বনাম কী হলো",
+        ar: "المَعْلُومُ وَالمَجْهُولُ",
+        icon: "two",
+        minutes: 8,
+        blurb:
+          "কর্তাবাচ্যে কর্তা থাকে, কর্মবাচ্যে কাজটাই মুখ্য: 'সৃষ্টি করা হয়েছে'।",
+      },
+      {
+        slug: "kormobachcho-chinho",
+        from: 14,
+        bn: "কর্মবাচ্য চেনার চিহ্ন",
+        ar: "عَلَامَةُ المَجْهُولِ",
+        icon: "eye",
+        minutes: 8,
+        blurb:
+          "চেনা যায় শুধু ভেতরের আওয়াজ দিয়ে: خَلَقَ হয়ে যায় خُلِقَ। অক্ষর একই, আওয়াজ আলাদা।",
+      },
+      {
+        slug: "kormobachcho-quran",
+        from: 15,
+        bn: "কুরআনে দেখো: কর্মবাচ্য",
+        ar: "فِي القُرْآنِ",
+        icon: "open-book",
+        minutes: 7,
+        blurb:
+          "خُلِقَ الإِنْسَانُ ضَعِيفًا। কে সৃষ্টি করল বলা হয়নি, কারণ সেটা সবাই জানে।",
+      },
+      {
+        slug: "kormobachcho-chine-nao",
+        from: 16,
+        bn: "নিজে চিনে নাও: কর্তা না কর্ম?",
+        ar: "تَمْرِينٌ",
+        icon: "check",
+        minutes: 7,
+        blurb:
+          "ভেতরের আওয়াজ শোনো। পেশ-যের হলে কর্মবাচ্য, নাহলে কর্তাবাচ্য।",
+      },
+    ],
+  },
+  {
+    id: "hatiar",
+    bn: "বাক্যের হাতিয়ার",
+    ar: "أَدَوَاتُ الجُمْلَةِ",
+    lessons: [
+      {
+        slug: "inna",
+        from: 17,
+        bn: "إِنَّ: নিশ্চয়ই",
+        ar: "إِنَّ",
+        icon: "strong",
+        minutes: 7,
+        blurb:
+          "বাক্যের শুরুতে বসে জোর আনে, আর পরের শব্দটাকে যবর পরিয়ে দেয়।",
+      },
+      {
+        slug: "allazi",
+        from: 18,
+        bn: "الَّذِي · الَّذِينَ: যে, যারা",
+        ar: "الاسْمُ المَوْصُولُ",
+        icon: "link",
+        minutes: 8,
+        blurb:
+          "দুটো বাক্যকে এক করে দেয়। কুরআনের সবচেয়ে বেশি আসা গঠনগুলোর একটা।",
+      },
+      {
+        slug: "kana",
+        from: 19,
+        bn: "كَانَ: ছিল, হয়ে থাকে",
+        ar: "كَانَ",
+        icon: "back",
+        minutes: 7,
+        blurb:
+          "নাম-বাক্যে 'হয়' লাগে না, কিন্তু অতীতে সেই জায়গাটা كَانَ নিয়ে নেয়।",
+      },
+      {
+        slug: "iza",
+        from: 20,
+        to: 21,
+        bn: "إِذَا: যখন",
+        ar: "إِذَا",
+        icon: "clock",
+        minutes: 8,
+        blurb:
+          "একটা শর্ত বা সময় বোঝায়, আর কুরআনের অনেক ছোট সূরা এই এক শব্দ দিয়ে শুরু।",
+      },
+      {
+        slug: "ya-ayyuha",
+        from: 22,
+        bn: "يَا أَيُّهَا: হে!",
+        ar: "النِّدَاءُ",
+        icon: "call",
+        minutes: 7,
+        blurb:
+          "ডাক দেওয়ার শব্দ। এটা শুনলেই বুঝবে পরের কথাটা সরাসরি তোমাকে বলা হচ্ছে।",
+      },
+      {
+        slug: "hatiar-chine-nao",
+        from: 23,
+        bn: "নিজে চিনে নাও: কোন হাতিয়ার?",
+        ar: "تَمْرِينٌ",
+        icon: "check",
+        minutes: 7,
+        blurb:
+          "প্রতিটি ছোট শব্দ কী আনে: জোর, সংযোগ, সময়, নাকি ডাক।",
+      },
+    ],
+  },
+  {
+    id: "surah",
+    bn: "পূর্ণ সূরা পড়া",
+    ar: "قِرَاءَةُ السُّورَةِ كَامِلَةً",
+    lessons: [
+      {
+        slug: "surah-kivabe",
+        from: 24,
+        bn: "সূরা কীভাবে খুলবে",
+        ar: "كَيْفَ تَفْتَحُ السُّورَةَ",
+        icon: "key",
+        minutes: 7,
+        blurb:
+          "গোটা সূরা ভয়ের কিছু নয়। একেকটা শব্দ ধরো, চেনাটা আগে চিনে নাও, বাকিটা আন্দাজ করো।",
+      },
+      {
+        slug: "ikhlas",
+        from: 25,
+        bn: "সূরা ইখলাস, শব্দ ধরে ধরে",
+        ar: "سُورَةُ الإِخْلَاصِ",
+        icon: "open-book",
+        minutes: 9,
+        blurb:
+          "চার আয়াত, আর হাদিসে একে কুরআনের এক-তৃতীয়াংশের সমান বলা হয়েছে।",
+      },
+      {
+        slug: "nasr",
+        from: 26,
+        bn: "সূরা নাসর, শব্দ ধরে ধরে",
+        ar: "سُورَةُ النَّصْرِ",
+        icon: "open-book",
+        minutes: 8,
+        blurb:
+          "إِذَا দিয়ে শুরু, আর তিন আয়াতে একটা গোটা ঘটনা।",
+      },
+      {
+        slug: "asr",
+        from: 27,
+        bn: "সূরা আসর, শব্দ ধরে ধরে",
+        ar: "سُورَةُ العَصْرِ",
+        icon: "open-book",
+        minutes: 8,
+        blurb:
+          "তিন আয়াতে পুরো জীবনের হিসাব। إِنَّ আর الَّذِينَ দুটোই এখানে আছে।",
+      },
+      {
+        slug: "fatiha",
+        from: 28,
+        bn: "সূরা ফাতিহা: কত কিছু তুমি চেনো",
+        ar: "سُورَةُ الفَاتِحَةِ",
+        icon: "star",
+        minutes: 10,
+        blurb:
+          "যে সূরা রোজ পড়ো, তার ভেতরে ষাট দিনের শেখা প্রায় সবটাই বসে আছে।",
+      },
+      {
+        slug: "harakat-chara-surah",
+        from: 29,
+        bn: "এবার হারাকাত ছাড়া",
+        ar: "بِلَا حَرَكَاتٍ",
+        icon: "eye",
+        minutes: 8,
+        blurb:
+          "চেনা সূরা, এবার যের-যবর ছাড়া। আগে নিজে পড়ার চেষ্টা, তারপর মিলিয়ে নেওয়া।",
+      },
+      {
+        slug: "nije-poro-shesh",
+        from: 30,
+        bn: "নিজে পড়ে দেখো",
+        ar: "اِقْرَأْ بِنَفْسِكَ",
+        icon: "check",
+        minutes: 8,
+        blurb:
+          "হারাকাত ছাড়া আরও দুটি চেনা লাইন। ধীরে ধীরে, অন্তর থেকে।",
+      },
+    ],
+  },
+];
+
+/* ------------------------------------------------------------
+   THE LADDER, three ধাপ.
+
+   Ten days, then twenty, then thirty: sixty in all, which is the
+   number the course promises on its own first slide. The stages
+   get longer because what they carry gets heavier, and the daily
+   sitting grows with them, from twenty minutes to forty.
+   ------------------------------------------------------------ */
+export const DHAPS: Dhap[] = [
+  {
+    slug: "dhap-1",
+    kicker: "ধাপ ১",
+    bn: "ভিত্তি",
+    ar: "الأَسَاسُ",
+    icon: "seed",
+    who: "যিনি আরবি পড়তে পারেন, কিন্তু কী পড়ছেন সেটা বোঝেন না",
+    blurb:
+      "নাম-শব্দ, সর্বনাম, ছোট জোড়া-শব্দ আর 'আল'। কুরআনে যে শব্দগুলো বারবার আসে, প্রথমে সেগুলোই।",
+    can:
+      "১০ দিন পরে: বিসমিল্লাহ, আলহামদু লিল্লাহ আর সূরা ইখলাসের প্রথম আয়াত শব্দ ধরে ধরে বুঝতে পারবেন।",
+    minutes: [20, 30],
+    status: "live",
+    sections: DHAP_1_SECTIONS,
+  },
+
+  {
+    slug: "dhap-2",
+    kicker: "ধাপ ২",
+    bn: "শব্দ থেকে বাক্য",
+    ar: "مِنَ الكَلِمَةِ إِلَى الجُمْلَةِ",
+    icon: "bridge",
+    who: "প্রথম ধাপ শেষ, এখন আলাদা শব্দ নয়, গোটা বাক্য বুঝতে চান",
+    blurb:
+      "মূল ও ছাঁচ, ক্রিয়ার তিন কাল, বাক্যের দুই রকম গড়ন, শব্দের শেষের চিহ্ন, আর হারাকাত ছাড়া পড়া।",
+    can:
+      "২০ দিন পরে: একটা আয়াত দেখে বলতে পারবেন কে করল, কী করল আর কার জিনিস। আর যের-যবর ছাড়া লেখা চেনা লাইনও পড়তে পারবেন।",
+    minutes: [25, 35],
+    status: "live",
+    sections: DHAP_2_SECTIONS,
+  },
+
+  {
+    slug: "dhap-3",
+    kicker: "ধাপ ৩",
+    bn: "বাক্য থেকে সূরা",
+    ar: "مِنَ الجُمْلَةِ إِلَى السُّورَةِ",
+    icon: "open-book",
+    who: "দুই ধাপ শেষ, এখন গোটা সূরা খুলে বসতে চান",
+    blurb:
+      "ক্রিয়ার রূপ, ভাঙা বহুবচন, কর্মবাচ্য, বাক্যের হাতিয়ার, আর চারটা সূরা শব্দ ধরে ধরে।",
+    can:
+      "৩০ দিন পরে: ইখলাস, নাসর, আসর আর ফাতিহা শব্দ ধরে ধরে বুঝতে পারবেন, আর নতুন কোনো ছোট সূরা নিজে খুলে বসতে পারবেন।",
+    minutes: [30, 40],
+    status: "live",
+    sections: DHAP_3_SECTIONS,
+  },
+];
+
+/* ------------------------------------------------------------
+   THE SCHOOL
+   ------------------------------------------------------------ */
+export const SCHOOL: School = {
+  id: "quran",
+  mount: "/quran/",
+  bn: "কুরআনের আরবি",
+  ar: "القُرْآنُ مِنَ القَلْبِ",
+  en: "Qur'anic Arabic from Bangla",
+  tagline: "অন্তর থেকে। কোনো লেখা নয়: শুধু চেনা, শোনা আর অনুভব করা।",
+};
+
+/* ------------------------------------------------------------
+   URLs, ids and sums
+
+   Nothing below assumes there are three ধাপ or that a lesson is
+   one day, so adding a fourth is a matter of adding it to the
+   array above.
+   ------------------------------------------------------------ */
+
+/** A ধাপ's folder URL. */
+export const dhapUrl = (dhap: Dhap): string => `/quran/${dhap.slug}/index.html`;
+
+/** A lesson's page URL. */
+export const lessonUrl = (dhap: Dhap, lesson: Lesson): string =>
+  `/quran/${dhap.slug}/${lesson.slug}.html`;
+
+/** Progress is stored per lesson under a stable id. */
+export const lessonId = (dhap: Dhap, lesson: Lesson): string =>
+  `${dhap.slug}/${lesson.slug}`;
+
+/** How many days a lesson covers. Most cover one. */
+export const lessonDays = (lesson: Lesson): number =>
+  (lesson.to ?? lesson.from) - lesson.from + 1;
+
+/** "দিন ৫" or "দিন ৫–৬", in Bangla digits.
+
+    The en dash is deliberate and allowed: it is a number range,
+    which is the one thing the house rule on dashes keeps it for. */
+export const bnNum = (n: number | string): string =>
+  String(n).replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)]);
+export const dayLabel = (lesson: Lesson): string =>
+  lesson.to ? `দিন ${bnNum(lesson.from)}–${bnNum(lesson.to)}` : `দিন ${bnNum(lesson.from)}`;
+
+/** Lessons of one ধাপ, flattened, in order. */
+export const dhapLessons = (dhap: Dhap): LadderLesson[] =>
+  dhap.sections.flatMap((section) =>
+    section.lessons.map((lesson) => ({
+      ...lesson,
+      dhap,
+      section,
+      id: lessonId(dhap, lesson),
+      url: lessonUrl(dhap, lesson),
+      label: dayLabel(lesson),
+      days: lessonDays(lesson),
+      status: lesson.status ?? "live",
+    }))
+  );
+
+/** Flat list of every lesson in the school.
+
+    Takes the ladder as an argument, defaulting to this file's own.
+    Every other helper here is already a pure function of what it
+    is handed, and these three were the only ones that closed over
+    the module's array. archive/TRANSITION.md Stage 8 needs a builder to be
+    able to pass in a ladder read from the database; no existing
+    caller can tell the difference. */
+export const allLessons = (stages: Dhap[] = DHAPS): LadderLesson[] =>
+  stages.flatMap(dhapLessons);
+
+/** How many days a ধাপ covers, counted from its lessons rather
+    than declared, so a lesson that grows to cover two days moves
+    the number on the stage page by itself. */
+export const dhapDays = (dhap: Dhap): number =>
+  dhapLessons(dhap).reduce((n, l) => n + l.days, 0);
+
+/** Every day in the school. The course promises sixty. */
+export const totalDays = (stages: Dhap[] = DHAPS): number =>
+  stages.reduce((n, d) => n + dhapDays(d), 0);
+
+/** How many lessons a ধাপ has, and how many are written. */
+export const dhapCount = (dhap: Dhap): { total: number; live: number } => {
+  const lessons = dhapLessons(dhap);
+  return { total: lessons.length, live: lessons.filter((l) => l.status === "live").length };
+};
+
+/** Total reading time of a ধাপ, in minutes. */
+export const dhapMinutes = (dhap: Dhap): number =>
+  dhapLessons(dhap).reduce((sum, l) => sum + (l.minutes ?? 0), 0);
+
+/** Find a ধাপ by slug. */
+export const findDhap = (slug: string, stages: Dhap[] = DHAPS): Dhap | undefined =>
+  stages.find((d) => d.slug === slug);
+
+/** Find a lesson (and its ধাপ) from a URL path. */
+export const findByPath = (path: string, stages: Dhap[] = DHAPS): LadderLesson | undefined =>
+  allLessons(stages).find((l) => l.url === path || l.url === `${path}.html`);

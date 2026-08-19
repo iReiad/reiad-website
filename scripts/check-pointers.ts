@@ -130,10 +130,10 @@ const GONE: Gone[] = [
 
   /* Precached, so editing a comment in one costs every returning
      visitor a refetch of the whole shell. Free to fix on the day
-     each becomes aab/src/*.ts, and that is when they will be. */
+     each becomes aab/src/*.ts, and that is when they will be. The
+     two curriculum modules were on this list until the ladders
+     moved to shared/, which is exactly that day. */
   { file: "aab/app.js", name: "check-content.mjs", why: "precached; see MIGRATION.md" },
-  { file: "aab/deutsch/curriculum.js", name: "build-deutsch.mjs", why: "precached" },
-  { file: "aab/english/curriculum.js", name: "build-english.mjs", why: "precached" },
   { file: "aab/tools/stock.model.js", name: "stock.test.mjs", why: "precached" },
 ];
 

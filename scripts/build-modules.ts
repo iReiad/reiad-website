@@ -28,13 +28,14 @@
    commit. Stage 13 is done when that directory holds only its
    README, because every module describes itself.
 
-   ---- and one that comes from shared/ instead ----
+   ---- and five that come from shared/ instead ----
 
-   `/content.js` is the site's manifest and three runtimes read
-   it, so its source is `shared/content.ts` and this writes the
-   browser's copy. Two things follow from the source living one
-   directory along: its own compile, and one specifier rebased.
-   `SHARED` and `rebase` below are where each is stated.
+   The site's manifest and the four schools' ladders are read by
+   three runtimes each, so their source is `shared/content.ts` and
+   `shared/curricula/*.ts` and this writes the browser's copies.
+   Two things follow from the source living one directory along:
+   its own compile, and four specifiers rebased. `SHARED` and
+   `rebase` below are where each is stated.
    ============================================================ */
 
 import { execFileSync } from "node:child_process";
@@ -90,36 +91,46 @@ export const MODULES = [
   "tools/tools",
 ];
 
-/** The one served module whose source is in `shared/` rather than
-    in `aab/src/`, because the Worker, the checks under `scripts/`
-    and the browser all read the same manifest and only the last of
+/** The five served modules whose source is in `shared/` rather
+    than in `aab/src/`: the site's manifest and the four schools'
+    ladders. The Worker, the checks under `scripts/`, the Next.js
+    routes and the browser read the same five, and only the last of
     them needs a file at a URL.
 
-    It is compiled on its own, by `scripts/tsconfig.content.json`,
-    because `aab/src/tsconfig.json` has `rootDir` set to that
-    directory and a source outside it cannot be added to that run.
+    They are compiled on their own, by
+    `scripts/tsconfig.shared.json`, because `aab/src/tsconfig.json`
+    has `rootDir` set to that directory and a source outside it
+    cannot be added to that run.
 
-    No declaration is emitted for it and none should be. Anything
-    that wants the types maps `/content.js` on to the source, which
-    is what `app/tsconfig.json`, `aab/src/tsconfig.json` and
-    `next/tsconfig.json` do: one description, and it is the module. */
+    No declaration is emitted for any of them and none should be.
+    Anything that wants the types maps the served path on to the
+    source, which is what `app/tsconfig.json`,
+    `aab/src/tsconfig.json` and `next/tsconfig.json` do: one
+    description, and it is the module. */
 const SHARED = {
-  config: "scripts/tsconfig.content.json",
-  /** Where that config's `rootDir` puts the output. */
-  from: "shared/content.js",
-  to: "aab/content.js",
+  config: "scripts/tsconfig.shared.json",
+  /** Where that config's `rootDir` puts each output, against the
+      path in `aab/` it belongs at. Those four addresses are in
+      `sw.js`'s precache list and in the imports of eleven browser
+      modules, so they are fixed. */
+  files: {
+    "content.js": "aab/content.js",
+    "curricula/money.js": "aab/money/curriculum.js",
+    "curricula/deutsch.js": "aab/deutsch/curriculum.js",
+    "curricula/quran.js": "aab/quran/curriculum.js",
+    "curricula/english.js": "aab/english/curriculum.js",
+  } as Record<string, string>,
 };
 
 /** The one thing here that is not tsc's output verbatim.
 
-    The source sits in `shared/` and the output in `aab/`, so a
-    specifier reaching from the first into the second has to be
-    rebased: `../aab/money/curriculum.js` is `./money/curriculum.js`
-    seen from `aab/content.js`, which is what the browser resolves
-    at `/money/curriculum.js` AND what node resolves when a check
-    imports the built file. tsc never rewrites a specifier, so
-    nothing else was going to do this. */
-const rebase = (js: string): string => js.replaceAll('from "../aab/', 'from "./');
+    A ladder is `shared/curricula/money.ts` at the source and
+    `aab/money/curriculum.js` at the output, so the specifier
+    `content.ts` reaches it by has to be rebased. tsc never
+    rewrites a specifier beyond its extension, so nothing else was
+    going to do this. */
+const rebase = (js: string): string =>
+  js.replace(/from "\.\/curricula\/(\w+)\.js"/g, 'from "./$1/curriculum.js"');
 
 /** Compile into a temporary directory and read the results back.
 
@@ -149,18 +160,19 @@ export function compile() {
       .filter((f) => f.endsWith(".js") && !f.startsWith("types/"))
       .filter((f) => !MODULES.includes(f.replace(/\.js$/, "")));
 
-    /* And the manifest, out of `shared/`. Its own directory,
-       because that run's `rootDir` is the repository: `allowJs` is
-       on so the four ladders resolve, and tsc refuses an input
-       above `rootDir`. It writes copies of those four beside the
-       one file wanted here, which is why nothing walks this
-       output looking for strays. */
-    const sharedOut = mkdtempSync(join(tmpdir(), "reiad-content-"));
+    /* And the manifest and the four ladders, out of `shared/`.
+       Their own directory, because that run's `rootDir` is
+       `shared/` and tsc refuses an input above it. Only the five
+       files named in SHARED.files are read back, which is why
+       nothing walks this output looking for strays. */
+    const sharedOut = mkdtempSync(join(tmpdir(), "reiad-shared-"));
     try {
       execFileSync("npx", [
         "tsc", "-p", join(ROOT, SHARED.config), "--outDir", sharedOut,
       ], { cwd: ROOT, stdio: "pipe" });
-      built[SHARED.to] = rebase(readFileSync(join(sharedOut, SHARED.from), "utf8"));
+      for (const [from, to] of Object.entries(SHARED.files)) {
+        built[to] = rebase(readFileSync(join(sharedOut, from), "utf8"));
+      }
     } finally {
       rmSync(sharedOut, { recursive: true, force: true });
     }
@@ -197,13 +209,13 @@ if (RUN) {
       process.exit(1);
     }
     console.log(`modules: ${MODULES.length} built file(s) match aab/src/, `
-      + `and ${SHARED.to} matches shared/content.ts.`);
+      + `and ${Object.keys(SHARED.files).length} match shared/.`);
   } else {
     for (const [rel, text] of Object.entries(built)) {
       mkdirSync(dirname(join(ROOT, rel)), { recursive: true });
       writeFileSync(join(ROOT, rel), text);
     }
-    console.log(`wrote ${Object.keys(built).length} file(s) from aab/src/:`);
+    console.log(`wrote ${Object.keys(built).length} file(s) from aab/src/ and shared/:`);
     for (const rel of Object.keys(built)) console.log(`   ${rel}`);
   }
 }

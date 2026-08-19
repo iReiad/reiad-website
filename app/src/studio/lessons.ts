@@ -23,11 +23,11 @@
    ---- and why the ladder is read-only from here ----
 
    Which lessons exist, what order they come in and which section
-   they sit in are decided by each school's `curriculum.js` and
-   the builders that read it. This module can change a lesson's
-   prose and the few things that belong to the lesson rather than
-   to the ladder. It cannot add one. The endpoint refuses that
-   too, and the note above the PUT there says why.
+   they sit in are decided by each school's file in
+   `shared/curricula/`. This module can change a lesson's prose
+   and the few things that belong to the lesson rather than to the
+   ladder. It cannot add one. The endpoint refuses that too, and
+   the note above the PUT there says why.
    ============================================================ */
 
 import { api } from "../api.ts";

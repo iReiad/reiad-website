@@ -11,18 +11,13 @@
    fetched it from and which `sw.js` precaches by name. Edit this
    file, never that one.
 
-   ---- and the one specifier that is rewritten ----
+   ---- and the four specifiers that are rewritten ----
 
-   The four `curriculum.js` imports below reach into `aab/`,
-   because that is where the four ladders live and they are read
-   by the browser at those paths. The output sits IN `aab/`, so
-   the generator rebases `../aab/` to `./`: `./money/curriculum.js`
-   is what both the browser and node resolve from `aab/content.js`.
-
-   That reach is also why `next/` cannot import this file yet.
-   `next/.npmrc` copies `@reiad/shared` into `next/node_modules`,
-   where `../aab/` is not the repository. The four ladders moving
-   to `shared/` is what lifts that, and `MIGRATION.md` tracks it.
+   A ladder is `./curricula/<school>.ts` here and
+   `/money/curriculum.js` or one of its three siblings in the
+   browser, which is the address each has been fetched from for a
+   year. The generator rebases the one on to the other, so
+   `aab/content.js` names what both the browser and node resolve.
    ============================================================ */
 
 /** The site's own facts, stated once. */
@@ -73,27 +68,27 @@ export const ARTICLES: FilePiece[] = [];
    The Learn area.
 
    The curriculum, every stage, section and lesson, lives in
-   /money/curriculum.js, which is the one file to edit when the
-   Learn area changes. It is re-exported here so that the menu,
-   the palette and build-meta.mjs have a single import as before.
+   shared/curricula/money.ts, which is the one file to edit when
+   the money school changes. It is re-exported here so that the
+   menu, the palette and build-meta.mjs have a single import.
 
    TERM_GROUPS below is the ORIGINAL eighteen-term grouping, kept
    because /money/terms/*.html and the A–Z glossary were built
    around it and its URLs are published. It is now the same data
-   as stage `basics-1` of the curriculum; curriculum.js is the
-   source of truth for the structure, this for the term cards.
+   as stage `basics-1` of the ladder; the ladder is the source of
+   truth for the structure, this for the term cards.
    ============================================================ */
 import {
   STAGES, SCHOOLS, allLessons, stageLessons, stageUrl, lessonUrl, findStage,
-} from "../aab/money/curriculum.js";
+} from "./curricula/money.ts";
 
-/* The second school. German has its own curriculum file for the
-   same reason it has its own mount: nothing about ব্রোকার belongs
-   in a file about Akkusativ. Both are imported here so the menu,
-   the palette and build-meta.mjs still have a single import. */
+/* The second school. German has its own ladder for the same
+   reason it has its own mount: nothing about ব্রোকার belongs in a
+   file about Akkusativ. Both are imported here so the menu, the
+   palette and build-meta.mjs still have a single import. */
 import {
   STUFEN, SCHOOL as DEUTSCH, allTeile, stufeUrl, teilUrl, workbookUrl,
-} from "../aab/deutsch/curriculum.js";
+} from "./curricula/deutsch.ts";
 
 /* The third school, and the same argument a third time: nothing
    about ইদাফা belongs in a file about Akkusativ either. The
@@ -103,7 +98,7 @@ import {
 import {
   DHAPS, SCHOOL as QURAN, allLessons as allDars,
   dhapUrl, lessonUrl as darsUrl, totalDays as quranDays,
-} from "../aab/quran/curriculum.js";
+} from "./curricula/quran.ts";
 
 /* The fourth school, and the same argument a fourth time:
    nothing about phrasal verbs belongs in a file about Akkusativ
@@ -115,7 +110,7 @@ import {
 import {
   TERMS as ENGLISH_TERMS, SCHOOL as ENGLISH, allParts,
   termUrl, partUrl, workbookUrl as englishBookUrl,
-} from "../aab/english/curriculum.js";
+} from "./curricula/english.ts";
 
 // re-exported, because `export … from` alone would not give this
 // file the local bindings that searchIndex() below needs
@@ -745,6 +740,13 @@ export const PAGES: Page[] = [
 export const COUNTS = {
   /** Case studies you can open and drive. */
   caseStudies: PAGES.filter((p) => p.group === "case" && !p.private).length,
+  /** Everything you can open and drive: the case studies plus the
+      calculators that are pages of their own. Tagged `case` or
+      `tool` in PAGES, which is the same tagging the menu and the
+      palette group by, so publishing another one moves this
+      without anybody editing it. */
+  models: PAGES.filter((p) => !p.private
+    && (p.group === "case" || p.group === "tool")).length,
   /** Calculators on the Tools hub, not counting the stock check. */
   calculators: TOOLS.length,
   /** Stages in the money ladder, starter to research. */

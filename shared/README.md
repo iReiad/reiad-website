@@ -7,13 +7,20 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is five files:
+Today that is six files and a directory of four:
 
 - **`content.ts`** the site's own manifest: `SITE`, `SECTIONS`,
   `SKILLS`, `TOOLS`, `PAGES`, `COUNTS` and the palette's index.
   Every number this site says about itself is derived here rather
   than typed into a sentence, which is the rule `check-content.ts`
-  enforces. It is the one file here with an output: see below.
+  enforces. It has an output: see below.
+
+- **`curricula/`** the four schools' ladders, one file each:
+  every stage, section and lesson of `/money/`, `/deutsch/`,
+  `/quran/` and `/english/`, with the helpers each school spells
+  in its own vocabulary. They are what `content.ts` counts and
+  what `import-schools.ts` writes into D1, and they have outputs
+  too: see below.
 
 - **`look.ts`** the per-section table. What mount a piece is
   served at, the class on its body, the card it falls back to, how
@@ -38,21 +45,18 @@ Today that is five files:
   with the type derived from it, so a status added to one is added
   to the other by construction.
 
+- **`courses.ts`** the third-party course catalogue's types,
+  counts and addresses, over the generated `courses.data.json`.
+  It is not in the `exports` map and must not be imported for its
+  VALUES from `next/`: the catalogue is somebody else's course and
+  a bundle carrying it would be publishing it. `check-courses.ts`
+  fails on that import.
+
 ## TypeScript, and nothing compiled beside it
 
 These are `.ts` files and there is no `.js` next to them, no build
 script in this directory and nothing to keep in step. Both
 consumers compile them:
-
-`content.ts` has one more consumer, and it is the reason for the
-only output any of these has. The BROWSER reads the manifest too,
-at `/content.js`, which is a URL `sw.js` precaches by name and
-three browser modules import. It cannot reach this directory, so
-`scripts/build-modules.ts` compiles this one file to
-`aab/content.js` the same way it compiles `aab/src/*.ts`. Edit the
-source; the output is checked against it by
-`node scripts/build-modules.ts --check`.
-
 
 - **Next** through `transpilePackages: ["@reiad/shared"]` in
   `next/next.config.ts`, which it needs because the package
@@ -65,12 +69,32 @@ source; the output is checked against it by
 `package.json` therefore exports the `.ts` files directly.
 
 It was briefly the other way around, and the other way around is
-worth not going back to: the four modules were compiled to
-committed `.js` and `.d.ts` beside their own source, which made
-twelve files where there are four, plus a build script, plus a
-check to catch somebody editing the output instead of the input.
-All of that existed to serve a compile step that neither runtime
-needs, since both of them already have a compiler.
+worth not going back to: each module was compiled to a committed
+`.js` and `.d.ts` beside its own source, which is three files
+where there is one, plus a build script, plus a check to catch
+somebody editing the output instead of the input. All of that
+existed to serve a compile step that neither runtime needs, since
+both of them already have a compiler.
+
+## The five with an output, and the extension in their imports
+
+`content.ts` and the four ladders have one more consumer. The
+BROWSER reads the manifest at `/content.js` and a ladder at
+`/money/curriculum.js` or one of its three siblings, five URLs
+`sw.js` precaches by name and fourteen browser modules import. It
+cannot reach this directory, so `scripts/build-modules.ts`
+compiles those five into `aab/` the same way it compiles
+`aab/src/*.ts`, rebasing the four specifiers `content.ts` reaches
+a ladder by. Edit the source; the output is checked against it by
+`node scripts/build-modules.ts --check`.
+
+Imports inside this directory carry the `.ts` extension, because
+node reads these files with no build step and resolves the real
+filename. Every config that sees one therefore sets
+`allowImportingTsExtensions`, and `scripts/tsconfig.shared.json`,
+which is the one that compiles them, pairs it with
+`rewriteRelativeImportExtensions`: that is what turns the
+specifier back into a `.js` a browser can fetch.
 
 `tsconfig.json` here emits nothing. It is for
 `npx tsc -p shared/tsconfig.json`, which answers "does this
@@ -95,15 +119,6 @@ files.
 
 The Worker imports them by relative path, because esbuild has no
 such restriction.
-
-**`content.ts` is deliberately not in the `exports` map**, and
-that is a fact about `next/` rather than about the file. It reads
-the four `curriculum.js` ladders, which are still the browser's
-files under `aab/`, so the copy in `next/node_modules` would
-resolve `../aab/` to something that is not the repository. Left
-out, `import … from "@reiad/shared/content"` fails at the import
-rather than at the build. The ladders moving here is what lifts
-it, and `MIGRATION.md` is where that is tracked.
 
 ## Editing one of these, and the copy that does not notice
 

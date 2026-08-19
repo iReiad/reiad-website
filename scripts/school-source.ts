@@ -2,9 +2,9 @@
    school-source.ts: where a builder gets its curriculum.
 
    archive/TRANSITION.md Stage 8, step 3. The builders read the four
-   `curriculum.js` modules today. This is the switch that lets one
-   read the database instead, so that the two can be run against
-   each other and the pages diffed.
+   ladders in `shared/curricula/` at the time. This is the switch
+   that lets one read the database instead, so that the two can be
+   run against each other and the pages diffed.
 
    ```js
    const { stages, bodies } = await sourceFor("quran");
@@ -13,8 +13,8 @@
 
    ---- why the shape is `{ stages, bodies }` and not the module ----
 
-   A `curriculum.js` exports an array and about a dozen helpers
-   over it, and nearly all of those helpers are pure functions of
+   A ladder exports an array and about a dozen helpers over it,
+   and nearly all of those helpers are pure functions of
    the object handed to them: `dhapLessons(dhap)` reads
    `dhap.sections`, `dhapMinutes(dhap)` sums what it finds. They
    work on any array of the right shape, which is why the database
