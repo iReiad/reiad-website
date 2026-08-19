@@ -91,7 +91,17 @@ const SHELLS: Record<string, [root: string, bundle: string]> = {
 
 const shellFor = ([root, bundle]: [string, string]): string =>
   `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">`
-  + `<link rel="stylesheet" href="/styles.css">`
+  /* `/fallback.css`, not `/styles.css`. Nothing has been served
+     at the second since the stylesheet moved into Next: it is
+     emitted with a content hash now, which a hand-written
+     shell cannot know. The link 404ed, so this page was
+     unstyled, which failed the desk's "nothing threw" check
+     and made the Studio's two preview-theme checks compare
+     `rgba(0, 0, 0, 0)` with itself. `/fallback.css` is the
+     whole stylesheet with its comments stripped, at a stable
+     name, which is exactly what the two file pages link and
+     exactly what a shell like this one wants. */
+  + `<link rel="stylesheet" href="/fallback.css">`
   + `<script type="module" crossorigin src="${bundle}"></script></head>`
   + `<body><main id="main"><div class="wrap" id="${root}" hidden></div></main></body></html>`;
 
