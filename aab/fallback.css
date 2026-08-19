@@ -6,13 +6,20 @@
    a stylesheet whose name carries a hash. Edit the source and run
    the generator. */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, glow, utilities;
 
 @layer tokens {
 
   @property --i        { syntax: "<number>";  initial-value: 0;   inherits: false; }
   @property --shine    { syntax: "<angle>";   initial-value: 0deg; inherits: false; }
   @property --reveal   { syntax: "<number>";  initial-value: 1;   inherits: false; }
+
+  @property --gx       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
+  @property --gy       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
+  @property --glow-a   { syntax: "<number>";  initial-value: 0;   inherits: false; }
+
+  @property --glow-w   { syntax: "<length>"; initial-value: 0px; inherits: false; }
+  @property --glow-i   { syntax: "<percentage>"; initial-value: 0%; inherits: false; }
 
   :root {
 
@@ -562,6 +569,8 @@
   }
 
   .btn-solid {
+
+    --surface-image: none;
     background: var(--accent-strong); color: var(--accent-ink);
     border-color: transparent;
     box-shadow: var(--glass-lift-solid);
@@ -591,6 +600,8 @@
     &:hover { background-color: var(--panel-hover); border-color: var(--accent-line); }
   }
   .btn-quiet {
+
+    --surface-image: none;
     background: transparent; color: var(--ink-soft);
     border-color: transparent;
 
@@ -1221,6 +1232,9 @@
   .pref-chips { display: flex; flex-wrap: wrap; gap: 7px; }
   .pref-chip {
     display: grid; gap: 1px; text-align: start;
+
+    --surface-image: var(--glass-grain);
+    --surface-size: var(--glass-grain-size, auto);
     padding: 8px 13px; min-height: 42px;
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
     background-color: var(--glass-fill-quiet); color: var(--ink);
@@ -2962,6 +2976,9 @@
   .chip-row { display: flex; flex-wrap: wrap; gap: var(--s-4); }
   .chip {
     border: 1px solid var(--hairline); border-radius: var(--radius-pill);
+
+    --surface-image: var(--glass-grain);
+    --surface-size: var(--glass-grain-size, auto);
     background-color: var(--glass-fill-quiet); color: var(--ink-soft);
     background-image: var(--glass-grain);
     background-size: var(--glass-grain-size, auto);
@@ -6926,7 +6943,12 @@
     align-content: start;
     padding: clamp(14px, 1.8vw, 20px) 18px clamp(14px, 1.8vw, 20px) 21px;
     border: 1px solid var(--hairline); border-radius: var(--radius);
-    background: linear-gradient(150deg, var(--accent-soft), var(--panel) 55%);
+
+    background-color: var(--panel);
+    --surface-image: linear-gradient(150deg, var(--accent-soft), var(--panel) 55%);
+    --surface-size: auto;
+
+    background-image: var(--surface-image);
     text-decoration: none; color: var(--ink);
     min-width: 0;
     transition: rotate var(--enter) var(--ease),
@@ -8021,5 +8043,42 @@
     .rt-grid tbody td { block-size: 30px; }
     .rt-grid th, .rt-grid td { border-color: #999; }
     .rt-grid-band th { background: none; border-block-end-width: 2px; }
+  }
+}
+
+@layer glow {
+
+  [data-glow] {
+    --glow-w: 110px;
+    --glow-i: 34%;
+
+    background-image:
+      var(--surface-image, var(--sheen), var(--glass-grain)),
+      radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
+        color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent),
+        transparent 100%);
+    background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
+
+    transition: --glow-a var(--enter) var(--ease),
+                rotate var(--enter) var(--ease),
+                background-color var(--fast) var(--ease),
+                border-color var(--fast) var(--ease),
+                color var(--fast) var(--ease),
+                box-shadow var(--fast) var(--ease),
+                translate var(--fast) var(--ease),
+                transform var(--fast) var(--ease),
+                filter var(--fast) var(--ease),
+                opacity var(--fast) var(--ease);
+
+    &:hover, &:focus-visible, &:focus-within { --glow-a: 1; }
+  }
+
+  [data-glow="chip"]    { --glow-w:  70px; --glow-i: 40%; }
+  [data-glow="control"] { --glow-w: 110px; --glow-i: 34%; }
+  [data-glow="card"]    { --glow-w: 240px; --glow-i: 26%; }
+  [data-glow="pane"]    { --glow-w: 420px; --glow-i: 16%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-glow] { --gx: 50%; --gy: 50%; transition: none; }
   }
 }

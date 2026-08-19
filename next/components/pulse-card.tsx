@@ -76,7 +76,7 @@ export function PulseCard() {
   const href = piece ? `/${piece.section}/${piece.slug}.html` : "/insights";
 
   return (
-    <a className="gate-tile min-h-[150px] col-span-2 lg:col-span-6" href={href}
+    <a className="gate-tile min-h-[150px] col-span-2 lg:col-span-6" data-glow="card" href={href}
       /* The colour of whichever piece is showing, not a fixed one.
          This tile cycles between the three reading sections, so a
          cooking piece makes it rose and a travel piece plum, out

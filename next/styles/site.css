@@ -10193,6 +10193,10 @@ German for day, and .tag is what the site has always called
     background-color: var(--panel);
     --surface-image: linear-gradient(150deg, var(--accent-soft), var(--panel) 55%);
     --surface-size: auto;
+    /* Said here as well, so the tile is right with or without
+       `data-glow`: `@layer glow` sets background-image from the
+       same token and this is what it composes with. */
+    background-image: var(--surface-image);
     text-decoration: none; color: var(--ink);
     min-width: 0;
     transition: rotate var(--enter) var(--ease),
@@ -11795,79 +11799,24 @@ German for day, and .tag is what the site has always called
   /* ============================================================
      AND THE SURFACES THAT ARE NOT COMPONENTS YET
 
-     Three lists, one per kind, and they are here for the same
-     reason `SCENES` and `CARD` are lists in `tilt.ts`: most of
-     what a reader touches on this site is still a class in a
-     stylesheet rather than a component, and 251 lesson cards are
-     built in a loop by a browser module. Waiting for every one
-     of them to become a `<GoCard>` would mean the material
-     arrives on a tenth of the site.
+     They do not get it here, and that is the point.
 
-     So a name here is the same statement `data-glow` makes, one
-     level down, and the two are meant to trade places: as a
-     class becomes a component the component carries the
-     attribute and the name comes OUT of this list.
-     `check-components.ts` counts what is left.
+     The first draft of this layer named all sixty of them:
+     `.cell`, `.chart-card`, `.tile`, `.scenario` and the rest,
+     so that 251 lesson cards could join without touching 251
+     call sites. `check-css.ts` failed it, correctly, and the
+     message is the reason this file exists at all: a class
+     defined in two layers is a class whose later definition
+     wins on every page, including the ones that meant the
+     other.
 
-     A name in the wrong list is the one way to get this wrong,
-     and the test is not what the thing looks like, it is what
-     happens when you press it. A chip latches, a control acts, a
-     card takes you in, a pane holds other things.
+     So the material is `data-glow` and nothing else, the
+     components carry it, and a surface that is still a
+     hand-written class gets it by BECOMING a component.
+     `check-components.ts` counts what is left, and that count
+     is now the distance between this design language and the
+     whole site.
      ============================================================ */
-
-  /* Small, and mostly latching: a filter, a segment, a tick. */
-  :is(.chip, .scenario, .toggle, .tick-btn, .keep-btn, .pref-chip,
-      .topic-chip, .quiz-option, .checkpoint, .choice,
-      .rt-mark, .rt-heat-day, button.react) {
-    --glow-w: 70px; --glow-i: 40%;
-  }
-
-  /* Pressed to do something, or to go somewhere. */
-  :is(.btn, .tab, .icon-btn, .link-btn, .acc-item, .tree-btn,
-      .audience-opt, .crumb-step, .top-btn, .drawer-close,
-      .rail-item, .slash-item, .quiz-reset, .rt-jar, .big-link) {
-    --glow-w: 110px; --glow-i: 34%;
-  }
-
-  /* Something you go into, or read. */
-  :is(.cell, .card, .gate-tile, .news-card, .chart-card, .tile,
-      .lesson-card, .work-card, .rung, .tally-item, .res,
-      .desk-tile, .acct-tile, .kept-row, .ladder-row, .target,
-      .saved-row, .gate-card, .resume, .hub-pledge, .rt-template) {
-    --glow-w: 240px; --glow-i: 26%;
-  }
-
-  /* Holds other things. */
-  :is(.topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
-      .tabs-nav[data-sticky], .tool, .studio-pane, .band, .rt-sheet) {
-    --glow-w: 420px; --glow-i: 16%;
-  }
-
-  /* And the one rule that turns the light on for all of them.
-     Written apart from the four above so that the sizes read as
-     a table: those set what KIND of glass a thing is, this is
-     the light every kind carries. */
-  :is(.chip, .scenario, .toggle, .tick-btn, .keep-btn, .pref-chip,
-      .topic-chip, .quiz-option, .checkpoint, .choice,
-      .rt-mark, .rt-heat-day, button.react,
-      .btn, .tab, .icon-btn, .link-btn, .acc-item, .tree-btn,
-      .audience-opt, .crumb-step, .top-btn, .drawer-close,
-      .rail-item, .slash-item, .quiz-reset, .rt-jar, .big-link,
-      .cell, .card, .gate-tile, .news-card, .chart-card, .tile,
-      .lesson-card, .work-card, .rung, .tally-item, .res,
-      .desk-tile, .acct-tile, .kept-row, .ladder-row, .target,
-      .saved-row, .gate-card, .resume, .hub-pledge, .rt-template,
-      .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
-      .tabs-nav[data-sticky], .tool, .studio-pane, .band, .rt-sheet) {
-    background-image:
-      var(--surface-image, var(--sheen), var(--glass-grain)),
-      radial-gradient(var(--glow-w, 110px) circle at var(--gx, 50%) var(--gy, 50%),
-        color-mix(in oklab, var(--accent) calc(var(--glow-i, 34%) * var(--glow-a, 0)), transparent),
-        transparent 100%);
-    background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
-
-    &:hover, &:focus-visible, &:focus-within { --glow-a: 1; }
-  }
 
   /* ---- a reader who asked for less motion keeps the light ----
 

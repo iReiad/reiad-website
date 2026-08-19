@@ -106,7 +106,7 @@ function SlimTile({ href, accent, icon, chip, title, live }: {
   title: string; live?: boolean;
 }) {
   return (
-    <a className="gate-tile gate-slim" href={href} lang="bn"
+    <a className="gate-tile gate-slim" data-glow="card" href={href} lang="bn"
       style={{ ["--accent" as string]: accent }}>
       <span className="gt-disc"><Icon name={icon} size={16} /></span>
       <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1 min-w-0">
