@@ -567,6 +567,50 @@ for (const url of [...targets].sort()) {
   }
 }
 
+/* ============================================================
+   A PAGE WITH NO LAYOUT IS A PAGE WITH NO STYLESHEET
+
+   The stylesheet is imported at the top of `shell.tsx`, so Next
+   compiles it, hashes it and emits the `<link>` itself. A route
+   that mounts no shell therefore links no stylesheet, and the
+   shell is mounted by a LAYOUT: `siteLayout()` in
+   `components/page.tsx` is what nearly every one of them is.
+
+   Next answers a missing root layout by generating an empty one
+   rather than by failing, so the page renders. It renders as
+   bare HTML: no rail, no bar, no footer, default link colours,
+   and every inline SVG at its intrinsic size.
+
+   That shipped. `/tools/routine` had no `layout.tsx` for four
+   pull requests and every check passed, because every other
+   check reads MARKUP and the markup was right. Nothing here can
+   see a stylesheet that was never linked; what it can see is the
+   file that would have linked it.
+   ============================================================ */
+{
+  const app = join(NEXT, "app");
+  const walkApp = (dir: string, layouts: number): void => {
+    let entries: string[] = [];
+    try { entries = readdirSync(dir); } catch { return; }
+    const here = layouts + (entries.includes("layout.tsx") ? 1 : 0);
+    if (entries.includes("page.tsx") && here === 0) {
+      failures++;
+      const where = relative(ROOT, dir);
+      console.error(`LAYOUT   ${where}/page.tsx is not inside any layout.`);
+      console.error("        The stylesheet is imported by components/shell.tsx and the shell");
+      console.error("        is mounted by a layout, so this page renders with no CSS and no");
+      console.error("        chrome. Add a layout.tsx here or in a directory above it:");
+      console.error('            export default siteLayout({ current: "..." });');
+    }
+    for (const name of entries) {
+      if (name.startsWith(".") || name === "node_modules") continue;
+      const full = join(dir, name);
+      if (statSync(full).isDirectory()) walkApp(full, here);
+    }
+  };
+  walkApp(app, 0);
+}
+
 console.log(
   failures
     ? `\n${failures} broken route(s): fix before deploying.`
