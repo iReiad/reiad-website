@@ -17,6 +17,8 @@ next/.next/
 next/.open-next/
 next/next-env.d.ts
 next/tsconfig.tsbuildinfo
+# The browser tests' own config, which check-types.ts runs.
+next/tsconfig.test.tsbuildinfo
 
 # The design harness, written by scripts/preview.ts and looked at, not kept.
 aab/preview.html

@@ -1,0 +1,38 @@
+{
+  "//": [
+    "The node-side files beside the app: the browser tests and the",
+    "wrangler-dev harness they share.",
+    "",
+    "They are excluded from tsconfig.json because `next build`",
+    "typechecks that one, and a test in it makes the production",
+    "build depend on the tests' imports. Playwright is a",
+    "devDependency of `app/` and Cloudflare's build installs only",
+    "`next/`, so that mistake compiled here and failed on the",
+    "deploy.",
+    "",
+    "Nothing typechecks these on its own, which is the trap",
+    "`scripts/check-types.ts` was written for: node strips the",
+    "annotations without reading them, so a .ts nobody checks is a",
+    ".js wearing them. That check runs this config too."
+  ],
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    /* BOTH, because `types` replaces rather than merges too, the
+       same way `paths` does: node's for the harness, and the
+       Worker's because the components these tests import are the
+       app's and `D1Database` is a global from that package. */
+    "types": ["node", "@cloudflare/workers-types"],
+    /* `article.test.ts` imports `./dev-worker.ts` by its real
+       filename, because node resolves a file on disk and has no
+       opinion about what TypeScript would have preferred.
+
+       No `paths` here on purpose: it REPLACES rather than merges,
+       so an entry added here would lose the seven in the parent
+       that map `/account.js` and its neighbours. Playwright's is
+       in the parent for that reason and says so. */
+    "allowImportingTsExtensions": true
+  },
+  "include": ["*.test.ts", "dev-worker.ts", "components/**/*.tsx", "lib/**/*.ts"],
+  "exclude": ["node_modules"]
+}

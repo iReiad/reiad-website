@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-types.ts: the checks and the generators, typechecked.
+   check-types.ts: the node-side TypeScript, typechecked.
 
        node scripts/check-types.ts
 
@@ -24,6 +24,21 @@
 
    `scripts/tsconfig.json` is the settings and says why each is
    what it is.
+
+   ---- and the same trap one directory along ----
+
+   `next/tsconfig.test.json` is here for the same reason and it
+   took a red deploy to find. The browser tests beside the app
+   were in `next/tsconfig.json` at first, which sounded better than
+   a second config: `next build` typechecks that one, so the build
+   would hold them to their types for free.
+
+   It holds the PRODUCTION BUILD to the tests' imports as well.
+   Playwright is a devDependency of `app/` and Cloudflare's build
+   installs `next/` and nothing else, so `next build` compiled
+   here, where `app/` happens to be installed, and failed on the
+   deploy with two missing modules. They are excluded there and
+   checked here, which is where a check on our own source belongs.
 
    ---- and the second half: no JavaScript here at all ----
 
@@ -58,7 +73,14 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const HERE = join(ROOT, "scripts");
-const CONFIG = join(HERE, "tsconfig.json");
+
+/** Every config covering TypeScript that node runs directly and
+    no build compiles. What `next build` already checks is
+    deliberately absent: one check per thing. */
+const CONFIGS: Array<[what: string, config: string]> = [
+  ["scripts/", join(HERE, "tsconfig.json")],
+  ["next/ (the browser tests)", join(ROOT, "next", "tsconfig.test.json")],
+];
 
 /* `fixtures/` is captured data rather than code: the Drive
    listing `import-courses.ts` rebuilds the catalogue from. */
@@ -86,18 +108,20 @@ if (javascript.length) {
   process.exit(1);
 }
 
-try {
-  execFileSync("npx", ["tsc", "-p", CONFIG], { cwd: ROOT, stdio: "pipe" });
-} catch (err) {
-  /* tsc writes its complaints to stdout, not stderr, which is
-     why this prints the one and not the other. A check that
-     failed and said nothing is a check nobody can act on. */
-  const out = (err as { stdout?: Buffer }).stdout?.toString() ?? "";
-  console.error(out.trim() || "tsc failed and said nothing.");
-  console.error("\nscripts/ does not typecheck. Node strips these types without"
-    + " reading them,\nso nothing else would have told you.\n");
-  process.exit(1);
+for (const [what, config] of CONFIGS) {
+  try {
+    execFileSync("npx", ["tsc", "-p", config], { cwd: ROOT, stdio: "pipe" });
+  } catch (err) {
+    /* tsc writes its complaints to stdout, not stderr, which is
+       why this prints the one and not the other. A check that
+       failed and said nothing is a check nobody can act on. */
+    const out = (err as { stdout?: Buffer }).stdout?.toString() ?? "";
+    console.error(out.trim() || "tsc failed and said nothing.");
+    console.error(`\n${what} does not typecheck. Node strips these types without`
+      + " reading them,\nso nothing else would have told you.\n");
+    process.exit(1);
+  }
 }
 
-console.log("scripts: no JavaScript, and every .ts file typechecks under"
-  + " scripts/tsconfig.json.");
+console.log("types: no JavaScript in scripts/, and every .ts file node runs"
+  + `\n       directly typechecks, under ${CONFIGS.length} config(s).`);

@@ -8,12 +8,6 @@
     ],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    /* For the node-side files beside this config: `article.test.ts`
-       imports `./dev-worker.ts` by its real filename, because node
-       resolves the file on disk and has no opinion about what
-       TypeScript would have preferred. `noEmit` below is what makes
-       this legal. */
-    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "strict": true,
     "noEmit": true,
@@ -31,18 +25,15 @@
       "@/*": [
         "./*"
       ],
-      /* Where playwright really is: a devDependency of `app/`, and
-         the browser tests beside this config import it from there
-         at run time because node resolves a real path. This is so
-         that they can also have its types. */
+      /* For the browser tests, which `tsconfig.test.json` checks
+         and this config deliberately excludes. It lives here
+         because `paths` REPLACES rather than merges: a child
+         config that adds one entry loses the seven below, which
+         is 23 errors and twenty minutes.
+
+         Costs the app nothing. Nothing under `app/` imports
+         playwright, so this maps a specifier no route resolves. */
       "playwright": [
-        "../app/node_modules/playwright"
-      ],
-      /* And the same package by the path node resolves it at. A
-         `paths` entry is matched against the specifier as
-         written, so the type-only name above does not cover the
-         runtime one. */
-      "../app/node_modules/playwright/index.mjs": [
         "../app/node_modules/playwright"
       ],
       "/account.js": [
@@ -82,7 +73,21 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
+  /* THE TEST FILES ARE NOT THE APP'S, and this line is load-bearing.
+
+     `next build` typechecks everything this config includes, so a
+     `*.test.ts` in here makes the PRODUCTION BUILD depend on
+     whatever the tests import: playwright is a devDependency of
+     `app/`, and Cloudflare's build installs `next/` and nothing
+     else. It compiled on a laptop that happened to have `app/`
+     installed and failed on the deploy, which is the shape
+     `aab/schools/workbook.test.mjs` warns about at length.
+
+     `tsconfig.test.json` is what typechecks them, and
+     `scripts/check-types.ts` runs it. */
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "*.test.ts",
+    "dev-worker.ts"
   ]
 }
