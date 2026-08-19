@@ -505,7 +505,7 @@ next begins. Not all four and then integrate.
 | --- | --- | --- |
 | **1** | migration, RLS, the isolation proof, `shared/routine.ts` and the three templates | A cannot read B's rows, proven against the real database; leisure cannot fail and nobody is shown a zero, proven by 50 checks |
 | **2** | the daily view: marks, note, autosave, language, the tick | the twenty-second path works one-handed on a phone |
-| **3** | settings: builder, templates, seeds, export and import | Sadia's day loads in one press; export, erase, re-import lands exactly where you were |
+| **3** | settings: builder, templates, seeds, export and import | Sadia's day loads in one press; export, erase, re-import lands exactly where you were. **Done.** |
 | **4** | the year, the jar, the birds, the garden, the seasons, print | six panels drawn from the rows, and the page in বর্ষা does not look like the page in শীত |
 
 Phase 1 is next.

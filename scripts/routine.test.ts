@@ -46,7 +46,8 @@ import { fileURLToPath } from "node:url";
    package specifier is the route a BUILD takes and a relative
    path is the route plain node takes. */
 import {
-  TEMPLATES, FIRST_RUN, done, hours, bandTasks,
+  TEMPLATES, FIRST_RUN, SCHEMA, done, hours, bandTasks,
+  toExport, readImport, summarise, mergeDays, exportName,
   type Task, type RoutineShape, type Entry,
 } from "../shared/routine.ts";
 
@@ -328,6 +329,99 @@ console.log("\nthe words that must not appear");
       ok(`${rel} does not contain ${what}`, !pattern.test(text));
     }
   }
+}
+
+/* ============================================================
+   8. Taking a copy, and putting it back
+   ============================================================ */
+console.log("\ntaking a copy, and putting it back");
+{
+  const sadia = shapeOf("sadias-day");
+  const mine = { name: "Sadia's day", ...sadia };
+  const days: Entry[] = [
+    { entry_date: "2026-08-03", marks: { eng: 1, brd: 0.5 }, mood: "light",
+      note: "the birds ate from my hand", chose: "drew the neighbour's cat" },
+    { entry_date: "2026-08-01", marks: { slp: 1 }, mood: null, note: null, chose: null },
+  ];
+
+  const file = toExport(mine, days, "2026-08-19");
+  is("the file says which format it is", file.schema, SCHEMA);
+  /* Oldest first, so the file reads like a diary rather than a
+     database. Nobody will open it, and if they do it should make
+     sense. */
+  is("and the days are in order", file.entries.map((e) => e.entry_date),
+    ["2026-08-01", "2026-08-03"]);
+  ok("the note survives the round trip",
+    JSON.stringify(file).includes("the birds ate from my hand"));
+  ok("and so does what she chose",
+    JSON.stringify(file).includes("drew the neighbour's cat"));
+
+  const back = readImport(JSON.stringify(file));
+  ok("a file this site wrote reads back", back.ok);
+  if (back.ok) {
+    is("with every day", back.file.entries.length, 2);
+    is("and every task", back.file.routine.tasks.length, 18);
+    is("and the same arithmetic on the way out",
+      done(back.file.routine, back.file.entries[1]), done(sadia, days[0]));
+  }
+
+  /* ---- and every way it can be refused ---- */
+
+  /* NEVER GUESS AT A FILE. A format that tries its best with one
+     it does not understand is a format that silently loses half
+     of somebody's year. Each refusal below is a sentence
+     somebody could act on rather than "that did not work". */
+  const refusals: Array<[string, string]> = [
+    ["not json at all", "hello"],
+    ["an array", "[]"],
+    ["no schema field", JSON.stringify({ routine: {}, entries: [] })],
+    ["another program's export", JSON.stringify({ schema: "habitica/2" })],
+    ["a schema but no routine", JSON.stringify({ schema: SCHEMA, entries: [] })],
+    ["a day with no date", JSON.stringify({
+      schema: SCHEMA, routine: { bands: [], tasks: [] },
+      entries: [{ marks: {} }],
+    })],
+  ];
+  for (const [what, text] of refusals) {
+    const got = readImport(text);
+    ok(`${what} is refused`, !got.ok);
+    ok(`  and says why in words`, !got.ok && got.why.length > 25 && /[a-z]/.test(got.why),
+      !got.ok ? got.why : "");
+  }
+
+  /* ---- the summary somebody reads before pressing anything ---- */
+  const said = summarise(file);
+  ok("the summary counts the days", said.includes("2 days"), said);
+  ok("and names the span", said.includes("1 August") && said.includes("3 August"), said);
+  ok("one day reads as one day",
+    summarise({ ...file, entries: [days[1]] }).includes("1 day, on 1 August"),
+    summarise({ ...file, entries: [days[1]] }));
+  ok("and an empty file says so rather than counting nothing",
+    summarise({ ...file, entries: [] }).includes("no days"),
+    summarise({ ...file, entries: [] }));
+
+  /* ---- merge keeps everything, replace is what it says ---- */
+  const here: Entry[] = [
+    { entry_date: "2026-08-01", marks: { eng: 1 }, note: "mine" },
+    { entry_date: "2026-08-09", marks: { art: 1 }, note: "only mine" },
+  ];
+  const merged = mergeDays(here, file.entries, "merge");
+  is("merge keeps every day either side has",
+    merged.map((e) => e.entry_date), ["2026-08-01", "2026-08-03", "2026-08-09"]);
+  /* The imported day wins where both have one, which is the right
+     way round: somebody importing is restoring, and a restore
+     that loses to what is already there is not one. */
+  is("and the imported day wins where both have one",
+    merged.find((e) => e.entry_date === "2026-08-01")?.note, null);
+  ok("a day only this device has is never dropped",
+    merged.some((e) => e.entry_date === "2026-08-09"));
+
+  const replaced = mergeDays(here, file.entries, "replace");
+  is("replace is what it says", replaced.map((e) => e.entry_date),
+    ["2026-08-01", "2026-08-03"]);
+
+  is("and the file is named for the day", exportName("2026-08-19"),
+    "routine-2026-08-19.json");
 }
 
 /* ---------- ---------- */

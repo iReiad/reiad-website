@@ -46,7 +46,7 @@ import {
   type Band, type Task, type RoutineShape,
 } from "@reiad/shared/routine";
 import { runtimeModule } from "../account/runtime";
-import { Button } from "../ui/button";
+import { Button, ButtonLink } from "../ui/button";
 import { ChipButton } from "../ui/chip";
 import { Field, TextArea } from "../ui/field";
 
@@ -428,6 +428,16 @@ export function RoutineDay() {
       {/* Quiet, never a modal, never over the content. And the
           failure is a promise rather than an apology: it stays on
           screen and we keep trying. */}
+      {/* The other surface, from here rather than from the rail:
+          "what is on my list" is a question somebody has while
+          looking at the list, and never one they have while
+          deciding where to go. */}
+      <p className="rt-to-settings">
+        <ButtonLink kind="quiet" size="sm" href="/tools/routine/settings">
+          change what is on this list
+        </ButtonLink>
+      </p>
+
       <p className="rt-saved" data-state={saved} role="status">
         {saved === "ok" ? "saved"
           : saved === "later" ? "not saved yet, we will keep trying"
