@@ -846,10 +846,14 @@ a browser with it: point `CHROMIUM_PATH` at one, or run
 so and skip, which is not a pass:
 
 ```sh
-node app/desk.test.ts             # a panel that renders and is not finished
-                                   # (75 checks, needs Playwright and a browser)
-node app/studio.test.ts           # the React Studio's chrome, end to end
-                                   # (78 checks, needs Playwright and a browser)
+node app/desk.test.ts             # a panel that renders and is not finished, and
+                                   # one that draws an empty list where it should
+                                   # say the database is unreachable
+                                   # (76 checks, needs Playwright and a browser)
+node app/studio.test.ts           # the React Studio's chrome, end to end, and the
+                                   # pre-flight rules about a photo: no alt text,
+                                   # or hosted on somebody else's server
+                                   # (83 checks, needs Playwright and a browser)
 node scripts/check-types.ts        # and again here, because those two have a
                                    # config of their own and it SKIPS where
                                    # app/node_modules is absent, which is every
