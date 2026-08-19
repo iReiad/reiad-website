@@ -15,8 +15,8 @@
    and for nothing an effect or a click does.
 
    That mattered the moment the comment thread became a component
-   (#147), and it will matter again: `engage.js` and
-   `read-aloud.js` are on the same page.
+   (#147) and again when the reactions and the question box did
+   (#149). `read-aloud.js` is the one left on this page.
 
    ---- why the Worker rather than a deployed preview ----
 
@@ -149,6 +149,15 @@ interface Seeded {
   replies?: Seeded[];
 }
 
+/** What the front door answers, when a check needs it to. */
+interface Engaged {
+  /** What `GET /api/signals/react` says the counts are. */
+  counts?: Record<string, number>;
+  /** And what `POST` says they are after a press. */
+  after?: Record<string, number>;
+  questions?: Array<{ id: number; name?: string; body: string; answer?: string }>;
+}
+
 /** What one load of the piece leaves behind. */
 interface Loaded {
   page: Page;
@@ -160,7 +169,10 @@ interface Loaded {
 /** One load of the piece, with the thread's endpoint answered
     however the check needs it, and everything the page threw.
     `"broken"` aborts that endpoint instead of answering it. */
-const open = async (comments: Seeded[] | "broken"): Promise<Loaded> => {
+const open = async (
+  comments: Seeded[] | "broken",
+  { engage }: { engage?: Engaged } = {},
+): Promise<Loaded> => {
   const page = await browser.newPage();
   /* Three lists, and keeping them apart is what makes the checks
      below sayable. `thrown` is a real exception, which is always
@@ -214,6 +226,38 @@ const open = async (comments: Seeded[] | "broken"): Promise<Loaded> => {
      site's, and a test that needs Google to answer is a test that
      goes red on somebody else's afternoon. */
   await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
+
+  /* The front door's endpoints, when a check is about what the
+     reactions and the question box do with them. Left alone
+     otherwise, so that "nothing answers them" stays one of the
+     states this file covers. */
+  if (engage) {
+    const json = (body: unknown) => ({
+      status: 200, contentType: "application/json", body: JSON.stringify(body),
+    });
+    /* `backendReady()` asks `auth/me`, not a health endpoint, and
+       that is the gate the whole section is behind. */
+    await page.route("**/api/auth/me*", (r: Route) => r.fulfill(json({ ok: true })));
+    /* Also one address and two jobs: GET is what the counts are,
+       POST is what they became. Answering both with the same
+       numbers would have shown the press already registered
+       before anything was pressed. */
+    await page.route("**/api/signals/react*", (r: Route, q: Request) =>
+      r.fulfill(q.method() === "POST"
+        ? json({ ok: true, counts: engage.after ?? {} })
+        : json({ counts: engage.counts ?? {} })));
+    /* One address, two jobs: GET is the answered questions and
+       POST is somebody asking one. The module reads `ok` off the
+       second and `questions` off the first, so a stub that
+       answered both the same way sent the form down its failure
+       path with nothing wrong. */
+    await page.route("**/api/questions*", (r: Route, q: Request) =>
+      r.fulfill(q.method() === "POST"
+        ? json({ ok: true })
+        : json({ questions: engage.questions ?? [] })));
+    await page.route("**/api/signals/view*", (r: Route) => r.fulfill(json({ ok: true })));
+  }
+
   if (comments === "broken") {
     await page.route("**/api/comments*", (r: Route) => r.abort());
   } else if (comments) {
@@ -246,6 +290,9 @@ const MAY_BE_MISSING = [
   "/api/articles",        // the front door's, for the reading rail
   "/api/auth/me",         // the front door's, so nobody is ever signed in here
   "/api/comments",        // aborted on purpose, in the broken-thread block
+  "/api/questions",       // the front door's, answered by a route below
+  "/api/signals/react",   // the same
+  "/api/signals/view",    // the same, and fire-and-forget
   "/css2",                // the webfonts, aborted above
 ];
 
@@ -367,6 +414,133 @@ console.log("the article page, in a browser");
     && await page.locator(".comment-form").count() === 0);
   ok("and throws nothing on the way", thrown.length === 0, thrown.join(" | "));
   await page.close();
+}
+
+/* ---------- 6. the reactions and the question box ----------
+
+   `next/components/engage.tsx`, and the whole of it is behind
+   `backendReady()`: with nothing answering `/api/health` the
+   section is not drawn at all, which is the state block 1 above
+   already loaded the page in. So this is the other half. */
+
+{
+  const { page } = await open([], {
+    engage: {
+      counts: { helpful: 4 },
+      after: { helpful: 5 },
+      questions: [{ id: 1, name: "Ayesha", body: "Why free float?",
+                    answer: "Because the rest is not tradable." }],
+    },
+  });
+
+  ok("with a database, the engage section is drawn",
+    await page.locator("section.engage").count() === 1);
+  ok("three reactions and no more",
+    await page.locator(".react-row .react").count() === 3);
+  ok("and the count the endpoint gave",
+    (await page.locator('.react[data-kind="helpful"] b').textContent()) === "4");
+  ok("a kind nobody has pressed shows no number",
+    (await page.locator('.react[data-kind="more"] b').textContent()) === "");
+  ok("nothing is pressed yet",
+    await page.locator('.react[aria-pressed="true"]').count() === 0);
+
+  /* One per reader per piece, and the record of it is this
+     browser's. Pressing twice must not post twice. */
+  await page.locator('.react[data-kind="helpful"]').click();
+  await page.waitForTimeout(400);
+  ok("pressing one marks it pressed",
+    await page.locator('.react[data-kind="helpful"][aria-pressed="true"]').count() === 1);
+  ok("and takes the new counts from the answer",
+    (await page.locator('.react[data-kind="helpful"] b').textContent()) === "5");
+
+  await page.locator('.react[data-kind="more"]').click();
+  await page.waitForTimeout(300);
+  ok("a second press does nothing, because one is the rule",
+    await page.locator('.react[aria-pressed="true"]').count() === 1);
+  ok("and it is still the first one",
+    await page.locator('.react[data-kind="helpful"][aria-pressed="true"]').count() === 1);
+
+  ok("a question that has been answered is shown",
+    await page.locator(".qa-list .qa").count() === 1);
+  ok("with who asked it",
+    (await page.locator(".qa .q .who").textContent()) === "Ayesha");
+  ok("and the answer under it",
+    (await page.locator(".qa .a p").textContent()) === "Because the rest is not tradable.");
+
+  ok("there is a box to ask one", await page.locator("form.ask-form").count() === 1);
+  ok("the honeypot is there and out of sight",
+    await page.locator('input[name="website"]').count() === 1);
+  ok("and hidden from anything reading the page aloud",
+    await page.locator('input[name="website"][aria-hidden="true"]').count() === 1);
+  await page.close();
+}
+
+/* ---------- 7. and asking one ---------- */
+
+{
+  const { page } = await open([], { engage: { counts: {} } });
+  await page.locator("form.ask-form textarea").fill("Too short");
+  await page.locator("form.ask-form button[type=submit]").click();
+  await page.waitForTimeout(300);
+  ok("a question too short to answer is refused before it is sent",
+    (await page.locator(".ask-form .gate-msg").textContent())
+      ?.startsWith("A bit more detail"));
+  ok("and the form is still there to fix",
+    await page.locator("form.ask-form").count() === 1);
+
+  await page.locator("form.ask-form textarea")
+    .fill("Why is the index free-float weighted rather than full market cap?");
+  await page.locator("form.ask-form button[type=submit]").click();
+  await page.waitForTimeout(600);
+  ok("a real one is taken, and says what happens next",
+    (await page.locator(".engage .verdict").textContent())?.startsWith("Got it."));
+  ok("and the form is gone, so it cannot be sent twice",
+    await page.locator("form.ask-form").count() === 0);
+  await page.close();
+}
+
+/* ---------- 8. the view is counted once, and this asks it twice ----------
+
+   `aab/engage.js` called `countView()` at its top level and
+   `app.js` calls it for every page, so an insights piece posted
+   `signals/view` twice per load and a cooking piece once. Nothing
+   said so, because two rows a day is not a shape anybody looks at.
+
+   THE RUNTIME HALF CANNOT SEE IT FROM HERE, and that is
+   `countView()` being right rather than this being wrong: it
+   refuses on `localhost` and `127.0.0.1` so that the author
+   reading their own drafts is not a view, and this harness is
+   127.0.0.1 by definition. So the observation is that a dev host
+   posts NOTHING, which is the other half of the same rule, and
+   the claim about double counting is asked of the source. */
+
+{
+  const page = await browser.newPage();
+  let views = 0;
+  await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
+  await page.route("**/api/auth/me*", (r: Route) => r.fulfill({
+    status: 200, contentType: "application/json", body: '{"ok":true}' }));
+  await page.route("**/api/signals/view*", (r: Route) => {
+    views += 1;
+    return r.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true}' });
+  });
+  await page.goto(URL_, { waitUntil: "load" });
+  await page.waitForTimeout(2000);
+  ok("a dev host counts no views at all", views === 0,
+    `${views} POST(s) to /api/signals/view from 127.0.0.1`);
+  await page.close();
+
+  const engageSrc = await readFile(join(here, "components", "engage.tsx"), "utf8");
+  const appSrc = await readFile(join(here, "..", "aab", "app.js"), "utf8");
+  const bare = (src: string) => src
+    .replace(/\/\*[\s\S]*?\*\//g, " ").replace(/^\s*\/\/.*$/gm, " ");
+  ok("the component does not count a view",
+    !/\bcountView\s*\(/.test(bare(engageSrc)),
+    "app.js counts one for every page; a second here is the bug this replaced");
+  ok("and app.js counts exactly one",
+    (bare(appSrc).match(/\bcountView\s*\(/g) ?? []).length === 1);
+  ok("and no longer imports the module that counted a second",
+    !bare(appSrc).includes("/engage.js"));
 }
 
 await browser.close();

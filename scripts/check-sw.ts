@@ -143,7 +143,10 @@ for (const p of paths) {
      rather than approximated:
 
        `import("/engage.js").catch(…)` in app.js, a DYNAMIC import
-       inside a catch, which is the shape that is allowed to fail;
+       inside a catch, which is the shape that is allowed to fail.
+       That line went with the module in #149 and the rule it
+       taught did not: the next one of those must not be precached
+       either;
 
        `export const schoolFor = (path = "/money/") =>`, an export
        whose DEFAULT PARAMETER is a path.

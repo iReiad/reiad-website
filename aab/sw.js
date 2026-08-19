@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v133: `/app.js` no longer imports `/engage.js`, and that import
+        was counting every insights view TWICE: `initDynamic()`
+        calls `countView()` for every page and then loaded a module
+        whose top level called it again. Reactions and the question
+        box are a component now. An old app.js would go on
+        double-counting, and go on importing a module that is not
+        served any more.
+
    v132: `/comments.js` is GONE from this list, which is the first
         precached module to leave rather than change. The thread
         under a piece is `next/components/comments.tsx` now, and a
@@ -1376,7 +1384,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v132";
+const VERSION = "v133";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

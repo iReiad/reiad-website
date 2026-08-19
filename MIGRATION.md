@@ -55,7 +55,7 @@ loaded by something not counted here, and both were worth checking.
 | `auth.js` | 216 | | **service.** The Studio's gate |
 | `checkpoints.js` | 209 | ts | **service.** The ticks inside a lesson, filed under a school's own key |
 | `account-page.js` | 203 | ts | **shell**, and finished: four jobs left and the section above says why each stays |
-| `engage.js` | 186 | | **interface.** Reactions and reader questions |
+| `engage.js` | 186 | ✔ | **interface**, and done: `components/engage.tsx`. It counted every insights view a second time |
 | `prefs.js` | 181 | ts | **service.** Applied before the first paint by `shell.tsx`, carried by `sync.ts` |
 | `read-aloud.js` | 150 | | **interface.** The speech control on a piece |
 | `photo.js` | 144 | ts | **service.** Decoding a pasted photo. Never a fetch: `CLAUDE.md` says what that cost |
