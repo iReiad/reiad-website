@@ -111,6 +111,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/comments.test.ts",
     "scripts/restore.test.ts",
     "scripts/snapshot.test.ts",
+    "scripts/routine.test.ts",
     "scripts/schools.test.ts",
     "scripts/schools-api.test.ts",
     "functions/_lib/notion.test.ts",

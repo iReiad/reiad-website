@@ -8,6 +8,7 @@
     "./headers": "./headers.ts",
     "./schools": "./schools.ts",
     "./rows": "./rows.ts",
-    "./content": "./content.ts"
+    "./content": "./content.ts",
+    "./routine": "./routine.ts"
   }
 }

@@ -414,7 +414,10 @@ time. Nothing is ever lost by pressing the wrong thing quickly.
 
 ## 8. The hard constraints, as tests
 
-`next/routine.test.ts`, and these are assertions, not intentions.
+`scripts/routine.test.ts`, and these are assertions rather than
+intentions. In `scripts/` and not in `next/` because it needs neither
+the Next build nor a browser: it is the arithmetic, the templates and
+a grep, which is what makes it run in CI.
 
 - **No streaks.** The test greps the built markup and the modules for
   `streak`, `chain`, `consecutive` and the flame emoji, and fails on
@@ -434,6 +437,24 @@ time. Nothing is ever lost by pressing the wrong thing quickly.
 - **Leisure cannot fail**: a task with `counts: false` never enters
   any arithmetic, asserted directly.
 - **Copy stays plain and kind.** A fourteen-year-old reads this.
+
+Four of these are already true and tested, before there is anything
+to look at, because they are properties of `done()` in
+`shared/routine.ts` rather than of a page:
+
+| | |
+| --- | --- |
+| leisure cannot fail | a day of nothing but television answers `null`, and adding one real task after it answers exactly one thirteenth. The five leisure marks reach neither the numerator nor the denominator |
+| nobody is shown a zero | four different empty days, and no path through the arithmetic returns `0` |
+| tidying does not rewrite the past | archiving a task takes it off today's list, leaves it in the routine, and does not move yesterday's figure |
+| the ratchet | a counter is fed forty days with a dead fortnight in the middle and asserted never to fall. Coming back after two weeks away costs nothing |
+
+The grep strips comments first, and that is not a loophole: the ban is
+on the tool having a streak, not on the code explaining why it does
+not. `shared/routine.ts` opens with the sentence the whole thing rests
+on and would otherwise fail its own test, which is the trap `CLAUDE.md`
+names for the em dash rule. Every string a reader can see still gets
+scanned.
 
 ### Isolation, which gates everything
 
@@ -482,7 +503,7 @@ next begins. Not all four and then integrate.
 
 | phase | what | done when |
 | --- | --- | --- |
-| **1** | migration, RLS, the isolation test, the three seed templates | A cannot read B's rows, proven by a test that fails when a policy is dropped |
+| **1** | migration, RLS, the isolation proof, `shared/routine.ts` and the three templates | A cannot read B's rows, proven against the real database; leisure cannot fail and nobody is shown a zero, proven by 50 checks |
 | **2** | the daily view: marks, note, autosave, language, the tick | the twenty-second path works one-handed on a phone |
 | **3** | settings: builder, templates, seeds, export and import | Sadia's day loads in one press; export, erase, re-import lands exactly where you were |
 | **4** | the year, the jar, the birds, the garden, the seasons, print | six panels drawn from the rows, and the page in বর্ষা does not look like the page in শীত |
