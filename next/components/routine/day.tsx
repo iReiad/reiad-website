@@ -423,6 +423,13 @@ export function RoutineDay() {
         <ButtonLink kind="quiet" size="sm" href="/tools/routine/settings">
           change what is on this list
         </ButtonLink>
+        {/* The paper fallback, and it is linked from the day
+            rather than buried in settings for the reason it
+            exists: somebody wants it on the day the screen is
+            flat, which is not a day they will go looking. */}
+        <ButtonLink kind="quiet" size="sm" href="/tools/routine/print">
+          the week on paper
+        </ButtonLink>
       </p>
 
       <p className="rt-saved" data-state={saved} role="status">

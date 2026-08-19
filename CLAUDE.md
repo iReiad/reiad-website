@@ -899,7 +899,7 @@ node next/routine-day.test.ts      # a day that renders and does not mark, an
                                    # empty day showing a nought, anything on the
                                    # page turning red, or a task taken off the
                                    # list being deleted rather than archived
-                                   # (41 checks, needs the Next build and a
+                                   # (53 checks, needs the Next build and a
                                    # browser, skips without)
 node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read (23 checks, no browser)

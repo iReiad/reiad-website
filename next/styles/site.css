@@ -11268,7 +11268,10 @@ German for day, and .tag is what the site has always called
   /* ---------- settings: the list, the templates, the copy ---------- */
 
   .rt-back { margin-block: 0 var(--s-7); }
-  .rt-to-settings { margin-block: var(--s-9) 0; }
+  .rt-to-settings {
+    margin-block: var(--s-9) 0;
+    display: flex; flex-wrap: wrap; gap: var(--s-4);
+  }
 
   .rt-builder h3, .rt-data h3 {
     font-family: var(--font-bn-serif); margin-block: 0 var(--s-5);
@@ -11511,5 +11514,85 @@ German for day, and .tag is what the site has always called
   .rt-log li {
     padding-inline-start: var(--s-6);
     border-inline-start: 2px solid var(--hairline);
+  }
+
+  /* ---------- the week on paper ----------
+
+     A routine that only works on a screen is a routine that stops
+     on the day the screen is flat, so the BLANK sheet is the
+     point of this and the filled one is the bonus. */
+
+  .rt-print-controls {
+    display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-4);
+    margin-block-end: var(--s-7);
+  }
+
+  .rt-sheet {
+    max-inline-size: 46rem;
+    padding: var(--s-8);
+    border: 1px solid var(--hairline); border-radius: var(--radius);
+    background: var(--paper);
+  }
+  .rt-sheet-head { margin-block-end: var(--s-7); }
+  .rt-sheet-head h2 { font-family: var(--font-bn-serif); margin: 0; }
+  .rt-sheet-head p { margin: 0; font-size: var(--t-2); }
+
+  .rt-grid { inline-size: 100%; border-collapse: collapse; font-size: var(--t-2); }
+  .rt-grid th, .rt-grid td {
+    border: 1px solid var(--hairline);
+    padding: 5px 6px; text-align: center; vertical-align: middle;
+  }
+  .rt-grid-task {
+    text-align: start; font-weight: 400; font-family: var(--font-bn);
+    inline-size: 42%;
+  }
+  .rt-grid thead th { font-weight: 500; }
+  .rt-grid-dow { display: block; font-family: var(--font-mono); font-size: var(--t-1); }
+  .rt-grid-num { display: block; color: var(--ink-soft); font-size: var(--t-1); }
+  .rt-grid-band th {
+    text-align: start; font-family: var(--font-bn); font-weight: 500;
+    background: var(--paper-sunk); font-size: var(--t-1);
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  /* Every box is at least a thumb tall, because the point of the
+     blank sheet is that somebody writes in it with a pen. */
+  .rt-grid tbody td { block-size: 26px; min-inline-size: 26px; }
+  .rt-grid-mark { color: var(--accent); font-size: var(--t-4); }
+  /* A row with nothing printed in it, on both sheets: a week
+     always has something the list did not know about, and a grid
+     with no room for it says the list is the whole of a life. */
+  .rt-grid-spare th { color: var(--ink-soft); }
+
+  .rt-sheet-foot { margin-block-start: var(--s-7); }
+  .rt-sheet-notes { list-style: none; margin: 0 0 var(--s-5); padding: 0; display: grid; gap: var(--s-4); }
+  .rt-sheet-notes cite {
+    display: block; font-style: normal;
+    font-size: var(--t-1); color: var(--ink-soft);
+  }
+  .rt-hand { font-family: var(--font-hand); font-size: var(--t-5); }
+  /* The only numbers on the paper, and they are a total rather
+     than a score: nothing here is out of anything. */
+  .rt-sheet-count { margin: 0; font-size: var(--t-2); color: var(--ink-soft); }
+
+  /* ---------- and on paper ----------
+
+     The rail, the bar and the footer are already taken away by
+     the print rules further up this stylesheet, so what is left
+     here is this page's own: the controls go, the sheet loses the
+     border it needed on screen, and nothing breaks across a
+     page. */
+  @media print {
+    .rt-print-controls { display: none; }
+    .rt-sheet {
+      max-inline-size: none; padding: 0;
+      border: 0; background: none;
+    }
+    .rt-grid { break-inside: avoid; }
+    .rt-grid tbody tr { break-inside: avoid; }
+    /* Boxes big enough to write in with a pen, which is the whole
+       reason the blank sheet exists. */
+    .rt-grid tbody td { block-size: 30px; }
+    .rt-grid th, .rt-grid td { border-color: #999; }
+    .rt-grid-band th { background: none; border-block-end-width: 2px; }
   }
 }
