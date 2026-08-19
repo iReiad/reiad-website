@@ -833,6 +833,9 @@ node scripts/check-schools.ts # a ladder the browser and the builders disagree a
 node scripts/check-rows.ts # a description of the database that has stopped
                             # being true, or a handler keeping its own copy
                             # of a vocabulary
+node scripts/check-rls.ts  # a Supabase table created with no row-level
+                            # security on it, which has no symptom at all, or
+                            # a second table readable by anyone
 node scripts/check-courses.ts # a Drive id that is not one, the private course
                             # catalogue leaking into a public bundle, or the
                             # Worker and the browser disagreeing about where
