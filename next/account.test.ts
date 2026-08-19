@@ -1,8 +1,8 @@
 /* ============================================================
-   account.test.mjs: what an account actually gets you, driven in
+   account.test.ts: what an account actually gets you, driven in
    a real browser.
 
-     node next/account.test.mjs
+     node next/account.test.ts
 
    Needs `npx next build` in `next/` first, and a browser. Without
    either it says which one is missing and skips, and a skip is
@@ -14,7 +14,7 @@
    notes, reading preferences, a year of days and a way to take a
    copy of all of it. Every one of them is drawn by a script into
    markup a route rendered, which is the exact shape of thing that
-   `parity.test.mjs` cannot see and `interactive.test.mjs` was
+   `parity.test.ts` cannot see and `interactive.test.ts` was
    written for: the HTML is right whether or not a single one of
    them worked.
 
@@ -26,7 +26,7 @@
    the focus return are checked here rather than assumed.
 
    The pages are served the way Cloudflare serves them, which is
-   the same three-line split `interactive.test.mjs` uses: the HTML
+   the same three-line split `interactive.test.ts` uses: the HTML
    Next prerendered, the chunks beside it, and everything else out
    of `aab/`. Supabase is routed, so nothing here reaches the real
    project and the test needs no network.
@@ -36,6 +36,7 @@ import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { BrowserContext, Dialog, Page, Route } from "playwright";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BUILD = join(HERE, ".next");
@@ -43,21 +44,24 @@ const AAB = join(HERE, "..", "aab");
 const PORT = 8993;
 
 let passed = 0;
-const failures = [];
-const ok = (name, condition, detail = "") => {
+const failures: string[] = [];
+const ok = (name: string, condition: unknown, detail: string | null = ""): void => {
   if (condition) { passed++; return; }
   failures.push(detail ? `${name}: ${detail}` : name);
 };
-const is = (name, got, want) =>
+const is = (name: string, got: unknown, want: unknown): void =>
   ok(name, JSON.stringify(got) === JSON.stringify(want),
     `got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`);
 
-const skip = (why) => {
+/** Says why, and does not come back. `never` rather than `void`
+    so that everything after a skip knows what the skip ruled out:
+    the browser below is not optional once this line is past. */
+const skip: (why: string) => never = (why) => {
   console.log(`account: SKIPPED, ${why}`);
   process.exit(0);
 };
 
-const exists = (path) => stat(path).then(() => true, () => false);
+const exists = (path: string): Promise<boolean> => stat(path).then(() => true, () => false);
 
 if (!await exists(join(BUILD, "server/app/account.html.html"))) {
   skip("next/.next holds no prerendered account page. Run `npx next build` in next/ first.");
@@ -68,12 +72,18 @@ const browserPath = process.env.CHROMIUM_PATH
     ? "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
     : null);
 
-let chromium;
-try {
-  ({ chromium } = await import("../app/node_modules/playwright/index.mjs"));
-} catch {
+/* The runtime import is the real path, because node resolves a
+   file on disk; the types come from the same package through the
+   `paths` entry in `tsconfig.json`. The specifier is a VARIABLE
+   because a literal is analysed, and a relative path `paths`
+   cannot map is a module with no declaration. */
+const PLAYWRIGHT = "../app/node_modules/playwright/index.mjs";
+const playwright = await import(PLAYWRIGHT)
+  .then((m) => m as typeof import("playwright"), () => null);
+if (!playwright) {
   skip("playwright is not installed. It is a devDependency of app/: `cd app && npm install`.");
 }
+const { chromium } = playwright;
 if (!browserPath && !process.env.CHROMIUM_PATH) {
   try {
     chromium.executablePath();
@@ -84,7 +94,7 @@ if (!browserPath && !process.env.CHROMIUM_PATH) {
 
 /* ---- the site, served the way Cloudflare serves it ---- */
 
-const TYPES = {
+const TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".mjs": "text/javascript; charset=utf-8",
@@ -95,7 +105,7 @@ const TYPES = {
   ".ico": "image/x-icon",
 };
 
-const PRERENDERED = { "/account.html": "account.html.html" };
+const PRERENDERED: Record<string, string> = { "/account.html": "account.html.html" };
 
 /* The real policy, read out of `aab/_headers` rather than copied,
    because a copy is a second list and this repository has been
@@ -105,13 +115,19 @@ const PRERENDERED = { "/account.html": "account.html.html" };
    whether an image, a font or a fetch is allowed: the page looks
    identical either way, which is exactly the shape of the bug
    `scripts/check-csp.ts` was written for. */
-const CSP = (await readFile(join(AAB, "_headers"), "utf8"))
-  .match(/Content-Security-Policy: (.+)/)[1].trim();
+/* Thrown rather than defaulted to nothing: a harness that served
+   the page with an empty policy would answer every check in this
+   file and none of them would be about the policy. */
+const policy = (await readFile(join(AAB, "_headers"), "utf8"))
+  .match(/Content-Security-Policy: (.+)/)?.[1];
+if (!policy) throw new Error("aab/_headers carries no Content-Security-Policy");
+const CSP = policy.trim();
 
 const server = createServer(async (req, res) => {
-  const path = new URL(req.url, "http://x").pathname;
-  const file = PRERENDERED[path]
-    ? join(BUILD, "server/app", PRERENDERED[path])
+  const path = new URL(req.url ?? "/", "http://x").pathname;
+  const prerendered = PRERENDERED[path];
+  const file = prerendered
+    ? join(BUILD, "server/app", prerendered)
     : path.startsWith("/_next/static/")
       ? join(BUILD, "static", path.slice("/_next/static/".length))
       : join(AAB, path.replace(/^\//, ""));
@@ -127,22 +143,22 @@ const server = createServer(async (req, res) => {
     res.end("not found");
   }
 });
-await new Promise((resolve) => server.listen(PORT, resolve));
+await new Promise<void>((resolve) => { server.listen(PORT, () => resolve()); });
 
 const browser = await chromium.launch(browserPath ? { executablePath: browserPath } : {});
 
 /* ---- a signed-in session, and an account with things in it ---- */
 
 const SUPA = "https://wvjarqnnmkkuxyrndtya.supabase.co";
-const b64 = (o) => Buffer.from(JSON.stringify(o)).toString("base64url");
+const b64 = (o: unknown) => Buffer.from(JSON.stringify(o)).toString("base64url");
 /* The picture a Google sign-in brings with it. Routed below to a
    1x1 image, so the check is about the markup and the policy
    rather than about Google being up. */
 const AVATAR = "https://lh3.googleusercontent.com/a/A-PICTURE";
-const jwt = (sub) => [b64({ alg: "HS256" }),
+const jwt = (sub: string) => [b64({ alg: "HS256" }),
   b64({ sub, email: "i@reiad.co.uk", exp: Math.floor(Date.now() / 1000) + 3600,
         user_metadata: { full_name: "Rony Reiad", avatar_url: AVATAR } }), "s"].join(".");
-const session = (sub) => JSON.stringify({
+const session = (sub: string) => JSON.stringify({
   access_token: jwt(sub), refresh_token: "r", expires_at: Date.now() + 3600e3,
   user: { id: sub, email: "i@reiad.co.uk", name: "Rony Reiad", avatar: AVATAR },
 });
@@ -154,18 +170,78 @@ const PIXEL = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
   "base64");
 
-const DAYS = (() => {
+const DAYS = ((): string[] => {
   /* Ten of the last fourteen, so the heatmap has something to
      draw and the week line has a number that is not zero. */
-  const out = [];
+  const out: string[] = [];
   for (let i = 0; i < 14; i += (i % 4 === 2 ? 2 : 1)) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    const pad = (n) => String(n).padStart(2, "0");
+    const pad = (n: number) => String(n).padStart(2, "0");
     out.push(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
   }
   return out;
 })();
+
+/** Anything that came up the wire, as an object. A narrowing
+    function rather than a cast, because what the page posts is
+    the thing being checked and a cast would decide it here. */
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+/** The same, for a POST body: PostgREST takes an array of rows
+    even when there is one of them. */
+const asRows = (value: unknown): Record<string, unknown>[] =>
+  Array.isArray(value) ? value.filter(isObject) : [];
+
+/** One row of `library`, `targets` or `scenarios`. The three
+    tables hold different columns and this harness treats them
+    alike: an id, plus whatever the check seeded or the page
+    posted. Which columns matter is said where each is seeded. */
+type ListRow = { id: string } & Record<string, unknown>;
+
+/** One row of `progress`: a synced key and whatever is filed
+    under it. */
+interface ProgressRow {
+  key: string;
+  value: unknown;
+  updated_at: string;
+}
+
+/** What the browser sent, so a check can say a press wrote
+    something rather than only that a row left the page. */
+interface Sent {
+  table: string;
+  method: string;
+  body: unknown;
+}
+
+/** What an account holds before the page is opened. Absent means
+    the default below, not empty. */
+interface Seeded {
+  progress?: Record<string, string[]>;
+  library?: ListRow[];
+  targets?: ListRow[];
+  scenarios?: ListRow[];
+  profile?: Record<string, unknown>;
+}
+
+interface Account {
+  progress: Map<string, ProgressRow>;
+  library: ListRow[];
+  targets: ListRow[];
+  scenarios: ListRow[];
+  profile: Record<string, unknown>;
+  sent: Sent[];
+}
+
+/** One load of the account page, and everything it left behind. */
+interface Opened {
+  page: Page;
+  context: BrowserContext;
+  state: Account;
+  errors: string[];
+}
 
 /**
  * A browser talking to an account that holds `state`.
@@ -175,20 +251,25 @@ const DAYS = (() => {
  * button actually wrote something rather than only that the row
  * disappeared from the page.
  */
-async function open(path, { signedIn = true, rows = {}, seed = {} } = {}) {
+async function open(
+  path: string,
+  { signedIn = true, rows = {}, seed = {} }:
+    { signedIn?: boolean; rows?: Seeded; seed?: Record<string, string> } = {},
+): Promise<Opened> {
   const context = await browser.newContext({ viewport: { width: 1180, height: 1000 } });
   const page = await context.newPage();
-  const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  await page.route("https://fonts.googleapis.com/**", (r) => r.abort());
+  const errors: string[] = [];
+  page.on("pageerror", (e: Error) => { errors.push(e.message); });
+  await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
 
-  const state = {
+  const state: Account = {
     progress: new Map(Object.entries({
       "learn-read": ["share", "dse"],
       "learn-checks": ["share#0", "share#1"],
       "days-active": DAYS,
       ...(rows.progress ?? {}),
-    }).map(([key, value]) => [key, { key, value, updated_at: new Date().toISOString() }])),
+    }).map(([key, value]): [string, ProgressRow] =>
+      [key, { key, value, updated_at: new Date().toISOString() }])),
     library: rows.library ?? [],
     targets: rows.targets ?? [],
     scenarios: rows.scenarios ?? [],
@@ -199,19 +280,20 @@ async function open(path, { signedIn = true, rows = {}, seed = {} } = {}) {
     sent: [],
   };
 
-  await context.route(`${SUPA}/rest/v1/**`, async (route) => {
+  await context.route(`${SUPA}/rest/v1/**`, async (route: Route) => {
     const req = route.request();
     const url = new URL(req.url());
-    const table = url.pathname.split("/").pop();
-    const json = (body, status = 200) =>
-      route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
+    const table = url.pathname.split("/").pop() ?? "";
+    const json = (payload: unknown, status = 200) =>
+      route.fulfill({ status, contentType: "application/json", body: JSON.stringify(payload) });
 
-    const body = req.postData() ? JSON.parse(req.postData()) : null;
+    const posted = req.postData();
+    const body: unknown = posted ? JSON.parse(posted) : null;
     if (req.method() !== "GET") state.sent.push({ table, method: req.method(), body });
 
     if (table === "profiles") {
       if (req.method() === "PATCH") {
-        state.profile = { ...state.profile, ...body };
+        state.profile = { ...state.profile, ...(isObject(body) ? body : {}) };
         return route.fulfill({ status: 204, body: "" });
       }
       return json([state.profile]);
@@ -219,8 +301,12 @@ async function open(path, { signedIn = true, rows = {}, seed = {} } = {}) {
     if (table === "progress") {
       if (req.method() === "DELETE") { state.progress.clear(); return route.fulfill({ status: 204, body: "" }); }
       if (req.method() === "POST") {
-        body.forEach((r) => state.progress.set(r.key,
-          { ...r, updated_at: new Date().toISOString() }));
+        for (const r of asRows(body)) {
+          state.progress.set(String(r.key), {
+            ...r, key: String(r.key), value: r.value,
+            updated_at: new Date().toISOString(),
+          });
+        }
         return route.fulfill({ status: 201, body: "" });
       }
       return json([...state.progress.values()]);
@@ -231,12 +317,12 @@ async function open(path, { signedIn = true, rows = {}, seed = {} } = {}) {
         return route.fulfill({ status: 204, body: "" });
       }
       if (req.method() === "POST") {
-        const rows = body.map((r) => ({
+        const made = asRows(body).map((r): ListRow => ({
           id: `id-${state[table].length + 1}`, created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(), saved: false, note: "", ...r,
         }));
-        state[table] = [...rows, ...state[table]];
-        return json(rows, 201);
+        state[table] = [...made, ...state[table]];
+        return json(made, 201);
       }
       if (req.method() === "PATCH") return route.fulfill({ status: 204, body: "" });
       return json(state[table]);
@@ -244,20 +330,21 @@ async function open(path, { signedIn = true, rows = {}, seed = {} } = {}) {
     return json([]);
   });
 
-  await context.route(`${SUPA}/auth/v1/**`, (r) =>
+  await context.route(`${SUPA}/auth/v1/**`, (r: Route) =>
     r.fulfill({ status: 200, contentType: "application/json", body: "{}" }));
 
   /* The avatar, served from here rather than from Google. The
      request still leaves as `https://lh3.googleusercontent.com`,
      so the page's policy decides whether it is made at all, which
      is the half of this worth checking. */
-  await context.route("https://lh3.googleusercontent.com/**", (r) =>
+  await context.route("https://lh3.googleusercontent.com/**", (r: Route) =>
     r.fulfill({ status: 200, contentType: "image/png", body: PIXEL }));
 
-  await page.addInitScript(([on, who, extra]) => {
+  const start: [boolean, string, Record<string, string>] = [signedIn, session("u-1"), seed];
+  await page.addInitScript(([on, who, extra]: [boolean, string, Record<string, string>]) => {
     if (on) localStorage.setItem("reiad-session", who);
     for (const [k, v] of Object.entries(extra)) localStorage.setItem(k, v);
-  }, [signedIn, session("u-1"), seed]);
+  }, start);
 
   await page.goto(`http://localhost:${PORT}${path}`, { waitUntil: "load" });
   await page.waitForTimeout(2200);
@@ -374,7 +461,7 @@ console.log("\nthe account page");
   is("the account's face carries the picture", await faceImg.count(), 1);
   is("and it is the one the session names", await faceImg.getAttribute("src"), AVATAR);
   ok("and the browser was allowed to fetch it",
-    await faceImg.evaluate((el) => el.naturalWidth > 0));
+    await faceImg.evaluate((el: HTMLImageElement) => el.naturalWidth > 0));
   ok("the initial is still under it, for a picture that will not load",
     (await page.locator("#account-face").textContent())?.trim() === "R");
   is("and the host is not told which page it is on",
@@ -446,7 +533,7 @@ console.log("\nthe account page");
     await money.locator(".ladder-go .mono").textContent(), "Carry on");
   ok("and points at a lesson that has not been ticked",
     !["/money/terms/share.html", "/money/terms/dse.html"]
-      .includes(await money.locator(".ladder-go").getAttribute("href")),
+      .includes(await money.locator(".ladder-go").getAttribute("href") ?? ""),
     await money.locator(".ladder-go").getAttribute("href"));
 
   /* A school nobody has opened is quieter, and says so rather
@@ -459,7 +546,7 @@ console.log("\nthe account page");
   /* Each row wears its own school's colour, from the one table
      the menu comes from. */
   is("every bar wears its school's own accent",
-    await page.locator(".ladder-row").evaluateAll((rows) =>
+    await page.locator(".ladder-row").evaluateAll((rows: HTMLElement[]) =>
       [...new Set(rows.map((r) => r.style.getPropertyValue("--accent")))].length), 4);
 
   await page.getByRole("tab", { name: "Reading list" }).click();
@@ -527,12 +614,20 @@ console.log("\nreading preferences");
   const scaleNow = () => page.evaluate(() =>
     getComputedStyle(document.documentElement).getPropertyValue("--read-scale").trim());
 
+  /** One field of the stored preferences. Read out of the browser
+      as text and narrowed here, because a function handed to
+      `page.evaluate` is serialised and cannot close over one. */
+  const stored = async (field: string): Promise<unknown> => {
+    const raw = await page.evaluate(() => localStorage.getItem("reader-prefs"));
+    const prefs: unknown = raw === null ? null : JSON.parse(raw);
+    return isObject(prefs) ? prefs[field] : undefined;
+  };
+
   await page.getByRole("button", { name: /Comfortable/ }).click();
   await page.waitForTimeout(300);
 
   is("pressing Comfortable moves the type", await scaleNow(), "1.12");
-  is("and is remembered", await page.evaluate(() =>
-    JSON.parse(localStorage.getItem("reader-prefs")).text), "large");
+  is("and is remembered", await stored("text"), "large");
 
   await page.getByRole("button", { name: /Narrow/ }).click();
   await page.waitForTimeout(300);
@@ -549,7 +644,7 @@ console.log("\nreading preferences");
   /* ---- what the glass is made of ----
 
      Three settings under one heading, and the reason they are
-     checked here rather than in `interactive.test.mjs` is the
+     checked here rather than in `interactive.test.ts` is the
      same reason the four above are: the markup is right whether
      or not a press reaches `<html>`, and `<html>` is the whole
      mechanism. `data-glass` names the material and the two custom
@@ -561,12 +656,10 @@ console.log("\nreading preferences");
      and the other seven sections of this page are in the document
      too. */
   const prefs = page.locator("#account-prefs");
-  const onHtml = (name) => page.evaluate(
-    (n) => document.documentElement.getAttribute(n), name);
-  const propNow = (name) => page.evaluate(
-    (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), name);
-  const stored = (field) => page.evaluate(
-    (f) => JSON.parse(localStorage.getItem("reader-prefs"))[f], field);
+  const onHtml = (name: string) => page.evaluate(
+    (n: string) => document.documentElement.getAttribute(n), name);
+  const propNow = (name: string) => page.evaluate(
+    (n: string) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), name);
 
   is("the glass has its own heading",
     await page.locator("#prefs-glass").textContent(), "What the glass is made of");
@@ -621,9 +714,10 @@ console.log("\nadding a target");
 
   const sent = state.sent.find((s) => s.table === "targets" && s.method === "POST");
   ok("it was sent to the account", Boolean(sent));
-  is("as a habit", sent?.body?.[0]?.kind, "habit");
-  is("with the number on it", sent?.body?.[0]?.target, 5);
-  is("and a sentence a person would write", sent?.body?.[0]?.label, "Read on 5 days a week");
+  const row = asRows(sent?.body)[0] ?? {};
+  is("as a habit", row.kind, "habit");
+  is("with the number on it", row.target, 5);
+  is("and a sentence a person would write", row.label, "Read on 5 days a week");
   is("no page errors", errors.length ? errors[0] : "none", "none");
   await context.close();
 }
@@ -748,12 +842,18 @@ console.log("\nsetting the account up, then changing it");
 
   const sent = state.sent.find((x) => x.table === "profiles" && x.method === "PATCH");
   ok("the answers reach the account", Boolean(sent));
-  is("the name", sent?.body?.display_name, "Rony");
-  is("the pace", sent?.body?.pace, "often");
+  const body = sent?.body;
+  const patch: Record<string, unknown> = isObject(body) ? body : {};
+  is("the name", patch.display_name, "Rony");
+  is("the pace", patch.pace, "often");
   /* Union, not replacement: the school they follow and the school
      they have already started, both. */
-  is("and both courses", [...(sent?.body?.following ?? [])].sort(), ["deutsch", "money"]);
-  ok("answered, so it stops asking", Boolean(sent?.body?.setup_at));
+  const following = patch.following;
+  is("and both courses",
+    (Array.isArray(following) ? following.filter((c): c is string => typeof c === "string") : [])
+      .sort(),
+    ["deutsch", "money"]);
+  ok("answered, so it stops asking", Boolean(patch.setup_at));
 
   is("and the form reframes at once, without a reload",
     await page.locator("#settings-label").textContent(), "Your settings");
@@ -787,7 +887,7 @@ console.log("\nerasing everything");
 
   await page.getByRole("tab", { name: "Your data" }).click();
   await page.waitForTimeout(200);
-  page.on("dialog", (d) => d.accept());
+  page.on("dialog", (d: Dialog) => d.accept());
   await page.locator("#account-forget").click();
   await page.waitForTimeout(1400);
 
@@ -831,14 +931,20 @@ console.log("\ntaking a copy of everything");
     file.suggestedFilename());
 
   const stream = await file.createReadStream();
-  const chunks = [];
-  for await (const chunk of stream) chunks.push(chunk);
-  const bundle = JSON.parse(Buffer.concat(chunks).toString());
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+  /* Narrowed rather than trusted: the whole claim of this block is
+     that the file holds five things, so reading it as a shape
+     already agreed on would be checking the shape and not the
+     file. */
+  const parsed: unknown = JSON.parse(Buffer.concat(chunks).toString());
+  const took: Record<string, unknown> = isObject(parsed) ? parsed : {};
 
-  ok("it holds the progress", Array.isArray(bundle.progress?.["learn-read"]));
-  ok("the reading list", bundle.library?.length === 1);
-  ok("the profile", bundle.profile?.display_name === "Rony Reiad");
-  ok("and says what it is", typeof bundle.what === "string" && bundle.what.length > 10);
+  ok("it holds the progress",
+    isObject(took.progress) && Array.isArray(took.progress["learn-read"]));
+  ok("the reading list", Array.isArray(took.library) && took.library.length === 1);
+  ok("the profile", isObject(took.profile) && took.profile.display_name === "Rony Reiad");
+  ok("and says what it is", typeof took.what === "string" && took.what.length > 10);
   is("no page errors", errors.length ? errors[0] : "none", "none");
   await context.close();
 }

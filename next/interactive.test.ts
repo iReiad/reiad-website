@@ -1,8 +1,8 @@
 /* ============================================================
-   interactive.test.mjs: does what a page's own module writes into
+   interactive.test.ts: does what a page's own module writes into
    it survive the page being a route?
 
-     node next/interactive.test.mjs
+     node next/interactive.test.ts
 
    Needs `npx next build` in `next/` first, and a browser. Without
    either it says which one is missing and skips, and a skip is not
@@ -11,12 +11,12 @@
    ---- what it is for ----
 
    Every calculator on this site went blank on the day its page
-   stopped being a file. `parity.test.mjs` could not see it and
+   stopped being a file. `parity.test.ts` could not see it and
    neither could any other check here, because all of them read
    HTML: the markup was right, the module was right, the module ran
    and computed the right number, and then React's hydration put
    the empty markup back. Nothing but a browser can tell those two
-   apart, which is the same argument `app/desk.test.mjs` makes for
+   apart, which is the same argument `app/desk.test.ts` makes for
    the desk and is why this file looks like that one.
 
    So each case below names a page and something in it that ONLY
@@ -29,13 +29,14 @@
    Next prerendered, the chunks it built beside it, and everything
    else out of `aab/`, which is exactly the split `wrangler.toml`
    describes. The dynamic routes are not here: they need the
-   database, and `parity.test.mjs` is where they are asked about.
+   database, and `parity.test.ts` is where they are asked about.
    ============================================================ */
 
 import { createServer } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Page, Route } from "playwright";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BUILD = join(HERE, ".next");
@@ -47,7 +48,8 @@ const PORT = 8991;
    ships a placeholder for that thing, the placeholder is named
    too: an element that exists in the page either way proves
    nothing, and this is a check about whether anything filled it. */
-const CASES = [
+type Case = [url: string, file: string, selector: string, what: string, placeholder?: string];
+const CASES: Case[] = [
   /* The home page is not here any more. It carried `#kinetic`, a
      headline `/app.js` rebuilt one span per word, and the front
      door has no such thing since Stage 11.8: it renders three
@@ -100,25 +102,30 @@ const CASES = [
    the skills list now, so there is one door and nothing left to
    refine. Anything a browser still has stored under `track` is
    ignored. */
-const READERS = [
+type Reader = [who: string, audience: string | null, track: string | null, expected: string];
+const READERS: Reader[] = [
   ["a reader who has just arrived", null, null, "open"],
   ["a learner", "learn", null, "learn"],
   ["a reader here for work", "work", null, "work"],
 ];
 
 let passed = 0;
-const failures = [];
-const ok = (name, condition, detail = "") => {
+const failures: string[] = [];
+/** `detail` is whatever the page said, and a locator says null
+    where there was nothing to say. */
+const ok = (name: string, condition: unknown, detail: string | null = ""): void => {
   if (condition) { passed++; return; }
   failures.push(detail ? `${name}: ${detail}` : name);
 };
 
-const skip = (why) => {
+/** Says why, and does not come back: `never` rather than `void`,
+    so the browser below is not optional once this line is past. */
+const skip: (why: string) => never = (why) => {
   console.log(`interactive: SKIPPED, ${why}`);
   process.exit(0);
 };
 
-const exists = (path) => stat(path).then(() => true, () => false);
+const exists = (path: string): Promise<boolean> => stat(path).then(() => true, () => false);
 
 /* ---- the two things this cannot run without ---- */
 
@@ -131,12 +138,18 @@ const browserPath = process.env.CHROMIUM_PATH
     ? "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
     : null);
 
-let chromium;
-try {
-  ({ chromium } = await import("../app/node_modules/playwright/index.mjs"));
-} catch {
+/* The runtime import is the real path, because node resolves a
+   file on disk; the types come from the same package through the
+   `paths` entry in `tsconfig.json`. The specifier is a VARIABLE
+   because a literal is analysed, and a relative path `paths`
+   cannot map is a module with no declaration. */
+const PLAYWRIGHT = "../app/node_modules/playwright/index.mjs";
+const playwright = await import(PLAYWRIGHT)
+  .then((m) => m as typeof import("playwright"), () => null);
+if (!playwright) {
   skip("playwright is not installed. It is a devDependency of app/: `cd app && npm install`.");
 }
+const { chromium } = playwright;
 if (!browserPath && !process.env.CHROMIUM_PATH) {
   try {
     chromium.executablePath();
@@ -147,7 +160,7 @@ if (!browserPath && !process.env.CHROMIUM_PATH) {
 
 /* ---- the site, served the way Cloudflare serves it ---- */
 
-const TYPES = {
+const TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".mjs": "text/javascript; charset=utf-8",
@@ -166,7 +179,7 @@ const TYPES = {
    but "one introduction shows and the page fits a screen", which
    is the block at the foot of this file. Leaving it out of both
    is how it silently started 404ing. */
-const PRERENDERED = {
+const PRERENDERED: Record<string, string> = {
   ...Object.fromEntries(CASES.map(([url, file]) => [url, file])),
   "/": "index.html",
   /* Not one of the cases either: what the contact form proves is
@@ -176,9 +189,10 @@ const PRERENDERED = {
 };
 
 const server = createServer(async (req, res) => {
-  const path = new URL(req.url, "http://x").pathname;
-  const file = PRERENDERED[path]
-    ? join(BUILD, "server/app", PRERENDERED[path])
+  const path = new URL(req.url ?? "/", "http://x").pathname;
+  const prerendered = PRERENDERED[path];
+  const file = prerendered
+    ? join(BUILD, "server/app", prerendered)
     : path.startsWith("/_next/static/")
       ? join(BUILD, "static", path.slice("/_next/static/".length))
       : join(AAB, path.replace(/^\//, ""));
@@ -191,22 +205,33 @@ const server = createServer(async (req, res) => {
     res.end("not found");
   }
 });
-await new Promise((resolve) => server.listen(PORT, resolve));
+await new Promise<void>((resolve) => { server.listen(PORT, () => resolve()); });
 
 const browser = await chromium.launch(browserPath ? { executablePath: browserPath } : {});
 
+/** What one load of a page leaves behind. */
+interface Loaded {
+  page: Page;
+  errors: string[];
+}
+
+/** What a reader's browser remembers before the page opens: the
+    audience they chose, and the track they chose before that axis
+    went. */
+type Remembers = [audience: string | null, track: string | null];
+
 /** One page, loaded and left alone for a moment: a module that
     draws a chart is allowed to take longer than the load event. */
-const open = async (path, remembers) => {
+const open = async (path: string, remembers?: Remembers): Promise<Loaded> => {
   const page = await browser.newPage();
-  const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
+  const errors: string[] = [];
+  page.on("pageerror", (e: Error) => { errors.push(e.message); });
   /* The webfonts are the one thing here that is not this site's,
      and a test that needs Google to answer is a test that goes red
      on somebody else's afternoon. */
-  await page.route("https://fonts.googleapis.com/**", (r) => r.abort());
+  await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
   if (remembers) {
-    await page.addInitScript(([a, k]) => {
+    await page.addInitScript(([a, k]: Remembers) => {
       if (a) localStorage.setItem("audience", a);
       if (k) localStorage.setItem("track", k);
     }, remembers);
@@ -219,13 +244,17 @@ const open = async (path, remembers) => {
 for (const [url, , selector, what, placeholder] of CASES) {
   const { page, errors } = await open(url);
 
-  const found = await page.evaluate(([s, empty]) => {
+  /* The argument is a TUPLE and is annotated as one on both
+     sides: inferred, it is an array of the union of its two
+     members, and the function then cannot say which is which. */
+  const asked: [string, string | undefined] = [selector, placeholder];
+  const found = await page.evaluate(([s, empty]: [string, string | undefined]) => {
     const nodes = [...document.querySelectorAll(s)];
     if (!nodes.length) return "nothing matches";
     if (empty === undefined) return null;
     const text = (nodes[0].textContent || "").trim();
     return text && text !== empty ? null : `still reads "${text}"`;
-  }, [selector, placeholder]);
+  }, asked);
   ok(`${url} has ${what}`, found === null, `${found} ${selector}`);
 
   /* React error #418 and its neighbours are what a hydration
@@ -240,9 +269,10 @@ for (const [url, , selector, what, placeholder] of CASES) {
 for (const [who, audience, track, expected] of READERS) {
   const { page } = await open("/", [audience, track]);
 
-  const shown = await page.evaluate(() => [...document.querySelectorAll("[data-when]")]
-    .filter((el) => getComputedStyle(el).display !== "none")
-    .map((el) => el.dataset.when));
+  const shown = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>("[data-when]")]
+      .filter((el) => getComputedStyle(el).display !== "none")
+      .map((el) => el.dataset.when));
 
   ok(`the home page shows ${who} one introduction`,
     shown.length > 0 && new Set(shown).size === 1 && shown[0] === expected,
@@ -265,8 +295,9 @@ for (const [who, audience, track, expected] of READERS) {
   }));
   ok(`the deck stands under the hero for ${who}`, deck.tiles.length >= 8,
     `${deck.tiles.length} tiles`);
-  const wantFeatured = { open: "/tools/live.html", learn: "/money/index.html",
-    work: "/portfolio.html" }[expected];
+  const featured: Record<string, string> = { open: "/tools/live.html",
+    learn: "/money/index.html", work: "/portfolio.html" };
+  const wantFeatured = featured[expected];
   ok(`and the featured card answers ${who}`, deck.featured === wantFeatured,
     `featured ${deck.featured}, expected ${wantFeatured}`);
 
@@ -304,7 +335,7 @@ for (const width of [360, 390, 412]) {
   await page.goto(`http://localhost:${PORT}/skills/index.html`, { waitUntil: "load" });
   await page.waitForTimeout(900);
 
-  const box = (sel) => page.evaluate((s) => {
+  const box = (sel: string) => page.evaluate((s: string) => {
     const e = document.querySelector(s);
     if (!e || getComputedStyle(e).display === "none") return null;
     const r = e.getBoundingClientRect();
@@ -314,8 +345,12 @@ for (const width of [360, 390, 412]) {
   const burger = await box(".drawer-btn");
   ok(`${width}px: the bar has a burger`, burger !== null);
 
-  /* Open it by pressing the burger where a thumb would. */
+  /* Open it by pressing the burger where a thumb would. There is
+     nothing to press if the check above already failed, and it
+     has recorded that; going on would report the same absence a
+     second time as eight different failures. */
   const b = await page.locator(".drawer-btn").boundingBox();
+  if (!b) { await page.close(); continue; }
   const x = b.x + b.width / 2, y = b.y + b.height / 2;
   await page.mouse.click(x, y);
   await page.waitForTimeout(700);
@@ -327,14 +362,15 @@ for (const width of [360, 390, 412]) {
     await box(".drawer-close") === burger,
     `burger ${burger}, close ${await box(".drawer-close")}`);
 
+  const thumb: [number, number] = [x, y];
   ok(`${width}px: that pixel now belongs to the close button`,
-    await page.evaluate(([px, py]) =>
-      !!document.elementFromPoint(px, py)?.closest(".drawer-close"), [x, y]));
+    await page.evaluate(([px, py]: [number, number]) =>
+      !!document.elementFromPoint(px, py)?.closest(".drawer-close"), thumb));
 
   /* The drawer's column is built from the button, so everything
      that is not indented starts on its line. */
   const lefts = await page.evaluate(() => {
-    const l = (s) => { const e = document.querySelector(s);
+    const l = (s: string) => { const e = document.querySelector(s);
       return e ? Math.round(e.getBoundingClientRect().left) : null; };
     return { close: l(".drawer-close"), group: l(".rail-nav .rail-label"),
              askLabel: l(".rail-audience .rail-label"),
@@ -404,7 +440,7 @@ for (const width of [360, 390, 412]) {
   await page.goto(`http://localhost:${PORT}/skills/index.html`, { waitUntil: "load" });
   await page.waitForTimeout(900);
   const state = await page.evaluate(() => {
-    const shown = (s) => { const e = document.querySelector(s);
+    const shown = (s: string) => { const e = document.querySelector(s);
       return !!e && getComputedStyle(e).display !== "none"; };
     return { burger: shown(".drawer-btn"), close: shown(".drawer-close"),
              railMark: shown(".rail-mark"), barMark: shown(".topbar-mark"),
@@ -437,21 +473,23 @@ for (const width of [360, 390, 412]) {
    the component could have swallowed them into state and the
    page would look identical.
    ============================================================ */
-for (const [label, api, web3, expect] of [
+type Sending = [label: string, api: boolean, web3: boolean, expected: RegExp];
+const SENDING: Sending[] = [
   ["the site's own endpoint answers", true, true, /^Sent/],
   ["it does not, and Web3Forms catches it", false, true, /^Sent/],
   ["neither does, and it says so", false, false, /^Couldn't send/],
-]) {
+];
+for (const [label, api, web3, expected] of SENDING) {
   const page = await browser.newPage({ viewport: { width: 1180, height: 900 } });
-  const errors = [];
-  page.on("pageerror", (e) => errors.push(e.message));
-  await page.route("https://fonts.googleapis.com/**", (r) => r.abort());
+  const errors: string[] = [];
+  page.on("pageerror", (e: Error) => { errors.push(e.message); });
+  await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
 
   let posted = 0;
-  await page.route("**/api/**", (r) => r.fulfill({
+  await page.route("**/api/**", (r: Route) => r.fulfill({
     status: 200, contentType: "application/json", body: JSON.stringify({ ok: api }),
   }));
-  await page.route("https://api.web3forms.com/**", (r) => {
+  await page.route("https://api.web3forms.com/**", (r: Route) => {
     posted += 1;
     return r.fulfill({ status: 200, contentType: "application/json",
       body: JSON.stringify({ success: web3, message: "x" }) });
@@ -477,7 +515,7 @@ for (const [label, api, web3, expect] of [
   await page.waitForTimeout(1200);
 
   const said = await page.locator("#form-status").textContent();
-  ok(`${label}: it says what happened`, expect.test(said ?? ""), said);
+  ok(`${label}: it says what happened`, expected.test(said ?? ""), said);
   ok(`${label}: and falls through only when it has to`,
     api ? posted === 0 : posted === 1, `web3 posts: ${posted}`);
   ok(`${label}: no page errors`, errors.length === 0, errors[0]);

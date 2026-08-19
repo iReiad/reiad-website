@@ -7,8 +7,8 @@
    THE GAP THIS CLOSES
 
    Every browser test in this repository drives a PRERENDERED
-   page: `interactive.test.mjs` serves Next's output files from a
-   little static server, `account.test.mjs` and `app/desk.test.mjs`
+   page: `interactive.test.ts` serves Next's output files from a
+   little static server, `account.test.ts` and `app/desk.test.ts`
    do the same for theirs. An article is not prerendered. It is
    rendered per request out of D1, so none of them could reach it,
    and a client component on it was verified for its first paint
@@ -29,7 +29,7 @@
    localhost, and that is why. `scripts/check-preview.ts` is what
    asks a deployed preview anything, over fetch.
 
-   `dev-worker.ts` is the boot, shared with `parity.test.mjs`.
+   `dev-worker.ts` is the boot, shared with `parity.test.ts`.
    ============================================================ */
 
 import { dirname, extname, join } from "node:path";
@@ -92,7 +92,7 @@ if (!browserPath) {
 /* ---------- one piece, invented ----------
 
    A slug nothing will ever be called, on the same reasoning
-   `parity.test.mjs` gives for `rate-cycle`: a fixture that
+   `parity.test.ts` gives for `rate-cycle`: a fixture that
    collides with a real piece tests the fixture. */
 const ARTICLE = {
   slug: "browser-fixture", section: "insights", lang: "en",

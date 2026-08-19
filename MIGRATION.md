@@ -225,7 +225,7 @@ that has never existed under any extension. Following each one up
 gave opposite answers:
 
 - the component's `schriftKey()` **was** held, all along, by
-  `aab/schools/workbook.test.mjs`, which renders the real
+  `aab/schools/workbook.test.ts`, which renders the real
   component into a DOM, types into a box and asserts the writing
   came back under `area.dataset.schrift`. The guarantee was real
   and the pointer named the wrong file, which is the worse of the
@@ -282,29 +282,33 @@ kept growing: five `.mjs` test files are five neighbours to copy,
 and the first thing written after `scripts/` finished was a sixth
 and a seventh.
 
-**Done (8):** `comments.test.ts` `article.test.ts` `dev-worker.ts`
+**Done (12):** `comments.test.ts` `article.test.ts` `dev-worker.ts`
 `insights-hub.test.ts` `read-aloud.test.ts` `market-pulse.test.ts`
-`hydrate-fixture.ts` `research.test.ts`.
+`hydrate-fixture.ts` `research.test.ts` `parity.test.ts`
+`interactive.test.ts` `account.test.ts` `progress.test.ts`.
 
-The last five are new rather than converted, and the harness is
+Five of those are new rather than converted, and the harness is
 the point of them. `hydrate-fixture.ts` renders one component the
 way a route renders it, serves that markup with a script that
 hydrates it, and opens a browser on the result. Both dynamic routes
-are `force-dynamic`, so `interactive.test.mjs` cannot serve either
+are `force-dynamic`, so `interactive.test.ts` cannot serve either
 and the only other way in is `dev-worker.ts`, which is the whole
 OpenNext build on workerd. Both are excluded from
 `next/tsconfig.json` and checked by `tsconfig.test.json`, for the
 reason written beside that line.
 
-**Left (4):** `parity.test.mjs` (1,222 lines and the most valuable
-test here, so it goes last), `interactive.test.mjs`,
-`account.test.mjs`, `progress.test.mjs`. `postcss.config.mjs` is
-not one of them: a PostCSS config is read by the tool, not by us.
+**Left (0).** `postcss.config.mjs` is not one: a PostCSS config is
+read by the tool, not by us.
 
-Nothing extra is needed to hold these to their types.
-`next build` typechecks everything in `next/tsconfig.json` and
-fails on an error, which is how the three above were caught with
-44 of them between them, all of which a rename would have left.
+`next/tsconfig.test.json` is what holds these to their types, and
+its `include` already covers `*.test.ts`, so a rename puts a file
+under `strict` the moment it lands. `scripts/check-types.ts` runs
+that config. The four converted last needed real types for the
+same three things each time: the playwright import, which is the
+`.mjs` path at runtime and the `playwright` types through `paths`;
+a `JSON.parse` result, narrowed rather than asserted; and the
+argument handed to `page.evaluate`, which is a tuple and is
+inferred as a union without one.
 
 ### Worker
 
@@ -332,6 +336,34 @@ Converting `sanitise` broke `check-css.ts`, which read `ALLOWED_CLASSES` with
 a regex that had no room for `: Set<string>` between the name and the `=`.
 The check was right to fail and its parser now reads both forms. Expect the
 same from any check that greps a source file.
+
+**The three tests under `_lib/` converted on 19 August 2026**, and the
+rename was the smaller half of it. Nothing in `functions/` typechecks by
+default: wrangler's esbuild reads no tsconfig at all, so a `.ts` here is
+annotations nothing reads. `functions/tsconfig.test.json` is what holds
+them to theirs and `check-types.ts` runs it, on the root install, so it
+runs in CI as well.
+
+`notion.test.ts` imports the one module it tests that is still
+JavaScript, so `_lib/notion.d.ts` describes the six exports it uses and
+nothing else. It goes on the day `notion.js` becomes `notion.ts`: a
+module that has converted describes itself, which is the same end state
+`aab/src/types/` has.
+
+### app/
+
+Two files, and both are browser tests: `desk.test.ts` and
+`studio.test.ts`, converted on 19 August 2026. There is no JavaScript
+and no `.mjs` left in this workspace.
+
+They are NOT in `app/tsconfig.json`, and that is the point of the
+second config rather than an oversight. That one is the BUILD, run by
+`tsc -b` before Vite with an `include` of `src`, so a test in it would
+hold the desk's own build to Playwright being installed. That is the
+mistake `next/tsconfig.test.json` was split out for after it failed a
+deploy. `app/tsconfig.test.json` is the second config, `check-types.ts`
+runs it, and where `app/node_modules` is absent it skips and says which
+directory to install in.
 
 ### Shared
 

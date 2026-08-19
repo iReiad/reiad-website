@@ -70,7 +70,7 @@
    Nothing here carries a class that exists only to be selected. A
    section is addressed by its `id`, which it needs anyway for the
    menu's fragments, and the rail is a labelled `<nav>`, which is
-   what `next/account.test.mjs` asks for.
+   what `next/account.test.ts` asks for.
 
    ---- and it is still filled entirely by a script ----
 

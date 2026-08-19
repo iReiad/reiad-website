@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* ============================================================
-   progress.test.mjs: the money school's ticks.
+   progress.test.ts: the money school's ticks.
 
-       node next/progress.test.mjs
+       node next/progress.test.ts
 
    No browser and no build: the module is `localStorage` and
    arithmetic, so a shim is enough and this can run beside the
@@ -32,29 +32,63 @@
    reader would notice.
    ============================================================ */
 
-/* ---------- the smallest browser that will do ---------- */
+/* A module, said out loud. Nothing imports this file and every
+   import in it is dynamic, so there is no module syntax for node
+   or for tsc to find, and the top-level `await` below is only
+   legal in a module. It survives type stripping, which an
+   `import type` would not. */
+export {};
 
-const store = new Map();
-globalThis.localStorage = {
-  getItem: (k) => (store.has(k) ? store.get(k) : null),
-  setItem: (k, v) => store.set(k, String(v)),
-  removeItem: (k) => store.delete(k),
+/* ---------- the smallest browser that will do ----------
+
+   Two globals rather than three: `CustomEvent` is node's own and
+   has been since node 19, so `announce()` builds a real one.
+   `window` is a real `EventTarget` for the same reason, which is
+   also why it is installed rather than assigned: the DOM type of
+   `window` is `Window & typeof globalThis`, and a cast to that
+   would claim a browser this is not. */
+
+const store = new Map<string, string>();
+
+const storage: Storage = {
+  get length() { return store.size; },
+  key: (i) => [...store.keys()][i] ?? null,
+  getItem: (k) => store.get(k) ?? null,
+  setItem: (k, v) => { store.set(k, String(v)); },
+  removeItem: (k) => { store.delete(k); },
+  clear: () => { store.clear(); },
 };
-globalThis.CustomEvent = class { constructor(type) { this.type = type; } };
-globalThis.window = {
-  dispatchEvent() {}, addEventListener() {}, removeEventListener() {},
-};
+globalThis.localStorage = storage;
+Object.defineProperty(globalThis, "window", {
+  value: new EventTarget(), writable: true, configurable: true,
+});
 
 const P = await import("./lib/progress.ts");
 
 let passed = 0;
-const failures = [];
-const ok = (what, cond, detail = "") => {
+const failures: string[] = [];
+const ok = (what: string, cond: unknown, detail = ""): void => {
   if (cond) { passed++; console.log(`  ok   ${what}`); }
   else { failures.push(`${what}${detail ? `: ${detail}` : ""}`); console.log(`  FAIL ${what}   ${detail}`); }
 };
 const reset = () => store.clear();
-const stored = (key) => JSON.parse(store.get(key) ?? "null");
+
+/** What a key holds, narrowed rather than asserted: `JSON.parse`
+    promises nothing about what it found, and an absent key and a
+    key full of rubbish are the same answer here because they are
+    the same answer to the module. */
+const storedIds = (key: string): string[] => {
+  const value: unknown = JSON.parse(store.get(key) ?? "null");
+  return Array.isArray(value) ? value.filter((id): id is string => typeof id === "string") : [];
+};
+
+/** A bookmark, of which only the id decides anything. */
+const storedMark = (key: string): { id: string } | null => {
+  const value: unknown = JSON.parse(store.get(key) ?? "null");
+  if (typeof value !== "object" || value === null || !("id" in value)) return null;
+  const id: unknown = value.id;
+  return typeof id === "string" ? { id } : null;
+};
 
 /* ============================================================
    1. Reading a page must not cost a reader their ticks
@@ -69,12 +103,12 @@ console.log("\n--- reading never writes ---");
   const set = P.readSet("money");
   ok("a lesson page still sees all forty ticks", set.size === 40, `saw ${set.size}`);
   ok("and storage is untouched by having been read",
-    stored("learn-read").length === 40, `${stored("learn-read").length} left`);
+    storedIds("learn-read").length === 40, `${storedIds("learn-read").length} left`);
 
   /* What the hub does: one meter per stage, several times over. */
   for (let i = 0; i < 8; i++) P.readSet("money");
   ok("eight stage meters in a row leave all forty",
-    stored("learn-read").length === 40, `${stored("learn-read").length} left`);
+    storedIds("learn-read").length === 40, `${storedIds("learn-read").length} left`);
 
   /* An id from another school, left by an old bug, is inert
      rather than something to go and delete. */
@@ -94,22 +128,24 @@ console.log("\n--- the storage keys ---");
   reset();
   P.markRead("money", "basics-1/l1");
   ok("the money school writes `learn-read`, not `money-read`",
-    stored("learn-read")?.length === 1 && store.get("money-read") === undefined);
+    storedIds("learn-read").length === 1 && store.get("money-read") === undefined);
 
   reset();
   P.markRead("quran", "dhap-1/dars-1");
   ok("the Qur'anic Arabic school writes `quran-done`",
-    stored("quran-done")?.length === 1);
+    storedIds("quran-done").length === 1);
 
-  for (const [school, key] of [["deutsch", "deutsch-read"], ["english", "english-read"]]) {
+  const pairs: Array<[school: string, key: string]> = [
+    ["deutsch", "deutsch-read"], ["english", "english-read"]];
+  for (const [school, key] of pairs) {
     reset();
     P.markRead(school, "x/y");
-    ok(`the ${school} school writes \`${key}\``, stored(key)?.length === 1);
+    ok(`the ${school} school writes \`${key}\``, storedIds(key).length === 1);
   }
 
   reset();
   P.setLast("money", { id: "a", title: "t", stage: "s", url: "/money/a/" });
-  ok("the money school's bookmark is `learn-last`", stored("learn-last")?.id === "a");
+  ok("the money school's bookmark is `learn-last`", storedMark("learn-last")?.id === "a");
 }
 
 /* ============================================================

@@ -19,7 +19,7 @@
    Both halves do nothing at all until React has hydrated: one is a
    click and the other is an effect. Reading the markup would show
    a chip row and a hidden form and say nothing about either, which
-   is exactly the shape `interactive.test.mjs` exists for, and
+   is exactly the shape `interactive.test.ts` exists for, and
    `/insights.html` is `force-dynamic` so that file cannot serve
    it. `hydrate-fixture.ts` is the smaller way in: the components,
    server-rendered and hydrated, on a page of their own.

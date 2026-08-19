@@ -33,7 +33,7 @@
    this needs no network at all, and a policy should not be
    widened to permit a request that never had to be made.
 
-   `aab/studio-publish.test.mjs` drives a real publish under the
+   `aab/studio-publish.test.ts` drives a real publish under the
    real policy, read out of `_headers`, and fails loudly if this
    regresses.
    ---- this file is TypeScript, and the .js beside it is built ----

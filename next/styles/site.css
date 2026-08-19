@@ -9109,7 +9109,7 @@ German for day, and .tag is what the site has always called
      it was designed at. The burger measured 40px against the
      close button's 42 on a 412px phone, so the button moved a
      pixel under the thumb that had just pressed it, and
-     `interactive.test.mjs` is the check that says those two are
+     `interactive.test.ts` is the check that says those two are
      the same box.
 
      The mark is the one thing here that MAY shrink: it is a

@@ -141,7 +141,7 @@ with it: English files a day as `term-1/day-3` and German as
 the English ticks were written correctly by `toggleDay` and
 looked for under a name nothing had ever used.
 
-`aab/schools/workbook.test.mjs`, 40 checks, drives both books
+`aab/schools/workbook.test.ts`, 40 checks, drives both books
 against the route's own markup.
 
 ## Phase 4. Audit each check, then move it
@@ -283,7 +283,7 @@ permanent 301 and keeps answering forever:
 | `next/lib/nav.ts` | sixteen hrefs, and it is the one table |
 | `stageUrl`, `lessonUrl`, `stageBase` in `shared/schools.ts` | which is where 251 of them are computed |
 | every `<a href>` in a lesson body | in D1, so one UPDATE and a re-export |
-| the canonicals, `sitemap.xml`, `feed.xml`, `og:url` | `build-meta.mjs` writes these |
+| the canonicals, `sitemap.xml`, `feed.xml`, `og:url` | `build-meta.ts` writes these |
 | `aab/_redirects` | one line per old address |
 | `check-routes.ts` | a new rule: no internal link ends in `.html` |
 
@@ -304,8 +304,8 @@ a better idiom than a custom script:
 
 | now | becomes |
 | --- | --- |
-| `build-og.mjs`, 418 lines | `opengraph-image.tsx`, which also retires the 2.1 MB `og/` directory |
-| `build-meta.mjs`, 161 lines | `sitemap.ts`, `robots.ts`, and a route handler for the feed |
+| `build-og.ts`, 418 lines | `opengraph-image.tsx`, which also retires the 2.1 MB `og/` directory |
+| `build-meta.ts`, 161 lines | `sitemap.ts`, `robots.ts`, and a route handler for the feed |
 
 ---
 

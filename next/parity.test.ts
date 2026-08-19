@@ -1,9 +1,9 @@
 /* ============================================================
-   parity.test.mjs: does the Next.js route render the same
+   parity.test.ts: does the Next.js route render the same
    article as the Worker does?
 
      cd next && npm run build && npx opennextjs-cloudflare build
-     node next/parity.test.mjs
+     node next/parity.test.ts
 
    OPTIONAL, like the browser tests: it needs the OpenNext build
    to have run, and it skips with a note if `.open-next/worker.js`
@@ -50,6 +50,7 @@ import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Row } from "../scripts/schools-snapshot.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PORT = 8787;
@@ -62,7 +63,24 @@ if (!existsSync(join(here, ".open-next/worker.js"))) {
 
 /* ---------- the article both renderers are given ---------- */
 
-const ARTICLE = {
+/** One row of `articles`, as this fixture writes it. */
+interface Article {
+  slug: string;
+  section: string;
+  lang: string;
+  title: string;
+  dek: string;
+  tag: string;
+  topics: string;
+  body: string;
+  cover: string;
+  minutes: number;
+  status: string;
+  published_at: string;
+  updated_at: string;
+}
+
+const ARTICLE: Article = {
   /* Not the slug of anything real. `dse-basics` was the obvious
      choice and is wrong: it is one of the pieces still committed
      as a file, so seeding it into D1 made the check below that
@@ -96,7 +114,7 @@ const ARTICLE = {
 
 const state = mkdtempSync(join(tmpdir(), "reiad-parity-"));
 
-const d1 = (sql) => execFileSync(
+const d1 = (sql: string) => execFileSync(
   "npx",
   ["wrangler", "d1", "execute", "reiad", "--local", "--persist-to", state, "--command", sql],
   { cwd: here, stdio: "pipe" },
@@ -110,28 +128,31 @@ const d1 = (sql) => execFileSync(
    Slugs nothing will ever be called, on the same reasoning as
    `rate-cycle` above: a fixture that collides with a real piece
    tests the fixture. */
-const KITCHEN = {
+const KITCHEN: Article = {
   ...ARTICLE,
   slug: "parity-kitchen", section: "cooking", lang: "bn",
   title: "পেঁয়াজ কাটার আসল নিয়ম", dek: "শিরা বরাবর কাটলে কী বদলায়।",
   tag: "রান্নাঘর · উপকরণ", topics: "উপকরণ|কৌশল", minutes: 12,
   cover: "", published_at: "2026-07-02",
 };
-const DESK = {
+const DESK: Article = {
   ...ARTICLE,
   slug: "parity-travel", section: "travel", lang: "bn",
   title: "ভিসার কাগজপত্র", dek: "কোন কাগজে সবচেয়ে বেশি নজর পড়ে।",
   tag: "ভ্রমণ · ভিসা", topics: "ভিসা", minutes: 9,
   cover: "", published_at: "2026-07-03",
 };
-const DRAFT = {
+const DRAFT: Article = {
   ...ARTICLE,
   slug: "parity-draft", section: "insights", status: "draft",
   title: "Not published yet", published_at: "",
 };
 
-const columns = Object.keys(ARTICLE);
-const row = (article) => columns
+/* `Object.keys` is typed `string[]`, because a value may carry
+   keys its type does not name. Nothing else writes these four
+   rows, so here it cannot. */
+const columns = Object.keys(ARTICLE) as Array<keyof Article>;
+const row = (article: Article) => columns
   .map((c) => (typeof article[c] === "number" ? article[c] : `'${String(article[c]).replace(/'/g, "''")}'`))
   .join(", ");
 
@@ -185,10 +206,10 @@ d1(`CREATE TABLE IF NOT EXISTS school_lessons (
       title TEXT, minutes INTEGER, status TEXT, meta TEXT, body TEXT,
       PRIMARY KEY (school, stage, slug))`);
 
-const q = (v) => (v === null || v === undefined
+const q = (v: unknown) => (v === null || v === undefined
   ? "NULL"
   : typeof v === "number" ? String(v) : `'${String(v).replace(/'/g, "''")}'`);
-const insert = (table, cols, r) =>
+const insert = (table: string, cols: string[], r: Row) =>
   `INSERT OR REPLACE INTO ${table} (${cols.join(", ")}) `
   + `VALUES (${cols.map((c) => q(r[c])).join(", ")});`;
 
@@ -205,9 +226,9 @@ const insert = (table, cols, r) =>
 const statements = [
   ...snapshot.stages.map((r) =>
     insert("school_stages", ["school", "slug", "position", "title", "status", "meta"], r)),
-  ...snapshot.sections.filter((x) => SEEDED.includes(x.stage)).map((r) =>
+  ...snapshot.sections.filter((x) => SEEDED.includes(String(x.stage))).map((r) =>
     insert("school_sections", ["school", "stage", "ident", "position", "title", "meta"], r)),
-  ...snapshot.lessons.filter((x) => SEEDED.includes(x.stage)).map((r) =>
+  ...snapshot.lessons.filter((x) => SEEDED.includes(String(x.stage))).map((r) =>
     insert("school_lessons",
       ["school", "stage", "slug", "section", "position", "title", "minutes",
        "status", "meta", "body"], r)),
@@ -237,11 +258,16 @@ let log = "";
 dev.stdout.on("data", (d) => { log += d; });
 dev.stderr.on("data", (d) => { log += d; });
 
-let gone = null;
+let gone: number | string | null = null;
 dev.on("exit", (code, signal) => { gone = code ?? signal ?? "gone"; });
 
 const stop = () => {
-  try { process.kill(-dev.pid, "SIGTERM"); } catch { dev.kill("SIGTERM"); }
+  /* The whole group, so workerd goes with wrangler. A child with
+     no pid has already gone, and there is nothing to signal. */
+  try {
+    if (dev.pid) process.kill(-dev.pid, "SIGTERM");
+    else dev.kill("SIGTERM");
+  } catch { dev.kill("SIGTERM"); }
   try { rmSync(state, { recursive: true, force: true }); } catch { /* fine */ }
 };
 process.on("exit", stop);
@@ -305,7 +331,7 @@ const fromWorker = render(ARTICLE, ORIGIN);
 /* ---------- the checks ---------- */
 
 let passed = 0;
-const failures = [];
+const failures: string[] = [];
 
 /* Compared after decoding, because the two renderers escape
    differently and neither is wrong. React writes `&#x27;` where a
@@ -313,28 +339,31 @@ const failures = [];
    template writes a bare `&` inside an attribute (React is the
    more correct of the two there). A browser parses them to the
    same string, and the same string is the thing being checked. */
-const decode = (v) => (typeof v === "string"
-  ? v.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (whole, body) => {
+const NAMED: Record<string, string> = {
+  amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: "\u00a0",
+};
+const decode = (v: string | null): string | null => (typeof v === "string"
+  ? v.replace(/&(#x?[0-9a-f]+|[a-z]+);/gi, (whole: string, body: string) => {
       if (body[0] === "#") {
         const code = body[1] === "x" || body[1] === "X"
           ? parseInt(body.slice(2), 16) : parseInt(body.slice(1), 10);
         return Number.isFinite(code) ? String.fromCodePoint(code) : whole;
       }
-      return { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: "\u00a0" }[body] ?? whole;
+      return NAMED[body] ?? whole;
     })
   : v);
 
-const check = (name, a, b) => {
+const check = (name: string, a: string | null, b: string | null): void => {
   if (decode(a) === decode(b)) { passed++; return; }
   failures.push(`${name}\n      worker: ${JSON.stringify(a)}\n      next:   ${JSON.stringify(b)}`);
 };
-const ok = (name, condition, detail = "") => {
+const ok = (name: string, condition: unknown, detail = ""): void => {
   if (condition) { passed++; return; }
   failures.push(name + (detail ? `\n      ${detail}` : ""));
 };
 
 /** The content of a meta tag, whichever order its attributes are in. */
-const meta = (html, key, attr = "property") => {
+const meta = (html: string, key: string, attr = "property"): string | null => {
   const re = new RegExp(
     `<meta[^>]*(?:${attr}="${key}"[^>]*content="([^"]*)"`
     + `|content="([^"]*)"[^>]*${attr}="${key}")`, "i");
@@ -363,14 +392,14 @@ const meta = (html, key, attr = "property") => {
     being checked is the part worth checking: that the route says
     the same THING at its new address, rung for rung and link for
     link. Real drift still fails. */
-const moved = (v) => {
+const moved = (v: string | null): string | null => {
   if (typeof v !== "string") return v;
   return v
     .replaceAll("/learn/learn.js", "/money/reader.js")
     .replaceAll("/learn/", "/money/");
 };
 
-const renamed = (v) =>
+const renamed = (v: string | null): string | null =>
   (typeof v === "string" ? v.replaceAll("\u09b6\u09c7\u0996\u09be\u09b0 \u09b2\u09be\u0987\u09ac\u09cd\u09b0\u09c7\u09b0\u09bf", "\u099f\u09be\u0995\u09be \u0993 \u09b6\u09c7\u09af\u09bc\u09be\u09b0") : v);
 
 /* ---------- sentences that were changed on purpose ----------
@@ -413,12 +442,13 @@ const REWRITTEN = [
    two spellings of the same letter: `\u09dc` is one code point and
    `\u09a1\u09bc` is two, they render identically, and a table written
    in one form matches nothing written in the other. */
-const rewritten = (v) => (typeof v !== "string" ? v
+const rewritten = (v: string | null): string | null => (typeof v !== "string" ? v
   : REWRITTEN.reduce((s, [was, now]) => s.replaceAll(was.normalize("NFC"), now),
                      v.normalize("NFC")));
 
-const tagText = (html, tag) => html.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "i"))?.[1] ?? null;
-const attr = (html, re) => html.match(re)?.[1] ?? null;
+const tagText = (html: string, tag: string): string | null =>
+  html.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "i"))?.[1] ?? null;
+const attr = (html: string, re: RegExp): string | null => html.match(re)?.[1] ?? null;
 
 ok("the route answers at the address the piece actually has",
   res.status === 200, `status ${res.status} for /insights/${ARTICLE.slug}.html`);
@@ -486,7 +516,7 @@ check("the language",
   ok("the Worker links a stylesheet", Boolean(workerCss), "no <link rel=stylesheet>");
   ok("and so does the route", Boolean(nextCss), "no <link rel=stylesheet>");
   ok("and the Worker's is a file that exists",
-    Boolean(workerCss) && existsSync(join(here, "..", "aab", workerCss.slice(1))),
+    workerCss !== null && existsSync(join(here, "..", "aab", workerCss.slice(1))),
     `aab${workerCss} is not there, so the page is served unstyled`);
 }
 check("the webfonts",
@@ -546,10 +576,10 @@ ok("the section's own footer line",
    React then undoes, so a route names what it is going to load in
    a preload link and loads it once the hydration is over. See
    `components/scripts.tsx`, which is the whole story, and
-   `interactive.test.mjs`, which is what holds it in a browser.
+   `interactive.test.ts`, which is what holds it in a browser.
    Either spelling counts here: the question is whether the page
    loads the module, not which tag says so. */
-const loads = (html, src) =>
+const loads = (html: string, src: string): boolean =>
   new RegExp(`<script[^>]*src="${src}"`).test(html)
   || new RegExp(`<link[^>]*rel="(?:modulepreload|preload)"[^>]*href="${src}"`).test(html)
   || new RegExp(`<link[^>]*href="${src}"[^>]*rel="(?:modulepreload|preload)"`).test(html);
@@ -642,7 +672,7 @@ const CHUNK_BUDGET = 8;
    deployed branch preview, for the environments where this file
    cannot run. */
 
-const hub = async (path) => {
+const hub = async (path: string): Promise<{ status: number; html: string }> => {
   const answer = await fetch(`http://127.0.0.1:${PORT}${path}`);
   return { status: answer.status, html: await answer.text() };
 };
@@ -650,7 +680,7 @@ const hub = async (path) => {
 /* `check()` above reports its two sides as "worker" and "next",
    which is the right pair for an article and a wrong one here:
    there is no worker side. Same comparison, honest labels. */
-const says = (name, want, got) => ok(name, decode(got) === want,
+const says = (name: string, want: string, got: string | null): void => ok(name, decode(got) === want,
   `wanted ${JSON.stringify(want)}\n      got    ${JSON.stringify(got)}`);
 
 {
@@ -716,7 +746,7 @@ const says = (name, want, got) => ok(name, decode(got) === want,
 /* `nav` is the address the rail marks, which is not always the
    page's own: the stock check has its own item under Tools since
    Stage 11.8, and before that it marked the Tools link. */
-for (const [path, title, nav] of [
+const HAND_WRITTEN: Array<[path: string, title: string, nav: string | null]> = [
   ["/about.html", "About · Reiad's Library", "/about.html"],
   ["/contact.html", "Contact · Reiad's Library", "/contact.html"],
   ["/skills/index.html", "দক্ষতা · Skills · Reiad's Library", "/skills/index.html"],
@@ -732,7 +762,8 @@ for (const [path, title, nav] of [
   ["/portfolio/dissertation.html",
     "Islamic vs conventional funds in the UK · MSc dissertation · Reiad's Library",
     "/portfolio.html"],
-]) {
+];
+for (const [path, title, nav] of HAND_WRITTEN) {
   const page = await hub(path);
   ok(`${path} answers`, page.status === 200, `status ${page.status}`);
   says(`${path} states its own title`, title, tagText(page.html, "title"));
@@ -812,13 +843,13 @@ for (const [path, title, nav] of [
      side, and the honest thing then is to delete them rather than
      to weaken them into checks of nothing. */
   const { readFileSync } = await import("node:fs");
-  const committed = (rel) =>
+  const committed = (rel: string): string =>
     readFileSync(join(here, "..", "archive", "schools-pages", rel), "utf8");
 
   /* The inside of a tag, by class, whichever order its attributes
      are in. The builders write `class="x"` first and React does
      not promise to. */
-  const byClass = (html, tag, cls) => html.match(
+  const byClass = (html: string, tag: string, cls: string): string | null => html.match(
     new RegExp(`<${tag}[^>]*class="[^"]*\\b${cls}\\b[^"]*"[^>]*>([\\s\\S]*?)</${tag}>`, "i")
   )?.[1] ?? null;
 
@@ -844,16 +875,21 @@ for (const [path, title, nav] of [
      route's real answer, which passes for the wrong reason on the
      day somebody deletes the script. Extract both spellings, then
      let `moved()` map the old on to the new. */
-  const schoolScripts = (html) => [...html.matchAll(
+  const schoolScripts = (html: string): string => [...html.matchAll(
     /(?:<script type="module" src|<link rel="modulepreload" href)="(\/(?:learn|money|deutsch|quran|english)\/[a-z-]+\.js)"/g)]
-    .map((m) => moved(m[1])).sort().join(" ");
+    .map((m) => moved(m[1]) ?? "").sort().join(" ");
 
   /* Text, with the tags taken out and the whitespace flattened.
      Indentation is the one difference that is guaranteed and
      means nothing: the builders write a page a person can read
      and React writes one it does not occur to it to indent. */
-  const words = (html) => (html === null ? null : decode(
+  const words = (html: string | null): string | null => (html === null ? null : decode(
     html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()));
+
+  /** How one fact is pulled out of a page. Both sides of every
+      comparison below go through the same one, which is what
+      makes the comparison a comparison. */
+  type Extract = (html: string) => string | null;
 
   /* One lesson per school, and each is the shape that school is
      the only one to have. */
@@ -877,7 +913,7 @@ for (const [path, title, nav] of [
        says "worker" and "next", which is the right pair for an
        article and a wrong one here: the thing on the other side
        of this comparison is a committed file. */
-    const same = (what, extract) => {
+    const same = (what: string, extract: Extract): void => {
       const a = rewritten(moved(decode(extract(was))));
       const b = moved(decode(extract(now)));
       const bn = typeof b === "string" ? b.normalize("NFC") : b;
@@ -909,7 +945,7 @@ for (const [path, title, nav] of [
 
     /* Where the backlinks and the prev/next pair actually point,
        which `words()` throws away and is the half that breaks. */
-    const links = (h, cls) => {
+    const links = (h: string, cls: string): string | null => {
       const inside = byClass(h, cls === "prev-next" ? "nav" : "p", cls);
       return inside === null
         ? null
@@ -935,9 +971,10 @@ for (const [path, title, nav] of [
        supposed to be carrying. Compared as the row has it rather
        than as either page indents it. */
     const stage = path.split("/")[2] === "terms" ? "basics-1" : path.split("/")[2];
-    const slug = path.split("/").pop().replace(/\.html$/, "");
-    const stored = snapshot.lessons.find(
-      (l) => l.stage === stage && l.slug === slug)?.body ?? "";
+    const slug = (path.split("/").pop() ?? "").replace(/\.html$/, "");
+    const found = snapshot.lessons.find(
+      (l) => l.stage === stage && l.slug === slug)?.body;
+    const stored = typeof found === "string" ? found : "";
     ok(`${path}: the prose is the row's, unchanged`,
       stored !== "" && now.includes(stored.trim()),
       "the stored body is not in the page, character for character");
@@ -968,7 +1005,7 @@ for (const [path, title, nav] of [
 
     const was = committed(file);
     const now = page.html;
-    const same = (what, extract) => {
+    const same = (what: string, extract: Extract): void => {
       const a = rewritten(moved(decode(extract(was))));
       const b = moved(decode(extract(now)));
       const bn = typeof b === "string" ? b.normalize("NFC") : b;
@@ -1112,7 +1149,7 @@ for (const [path, title, nav] of [
 
     const was = committed(file);
     const now = page.html;
-    const same = (what, extract) => {
+    const same = (what: string, extract: Extract): void => {
       const a = rewritten(moved(decode(extract(was))));
       const b = moved(decode(extract(now)));
       const bn = typeof b === "string" ? b.normalize("NFC") : b;
@@ -1146,9 +1183,9 @@ for (const [path, title, nav] of [
        not change: eight hundred lines of hand-converted Bangla is
        eight hundred chances to lose a word that nobody reviewing
        a diff of markup would catch. All three still match exactly. */
-    const body = (h) => h.match(
+    const body = (h: string): string | null => h.match(
       /<main id="main">\s*<div class="wrap"[^>]*>([\s\S]*)<\/div>\s*<\/main>/)?.[1] ?? null;
-    const prose = (h) => (h ?? "")
+    const prose = (h: string | null): string => (h ?? "")
       .replace(/<!--[\s\S]*?-->/g, " ")
       .replace(/<[^>]+>/g, " ")
       .replace(/&nbsp;/g, " ")
@@ -1159,7 +1196,10 @@ for (const [path, title, nav] of [
        something is wrong and nothing about what: on a hub of
        nine hundred words that is a bisection by hand. */
     {
-      const a = rewritten(prose(moved(body(was))));
+      /* `prose()` answers "" for a page with no `<main>`, so both
+         sides are strings whatever the two pages turned out to
+         be; the check below is what says the old one had one. */
+      const a = rewritten(prose(moved(body(was)))) ?? "";
       const b = prose(moved(body(now))).normalize("NFC");
       const wa = a.split(" ");
       const wb = b.split(" ");
@@ -1250,7 +1290,7 @@ for (const [path, title, nav] of [
          the three stages it needs; asking for the other four
          would be asking the route to invent them. */
       const written = snapshot.lessons
-        .filter((r) => r.school === "money" && r.body && SEEDED.includes(r.stage));
+        .filter((r) => r.school === "money" && r.body && SEEDED.includes(String(r.stage)));
       const missing = written.filter((r) => !contents.html.includes(`>${r.title}<`));
       ok(`/money/contents.html names all ${written.length} written lessons`,
         missing.length === 0,

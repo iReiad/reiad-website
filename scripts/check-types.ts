@@ -54,6 +54,16 @@
    looked. A SKIP IS NOT A PASS: the line names what to run and
    where, the same way every optional test in `CLAUDE.md` does.
 
+   ---- and two more directories with the same hole in them ----
+
+   `functions/tsconfig.test.json` and `app/tsconfig.test.json`.
+   Wrangler's esbuild reads no tsconfig at all, and
+   `app/tsconfig.json` is the BUILD, whose `include` is `src`, so
+   the tests in both directories typechecked nowhere. The Worker's
+   three lean on the root install and therefore run in CI; the
+   app's two need `app/node_modules` for Playwright's types, and
+   the skip below names that directory rather than next/.
+
    ---- and the second half: no JavaScript here at all ----
 
    `tsconfig.json` cannot say that. `checkJs` would, but it
@@ -107,6 +117,28 @@ const CONFIGS: Config[] = [
     config: join(ROOT, "next", "tsconfig.test.json"),
     needs: join(ROOT, "next"),
   },
+  /* No `needs`: the Worker's tests import nothing but each other,
+     the modules under test and @types/node, so this one runs on
+     the root install and therefore in CI. */
+  {
+    what: "functions/ (the Worker's own tests)",
+    config: join(ROOT, "functions", "tsconfig.test.json"),
+  },
+  {
+    what: "app/ (the desk and the Studio in a browser)",
+    config: join(ROOT, "app", "tsconfig.test.json"),
+    needs: join(ROOT, "app"),
+  },
+  /* The one entry whose `needs` is not its own directory. Four of
+     these seven run in linkedom off the root install; the other
+     three drive a real browser, and playwright is a devDependency
+     of `app/`, so the config cannot resolve it without that
+     install. */
+  {
+    what: "aab/ (the browser-side tests)",
+    config: join(ROOT, "aab", "tsconfig.test.json"),
+    needs: join(ROOT, "app"),
+  },
 ];
 
 /* `fixtures/` is captured data rather than code: the Drive
@@ -135,11 +167,14 @@ if (javascript.length) {
   process.exit(1);
 }
 
-const skipped: string[] = [];
+/** A skipped config, and the directory to install in. The second
+    is what makes the line actionable: two of these need a
+    different one. */
+const skipped: Array<{ what: string; where: string }> = [];
 
 for (const { what, config, needs } of CONFIGS) {
   if (needs && !existsSync(join(needs, "node_modules"))) {
-    skipped.push(what);
+    skipped.push({ what, where: relative(ROOT, needs) });
     continue;
   }
   try {
@@ -159,8 +194,8 @@ for (const { what, config, needs } of CONFIGS) {
 const ran = CONFIGS.length - skipped.length;
 console.log("types: no JavaScript in scripts/, and every .ts file node runs"
   + `\n       directly typechecks, under ${ran} of ${CONFIGS.length} config(s).`);
-for (const what of skipped) {
+for (const { what, where } of skipped) {
   console.log(`       SKIPPED ${what}: no node_modules there, so the types it`
     + `\n       needs are absent. This is not a pass. Run it where they are:`
-    + `\n         cd next && npm install && cd .. && node scripts/check-types.ts`);
+    + `\n         cd ${where} && npm install && cd .. && node scripts/check-types.ts`);
 }

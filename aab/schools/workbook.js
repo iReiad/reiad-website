@@ -38,7 +38,7 @@
 
    The DOM vocabulary is FIXED, because one component renders
    both books. What differs is a storage key, a curriculum, and
-   two words. `aab/schools/workbook.test.mjs` asserts the keys by
+   two words. `aab/schools/workbook.test.ts` asserts the keys by
    name: `deutsch-schrift` and `english-write` are in real
    browsers, and the rule at the top of "What a reader has read"
    is why renaming one loses somebody's work rather than moving
@@ -76,7 +76,7 @@ const esc = (s) =>
  *   this file built the German shape for both. The English ticks
  *   were written correctly by `toggleDay` and then looked for
  *   under a name nothing had ever used, so a day could be ticked
- *   and came back unticked. `workbook.test.mjs` is what found
+ *   and came back unticked. `workbook.test.ts` is what found
  *   that, and it is the rule at the top of "Three schools, one
  *   engine": every key is passed in by the school, spelled the
  *   way it has always been spelled.

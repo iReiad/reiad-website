@@ -1003,7 +1003,7 @@ function refuse(root, answer) {
 }
 /* The entry point, guarded on `document` existing at all.
 
-   Not defensive programming for its own sake: `courses.test.mjs`
+   Not defensive programming for its own sake: `courses.test.ts`
    imports this module to reach `whereAmI()` before it has built a
    DOM, and a module that throws on import cannot be tested by the
    thing that would catch it throwing. In a browser the guard is

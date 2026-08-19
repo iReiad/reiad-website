@@ -4,8 +4,8 @@
 
    No DOM in here. Everything takes numbers and returns numbers,
    which is the only way to check it against values a textbook
-   already agrees on. dissertation.test.mjs does exactly that,
-   run `node aab/portfolio/dissertation.test.mjs`.
+   already agrees on. dissertation.test.ts does exactly that,
+   run `node aab/portfolio/dissertation.test.ts`.
 
    Three groups of things live here:
 

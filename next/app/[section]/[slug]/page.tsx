@@ -40,7 +40,7 @@ type Params = { params: Promise<{ section: string; slug: string }> };
 /* Every tag in here is the same fact the Worker's own renderer
    states, out of the same function. What Next writes them as is
    Next's business; that they say the same thing is checked by
-   next/parity.test.mjs, tag by tag. */
+   next/parity.test.ts, tag by tag. */
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { section, slug } = await params;
   const article = await getArticle(section, slug);

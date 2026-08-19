@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* ============================================================
-   scorecard.test.mjs, checks on the PD modelling pipeline.
+   scorecard.test.ts, checks on the PD modelling pipeline.
 
-       node aab/portfolio/scorecard.test.mjs
+       node aab/portfolio/scorecard.test.ts
 
    A model that is wrong does not crash. It returns a number,
    the number looks reasonable, and nothing anywhere says
@@ -22,31 +22,43 @@
    ============================================================ */
 
 import {
-  normCdf, twoSided, sigmoid, rng, shuffle, solve, invert,
+  normCdf, twoSided, sigmoid, rng, solve, invert,
   fitLogistic, fitScaler, applyScaler, stratifiedSplit, stratifiedFolds,
-  buildFeatures, designMatrix, labels, featureValue,
+  designMatrix,
   binEdges, binOf, woeTable, informationValues, ivBand,
-  fitBinner, applyBinner, fitGbm, GBM_DEFAULTS,
-  logLoss, brier, roc, aucMannWhitney, precisionRecall, aucStandardError, delong,
+  fitBinner, applyBinner, fitGbm,
+  brier, roc, aucMannWhitney, precisionRecall, aucStandardError, delong,
   confusion, costCurve, calibration, fitPlatt, liftTable,
-  pointsScaling, scorePoints, permutationImportance, byAttribute, partialDependence,
-  fairness, GROUPS, run, crossValidate, toCsv,
+  pointsScaling, scorePoints, permutationImportance, partialDependence,
+  fairness, run, crossValidate, toCsv,
   ROWS, SCHEMA, SOURCE, CHECKS, FEATURES, TARGET, DEFAULTS, DRIVERS,
 } from "./scorecard.model.js";
+import type { Delong, DelongComparison, DummyFeature, Feature, Row } from "./scorecard.model.js";
 
 let pass = 0;
-const failures = [];
-const ok = (name, cond) => {
+const failures: string[] = [];
+const ok = (name: string, cond: boolean): void => {
   if (cond) pass++; else failures.push(name);
 };
-const close = (name, got, want, tol) =>
+const close = (name: string, got: number, want: number, tol: number): void =>
   ok(`${name} (got ${got}, want ${want})`, Math.abs(got - want) <= tol);
 
-const sum = (xs) => xs.reduce((a, b) => a + b, 0);
-const mean = (xs) => sum(xs) / xs.length;
+const sum = (xs: readonly number[]): number => xs.reduce((a, b) => a + b, 0);
+const mean = (xs: readonly number[]): number => sum(xs) / xs.length;
+
+/* `kind` decides it: only a dummy carries an attribute, a
+   reference flag and a count of the rows at its level. */
+const isDummy = (f: Feature): f is DummyFeature => f.kind === "dummy";
+
+/* delong answers with three fields and no comparison at all
+   where one class is empty, which none of these samples is. */
+const compared = (d: Delong): DelongComparison => {
+  if (d.se === undefined) throw new Error("delong saw a sample with one class in it");
+  return d;
+};
 
 /* ---------- 1 · the shipped data is the data that was downloaded ----------
-   scorecard.fetch.mjs computed these totals from the file it
+   scorecard.fetch.ts computed these totals from the file it
    pulled off the UCI archive. Recomputing them from the rows in
    the repository is what makes the provenance claim checkable
    rather than decorative: a conversion that dropped a column,
@@ -89,13 +101,14 @@ ok("the cost matrix is the one the documentation states",
 ok("no feature is built on a level with no applicants in it",
   FEATURES.every((f) => f.kind === "num" || f.n > 0));
 ok("one reference level per categorical attribute",
-  [...new Set(FEATURES.filter((f) => f.kind === "dummy").map((f) => f.attribute))]
+  [...new Set(FEATURES.filter(isDummy).map((f) => f.attribute))]
     .every((attr) => FEATURES.filter((f) => f.attribute === attr && f.isReference).length === 1));
 ok("the reference is the most common level of its attribute",
-  [...new Set(FEATURES.filter((f) => f.kind === "dummy").map((f) => f.attribute))]
+  [...new Set(FEATURES.filter(isDummy).map((f) => f.attribute))]
     .every((attr) => {
-      const levels = FEATURES.filter((f) => f.attribute === attr);
+      const levels = FEATURES.filter(isDummy).filter((f) => f.attribute === attr);
       const ref = levels.find((f) => f.isReference);
+      if (!ref) throw new Error(`no reference level for ${attr}`);
       return levels.every((f) => f.n <= ref.n);
     }));
 ok("the seven numeric attributes come through as numbers",
@@ -109,7 +122,7 @@ ok("the protected attributes are flagged",
   ok("dummies are zero or one",
     X.every((row) => FEATURES.every((f, j) => f.kind === "num" || row[j] === 0 || row[j] === 1)));
   ok("exactly one dummy per attribute is hot",
-    [...new Set(FEATURES.filter((f) => f.kind === "dummy").map((f) => f.attribute))]
+    [...new Set(FEATURES.filter(isDummy).map((f) => f.attribute))]
       .every((attr) => X.every((row) =>
         sum(FEATURES.map((f, j) => (f.attribute === attr ? row[j] : 0))) === 1)));
 }
@@ -122,7 +135,7 @@ ok("the protected attributes are flagged",
   ok("solve returns a vector that satisfies the system",
     back.every((v, i) => Math.abs(v - [13, 7, 19][i]) < 1e-9));
   const inv = invert(A);
-  const I = A.map((row, i) => inv[0].map((_, j) => sum(row.map((v, k) => v * inv[k][j]))));
+  const I = A.map((row) => inv[0].map((_, j) => sum(row.map((v, k) => v * inv[k][j]))));
   ok("invert returns the inverse",
     I.every((row, i) => row.every((v, j) => Math.abs(v - (i === j ? 1 : 0)) < 1e-9)));
 }
@@ -139,9 +152,11 @@ ok("the protected attributes are flagged",
   const b = 70;  // x=1, y=0
   const c = 10;  // x=0, y=1
   const d = 90;  // x=0, y=0
-  const X = [];
-  const y = [];
-  const add = (xv, yv, times) => { for (let i = 0; i < times; i++) { X.push([xv]); y.push(yv); } };
+  const X: number[][] = [];
+  const y: number[] = [];
+  const add = (xv: number, yv: number, times: number): void => {
+    for (let i = 0; i < times; i++) { X.push([xv]); y.push(yv); }
+  };
   add(1, 1, a); add(1, 0, b); add(0, 1, c); add(0, 0, d);
 
   const fit = fitLogistic(X, y, { ridge: 0, tol: 1e-12, maxIter: 60 });
@@ -200,7 +215,7 @@ ok("the protected attributes are flagged",
   ok("the split covers every row once", train.length + test.length === ROWS.length);
   ok("and the halves do not overlap",
     new Set([...trainIdx, ...testIdx]).size === ROWS.length);
-  const rate = (rows) => rows.filter((r) => r[TARGET] === 1).length / rows.length;
+  const rate = (rows: Row[]): number => rows.filter((r) => r[TARGET] === 1).length / rows.length;
   close("the default rate survives the split, in train", rate(train), 0.3, 0.005);
   close("and in test", rate(test), 0.3, 0.005);
   const again = stratifiedSplit(ROWS, { testFraction: 0.3, seed: 5 });
@@ -317,12 +332,12 @@ ok("the protected attributes are flagged",
   const a = y.map((yi) => yi * 0.8 + rand());
   const b = y.map((yi) => yi * 0.3 + rand());
 
-  const same = delong(y, a, a);
+  const same = compared(delong(y, a, a));
   close("a model against itself differs by exactly nothing", same.difference, 0, 1e-12);
   ok("with no uncertainty about it", same.se < 1e-12 && same.p === 1);
   ok("and a correlation of one with itself", Math.abs(same.correlation - 1) < 1e-9);
 
-  const test = delong(y, a, b);
+  const test = compared(delong(y, a, b));
   /* DeLong reaches the AUC through structural components, which
      is a different route from both the trapezoid and the
      Mann-Whitney count. All three landing on the same number is a
@@ -402,9 +417,9 @@ ok("the protected attributes are flagged",
    takes three distinct values, where the identity has to hold to
    machine precision rather than approximately. */
 {
-  const y = [];
-  const p = [];
-  const push = (prob, nBad, nGood) => {
+  const y: number[] = [];
+  const p: number[] = [];
+  const push = (prob: number, nBad: number, nGood: number): void => {
     for (let i = 0; i < nBad; i++) { y.push(1); p.push(prob); }
     for (let i = 0; i < nGood; i++) { y.push(0); p.push(prob); }
   };
@@ -491,9 +506,13 @@ ok("the protected attributes are flagged",
   const hLeft = 4 * p0 * (1 - p0);
   const expected = -gLeft / (hLeft + lambda);
   const tree = fit.trees[0];
-  const leftLeaf = tree.nodes[tree.nodes[tree.root].left];
+  const root = tree.nodes[tree.root];
+  /* A node carries the five split fields only once it has been
+     split, and a stump that never split would be the bug here. */
+  if (root.left === undefined) throw new Error("the single tree never split");
+  const leftLeaf = tree.nodes[root.left];
   close("the leaf value is the closed-form minimiser", leftLeaf.value, expected, 1e-9);
-  ok("the stump split on the only feature there is", tree.nodes[tree.root].feature === 0);
+  ok("the stump split on the only feature there is", root.feature === 0);
 }
 {
   const X = [[1], [2], [3], [4], [5], [6]];
@@ -506,7 +525,7 @@ ok("the protected attributes are flagged",
 /* ---------- 12 · scorecard points ---------- */
 {
   const { factor, offset } = pointsScaling({ target: 600, targetOdds: 50, pdo: 20 });
-  const scoreOf = (odds) => offset + factor * Math.log(odds);
+  const scoreOf = (odds: number): number => offset + factor * Math.log(odds);
   close("the target odds sit on the target score", scoreOf(50), 600, 1e-9);
   close("doubling the odds adds exactly one PDO", scoreOf(100) - scoreOf(50), 20, 1e-12);
   close("and halving them takes one off", scoreOf(25) - scoreOf(50), -20, 1e-12);

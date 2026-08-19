@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v141: `/content.js`, `/photo.js` and `/schools/workbook.js`,
+        and all three changed only in their comments: the last
+        `.mjs` in this repository became `.ts`, and every comment
+        naming one had to name the new file. A comment is bytes
+        and a precached file is compared by bytes.
+
    v140: `/account.js`, `/signin.js`, `/account-page.js` and
         `/fallback.css`. The picture a Google sign-in brings comes
         through to the page now, and `account.js` is TypeScript:
@@ -1440,7 +1446,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v140";
+const VERSION = "v141";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

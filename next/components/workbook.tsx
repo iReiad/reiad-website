@@ -44,7 +44,7 @@ import { Button } from "./ui/button";
     `<stufe slug>/<name>`, and the name carries the day number, so
     "tag-1-tausche-1" is a name and not a description. The builder
     made this string and so does this, and what holds them together
-    is `aab/schools/workbook.test.mjs`: it renders this component
+    is `aab/schools/workbook.test.ts`: it renders this component
     into a real DOM, types into a box, and asserts the writing came
     back under `area.dataset.schrift` and under the school's own
     outer key. That is the guarantee, and it is why a rename here

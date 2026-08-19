@@ -23,7 +23,7 @@
    run: the server sends an empty live region and nothing else, on
    purpose, because what a reader has cached and whether a feed
    answers are facts about one browser. `/insights.html` is
-   `force-dynamic`, so `interactive.test.mjs` cannot serve it, and
+   `force-dynamic`, so `interactive.test.ts` cannot serve it, and
    `hydrate-fixture.ts` is the smaller way in.
 
    ---- and why the endpoints are Playwright routes ----

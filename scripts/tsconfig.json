@@ -52,7 +52,18 @@
     "noFallthroughCasesInSwitch": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": ["node"],
+    /* `build-og.ts` drives a headless browser to render the share
+       cards, and playwright is a devDependency of `app/` rather
+       than of the root: it is a browser driver, and the root
+       install is what CI runs. Mapping the bare specifier here is
+       the same thing `next/tsconfig.json` does for the browser
+       tests, and for the same reason. The script itself imports
+       "playwright" and node resolves it at run time from wherever
+       it is installed. */
+    "paths": {
+      "playwright": ["../app/node_modules/playwright"]
+    }
   },
   "include": ["**/*.ts", "../shared/**/*.ts"],
   "exclude": ["node_modules"]

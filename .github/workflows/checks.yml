@@ -130,8 +130,8 @@ jobs:
       # server.
       #
       # WHAT IS DELIBERATELY ABSENT, and why it is not an
-      # oversight. aab/studio.test.mjs, aab/sync.test.mjs,
-      # aab/studio-publish.test.mjs, both files in app/ and three
+      # oversight. aab/studio.test.ts, aab/sync.test.ts,
+      # aab/studio-publish.test.ts, both files in app/ and three
       # in next/ all need something this job does not have: a
       # browser, a server on :8899, or an OpenNext build. Every one
       # of them SKIPS rather than fails when that is missing, and

@@ -15,7 +15,7 @@
    `/api/comments` puts on the page, and what pressing Post does,
    are not asked here and are not asked anywhere yet, because
    nothing in this repository drives a DYNAMIC route in a browser.
-   `interactive.test.mjs` serves Next's prerendered files and an
+   `interactive.test.ts` serves Next's prerendered files and an
    article is not one.
 
    So the split is deliberate rather than convenient:
@@ -51,7 +51,7 @@ try {
 
 /* Bundled with the renderer, because the result is imported as a
    `data:` URL and a data module cannot resolve a bare specifier.
-   `aab/schools/workbook.test.mjs` says the rest, including why
+   `aab/schools/workbook.test.ts` says the rest, including why
    this reaches for the component and never for the page. */
 const bundled = await esbuild({
   stdin: {

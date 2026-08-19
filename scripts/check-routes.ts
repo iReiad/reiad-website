@@ -335,10 +335,15 @@ for (const pattern of WORKER_FIRST) {
    checks and the tests are being converted to TypeScript, which
    node runs directly, and a rule that only knew `.mjs` would go
    quiet at exactly the moment the files it guards changed name.
-   The whole point of this block is that the failure is silent. */
+   The whole point of this block is that the failure is silent.
+
+   `.d.ts` is here for the same reason. A declaration describes
+   JavaScript for the typechecker and answers nothing a browser
+   asks for, and the four case-study models each have one beside
+   them now. */
 const DEV_ONLY = new RegExp(
   "(^|/)(check-[^/]*\\.(mjs|ts)|build-[^/]*\\.(mjs|ts)|[^/]*\\.test\\.(mjs|ts))$"
-  + "|^src/|\\.sql$|scorecard\\.fetch\\.(mjs|ts)$");
+  + "|\\.d\\.ts$|^src/|\\.sql$|scorecard\\.fetch\\.(mjs|ts)$");
 
 const IGNORED = readFileSync(join(AAB, ".assetsignore"), "utf8")
   .split("\n")

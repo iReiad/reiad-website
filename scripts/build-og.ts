@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================
-   build-og.mjs, renders the social share images.
+   build-og.ts, renders the social share images.
 
    A 1200×630 PNG is what WhatsApp, LinkedIn, Facebook and X show
    when someone shares a link, and it's the first impression most
@@ -8,24 +8,49 @@
    editor and let them drift from the site, this draws them with
    the site's own fonts and colours in a headless browser.
 
-       node aab/build-og.mjs      # needs playwright available
+       node scripts/build-og.ts   # needs playwright available
 
    Output lands in aab/og/. Re-run it if the palette changes.
+
+   ---- it lived in aab/, which is the directory it writes into ----
+
+   A generator inside the directory it generates is a generator
+   that gets uploaded: every file in `aab/` answers at a public
+   URL, and only a line in `.assetsignore` was keeping this one
+   off the site. It reached the four ladders through the BUILT
+   `<school>/curriculum.js` rather than through the
+   `shared/curricula/*.ts` those are written from, and nothing
+   typechecked it. All three are fixed by living here, where
+   `scripts/tsconfig.json` covers it and every other generator
+   already is.
    ============================================================ */
 
-import { mkdirSync } from "node:fs";
+import { globSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readFileSync, writeFileSync } from "node:fs";
-import { globSync } from "node:fs";
-import { chromium } from "playwright";
-import { STAGES } from "./money/curriculum.js";
-import { STUFEN } from "./deutsch/curriculum.js";
-import { DHAPS } from "./quran/curriculum.js";
-import { TERMS } from "./english/curriculum.js";
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const OUT = join(HERE, "og");
+import { chromium } from "playwright";
+
+import { STAGES } from "../shared/curricula/money.ts";
+import { STUFEN } from "../shared/curricula/deutsch.ts";
+import { DHAPS } from "../shared/curricula/quran.ts";
+import { TERMS } from "../shared/curricula/english.ts";
+
+/* `document` below is the PAGE's, not node's: the two callbacks
+   handed to `evaluate()` are serialised and run inside the
+   browser. Declared here rather than by pulling the DOM lib into
+   `scripts/tsconfig.json`, because that config covers every check
+   in this directory and a check that can name `document` and
+   still typecheck is a check that fails under node. Two fields,
+   and this is the only file that wants them. */
+declare const document: {
+  fonts: { ready: Promise<unknown>; size: number };
+};
+
+/* `aab/` is what the site is uploaded from, so that is where the
+   cards go and that is where the pages this repoints live. */
+const AAB = join(dirname(fileURLToPath(import.meta.url)), "..", "aab");
+const OUT = join(AAB, "og");
 mkdirSync(OUT, { recursive: true });
 
 /* ------------------------------------------------------------
@@ -46,12 +71,22 @@ mkdirSync(OUT, { recursive: true });
    Pointing the pages at their cards runs either way: it touches
    no network and is idempotent.
    ------------------------------------------------------------ */
-const flag = (name) =>
+const flag = (name: string): string | undefined =>
   process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=").slice(1).join("=");
 const ONLY = flag("only");
 const FONT_CSS = flag("fonts");
 
-const CARDS = [
+/** One share card. `bn` picks the Bangla faces and the Bangla
+    line height; everything else is the same slab of text. */
+interface Card {
+  file: string;
+  eyebrow: string;
+  title: string;
+  sub: string;
+  bn?: boolean;
+}
+
+const CARDS: Card[] = [
   { file: "default.png", eyebrow: "reiad.co.uk", title: "Bangladesh's markets, explained in the language we speak.",
     sub: "Plain-Bangla investment education · financial modeling · analysis" },
   { file: "learn.png", eyebrow: "শেখার লাইব্রেরি · Learn hub", title: "টাকার ভাষা, আমাদের ভাষায়।",
@@ -186,7 +221,12 @@ const CARDS = [
    cards themselves, so adding an image and pointing pages at it is
    one edit rather than two that can drift apart.
    ------------------------------------------------------------ */
-const ASSIGN = [
+/** A page pattern and the card it gets. Order matters: the first
+    match wins, so a workbook rule has to come before the term
+    rule that would otherwise claim it. */
+type Assignment = [RegExp, string];
+
+const ASSIGN: Assignment[] = [
   [/^tools\/stock\.html$/, "stock.png"],
   [/^tools\//, "tools.png"],
   [/^portfolio\/three-statement\.html$/, "three-statement.png"],
@@ -199,7 +239,7 @@ const ASSIGN = [
   [/^portfolio\.html$/, "portfolio.png"],
   [/^money\/contents\.html$/, "contents.png"],
   [/^money\/index\.html$/, "learn.png"],
-  ...STAGES.map((st) => [
+  ...STAGES.map((st): Assignment => [
     st.slug === "basics-1"
       ? /^money\/(basics-1|terms)\//
       : new RegExp(`^money\\/${st.slug}\\/`),
@@ -212,12 +252,12 @@ const ASSIGN = [
      to agree with the `og` the German book's route renders into the
      workbook pages, or the two generators take turns overwriting
      each other's tags. */
-  ...STUFEN.filter((st) => st.workbook).map((st) => [
+  ...STUFEN.flatMap((st) => (st.workbook ? [[
     new RegExp(`^deutsch\\/${st.slug}\\/${st.workbook.slug}\\.html$`),
     "deutsch-arbeitsbuch.png",
-  ]),
+  ] as Assignment] : [])),
   [/^deutsch\/index\.html$/, "deutsch.png"],
-  ...STUFEN.map((st) => [
+  ...STUFEN.map((st): Assignment => [
     new RegExp(`^deutsch\\/${st.slug}\\/`),
     `deutsch-${st.slug}.png`,
   ]),
@@ -227,7 +267,7 @@ const ASSIGN = [
      added under /quran/ later still previews as the school. These
      have to agree with the `og` values build-quran.mjs writes. */
   [/^quran\/index\.html$/, "quran.png"],
-  ...DHAPS.map((dh) => [
+  ...DHAPS.map((dh): Assignment => [
     new RegExp(`^quran\\/${dh.slug}\\/`),
     `quran-${dh.slug}.png`,
   ]),
@@ -236,12 +276,12 @@ const ASSIGN = [
      rule that would otherwise claim it, then the hub, then one
      rule per term, then a catch-all. These have to agree with the
      `og` values the English book's route renders. */
-  ...TERMS.filter((t) => t.workbook).map((t) => [
+  ...TERMS.flatMap((t) => (t.workbook ? [[
     new RegExp(`^english\\/${t.slug}\\/${t.workbook.slug}\\.html$`),
     "english-workbook.png",
-  ]),
+  ] as Assignment] : [])),
   [/^english\/index\.html$/, "english.png"],
-  ...TERMS.map((t) => [
+  ...TERMS.map((t): Assignment => [
     new RegExp(`^english\\/${t.slug}\\/`),
     `english-${t.slug}.png`,
   ]),
@@ -254,13 +294,14 @@ const ASSIGN = [
   [/^colophon\.html$/, "colophon.png"],
 ];
 
-const cardFor = (rel) => (ASSIGN.find(([re]) => re.test(rel)) ?? [])[1] ?? "default.png";
+const cardFor = (rel: string): string =>
+  ASSIGN.find(([re]) => re.test(rel))?.[1] ?? "default.png";
 
 const FONTS = FONT_CSS
   ? `<style>${readFileSync(FONT_CSS, "utf8")}</style>`
   : `<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+Bengali:wght@600&family=Noto+Sans+Bengali:wght@400&display=swap" rel="stylesheet">`;
 
-const page = (card) => `<!doctype html><meta charset="utf-8">
+const page = (card: Card): string => `<!doctype html><meta charset="utf-8">
 ${FONTS}
 <style>
   * { margin: 0; box-sizing: border-box; }
@@ -361,7 +402,7 @@ await browser.close();
 /* ------------------------------------------------------------
    Point every page at its card.
    ------------------------------------------------------------ */
-const files = globSync("**/*.html", { cwd: HERE })
+const files = globSync("**/*.html", { cwd: AAB })
   .filter((f) => !f.startsWith("og/") && f !== "offline.html");
 
 /* Pages that are nobody's business to share. The list matches
@@ -374,14 +415,14 @@ const PRIVATE = new Set([
   "insights/_template.html",
 ]);
 
-const esc = (t) => t.replace(/&/g, "&amp;").replace(/"/g, "&quot;")
+const esc = (t: string): string => t.replace(/&/g, "&amp;").replace(/"/g, "&quot;")
   .replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 let pointed = 0;
 let added = 0;
 for (const rel of files) {
   if (PRIVATE.has(rel)) continue;
-  const abs = join(HERE, rel);
+  const abs = join(AAB, rel);
   const html = readFileSync(abs, "utf8");
   const want = `https://reiad.co.uk/og/${cardFor(rel)}`;
 

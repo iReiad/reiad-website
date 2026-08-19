@@ -1,14 +1,14 @@
 /* ============================================================
-   desk.test.mjs: the React desk, driven in a real browser.
+   desk.test.ts: the React desk, driven in a real browser.
 
-     node app/desk.test.mjs
+     node app/desk.test.ts
 
    OPTIONAL, like the Studio's own browser test: it needs
    Playwright, and nothing about building or deploying the site
    depends on it.
 
        npm i -D playwright
-       PLAYWRIGHT=/path/to/playwright node app/desk.test.mjs
+       PLAYWRIGHT=/path/to/playwright node app/desk.test.ts
 
    It serves aab/ itself on a spare port and answers every /api/
    call from fixtures below, so there is no server and no database
@@ -35,20 +35,34 @@ import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Browser, BrowserType, Locator } from "playwright";
 
 const ROOT = fileURLToPath(new URL("../aab/", import.meta.url));
 const PORT = 8131;
 
 /* ---------- Playwright, wherever it lives ---------- */
 
-let chromium;
+/** What `import(spec)` might hand back. The specifier is a
+    variable on purpose, so PLAYWRIGHT can name an install
+    somewhere else, and that is exactly what TypeScript cannot
+    resolve: it answers `any`, and this is the one place that
+    turns it back into a type the rest of the file can rely on. */
+interface PlaywrightModule {
+  chromium?: BrowserType;
+  default?: { chromium?: BrowserType };
+}
+
+const isModule = (value: unknown): value is PlaywrightModule =>
+  typeof value === "object" && value !== null;
+
+let chromium: BrowserType | undefined;
 try {
   const spec = process.env.PLAYWRIGHT || "playwright";
-  const mod = await import(spec);
-  chromium = mod.chromium ?? mod.default?.chromium;
+  const mod: unknown = await import(spec);
+  chromium = isModule(mod) ? mod.chromium ?? mod.default?.chromium : undefined;
 } catch {
   console.log("Playwright isn't installed, so the browser checks are skipped.");
-  console.log("  npm i -D playwright   (or: PLAYWRIGHT=/path/to/playwright node app/desk.test.mjs)");
+  console.log("  npm i -D playwright   (or: PLAYWRIGHT=/path/to/playwright node app/desk.test.ts)");
   process.exit(0);
 }
 if (!chromium) {
@@ -70,12 +84,12 @@ if (!chromium) {
    the bundle actually needs, the stylesheet and the element it
    mounts into, and nothing else. Everything this file checks is
    inside that element. */
-const SHELLS = {
+const SHELLS: Record<string, [root: string, bundle: string]> = {
   "/desk/index.html": ["desk-root", "/desk/app.js"],
   "/studio/index.html": ["studio-root", "/studio/app.js"],
 };
 
-const shellFor = ([root, bundle]) =>
+const shellFor = ([root, bundle]: [string, string]): string =>
   `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">`
   + `<link rel="stylesheet" href="/styles.css">`
   + `<script type="module" crossorigin src="${bundle}"></script></head>`
@@ -83,7 +97,7 @@ const shellFor = ([root, bundle]) =>
 
 /* ---------- a static server, so there's nothing to start ---------- */
 
-const TYPES = {
+const TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
   ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
   ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png",
@@ -92,7 +106,7 @@ const TYPES = {
 
 const server = createServer(async (req, res) => {
   try {
-    const path = decodeURIComponent(new URL(req.url, "http://x").pathname);
+    const path = decodeURIComponent(new URL(req.url ?? "/", "http://x").pathname);
     if (SHELLS[path]) {
       res.writeHead(200, { "Content-Type": TYPES[".html"] });
       res.end(shellFor(SHELLS[path]));
@@ -107,7 +121,7 @@ const server = createServer(async (req, res) => {
     res.writeHead(404).end("not found");
   }
 });
-await new Promise((r) => server.listen(PORT, "127.0.0.1", r));
+await new Promise<void>((ready) => { server.listen(PORT, "127.0.0.1", ready); });
 
 /* ---------- what the database would have said ----------
 
@@ -117,9 +131,11 @@ await new Promise((r) => server.listen(PORT, "127.0.0.1", r));
    difference. Fixtures pinned to a date in 2024 would have tested
    neither. */
 
-const ago = (mins) => new Date(Date.now() - mins * 60_000).toISOString();
+const ago = (mins: number): string => new Date(Date.now() - mins * 60_000).toISOString();
 
-const FIXTURES = {
+/* Answers rather than a schema: each one is handed straight to
+   JSON.stringify, and what the panels make of it is the subject. */
+const FIXTURES: Record<string, unknown> = {
   "auth/me": { ok: true, signedIn: true, configured: true },
 
   questions: {
@@ -224,10 +240,23 @@ const FIXTURES = {
 /* ---------- the checks ---------- */
 
 let passed = 0;
-const failures = [];
-const check = (name, condition, detail = "") => {
+const failures: string[] = [];
+const check = (name: string, condition: boolean, detail = ""): void => {
   if (condition) { passed++; return; }
   failures.push(name + (detail ? `\n    ${detail}` : ""));
+};
+
+/** What an element says. `textContent()` and `getAttribute()` both
+    answer `string | null`, and a null here is a selector that found
+    nothing rather than an element with nothing in it.
+
+    So it throws, which is what the JavaScript did by calling
+    `.includes` on the null. Answering "" instead would read as an
+    element that is there and empty, and a check written as
+    `!said(...).includes(x)` would pass on one that is missing. */
+const said = (value: string | null): string => {
+  if (value === null) throw new Error("nothing there to read");
+  return value;
 };
 
 /* A browser, or a clean skip.
@@ -238,16 +267,16 @@ const check = (name, condition, detail = "") => {
    A machine with Chromium already on it says so through
    CHROMIUM_PATH. Anything else skips with the reason, because a
    test that cannot start is not a test that failed. */
-let browser;
+let browser: Browser;
 try {
   browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_PATH || undefined,
   });
 } catch (err) {
   console.log("No browser to drive, so the browser checks are skipped.");
-  console.log(`  ${String(err.message ?? err).split("\n")[0]}`);
+  console.log(`  ${(err instanceof Error ? err.message : String(err)).split("\n")[0]}`);
   console.log("  npx playwright install chromium"
-    + "   (or: CHROMIUM_PATH=/path/to/chrome node app/desk.test.mjs)");
+    + "   (or: CHROMIUM_PATH=/path/to/chrome node app/desk.test.ts)");
   server.close();
   process.exit(0);
 }
@@ -261,7 +290,7 @@ const context = await browser.newContext({
 });
 
 /** Every /api/ path this page asked for, in order. */
-const asked = [];
+const asked: string[] = [];
 
 await context.route("**/api/**", async (route) => {
   const url = new URL(route.request().url());
@@ -284,7 +313,7 @@ await context.route("**/api/**", async (route) => {
 });
 
 const page = await context.newPage();
-const pageErrors = [];
+const pageErrors: string[] = [];
 page.on("pageerror", (e) => pageErrors.push(e.message));
 page.on("console", (m) => { if (m.type() === "error") pageErrors.push(`console: ${m.text()}`); });
 
@@ -299,8 +328,12 @@ await page.goto(`http://127.0.0.1:${PORT}/desk/index.html`, { waitUntil: "domcon
 await page.waitForSelector(".desk-tiles", { timeout: 10_000 });
 await page.waitForTimeout(400);
 
-const tab = (label) => page.locator(`[role="tab"]`, { hasText: label }).first();
-const open = async (label) => { await tab(label).click(); await page.waitForTimeout(350); };
+const tab = (label: string): Locator =>
+  page.locator(`[role="tab"]`, { hasText: label }).first();
+const open = async (label: string): Promise<void> => {
+  await tab(label).click();
+  await page.waitForTimeout(350);
+};
 
 /* ---------- 1. the shell ---------- */
 
@@ -322,10 +355,14 @@ check("the selected tab says so",
    the tab strip and the first thing in the panel, and the panel
    read as belonging to nothing. */
 check("the panel is not floating away from its tabs",
-  await page.evaluate(() =>
-    parseFloat(getComputedStyle(document.getElementById("desk-panel")).paddingTop) < 24),
-  await page.evaluate(() =>
-    getComputedStyle(document.getElementById("desk-panel")).paddingTop));
+  await page.evaluate(() => {
+    const panel = document.getElementById("desk-panel");
+    return panel !== null && parseFloat(getComputedStyle(panel).paddingTop) < 24;
+  }),
+  await page.evaluate(() => {
+    const panel = document.getElementById("desk-panel");
+    return panel === null ? "there is no #desk-panel" : getComputedStyle(panel).paddingTop;
+  }));
 
 /* ---------- 2. the overview ---------- */
 
@@ -345,7 +382,7 @@ check("a tile routes to its panel",
   await (async () => {
     await page.locator(".desk-tile", { hasText: "Confirmed subscribers" }).click();
     await page.waitForTimeout(300);
-    const on = await page.locator('[role="tab"][aria-selected="true"]').textContent();
+    const on = said(await page.locator('[role="tab"][aria-selected="true"]').textContent());
     return on.includes("Subscribers");
   })());
 
@@ -368,7 +405,7 @@ check("a question carries its facts",
 check("the asker's address is a mailto",
   await page.locator('.admin-meta a[href^="mailto:"]').count() === 1);
 check("an anonymous asker is named as one",
-  (await page.locator(".admin-row").nth(1).textContent()).includes("anonymous"));
+  said(await page.locator(".admin-row").nth(1).textContent()).includes("anonymous"));
 check("the question is set in the serif column",
   await page.locator(".admin-q").count() === 2);
 check("there is somewhere to write the answer",
@@ -376,7 +413,7 @@ check("there is somewhere to write the answer",
 check("the new one is marked new, the nine-day-old one is not",
   await page.locator(".admin-row .pill-new").count() === 1);
 check("publishing is the solid button",
-  (await page.locator(".admin-row").first().locator(".btn-solid").textContent())
+  said(await page.locator(".admin-row").first().locator(".btn-solid").textContent())
     .includes("Answer"));
 check("and it is not the only way out",
   await page.locator(".admin-row").first().locator(".btn").count() === 4,
@@ -406,7 +443,7 @@ check("and it does not ask once per keystroke",
 await open("Comments");
 check("comments are listed", await page.locator(".comment-line").count() === 2);
 check("a reply says it is one",
-  (await page.locator(".comment-line").nth(1).textContent()).includes("reply"));
+  said(await page.locator(".comment-line").nth(1).textContent()).includes("reply"));
 check("each one links to where it was written",
   await page.locator('.comment-line a[href="/cooking/onions.html"]').count() === 2);
 check("approving is the one that stands out",
@@ -424,9 +461,9 @@ await open("Enquiries");
 check("only the new one shows by default",
   await page.locator(".admin-row").count() === 1);
 check("replying by email comes first",
-  (await page.locator(".admin-row .btn-solid").getAttribute("href")).startsWith("mailto:"));
+  said(await page.locator(".admin-row .btn-solid").getAttribute("href")).startsWith("mailto:"));
 check("with a subject line already written",
-  (await page.locator(".admin-row .btn-solid").getAttribute("href")).includes("subject="));
+  said(await page.locator(".admin-row .btn-solid").getAttribute("href")).includes("subject="));
 check("there is somewhere for private notes",
   await page.locator("textarea.admin-answer").count() === 1);
 check("the filters count every status",
@@ -444,7 +481,7 @@ check("a closed enquiry can be reopened",
 
 await open("Subscribers");
 check("three figures, not one", await page.locator(".stat").count() === 3);
-check("confirmed leads", (await page.locator(".stat-lead").textContent()).includes("Confirmed"));
+check("confirmed leads", said(await page.locator(".stat-lead").textContent()).includes("Confirmed"));
 check("the list can be taken away as a file",
   await page.locator('a[href="/api/subscribers/export"]').count() === 1);
 check("every address is listed", await page.locator(".admin-table .admin-line").count() === 4);
@@ -463,16 +500,16 @@ await open("What's read");
 check("three windows to choose from", await page.locator(".desk-filters .chip").count() === 3);
 check("the line is drawn", await page.locator(".chart-box svg polyline").count() === 1);
 check("the busiest day is a figure of its own",
-  (await page.locator(".stat-row").textContent()).includes("420"));
+  said(await page.locator(".stat-row").textContent()).includes("420"));
 check("a path is named, not printed",
-  (await page.locator(".admin-table .admin-line").first().textContent()).includes("Portfolio"),
-  await page.locator(".admin-table .admin-line").first().textContent());
+  said(await page.locator(".admin-table .admin-line").first().textContent()).includes("Portfolio"),
+  await page.locator(".admin-table .admin-line").first().textContent() ?? "");
 check("a tool is named too, and content.js is the only thing that knows that",
-  (await page.locator(".admin-table").first().textContent()).toLowerCase().includes("tool"));
+  said(await page.locator(".admin-table").first().textContent()).toLowerCase().includes("tool"));
 check("reactions are shown when there are any",
   (await page.locator(".section-label").allTextContents()).includes("Reactions"));
 check("and the page says what it does not know",
-  (await page.locator(".tool-note").textContent()).includes("No cookies"));
+  said(await page.locator(".tool-note").textContent()).includes("No cookies"));
 
 /* ---------- 8. published ---------- */
 
@@ -489,8 +526,8 @@ await open("Published");
   check("nothing offers to import a file, because there are none",
     await page.locator(".article-line.is-file, .chip-move").count() === 0);
   check("the count says how many pieces there are",
-    /piece/.test(await page.locator(".admin-count").textContent()),
-    await page.locator(".admin-count").textContent());
+    /piece/.test(await page.locator(".admin-count").textContent() ?? ""),
+    await page.locator(".admin-count").textContent() ?? "");
   check("a piece with no hosted photo is flagged",
     await page.locator(".pill-warn").count() === 1);
   check("and the flag says what is wrong",
@@ -585,11 +622,12 @@ await page.locator(".article-line", { hasText: "rate cycle" })
 await page.waitForTimeout(400);
 check("history opens as a modal", await page.locator("dialog.sheet[open]").count() === 1);
 check("it names the piece it belongs to",
-  (await page.locator("#history-title").textContent()).includes("rate cycle"));
+  said(await page.locator("#history-title").textContent()).includes("rate cycle"));
 check("both kept versions are listed",
   await page.locator("dialog.sheet[open] .admin-line").count() === 2);
 check("each one can be put back",
-  (await page.locator("dialog.sheet[open] .admin-line").first().textContent()).includes("Restore"));
+  said(await page.locator("dialog.sheet[open] .admin-line").first().textContent())
+    .includes("Restore"));
 await page.locator("dialog.sheet[open] .pane-bar .icon-btn").click();
 await page.waitForTimeout(300);
 check("and it closes", await page.locator("dialog.sheet[open]").count() === 0);
@@ -602,7 +640,7 @@ check("arrow keys move between tabs",
     await tab("Published").focus();
     await page.keyboard.press("ArrowRight");
     await page.waitForTimeout(250);
-    const on = await page.locator('[role="tab"][aria-selected="true"]').textContent();
+    const on = said(await page.locator('[role="tab"][aria-selected="true"]').textContent());
     return on.includes("Questions");     // wraps round to the first
   })());
 

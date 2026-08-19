@@ -92,7 +92,7 @@ const GONE: Gone[] = [
   { file: "next/lib/workbook.ts", name: "check-workbook.mjs",
     why: "names the old pointer beside check-next.ts, which holds it now" },
   { file: "next/components/workbook.tsx", name: "check-workbook.mjs",
-    why: "names the old pointer beside workbook.test.mjs, which held it all along" },
+    why: "names the old pointer beside workbook.test.ts, which held it all along" },
   { file: "scripts/check-next.ts", name: "check-workbook.mjs",
     why: "the check itself, saying which name used to be given for it" },
 

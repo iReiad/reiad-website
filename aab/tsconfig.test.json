@@ -1,0 +1,73 @@
+{
+  "//": [
+    "The browser-side tests, typechecked. Seven files: the three",
+    "schools' engines and the course player, driven in linkedom,",
+    "and the three that drive a real browser through Playwright.",
+    "",
+    "They are here rather than in `aab/src/tsconfig.json` because",
+    "that config COMPILES. It emits every module in `aab/src/` to",
+    "the address it is served from and a declaration for each into",
+    "`app/src/types/`, so a test added to it would be built into",
+    "`aab/` and published beside them. This one emits nothing and",
+    "exists only to read.",
+    "",
+    "Nothing typechecked these until they stopped being `.mjs`,",
+    "which is the trap `scripts/check-types.ts` was written for:",
+    "node strips the annotations without reading them, so a `.ts`",
+    "nobody checks is a `.js` wearing them, and that is worse than",
+    "the `.mjs` it replaced because a reader now believes them.",
+    "That check runs this config, so the rename and the types",
+    "arrive together or the build says so.",
+    "",
+    "It is listed there with `needs: app/`, because three of the",
+    "seven import `playwright` and it is a devDependency of that",
+    "workspace rather than of the root. CI runs `npm ci` at the",
+    "root and nowhere else, so this config skips there, loudly:",
+    "a skip is not a pass."
+  ],
+  "compilerOptions": {
+    "target": "ES2023",
+    /* DOM as well as ES2023, and it is not decoration. `linkedom`
+       types `parseHTML` as returning `Window & typeof globalThis`,
+       and every callback these tests hand to `page.evaluate` runs
+       in a real browser, so both halves need the browser's own
+       library. */
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "verbatimModuleSyntax": true,
+    /* `courses.test.ts` reads its fixture's shape out of
+       `./src/courses.ts` by its real filename, because node
+       resolves what is on disk and has no opinion about what
+       TypeScript would have preferred. `noEmit` is what makes
+       that legal here. */
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    /* The served paths these tests name, and `paths` REPLACES
+       rather than merges, so every one of them is written out.
+
+       `/account.js` points at the SOURCE rather than at a
+       description of it, the way `aab/src/tsconfig.json` does:
+       one file, so the two cannot drift. `/editor.js` has no
+       TypeScript source yet, so it points at the hand-written
+       declaration `app/src/types/` holds for it.
+
+       Playwright is a devDependency of `app/`, which is the same
+       entry `next/tsconfig.json` and `scripts/tsconfig.json`
+       carry and for the same reason: it is a browser driver, and
+       the root install is what CI runs. */
+    "paths": {
+      "playwright": ["../app/node_modules/playwright"],
+      "/account.js": ["./src/account.ts"],
+      "/editor.js": ["../app/src/types/editor.d.ts"]
+    }
+  },
+  "include": ["*.test.ts", "schools/*.test.ts", "portfolio/*.test.ts",
+              "portfolio/scorecard.fetch.ts"],
+  "exclude": ["node_modules"]
+}

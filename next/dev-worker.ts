@@ -2,7 +2,7 @@
    dev-worker.ts: the built Worker, on workerd, with a database
    in it.
 
-   Not a test. `parity.test.mjs` and `article.test.ts` both need
+   Not a test. `parity.test.ts` and `article.test.ts` both need
    the same three things before they can ask anything at all: a
    temporary D1 with rows in it, `wrangler dev` running the
    OpenNext build against it, and an honest answer about whether

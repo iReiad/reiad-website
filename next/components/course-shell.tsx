@@ -59,7 +59,7 @@ export function CourseShell() {
     `noindex` on all four, and not because the pages are boring: a
     crawler that cannot sign in gets the shell above, so what it
     would index is a permanent "loading" page under eight hundred
-    addresses. `build-meta.mjs` disallows the prefix in robots.txt
+    addresses. `build-meta.ts` disallows the prefix in robots.txt
     as well, which is the half that stops the fetch; this is the
     half that survives somebody linking to it. */
 export const courseMeta = (title: string) => ({
