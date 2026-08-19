@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v144: `/offline.html`, and `/404.html` beside it, for a word.
+        Both boot scripts tested `a === "money"` where the stored
+        audience is `learn` or `work`, so a reader who chose
+        Learning got no `data-audience` on the two pages that
+        answer when the Worker and the routes cannot. The money
+        school's move from /learn/ to /money/ took this comparison
+        with it, which is the one thing that move was not supposed
+        to touch. `check-next.ts` compares the three copies now.
+
    v143: most of the list, and for two reasons at once.
 
         Task #28 took `.html` off every address on the site, so
@@ -1469,7 +1478,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v143";
+const VERSION = "v144";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

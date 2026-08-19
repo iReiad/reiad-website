@@ -326,6 +326,64 @@ for (const rung of [...STUFEN, ...TERMS] as Rung[]) {
   }
 }
 
+/* ============================================================
+   The pre-paint boot, said three times
+
+   `shell.tsx` writes it into every route. `404.html` and
+   `offline.html` carry their own copy, and they have to: they are
+   files, they answer when the Worker and the routes cannot, and
+   there is nothing to render one for them.
+
+   So the vocabulary is written out three times, and it drifted.
+   The two file pages tested `a === "money"` where the stored
+   value is `learn` or `work`, which is `AUDIENCES` in
+   `next/lib/nav.ts`, what `shell.tsx` writes, and what
+   `html[data-audience="learn"]` in the stylesheet answers to. The
+   money school moved from `/learn/` to `/money/` on 17 August
+   2026 and this comparison moved with it, which is the one thing
+   that move was not supposed to touch.
+
+   A reader who chose Learning therefore got no `data-audience` on
+   those two pages, so the rail's groups came out in the other
+   order, on exactly the two pages that answer when everything
+   else is down. Nothing could see it: both pages render
+   perfectly.
+
+   This compares the ATTRIBUTE VALUES each copy tests for, not the
+   text, because the two are written differently on purpose:
+   `shell.tsx` minifies its copy into one line and the files
+   space theirs out to be read. */
+{
+  const values = (src: string, attr: string): string[] => {
+    /* Every `a === "x"` (or `t === "x"`) in the same statement as
+       a `setAttribute` for this attribute. */
+    const line = src.split("\n").find((l) => l.includes(`"${attr}"`) && l.includes("==="))
+      ?? src.split(/;\s*/).find((l) => l.includes(`"${attr}"`) && l.includes("===")) ?? "";
+    return [...line.matchAll(/===\s*"([a-z-]+)"/g)].map((m) => m[1]).sort();
+  };
+
+  const shell = read("next/components/shell.tsx");
+  for (const attr of ["data-audience", "data-theme"]) {
+    const want = values(shell, attr);
+    if (!want.length) {
+      fail(`check-next.ts cannot find the ${attr} test in shell.tsx any more.`,
+        "This check compares the two file pages against it, so it is now",
+        "comparing them against nothing. Point it at the boot script again.");
+      continue;
+    }
+    for (const page of ["aab/404.html", "aab/offline.html"]) {
+      const got = values(read(page), attr);
+      if (got.join() === want.join()) continue;
+      fail(`${page} tests ${attr} for ${got.join(", ") || "nothing"} and `
+        + `shell.tsx tests ${want.join(", ")}.`,
+        "The boot script is written three times because these two pages are",
+        "files and cannot render one. A value only one of them knows is a",
+        "reader whose choice is dropped on the two pages that answer when",
+        "the Worker and the routes cannot.");
+    }
+  }
+}
+
 console.log(failures
   ? `\n${failures} copy(ies) in next/ have drifted from the original.\n`
   : `next/ holds 3 drawings copied out of aab/ by hand and ${drawings}\n`

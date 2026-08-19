@@ -244,7 +244,7 @@ for (const name of RULES) {
    ============================================================ */
 
 {
-  const urls = ["/skills/courses/index.html"];
+  const urls = ["/skills/courses", "/skills/courses/index.html"];
   for (const course of COURSES) {
     urls.push(courseUrl(course.slug));
     for (const mod of course.modules) {

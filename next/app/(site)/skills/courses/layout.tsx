@@ -20,7 +20,7 @@ import { trailFor, PENDING } from "../../../../lib/crumbs";
 export default siteLayout({
   current: "skills",
   crumbs: trailFor("skills", [
-    { href: "/skills/courses/index.html", label: "কোর্স" },
+    { href: "/skills/courses", label: "কোর্স" },
     { label: PENDING },
   ]),
   scripts: <SiteScripts srcs={["/courses.js"]} />,

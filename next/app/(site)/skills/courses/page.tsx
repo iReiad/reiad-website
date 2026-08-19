@@ -1,6 +1,6 @@
-/* /skills/courses/index.html: the eight courses. */
+/* /skills/courses: the eight courses. */
 import type { Metadata } from "next";
-import { CourseShell, courseMeta } from "../../../../../components/course-shell";
+import { CourseShell, courseMeta } from "../../../../components/course-shell";
 
 export const metadata: Metadata = courseMeta("Courses");
 

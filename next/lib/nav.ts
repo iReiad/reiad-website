@@ -136,7 +136,7 @@ export const NAV: NavGroup[] = [
         blurb: "ভিসা, কাগজপত্র আর প্রথমবার দেশের বাইরে যাওয়ার পুরো ধাপ।",
       },
       {
-        label: "Courses", sub: "কোর্স", href: "/skills/courses/index.html",
+        label: "Courses", sub: "কোর্স", href: "/skills/courses",
         icon: "cap", key: "courses", kind: "নিজের", unlisted: true,
         accent: "var(--gold)",
         blurb: "বাইরের কোর্স, নিজের পড়ার জন্য রাখা। কোনোটাই প্রকাশ করা হয়নি।",

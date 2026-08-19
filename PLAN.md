@@ -45,9 +45,9 @@ Free, verifiable, and it shrinks every later phase.
 | the four `arbeitsbuch.html` / `workbook.html` files | 2.2 MB, shadowed by the routes since Stage 11.7 |
 | the comment in `wrangler.toml` saying "The four practice books are files still" | it stopped being true when the routes landed |
 
-`/deutsch/stufe-1/arbeitsbuch.html` matches a `NEXT_ROUTES`
-pattern and `next/app/[section]/[slug]/arbeitsbuch.html/page.tsx`
-answers it, so the file is never reached. Verify with one fetch
+`/deutsch/stufe-1/arbeitsbuch` matches a `NEXT_ROUTES` pattern
+and `next/app/[section]/[slug]/arbeitsbuch/page.tsx` answers it,
+so the file is never reached. Verify with one fetch
 per URL before deleting, not after.
 
 ## Phase 1. The visible defects
@@ -264,34 +264,45 @@ retires that question rather than guarding it.
 
 ## Phase 5.5. Drop `.html` from every address
 
-`/about.html`, `/money/index.html`, `/deutsch/stufe-1/anfang.html`.
-Those are the addresses of FILES, and there have been no files
-behind them since Stage 11.7. A Next route serves `/about` and
-`/money/` and needs no extension, and the extension is the last
-visible piece of the old system on a reader's screen.
+**Done, and two lines of the plan below were wrong.** Every route
+directory under `next/app/` lost its `.html`: `/about`, `/skills`,
+`/money/basics-1`, `/deutsch/stufe-1/arbeitsbuch`. Every address
+that was live before it is a 301 in `aab/_redirects`, one line
+each, and that file is now the description of the mechanism.
 
-**It is not a rename.** 251 of those addresses are live, shared
-and indexed, and the rule this repository runs on is that a URL
-somebody shared does not move. So every old address gets a
-permanent 301 and keeps answering forever:
+The plan said every `<a href>` in a lesson body would be rewritten
+in D1 with one UPDATE. It was not, and it must not be: an
+article's address and a school lesson's address KEEP their
+`.html`, because there the suffix is part of a slug rather than
+part of a route. It is in the rows, in every link inside every
+lesson body, and in the `public.library` row of everybody who has
+saved a piece. So the redirects are not a safety net for the
+bodies, they are what the bodies run on.
+
+The plan also wanted a new rule in `check-routes.ts`: no internal
+link ends in `.html`. That rule would fail on every article and
+every lesson on the site. What proves this finished instead is
+what was already there: `check-routes.ts` traces every source in
+`_redirects` to whatever finally answers it, and
+`next/parity.test.ts` asks the real Worker for each address.
+
+`/skills/courses/` is the one section that TOLERATES its old
+addresses rather than redirecting them: 845 of them are generated
+out of a Drive folder, so a rule each would go stale the first
+time that folder changed. `shared/courses.ts` says so beside
+`lessonOf`.
 
 | | |
 | --- | --- |
-| the route folders under `next/app/` | `about.html/page.tsx` becomes `about/page.tsx` |
-| `NEXT_ROUTES` in `worker.js` | the patterns match the extension today |
-| `run_worker_first` in `wrangler.toml` | same |
+| the route folders under `next/app/` | `about.html/page.tsx` became `about/page.tsx`; four of them needed a `(hub)` route group, because a layout moved up a level would have wrapped its siblings |
+| `next/app/[section]/[slug]/index.html/` | merged into the article's own `page.tsx`, which dispatches on `isSchool()`: a stage's ladder and an article now share one address shape |
+| `NEXT_ROUTES` in `worker.js` | the patterns lost the extension |
+| `run_worker_first` in `wrangler.toml` | same, and `/money/*` replaced `/money/*/*` because a two-segment ladder cannot be named without a star |
 | `next/lib/nav.ts` | sixteen hrefs, and it is the one table |
-| `stageUrl`, `lessonUrl`, `stageBase` in `shared/schools.ts` | which is where 251 of them are computed |
-| every `<a href>` in a lesson body | in D1, so one UPDATE and a re-export |
-| the canonicals, `sitemap.xml`, `feed.xml`, `og:url` | `build-meta.ts` writes these |
+| `stageUrl` and `workbookUrl` in `shared/schools.ts` and the four `shared/curricula/` | where the school addresses are computed |
+| the canonicals, `sitemap.xml`, `feed.xml`, `og:url`, the JSON-LD | `build-meta.ts` and `shared/look.ts` |
+| `robots.txt` | `Disallow: /studio/` stopped covering `/studio` the moment the trailing slash left the address |
 | `aab/_redirects` | one line per old address |
-| `check-routes.ts` | a new rule: no internal link ends in `.html` |
-
-Two things make this safe to leave until here. It touches nothing
-structural, so it can happen at any point without changing what
-any other phase does. And `check-routes.ts` already walks every
-link on the site, so the rule that proves it finished is nine
-lines in a check that exists.
 
 **`404.html` and `offline.html` keep theirs**, for the reason they
 are exceptions to everything else: they are files, and a file has

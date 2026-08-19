@@ -16,15 +16,21 @@
 #
 # ---- one rule per old address, and no splats ----
 #
-# There is one exception below and it is `/index.html`. Everything
-# else is written out, including seventeen stage ladders, because
-# a redirect is a fact about an address that WAS live and that set
-# does not grow: a stage written after this file cannot have an
-# `index.html` form, so there is nothing here to keep in step with
-# the data. A placeholder rule would be four lines instead of
-# twenty-three and would buy that staleness back, and it would
-# also be invisible to `check-routes.ts`, which traces every
-# source below to whatever finally answers it.
+# Everything is written out, including seventeen stage ladders,
+# because a redirect is a fact about an address that WAS live and
+# that set does not grow: a stage written after this file cannot
+# have an `index.html` form, so there is nothing here to keep in
+# step with the data. A placeholder rule would be four lines
+# instead of twenty-three and would buy that staleness back, and
+# it would also be invisible to `check-routes.ts`, which traces
+# every source below to whatever finally answers it.
+#
+# ONE SET OF OLD ADDRESSES IS NOT HERE: `/skills/courses/`. That
+# set DOES grow, 845 of them generated out of a Drive folder, so
+# `worker.js` answers both spellings instead and `shared/courses.ts`
+# says why beside `lessonOf`. Nothing else on this site may borrow
+# that argument: it rests on the section being admin-only and
+# unlisted, so there is no canonical to split.
 #
 # ---- the loop this file used to make ----
 #
@@ -126,8 +132,15 @@
 /colophon.html        /about                301
 /colophon             /about                301
 # A term that moved from Insights to the money school. Both
-# spellings of the source; the destination is a LESSON, which is
-# the one kind of address on this site that keeps its `.html`.
+# spellings of the source, and the destination keeps its `.html`
+# because it is a LESSON.
+#
+# Two kinds of address kept the suffix through task #28 and both
+# are a slug rather than a route: a school lesson,
+# `/money/terms/dsex.html`, and an article, `/insights/<slug>.html`.
+# The suffix is in the rows, in every link inside every lesson body
+# in D1, and in the `public.library` row of everybody who has saved
+# a piece. Do not "finish the job" on either.
 /insights/dsex.html   /money/terms/dsex.html   301
 /insights/dsex        /money/terms/dsex.html   301
 # The trailing-slash forms of the two hubs and the skills index,

@@ -743,6 +743,37 @@ const says = (name: string, want: string, got: string | null): void => ok(name, 
     nowhere.status === 404, `status ${nowhere.status}`);
 }
 
+/* ---------- the addresses task #28 moved, which only decline ----------
+
+   A rule in `aab/_redirects` fires because the Worker DECLINES,
+   and `fromNext()` in worker.js falls through on 404 and on
+   nothing else. Most old addresses match no route at all, so
+   there is nothing to ask; these are the ones a route pattern
+   still claims and a lookup then has to refuse, one per shape.
+
+   404 rather than 500 is the whole assertion. `getArticle` and
+   `getLesson` both reach D1, and a route that threw instead of
+   returning null would answer 500, which falls through to
+   nothing: the reader would get the error rather than the
+   redirect, and every check in this repository would still pass.
+   It cannot be asked anywhere but here, because it needs the
+   binding. */
+{
+  console.log("\nthe old addresses, which have to decline rather than throw");
+  for (const [path, what] of [
+    ["/cooking/index.html", "a reading hub's old address"],
+    ["/travel/index.html", "the other one"],
+    ["/money/basics-1/index.html", "a stage ladder's"],
+    ["/deutsch/stufe-1/index.html", "a Stufe's"],
+    ["/deutsch/stufe-1/arbeitsbuch.html", "a practice book's"],
+    ["/english/term-1/workbook.html", "the other book's"],
+  ] as Array<[string, string]>) {
+    const gone = await hub(path);
+    ok(`${path} declines with a 404 (${what})`, gone.status === 404,
+      `status ${gone.status}, so _redirects never fires and the reader keeps it`);
+  }
+}
+
 /* ---------- the hand-written pages ----------
 
    Stage 11.5. Prose, ported markup for markup, so there is
