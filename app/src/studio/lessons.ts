@@ -118,7 +118,7 @@ export interface Stage {
 
     Widening the allowlist is not the answer either. Those classes
     belong to the starter guide's own layer, not to `@layer
-    article`, and `check-css.mjs` fails a class that two layers
+    article`, and `check-css.ts` fails a class that two layers
     both define. They would also then be offered inside every
     article, where they are meaningless.
 

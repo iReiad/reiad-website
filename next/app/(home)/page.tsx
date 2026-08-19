@@ -60,7 +60,7 @@ export const metadata: Metadata = pageMeta({
     of them is a fact about a list somewhere else on this site: six
     schools in `lib/nav.ts`, five calculators, seven case studies.
     They are small enough to be checked by `CLAIMS` in
-    `check-content.mjs`, which is where a sentence that cannot hold
+    `check-content.ts`, which is where a sentence that cannot hold
     a counting slot goes. */
 const FACTS = [
   { n: "৬", label: "ফ্রি কোর্স", en: "free courses" },

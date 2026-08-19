@@ -1,5 +1,5 @@
 /* ============================================================
-   check-sw.js, did a precached file change without a VERSION bump?
+   check-sw.ts, did a precached file change without a VERSION bump?
 
    This exists because the same mistake has now been made twice.
    sw.js precaches the shell, and a precached file is answered from
@@ -19,8 +19,8 @@
    recorded in sw-manifest.json alongside the VERSION they belong
    to. Run this before committing:
 
-       node scripts/check-sw.js            verify
-       node scripts/check-sw.js --update   record the current state
+       node scripts/check-sw.ts            verify
+       node scripts/check-sw.ts --update   record the current state
 
    If any precached file has changed since the manifest was written
    and VERSION has not moved, it fails and says which files.
@@ -33,11 +33,9 @@ import { dirname, join } from "node:path";
 
 /* `AAB` is the served directory and `HERE` used to be it. Every
    file in `aab/` is uploaded and answers at a public URL, so a
-   check living there was a check published at `/check-sw.mjs`,
-   kept private only by a line in `.assetsignore` somebody has to
-   remember to add. A check outside the served directory cannot be
-   served. The extension went with it: the root declares
-   `"type": "module"`, so `.js` behaves exactly as `.mjs` did.
+   check living there is a check published, kept private only by a
+   line in `.assetsignore` somebody has to remember to add. A check
+   outside the served directory cannot be served.
 
    `sw-manifest.json` stays in `aab/`, and that is not an
    oversight: it is data the service worker's own check reads
@@ -171,8 +169,15 @@ if (unreachable.length) {
   process.exit(1);
 }
 
-const hashes = {};
-const missing = [];
+/** Each precached path against the first sixteen hex characters
+    of its SHA-256. Written to `sw-manifest.json` beside the
+    VERSION the hashes belong to, which is the whole mechanism:
+    a file that changed under a VERSION that did not is what this
+    check is looking for. */
+type Hashes = Record<string, string>;
+
+const hashes: Hashes = {};
+const missing: string[] = [];
 for (const p of paths) {
   // "/" is the same file as /index.html on a static host
   const rel = p === "/" ? "index.html" : p.replace(/^\//, "");
@@ -197,11 +202,18 @@ if (update) {
   process.exit(0);
 }
 
-let prev = null;
+/** The manifest as it is on disk: the VERSION it was written for
+    and the hashes at that moment. */
+interface Manifest {
+  version: string;
+  hashes: Hashes;
+}
+
+let prev: Manifest;
 try {
-  prev = JSON.parse(await readFile(MANIFEST, "utf8"));
+  prev = JSON.parse(await readFile(MANIFEST, "utf8")) as Manifest;
 } catch {
-  console.error("no sw-manifest.json: run: node scripts/check-sw.js --update");
+  console.error("no sw-manifest.json: run: node scripts/check-sw.ts --update");
   process.exit(1);
 }
 
@@ -217,7 +229,7 @@ if (!changed.length && !added.length && !removed.length) {
 
 if (version !== prev.version) {
   console.log(`sw ${prev.version} → ${version}, ${changed.length} file(s) changed. Fine.`);
-  console.log("   run: node scripts/check-sw.js --update");
+  console.log("   run: node scripts/check-sw.ts --update");
   process.exit(0);
 }
 
@@ -226,5 +238,5 @@ for (const p of changed) console.error(`   changed  ${p}`);
 for (const p of added) console.error(`   added    ${p}`);
 for (const p of removed) console.error(`   removed  ${p}`);
 console.error("\nEvery returning visitor will keep the old copies until VERSION moves.");
-console.error("Bump VERSION in sw.js, then run: node scripts/check-sw.js --update");
+console.error("Bump VERSION in sw.js, then run: node scripts/check-sw.ts --update");
 process.exit(1);

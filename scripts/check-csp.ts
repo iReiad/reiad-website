@@ -1,5 +1,5 @@
 /* ============================================================
-   check-csp.mjs: can the browser actually reach what the code
+   check-csp.ts: can the browser actually reach what the code
    asks for?
 
    THE BUG THIS EXISTS FOR
@@ -27,14 +27,11 @@ import { join, dirname, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /* `AAB` is the browser modules and `ROOT` is the repository. They
-   were the same directory until this file moved out of it: every
-   file in `aab/` is uploaded and served, so a check living there
-   was a check published at `/check-csp.mjs`, kept private only by
-   a line in `.assetsignore` that somebody has to remember to add.
-   A check outside the served directory cannot be served.
-
-   The extension went with it: the root declares
-   `"type": "module"`, so `.js` behaves exactly as `.mjs` did. */
+   were the same directory until this file moved out of it. Every
+   file in `aab/` is uploaded and answers at a public URL, so a
+   check living there is a check published, kept private only by a
+   line in `.assetsignore` somebody has to remember to add. A check
+   outside the served directory cannot be served. */
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const AAB = join(ROOT, "aab");
 
@@ -104,7 +101,9 @@ const connect = (csp.match(/connect-src([^;]*)/)?.[1] ?? "")
 
 /* ---------- what the code asks for ---------- */
 
-const jsFiles = [];
+/** Every file the browser might run, gathered by `walk()` below.
+    Absolute paths; `relative(ROOT, path)` is what a message says. */
+const jsFiles: string[] = [];
 
 /* Generated bundles are skipped, and their SOURCE is read instead.
 
@@ -120,7 +119,7 @@ const jsFiles = [];
    would actually be written, and it is a hundredth of the size. */
 const GENERATED = new Set(["desk", "studio"]);
 
-const walk = (dir, skip = new Set()) => {
+const walk = (dir: string, skip = new Set<string>()): void => {
   for (const name of readdirSync(dir)) {
     // node_modules is not ours, and the generated schools hold no fetches.
     if (name === "node_modules" || name.startsWith(".")) continue;

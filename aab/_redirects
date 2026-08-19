@@ -61,7 +61,7 @@
 # addresses are in `run_worker_first` in wrangler.toml, which takes
 # them away from the asset router altogether: nothing rewrites them,
 # the Next.js Worker answers them, and there is no other side to the
-# bounce. `check-routes.mjs` reads that list and models it, so if the
+# bounce. `check-routes.ts` reads that list and models it, so if the
 # entry in wrangler.toml is ever removed, these six lines become the
 # loop it has always been able to catch.
 /about                 /about.html           301

@@ -247,8 +247,11 @@ export const bookFor = (slug: string): WorkbookBook | null => BOOKS[slug] ?? nul
     `curriculum.js` declares the same number in `workbook.days`
     because the browser draws a progress bar from it and must not
     pull five thousand lines of days down to count them.
-    `check-workbook.mjs` asserts the two against each other, so a
-    declaration that drifts fails a check rather than a reader. */
+    NOTHING asserts the two against each other. `check-workbook.mjs`
+    was named here and has never existed under any extension, so
+    what this comment promised was a check nobody wrote. Said out
+    loud rather than quietly deleted: a declaration that drifts
+    from its days still reaches a reader as a wrong progress bar. */
 export const dayCount = (slug: string): number => bookFor(slug)?.days.length ?? 0;
 
 /** Which language tag a target-language line carries. */

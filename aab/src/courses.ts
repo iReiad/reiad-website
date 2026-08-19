@@ -917,7 +917,7 @@ async function mountCaptions(video: HTMLElement, drive: string) {
 
      Read with a pattern rather than `new URL`, which needs a base
      and would mean inventing a hostname to parse a relative path.
-     `check-csp.js` reads every host named in this directory and
+     `check-csp.ts` reads every host named in this directory and
      is right to refuse one that exists only to satisfy a
      constructor. */
   const pass = /[?&]t=([^&]*)/.exec(answer.data.url)?.[1] ?? "";

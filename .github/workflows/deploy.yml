@@ -121,7 +121,7 @@ jobs:
       # node builtins and one file from shared/.
       #
       # The reason it mattered is worth keeping even though the
-      # step has gone. `build-modules.mjs` runs `npx tsc`, and
+      # step has gone. `build-modules.ts` runs `npx tsc`, and
       # with no node_modules npx does not fail: it goes to the
       # registry, where `tsc` is not TypeScript. A run once died
       # inside `tsc@2.0.4`, a package nothing here has ever asked

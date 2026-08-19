@@ -40,7 +40,7 @@ fetches at runtime, so the two can disagree, and nothing here would
 notice. Two things keep them honest:
 
 - every signature below was read off the module it describes, and
-- `node aab/check-csp.mjs` walks `app/src`, so an import of something
+- `node scripts/check-csp.ts` walks `app/src`, so an import of something
   that is not served by this origin fails a check rather than a page.
 
 If one of these modules changes shape, this directory is the thing to

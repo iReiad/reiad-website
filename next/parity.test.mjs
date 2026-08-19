@@ -678,7 +678,7 @@ for (const [path, title, nav] of [
 /* Every case study is reachable from the portfolio index, and the
    index is the only thing that says so. A card pointing at a page
    that does not answer, or a page nothing links, is the failure
-   `check-content.mjs` watches from the other side; this is the
+   `check-content.ts` watches from the other side; this is the
    half that can only be seen once the pages are being served. */
 {
   const index = await hub("/portfolio.html");

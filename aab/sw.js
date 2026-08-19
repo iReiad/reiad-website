@@ -140,7 +140,7 @@
         place of the two.
 
    v122: Seven rules that style nothing on this site are gone,
-        and `check-css.js` counts them now so no eighth arrives
+        and `check-css.ts` counts them now so no eighth arrives
         quietly. `.card-sub`, `.news-meta`, `.palette-panel`,
         `.pill-new`, `.section-more` and the two `-dot` variants
         of chart lines whose templates build `line-${k}` and
@@ -352,7 +352,7 @@
         and declared nowhere, so `bg-weave` and `bg-sheen` did
         nothing in all seven components that asked, and every
         surface was flat colour. Both exist now, plus `--grain`,
-        and all three take the page's accent. `check-css.js`
+        and all three take the page's accent. `check-css.ts`
         reads the Tailwind source too, which is where it could not
         see any of this.
 
@@ -386,7 +386,7 @@
         whole declaration invalid at computed value time, so
         picking an answer did nothing visible. `--header-h` was
         the same, left behind when `body > header` was removed.
-        `check-css.js` now fails on a token nothing defines and
+        `check-css.ts` now fails on a token nothing defines and
         no script sets.
 
    v105: The theming actually reaches the page. `--accent` was set
@@ -876,7 +876,7 @@
         pages. None of the three can be drawn any more: the first
         was only ever set from a content.js entry and is not a
         column, and the other two belonged to the markup the route
-        replaced. check-css.mjs is what found them, the moment the
+        replaced. check-css.ts is what found them, the moment the
         pages holding them left aab/.
 
    v71: archive/TRANSITION.md Stage 11.1. The three reading hubs are
@@ -1281,7 +1281,7 @@
    card on the site grew an empty bordered box around its label.
    styles.css, the practice book and its script all changed, and
    all three are precached, without the bump the fix would have
-   reached nobody who had been to the site before. check-css.mjs
+   reached nobody who had been to the site before. check-css.ts
    now fails on the general case.
 
    v22: the German school's first fixes, the practice book's
@@ -1319,7 +1319,7 @@
    the figure toolbar and the pre-flight panel (v16); and the desk
    moved onto its own page, taking the dashboard's styles with it
    (v17). styles.css is precached and changed in all three, which is
-   exactly the shape of the v3 and v10 mistakes, check-sw.js caught
+   exactly the shape of the v3 and v10 mistakes, check-sw.ts caught
    each one before it shipped.
 
    v12: the About page was rebuilt, new markup, a new `about`
@@ -1330,7 +1330,7 @@
    menu and palette were restructured, the home page gained a
    Bangla half and a models section, and the learn hub's doors
    became buttons. styles.css, app.js, content.js, learn.js,
-   hub.js and three precached pages all changed. check-sw.js
+   hub.js and three precached pages all changed. check-sw.ts
    caught this one before it shipped, which is what it is for.
 
    v10: THE SAME MISTAKE AS v3, MADE AGAIN. The stock check shipped
@@ -1344,7 +1344,7 @@
    The structural fix is below in the fetch handler: the runtime
    cache is now consulted BEFORE the shell, so a background refresh
    actually takes effect. A missed bump now costs one stale load
-   instead of freezing a file forever. check-sw.js guards the rest.
+   instead of freezing a file forever. check-sw.ts guards the rest.
 
    v9: the stock check landed, a new page under /tools/ with its
    own engine, string table and stylesheet block, plus a changed
@@ -1477,7 +1477,7 @@ const PRECACHE = [
      of a reader who may never open Stufe 2. The other two are
      picked up by the runtime cache the first evening they are
      opened, which is the evening before the bus.
-     (Keep double quotes out of this comment: check-sw.js reads
+     (Keep double quotes out of this comment: check-sw.ts reads
      the list below by pulling quoted strings out of the block.) */
   /* The two modules all three of the schools below now run on.
      progress.js is the ticks, the days and the bookmark, and
@@ -1546,7 +1546,7 @@ const PRECACHE = [
 
    archive/TRANSITION.md Stage 11.7. Every one of these is a page a Worker
    builds out of the database, so there is nothing in aab/ to hash
-   and check-sw.js does not try: it checks that each one is a
+   and check-sw.ts does not try: it checks that each one is a
    route worker.js actually forwards, which is the failure that
    would matter here (an address in this list that nothing serves
    is an install that fetches a 404 and caches it).

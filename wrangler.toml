@@ -111,7 +111,7 @@ not_found_handling = "404-page"
 # /cooking/index.html under /cooking/* and four school patterns under
 # their own suffixless form, so every push from 16 August onwards
 # built nothing while the site carried on serving the last good
-# upload. `check-routes.mjs` now runs the same overlap test the
+# upload. `check-routes.ts` now runs the same overlap test the
 # deploy does, so the next one fails on a laptop instead.
 run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/*", "/_next/*",
   "/feed.xml", "/sitemap.xml", "/insights.html",

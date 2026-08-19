@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-content.js, catch a page that has stopped telling the
+   check-content.ts, catch a page that has stopped telling the
    truth about the site.
 
-       node scripts/check-content.js
+       node scripts/check-content.ts
 
    THE BUG THIS EXISTS FOR
 
@@ -68,7 +68,7 @@ import { METRICS, PILLARS } from "../aab/tools/stock.model.js";
 /* `ROOT` was this file's own directory, which was `aab/`. It moved
    out for the reason the four checks before it did: every file in
    `aab/` is uploaded and answers at a public URL, so a check
-   living there was a check published at `/check-content.js`,
+   living there was a check published at `/check-content.ts`,
    kept private only by a line in `.assetsignore`. A check outside
    the served directory cannot be served, and the extension goes
    with it because the root declares `"type": "module"`.
@@ -80,18 +80,18 @@ let failures = 0;
 
 /** Is this an address a Worker renders rather than a file? The
     allowlist in worker.js, read rather than copied. Whether the
-    asset router lets it through is check-routes.mjs's question,
+    asset router lets it through is check-routes.ts's question,
     and it asks it of the same two lists. */
-const workerAnswers = (url) =>
+const workerAnswers = (url: string): boolean =>
   ARTICLE.test(url) || NEXT_ROUTES.some((route) => route.test(url));
 
-const fail = (line, ...detail) => {
+const fail = (line: string, ...detail: string[]): void => {
   failures++;
   console.error(line);
   detail.forEach((d) => console.error(`        ${d}`));
 };
 
-const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
+const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
 
 /* ------------------------------------------------------------
    1. Every case study is in the manifest and on the page
@@ -112,8 +112,14 @@ const caseFiles = readdirSync(join(ROOT, NEXT_PAGES, "portfolio"))
   .filter((f) => f.endsWith(".html"))
   .map((f) => `/portfolio/${f}`);
 
+/* `flatMap` rather than `filter().map()`, and not for tidiness: a
+   PAGES entry's url can be null, because the two workbook groups
+   are built from `workbookUrl()`, which answers null for a stage
+   with no book. The filter that drops those is invisible to a
+   type, and the loop below compares urls to file names. Section 2
+   is where a null one is reported. */
 const listed = new Set(
-  PAGES.filter((p) => p.group === "case").map((p) => p.url)
+  PAGES.flatMap((p) => (p.group === "case" && p.url ? [p.url] : []))
 );
 const portfolioHtml = read(`${NEXT_PAGES}/portfolio.html/page.tsx`);
 
@@ -146,12 +152,25 @@ for (const url of listed) {
    "A file that exists" was the whole question until Stage 11.
    Some of these addresses are rendered on request now and have no
    file behind them on purpose, so the question is the one
-   check-routes.mjs already answers: does anything at all answer
+   check-routes.ts already answers: does anything at all answer
    this URL. A manifest entry pointing at neither is a dead link
    in the menu of every page on the site, which is what this has
    always been for.
    ------------------------------------------------------------ */
 for (const page of PAGES) {
+  /* An entry with no address at all, which the two workbook groups
+     can produce: `workbookUrl()` answers null for a stage with no
+     book, and the `.filter()` in front of it is the only thing
+     stopping one reaching here. Asked where it can be answered,
+     because a manifest entry with no url is a menu item and a
+     palette entry that go nowhere. */
+  if (!page.url) {
+    fail(`no-url    ${page.title}`,
+      "this PAGES entry has no url, so it is in the menu and in the palette",
+      "and neither goes anywhere. The workbook entries are built from",
+      "workbookUrl(), which answers null for a stage with no book.");
+    continue;
+  }
   const rel = page.url.replace(/^\//, "");
   if (existsSync(join(ROOT, rel))) continue;
   if (workerAnswers(page.url)) continue;
@@ -167,8 +186,9 @@ for (const page of PAGES) {
 /* The same digits app.js uses, so this checks what a reader
    actually sees rather than what the markup happens to store. */
 const BN_DIGITS = "০১২৩৪৫৬৭৮৯";
-const toBangla = (n) => String(n).replace(/\d/g, (d) => BN_DIGITS[Number(d)]);
-const fromBangla = (s) =>
+const toBangla = (n: number): string =>
+  String(n).replace(/\d/g, (d) => BN_DIGITS[Number(d)]);
+const fromBangla = (s: string): string =>
   s.replace(/[০-৯]/g, (d) => String(BN_DIGITS.indexOf(d)));
 
 /* Every file that can carry a slot, which is no longer only
@@ -207,16 +227,26 @@ for (const dir of ["../next/app", "../next/components"]) {
   })(dir);
 }
 
+/* `COUNTS`, looked up by a name this file cannot know at compile
+   time: the keys come out of markup (`data-count="stages"`) and out
+   of the CLAIMS table below, and whether one of them really is a
+   key is the question both sections ask.
+
+   An annotation rather than a cast, so that it is checked: this
+   line stops compiling the day a value in COUNTS stops being a
+   number, which is what both readers below take it to be. */
+const COUNT: Record<string, number> = COUNTS;
+
 const SLOT = /<span[^>]*\bdata-count="([a-zA-Z]+)"[^>]*>([^<]*)<\/span>/g;
 
 for (const file of htmlFiles) {
   const html = read(file);
   for (const [, key, fallback] of html.matchAll(SLOT)) {
-    const value = COUNTS[key];
+    const value = COUNT[key];
     if (value === undefined) {
       fail(`bad-key   ${file}`,
         `data-count="${key}" is not a key of COUNTS in content.js.`,
-        `Known keys: ${Object.keys(COUNTS).join(", ")}`);
+        `Known keys: ${Object.keys(COUNT).join(", ")}`);
       continue;
     }
     const printed = Number(fromBangla(fallback.trim()));
@@ -237,7 +267,16 @@ for (const file of htmlFiles) {
    COUNTS key that phrase is really quoting. `approx` allows the
    vaguer forms ("forty-odd") to cover a decade, because that is
    what they mean: forty-odd is right for 41 and wrong for 58. */
-const CLAIMS = [
+/** One sentence that states a number in words, and the COUNTS key
+    it is really quoting. Two shapes, and a claim is exactly one of
+    them: `word` is a number written out exactly, `approx` marks a
+    vaguer form covering a decade. Writing both on one entry, or
+    neither, is what this union refuses. */
+type Claim =
+  | { file: string; text: string; key: string; word: string; approx?: never }
+  | { file: string; text: string; key: string; approx: true; word?: never };
+
+const CLAIMS: Claim[] = [
   { file: "content.js", text: "Forty-odd ratios across six pillars", key: "ratios", approx: true },
   { file: "content.js", text: "eight stages deep", key: "stages", word: "eight" },
   { file: "content.js", text: "German from Bangla in four stages", key: "stufen", word: "four" },
@@ -252,10 +291,10 @@ const CLAIMS = [
   { file: "tools/stock.model.js", text: "forty-odd ratios grouped into six", key: "ratios", approx: true },
 ];
 
-const WORDS = {
+const WORDS: Record<string, number> = {
   three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
 };
-const DECADE = {
+const DECADE: Record<string, number> = {
   "twenty-odd": 20, "thirty-odd": 30, "forty-odd": 40, "fifty-odd": 50,
   "sixty-odd": 60, "seventy-odd": 70,
 };
@@ -266,16 +305,26 @@ for (const claim of CLAIMS) {
     fail(`gone      ${claim.file}`,
       `CLAIMS expects the phrase ${JSON.stringify(claim.text)} in this file,`,
       "and it is not there. If the sentence was rewritten, update CLAIMS in",
-      "check-content.js so the next data change is still checked.");
+      "check-content.ts so the next data change is still checked.");
     continue;
   }
-  const value = COUNTS[claim.key];
+  const value = COUNT[claim.key];
+  /* The same question section 3 asks of a markup slot, asked of
+     this table too: a claim quoting a key COUNTS does not have is
+     a sentence nothing is checking, and it used to compare
+     undefined against a decade and pass. */
+  if (value === undefined) {
+    fail(`bad-key   ${claim.file}`,
+      `CLAIMS says this sentence quotes "${claim.key}", which is not a key of`,
+      `COUNTS. Known keys: ${Object.keys(COUNT).join(", ")}`);
+    continue;
+  }
   if (claim.approx) {
-    const key = claim.text.toLowerCase().match(/\b\w+-odd\b/)?.[0];
-    const decade = DECADE[key];
+    const said = claim.text.toLowerCase().match(/\b\w+-odd\b/)?.[0];
+    const decade = said ? DECADE[said] : undefined;
     if (decade === undefined || value < decade || value > decade + 9) {
       fail(`wrong     ${claim.file}`,
-        `"${claim.text}" says ${key}, but ${claim.key} is ${value}.`);
+        `"${claim.text}" says ${said}, but ${claim.key} is ${value}.`);
     }
   } else if (WORDS[claim.word] !== value) {
     fail(`wrong     ${claim.file}`,

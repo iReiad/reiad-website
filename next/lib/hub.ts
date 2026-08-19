@@ -196,7 +196,7 @@ export const READ_HUB: Record<string, ReadHubCopy> = {
     were in the ARTICLES list in `content.js`, which is where
     `aab/app.js` still reads them from for as long as the
     hand-written `insights.html` is the page being served. The two
-    copies are held together by `aab/check-content.mjs` until that
+    copies are held together by `scripts/check-content.ts` until that
     file is archived and this becomes the only one. */
 export const SOON = [
   {

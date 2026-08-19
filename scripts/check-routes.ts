@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-routes.mjs, catch broken URLs before deploying.
+   check-routes.ts, catch broken URLs before deploying.
 
-       node scripts/check-routes.js
+       node scripts/check-routes.ts
 
    Cloudflare Pages' routing is the one part of this site that
    can't be tested with a local file server, and it has already
@@ -40,18 +40,17 @@ import { NEXT_ROUTES, ARTICLE } from "../worker.js";
 
    It moved because of what it checks two hundred lines down:
    every file in `aab/` is uploaded and served, so a check living
-   there was a check published at `/check-routes.mjs`. The rule
+   there was a check published at its own URL. The rule
    that kept that from happening was a line in `.assetsignore`,
    and a rule you have to remember is the thing this repository
    keeps replacing. A check that is not in the served directory
    cannot be served, which retires the question rather than
    guarding it.
 
-   The extension went with it: the root package.json declares
-   `"type": "module"`, so `.js` here behaves exactly as `.mjs`
-   did. Inside `aab/` it could not, because `.assetsignore`
-   matches `check-*.mjs` and that pattern was the only thing
-   standing between these files and a public URL. */
+   `.assetsignore` still carries the `check-*` rules, and they
+   still matter: they are what stops a check that has NOT moved
+   out from being served. See the DEV_ONLY section below, which
+   fails on any such file no rule covers. */
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const AAB = join(ROOT, "aab");
 const MAX_HOPS = 10;
@@ -74,7 +73,7 @@ const WORKER_FIRST = (
   .replace(/^\s*#.*$/gm, "")
   .match(/"([^"]+)"/g)?.map((quoted) => quoted.slice(1, -1)) ?? [];
 
-const globs = (pattern, path) =>
+const globs = (pattern: string, path: string): boolean =>
   new RegExp(`^${pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`)
     .test(path);
 
@@ -84,7 +83,7 @@ const globs = (pattern, path) =>
     the allowlist that the asset router still gets to first is
     answered by a file; a path the Worker would claim that is not
     in `run_worker_first` never reaches it. */
-const workerAnswers = (path) =>
+const workerAnswers = (path: string): boolean =>
   WORKER_FIRST.some((pattern) => globs(pattern, path))
   && (ARTICLE.test(path) || NEXT_ROUTES.some((route) => route.test(path)));
 
@@ -99,7 +98,17 @@ const rules = readFileSync(join(AAB, "_redirects"), "utf8")
     return { from, to, status: Number(status), line: i + 1 };
   });
 
-function step(path) {
+/** What answers one path: a file, another path, or nothing.
+    Exactly one of the three is set, which is what `trace()` below
+    branches on. */
+interface Step {
+  file?: string;
+  redirect?: string;
+  why?: string;
+  missing?: true;
+}
+
+function step(path: string): Step {
   const rule = rules.find((r) => r.from === path);
   if (rule) return { redirect: rule.to, why: `_redirects` };
 
@@ -122,8 +131,15 @@ function step(path) {
   return { missing: true };
 }
 
-function trace(start) {
-  const chain = [];
+/** Where a path ends up, and every hop it took to get there. */
+interface Trace {
+  status: "ok" | "LOOP" | "MISSING" | "TOO MANY HOPS";
+  chain: string[];
+  file?: string;
+}
+
+function trace(start: string): Trace {
+  const chain: string[] = [];
   let path = start;
   for (let i = 0; i < MAX_HOPS; i++) {
     if (chain.includes(path)) return { status: "LOOP", chain: [...chain, path] };
@@ -131,6 +147,12 @@ function trace(start) {
     const s = step(path);
     if (s.file) return { status: "ok", chain, file: s.file };
     if (s.missing) return { status: "MISSING", chain };
+    /* A step that is neither a file nor missing is a redirect, and
+       `step()` sets exactly one of the three. Said out loud rather
+       than assumed, because the loop below would otherwise walk
+       `undefined` round MAX_HOPS times and report a broken URL as
+       "too many hops". */
+    if (!s.redirect) return { status: "MISSING", chain };
     path = s.redirect;
   }
   return { status: "TOO MANY HOPS", chain };
@@ -140,7 +162,7 @@ function trace(start) {
 
 /** Every file under aab/, as a path relative to it. The pages
     come out of this and so does the upload check further down. */
-const files = [];
+const files: string[] = [];
 (function walk(dir) {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
@@ -178,9 +200,11 @@ const targets = new Set(["/", ...pages, ...rules.map((r) => r.from)]);
    `check-schools.ts` already holds to the ladder.
    ---------------------------------------------------------- */
 
-const linkSources = new Map();
+/** Every internal link found, against the first page or route
+    that named it, so a failure can say where to go and change it. */
+const linkSources = new Map<string, string>();
 
-const addLinks = (text, source) => {
+const addLinks = (text: string, source: string): void => {
   for (const m of text.matchAll(/(?:href|src)="(\/[^"#?]*)/g)) {
     targets.add(m[1]);
     if (!linkSources.has(m[1])) linkSources.set(m[1], source);
@@ -289,7 +313,7 @@ for (const pattern of WORKER_FIRST) {
    Everything in aab/ is an asset, so everything in aab/ is a
    public URL. The checks, the tests, the two school builders and
    the TypeScript sources of four served modules were all being
-   published: about 300 KB at addresses like /check-routes.mjs
+   published: about 300 KB at addresses like /check-routes.ts
    and /schema.sql, which nobody had asked for and nobody
    maintained as pages.
 
@@ -316,11 +340,15 @@ const IGNORED = readFileSync(join(AAB, ".assetsignore"), "utf8")
 
 /** The matching .assetsignore does: a leading or trailing `/`
     anchors a directory, `*` matches within one path segment. */
-const ignores = (rule, path) => {
+const ignores = (rule: string, path: string): boolean => {
   if (rule.endsWith("/")) return path.startsWith(rule) || path.includes(`/${rule}`);
-  const re = new RegExp(`^${rule.split("*").map((p) =>
+  const re = new RegExp(`^${rule.split("*").map((p: string) =>
     p.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join("[^/]*")}$`);
-  return re.test(path) || re.test(path.split("/").pop());
+  /* Against the whole path and against the last segment, because
+     `.assetsignore` allows both spellings. `split("/")` on a
+     non-empty string always has a last element; `?? path` is what
+     says so rather than a `!`. */
+  return re.test(path) || re.test(path.split("/").pop() ?? path);
 };
 
 for (const path of files) {
@@ -335,7 +363,15 @@ for (const path of files) {
 const SLUG = /^[a-z0-9-]+$/;
 const BACKUP = join(ROOT, "content", "articles.backup.json");
 
-let live = [];
+/** The live articles out of the nightly export, of which this
+    reads two fields: the slug it checks, and the title it names
+    the offending piece by. */
+interface Article {
+  slug?: string;
+  title?: string;
+}
+
+let live: Article[] = [];
 if (!existsSync(BACKUP)) {
   failures++;
   console.error("no-backup  content/articles.backup.json");
@@ -343,10 +379,12 @@ if (!existsSync(BACKUP)) {
   console.error("        copy of their slugs a check with no network can read.");
 } else {
   try {
-    live = JSON.parse(readFileSync(BACKUP, "utf8")).articles ?? [];
+    live = (JSON.parse(readFileSync(BACKUP, "utf8")) as { articles?: Article[] })
+      .articles ?? [];
   } catch (e) {
     failures++;
-    console.error(`unreadable-backup  content/articles.backup.json   (${e.message})`);
+    const said = e instanceof Error ? e.message : String(e);
+    console.error(`unreadable-backup  content/articles.backup.json   (${said})`);
   }
 }
 

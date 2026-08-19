@@ -25,7 +25,7 @@
 
    ---- what it does not do ----
 
-   It does not check content. `check-content.mjs` and
+   It does not check content. `check-content.ts` and
    `check-pieces.ts` do that from the data, offline, and they are
    the ones to reach for. This asks the deployed site a small
    number of questions whose answers cannot be known from here.
@@ -278,7 +278,7 @@ for (const [path, what] of [
 
 /* ---------- 7. every piece the site advertises can be read ----------
 
-   `check-routes.mjs` does this offline and cannot see the half
+   `check-routes.ts` does this offline and cannot see the half
    that matters here: a piece that exists only as a row in D1 is in
    the sitemap because the Worker merges it in, and nothing in the
    repository knows whether its URL actually answers. A published

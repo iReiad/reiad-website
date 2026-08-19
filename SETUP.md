@@ -89,7 +89,7 @@ the deploy stopped at the first thing wrangler reads.
 
 **No pattern in `run_worker_first` may be covered by another pattern in
 it.** Wrangler checks that before it reads `worker.js` or looks at `aab/`,
-and it stops rather than warning. `node aab/check-routes.mjs` runs the same
+and it stops rather than warning. `node scripts/check-routes.ts` runs the same
 test now, so it fails on a laptop instead of in a build log nobody opens.
 
 The quickest way to tell a broken build from a broken site, without the
@@ -252,8 +252,8 @@ npx wrangler dev                     # the real runtime, local D1 and R2
 ./test-api.sh                        # 108 checks over every endpoint
 node functions/_lib/notion.test.mjs  # 74 checks on the Notion conversion
 node aab/studio.test.mjs             # 67 browser checks (needs Playwright)
-node aab/check-routes.mjs            # catches redirect loops
-node aab/check-sw.mjs                # precached file changed without a VERSION bump?
+node scripts/check-routes.ts            # catches redirect loops
+node scripts/check-sw.ts                # precached file changed without a VERSION bump?
 ```
 
 ---

@@ -57,10 +57,11 @@ What that rules out, concretely:
   is a page that will drift from the other 250.
 
 `MIGRATION.md` lists what is still on the old method. The four practice
-books are the last real pages: they carry `.slimbar` instead of the rail
-purely because they are generated static HTML with no React in them, and
-that is a reason to port them, not a reason to teach a `.mjs` builder to
-render a rail.
+books were the last real pages and are routes as of #129:
+`next/app/[section]/[slug]/arbeitsbuch.html` and `workbook.html`, with
+`aab/schools/workbook.js` loaded by the route as the engine. The two
+builders that emitted them from a template literal are gone, not
+archived.
 
 The two exceptions are `404.html` and `offline.html`, and they are
 exceptions on purpose: they have to answer when the Worker, the route and
@@ -159,7 +160,7 @@ carrying `data-count`:
 
 Bangla digits are used automatically inside a `[lang="bn"]` element. The
 number left in the markup is the no-JavaScript fallback, so keep it
-roughly right; `check-content.js` fails the build if it drifts.
+roughly right; `check-content.ts` fails the build if it drifts.
 
 The same rule covers lists. A list of things that exist elsewhere on the
 site (case studies, articles, tools) is built from `content.js` by
@@ -182,7 +183,7 @@ import. They are asserted against that model by the check below.
 
 A sentence that genuinely cannot hold a slot (a `<meta>` description, a
 blurb inside `content.js`) goes in the `CLAIMS` table in
-`scripts/check-content.js`, so the next data change fails a check rather than a
+`scripts/check-content.ts`, so the next data change fails a check rather than a
 reader.
 
 ## The shell, and the one table the menu comes from
@@ -216,12 +217,14 @@ answers; nothing keeps a second copy in React, because the copy is
 the one that arrives a paint late. `@layer shell` in `styles.css`
 is where the rules are.
 
-**Six pages are not routes and cannot be:** the four practice
-books, which are generated static HTML a learner fills in offline,
-and `404.html` and `offline.html`, which have to work when nothing
-else does. They carry `.slimbar` instead, in the same layer. If you
-add a seventh, give it the slim bar too: `body > header` is gone
-from the stylesheet and nothing will style a header you write.
+**Two pages are not routes and cannot be:** `404.html` and
+`offline.html`, which have to answer when the Worker, the route and
+the network are all unavailable, which is exactly when a route
+cannot. They carry `.slimbar` instead, in the same layer, and they
+are the whole of `aab/*.html` now. It was six until #129 ported the
+four practice books. If you add a third, give it the slim bar too:
+`body > header` is gone from the stylesheet and nothing will style
+a header you write.
 
 ## Two kinds of card, and a reader can tell them apart
 
@@ -500,8 +503,11 @@ came back unticked. `dayId` is an argument now, like every other
 key.
 
 The money school is not a caller. Its ticks are `next/lib/progress.ts`,
-because its pages are routes; these three still need a browser
-module because their practice books are generated static HTML.
+because its pages are routes. These three still need a browser module
+for a different reason: a practice book is a page a learner TYPES INTO,
+and what they type is theirs and the browser's, which is the same rule
+the ladder and the ticks follow. The book is a route now and
+`workbook-body.tsx` loads the engine through `SiteScripts`.
 
 ## The blocks an article is made of
 
@@ -514,7 +520,7 @@ has to be in three places or it does not survive the trip:
 2. `KEEP_CLASSES` in `aab/editor.js`, the browser's sanitiser,
 3. `ALLOWED_CLASSES` in `functions/_lib/sanitise.js`, the server's.
 
-`check-css.js` fails if the two allowlists disagree, if a class is allowed
+`check-css.ts` fails if the two allowlists disagree, if a class is allowed
 into an article and styled nowhere, or if two cascade layers both define
 one. The last of those is not hypothetical twice over: `.glance` was
 already the About page's, `.steps` already the Learn hub's, and a later
@@ -552,7 +558,7 @@ uploaded and answers at its own public URL. Every file: the five
 `check-*.mjs`, the seven `*.test.mjs`, both school builders, the
 TypeScript that four served modules are compiled from and
 `schema.sql` were all live, about 300 KB of them, at addresses
-like `/check-routes.mjs`.
+like `/check-routes.ts`.
 
 `aab/.assetsignore` is what stops that. Nothing in them was secret
 and none of it was reachable from a link, which is exactly why it
@@ -560,7 +566,7 @@ sat there: a file nobody meant to publish is a file nobody thinks
 about before changing.
 
 Add a check or a test beside the others and it starts being
-published the moment it is committed, so `scripts/check-routes.js` reads
+published the moment it is committed, so `scripts/check-routes.ts` reads
 that file and fails on any path matching a build-or-test shape
 that no rule covers.
 
@@ -605,17 +611,17 @@ message, and the four that need a browser or a build do not run in CI
 at all:
 
 ```sh
-node scripts/check-routes.js # redirect loops, dead links in routes as well
+node scripts/check-routes.ts # redirect loops, dead links in routes as well
                             # as in files, a live article whose slug cannot be a
                             # URL, and a check or a test published as a page
-node scripts/check-css.js   # a school's layer styling the whole site, a block
+node scripts/check-css.ts   # a school's layer styling the whole site, a block
                             # class that means two things at once, and a rule
                             # that styles nothing on the site at all
-node scripts/check-sw.js    # a precached file changed without a VERSION bump,
+node scripts/check-sw.ts    # a precached file changed without a VERSION bump,
                             # or a precached module whose import is not precached
-node scripts/check-content.js # a page that has stopped counting the site
+node scripts/check-content.ts # a page that has stopped counting the site
                             # correctly
-node scripts/check-csp.js   # code calling a host the browser is not allowed to
+node scripts/check-csp.ts   # code calling a host the browser is not allowed to
                             # reach, from a route as well as from a module
 node scripts/check-contrast.ts # an accent that has drifted under the WCAG
                             # threshold for the size it is set at
@@ -783,7 +789,7 @@ renders perfectly with both of them broken.
 
 If a precached file changed, bump `VERSION` in `aab/sw.js`, add a line to
 the changelog at the top of that file saying what changed and why it needs
-the bump, then run `node scripts/check-sw.js --update`.
+the bump, then run `node scripts/check-sw.ts --update`.
 
 ## A migration's filename is a fact, not a label
 
@@ -892,7 +898,7 @@ schools' half of the nightly backup, on the same footing as
 `content/articles.backup.json`. It is what `check-schools.ts`
 compares the four `curriculum.js` modules against. And it is the
 only copy of the lesson prose that a check running on a laptop
-with no network can read, which is how `check-css.js` knows that
+with no network can read, which is how `check-css.ts` knows that
 `.shobdo-list` and thirty-one other rules are styling something
 real.
 
@@ -903,13 +909,13 @@ the git log answers "did the prose change" rather than "was this
 refreshed".
 
 **The pages are gone as of 16 August 2026, and so is half of
-this.** archive/TRANSITION.md Stage 11.7: 247 of the 251 school pages are
+this.** archive/TRANSITION.md Stage 11.7: 247 of the 251 school pages became
 Next.js routes rendered from the rows, and the four practice books
-are what is left. So there is no committed page to compare a build
-against, `check-schools-built.mjs` is in `archive/schools-builders/`
-beside the two builders whose whole output it watched, and
-`next/parity.test.mjs` asks that question against the route
-instead.
+followed in #129, so all 251 are routes. There is no committed page
+to compare a build against, `check-schools-built.mjs` is in
+`archive/schools-builders/` beside the two builders whose whole
+output it watched, and `next/parity.test.mjs` asks that question
+against the route instead.
 
 `check-schools.ts` stays and does two things: it compares the
 ladder in `curriculum.js` against the ladder in the snapshot, and
@@ -939,7 +945,7 @@ split, a risk badge and a call-to-action, using the classes
 `split`, `do`, `others`, `warn`, `bn-h` and `btn`, none of which is
 in the article allowlist, and widening the allowlist would not have
 fixed it: those classes belonged to the starter guide's own layer
-and `check-css.js` fails a class two layers both define.
+and `check-css.ts` fails a class two layers both define.
 
 They were rewritten into the article's own vocabulary instead. The
 split became a `checklist` and a `side-note`, the warnings became
@@ -955,8 +961,6 @@ both ladders, `shared/schools.ts` and `aab/learn/curriculum.js`.
 Generated pages are generated. Edit the source, never the output:
 
 ```sh
-node aab/deutsch/build-deutsch.mjs   # the three German practice books
-node aab/english/build-english.mjs   # the English practice book
 node scripts/build-modules.ts       # aab/share-card.js and aab/api.js from aab/src/
 node scripts/build-fallback.ts     # aab/fallback.css from next/styles/site.css
 node scripts/build-school-icons.ts  # next/lib/school-icons.ts from aab/*/icons.js
@@ -1439,7 +1443,7 @@ one place they all pass through: the public snapshot lives in D1
 `settings` and refreshes at most every five minutes, a reader's own
 numbers cache at the edge for one minute and their history for ten.
 Do not add a second caller, and do not write the broker's hostname
-into anything under `aab/` or `next/`: `scripts/check-csp.js` scans
+into anything under `aab/` or `next/`: `scripts/check-csp.ts` scans
 every string in both and will rightly fail it.
 
 **A key is stored sealed or not at all.** `PUT /api/broker/key`
@@ -1479,7 +1483,7 @@ reach. In order:
    puts it in the menu, the Ctrl+K palette, the sitemap, the home page
    rotation and the portfolio count.
 3. Add its card to `portfolio.html`.
-4. `node scripts/check-content.js` fails until steps 2 and 3 are both done.
+4. `node scripts/check-content.ts` fails until steps 2 and 3 are both done.
 
 ## Where an article lives
 
@@ -1518,7 +1522,7 @@ every check still runs first:
 
 - all four checks in **Before deploying** pass,
 - anything that touched a precached file bumped `VERSION` in
-  `aab/sw.js` and re-ran `scripts/check-sw.js --update`,
+  `aab/sw.js` and re-ran `scripts/check-sw.ts --update`,
 - generated pages were regenerated from their source, not edited,
 - and `grep -rn $'\u2014' aab/ functions/` comes back empty.
 

@@ -23,7 +23,7 @@
 
    Every check passed. `check-contrast.ts` measured text against
    those surfaces and was satisfied, because a hole has perfectly
-   good contrast. `check-css.mjs` saw well-formed rules. Nothing
+   good contrast. `check-css.ts` saw well-formed rules. Nothing
    measured the one thing that had broken, which is that a raised
    surface has to be lighter than its ground in a light theme and
    lighter again in a dark one.
