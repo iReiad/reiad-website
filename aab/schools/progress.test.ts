@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* ============================================================
-   progress.test.mjs: what the three schools' progress modules do.
+   progress.test.ts: what the three schools' progress modules do.
 
-       node aab/schools/progress.test.mjs
+       node aab/schools/progress.test.ts
 
    `schools/progress.js` replaced three copies of the same 300
    lines, one per school. The house rule for that kind of change
@@ -31,6 +31,9 @@
    No browser is needed and none is started: localStorage and the
    handful of DOM calls the module makes are stubbed below, which
    is the whole of what it touches.
+
+   `aab/tsconfig.test.json` is what typechecks the annotations
+   below, and `scripts/check-types.ts` runs it.
    ============================================================ */
 
 import { registerHooks } from "node:module";
@@ -53,19 +56,137 @@ registerHooks({
 });
 
 let passed = 0;
-const failures = [];
-const ok = (name, condition, detail = "") => {
+const failures: string[] = [];
+const ok = (name: string, condition: unknown, detail = ""): void => {
   if (condition) { passed++; return; }
   failures.push(detail ? `${name}\n      ${detail}` : name);
 };
-const same = (name, a, b) => ok(name, Object.is(a, b),
+const same = (name: string, a: unknown, b: unknown): void => ok(name, Object.is(a, b),
   `expected ${JSON.stringify(a)}, got ${JSON.stringify(b)}`);
-const sameSet = (name, a, b) => ok(name,
+const sameSet = (name: string, a: Iterable<unknown>, b: Iterable<unknown>): void => ok(name,
   JSON.stringify([...a].sort()) === JSON.stringify([...b].sort()),
   `expected ${JSON.stringify([...a].sort())}, got ${JSON.stringify([...b].sort())}`);
-const hasKeys = (name, obj, keys) => ok(name,
+const hasKeys = (name: string, obj: object, keys: string[]): void => ok(name,
   keys.every((k) => k in obj),
   `missing ${keys.filter((k) => !(k in obj)).join(", ")} from ${JSON.stringify(obj)}`);
+
+/* ------------------------------------------------------------
+   what the two modules under test are, as far as tsc can know
+
+   Both are fetched from a computed address, `/${n}/progress.js`,
+   which is the address the browser fetches them from and is not a
+   specifier tsc can resolve. So the shapes below are this file's
+   claim about them, and `exported()` is what turns a claim into a
+   check: a school that renames one of these fails here, by name,
+   rather than as "not a function" thirty lines later.
+   ------------------------------------------------------------ */
+
+/** One page of a school, and whether it has been written yet. */
+interface Lesson {
+  id: string;
+  status?: string;
+}
+
+/** A rung of a school's ladder. `workbook` is the practice book,
+    which two of the three have. */
+interface Stage {
+  slug: string;
+  workbook?: { days?: number } | null;
+}
+
+/** The three names each school spells for itself, out of its own
+    `curriculum.js`. A school has the pair its row below names and
+    not the other four. */
+interface CurriculumModule {
+  STUFEN?: Stage[];
+  TERMS?: Stage[];
+  DHAPS?: Stage[];
+  allTeile?: () => Lesson[];
+  allParts?: () => Lesson[];
+  allLessons?: () => Lesson[];
+}
+
+type Mark = (id: string) => void;
+
+/** What a hub row draws. */
+interface StageStats {
+  done: number;
+  total: number;
+  live: number;
+  pct: number;
+  complete: boolean;
+  started: boolean;
+}
+
+/** What the bar at the top of a hub draws. `days` and `totalDays`
+    belong to the school that counts in days rather than pages. */
+interface OverallStats {
+  done: number;
+  live: number;
+  pct: number;
+  complete: boolean;
+  days?: number;
+  totalDays?: number;
+}
+
+/** A practice book's own count. */
+interface DayStats {
+  done: number;
+  next: number;
+}
+
+/** Where a reader was. The stage is filed under the school's own
+    word for one, so it is read by that name rather than a fixed
+    one. */
+interface Bookmark {
+  id: string;
+  url: string;
+  bn: string;
+  ts: number;
+  [stage: string]: string | number;
+}
+
+/** The shared half of a school's progress module, plus the names
+    each school spells its own way. */
+interface ProgressModule {
+  overallStats: () => OverallStats;
+  nextUp: () => Lesson | null;
+  setLast: (mark: Record<string, string>) => void;
+  getLast: () => Bookmark | null;
+  recordVisit: () => string | null;
+  resetAll: () => void;
+  dayStats: (stage: Stage) => DayStats;
+  allDayStats: () => DayStats;
+  toggleDay: (stage: Stage, day: number) => void;
+  isDayDone: (stage: Stage, day: number) => boolean;
+  nextBook: () => Stage | null;
+  setLastDay: (day: number) => void;
+  getLastDay: () => number;
+  markRead?: Mark;
+  markDone?: Mark;
+  unmarkRead?: Mark;
+  unmarkDone?: Mark;
+  readSet?: () => Set<string>;
+  doneSet?: () => Set<string>;
+  isRead?: (id: string) => boolean;
+  isDone?: (id: string) => boolean;
+  stufeStats?: (stage: Stage) => StageStats;
+  termStats?: (stage: Stage) => StageStats;
+  dhapStats?: (stage: Stage) => StageStats;
+  stufeState?: (stage: Stage) => string;
+  termState?: (stage: Stage) => string;
+  dhapState?: (stage: Stage) => string;
+  currentStufe?: () => Stage | null;
+  currentTerm?: () => Stage | null;
+  currentDhap?: () => Stage | null;
+}
+
+/** One export named by the row below, with the name in the message
+    so that a rename says which one. */
+function exported<T>(value: T | undefined, name: string): T {
+  if (value === undefined) throw new Error(`${name} is not exported`);
+  return value;
+}
 
 /* ------------------------------------------------------------
    the browser, in about twenty lines
@@ -75,25 +196,43 @@ const hasKeys = (name, obj, keys) => ok(name,
    key, which is the assertion that matters most here.
    ------------------------------------------------------------ */
 
-function stubBrowser({ title = "", path = "/", attrs = {} } = {}) {
-  const store = new Map();
-  const fired = [];
-  globalThis.localStorage = {
-    getItem: (k) => (store.has(k) ? store.get(k) : null),
-    setItem: (k, v) => store.set(k, String(v)),
-    removeItem: (k) => store.delete(k),
-  };
-  globalThis.addEventListener = () => {};
-  globalThis.dispatchEvent = (e) => { fired.push(e.type); return true; };
-  globalThis.CustomEvent = class { constructor(type) { this.type = type; } };
-  globalThis.location = { pathname: path };
+interface Stub {
+  store: Map<string, string>;
+  fired: string[];
+}
+
+function stubBrowser(
+  { title = "", path = "/", attrs = {} }:
+  { title?: string; path?: string; attrs?: Record<string, string> } = {},
+): Stub {
+  const store = new Map<string, string>();
+  const fired: string[] = [];
 
   const has = Object.keys(attrs).length > 0;
   const article = {
-    getAttribute: (n) => (n in attrs ? attrs[n] : null),
-    hasAttribute: (n) => n in attrs,
+    getAttribute: (n: string) => (n in attrs ? attrs[n] : null),
+    hasAttribute: (n: string) => n in attrs,
   };
-  globalThis.document = { title, querySelector: () => (has ? article : null) };
+
+  /* One assignment rather than six, because `globalThis` is typed:
+     every name below already means something in a browser, and
+     these stubs are a fraction of each. */
+  Object.assign(globalThis, {
+    localStorage: {
+      getItem: (k: string) => (store.has(k) ? store.get(k) : null),
+      setItem: (k: string, v: unknown) => store.set(k, String(v)),
+      removeItem: (k: string) => store.delete(k),
+    },
+    addEventListener: () => {},
+    dispatchEvent: (e: { type: string }) => { fired.push(e.type); return true; },
+    CustomEvent: class {
+      type: string;
+      constructor(type: string) { this.type = type; }
+    },
+    location: { pathname: path },
+    document: { title, querySelector: () => (has ? article : null) },
+  });
+
   return { store, fired };
 }
 
@@ -106,7 +245,31 @@ function stubBrowser({ title = "", path = "/", attrs = {} } = {}) {
    that grows a stage does not fail this file.
    ------------------------------------------------------------ */
 
-const SCHOOLS = [
+/** One school, and every name it spells for itself. The strings
+    are read as keys off the two modules above, which is why they
+    are narrowed to the names those modules really carry. */
+interface SchoolCase {
+  id: string;
+  keys: { read: string; days?: string; last: string; tag?: string };
+  ladder: "STUFEN" | "TERMS" | "DHAPS";
+  all: "allTeile" | "allParts" | "allLessons";
+  stageProp: "stufe" | "term" | "dhap";
+  stats: "stufeStats" | "termStats" | "dhapStats";
+  state: "stufeState" | "termState" | "dhapState";
+  current: "currentStufe" | "currentTerm" | "currentDhap";
+  mark: "markRead" | "markDone";
+  unmark: "unmarkRead" | "unmarkDone";
+  set: "readSet" | "doneSet";
+  is: "isRead" | "isDone";
+  book: boolean;
+  title: string;
+  path: string;
+  attrs: Record<string, string>;
+  visitId: string;
+  visitBn: string;
+}
+
+const SCHOOLS: SchoolCase[] = [
   {
     id: "deutsch",
     keys: { read: "deutsch-read", days: "deutsch-days", last: "deutsch-last", tag: "deutsch-tag" },
@@ -156,28 +319,30 @@ const SCHOOLS = [
 
 for (const S of SCHOOLS) {
   const n = S.id;
-  const cur = await import(`/${n}/curriculum.js`);
-  const stages = cur[S.ladder];
-  const lessons = cur[S.all]();
+  const cur: CurriculumModule = await import(`/${n}/curriculum.js`);
+  const stages = exported(cur[S.ladder], `${n}: ${S.ladder}`);
+  const lessons = exported(cur[S.all], `${n}: ${S.all}`)();
   const live = lessons.filter((l) => l.status === "live");
 
   /* A fresh browser before the module is loaded, because loading
      it is the first thing a page does. */
   const { store } = stubBrowser({ title: S.title, path: S.path, attrs: S.attrs });
-  const P = await import(`/${n}/progress.js`);
+  const P: ProgressModule = await import(`/${n}/progress.js`);
 
-  const mark = P[S.mark];
-  const unmark = P[S.unmark];
-  const readSet = P[S.set];
-  const isRead = P[S.is];
-  const stageStats = P[S.stats];
+  const mark = exported(P[S.mark], `${n}: ${S.mark}`);
+  const unmark = exported(P[S.unmark], `${n}: ${S.unmark}`);
+  const readSet = exported(P[S.set], `${n}: ${S.set}`);
+  const isRead = exported(P[S.is], `${n}: ${S.is}`);
+  const stageStats = exported(P[S.stats], `${n}: ${S.stats}`);
+  const stageState = exported(P[S.state], `${n}: ${S.state}`);
+  const currentStage = exported(P[S.current], `${n}: ${S.current}`);
 
   /* ---- nothing read yet ---- */
 
   same(`${n}: a new reader has read nothing`, 0, P.overallStats().done);
   same(`${n}: and has started no stage`, false, stageStats(stages[0]).started);
   same(`${n}: the first written lesson is what is next`, live[0].id, P.nextUp()?.id);
-  same(`${n}: and the stage they are in is the first`, stages[0].slug, P[S.current]()?.slug);
+  same(`${n}: and the stage they are in is the first`, stages[0].slug, currentStage()?.slug);
   same(`${n}: nothing is written to storage by loading the module`, 0, store.size);
 
   /* ---- reading ---- */
@@ -210,7 +375,7 @@ for (const S of SCHOOLS) {
 
   /* ---- the ladder's states ---- */
 
-  const states = stages.map((s) => P[S.state](s));
+  const states = stages.map((s) => stageState(s));
   ok(`${n}: every stage has a state a hub knows how to label`,
     states.every((s) => ["done", "now", "next", "past", "later"].includes(s)),
     states.join(", "));
@@ -221,22 +386,22 @@ for (const S of SCHOOLS) {
 
   P.setLast({ id: live[2].id, [S.stageProp]: stages[0].slug, url: "/x", bn: "x" });
   const last = P.getLast();
-  same(`${n}: the bookmark comes back`, live[2].id, last.id);
-  same(`${n}: with the stage it was set with`, stages[0].slug, last[S.stageProp]);
-  ok(`${n}: and a timestamp`, Number.isFinite(last.ts));
+  same(`${n}: the bookmark comes back`, live[2].id, last?.id);
+  same(`${n}: with the stage it was set with`, stages[0].slug, last?.[S.stageProp]);
+  ok(`${n}: and a timestamp`, Number.isFinite(last?.ts));
   ok(`${n}: filed under ${S.keys.last}`, store.has(S.keys.last));
 
   /* ---- opening a lesson ---- */
 
   same(`${n}: opening a lesson records it`, S.visitId, P.recordVisit());
-  same(`${n}: and moves the bookmark to it`, S.visitId, P.getLast().id);
-  same(`${n}: with the title off the page`, S.visitBn, P.getLast().bn);
-  same(`${n}: and the address it was read at`, S.path, P.getLast().url);
+  same(`${n}: and moves the bookmark to it`, S.visitId, P.getLast()?.id);
+  same(`${n}: with the title off the page`, S.visitBn, P.getLast()?.bn);
+  same(`${n}: and the address it was read at`, S.path, P.getLast()?.url);
 
   /* ---- the practice book, where there is one ---- */
 
   if (S.book) {
-    const book = stages.find((s) => s.workbook?.days);
+    const book = exported(stages.find((s) => s.workbook?.days), `${n}: a stage with a book`);
     same(`${n}: an untouched book has no days done`, 0, P.dayStats(book).done);
     same(`${n}: and points at day one`, 1, P.dayStats(book).next);
 
@@ -249,17 +414,17 @@ for (const S of SCHOOLS) {
     same(`${n}: and the next day is the first gap`, 2, P.dayStats(book).next);
     same(`${n}: every book adds up`, 3, P.allDayStats().done);
     ok(`${n}: the book still being skipped is offered`, P.nextBook()?.slug);
-    ok(`${n}: the days are filed under ${S.keys.days}`, store.has(S.keys.days));
+    ok(`${n}: the days are filed under ${S.keys.days}`, store.has(String(S.keys.days)));
 
     P.setLastDay(12);
     same(`${n}: the book remembers where it was left`, 12, P.getLastDay());
-    ok(`${n}: under ${S.keys.tag}`, store.has(S.keys.tag));
+    ok(`${n}: under ${S.keys.tag}`, store.has(String(S.keys.tag)));
   } else {
     same(`${n}: a school with no book has no days key`, undefined, S.keys.days);
     same(`${n}: and counts in days rather than pages`, true,
       Number.isInteger(P.overallStats().days));
     ok(`${n}: which is not the same number as the pages`,
-      P.overallStats().totalDays >= P.overallStats().live);
+      (P.overallStats().totalDays ?? 0) >= P.overallStats().live);
   }
 
   /* ---- every key, and only those keys ---- */

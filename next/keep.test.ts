@@ -24,7 +24,7 @@
 
    None of it exists until React has hydrated and two effects have
    run. Both routes that render it, a piece and a lesson, are
-   dynamic, so `interactive.test.mjs` cannot serve either;
+   dynamic, so `interactive.test.ts` cannot serve either;
    `hydrate-fixture.ts` is the smaller way in and hydrates the
    component against the server's own markup, which is where this
    shape has gone wrong before.

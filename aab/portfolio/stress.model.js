@@ -4,7 +4,7 @@
    No DOM. Numbers in, numbers out, same rule as the other three
    engines in this folder, because a function that touches the
    page cannot be checked against a value some other authority
-   already agrees on. stress.test.mjs does exactly that.
+   already agrees on. stress.test.ts does exactly that.
 
    ------------------------------------------------------------
    ABOUT THE PORTFOLIO, READ THIS FIRST

@@ -63,6 +63,24 @@ const el = <K extends keyof HTMLElementTagNameMap>(
 /** First letter of a name, for the button when signed in. */
 const initial = (name?: string | null): string => (name ?? "?").trim().charAt(0).toUpperCase() || "?";
 
+/** The reader's picture, over the initial rather than instead of
+    it, and the same in the bar as in the menu.
+
+    `referrerPolicy` because the provider hosting the picture has
+    no business being told which page of this site it is on, and
+    an `error` handler because an avatar URL outlives nothing:
+    Google rotates them, and a broken image in a circle is worse
+    than the letter that was already there. */
+function picture(user: Reader): HTMLImageElement | null {
+  if (!user.avatar) return null;
+  const img = el("img", {
+    src: user.avatar, alt: "", decoding: "async",
+    referrerPolicy: "no-referrer",
+  });
+  img.addEventListener("error", () => img.remove());
+  return img;
+}
+
 /* ============================================================
    Where the menu goes, and who is responsible for it
 
@@ -216,8 +234,8 @@ function accountFace(user: Reader): HTMLElement {
 
   return el("div", { className: "acc-body" },
     el("div", { className: "acc-who" },
-      el("span", { className: "acc-avatar", "aria-hidden": "true",
-                   textContent: initial(user.name) }),
+      el("span", { className: "acc-avatar", "aria-hidden": "true" },
+         initial(user.name), picture(user)),
       el("span", { className: "acc-who-text" },
         el("strong", { textContent: user.name || "Reader" }),
         user.email ? el("small", { textContent: user.email }) : null)),
@@ -370,7 +388,11 @@ document.addEventListener("click", (e) => {
 
 function paintButton(button: HTMLButtonElement): void {
   const user = current();
-  button.textContent = user ? initial(user.name) : "Sign in";
+  button.replaceChildren(user ? initial(user.name) : "Sign in");
+  if (user) {
+    const face = picture(user);
+    if (face) button.append(face);
+  }
   button.dataset.signedIn = String(!!user);
   button.setAttribute("aria-label", user
     ? `Signed in as ${user.name}. Open your account menu.`

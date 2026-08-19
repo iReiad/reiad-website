@@ -1,0 +1,39 @@
+{
+  "//": [
+    "The two browser tests beside the app: `desk.test.ts` and",
+    "`studio.test.ts`, which serve `aab/` on a spare port and drive",
+    "the BUILT bundle in Chromium.",
+    "",
+    "They are outside `tsconfig.json` because that one is the",
+    "BUILD: `npm run build` runs `tsc -b` over it before Vite, and",
+    "its `include` is `src`. A test in it would hold the desk's own",
+    "build to Playwright being installed, which is the mistake",
+    "`next/tsconfig.test.json` was split out for after it failed a",
+    "deploy.",
+    "",
+    "So nothing typechecks these on their own, which is the trap",
+    "`scripts/check-types.ts` was written for: node strips the",
+    "annotations without reading them, so a `.ts` nobody checks is a",
+    "`.js` wearing them. That check runs this config too, and skips",
+    "it out loud where `app/node_modules` is absent, because",
+    "Playwright's types are the whole reason this config needs one.",
+    "",
+    "`types` REPLACES rather than merges, so this names node's and",
+    "not React's: nothing here renders a component. Playwright is",
+    "not in that list either and does not belong there; it is",
+    "imported by name and its types come with the import.",
+    "",
+    "NO `paths` here, on purpose. It replaces rather than merges",
+    "too, so an entry added here would lose the seven in the parent",
+    "that map `/content.js` and its neighbours on to the modules",
+    "the browser fetches. Nothing in these two files imports one:",
+    "what they drive is the built bundle over HTTP."
+  ],
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["*.test.ts"],
+  "exclude": ["node_modules"]
+}

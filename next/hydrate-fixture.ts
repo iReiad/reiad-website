@@ -21,10 +21,10 @@
    ---- why a fixture rather than the route ----
 
    `/insights.html` and an article are both `force-dynamic`, so
-   neither is in `.next/server/app/` and `interactive.test.mjs`
+   neither is in `.next/server/app/` and `interactive.test.ts`
    cannot serve either. The other way in is `dev-worker.ts`, which
    is the OpenNext build on workerd with a database under it, and
-   that is what `article.test.ts` and `parity.test.mjs` use.
+   that is what `article.test.ts` and `parity.test.ts` use.
 
    This is the smaller question, asked where it can be asked
    quickly: does the COMPONENT do what the module it replaced did,
@@ -89,7 +89,7 @@ export async function bundle(contents: string): Promise<string> {
     /* React reads this to decide whether to ship its development
        warnings, and the hydration mismatch is one of them. The
        minified numbered errors are what production gives, and
-       `interactive.test.mjs` matches on those; a readable message
+       `interactive.test.ts` matches on those; a readable message
        is worth more here, and both spellings are watched for. */
     define: { "process.env.NODE_ENV": '"development"' },
     logLevel: "silent",

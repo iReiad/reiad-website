@@ -136,7 +136,7 @@ expensive. A typo in `bnNum` put every Bangla numeral on the site
 into Devanagari, `০১২৩` becoming `०१२३`. It was fixed here, the
 Next build was re-run, and the route kept serving the wrong digits,
 because the build was compiling a copy made before the fix. What
-caught it was `next/parity.test.mjs`, which renders the route and
+caught it was `next/parity.test.ts`, which renders the route and
 compares it against the page it replaced; nothing else would have,
 and the digits are similar enough to survive a glance at a diff.
 

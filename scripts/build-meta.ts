@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* ============================================================
-   build-meta.mjs, regenerates the machine-readable files from
-   content.js, so they can never drift out of date:
+   build-meta.ts, regenerates the machine-readable files from
+   the site's manifest, so they can never drift out of date:
 
      feed.xml      RSS for the articles
      sitemap.xml   every public page
@@ -9,29 +9,49 @@
 
    Run it after publishing an article:
 
-       node aab/build-meta.mjs
+       node scripts/build-meta.ts
 
    It is deliberately not a build step: the site works whether
    or not you remember to run it; you just get a stale feed if
    you don't.
+
+   ---- it lived in aab/ and read the built copy ----
+
+   It was `scripts/build-meta.ts`, and it reached the manifest with
+   `await import(join(HERE, "content.js"))`, which is the file
+   `build-modules.ts` WRITES out of `shared/content.ts`. So it
+   read the output of a build rather than its source, and a
+   dynamic import by path is a value nothing can typecheck.
+
+   Both are gone by moving it here: `shared/content.ts` is the
+   source, the import is static, and `scripts/tsconfig.json`
+   covers this directory, so the annotations below are checked
+   rather than merely written. It is also where every other
+   generator in this repository already lives.
    ============================================================ */
 
 import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const {
+import {
   SITE, PAGES, TOOLS, STAGES, allLessons, liveArticles,
   STUFEN, allTeile, stufeUrl, workbookUrl,
   DHAPS, allDars, dhapUrl,
   ENGLISH_TERMS, allParts, termUrl,
   READS, livePieces,
-} = await import(join(HERE, "content.js"));
+} from "../shared/content.ts";
 
-const esc = (s) =>
-  String(s).replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[c]));
+/* Written into `aab/`, which is what the site is uploaded from.
+   Three of these four are in `.gitattributes` as generated. */
+const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "aab");
+
+const ENTITIES: Record<string, string> = {
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;",
+};
+
+const esc = (s: unknown): string =>
+  String(s).replace(/[&<>"']/g, (c) => ENTITIES[c]);
 
 const articles = liveArticles();
 const now = new Date().toUTCString();
@@ -67,19 +87,24 @@ ${(a.topics ?? []).map((t) => `      <category>${esc(t)}</category>`).join("\n")
    asking search engines to index placeholders. They go in the
    moment they are written, with no other change needed here.
 
-   The starter guide's steps are anchors on /money/, not pages, so
-   they are covered by the hub's own entry. */
-const lessons = allLessons().filter(
-  (l) => l.status === "live" && !l.stage.inline
-);
+   There was a `&& !l.stage.inline` here, for a stage whose
+   lessons were anchors on the hub rather than pages. The starter
+   guide was the only one and it has been eight pages since 17
+   August 2026, so the branch matched nothing: `inline` is not a
+   field on `Stage` any more and the test was reading undefined on
+   every lesson. Nothing typechecked this file, so it read as a
+   live rule for two days. */
+const lessons = allLessons().filter((l) => l.status === "live");
 
 /* The German school, on the same rule: every Stufe index, every
    written Teil, and each Stufe's practice book. Unwritten Teile
    stay out, those pages exist so a listed thing is never a dead
    link, not so a search engine can index a placeholder. */
 const teile = allTeile().filter((t) => t.status === "live");
-const workbooks = STUFEN.filter((s) => s.workbook && s.status === "live")
-  .map((s) => workbookUrl(s));
+/* `workbookUrl` already answers null for a Stufe with no book or
+   one not yet live, so the condition is asked once, there, rather
+   than being repeated here where it could drift from it. */
+const workbooks = STUFEN.map(workbookUrl).filter((u): u is string => u !== null);
 
 /* The Quranic Arabic school, third time the same rule. It has no
    practice book: the day is the lesson, so a ধাপ index and its
@@ -92,8 +117,22 @@ const dars = allDars().filter((l) => l.status === "live");
    added here. */
 const parts = allParts().filter((p) => p.status === "live");
 
-const urls = [
-  ...PAGES.filter((p) => !p.private).map((p) => ({ loc: p.url, priority: "0.8" })),
+/** One line of the sitemap. `lastmod` only where there is a real
+    date to give: an article has one and a hub does not, and a
+    made-up one is worse than none. */
+interface SitemapUrl {
+  loc: string;
+  lastmod?: string;
+  priority: string;
+}
+
+const urls: SitemapUrl[] = [
+  /* `url` is optional on a PAGES entry and a sitemap cannot hold
+     a missing one: without this filter an entry without one emits
+     `<loc>https://reiad.co.uknull</loc>`, which is a URL a
+     crawler will dutifully try. */
+  ...PAGES.filter((p) => !p.private && p.url)
+    .map((p) => ({ loc: p.url as string, priority: "0.8" })),
   ...articles.map((a) => ({ loc: `/insights/${a.slug}.html`, lastmod: a.date, priority: "0.9" })),
   ...STAGES.map((s) => ({ loc: `/money/${s.slug}/index.html`, priority: "0.8" })),
   ...lessons.map((l) => ({ loc: l.url, priority: "0.7" })),
@@ -135,9 +174,9 @@ Disallow: /skills/courses/
 Sitemap: ${SITE.origin}/sitemap.xml
 `;
 
-writeFileSync(join(HERE, "feed.xml"), feed);
-writeFileSync(join(HERE, "sitemap.xml"), sitemap);
-writeFileSync(join(HERE, "robots.txt"), robots);
+writeFileSync(join(OUT, "feed.xml"), feed);
+writeFileSync(join(OUT, "sitemap.xml"), sitemap);
+writeFileSync(join(OUT, "robots.txt"), robots);
 
 console.log(`feed.xml     ${articles.length} article(s)`);
 console.log(`sitemap.xml  ${urls.length} URLs`);

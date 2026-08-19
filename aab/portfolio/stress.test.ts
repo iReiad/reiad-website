@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* ============================================================
-   stress.test.mjs, checks on the credit stress-testing engine.
+   stress.test.ts, checks on the credit stress-testing engine.
 
-       node aab/portfolio/stress.test.mjs
+       node aab/portfolio/stress.test.ts
 
    The engine behind the stress-testing case study computes
    things that are impossible to eyeball: a conditional default
@@ -25,22 +25,33 @@ import {
   capitalRequirement, riskWeight, shockIndex, factorZ, shape, macroPath,
   lifecycle, hazardGamma, lgdFromCollateral, calibrateLgdSigma, lgdSigma,
   stressedLgd, stressedEad, stage2Share, lifetimePd, attribution,
-  runSegment, run, reverseStress, tornado, sensitivity, ladder,
+  run, reverseStress, tornado, sensitivity, ladder,
   vintageCurves, parsePortfolioCsv, bookFor, toCsv,
   BOOK, SEGMENTS, MACRO, SCENARIOS, DEFAULTS, DRIVERS,
 } from "./stress.model.js";
+import type { Assumptions, Quarter, Segment } from "./stress.model.js";
 
 let pass = 0;
-const failures = [];
+const failures: string[] = [];
 
-const ok = (name, cond) => {
+const ok = (name: string, cond: boolean): void => {
   if (cond) pass++; else failures.push(name);
 };
-const close = (name, got, want, tol) =>
+const close = (name: string, got: number, want: number, tol: number): void =>
   ok(`${name} (got ${got}, want ${want})`, Math.abs(got - want) <= tol);
 
+/* The shipped book is fixed, so every id named below is in it.
+   `find` cannot know that, and a segment that has gone missing
+   should stop the run rather than arrive as undefined. */
+const segment = (id: string): Segment => {
+  const seg = SEGMENTS.find((s) => s.id === id);
+  if (!seg) throw new Error(`no segment ${id} in the shipped book`);
+  return seg;
+};
+
 const A = { ...DEFAULTS };
-const scenarioAssumptions = (id) => ({ ...DEFAULTS, ...SCENARIOS[id].peaks, scenario: id });
+const scenarioAssumptions = (id: string): Assumptions =>
+  ({ ...DEFAULTS, ...SCENARIOS[id].peaks, scenario: id });
 
 /* ---------- 1 · the normal distribution ----------
    Against printed tables. Everything downstream is one of these
@@ -96,7 +107,7 @@ ok("the anchor sits below zero for every shipped segment",
   const lo = -8;
   const hi = 8;
   const h = (hi - lo) / n;
-  const f = (z) => conditionalPd(pd, rho, z) * Math.exp(-(z * z) / 2) / Math.sqrt(2 * Math.PI);
+  const f = (z: number): number => conditionalPd(pd, rho, z) * Math.exp(-(z * z) / 2) / Math.sqrt(2 * Math.PI);
   let sum = f(lo) + f(hi);
   for (let i = 1; i < n; i++) sum += f(lo + i * h) * (i % 2 ? 4 : 2);
   close("E[PD(Z)] over the cycle returns the long-run PD", (sum * h) / 3, pd, 1e-6);
@@ -197,7 +208,7 @@ ok("the loss given default stays a fraction",
    modelling it this way: the second slice of a price fall costs
    more than the first. */
 {
-  const at = (sh) => lgdFromCollateral(1.5, 0.2, 0.7, sh);
+  const at = (sh: number): number => lgdFromCollateral(1.5, 0.2, 0.7, sh);
   const first = at(-0.1) - at(0);
   const second = at(-0.2) - at(-0.1);
   ok(`the second ten per cent off collateral costs more than the first (${first.toFixed(4)} then ${second.toFixed(4)})`,
@@ -205,6 +216,9 @@ ok("the loss given default stays a fraction",
 }
 {
   const sigma = calibrateLgdSigma(1.55, 0.18, 0.20);
+  /* null would mean no dispersion reproduces that loss given
+     default, which for these three numbers would be the bug. */
+  if (sigma === null) throw new Error("the calibration found no dispersion");
   close("the calibration reproduces the stated loss given default",
     lgdFromCollateral(1.55, 0.18, sigma), 0.20, 1e-6);
 }
@@ -218,16 +232,16 @@ ok("collateral prices do not move an unsecured loss given default",
   SEGMENTS.filter((s) => lgdSigma(s) === null).every((s) =>
     stressedLgd(s, { propertyLevel: -40, s: 0 }) === stressedLgd(s, { propertyLevel: 0, s: 0 })));
 ok("a car book does not reprice with the property index",
-  stressedLgd(SEGMENTS.find((s) => s.id === "auto"), { propertyLevel: -30, s: 0 })
-  < stressedLgd(SEGMENTS.find((s) => s.id === "home"), { propertyLevel: -30, s: 0 })
-  / SEGMENTS.find((s) => s.id === "home").lgdBase * SEGMENTS.find((s) => s.id === "auto").lgdBase);
+  stressedLgd(segment("auto"), { propertyLevel: -30, s: 0 })
+  < stressedLgd(segment("home"), { propertyLevel: -30, s: 0 })
+  / segment("home").lgdBase * segment("auto").lgdBase);
 ok("turning the downturn effect off freezes the loss given default",
   SEGMENTS.every((s) =>
     Math.abs(stressedLgd(s, { propertyLevel: -40, s: 3, lgdDownturn: 0 }) - s.lgdBase) < 1e-9));
 
 /* ---------- 6 · exposure at default ---------- */
 {
-  const card = SEGMENTS.find((s) => s.id === "card");
+  const card = segment("card");
   const drawn = card.ead * (1 - card.stage3Opening);
   close("with no stress the drawdown is the stated conversion factor",
     stressedEad(card, drawn, { s: 0, ccfStress: 0.25 }), drawn + card.ccf * card.undrawn, 1e-9);
@@ -235,7 +249,7 @@ ok("turning the downturn effect off freezes the loss given default",
     stressedEad(card, drawn, { s: 2, ccfStress: 0.25 }) > stressedEad(card, drawn, { s: 0, ccfStress: 0.25 }));
   ok("the conversion factor cannot exceed the limit",
     stressedEad(card, drawn, { s: 20, ccfStress: 0.5 }) <= drawn + card.undrawn + 1e-9);
-  const home = SEGMENTS.find((s) => s.id === "home");
+  const home = segment("home");
   ok("a term loan has nothing left to draw",
     stressedEad(home, 100, { s: 3, ccfStress: 0.5 }) === 100);
 }
@@ -342,7 +356,7 @@ ok("lifetime PD rises with the life", lifetimePd(0.04, 5) > lifetimePd(0.04, 3))
     seg.quarters.every((q) => Math.abs(q.ratio - 1) < 1e-9)));
   ok("the base case ratio never falls below where it started",
     r.quarters.every((q) => q.ratio >= r.openingRatio - 1e-9));
-  ok("the base case pays dividends", r.quarters.slice(1).every((q) => q.dividend > 0));
+  ok("the base case pays dividends", r.quarters.slice(1).every((q) => (q.dividend ?? 0) > 0));
 }
 
 /* Exposure conservation. Run a book with no undrawn limits, so
@@ -351,9 +365,9 @@ ok("lifetime PD rises with the life", lifetimePd(0.04, 5) > lifetimePd(0.04, 3))
    sheet replaces amortisation and write-offs, and a defaulted
    loan is still on the balance sheet until it is written off. */
 {
-  const seg = { ...SEGMENTS.find((s) => s.id === "home"), undrawn: 0 };
+  const seg = { ...segment("home"), undrawn: 0 };
   const r = run(scenarioAssumptions("severe"), [seg], BOOK);
-  const total = (q) => q.performing + q.stage3;
+  const total = (q: Quarter): number => q.performing + q.stage3;
   const opening = total(r.quarters[0]);
   const worst = Math.max(...r.quarters.map((q) => Math.abs(total(q) - opening)));
   close(`exposure is conserved to within ${worst.toExponential(1)}`, worst, 0, 1e-6);
@@ -446,7 +460,7 @@ ok("lifetime PD rises with the life", lifetimePd(0.04, 5) > lifetimePd(0.04, 3))
 /* ---------- 15 · vintage curves ---------- */
 {
   const r = run(A);
-  const home = SEGMENTS.find((s) => s.id === "home");
+  const home = segment("home");
   const curves = vintageCurves(home, r.path, A);
   ok("one curve per vintage", curves.length === home.vintages.length);
   ok("every curve starts at zero", curves.every((c) => c.points[0].cum === 0));
@@ -461,7 +475,11 @@ ok("lifetime PD rises with the life", lifetimePd(0.04, 5) > lifetimePd(0.04, 3))
      claim the vintage chart exists to make, so it is checked
      rather than asserted. */
   {
-    const at = (label, age) => curves.find((c) => c.label === label).points.find((p) => p.age === age).cum;
+    const at = (label: string, age: number): number => {
+      const point = curves.find((c) => c.label === label)?.points.find((p) => p.age === age);
+      if (!point) throw new Error(`no ${label} vintage at ${age} months on book`);
+      return point.cum;
+    };
     ok("the 2022 vintage is worse than the 2021 one at the same age", at("2022", 30) > at("2021", 30));
     ok("and the 2020 vintage is the best of the three", at("2020", 30) < at("2021", 30));
   }
@@ -471,6 +489,11 @@ ok("lifetime PD rises with the life", lifetimePd(0.04, 5) > lifetimePd(0.04, 3))
 {
   const rev = reverseStress(A);
   ok("a breaking scenario exists somewhere below six times the adverse one", rev.found);
+  /* Everything below reads the multiple the search landed on, and
+     a search that found nothing has none to read. */
+  if (!rev.found || rev.unemployment === undefined) {
+    throw new Error("the reverse stress found no breaking scenario");
+  }
   const back = run(Object.fromEntries([
     ...Object.entries(A),
     ...MACRO.map((m) => [m.key, (A[m.key] ?? 0) * rev.multiple]),

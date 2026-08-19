@@ -40,7 +40,15 @@ export const SECURITY_HEADERS = {
     + "script-src 'self' 'unsafe-inline'; "
     + "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
     + "font-src 'self' https://fonts.gstatic.com; "
-    + "img-src 'self' data:; "
+    /* One third-party image host, and one picture: the avatar
+       Google hands over with a sign-in. It is added rather than
+       proxied because these bytes are public, need no credential
+       and are the reader's own picture on the reader's own
+       account page, which is none of the things that made the
+       course section route Drive through the Worker. The tag
+       carries `referrerpolicy="no-referrer"`, so the host is not
+       told which page it is on. */
+    + "img-src 'self' data: https://lh3.googleusercontent.com; "
     + "connect-src 'self' https://api.web3forms.com "
     + "https://market-pulse.i-reiad.workers.dev https://wvjarqnnmkkuxyrndtya.supabase.co; "
     /* Media is this origin's, which is the whole of the course

@@ -2,7 +2,7 @@
    frontier.model.js: portfolio construction, end to end.
 
    No DOM. Prices in, weights and performance out, so that
-   frontier.test.mjs can check every piece against a closed form
+   frontier.test.ts can check every piece against a closed form
    or an identity rather than against itself.
 
    Everything on the page is computed here, in the browser, from
@@ -354,7 +354,7 @@ export function inverseVariance(S) {
  * than recomputed on every page load, because these are the
  * numbers the money was in. inverseVariance() above reproduces
  * them from the same prices to within a hundredth of a
- * percentage point, which frontier.test.mjs checks.
+ * percentage point, which frontier.test.ts checks.
  */
 export const AS_BUILT = {
   BAG: 0.1761, CWK: 0.1533, FRAS: 0.0937, BOWL: 0.0853, IGG: 0.1669,

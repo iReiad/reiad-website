@@ -55,5 +55,18 @@
     "types": ["node"]
   },
   "include": ["**/*.ts", "../shared/**/*.ts"],
-  "exclude": ["node_modules"]
+  "//exclude": [
+    "build-og.ts is the one generator here that drives a browser,",
+    "and playwright is a devDependency of app/ rather than of the",
+    "root: it is a browser driver, and the root install is the one",
+    "CI runs. So this config cannot resolve it, and a `paths` entry",
+    "pointing into app/node_modules made `npm ci` at the root fail",
+    "on a module that was never going to be there.",
+    "",
+    "tsconfig.browser.json beside this one covers it, and",
+    "check-types.ts runs that with `needs: app/`, so it skips",
+    "loudly where the install is absent instead of failing there.",
+    "That is the same arrangement next/, app/ and aab/ already use."
+  ],
+  "exclude": ["node_modules", "build-og.ts"]
 }

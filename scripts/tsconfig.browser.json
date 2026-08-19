@@ -1,0 +1,25 @@
+{
+  "//": [
+    "The one generator here that drives a browser: build-og.ts,",
+    "which renders the 1200x630 share cards with the site's own",
+    "fonts and colours rather than letting them drift from it.",
+    "",
+    "It is separate from tsconfig.json for one reason, and it is",
+    "the reason next/, app/ and aab/ each have their own too:",
+    "playwright is a devDependency of app/, CI runs `npm ci` at",
+    "the root and nowhere else, and a config that cannot resolve",
+    "an import fails rather than skipping. So this one carries the",
+    "playwright mapping, check-types.ts runs it with `needs: app/`,",
+    "and where that install is absent it says so and skips.",
+    "",
+    "A skip is not a pass, which is why the line names what to run."
+  ],
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "playwright": ["../app/node_modules/playwright"]
+    }
+  },
+  "include": ["build-og.ts"],
+  "exclude": ["node_modules"]
+}

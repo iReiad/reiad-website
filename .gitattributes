@@ -32,22 +32,33 @@ aab/desk/app.js       linguist-generated=true
 aab/studio/app.js     linguist-generated=true
 
 # ---------- the four schools ----------
-# 251 pages, written by the builders in each directory from a
-# curriculum and the content files beside it.
-aab/learn/**          linguist-generated=true
-aab/deutsch/**        linguist-generated=true
-aab/quran/**          linguist-generated=true
-aab/english/**        linguist-generated=true
+# One file each, and it is the LADDER: node scripts/build-modules.ts
+# writes these four from shared/curricula/*.ts.
+#
+# It was the whole of each directory, with a comment about 251
+# pages written by a builder in it. There are no pages there and
+# there are no builders: Stage 11.7 made all 251 routes and the
+# builders are in archive/schools-builders/. What is left beside
+# these four is hand-written source, progress.js and hub.js and
+# each school's icons.js, and marking those generated collapsed
+# them in every diff, so a change to one showed as nothing.
+#
+# aab/learn/** was here too and reached nothing: the money school
+# moved to /money/ on 17 August 2026.
+aab/deutsch/curriculum.js   linguist-generated=true
+aab/english/curriculum.js   linguist-generated=true
+aab/money/curriculum.js     linguist-generated=true
+aab/quran/curriculum.js     linguist-generated=true
 
 # ---------- the feed, the sitemap, the robots file ----------
-# node aab/build-meta.mjs
+# node scripts/build-meta.ts
 aab/feed.xml          linguist-generated=true
 aab/sitemap.xml       linguist-generated=true
 aab/robots.txt        linguist-generated=true
 aab/sw-manifest.json  linguist-generated=true
 
 # ---------- the share cards ----------
-# node aab/build-og.mjs
+# node scripts/build-og.ts
 aab/og/**             linguist-generated=true
 
 # ---------- the nightly backup ----------

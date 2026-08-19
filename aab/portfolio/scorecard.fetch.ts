@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* ============================================================
-   scorecard.fetch.mjs, the file that makes scorecard.data.js.
+   scorecard.fetch.ts, the file that makes scorecard.data.js.
 
-       node aab/portfolio/scorecard.fetch.mjs
+       node aab/portfolio/scorecard.fetch.ts
 
    Downloads the Statlog German Credit data from the UCI Machine
    Learning Repository, checks it is the file it is supposed to
@@ -17,13 +17,13 @@
    in this repository cannot be traced back to the source, so
    this script is the trace: it names the URL, it records the
    checksum of exactly what it downloaded, and it recomputes
-   column-level totals that scorecard.test.mjs checks the shipped
+   column-level totals that scorecard.test.ts checks the shipped
    file against. If a conversion ever mangles a column, the sums
    move and the tests fail.
 
    It needs the network, so it is not part of any build. Run it
    if the source ever changes, and commit what it writes, the
-   same arrangement as build-lessons.mjs and build-og.mjs.
+   same arrangement as build-lessons.mjs and build-og.ts.
 
    ------------------------------------------------------------
    THE DATA
@@ -63,8 +63,34 @@ const KNOWN_MD5 = "6b94c2e35480e671545e52a808a8a549";
    (german.doc at the same URL). Codes are the source's; the
    labels are its wording, shortened where it does not fit a
    chart axis and left alone where it does.
+   `type` is the discriminant: a `num` column has no levels and a
+   `cat` column always has them, which is what lets the conversion
+   below read a cell without asking twice.
    ------------------------------------------------------------ */
-const SCHEMA = [
+
+interface NumericColumn {
+  key: string;
+  name: string;
+  short: string;
+  type: "num";
+  unit?: string;
+  protected?: true;
+}
+
+interface CategoricalColumn {
+  key: string;
+  name: string;
+  short: string;
+  type: "cat";
+  protected?: true;
+  /** `[code, label]`, the source's own codes in the source's order.
+      The index into this array is what a converted row carries. */
+  levels: Array<[string, string]>;
+}
+
+type Column = NumericColumn | CategoricalColumn;
+
+const SCHEMA: Column[] = [
   { key: "checking", name: "Checking account status", type: "cat", short: "Checking",
     levels: [
       ["A11", "below 0 DM"], ["A12", "0 to 200 DM"],
@@ -153,8 +179,9 @@ if (lines.length !== 1000) {
   process.exit(1);
 }
 
-const rows = [];
-const unseen = new Map();
+/** Twenty attributes in SCHEMA order, then the label. */
+const rows: number[][] = [];
+const unseen = new Map<string, number>();
 lines.forEach((line, i) => {
   const cells = line.split(/\s+/);
   if (cells.length !== 21) throw new Error(`line ${i + 1}: ${cells.length} columns, expected 21`);
@@ -190,15 +217,15 @@ lines.forEach((line, i) => {
    is an attestation by the conversion rather than a restatement
    of it.
    ------------------------------------------------------------ */
-const numericSums = {};
-const numericRanges = {};
+const numericSums: Record<string, number> = {};
+const numericRanges: Record<string, [number, number]> = {};
 SCHEMA.forEach((col, j) => {
   if (col.type !== "num") return;
   const v = rows.map((r) => r[j]);
   numericSums[col.key] = v.reduce((a, b) => a + b, 0);
   numericRanges[col.key] = [Math.min(...v), Math.max(...v)];
 });
-const levelCounts = {};
+const levelCounts: Record<string, number[]> = {};
 SCHEMA.forEach((col, j) => {
   if (col.type !== "cat") return;
   levelCounts[col.key] = col.levels.map((_, k) => rows.filter((r) => r[j] === k).length);
@@ -211,7 +238,7 @@ const bad = rows.filter((r) => r[r.length - 1] === 1).length;
    right: it does not. Kept in the schema so the codes line up
    with the published documentation, and flagged so the model
    does not spend a column on a category with no rows in it. */
-const emptyLevels = [];
+const emptyLevels: string[] = [];
 SCHEMA.forEach((col) => {
   if (col.type !== "cat") return;
   col.levels.forEach(([code], k) => {
@@ -220,12 +247,12 @@ SCHEMA.forEach((col) => {
 });
 console.log(`levels present in the documentation but not in the data: ${emptyLevels.join(", ") || "none"}`);
 
-const j = (v) => JSON.stringify(v);
+const j = (v: unknown): string => JSON.stringify(v);
 const schemaOut = SCHEMA.map((c) => {
   const parts = [`key: ${j(c.key)}`, `name: ${j(c.name)}`, `short: ${j(c.short)}`, `type: ${j(c.type)}`];
-  if (c.unit) parts.push(`unit: ${j(c.unit)}`);
+  if (c.type === "num" && c.unit) parts.push(`unit: ${j(c.unit)}`);
   if (c.protected) parts.push("protected: true");
-  if (c.levels) {
+  if (c.type === "cat") {
     parts.push(`levels: [${c.levels.map(([code, label]) => `[${j(code)}, ${j(label)}]`).join(", ")}]`);
   }
   return `  { ${parts.join(", ")} },`;
@@ -234,7 +261,7 @@ const schemaOut = SCHEMA.map((c) => {
 const file = `/* ============================================================
    scorecard.data.js: the Statlog German Credit data.
 
-   GENERATED by scorecard.fetch.mjs. Do not edit by hand: run
+   GENERATED by scorecard.fetch.ts. Do not edit by hand: run
    that script and commit what it writes.
 
      Hofmann, H. (1994). Statlog (German Credit Data).
@@ -286,7 +313,7 @@ export const SCHEMA = [
 ${schemaOut}
 ];
 
-/** What the conversion saw, for scorecard.test.mjs to check the rows against. */
+/** What the conversion saw, for scorecard.test.ts to check the rows against. */
 export const CHECKS = {
   rows: ${rows.length},
   bad: ${bad},

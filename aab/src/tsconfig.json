@@ -50,7 +50,7 @@
     "skipLibCheck": true,
     "paths": {
       "/activation.js": ["./types/activation.d.ts"],
-      "/account.js": ["./types/account.d.ts"],
+      "/account.js": ["./account.ts"],
       "/saved.js": ["./saved.ts"],
       "/prefs.js": ["./prefs.ts"],
       "/checkpoints.js": ["./checkpoints.ts"],

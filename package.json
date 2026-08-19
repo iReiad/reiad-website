@@ -22,7 +22,7 @@
     "Nothing here is shipped. No dependency below is imported by",
     "any file the browser or either Worker loads. linkedom is the",
     "newest of them and the same rule holds: it is a DOM for",
-    "aab/schools/hub.test.mjs to build the three school hubs in,",
+    "aab/schools/hub.test.ts to build the three school hubs in,",
     "so that test needs no browser and no network. Without it the",
     "test says so and skips, which is not a pass.",
     "",

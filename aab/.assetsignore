@@ -38,13 +38,18 @@
 # shape no rule covers, so the two together mean it cannot happen
 # quietly either way.
 #
-# `build-meta.mjs` and `build-og.mjs` are still here. PLAN.md
-# Phase 6 is what retires them: a sitemap and an OpenGraph image
-# are both things Next has a better idiom for than a script.
-# Both extensions, because these are being converted to
-# TypeScript, which node runs directly. A rule that knew only
-# `.mjs` would go quiet at the moment the files changed name, and
-# `scripts/check-routes.ts` widened with it.
+# The two builders left on 19 August 2026 as well, with the sweep
+# that took the last `.mjs` out of this repository: they are
+# `scripts/build-meta.ts` and `scripts/build-og.ts` now, beside
+# every other generator, where `scripts/tsconfig.json` typechecks
+# them. So these rules guard nothing that is here either, and they
+# stay for the same reason the `check-*` ones do.
+#
+# Both extensions, because a rule that knew only `.mjs` would have
+# gone quiet at the moment those files changed name, and
+# `scripts/check-routes.ts` widened with it. PLAN.md Phase 6 is
+# what retires the two builders outright: a sitemap and an
+# OpenGraph image are both things Next has a better idiom for.
 check-*.mjs
 check-*.ts
 build-*.mjs
@@ -58,9 +63,22 @@ build-*.ts
 */*.test.mjs
 */*.test.ts
 
+# And the config that typechecks them, which is not itself a test
+# and so is reached by no rule above. `aab/src/` has one too and
+# the `src/` rule below covers it.
+tsconfig.test.json
+
 # One-off data fetchers, run by hand when a model needs refreshing.
 portfolio/scorecard.fetch.mjs
 portfolio/scorecard.fetch.ts
+
+# Descriptions of the hand-written JavaScript beside them, read by
+# the typechecker and by nothing the browser fetches. The four
+# case-study models are plain JavaScript, so a `.d.ts` is what
+# lets `aab/tsconfig.test.json` hold their tests to real types
+# instead of silencing an untyped import.
+*.d.ts
+*/*.d.ts
 
 # The TypeScript that /api.js, /share-card.js, /photo.js and
 # /tailwind.css are compiled from. The built files are served; the

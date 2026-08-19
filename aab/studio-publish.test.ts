@@ -1,7 +1,7 @@
 /* ============================================================
-   studio-publish.test.mjs: a photo actually reaches /media.
+   studio-publish.test.ts: a photo actually reaches /media.
 
-     node aab/studio-publish.test.mjs
+     node aab/studio-publish.test.ts
 
    This exists because of a bug that no amount of reading the code
    would have found, and that every check in this repository
@@ -36,17 +36,22 @@
    than a copy of it that can drift.
 
    Skips itself, loudly, if Playwright is not installed.
+
+   `aab/tsconfig.test.json` is what typechecks the annotations
+   below, and `scripts/check-types.ts` runs it. A `!` inside a
+   `page.evaluate` callback is the repo's usual "this element is in
+   the markup": the callback runs in the browser and cannot reach a
+   helper out here.
    ============================================================ */
 
 import { createServer } from "node:http";
 import { readFile, readFileSync } from "node:fs";
-import { readFile as read } from "node:fs/promises";
 import { extname, join, dirname, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const aab = dirname(fileURLToPath(import.meta.url));
 
-let chromium;
+let chromium: typeof import("playwright").chromium;
 try {
   ({ chromium } = await import("playwright"));
 } catch {
@@ -75,14 +80,14 @@ if (!/connect-src/.test(CSP)) {
 
 /* ---------- a server that sends it ---------- */
 
-const TYPES = {
+const TYPES: Record<string, string> = {
   ".html": "text/html", ".js": "text/javascript", ".css": "text/css",
   ".json": "application/json", ".svg": "image/svg+xml", ".webp": "image/webp",
   ".ico": "image/x-icon", ".xml": "application/xml", ".woff2": "font/woff2",
 };
 
 const server = createServer((req, res) => {
-  let path = decodeURIComponent(new URL(req.url, "http://x").pathname);
+  let path = decodeURIComponent(new URL(String(req.url), "http://x").pathname);
   if (path.endsWith("/")) path += "index.html";
   const file = join(aab, normalize(path).replace(/^(\.\.[/\\])+/, ""));
   readFile(file, (err, data) => {
@@ -95,18 +100,23 @@ const server = createServer((req, res) => {
   });
 });
 
-await new Promise((r) => server.listen(0, r));
-const origin = `http://localhost:${server.address().port}`;
+await new Promise<void>((r) => { server.listen(0, () => r()); });
+const address = server.address();
+if (address === null || typeof address === "string") {
+  console.error("The test server took a socket rather than a port, so there is no origin.");
+  process.exit(1);
+}
+const origin = `http://localhost:${address.port}`;
 
 /* ---------- the run ---------- */
 
 let failures = 0;
-const check = (name, got, want) => {
+const check = (name: string, got: unknown, want: unknown): void => {
   if (JSON.stringify(got) === JSON.stringify(want)) { console.log(`  ok   ${name}`); return; }
   failures += 1;
   console.log(`  FAIL ${name}\n       got  ${JSON.stringify(got)}\n       want ${JSON.stringify(want)}`);
 };
-const okay = (name, cond) => check(name, !!cond, true);
+const okay = (name: string, cond: unknown): void => check(name, !!cond, true);
 
 const browser = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH || undefined,
@@ -114,10 +124,28 @@ const browser = await chromium.launch({
 const ctx = await browser.newContext({ viewport: { width: 1400, height: 1000 }, serviceWorkers: "block" });
 const page = await ctx.newPage();
 
-const blocked = [];
-const uploads = [];
-const store = new Map();
-let posted = null;
+/** One file as R2 would hand it back. */
+interface Held {
+  buf: Buffer;
+  type: string;
+}
+
+/** What the article endpoint was sent, which is the whole point:
+    a body with no `data:` left in it and a cover that is a drawn
+    card. */
+interface Posted {
+  body?: string;
+  cover?: string;
+}
+
+const blocked: string[] = [];
+const uploads: Array<{ key: string; bytes: number; type: string }> = [];
+const store = new Map<string, Held>();
+/* Declared rather than initialised, and that is not a style
+   choice: a `let` only a callback ever writes stays narrowed to
+   the value it was given here, so `if (posted)` below would be
+   reading a type that can hold nothing. */
+let posted: Posted | undefined;
 
 page.on("console", (m) => {
   const text = m.text();
@@ -137,7 +165,7 @@ await ctx.route("**/media/**", (route) => {
 await ctx.route("**/api/**", (route) => {
   const req = route.request();
   const path = new URL(req.url()).pathname.replace("/api/", "");
-  const json = (o) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(o) });
+  const json = (o: unknown) => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(o) });
 
   if (path.startsWith("auth")) return json({ ok: true, signedIn: true, configured: true });
 
@@ -152,7 +180,7 @@ await ctx.route("**/api/**", (route) => {
   }
 
   if (path.startsWith("articles")) {
-    if (req.method() === "POST") { posted = JSON.parse(req.postData()); return json({ ok: true, article: posted }); }
+    if (req.method() === "POST") { posted = JSON.parse(String(req.postData())); return json({ ok: true, article: posted }); }
     return json({ ok: true, articles: [] });
   }
   return json({ ok: true });
@@ -167,17 +195,17 @@ await page.waitForTimeout(1200);
 // A WebP the browser encodes itself, so the fixture is certainly valid.
 const photo = await page.evaluate(async () => {
   const c = new OffscreenCanvas(600, 400);
-  const g = c.getContext("2d");
+  const g = c.getContext("2d")!;
   g.fillStyle = "#0B3D2E"; g.fillRect(0, 0, 600, 400);
   g.fillStyle = "#D4A24C"; g.fillRect(40, 40, 200, 120);
   const blob = await c.convertToBlob({ type: "image/webp", quality: 0.9 });
-  return new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(blob); });
+  return new Promise<string>((res) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result)); fr.readAsDataURL(blob); });
 });
 
 okay("the fixture is a data: URL, the way a pasted photo arrives", photo.startsWith("data:image/webp"));
 
 await page.evaluate((src) => {
-  const ed = document.querySelector("#editor") ?? document.querySelector("[contenteditable]");
+  const ed = (document.querySelector("#editor") ?? document.querySelector("[contenteditable]"))!;
   ed.innerHTML = `<p>Before.</p><figure><img src="${src}" alt="a photo" width="600" height="400">`
     + `<figcaption>A caption</figcaption></figure><p>After.</p>`;
   ed.dispatchEvent(new Event("input", { bubbles: true }));

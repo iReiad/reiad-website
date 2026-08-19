@@ -57,7 +57,6 @@ export interface SchoolStage {
   de?: string;
   icon?: string;
   base?: string;
-  inline?: boolean;
   workbook?: { slug: string; days: number };
   sections: SchoolSection[];
   [key: string]: unknown;

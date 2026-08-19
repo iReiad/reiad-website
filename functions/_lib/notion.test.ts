@@ -1,7 +1,7 @@
 /* ============================================================
-   notion.test.mjs: the Notion → HTML conversion.
+   notion.test.ts: the Notion → HTML conversion.
 
-     node functions/_lib/notion.test.mjs
+     node functions/_lib/notion.test.ts
 
    No token, no network, no Worker: `convert` is handed a fake
    client, and every block below is the shape Notion's API actually
@@ -13,50 +13,67 @@
 import {
   convert, inline, normaliseId, propValue, readFields, textOf,
 } from "./notion.js";
+import type {
+  Block, ConvertState, NotionFetch, NotionProperty, RichText,
+} from "./notion.js";
 import { sanitiseHTML } from "./sanitise.ts";
 
 let passed = 0;
-const failures = [];
+const failures: string[] = [];
 
-function check(name, actual, expected) {
+function check(name: string, actual: unknown, expected: unknown): void {
   const a = typeof actual === "string" ? actual : JSON.stringify(actual);
   const e = typeof expected === "string" ? expected : JSON.stringify(expected);
   if (a === e) { passed++; return; }
   failures.push(`${name}\n    expected: ${e}\n    actual:   ${a}`);
 }
 
-function ok(name, condition, detail = "") {
+function ok(name: string, condition: boolean, detail = ""): void {
   if (condition) { passed++; return; }
   failures.push(`${name}${detail ? `\n    ${detail}` : ""}`);
 }
 
 /* ---------- helpers that build Notion's shapes ---------- */
 
-const rt = (text, annotations = {}, href = null) => ({
+const rt = (
+  text: string,
+  annotations: RichText["annotations"] = {},
+  href: string | null = null,
+): RichText => ({
   plain_text: text,
   annotations: { bold: false, italic: false, underline: false, code: false, ...annotations },
   href,
 });
 
-const block = (type, data, extra = {}) => ({
+const block = (type: string, data: unknown, extra: Partial<Block> = {}): Block => ({
   id: `id-${type}`, type, [type]: data, has_children: false, ...extra,
 });
 
+/** The client, plus the calls it was asked to make: the fetch
+    budget is checked by counting them. */
+type FakeClient = NotionFetch & { calls: string[] };
+
 /** A client that answers children lookups from a table, and counts
     its calls so the fetch budget can be checked. */
-function fakeClient(childrenById = {}) {
-  const calls = [];
-  const fn = async (path) => {
+function fakeClient(childrenById: Record<string, Block[]> = {}): FakeClient {
+  const calls: string[] = [];
+  const fn = async (path: string) => {
     calls.push(path);
-    const id = path.match(/\/blocks\/([^/]+)\/children/)?.[1];
+    const id = path.match(/\/blocks\/([^/]+)\/children/)?.[1] ?? "";
     return { results: childrenById[id] ?? [], has_more: false, next_cursor: null };
   };
   fn.calls = calls;
   return fn;
 }
 
-const run = (blocks, childrenById = {}) => {
-  const state = { fetches: 0, truncated: false };
+interface Run {
+  html: string;
+  state: ConvertState;
+  notion: FakeClient;
+}
+
+const run = (blocks: Block[], childrenById: Record<string, Block[]> = {}): Promise<Run> => {
+  const state: ConvertState = { fetches: 0, truncated: false };
   const notion = fakeClient(childrenById);
   return convert(blocks, { notion, origin: "https://reiad.co.uk", state })
     .then((html) => ({ html, state, notion }));
@@ -261,7 +278,7 @@ check("textOf joins the parts", textOf([rt("a"), rt("b")]), "ab");
 {
   const table = block("table", { has_column_header: true },
     { id: "t1", has_children: true });
-  const row = (cells) => ({ type: "table_row", table_row: { cells } });
+  const row = (cells: RichText[][]): Block => ({ type: "table_row", table_row: { cells } });
   const { html } = await run([table], {
     t1: [row([[rt("Year")], [rt("Return")]]), row([[rt("2024")], [rt("7%")]])],
   });
@@ -311,7 +328,7 @@ check("textOf joins the parts", textOf([rt("a"), rt("b")]), "ab");
 {
   // Each level says it has children, and the fake client always has
   // one more to give. Only the depth cap ends this.
-  const deep = {};
+  const deep: Record<string, Block[]> = {};
   for (let i = 0; i < 12; i++) {
     deep[`n${i}`] = [block("bulleted_list_item", { rich_text: [rt(`level ${i + 1}`)] },
       { id: `n${i + 1}`, has_children: true })];
@@ -329,8 +346,8 @@ check("textOf joins the parts", textOf([rt("a"), rt("b")]), "ab");
 {
   // Many siblings each wanting children is the other way to burn the
   // budget: breadth rather than depth.
-  const kids = {};
-  const wide = [];
+  const kids: Record<string, Block[]> = {};
+  const wide: Block[] = [];
   for (let i = 0; i < 40; i++) {
     wide.push(block("paragraph", { rich_text: [rt(`p${i}`)] },
       { id: `w${i}`, has_children: true }));
@@ -347,7 +364,7 @@ check("textOf joins the parts", textOf([rt("a"), rt("b")]), "ab");
    ============================================================ */
 
 {
-  const props = {
+  const props: Record<string, NotionProperty> = {
     Name: { type: "title", title: [rt("The DSEX, explained")] },
     Standfirst: { type: "rich_text", rich_text: [rt("What it measures.")] },
     Category: { type: "select", select: { name: "Explainer" } },

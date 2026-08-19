@@ -35,7 +35,13 @@
    before one.
    ============================================================ */
 
+import { execFileSync } from "node:child_process";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { SECURITY_HEADERS } from "../shared/headers.ts";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 const args = process.argv.slice(2);
 const origin = (args[args.indexOf("--origin") + 1] || "").startsWith("http")
@@ -66,6 +72,7 @@ const WORKER_PIECE = "/cooking/onions.html";
 
 let passed = 0;
 const failures: string[] = [];
+const ahead: string[] = [];
 
 const ok = (name: string, condition: unknown, detail = ""): void => {
   if (condition) { passed++; return; }
@@ -74,6 +81,47 @@ const ok = (name: string, condition: unknown, detail = ""): void => {
 
 const same = (name: string, expected: unknown, actual: unknown): void =>
   ok(name, expected === actual, `expected ${expected}, got ${actual}`);
+
+/* ---------- what is live is main, and this may not be main ----------
+
+   `live-check.yml` runs on every push, on every branch, and this
+   file compares the DEPLOYED site against the WORKING TREE. Those
+   are the same thing on main and they are not the same thing on a
+   branch: a branch that adds a header, a route or a module is
+   asking production to already be serving something nobody has
+   merged.
+
+   It went red exactly that way twice in two days, once for a
+   module a branch added to a page and once for a Google avatar
+   host a branch added to `img-src`. Both were green the moment
+   they merged, which is the tell: the check was right about the
+   site and wrong about the question.
+
+   So a difference between what this branch says and what is
+   deployed is a NOTE off main and a FAILURE on it. Everything
+   else in this file is unchanged, because everything else asks a
+   question a branch cannot make false: whether the service
+   binding is wired, whether the second Worker's scripts answer,
+   whether every piece in the live sitemap loads. */
+const branch = process.env.GITHUB_REF_NAME
+  ?? (() => {
+    try {
+      return execFileSync("git", ["rev-parse", "--abbrev-ref", "HEAD"],
+        { cwd: ROOT, encoding: "utf8" }).trim();
+    } catch { return "main"; }
+  })();
+const ON_MAIN = branch === "main" || branch === "HEAD";
+
+/** An assertion about something a branch can legitimately be ahead
+    of production on. Off main it is reported and not counted. */
+const deployed = (name: string, expected: unknown, actual: unknown): void => {
+  if (expected === actual) { passed++; return; }
+  if (ON_MAIN) {
+    failures.push(`${name}: expected ${expected}, got ${actual}`);
+    return;
+  }
+  ahead.push(`${name}\n      committed here: ${expected}\n      live right now: ${actual}`);
+};
 
 /** Every response is asked for without the cache, because a check
     reading Cloudflare's copy of yesterday's deploy is worse than
@@ -188,7 +236,7 @@ ok("the share card is the drawn one, not a raw photo",
 /* ---------- 2. the headers a Worker response does not get free ---------- */
 
 for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
-  same(`the ${key} header`, value, article.headers.get(key));
+  deployed(`the ${key} header`, value, article.headers.get(key));
 }
 ok("the article is cacheable at the edge",
   (article.headers.get("Cache-Control") || "").includes("stale-while-revalidate"),
@@ -340,9 +388,18 @@ for (const [path, what] of [
 /* ---------- done ---------- */
 
 console.log(`\n${origin}: ${passed} checks passed`);
+if (ahead.length) {
+  console.log(`\n${ahead.length} thing(s) this branch changes that ${origin} has not`
+    + ` deployed yet.\nOn main each of these is a failure; on "${branch}" it is what a`
+    + ` branch looks like\nbefore it merges:\n`);
+  for (const a of ahead) console.log(`  ~ ${a}`);
+  console.log("");
+}
 if (failures.length) {
   console.log(`${failures.length} failed:\n`);
   for (const f of failures) console.log(`  ✗ ${f}`);
   process.exit(1);
 }
-console.log("The deployed site is doing what the repository says.\n");
+console.log(ahead.length
+  ? "The deployed site is doing what main says. This branch is ahead of it.\n"
+  : "The deployed site is doing what the repository says.\n");

@@ -20,7 +20,7 @@ import { bn, bnWord, bookFor } from "../lib/workbook";
 /** The route: the guards, and then the body.
 
     Split in two so the body can be rendered by a test without a
-    Next request behind it. `workbook.test.mjs` drives both books
+    Next request behind it. `workbook.test.ts` drives both books
     against exactly this markup, and it exists because both of
     them rendered and did nothing for a while: a port is finished
     when it does what the thing it replaced did, and those two

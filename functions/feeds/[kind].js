@@ -1,7 +1,7 @@
 /* ============================================================
    /feed.xml and /sitemap.xml: the static files, plus the database.
 
-   Both are generated at build time by aab/build-meta.mjs, which
+   Both are generated at build time by scripts/build-meta.ts, which
    reads content.js. That is the right source for everything written
    as a file, and it cannot see a thing about articles published
    through the Studio, because those live in D1 and content.js is

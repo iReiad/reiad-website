@@ -2,7 +2,7 @@
    stress.js: the dashboard around the stress test.
 
    Same split as the other case studies. stress.model.js holds
-   the arithmetic and is checked on its own by stress.test.mjs;
+   the arithmetic and is checked on its own by stress.test.ts;
    this turns it into something you can argue with.
 
    ------------------------------------------------------------

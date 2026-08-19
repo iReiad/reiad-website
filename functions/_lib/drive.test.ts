@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* ============================================================
-   drive.test.mjs: the service account's half of `_lib/drive.ts`,
+   drive.test.ts: the service account's half of `_lib/drive.ts`,
    and the ticket beside it.
 
-       node functions/_lib/drive.test.mjs
+       node functions/_lib/drive.test.ts
 
    ---- what this can and cannot check ----
 
@@ -34,7 +34,7 @@ import { accessToken, canReachDrive, forgetToken } from "./drive.ts";
 import { canTicket, checkTicket, mintTicket } from "./ticket.ts";
 
 let bad = 0;
-const ok = (name, cond, detail = "") => {
+const ok = (name: string, cond: boolean, detail = ""): void => {
   console.log(`${cond ? "  ok " : "FAIL"}  ${name}${cond ? "" : `\n        ${detail}`}`);
   if (!cond) bad += 1;
 };
@@ -66,16 +66,30 @@ ok("with no credential the token is null, not a throw",
 
 console.log("\n--- the JWT it signs ---");
 
-let sent = null;
+/** The one request this module makes, caught rather than sent. */
+interface Sent {
+  url: string;
+  body: string;
+}
+
+/* A field rather than a bare `let`, and the reason is worth the
+   line: the assignment below happens inside the stub, and
+   TypeScript narrows a captured variable by the flow it can see,
+   which here is the initialiser alone. `sent` would be `null` at
+   every check under it. */
+const caught: { sent: Sent | null } = { sent: null };
+
 const realFetch = globalThis.fetch;
+/* A real `Response`, because the stub has to BE one: `accessToken`
+   reads `ok`, `status`, `json()` and `text()` off whatever comes
+   back, and a hand-made object with four of those on it is not the
+   thing the type says it is. */
 globalThis.fetch = async (url, init) => {
-  sent = { url: String(url), body: String(init?.body ?? "") };
-  return {
-    ok: true,
-    status: 200,
-    json: async () => ({ access_token: "an-access-token", expires_in: 3600 }),
-    text: async () => "",
-  };
+  caught.sent = { url: String(url), body: String(init?.body ?? "") };
+  return new Response(
+    JSON.stringify({ access_token: "an-access-token", expires_in: 3600 }),
+    { status: 200, headers: { "Content-Type": "application/json" } },
+  );
 };
 
 forgetToken();
@@ -83,20 +97,36 @@ const token = await accessToken(ENV);
 
 ok("it returns the access token Google gave it", token === "an-access-token");
 ok("it asks Google's token endpoint",
-  sent?.url === "https://oauth2.googleapis.com/token", sent?.url);
+  caught.sent?.url === "https://oauth2.googleapis.com/token", caught.sent?.url);
 
-const form = new URLSearchParams(sent.body);
+const form = new URLSearchParams(caught.sent?.body ?? "");
 ok("with the JWT bearer grant",
   form.get("grant_type") === "urn:ietf:params:oauth:grant-type:jwt-bearer",
-  form.get("grant_type"));
+  form.get("grant_type") ?? "");
 
 const jwt = form.get("assertion") ?? "";
 const [head64, claims64, sig64] = jwt.split(".");
 ok("and an assertion in three parts", Boolean(head64 && claims64 && sig64));
 
-const fromB64url = (s) => Buffer.from(s.replace(/-/g, "+").replace(/_/g, "/"), "base64");
-const header = JSON.parse(fromB64url(head64).toString());
-const claims = JSON.parse(fromB64url(claims64).toString());
+const fromB64url = (s: string): Buffer<ArrayBuffer> =>
+  Buffer.from(s.replace(/-/g, "+").replace(/_/g, "/"), "base64");
+
+/* What the two halves of the assertion say. `JSON.parse` answers
+   `any`, so these annotations are a claim rather than a check, and
+   the checks under them are what holds the claim. */
+interface JwtHeader {
+  alg?: string;
+}
+interface JwtClaims {
+  iss?: string;
+  aud?: string;
+  scope?: string;
+  iat: number;
+  exp: number;
+}
+
+const header: JwtHeader = JSON.parse(fromB64url(head64).toString());
+const claims: JwtClaims = JSON.parse(fromB64url(claims64).toString());
 
 ok("signed RS256", header.alg === "RS256", JSON.stringify(header));
 ok("issued by the service account", claims.iss === ENV.GOOGLE_SA_EMAIL);
@@ -143,9 +173,9 @@ console.log("\n--- one exchange per isolate ---");
 
 forgetToken();
 await accessToken(ENV);
-sent = null;
+caught.sent = null;
 await accessToken(ENV);
-ok("a second call does not exchange again", sent === null);
+ok("a second call does not exchange again", caught.sent === null);
 
 /* Only that an exchange happened, not that the assertion differs:
    two JWTs minted in the same second are byte for byte the same,
@@ -153,7 +183,7 @@ ok("a second call does not exchange again", sent === null);
    test that would pass or fail on how fast the machine was. */
 forgetToken();
 await accessToken(ENV);
-ok("and forgetting it exchanges again", sent !== null);
+ok("and forgetting it exchanges again", caught.sent !== null);
 
 globalThis.fetch = realFetch;
 
@@ -180,7 +210,7 @@ ok("a forged signature opens nothing",
 ok("a ticket from a different key opens nothing",
   !await checkTicket({ GOOGLE_SA_KEY: "some other key" }, FILE, pass));
 
-const stale = `${Date.now() - 1000}.${(await mintTicket(ENV, FILE)).split(".")[1]}`;
+const stale = `${Date.now() - 1000}.${(await mintTicket(ENV, FILE))?.split(".")[1]}`;
 ok("an expired ticket opens nothing", !await checkTicket(ENV, FILE, stale));
 ok("and nonsense opens nothing",
   !await checkTicket(ENV, FILE, "rubbish") && !await checkTicket(ENV, FILE, ""));

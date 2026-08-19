@@ -29,7 +29,7 @@
    INTEGRITY
 
    CHECKS below was computed from these arrays at the time they
-   were written. frontier.test.mjs recomputes each one from the
+   were written. frontier.test.ts recomputes each one from the
    shipped numbers, so a truncated series or a shifted column
    fails the tests rather than quietly changing a chart.
    ============================================================ */

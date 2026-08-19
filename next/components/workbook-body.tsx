@@ -2,7 +2,7 @@
    workbook-body.tsx: a whole practice book, as markup.
 
    Split out of `workbook-page.tsx` so it can be rendered without
-   a Next request behind it. That is what `aab/schools/workbook.test.mjs`
+   a Next request behind it. That is what `aab/schools/workbook.test.ts`
    does, and the split is load-bearing rather than tidy: the page
    imports `notFound` from `next/navigation`, the test bundles
    what it renders with esbuild, and CI runs `npm ci` at the root

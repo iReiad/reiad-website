@@ -93,7 +93,7 @@
      `app/`, and Cloudflare's build installs `next/` and nothing
      else. It compiled on a laptop that happened to have `app/`
      installed and failed on the deploy, which is the shape
-     `aab/schools/workbook.test.mjs` warns about at length.
+     `aab/schools/workbook.test.ts` warns about at length.
 
      `tsconfig.test.json` is what typechecks them, and
      `scripts/check-types.ts` runs it. */

@@ -55,7 +55,7 @@ export interface SchoolLook {
       carries the site's disclaimer instead. */
   footer: string;
   /** The prefix of the share card in `/og/`, before the stage's
-      slug. `build-og.mjs` both draws these and repoints the pages
+      slug. `build-og.ts` both draws these and repoints the pages
       at them, so a value here that disagrees with its ASSIGN
       table is two generators taking turns. */
   og: string;

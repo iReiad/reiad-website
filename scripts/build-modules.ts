@@ -65,6 +65,14 @@ export const MODULES = [
      reason to throw the declarations away: the desk is the next
      thing that will want to know what a saved scenario is. */
   "prefs", "saved", "checkpoints", "sync", "signin", "account-page",
+  /* Who a reader is, converted 19 August 2026 with the change
+     that brought the picture Google sends through to the page.
+     It was described by TWO hand-written declarations, one for
+     `aab/src/` and one for `next/`, and they disagreed about
+     what `saveProfile` answers. Both are gone: this emits the
+     one in `app/src/types/` and `tsconfig.json` maps
+     `/account.js` at the source. */
+  "account",
   /* The third-party course player, added with the section it
      draws. It is a browser module rather than a React component
      for the reason at the top of `aab/src/courses.ts`: the

@@ -32,7 +32,7 @@
    one of those ids breaks the hub silently: the page still draws,
    with the fallback list left in place, which looks fine.
 
-   `aab/schools/hub.test.mjs` is the guard and it drives this
+   `aab/schools/hub.test.ts` is the guard and it drives this
    component's own output.
    ============================================================ */
 

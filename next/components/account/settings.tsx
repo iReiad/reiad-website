@@ -84,15 +84,32 @@ export function Settings() {
      `profile.setup_at` so that pressing Save or Not now reframes
      the form at once rather than waiting for a re-read. */
   const [asked, setAsked] = useState(false);
+  /* And whether they have touched THIS list. A started course
+     pre-ticks itself until they do, and never again after. */
+  const [chose, setChose] = useState(false);
 
   useEffect(() => {
-    const look = () => setStarted(startedCourses());
+    const look = () => {
+      const now = startedCourses();
+      setStarted(now);
+      /* Ticked BY DEFAULT, rather than ticked always. This used to
+         be a union computed at render time, so a school the reader
+         had opened could not be unticked: the box came straight
+         back, which is a checkbox that refuses to be a checkbox.
+         Every school on this site had been started, so the whole
+         question was frozen with all four on.
+
+         Including `sync:done`, which is why this is here and not
+         in the seed below: a course started on a phone should
+         arrive pre-ticked the first time this page is opened on a
+         laptop, and that answer can come after the profile has. */
+      if (!chose) {
+        setFollowing((was) => (was === null ? was : new Set([...was, ...now])));
+      }
+    };
     look();
-    /* Including `sync:done`: a course this reader started on their
-       phone should already be ticked here the first time they open
-       the page on a laptop. */
     return subscribe(look);
-  }, []);
+  }, [chose]);
 
   /* The account's answers, once they arrive, and never over
      anything already typed: a reader who starts filling this in
@@ -101,7 +118,7 @@ export function Settings() {
   useEffect(() => {
     if (!profile) return;
     setName((was) => (was === null ? String(profile.display_name ?? "") : was));
-    setFollowing((was) => was ?? new Set(profile.following ?? []));
+    setFollowing((was) => was ?? new Set([...(profile.following ?? []), ...startedCourses()]));
     setPace((was) => was || String(profile.pace ?? ""));
     if (profile.setup_at) setAsked(true);
   }, [profile]);
@@ -118,9 +135,7 @@ export function Settings() {
     return () => { live = false; };
   }, []);
 
-  /* Union, not replacement. Somebody who follows German and has
-     just started English should see both ticked. */
-  const ticked = new Set([...(following ?? []), ...started]);
+  const ticked = following ?? new Set<string>();
 
   const save = useCallback(async (patch: Partial<Profile>, said: string) => {
     setBusy(true);
@@ -164,8 +179,9 @@ export function Settings() {
   };
 
   const toggle = (key: string) => {
-    setFollowing(() => {
-      const next = new Set(ticked);
+    setChose(true);
+    setFollowing((was) => {
+      const next = new Set(was ?? []);
       if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });

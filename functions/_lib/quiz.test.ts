@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* ============================================================
-   quiz.test.mjs: a Coursera quiz export, turned into questions.
+   quiz.test.ts: a Coursera quiz export, turned into questions.
 
-       node functions/_lib/quiz.test.mjs
+       node functions/_lib/quiz.test.ts
 
    ---- why the fixture is written out rather than committed ----
 
@@ -21,7 +21,7 @@ import { parseQuiz } from "./quiz.ts";
 import { sanitiseHTML } from "./sanitise.ts";
 
 let bad = 0;
-const ok = (name, cond, detail = "") => {
+const ok = (name: string, cond: boolean, detail = ""): void => {
   console.log(`${cond ? "  ok " : "FAIL"}  ${name}${cond ? "" : `\n        ${detail}`}`);
   if (!cond) bad += 1;
 };

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* ============================================================
-   frontier.test.mjs, checks on the portfolio-construction engine.
+   frontier.test.ts, checks on the portfolio-construction engine.
 
-       node aab/portfolio/frontier.test.mjs
+       node aab/portfolio/frontier.test.ts
 
    An optimiser that has converged to the wrong point returns a
    perfectly plausible set of weights. A backtest with an
@@ -30,7 +30,7 @@
 import {
   returnsOf, returnMatrix, stdev, covariance, correlationOf, shrink,
   portfolioReturn, portfolioVariance, portfolioVol, riskContributions,
-  annualiseReturn, annualiseVol, projectToSimplex, optimise, minimumVariance,
+  annualiseReturn, annualiseVol, projectToSimplex, minimumVariance,
   frontier, tangency, equalWeight, inverseVariance,
   backtest, underwater, performance, annualReturns,
   screen, SCREEN_DEFAULTS, capmExpected, run, toCsv,
@@ -38,20 +38,21 @@ import {
   COMPANIES, TICKERS, HELD, DATES_2015, PRICES_2015, DATES_OOS, PRICES_OOS,
   BENCHMARK_ANNUAL, CAPM, CHECKS, DEFAULTS, DRIVERS, TRADING_DAYS,
 } from "./frontier.model.js";
+import type { YearRow } from "./frontier.model.js";
 
 let pass = 0;
-const failures = [];
-const ok = (name, cond) => { if (cond) pass++; else failures.push(name); };
-const close = (name, got, want, tol) =>
+const failures: string[] = [];
+const ok = (name: string, cond: boolean): void => { if (cond) pass++; else failures.push(name); };
+const close = (name: string, got: number, want: number, tol: number): void =>
   ok(`${name} (got ${got}, want ${want})`, Math.abs(got - want) <= tol);
 
-const sum = (xs) => xs.reduce((a, b) => a + b, 0);
-const mean = (xs) => sum(xs) / xs.length;
+const sum = (xs: readonly number[]): number => xs.reduce((a, b) => a + b, 0);
+const mean = (xs: readonly number[]): number => sum(xs) / xs.length;
 
 /* A matrix inverse written here rather than imported, so the
    closed-form checks below are an outside opinion rather than
    the model marking its own work. */
-function inverse(A) {
+function inverse(A: readonly number[][]): number[][] {
   const n = A.length;
   const M = A.map((row, i) => [...row, ...Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))]);
   for (let c = 0; c < n; c++) {
@@ -181,7 +182,7 @@ ok("every company carries the fields the page reads",
   {
     const v = [0.9, -0.2];
     const proj = projectToSimplex(v, 1);
-    const d2 = (w) => (w[0] - v[0]) ** 2 + (w[1] - v[1]) ** 2;
+    const d2 = (w: readonly number[]): number => (w[0] - v[0]) ** 2 + (w[1] - v[1]) ** 2;
     let best = Infinity;
     for (let i = 0; i <= 100000; i++) {
       const w = [i / 100000, 1 - i / 100000];
@@ -225,7 +226,7 @@ ok("every company carries the fields the page reads",
   const R = returnMatrix(PRICES_2015, HELD);
   const S = covariance(R);
   const mv = minimumVariance(S, { cap: 1 });
-  const v = (w) => portfolioVariance(w, S);
+  const v = (w: readonly number[]): number => portfolioVariance(w, S);
   ok("minimum variance beats equal weight in sample", v(mv) < v(equalWeight(10)));
   ok("and beats inverse-variance weighting too", v(mv) < v(inverseVariance(S)));
   close("its weights sum to one", sum(mv), 1, 1e-12);
@@ -257,6 +258,9 @@ ok("every company carries the fields the page reads",
     Math.abs(f.efficient[0].vol - annualiseVol(portfolioVol(minimumVariance(S, { cap: 0.35 }), S))) < 5e-4);
 
   const t = tangency(mu, S, 0.005, { cap: 0.35 }, f);
+  /* null would mean the frontier came back empty, which the
+     checks above have already ruled out. */
+  if (!t) throw new Error("no tangency portfolio on the frontier");
   ok("the tangency portfolio has the best Sharpe ratio on the frontier",
     f.efficient.every((p) => (p.ret - 0.005) / p.vol <= t.sharpe + 1e-9));
   ok("and it is not simply the minimum-variance point", t.vol > f.efficient[0].vol);
@@ -433,7 +437,7 @@ ok("and it slopes upwards", capmExpected(1.5) > capmExpected(0.5));
 
   const years = yearTable(nav, DATES_OOS, b.portfolio);
   ok("there are five held years", years.length === 5);
-  const reported = {
+  const reported: Record<number, [number, number]> = {
     2016: [-0.0063, 0.1857], 2017: [0.2877, 0.0924], 2018: [-0.1243, 0.1356],
     2019: [0.2553, 0.1556], 2020: [0.0617, 0.3064],
   };
@@ -450,9 +454,17 @@ ok("and it slopes upwards", capmExpected(1.5) > capmExpected(0.5));
     ok(`${y.year} records whether the index was beaten`,
       y.beatIndex === y.ret > y.benchmark);
   });
+  /* The five held years are fixed, so every year named below is
+     in the table. `find` cannot know that, and a year that had
+     gone missing should stop the run. */
+  const year = (n: number): YearRow => {
+    const row = years.find((y) => y.year === n);
+    if (!row) throw new Error(`no ${n} in the year table`);
+    return row;
+  };
   ok("2017 and 2019 beat the index", years.filter((y) => y.beatIndex).length >= 3);
   ok("2020 is the most volatile of the five",
-    years.every((y) => y.year === 2020 || y.vol < years.find((z) => z.year === 2020).vol));
+    years.every((y) => y.year === 2020 || y.vol < year(2020).vol));
   close("the average held year beats the average index year",
     mean(years.map((y) => y.ret)) - mean(years.map((y) => y.benchmark)), 0.0516, 0.002);
 
@@ -463,8 +475,8 @@ ok("and it slopes upwards", capmExpected(1.5) > capmExpected(0.5));
   const byTreynor = [...years].sort((a, z) => z.treynor - a.treynor).map((y) => y.year);
   const byExcess = [...years].sort((a, z) => (z.ret - z.riskFree) - (a.ret - a.riskFree)).map((y) => y.year);
   ok("Treynor ranks the years on excess return alone", byTreynor.join() === byExcess.join());
-  const y17 = years.find((y) => y.year === 2017);
-  const y19 = years.find((y) => y.year === 2019);
+  const y17 = year(2017);
+  const y19 = year(2019);
   ok("2017 was the calmest of the five", years.every((y) => y.year === 2017 || y.vol > y17.vol));
   ok("so Sharpe separates it from 2019 further than Treynor does",
     y17.sharpe / y19.sharpe > y17.treynor / y19.treynor);

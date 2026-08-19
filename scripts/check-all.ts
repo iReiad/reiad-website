@@ -83,6 +83,16 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/check-scale.ts",
     "scripts/check-prefixes.ts",
     "scripts/check-selfref.ts",
+    /* The other half of check-selfref.ts: that one guards the
+       TOKEN namespaces Tailwind owns, this one guards the class
+       names. `.ring` is a utility and was also this site's
+       progress ring, and layer order cannot help. */
+    "scripts/check-utility-clash.ts",
+    /* The extension rule, which was a paragraph in CLAUDE.md
+       until 19 August 2026 and was broken anyway: the
+       neighbours are the pattern, so somebody adding a test
+       opens the one beside it and writes another `.mjs`. */
+    "scripts/check-mjs.ts",
     "scripts/check-next.ts",
     "scripts/check-courses.ts",
     "scripts/check-accents.ts",
@@ -102,19 +112,19 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/snapshot.test.ts",
     "scripts/schools.test.ts",
     "scripts/schools-api.test.ts",
-    "functions/_lib/notion.test.mjs",
-    "functions/_lib/drive.test.mjs",
-    "functions/_lib/quiz.test.mjs",
-    "aab/schools/progress.test.mjs",
-    "next/progress.test.mjs",
+    "functions/_lib/notion.test.ts",
+    "functions/_lib/drive.test.ts",
+    "functions/_lib/quiz.test.ts",
+    "aab/schools/progress.test.ts",
+    "next/progress.test.ts",
     "next/comments.test.ts",
-    "aab/schools/hub.test.mjs",
-    "aab/schools/workbook.test.mjs",
-    "aab/courses.test.mjs",
-    "aab/portfolio/stress.test.mjs",
-    "aab/portfolio/scorecard.test.mjs",
-    "aab/portfolio/frontier.test.mjs",
-    "aab/portfolio/dissertation.test.mjs",
+    "aab/schools/hub.test.ts",
+    "aab/schools/workbook.test.ts",
+    "aab/courses.test.ts",
+    "aab/portfolio/stress.test.ts",
+    "aab/portfolio/scorecard.test.ts",
+    "aab/portfolio/frontier.test.ts",
+    "aab/portfolio/dissertation.test.ts",
   ]],
 ];
 

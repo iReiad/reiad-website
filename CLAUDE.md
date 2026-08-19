@@ -107,13 +107,48 @@ by the file AND the name, with the reason. Keyed by both because
 "`build-styles.mjs` is gone" is a true sentence and a NEW comment
 naming it somewhere else is not.
 
-**Nothing new here is `.mjs`.** `next/` had five test files with
-that extension and they are the reason a sixth kept getting
-written: the neighbours are the pattern, and a pattern that is
-waiting to be ported is not one to copy. A `.ts` runs under node
-with no build step, and `next build` typechecks everything in
-`next/tsconfig.json`, so the build is what holds a file here to
-its own annotations. There is nothing to trade.
+**Nothing here is `.mjs`, and it is a check now.**
+`scripts/check-mjs.ts` fails on any tracked `.mjs` or `.cjs`
+outside `archive/`.
+
+It was a paragraph in this file first, saying nothing new should
+be one, and it was broken anyway: twenty-three of them were here
+on 19 August 2026, five in `next/` alone. That is what a rule
+enforced by whoever last read the prose looks like. Somebody
+adding a test opens the one beside it, sees `.mjs`, and writes
+another, and the pattern reproduces itself faster than the
+paragraph gets read.
+
+There is nothing to trade. A `.ts` runs under node with no build
+step, no loader and no configuration, because type stripping has
+been on by default since 22.18.
+
+**Renaming is half of it.** The other half is a config that
+typechecks the file, and `scripts/check-types.ts` is what says the
+second half happened: node strips annotations without reading
+them, so a `.ts` that nothing typechecks is a `.js` wearing them,
+which is worse than the `.mjs` it replaced because a reader now
+believes them. Every directory of node-side TypeScript here has a
+config in that check's `CONFIGS` list.
+
+One exception, in `KEPT` in the check with its reason: Next loads
+`next/postcss.config.mjs` by name and reads only `.js`, `.mjs`,
+`.cjs` and `.json`, and `next/package.json` has no
+`"type": "module"`, so a `.js` there would be CommonJS. There is
+no `.ts` form of that file to write. An entry there has to name a
+LOADER; "it would be work to convert" is debt, and debt goes in
+the same commit as the conversion. The check also fails on a
+STALE exception, for the reason `GONE` above is keyed by two
+things.
+
+The sweep that emptied it found three bugs in one generator that
+nothing could see while it was `.mjs`: a filter on `stage.inline`,
+a field removed two days earlier, so the condition read
+`undefined` on every lesson; a sitemap entry that would emit
+`<loc>https://reiad.co.uknull</loc>` for a page with no URL; and a
+practice-book condition written out a second time beside the
+function that already applied it. That is the argument for the
+rule in one file.
 
 ## Comments carry the constraint, not the story
 
@@ -345,7 +380,7 @@ emptying it, an absent key is an empty set, and subtraction takes
 the account down with it. The old file needed a timestamp per key
 to get that right and got it wrong for a year.
 
-`aab/sync.test.mjs` is the guard, 27 checks in a real browser
+`aab/sync.test.ts` is the guard, 27 checks in a real browser
 against a routed Supabase, and it drives `/404.html` because that
 is one of the six pages still served as a file.
 
@@ -402,7 +437,7 @@ at.
   Leaving should be as easy as arriving.
 - **Erase everything**, which means the account and the mirror.
 
-`next/account.test.mjs` is the guard: 128 checks in a real browser
+`next/account.test.ts` is the guard: 117 checks in a real browser
 against a routed Supabase.
 
 ### Eight sections, one on screen
@@ -492,8 +527,8 @@ bigger knot than three readable copies. A row is drawn by the
 school; everything around it is shared.
 
 Two tests cover it, and they cover different halves.
-`aab/schools/progress.test.mjs` is the arithmetic and the keys;
-`aab/schools/hub.test.mjs` is the drawing, and it builds all three
+`aab/schools/progress.test.ts` is the arithmetic and the keys;
+`aab/schools/hub.test.ts` is the drawing, and it builds all three
 hubs in a real DOM against the markup out of `next/lib/school-hubs.ts`,
 because a hub that renders and is not finished looks exactly like
 one that is.
@@ -506,14 +541,14 @@ where the component renders `.buch-tag` and `data-schrift`, so
 nothing saved and nothing ticked, and the German one dereferenced
 `document.getElementById("tage")` at its top level on a route that
 had no such element, so it threw before its first function ran.
-Both pages rendered perfectly. `aab/schools/workbook.test.mjs` is
+Both pages rendered perfectly. `aab/schools/workbook.test.ts` is
 what says they do not any more.
 
 **Every storage key is passed in by the school, spelled the way it
 has always been spelled.** That is not decoration, it is the whole
 reason the engine takes them as an argument rather than deriving
 them from the school's name: `english-day` is not `english-tag`,
-and the rule at the top of this section is why. `aab/schools/progress.test.mjs`
+and the rule at the top of this section is why. `aab/schools/progress.test.ts`
 asserts all ten of them by name.
 
 That covers the ID SHAPES too, and it had to. A day's tick is
@@ -570,7 +605,7 @@ and this site's policy allows `data:` under `img-src` only. So a pasted
 photo displays perfectly and every attempt to upload one was blocked
 before it left the browser, silently, for weeks: R2 stayed empty, every
 `cover` stayed empty, and every shared link showed the default card.
-`aab/photo.js` decodes instead, and `aab/studio-publish.test.mjs` drives
+`aab/photo.js` decodes instead, and `aab/studio-publish.test.ts` drives
 a real publish under the policy read out of `_headers` and fails if that
 regresses. Do not "simplify" it back to a fetch.
 
@@ -603,11 +638,11 @@ replacement really does what it did.
 Two conditions, both literal: **nothing serves it and nothing
 imports it.** So before the move, follow every reference: a
 `PAGES` entry in `shared/content.ts`, the prerender rules in `app.js`,
-the `Disallow` block `build-meta.mjs` writes, the `PRIVATE` set in
-`build-og.mjs`, any test that drives the page, and any link in
+the `Disallow` block `build-meta.ts` writes, the `PRIVATE` set in
+`build-og.ts`, any test that drives the page, and any link in
 `app/src/**`. Add a line to `_redirects` for the old URL. If a
 test was the only thing checking a module the page happened to
-host, repoint the test rather than losing it: `aab/studio.test.mjs`
+host, repoint the test rather than losing it: `aab/studio.test.ts`
 is 68 checks of `aab/editor.js` and it survived `studio.html` by
 being pointed at `/studio/`.
 
@@ -653,6 +688,10 @@ node scripts/check-prefixes.ts # a hand-written vendor prefix, which DELETES the
                             # standard property it is written beside
 node scripts/check-selfref.ts # a custom property set to itself, which is nothing
                             # on that element and everything inside it
+node scripts/check-utility-clash.ts # a class this site styles that Tailwind also
+                            # generates, which no layer order can win back
+node scripts/check-mjs.ts   # a .mjs, which is a file nothing typechecks and the
+                            # reason the next one gets written
 node scripts/check-jsx-space.ts # a sentence running into the link inside it,
                             # because JSX ate the line break before the element
 node scripts/check-crons.ts # a scheduled job the Worker is no longer listening for
@@ -701,17 +740,19 @@ node scripts/input.test.ts         # a rule that stopped rejecting, in the one
                                    # place three endpoints read (36 checks)
 node scripts/snapshot.test.ts      # a nightly snapshot that leaks, or that throws
                                    # at 03:17 where nobody is watching
-node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the
+node aab/studio-publish.test.ts   # a photo that never reaches R2, under the
                                    # real CSP (needs Playwright, skips without)
-node next/account.test.mjs        # the account's five features and the popover
-                                  # menu (112 checks, needs the Next build and a
+node next/account.test.ts        # the account's five features, the popover
+                                  # menu, the Save under a byline and the picture
+                                  # a Google sign-in brings, under the real CSP
+                                  # (117 checks, needs the Next build and a
                                   # browser, skips without)
-node aab/sync.test.mjs             # a browser's own progress getting into an
+node aab/sync.test.ts             # a browser's own progress getting into an
                                    # account, resetting, signing out, and two
                                    # signed-in devices (27 checks, needs a
                                    # server on :8899 and Playwright)
-node aab/studio.test.mjs           # the editor, end to end (68 checks)
-node next/progress.test.mjs         # a page that costs a reader their ticks just
+node aab/studio.test.ts           # the editor, end to end (68 checks)
+node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read (23 checks, no browser)
 node next/comments.test.ts        # a comment body that stopped being text, a reply
                                    # two levels deep, or a thread that draws itself
@@ -735,26 +776,26 @@ node next/keep.test.ts             # the Save and the note under a byline: nothi
                                    # answered, and neither control writing over the
                                    # other's column of the one row (109 checks,
                                    # needs Playwright and a browser, skips without)
-node aab/schools/progress.test.mjs  # a school's ticks filed under a key that is
+node aab/schools/progress.test.ts  # a school's ticks filed under a key that is
                                    # not the one in somebody's browser, and the
                                    # three schools' shared engine (119 checks)
-node aab/courses.test.mjs          # the third-party course player: the sidebar, the
+node aab/courses.test.ts          # the third-party course player: the sidebar, the
                                    # ticks, the per-module bars, mark-complete-and-
                                    # continue, the deep link, and the timers it must
                                    # never grow (74 checks, needs linkedom)
-node aab/schools/workbook.test.mjs # a practice book that renders and does nothing:
+node aab/schools/workbook.test.ts # a practice book that renders and does nothing:
                                    # the day walker, what was typed, the answers,
                                    # the tick, and the storage key each is filed
                                    # under (40 checks, needs linkedom)
-node aab/schools/hub.test.mjs      # a school hub that renders and is not finished:
+node aab/schools/hub.test.ts      # a school hub that renders and is not finished:
                                    # the ladder, the ring, the bar and the resume
                                    # card, built against the markup the route
                                    # serves (57 checks, needs linkedom, skips
                                    # without)
-node functions/_lib/notion.test.mjs
-node functions/_lib/drive.test.mjs   # a JWT Google would refuse, and a pass that
+node functions/_lib/notion.test.ts
+node functions/_lib/drive.test.ts   # a JWT Google would refuse, and a pass that
                                      # opens more than the one file it names
-node functions/_lib/quiz.test.mjs    # a quiz rendered with its questions and none
+node functions/_lib/quiz.test.ts    # a quiz rendered with its questions and none
                                      # of its answers, which looks finished
 node scripts/schools.test.ts         # a curriculum that lost a field, a lesson
                                      # body that changed, or a ladder that came
@@ -768,7 +809,7 @@ node scripts/schools-api.test.ts     # a school readable by anyone, writable by
                                      # check-schools-built.mjs compared the
                                      # builders against the committed pages.
                                      # There are no committed pages. What asks
-                                     # that question now is next/parity.test.mjs,
+                                     # that question now is next/parity.test.ts,
                                      # against the route.
 ```
 
@@ -779,17 +820,21 @@ a browser with it: point `CHROMIUM_PATH` at one, or run
 so and skip, which is not a pass:
 
 ```sh
-node app/desk.test.mjs             # a panel that renders and is not finished
+node app/desk.test.ts             # a panel that renders and is not finished
                                    # (75 checks, needs Playwright and a browser)
-node app/studio.test.mjs           # the React Studio's chrome, end to end
+node app/studio.test.ts           # the React Studio's chrome, end to end
                                    # (78 checks, needs Playwright and a browser)
+node scripts/check-types.ts        # and again here, because those two have a
+                                   # config of their own and it SKIPS where
+                                   # app/node_modules is absent, which is every
+                                   # CI runner
 ```
 
 And when anything under `next/` or `shared/` changed, after
 `cd next && npx opennextjs-cloudflare build`:
 
 ```sh
-node next/parity.test.mjs          # the Next.js route saying something the
+node next/parity.test.ts          # the Next.js route saying something the
                                    # Worker's own renderer does not, and a
                                    # reading hub that has stopped agreeing with
                                    # the database
@@ -803,7 +848,7 @@ node next/article.test.ts          # the article page, on the real Worker with a
                                    # hydrating wrongly on the one kind of route
                                    # nothing else can reach (27 checks, needs the
                                    # OpenNext build and a browser, skips without)
-node next/interactive.test.mjs     # a calculator that renders and computes
+node next/interactive.test.ts     # a calculator that renders and computes
                                    # nothing, because hydration undid it, and a
                                    # contact form that looks sent and reached
                                    # nobody (80 checks, needs `npx next build`
@@ -839,7 +884,7 @@ written, pushed and asked real questions while `NEXT_ROUTES` in
 `worker.js` still sends nobody there. The URL is in the Cloudflare
 bot's comment on the pull request.
 
-It exists because `next/parity.test.mjs` is the better test and
+It exists because `next/parity.test.ts` is the better test and
 does not run everywhere: it needs `wrangler dev` on workerd, and
 somewhere without it this is the only thing holding a route to
 anything. Reach for the parity test first; reach for this when
@@ -979,7 +1024,7 @@ Next.js routes rendered from the rows, and the four practice books
 followed in #129, so all 251 are routes. There is no committed page
 to compare a build against, `check-schools-built.mjs` is in
 `archive/schools-builders/` beside the two builders whose whole
-output it watched, and `next/parity.test.mjs` asks that question
+output it watched, and `next/parity.test.ts` asks that question
 against the route instead.
 
 `check-schools.ts` stays and does two things: it compares the
@@ -1033,7 +1078,7 @@ node scripts/build-modules.ts       # aab/share-card.js and aab/api.js from aab/
                                     # aab/*/curriculum.js from shared/
 node scripts/build-fallback.ts     # aab/fallback.css from next/styles/site.css
 node scripts/build-school-icons.ts  # next/lib/school-icons.ts from aab/*/icons.js
-node aab/build-meta.mjs              # feed.xml, sitemap.xml, robots.txt
+node scripts/build-meta.ts              # feed.xml, sitemap.xml, robots.txt
 
 cd app && npm run build             # aab/desk/**   from app/src/** (React)
                                     # aab/studio/** from app/src/studio/**
@@ -1174,7 +1219,7 @@ rm -rf next/node_modules/@reiad/shared && (cd next && npm install)
 
 A typo in `bnNum` put every Bangla numeral into Devanagari, `০১২৩`
 becoming `०१२३`. It was fixed, the build was re-run, and the route
-went on serving the wrong digits from the copy. `next/parity.test.mjs`
+went on serving the wrong digits from the copy. `next/parity.test.ts`
 is what caught it. `shared/README.md` says all of this again where
 somebody editing those files will see it.
 
@@ -1199,7 +1244,7 @@ Stage A: the stylesheet is Next's and carries a content hash,
 which a response a Worker builds cannot know. Both pages that
 link one by name were still asking for the old address, so both
 were unstyled, and the only thing in the repository that knew was
-one check in `next/parity.test.mjs` that had been failing for so
+one check in `next/parity.test.ts` that had been failing for so
 long it read as furniture.
 
 ## The writing surface is one module
@@ -1222,7 +1267,7 @@ when it renders.** Those two look identical from the outside, which is
 how the first React desk shipped as three thin panels missing the
 search boxes, the filter counts and most of the actions. So the list of
 what the old page did is written down as a test:
-`app/desk.test.mjs` drives the built page in a browser against routed
+`app/desk.test.ts` drives the built page in a browser against routed
 API fixtures, and every check in it is a feature `aab/desk.js` had.
 Anything ported out of `aab/*.js` gets the same treatment before it is
 called done.
@@ -1261,7 +1306,7 @@ An element a pre-paint inline script deliberately rewrites, the home
 page's headline being the only one, carries `suppressHydrationWarning`
 so React leaves it alone.
 
-`next/interactive.test.mjs` drives the built pages in a real browser
+`next/interactive.test.ts` drives the built pages in a real browser
 and fails if any of this comes back.
 
 ## The money school lives at /money/
@@ -1314,7 +1359,7 @@ course, so the pages are empty and the catalogue is behind
 | `functions/_lib/drive.ts` | the one place this site reads Drive |
 | `functions/_lib/ticket.ts` | a signed pass, because `<video>` sends no header |
 | `functions/_lib/quiz.ts` | a Coursera quiz export, read into questions |
-| `functions/_lib/drive.test.mjs` | the JWT really is a signature, and the pass opens one file |
+| `functions/_lib/drive.test.ts` | the JWT really is a signature, and the pass opens one file |
 | `aab/src/courses.ts` | the browser's half: all four pages |
 | `next/app/(site)/skills/courses/` | four shells with nothing in them |
 
@@ -1407,7 +1452,7 @@ report `ended`, and using it would still be guessing that somebody
 who left a tab open has learnt something. A lesson is complete
 when the reader presses "Mark complete & continue", and the last
 lesson of a module goes to the module summary rather than into the
-next module. `aab/courses.test.mjs` asserts the absence as well as
+next module. `aab/courses.test.ts` asserts the absence as well as
 the presence.
 
 **A transcript and captions are two files and two jobs.** Every
@@ -1456,7 +1501,7 @@ its own server and what was downloaded is the paper, not the
 marking scheme. So the page records what the reader picked and
 prints one line saying nothing is marked right or wrong. A tick
 next to a wrong answer would be worse than no tick.
-`quiz.test.mjs` asserts the absence of a score as well as the
+`quiz.test.ts` asserts the absence of a score as well as the
 presence of the options.
 
 Answers are `courses-answers`, a `set` of
@@ -1509,7 +1554,7 @@ The scope is still `drive.readonly`: read, never write.
 `drive.metadata.readonly`, which `import-courses.ts` uses, is not
 enough here, because it deliberately cannot read file content.
 
-`functions/_lib/drive.test.mjs` generates a throwaway RSA key and
+`functions/_lib/drive.test.ts` generates a throwaway RSA key and
 verifies the signed assertion against its public half, because
 every way of getting the JWT wrong comes back from Google as
 `invalid_grant`, which is also what it says when a clock is wrong

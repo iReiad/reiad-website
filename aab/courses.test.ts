@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* ============================================================
-   courses.test.mjs: the third-party course player, driven.
+   courses.test.ts: the third-party course player, driven.
 
-       node aab/courses.test.mjs
+       node aab/courses.test.ts
 
    The house rule in CLAUDE.md: a thing is finished when it does
    what it was asked to do, not when it renders, and those two
@@ -32,6 +32,11 @@
 
    Without linkedom installed it says so and skips, which is not a
    pass. `npm install` at the root is the whole of the fix.
+
+   The fixture's shape is read out of `aab/src/courses.ts` rather
+   than written out again, so a field the module gains is a field
+   this file has to supply. `aab/tsconfig.test.json` is what
+   typechecks that, and `scripts/check-types.ts` runs it.
    ============================================================ */
 
 import { registerHooks } from "node:module";
@@ -39,10 +44,17 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
+import type { Course, CourseSummary } from "./src/courses.ts";
+
+/** The module under test, fetched from the address the browser
+    fetches it from, which is not a specifier tsc can resolve. Its
+    source is, and it is the same file. */
+type CoursesModule = typeof import("./src/courses.ts");
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const AAB = join(ROOT, "aab");
 
-let parseHTML;
+let parseHTML: typeof import("linkedom").parseHTML;
 try {
   ({ parseHTML } = await import("linkedom"));
 } catch {
@@ -83,10 +95,19 @@ registerHooks({
 });
 
 let bad = 0;
-const ok = (name, cond, detail = "") => {
+const ok = (name: string, cond: unknown, detail: unknown = ""): void => {
   console.log(`${cond ? "  ok " : "FAIL"}  ${name}${cond ? "" : `\n        ${detail}`}`);
   if (!cond) bad += 1;
 };
+
+/** An element this file has just asserted the page carries, or the
+    window a document was built with. A missing one is a broken
+    harness rather than a failing check, so it throws saying
+    which. */
+function need<T>(found: T | null | undefined, what: string): T {
+  if (found == null) throw new Error(`no ${what}`);
+  return found;
+}
 
 /* ============================================================
    The fixture
@@ -96,7 +117,7 @@ const ok = (name, cond, detail = "") => {
    attachment, a module that ends, and a module with nothing in it.
    ============================================================ */
 
-const COURSE = {
+const COURSE: Course = {
   slug: "foundations", n: 1, title: "Foundations",
   modules: [
     {
@@ -137,7 +158,7 @@ const COURSE = {
   ],
 };
 
-const SUMMARIES = [
+const SUMMARIES: CourseSummary[] = [
   { slug: "foundations", n: 1, title: "Foundations", modules: 3, lessons: 4, videos: 3, pending: 1 },
   { slug: "asking", n: 2, title: "Asking questions", modules: 2, lessons: 0, videos: 0, pending: 2 },
 ];
@@ -152,10 +173,18 @@ const SHELL = '<!doctype html><html><body><div id="course-app"></div></body></ht
    the module renders it as it stands. */
 const READING_HTML = '<h2>What you will do</h2><p>Read the syllabus.</p>';
 
-/* What the Worker answers for a quiz: questions, already parsed
-   and sanitised. No markup of Coursera's own reaches the browser,
-   which is why this is a list of strings rather than HTML. */
-const QUIZ_BODY = {
+/** What the Worker answers for a quiz: questions, already parsed
+    and sanitised. No markup of Coursera's own reaches the browser,
+    which is why the options are strings rather than HTML. */
+interface QuizAnswer {
+  ok: boolean;
+  title: string;
+  parsed: boolean;
+  html: string;
+  questions: Array<{ n: number; prompt: string; multiple: boolean; options: string[] }>;
+}
+
+const QUIZ_BODY: QuizAnswer = {
   ok: true,
   title: "Checkup",
   parsed: true,
@@ -176,19 +205,39 @@ const QUIZ_BODY = {
   ],
 };
 
+/** How one visit differs from the plain one: who is asking, what
+    the Worker answers with, and the one route that is made to
+    fail. */
+interface Scenario {
+  reader?: { id: string } | null;
+  status?: number;
+  ticketFails?: { status: number; message: string } | null;
+  quizBody?: QuizAnswer | null;
+}
+
+/** What a visit leaves behind: the page, where the continue button
+    went, every endpoint that was asked for, and anything opened in
+    a new tab. */
+interface Visit {
+  document: Document;
+  went: () => string | null;
+  asked: string[];
+  opened: () => string | null;
+}
+
 /** Build a DOM at one address, run the module against it, and
     hand back the document. `store` persists across calls inside
     one scenario so that a tick made on one page is visible on the
     next, which is the whole point of the ticks. */
 async function visit(
-  path, store,
-  { reader = { id: "admin" }, status = 200, ticketFails = null, quizBody = null } = {},
-) {
+  path: string, store: Map<string, string>,
+  { reader = { id: "admin" }, status = 200, ticketFails = null, quizBody = null }: Scenario = {},
+): Promise<Visit> {
   const { window, document } = parseHTML(SHELL);
-  const listeners = new Map();
-  const asked = [];
-  let gone = null;
-  let opened = null;
+  const listeners = new Map<string, Array<(e: Event) => void>>();
+  const asked: string[] = [];
+  let gone: string | null = null;
+  let opened: string | null = null;
 
   Object.assign(globalThis, {
     window, document,
@@ -197,15 +246,15 @@ async function visit(
     __reader: reader,
     __token: reader ? "a-token" : null,
     setTimeout,
-    open: (to) => { opened = to; return null; },
+    open: (to: string) => { opened = to; return null; },
     localStorage: {
-      getItem: (k) => (store.has(k) ? store.get(k) : null),
-      setItem: (k, v) => store.set(k, String(v)),
-      removeItem: (k) => store.delete(k),
+      getItem: (k: string) => (store.has(k) ? store.get(k) : null),
+      setItem: (k: string, v: unknown) => store.set(k, String(v)),
+      removeItem: (k: string) => store.delete(k),
     },
-    addEventListener: (t, f) => listeners.set(t, [...(listeners.get(t) ?? []), f]),
-    dispatchEvent: (e) => { (listeners.get(e.type) ?? []).forEach((f) => f(e)); return true; },
-    fetch: async (url) => {
+    addEventListener: (t: string, f: (e: Event) => void) => listeners.set(t, [...(listeners.get(t) ?? []), f]),
+    dispatchEvent: (e: Event) => { (listeners.get(e.type) ?? []).forEach((f) => f(e)); return true; },
+    fetch: async (url: string) => {
       const path = String(url).replace(/^.*\/api\/courses/, "");
       asked.push(path);
 
@@ -221,7 +270,7 @@ async function visit(
         };
       }
 
-      let body = { ok: true, courses: SUMMARIES };
+      let body: unknown = { ok: true, courses: SUMMARIES };
       if (path.startsWith("/ticket/")) {
         body = { ok: true, url: `/api/courses/file/${path.slice(8)}?t=1.sig` };
       } else if (path.startsWith("/reading/")) {
@@ -248,31 +297,33 @@ async function visit(
     configurable: true,
     value: {
       pathname: path,
-      set href(to) { gone = to; },
-      get href() { return gone; },
+      set href(to: string | null) { gone = to; },
+      get href(): string | null { return gone; },
     },
   });
 
-  const mod = await import(`/courses.js?${Math.random()}`);
-  await mod.start(document.getElementById("course-app"));
+  const mod: CoursesModule = await import(`/courses.js?${Math.random()}`);
+  await mod.start(need(document.getElementById("course-app"), "#course-app"));
 
   /* The player and the reading are fetched, so the page is not
      finished when start() resolves. One turn of the microtask
      queue is enough here because every stub above resolves
      immediately. */
-  await new Promise((go) => { setTimeout(go, 0); });
+  await new Promise<void>((go) => { setTimeout(go, 0); });
 
   return { document, went: () => gone, asked, opened: () => opened };
 }
 
-const text = (doc, sel) => doc.querySelector(sel)?.textContent?.trim() ?? "";
-const all = (doc, sel) => [...doc.querySelectorAll(sel)];
+const text = (doc: ParentNode, sel: string): string =>
+  doc.querySelector(sel)?.textContent?.trim() ?? "";
+const all = <T extends Element = Element>(doc: ParentNode, sel: string): T[] =>
+  [...doc.querySelectorAll<T>(sel)];
 
 /* ============================================================ */
 
 console.log("\n--- the address decides the page ---");
 
-const { whereAmI } = await import(`/courses.js?${Math.random()}`);
+const { whereAmI }: CoursesModule = await import(`/courses.js?${Math.random()}`);
 
 ok("/skills/courses/index.html is the catalogue",
   whereAmI("/skills/courses/index.html")?.view === "catalogue");
@@ -299,7 +350,7 @@ ok("anything deeper is nothing", whereAmI("/skills/courses/a/b/c/d.html") === nu
 console.log("\n--- the sidebar ---");
 
 {
-  const store = new Map();
+  const store = new Map<string, string>();
   const { document: doc } = await visit(
     "/skills/courses/foundations/week-one/syllabus.html", store);
 
@@ -326,13 +377,13 @@ console.log("\n--- the sidebar ---");
     text(doc, '.course-lesson[data-here] .course-lesson-name') === "Syllabus");
 
   ok("a lesson group becomes a heading",
-    all(doc, ".course-section").map((n) => n.textContent.trim())
+    all(doc, ".course-section").map((n) => n.textContent?.trim())
       .includes("Second group"));
 
   ok("every module has a bar", all(doc, ".course-mod .meter").length === 2,
     "the pending module has none, and should not");
   ok("a pending module says so",
-    all(doc, ".course-mod-pct").some((n) => n.textContent.includes("not imported")));
+    all(doc, ".course-mod-pct").some((n) => n.textContent?.includes("not imported")));
   ok("a pending module draws no lessons",
     all(doc, ".course-mod")[2]?.querySelectorAll(".course-lesson").length === 0);
 
@@ -345,7 +396,7 @@ console.log("\n--- the sidebar ---");
 console.log("\n--- ticks, and the bar that counts them ---");
 
 {
-  const store = new Map();
+  const store = new Map<string, string>();
   store.set("courses-read", JSON.stringify([
     "foundations/week-one/welcome",
     "foundations/week-one/syllabus",
@@ -362,7 +413,7 @@ console.log("\n--- ticks, and the bar that counts them ---");
     all(doc, ".course-lesson a:not([data-done]) .course-tick")
       .every((n) => n.textContent === ""));
 
-  const pcts = all(doc, ".course-mod-pct").map((n) => n.textContent.trim());
+  const pcts = all(doc, ".course-mod-pct").map((n) => n.textContent?.trim());
   ok("the first module is two thirds done", pcts[0] === "67%", `saw ${pcts[0]}`);
   ok("the second module is untouched", pcts[1] === "0%", `saw ${pcts[1]}`);
 
@@ -373,8 +424,9 @@ console.log("\n--- ticks, and the bar that counts them ---");
 
   /* A tick belongs to one course, one module and one lesson, so a
      lesson slug shared with another course is not the same tick. */
+  const filed: string[] = JSON.parse(String(store.get("courses-read")));
   ok("a tick is filed under all three parts",
-    JSON.parse(store.get("courses-read")).every((id) => id.split("/").length === 3));
+    filed.every((id) => id.split("/").length === 3));
 }
 
 /* ============================================================ */
@@ -382,7 +434,7 @@ console.log("\n--- ticks, and the bar that counts them ---");
 console.log("\n--- the lesson page ---");
 
 {
-  const store = new Map();
+  const store = new Map<string, string>();
   const { document: doc } = await visit(
     "/skills/courses/foundations/week-one/welcome.html", store);
 
@@ -467,8 +519,8 @@ console.log("\n--- the lesson page ---");
       !sad.querySelector(".course-video video"));
   }
 
-  ok("opening moves the bookmark",
-    JSON.parse(store.get("courses-last") ?? "{}").id === "foundations/week-one/welcome");
+  const bookmark: { id?: string } = JSON.parse(store.get("courses-last") ?? "{}");
+  ok("opening moves the bookmark", bookmark.id === "foundations/week-one/welcome");
   ok("opening does NOT tick the lesson", !store.has("courses-read"),
     "arriving is not finishing");
 
@@ -480,7 +532,7 @@ console.log("\n--- the lesson page ---");
 }
 
 {
-  const store = new Map();
+  const store = new Map<string, string>();
   const { document: doc } = await visit(
     "/skills/courses/foundations/week-one/syllabus.html", store);
 
@@ -503,9 +555,10 @@ console.log("\n--- the lesson page ---");
 console.log("\n--- a quiz a reader can answer ---");
 
 {
-  const store = new Map();
+  const store = new Map<string, string>();
   const { document: doc } = await visit(
     "/skills/courses/foundations/week-two/thinking.html", store);
+  const view = need(doc.defaultView, "the window this document was built with");
 
   const qs = all(doc, ".course-quiz .quiz-q");
   ok("every question is drawn", qs.length === 2, `saw ${qs.length}`);
@@ -524,14 +577,17 @@ console.log("\n--- a quiz a reader can answer ---");
   ok("and they carry their words",
     opts[0]?.textContent?.includes("The first"), opts[0]?.textContent);
 
-  const inputs = all(doc, ".quiz-option input");
+  const inputs = all<HTMLInputElement>(doc, ".quiz-option input");
   ok("a pick-one question draws radios",
     all(doc, ".quiz-q")[0].querySelectorAll("input[type=radio]").length === 3);
   ok("a select-all question draws checkboxes",
     all(doc, ".quiz-q")[1].querySelectorAll("input[type=checkbox]").length === 2);
+  /* `values` is a NodeList method every DOM has and linkedom's
+      once did not, so the spread below is guarded rather than
+      assumed. */
   ok("radios of one question share a name, so the browser enforces one",
-    new Set(all(doc, ".quiz-q")[0].querySelectorAll("input")
-      .values ? [...all(doc, ".quiz-q")[0].querySelectorAll("input")].map(
+    new Set(typeof all(doc, ".quiz-q")[0].querySelectorAll("input")
+      .values === "function" ? [...all(doc, ".quiz-q")[0].querySelectorAll("input")].map(
         (i) => i.getAttribute("name")) : []).size === 1);
   ok("and the two questions do not share it",
     all(doc, ".quiz-q")[0].querySelector("input")?.getAttribute("name")
@@ -556,11 +612,11 @@ console.log("\n--- a quiz a reader can answer ---");
 
   console.log("\n--- answering, and remembering ---");
 
-  const first = all(doc, ".quiz-q")[0].querySelectorAll("input")[1];
+  const first = all(doc, ".quiz-q")[0].querySelectorAll<HTMLInputElement>("input")[1];
   first.checked = true;
-  first.dispatchEvent(new doc.defaultView.Event("change"));
+  first.dispatchEvent(new view.Event("change"));
 
-  const saved = JSON.parse(store.get("courses-answers") ?? "[]");
+  const saved: string[] = JSON.parse(store.get("courses-answers") ?? "[]");
   ok("an answer is written down",
     saved.includes("foundations/week-two/thinking#1#1"), JSON.stringify(saved));
   ok("filed under the lesson, the question and the option",
@@ -568,21 +624,21 @@ console.log("\n--- a quiz a reader can answer ---");
 
   /* A radio that stored two answers would be a page saying the
      reader picked two things where it allowed one. */
-  const other = all(doc, ".quiz-q")[0].querySelectorAll("input")[2];
+  const other = all(doc, ".quiz-q")[0].querySelectorAll<HTMLInputElement>("input")[2];
   other.checked = true;
-  other.dispatchEvent(new doc.defaultView.Event("change"));
-  const after = JSON.parse(store.get("courses-answers") ?? "[]");
+  other.dispatchEvent(new view.Event("change"));
+  const after: string[] = JSON.parse(store.get("courses-answers") ?? "[]");
   ok("changing a pick-one answer replaces it rather than adding",
     after.filter((a) => a.startsWith("foundations/week-two/thinking#1#")).length === 1,
     JSON.stringify(after));
 
   /* Select-all is the opposite and must accumulate. */
-  const multi = all(doc, ".quiz-q")[1].querySelectorAll("input");
+  const multi = all(doc, ".quiz-q")[1].querySelectorAll<HTMLInputElement>("input");
   multi[0].checked = true;
-  multi[0].dispatchEvent(new doc.defaultView.Event("change"));
+  multi[0].dispatchEvent(new view.Event("change"));
   multi[1].checked = true;
-  multi[1].dispatchEvent(new doc.defaultView.Event("change"));
-  const both = JSON.parse(store.get("courses-answers") ?? "[]");
+  multi[1].dispatchEvent(new view.Event("change"));
+  const both: string[] = JSON.parse(store.get("courses-answers") ?? "[]");
   ok("a select-all question keeps both answers",
     both.filter((a) => a.startsWith("foundations/week-two/thinking#2#")).length === 2,
     JSON.stringify(both));
@@ -590,7 +646,8 @@ console.log("\n--- a quiz a reader can answer ---");
   /* Coming back to the page is the point of saving at all. */
   const { document: again } = await visit(
     "/skills/courses/foundations/week-two/thinking.html", store);
-  const back = all(again, ".quiz-q")[0].querySelectorAll("input");
+  const againView = need(again.defaultView, "the window that document was built with");
+  const back = all(again, ".quiz-q")[0].querySelectorAll<HTMLInputElement>("input");
   ok("the answer is still ticked on the way back", back[2].checked === true);
   ok("and the ones not picked are not", !back[0].checked && !back[1].checked);
 
@@ -598,21 +655,21 @@ console.log("\n--- a quiz a reader can answer ---");
 
   const reset = again.querySelector(".quiz-reset");
   ok("there is a way to clear them", Boolean(reset));
-  reset.dispatchEvent(new again.defaultView.Event("click"));
-  const cleared = JSON.parse(store.get("courses-answers") ?? "[]");
+  need(reset, ".quiz-reset").dispatchEvent(new againView.Event("click"));
+  const cleared: string[] = JSON.parse(store.get("courses-answers") ?? "[]");
   ok("clearing removes this lesson's answers",
     !cleared.some((a) => a.startsWith("foundations/week-two/thinking#")),
     JSON.stringify(cleared));
   ok("and unticks the boxes on the page",
-    [...again.querySelectorAll(".quiz-option input")].every((i) => !i.checked));
+    [...again.querySelectorAll<HTMLInputElement>(".quiz-option input")].every((i) => !i.checked));
 
   console.log("\n--- answering is not finishing ---");
 
   /* The rule the whole section is built on. A quiz answered is
      not a lesson done: that is still a button the reader presses. */
+  const read: string[] = JSON.parse(store.get("courses-read") ?? "[]");
   ok("answering does not tick the lesson",
-    !JSON.parse(store.get("courses-read") ?? "[]")
-      .includes("foundations/week-two/thinking"));
+    !read.includes("foundations/week-two/thinking"));
 }
 
 {
@@ -630,49 +687,52 @@ console.log("\n--- a quiz a reader can answer ---");
 console.log("\n--- mark complete and continue ---");
 
 {
-  const store = new Map();
+  const store = new Map<string, string>();
   const { document: doc, went } = await visit(
     "/skills/courses/foundations/week-one/welcome.html", store);
 
-  doc.querySelector(".course-continue").click();
+  need(doc.querySelector<HTMLElement>(".course-continue"), ".course-continue").click();
 
-  ok("the lesson is ticked",
-    JSON.parse(store.get("courses-read")).includes("foundations/week-one/welcome"));
+  const read: string[] = JSON.parse(String(store.get("courses-read")));
+  ok("the lesson is ticked", read.includes("foundations/week-one/welcome"));
   ok("and it goes to the next lesson in the module",
     went() === "/skills/courses/foundations/week-one/syllabus.html", String(went()));
 }
 
 {
-  const store = new Map();
+  const store = new Map<string, string>();
   const { document: doc, went } = await visit(
     "/skills/courses/foundations/week-one/insights.html", store);
 
+  const go = need(doc.querySelector<HTMLElement>(".course-continue"), ".course-continue");
   ok("the last lesson of a module says so on the button",
-    doc.querySelector(".course-continue").textContent.includes("finish the module"),
-    doc.querySelector(".course-continue").textContent);
+    go.textContent?.includes("finish the module"), go.textContent);
 
-  doc.querySelector(".course-continue").click();
+  go.click();
 
+  const read: string[] = JSON.parse(String(store.get("courses-read")));
   ok("the last lesson of a module is ticked too",
-    JSON.parse(store.get("courses-read")).includes("foundations/week-one/insights"));
+    read.includes("foundations/week-one/insights"));
   ok("and it goes to the module summary, not into the next module",
     went() === "/skills/courses/foundations/week-one/index.html", String(went()));
 }
 
 {
-  const store = new Map();
+  const store = new Map<string, string>();
   const { document: doc } = await visit(
     "/skills/courses/foundations/week-two/thinking.html", store);
 
-  const tick = doc.querySelector(".tick-btn");
+  const tick = need(doc.querySelector<HTMLElement>(".tick-btn"), ".tick-btn");
   tick.click();
+  const ticked: string[] = JSON.parse(String(store.get("courses-read")));
   ok("the plain tick marks a lesson done",
-    JSON.parse(store.get("courses-read")).includes("foundations/week-two/thinking"));
+    ticked.includes("foundations/week-two/thinking"));
   ok("and says so", tick.getAttribute("aria-pressed") === "true");
 
   tick.click();
+  const after: string[] = JSON.parse(String(store.get("courses-read")));
   ok("pressing it again un-ticks",
-    !JSON.parse(store.get("courses-read")).includes("foundations/week-two/thinking"));
+    !after.includes("foundations/week-two/thinking"));
   ok("the rail redraws with it",
     all(doc, ".course-lesson a[data-done]").length === 0);
 }
@@ -680,7 +740,7 @@ console.log("\n--- mark complete and continue ---");
 {
   /* A tick redraws the rail, and the redraw must not fold up a
      module the reader opened by hand to look ahead. */
-  const store = new Map();
+  const store = new Map<string, string>();
   const { document: doc } = await visit(
     "/skills/courses/foundations/week-two/thinking.html", store);
 
@@ -690,7 +750,7 @@ console.log("\n--- mark complete and continue ---");
       && boxes[1].hasAttribute("open"));
 
   boxes[0].setAttribute("open", "");             // the reader looks back
-  doc.querySelector(".tick-btn").click();
+  need(doc.querySelector<HTMLElement>(".tick-btn"), ".tick-btn").click();
 
   const after = all(doc, ".course-mod");
   ok("a module opened by hand stays open after a tick",
@@ -704,7 +764,7 @@ console.log("\n--- mark complete and continue ---");
 console.log("\n--- the course page deep-links ---");
 
 {
-  const store = new Map();
+  const store = new Map<string, string>();
   const { document: doc } = await visit("/skills/courses/foundations/index.html", store);
 
   ok("with nothing done it says start here",
@@ -715,7 +775,7 @@ console.log("\n--- the course page deep-links ---");
 }
 
 {
-  const store = new Map();
+  const store = new Map<string, string>();
   store.set("courses-read", JSON.stringify([
     "foundations/week-one/welcome",
     "foundations/week-one/syllabus",
@@ -734,7 +794,7 @@ console.log("\n--- the course page deep-links ---");
   /* A gap in the middle: the bookmark is past it, and the reader
      should still be sent back to the lesson they skipped rather
      than being told they have finished. */
-  const store = new Map();
+  const store = new Map<string, string>();
   store.set("courses-read", JSON.stringify([
     "foundations/week-one/welcome",
     "foundations/week-one/insights",
@@ -752,7 +812,7 @@ console.log("\n--- the course page deep-links ---");
 }
 
 {
-  const store = new Map();
+  const store = new Map<string, string>();
   store.set("courses-read", JSON.stringify([
     "foundations/week-one/welcome", "foundations/week-one/syllabus",
     "foundations/week-one/insights", "foundations/week-two/thinking",
@@ -770,7 +830,7 @@ console.log("\n--- the course page deep-links ---");
 console.log("\n--- the module summary and the catalogue ---");
 
 {
-  const store = new Map();
+  const store = new Map<string, string>();
   const { document: doc } = await visit(
     "/skills/courses/foundations/week-one/index.html", store);
 
@@ -785,7 +845,7 @@ console.log("\n--- the module summary and the catalogue ---");
 }
 
 {
-  const store = new Map();
+  const store = new Map<string, string>();
   const { document: doc } = await visit("/skills/courses/index.html", store);
 
   ok("the catalogue lists every course",
@@ -794,7 +854,7 @@ console.log("\n--- the module summary and the catalogue ---");
     doc.querySelector(".course-card")?.getAttribute("href")
       === "/skills/courses/foundations/index.html");
   ok("a course with nothing imported says so",
-    all(doc, ".course-card .card-dek")[1]?.textContent.includes("not imported yet"));
+    all(doc, ".course-card .card-dek")[1]?.textContent?.includes("not imported yet"));
   ok("the count comes from the list rather than a sentence",
     text(doc, ".hub-lede").includes(String(SUMMARIES.length)));
 }

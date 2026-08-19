@@ -233,7 +233,7 @@ function AddTarget({ onAdded }: { onAdded: () => Promise<void> }) {
         Add a target
       </summary>
 
-      {/* The three ids below are the ones `next/account.test.mjs`
+      {/* The three ids below are the ones `next/account.test.ts`
           drives and are the only ids in this file. They are hooks
           for the test rather than styling, which is the same
           reason the sections of this page carry one. */}

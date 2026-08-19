@@ -2,7 +2,7 @@
    scorecard.model.js: the probability-of-default pipeline.
 
    No DOM. Data in, fitted models and metrics out, so that
-   scorecard.test.mjs can check every piece against a value some
+   scorecard.test.ts can check every piece against a value some
    other authority already agrees on.
 
    Everything here runs in the browser, on the reader's machine,

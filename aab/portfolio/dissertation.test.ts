@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /* ============================================================
-   dissertation.test.mjs, checks on the statistics engine.
+   dissertation.test.ts, checks on the statistics engine.
 
-       node aab/portfolio/dissertation.test.mjs
+       node aab/portfolio/dissertation.test.ts
 
    The engine on the dissertation case-study page does real
    inference: Welch t-tests, and power calculations through the
@@ -27,12 +27,12 @@ import {
 } from "./dissertation.data.js";
 
 let pass = 0;
-const failures = [];
+const failures: string[] = [];
 
-const ok = (name, cond) => {
+const ok = (name: string, cond: boolean): void => {
   if (cond) pass++; else failures.push(name);
 };
-const close = (name, got, want, tol) =>
+const close = (name: string, got: number, want: number, tol: number): void =>
   ok(`${name} (got ${got}, want ${want})`, Math.abs(got - want) <= tol);
 
 /* ---------- 1 · gamma and beta ---------- */
@@ -117,6 +117,9 @@ close("quantile: median of 1..5", quantileSorted([1, 2, 3, 4, 5], 0.5), 3, 1e-12
 close("quantile interpolates", quantileSorted([1, 2, 3, 4], 0.5), 2.5, 1e-12);
 {
   const b = boxStats([1, 2, 3, 4, 5, 6, 7, 8, 9, 100]);
+  /* boxStats answers null for a sample with nothing finite in it,
+     which this is not, and a null here would be the bug. */
+  if (!b) throw new Error("boxStats returned nothing for a sample of ten");
   close("box median", b.med, 5.5, 1e-12);
   ok("box finds the outlier", b.outliers.length === 1 && b.outliers[0] === 100);
   ok("whisker stops inside the fence", b.whiskerHi === 9);
@@ -182,6 +185,7 @@ for (const key of Object.keys(REGRESSIONS)) {
    contains zero, and the difference is not significant. */
 {
   const d = REGRESSIONS.pooled.coefs.find((c) => c.name === "islamic");
+  if (!d) throw new Error("the pooled regression has no islamic coefficient");
   ok("the Islamic dummy's 95% interval contains zero", d.lo < 0 && d.hi > 0);
   ok("the Islamic dummy is insignificant at 10%", d.p > 0.1);
 }

@@ -145,7 +145,7 @@ export function Ring({ value, total, accent }: { value: number; total: number; a
   const circumference = 2 * Math.PI * r;
 
   return (
-    <span className="ring" style={style(accent)}>
+    <span className="progress-ring" style={style(accent)}>
       <svg viewBox="0 0 44 44" aria-hidden="true">
         <circle className="ring-track" cx="22" cy="22" r={r} fill="none" strokeWidth="4" />
         <circle className="ring-fill" cx="22" cy="22" r={r} fill="none" strokeWidth="4"

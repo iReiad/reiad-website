@@ -1552,6 +1552,13 @@
     justify-content: center; border-radius: 50%;
     background: var(--accent-soft); border-color: var(--accent);
     color: var(--accent); font-size: var(--t-3);
+    position: relative; overflow: hidden;
+
+    /* Same arrangement as `.acc-avatar`, and the same reason. */
+    & > img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover;
+    }
   }
 
   .signin {
@@ -1934,6 +1941,22 @@
     display: grid; place-items: center;
     background: var(--accent); color: var(--accent-ink);
     font-family: var(--font-serif); font-size: var(--t-7); line-height: 1;
+
+    /* The picture sits ON the initial rather than instead of it,
+       so one that fails to load leaves the letter behind rather
+       than an empty circle. Google's avatar URLs do rot: the
+       account survives, the photo's address does not.
+
+       Taken out of flow rather than stacked in a grid cell,
+       because the initial is a bare text node: an anonymous grid
+       item, and auto-placement puts it in the next free cell
+       beside an image pinned to the first. */
+    position: relative; overflow: hidden;
+
+    & > img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover;
+    }
   }
   .acc-who-text {
     display: grid; min-width: 0;
@@ -5998,7 +6021,7 @@ and an intro that needs them in step is an intro that breaks
 
    Declared AFTER `learn`, because it reuses that layer's
    furniture, .rung, .lesson-card, .stage-hero, .resume,
-   .progress-line, .ring, and adjusts a few pieces of it. A rule
+   .progress-line, .progress-ring, and adjusts a few pieces of it. A rule
    sitting in `learn` would otherwise beat these on layer order
    however specific they were.
 
@@ -9086,7 +9109,7 @@ German for day, and .tag is what the site has always called
      it was designed at. The burger measured 40px against the
      close button's 42 on a 412px phone, so the button moved a
      pixel under the thumb that had just pressed it, and
-     `interactive.test.mjs` is the check that says those two are
+     `interactive.test.ts` is the check that says those two are
      the same box.
 
      The mark is the one thing here that MAY shrink: it is a
@@ -9241,7 +9264,12 @@ German for day, and .tag is what the site has always called
          whole row and floats clear of both edges. */
       left: var(--top-gap);
     }
-    .topbar-mark { display: flex; flex: 1 1 auto; min-width: 0; }
+    /* `0 0 auto`, and it was `1 1 auto`. That was right when the
+       mark was the only thing in the bar; the trail is there now
+       and the mark grew to 490px of a 785px bar, so where you are
+       was squeezed into 44px against the tools. A logo does not
+       grow: the trail does. */
+    .topbar-mark { display: flex; flex: 0 0 auto; min-width: 0; }
 
     .rail-audience {
       display: grid; gap: var(--s-3); margin-bottom: 10px;
@@ -9733,8 +9761,21 @@ German for day, and .tag is what the site has always called
 
   /* ---------- the ring, for a stage or a school ---------- */
 
-  .ring { display: grid; place-items: center; width: 44px; height: 44px; }
-  .ring svg { grid-area: 1 / 1; rotate: -90deg; width: 44px; height: 44px; }
+  /* `.progress-ring`, and it was `.ring` until 19 August 2026.
+
+     `ring` is a TAILWIND UTILITY, `box-shadow: 0 0 0 1px`, and
+     Tailwind's scanner reads `aab/*.js` and `next/**` as sources,
+     so writing the class anywhere generated it. Layer order did
+     not save this: the rule below never sets `box-shadow`, so
+     there was nothing to win, and every progress ring on the four
+     school hubs wore a 1px square exactly 44px across.
+
+     Renamed rather than patched with `box-shadow: none`, on the
+     same grounds as `--radius-*` above it: a name this site shares
+     with the framework is a collision waiting to happen again, and
+     the one that already happened cost a redesign nobody made. */
+  .progress-ring { display: grid; place-items: center; width: 44px; height: 44px; }
+  .progress-ring svg { grid-area: 1 / 1; rotate: -90deg; width: 44px; height: 44px; }
   .ring-track { stroke: color-mix(in oklab, var(--ink) 12%, transparent); }
   .ring-fill {
     stroke: var(--accent);
@@ -10212,7 +10253,9 @@ German for day, and .tag is what the site has always called
   .crumbs-bar {
     padding-block: 0;
     min-width: 0;
-    flex: 0 1 auto;
+    /* The one thing in the bar that should take the space it is
+       given: it is the only part that changes from page to page. */
+    flex: 1 1 auto;
     overflow: hidden;
 
     & ol { flex-wrap: nowrap; }
@@ -10221,7 +10264,14 @@ German for day, and .tag is what the site has always called
     & li span, & li a {
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    & [aria-current="page"] { max-width: none; color: var(--ink); }
+    /* Where you ARE, said louder than how you got there. A trail
+       of three greys at one size is a row a reader has to parse;
+       the last crumb is the page and reads as the bar's subject. */
+    & [aria-current="page"] {
+      max-width: none; color: var(--ink);
+      font-size: var(--t-3); font-weight: 500;
+    }
+    & li:not([aria-current="page"]) { font-size: var(--t-2); }
   }
 
   /* The separator that joins the trail to the mark, and ONLY

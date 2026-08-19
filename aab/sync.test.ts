@@ -1,7 +1,7 @@
 /* ============================================================
-   sync.test.mjs: progress belongs to the account.
+   sync.test.ts: progress belongs to the account.
 
-     node aab/sync.test.mjs        (needs a server on :8899 and
+     node aab/sync.test.ts          (needs a server on :8899 and
                                     Playwright; skips without them)
 
    The old file tested a three-way merge and the dialog that
@@ -43,9 +43,14 @@
 
    Plus the display name, which is checked here because it shares
    the profile path with everything above.
+
+   `aab/tsconfig.test.json` is what typechecks the annotations
+   below, and `scripts/check-types.ts` runs it.
    ============================================================ */
 
-let chromium;
+import type { BrowserContext, Page } from "playwright";
+
+let chromium: typeof import("playwright").chromium;
 try {
   ({ chromium } = await import("playwright"));
 } catch {
@@ -75,42 +80,78 @@ try {
 }
 
 const SUPA = "https://wvjarqnnmkkuxyrndtya.supabase.co";
-const b64 = (o) => Buffer.from(JSON.stringify(o)).toString("base64url");
-const jwt = (sub) => [b64({ alg: "HS256" }),
+const b64 = (o: unknown): string => Buffer.from(JSON.stringify(o)).toString("base64url");
+const jwt = (sub: string): string => [b64({ alg: "HS256" }),
   b64({ sub, email: "i@reiad.co.uk", exp: Math.floor(Date.now() / 1000) + 3600,
         user_metadata: { full_name: "Rony Reiad" } }), "s"].join(".");
-const session = (sub) => JSON.stringify({ access_token: jwt(sub), refresh_token: "r",
+const session = (sub: string): string => JSON.stringify({ access_token: jwt(sub), refresh_token: "r",
   expires_at: Date.now() + 3600e3, user: { id: sub, email: "i@reiad.co.uk", name: "Rony Reiad" } });
 
 const b = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
 
 let fails = 0;
-const check = (n, got, want) => {
+const check = (n: string, got: unknown, want: unknown): void => {
   const ok = JSON.stringify(got) === JSON.stringify(want);
   if (!ok) fails++;
   console.log(`  ${ok ? "ok  " : "FAIL"} ${n}${ok ? "" : `\n        got  ${JSON.stringify(got)}\n        want ${JSON.stringify(want)}`}`);
 };
 
+/** One row of `public.progress`, as PostgREST answers with it. */
+interface Row {
+  key: string;
+  value: unknown;
+  updated_at?: string;
+}
+
+/** The columns of `public.profiles` this file reads and writes.
+    They are the COLUMNS, spelled as Supabase returns them. */
+interface Profile {
+  display_name?: string;
+  following?: string[];
+  pace?: string;
+  setup_at?: string;
+}
+
+/** The account, as the routed Supabase below holds it. */
+interface Account {
+  rows: Map<string, Row>;
+  profile: Profile | null;
+  patches: Profile[];
+  deletes: number;
+}
+
+/** One browser, its account, and anything the page threw. */
+interface Fixture {
+  ctx: BrowserContext;
+  p: Page;
+  state: Account;
+  errs: string[];
+}
+
 /** A browser holding `device`, talking to an account holding
     `accountRows`. Every Supabase call is answered here, so the
     real project is never touched and the test needs no network. */
-async function make({ accountRows = [], profile = null, device = {} }) {
+async function make(
+  { accountRows = [], profile = null, device = {} }:
+  { accountRows?: Row[]; profile?: Profile | null; device?: Record<string, string> },
+): Promise<Fixture> {
   const ctx = await b.newContext({ viewport: { width: 1100, height: 1000 }, serviceWorkers: "block" });
   const p = await ctx.newPage();
-  const errs = []; p.on("pageerror", (e) => errs.push(e.message));
-  const state = { rows: new Map(accountRows.map((r) => [r.key, r])), profile, patches: [], deletes: 0 };
+  const errs: string[] = []; p.on("pageerror", (e) => errs.push(e.message));
+  const state: Account = { rows: new Map(accountRows.map((r) => [r.key, r])), profile, patches: [], deletes: 0 };
 
   await ctx.route(`${SUPA}/rest/v1/**`, async (route) => {
     const req = route.request(); const u = new URL(req.url());
-    const json = (o, s = 200) => route.fulfill({ status: s, contentType: "application/json", body: JSON.stringify(o) });
+    const json = (o: unknown, s = 200) => route.fulfill({ status: s, contentType: "application/json", body: JSON.stringify(o) });
     if (u.pathname.endsWith("/profiles")) {
-      if (req.method() === "PATCH") { const patch = JSON.parse(req.postData()); state.patches.push(patch); state.profile = { ...state.profile, ...patch }; return route.fulfill({ status: 204, body: "" }); }
+      if (req.method() === "PATCH") { const patch: Profile = JSON.parse(String(req.postData())); state.patches.push(patch); state.profile = { ...state.profile, ...patch }; return route.fulfill({ status: 204, body: "" }); }
       return json(state.profile ? [state.profile] : []);
     }
     if (u.pathname.endsWith("/progress")) {
       if (req.method() === "DELETE") { state.deletes++; state.rows.clear(); return route.fulfill({ status: 204, body: "" }); }
       if (req.method() === "POST") {
-        JSON.parse(req.postData()).forEach((r) => state.rows.set(r.key, { ...r, updated_at: new Date().toISOString() }));
+        const sent: Row[] = JSON.parse(String(req.postData()));
+        sent.forEach((r) => state.rows.set(r.key, { ...r, updated_at: new Date().toISOString() }));
         return route.fulfill({ status: 201, body: "" });
       }
       return json([...state.rows.values()]);
@@ -123,13 +164,14 @@ async function make({ accountRows = [], profile = null, device = {} }) {
   await ctx.route(`${SUPA}/auth/v1/**`, (r) => r.fulfill({ status: 200, contentType: "application/json", body: "{}" }));
   await ctx.route("**/api/**", (r) => r.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true,"articles":[]}' }));
 
-  await p.addInitScript((d) => { for (const [k, v] of Object.entries(d)) localStorage.setItem(k, v); }, device);
+  await p.addInitScript((d: Record<string, string>) => { for (const [k, v] of Object.entries(d)) localStorage.setItem(k, v); }, device);
   return { ctx, p, state, errs };
 }
 
 const old = new Date(Date.now() - 600000).toISOString();
-const local = (p, key) => p.evaluate((k) => JSON.parse(localStorage.getItem(k) ?? "null"), key);
-const sorted = (v) => (Array.isArray(v) ? [...v].sort() : v);
+const local = (p: Page, key: string): Promise<unknown> =>
+  p.evaluate((k) => JSON.parse(localStorage.getItem(k) ?? "null"), key);
+const sorted = (v: unknown): unknown => (Array.isArray(v) ? [...v].sort() : v);
 
 /* ---------- 1. signing in adopts, and uploads nothing ---------- */
 console.log("signing in on a browser that already has progress");
@@ -267,7 +309,7 @@ console.log("\nsigning out");
    old version of this check was navigating to a 404 and asserting
    against an empty page. What it was really testing is the
    profile path the whole of this file shares, and that is a
-   module. `app/desk.test.mjs` is the pattern for driving a
+   module. `app/desk.test.ts` is the pattern for driving a
    rendered page, and needs a build this file does not. */
 console.log("\nchanging the display name");
 {

@@ -68,6 +68,18 @@ const NOT_FETCHED = {
   "https://www.facebook.com": "a profile link on /about.html",
   "https://www.instagram.com": "a profile link on /about.html",
   "https://github.com": "a link to this repository on /about.html",
+  /* An IMAGE host, so it is `img-src` rather than `connect-src`,
+     and `aab/_headers` allows it there: the picture a Google
+     sign-in brings, drawn into the account's circle by
+     `account-page.ts` and `signin.ts`. It is an `<img src>` in
+     both, never a fetch, and the tag carries
+     `referrerpolicy="no-referrer"`.
+
+     It also appears in `aab/studio.test.ts` as the off-site photo
+     the Studio's pre-flight is meant to warn about, which is a
+     string in a fixture rather than an address anything reaches. */
+  "https://lh3.googleusercontent.com":
+    "an <img src> for the account's picture, allowed under img-src, never fetched",
   /* The webfonts, and they are here rather than in connect-src
      because a stylesheet link and a font file are `style-src` and
      `font-src`, which the policy already allows both of. A
@@ -126,6 +138,11 @@ const walk = (dir: string, skip = new Set<string>()): void => {
     if (skip.has(name)) continue;
     const path = join(dir, name);
     if (statSync(path).isDirectory()) walk(path, skip);
+    /* No `.mjs`, and there is none left to match: the browser
+       tests under `aab/` were that extension and were therefore
+       invisible here until 19 August 2026. Converting them is
+       what brought `lh3.googleusercontent.com` into view, as a
+       string in a Studio fixture. */
     else if (/\.(js|ts|tsx)$/.test(name)) jsFiles.push(path);
   }
 };

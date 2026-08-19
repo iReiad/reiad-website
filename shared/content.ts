@@ -70,7 +70,7 @@ export const ARTICLES: FilePiece[] = [];
    The curriculum, every stage, section and lesson, lives in
    shared/curricula/money.ts, which is the one file to edit when
    the money school changes. It is re-exported here so that the
-   menu, the palette and build-meta.mjs have a single import.
+   menu, the palette and build-meta.ts have a single import.
 
    TERM_GROUPS below is the ORIGINAL eighteen-term grouping, kept
    because /money/terms/*.html and the A–Z glossary were built
@@ -85,7 +85,7 @@ import {
 /* The second school. German has its own ladder for the same
    reason it has its own mount: nothing about ব্রোকার belongs in a
    file about Akkusativ. Both are imported here so the menu, the
-   palette and build-meta.mjs still have a single import. */
+   palette and build-meta.ts still have a single import. */
 import {
   STUFEN, SCHOOL as DEUTSCH, allTeile, stufeUrl, teilUrl, workbookUrl,
 } from "./curricula/deutsch.ts";

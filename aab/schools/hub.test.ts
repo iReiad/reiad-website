@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /* ============================================================
-   hub.test.mjs: the three school hubs, built against the markup
+   hub.test.ts: the three school hubs, built against the markup
    a reader actually gets.
 
-       node aab/schools/hub.test.mjs
+       node aab/schools/hub.test.ts
 
    `schools/hub.js` took the four identical halves out of three
    hub scripts: the progress ring, the resume card, the bar at
-   the top and the reset button. `progress.test.mjs` next door
+   the top and the reset button. `progress.test.ts` next door
    covers the arithmetic; nothing covered the drawing, and the
    drawing is the half a reader sees.
 
@@ -39,6 +39,9 @@
 
    Without linkedom installed it says so and skips, which is not
    a pass. `npm install` at the root is the whole of the fix.
+
+   `aab/tsconfig.test.json` is what typechecks the annotations
+   below, and `scripts/check-types.ts` runs it.
    ============================================================ */
 
 import { registerHooks } from "node:module";
@@ -48,7 +51,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const AAB = join(ROOT, "aab");
 
-let parseHTML;
+let parseHTML: typeof import("linkedom").parseHTML;
 try {
   ({ parseHTML } = await import("linkedom"));
 } catch {
@@ -109,15 +112,50 @@ const bundled = await build({
   logLevel: "silent",
 });
 
-const mod = await import(
+/** The two exports that bundle carries. It is imported from a
+    `data:` URL, which is not a specifier tsc can resolve, so this
+    is the file's own claim about it: the component the route
+    renders, and the renderer that turns it into markup. */
+interface HubBundle {
+  SchoolHubPage: (props: { school: string }) => unknown;
+  renderToStaticMarkup: (node: unknown) => string;
+}
+
+const mod: HubBundle = await import(
   `data:text/javascript;base64,${Buffer.from(bundled.outputFiles[0].text).toString("base64")}`);
 
-const bodies = Object.fromEntries(
+const bodies: Record<string, string> = Object.fromEntries(
   ["deutsch", "english", "quran"].map((school) =>
     [school, mod.renderToStaticMarkup(mod.SchoolHubPage({ school }))]));
 
 let bad = 0;
-const ok = (n, c, d = "") => { console.log(`${c ? "  ok " : "FAIL"}  ${n}${c ? "" : "   " + d}`); if (!c) bad++; };
+const ok = (n: string, c: unknown, d = ""): void => { console.log(`${c ? "  ok " : "FAIL"}  ${n}${c ? "" : "   " + d}`); if (!c) bad++; };
+
+/** An element the markup is asserted to carry one line above, or
+    the one export of three a school answers to. A missing one is a
+    broken harness rather than a failing check, so it throws
+    saying which. */
+function need<T>(found: T | null | undefined, what: string): T {
+  if (found == null) throw new Error(`no ${what}`);
+  return found;
+}
+
+/** What a school's own progress module is called on to do here.
+    Fetched from a computed address, so tsc resolves none of it:
+    the two pairs are the words each school uses for the same
+    thing. */
+interface SchoolProgress {
+  markRead?: (id: string) => void;
+  markDone?: (id: string) => void;
+  resetAll: () => void;
+}
+
+/** And its ladder, under whichever of the three names it carries. */
+interface SchoolCurriculum {
+  allTeile?: () => Array<{ id: string; status?: string }>;
+  allParts?: () => Array<{ id: string; status?: string }>;
+  allLessons?: () => Array<{ id: string; status?: string }>;
+}
 
 for (const school of ["deutsch", "english", "quran"]) {
   console.log(`\n--- ${school} ---`);
@@ -125,23 +163,23 @@ for (const school of ["deutsch", "english", "quran"]) {
   if (!body) { ok(`${school}: markup found in school-hubs.ts`, false); continue; }
 
   const { window, document } = parseHTML(`<!doctype html><html><body>${body}</body></html>`);
-  const store = new Map();
-  const listeners = new Map();
+  const store = new Map<string, string>();
+  const listeners = new Map<string, Array<(e: Event) => void>>();
   Object.assign(globalThis, {
     window, document,
     localStorage: {
-      getItem: (k) => (store.has(k) ? store.get(k) : null),
-      setItem: (k, v) => store.set(k, String(v)),
-      removeItem: (k) => store.delete(k),
+      getItem: (k: string) => (store.has(k) ? store.get(k) : null),
+      setItem: (k: string, v: unknown) => store.set(k, String(v)),
+      removeItem: (k: string) => store.delete(k),
     },
-    addEventListener: (t, f) => listeners.set(t, [...(listeners.get(t) ?? []), f]),
-    dispatchEvent: (e) => { (listeners.get(e.type) ?? []).forEach((f) => f(e)); return true; },
+    addEventListener: (t: string, f: (e: Event) => void) => listeners.set(t, [...(listeners.get(t) ?? []), f]),
+    dispatchEvent: (e: Event) => { (listeners.get(e.type) ?? []).forEach((f) => f(e)); return true; },
     CustomEvent: window.CustomEvent,
     confirm: () => true,
     location: { pathname: `/${school}/index.html` },
   });
 
-  const errors = [];
+  const errors: string[] = [];
   try {
     await import(`/${school}/hub.js?${Math.random()}`);
   } catch (e) { errors.push(String(e)); }
@@ -151,17 +189,20 @@ for (const school of ["deutsch", "english", "quran"]) {
   const rungs = [...document.querySelectorAll("details.rung")];
   ok(`${school}: the ladder built its rungs (${rungs.length})`, rungs.length > 0);
 
-  /* `span.ring > svg`, which is `<Ring>` in components/deck.tsx node
-     for node. It was `svg.ring` with the rotation on a transform
-     attribute, and that shape existed only because two layers both
-     defined `.ring` and the school's copy lost: `.ring svg` does not
-     match an SVG that is itself the `.ring`, so the schools' ring was
-     never rotated twice by accident. One shape now, and the rotation
-     is the stylesheet's in both places. */
-  const rings = document.querySelectorAll("span.ring > svg").length;
+  /* `span.progress-ring > svg`, which is `<Ring>` in
+     components/deck.tsx node for node. It was `svg.ring` with the
+     rotation on a transform attribute, and that shape existed only
+     because two layers both defined `.ring` and the school's copy
+     lost. One shape now, and the rotation is the stylesheet's in
+     both places.
+
+     `progress-ring` rather than `ring` because `ring` is a Tailwind
+     utility, and this test is what says the rename reached the
+     module as well as the component. */
+  const rings = document.querySelectorAll("span.progress-ring > svg").length;
   ok(`${school}: the shared ring drew one per rung (${rings})`, rings === rungs.length && rings > 0);
 
-  const fills = [...document.querySelectorAll("span.ring > svg circle.ring-fill")];
+  const fills = [...document.querySelectorAll("span.progress-ring > svg circle.ring-fill")];
   /* `.every()` on an empty list is true, so the count is asserted
      first. This check passed for three schools while the selector
      above it was returning nothing at all. */
@@ -172,22 +213,22 @@ for (const school of ["deutsch", "english", "quran"]) {
   const states = rungs.map((r) => r.getAttribute("data-state"));
   ok(`${school}: exactly one rung is "now"`, states.filter((s) => s === "now").length === 1, states.join(","));
   ok(`${school}: every state is one the stylesheet knows`,
-    states.every((s) => ["done", "now", "next", "past", "later"].includes(s)), states.join(","));
+    states.every((s) => ["done", "now", "next", "past", "later"].includes(s ?? "")), states.join(","));
 
-  const pills = [...document.querySelectorAll(".state-pill")].map((e) => e.textContent.trim());
+  const pills = [...document.querySelectorAll(".state-pill")].map((e) => (e.textContent ?? "").trim());
   ok(`${school}: every rung is labelled in Bangla`,
     pills.length === rungs.length && pills.every(Boolean), pills.join(","));
 
-  const counts = [...document.querySelectorAll(".rung-count")].map((e) => e.textContent);
+  const counts = [...document.querySelectorAll(".rung-count")].map((e) => e.textContent ?? "");
   ok(`${school}: rung counts are in Bangla numerals`,
     counts.length > 0 && counts.every((c) => /^[০-৯]+\/[০-৯]+$/.test(c)), counts.slice(0, 3).join(" "));
 
   const bar = document.getElementById(`${school}-progress`);
-  ok(`${school}: the top bar was filled`, Boolean(bar?.querySelector(".count")?.textContent.trim()),
+  ok(`${school}: the top bar was filled`, Boolean(bar?.querySelector(".count")?.textContent?.trim()),
     String(bar?.querySelector(".count")?.textContent));
   ok(`${school}: the bar's fill has a width`,
-    /^\d+%$/.test(bar?.querySelector(".track i")?.style?.width ?? ""),
-    String(bar?.querySelector(".track i")?.style?.width));
+    /^\d+%$/.test(bar?.querySelector<HTMLElement>(".track i")?.style?.width ?? ""),
+    String(bar?.querySelector<HTMLElement>(".track i")?.style?.width));
 
   ok(`${school}: reset is hidden with nothing to reset`,
     document.getElementById(`${school}-reset`)?.hidden === true);
@@ -198,19 +239,19 @@ for (const school of ["deutsch", "english", "quran"]) {
      ships `<div id="resume" hidden>`, so the assertion above
      passes whether or not paintResume ever runs: it did, on a
      version of this file that had lost the branch entirely. */
-  document.getElementById("resume").hidden = false;
+  need(document.getElementById("resume"), "#resume").hidden = false;
 
   /* Now read something, and see the page answer. */
-  const P = await import(`/${school}/progress.js`);
-  const cur = await import(`/${school}/curriculum.js`);
-  const all = (cur.allTeile ?? cur.allParts ?? cur.allLessons)();
+  const P: SchoolProgress = await import(`/${school}/progress.js`);
+  const cur: SchoolCurriculum = await import(`/${school}/curriculum.js`);
+  const all = need(cur.allTeile ?? cur.allParts ?? cur.allLessons, "a ladder")();
   const live = all.filter((l) => l.status === "live");
-  (P.markRead ?? P.markDone)(live[0].id);
+  need(P.markRead ?? P.markDone, "a mark function")(live[0].id);
 
   ok(`${school}: the resume card appears once something is read`,
     document.getElementById("resume")?.hidden === false);
   ok(`${school}: and names what to resume`,
-    Boolean(document.querySelector("#resume .resume-label")?.textContent.trim()),
+    Boolean(document.querySelector("#resume .resume-label")?.textContent?.trim()),
     String(document.querySelector("#resume .resume-label")?.textContent));
   ok(`${school}: with somewhere to go`,
     Boolean(document.querySelector("#resume a.btn")?.getAttribute("href")),
@@ -231,7 +272,7 @@ for (const school of ["deutsch", "english", "quran"]) {
     document.getElementById(`${school}-reset`)?.hidden === true);
   ok(`${school}: and empties the ladder's counts`,
     [...document.querySelectorAll(".rung-count")]
-      .every((e) => /^০\//.test(e.textContent)),
+      .every((e) => /^০\//.test(e.textContent ?? "")),
     [...document.querySelectorAll(".rung-count")].map((e) => e.textContent).join(" "));
 }
 

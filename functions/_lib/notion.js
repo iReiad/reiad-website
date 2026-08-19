@@ -3,7 +3,7 @@
 
    Kept apart from the route that serves it for one reason: this is
    the intricate half and it is pure, so it can be tested without a
-   Worker, a token, or a network. See notion.test.mjs.
+   Worker, a token, or a network. See notion.test.ts.
 
    The conversion is lossy on purpose. Notion has infinite block
    types; this site has about twenty tags, listed in

@@ -5,13 +5,13 @@
      node scripts/check-preview.ts \
        --preview https://<branch>-reiad-next.i-reiad.workers.dev
 
-   archive/TRANSITION.md Stage 11. This is `next/parity.test.mjs`'s
+   archive/TRANSITION.md Stage 11. This is `next/parity.test.ts`'s
    question asked of two deployed Workers instead of one local
    one, and it exists because that test cannot run everywhere.
 
    ---- why there are two of these ----
 
-   `parity.test.mjs` starts the built Worker under `wrangler dev`
+   `parity.test.ts` starts the built Worker under `wrangler dev`
    on workerd, with a local D1 seeded with one article, and
    compares it against what `functions/insights/[slug].js` would
    have produced for the same row. No network, no account. That is
@@ -33,7 +33,7 @@
 
    ---- what it compares, and what it cannot ----
 
-   The same facts `parity.test.mjs` compares, one tag at a time,
+   The same facts `parity.test.ts` compares, one tag at a time,
    because attribute order is the renderer's business and not the
    author's. It cannot compare against the Worker's own template
    the way that test does, because production now answers these
