@@ -184,8 +184,19 @@ were in the comments this repository writes at length on purpose,
 which is the argument for the length rather than against it: the
 ones that said only what a thing was for stayed true.
 
-The last chunk scanned for the rest of them rather than waiting to
-trip over one. Every tracked file, every string shaped like a
+`scripts/check-pointers.ts` is what stops the twentieth. It reads
+every tracked file outside `archive/` and fails on any `check-*`,
+`build-*`, `import-*`, `export-*` or `*.test.*` name that reaches
+no file, with `GONE` for the ones that are named as gone on
+purpose, keyed by the file AND the name so that a NEW mention
+somewhere else still fails. It caught two things while being
+written: itself, twice, because it resolved names against the git
+index and a file that has been written and not committed exists;
+and the sentence in `CLAUDE.md` that explains the rule, which uses
+a deleted filename as its example and now has an entry saying so.
+
+The chunk before it scanned for the rest of them rather than
+waiting to trip over one. Every tracked file, every string shaped like a
 `check-*`, `build-*`, `import-*`, `export-*` or `*.test.*` of ours,
 against whether that file exists: **25 names resolved to nothing.**
 Twelve were a rename nobody followed, `check-css.mjs` in ten places

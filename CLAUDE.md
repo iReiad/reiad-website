@@ -93,6 +93,20 @@ was added to the output, the next `build-modules` run dropped it, and quiz
 answers saved on one device and reached no other. `check-courses.ts` now
 fails if this section writes a storage key the account does not carry.
 
+**A comment that names a file has to name one that exists.**
+`check-pointers.ts` reads every tracked file outside `archive/` and
+fails on any `check-*`, `build-*`, `import-*`, `export-*` or
+`*.test.*` name that reaches nothing. It exists because converting
+`scripts/` to TypeScript turned up twenty-five such names in one
+sweep, two of which promised a check nobody had ever written. A
+stale pointer costs nothing until somebody follows it, which is
+precisely why they survive.
+
+A name that is gone ON PURPOSE goes in `GONE` in that file, keyed
+by the file AND the name, with the reason. Keyed by both because
+"`build-styles.mjs` is gone" is a true sentence and a NEW comment
+naming it somewhere else is not.
+
 ## Comments carry the constraint, not the story
 
 Keep what a reader needs in order not to break something: what will fail,
@@ -646,7 +660,10 @@ node scripts/build-fallback.ts --check # /fallback.css, which the two pages that
                                        # are files link, no longer matching the
                                        # stylesheet it is drawn from
 node scripts/check-types.ts  # scripts/ that node strips the types out of
-                            # without ever reading them
+                            # without ever reading them, and a .js
+                            # reappearing in a directory that has none
+node scripts/check-pointers.ts # a comment sending a reader to a file that
+                            # does not exist
 node scripts/build-school-icons.ts --check   # a school drawing next/ copied
 node scripts/check-next.ts # a copy inside next/ that has drifted from the
                             # thing it was copied from
