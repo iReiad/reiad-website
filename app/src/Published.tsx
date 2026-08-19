@@ -48,7 +48,7 @@ import {
   shareCardBlob, cardSlug, hostPhotosIn, isHosted, uploadMedia, toast, copyText,
 } from "./site.ts";
 import {
-  Broken, Chip, Count, Empty, Filters, Loading, Pill, SearchBox, when,
+  Broken, Chip, ChipLink, Count, Empty, Filters, Loading, Pill, SearchBox, when,
 } from "./bits.tsx";
 
 /* A piece, and there is only one kind of one now.
@@ -272,9 +272,10 @@ function Row({
       </span>
 
       <span className="line-actions">
-        <a className="chip"
-           href={`/studio/index.html?edit=${encodeURIComponent(a.slug)}`}>Edit</a>
-        <a className="chip" href={url} target="_blank" rel="noopener">View</a>
+        <ChipLink href={`/studio/index.html?edit=${encodeURIComponent(a.slug)}`}>
+          Edit
+        </ChipLink>
+        <ChipLink href={url} target="_blank" rel="noopener">View</ChipLink>
 
         {/* One open at a time, so the panel below never opens under
             another. The old desk did this by walking the DOM on
@@ -382,7 +383,8 @@ export function Published() {
   return (
     <>
       <Filters options={SECTION_FILTERS} active={section} counts={counts} onPick={setSection} />
-      <SearchBox placeholder="Search titles, file names and topics" onSearch={setQ} />
+      <SearchBox id="search-published"
+                 placeholder="Search titles, file names and topics" onSearch={setQ} />
 
       {/* Counted, never remembered. It used to end with "2 still
           to import", which was the number of pieces still written

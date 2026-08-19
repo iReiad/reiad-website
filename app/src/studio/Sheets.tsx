@@ -16,6 +16,8 @@
    ============================================================ */
 
 import { useEffect, useRef, useState } from "react";
+import { SectionLabel } from "../../../next/components/ui/label.tsx";
+import { Chip } from "../bits.tsx";
 import type { Article } from "../api.ts";
 import { notionPages, type NotionRow } from "./notion.ts";
 import type { Draft } from "./drafts.ts";
@@ -45,9 +47,6 @@ function Sheet({
   );
 }
 
-const Label = ({ children }: { children: React.ReactNode }) =>
-  <span className="mono section-label">{children}</span>;
-
 /* ============================================================
    Open
    ============================================================ */
@@ -70,7 +69,7 @@ export function OpenSheet({
     <Sheet title="Open" onClose={onClose}>
       {loading ? <p className="muted mono">Loading…</p> : (
         <>
-          <Label>Drafts on this device</Label>
+          <SectionLabel>Drafts on this device</SectionLabel>
           {drafts.length === 0 ? <p className="muted">No drafts yet.</p> : null}
           {drafts.map((draft) => {
             const title = draft.fields?.title?.trim() || "Untitled";
@@ -80,9 +79,8 @@ export function OpenSheet({
                 <span className="mono muted">
                   {draft.savedAt ? new Date(draft.savedAt).toLocaleString() : ""}
                 </span>
-                <button className="chip" type="button" onClick={() => onDraft(draft)}>Open</button>
-                <button className="chip" type="button"
-                        onClick={() => onDeleteDraft(draft)}>Delete</button>
+                <Chip onClick={() => onDraft(draft)}>Open</Chip>
+                <Chip onClick={() => onDeleteDraft(draft)}>Delete</Chip>
               </div>
             );
           })}
@@ -95,15 +93,14 @@ export function OpenSheet({
 
           {dynamic ? (
             <>
-              <Label>Published through the Studio</Label>
+              <SectionLabel>Published through the Studio</SectionLabel>
               {articles.length === 0
                 ? <p className="muted">Nothing in the database yet.</p> : null}
               {articles.map((a) => (
                 <div className="admin-line" key={a.slug}>
                   <span>{a.title}</span>
                   <span className="mono">{a.status}</span>
-                  <button className="chip" type="button"
-                          onClick={() => onArticle(a.slug)}>Edit</button>
+                  <Chip onClick={() => onArticle(a.slug)}>Edit</Chip>
                 </div>
               ))}
             </>
@@ -193,8 +190,7 @@ export function NotionSheet({
               <span className="mono muted">
                 {page.edited ? new Date(page.edited).toLocaleDateString() : ""}
               </span>
-              <button className="chip" type="button"
-                      onClick={() => onImport(page.id)}>Import</button>
+              <Chip onClick={() => onImport(page.id)}>Import</Chip>
             </div>
           ))}
       </div>

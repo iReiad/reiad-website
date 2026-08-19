@@ -16,6 +16,11 @@
    ============================================================ */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+/* The site's own components, across the workspace boundary. The
+   note above the same two imports in `app/src/Desk.tsx` says what
+   holds that up. */
+import { Button, ButtonLink } from "../../../next/components/ui/button.tsx";
+import { Eyebrow, SectionLabel } from "../../../next/components/ui/label.tsx";
 import type { EditorHandle } from "/editor.js";
 import { findSection, pieceUrl } from "/content.js";
 import { topicsFromTag as topicsFrom } from "./piece.ts";
@@ -373,7 +378,7 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
   return (
     <>
       <div className="hero">
-        <span className="eyebrow mono">Article Studio · private tool</span>
+        <Eyebrow>Article Studio · private tool</Eyebrow>
         <h1 style={{ fontSize: "clamp(1.9rem,4.4vw,2.8rem)" }}>
           Paste the article. Paste the photos. Publish.
         </h1>
@@ -390,42 +395,42 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
           Open, New and the desk should not be a scroll away. */}
       <div className="studio-bar">
         <span className="bar-group">
-          <button className="btn btn-ghost" type="button" id="btn-new" onClick={() => {
+          <Button id="btn-new" onClick={() => {
             setTied(blankTied());
             blank();
             toast("New article. The one you were on is under Open.");
-          }}>＋ New</button>
-          <button className="btn btn-ghost" type="button" id="btn-open"
-                  onClick={() => setSheet("open")}>Open…</button>
+          }}>＋ New</Button>
+          <Button id="btn-open" onClick={() => setSheet("open")}>Open…</Button>
           {/* The other writing surface. A lesson is prose in the
               same editor and is reached from here rather than from
               the desk, because this page is where writing happens
               and a tool nobody can find is the failure the
               publishing checklist in CLAUDE.md is about. */}
-          <a className="btn btn-ghost" id="btn-lessons" href="/studio/?lessons">
+          <ButtonLink id="btn-lessons" href="/studio/?lessons">
             The schools…
-          </a>
+          </ButtonLink>
         </span>
         {/* The link to the old Studio is gone with the page:
             `studio.html` and `studio.js` are in `archive/` as of
             16 August 2026 and are not deployed. */}
         <span className="bar-group" id="notion-group">
           {hasNotion ? (
-            <button className="btn btn-ghost" type="button" id="btn-notion"
-                    onClick={() => setSheet("notion")}>Import from Notion</button>
+            <Button id="btn-notion" onClick={() => setSheet("notion")}>
+              Import from Notion
+            </Button>
           ) : null}
           {dynamic && tied.notionPageId ? (
-            <button className="btn btn-ghost" type="button" id="btn-resync" onClick={() => {
+            <Button id="btn-resync" onClick={() => {
               if (!confirm("Replace the article body with the current Notion page? "
                 + "Anything typed here is lost.")) return;
               void importNotion(tied.notionPageId as string, true);
-            }}>Re-sync from Notion</button>
+            }}>Re-sync from Notion</Button>
           ) : null}
         </span>
         {dynamic ? (
-          <a className="btn btn-ghost" id="btn-desk" href="/desk/index.html">
+          <ButtonLink id="btn-desk" href="/desk/index.html">
             {waiting ? `The desk (${waiting}) →` : "The desk →"}
-          </a>
+          </ButtonLink>
         ) : null}
         <span className="studio-now" id="now-line">{nowLine}</span>
       </div>
@@ -456,43 +461,43 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
       </div>
 
       <section>
-        <span className="section-label mono">3 · Publish it</span>
+        <SectionLabel>3 · Publish it</SectionLabel>
 
         <Preflight issues={issues} started={Boolean(meta.body.trim() || fields.title.trim())} />
 
         <div className="row-flex publish-row">
           {dynamic ? (
             <>
-              <button className="btn btn-solid" type="button" id="btn-publish"
+              <Button kind="solid" id="btn-publish"
                       disabled={blocked || Boolean(busy)}
                       onClick={() => void send("live")}>
                 {busy || "Publish to the site"}
-              </button>
-              <button className="btn btn-ghost" type="button" id="btn-save-draft"
+              </Button>
+              <Button id="btn-save-draft"
                       disabled={blocked || Boolean(busy)}
-                      onClick={() => void send("draft")}>Save draft to the site</button>
+                      onClick={() => void send("draft")}>Save draft to the site</Button>
             </>
           ) : null}
           {dynamic && tied.slug ? (
-            <button className="btn btn-ghost" type="button" id="btn-view" onClick={() => {
+            <Button id="btn-view" onClick={() => {
               // Where it is, not where it is going: the picker may
               // already be showing the section it is about to move to.
               open(pieceUrl(findSection(tied.section ?? ""), tied.slug as string),
                 "_blank", "noopener");
-            }}>View it</button>
+            }}>View it</Button>
           ) : null}
-          <button className="btn btn-ghost" type="button" id="btn-clear" onClick={async () => {
+          <Button id="btn-clear" onClick={async () => {
             if (!confirm("Clear the editor and delete this draft? "
               + "Anything already published stays published.")) return;
             if (tied.draftId) await dropDraft(tied.draftId);
             blank();
             toast("Cleared");
-          }}>Clear</button>
-          <button className="btn btn-ghost push" type="button" id="btn-lock"
+          }}>Clear</Button>
+          <Button className="push" id="btn-lock"
                   title="Lock the Studio on this device"
                   onClick={() => {
                     if (confirm("Lock the Studio? Your draft stays saved on this device.")) lock();
-                  }}>Lock</button>
+                  }}>Lock</Button>
         </div>
 
         {/* Publishing to the database is the only route out of the

@@ -23,8 +23,9 @@ import type { Article, Stats as Figures } from "./api.ts";
 import { readStats, listArticles } from "./api.ts";
 import { useRows } from "./useRows.ts";
 import { findSection, pieceUrl, searchIndex } from "./site.ts";
+import { SectionLabel } from "../../next/components/ui/label.tsx";
 import {
-  Broken, Count, Empty, Filters, Loading, SectionLabel, Sparkline, Stat, StatRow,
+  Broken, Count, Empty, Filters, Loading, Sparkline, Stat, StatRow,
 } from "./bits.tsx";
 
 const RANGES = [

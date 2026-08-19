@@ -68,6 +68,20 @@ export default defineConfig({
   plugins: [react()],
   root: resolve(here, target.root),
   base: target.base,
+  resolve: {
+    /* One React in the bundle, whichever directory asked for it.
+
+       `app/src/**` imports components out of `next/components/ui/`,
+       and a bare `react` inside one of those files resolves from
+       `next/node_modules` while the same specifier in `app/src`
+       resolves from `app/node_modules`. Two copies of the JSX
+       runtime is the harmless end of that; two copies of React
+       itself is hooks throwing `Invalid hook call` in a bundle that
+       built cleanly. Named here rather than left to luck: the two
+       package.json files can hold the same version today and not
+       tomorrow. */
+    dedupe: ["react", "react-dom"],
+  },
   build: {
     /* Resolved from the workspace root, not from `root`: Vite
        resolves a relative outDir against the project root, which

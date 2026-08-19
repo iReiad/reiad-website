@@ -19,8 +19,9 @@ import { listEnquiries, saveEnquiry } from "./api.ts";
 import { useRows } from "./useRows.ts";
 import { isNew } from "./seen.ts";
 import { toast } from "./site.ts";
+import { Button, ButtonLink } from "../../next/components/ui/button.tsx";
 import {
-  Actions, Broken, Btn, Count, Empty, Filters, Loading, Pill, SearchBox, when,
+  Actions, Broken, Count, Empty, Filters, Loading, Pill, SearchBox, when,
 } from "./bits.tsx";
 
 const FILTERS = [
@@ -67,16 +68,16 @@ function Card({ item, onDone }: { item: Enquiry; onDone: () => void }) {
       />
 
       <Actions>
-        <a className="btn btn-solid" href={`mailto:${item.email}?subject=${subject}`}>
+        <ButtonLink kind="solid" href={`mailto:${item.email}?subject=${subject}`}>
           Reply by email
-        </a>
+        </ButtonLink>
         {item.status !== "replied"
-          ? <Btn disabled={busy} onClick={() => save("replied")}>Mark replied</Btn> : null}
+          ? <Button disabled={busy} onClick={() => save("replied")}>Mark replied</Button> : null}
         {item.status !== "closed"
-          ? <Btn disabled={busy} onClick={() => save("closed")}>Close</Btn> : null}
+          ? <Button disabled={busy} onClick={() => save("closed")}>Close</Button> : null}
         {item.status !== "new"
-          ? <Btn disabled={busy} onClick={() => save("new")}>Reopen</Btn> : null}
-        <Btn disabled={busy} onClick={() => save(item.status)}>Save notes</Btn>
+          ? <Button disabled={busy} onClick={() => save("new")}>Reopen</Button> : null}
+        <Button disabled={busy} onClick={() => save(item.status)}>Save notes</Button>
       </Actions>
     </div>
   );
@@ -112,7 +113,8 @@ export function Enquiries() {
   return (
     <>
       <Filters options={FILTERS} active={status} counts={counts} onPick={setStatus} />
-      <SearchBox placeholder="Search names, addresses, messages" onSearch={setQ} />
+      <SearchBox id="search-enquiries"
+                 placeholder="Search names, addresses, messages" onSearch={setQ} />
 
       {loading ? <Loading /> : failed ? <Broken what="enquiries" /> : (
         <>

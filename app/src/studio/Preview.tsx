@@ -20,6 +20,8 @@
    ============================================================ */
 
 import { useMemo } from "react";
+import { Eyebrow } from "../../../next/components/ui/label.tsx";
+import { Chip } from "../bits.tsx";
 import { findSection } from "/content.js";
 import { coverFor, type Meta } from "./piece.ts";
 
@@ -44,7 +46,7 @@ const clip = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…`
 function ArticleView({ m }: { m: Meta }) {
   return (
     <article className="article">
-      <span className="eyebrow mono">{m.tag}</span>
+      <Eyebrow>{m.tag}</Eyebrow>
       <h1>{m.title}</h1>
       {m.dek ? <p className="lede">{m.dek}</p> : null}
       <p className="byline mono">
@@ -170,32 +172,28 @@ export function Preview({
       <div className="pane-bar preview-controls">
         <div className="chip-row seg" role="group" aria-label="What to preview">
           {(["article", "card", "share"] as ViewMode[]).map((mode) => (
-            <button key={mode} type="button" className="chip"
-                    data-view={mode}
-                    aria-pressed={view.mode === mode}
-                    onClick={() => setView({ mode })}>
+            <Chip key={mode} data-view={mode} pressed={view.mode === mode}
+                  onClick={() => setView({ mode })}>
               {mode === "article" ? "Article" : mode === "card" ? "Card" : "Share"}
-            </button>
+            </Chip>
           ))}
         </div>
         <div className="chip-row seg" role="group" aria-label="Preview width">
           {(["phone", "tablet", "full"] as ViewWidth[]).map((width) => (
-            <button key={width} type="button" className="chip"
-                    data-width={width}
-                    aria-pressed={view.width === width}
-                    // Width is meaningless for the card and share views.
-                    disabled={view.mode !== "article"}
-                    onClick={() => setView({ width })}>
+            <Chip key={width} data-width={width} pressed={view.width === width}
+                  // Width is meaningless for the card and share views.
+                  disabled={view.mode !== "article"}
+                  onClick={() => setView({ width })}>
               {width === "phone" ? "Phone" : width === "tablet" ? "Tablet" : "Full"}
-            </button>
+            </Chip>
           ))}
         </div>
-        <button
-          type="button" className="chip" id="preview-theme" aria-label="Preview theme"
+        <Chip
+          id="preview-theme" aria-label="Preview theme"
           onClick={() => setView({
             theme: THEME_CYCLE[(THEME_CYCLE.indexOf(view.theme) + 1) % THEME_CYCLE.length],
           })}
-        >Theme: {view.theme}</button>
+        >Theme: {view.theme}</Chip>
       </div>
 
       {/* The site's theme switch is :root[data-theme], so it cannot

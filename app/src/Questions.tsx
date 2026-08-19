@@ -29,8 +29,9 @@ import { listQuestions, answerQuestion, deleteQuestion } from "./api.ts";
 import { useRows } from "./useRows.ts";
 import { isNew } from "./seen.ts";
 import { toast } from "./site.ts";
+import { Button } from "../../next/components/ui/button.tsx";
 import {
-  Actions, Broken, Btn, Count, Empty, Filters, Loading, Pill, SearchBox, when,
+  Actions, Broken, Count, Empty, Filters, Loading, Pill, SearchBox, when,
 } from "./bits.tsx";
 
 const FILTERS = [
@@ -99,15 +100,19 @@ function Card({ q, onDone }: { q: Question; onDone: () => void }) {
           nothing here is a one-way door. */}
       <Actions>
         {q.status !== "published"
-          ? <Btn solid disabled={busy} onClick={() => act("published")}>Answer &amp; publish</Btn>
-          : <Btn disabled={busy} onClick={() => act("pending")}>Unpublish</Btn>}
+          ? (
+            <Button kind="solid" disabled={busy} onClick={() => act("published")}>
+              Answer &amp; publish
+            </Button>
+          )
+          : <Button disabled={busy} onClick={() => act("pending")}>Unpublish</Button>}
         {q.status !== "archived"
-          ? <Btn disabled={busy} onClick={() => act("archived")}>Archive</Btn> : null}
+          ? <Button disabled={busy} onClick={() => act("archived")}>Archive</Button> : null}
         {q.status !== "spam"
-          ? <Btn disabled={busy} onClick={() => act("spam")}>Spam</Btn> : null}
+          ? <Button disabled={busy} onClick={() => act("spam")}>Spam</Button> : null}
         {q.status !== "pending"
-          ? <Btn disabled={busy} onClick={() => act("pending")}>Back to waiting</Btn> : null}
-        <Btn disabled={busy} onClick={remove}>Delete</Btn>
+          ? <Button disabled={busy} onClick={() => act("pending")}>Back to waiting</Button> : null}
+        <Button disabled={busy} onClick={remove}>Delete</Button>
       </Actions>
     </div>
   );
@@ -128,7 +133,8 @@ export function Questions() {
   return (
     <>
       <Filters options={FILTERS} active={status} counts={counts} onPick={setStatus} />
-      <SearchBox placeholder="Search questions, names, articles" onSearch={setQ} />
+      <SearchBox id="search-questions"
+                 placeholder="Search questions, names, articles" onSearch={setQ} />
 
       {loading ? <Loading /> : failed ? <Broken what="the queue" /> : (
         <>

@@ -23,6 +23,7 @@
 
 import { useEffect, useRef } from "react";
 import { createEditor, type EditorHandle } from "/editor.js";
+import { Chip } from "../bits.tsx";
 import { toast } from "../site.ts";
 
 const PLACEHOLDER = `Paste your article here (Ctrl+V).
@@ -123,39 +124,34 @@ export function Editor({
         {TOOLS.map((row) => (
           <span className="tool-group" role="group" aria-label={row.group} key={row.group}>
             {row.items.map(([cmd, value, label, title]) => (
-              <button
-                className="chip"
-                type="button"
+              <Chip
                 key={`${cmd}-${value}-${label}`}
                 title={title}
                 onClick={() => ed?.command(cmd, value || null)}
               >
                 {label === "B" ? <b>B</b> : label === "I" ? <i>I</i> : label}
-              </button>
+              </Chip>
             ))}
           </span>
         ))}
 
         <span className="tool-group" role="group" aria-label="Insert">
-          <button className="chip" type="button" title="Add a link (Ctrl+K)"
-                  onClick={() => ed?.link()}>Link</button>
-          <button className="chip" type="button" id="add-photo" title="Add a photo"
-                  onClick={() => photoInput.current?.click()}>＋ Photo</button>
+          <Chip title="Add a link (Ctrl+K)" onClick={() => ed?.link()}>Link</Chip>
+          <Chip id="add-photo" title="Add a photo"
+                onClick={() => photoInput.current?.click()}>＋ Photo</Chip>
         </span>
 
         <span className="tool-group" role="group" aria-label="Blocks">
           {BLOCK_BUTTONS.map((key) => {
             const block = ed?.byKey(key);
             return (
-              <button
-                className="chip"
-                type="button"
+              <Chip
                 key={key}
                 title={block ? `${block.label}: ${block.hint}` : undefined}
                 onClick={() => { if (block) { ed?.focus(); ed?.run(block); } }}
               >
                 {block?.label ?? key}
-              </button>
+              </Chip>
             );
           })}
         </span>
