@@ -92,7 +92,12 @@ export function render(article, origin) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="${FONTS}" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css">
+  <!-- /fallback.css, not /styles.css: nothing has served the latter
+       since the stylesheet became Next's and got a content hash, and
+       a response a Worker builds cannot know that hash. This renderer
+       only answers when the service binding is gone, which is exactly
+       when an unstyled page is least welcome. -->
+  <link rel="stylesheet" href="/fallback.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
