@@ -28,6 +28,7 @@ import { useCallback, useEffect, useSyncExternalStore } from "react";
 import {
   getLast, markRead, readSet, setLast, subscribe, toggleRead, type Bookmark,
 } from "../lib/progress";
+import { GoCard } from "./deck";
 import { Icon } from "./icons";
 
 /** The lessons of a school, as the page already knows them. */
@@ -220,12 +221,18 @@ export function Resume({
     return words.fresh ? <p className="resume-done">{words.fresh}</p> : null;
   }
 
+  /* `<GoCard>` rather than the five class names it writes.
+
+     This was the deck's own private vocabulary copied out by
+     hand: `.card`, `data-kind="go"`, `.card-chip`, `.card-title`
+     and `.card-go`, all correct, none of them imported. It is the
+     one call site on the site that could go on rendering
+     correctly while the component it copies changed underneath
+     it, which is the definition of the drift the library exists
+     to stop. The DOM is identical. */
   return (
-    <a className="card resume" data-kind="go" href={next.url}>
-      <span className="card-chip">{words.label}</span>
-      <h3 className="card-title">{next.title}</h3>
-      <span className="card-go">{words.go}</span>
-    </a>
+    <GoCard className="resume" href={next.url}
+            chip={words.label} title={next.title} go={words.go} />
   );
 }
 

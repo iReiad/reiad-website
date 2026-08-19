@@ -81,13 +81,13 @@ const { renderToString, markup } = await load<Server>(`
   import { createElement as h } from "react";
   import { TopicFilter } from "./components/topic-filter";
   import { SubscribeBox } from "./components/subscribe";
-  import { SoonCard } from "./components/cards";
+  import { SoonCard } from "./components/deck";
   export { renderToString } from "react-dom/server.browser";
   export const markup = (data) => {
     const { pieces, soon } = JSON.parse(data);
     return h("div", null,
       h("section", null, h(TopicFilter, { pieces },
-        soon.map((s) => h(SoonCard, { key: s.title, title: s.title, dek: s.dek })))),
+        soon.map((s) => h(SoonCard, { key: s.title, title: s.title, dek: s.dek, soon: "Coming soon" })))),
       h("section", null, h(SubscribeBox, null)));
   };
 `);
@@ -105,12 +105,12 @@ const fixture = await open({
     import { hydrateRoot } from "react-dom/client";
     import { TopicFilter } from "./components/topic-filter";
     import { SubscribeBox } from "./components/subscribe";
-    import { SoonCard } from "./components/cards";
+    import { SoonCard } from "./components/deck";
     const { pieces, soon } = JSON.parse(document.getElementById("fixture").textContent);
     hydrateRoot(document.getElementById("root"),
       h("div", null,
         h("section", null, h(TopicFilter, { pieces },
-          soon.map((s) => h(SoonCard, { key: s.title, title: s.title, dek: s.dek })))),
+          soon.map((s) => h(SoonCard, { key: s.title, title: s.title, dek: s.dek, soon: "Coming soon" })))),
         h("section", null, h(SubscribeBox, null))));
   `,
   files: {
@@ -184,7 +184,13 @@ console.log("the Insights hub's own behaviour");
     served.includes("Equities · 3") && served.includes("Beginner · 2")
     && served.includes("Banks · 1") && served.includes("Bonds · 1"), served);
   ok("every card ships visible", !/class="cell sample-card"[^>]*hidden/.test(served));
-  ok("the teasers are in the grid too", served.includes("cell sample-card placeholder"));
+  /* The deck's soon card, which is what the hub renders. It was
+     `cell sample-card placeholder` here, the markup of a SECOND
+     `SoonCard` that lived in `cards.tsx` beside the real one, and
+     this line is what would have caught the two had it been
+     pointed at the component the page uses rather than at a
+     string. */
+  ok("the teasers are in the grid too", served.includes('data-kind="soon"'), served.slice(0, 200));
   ok("the subscribe form ships hidden, so a site with no database shows "
     + "the RSS line alone",
     /<form[^>]*id="subscribe-form"[^>]*hidden/.test(served), served);
@@ -237,8 +243,13 @@ console.log("the Insights hub's own behaviour");
     (await shown()).join(", "));
   ok("a piece filed under no topic at all is hidden by a topic",
     !(await shown()).includes("A piece with no topics"));
+  /* `[data-kind="soon"]` rather than `.sample-card.placeholder`:
+     there were two `SoonCard` exports, this fixture imported the
+     one in `cards.tsx` and the hub rendered the one in
+     `deck.tsx`, so the selector here described a card the site
+     does not draw. */
   ok("and a promised piece is never hidden, because it carries no topic either",
-    await page.$eval(".sample-card.placeholder", (n: Element) => !(n as HTMLElement).hidden));
+    await page.$eval('[data-kind="soon"]', (n: Element) => !(n as HTMLElement).hidden));
 
   await press("Bonds");
   ok("a piece filed under two topics comes back under the second one",

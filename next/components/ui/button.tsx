@@ -35,6 +35,22 @@
    `type="button"` by default, because a bare <button> inside a
    form submits it, and that has been the cause of a page
    reloading itself on every design system that forgot.
+
+   ---- a button that stays down ----
+
+   `pressed` was the hole this file left, and it is the reason
+   there are sixteen button shapes in the stylesheet rather than
+   one. A control that has an on state could not be a `<Button>`,
+   so every one of them invented a class: `.scenario` on the
+   calculators, `.toggle` beside it, `.chip` on the filters,
+   `.tick-btn`, `.keep-btn`, `.pref-chip`, `button.react`. Seven
+   vocabularies for one idea, each with its own padding and its
+   own idea of what "on" looks like.
+
+   It writes `aria-pressed`, and `@layer components` styles
+   `.btn[aria-pressed="true"]`, so the state a screen reader
+   announces and the state a reader sees are the same attribute.
+   Two ways of saying it is how they come apart.
    ============================================================ */
 
 import type { ButtonHTMLAttributes, ReactNode } from "react";
@@ -83,17 +99,27 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** This button stands on an accent fill: inside a `<Band>`, or
       anything else whose ground is `--accent-strong`. */
   onAccent?: boolean;
+  /** A button that stays down: a filter, a mode, a setting.
+      Writes `aria-pressed`, which is both what a screen reader
+      announces and what the stylesheet draws, so the two cannot
+      disagree.
+
+      Leave it undefined for an ordinary button. `aria-pressed`
+      on something that is not a toggle tells a reader it has a
+      state it does not have. */
+  pressed?: boolean;
   children: ReactNode;
 }
 
 export function Button({
   kind = "ghost", size = "md", block = false, onAccent = false,
-  className, type = "button", children, ...rest
+  pressed, className, type = "button", children, ...rest
 }: ButtonProps) {
   return (
     <button
       type={type}
       className={classes(kind, size, block, onAccent, className)}
+      aria-pressed={pressed}
       {...rest}
     >
       {children}

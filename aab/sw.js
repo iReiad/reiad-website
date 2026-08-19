@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v147: `/fallback.css`, and `/desk/app.js` and `/studio/app.js`
+        with it. `<Button>` gained a `pressed` state and
+        `.link-btn` gained the rule it had been promised and never
+        given, so the two pages that are files and the two React
+        bundles all carry it.
+
    v146: `/fallback.css`. The trail in the bar gained an arrow
         that opens what else is at that level, and the two pages
         that are files link the fallback stylesheet by name. A
@@ -1493,7 +1499,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v146";
+const VERSION = "v147";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

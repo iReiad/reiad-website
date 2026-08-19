@@ -35,6 +35,10 @@ import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { nextOwns } from "../worker.js";
+/* The one table the rail, the footer and /skills are drawn from.
+   Read here so that a link in the site's own chrome is held to
+   the same standard as a link inside a page. */
+import { NAV } from "../next/lib/nav.ts";
 /* The four ladders, for the practice-book check at the end: a
    stage has a book only if it declares one, which no route
    pattern can tell. */
@@ -518,6 +522,48 @@ for (const url of [...targets].sort()) {
     console.error(`        ${rule.from} says this page was a directory, so ${path} was`);
     console.error("        its canonical address and is what a bookmark or a crawler holds.");
     console.error(`        ${got.chain.join(" \u2192 ")}`);
+  }
+}
+
+/* ============================================================
+   EVERY LINK IN THE SITE'S OWN CHROME RESOLVES.
+
+   `lib/nav.ts` is the one table the rail, the footer and /skills
+   are all drawn from, so an address in it is on all 251 pages.
+   Nothing checked it. This file walks `aab/` for links, and the
+   chrome stopped being a file when the rail became a component,
+   so the most-linked addresses on the site were the least
+   checked ones.
+
+   `/skills/courses` is what that cost. `run_worker_first` in
+   wrangler.toml carried `/skills/courses/*` and not the bare
+   path, and a `*` matches what comes AFTER the slash: the hub's
+   own address was never forwarded to the Worker, the asset
+   router answered, there is no file, and the entry in the rail
+   pointed at this site's 404 page. `/skills/courses/` made it
+   worse by 308ing into the same place, while
+   `/skills/courses/index.html` and every course under it
+   answered perfectly, which is why it read as "the course is
+   gone" rather than as a routing bug.
+
+   Fragments are dropped before the walk: `/skills#reviews` is
+   the `/skills` page and the fragment is a place on it.
+   ============================================================ */
+{
+  const seen = new Set<string>();
+  for (const group of NAV) {
+    for (const item of group.items) {
+      const href = String(item.href ?? "").split("#")[0];
+      if (!href.startsWith("/") || seen.has(href)) continue;
+      seen.add(href);
+      const got = trace(href);
+      if (got.status === "ok") continue;
+      failures++;
+      console.error(`NAV      ${href} (${item.label}) does not resolve: ${got.status}`);
+      console.error("        It is in lib/nav.ts, so it is a link in the rail, the footer");
+      console.error("        and /skills, which is every page of this site.");
+      console.error(`        ${got.chain.join(" \u2192 ")}`);
+    }
   }
 }
 
