@@ -43,10 +43,18 @@ import { Button } from "./ui/button";
 
     `<stufe slug>/<name>`, and the name carries the day number, so
     "tag-1-tausche-1" is a name and not a description. The builder
-    made this string and so does this. The builder is gone with
-    the generated books (#129), so there is one maker of the string
-    again and nothing to hold to anything: `check-workbook.mjs` was
-    named here and never existed. */
+    made this string and so does this, and what holds them together
+    is `aab/schools/workbook.test.mjs`: it renders this component
+    into a real DOM, types into a box, and asserts the writing came
+    back under `area.dataset.schrift` and under the school's own
+    outer key. That is the guarantee, and it is why a rename here
+    is a failing test rather than a learner's lost writing.
+
+    It said `check-workbook.mjs` until 19 August 2026, which has
+    never existed under any extension. The check was real and the
+    pointer named the wrong file, which is the worse of the two
+    ways to be wrong: the next person follows it, finds nothing,
+    and concludes there is no guarantee. */
 export const schriftKey = (slug: string, name: string): string => `${slug}/${name}`;
 
 /** How many of their own sentences a learner writes per day. Eight

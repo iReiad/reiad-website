@@ -82,14 +82,19 @@ const GONE: Gone[] = [
   { file: "next/postcss.config.mjs", name: "scripts/build-styles.mjs",
     why: "says why this config exists and that script does not" },
 
-  /* Never existed, and two components promised it. Both say so
-     now rather than promising it. */
+  /* Never existed under any extension, and two components named
+     it. Each of these now names the check that really does the job
+     and says what the old name was, which is the point: one of the
+     two guarantees was real all along and the pointer was wrong,
+     which is the worse way to be wrong. */
   { file: "MIGRATION.md", name: "check-workbook.mjs",
-    why: "the record of a check two comments promised and nobody wrote" },
+    why: "the record of a name two comments carried and nothing answered to" },
   { file: "next/lib/workbook.ts", name: "check-workbook.mjs",
-    why: "names the check that does not exist, so nobody assumes it does" },
+    why: "names the old pointer beside check-next.ts, which holds it now" },
   { file: "next/components/workbook.tsx", name: "check-workbook.mjs",
-    why: "the same" },
+    why: "names the old pointer beside workbook.test.mjs, which held it all along" },
+  { file: "scripts/check-next.ts", name: "check-workbook.mjs",
+    why: "the check itself, saying which name used to be given for it" },
 
   /* The rule tripping over its own example, which is the right
      outcome and is left as one: CLAUDE.md explains why GONE is

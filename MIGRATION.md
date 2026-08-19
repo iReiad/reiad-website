@@ -203,13 +203,26 @@ Twelve were a rename nobody followed, `check-css.mjs` in ten places
 among them, and `SETUP.md` had `node aab/check-routes.mjs`, wrong
 in the directory AND the extension, as an instruction to run.
 
-Two were worse than a stale pointer. `next/lib/workbook.ts` said
-"`check-workbook.mjs` asserts the two against each other, so a
-declaration that drifts fails a check rather than a reader", and
-`next/components/workbook.tsx` said it "holds the two to being
-identical". There has never been such a file. A comment promising a
-guarantee nobody wrote is worse than no comment, because the next
-person reads it and stops looking. Both say what is true now.
+Two were worse than a stale pointer, and they were worse in
+different ways. `next/lib/workbook.ts` and
+`next/components/workbook.tsx` both named a `check-workbook.mjs`
+that has never existed under any extension. Following each one up
+gave opposite answers:
+
+- the component's `schriftKey()` **was** held, all along, by
+  `aab/schools/workbook.test.mjs`, which renders the real
+  component into a DOM, types into a box and asserts the writing
+  came back under `area.dataset.schrift`. The guarantee was real
+  and the pointer named the wrong file, which is the worse of the
+  two: the next person follows it, finds nothing, and concludes
+  there is no guarantee.
+- `dayCount()` was **not** held. `curriculum.js` declares
+  `workbook.days` because the hub draws a progress bar from it and
+  must not pull five thousand lines of days down to count them,
+  and nothing compared the declaration to the days. That is a
+  learner told they are on day 30 of 60 in a book that has 90.
+  `check-next.ts` holds it now, as the third copy inside `next/`
+  that it watches.
 
 Five are deliberately left, and the reason is the service worker:
 `aab/app.js`, `aab/content.js`, the two `curriculum.js` modules and
