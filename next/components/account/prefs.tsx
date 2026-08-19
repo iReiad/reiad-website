@@ -97,7 +97,7 @@ export function Preferences() {
           rows: [
             { key: "glass", label: "Finish", options: m.GLASSES },
             { key: "blur", label: "Blur", options: m.BLURS },
-            { key: "veil", label: "Tint", options: m.VEILS },
+            { key: "veil", label: "Transparency", options: m.VEILS },
           ],
         },
       ]);

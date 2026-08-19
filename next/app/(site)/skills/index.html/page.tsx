@@ -100,7 +100,16 @@ export default function SkillsPage() {
               ) : (
                 <GoCard
                   key={skill.href} href={skill.href}
-                  accent={skill.key === "money" ? "var(--gold)" : "var(--green)"}
+                  /* The school's own colour, out of `lib/nav.ts`,
+                     which is where every other place on this site
+                     reads it: the rail, the footer and the page a
+                     card takes you to. This said gold for money and
+                     green for everything else, so German, Qur'anic
+                     Arabic, English, Cooking and Travel all lost
+                     the blue, teal, violet, rose and plum the one
+                     table gives them, on the page whose whole job
+                     is to show the six side by side. */
+                  accent={skill.accent}
                   icon={skill.icon} chip={skill.kind} lang="bn"
                   title={skill.sub ?? skill.label} dek={skill.blurb}
                   go={skill.kind === "কোর্স" ? "কোর্সটা খুলুন" : "লেখাগুলো দেখুন"}
