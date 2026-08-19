@@ -30,7 +30,6 @@ import {
 } from "/content.js";
 import { countView } from "/api.js";
 import { allPieces, pieceHref } from "/pieces.js";
-import { initCrumbs } from "/crumbs.js";
 import { initAudience, audienceBoost } from "/audience.js";
 import { initTilt } from "/tilt.js";
 import { initStreak } from "/streak.js";
@@ -584,7 +583,6 @@ function initDynamic() {
 /* ---------- go ---------- */
 initTheme();
 initAudience();
-initCrumbs();
 initPalette();
 initShortcuts();
 initCounts();

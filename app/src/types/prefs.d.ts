@@ -10,6 +10,10 @@ export interface PrefOption {
     readonly note?: string;
     readonly size?: string;
     readonly ch?: string;
+    /** The multiplier on every blur radius. */
+    readonly amount?: string;
+    /** The alpha of the tint over the blur. */
+    readonly alpha?: string;
 }
 export declare const SCALES: readonly [{
     readonly id: "small";
@@ -62,15 +66,66 @@ export declare const LANGS: readonly [{
     readonly label: "English";
     readonly note: "the calculators open in English";
 }];
+export declare const GLASSES: readonly [{
+    readonly id: "frost";
+    readonly label: "Frost";
+    readonly note: "cold, and you see a long way through";
+}, {
+    readonly id: "paper";
+    readonly label: "Paper";
+    readonly note: "the site's own weave, held closer";
+}, {
+    readonly id: "plain";
+    readonly label: "Plain";
+    readonly note: "no blur at all, solid grounds";
+}];
+export declare const BLURS: readonly [{
+    readonly id: "soft";
+    readonly label: "Soft";
+    readonly note: "barely there";
+    readonly amount: "0.55";
+}, {
+    readonly id: "normal";
+    readonly label: "Normal";
+    readonly note: "what this site has always been";
+    readonly amount: "1";
+}, {
+    readonly id: "deep";
+    readonly label: "Deep";
+    readonly note: "properly frosted";
+    readonly amount: "1.7";
+}];
+export declare const VEILS: readonly [{
+    readonly id: "clear";
+    readonly label: "Clear";
+    readonly note: "the page shows through";
+    readonly alpha: "0.54";
+}, {
+    readonly id: "normal";
+    readonly label: "Normal";
+    readonly note: "what this site has always been";
+    readonly alpha: "0.72";
+}, {
+    readonly id: "dense";
+    readonly label: "Dense";
+    readonly note: "quieter behind the words";
+    readonly alpha: "0.9";
+}];
 export type Scale = (typeof SCALES)[number]["id"];
 export type Measure = (typeof MEASURES)[number]["id"];
 export type Theme = (typeof THEMES)[number]["id"];
 export type Lang = (typeof LANGS)[number]["id"];
+export type Glass = (typeof GLASSES)[number]["id"];
+export type Blur = (typeof BLURS)[number]["id"];
+export type Veil = (typeof VEILS)[number]["id"];
 export interface Prefs {
     text: Scale;
     measure: Measure;
     theme: Theme;
     lang: Lang;
+    glass: Glass;
+    blur: Blur;
+    veil: Veil;
 }
 /** What this device holds, with anything unrecognised replaced.
 

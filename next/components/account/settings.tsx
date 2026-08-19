@@ -59,7 +59,7 @@ const Question = ({ ask, why, children }: {
   children: ReactNode;
 }) => (
   <fieldset className="m-0 grid gap-[9px] border-0 p-0">
-    <legend className="p-0 font-serif text-[1.04rem] text-ink">{ask}</legend>
+    <legend className="p-0 font-read text-[1.04rem] text-ink">{ask}</legend>
     <Why>{why}</Why>
     {children}
   </fieldset>

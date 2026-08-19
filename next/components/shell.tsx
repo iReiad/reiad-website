@@ -42,6 +42,9 @@ import { TopBar } from "./topbar";
 import { NavTree } from "./nav-tree";
 import { SiteFooter } from "./footer";
 import { accentStyle } from "../lib/nav";
+import { trailFor, trailJsonLd } from "../lib/crumbs";
+import { siteOrigin } from "../lib/article";
+import { Crumbs, type Crumb } from "./ui/crumbs";
 
 /* Before the first paint, and therefore inline and blocking.
 
@@ -81,8 +84,18 @@ const BOOT = `(function(){var d=document.documentElement;try{`
   + `var s={small:"0.94",normal:"1",large:"1.12"}[p.text];`
   + `if(s)d.style.setProperty("--read-scale",s);`
   + `var m={narrow:"56ch",normal:"66ch",wide:"78ch"}[p.measure];`
-  + `if(m)d.style.setProperty("--read-measure",m)}catch(e){`
-  + `d.setAttribute("data-rail","open")}})()`;
+  + `if(m)d.style.setProperty("--read-measure",m);`
+  /* The glass. Three tables, and they are the ones in
+     `aab/src/prefs.ts`: GLASSES, BLURS and VEILS. A surface that
+     arrived flat and frosted a frame later would be worse than
+     one that never blurred, so this cannot wait for a module. */
+  + `d.setAttribute("data-glass",`
+  + `{frost:1,paper:1,plain:1}[p.glass]?p.glass:"frost");`
+  + `var b={soft:"0.55",normal:"1",deep:"1.7"}[p.blur];`
+  + `if(b)d.style.setProperty("--glass-amount",b);`
+  + `var v={clear:"0.54",normal:"0.72",dense:"0.9"}[p.veil];`
+  + `if(v)d.style.setProperty("--glass-veil",v)}catch(e){`
+  + `d.setAttribute("data-rail","open");d.setAttribute("data-glass","frost")}})()`;
 
 /** Which nav item is marked as where you are.
 
@@ -143,6 +156,7 @@ export function SiteShell({
   footer = LOOK.insights.footer,
   footerName,
   current = null,
+  crumbs,
   fixed = false,
   beforeMain, scripts, children,
 }: {
@@ -158,6 +172,11 @@ export function SiteShell({
      Library", which is its own and is kept. */
   footerName?: string;
   current?: Current;
+  /** The trail in the bar, for a page deeper than its section: a
+      stage, a lesson, a case study. Left out, the section's own
+      trail is built from `lib/nav.ts`, which is right for every
+      page that IS a section. */
+  crumbs?: Crumb[];
   /** One page is not a scrolling column: the front door fills the
       viewport exactly and has no footer under it, because there is
       nothing under it to scroll to. Everything else is a page. */
@@ -172,6 +191,9 @@ export function SiteShell({
      any of it. Without this React treats an attribute it did not
      render as a mismatch and takes it off, which is a reader's
      theme being thrown away between the paint and the hydration. */
+  const trail = crumbs ?? trailFor(current);
+  const ld = trailJsonLd(trail, siteOrigin());
+
   return (
     <html
       lang={lang}
@@ -203,8 +225,29 @@ export function SiteShell({
         <Sidebar current={current} />
         <DrawerBackdrop />
 
+        {/* The trail again, for a machine. It is what `crumbs.js`
+            emitted beside the row it drew, and the one thing that
+            file did which the row itself did not, so it moves here
+            rather than being lost with it. `dangerouslySetInnerHTML`
+            because React drops the children of a `<script>`, which
+            for this one tag is the ordinary way. */}
+        {ld ? (
+          <script type="application/ld+json"
+                  dangerouslySetInnerHTML={{ __html: ld }} />
+        ) : null}
+
         <div className="shell-col">
-          <TopBar tree={<NavTree current={current} />} />
+          <TopBar
+            tree={<NavTree current={current} />}
+            /* `slice(1)` because the mark to its left IS the home
+               crumb, and a bar reading "Reiad's Library > Home >
+               Skills" says the first thing twice. The home crumb
+               stays in the trail rather than being left out of it,
+               so that a route reading the same array for anything
+               else gets a complete one. */
+            crumbs={<Crumbs trail={trail.slice(1)}
+                            label="পথ" className="crumbs-bar" min={1} />}
+          />
           {beforeMain}
           {children}
           {fixed ? null : <SiteFooter note={footer} name={footerName} />}

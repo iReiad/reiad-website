@@ -38,6 +38,7 @@ import { SiteShell } from "../../../components/shell";
 import { SiteScripts } from "../../../components/scripts";
 import { getArticle } from "../../../lib/article";
 import { LOOKS } from "../../../lib/school";
+import { trailFor } from "../../../lib/crumbs";
 
 export default async function ReadingLayout({
   children, params,
@@ -53,6 +54,8 @@ export default async function ReadingLayout({
   if (!article) notFound();
 
   const look = lookFor(article.section);
+  const current = article.section === "insights" ? "insights"
+    : article.section === "cooking" ? "cooking" : "travel";
 
   return (
     <SiteShell
@@ -60,8 +63,11 @@ export default async function ReadingLayout({
       bodyClass={look.bodyClass}
       skip={look.skip}
       footer={look.footer}
-      current={article.section === "insights" ? "insights"
-        : article.section === "cooking" ? "cooking" : "travel"}
+      current={current}
+      /* The piece names itself as the last crumb. The row is
+         already read here, so this costs nothing, and it is the
+         one level `lib/nav.ts` cannot know: a piece is a row. */
+      crumbs={trailFor(current, [{ label: article.title }])}
       beforeMain={<div className="read-progress" aria-hidden="true" />}
       scripts={<SiteScripts srcs={[{ src: "/read-aloud.js", classic: true }]} />}
     >

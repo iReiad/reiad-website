@@ -51,15 +51,22 @@ export interface Crumb {
   label: ReactNode;
 }
 
-export function Crumbs({ trail, label = "Breadcrumb" }: {
+export function Crumbs({ trail, label = "Breadcrumb", className, min = 2 }: {
   trail: Crumb[];
   /** "পথ" on a Bangla page. */
   label?: string;
+  className?: string;
+  /** How short a trail is still worth drawing. Two in a row of
+      its own, where one crumb is the page's own name and says
+      nothing the heading under it does not. One in the top bar,
+      where the mark to its left is the home crumb and the trail
+      picks up after it. */
+  min?: number;
 }) {
-  if (trail.length < 2) return null;   // a trail of one is noise
+  if (trail.length < min) return null;
 
   return (
-    <nav className="crumbs" aria-label={label}>
+    <nav className={["crumbs", className].filter(Boolean).join(" ")} aria-label={label}>
       <ol>
         {trail.map((c, i) => {
           const last = i === trail.length - 1;

@@ -204,7 +204,7 @@ export default function ToolsPage() {
                 <p className="tool-note">
                   Assumes the return arrives evenly and gets reinvested, and that you
               never miss a month. Real returns arrive lumpy: the shape holds, the
-              exact number won't. 
+              exact number won't.{" "}
                   <a className="term" href="/money/terms/compounding.html">চক্রবৃদ্ধি কী?
                   </a>
                 </p>
@@ -325,10 +325,10 @@ export default function ToolsPage() {
               on the interest. Real products differ: purchase ceilings, quarterly
               versus maturity payment, and early-encashment penalties can outweigh
               the rate gap entirely. Confirm current rates with Bangladesh Bank
-              and your branch.
+              and your branch.{" "}
               
                   <a className="term" href="/money/terms/sanchayapatra.html">সঞ্চয়পত্র
-                  </a> ·
+                  </a> ·{" "}
               
                   <a className="term" href="/money/terms/fdr.html">এফডিআর
                   </a>
@@ -412,7 +412,7 @@ export default function ToolsPage() {
                 <p className="tool-note">
                   Real return uses the Fisher relation, (1 + return) ÷ (1 + inflation)
               − 1, not the subtraction people usually do, which flatters the
-              answer at high rates.
+              answer at high rates.{" "}
               
                   <a className="term" href="/money/terms/inflation.html">মূল্যস্ফীতি কী?
                   </a>
@@ -566,7 +566,7 @@ export default function ToolsPage() {
                 <p className="tool-note">
                   A stop-loss is a decision, not a guarantee: DSE circuit breakers and
               thin liquidity mean the price you get out at can be worse than the
-              one you planned. Size as though the stop might slip.
+              one you planned. Size as though the stop might slip.{" "}
               
                   <a className="term" href="/money/terms/risk-return.html">ঝুঁকি ও রিটার্ন
                   </a>

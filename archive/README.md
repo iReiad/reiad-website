@@ -48,6 +48,7 @@ what anybody is served.
 | `index.html` | a Next.js route at `/`, which its canonical link always named | 16 August 2026 |
 | `shells/*.html` | Next.js routes; Vite stopped emitting a page | 16 August 2026 |
 | `first-sync.js` | nothing: `aab/sync.js` no longer has a question to ask | 17 August 2026 |
+| `crumbs.js`, `crumbs.ts` | `next/lib/crumbs.ts`, out of `lib/nav.ts`, drawn in the top bar | 19 August 2026 |
 
 `work.html` and `services.html` were early placeholders that still
 carried template text ("[Your Name]", "hello@yourdomain.com"), kept

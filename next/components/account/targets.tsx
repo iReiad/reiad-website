@@ -229,7 +229,7 @@ function AddTarget({ onAdded }: { onAdded: () => Promise<void> }) {
                         [&>summary::-webkit-details-marker]:hidden">
       <summary className="flex min-h-[46px] cursor-pointer items-center gap-2
                           px-4 py-[13px] text-[0.92rem] text-green
-                          before:font-mono before:text-base before:content-['+']">
+                          before:font-code before:text-base before:content-['+']">
         Add a target
       </summary>
 

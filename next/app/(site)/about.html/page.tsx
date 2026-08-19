@@ -167,7 +167,7 @@ export default function AboutPage() {
               <div className="glance-item">
                 <span className="glance-k mono">Languages
                 </span>
-                <b>English · 
+                <b>English ·{" "}
                   <span className="bn-h">বাংলা
                   </span>
                 </b>
@@ -476,10 +476,10 @@ export default function AboutPage() {
               </div>
             </div>
             <p className="kit-note">
-              The formal CV is available on request: 
+              The formal CV is available on request:{" "}
               <a href="mailto:i@reiad.co.uk">email
-              </a>
-              or 
+              </a>{" "}
+              or{" "}
               <a href="https://www.linkedin.com/in/reiad" rel="noopener">LinkedIn
               </a>.
         
@@ -602,7 +602,7 @@ export default function AboutPage() {
                version: the differences worth knowing about show up in how the two
                behave under stress, not in headline average returns, and the sample
                of Shariah-compliant funds was too small to have proved otherwise.
-               The whole thing is on this site as an
+               The whole thing is on this site as an{" "}
                
                   <a href="/portfolio/dissertation.html">interactive case study
                   </a>,
@@ -612,11 +612,11 @@ export default function AboutPage() {
               <details className="faq">
                 <summary>Is he available for work?
                 </summary>
-                <p>Yes: financial modeling, data analysis and finance writing, freelance.
+                <p>Yes: financial modeling, data analysis and finance writing, freelance.{" "}
                
                   <a href="/portfolio.html">The portfolio page
                   </a> sets out what that
-               covers and how a project runs, and
+               covers and how a project runs, and{" "}
                
                   <a href="/contact.html">the contact form
                   </a> reaches him directly.
@@ -628,7 +628,7 @@ export default function AboutPage() {
                 <p>By hand for two years, and it is moving: the pages you are reading
                are becoming React components on Next.js, one route at a time, with
                the writing itself in a database rather than in files. The plan, the
-               reasoning and the things it has cost are in
+               reasoning and the things it has cost are in{" "}
                
                   <a href="https://github.com/iReiad/reiad-website">the repository
                   </a>,

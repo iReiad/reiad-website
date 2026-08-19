@@ -34,7 +34,7 @@ const INK: Record<string, string> = {
 /** One key: a mark, and the words for it. */
 export function Key({ series, children }: { series: Series; children: ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 font-mono text-t1
+    <span className="inline-flex items-center gap-1.5 font-code text-t1
       uppercase tracking-[0.06em] text-ink-soft">
       <i
         aria-hidden="true"

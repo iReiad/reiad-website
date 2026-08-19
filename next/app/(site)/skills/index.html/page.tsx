@@ -39,7 +39,7 @@ export const metadata: Metadata = pageMeta({
   path: "/skills/index.html",
   title: "দক্ষতা · Skills · Reiad's Library",
   description: "এই সাইটে যা যা শেখানো হয়, এক পাতায়: টাকা ও শেয়ার, জার্মান, কুরআনের আরবি, "
-    + "ইংরেজি, রান্না আর ভ্রমণ, সবটাই বাংলায় আর সবটাই ফ্রি।",
+    + "ইংরেজি, রান্না আর ভ্রমণ, সবটাই বাংলায়, আর শেখার সবকিছু ফ্রি।",
   ogTitle: "দক্ষতা · Skills",
   ogDescription: "টাকা ও শেয়ার, জার্মান, কুরআনের আরবি, ইংরেজি, রান্না আর ভ্রমণ, সবটাই বাংলায়।",
   card: "skills",
@@ -74,7 +74,7 @@ export default function SkillsPage() {
           <h1 className="bn-h">এই সাইটে যা যা শেখানো হয়।</h1>
           <p className="hub-lede" lang="bn">
             {bn(live.length)}টা খোলা আছে, বাকিটা হচ্ছে। প্রতিটার নিয়ম একই: ব্যাখ্যা বাংলায়,
-            কোনো লগইন নেই, কোনো দাম নেই, আর আপনার অগ্রগতি আপনার নিজের ব্রাউজারেই থাকে।
+            শেখার সবকিছু ফ্রি, আর আপনার অগ্রগতি জমা থাকে আপনার অ্যাকাউন্টে।
             যেটা এখনো আসেনি সেটাও নিচে আছে, কারণ কী আসছে জানা থাকলে অপেক্ষা করা যায়।
           </p>
         </header>
@@ -173,7 +173,7 @@ export default function SkillsPage() {
         <div className="hub-pledge" lang="bn">
           <b className="bn-h">শিক্ষা বিনামূল্যে হওয়া উচিত।</b>
           <span>
-            এখানকার প্রতিটা স্কুল ফ্রি থাকবে, চিরকাল। যেগুলো এখনো লেখা হয়নি, সেগুলোও ফ্রিই আসবে।
+            এখানকার স্কুলগুলোর পাঠ পড়তে কোনো টাকা লাগে না।
           </span>
           <span className="pledge-en" lang="en">Education should be free</span>
         </div>

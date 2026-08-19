@@ -87,7 +87,7 @@ export const LOOK: Record<string, Look> = {
       + "স্বাদ অনুযায়ী মাপ আর সময় একটু এদিক-ওদিক হবেই।",
     back: { url: HUB.cooking, kicker: "রান্নাঘর", label: "সব লেখা এক জায়গায় →" },
     side: { url: "/skills/index.html", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
-    footer: "রান্নাঘরের লেখাগুলো বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া।",
+    footer: "রান্নাঘরের লেখাগুলো বিনামূল্যে, বাংলায়।",
   },
   travel: {
     mount: "/travel/",
@@ -100,7 +100,7 @@ export const LOOK: Record<string, Look> = {
       + "আগে অফিসিয়াল গাইডেন্স একবার দেখে নিন।",
     back: { url: HUB.travel, kicker: "ভ্রমণ", label: "সব লেখা এক জায়গায় →" },
     side: { url: "/skills/index.html", kicker: "দক্ষতা", label: "আর কী কী শেখানো হয় →" },
-    footer: "ভ্রমণের লেখাগুলো বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া।",
+    footer: "ভ্রমণের লেখাগুলো বিনামূল্যে, বাংলায়।",
   },
 };
 

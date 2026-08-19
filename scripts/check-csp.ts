@@ -132,6 +132,7 @@ const walk = (dir: string, skip = new Set<string>()): void => {
 
 walk(AAB, GENERATED);
 walk(join(ROOT, "app", "src"));
+walk(join(ROOT, "next", "lib"));
 
 /* And the routes, which is where the site is built now.
 
@@ -143,11 +144,16 @@ walk(join(ROOT, "app", "src"));
    as easily as a module, and it is the same bug: invisible in
    review, invisible locally, and it blames somebody else.
 
-   `next/app` and `next/components` only. `next/lib` is the
-   database reads, which run on the Worker, and adding it would be
-   the `functions/` mistake below one directory over. A component
-   that fetches something does it in the browser, and a component
-   that renders a `<script>` writes browser code as a string,
+   `next/lib` is walked too, and the sentence that used to be here
+   said it should not be: it is the database reads, which run on
+   the Worker. It is also where a string a component renders into
+   the page is BUILT. `lib/crumbs.ts` writes the JSON-LD trail and
+   names `https://schema.org` in it, and the check called that
+   host unused while it sat one directory outside the walk, which
+   is the check being wrong in the direction it exists to prevent.
+   A component that fetches something does it in the browser, and
+   a component that renders a `<script>` writes browser code as a
+   string,
    which this reads as text like everything else. */
 walk(join(ROOT, "next", "app"));
 walk(join(ROOT, "next", "components"));

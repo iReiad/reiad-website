@@ -1,33 +1,24 @@
 /* ============================================================
    footer.tsx: the end of every page.
 
-   The old one was three lines: a name, the page's own
-   disclaimer, and an email address. It was honest and it was a
-   dead end, on a site whose whole shape is "there is more of
-   this than you think".
+   It is the menu again, spelled out, from the same table the rail
+   and the drawer read, `lib/nav.ts`. A school added there appears
+   here by itself and the two cannot drift.
 
-   This one is the menu again, spelled out. Same table,
-   `lib/nav.ts`, so a school added there appears here as well as
-   in the rail, and neither can drift from the other.
+   The per-page note is the last line rather than the first. It is
+   a disclaimer, not a greeting.
 
-   The per-page note is kept and is the last line rather than the
-   first. It is a disclaimer, not a greeting.
+   ---- keep it short ----
 
-   ---- what came out, and why ----
+   Three rows and no more: the mark, the links, and the legal
+   line. Every extra line here is a line under all 250-odd pages,
+   so anything the page already says belongs to the page. That is
+   why there is one sentence beside the name and not four: what
+   this site is, and what an account is for.
 
-   A green band under the links said, in both languages, that
-   everything is free, that there is no login, and that what you
-   have read stays in your own browser. Every one of those facts
-   is in `note`, two elements below it, on every page that has a
-   note: the German school's reads "free, in Bangla, and without
-   a login. Your progress stays in your own browser." So the
-   footer made the same promise twice, a hundred pixels apart,
-   and on /skills/ the page itself made it a third time in a band
-   directly above.
-
-   One sentence of it survives, under the mark, because it was
-   the only part not said anywhere else: that an account carries
-   progress between devices.
+   `unlisted` items are skipped. A link in the footer is a promise
+   the address opens, and `/skills/courses/` answers 403 to
+   everybody but one person. See `lib/nav.ts`.
    ============================================================ */
 
 import { NAV } from "../lib/nav";
@@ -48,24 +39,13 @@ export function SiteFooter({
         <div className="deck-foot-top">
           <div className="deck-foot-mark">
             <span className="deck-foot-name">{name}</span>
-            <p className="deck-foot-line">
-              বাংলায় শেখা, আর যে কাজগুলো খুলে দেখা যায়।
-            </p>
-            <p className="deck-foot-line" lang="en">
-              Six free courses and models you can open.
+            <p className="deck-foot-line" lang="bn">
+              বাংলায় শেখা, আর যে কাজগুলো খুলে দেখা যায়। শেখা ফ্রি, আর
+              অগ্রগতি থাকে আপনার অ্যাকাউন্টে।
             </p>
             <a className="deck-foot-mail" href="mailto:i@reiad.co.uk">
-              <Icon name="mail" size={15} /> i@reiad.co.uk
+              <Icon name="mail" size={14} /> i@reiad.co.uk
             </a>
-            {/* The one thing the green band used to say that the
-                page's own note does not: what an account is FOR.
-                Everything else it said, that this is free, that
-                there is no login, that progress stays on the
-                device, is said again in `note` two elements
-                below, on every school page and on /skills/. */}
-            <p className="deck-foot-line" lang="bn">
-              অ্যাকাউন্ট খুললে অগ্রগতি আপনার সব ডিভাইসে থাকে।
-            </p>
           </div>
 
           <nav className="deck-foot-nav" aria-label="Everything on this site">

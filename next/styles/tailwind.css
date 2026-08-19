@@ -163,7 +163,6 @@
   --background-image-weave: var(--weave);
   --background-image-sheen: var(--sheen);
   --shadow-card: var(--shadow);
-  --shadow-lift: var(--shadow-lift);
 
   /* ---- metrics, and the collision that made the site square ----
 
@@ -196,12 +195,33 @@
   --radius-tight: var(--radius-sm);
   --radius-round: var(--radius-pill);
 
-  /* type */
-  --font-sans: var(--font-sans);
-  --font-serif: var(--font-serif);
-  --font-mono: var(--font-mono);
-  --font-bn: var(--font-bn);
-  --font-bn-serif: var(--font-bn-serif);
+  /* ---- and the same collision, six more times ----
+
+     `--font-sans: var(--font-sans)` is the paragraph above
+     happening again: `@theme` emits into `:root` under
+     `@layer base`, which beats `@layer tokens`, so the winning
+     declaration for every face on this site was a cycle and every
+     face fell back to the browser's default. `--shadow-lift` went
+     the same way, which is the two lifted surfaces in
+     `ui/surface.tsx`.
+
+     `@theme inline` does NOT fix it: `inline` changes what a
+     utility compiles to, not whether the key is emitted. Clearing
+     the namespace and renaming is the fix that worked for the
+     corners, and the new names cannot collide with the site's
+     again. `--font-*: initial` is load-bearing on its own:
+     without it Tailwind emits its OWN `--font-sans` into the same
+     place and the site's faces lose to it silently.
+
+     `--shadow-*` is not cleared: nothing Tailwind ships under it
+     shares a name with anything here. */
+  --font-*: initial;
+  --font-body: var(--font-sans);
+  --font-read: var(--font-serif);
+  --font-code: var(--font-mono);
+  --font-bangla: var(--font-bn);
+  --font-bangla-read: var(--font-bn-serif);
+  --shadow-pane: var(--shadow-lift);
 
   /* the type scale, so a utility is a step and not a guess.
      `text-[0.82rem]` in a component is the fifty-first font size

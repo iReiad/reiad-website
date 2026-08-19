@@ -57,7 +57,7 @@ export default function Page() {
             <p className="note note-inline" id="co-note">–
             </p>
             <p className="lede" style={{ fontSize: "0.95rem" }}>
-              The cash flows come from the
+              The cash flows come from the{" "}
           
               <a href="/portfolio/three-statement.html">three-statement model
               </a> in

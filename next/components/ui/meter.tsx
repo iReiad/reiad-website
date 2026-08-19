@@ -64,7 +64,7 @@ export function Meter({
         />
       </div>
       {figure ? (
-        <span className="shrink-0 font-mono text-t1 tabular-nums text-ink-soft">
+        <span className="shrink-0 font-code text-t1 tabular-nums text-ink-soft">
           {figure}
         </span>
       ) : null}

@@ -73,7 +73,7 @@ export function Band({
     >
       {label ? (
         <span
-          className={`font-mono text-t1 uppercase tracking-[0.07em] ${
+          className={`font-code text-t1 uppercase tracking-[0.07em] ${
             solid ? "text-accent-ink/70" : "text-ink-soft"}`}
         >
           {label}

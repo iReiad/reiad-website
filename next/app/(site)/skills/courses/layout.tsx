@@ -9,8 +9,19 @@
    only one reader can open is a promise the site cannot keep. */
 import { siteLayout } from "../../../../components/page";
 import { SiteScripts } from "../../../../components/scripts";
+import { trailFor, PENDING } from "../../../../lib/crumbs";
 
+/* The trail past the section. `current: "skills"` gets Home and
+   দক্ষতা out of the table; the two below it cannot come from
+   there, because the catalogue is admin-only and the page's own
+   name arrives with the fetch. The last crumb is a placeholder
+   that `name()` in `aab/src/courses.ts` rewrites, which is why
+   this section is the one place a crumb is written twice. */
 export default siteLayout({
   current: "skills",
+  crumbs: trailFor("skills", [
+    { href: "/skills/courses/index.html", label: "কোর্স" },
+    { label: PENDING },
+  ]),
   scripts: <SiteScripts srcs={["/courses.js"]} />,
 });

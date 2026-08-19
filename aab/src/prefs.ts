@@ -14,6 +14,19 @@
               already stored under `theme` by /app.js; this is
               the same key, read by the same boot script, now
               carried between devices as well.
+     glass    what the site's translucent surfaces are made of.
+              Three finishes, and `plain` is the honest name for
+              off: no blur, solid grounds, which is also what a
+              browser with no `backdrop-filter` and a reader who
+              has asked for reduced transparency both get.
+     blur     how far through those surfaces you can see. A
+              multiplier on every radius rather than a radius, so
+              one step moves the whole site together and the top
+              bar stays thicker than a chip.
+     veil     how much tint sits over the blur. The two are a
+              pair: a reader who wants to see the page moving
+              under the bar turns the veil down, and one who finds
+              that busy turns it up.
      lang     which language the calculators open in. Named for
               exactly what it does rather than for what it sounds
               like it might do: this site is Bangla-first
@@ -58,6 +71,10 @@ export interface PrefOption {
   readonly note?: string;
   readonly size?: string;
   readonly ch?: string;
+  /** The multiplier on every blur radius. */
+  readonly amount?: string;
+  /** The alpha of the tint over the blur. */
+  readonly alpha?: string;
 }
 
 export const SCALES = [
@@ -87,6 +104,46 @@ export const LANGS = [
   { id: "en", label: "English", note: "the calculators open in English" },
 ] as const satisfies readonly PrefOption[];
 
+/* ============================================================
+   Glass
+
+   THREE FINISHES, NOT THREE BLURS. What separates them is what
+   the surface is made of: `frost` is cold and sees a long way
+   through, `paper` is the site's own weave with the blur pulled
+   back so the texture reads, and `plain` is not glass at all.
+   The two sliders below then move whichever of the three is on.
+
+   `plain` is the one to keep working. It is what a browser with
+   no `backdrop-filter` gets, what `prefers-reduced-transparency`
+   gets, and what anybody who finds moving text under a bar hard
+   to read chooses. So it is a real finish with its own solid
+   grounds rather than the others with a feature switched off.
+   ============================================================ */
+export const GLASSES = [
+  { id: "frost", label: "Frost", note: "cold, and you see a long way through" },
+  { id: "paper", label: "Paper", note: "the site's own weave, held closer" },
+  { id: "plain", label: "Plain", note: "no blur at all, solid grounds" },
+] as const satisfies readonly PrefOption[];
+
+/* A multiplier rather than a radius, so one step moves every
+   surface together and the top bar stays thicker than a chip.
+   `--glass-r` in the stylesheet is what it multiplies. */
+export const BLURS = [
+  { id: "soft", label: "Soft", note: "barely there", amount: "0.55" },
+  { id: "normal", label: "Normal", note: "what this site has always been", amount: "1" },
+  { id: "deep", label: "Deep", note: "properly frosted", amount: "1.7" },
+] as const satisfies readonly PrefOption[];
+
+/* The middle one is the 0.72 the stylesheet has always carried,
+   for the same reason the middle measure is 66ch: the steps are
+   away from what is already there rather than a scale invented
+   around it. */
+export const VEILS = [
+  { id: "clear", label: "Clear", note: "the page shows through", alpha: "0.54" },
+  { id: "normal", label: "Normal", note: "what this site has always been", alpha: "0.72" },
+  { id: "dense", label: "Dense", note: "quieter behind the words", alpha: "0.9" },
+] as const satisfies readonly PrefOption[];
+
 /* The four settings, as the types they can actually hold. Derived
    from the tables above rather than written out again: a fifth
    scale added to SCALES is a fifth `Scale` without anybody
@@ -97,15 +154,24 @@ export type Scale = (typeof SCALES)[number]["id"];
 export type Measure = (typeof MEASURES)[number]["id"];
 export type Theme = (typeof THEMES)[number]["id"];
 export type Lang = (typeof LANGS)[number]["id"];
+export type Glass = (typeof GLASSES)[number]["id"];
+export type Blur = (typeof BLURS)[number]["id"];
+export type Veil = (typeof VEILS)[number]["id"];
 
 export interface Prefs {
   text: Scale;
   measure: Measure;
   theme: Theme;
   lang: Lang;
+  glass: Glass;
+  blur: Blur;
+  veil: Veil;
 }
 
-const DEFAULTS = { text: "normal", measure: "normal", lang: "bn" } as const;
+const DEFAULTS = {
+  text: "normal", measure: "normal", lang: "bn",
+  glass: "frost", blur: "normal", veil: "normal",
+} as const;
 
 const known = <T extends string>(
   list: readonly PrefOption[], value: unknown, fallback: T,
@@ -134,6 +200,9 @@ export function readPrefs(): Prefs {
     text: known(SCALES, stored.text, DEFAULTS.text),
     measure: known(MEASURES, stored.measure, DEFAULTS.measure),
     lang: known(LANGS, stored.lang, DEFAULTS.lang),
+    glass: known(GLASSES, stored.glass, DEFAULTS.glass),
+    blur: known(BLURS, stored.blur, DEFAULTS.blur),
+    veil: known(VEILS, stored.veil, DEFAULTS.veil),
     /* Not stored here, and read from where it has always lived so
        that this file and `/app.js` cannot disagree about it. */
     theme: readTheme(),
@@ -179,7 +248,8 @@ export function savePrefs(patch: Partial<Prefs>): Prefs {
 
   try {
     localStorage.setItem(PREFS_KEY, JSON.stringify({
-      text: next.text, measure: next.measure, lang: next.lang, ts: Date.now(),
+      text: next.text, measure: next.measure, lang: next.lang,
+      glass: next.glass, blur: next.blur, veil: next.veil, ts: Date.now(),
     }));
   } catch { /* private mode */ }
 
@@ -191,20 +261,34 @@ export function savePrefs(patch: Partial<Prefs>): Prefs {
 /* ============================================================
    Putting them on the page
 
-   Two custom properties on <html>, and the stylesheet answers.
-   Nothing here touches an element: a preference that had to walk
-   the DOM would be a preference that is wrong on anything
+   Custom properties and attributes on <html>, and the stylesheet
+   answers. Nothing here touches an element: a preference that had
+   to walk the DOM would be a preference that is wrong on anything
    rendered after it ran, and the boot script that runs before the
    first paint could not walk one anyway.
+
+   `data-glass` is an attribute because it names a material and
+   the stylesheet has a block per material; the two numbers are
+   custom properties because every radius and every tint on the
+   site is derived from them by `calc()`. Both are read before the
+   first paint by the boot script in `next/components/shell.tsx`,
+   which carries the same three tables inline: a bar that arrived
+   at one thickness and thickened a frame later would be worse
+   than one that never blurred.
    ============================================================ */
 
 export function applyPrefs(prefs: Prefs = readPrefs()): void {
   const root = document.documentElement;
   const scale = SCALES.find((s) => s.id === prefs.text) ?? SCALES[1];
   const measure = MEASURES.find((m) => m.id === prefs.measure) ?? MEASURES[1];
+  const blur = BLURS.find((b) => b.id === prefs.blur) ?? BLURS[1];
+  const veil = VEILS.find((v) => v.id === prefs.veil) ?? VEILS[1];
 
   root.style.setProperty("--read-scale", scale.size);
   root.style.setProperty("--read-measure", measure.ch);
+  root.style.setProperty("--glass-amount", blur.amount);
+  root.style.setProperty("--glass-veil", veil.alpha);
+  root.setAttribute("data-glass", prefs.glass);
 
   if (prefs.theme === "light" || prefs.theme === "dark") {
     root.setAttribute("data-theme", prefs.theme);
@@ -221,5 +305,5 @@ addEventListener("prefs:sync", () => applyPrefs(), { passive: true });
 /* And on load, for the six pages that are files rather than
    routes and therefore have no boot script of the shell's. It is
    a no-op everywhere else: the boot script has already set the
-   same three values, so nothing moves. */
+   same values, so nothing moves. */
 applyPrefs();
