@@ -39,7 +39,7 @@ import {
 import { requireAdmin } from "../../_lib/auth.js";
 import { throttle } from "../../_lib/auth.js";
 import { readerFrom } from "../../_lib/reader.js";
-import { isAdmin } from "../../_lib/admins.js";
+import { isAdmin } from "../../_lib/admins.ts";
 import { SECTIONS, COMMENT_STATUS, allowed } from "../../../shared/rows.ts";
 import { read, safeSlug } from "../../_lib/input.js";
 

@@ -37,7 +37,7 @@
 
 import { fail, methods, ok } from "../../_lib/http.ts";
 import { readerFrom } from "../../_lib/reader.js";
-import { isAdmin } from "../../_lib/admins.js";
+import { isAdmin } from "../../_lib/admins.ts";
 import { PRIVATE_TEMPLATES } from "../../../shared/routine.ts";
 
 export interface RoutineEnv {
@@ -65,7 +65,7 @@ export async function onRequest(context: RoutineContext): Promise<Response> {
          signed-out reader has no routine: there is no account for
          one to belong to. */
       const reader = await readerFrom(request, env);
-      const admin = reader ? await isAdmin(reader, env) : false;
+      const admin = reader ? await isAdmin(env, request, reader.id) : false;
       return ok({ templates: admin ? PRIVATE_TEMPLATES : [] });
     },
   });
