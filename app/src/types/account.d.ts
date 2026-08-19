@@ -58,3 +58,14 @@ export function cachedProfile(): Profile | null;
     the row a second time. */
 export function getProfile(): Promise<Profile | null>;
 export function saveProfile(patch: Partial<Profile>): Promise<Profile | null>;
+
+/** Picks up a redirect back from Supabase, whose tokens arrive in
+    the URL FRAGMENT so that they are never sent to a server, and
+    reads who the reader is out of the access token. Synchronous:
+    anything needing the network happens after, and says so on
+    `account:changed`.
+
+    Called once by `signin.js`, and it is also the only way in to
+    a session from outside this module: everything else here reads
+    one or ends one. */
+export function initAccount(): Reader | null;

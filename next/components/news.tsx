@@ -39,6 +39,7 @@
    ============================================================ */
 
 import { useEffect, useRef } from "react";
+import { flip } from "../lib/flip";
 import { Button, ButtonLink } from "./ui/button";
 
 /* ------------------------------------------------------------
@@ -208,37 +209,11 @@ export function NewsCard(
 
 /* ------------------------------------------------------------
    the mini window
+
+   The growing is `lib/flip.ts`, shared with the About page's
+   research window, which opens the same way out of the card that
+   was pressed.
    ------------------------------------------------------------ */
-
-/** Grow the window out of the card it came from.
-
-    `win` is the dialog, already open: the rectangles have to be
-    measured after `showModal()` or the window has no size to
-    animate from. */
-function flip(win: HTMLElement, from: HTMLElement | null): void {
-  if (!from) return;
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  if (typeof win.animate !== "function") return;
-
-  const a = from.getBoundingClientRect();
-  const b = win.getBoundingClientRect();
-  if (!b.width || !b.height) return;
-
-  const dx = a.left + a.width / 2 - (b.left + b.width / 2);
-  const dy = a.top + a.height / 2 - (b.top + b.height / 2);
-
-  win.animate(
-    [
-      {
-        transform: `translate(${dx}px, ${dy}px) `
-          + `scale(${a.width / b.width}, ${a.height / b.height})`,
-        opacity: 0.4,
-      },
-      { transform: "translate(0, 0) scale(1, 1)", opacity: 1 },
-    ],
-    { duration: 320, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
-  );
-}
 
 /** Which story is open, and the card it was opened from. */
 export interface Story {
@@ -304,9 +279,9 @@ export function NewsWindow({ story, onClose }: { story: Story; onClose: () => vo
         {/* `ghost`, not `quiet`. It was `.icon-btn push`: a panel
             ground with a hairline, and `quiet` is transparent
             until hovered. The way out of a modal is the one
-            control in it that must be findable without looking,
-            and `about.js` still draws the same window's close the
-            old way, so the two would not have matched either. */}
+            control in it that must be findable without looking.
+            `components/research.tsx` draws the same window's
+            close the same way, so the two match. */}
         <Button kind="ghost" size="sm" className="ms-auto" aria-label="Close"
                 onClick={() => ref.current?.close()}>
           ✕ Esc

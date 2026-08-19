@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v137: `/news.js` and `/keep.js` leave this list, because both
+        are gone. The research window on the About page and the
+        Save and note under every byline are components, so an old
+        shell would fetch two 404s on install and cache them. The
+        About page's windows also opened on a title with nothing
+        under it: the route port left every `<template data-detail>`
+        empty, and an old app.js goes on drawing that.
+
    v136: the four ladders are `shared/curricula/*.ts` and the four
         `/<school>/curriculum.js` are generated from them. Same
         addresses, same exports, verified 58 of them against the
@@ -1413,7 +1421,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v136";
+const VERSION = "v137";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -1471,9 +1479,6 @@ const PRECACHE = [
      imports it too, so a shell without it is an account page that
      does not load and a stock check with no Save button. */
   "/saved.js",
-  /* The Save and the note under the byline of every piece and
-     every lesson. */
-  "/keep.js",
   /* How the reader wants to be read to. The boot script in the
      shell applies the same values before the first paint without
      this file, so a stale shell is a preferences panel that does
@@ -1490,10 +1495,7 @@ const PRECACHE = [
   "/activation.js",
   /* app.js imports this one directly, so a cached app.js without
      it is an app.js whose import 404s, which is worse than no
-     app.js at all. news.js was the Insights page's and is the
-     About page's: the market pulse is `components/market-pulse.tsx`
-     now and `about.js` is the only importer left, which is what
-     shrinking news.js to its two surviving exports is waiting on.
+     app.js at all.
 
      Six names left this list in August 2026 and none of them is
      coming back: /recent.js, /home.js, /skills/skills.js,
@@ -1504,7 +1506,6 @@ const PRECACHE = [
      which is the one thing on those pages that really did need a
      browser. */
   "/tilt.js",
-  "/news.js",
   "/money/reader.js",
   "/money/curriculum.js",
   "/money/icons.js",

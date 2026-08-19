@@ -380,8 +380,9 @@ Five things, and each one had to pass the same test the three
 settings questions pass: it changes something the reader can point
 at.
 
-- **A reading list and notes.** `aab/src/keep.ts` puts a Save and
-  an Add a note under the byline of every piece and every lesson,
+- **A reading list and notes.** `next/components/keep.tsx` puts a
+  Save and an Add a note under the byline of every piece and every
+  lesson,
   and `public.library` is **one row per person per page**, with
   `saved` and `note` as two columns of it. They are two facts
   about one thing rather than two things, and a trigger removes
@@ -702,9 +703,8 @@ node scripts/snapshot.test.ts      # a nightly snapshot that leaks, or that thro
                                    # at 03:17 where nobody is watching
 node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the
                                    # real CSP (needs Playwright, skips without)
-node next/account.test.mjs        # the account's five features, the popover
-                                  # menu and the Save under a byline
-                                  # (128 checks, needs the Next build and a
+node next/account.test.mjs        # the account's five features and the popover
+                                  # menu (112 checks, needs the Next build and a
                                   # browser, skips without)
 node aab/sync.test.mjs             # a browser's own progress getting into an
                                    # account, resetting, signing out, and two
@@ -730,6 +730,11 @@ node next/market-pulse.test.ts     # the Insights hub's board of headlines: two
                                    # a square per story and a window that grows out
                                    # of the one that was pressed (91 checks, needs
                                    # Playwright and a browser, skips without)
+node next/keep.test.ts             # the Save and the note under a byline: nothing
+                                   # signed out, nothing until the account has
+                                   # answered, and neither control writing over the
+                                   # other's column of the one row (109 checks,
+                                   # needs Playwright and a browser, skips without)
 node aab/schools/progress.test.mjs  # a school's ticks filed under a key that is
                                    # not the one in somebody's browser, and the
                                    # three schools' shared engine (119 checks)

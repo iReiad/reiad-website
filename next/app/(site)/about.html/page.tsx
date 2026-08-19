@@ -11,6 +11,13 @@
    browser reads at `/content.js`. They were `/about.js`'s until
    the four ladders moved into `shared/`, and a reader with no
    JavaScript saw a dash where each number should have been.
+
+   ---- the research cards ----
+
+   `RESEARCH` below is the words, because they are this page's
+   copy; `components/research.tsx` is the cards, the window and
+   the way in with no JavaScript. Between them they are the whole
+   of what `/about.js` was.
    ============================================================ */
 
 import type { Metadata } from "next";
@@ -20,10 +27,83 @@ import { Band } from "../../../components/ui/band";
 import { ButtonLink } from "../../../components/ui/button";
 import { InfoCard } from "../../../components/deck";
 import { Eyebrow, SectionLabel } from "../../../components/ui/label";
+import { Research, type ResearchItem } from "../../../components/research";
 
 const DEK = "Rony Reiad: economics graduate from Chittagong, MSc Finance & Risk "
   + "Management from Brighton, researching Islamic funds and credit risk, and "
   + "building Bangla-language investment education.";
+
+/** The three pieces of research, and the case study each one
+    became. `detail` is what the card has no room for and the
+    window shows; it was a `<template data-detail>` in the markup
+    and it is a prop now, which is the same fact in the same
+    file. */
+const RESEARCH: ResearchItem[] = [
+  {
+    href: "/portfolio/dissertation.html",
+    label: "Open the dissertation case study",
+    tag: "Dissertation · 15,000 words",
+    title: "Do Islamic funds actually carry less risk?",
+    blurb: "Islamic against conventional UK funds on systematic risk, idiosyncratic "
+      + "risk and drawdowns, across the pre- and post-COVID periods. The interesting "
+      + "differences turned up in behaviour under stress rather than in headline "
+      + "average returns.",
+    detail: [
+      "220 UK-domiciled equity funds, 19,577 fund-months, January 2018 to July 2025. "
+      + "Fama-French five factors plus Carhart momentum, with an Islamic dummy, run "
+      + "alongside the univariate tests on volatility, beta, idiosyncratic risk and "
+      + "drawdown.",
+      "The hypothesis failed: every univariate test returns p > 0.21, and the Islamic "
+      + "dummy is positive but insignificant. The result worth publishing is the one "
+      + "underneath that. Three Shariah-compliant funds in the sample gave the "
+      + "drawdown comparison roughly a 7% chance of detecting the gap it was looking "
+      + "for, so the study could not have found a difference even if one existed.",
+      "The case study is the submitted document, made interactive: every table "
+      + "transcribed, every series lifted from the charts embedded in it, and the "
+      + "power calculation you can move yourself.",
+    ],
+  },
+  {
+    href: "/portfolio/frontier.html",
+    label: "Open the fund",
+    tag: "Python",
+    title: "An Islamic fund portfolio, built and tested",
+    blurb: "Portfolio construction in Python with performance compared against "
+      + "conventional benchmarks either side of COVID. Analysis and charts automated, "
+      + "so re-running it on new data is one command.",
+    detail: [
+      "Ten FTSE 250 holdings chosen by a screen that runs before any price is looked "
+      + "at: leverage under a third of equity, sustainability away from the laggards, "
+      + "and returns on capital above the cost of it.",
+      "Weights set at the end of 2015 by minimising the variance each holding "
+      + "contributes, then held unchanged through the five years that followed, which "
+      + "is the only honest test of a construction method: it cannot know what "
+      + "happened next, because when the weights were chosen, nobody did.",
+      "The case study solves the efficient frontier and the optimised alternatives "
+      + "beside it, live, from the daily closes.",
+    ],
+  },
+  {
+    href: "/portfolio/scorecard.html",
+    label: "Open the credit models",
+    tag: "Credit",
+    title: "A credit-risk case, worked as a bank would",
+    blurb: "Liquidity, leverage, profitability and repayment capacity assessed in "
+      + "order, ending in a recommendation that states what would have to change to "
+      + "reverse it.",
+    detail: [
+      "The same discipline, taken from one borrower to a book of them. The "
+      + "probability-of-default case study fits a logistic scorecard against a "
+      + "gradient-boosted ensemble on a public dataset, in your browser, and follows "
+      + "it through cross-validation and calibration to the cut-off where the "
+      + "modelling stops and the lending decision starts.",
+      "Its companion takes a whole loan book through a recession: macro shocks "
+      + "driving default rates through a Merton model and a vintage hazard model at "
+      + "once, then IFRS 9 staging, provisions and the capital ratio, with the gap "
+      + "between the two engines left on the page because that gap is the model risk.",
+    ],
+  },
+];
 
 export const metadata: Metadata = pageMeta({
   path: "/about.html",
@@ -359,60 +439,15 @@ export default function AboutPage() {
              nowhere, while the finished, interactive version of the
              same work sat two clicks away in the portfolio.
 
-             So they open. A card is a button now, it opens the same
-             kind of mini window the market-pulse cards use on the
-             Insights page, growing out of the card you clicked, and
-             the window carries what the card had no room for plus a
-             way into the case study itself.
-
-             The `data-detail` paragraphs are the window's content
-             and stay in the markup rather than in about.js: they are
-             page copy, they should be in the page, and a reader with
-             no JavaScript gets a card that is simply a link to the
-             case study instead. See about.js.
+             So they open. A card is a button once the component
+             below has run, it opens the same kind of mini window the
+             market-pulse cards use on the Insights page, growing out
+             of the card you pressed, and the window carries what the
+             card had no room for plus a way into the case study
+             itself. With no JavaScript each card carries a plain
+             link to its case study instead.
              ============================================================ */}
-            <div className="research" id="research">
-              <article className="res" data-case="/portfolio/dissertation.html" data-case-label="Open the dissertation case study">
-                <span className="res-tag mono">Dissertation · 15,000 words
-                </span>
-                <h3>Do Islamic funds actually carry less risk?
-                </h3>
-                <p>Islamic against conventional UK funds on systematic risk, idiosyncratic
-               risk and drawdowns, across the pre- and post-COVID periods. The
-               interesting differences turned up in behaviour under stress rather than
-               in headline average returns.
-                </p>
-                <template data-detail />
-                <a className="res-fallback more" href="/portfolio/dissertation.html">Open the dissertation case study →
-                </a>
-              </article>
-              <article className="res" data-case="/portfolio/frontier.html" data-case-label="Open the fund">
-                <span className="res-tag mono">Python
-                </span>
-                <h3>An Islamic fund portfolio, built and tested
-                </h3>
-                <p>Portfolio construction in Python with performance compared against
-               conventional benchmarks either side of COVID. Analysis and charts
-               automated, so re-running it on new data is one command.
-                </p>
-                <template data-detail />
-                <a className="res-fallback more" href="/portfolio/frontier.html">Open the fund →
-                </a>
-              </article>
-              <article className="res" data-case="/portfolio/scorecard.html" data-case-label="Open the credit models">
-                <span className="res-tag mono">Credit
-                </span>
-                <h3>A credit-risk case, worked as a bank would
-                </h3>
-                <p>Liquidity, leverage, profitability and repayment capacity assessed in
-               order, ending in a recommendation that states what would have to change
-               to reverse it.
-                </p>
-                <template data-detail />
-                <a className="res-fallback more" href="/portfolio/scorecard.html">Open the credit models →
-                </a>
-              </article>
-            </div>
+            <Research items={RESEARCH} />
           </section>
           {/* ============ TOOLKIT ============ */}
           <section>

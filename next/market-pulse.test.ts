@@ -711,21 +711,21 @@ console.log("the market pulse on the Insights hub");
   ok("nothing precaches it", !precached.includes("/pulse.js"),
     "an install would fetch a 404 and cache it");
 
-  /* `aab/news.js` is a different answer and the reason is written
-     down rather than assumed: `about.js` imports `el` and `flip`
-     from it for the research window, so taking the file away takes
-     that page with it. What is asserted here is that nothing ELSE
-     leans on it, which is the condition for archiving it on the
-     day about.js becomes a component. */
+  /* `aab/news.js` outlived this port by a day. `about.js` imported
+     `el` and `flip` from it for the About page's research window,
+     so taking the file away would have taken that page with it;
+     the window is `components/research.tsx` now and both modules
+     are archived. `research.test.ts` is what holds the window. */
   const importers = readdirSync(join(ROOT, "aab"))
     .filter((name) => name.endsWith(".js"))
     .filter((name) => /from\s+"\/news\.js"/
       .test(readFileSync(join(ROOT, "aab", name), "utf8")));
-  ok("aab/news.js is still served, and about.js is the only reason",
-    importers.join(",") === "about.js", importers.join(",") || "nothing imports it");
-  ok("so the page it belongs to still works",
-    existsSync(join(ROOT, "aab", "about.js"))
-    && readFileSync(join(ROOT, "aab", "about.js"), "utf8").includes('from "/news.js"'));
+  ok("nothing in aab/ imports /news.js any more", importers.length === 0,
+    importers.join(",") || "nothing does");
+  ok("so it is not served either", !existsSync(join(ROOT, "aab", "news.js")));
+  ok("and it is readable in archive/, beside the page that held it up",
+    existsSync(join(ROOT, "archive", "modules", "news.js"))
+    && existsSync(join(ROOT, "archive", "modules", "about.js")));
 
   /* Two things have carried the word "pulse" since before either
      was a component, and merging them would be a redesign wearing

@@ -52,6 +52,9 @@ what anybody is served.
 | `hub.js` | `next/components/topic-filter.tsx` and `next/components/subscribe.tsx` | 19 August 2026 |
 | `read-aloud.js` | `next/components/read-aloud.tsx` | 19 August 2026 |
 | `pulse.js` | `next/components/market-pulse.tsx`, over `news.tsx` | 19 August 2026 |
+| `about.js` | `next/components/research.tsx`, with the words in the route | 19 August 2026 |
+| `news.js` | `next/components/news.tsx` and `next/lib/flip.ts` | 19 August 2026 |
+| `keep.js`, `keep.ts` | `next/components/keep.tsx`, rendered by the piece and lesson routes | 19 August 2026 |
 
 `work.html` and `services.html` were early placeholders that still
 carried template text ("[Your Name]", "hello@yourdomain.com"), kept
@@ -139,6 +142,15 @@ the rewrite has to be checked against, and because the wording of
 those three choices is a good record of how hard the old shape
 was to explain. `.first-sync*` went out of `styles.css` in the
 same commit.
+
+`news.js` was archived a fortnight after the thing it was written
+for. The market pulse became `components/news.tsx` and
+`components/market-pulse.tsx`, and the file stayed byte for byte
+because `about.js` imported `el` and `flip` from it for the
+research window: one page's interface holding a served module up.
+Both are here now, and the animation the two windows share is
+`next/lib/flip.ts`, which is where it goes so that the About page
+does not import a feed of headlines to borrow it.
 
 `reads.js` drew the cards on both of those pages and has nothing
 left to draw. `.read-en`, `.read-note` and `.read-fallback` went

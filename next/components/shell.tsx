@@ -144,7 +144,7 @@ export function SiteHead() {
  * in the middle, the footer, and the site's own scripts.
  *
  * `scripts` is for the modules one kind of page needs and the
- * rest do not, `/about.js` on the About page for instance.
+ * rest do not, `/tools/stock.js` on the stock check for instance.
  * `/app.js` is not one of them: the palette, the theme toggle and
  * the tilt are on every page of this site.
  */
