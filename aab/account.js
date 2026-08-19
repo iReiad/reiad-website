@@ -268,8 +268,28 @@ export async function refreshUser() {
         if (!res.ok)
             throw new Error(String(res.status));
         const user = await res.json();
-        if (session)
-            write({ ...session, user: person(user) });
+        /* A REFRESH NEVER DOWNGRADES. `person()` answers null for a
+           record with no `id`, and writing that null over a session
+           that already had a reader in it signs them out of a page
+           they were signed in to: `current()` goes null, `saveProfile`
+           throws "Not signed in.", and sync stops pushing ticks
+           without saying anything.
+    
+           That is not hypothetical and it is not a test artifact.
+           This function returned a user built field by field until 19
+           August 2026, so an unusable answer produced an object with
+           undefined fields, which is wrong but truthy. Factoring the
+           three copies into `person()` made the same answer produce
+           null, and `aab/sync.test.ts` went from 27 passing to four
+           failures and an uncaught throw within the hour.
+    
+           So an answer this cannot read leaves the session alone, the
+           same as a network error one line below. There is exactly
+           one thing that ends a session on purpose, and it is
+           `signOut()`. */
+        const fresh = person(user);
+        if (session && fresh)
+            write({ ...session, user: fresh });
         return current();
     }
     catch {

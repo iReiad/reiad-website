@@ -380,9 +380,19 @@ emptying it, an absent key is an empty set, and subtraction takes
 the account down with it. The old file needed a timestamp per key
 to get that right and got it wrong for a year.
 
-`aab/sync.test.ts` is the guard, 27 checks in a real browser
+`aab/sync.test.ts` is the guard, 36 checks in a real browser
 against a routed Supabase, and it drives `/404.html` because that
-is one of the six pages still served as a file.
+is one of the two pages still served as a file.
+
+**It starts its own server, and that is the whole reason it is
+worth anything.** It asked for one on :8899 and exited 0 when
+there was none, so it skipped on every machine where nobody had
+read that line, which is every machine. It skipped through a real
+regression: `refreshUser()` began writing a null user over a live
+session, which takes `current()` to null, makes `saveProfile`
+throw and stops sync pushing ticks, and four of its sections went
+red at once without anybody seeing it. A test that needs a server
+started by hand is a test that does not run.
 
 ### The two things an account holds that are not a tick
 
@@ -748,9 +758,11 @@ node next/account.test.ts        # the account's five features, the popover
                                   # (117 checks, needs the Next build and a
                                   # browser, skips without)
 node aab/sync.test.ts             # a browser's own progress getting into an
-                                   # account, resetting, signing out, and two
-                                   # signed-in devices (27 checks, needs a
-                                   # server on :8899 and Playwright)
+                                   # account, resetting, signing out, two
+                                   # signed-in devices, and a refresh that
+                                   # signs somebody out by accident
+                                   # (36 checks, needs Playwright and a
+                                   # browser; it starts its own server)
 node aab/studio.test.ts           # the editor, end to end (68 checks)
 node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read (23 checks, no browser)

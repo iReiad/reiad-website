@@ -1,99 +1,160 @@
 /* ============================================================
    sync.test.ts: progress belongs to the account.
 
-     node aab/sync.test.ts          (needs a server on :8899 and
-                                    Playwright; skips without them)
+     node aab/sync.test.ts
 
-   The old file tested a three-way merge and the dialog that
-   fronted it. Both are gone, so this is a rewrite rather than an
-   edit, and what it holds `aab/sync.js` to is one sentence:
+   THE SENTENCE THIS HOLDS `aab/src/sync.ts` TO:
 
      THE ACCOUNT IS THE RECORD, AND NOTHING IS EVER PULLED OUT OF
      THE BROWSER INTO IT.
 
-   Five things follow from that sentence and each of them is a
-   check below. Three were bugs in the old shape, one is the rule
-   itself, and one is what signing out has to do once the device
-   is a mirror rather than a second copy.
+   Everything below follows from it. `CLAUDE.md` states the same
+   thing as four states, and this file is one section per state
+   plus the three edges that turned out to matter.
 
-   1. SIGNING IN ADOPTS. A browser that already holds progress
-      shows the account's, and what it held is neither merged nor
-      uploaded. The old file asked the reader which they wanted,
-      because it could not tell a laptop from a borrowed phone.
-      Nothing has to tell them apart now.
+   ---- why it starts its own server ----
 
-   2. A TICK MADE WHILE SIGNED IN GOES UP. Adoption must not be
-      mistaken for read-only: everything done after signing in is
-      the account's.
+   It did not. It asked for one on :8899, printed
+   `cd aab && python3 -m http.server 8899` and exited 0 when there
+   was none, which is every run nobody had read that line before.
+   A test that needs a server somebody starts by hand is a test
+   that does not run, and this one did not run for long enough to
+   miss a real regression: `refreshUser()` began writing a null
+   user over a live session on 19 August 2026, and the four
+   failures and the uncaught throw that followed sat unseen
+   because the file skipped.
 
-   3. RESETTING CLEARS THE ACCOUNT. Every school's resetAll()
-      REMOVES its key rather than emptying it, and the old guard
-      recognised only an empty array, so `undefined` fell through
-      a union and the account's copy came straight back, every
-      time. There is no guard here: an absent key is an empty set
-      and subtraction does the rest.
+   The same went for Playwright. It asked for the bare specifier,
+   which resolves from the root, and Playwright is a devDependency
+   of `app/`. Both are found now, and a skip names which of the
+   two ways it failed to start.
 
-   4. A TICK FROM ANOTHER DEVICE ARRIVES. Two signed-in devices
-      is the one case that still needs reconciling, and it is
-      reconciled between two states that both came from the
-      account.
+   ---- and why the policy is real ----
 
-   5. SIGNING OUT TAKES THE MIRROR OFF. The next person at the
-      same machine must not inherit the last one's ticks.
+   The page is served with the Content-Security-Policy read out of
+   `aab/_headers` rather than a copy of it. A harness that drops
+   the policy cannot tell you whether a request was made or
+   refused, and every exchange here is a `fetch` to Supabase under
+   `connect-src`.
 
-   Plus the display name, which is checked here because it shares
-   the profile path with everything above.
+   ---- /404.html, and not the home page ----
 
-   `aab/tsconfig.test.json` is what typechecks the annotations
-   below, and `scripts/check-types.ts` runs it.
+   The home page has not been a file in `aab/` since Stage 11.5, so
+   a static server over this directory answers it 404. `404.html`
+   is one of the two pages that are not routes and cannot be, it
+   loads `/app.js` like every other page, and `app.js` imports
+   `signin.js`, which imports `sync.js` and starts it. That is the
+   whole of what these checks need a page for.
+
+   `aab/tsconfig.test.json` typechecks the annotations below and
+   `scripts/check-types.ts` runs it.
    ============================================================ */
 
-import type { BrowserContext, Page } from "playwright";
+import { createServer } from "node:http";
+import { readFile, stat } from "node:fs/promises";
+import { dirname, extname, join, normalize } from "node:path";
+import { fileURLToPath } from "node:url";
+import type { AddressInfo } from "node:net";
+import type { BrowserContext, Page, Route } from "playwright";
 
-let chromium: typeof import("playwright").chromium;
-try {
-  ({ chromium } = await import("playwright"));
-} catch {
-  console.log("Playwright is not installed, so this test is skipped.");
+const HERE = dirname(fileURLToPath(import.meta.url));
+
+/* ------------------------------------------------------------
+   1. the two things this needs, found where they actually are
+   ------------------------------------------------------------ */
+
+/** Either shape of the module is accepted, so both are described. */
+interface PlaywrightModule {
+  chromium?: typeof import("playwright").chromium;
+  default?: { chromium?: typeof import("playwright").chromium };
+}
+
+/* Playwright is a devDependency of `app/`: it is a browser driver
+   and the root install is what CI runs. Every browser test here
+   reaches it by that path. */
+const WHERE = [
+  process.env.PLAYWRIGHT,
+  "playwright",
+  "../app/node_modules/playwright/index.mjs",
+].filter((s): s is string => Boolean(s));
+
+let chromium: typeof import("playwright").chromium | undefined;
+for (const spec of WHERE) {
+  try {
+    const mod: PlaywrightModule = await import(spec);
+    chromium = mod.chromium ?? mod.default?.chromium;
+    if (chromium) break;
+  } catch { /* try the next place */ }
+}
+if (!chromium) {
+  console.log("SKIPPED: no Playwright, so there is no browser to drive.");
+  console.log("  cd app && npm install");
+  console.log("A skip is not a pass.");
   process.exit(0);
 }
 
-/* /404.html rather than /index.html, and the reason is worth
-   writing down because the old file did not notice: the home page
-   has not been a file in `aab/` since archive/TRANSITION.md Stage
-   11.5. A static server over this directory answers it with a
-   404, so every navigation in the old version of this test landed
-   on nothing and every assertion after it was about an empty
-   page.
+/* ------------------------------------------------------------
+   2. the site, served the way Cloudflare serves it
+   ------------------------------------------------------------ */
 
-   404.html is one of the six pages that are not routes and cannot
-   be, it loads `/app.js` like every other page on the site, and
-   app.js imports signin.js, which imports sync.js and starts it.
-   That is the whole of what these checks need a page for. */
-try {
-  const res = await fetch("http://localhost:8899/404.html");
-  if (!res.ok) throw new Error(String(res.status));
-} catch {
-  console.log("No server on :8899, so this test is skipped.");
-  console.log("  cd aab && python3 -m http.server 8899");
+const TYPES: Record<string, string> = {
+  ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8", ".json": "application/json",
+  ".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp",
+  ".ico": "image/x-icon", ".woff2": "font/woff2", ".txt": "text/plain; charset=utf-8",
+  ".xml": "application/xml", ".webmanifest": "application/manifest+json",
+};
+
+/* The real policy, read rather than copied: a second copy of a
+   list is the failure the top of CLAUDE.md is about, and this one
+   decides whether a request leaves the page at all. */
+const CSP = (await readFile(join(HERE, "_headers"), "utf8"))
+  .match(/Content-Security-Policy: (.+)/)?.[1].trim() ?? "";
+if (!CSP) {
+  console.log("SKIPPED: no Content-Security-Policy line in aab/_headers to serve.");
+  console.log("A skip is not a pass.");
   process.exit(0);
 }
+
+const server = createServer(async (req, res) => {
+  const path = new URL(req.url ?? "/", "http://x").pathname;
+  /* `normalize` before joining, so a request cannot walk out of
+     the served directory. It is a test, and it is also two lines. */
+  const file = join(HERE, normalize(path).replace(/^(\.\.[/\\])+/, ""));
+  try {
+    if (!(await stat(file)).isFile()) throw new Error("not a file");
+    const type = TYPES[extname(file)] ?? "application/octet-stream";
+    res.writeHead(200, type.startsWith("text/html")
+      ? { "Content-Type": type, "Content-Security-Policy": CSP }
+      : { "Content-Type": type });
+    res.end(await readFile(file));
+  } catch {
+    res.writeHead(404, { "Content-Type": "text/plain" });
+    res.end("not found");
+  }
+});
+await new Promise<void>((done) => server.listen(0, "127.0.0.1", done));
+const PORT = (server.address() as AddressInfo).port;
+const PAGE = `http://127.0.0.1:${PORT}/404.html`;
+
+const browser = await chromium.launch({
+  executablePath: process.env.CHROMIUM_PATH || undefined,
+});
+
+/* ------------------------------------------------------------
+   3. an account, and a browser that talks to it
+   ------------------------------------------------------------ */
 
 const SUPA = "https://wvjarqnnmkkuxyrndtya.supabase.co";
-const b64 = (o: unknown): string => Buffer.from(JSON.stringify(o)).toString("base64url");
-const jwt = (sub: string): string => [b64({ alg: "HS256" }),
-  b64({ sub, email: "i@reiad.co.uk", exp: Math.floor(Date.now() / 1000) + 3600,
-        user_metadata: { full_name: "Rony Reiad" } }), "s"].join(".");
-const session = (sub: string): string => JSON.stringify({ access_token: jwt(sub), refresh_token: "r",
-  expires_at: Date.now() + 3600e3, user: { id: sub, email: "i@reiad.co.uk", name: "Rony Reiad" } });
-
-const b = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined });
 
 let fails = 0;
-const check = (n: string, got: unknown, want: unknown): void => {
+let ran = 0;
+const check = (name: string, got: unknown, want: unknown): void => {
+  ran += 1;
   const ok = JSON.stringify(got) === JSON.stringify(want);
-  if (!ok) fails++;
-  console.log(`  ${ok ? "ok  " : "FAIL"} ${n}${ok ? "" : `\n        got  ${JSON.stringify(got)}\n        want ${JSON.stringify(want)}`}`);
+  if (!ok) fails += 1;
+  console.log(`  ${ok ? "ok  " : "FAIL"} ${name}`
+    + (ok ? "" : `\n        got  ${JSON.stringify(got)}\n        want ${JSON.stringify(want)}`));
 };
 
 /** One row of `public.progress`, as PostgREST answers with it. */
@@ -112,15 +173,26 @@ interface Profile {
   setup_at?: string;
 }
 
+/** What `GET /auth/v1/user` answers with. The real endpoint sends
+    a whole user record; only the three fields this site reads are
+    described, and `id` is the one that matters. */
+interface UserRecord {
+  id?: string;
+  email?: string;
+  user_metadata?: { full_name?: string; avatar_url?: string };
+}
+
 /** The account, as the routed Supabase below holds it. */
 interface Account {
   rows: Map<string, Row>;
   profile: Profile | null;
   patches: Profile[];
   deletes: number;
+  /** Every Supabase path this browser asked for, so a section can
+      assert that a signed-out reader asked for nothing at all. */
+  asked: string[];
 }
 
-/** One browser, its account, and anything the page threw. */
 interface Fixture {
   ctx: BrowserContext;
   p: Page;
@@ -128,221 +200,464 @@ interface Fixture {
   errs: string[];
 }
 
-/** A browser holding `device`, talking to an account holding
-    `accountRows`. Every Supabase call is answered here, so the
-    real project is never touched and the test needs no network. */
+const b64 = (o: unknown): string => Buffer.from(JSON.stringify(o)).toString("base64url");
+const jwt = (sub: string): string => [
+  b64({ alg: "HS256" }),
+  b64({
+    sub, email: "i@reiad.co.uk", exp: Math.floor(Date.now() / 1000) + 3600,
+    user_metadata: { full_name: "Rony Reiad" },
+  }),
+  "s",
+].join(".");
+
+/* A session as a browser that signed in BEFORE 19 August 2026
+   holds it: no `avatar` on the user. That is deliberate and it is
+   the shape most real sessions are in, so `initAccount()` calls
+   `refreshUser()` on load and the answer below is on the path of
+   every section in this file. */
+const session = (sub: string): string => JSON.stringify({
+  access_token: jwt(sub), refresh_token: "r", expires_at: Date.now() + 3600e3,
+  user: { id: sub, email: "i@reiad.co.uk", name: "Rony Reiad" },
+});
+
+/** What a healthy `/auth/v1/user` sends back. */
+const REAL_USER = (sub: string): UserRecord => ({
+  id: sub,
+  email: "i@reiad.co.uk",
+  user_metadata: { full_name: "Rony Reiad" },
+});
+
 async function make(
-  { accountRows = [], profile = null, device = {} }:
-  { accountRows?: Row[]; profile?: Profile | null; device?: Record<string, string> },
+  { accountRows = [], profile = null, device = {}, user = REAL_USER("u") }:
+  {
+    accountRows?: Row[];
+    profile?: Profile | null;
+    device?: Record<string, string>;
+    /** What `GET /auth/v1/user` answers. One section deliberately
+        sends something unusable. */
+    user?: UserRecord;
+  },
 ): Promise<Fixture> {
-  const ctx = await b.newContext({ viewport: { width: 1100, height: 1000 }, serviceWorkers: "block" });
+  const ctx = await browser.newContext({
+    viewport: { width: 1100, height: 1000 },
+    serviceWorkers: "block",
+  });
   const p = await ctx.newPage();
-  const errs: string[] = []; p.on("pageerror", (e) => errs.push(e.message));
-  const state: Account = { rows: new Map(accountRows.map((r) => [r.key, r])), profile, patches: [], deletes: 0 };
+  const errs: string[] = [];
+  p.on("pageerror", (e) => errs.push(e.message));
+  const state: Account = {
+    rows: new Map(accountRows.map((r) => [r.key, r])),
+    profile, patches: [], deletes: 0, asked: [],
+  };
+
+  const json = (route: Route, body: unknown, status = 200) =>
+    route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
 
   await ctx.route(`${SUPA}/rest/v1/**`, async (route) => {
-    const req = route.request(); const u = new URL(req.url());
-    const json = (o: unknown, s = 200) => route.fulfill({ status: s, contentType: "application/json", body: JSON.stringify(o) });
+    const req = route.request();
+    const u = new URL(req.url());
+    state.asked.push(`${req.method()} ${u.pathname}`);
+
     if (u.pathname.endsWith("/profiles")) {
-      if (req.method() === "PATCH") { const patch: Profile = JSON.parse(String(req.postData())); state.patches.push(patch); state.profile = { ...state.profile, ...patch }; return route.fulfill({ status: 204, body: "" }); }
-      return json(state.profile ? [state.profile] : []);
+      if (req.method() === "PATCH") {
+        const patch = JSON.parse(String(req.postData())) as Profile;
+        state.patches.push(patch);
+        state.profile = { ...state.profile, ...patch };
+        return route.fulfill({ status: 204, body: "" });
+      }
+      return json(route, state.profile ? [state.profile] : []);
     }
+
     if (u.pathname.endsWith("/progress")) {
-      if (req.method() === "DELETE") { state.deletes++; state.rows.clear(); return route.fulfill({ status: 204, body: "" }); }
+      if (req.method() === "DELETE") {
+        state.deletes += 1;
+        state.rows.clear();
+        return route.fulfill({ status: 204, body: "" });
+      }
       if (req.method() === "POST") {
-        const sent: Row[] = JSON.parse(String(req.postData()));
-        sent.forEach((r) => state.rows.set(r.key, { ...r, updated_at: new Date().toISOString() }));
+        const sent = JSON.parse(String(req.postData())) as Row[];
+        for (const r of sent) state.rows.set(r.key, { ...r, updated_at: new Date().toISOString() });
         return route.fulfill({ status: 201, body: "" });
       }
-      return json([...state.rows.values()]);
+      return json(route, [...state.rows.values()]);
     }
-    /* Scenarios and targets: empty, and answered rather than left
-       to fail, because the account page asks for both and a
-       rejected fetch is a console error this file counts. */
-    return json([]);
-  });
-  await ctx.route(`${SUPA}/auth/v1/**`, (r) => r.fulfill({ status: 200, contentType: "application/json", body: "{}" }));
-  await ctx.route("**/api/**", (r) => r.fulfill({ status: 200, contentType: "application/json", body: '{"ok":true,"articles":[]}' }));
 
-  await p.addInitScript((d: Record<string, string>) => { for (const [k, v] of Object.entries(d)) localStorage.setItem(k, v); }, device);
+    /* Scenarios and targets: empty, and answered rather than left
+       to fail, because a rejected fetch is a console error this
+       file counts. */
+    return json(route, []);
+  });
+
+  await ctx.route(`${SUPA}/auth/v1/**`, (route) => {
+    const u = new URL(route.request().url());
+    state.asked.push(`${route.request().method()} ${u.pathname}`);
+    if (u.pathname.endsWith("/user")) return json(route, user);
+    return json(route, {});
+  });
+
+  await ctx.route("**/api/**", (route) =>
+    json(route, { ok: true, articles: [] }));
+
+  await p.addInitScript((d: Record<string, string>) => {
+    for (const [k, v] of Object.entries(d)) localStorage.setItem(k, v);
+  }, device);
   return { ctx, p, state, errs };
 }
 
-const old = new Date(Date.now() - 600000).toISOString();
+const old = new Date(Date.now() - 600_000).toISOString();
 const local = (p: Page, key: string): Promise<unknown> =>
   p.evaluate((k) => JSON.parse(localStorage.getItem(k) ?? "null"), key);
 const sorted = (v: unknown): unknown => (Array.isArray(v) ? [...v].sort() : v);
+const settled = (p: Page, ms: number): Promise<void> => p.waitForTimeout(ms);
 
-/* ---------- 1. signing in adopts, and uploads nothing ---------- */
-console.log("signing in on a browser that already has progress");
+/** Every section opens the page the same way. */
+async function open(f: Fixture, ms = 2000): Promise<void> {
+  await f.p.goto(PAGE, { waitUntil: "domcontentloaded" });
+  await settled(f.p, ms);
+}
+
+const noErrors = (f: Fixture): void =>
+  check("no page errors", f.errs.length ? f.errs[0] : "none", "none");
+
+/* ============================================================
+   4. signed out: nothing at all
+
+   The first row of the table in CLAUDE.md, and the one the old
+   version of this file never asked. A reader with no account gets
+   every page and every feature, and the site must not so much as
+   open a socket on their behalf.
+   ============================================================ */
+console.log("signed out, with progress of this browser's own");
 {
-  const { ctx, p, state, errs } = await make({
-    accountRows: [{ key: "learn-read", value: ["a"], updated_at: old }],
+  const f = await make({
     device: {
-      "reiad-session": session("u-adopt"),
-      /* Somebody else's afternoon on a shared machine, or this
-         reader's own guest visit. The site cannot tell, and under
-         the new rule it does not have to. */
       "learn-read": JSON.stringify(["b", "c"]),
       "deutsch-read": JSON.stringify(["stufe-1/anfang"]),
     },
   });
-  await p.goto("http://localhost:8899/404.html", { waitUntil: "domcontentloaded" });
-  await p.waitForTimeout(2500);
+  await open(f);
 
-  check("the device holds the account's", sorted(await local(p, "learn-read")), ["a"]);
-  check("a key the account does not have is dropped", await local(p, "deutsch-read"), null);
-  check("and nothing of the browser's went up",
-    sorted(state.rows.get("learn-read")?.value ?? []), ["a"]);
-  check("the account gained no second key", [...state.rows.keys()], ["learn-read"]);
-  check("nothing was asked", await p.locator("dialog.first-sync").count(), 0);
-  check("no page errors", errs.length ? errs[0] : "none", "none");
-  await ctx.close();
+  check("nothing was asked of the account", f.state.asked, []);
+  check("this browser's progress is untouched",
+    sorted(await local(f.p, "learn-read")), ["b", "c"]);
+  check("and so is the other school's",
+    await local(f.p, "deutsch-read"), ["stufe-1/anfang"]);
+  noErrors(f);
+  await f.ctx.close();
 }
 
-/* ---------- 2. a tick made while signed in goes up ---------- */
+/* ============================================================
+   5. signing in adopts, and uploads nothing
+
+   The account's rows are written on to the device, and any synced
+   key the account does not have is removed. What the browser held
+   first is not merged and not uploaded, because a browser may be
+   a library machine or a phone handed over for five minutes and
+   the site cannot tell.
+   ============================================================ */
+console.log("\nsigning in on a browser that already has progress");
+{
+  const f = await make({
+    accountRows: [{ key: "learn-read", value: ["a"], updated_at: old }],
+    device: {
+      "reiad-session": session("u-adopt"),
+      "learn-read": JSON.stringify(["b", "c"]),
+      "deutsch-read": JSON.stringify(["stufe-1/anfang"]),
+    },
+    user: REAL_USER("u-adopt"),
+  });
+  await open(f, 2500);
+
+  check("the device holds the account's", sorted(await local(f.p, "learn-read")), ["a"]);
+  check("a key the account does not have is dropped", await local(f.p, "deutsch-read"), null);
+  check("and nothing of the browser's went up",
+    sorted(f.state.rows.get("learn-read")?.value ?? []), ["a"]);
+  /* The key the BROWSER held and the account did not. `days-active`
+     is not that: it is a set `/streak.js` writes on a visit, so it
+     goes up like any other tick made while signed in, which is the
+     section below. Asserting "no second key at all" was asserting
+     that a signed-in reader's visit is not recorded, and it went
+     red the first time this file was run against a page that
+     records one. */
+  check("nothing the browser already held went up",
+    [...f.state.rows.keys()].includes("deutsch-read"), false);
+  /* `archive/first-sync.js` is the dialog this replaced. It had to
+     ask, once per account per browser, because it treated the two
+     as equal copies. Nothing has to be asked now. */
+  check("nothing was asked of the reader", await f.p.locator("dialog.first-sync").count(), 0);
+  noErrors(f);
+  await f.ctx.close();
+}
+
+/* ============================================================
+   6. a tick made while signed in goes up
+
+   Adoption is not read-only. Everything done after signing in is
+   the account's.
+   ============================================================ */
 console.log("\nticking a lesson while signed in");
 {
-  const { ctx, p, state, errs } = await make({
+  const f = await make({
     accountRows: [{ key: "learn-read", value: ["a"], updated_at: old }],
     device: { "reiad-session": session("u-tick") },
+    user: REAL_USER("u-tick"),
   });
-  await p.goto("http://localhost:8899/404.html", { waitUntil: "domcontentloaded" });
-  await p.waitForTimeout(2000);
+  await open(f);
 
-  // Exactly what a tick button does: write the key, announce it.
-  await p.evaluate(() => {
+  /* Exactly what a tick button does: write the key, announce it. */
+  await f.p.evaluate(() => {
     localStorage.setItem("learn-read", JSON.stringify(["a", "share"]));
     dispatchEvent(new CustomEvent("learn:progress"));
   });
-  await p.waitForTimeout(4000);
+  await settled(f.p, 4000);
 
-  check("the account has both", sorted(state.rows.get("learn-read")?.value ?? []), ["a", "share"]);
-  check("no page errors", errs.length ? errs[0] : "none", "none");
-  await ctx.close();
+  check("the account has both", sorted(f.state.rows.get("learn-read")?.value ?? []), ["a", "share"]);
+  noErrors(f);
+  await f.ctx.close();
 }
 
-/* ---------- 3. resetting clears the account ---------- */
+/* ============================================================
+   7. resetting clears the account
+
+   Every school's `resetAll()` REMOVES its key rather than
+   emptying it. The guard this replaced recognised only an empty
+   array, so `undefined` fell through a union and the account's
+   copy came straight back, every time. There is no guard now: an
+   absent key is an empty set and subtraction does the rest.
+   ============================================================ */
 console.log("\nresetting progress while signed in");
 {
-  const { ctx, p, state, errs } = await make({
+  const f = await make({
     accountRows: [
       { key: "learn-read", value: ["share", "dse"], updated_at: old },
-      { key: "learn-last", value: { id: "share", ts: Date.now() - 600000 }, updated_at: old },
+      { key: "learn-last", value: { id: "share", ts: Date.now() - 600_000 }, updated_at: old },
     ],
     device: { "reiad-session": session("u-reset") },
+    user: REAL_USER("u-reset"),
   });
-  await p.goto("http://localhost:8899/404.html", { waitUntil: "domcontentloaded" });
-  await p.waitForTimeout(2000);
+  await open(f);
 
-  check("the device adopted the account's", sorted(await local(p, "learn-read")), ["dse", "share"]);
+  check("the device adopted the account's", sorted(await local(f.p, "learn-read")), ["dse", "share"]);
 
-  // Exactly what the school's own reset does: remove, not empty.
-  await p.evaluate(() => {
+  await f.p.evaluate(() => {
     for (const key of ["learn-read", "learn-last"]) localStorage.removeItem(key);
     dispatchEvent(new CustomEvent("learn:progress"));
   });
-  await p.waitForTimeout(4000);
+  await settled(f.p, 4000);
 
-  check("the device stays cleared", (await local(p, "learn-read")) ?? [], []);
-  check("the bookmark stays cleared", await local(p, "learn-last"), null);
-  check("and the account is cleared too", state.rows.get("learn-read")?.value ?? null, []);
-  check("no page errors", errs.length ? errs[0] : "none", "none");
-  await ctx.close();
+  check("the device stays cleared", (await local(f.p, "learn-read")) ?? [], []);
+  check("the bookmark stays cleared", await local(f.p, "learn-last"), null);
+  check("and the account is cleared too", f.state.rows.get("learn-read")?.value ?? null, []);
+  noErrors(f);
+  await f.ctx.close();
 }
 
-/* ---------- 4. a tick from another device arrives ---------- */
+/* ============================================================
+   8. a tick from another device arrives
+
+   Two signed-in devices is the one merge left, and it is between
+   two states that both came from the account: `base` is what the
+   account said at the last exchange, so `local \ base` is what
+   this reader did and `base \ local` is what they undid.
+   ============================================================ */
 console.log("\na tick made on another device");
 {
-  const { ctx, p, state, errs } = await make({
+  const f = await make({
     accountRows: [{ key: "learn-read", value: ["a"], updated_at: old }],
     device: { "reiad-session": session("u-two") },
+    user: REAL_USER("u-two"),
   });
-  await p.goto("http://localhost:8899/404.html", { waitUntil: "domcontentloaded" });
-  await p.waitForTimeout(2000);
+  await open(f);
 
   /* The phone, which this browser knows nothing about, and one
      tick here at the same time. Neither may lose the other. */
-  state.rows.set("learn-read", { key: "learn-read", value: ["a", "phone"], updated_at: new Date().toISOString() });
-  await p.evaluate(() => {
+  f.state.rows.set("learn-read", {
+    key: "learn-read", value: ["a", "phone"], updated_at: new Date().toISOString(),
+  });
+  await f.p.evaluate(() => {
     localStorage.setItem("learn-read", JSON.stringify(["a", "laptop"]));
     dispatchEvent(new CustomEvent("learn:progress"));
   });
-  await p.waitForTimeout(4000);
+  await settled(f.p, 4000);
 
-  check("the account holds both", sorted(state.rows.get("learn-read")?.value ?? []), ["a", "laptop", "phone"]);
-  check("and so does this device", sorted(await local(p, "learn-read")), ["a", "laptop", "phone"]);
-  check("no page errors", errs.length ? errs[0] : "none", "none");
-  await ctx.close();
+  check("the account holds both",
+    sorted(f.state.rows.get("learn-read")?.value ?? []), ["a", "laptop", "phone"]);
+  check("and so does this device",
+    sorted(await local(f.p, "learn-read")), ["a", "laptop", "phone"]);
+  noErrors(f);
+  await f.ctx.close();
 }
 
-/* ---------- 5. signing out takes the mirror off ---------- */
+/* ============================================================
+   9. what came down is announced
+
+   `sync.js` writes the account's rows straight into localStorage,
+   which fires neither the same-tab event nor `storage`, because
+   `storage` only fires in OTHER tabs. `sync:done` is the third
+   thing `subscribe()` listens for and the one that is easy to
+   leave out: without it every meter on the page is drawn against
+   what storage held BEFORE the exchange and stays there.
+
+   `/account.html` drew a course target at "0 of 60" beside a bar
+   of the same school reading "9 of 60" for exactly this reason.
+   ============================================================ */
+console.log("\nwhat arrives is announced");
+{
+  const f = await make({
+    accountRows: [{ key: "learn-read", value: ["a", "b"], updated_at: old }],
+    device: { "reiad-session": session("u-event") },
+    user: REAL_USER("u-event"),
+  });
+  /* The listener has to be in place before the exchange, so it is
+     installed on the document before anything on the page runs. */
+  await f.p.addInitScript(() => {
+    const seen: string[] = [];
+    (window as unknown as { heard: string[] }).heard = seen;
+    document.addEventListener("sync:done", () => seen.push("sync:done"));
+    addEventListener("learn:progress", () => seen.push("learn:progress"));
+  });
+  await open(f, 3000);
+
+  const heard = await f.p.evaluate(() => (window as unknown as { heard: string[] }).heard);
+  check("sync:done fired, so a meter redraws",
+    Array.isArray(heard) && heard.includes("sync:done"), true);
+  check("and the device really did take the rows",
+    sorted(await local(f.p, "learn-read")), ["a", "b"]);
+  noErrors(f);
+  await f.ctx.close();
+}
+
+/* ============================================================
+   10. a refresh it cannot read does not sign anybody out
+
+   THE REGRESSION THIS SECTION EXISTS FOR, 19 August 2026.
+
+   `refreshUser()` built a reader field by field until that day,
+   so an answer with nothing usable in it produced an object with
+   undefined fields: wrong, but truthy. Factoring the three copies
+   of that mapping into one `person()` made the same answer
+   produce null, and the null was written straight over a live
+   session.
+
+   What that costs is not a wrong name in a corner. `current()`
+   goes null, so `saveProfile` throws "Not signed in.", `sync.js`
+   stops pushing, and a reader who is signed in watches their
+   ticks stop reaching the account with nothing on screen to say
+   so. Four sections of this file went red at once and it was
+   still shipped, because the file was skipping.
+
+   There is exactly one thing that ends a session on purpose and
+   it is `signOut()`.
+   ============================================================ */
+console.log("\na refresh that cannot be read");
+{
+  const f = await make({
+    accountRows: [{ key: "learn-read", value: ["a"], updated_at: old }],
+    device: { "reiad-session": session("u-odd") },
+    /* 200, and nothing usable in it. */
+    user: {},
+  });
+  await open(f, 2500);
+
+  check("the reader is still signed in", await f.p.evaluate(async () => {
+    const m = await import("/account.js");
+    return m.current()?.id ?? null;
+  }), "u-odd");
+  check("their name survived", await f.p.evaluate(async () => {
+    const m = await import("/account.js");
+    return m.current()?.name ?? null;
+  }), "Rony Reiad");
+
+  /* And the consequence, rather than only the cause: a tick still
+     reaches the account. */
+  await f.p.evaluate(() => {
+    localStorage.setItem("learn-read", JSON.stringify(["a", "still"]));
+    dispatchEvent(new CustomEvent("learn:progress"));
+  });
+  await settled(f.p, 4000);
+  check("and a tick still goes up",
+    sorted(f.state.rows.get("learn-read")?.value ?? []), ["a", "still"]);
+  noErrors(f);
+  await f.ctx.close();
+}
+
+/* ============================================================
+   11. signing out takes the mirror off
+
+   The next person at the same machine must not inherit the last
+   one's ticks, and the account must not lose anything by it.
+   ============================================================ */
 console.log("\nsigning out");
 {
-  const { ctx, p, state, errs } = await make({
+  const f = await make({
     accountRows: [{ key: "learn-read", value: ["a", "b"], updated_at: old }],
     device: { "reiad-session": session("u-out") },
+    user: REAL_USER("u-out"),
   });
-  await p.goto("http://localhost:8899/404.html", { waitUntil: "domcontentloaded" });
-  await p.waitForTimeout(2000);
-  check("the mirror is on the device", sorted(await local(p, "learn-read")), ["a", "b"]);
+  await open(f);
+  check("the mirror is on the device", sorted(await local(f.p, "learn-read")), ["a", "b"]);
 
-  await p.evaluate(async () => {
+  await f.p.evaluate(async () => {
     const m = await import("/account.js");
     await m.signOut();
   });
-  await p.waitForTimeout(1500);
+  await settled(f.p, 1500);
 
-  check("and it comes off again", await local(p, "learn-read"), null);
-  check("the account is untouched", sorted(state.rows.get("learn-read")?.value ?? []), ["a", "b"]);
-  check("no page errors", errs.length ? errs[0] : "none", "none");
-  await ctx.close();
+  check("and it comes off again", await local(f.p, "learn-read"), null);
+  check("the account is untouched", sorted(f.state.rows.get("learn-read")?.value ?? []), ["a", "b"]);
+  noErrors(f);
+  await f.ctx.close();
 }
 
-/* ---------- 6. changing the name ----------
+/* ============================================================
+   12. changing the name
 
    Driven through `/account.js` rather than through the account
-   page's form, and that is a change from the old file rather than
-   a shortcut. This harness is a static server over `aab/`, and
-   `/account.html` has not been a file in `aab/` since
-   archive/TRANSITION.md Stage 11.5: it is a Next.js route, so the
-   old version of this check was navigating to a 404 and asserting
-   against an empty page. What it was really testing is the
-   profile path the whole of this file shares, and that is a
-   module. `app/desk.test.ts` is the pattern for driving a
-   rendered page, and needs a build this file does not. */
+   page's form, and that is deliberate rather than a shortcut:
+   this harness is a static server over `aab/`, and
+   `/account.html` has not been a file here since Stage 11.5. What
+   this is really testing is the profile path the whole file
+   shares, and that is a module. `app/desk.test.ts` is the pattern
+   for driving a rendered page and needs a build this file does
+   not.
+   ============================================================ */
 console.log("\nchanging the display name");
 {
-  const { ctx, p, state, errs } = await make({
-    profile: { display_name: "Rony", following: ["deutsch"], pace: "often", setup_at: new Date().toISOString() },
+  const f = await make({
+    profile: {
+      display_name: "Rony", following: ["deutsch"], pace: "often",
+      setup_at: new Date().toISOString(),
+    },
     device: { "reiad-session": session("u-name") },
+    user: REAL_USER("u-name"),
   });
-  await p.goto("http://localhost:8899/404.html", { waitUntil: "domcontentloaded" });
-  await p.waitForTimeout(1500);
+  await open(f, 1500);
 
-  const before = await p.evaluate(async () => {
+  check("the profile row is read", await f.p.evaluate(async () => {
     const m = await import("/account.js");
     return (await m.getProfile())?.display_name ?? null;
-  });
-  check("the profile row is read", before, "Rony");
+  }), "Rony");
 
-  await p.evaluate(async () => {
+  await f.p.evaluate(async () => {
     const m = await import("/account.js");
     await m.setDisplayName("Rony Reiad");
   });
-  await p.waitForTimeout(800);
+  await settled(f.p, 800);
 
-  check("it PATCHed the new name", state.patches.at(-1)?.display_name, "Rony Reiad");
-  check("the session carries it", await p.evaluate(async () => {
+  check("it PATCHed the new name", f.state.patches.at(-1)?.display_name, "Rony Reiad");
+  check("the session carries it", await f.p.evaluate(async () => {
     const m = await import("/account.js");
     return m.current()?.name ?? null;
   }), "Rony Reiad");
   check("the header button updated",
-    (await p.locator(".account-btn").textContent())?.trim(), "R");
-  check("no page errors", errs.length ? errs[0] : "none", "none");
-  await ctx.close();
+    (await f.p.locator(".account-btn").textContent())?.trim(), "R");
+  noErrors(f);
+  await f.ctx.close();
 }
 
-await b.close();
-console.log(fails ? `\n${fails} failure(s)` : "\nall good: the account is the record");
+await browser.close();
+server.close();
+console.log(fails
+  ? `\n${fails} of ${ran} failed.`
+  : `\nsync: ${ran} checks, the account is the record and the browser is a mirror.`);
 process.exit(fails ? 1 : 0);
