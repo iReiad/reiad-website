@@ -38,6 +38,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   TEMPLATES, hours, readImport, toExport, summarise, mergeDays,
   exportName, type Band, type Task, type RoutineShape, type Entry, type ExportFile,
+  /* `import type` and never a value import: the private template
+     is served by the Worker behind `isAdmin()`, and importing it
+     here would put one person's day in a bundle anybody can
+     fetch. `check-courses.ts` fails on the other kind. */
+  type Template,
 } from "@reiad/shared/routine";
 import { runtimeModule } from "../account/runtime";
 import { Button } from "../ui/button";
@@ -210,6 +215,26 @@ function Templates({ onLoad, busy }: {
   busy: boolean;
 }) {
   const [preview, setPreview] = useState<string | null>(null);
+  /* The private ones, which is one real person's day rather than
+     a suggestion. They come from the Worker rather than from the
+     bundle: `isAdmin()` is the Worker's to answer, and an import
+     here would publish the template to everybody while this page
+     looked identical. `check-courses.ts` fails on that import.
+
+     An empty list is the answer for everybody who is not an
+     admin, and it is also the answer while the request is in
+     flight and if it fails, so nothing here ever says that
+     something exists which this reader may not have. */
+  const [mine, setMine] = useState<Template[]>([]);
+
+  useEffect(() => {
+    let live = true;
+    fetch("/api/routine/templates", { headers: { accept: "application/json" } })
+      .then(async (r): Promise<{ templates?: Template[] }> => (r.ok ? r.json() : {}))
+      .then((d) => { if (live) setMine(d.templates ?? []); })
+      .catch(() => {});
+    return () => { live = false; };
+  }, []);
 
   return (
     <div className="rt-templates">
@@ -218,7 +243,7 @@ function Templates({ onLoad, busy }: {
         template it came from.
       </p>
       <ul className="rt-template-list">
-        {TEMPLATES.map((t) => {
+        {[...mine, ...TEMPLATES].map((t) => {
           const open = preview === t.slug;
           const counting = t.data.tasks.filter((x) => x.counts).length;
           return (

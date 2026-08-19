@@ -49,6 +49,7 @@ import { onRequest as comments } from "./functions/api/comments/[[id]].js";
 import { onRequest as broker } from "./functions/api/broker/[[route]].js";
 import { onRequest as schools } from "./functions/api/schools/[[route]].js";
 import { onRequest as courses } from "./functions/api/courses/[[route]].ts";
+import { onRequest as routine } from "./functions/api/routine/[[route]].ts";
 import { onRequest as insight } from "./functions/insights/[slug].js";
 import { onRequest as feeds } from "./functions/feeds/[kind].js";
 import { db } from "./functions/_lib/db.js";
@@ -73,6 +74,7 @@ const API_ROUTES = [
   ["/api/broker", broker, "route"],
   ["/api/schools", schools, "route"],
   ["/api/courses", courses, "route"],
+  ["/api/routine", routine, "route"],
 ];
 
 /* The Cron schedules, as strings, because `event.cron` hands back
@@ -168,7 +170,7 @@ export const NEXT_ROUTES = [
      from the asset router in the same commit. */
   /^\/(about|contact|account|skills|tools|portfolio)$/i,
   /^\/tools\/(stock|live|routine)$/i,
-  /^\/tools\/routine\/(settings|print)$/i,
+  /^\/tools\/routine\/(settings|print|day|year)$/i,
   /* The two private shells. Their bundles are NOT here: those are
      files in aab/desk/ and aab/studio/, and the asset router
      answers them as it always has. */

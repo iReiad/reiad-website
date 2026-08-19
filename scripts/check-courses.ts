@@ -184,12 +184,30 @@ for (const course of COURSES) {
 
 const grep = (pattern: string, path: string): string[] => {
   try {
-    return execFileSync("grep", ["-rn", "--include=*.ts", "--include=*.tsx", pattern, path],
+    return execFileSync("grep", ["-rn", "--include=*.ts", "--include=*.tsx",
+      /* `next/node_modules/@reiad/shared` is the package copied in
+         by npm, so it holds the source it is copied FROM and
+         matches every pattern this looks for. It is a build
+         artifact and gitignored; reading it turns this check into
+         one that fails on nothing having gone wrong. */
+      "--exclude-dir=node_modules", pattern, path],
       { cwd: ROOT, encoding: "utf8" }).split("\n").filter(Boolean);
   } catch {
     return [];                                  // grep exits 1 on no match
   }
 };
+
+/* `PRIVATE_TEMPLATES` in `shared/routine.ts` is here for the same
+   reason and not because it is a course: it is one real person's
+   day, offered to an admin by `/api/routine/templates` and to
+   nobody else, and an import under `next/` would put it in a
+   bundle anybody can fetch while the page looked identical. Two
+   private things, one guard, rather than a second check whose
+   name would have to be remembered. */
+for (const line of grep("PRIVATE_TEMPLATES", join(ROOT, "next"))) {
+  if (/import\s+type\s/.test(line)) continue;
+  say(`next/ imports the private template, which publishes it: ${line.trim()}`);
+}
 
 for (const line of grep("shared/courses", join(ROOT, "next"))) {
   /* `import type { … }` is erased by TypeScript before anything

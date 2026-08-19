@@ -40,21 +40,46 @@ Quick check before committing:
 grep -rn $'\u2014' aab/ functions/
 ```
 
-## React or a route. Never new hand-written HTML.
+## React or a route. `aab/` is closed, and it is a check now.
 
-**Nothing new is built as a hand-written or string-generated HTML page.**
+**Nothing new is built the old way, and that is not only about pages.**
 A page is a Next.js route under `next/app/`; a piece of interface is a
-component under `next/components/` or `app/src/`. That is the target for
-everything, and anything still built the old way is a thing waiting to be
-ported rather than a pattern to copy.
+component under `next/components/` or `app/src/`. Anything still built the
+old way is a thing waiting to be ported rather than a pattern to copy.
 
 What that rules out, concretely:
 
 - a new `aab/*.html` file,
-- a new page emitted as a template literal from a `build-*.mjs`,
+- **a new browser module in `aab/src/`**, which is the one that gets
+  written by accident,
+- a new page emitted as a template literal from a builder,
+- a new `.js` under `functions/`,
 - a second copy of chrome the shell already renders. The rail, the top
   bar and the footer are `next/components/`, and a page that draws its own
   is a page that will drift from the other 250.
+
+**`scripts/check-closed.ts` holds it, because the prose did not.** The old
+system is recorded by name in `scripts/closed-set.json` and the list may
+only get SHORTER: a conversion removes a name and `--update` records it, a
+new file is not in the list and the check fails naming what to build
+instead.
+
+It was written the morning `aab/src/glow.ts` was, which is the whole
+argument. The pointer glow needed one listener; `tilt.ts` was a served
+module, the neighbours are always the pattern, so the new one was too. It
+is `next/components/glow.tsx` instead, and nothing outside the Next shell
+ever needed it: building it the old way would have cost a module
+registration, a tsconfig path, a service-worker precache entry and a
+version bump to serve one listener to pages that are already React.
+
+That is `check-mjs.ts`'s lesson one level up. Somebody adds a thing beside
+the thing that is already there, and the pattern reproduces itself faster
+than the paragraph gets read.
+
+```sh
+node scripts/check-closed.ts --list      # what is still on the old system
+node scripts/check-closed.ts --update    # after converting one, record it
+```
 
 `MIGRATION.md` lists what is still on the old method. The four practice
 books were the last real pages and are routes as of #129:
@@ -822,6 +847,8 @@ node scripts/check-selfref.ts # a custom property set to itself, which is nothin
                             # on that element and everything inside it
 node scripts/check-utility-clash.ts # a class this site styles that Tailwind also
                             # generates, which no layer order can win back
+node scripts/check-closed.ts # a new file on the old system: a browser module in
+                            # aab/src/, a hand-written page, a functions/*.js
 node scripts/check-mjs.ts   # a .mjs, which is a file nothing typechecks and the
                             # reason the next one gets written
 node scripts/check-jsx-space.ts # a sentence running into the link inside it,

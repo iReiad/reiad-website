@@ -74,6 +74,13 @@ export function GoCard({
   return (
     <a className={["card", rest.className].filter(Boolean).join(" ")}
        data-kind="go" data-done={done ? "" : undefined}
+       /* The light is what a card that answers you has and a card
+          that does not has none of. `<InfoCard>` and `<SoonCard>`
+          below deliberately carry no `data-glow`: they are the
+          end of the road, and the same distinction the rail and
+          the arrow already draw is drawn once more by the one
+          thing a pointer can test without clicking. */
+       data-glow="card"
        href={href} lang={rest.lang} style={style(rest.accent)}>
       {done ? <span className="card-tick" aria-label="পড়া হয়েছে">✓</span> : null}
       <Inside {...rest} />

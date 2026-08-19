@@ -84,7 +84,7 @@ export function FeaturedCard() {
   const c = CARDS[pick];
 
   return (
-    <a className="gate-tile gate-feat col-span-2 lg:col-span-8" href={c.href} lang={c.lang}
+    <a className="gate-tile gate-feat col-span-2 lg:col-span-8" data-glow="card" href={c.href} lang={c.lang}
        style={{ ["--accent" as string]: c.accent }}>
       <span className="gt-bg" aria-hidden="true"><Icon name={c.icon} size={150} /></span>
       <span className="flex items-center gap-2.5 min-w-0">

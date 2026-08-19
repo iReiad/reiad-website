@@ -66,7 +66,7 @@ export function ContinueCard() {
      row form: a returning reader knows where they were going, so
      this is a handle rather than a card, one line tall. */
   return (
-    <a className="gate-tile gate-slim" href={mark.url}
+    <a className="gate-tile gate-slim" data-glow="card" href={mark.url}
        style={{ ["--accent" as string]: "var(--gold)" }}>
       <span className="gt-disc"><Icon name="spark" size={16} /></span>
       <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1 min-w-0">

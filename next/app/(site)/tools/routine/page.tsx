@@ -14,15 +14,20 @@
    shares.
 
    So the server renders the frame and the heading, and
-   `<RoutineDay>` fills it. Signed out, that component draws a
-   short invitation rather than an empty shell: a redirect would
-   lose the address somebody was sent, and a blank page looks
-   broken.
+   `<RoutineDashboard>` fills it. Signed out, that component
+   draws a short invitation rather than an empty shell: a
+   redirect would lose the address somebody was sent, and a
+   blank page looks broken.
+
+   The day and the year have their own addresses under this one.
+   They were two tabs here, which made the landing page a
+   checklist; the dashboard is the landing page now and both are
+   still one press away.
    ============================================================ */
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
-import { RoutineHome } from "../../../../components/routine/home";
+import { RoutineDashboard } from "../../../../components/routine/dashboard";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/routine",
@@ -44,7 +49,7 @@ export default function RoutinePage() {
   return (
     <main id="main" className="wrap rt-page">
       <h1 className="rt-title">রুটিন</h1>
-      <RoutineHome />
+      <RoutineDashboard />
     </main>
   );
 }
