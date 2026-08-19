@@ -68,18 +68,19 @@ const NOT_FETCHED = {
   "https://www.facebook.com": "a profile link on /about.html",
   "https://www.instagram.com": "a profile link on /about.html",
   "https://github.com": "a link to this repository on /about.html",
-  /* An IMAGE host, so it is `img-src` rather than `connect-src`,
-     and `aab/_headers` allows it there: the picture a Google
-     sign-in brings, drawn into the account's circle by
-     `account-page.ts` and `signin.ts`. It is an `<img src>` in
-     both, never a fetch, and the tag carries
-     `referrerpolicy="no-referrer"`.
+  /* Links, never fetched: the anchors in `aab/editor.test.ts`'s
+     sanitiser fixtures and the URL its Ctrl+K check is handed. The
+     reserved documentation host, so it is the one entry here that
+     names nothing real on purpose.
 
-     It also appears in `aab/studio.test.ts` as the off-site photo
-     the Studio's pre-flight is meant to warn about, which is a
-     string in a fixture rather than an address anything reaches. */
-  "https://lh3.googleusercontent.com":
-    "an <img src> for the account's picture, allowed under img-src, never fetched",
+     It replaced `lh3.googleusercontent.com`, which used to sit
+     here as the off-site photo the Studio's pre-flight warns
+     about. That fixture is in `app/studio.test.ts` now, and this
+     check walks `app/src` rather than `app/`, which is where a
+     fetch this site is responsible for would be written. Why that
+     host is in `img-src` is written where the policy is, in
+     `aab/_headers` and `shared/headers.ts`. */
+  "https://example.com": "links in the editor test's fixtures, and the URL Ctrl+K is given",
   /* The webfonts, and they are here rather than in connect-src
      because a stylesheet link and a font file are `style-src` and
      `font-src`, which the policy already allows both of. A

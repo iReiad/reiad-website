@@ -184,12 +184,6 @@ const said = (value: string | null): string => {
   return value;
 };
 
-/** A box the page has, when something is measured against it. */
-function need<T>(found: T | null | undefined, what: string): T {
-  if (found == null) throw new Error(`no ${what}`);
-  return found;
-}
-
 /* A browser, or a clean skip that says which way it failed to
    start. `npm i` gets the library and not the browser, and
    Playwright refuses to launch one it did not download itself

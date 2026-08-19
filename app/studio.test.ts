@@ -16,11 +16,11 @@
    ---- what this covers, and what it deliberately does not ----
 
    The writing surface itself is `aab/editor.js` now, shared by
-   both Studios, and `aab/studio.test.ts` already drives all 70 of
-   its checks against the old page: the sanitiser, the markdown
-   rules, the slash menu, the figure toolbar. Repeating them here
-   would test the same module twice and prove nothing about the
-   port.
+   both Studios, and `aab/editor.test.ts` drives every one of its
+   checks against a shell of its own: the sanitiser, the markdown
+   rules, the slash menu, the figure toolbar, the paste. Repeating
+   them here would test the same module twice and prove nothing
+   about the port.
 
    So this file is the chrome: the fields, the section picker, the
    topic chips, the three previews, the weight meter, pre-flight,
@@ -469,8 +469,41 @@ const type = async (page: Page, text: string): Promise<void> => {
   await page.waitForTimeout(400);
   check("an over-long headline is flagged",
     said(await page.locator(".share-notes").textContent()).includes("will be cut around 60"));
+  {
+    /* Those 80 x's are a headline with no space in it, so it has no
+       break opportunity, and it ran straight out of the card until
+       `overflow-wrap` was set on it. */
+    const card = await page.locator(".share-card").boundingBox();
+    const text = await page.locator(".share-text strong").boundingBox();
+    if (!card || !text) throw new Error("the share card is not on screen");
+    check("a headline with no spaces stays inside the card",
+      text.x + text.width <= card.x + card.width + 1,
+      `card ends at ${card.x + card.width}, the headline at ${text.x + text.width}`);
+  }
   await page.locator('[data-view="article"]').click();
   await page.waitForTimeout(250);
+
+  /* ---- a photo hosted somewhere else ----
+     A paste from Google Docs is cross-origin: the browser cannot
+     fetch it to resize, so the upload fails and the piece keeps an
+     image pointing at a server nobody here controls. That host is
+     in `NOT_FETCHED` in scripts/check-csp.ts, named as this. */
+  await page.fill("#f-title", "A piece with a borrowed photo");
+  await page.evaluate(() => {
+    const editor = document.querySelector("#editor");
+    if (!editor) throw new Error("there is no #editor");
+    editor.innerHTML =
+      '<p>Text</p><figure><img src="https://lh3.googleusercontent.com/x.png" alt="a chart"></figure>';
+    editor.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await page.waitForTimeout(600);
+  {
+    const issues = await page.locator("#preflight-list li").allTextContents();
+    check("pre-flight warns about an off-site photo",
+      issues.some((t) => /hosted elsewhere/.test(t)), issues.join(" | "));
+    check("and names where it is hosted",
+      issues.some((t) => t.includes("googleusercontent.com")), issues.join(" | "));
+  }
 
   /* ---- drafts, and Open ---- */
   await page.fill("#f-title", "The first draft");
