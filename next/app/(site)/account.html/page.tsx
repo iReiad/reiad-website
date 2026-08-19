@@ -89,6 +89,9 @@ import { Button, ButtonLink } from "../../../components/ui/button";
 import { Preferences } from "../../../components/account/prefs";
 import { Scenarios } from "../../../components/account/saved";
 import { ReadingList, Notes } from "../../../components/account/library";
+import { Paths } from "../../../components/account/paths";
+import { Targets } from "../../../components/account/targets";
+import { SCHOOL_LADDERS } from "../../../lib/school-ladders";
 
 export const metadata: Metadata = {
   ...pageMeta({
@@ -288,7 +291,14 @@ export default function AccountPage() {
           {/* ============ THE LADDERS ============ */}
           <Section id="ladders" title="Where you are"
                    blurb="Your position in each course, the chapters you have finished and the checkpoints you have ticked inside them. This is the account's copy, so it is the same on every device.">
-            <div className="ladder-list" id="account-paths" />
+            {/* The ladder comes down from here, out of the
+                generated snapshot, and the ticks are read in the
+                browser. That split is the rule
+                `next/lib/progress.ts` states, and this section
+                broke it until 18 August 2026: it imported all
+                four schools' `curriculum.js` at run time to find
+                out what a bar's denominator was. */}
+            <div className="ladder-list"><Paths ladders={SCHOOL_LADDERS} /></div>
             <p className="m-0 text-[0.82rem] text-ink-soft" id="account-synced" />
           </Section>
 
@@ -306,29 +316,7 @@ export default function AccountPage() {
           {/* ============ TARGETS ============ */}
           <Section id="targets" title="What you are aiming for"
                    blurb="Set a target and this page measures it. Nothing is sent to you about it: there are no notifications on this site and there will not be any.">
-            <div className="targets" id="account-targets" />
-            {/* A form nobody needs open until they want it, and a
-                `<details>` is the disclosure the rest of this site
-                already uses rather than a second panel with its
-                own open state in a script. */}
-            <details id="target-more"
-                     className="rounded-card border border-hairline bg-panel
-                                [&>summary]:list-none
-                                [&>summary::-webkit-details-marker]:hidden">
-              <summary className="flex min-h-[46px] cursor-pointer items-center gap-2
-                                  px-4 py-[13px] text-[0.92rem] text-green
-                                  before:font-mono before:text-base before:content-['+']">
-                Add a target
-              </summary>
-              <form id="target-form" className={`${FORM} gap-4 px-4 pb-[18px]`}>
-                <div className="choice-row" id="target-kind" />
-                <div className="target-fields" id="target-fields" />
-                <Actions>
-                  <Button kind="solid" type="submit">Add it</Button>
-                  <span className="signin-note" id="target-note" />
-                </Actions>
-              </form>
-            </details>
+            <Targets ladders={SCHOOL_LADDERS} />
           </Section>
 
           {/* ============ SAVED SCENARIOS ============ */}

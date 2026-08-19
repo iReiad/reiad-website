@@ -160,6 +160,7 @@ async function open(path, { signedIn = true, rows = {}, seed = {} } = {}) {
   const state = {
     progress: new Map(Object.entries({
       "learn-read": ["share", "dse"],
+      "learn-checks": ["share#0", "share#1"],
       "days-active": DAYS,
       ...(rows.progress ?? {}),
     }).map(([key, value]) => [key, { key, value, updated_at: new Date().toISOString() }])),
@@ -309,9 +310,17 @@ console.log("\nthe account page");
           kind: "lesson", saved: false, note: "Read this again before the exam.",
           updated_at: new Date().toISOString() },
       ],
-      targets: [{ id: "t1", kind: "habit", subject: "week", label: "Read on 4 days a week",
-        target: 4, reached: 0, unit: "days", done_at: null,
-        created_at: new Date().toISOString() }],
+      targets: [
+        { id: "t1", kind: "habit", subject: "week", label: "Read on 4 days a week",
+          target: 4, reached: 0, unit: "days", done_at: null,
+          created_at: new Date().toISOString() },
+        /* `target: 0` is what the form saves for a course: the
+           denominator is the ladder rather than a number somebody
+           typed, and it has to still be the ladder here. */
+        { id: "t2", kind: "course", subject: "money", label: "Finish Money",
+          target: 0, reached: 0, unit: "chapters", done_at: null,
+          created_at: new Date().toISOString() },
+      ],
       scenarios: [{ id: "s1", tool: "stock", name: "Square Pharma",
         inputs: { query: "price=210" }, summary: "71.4 · Buy",
         updated_at: new Date().toISOString() }],
@@ -340,10 +349,55 @@ console.log("\nthe account page");
   ok("and says how the week went",
     (await page.locator("#account-week").textContent())?.includes("of the last seven days"));
 
-  /* The ladders, which need the four curricula to have loaded. */
+  /* The ladders. The denominator comes down from the ROUTE, out
+     of `next/lib/school-ladders.ts`, and the ticks are read here,
+     which is the rule `next/lib/progress.ts` states. Until 18
+     August 2026 this section imported all four schools'
+     `curriculum.js` in the browser to find the denominator. */
   ok("every course has a bar", (await page.locator(".ladder-row .meter").count()) === 4);
   ok("and the money school is not at nought",
     (await page.locator(".ladder-row").first().locator(".ladder-pct").textContent()) !== "0%");
+
+  const money = page.locator(".ladder-row").first();
+
+  /* The account holds two money ticks, `share` and `dse`, and the
+     school's key is `learn-read` rather than `money-read`: the
+     school moved to /money/ and the key deliberately did not. A
+     bar reading "0 of ..." here is that rename having happened by
+     accident, and it loses somebody a year of ticks. */
+  /* Checkpoints are localStorage too, and the clause beside the
+     count is drawn from them: same key, same mirror, same race. */
+  ok("and names the checkpoints ticked inside them",
+    (await money.locator(".ladder-line").first().textContent())
+      ?.includes("2 checkpoints ticked in 1 lesson"),
+    await money.locator(".ladder-line").first().textContent());
+
+  is("the money bar counts the ticks the account holds",
+    (await money.locator(".ladder-line").first().textContent())?.split(" of ")[0], "2");
+  ok("out of the whole ladder, which the route counted",
+    Number((await money.locator(".ladder-line").first().textContent())?.match(/of (\d+)/)?.[1]) > 50);
+
+  /* It is followed, so it sorts first, and the resume card knows
+     it has been started. */
+  is("a started school says carry on rather than start",
+    await money.locator(".ladder-go .mono").textContent(), "Carry on");
+  ok("and points at a lesson that has not been ticked",
+    !["/money/terms/share.html", "/money/terms/dse.html"]
+      .includes(await money.locator(".ladder-go").getAttribute("href")),
+    await money.locator(".ladder-go").getAttribute("href"));
+
+  /* A school nobody has opened is quieter, and says so rather
+     than being dressed as a failure. */
+  const untouched = page.locator(".ladder-row:not([data-started])");
+  ok("a school never opened is not marked started", (await untouched.count()) === 3);
+  is("and its card says Start", await untouched.first().locator(".ladder-go .mono").textContent(),
+    "Start");
+
+  /* Each row wears its own school's colour, from the one table
+     the menu comes from. */
+  is("every bar wears its school's own accent",
+    await page.locator(".ladder-row").evaluateAll((rows) =>
+      [...new Set(rows.map((r) => r.style.getPropertyValue("--accent")))].length), 4);
 
   is("the reading list holds what was kept",
     await page.locator("#account-kept-list .kept-row").count(), 1);
@@ -356,7 +410,25 @@ console.log("\nthe account page");
     await page.locator("#account-notes .kept-note").textContent(),
     "Read this again before the exam.");
 
-  is("the target is drawn", await page.locator(".target").count(), 1);
+  is("both targets are drawn", await page.locator(".target").count(), 2);
+  /* A habit reads `days-active`; a course reads the reader's own
+     ticks against the ladder the route handed down. Neither is a
+     number anybody typed, which is the test a fourth kind would
+     have to pass. */
+  /* Not zero, which is the whole check. `days-active` is a synced
+     key, so a habit read once on mount is measured against
+     whatever this device held BEFORE the account's rows landed:
+     "0 of 4 days this week" for somebody who was here on ten of
+     the last fourteen. It looks like an honest number. */
+  ok("a habit target counts the days the account holds",
+    /^[1-9]\d* of 4 days this week/.test(
+      (await page.locator(".target").first().locator(".target-line").textContent()) ?? ""),
+    await page.locator(".target").first().locator(".target-line").textContent());
+  ok("a course target counts chapters against the whole ladder",
+    /^2 of \d\d+ chapters$/.test(
+      (await page.locator(".target").nth(1).locator(".target-line").textContent()) ?? ""),
+    await page.locator(".target").nth(1).locator(".target-line").textContent());
+
   is("the scenario is listed", await page.locator(".saved-row").count(), 1);
 
   is("no page errors", errors.length ? errors[0] : "none", "none");

@@ -46,12 +46,9 @@ import { current, signOut, getProfile, saveProfile, type Profile } from "/accoun
 import { sync, forgetOnAccount, SYNCED_KEYS } from "/sync.js";
 import {
   listScenarios, removeScenario,
-  listTargets, saveTarget, updateTarget, removeTarget,
+  listTargets, removeTarget,
   listLibrary, removeLibraryRow,
-  type Target, type TargetKind,
 } from "/saved.js";
-import { checkpointStats } from "/checkpoints.js";
-import type { Rung } from "/money/curriculum.js";
 import { COURSES } from "/content.js";
 import { activeDays, daysIn, run, today } from "/streak.js";
 
@@ -89,17 +86,6 @@ const say = (node: HTMLElement | null, text?: string | null, state?: string): vo
   if (state) node.dataset.state = state;
   else delete node.dataset.state;
 };
-
-/** A bar. `role="progressbar"` and a label, because a bar with no
-    number in it is a picture of a fact rather than the fact. */
-function meter(pct: number, label: string): HTMLElement {
-  const n = Math.max(0, Math.min(100, Math.round(pct || 0)));
-  const bar = el("span", {
-    className: "meter", role: "progressbar", "aria-label": label,
-    "aria-valuenow": String(n), "aria-valuemin": "0", "aria-valuemax": "100",
-  }, el("i", { style: `width:${n}%` }));
-  return bar;
-}
 
 /** The empty state of a list, said in a sentence rather than
     drawn as a dashed box with a shrug in it. */
@@ -320,144 +306,18 @@ function paintFace(): void {
 /* ============================================================
    THE LADDERS
 
-   A bar needs a denominator and the denominator is the
-   curriculum. Each school spells its own list a different way,
-   which is history rather than disorder: `allTeile` is German for
-   the same idea `allParts` is English for, and both were named
-   before there was anything reading all four. This is the one
-   place that has to read all four, so this is where the four
-   names are written down.
+   Painted here and `components/account/paths.tsx` now, and the
+   change is not only where the code lives. This file imported all
+   four schools' `curriculum.js` at run time, 150 KB of them, to
+   find out how many lessons a bar was counting against. The route
+   hands the ladder down instead, out of
+   `next/lib/school-ladders.ts`, which is the rule
+   `next/lib/progress.ts` states: the ladder is the server's and
+   the ticks are the browser's.
+
+   `startedCourses()` below stays, because the settings form still
+   ticks the courses a reader has already opened.
    ============================================================ */
-
-/** One school: how to load its ladder, which of the three names
-    that module calls the accessor, and the storage key its ticks
-    are filed under. The key is not the school's name and must not
-    become it: `learn-read` is the money school's and CLAUDE.md
-    says what renaming one costs. */
-type CurriculumModule = typeof import("/money/curriculum.js");
-
-interface Ladder {
-  load: () => Promise<CurriculumModule>;
-  all: (m: CurriculumModule) => Rung[];
-  key: string;
-}
-
-const LADDERS: Record<string, Ladder> = {
-  money:   { load: () => import("/money/curriculum.js"),   all: (m) => m.allLessons(), key: "learn-read" },
-  deutsch: { load: () => import("/deutsch/curriculum.js"), all: (m) => m.allTeile(),   key: "deutsch-read" },
-  quran:   { load: () => import("/quran/curriculum.js"),   all: (m) => m.allLessons(), key: "quran-done" },
-  english: { load: () => import("/english/curriculum.js"), all: (m) => m.allParts(),   key: "english-read" },
-};
-
-const LAST_KEY: Record<string, string> = {
-  money: "learn-last", deutsch: "deutsch-last",
-  quran: "quran-last", english: "english-last",
-};
-
-/** A rung as this page needs it: the id its ticks are under, the
-    address to send somebody to, a title to print, and whether it
-    is written yet. */
-interface Step {
-  id: string;
-  url: string;
-  title: string;
-  live: boolean;
-}
-
-let ladders: Map<string, Step[]> | null = null;
-
-async function loadLadders(): Promise<Map<string, Step[]>> {
-  if (ladders) return ladders;
-  const entries = await Promise.all(Object.entries(LADDERS).map(async ([id, spec]) => {
-    try {
-      const mod = await spec.load();
-      return [id, spec.all(mod).map((l): Step => ({
-        id: l.id, url: l.url, title: String(l.bn ?? l.en ?? l.id),
-        live: (l.status ?? "live") === "live",
-      }))] as const;
-    } catch (err) {
-      /* A ladder that will not load is a bar this page cannot
-         honestly draw, so it does not draw one. */
-      console.warn("account: could not read the ladder for", id, err);
-      return [id, [] as Step[]] as const;
-    }
-  }));
-  ladders = new Map(entries);
-  return ladders;
-}
-
-function standing(course: string, lessons: Step[]) {
-  const read = new Set(readLocal<string[]>(LADDERS[course].key) ?? []);
-  const live = lessons.filter((l) => l.live);
-  const done = live.filter((l) => read.has(l.id));
-
-  /* Where they were, and where to go, which are the same thing
-     only until the lesson they were on is finished. Same rule the
-     school hubs use, and for the same reason: a resume card that
-     sends you back to something you have already ticked is a card
-     nobody presses twice. */
-  const mark = readLocal<{ id?: string }>(LAST_KEY[course]);
-  const at = mark?.id ? live.findIndex((l) => l.id === mark.id) : -1;
-  const next = at === -1
-    ? live.find((l) => !read.has(l.id))
-    : live.slice(at).find((l) => !read.has(l.id)) ?? live.find((l) => !read.has(l.id));
-
-  return {
-    done: done.length,
-    total: live.length,
-    pct: live.length ? (done.length / live.length) * 100 : 0,
-    next: next ?? null,
-    checks: checkpointStats(course),
-    touched: done.length > 0 || Boolean(mark?.id),
-  };
-}
-
-function ladderRow(course: string, lessons: Step[]): HTMLElement {
-  const s = standing(course, lessons);
-  const name = courseName(course);
-
-  const line = s.checks.done
-    ? `${s.done} of ${s.total} chapters · ${plural(s.checks.done, "checkpoint", "checkpoints")}`
-      + ` ticked in ${plural(s.checks.lessons, "lesson", "lessons")}`
-    : `${s.done} of ${s.total} chapters`;
-
-  return el("div", { className: "ladder-row", "data-started": s.touched ? "" : undefined },
-    el("div", { className: "ladder-head" },
-      el("h3", { className: "bn-h", textContent: name }),
-      el("span", { className: "ladder-pct mono", textContent: `${Math.round(s.pct)}%` })),
-    meter(s.pct, `${name}: ${s.done} of ${s.total} chapters finished`),
-    el("p", { className: "ladder-line", textContent: line }),
-    s.next
-      ? el("a", { className: "ladder-go", href: s.next.url },
-          el("span", { className: "mono", textContent: s.touched ? "Carry on" : "Start" }),
-          el("strong", { className: "bn-h", textContent: s.next.title }))
-      : el("p", { className: "ladder-line", textContent:
-          s.total ? "Every written chapter is finished." : "Nothing written here yet." }));
-}
-
-async function paintPaths(): Promise<void> {
-  const host = $("#account-paths");
-  if (!host) return;
-
-  const all = await loadLadders();
-
-  /* Followed first, then anything with progress in it, then the
-     rest. A reader who has said they are learning German should
-     not scroll past three courses they have never opened to find
-     out how German is going. */
-  const following = new Set(profile?.following ?? []);
-  const started = startedCourses();
-  const rank = (id: string): number => (following.has(id) ? 0 : started.has(id) ? 1 : 2);
-
-  const rows = [...all.keys()]
-    .filter((id) => (all.get(id) ?? []).length)
-    .sort((a, b) => rank(a) - rank(b))
-    .map((id) => ladderRow(id, all.get(id)!));
-
-  host.replaceChildren(...(rows.length
-    ? rows
-    : [nothing("No course ladders could be read just now.")]));
-}
 
 /* ============================================================
    THE LIBRARY: kept pages, and notes
@@ -480,193 +340,17 @@ async function paintPaths(): Promise<void> {
 
 /* ============================================================
    TARGETS
+
+   The list, the three kinds, the measuring and the form are
+   `components/account/targets.tsx` now. They were a painter and a
+   submit handler that knew each other only by element id; adding
+   a target repaints the list, which is one piece of state and so
+   is one component.
+
+   Erasing everything still removes them, below, and it reads the
+   rows itself rather than keeping a module-level copy of what the
+   list last drew.
    ============================================================ */
-
-const KINDS: Array<{ id: TargetKind; label: string; note: string }> = [
-  { id: "course", label: "Finish a course", note: "measured by your own ticks" },
-  { id: "habit", label: "Turn up n days a week", note: "measured by the days you were here" },
-  { id: "metric", label: "Reach a number", note: "a figure you keep and update yourself" },
-];
-
-let targets: Target[] = [];
-
-/** Where a target's progress comes from, per kind. Two of the
-    three read what the reader has actually done; the third reads
-    a number they typed, because this site cannot see their
-    portfolio and pretending otherwise would be a bar that means
-    nothing. */
-async function measure(target: Target): Promise<{ at: number; of: number; unit: string }> {
-  if (target.kind === "course") {
-    const all = await loadLadders();
-    const s = standing(target.subject, all.get(target.subject) ?? []);
-    return { at: s.done, of: Number(target.target) || s.total || 1, unit: "chapters" };
-  }
-  if (target.kind === "habit") {
-    return { at: daysIn(7), of: Number(target.target) || 7, unit: "days this week" };
-  }
-  return {
-    at: Number(target.reached) || 0,
-    of: Number(target.target) || 1,
-    unit: target.unit || "",
-  };
-}
-
-async function targetRow(target: Target): Promise<HTMLElement> {
-  const { at, of, unit } = await measure(target);
-  const pct = of ? (at / of) * 100 : 0;
-  const finished = Boolean(target.done_at) || pct >= 100;
-  const numbers = `${at} of ${of}${unit ? ` ${unit}` : ""}`;
-
-  const actions = el("div", { className: "target-actions" });
-
-  /* A number this site cannot see is a number the reader keeps,
-     so the one control it gets is the one that updates it. */
-  if (target.kind === "metric") {
-    const field = el("input", {
-      type: "number", step: "any", min: "0", className: "target-input",
-      value: String(target.reached ?? 0), "aria-label": `Where ${target.label} is now`,
-    });
-    const update = el("button", { className: "btn btn-ghost btn-small", type: "button",
-      textContent: "Update" });
-    update.addEventListener("click", async () => {
-      update.disabled = true;
-      try {
-        await updateTarget(target.id, { reached: Number(field.value) || 0 });
-        await paintTargets();
-      } catch (err) {
-        say($("#target-note"), (err as Error).message, "warn");
-        update.disabled = false;
-      }
-    });
-    actions.append(field, update);
-  }
-
-  const done = el("button", { className: "btn btn-ghost btn-small", type: "button",
-    textContent: target.done_at ? "Reopen" : "Mark done" });
-  done.addEventListener("click", async () => {
-    done.disabled = true;
-    try {
-      await updateTarget(target.id, { done_at: target.done_at ? null : new Date().toISOString() });
-      await paintTargets();
-    } catch (err) {
-      say($("#target-note"), (err as Error).message, "warn");
-      done.disabled = false;
-    }
-  });
-
-  const drop = el("button", { className: "btn btn-ghost btn-small", type: "button",
-    textContent: "Remove" });
-  drop.addEventListener("click", async () => {
-    if (!confirm(`Remove "${target.label}"?`)) return;
-    drop.disabled = true;
-    try {
-      await removeTarget(target.id);
-      await paintTargets();
-    } catch (err) {
-      say($("#target-note"), (err as Error).message, "warn");
-      drop.disabled = false;
-    }
-  });
-  actions.append(done, drop);
-
-  return el("div", { className: "target", "data-done": finished ? "" : undefined },
-    el("div", { className: "target-head" },
-      el("h3", { textContent: target.label }),
-      el("span", { className: "target-pct mono",
-        textContent: `${Math.round(Math.min(pct, 100))}%` })),
-    meter(pct, `${target.label}: ${numbers}`),
-    el("p", { className: "target-line", textContent: finished ? `${numbers}. Done.` : numbers }),
-    actions);
-}
-
-async function paintTargets(): Promise<void> {
-  const host = $("#account-targets");
-  if (!host) return;
-
-  targets = await listTargets();
-  host.replaceChildren(...(targets.length
-    ? await Promise.all(targets.map(targetRow))
-    : [nothing("Nothing set. A target is a sentence with a number in it: finish "
-      + "the money ladder, read on four days a week, get a portfolio yield to "
-      + "six per cent.")]));
-}
-
-function buildKinds(): void {
-  const host = $("#target-kind");
-  if (!host) return;
-  host.replaceChildren(...KINDS.map((kind, n) =>
-    el("label", { className: "choice choice-pace", htmlFor: `kind-${kind.id}` },
-      el("input", { type: "radio", name: "target-kind", id: `kind-${kind.id}`,
-        value: kind.id, checked: n === 0, onchange: buildFields }),
-      el("span", { className: "choice-body" },
-        el("strong", { textContent: kind.label }),
-        el("small", { textContent: kind.note })))));
-}
-
-const chosenKind = (): TargetKind =>
-  ($<HTMLInputElement>("#target-kind input:checked")?.value as TargetKind) ?? "course";
-
-/** The fields, which differ per kind, because a course target has
-    nothing to type and a metric has four things. One form that
-    changes rather than three forms: three would be three save
-    handlers and three places for a label to drift. */
-function buildFields(): void {
-  const host = $("#target-fields");
-  if (!host) return;
-  const kind = chosenKind();
-
-  const field = (label: string, input: HTMLElement): HTMLElement =>
-    el("label", { className: "target-field" }, el("span", { textContent: label }), input);
-
-  if (kind === "course") {
-    host.replaceChildren(field("Which course",
-      el("select", { id: "target-subject" },
-        ...COURSES.map((c) => el("option", { value: c.id, textContent: `${c.bn} · ${c.en}` })))));
-    return;
-  }
-  if (kind === "habit") {
-    host.replaceChildren(field("Days a week",
-      el("input", { type: "number", id: "target-number", min: "1", max: "7", value: "4" })));
-    return;
-  }
-  host.replaceChildren(
-    field("What you are tracking",
-      el("input", { type: "text", id: "target-label", maxLength: 80,
-        placeholder: "Portfolio dividend yield" })),
-    field("Where it is now",
-      el("input", { type: "number", id: "target-now", step: "any", min: "0", value: "0" })),
-    field("Where you want it",
-      el("input", { type: "number", id: "target-number", step: "any", min: "0", value: "0" })),
-    field("Unit", el("input", { type: "text", id: "target-unit", maxLength: 20, placeholder: "%" })));
-}
-
-/** What the form is asking for. Throws a sentence rather than
-    returning null, so the one place that shows a complaint is the
-    one place that catches it. */
-function readTargetForm(): Parameters<typeof saveTarget>[0] {
-  const kind = chosenKind();
-
-  if (kind === "course") {
-    const subject = $<HTMLSelectElement>("#target-subject")?.value ?? "";
-    const course = COURSES.find((c) => c.id === subject);
-    if (!course) throw new Error("Pick a course.");
-    return { kind, subject, label: `Finish ${course.en}`, target: 0, unit: "chapters" };
-  }
-  if (kind === "habit") {
-    const n = Number($<HTMLInputElement>("#target-number")?.value);
-    if (!(n >= 1 && n <= 7)) throw new Error("Somewhere between one and seven days.");
-    return { kind, subject: "week", label: `Read on ${n} days a week`, target: n, unit: "days" };
-  }
-  const label = ($<HTMLInputElement>("#target-label")?.value ?? "").trim();
-  const goal = Number($<HTMLInputElement>("#target-number")?.value);
-  if (!label) throw new Error("Say what you are tracking.");
-  if (!(goal > 0)) throw new Error("A target needs a number greater than nothing.");
-  return {
-    kind, subject: label.slice(0, 60), label, target: goal,
-    reached: Number($<HTMLInputElement>("#target-now")?.value) || 0,
-    unit: ($<HTMLInputElement>("#target-unit")?.value ?? "").trim(),
-  };
-}
 
 /* ============================================================
    SAVED SCENARIOS
@@ -835,8 +519,6 @@ async function boot(): Promise<void> {
   paintIdentity();
   if (!current()) return;
 
-  buildKinds();
-  buildFields();
 
   /* The exchange first, and everything else after it.
 
@@ -879,10 +561,6 @@ async function boot(): Promise<void> {
     frame(false);
   }
 
-  /* Four sections that each talk to the account, in parallel,
-     because none is waiting on any other and one at a time would
-     be four round trips end to end. */
-  await Promise.all([paintPaths(), paintTargets()]);
 }
 
 /* ---------- saving ---------- */
@@ -916,7 +594,12 @@ $("#settings-form")?.addEventListener("submit", async (e) => {
   const name = $<HTMLInputElement>("#account-name")!.value.trim();
   if (!name) { say($("#settings-note"), "A name cannot be empty.", "warn"); return; }
 
-  const saved = await save({
+  /* Nothing is repainted after this and nothing needs to be. The
+     order of the ladders follows `following`, and
+     `components/account/paths.tsx` hears about a change through
+     `profile:changed`, which `saveProfile` dispatches on a save
+     that worked. */
+  await save({
     display_name: name,
     following: chosenCourses(),
     pace: chosenPace(),
@@ -925,9 +608,6 @@ $("#settings-form")?.addEventListener("submit", async (e) => {
        nothing else has still been through setup. */
     setup_at: new Date().toISOString(),
   }, "Saved.");
-
-  // The order of the ladders follows `following`.
-  if (saved) paintPaths();
 });
 
 /* "Not now" is a real answer and is recorded as one. Without this
@@ -936,25 +616,6 @@ $("#settings-form")?.addEventListener("submit", async (e) => {
 $("#settings-skip")?.addEventListener("click", async () => {
   await save({ setup_at: new Date().toISOString() },
     "Fine. Everything above is here whenever you want it.");
-});
-
-$("#target-form")?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const button = (e.currentTarget as HTMLFormElement)
-    .querySelector<HTMLButtonElement>("button[type=submit]")!;
-  button.disabled = true;
-  try {
-    await saveTarget(readTargetForm());
-    say($("#target-note"), "Added.", "ok");
-    buildFields();
-    const more = $<HTMLDetailsElement>("#target-more");
-    if (more) more.open = false;
-    await paintTargets();
-  } catch (err) {
-    say($("#target-note"), (err as Error).message || "That did not save.", "warn");
-  } finally {
-    button.disabled = false;
-  }
 });
 
 /* ---------- leaving ---------- */
@@ -983,7 +644,10 @@ $("#account-forget")?.addEventListener("click", async () => {
   let gone = await forgetOnAccount();
   try {
     await Promise.all([
-      ...targets.map((t) => removeTarget(t.id)),
+      /* Read rather than remembered. This file used to keep the
+         array the targets list had last drawn; the list is a
+         component now and this is the only caller, so it asks. */
+      ...(await listTargets()).map((t) => removeTarget(t.id)),
       ...(await listScenarios()).map((s) => removeScenario(s.id)),
       ...(await listLibrary()).map((r) => removeLibraryRow(r.id)),
     ]);
@@ -1010,7 +674,6 @@ $("#account-forget")?.addEventListener("click", async () => {
   paintKept();
   paintHeat();
   paintTiles(profile?.pace ?? "");
-  await Promise.all([paintPaths(), paintTargets()]);
 });
 
 document.addEventListener("account:changed", () => {

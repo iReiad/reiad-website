@@ -41,6 +41,17 @@ export interface NavItem {
   icon: IconName;
   /** Which `Current` value marks this item as where you are. */
   key?: string;
+  /** A school with a ladder: stages, lessons, and a tick per
+      lesson. `/account.html` draws a bar for each of these and
+      the settings form offers them as things to follow, so the
+      flag is what says "this is a course" rather than a Bangla
+      word in `kind` being read as one.
+
+      `scripts/check-next.mjs` fails if the four flagged here are
+      not exactly the four in `next/lib/school-ladders.ts`: a
+      school that gains a ladder and not the flag is a bar the
+      account page never draws, and the page looks finished. */
+  ladder?: true;
   /** A school still being written. It appears, and it says so. */
   soon?: boolean;
   /** In the table, and not in the menus.
@@ -94,23 +105,23 @@ export const NAV: NavGroup[] = [
       { label: "All skills", sub: "দক্ষতা", href: "/skills/index.html", icon: "skills", key: "skills" },
       {
         label: "Money", sub: "টাকা ও শেয়ার", href: "/money/index.html",
-        icon: "coins", key: "money", kind: "কোর্স", accent: "var(--green)",
+        icon: "coins", key: "money", kind: "কোর্স", ladder: true, accent: "var(--green)",
         blurb: "বিও অ্যাকাউন্ট খোলা থেকে নিজে একটা কোম্পানি যাচাই করা পর্যন্ত, "
           + "ধাপে ধাপে সাজানো। সবচেয়ে বড় স্কুল, আর শুরুটা একদম শূন্য থেকে।",
       },
       {
         label: "German", sub: "জার্মান", href: "/deutsch/index.html",
-        icon: "book", key: "deutsch", kind: "কোর্স", accent: "var(--blue)",
+        icon: "book", key: "deutsch", kind: "কোর্স", ladder: true, accent: "var(--blue)",
         blurb: "চারটা স্তরে জার্মান, বাংলা দিয়ে বোঝানো, আর রোজ এক পাতার অনুশীলন খাতা।",
       },
       {
         label: "Qur'anic Arabic", sub: "কুরআনের আরবি", href: "/quran/index.html",
-        icon: "scroll", key: "quran", kind: "কোর্স", accent: "var(--teal)",
+        icon: "scroll", key: "quran", kind: "কোর্স", ladder: true, accent: "var(--teal)",
         blurb: "তিন ধাপে ষাট দিন: শব্দ চেনা, বাক্য বোঝা, তারপর গোটা সূরা খুলে পড়া।",
       },
       {
         label: "English", sub: "মন থেকে ইংরেজি", href: "/english/index.html",
-        icon: "signpost", key: "english", kind: "কোর্স", accent: "var(--violet)",
+        icon: "signpost", key: "english", kind: "কোর্স", ladder: true, accent: "var(--violet)",
         blurb: "দুই টার্মে ইংরেজি: শব্দের ক্রম থেকে দুই মিনিট টানা বলা পর্যন্ত, সাথে ৩০ দিনের খাতা।",
       },
       {
@@ -262,6 +273,34 @@ export const SCHOOL_ACCENTS: string[] =
   NAV.find((g) => g.id === "learn")?.items
     .filter((i) => i.accent && !i.unlisted && !i.soon)
     .map((i) => i.accent as string) ?? [];
+
+/** The four schools with a ladder, in the order the rail lists
+    them.
+
+    `/account.html` reads this twice: once for the bar it draws
+    per school, and once for the courses the settings form offers
+    to follow. Both used `COURSES` in `aab/content.js`, which held
+    the money school TWICE, once by hand under a name it stopped
+    using when it moved to `/money/` and once through `SKILLS`.
+    Two checkboxes with one `id`, two entries in one `<select>`,
+    and a bar labelled with the old name. */
+export const LADDER_SCHOOLS = (NAV.find((g) => g.id === "learn")?.items ?? [])
+  .filter((item) => item.ladder)
+  .map((item) => ({
+    key: item.key as string,
+    /** The school's own name, which is the one it teaches under. */
+    bn: item.sub,
+    en: item.label,
+    href: item.href,
+    accent: item.accent ?? "var(--green)",
+    blurb: item.blurb ?? "",
+  }));
+
+/** Both names, the way this site writes a school: Bangla first. */
+export const schoolName = (key: string): string => {
+  const school = LADDER_SCHOOLS.find((s) => s.key === key);
+  return school ? `${school.bn} · ${school.en}` : key;
+};
 
 /** The attributes `<html>` carries, as a string, for a renderer
     that is not React.

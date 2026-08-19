@@ -31,6 +31,21 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v126: Where you are, and what you are aiming for, are components:
+        `account/paths.tsx` and `account/targets.tsx`. The ladder
+        each bar counts against comes down from the ROUTE now, out
+        of `next/lib/school-ladders.ts`, so `/account-page.js` no
+        longer imports all four schools' `curriculum.js` in the
+        browser to find out what a denominator was: 150 KB of
+        modules replaced by 20 KB of props, and the rule
+        `next/lib/progress.ts` states restored.
+
+        `/content.js` changed with it. `COURSES` held the money
+        school TWICE, once written out by hand under a name it
+        stopped using when it moved to `/money/` and once through
+        `SKILLS`. Two checkboxes with one id, and a duplicate in
+        the target form's menu.
+
    v125: The reading list and the notes are components too, one
         for both because `public.library` is one row per person
         per page with `saved` and `note` as two columns of it.
@@ -1296,7 +1311,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v125";
+const VERSION = "v126";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

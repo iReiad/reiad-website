@@ -131,6 +131,42 @@ is a Next.js route; a piece of interface is a component. See CLAUDE.md.
 **In flight:** the German book is a route (`arbeitsbuch.html`), sharing
 `components/workbook.tsx` with a data shape that already covers both schools.
 
+**In flight: `/account.html`.** The route was rendered by Next from the day
+it was ported and every section of it was still DRAWN by
+`/account-page.js`, which is the shape this whole tracker is about: correct
+HTML with a browser module building the contents of it in a loop.
+
+Six of the nine sections are components under `next/components/account/`
+now, and `aab/src/account-page.ts` is 1155 lines down to 699:
+
+| Section | |
+| --- | --- |
+| reading preferences | `prefs.tsx` |
+| saved scenarios | `saved.tsx` |
+| reading list, notes | `library.tsx`, one component for both |
+| where you are | `paths.tsx` |
+| targets, and the form | `targets.tsx` |
+| **left** | the year grid, the four tiles, the kept-keys cards, the identity header, the three settings questions, take-a-copy and erase |
+
+Two things came out of it that are not about where code lives.
+
+The ladder each bar counts against comes down from the ROUTE now, out of
+`next/lib/school-ladders.ts`, which `scripts/build-school-tree.mjs`
+generates from `content/schools.backup.json`. The page used to import all
+four schools' `curriculum.js` in the browser to find the denominator, 150 KB
+of modules for 20 KB of facts, and it is the exact thing
+`next/lib/progress.ts` is written against: **the ladder is the server's and
+the ticks are the browser's.**
+
+And `subscribe()` in `progress.ts` now hears `sync:done`. `aab/sync.js`
+writes the account's rows straight into localStorage, which fires neither
+the same-tab event nor `storage`, so for a signed-in reader every meter on
+every page was drawn against what storage held BEFORE the exchange and
+stayed there. It looked right most of the time, because the exchange
+usually finishes before the first paint. It looked wrong on the one page
+that fetches something of its own first: a course target reading "0 of 60"
+beside a bar of the same school reading "9 of 60".
+
 **The English book is blocked on a decision, not on work.** The two books are
 the same page structurally and two different designs visually: German uses
 `buch-tag`, `tag-teil`, `muster` in `@layer deutsch`; English uses `wb-day`,

@@ -266,6 +266,23 @@ stored a URL, so a lesson that moved took the bookmark with it.
 Opening is not finishing. A visit moves the bookmark; the tick is a
 button the reader presses.
 
+**Anything drawing a number out of those keys subscribes, and
+`subscribe()` listens for three things.** The same-tab event, the
+cross-tab `storage` event, and `sync:done`. The third is the one
+that is easy to leave out and it is the one that matters for a
+signed-in reader: `aab/sync.js` writes the account's rows straight
+into localStorage, which fires neither of the other two, because
+`storage` only fires in OTHER tabs. Without it every meter on the
+page is drawn against what storage held BEFORE the exchange, and
+stays there.
+
+That is invisible almost always, because the exchange usually
+finishes before the first paint. It showed up on the one page that
+fetches something of its own first: `/account.html` drew a course
+target at "0 of 60" beside a bar of the same school reading
+"9 of 60". A component that reads one of these keys ONCE, on mount,
+has the same bug whether or not it also redraws.
+
 ### Progress belongs to the account, and the browser is a mirror
 
 `aab/sync.js`, rewritten 17 August 2026, and the whole of it is
@@ -352,7 +369,7 @@ at.
   Leaving should be as easy as arriving.
 - **Erase everything**, which means the account and the mirror.
 
-`next/account.test.mjs` is the guard: 71 checks in a real browser
+`next/account.test.mjs` is the guard: 81 checks in a real browser
 against a routed Supabase.
 
 ### The account menu is a popover, not a dialog
@@ -606,7 +623,7 @@ node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the
                                    # real CSP (needs Playwright, skips without)
 node next/account.test.mjs        # the account's five features, the popover
                                   # menu and the Save under a byline
-                                  # (71 checks, needs the Next build and a
+                                  # (81 checks, needs the Next build and a
                                   # browser, skips without)
 node aab/sync.test.mjs             # a browser's own progress getting into an
                                    # account, resetting, signing out, and two
