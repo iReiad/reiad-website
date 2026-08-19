@@ -135,6 +135,21 @@ const GONE: Gone[] = [
 
 const allowed = new Set(GONE.map((g) => `${g.file} ${g.name}`));
 
+/** This file, which is the one place naming a file that is gone is
+    the whole job: the table above is a list of them, and the
+    header quotes four more as the examples the check exists for.
+
+    So it is exempt from ITS OWN names and from nothing else. Not
+    skipped as a source, which would be the easy version and the
+    wrong one: a pointer in here to a file that later moves is the
+    same defect as anywhere, and this is where a reader would be
+    least expecting it.
+
+    It failed on itself in CI for exactly this, having passed on a
+    laptop where it was still untracked and so was not yet read. */
+const SELF = "scripts/check-pointers.ts";
+const goneNames = new Set(GONE.map((g) => g.name));
+
 /* ---------- what to read ---------- */
 
 const tracked = execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" })
@@ -217,6 +232,10 @@ for (const file of tracked) {
 
   for (const name of new Set([...text.matchAll(NAMES)].map((m) => m[1]))) {
     if (resolves(name, file)) continue;
+    /* Before the allowlist, and NOT recorded as using an entry: a
+       GONE line whose only remaining mention is the GONE line
+       itself has stopped being needed, and should say so. */
+    if (file === SELF && goneNames.has(name)) continue;
     const key = `${file} ${name}`;
     if (allowed.has(key)) { used.add(key); continue; }
     dead.push({ file, name });
