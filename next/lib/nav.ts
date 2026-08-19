@@ -156,6 +156,13 @@ export const NAV: NavGroup[] = [
       { label: "Calculators", sub: "ক্যালকুলেটর", href: "/tools", icon: "calculator", key: "tools" },
       { label: "Stock check", sub: "শেয়ার যাচাই", href: "/tools/stock", icon: "gauge", key: "stock" },
       { label: "Live portfolio", sub: "লাইভ পোর্টফোলিও", href: "/tools/live", icon: "wallet", key: "live" },
+      /* A day of somebody's own. Listed like everything else,
+         because it explains itself signed out rather than
+         answering 403 the way the course section does: an entry
+         in the chrome to a page a reader cannot open is the
+         promise `unlisted` exists to avoid, and this page keeps
+         its promise to anybody. */
+      { label: "Routine", sub: "রুটিন", href: "/tools/routine", icon: "calendar", key: "routine" },
     ],
   },
   {

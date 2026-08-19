@@ -52,6 +52,9 @@
       "/saved.js": [
         "../app/src/types/saved.d.ts"
       ],
+      "/routine.js": [
+        "../app/src/types/routine.d.ts"
+      ],
       "/prefs.js": [
         "../app/src/types/prefs.d.ts"
       ],

@@ -895,6 +895,10 @@ node aab/editor.test.ts           # the sanitiser, the markdown rules, the slash
                                    # shell it mounts itself under the real CSP
                                    # (172 checks, needs Playwright and a browser,
                                    # skips without)
+node next/routine-day.test.ts      # a day that renders and does not mark, an
+                                   # empty day showing a nought, or anything on
+                                   # the page turning red (11 checks, needs the
+                                   # Next build and a browser, skips without)
 node next/progress.test.ts         # a page that costs a reader their ticks just
                                    # by being read (23 checks, no browser)
 node next/comments.test.ts        # a comment body that stopped being text, a reply

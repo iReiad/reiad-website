@@ -85,6 +85,13 @@ export const MODULES = [
      into a page, and a `<SiteScripts>` module runs after
      hydration where nothing React does can undo it. */
   "courses",
+  /* The routine's wire, added with phase 2 of ROUTINE.md. A
+     browser module rather than a server read for the reason
+     every account-backed thing here is one: what it reads is one
+     reader's own session out of localStorage, and the server has
+     neither the token nor any business holding it. `saved.ts` is
+     the file it is shaped after. */
+  "routine",
   /* The breadcrumb, converted with the fix to the bug it carried:
      six call sites split the document title on U+2014, a
      character this site's own rules guarantee never appears, so
