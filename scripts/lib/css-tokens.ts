@@ -3,8 +3,8 @@
    as a colour, in one mode.
 
    Two checks ask that question and they used to ask it with two
-   copies of the same parser. `check-contrast.mjs` measures whether
-   a colour can be read; `check-surfaces.mjs` measures whether a
+   copies of the same parser. `check-contrast.ts` measures whether
+   a colour can be read; `check-surfaces.ts` measures whether a
    raised surface is still raised. Both need `--panel` resolved
    through a `var()`, a `light-dark()`, a `color-mix()` and an
    accent, and a second copy of that is a second thing to get

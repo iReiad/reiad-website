@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-all.mjs: every check and every fast test, in one command.
+   check-all.ts: every check and every fast test, in one command.
 
-       node scripts/check-all.mjs             checks, then tests
-       node scripts/check-all.mjs --checks    checks only
-       node scripts/check-all.mjs --stage=X   one stage: checks,
+       node scripts/check-all.ts             checks, then tests
+       node scripts/check-all.ts --checks    checks only
+       node scripts/check-all.ts --stage=X   one stage: checks,
                                               generated or tests
-       node scripts/check-all.mjs --quiet     one line per failure
+       node scripts/check-all.ts --quiet     one line per failure
 
    THE LIST BELOW IS THE ONLY LIST. `.github/workflows/checks.yml`
    ran its own copy of it in three hand-written steps until 19
@@ -42,7 +42,19 @@ const ONLY_CHECKS = process.argv.includes("--checks");
 /** One stage by name, for a CI step that wants its own heading. */
 const STAGE = process.argv.find((a) => a.startsWith("--stage="))?.slice(8);
 
-const STAGES = [
+/** One thing to run: a path, or a path and its arguments. */
+type Entry = string | string[];
+
+/** What one finished, with everything it said on both streams:
+    a check that failed and printed nothing is a check nobody can
+    act on, so stdout and stderr are kept together and in order. */
+interface Result {
+  name: string;
+  code: number | null;
+  out: string;
+}
+
+const STAGES: Array<[stage: string, entries: Entry[]]> = [
   ["checks", [
     /* First, because node strips the types in every other file
        below without reading them: a check whose own annotations
@@ -53,19 +65,19 @@ const STAGES = [
     "scripts/check-sw.js",
     "scripts/check-content.js",
     "scripts/check-csp.js",
-    "scripts/check-crons.mjs",
-    "scripts/check-pieces.mjs",
-    "scripts/check-headers.mjs",
-    "scripts/check-schools.mjs",
-    "scripts/check-rows.mjs",
-    "scripts/check-api.mjs",
-    "scripts/check-contrast.mjs",
-    "scripts/check-surfaces.mjs",
-    "scripts/check-components.mjs",
-    "scripts/check-scale.mjs",
-    "scripts/check-next.mjs",
-    "scripts/check-courses.mjs",
-    "scripts/check-accents.mjs",
+    "scripts/check-crons.ts",
+    "scripts/check-pieces.ts",
+    "scripts/check-headers.ts",
+    "scripts/check-schools.ts",
+    "scripts/check-rows.ts",
+    "scripts/check-api.ts",
+    "scripts/check-contrast.ts",
+    "scripts/check-surfaces.ts",
+    "scripts/check-components.ts",
+    "scripts/check-scale.ts",
+    "scripts/check-next.ts",
+    "scripts/check-courses.ts",
+    "scripts/check-accents.ts",
   ]],
   ["generated", [
     ["scripts/build-modules.ts", "--check"],
@@ -99,9 +111,9 @@ const STAGES = [
 /* One spare core, so a laptop stays usable while this runs. */
 const AT_ONCE = Math.max(2, (cpus().length || 4) - 1);
 
-function run(entry) {
+function run(entry: Entry): Promise<Result> {
   const argv = Array.isArray(entry) ? entry : [entry];
-  return new Promise((done) => {
+  return new Promise<Result>((done) => {
     const child = spawn(process.execPath, argv, { cwd: ROOT });
     let out = "";
     child.stdout.on("data", (d) => { out += d; });
@@ -112,8 +124,8 @@ function run(entry) {
 }
 
 /** At most `AT_ONCE` at a time, keeping the machine responsive. */
-async function pool(entries) {
-  const results = [];
+async function pool(entries: Entry[]): Promise<Result[]> {
+  const results: Result[] = [];
   let next = 0;
   const workers = Array.from({ length: Math.min(AT_ONCE, entries.length) }, async () => {
     while (next < entries.length) {
@@ -127,7 +139,7 @@ async function pool(entries) {
 }
 
 const started = process.hrtime.bigint();
-const failures = [];
+const failures: Result[] = [];
 let ran = 0;
 
 if (STAGE && !STAGES.some(([name]) => name === STAGE)) {

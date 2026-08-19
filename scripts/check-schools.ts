@@ -1,8 +1,8 @@
 /* ============================================================
-   check-schools.mjs: does the snapshot still describe the same
+   check-schools.ts: does the snapshot still describe the same
    four schools the curriculum files do?
 
-     node scripts/check-schools.mjs
+     node scripts/check-schools.ts
 
    archive/TRANSITION.md Stage 8, step 4. Two files now say what a ladder
    is, and they are read by different people:
@@ -58,11 +58,43 @@ import { fromSnapshot } from "./school-source.mjs";
 import { laddered, stageUrl, workbookUrl } from "../shared/schools.ts";
 
 const snapshot = readSnapshot();
-const problems = [];
+const problems: string[] = [];
+
+/* The rows both sides are reduced from, as the snapshot writes
+   them. `readSchool()` in `import-schools.mjs` answers the same
+   shape out of the `curriculum.js` modules, which is the whole
+   point of comparing them. */
+interface StageRow {
+  school: string;
+  slug: string;
+  position: number;
+  status: string;
+}
+
+interface LessonRow {
+  school: string;
+  stage: string;
+  slug: string;
+  section: string;
+  position: number;
+  status: string;
+}
+
+interface Rows {
+  stages: StageRow[];
+  lessons: LessonRow[];
+}
+
+/** A ladder reduced to two lists of strings, so that a difference
+    is a line rather than a diff of objects. */
+interface Shape {
+  stages: string[];
+  lessons: string[];
+}
 
 /** The shape of a school that both sides can be reduced to: the
     ladder, and nothing that anybody edits. */
-const shapeOf = (rows, id) => ({
+const shapeOf = (rows: Rows, id: string): Shape => ({
   stages: rows.stages
     .filter((s) => s.school === id)
     .sort((a, b) => a.position - b.position)
@@ -79,7 +111,7 @@ for (const school of SCHOOLS) {
   const fromFiles = shapeOf(await readSchool(school), school.id);
   const fromSnapshot = shapeOf(snapshot, school.id);
 
-  for (const part of ["stages", "lessons"]) {
+  for (const part of ["stages", "lessons"] as const) {
     const a = fromFiles[part];
     const b = fromSnapshot[part];
     checked += a.length;
@@ -118,33 +150,50 @@ for (const school of SCHOOLS) {
    their lessons and two do not.
    ============================================================ */
 
-const FLATTEN = {
-  money: (m, stage) => m.stageLessons(stage),
-  deutsch: (m, stage) => m.stufeTeile(stage),
-  quran: (m, stage) => m.dhapLessons(stage),
-  english: (m, stage) => m.termParts(stage),
+/** One school's `curriculum.js`, of the parts asked for below.
+    They are plain JavaScript modules and each names the same four
+    ideas differently, which is what the tables under this are
+    for. Indexed rather than declared field by field, because the
+    names are the schools' own and the tables are where they are
+    written down. */
+type Curriculum = Record<string, (...args: never[]) => unknown>;
+
+/** A lesson as a school's own module hands it back. Compared
+    against `laddered()` field by field below, so only the fields
+    compared are named. */
+interface TheirLesson {
+  slug?: string;
+  days?: number;
+  [key: string]: unknown;
+}
+
+const FLATTEN: Record<string, (m: Curriculum, stage: unknown) => TheirLesson[]> = {
+  money: (m, stage) => (m.stageLessons as (s: unknown) => TheirLesson[])(stage),
+  deutsch: (m, stage) => (m.stufeTeile as (s: unknown) => TheirLesson[])(stage),
+  quran: (m, stage) => (m.dhapLessons as (s: unknown) => TheirLesson[])(stage),
+  english: (m, stage) => (m.termParts as (s: unknown) => TheirLesson[])(stage),
 };
 
 /* The stage's own contents page, under each school's name for it.
    Four exports, one address. */
-const STAGE_URL = {
-  money: (m, stage) => m.stageUrl(stage),
-  deutsch: (m, stage) => m.stufeUrl(stage),
-  quran: (m, stage) => m.dhapUrl(stage),
-  english: (m, stage) => m.termUrl(stage),
+const STAGE_URL: Record<string, (m: Curriculum, stage: unknown) => string> = {
+  money: (m, stage) => (m.stageUrl as (s: unknown) => string)(stage),
+  deutsch: (m, stage) => (m.stufeUrl as (s: unknown) => string)(stage),
+  quran: (m, stage) => (m.dhapUrl as (s: unknown) => string)(stage),
+  english: (m, stage) => (m.termUrl as (s: unknown) => string)(stage),
 };
 
 /* The English school labels a part in a helper of its own rather
    than on the object, so it is asked for one; the other three
    either put it on the lesson or do not have one. */
-const LABEL = {
-  english: (m, lesson) => m.partLabel(lesson),
+const LABEL: Record<string, (m: Curriculum, lesson: TheirLesson) => string> = {
+  english: (m, lesson) => (m.partLabel as (l: TheirLesson) => string)(lesson),
 };
 
 let agreed = 0;
 
 for (const school of SCHOOLS) {
-  const mod = await import(`../aab/${school.dir}/curriculum.js`);
+  const mod = await import(`../aab/${school.dir}/curriculum.js`) as Curriculum;
   const { stages } = await fromSnapshot(school.id);
 
   for (const stage of stages) {
@@ -166,7 +215,8 @@ for (const school of SCHOOLS) {
     }
 
     const bookHere = workbookUrl(school.id, stage) || "";
-    const bookThere = (mod.workbookUrl ? mod.workbookUrl(stage) : null) || "";
+    const theirBook = mod.workbookUrl as ((s: unknown) => string | null) | undefined;
+    const bookThere = (theirBook ? theirBook(stage) : null) || "";
     if (bookHere !== bookThere) {
       problems.push(`${school.id}: the practice book of "${stage.slug}" is `
         + `"${bookHere || "(none)"}" through shared/schools.ts and `
@@ -177,7 +227,7 @@ for (const school of SCHOOLS) {
       const other = theirs[i];
       agreed += 1;
 
-      const say = (what, a, b) => problems.push(
+      const say = (what: string, a: unknown, b: unknown): number => problems.push(
         `${school.id}: the ${what} of "${stage.slug}/${lesson.slug}" is `
         + `"${a}" through shared/schools.ts and "${b}" through `
         + `aab/${school.dir}/curriculum.js`);

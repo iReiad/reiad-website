@@ -28,7 +28,7 @@
    That second reason is also why the prose files are still in
    `aab/` rather than in `archive/`. The rule for archiving is
    that nothing serves it and nothing imports it, and two things
-   still import them: that test, and `check-schools.mjs`. Moving
+   still import them: that test, and `check-schools.ts`. Moving
    them is a step of its own.
 
    Neither switch is a way to publish. A change typed into one of

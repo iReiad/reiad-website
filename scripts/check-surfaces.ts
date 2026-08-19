@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-surfaces.mjs: a card is still a card.
+   check-surfaces.ts: a card is still a card.
 
-       node scripts/check-surfaces.mjs
-       node scripts/check-surfaces.mjs --table   # print the numbers
+       node scripts/check-surfaces.ts
+       node scripts/check-surfaces.ts --table   # print the numbers
 
    ---- what went wrong ----
 
@@ -21,7 +21,7 @@
    raised to sunk, which reads as a hole rather than as a card,
    and there is no way to see that in a diff.
 
-   Every check passed. `check-contrast.mjs` measured text against
+   Every check passed. `check-contrast.ts` measured text against
    those surfaces and was satisfied, because a hole has perfectly
    good contrast. `check-css.mjs` saw well-formed rules. Nothing
    measured the one thing that had broken, which is that a raised
@@ -47,7 +47,7 @@
    where a card is.
    ============================================================ */
 
-import { resolve } from "./lib/css-tokens.ts";
+import { resolve, type Lab, type Mode } from "./lib/css-tokens.ts";
 
 const TABLE = process.argv.includes("--table");
 
@@ -62,7 +62,10 @@ const ACCENTS = ["--green", "--teal", "--blue", "--violet",
    which the difference stops being a difference, and a design
    that wants more room is free to take it. What it may not do is
    cross zero. */
-const STACK = [
+/** The ladder of grounds, darkest first. `gap` is how much
+    lighter this step has to be than the one below it, and the
+    bottom step has none because there is nothing under it. */
+const STACK: Array<{ token: string; name: string; gap?: number }> = [
   { token: "--paper-sunk", name: "a sunk ground" },
   { token: "--paper", name: "the page", gap: 0.004 },
   { token: "--panel", name: "a card", gap: 0.004 },
@@ -85,27 +88,32 @@ const STACK = [
 const HOVER = { token: "--panel-hover", gap: 0.004 };
 
 /* A translucent surface is composited over what is behind it
-   before being measured, for the same reason `check-contrast.mjs`
+   before being measured, for the same reason `check-contrast.ts`
    does it: what a reader sees is the result, not the token. The
    page is behind everything above it. */
-function lightness(token, mode, accent, ground) {
+function lightness(
+  token: string, mode: Mode, accent: string, ground: Lab | null,
+): number | null {
   const colour = resolve(`var(${token})`, mode, undefined, accent);
   if (!colour) return null;
   return (ground ? over(colour, ground) : colour).L;
 }
 
-const over = (a, b) => (a.alpha >= 1 || !b ? a : {
+const over = (a: Lab, b: Lab | null): Lab => (a.alpha >= 1 || !b ? a : {
   L: a.L * a.alpha + b.L * (1 - a.alpha),
   a: a.a * a.alpha + b.a * (1 - a.alpha),
   b: a.b * a.alpha + b.b * (1 - a.alpha),
   alpha: 1,
 });
 
-const problems = [];
-const rows = [];
+const problems: string[] = [];
+
+/** One measurement, for the `--table` listing: which theme, which
+    section, the token, and its lightness. */
+const rows: Array<[mode: Mode, section: string, token: string, L: string]> = [];
 let measured = 0;
 
-for (const mode of ["light", "dark"]) {
+for (const mode of ["light", "dark"] as const) {
   for (const accent of ACCENTS) {
     const section = accent.replace("--", "");
 
@@ -117,8 +125,8 @@ for (const mode of ["light", "dark"]) {
       continue;
     }
 
-    let below = null;
-    let belowName = null;
+    let below: number | null = null;
+    let belowName: string | null = null;
 
     for (const step of STACK) {
       const L = lightness(step.token, mode, accent, paper);
@@ -130,7 +138,10 @@ for (const mode of ["light", "dark"]) {
       measured += 1;
       rows.push([mode, section, step.token, L.toFixed(4)]);
 
-      if (below !== null) {
+      /* The bottom step has no `gap` and nothing under it, so
+         there is nothing to compare: both conditions are the same
+         fact and stating them together is what says so. */
+      if (below !== null && step.gap !== undefined) {
         const gap = L - below;
         if (gap < step.gap) {
           problems.push(

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-contrast.mjs: the palette is readable, and it is
+   check-contrast.ts: the palette is readable, and it is
    measured rather than believed.
 
-       node scripts/check-contrast.mjs
-       node scripts/check-contrast.mjs --table   # print the numbers
+       node scripts/check-contrast.ts
+       node scripts/check-contrast.ts --table   # print the numbers
 
    WHY THIS EXISTS
 
@@ -50,10 +50,12 @@
    that will be.
    ============================================================ */
 
-import { ratio, over, resolve, tokens } from "./lib/css-tokens.ts";
+import {
+  ratio, over, resolve, tokens, type Lab, type Mode,
+} from "./lib/css-tokens.ts";
 
 /* The palette, resolved in both modes. `lib/css-tokens.ts` is the
-   parser and it is shared with `check-surfaces.mjs`, so a token
+   parser and it is shared with `check-surfaces.ts`, so a token
    that stops resolving stops resolving for both rather than for
    one. */
 const T = tokens();
@@ -63,7 +65,7 @@ const T = tokens();
     The page, because that is what is behind a card. A surface
     that is 86% opaque shows 14% of this, and measuring the
     surface alone would measure a colour nobody sees. */
-const GROUND = {
+const GROUND: Record<Mode, Lab | null> = {
   light: resolve("var(--paper)", "light"),
   dark: resolve("var(--paper)", "dark"),
 };
@@ -81,7 +83,19 @@ const GROUND = {
 const ACCENTS = ["--green", "--teal", "--blue", "--violet",
                  "--plum", "--rose", "--gold"];
 
-const PAIRS = [
+/** One combination the site actually puts on screen: the ink
+    token, the ground token, the ratio that size needs, what to
+    call it in the output, and which accent the page is wearing if
+    the pair only exists inside a section. */
+type Pair = [
+  fg: string,
+  bg: string,
+  threshold: number,
+  what: string,
+  accent?: string,
+];
+
+const PAIRS: Pair[] = [
   /* The text the whole site is made of. */
   ["--ink", "--paper", 4.5, "body text on the page"],
   ["--ink", "--panel", 4.5, "heading on a card"],
@@ -93,7 +107,7 @@ const PAIRS = [
      is ever set on. This is the block the seven colours made
      necessary: one of them being a shade too light is invisible
      to a person and obvious to this. */
-  ...ACCENTS.flatMap((accent) => [
+  ...ACCENTS.flatMap((accent): Pair[] => [
     [accent, "--paper", 4.5, `${accent.replace("--", "")} as text on the page`],
     [accent, "--panel", 4.5, `${accent.replace("--", "")} as text on a card`],
     [accent, "--paper-sunk", 4.5, `${accent.replace("--", "")} as text on a sunk ground`],
@@ -120,7 +134,7 @@ const PAIRS = [
    in the light theme and the LIGHT thing in the dark one, so the
    ink swaps and a check that measured one mode would have passed
    through the whole bug. */
-const ON_ACCENT = [
+const ON_ACCENT: Pair[] = [
   ["--accent-ink", "--accent-strong", 4.5, "text on a filled band"],
   ["--accent-ink", "--accent", 4.5, "text on a solid button"],
 ];
@@ -130,7 +144,14 @@ const ON_ACCENT = [
    ============================================================ */
 
 const table = process.argv.includes("--table");
-const rows = [];
+/** One measurement, for the `--table` listing and the count. */
+const rows: Array<{
+  what: string;
+  theme: Mode;
+  value: number;
+  threshold: number;
+  ok: boolean;
+}> = [];
 let failures = 0;
 let missing = 0;
 
@@ -145,32 +166,43 @@ let missing = 0;
    Text on a card is the pair that moves, so that is the pair
    repeated. `--danger` is in because it is the tightest one on
    the whole site and the first that would go. */
-const TINTED = ACCENTS.flatMap((accent) => [
+const TINTED: Pair[] = ACCENTS.flatMap((accent): Pair[] => [
   ["--ink", "--panel", 4.5, `heading on a card in ${accent.replace("--", "")}`, accent],
   ["--ink-soft", "--panel", 4.5, `secondary text on a card in ${accent.replace("--", "")}`, accent],
   ["--danger", "--panel", 4.5, `a warning on a card in ${accent.replace("--", "")}`, accent],
-  ...ON_ACCENT.map(([fg, bg, min, what]) =>
+  ...ON_ACCENT.map(([fg, bg, min, what]): Pair =>
     [fg, bg, min, `${what} in ${accent.replace("--", "")}`, accent]),
 ]);
 
 for (const [fg, bg, threshold, what, accent] of [...PAIRS, ...TINTED]) {
   /* A tinted pair is resolved on the spot, because the token it
      needs depends on which section is being measured. */
-  const at = (name, theme) => (accent
+  const at = (name: string, theme: Mode): Lab | null => (accent
     ? resolve(`var(${name})`, theme, new Set(), accent)
-    : T[name]?.[theme]);
+    : T[name]?.[theme] ?? null);
 
   if (!at(fg, "light") || !at(bg, "light")) {
     missing++;
     console.error(`  ?    ${what}: ${!at(fg, "light") ? fg : bg} could not be resolved out of styles.css`);
     continue;
   }
-  for (const theme of ["light", "dark"]) {
+  for (const theme of ["light", "dark"] as const) {
     /* Both sides composited over the page: a translucent card is
        what the reader sees through, and text on it is painted on
        the result rather than on the card's own colour. */
     const ground = GROUND[theme];
-    const value = ratio(over(at(fg, theme), ground), over(at(bg, theme), ground));
+    const ink = at(fg, theme);
+    const on = at(bg, theme);
+    /* Both are known to resolve: the block above skipped this
+       pair otherwise. Stated rather than asserted, so a token
+       that resolves in light and not in dark is caught here
+       instead of measured as black. */
+    if (!ground || !ink || !on) {
+      missing++;
+      console.error(`  ?    ${what}: could not be resolved in ${theme}`);
+      continue;
+    }
+    const value = ratio(over(ink, ground), over(on, ground));
     const ok = value >= threshold;
     if (!ok) failures++;
     rows.push({ what, theme, value, threshold, ok });

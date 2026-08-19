@@ -21,7 +21,7 @@
    folder belonging to one person, and a Next.js page that
    imported `COURSES` would put all of it into a JavaScript
    bundle that anybody can fetch, whatever the page then drew.
-   `scripts/check-courses.mjs` fails on any such import.
+   `scripts/check-courses.ts` fails on any such import.
 
    What a page may import is the TYPES, with `import type`, which
    TypeScript erases before anything is bundled. The catalogue
@@ -225,7 +225,7 @@ export const driveUrl = (drive: string): string =>
     Exported because more than one thing walks it, and a second
     copy of this list is a lesson field that some checks validate
     and others do not. That is not hypothetical: `captions` was
-    added to the catalogue and to this set, and `check-courses.mjs`
+    added to the catalogue and to this set, and `check-courses.ts`
     kept its own list and went on reporting a clean bill of health
     for 298 ids it had never looked at. */
 export const ID_FIELDS = [

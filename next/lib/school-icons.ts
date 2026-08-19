@@ -5,7 +5,7 @@
 
    The drawings the four schools put in a lesson's heading, copied
    out of `aab/<school>/icons.js` because `next/` cannot import
-   above its own directory. `scripts/check-next.mjs` regenerates
+   above its own directory. `scripts/check-next.ts` regenerates
    this and fails if what is committed differs, so the four
    browser modules stay the source and this stays a copy.
 

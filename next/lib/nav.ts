@@ -47,7 +47,7 @@ export interface NavItem {
       flag is what says "this is a course" rather than a Bangla
       word in `kind` being read as one.
 
-      `scripts/check-next.mjs` fails if the four flagged here are
+      `scripts/check-next.ts` fails if the four flagged here are
       not exactly the four in `next/lib/school-ladders.ts`: a
       school that gains a ladder and not the flag is a bar the
       account page never draws, and the page looks finished. */

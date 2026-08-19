@@ -11,7 +11,7 @@
     "annotations.",
     "",
     "So this exists and `scripts/check-types.ts` runs it, which is",
-    "in check-all.mjs beside every other check.",
+    "in check-all.ts beside every other check.",
     "",
     "`noEmit` because nothing here is built: node reads the source.",
     "`allowImportingTsExtensions` because that is how the imports",

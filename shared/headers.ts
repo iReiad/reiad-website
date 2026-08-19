@@ -18,7 +18,7 @@
    response headers.
 
    So the same headers are declared here and attached by hand, and
-   `scripts/check-headers.mjs` fails if this list and the `/*`
+   `scripts/check-headers.ts` fails if this list and the `/*`
    block in `aab/_headers` stop agreeing. One of them being edited
    alone is exactly how this happened.
 

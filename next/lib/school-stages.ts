@@ -11,7 +11,7 @@
      node scripts/export-schools.mjs --db schools.db
      node scripts/build-school-tree.ts
 
-   scripts/check-next.mjs fails if this file and the snapshot disagree. */
+   scripts/check-next.ts fails if this file and the snapshot disagree. */
 
 export interface TreeStage {
   slug: string;

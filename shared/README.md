@@ -20,7 +20,7 @@ Today that is four files:
 - **`headers.ts`** the security headers. `aab/_headers` is read by
   Cloudflare's static asset server and applies to files in `aab/`;
   a response built by a Worker is not a file, so it gets none of
-  them unless it says so. `scripts/check-headers.mjs` fails if this
+  them unless it says so. `scripts/check-headers.ts` fails if this
   list and `_headers` stop agreeing.
 
 - **`schools.ts`** the four curricula, read out of D1 in the shape

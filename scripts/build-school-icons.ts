@@ -14,7 +14,7 @@
    `aab/` still import them.
 
    So this writes the fifth copy, and writes it rather than asking
-   anybody to keep one by hand. `scripts/check-next.mjs` runs the
+   anybody to keep one by hand. `scripts/check-next.ts` runs the
    same generation and fails if the committed file differs, which
    is the arrangement every generated page in this repository
    already has: edit the source, run the generator, commit both.
@@ -92,7 +92,7 @@ export async function generate(): Promise<string> {
 
    The drawings the four schools put in a lesson's heading, copied
    out of \`aab/<school>/icons.js\` because \`next/\` cannot import
-   above its own directory. \`scripts/check-next.mjs\` regenerates
+   above its own directory. \`scripts/check-next.ts\` regenerates
    this and fails if what is committed differs, so the four
    browser modules stay the source and this stays a copy.
 
@@ -115,7 +115,7 @@ export function schoolIcon(school: string, name: string | undefined): string {
 `;
 }
 
-/* Only when run, never when imported. `check-next.mjs` imports
+/* Only when run, never when imported. `check-next.ts` imports
    `generate()` to compare, and a generator that writes its output
    as a side effect of being imported would make that check pass
    by fixing what it was asked to find. */

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-scale.mjs: the type scale is the type scale.
+   check-scale.ts: the type scale is the type scale.
 
-       node scripts/check-scale.mjs
-       node scripts/check-scale.mjs --list   # every size in use
+       node scripts/check-scale.ts
+       node scripts/check-scale.ts --list   # every size in use
 
    WHY THIS EXISTS
 
@@ -80,8 +80,19 @@ const body = css.slice(css.indexOf("\n", defined) + 1);
 const offset = css.slice(0, css.indexOf("\n", defined) + 1).split("\n").length;
 
 const list = process.argv.includes("--list");
-const found = new Map();
-const bad = [];
+/** A size in rem, to how many times the stylesheet writes it. */
+const found = new Map<number, number>();
+
+/** A font size that is not on the scale: where it is, what it is,
+    and the token nearest to it. */
+const bad: Array<{
+  line: number;
+  size: number;
+  /** The token's name, `--t-4`. */
+  nearest: string;
+  /** What that token is worth, in rem. */
+  to: number;
+}> = [];
 
 const lines = body.split("\n");
 lines.forEach((line, i) => {
@@ -127,10 +138,12 @@ const RUNGS = [...css.matchAll(/(--radius(?:-[a-z]+)?):\s*([^;]+);/g)]
    The line "used to end with `border-radius: 3px`" is inside a
    block comment whose first line is prose, so a test for a line
    STARTING with a comment marker walks straight past it. That is
-   the same hole check-contrast.mjs had, where a comment saying
+   the same hole check-contrast.ts had, where a comment saying
    `--accent: blue` became the first declaration of --accent.
    Track the block instead of guessing from one line. */
-const corners = [];
+/** A corner radius written as a literal rather than as a rung:
+    where it is, and how many pixels it asks for. */
+const corners: Array<{ line: number; px: number }> = [];
 let inComment = false;
 lines.forEach((line, i) => {
   const opens = line.lastIndexOf("/*");

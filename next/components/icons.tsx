@@ -18,7 +18,7 @@
    ---- why they are strings ----
 
    Same reason `school-icons.ts` holds strings: they are the
-   inside of an `<svg>`, and `check-next.mjs` compares the
+   inside of an `<svg>`, and `check-next.ts` compares the
    generated copy against the browser module character for
    character. The ones added here are JSX-free for consistency
    with the ones that are not.

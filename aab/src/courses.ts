@@ -47,7 +47,7 @@ import { setHere } from "/crumbs.js";
 
    The shape of `forBrowser()` in `shared/courses.ts`, written out
    because a browser module cannot import the Worker's package.
-   `scripts/check-courses.mjs` reads the field names out of the
+   `scripts/check-courses.ts` reads the field names out of the
    interfaces below and compares them against what that function
    actually emits, so the two cannot drift in silence.
    ============================================================ */
@@ -917,7 +917,7 @@ async function mountCaptions(video: HTMLElement, drive: string) {
 
      Read with a pattern rather than `new URL`, which needs a base
      and would mean inventing a hostname to parse a relative path.
-     `check-csp.mjs` reads every host named in this directory and
+     `check-csp.js` reads every host named in this directory and
      is right to refuse one that exists only to satisfy a
      constructor. */
   const pass = /[?&]t=([^&]*)/.exec(answer.data.url)?.[1] ?? "";

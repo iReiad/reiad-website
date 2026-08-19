@@ -574,7 +574,7 @@ for (const token of [...used].sort()) {
    that wrote it, `.cell-aim` outlived the card it painted, and
    `.wb-picker` was a byte-for-byte copy of `.tag-waehler`.
 
-   A RATCHET, not a wall, for the same reason `check-components.mjs`
+   A RATCHET, not a wall, for the same reason `check-components.ts`
    is one: there are 45 of them, clearing them is a change nobody
    could review in one sitting, and each needs looking at rather
    than deleting. The number may only fall.

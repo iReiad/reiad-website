@@ -1,8 +1,8 @@
 /* ============================================================
-   check-crons.mjs: the schedules in wrangler.toml are the ones
+   check-crons.ts: the schedules in wrangler.toml are the ones
    worker.js is waiting for.
 
-     node scripts/check-crons.mjs
+     node scripts/check-crons.ts
 
    Cloudflare hands `scheduled()` the exact cron string from
    wrangler.toml, and worker.js decides which job to run by
@@ -26,7 +26,7 @@ const toml = readFileSync(join(root, "wrangler.toml"), "utf8");
 const worker = readFileSync(join(root, "worker.js"), "utf8");
 
 let bad = 0;
-const fail = (msg) => { bad += 1; console.error(`  ${msg}`); };
+const fail = (msg: string): void => { bad += 1; console.error(`  ${msg}`); };
 
 /* ---- what wrangler.toml actually declares ---- */
 const line = toml.match(/^\s*crons\s*=\s*\[(.*)\]\s*$/m);

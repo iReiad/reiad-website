@@ -129,5 +129,9 @@ export function sanitiseHTML(input: unknown): string {
 export const textOf = (html: unknown): string =>
   String(html ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
-export const readingMinutes = (html) =>
+/** `unknown` like `textOf` above, and for the same reason: this
+    is handed whatever a row's body column held, which is a string
+    on every path anybody has written and is not a promise the
+    database makes. */
+export const readingMinutes = (html: unknown): number =>
   Math.max(1, Math.round(textOf(html).split(" ").filter(Boolean).length / 200));

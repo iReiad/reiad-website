@@ -19,7 +19,7 @@
 
    So the conversion is not finished when a file is renamed. It is
    finished when this passes with the file in it, which is why
-   this runs in `check-all.mjs` beside every other check rather
+   this runs in `check-all.ts` beside every other check rather
    than being something somebody remembers to do.
 
    `scripts/tsconfig.json` is the settings and says why each is

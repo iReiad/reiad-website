@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /* ============================================================
-   check-courses.mjs: the third-party course section, held to the
+   check-courses.ts: the third-party course section, held to the
    four things about it that are easy to get quietly wrong.
 
-       node scripts/check-courses.mjs
+       node scripts/check-courses.ts
 
    None of these produces an error at runtime. Each of them
    produces a page that renders, looks finished, and is wrong,
@@ -75,8 +75,8 @@ import { NEXT_ROUTES } from "../worker.js";
 import { splitName } from "./lib/coursera.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const problems = [];
-const say = (what) => problems.push(what);
+const problems: string[] = [];
+const say = (what: string): number => problems.push(what);
 
 /* ============================================================
    1. Every Drive id is a Drive id
@@ -98,14 +98,16 @@ const DRIVE_ID = /^[A-Za-z0-9_-]{25,60}$/;
    moving a slug moves the id a reader's progress is filed under. */
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-const checkSlug = (value, what, where) => {
+const checkSlug = (value: string, what: string, where: string): void => {
   if (!SLUG.test(value)) say(`${where}: ${what} slug "${value}" is not lower case and hyphens`);
 };
 
 let ids = 0;
-const seen = new Map();
+/** A Drive id, to the first place it was seen. Two lessons naming
+    one file is a lesson pointing at somebody else's video. */
+const seen = new Map<string, string>();
 
-const checkId = (value, where) => {
+const checkId = (value: string, where: string): void => {
   ids += 1;
   if (!DRIVE_ID.test(value)) {
     say(`${where}: "${value}" is not a Drive id`);
@@ -180,7 +182,7 @@ for (const course of COURSES) {
    2. Nothing under next/ imports the catalogue
    ============================================================ */
 
-const grep = (pattern, path) => {
+const grep = (pattern: string, path: string): string[] => {
   try {
     return execFileSync("grep", ["-rn", "--include=*.ts", "--include=*.tsx", pattern, path],
       { cwd: ROOT, encoding: "utf8" }).split("\n").filter(Boolean);
@@ -211,7 +213,7 @@ const browserSrc = readFileSync(join(ROOT, "aab", "src", "courses.ts"), "utf8");
     string after the name is the rule. A rewrite that made either
     of them a block body would fail here rather than pass
     vacuously, which is the right way round. */
-function template(src, name) {
+function template(src: string, name: string): string | null {
   const at = src.indexOf(`const ${name} =`);
   if (at === -1) return null;
   const open = src.indexOf("`", at);
@@ -321,7 +323,7 @@ if (existsSync(listing)) {
 
 /** The field names of one `export interface` in the browser
     module, which is its claim about what the API sends. */
-function fields(src, name) {
+function fields(src: string, name: string): string[] | null {
   const at = src.indexOf(`export interface ${name} {`);
   if (at === -1) return null;
   const end = src.indexOf("\n}", at);
@@ -329,7 +331,7 @@ function fields(src, name) {
   return src.slice(at, end)
     .split("\n")
     .map((line) => /^\s{2}([A-Za-z_][A-Za-z0-9_]*)\??:/.exec(line)?.[1])
-    .filter(Boolean)
+    .filter((name): name is string => Boolean(name))
     .sort();
 }
 
@@ -341,11 +343,18 @@ if (!sample) {
   const wire = forBrowser(sample);
   const mod = wire.modules.find((m) => m.lessons.length);
 
-  const pairs = [
+  /* `sample` was chosen for having lessons, so a module with some
+     exists; saying so rather than assuming it is what stops this
+     throwing on a catalogue that ever stops being true. */
+  if (!mod) {
+    say("the sample course has modules and none of them has a lesson");
+  }
+
+  const pairs: Array<[name: string, got: string[]]> = mod ? [
     ["Course", Object.keys(wire)],
     ["Module", Object.keys(wire.modules[0])],
     ["Lesson", Object.keys(mod.lessons[0])],
-  ];
+  ] : [];
 
   for (const [name, got] of pairs) {
     const said = fields(browserSrc, name);
@@ -381,7 +390,7 @@ if (!sample) {
    modules that touch `localStorage` as they load, and a check
    should not need a DOM to answer a question about a string. */
 {
-  const read = (rel) => readFileSync(join(ROOT, rel), "utf8");
+  const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
 
   const keys = [...read("aab/src/courses.ts")
     .matchAll(/^const\s+\w*_KEY\s*=\s*"([^"]+)"/gm)].map((m) => m[1]);

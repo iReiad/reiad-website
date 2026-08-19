@@ -63,7 +63,7 @@
 #   disconnect the repository
 #
 # `reiad-next` keeps its own Workers Build. It has a real build
-# step (OpenNext), it needs the branch previews that check-preview.mjs
+# step (OpenNext), it needs the branch previews that check-preview.ts
 # reads, and it was deploying happily throughout the outage above.
 # ============================================================
 
@@ -117,7 +117,7 @@ jobs:
       # tsc and to the Tailwind CLI; those are checks.yml's now,
       # and that job does its own install. What is left in this
       # job needs nothing from node_modules: `npx --yes wrangler@4`
-      # fetches wrangler itself, and check-live.mjs imports only
+      # fetches wrangler itself, and check-live.ts imports only
       # node builtins and one file from shared/.
       #
       # The reason it mattered is worth keeping even though the
@@ -160,4 +160,4 @@ jobs:
       # the upload, is the run whose answer is about what was just
       # deployed.
       - name: Ask the live site
-        run: node scripts/check-live.mjs
+        run: node scripts/check-live.ts
