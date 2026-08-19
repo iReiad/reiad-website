@@ -21,26 +21,45 @@
 import { all, db, one, run } from "../../_lib/db.js";
 import { body, fail, isEmail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.ts";
 import { requireAdmin, throttle } from "../../_lib/auth.js";
+import { htmlResponse } from "../../../shared/headers.ts";
 
 const token = () =>
   btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(18))))
     .replace(/[+/=]/g, "");
 
 /** Confirm and unsubscribe links are clicked in a browser, so they
-    answer with a page rather than JSON. */
+    answer with a page rather than JSON.
+
+    `/fallback.css` and NOT `/styles.css`, which is the address
+    this linked until 19 August 2026 and which nothing has served
+    since Stage A moved the stylesheet into Next, where it is
+    emitted under a content hash. So every reader who confirmed a
+    subscription got this page with no styling at all, for weeks,
+    and nothing said so: the page renders, the link 404s quietly,
+    and it is not a page anybody here clicks. `aab/fallback.css`
+    exists for exactly this, and `404.html` and `offline.html`
+    link it for exactly this reason: a response a Worker builds
+    cannot know the hash.
+
+    And `htmlResponse()` rather than a bare `new Response`, which
+    is the rule at "A response a Worker builds is not a static
+    asset" in CLAUDE.md. This was the last handler still building
+    its own: no CSP, no HSTS, no X-Frame-Options on a page a
+    reader reaches from their email. `check-headers.ts` now fails
+    on any HTML response that does not go through it. */
 const page = (title, message, tone = "ok") =>
-  new Response(
+  htmlResponse(
     `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark"><title>${title}, Reiad's Library</title>
-<link rel="stylesheet" href="/styles.css"><link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/fallback.css"><link rel="icon" href="/favicon.ico">
 </head><body><main id="main"><div class="wrap" style="padding-block:110px;max-width:640px">
 <span class="eyebrow mono">${tone === "ok" ? "Done" : "Hmm"}</span>
 <h1 style="font-size:2rem">${title}</h1>
 <p class="lede">${message}</p>
 <p style="margin-top:26px"><a class="btn btn-solid" href="/insights.html">Read something →</a></p>
 </div></main></body></html>`,
-    { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } }
+    { cache: "no-store" }
   );
 
 export async function onRequest(context) {

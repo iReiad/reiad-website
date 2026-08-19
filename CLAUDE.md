@@ -1083,6 +1083,21 @@ same either way. Anything that returns HTML from a Worker goes
 through `htmlResponse()` in `shared/headers.ts`, and
 `check-headers.ts` fails if that list and `_headers` drift.
 
+**It also fails on a handler that does not call it**, which the
+list comparison alone could never see. The subscription confirm
+page built its own `new Response` with a Content-Type and nothing
+else, so a reader arriving from their email got none of the six,
+while the check reported the two lists in perfect agreement.
+
+**And a Worker-built page links `/fallback.css`, never
+`/styles.css`.** Nothing has been served at the second since
+Stage A: the stylesheet is Next's and carries a content hash,
+which a response a Worker builds cannot know. Both pages that
+link one by name were still asking for the old address, so both
+were unstyled, and the only thing in the repository that knew was
+one check in `next/parity.test.mjs` that had been failing for so
+long it read as furniture.
+
 ## The writing surface is one module
 
 `aab/editor.js` is the contenteditable: the sanitiser, the block list,

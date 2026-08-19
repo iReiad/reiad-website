@@ -23,10 +23,22 @@
    X-Frame-Options and no HSTS, while the identical-looking article
    beside it, still a committed file, had all three. The page
    renders the same either way, which is why it lasted.
+
+   ---- and the half that comparing them does not cover ----
+
+   Two lists agreeing says nothing about whether a handler USES
+   the second one. `functions/api/subscribers/[[route]].js` built
+   its own `new Response` with a Content-Type and a Cache-Control
+   and nothing else, so the page a reader reaches from a
+   confirmation email had none of the three, for as long as that
+   handler existed, while this check reported the lists in
+   agreement. So the second half below reads every handler under
+   `functions/` and fails on any that answers with HTML without
+   going through `htmlResponse()`.
    ============================================================ */
 
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { readdirSync, readFileSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 /* A static import rather than `await import(join(ROOT, ...))`.
@@ -106,6 +118,38 @@ for (const key of Object.keys(fromFile)) {
     + "so a page rendered by a Worker would not have it");
 }
 
+/* ---------- and every HTML a Worker builds goes through it ----------
+
+   `text/html` written into a header object by hand is the shape
+   this looks for, because that is what building a response
+   without `htmlResponse()` looks like. A handler that answers
+   JSON, a redirect or a file is not this and is not read. */
+
+const FUNCTIONS = join(ROOT, "functions");
+const handlers: string[] = [];
+(function walk(dir: string): void {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) walk(full);
+    else if (/\.(js|ts)$/.test(entry.name) && !entry.name.includes(".test.")) {
+      handlers.push(full);
+    }
+  }
+})(FUNCTIONS);
+
+for (const file of handlers) {
+  const src = readFileSync(file, "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+  if (!/["'`]text\/html/.test(src)) continue;
+  if (/\bhtmlResponse\s*\(/.test(src)) continue;
+  failures.push(
+    `${relative(ROOT, file)} answers with HTML and does not call htmlResponse():\n`
+    + "        a response a Worker builds is not a static asset, so aab/_headers\n"
+    + "        does not apply to it and it carries no CSP, HSTS or X-Frame-Options"
+  );
+}
+
 if (failures.length) {
   console.error("\nthe two header lists disagree:\n");
   for (const f of failures) console.error(`  ✗ ${f}`);
@@ -118,4 +162,5 @@ if (failures.length) {
 
 console.log(
   `headers: ${Object.keys(SECURITY_HEADERS).length} security header(s), `
-  + "the same in aab/_headers and shared/headers.ts.");
+  + `the same in aab/_headers and shared/headers.ts, and ${handlers.length} `
+  + "handler(s) checked for building HTML without them.");

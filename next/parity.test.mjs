@@ -423,9 +423,28 @@ for (const key of ["twitter:card", "twitter:image", "description"]) {
 check("the title", tagText(fromWorker, "title"), tagText(fromNext, "title"));
 check("the language",
   attr(fromWorker, /<html lang="([^"]+)"/), attr(fromNext, /<html lang="([^"]+)"/));
-check("the stylesheet",
-  attr(fromWorker, /<link rel="stylesheet" href="(\/styles\.css)"/),
-  attr(fromNext, /<link rel="stylesheet" href="(\/styles\.css)"/));
+/* NOT "both link the same href", which is what this asked until
+   19 August 2026 and which stopped being answerable when Stage A
+   made the stylesheet Next's: Next emits it under a content hash
+   and a response a Worker builds cannot know the hash. The check
+   went on comparing `/styles.css` against null and failing, on
+   every branch and on main, for long enough that nobody could
+   tell a new failure from this one.
+
+   What is worth asking is that each of them links A stylesheet,
+   and that the Worker's names a file that exists. It did not:
+   `/styles.css` has been a 404 since Stage A, so the fallback
+   renderer and the subscription page were unstyled, and this was
+   the only thing in the repository that knew. */
+{
+  const workerCss = attr(fromWorker, /<link rel="stylesheet" href="(\/[^"]+\.css)"/);
+  const nextCss = attr(fromNext, /<link rel="stylesheet" href="([^"]+\.css)"/);
+  ok("the Worker links a stylesheet", Boolean(workerCss), "no <link rel=stylesheet>");
+  ok("and so does the route", Boolean(nextCss), "no <link rel=stylesheet>");
+  ok("and the Worker's is a file that exists",
+    Boolean(workerCss) && existsSync(join(here, "..", "aab", workerCss.slice(1))),
+    `aab${workerCss} is not there, so the page is served unstyled`);
+}
 check("the webfonts",
   attr(fromWorker, /<link href="(https:\/\/fonts\.googleapis[^"]+)"/),
   attr(fromNext, /href="(https:\/\/fonts\.googleapis[^"]+)"/));
@@ -1046,16 +1065,34 @@ for (const [path, title, nav] of [
     same("the body class", (h) => attr(h, /<body class="([^"]*)"/));
     same("the scripts the page loads", schoolScripts);
 
-    /* The writing itself, whole. Not a sample of it: this is the
-       one comparison in this file that can be exact, because the
-       body is the same string on both sides by construction, and
-       an inexact check here would be checking nothing. */
+    /* The WRITING, whole and word for word. Not the markup, and
+       the difference is the whole of why this check works again.
+
+       It compared the two bodies as strings until 19 August 2026,
+       which was right on the day it was written and stopped being
+       right twice over: the cards became `<InfoCard>` and the
+       grids became Tailwind utilities, both deliberately, in
+       stages that came after these pages were archived. So the
+       check was failing on a redesign it was never asking about,
+       on main as well as on every branch, and three permanent
+       failures are three a new one hides behind.
+
+       Tags out, comments out, whitespace collapsed. What is left
+       is what a reader reads, and that is the thing a port must
+       not change: eight hundred lines of hand-converted Bangla is
+       eight hundred chances to lose a word that nobody reviewing
+       a diff of markup would catch. All three still match exactly. */
     const body = (h) => h.match(
-      /<main id="main">\s*<div class="wrap"[^>]*>([\s\S]*)<\/div>\s*<\/main>/)?.[1]
-      ?.replace(/^\s+|\s+$/g, "") ?? null;
-    ok(`${path}: the writing is the page's, character for character`,
-      body(was) !== null && moved(body(was)) === moved(body(now)),
-      "the body differs from the committed page");
+      /<main id="main">\s*<div class="wrap"[^>]*>([\s\S]*)<\/div>\s*<\/main>/)?.[1] ?? null;
+    const prose = (h) => (h ?? "")
+      .replace(/<!--[\s\S]*?-->/g, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    ok(`${path}: the writing is the page's, word for word`,
+      body(was) !== null && prose(moved(body(was))) === prose(moved(body(now))),
+      "a word of the writing differs from the committed page");
 
     /* The ladder's fallback list survives, which is the half a
        reader with no JavaScript gets and the half a search engine
