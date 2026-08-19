@@ -91,6 +91,7 @@ import { Scenarios } from "../../../components/account/saved";
 import { ReadingList, Notes } from "../../../components/account/library";
 import { Paths } from "../../../components/account/paths";
 import { Targets } from "../../../components/account/targets";
+import { RoutineAccount } from "../../../components/routine/account";
 import { Tiles, Week, Year } from "../../../components/account/year";
 import { Kept } from "../../../components/account/kept";
 import { Settings } from "../../../components/account/settings";
@@ -256,6 +257,17 @@ const PANELS: Panel[] = [
         <Section id="targets" title="What you are aiming for"
                  blurb="Set a target and this page measures it. Nothing is sent to you about it: there are no notifications on this site and there will not be any.">
           <Targets ladders={SCHOOL_LADDERS} />
+        </Section>
+      ),
+    },
+    {
+      id: "routine",
+      label: "Routine",
+      /* ============ ROUTINE ============ */
+      node: (
+        <Section id="routine" title="Your routine"
+                 blurb="A day of your own: what you do, when, and what you have kept. It is set up here and read on its own page under Tools.">
+          <RoutineAccount />
         </Section>
       ),
     },

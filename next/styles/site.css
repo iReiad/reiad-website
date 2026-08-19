@@ -11626,6 +11626,157 @@ German for day, and .tag is what the site has always called
      than a score: nothing here is out of anything. */
   .rt-sheet-count { margin: 0; font-size: var(--t-2); color: var(--ink-soft); }
 
+  /* ============================================================
+     THE DASHBOARD
+
+     `/tools/routine` was two tabs over a list of tickable rows,
+     and beside the stock check and the scorecard it read as a
+     note-taking app that had wandered into a toolbox. This is
+     the same arrangement every tool on this site uses: a hero
+     that states the answer, then dense panels under it.
+
+     Twelve columns, because the panels are not all one size: a
+     heatmap wants the full width, seven weekday bars want a
+     third, and a grid of equal cards would give both the same.
+     `.rt-wide` is the only modifier, and it is the difference
+     between a panel that holds a chart and one that holds a
+     list.
+     ============================================================ */
+
+  .rt-dash {
+    display: grid; gap: var(--gap);
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: start;
+  }
+  .rt-dash > * { grid-column: span 12; }
+  @media (min-width: 60rem) {
+    .rt-dash > .rt-panel { grid-column: span 4; }
+    .rt-dash > .rt-half  { grid-column: span 6; }
+    .rt-dash > .rt-wide  { grid-column: span 8; }
+    .rt-dash > .rt-full  { grid-column: span 12; }
+  }
+
+  /* The heatmap fills the panel it is in rather than sitting in
+     the top left of it. Twelve columns of seven, each column
+     taking its share of the width, so the same component is a
+     dense block in the year view and a wall here. */
+  .rt-dash .rt-heat { gap: 4px; flex-wrap: nowrap; inline-size: 100%; }
+  .rt-dash .rt-heat-week { flex: 1 1 0; gap: 4px; min-inline-size: 0; }
+  .rt-dash .rt-heat-day {
+    inline-size: 100%; block-size: auto; aspect-ratio: 1;
+    /* Capped, because twelve columns across an eight-column panel
+       makes a 44px square, and a heatmap of buttons that size is
+       a chessboard rather than a year. */
+    max-inline-size: 22px;
+  }
+  .rt-dash .rt-heat { justify-content: start; }
+  .rt-dash > .rt-panel { padding: var(--s-6); border-radius: var(--radius-card); }
+
+  /* `center` and not `baseline`. A header holding an h3 and a
+     button baseline-aligns the button's TEXT with the heading,
+     which leaves the button's own tap height hanging below it as
+     ninety pixels of nothing under every panel title. */
+  .rt-panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: var(--s-5); inline-size: 100%; min-block-size: 0;
+  }
+  .rt-panel-head h3 { flex: 1 1 auto; }
+
+  /* ---------- the hero ---------- */
+
+  .rt-hero {
+    display: grid; gap: var(--s-7); padding: var(--s-7);
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+  @media (min-width: 60rem) {
+    .rt-hero { grid-template-columns: auto minmax(0, 1fr) auto; }
+  }
+  .rt-hero-ring { display: grid; justify-items: center; gap: var(--s-3); }
+  .rt-hero-when { margin: 0; font-size: var(--t-2); color: var(--ink-soft); }
+  .rt-hero-said { display: grid; gap: var(--s-3); min-inline-size: 0; }
+  .rt-hero-said h2 { margin: 0; font-size: var(--t-7); }
+  .rt-hero-hi {
+    margin: 0; font-family: var(--font-bn-serif);
+    font-size: var(--t-4); color: var(--accent);
+  }
+
+  /* Four facts, and none of them is a score out of anything.
+     `--trend` is the one colour here and it is the accent both
+     ways: green for up and red for down would make a quiet
+     fortnight look like a fault. */
+  .rt-hero-stats {
+    display: grid; gap: var(--s-5) var(--s-7); margin: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .rt-hero-stats dt {
+    font-family: var(--font-bn); font-size: var(--t-2);
+    color: var(--ink-soft); margin: 0;
+  }
+  .rt-hero-stats dd {
+    margin: 0; font-size: var(--t-6); line-height: 1.1;
+    display: flex; align-items: baseline; gap: var(--s-3);
+  }
+  .rt-hero-stats dd em {
+    font-style: normal; font-size: var(--t-2); color: var(--ink-soft);
+  }
+  .rt-hero-stats dd[data-trend="up"] em { color: var(--accent); }
+
+  /* ---------- the ring and the sparkline ---------- */
+
+  .rt-ring { display: block; }
+  .rt-ring-track { stroke: var(--paper-sunk); }
+  .rt-ring-fill {
+    stroke: var(--accent);
+    transition: stroke-dasharray var(--enter) var(--ease);
+  }
+  .rt-ring-num {
+    fill: var(--ink); font-family: var(--font-mono);
+    font-size: 11px; font-weight: 600;
+  }
+  .rt-ring-unit { fill: var(--ink-soft); font-family: var(--font-mono); font-size: 4px; }
+
+  .rt-spark { inline-size: 100%; block-size: 34px; overflow: visible; }
+  .rt-spark path { stroke: var(--accent); vector-effect: non-scaling-stroke; }
+  .rt-spark-dot { fill: var(--accent); }
+
+  /* ---------- today, on the dashboard ---------- */
+
+  .rt-today-bands { display: grid; gap: var(--s-6); inline-size: 100%; }
+  @media (min-width: 48rem) {
+    .rt-today-bands { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+  }
+  .rt-today-band h4 {
+    margin: 0 0 var(--s-4); font-family: var(--font-bn);
+    font-size: var(--t-2); letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent);
+  }
+  .rt-today-band h4 em { font-style: normal; color: var(--ink-soft); }
+  .rt-today-band ul {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-wrap: wrap; gap: var(--s-3);
+  }
+
+  /* ---------- how the days felt ---------- */
+
+  .rt-ribbon {
+    display: flex; gap: 2px; inline-size: 100%; flex-wrap: wrap;
+  }
+  .rt-ribbon i {
+    flex: 1 0 6px; block-size: 22px; border-radius: var(--radius-xs);
+    background: var(--paper-sunk);
+  }
+  .rt-ribbon i[data-none] { opacity: 0.35; }
+
+  /* ---------- the jar, and what you can do with all of it ---------- */
+
+  .rt-jar-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-5); }
+  .rt-jar-list li { display: grid; gap: var(--s-2); }
+  .rt-jar-list cite { font-style: normal; font-size: var(--t-1); color: var(--ink-soft); }
+
+  .rt-action-row { display: flex; flex-wrap: wrap; gap: var(--s-4); }
+  .rt-heat-key { font-size: var(--t-1); }
+
   /* ---------- and on paper ----------
 
      The rail, the bar and the footer are already taken away by
