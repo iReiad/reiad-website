@@ -43,14 +43,22 @@ import { SectionLabel } from "./ui/label";
    every other card on the page were blue. A rung belongs to its
    school, so it wears its school's colour.
 
+   FOLLOWING THE PAGE IS `undefined`, NOT `"var(--accent)"`. The
+   card writes its accent into `--accent`, so that string made the
+   declaration `--accent: var(--accent)`: a cycle, thrown out, and
+   `--accent` invalid on the card and everything inside it. Since
+   `--panel` is mixed from the accent, fourteen cards on
+   /money/index.html had no ground, no rail, no icon tile and no
+   chip. `scripts/check-selfref.ts` fails on it now.
+
    `soon` is a state and is deliberately not the accent: a rung
    that has been promised and not written should look the same in
    every school, because what it is saying has nothing to do with
    which school it is in. `<SoonCard>` in deck.tsx makes the same
    argument about being a div rather than a link. */
 const ACCENT = {
-  start: "var(--accent)",
-  live: "var(--accent)",
+  start: undefined,
+  live: undefined,
   soon: "var(--ink-soft)",
 };
 
@@ -85,8 +93,8 @@ export function MoneyHub({ school }: { school: School }) {
           <p className="hub-lede" lang="bn">
             বিও অ্যাকাউন্ট কী সেটাও জানেন না, এমন জায়গা থেকে শুরু করে নিজে একটা কোম্পানি
             যাচাই করা পর্যন্ত। {bnNum(school.counts.stages)}টা ধাপ,
-            লেখা হয়ে গেছে {bnNum(written)}টি, সবটাই ফ্রি। কোনো লগইন নেই, আর আপনি কতদূর
-            পড়েছেন সেটা আপনার নিজের ব্রাউজারেই থাকে।
+            লেখা হয়ে গেছে {bnNum(written)}টি, সবটাই ফ্রি। আপনি কতদূর পড়েছেন সেটা
+            জমা থাকে আপনার অ্যাকাউন্টে।
           </p>
 
           <div className="hub-progress">
@@ -230,9 +238,9 @@ export function MoneyHub({ school }: { school: School }) {
             />
             <InfoCard
               icon="check" accent="var(--green)" lang="bn"
-              title="টিক আপনার ব্রাউজারে"
-              dek="কোন লেখাটা পড়া হয়েছে সেটা আপনার নিজের যন্ত্রে জমা থাকে। কোনো অ্যাকাউন্ট
-                   লাগে না; অ্যাকাউন্ট শুধু এক যন্ত্র থেকে আরেক যন্ত্রে নিয়ে যায়।"
+              title="টিক আপনার অ্যাকাউন্টে"
+              dek="কোন লেখাটা পড়া হয়েছে সেটা জমা থাকে আপনার অ্যাকাউন্টে, তাই ফোনে
+                   যেখানে থামবেন ল্যাপটপে সেখান থেকেই শুরু করতে পারবেন।"
             />
             <InfoCard
               icon="warning" accent="var(--gold)" lang="bn"

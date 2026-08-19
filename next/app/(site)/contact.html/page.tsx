@@ -41,7 +41,7 @@ export default function ContactPage() {
             </h1>
             <p className="lede">
               Recruiters, freelance clients, and Learn-hub readers all welcome. The form
-          below lands straight in my inbox, or email
+          below lands straight in my inbox, or email{" "}
           
               <a href="mailto:i@reiad.co.uk">i@reiad.co.uk
               </a> directly.
@@ -103,7 +103,7 @@ export default function ContactPage() {
             </SectionLabel>
             <p>
               <a href="https://www.linkedin.com/in/reiad">LinkedIn
-              </a> ·
+              </a> ·{" "}
           
               <a href="mailto:i@reiad.co.uk">i@reiad.co.uk
               </a>
@@ -125,7 +125,7 @@ export default function ContactPage() {
                 </span>
                 <span className="v">Writing to me does not sign you up to anything. There's no
               newsletter, no CRM, no drip campaign, if you want to know when something
-              new is published, use 
+              new is published, use{" "}
                   <a href="/feed.xml">the RSS feed
                   </a>.
                 </span>
@@ -134,9 +134,9 @@ export default function ContactPage() {
                 <span className="k mono">Where it goes
                 </span>
                 <span className="v">The form posts to Web3Forms, which emails it to me and stores
-              nothing else. This site sets no analytics cookies and runs no trackers,
-              the only thing kept in your browser is your theme choice and which Learn
-              terms you've read.
+              nothing else. This site sets no analytics cookies and runs no trackers.
+              How you like to read and how far you have got through a course are kept
+              with your account.
                 </span>
               </div>
             </div>
@@ -171,10 +171,10 @@ export default function ContactPage() {
                 </summary>
                 <p>No: I'm not a licensed adviser and it would be a bad idea from someone
                who doesn't know your income, debts, or what the money is for. What I can
-               point you at is the reasoning: the 
+               point you at is the reasoning: the{" "}
                   <a href="/money/index.html">Learn hub
-                  </a>
-                  for the vocabulary and the 
+                  </a>{" "}
+                  for the vocabulary and the{" "}
                   <a href="/tools/index.html">calculators
                   </a> for
                the arithmetic, so the decision stays yours but stops being a guess.
@@ -200,7 +200,7 @@ export default function ContactPage() {
               <details className="faq">
                 <summary>The form isn't working.
                 </summary>
-                <p>Email 
+                <p>Email{" "}
                   <a href="mailto:i@reiad.co.uk">i@reiad.co.uk
                   </a> directly, that
                always works, and do mention the form failed so I can fix it.

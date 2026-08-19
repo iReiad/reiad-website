@@ -86,7 +86,7 @@ export default function Page() {
                 <h2>Run this on real data
                 </h2>
                 <p>Two columns: a date and a closing level. DSE publishes daily index
-               history; export it, drop it here, and the whole page recomputes.
+               history; export it, drop it here, and the whole page recomputes.{" "}
                
                   <strong>Nothing is uploaded
                   </strong>: the parsing and the maths
@@ -135,7 +135,7 @@ export default function Page() {
               <div id="chart-index" />
               <p className="statement-note">A linear axis makes early moves look trivial
             and recent ones look dramatic; on a log axis equal vertical distances
-            are equal 
+            are equal{" "}
                 <em>percentage
                 </em> moves, which is what a holder actually
             experiences. Worth toggling: it changes the story the chart tells.

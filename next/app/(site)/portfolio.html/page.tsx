@@ -392,10 +392,10 @@ export default function Page() {
                   <span className="d">
                     <span data-count="calculators">5
                     </span> calculators in the
-                Tools hub, plus a stock check that runs 
+                Tools hub, plus a stock check that runs{" "}
                     <span data-count="ratios">44
-                    </span>
-                    ratios across 
+                    </span>{" "}
+                    ratios across{" "}
                     <span data-count="pillars">6
                     </span> pillars and shows its own
                 arithmetic. Each one linkable, each one in English or Bangla.
@@ -557,7 +557,7 @@ export default function Page() {
             </div>
             <p className="note">
               Prefer the protection of a platform? I also take projects through Fiverr
-          and Upwork. 
+          and Upwork.{" "}
               <a href="/contact.html">Get in touch
               </a> and I will share the
           current profile links.

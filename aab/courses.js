@@ -39,7 +39,23 @@
    opening is not finishing.
    ============================================================ */
 import { token, current } from "/account.js";
-import { setHere } from "/crumbs.js";
+/* Rename the last crumb, for a page whose own name arrives after
+   the server rendered the trail. This section's pages are shells:
+   the catalogue is admin-only, so the title the server sent is
+   generic and the real one comes down with the fetch.
+
+   It was `setHere()` in `aab/crumbs.js`, which is archived: the
+   trail is `next/lib/crumbs.ts` and the top bar now. `.crumbs`
+   is the class both the bar and the row carry, so this finds
+   whichever the page has. */
+function setHere(name) {
+    const text = String(name ?? "").trim();
+    if (!text)
+        return;
+    const last = document.querySelector('.crumbs li[aria-current="page"]');
+    if (last)
+        last.textContent = text;
+}
 /* ============================================================
    Progress
 

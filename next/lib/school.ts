@@ -50,9 +50,9 @@ export interface SchoolLook {
       Skills index it used to be reached through. */
   current: "money" | "deutsch" | "quran" | "english";
   /** The footer note. Three of the four say the same thing about
-      being free and keeping progress in your own browser, in the
-      words of the language they teach; the money school carries
-      the site's disclaimer instead. */
+      being free and keeping progress in the reader's account, in
+      the words of the language they teach; the money school
+      carries the site's disclaimer instead. */
   footer: string;
   /** The prefix of the share card in `/og/`, before the stage's
       slug. `build-og.mjs` both draws these and repoints the pages
@@ -241,8 +241,8 @@ export const LOOKS: Record<string, SchoolLook> = {
     title: "জার্মান বাংলায়",
     bodyClass: "deutsch",
     current: "deutsch",
-    footer: "জার্মান অংশটা বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া। "
-      + "আপনার অগ্রগতি আপনার নিজের ব্রাউজারেই থাকে।",
+    footer: "জার্মান অংশটা বিনামূল্যে, বাংলায়। "
+      + "আপনার অগ্রগতি জমা থাকে আপনার অ্যাকাউন্টে।",
     og: "deutsch-",
     script: "/deutsch/teil.js",
     stageName: (stage) => String(stage.kicker),
@@ -327,8 +327,8 @@ export const LOOKS: Record<string, SchoolLook> = {
     title: "কুরআনের আরবি",
     bodyClass: "quran",
     current: "quran",
-    footer: "কুরআনের আরবির অংশটা বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া। "
-      + "আপনার অগ্রগতি আপনার নিজের ব্রাউজারেই থাকে।",
+    footer: "কুরআনের আরবির অংশটা বিনামূল্যে, বাংলায়। "
+      + "আপনার অগ্রগতি জমা থাকে আপনার অ্যাকাউন্টে।",
     og: "quran-",
     script: "/quran/dars.js",
     stageName: (stage) => String(stage.kicker),
@@ -396,8 +396,8 @@ export const LOOKS: Record<string, SchoolLook> = {
     title: "ইংরেজি বাংলায়",
     bodyClass: "english",
     current: "english",
-    footer: "ইংরেজির অংশটা বিনামূল্যে, বাংলায়, আর কোনো লগইন ছাড়া। "
-      + "আপনার অগ্রগতি আপনার নিজের ব্রাউজারেই থাকে।",
+    footer: "ইংরেজির অংশটা বিনামূল্যে, বাংলায়। "
+      + "আপনার অগ্রগতি জমা থাকে আপনার অ্যাকাউন্টে।",
     og: "english-",
     script: "/english/part.js",
     stageName: (stage) => String(stage.kicker),

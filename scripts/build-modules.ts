@@ -67,7 +67,6 @@ export const MODULES = [
      six call sites split the document title on U+2014, a
      character this site's own rules guarantee never appears, so
      the split did nothing and the whole title reached the crumb. */
-  "crumbs",
   /* The first module served from a subdirectory: the live
      portfolio's page module, at /tools/live.js beside the plain
      JavaScript calculators. The name here is the served path

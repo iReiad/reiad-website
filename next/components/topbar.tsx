@@ -113,7 +113,18 @@ function BarMark() {
   );
 }
 
-export function TopBar({ tree }: { tree: ReactNode }) {
+/* The whole site as a tree, in a panel off the bar. It is built
+   and it is not in the bar: the trail is, because "where am I"
+   is the question a reader arriving from a search result has and
+   the tree answers "what else is there", which the rail already
+   answers down the left of every page.
+
+   Flip this to put it back. `<NavTree>` is still rendered by the
+   shell and still passed in, so nothing else has to change, and
+   nothing dead is shipped to 250 pages while it is off. */
+const TREE_IN_BAR = false;
+
+export function TopBar({ tree, crumbs }: { tree: ReactNode; crumbs: ReactNode }) {
   return (
     <div className="topbar">
       <DrawerButton />
@@ -124,11 +135,14 @@ export function TopBar({ tree }: { tree: ReactNode }) {
           menu somebody opens when they are deciding rather than
           across the top of every page they read.
 
-          What the bar carries instead is the whole site as a
-          tree, rendered on the server and handed in as a slot,
-          because this file is a client component and that one is
-          a database read. See `nav-tree.tsx`. */}
-      {tree}
+          The trail is here instead, rendered on the server and
+          handed in as a slot because this file is a client
+          component. The mark to its left is its first crumb: one
+          line saying whose site this is and where in it you are,
+          rather than a bar saying the first and a row under it
+          saying the second. See `lib/crumbs.ts`. */}
+      {crumbs}
+      {TREE_IN_BAR ? tree : null}
       <div className="top-tools">
         <button className="top-btn" id="open-palette" type="button"
                 aria-label="Search the site (Ctrl+K)">

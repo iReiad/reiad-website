@@ -30,7 +30,6 @@ import {
 } from "/content.js";
 import { countView } from "/api.js";
 import { allPieces, pieceHref } from "/pieces.js";
-import { initCrumbs } from "/crumbs.js";
 import { initAudience, audienceBoost } from "/audience.js";
 import { initTilt } from "/tilt.js";
 import { initStreak } from "/streak.js";
@@ -574,17 +573,16 @@ function initDynamic() {
   allPieces().then((pieces) => {
     if (pieces?.length) addToSearchIndex(pieces);
   });
-  // Reactions and reader questions attach themselves to article pages,
-  // so no article file has to know they exist.
-  if (/^\/insights\/[a-z0-9-]+/i.test(location.pathname)) {
-    import("/engage.js").catch(() => {});
-  }
+  /* Reactions and reader questions are `next/components/engage.tsx`
+     as of #149, rendered by the article route. The dynamic import
+     that used to be here loaded a module whose top level called
+     countView() a SECOND time, so an insights piece counted every
+     view twice and a cooking or travel piece counted it once. */
 }
 
 /* ---------- go ---------- */
 initTheme();
 initAudience();
-initCrumbs();
 initPalette();
 initShortcuts();
 initCounts();

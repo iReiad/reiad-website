@@ -466,7 +466,10 @@ console.log("\nreading preferences");
 
   await page.getByRole("tab", { name: "Preferences" }).click();
   await page.waitForTimeout(200);
-  is("four rows of them", await page.locator(".pref-row").count(), 4);
+  is("seven rows of them", await page.locator(".pref-row").count(), 7);
+  is("every one of them is labelled",
+    await page.locator("#account-prefs .pref-label").allTextContents(),
+    ["Type size", "Line width", "Theme", "Calculators open in", "Finish", "Blur", "Tint"]);
   is("normal is the one chosen",
     await page.locator('.pref-chips .pref-chip[data-on] strong').first().textContent(),
     "Normal");
@@ -492,6 +495,58 @@ console.log("\nreading preferences");
   await page.waitForTimeout(300);
   is("the language chip writes the tools' own key",
     await page.evaluate(() => localStorage.getItem("tool-lang")), "en");
+
+  /* ---- what the glass is made of ----
+
+     Three settings under one heading, and the reason they are
+     checked here rather than in `interactive.test.mjs` is the
+     same reason the four above are: the markup is right whether
+     or not a press reaches `<html>`, and `<html>` is the whole
+     mechanism. `data-glass` names the material and the two custom
+     properties are what every radius and every tint is derived
+     from, so a chip that writes storage and not those three is a
+     chip that changes nothing until the next load.
+
+     Scoped to the panel: "Clear" and "Plain" are ordinary words
+     and the other seven sections of this page are in the document
+     too. */
+  const prefs = page.locator("#account-prefs");
+  const onHtml = (name) => page.evaluate(
+    (n) => document.documentElement.getAttribute(n), name);
+  const propNow = (name) => page.evaluate(
+    (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), name);
+  const stored = (field) => page.evaluate(
+    (f) => JSON.parse(localStorage.getItem("reader-prefs"))[f], field);
+
+  is("the glass has its own heading",
+    await page.locator("#prefs-glass").textContent(), "What the glass is made of");
+  is("frost is what a reader starts on", await onHtml("data-glass"), "frost");
+
+  await prefs.getByRole("button", { name: /Paper/ }).click();
+  await page.waitForTimeout(300);
+  is("pressing Paper changes the material", await onHtml("data-glass"), "paper");
+  is("and the material is remembered", await stored("glass"), "paper");
+
+  await prefs.getByRole("button", { name: /Deep/ }).click();
+  await page.waitForTimeout(300);
+  is("pressing Deep moves every blur at once", await propNow("--glass-amount"), "1.7");
+  is("and the blur is remembered", await stored("blur"), "deep");
+
+  await prefs.getByRole("button", { name: /Clear/ }).click();
+  await page.waitForTimeout(300);
+  is("pressing Clear thins the tint", await propNow("--glass-veil"), "0.54");
+  is("and the tint is remembered", await stored("veil"), "clear");
+
+  /* Plain is a finish with its own solid grounds rather than the
+     other two switched off, so it is chosen the same way and the
+     panel says which one is on. */
+  await prefs.getByRole("button", { name: /Plain/ }).click();
+  await page.waitForTimeout(300);
+  is("Plain is chosen like any other finish", await onHtml("data-glass"), "plain");
+  is("and the Finish row says so",
+    await prefs.locator('[role=group][aria-label="Finish"] .pref-chip[data-on] strong')
+      .textContent(),
+    "Plain");
 
   is("no page errors", errors.length ? errors[0] : "none", "none");
   await context.close();

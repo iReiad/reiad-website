@@ -177,7 +177,7 @@ export default function Page() {
                 <p>Net income lands in retained earnings and at the top of the cash
                flow. Capex builds PP&E and comes back as next year's
                depreciation. Working capital days set receivables, inventory and
-               payables, and the 
+               payables, and the{" "}
                   <em>change
                   </em> in them is a cash item. Cash is
                the balance sheet's plug, straight off the bottom of the cash flow.

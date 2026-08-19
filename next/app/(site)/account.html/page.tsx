@@ -145,7 +145,7 @@ function Section({ id, title, blurb, children }: {
             eight sections read as one page rather than as eight
             features that arrived separately. */}
         <span className="mb-1 h-[3px] w-7 rounded-full bg-green/70" aria-hidden="true" />
-        <h2 className="m-0 font-serif text-[clamp(1.2rem,3.4vw,1.5rem)]">{title}</h2>
+        <h2 className="m-0 font-read text-[clamp(1.2rem,3.4vw,1.5rem)]">{title}</h2>
         <p className="m-0 max-w-[var(--measure)] text-t5 text-ink-soft">{blurb}</p>
       </div>
       {children}
@@ -169,7 +169,7 @@ function Card({ id, className = "", children }: {
          className={`@container/acct grid content-start gap-2.5 rounded-card
                      border border-hairline bg-panel shadow-card
                      p-[clamp(14px,3vw,20px)]
-                     [&>h3]:m-0 [&>h3]:font-serif [&>h3]:text-t6
+                     [&>h3]:m-0 [&>h3]:font-read [&>h3]:text-t6
                      [&>p]:m-0 [&>p]:text-t4 [&>p]:text-ink-soft
                      [&>.btn]:justify-self-start ${className}`}>
       {children}
@@ -376,7 +376,7 @@ export default function AccountPage() {
           <div className="wrap grid grid-cols-[auto_1fr] items-center gap-x-5 gap-y-[18px]">
             <span id="account-face" aria-hidden="true"
                   className="grid aspect-square w-[clamp(48px,12vw,62px)] place-items-center
-                             rounded-full bg-green font-serif text-[clamp(1.3rem,5vw,1.8rem)]
+                             rounded-full bg-green font-read text-[clamp(1.3rem,5vw,1.8rem)]
                              leading-none text-white" />
             <div className="min-w-0">
               <h1 id="account-hello" className="m-0 text-[clamp(1.5rem,5vw,2.2rem)] text-balance">
@@ -384,7 +384,7 @@ export default function AccountPage() {
               </h1>
               <p id="account-email"
                  className="mt-0.5 mb-0 overflow-hidden text-ellipsis whitespace-nowrap
-                            font-mono text-[0.86rem] text-ink-soft" />
+                            font-code text-[0.86rem] text-ink-soft" />
             </div>
             {/* The four numbers. `auto-fit` rather than four
                 columns, because two-by-two is the right shape on

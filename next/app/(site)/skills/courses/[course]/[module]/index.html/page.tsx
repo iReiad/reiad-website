@@ -6,5 +6,5 @@ import { CourseShell, courseMeta } from "../../../../../../../components/course-
 export const metadata: Metadata = courseMeta("Module");
 
 export default function ModulePage() {
-  return <CourseShell here="Module" />;
+  return <CourseShell />;
 }

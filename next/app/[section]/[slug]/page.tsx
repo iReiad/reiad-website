@@ -30,6 +30,7 @@ import { notFound } from "next/navigation";
 import { dateLabel, headFacts, lookFor } from "@reiad/shared/look";
 import { getArticle, siteOrigin } from "../../../lib/article";
 import { Comments } from "@/components/comments";
+import { Engage } from "@/components/engage";
 import { SiteScripts } from "../../../components/scripts";
 import { Eyebrow } from "../../../components/ui/label";
 
@@ -97,6 +98,17 @@ export default async function ArticlePage({ params }: Params) {
         <div dangerouslySetInnerHTML={{ __html: article.body }} />
 
         <div className="note">{look.note}</div>
+
+        {/* Reactions and the question box, before the prev/next
+            pair, which is where `aab/engage.js` inserted itself.
+
+            INSIGHTS ONLY, because that is what `app.js` did: it
+            imported that module on `/insights/` and nowhere else,
+            so a cooking or travel piece has never had either.
+            Said here rather than inside the component, so that
+            turning it on for the other two is a line in a route
+            and a decision somebody took. */}
+        {article.section === "insights" ? <Engage slug={article.slug} /> : null}
 
         <div className="prev-next">
           <a href={look.back.url}>

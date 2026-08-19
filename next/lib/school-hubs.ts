@@ -61,7 +61,7 @@ export const SCHOOL_HUBS: Record<string, SchoolHub> = {
   "deutsch": {
     head: {
           "title": "জার্মান, বাংলায় · Deutsch von Herzen · Reiad's Library",
-          "description": "বাংলা থেকে জার্মান, একদম শুরু থেকে: চারটা স্তর, রোজ একটা পাতার অনুশীলন। শব্দ মুখস্থ নয়, কাঠামো শেখা। বিনামূল্যে, লগইন ছাড়া।",
+          "description": "বাংলা থেকে জার্মান, একদম শুরু থেকে: চারটা স্তর, রোজ একটা পাতার অনুশীলন। শব্দ মুখস্থ নয়, কাঠামো শেখা। বাংলায়, বিনামূল্যে।",
           "canonical": "https://reiad.co.uk/deutsch/index.html",
           "ogImage": "https://reiad.co.uk/og/deutsch.png",
           "ogType": "website"

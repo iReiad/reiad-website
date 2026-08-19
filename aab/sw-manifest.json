@@ -1,9 +1,9 @@
 {
-  "version": "v132",
+  "version": "v134",
   "hashes": {
     "/offline.html": "a18e4f2c69892632",
-    "/fallback.css": "2e8481193525e93e",
-    "/app.js": "e13a222a9225267b",
+    "/fallback.css": "705f41c5ba249c9e",
+    "/app.js": "4081b8ec91cbe2df",
     "/content.js": "f9d26573667a4a51",
     "/api.js": "a7bab41d860a4806",
     "/pieces.js": "2a797d3be504fbd4",
@@ -15,9 +15,8 @@
     "/photo.js": "2ff939a5d971d6e2",
     "/saved.js": "a19be7d350dc2498",
     "/keep.js": "72957ee6132be7e2",
-    "/prefs.js": "84bbd206848e1dbc",
+    "/prefs.js": "833cad34b4e1dd1b",
     "/checkpoints.js": "8903c0d041e563b3",
-    "/crumbs.js": "caa70b9cd0a89fec",
     "/audience.js": "638ceb49784d808c",
     "/activation.js": "3d0a5d2317d6d8dc",
     "/tilt.js": "31fb2d9138644e3a",

@@ -31,6 +31,26 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v134: three things a cached shell would go on getting wrong.
+        `/app.js` no longer imports `/crumbs.js`: the trail is
+        rendered by the server into the top bar now, so an old
+        app.js draws a second one under it and 404s on a module
+        that is not served. `/fallback.css` is the whole stylesheet
+        again and this time the glass in it actually blurs: every
+        `backdrop-filter` was written with a hand-typed `-webkit-`
+        twin, which is the one Chrome has never supported and the
+        only one the build kept. And `/prefs.js` grew the three
+        glass settings, so an old copy cannot apply a choice the
+        account page can now make.
+
+   v133: `/app.js` no longer imports `/engage.js`, and that import
+        was counting every insights view TWICE: `initDynamic()`
+        calls `countView()` for every page and then loaded a module
+        whose top level called it again. Reactions and the question
+        box are a component now. An old app.js would go on
+        double-counting, and go on importing a module that is not
+        served any more.
+
    v132: `/comments.js` is GONE from this list, which is the first
         precached module to leave rather than change. The thread
         under a piece is `next/components/comments.tsx` now, and a
@@ -1376,7 +1396,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v132";
+const VERSION = "v134";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -1449,7 +1469,6 @@ const PRECACHE = [
   "/checkpoints.js",
   /* Loaded lazily by an article page. Precached so a thread still
      draws for somebody reading offline. */
-  "/crumbs.js",
   "/audience.js",
   "/activation.js",
   /* app.js imports this one directly, so a cached app.js without

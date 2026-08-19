@@ -175,7 +175,7 @@
     --panel-base:      oklch(100%  0.003 var(--h-paper));
     --hairline-base:   oklch(88.5% 0.012 var(--h-paper));
     --pane-top:        oklch(100% 0 0 / 0.55);
-    --glass-base:      oklch(99% 0.004 var(--h-paper) / 0.72);
+    --glass-base:      oklch(99% 0.004 var(--h-paper) / var(--glass-veil));
     --glass-solid-base: oklch(99% 0.004 var(--h-paper));
     --accent-ink:      oklch(99% 0.004 var(--h-paper));
     --accent-mate:     oklch(20% 0.02 var(--h-green));
@@ -381,14 +381,74 @@
        in `@layer shell`. Without it, a header on such a browser
        is 28% transparent over moving text, which is the one
        state this must never be in. */
-    --glass-base:   light-dark(oklch(99% 0.004 var(--h-paper) / 0.72),
-                               oklch(23% 0.014 var(--h-green) / 0.72));
+    --glass-base:   light-dark(oklch(99% 0.004 var(--h-paper) / var(--glass-veil)),
+                               oklch(23% 0.014 var(--h-green) / var(--glass-veil)));
     --glass-edge:   light-dark(oklch(100% 0 0 / 0.7), oklch(100% 0 0 / 0.1));
     /* The lit top edge that reads as a pane rather than a
        rectangle of paint. One shadow, so a surface can carry it
        without a pseudo-element. */
     --pane-lift:    inset 0 1px 0 var(--pane-top), var(--shadow);
-    --glass-blur:   saturate(1.7) blur(14px);
+
+    /* ---- glass is a material, and the reader picks it ----
+
+       It was one declaration, `saturate(1.7) blur(14px)`, and it
+       had never once run: it was written with a hand-typed
+       `-webkit-` twin under it, Lightning CSS read the pair as
+       one property and kept the last, and Chrome has never
+       supported the prefixed name. Every bar, rail and menu on
+       this site was a 72% translucent panel over moving text in
+       every browser but Safari, which is the one state the note
+       above `--glass-base` says must never happen.
+
+       So it is worth building properly rather than restoring.
+       Three things make a surface read as glass rather than fog,
+       and only the first is a blur: what is behind it stays
+       COLOURED, which is the saturate; it is lit from above,
+       which is `--glass-lift`; and it has a grain, because a
+       perfectly smooth translucent panel reads as plastic.
+
+       TWO KNOBS AND A MATERIAL, all three the reader's, all
+       three set before the first paint by the boot script in
+       `next/components/shell.tsx` from `aab/src/prefs.ts`.
+       `--glass-amount` multiplies every radius so one step moves
+       the whole site together and the top bar stays thicker than
+       a chip; `--glass-veil` is the alpha of the tint over it;
+       `data-glass` picks which of the three blocks below runs. */
+    --glass-amount: 1;
+    --glass-veil:   0.72;
+    --glass-r:      14px;
+    --glass-sat:    1.7;
+    --glass-bright: 1;
+    --glass-grain:  none;
+
+    /* Three thicknesses off one radius. A chip and a top bar
+       cannot carry the same blur: at 14px a chip is a smudge,
+       and at 6px a bar with an article scrolling under it is a
+       window. */
+    --glass-thin:  saturate(var(--glass-sat)) brightness(var(--glass-bright))
+                   blur(calc(var(--glass-r) * 0.4 * var(--glass-amount)));
+    --glass-blur:  saturate(var(--glass-sat)) brightness(var(--glass-bright))
+                   blur(calc(var(--glass-r) * var(--glass-amount)));
+    --glass-thick: saturate(var(--glass-sat)) brightness(var(--glass-bright))
+                   blur(calc(var(--glass-r) * 2 * var(--glass-amount)));
+
+    /* What a glass surface actually paints, so that turning the
+       glass off is one declaration rather than one `@supports`
+       block per surface. Six surfaces used to carry their own
+       copy of the same fallback and a seventh would have been
+       written without one. */
+    --glass-fill:  var(--glass-bg);
+
+    /* Lit from above and seated below: the pair of inset lines
+       that make a pane read as having thickness rather than
+       being a rectangle of paint. */
+    --glass-under: oklch(0% 0 0 / 0.06);
+    --glass-lift:  inset 0 1px 0 var(--pane-top),
+                   inset 0 -1px 0 var(--glass-under),
+                   var(--shadow);
+    --glass-lift-hi: inset 0 1px 0 var(--pane-top),
+                     inset 0 -1px 0 var(--glass-under),
+                     var(--shadow-lift);
     --shadow:       light-dark(0 10px 30px oklch(30% 0.05 var(--h-green) / 0.09),
                                0 10px 30px oklch(0% 0 0 / 0.38));
     --shadow-lift:  light-dark(0 18px 44px oklch(30% 0.05 var(--h-green) / 0.14),
@@ -711,7 +771,8 @@
     --panel-base:      oklch(23%   0.016 var(--h-green));
     --hairline-base:   oklch(28%   0.015 var(--h-green));
     --pane-top:        oklch(100% 0 0 / 0.06);
-    --glass-base:      oklch(23% 0.014 var(--h-green) / 0.72);
+    --glass-under:     oklch(0% 0 0 / 0.22);
+    --glass-base:      oklch(23% 0.014 var(--h-green) / var(--glass-veil));
     --glass-solid-base: oklch(23% 0.014 var(--h-green));
     --accent-ink:      oklch(14% 0.012 var(--h-green));
     --accent-mate:     oklch(96% 0.01 var(--h-paper));
@@ -738,7 +799,8 @@
     --panel-base:      oklch(23%   0.016 var(--h-green));
     --hairline-base:   oklch(28%   0.015 var(--h-green));
     --pane-top:        oklch(100% 0 0 / 0.06);
-    --glass-base:      oklch(23% 0.014 var(--h-green) / 0.72);
+    --glass-under:     oklch(0% 0 0 / 0.22);
+    --glass-base:      oklch(23% 0.014 var(--h-green) / var(--glass-veil));
     --glass-solid-base: oklch(23% 0.014 var(--h-green));
     --accent-ink:      oklch(14% 0.012 var(--h-green));
     --accent-mate:     oklch(96% 0.01 var(--h-paper));
@@ -758,6 +820,83 @@
 
   :root[data-theme="light"] { color-scheme: light; }
   :root[data-theme="dark"]  { color-scheme: dark; }
+
+  /* ============================================================
+     The three materials
+
+     `data-glass` on <html>, written before the first paint, and
+     the reader chooses it on /account.html. Each block says what
+     the surface is MADE of; the two knobs above then move
+     whichever one is on. Nothing here is a selector on a surface,
+     which is the point: a seventh glass surface written tomorrow
+     answers all three by using the tokens.
+     ============================================================ */
+
+  /* Cold, and you see a long way through. The brightness is not
+     decoration: lifting the backdrop under a pale bar and
+     dropping it under a dark one is what keeps the text on the
+     bar readable when the veil is turned down. */
+  :root[data-glass="frost"] {
+    --glass-sat:    1.7;
+    --glass-bright: 1.05;
+    --glass-grain:
+      radial-gradient(circle at 50% 50%,
+        color-mix(in oklab, var(--tex-ink) calc(var(--tex-a) * 55%), transparent) 0 0.5px,
+        transparent 0.6px);
+    --glass-grain-size: 3px 3px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root[data-glass="frost"]:not([data-theme="light"]) { --glass-bright: 0.86; }
+  }
+  :root[data-theme="dark"][data-glass="frost"] { --glass-bright: 0.86; }
+
+  /* The site's own weave, held closer. The blur comes back to
+     9px because a texture behind a 14px blur is a texture nobody
+     can see, and the saturate comes down with it: paper is warm
+     rather than cold. */
+  :root[data-glass="paper"] {
+    --glass-r:      9px;
+    --glass-sat:    1.15;
+    --glass-bright: 1.02;
+    --glass-grain:  var(--weave);
+    --glass-grain-size: auto;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root[data-glass="paper"]:not([data-theme="light"]) { --glass-bright: 0.94; }
+  }
+  :root[data-theme="dark"][data-glass="paper"] { --glass-bright: 0.94; }
+
+  /* Not glass. A finish in its own right rather than the others
+     with a feature switched off, and the same one three other
+     things resolve to: a browser with no `backdrop-filter`, a
+     reader who has asked for less transparency, and printing. */
+  :root[data-glass="plain"] {
+    --glass-fill:  var(--glass-solid);
+    --glass-thin:  none;
+    --glass-blur:  none;
+    --glass-thick: none;
+    --glass-grain: none;
+  }
+
+  /* The three that resolve to it. `prefers-reduced-transparency`
+     is a real request rather than a hint: somebody has told their
+     operating system that moving content under a surface is hard
+     to read, and this site is mostly long-form prose. */
+  @media (prefers-reduced-transparency: reduce), print {
+    :root, :root[data-glass] {
+      --glass-fill:  var(--glass-solid);
+      --glass-thin:  none;
+      --glass-blur:  none;
+      --glass-thick: none;
+      --glass-grain: none;
+    }
+  }
+  @supports not (backdrop-filter: blur(1px)) {
+    :root, :root[data-glass] {
+      --glass-fill:  var(--glass-solid);
+      --glass-grain: none;
+    }
+  }
 
   /* Cross-document view transitions: navigating between pages of
      the site animates instead of flashing white. Ignored where
@@ -816,7 +955,6 @@
        is the "little space"– a heading pinned flush against the
        header bottom reads as clipped. */
     scroll-padding-top: calc(var(--top-space) + 0.9rem);
-    -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
 
     /* Here as well as on body, because this is the element the
@@ -1672,15 +1810,8 @@
     padding: 0;
     border: 1px solid var(--hairline);
     border-radius: var(--radius);
-    background: var(--glass-bg);
-    /* Real glass: this sits over content that scrolls under it,
-       which is the one place a backdrop blur earns its cost. A
-       card does not, and gets the tint and the edge without the
-       filter. See the note above `--glass-bg`. */
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     color: var(--ink);
-    box-shadow: var(--shadow-lift);
+    box-shadow: var(--glass-lift-hi);
 
     /* No backdrop on a laptop: this is a menu, and dimming the
        page behind a menu is what made the thing it replaced feel
@@ -2101,7 +2232,6 @@
     background-size: 44px 44px;
     opacity: 0.45;
     mask-image: radial-gradient(ellipse 90% 80% at 30% 20%, #000 0%, transparent 70%);
-    -webkit-mask-image: radial-gradient(ellipse 90% 80% at 30% 20%, #000 0%, transparent 70%);
     pointer-events: none;
   }
 
@@ -2609,7 +2739,6 @@ it collapsed to the width of the word "Bangladesh". */
     &::backdrop {
       background: oklch(18% 0.02 var(--h-green) / 0.5);
       backdrop-filter: blur(3px);
-      -webkit-backdrop-filter: blur(3px);
     }
   }
   .news-window-bar {
@@ -2821,16 +2950,7 @@ it collapsed to the width of the word "Bangladesh". */
     padding: 6px var(--bar-pad);
     border-radius: var(--radius-pill);
     border: 1px solid var(--glass-edge);
-    box-shadow: var(--shadow);
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-  }
-  /* Where there is no backdrop-filter there is no glass, and a
-     28%-transparent bar over moving text is the one state this
-     must never be in. `.topbar` says the same thing above. */
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .tabs-nav[data-sticky] { background: var(--glass-solid); }
+    box-shadow: var(--glass-lift);
   }
 
   /* With one calculator on screen the card no longer needs to be
@@ -2846,7 +2966,17 @@ it collapsed to the width of the word "Bangladesh". */
 
      Set by `components/ui/tab-panels.tsx` only once it has run, so
      a page with no JavaScript keeps the rhythm it needs. */
-  [data-panels="on"] > * > section { padding-block-start: 0; scroll-margin-top: 0; }
+  /* A panel is the only section on screen, so it does not lead
+     with the `--step` that separates sections on a long page. It
+     does keep a gap, and the gap is the strip's: the strip is
+     sticky and the panel scrolls beneath it, which is right and
+     looked broken while no glass surface on this site blurred at
+     all, because a heading read straight through the bar. */
+  [data-panels="on"] > * > section {
+    padding-block-start: var(--s-6);
+    scroll-margin-top: 0;
+  }
+  [data-panels="on"] > * > section > :first-child { margin-block-start: 0; }
 
   .tool {
     background: var(--panel);
@@ -2904,14 +3034,14 @@ it collapsed to the width of the word "Bangladesh". */
 
   /* range sliders, themed both sides */
   .tool-inputs input[type="range"] {
-    -webkit-appearance: none; appearance: none;
+    appearance: none;
     width: 100%; height: 4px; border-radius: var(--radius-pill);
     background: linear-gradient(var(--accent), var(--accent)) 0 / var(--pct, 50%) 100% no-repeat,
                 var(--hairline);
     cursor: pointer;
   }
   .tool-inputs input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
+    appearance: none;
     width: 17px; height: 17px; border-radius: 50%;
     background: var(--accent); border: 2px solid var(--panel);
     box-shadow: 0 1px 5px oklch(0% 0 0 / 0.28);
@@ -3889,7 +4019,6 @@ it collapsed to the width of the word "Bangladesh". */
        ground of its own rather than the pane's. */
     background: color-mix(in oklab, var(--paper-sunk) 92%, transparent);
     backdrop-filter: blur(10px) saturate(1.3);
-    -webkit-backdrop-filter: blur(10px) saturate(1.3);
     border-top: 1px solid var(--hairline);
     transition: box-shadow var(--fast) var(--ease);
   }
@@ -5042,14 +5171,14 @@ it collapsed to the width of the word "Bangladesh". */
     &[data-edited] .val::after { content: " ·edited"; color: var(--accent); }
   }
   .driver input[type="range"] {
-    -webkit-appearance: none; appearance: none;
+    appearance: none;
     width: 100%; height: 4px; border-radius: var(--radius-pill); margin-top: 9px;
     background: linear-gradient(var(--accent), var(--accent)) 0 / var(--pct, 50%) 100% no-repeat,
                 var(--hairline);
     cursor: pointer;
   }
   .driver input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
+    appearance: none;
     width: 16px; height: 16px; border-radius: 50%;
     background: var(--accent); border: 2px solid var(--paper);
     box-shadow: 0 1px 4px oklch(0% 0 0 / 0.3);
@@ -7277,7 +7406,6 @@ German for day, and .tag is what the site has always called
         linear-gradient(var(--hairline) 1px, transparent 1px),
         linear-gradient(90deg, var(--hairline) 1px, transparent 1px);
       background-size: 34px 34px;
-      -webkit-mask-image: radial-gradient(ellipse 70% 60% at 92% 4%, #000, transparent 70%);
       mask-image: radial-gradient(ellipse 70% 60% at 92% 4%, #000, transparent 70%);
       opacity: 0.7;
     }
@@ -8236,13 +8364,6 @@ German for day, and .tag is what the site has always called
     width: var(--rail-w);
     display: flex;
     flex-direction: column;
-    background: var(--glass-bg);
-    /* Real glass: this sits over content that scrolls under it,
-       which is the one place a backdrop blur earns its cost. A
-       card does not, and gets the tint and the edge without the
-       filter. See the note above `--glass-bg`. */
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     border-right: 1px solid var(--hairline);
     /* The rail holds still across a cross-document view
        transition instead of being cross-faded out and back in,
@@ -8574,20 +8695,10 @@ German for day, and .tag is what the site has always called
     height: var(--top-h);
     padding-inline: var(--bar-pad);
     border-radius: var(--radius-pill);
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-edge);
-    box-shadow: var(--shadow);
+    box-shadow: var(--glass-lift);
     transition: left var(--slow) var(--ease);
     view-transition-name: site-topbar;
-  }
-
-  /* Where there is no backdrop-filter there is no glass, and a
-     28%-transparent bar over moving text is the one state this
-     must never be in. */
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .topbar { background: var(--glass-solid); }
   }
 
   /* Two equal halves, and they have to be equal because the
@@ -8676,11 +8787,7 @@ German for day, and .tag is what the site has always called
     margin: 0; padding: clamp(14px, 2vw, 22px);
     border-radius: var(--radius-lg);
     border: 1px solid var(--glass-edge);
-    background-color: var(--glass-bg);
-    background-image: var(--sheen), var(--weave);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    box-shadow: var(--shadow-lift);
+    box-shadow: var(--glass-lift-hi);
     color: var(--ink);
     transition: opacity var(--fast) var(--ease), translate var(--fast) var(--ease),
                 overlay var(--fast) allow-discrete, display var(--fast) allow-discrete;
@@ -8690,10 +8797,6 @@ German for day, and .tag is what the site has always called
     .tree-panel:popover-open { opacity: 0; translate: 0 -6px; }
   }
   .tree-panel::backdrop { background: transparent; }
-
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .tree-panel { background-color: var(--glass-solid); }
-  }
 
   /* Learning across the top, the other four groups under it.
 
@@ -9071,19 +9174,18 @@ German for day, and .tag is what the site has always called
 
   .deck-foot {
     flex-shrink: 0;
-    /* Half a step rather than a whole one. The footer already
-       announces itself with a rule and a change of ground; the
-       other 30-odd pixels were doing nothing but pushing it off
-       the bottom of a phone. */
-    margin-top: calc(var(--step) * 0.55);
+    /* A third of a step. The footer already announces itself
+       with a rule and a change of ground, so the gap above it is
+       separation rather than a section break. */
+    margin-top: calc(var(--step) * 0.35);
     background: var(--paper-sunk);
     border-top: 1px solid var(--hairline);
     view-transition-name: site-footer;
   }
   .deck-foot-inner {
     max-width: 1180px; margin-inline: auto;
-    padding: clamp(22px, 3vw, 40px) clamp(16px, 3vw, 34px) 22px;
-    display: grid; gap: clamp(16px, 2.2vw, 24px);
+    padding: clamp(14px, 1.7vw, 22px) clamp(16px, 3vw, 34px) 14px;
+    display: grid; gap: clamp(10px, 1.2vw, 14px);
   }
 
   /* ---------- how much room the name gets ----------
@@ -9103,30 +9205,32 @@ German for day, and .tag is what the site has always called
      because 30px between a 290px column and a 620px one is a
      different distance from 30px between 210px and 700px. */
   .deck-foot-top {
-    display: grid; gap: 22px 36px;
-    grid-template-columns: minmax(0, 0.8fr) 2.6fr;
+    display: grid; gap: 14px 32px;
+    grid-template-columns: minmax(0, 0.7fr) 3fr;
     align-items: start;
   }
-  .deck-foot-mark { display: grid; gap: 5px; align-content: start; min-width: 0; }
+  .deck-foot-mark { display: grid; gap: 3px; align-content: start; min-width: 0; }
+  /* A signature rather than a masthead: the mark is three short
+     lines and the links are what a footer is for. */
   .deck-foot-name {
-    font-family: var(--font-serif); font-size: var(--t-7);
-    display: block; margin-bottom: 1px;
+    font-family: var(--font-serif); font-size: var(--t-5);
+    display: block; margin-bottom: 0;
   }
   .deck-foot-line {
-    color: var(--ink-soft); font-size: var(--t-4); margin: 0; max-width: 34ch;
-    line-height: 1.5;
+    color: var(--ink-soft); font-size: var(--t-3); margin: 0; max-width: 46ch;
+    line-height: 1.4;
   }
   .deck-foot-line[lang="bn"] { font-family: var(--font-bn); }
   .deck-foot-mail {
     display: inline-flex; align-items: center; gap: 7px;
     justify-self: start;
-    margin-top: 6px; font-family: var(--font-mono); font-size: var(--t-3);
+    margin-top: 2px; font-family: var(--font-mono); font-size: var(--t-2);
   }
   /* The icon and the address are on one baseline rather than on
      one centre line: an inline SVG's box is taller than the
      lowercase text beside it, so centring the two puts the glyph
      a pixel low against every letter of the address. */
-  .deck-foot-mail svg { flex: 0 0 15px; translate: 0 1px; }
+  .deck-foot-mail svg { flex: 0 0 14px; translate: 0 1px; }
 
   /* ---------- five groups of very different lengths ----------
 
@@ -9157,7 +9261,11 @@ German for day, and .tag is what the site has always called
        different amount, growing across the row. One value, read
        by both. */
     --foot-gap: var(--s-7);
-    display: grid; gap: var(--s-8) var(--foot-gap);
+    display: grid; gap: var(--s-6) var(--foot-gap);
+    /* 96px, and tracks wider than that would be taller: at 210px
+       the names stop wrapping and `auto-fill` drops from five
+       columns to four, which is 470px of footer against 335. A
+       wrapped name costs a line; a lost column costs a row. */
     grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
     align-items: start;
   }
@@ -9204,13 +9312,13 @@ German for day, and .tag is what the site has always called
     & ul {
       grid-column: 1 / -1;
       grid-template-columns: subgrid;
-      gap: var(--s-2) var(--foot-gap);
+      gap: 3px var(--foot-gap);
     }
   }
-  .deck-foot-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 5px; }
+  .deck-foot-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 3px; }
   .deck-foot-col a {
-    color: var(--ink); text-decoration: none; font-size: var(--t-4);
-    line-height: 1.45; display: inline-block;
+    color: var(--ink); text-decoration: none; font-size: var(--t-3);
+    line-height: 1.35; display: inline-block;
   }
   .deck-foot-col a:hover { color: var(--accent); }
   .deck-foot-col a [lang="bn"] { font-family: var(--font-bn); color: var(--ink-soft); }
@@ -9220,7 +9328,7 @@ German for day, and .tag is what the site has always called
      that inherits the list's line height does not, and the four
      headings here are three, four, five and eight characters. */
   .deck-foot-label {
-    display: block; margin-bottom: 9px; line-height: 1;
+    display: block; margin-bottom: 6px; line-height: 1;
     color: var(--accent); font-size: var(--t-0); letter-spacing: 0.12em;
   }
 
@@ -9231,14 +9339,14 @@ German for day, and .tag is what the site has always called
      footer and space-between would then spread the three marks
      across the whole width to fill the gap it left. */
   .deck-foot-end {
-    display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-4) 18px;
-    padding-top: 16px;
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s-3) 14px;
+    padding-top: 10px;
     border-top: 1px solid var(--hairline);
     color: var(--ink-soft);
   }
-  .deck-foot-end > .mono { font-size: var(--t-2); }
+  .deck-foot-end > .mono { font-size: var(--t-1); }
   .deck-foot-note {
-    flex: 1 1 320px; margin: 0; font-size: var(--t-3); min-width: 0;
+    flex: 1 1 320px; margin: 0; font-size: var(--t-2); min-width: 0;
     margin-inline-start: auto; text-align: end;
   }
 
@@ -9251,7 +9359,7 @@ German for day, and .tag is what the site has always called
      `auto-fit` worked out to, which agreed with two by luck
      until the track size changed and quietly became three. */
   @media (max-width: 860px) {
-    .deck-foot-top { grid-template-columns: 1fr; gap: 18px; }
+    .deck-foot-top { grid-template-columns: 1fr; gap: 12px; }
   }
 
   /* ---------- the footer on a phone ----------
@@ -9269,14 +9377,28 @@ German for day, and .tag is what the site has always called
   @media (max-width: 620px) {
     .deck-foot-nav {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: var(--s-7) 14px;
+      gap: var(--s-6) 12px;
     }
-    .deck-foot-col a { font-size: var(--t-3); line-height: 1.35; }
-    .deck-foot-col ul { gap: 3px; }
-    .deck-foot-label { margin-bottom: 7px; }
-    .deck-foot-line[lang="en"] { display: none; }
-    .deck-foot-name { font-size: var(--t-6); }
-    .deck-foot-end { padding-top: 13px; gap: var(--s-3) 14px; }
+    .deck-foot-col a { font-size: var(--t-2); line-height: 1.3; }
+    .deck-foot-col ul { gap: 2px; }
+    /* Out of the subgrid on a phone. It exists so the eight
+       learning links stand in the same columns as the four groups
+       under them, and under 620px there are two columns for both,
+       so it lines up either way. What it also does is take its
+       row tracks from the parent, which sizes them by the tallest
+       group and left 47px of nothing in the longest column. */
+    .deck-foot-col[data-group="learn"] ul {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2px 12px;
+    }
+    .deck-foot-label { margin-bottom: 5px; }
+    /* The mark has one line and it is Bangla. The rule that used
+       to hide an English second line went with the line. */
+    .deck-foot-name { font-size: var(--t-4); }
+    .deck-foot-line { font-size: var(--t-2); }
+    .deck-foot-end { padding-top: 9px; gap: var(--s-2) 12px; }
+    .deck-foot-note { font-size: var(--t-1); line-height: 1.35; }
+    .deck-foot-inner { padding-block: 13px 12px; }
   }
 
 
@@ -9731,7 +9853,6 @@ German for day, and .tag is what the site has always called
     border-radius: var(--radius-xs);
     padding-inline: 2px;
     box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
   }
 
   .gate-lede {
@@ -9942,15 +10063,90 @@ German for day, and .tag is what the site has always called
     margin: var(--top-gap);
     padding-inline: 14px;
     border-radius: var(--radius-pill);
-    background: var(--glass-bg);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-edge);
-    box-shadow: var(--shadow);
+    box-shadow: var(--glass-lift);
     view-transition-name: site-topbar;
   }
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .slimbar { background: var(--glass-solid); }
+
+  /* ============================================================
+     Every glass surface on this site, said once
+
+     Six of them, and each used to carry its own copy of the
+     ground, the filter and a `@supports` fallback: four copies of
+     one fallback, and a seventh surface would have been written
+     without it. The list is the whole of what "glass" means here,
+     so a new one is one name added to one rule and it answers
+     `data-glass`, both knobs and every fallback for free.
+
+     It is in `@layer shell` because that layer wins over
+     `components`, `menu` and `tools`, where four of the six are
+     otherwise styled. A glass surface in `deck`, `courses` or
+     `utilities` would need its ground here AND nothing setting
+     one there.
+
+     The grain is what stops a translucent panel reading as
+     plastic, and it goes UNDER the sheen so the lit top edge sits
+     on top of the texture rather than being speckled by it.
+     ============================================================ */
+  .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .tabs-nav[data-sticky] {
+    background-color: var(--glass-fill);
+    background-image: var(--sheen), var(--glass-grain);
+    background-size: auto, var(--glass-grain-size, auto);
+    backdrop-filter: var(--glass-blur);
+  }
+
+  /* ============================================================
+     The trail, in the bar
+
+     It was a row of its own under the bar, so the top of every
+     page said the site's name on one line and where you were on
+     the next, and the row was built in the browser by 402 lines
+     that guessed. Now the mark is the first crumb and the trail
+     continues out of it, on one line, from the server.
+
+     `.crumbs` is the row's own look and stays for the two pages
+     that are files; this is that look sized for a bar. The
+     separator before the FIRST crumb is what joins it to the
+     mark: without it the mark and the section read as two
+     unrelated things sitting next to each other.
+     ============================================================ */
+  .crumbs-bar {
+    padding-block: 0;
+    min-width: 0;
+    flex: 0 1 auto;
+    overflow: hidden;
+
+    & ol { flex-wrap: nowrap; }
+    & li { min-width: 0; }
+    & li + li::before { margin-inline: 8px; opacity: 0.45; }
+    & li span, & li a {
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    & [aria-current="page"] { max-width: none; color: var(--ink); }
+  }
+
+  /* The separator that joins the trail to the mark, and ONLY
+     where there is a mark to join it to: `.topbar-mark` is the
+     rail's wordmark borrowed for the widths where the rail is a
+     drawer, so above that breakpoint an arrow before the first
+     crumb points at nothing. */
+  @media (max-width: 900px) {
+    .crumbs-bar li:first-child::before {
+      content: "›"; margin-inline: 8px; opacity: 0.45;
+    }
+  }
+
+  /* Room for the trail: the mark's own name is the thing to give
+     up first, because the trail says where you are and the mark
+     says something the tab title already does. Below the width
+     where the rail becomes a drawer the mark is the only
+     wordmark on screen, so it stays and the EARLIER crumbs go
+     instead: the last one is the page you are on. */
+  @media (max-width: 1100px) {
+    .topbar-mark span { display: none; }
+  }
+  @media (max-width: 760px) {
+    .crumbs-bar li:not(:last-child) { display: none; }
   }
 
   /* The same mark as the rail's, on the six pages that are not

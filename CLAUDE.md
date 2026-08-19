@@ -401,7 +401,7 @@ at.
   Leaving should be as easy as arriving.
 - **Erase everything**, which means the account and the mirror.
 
-`next/account.test.mjs` is the guard: 117 checks in a real browser
+`next/account.test.mjs` is the guard: 128 checks in a real browser
 against a routed Supabase.
 
 ### Eight sections, one on screen
@@ -648,6 +648,12 @@ node scripts/check-csp.ts   # code calling a host the browser is not allowed to
 node scripts/check-contrast.ts # an accent that has drifted under the WCAG
                             # threshold for the size it is set at
 node scripts/check-scale.ts # a fifty-first font size
+node scripts/check-prefixes.ts # a hand-written vendor prefix, which DELETES the
+                            # standard property it is written beside
+node scripts/check-selfref.ts # a custom property set to itself, which is nothing
+                            # on that element and everything inside it
+node scripts/check-jsx-space.ts # a sentence running into the link inside it,
+                            # because JSX ate the line break before the element
 node scripts/check-crons.ts # a scheduled job the Worker is no longer listening for
 node scripts/check-pieces.ts # a written piece nothing on the site links to
 node scripts/check-headers.ts # a page a Worker built, served with no CSP
@@ -695,7 +701,7 @@ node aab/studio-publish.test.mjs   # a photo that never reaches R2, under the
                                    # real CSP (needs Playwright, skips without)
 node next/account.test.mjs        # the account's five features, the popover
                                   # menu and the Save under a byline
-                                  # (117 checks, needs the Next build and a
+                                  # (128 checks, needs the Next build and a
                                   # browser, skips without)
 node aab/sync.test.mjs             # a browser's own progress getting into an
                                    # account, resetting, signing out, and two

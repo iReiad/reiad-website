@@ -223,7 +223,7 @@ export default function Page() {
                 <p>The long-run average default rate is not the rate of a typical year. Default
               rates are right-skewed: a few terrible years pull the average above the
               median, so the year that actually produces the average rate is already a
-              mildly bad one, at 
+              mildly bad one, at{" "}
                   <strong id="anchor-value">–
                   </strong> on this scale.
               Starting a stress test from Z = 0 quietly assumes the book is currently
@@ -521,7 +521,7 @@ export default function Page() {
                default, and which of the four Basel treatments it takes. Percentages or
                decimals, either way. Everything else, the macro sensitivities, the
                seasoning curve, the vintage mix, comes from the shipped segment of the
-               same kind. 
+               same kind.{" "}
                   <strong>Nothing is uploaded
                   </strong>: the parsing and the model
                run in your browser, and the file never leaves your machine.

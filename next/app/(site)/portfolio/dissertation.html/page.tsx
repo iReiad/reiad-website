@@ -171,11 +171,11 @@ export default function Page() {
               </div>
               <div className="table-scroll" id="evidence-table" />
               <p className="statement-note">
-                The pattern: emerging-market studies that measure 
+                The pattern: emerging-market studies that measure{" "}
                 <em>risk
                 </em> tend
             to find Islamic funds lower-risk. Developed-market studies that
-            measure 
+            measure{" "}
                 <em>return
                 </em> tend to find no difference or a small
             penalty. Index-level studies that split by regime find Islamic
@@ -211,7 +211,7 @@ export default function Page() {
               window, against 217 conventional ones. This is not a sampling
               choice that could have been made differently; it is the size of
               the UK Shariah equity fund market. Every result below has to be
-              read through this picture, and the
+              read through this picture, and the{" "}
               
                   <a href="#sec-power">power section
                   </a> makes the consequence
@@ -271,7 +271,7 @@ export default function Page() {
               and standard deviation, and it is wrong at both ends.
               Four observations sit outside ±50% in a month. Those are not
               markets; they are NAV series with corporate actions in them, and
-              they are the same funds that show up as outliers in
+              they are the same funds that show up as outliers in{" "}
               
                   <a href="#sec-idio">the volatility cross-section
                   </a>.
@@ -280,7 +280,7 @@ export default function Page() {
                 <p className="statement-note is-warn">
                   The distribution is also centred in the wrong place: its mean sits
               at −7.3% a month, not near zero. That is not a market fact and it
-              is not a rounding error. It is worked through in
+              is not a rounding error. It is worked through in{" "}
               
                   <a href="#sec-audit">reading my own numbers back
                   </a>, along with
@@ -307,7 +307,7 @@ export default function Page() {
                   </h3>
                   <p>Monthly simple returns from NAV, minus the UK 3-month Treasury
                 bill. Everything downstream is denominated in the return an
-                investor earned 
+                investor earned{" "}
                     <em>above
                     </em> doing nothing.
                   </p>
@@ -368,7 +368,7 @@ export default function Page() {
                 worth paying for. It isn't. Size, value, profitability,
                 investment and momentum absorb the style tilts that screening
                 creates, so that whatever is left in the dummy is a difference
-                between fund 
+                between fund{" "}
                     <em>types
                     </em>, not a difference between growth and
                 value portfolios wearing different labels.
@@ -460,7 +460,7 @@ export default function Page() {
                   <button type="button" data-alpha="0.01" aria-pressed="false">1%
                   </button>
                 </div>
-                <span className="mono">currently 
+                <span className="mono">currently{" "}
                   <span id="alpha-value">5%
                   </span>
                 </span>
@@ -559,7 +559,7 @@ export default function Page() {
                 </div>
               </div>
               <p className="prose">
-                What 
+                What{" "}
                 <em>does
                 </em> differ is style. HML is negative everywhere: a
             growth tilt, exactly what removing leveraged financials from an
@@ -656,7 +656,7 @@ export default function Page() {
           
               </p>
               <p className="statement-note">
-                Note what the chart is and is not. Both curves are averages
+                Note what the chart is and is not. Both curves are averages{" "}
             
                 <em>across funds
                 </em>, so they show the shared shape of the period
@@ -730,7 +730,7 @@ export default function Page() {
               <p className="prose">
                 There is a further twist, and it is the reason no amount of extra
             data collection would have rescued this design. Precision in a
-            two-sample comparison is governed by the 
+            two-sample comparison is governed by the{" "}
                 <em>smaller
                 </em> group.
             Raising the conventional count from 217 to a million moves the
@@ -892,7 +892,7 @@ export default function Page() {
                   <p>In a developed market, a Shariah-compliant equity fund is an
                 equity fund with a rulebook. It carries the same market risk,
                 falls at the same time, and recovers on roughly the same
-                schedule. The constraints show up in 
+                schedule. The constraints show up in{" "}
                     <em>style
                     </em> (a growth
                 tilt, no momentum exposure), not in the level of risk. That is
@@ -967,7 +967,7 @@ export default function Page() {
                 <div className="row">
                   <span className="k mono">3 · The units artefact
                   </span>
-                  <span className="v">Covered in full 
+                  <span className="v">Covered in full{" "}
                     <a href="#sec-audit">above
                     </a>.
                 Contained to the level of the risk-adjusted ratios; it does not

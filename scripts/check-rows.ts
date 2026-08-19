@@ -37,9 +37,10 @@
    the description agrees with the database.
    ============================================================ */
 
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { LADDER_SCHOOLS } from "../next/lib/nav.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
@@ -213,9 +214,70 @@ for (const file of HANDLERS) {
   }
 }
 
+/* ------------------------------------------------------------
+   3. And a CHECK constraint holding a copy of a vocabulary
+
+   Same rule as the handlers above, one database along.
+   `public.profiles.following` holds SCHOOL IDS, and Postgres
+   cannot import `next/lib/nav.ts`, so the list is written out in
+   a constraint and there is no way for it not to be.
+
+   THE BUG THIS EXISTS FOR. It said `learn`, and the money school
+   stopped being called that on 17 August 2026 when it moved to
+   /money/. The settings form sends the whole patch at once with
+   `following` in it, PostgREST refused the row, and every save on
+   /account.html answered "Could not save that (400)" for as long
+   as that was true. Nothing here noticed, because nothing here
+   had ever read a migration.
+
+   Worse than it sounds, because the form ticks a school somebody
+   has STARTED whether or not they chose it: a reader who had read
+   one money lesson could not save their own name.
+
+   Read out of the last migration that writes the constraint, so
+   that a new migration is what changes the answer. `learn-read`
+   and `learn-last` are storage keys and not school ids, and are
+   deliberately not this: the rule at the top of "What a reader
+   has read" in CLAUDE.md is why.
+   ------------------------------------------------------------ */
+
+const MIGRATIONS = join(ROOT, "supabase", "migrations");
+const CONSTRAINT = /following\s*<@\s*array\[([^\]]*)\]/;
+
+const writes = readdirSync(MIGRATIONS).sort()
+  .filter((f) => CONSTRAINT.test(readFileSync(join(MIGRATIONS, f), "utf8")));
+
+if (!writes.length) {
+  fail("no migration constrains profiles.following",
+    "This check reads the list out of the last one that does.",
+    "If the constraint was dropped on purpose, drop this too.");
+} else {
+  const last = writes[writes.length - 1];
+  const said = readFileSync(join(MIGRATIONS, last), "utf8")
+    .match(new RegExp(CONSTRAINT.source, "g")) ?? [];
+  /* The LAST occurrence in the file, because a migration that
+     changes a constraint drops it and adds it, and the comment
+     above the change quotes the old one. */
+  const ids = [...(said[said.length - 1]?.matchAll(/'([a-z-]+)'/g) ?? [])]
+    .map((m) => m[1]).sort();
+  const want = LADDER_SCHOOLS.map((s) => s.key).sort();
+
+  if (ids.join(",") !== want.join(",")) {
+    fail(`supabase/migrations/${last} allows a different set of schools`,
+      `the constraint: ${ids.join(", ") || "(none)"}`,
+      `LADDER_SCHOOLS:  ${want.join(", ")}`,
+      "profiles.following holds school ids, and a save that names one the",
+      "constraint has not heard of is a 400 on the whole PATCH. Add a",
+      "migration; do not edit one that has run.");
+  } else {
+    described += ids.length;
+  }
+}
+
 console.log(failures
   ? `\n${failures} problem(s): shared/rows.ts does not describe this database.\n`
   : `rows: ${Object.keys(DESCRIBES).length} tables described, ${described} columns\n`
-    + `      matched against aab/schema.sql, and ${scanned} handlers holding\n`
-    + "      no second copy of a vocabulary.\n");
+    + `      matched against aab/schema.sql, ${scanned} handlers holding no\n`
+    + "      second copy of a vocabulary, and the schools a profile may\n"
+    + "      follow the same in Postgres as in nav.ts.\n");
 process.exit(failures ? 1 : 0);
