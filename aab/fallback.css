@@ -1653,18 +1653,25 @@
   .tabs-nav > .tab { flex: 0 0 auto; scroll-snap-align: start; }
 
   .tabs-nav[data-sticky] {
-    position: sticky; top: var(--top-space); z-index: 20;
-    padding-block: 7px;
-    border-bottom: 1px solid var(--hairline);
+    position: sticky;
+    top: calc(var(--top-space) + var(--top-gap));
+    z-index: 20;
+    padding: 6px var(--bar-pad);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--glass-edge);
+    box-shadow: var(--shadow);
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
   }
+
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .tabs-nav[data-sticky] { background: var(--glass-solid); }
   }
 
   body[data-tool-tabs="on"] .tool { scroll-margin-top: 0; margin-bottom: 0; }
+
+  [data-panels="on"] > * > section { padding-block-start: 0; scroll-margin-top: 0; }
 
   .tool {
     background: var(--panel);

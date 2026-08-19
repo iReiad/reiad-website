@@ -271,9 +271,18 @@ async function sendRows(head, rows) {
    ============================================================ */
 let base = null; // null before adopting
 let who = null; // the account `base` belongs to
-/** Take the mirror off this device. Called when the session ends
-    and when the account is emptied. Announces, because a hub with
-    a progress ring on it is looking at storage that just moved. */
+/** Take the mirror off this device. Called when the session ends,
+    when a different person signs in on the same browser, and when
+    the account is emptied. Announces, because a hub with a
+    progress ring on it is looking at storage that just moved.
+
+    TWO ANNOUNCEMENTS, because two families listen. The school
+    events are what the browser modules have listened to since
+    before there were accounts; `sync:done` is what
+    `subscribe()` in `next/lib/progress.ts` hears, and every
+    React component that counts a key is behind it. Firing only
+    the first left every meter on `/account.html` showing the
+    numbers of the account that had just been erased. */
 function clearMirror() {
     const schools = new Set();
     for (const [key, [, event]] of Object.entries(KEYS)) {
@@ -285,6 +294,9 @@ function clearMirror() {
     base = null;
     who = null;
     schools.forEach((event) => dispatchEvent(new CustomEvent(event)));
+    document.dispatchEvent(new CustomEvent("sync:done", {
+        detail: { adopted: false, kept: 0, sent: 0 },
+    }));
 }
 /**
  * Write the account's rows onto this device, and drop anything

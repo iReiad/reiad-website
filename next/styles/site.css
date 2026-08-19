@@ -2801,16 +2801,34 @@ it collapsed to the width of the word "Bangladesh". */
   .tabs-nav::-webkit-scrollbar { display: none; }
   .tabs-nav > .tab { flex: 0 0 auto; scroll-snap-align: start; }
 
-  /* Stuck under the bar, which is the one place on a page where
-     a backdrop filter earns its cost: content scrolls under it. */
+  /* A second floating object, under the first.
+
+     It is `.topbar` again: the same pill, the same glass, the same
+     edge and the same shadow, sitting one `--top-gap` below it and
+     inside the page's own column rather than spanning the window.
+     That is the whole idea of the bar as an OBJECT: a reader who
+     has learnt that the thing floating at the top is the site's
+     controls reads a second floating thing as this page's, and a
+     full-width strip with a hairline under it as a heading.
+
+     Sticky rather than fixed, because it belongs to the page it
+     switches. Content scrolls under it, which is the one place on
+     a page where a backdrop filter earns its cost. */
   .tabs-nav[data-sticky] {
-    position: sticky; top: var(--top-space); z-index: 20;
-    padding-block: 7px;
-    border-bottom: 1px solid var(--hairline);
+    position: sticky;
+    top: calc(var(--top-space) + var(--top-gap));
+    z-index: 20;
+    padding: 6px var(--bar-pad);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--glass-edge);
+    box-shadow: var(--shadow);
     background: var(--glass-bg);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
   }
+  /* Where there is no backdrop-filter there is no glass, and a
+     28%-transparent bar over moving text is the one state this
+     must never be in. `.topbar` says the same thing above. */
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .tabs-nav[data-sticky] { background: var(--glass-solid); }
   }
@@ -2819,6 +2837,16 @@ it collapsed to the width of the word "Bangladesh". */
      scrolled to, and scroll-margin would drag it under the header
      when a tab is chosen. */
   body[data-tool-tabs="on"] .tool { scroll-margin-top: 0; margin-bottom: 0; }
+
+  /* The same thing one level up, for a page whose panels are
+     `<section>`s: `main section` leads with `--step` so that
+     sections on a long page have air between them, and a panel is
+     the only section on screen. Under the strip that reads as a
+     screenful of nothing above the heading.
+
+     Set by `components/ui/tab-panels.tsx` only once it has run, so
+     a page with no JavaScript keeps the rhythm it needs. */
+  [data-panels="on"] > * > section { padding-block-start: 0; scroll-margin-top: 0; }
 
   .tool {
     background: var(--panel);
