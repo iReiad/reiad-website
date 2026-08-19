@@ -35,6 +35,13 @@ import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { NEXT_ROUTES, ARTICLE } from "../worker.js";
+/* The four ladders, for the practice-book check at the end: a
+   stage has a book only if it declares one, which no route
+   pattern can tell. */
+import { STAGES as MONEY } from "../shared/curricula/money.ts";
+import { STUFEN } from "../shared/curricula/deutsch.ts";
+import { TERMS } from "../shared/curricula/english.ts";
+import { DHAPS } from "../shared/curricula/quran.ts";
 
 /* `AAB` is what this walks and `ROOT` is the repository, and the
    two were the same directory until this file moved out of it.
@@ -415,6 +422,65 @@ for (const url of [...targets].sort()) {
   const from = linkSources.get(url);
   console.error(`${t.status}  ${url}${from ? `   (linked from ${from})` : ""}`);
   console.error(`        ${t.chain.join(" → ")}`);
+}
+
+/* ============================================================
+   A redirect must point at a page that EXISTS, not at one whose
+   shape a route pattern recognises.
+
+   `workerAnswers()` above answers "a Worker renders this" for any
+   path matching a route pattern, which is the right answer for
+   the question it is asked and is not the whole question. A
+   pattern says an address is well formed. It cannot say there is
+   anything behind it.
+
+   Two rules got through it on the day #28 landed:
+
+     /deutsch/stufe-4/arbeitsbuch.html -> /deutsch/stufe-4/arbeitsbuch
+     /english/term-2/workbook.html     -> /english/term-2/workbook
+
+   Neither stage declares a `workbook` in `shared/curricula/`, so
+   neither ever had a practice book. Each rule pointed an address
+   that was never live at one that does not exist, both traced
+   clean here, and both 404ed on the deployed site.
+
+   The ladder is the data and this reads it, which is the rule at
+   the top of `CLAUDE.md`: a list of things that exist comes from
+   the data, never from a shape that looks right.
+   ============================================================ */
+{
+  const BOOKS = new Set<string>();
+  const LADDERS = { money: MONEY, deutsch: STUFEN, english: TERMS, quran: DHAPS };
+  for (const [school, ladder] of Object.entries(LADDERS)) {
+    for (const rung of ladder) {
+      /* `workbook` ONLY, and `uebung` deliberately not. They read
+         like alternatives and are not the same kind of thing: a
+         `workbook` is an object with a slug and therefore a page,
+         a `uebung` is a STRING, the note a stage carries instead
+         of having a book. Stufe 4 has one, which is exactly why
+         it has no practice book and why the rule pointing at one
+         was wrong.
+
+         `in` rather than a cast, because the four ladders are four
+         types and the money school's `Stage` declares neither. */
+      const book = "workbook" in rung ? rung.workbook : undefined;
+      if (book) BOOKS.add(`/${school}/${rung.slug}/${book.slug}`);
+    }
+  }
+  /* Only the practice books, because they are the one address on
+     this site whose existence is a FIELD rather than a row: a
+     stage without a `workbook` has no page, and nothing else here
+     can tell. Lessons and stages come out of D1, which this check
+     cannot reach. */
+  const BOOKISH = /^\/(deutsch|english|quran|money)\/[a-z0-9-]+\/(arbeitsbuch|workbook|uebung)$/;
+  for (const rule of rules) {
+    if (!BOOKISH.test(rule.to) || BOOKS.has(rule.to)) continue;
+    failures++;
+    console.error(`MISSING  ${rule.from} redirects to ${rule.to}`);
+    console.error("        No stage in shared/curricula/ declares that practice book,");
+    console.error("        so the destination has no page and the source never had one.");
+    console.error("        A redirect is a fact about an address that WAS live.");
+  }
 }
 
 console.log(
