@@ -537,14 +537,14 @@ const MATERIAL = new Map([
    Position is geometry. So is isolation, so is z-index, so is
    display. None of them is the light. */
 const MATERIAL_PROPS = new Set([
-  "background-image", "background-size", "transition",
+  "background-image", "background-size", "background-position", "transition",
   /* The three a surface is DESCRIBED by, and the four derived
      from them. Nothing else: a material layer says what a thing
      is made of, and every consequence of that is a light. */
   "--depth", "--polish", "--clarity", "--standing",
   "--glow-w", "--glow-i", "--glow-stop", "--glow-a", "--glow-fade",
-  "--lit", "--gx", "--gy",
-  "--surface-image", "--surface-size",
+  "--lit", "--spec", "--gx", "--gy", "--tx", "--ty",
+  "--surface-image", "--surface-size", "--surface-position",
 ]);
 
 for (const cls of new Set([...studioClasses, ...serverClasses])) {

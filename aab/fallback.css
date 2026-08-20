@@ -608,7 +608,7 @@
   }
   .btn-quiet {
 
-    --surface-image: none;
+    --standing: 0;
     background: transparent; color: var(--ink-soft);
     border-color: transparent;
 
@@ -1240,8 +1240,6 @@
   .pref-chip {
     display: grid; gap: 1px; text-align: start;
 
-    --surface-image: var(--glass-grain);
-    --surface-size: var(--glass-grain-size, auto);
     padding: 8px 13px; min-height: 42px;
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
     background-color: var(--glass-fill-quiet); color: var(--ink);
@@ -2978,8 +2976,6 @@
   .chip {
     border: 1px solid var(--hairline); border-radius: var(--radius-pill);
 
-    --surface-image: var(--glass-grain);
-    --surface-size: var(--glass-grain-size, auto);
     background-color: var(--glass-fill-quiet); color: var(--ink-soft);
     background-image: var(--glass-grain);
     background-size: var(--glass-grain-size, auto);
@@ -8240,13 +8236,11 @@
     --depth: 3.4; --polish: 0.55; --clarity: 0.28; --standing: 1;
 
     --glow-w: 0px;
+
     --surface-image:
       radial-gradient(calc(var(--depth) * 34%) calc(var(--depth) * 26%) at 100% 0%,
         color-mix(in oklab, var(--accent) calc(var(--clarity) * 40%), transparent),
-        transparent var(--glow-stop)),
-      var(--lit),
-      var(--glass-grain);
-    --surface-size: auto, auto, var(--glass-grain-size, auto);
+        transparent var(--glow-stop));
   }
 
   :is(.rail-item, .tree-link, .tree-btn, .acc-item, .crumb-step,
@@ -8286,14 +8280,30 @@
 
     --lit: linear-gradient(180deg,
       color-mix(in oklab, var(--pane-top) calc(var(--standing) * 100%), transparent) 0%,
-      transparent calc(10% + var(--depth) * 2.2%));
+      transparent calc(10% + var(--depth) * 2.2%),
+      transparent calc(90% - var(--depth) * 1.4%),
+
+      color-mix(in oklab, var(--pane-top) calc(var(--depth) * 7%), transparent) 100%);
+
+    --spec: linear-gradient(105deg,
+      transparent calc(var(--gx, 50%) - 15%),
+      color-mix(in oklab, var(--pane-top)
+
+        calc(var(--polish) * var(--standing) * (14% + var(--glow-a, 0) * 26%)),
+        transparent) var(--gx, 50%),
+      transparent calc(var(--gx, 50%) + 15%));
 
     background-image:
-      var(--surface-image, var(--lit), var(--glass-grain)),
+      var(--spec, none),
+      var(--lit),
+      var(--surface-image, none),
+      var(--glass-grain),
       radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent) 0%,
         transparent var(--glow-stop));
-    background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
+    background-size: auto, auto, var(--surface-size, auto), var(--glass-grain-size, auto), auto;
+
+    background-position: 0 0, 0 0, 0 0, var(--tx, 0) var(--ty, 0), 0 0;
 
     transition: --glow-a var(--enter) var(--ease),
                 rotate var(--enter) var(--ease),

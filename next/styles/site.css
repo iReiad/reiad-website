@@ -1523,9 +1523,11 @@
     &:hover { background-color: var(--panel-hover); border-color: var(--accent-line); }
   }
   .btn-quiet {
-    /* Nothing but the light, which is the whole of what makes a
-       quiet button feel pressable without giving it a surface. */
-    --surface-image: none;
+    /* Nothing but the light. Said as standing rather than by
+       emptying the stack, because standing is the property that
+       means "does not declare itself" and a quiet button is the
+       definition of one. */
+    --standing: 0;
     background: transparent; color: var(--ink-soft);
     border-color: transparent;
 
@@ -2456,10 +2458,10 @@
   .pref-chips { display: flex; flex-wrap: wrap; gap: 7px; }
   .pref-chip {
     display: grid; gap: 1px; text-align: start;
-    /* No sheen. The lit top edge is the inset line below, and the
-       gradient as well would be that highlight said twice. */
-    --surface-image: var(--glass-grain);
-    --surface-size: var(--glass-grain-size, auto);
+    /* It opted out of the sheen when the sheen was one fixed
+       gradient on everything. The bevel is standing-driven now
+       and a chip stands at 0.3, so the material gives it the
+       faint edge it wanted without an exception. */
     padding: 8px 13px; min-height: 42px;
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
     background-color: var(--glass-fill-quiet); color: var(--ink);
@@ -4688,10 +4690,10 @@ it collapsed to the width of the word "Bangladesh". */
   .chip-row { display: flex; flex-wrap: wrap; gap: var(--s-4); }
   .chip {
     border: 1px solid var(--hairline); border-radius: var(--radius-pill);
-    /* No sheen. The lit top edge is the inset line below, and the
-       gradient as well would be that highlight said twice. */
-    --surface-image: var(--glass-grain);
-    --surface-size: var(--glass-grain-size, auto);
+    /* It opted out of the sheen when the sheen was one fixed
+       gradient on everything. The bevel is standing-driven now
+       and a chip stands at 0.3, so the material gives it the
+       faint edge it wanted without an exception. */
     background-color: var(--glass-fill-quiet); color: var(--ink-soft);
     background-image: var(--glass-grain);
     background-size: var(--glass-grain-size, auto);
@@ -12188,13 +12190,12 @@ German for day, and .tag is what the site has always called
        the module's membership test. A plate is lit and holds
        still. */
     --glow-w: 0px;
+    /* A tint like any other surface's now, so it composes with
+       the bevel and the grain instead of replacing them. */
     --surface-image:
       radial-gradient(calc(var(--depth) * 34%) calc(var(--depth) * 26%) at 100% 0%,
         color-mix(in oklab, var(--accent) calc(var(--clarity) * 40%), transparent),
-        transparent var(--glow-stop)),
-      var(--lit),
-      var(--glass-grain);
-    --surface-size: auto, auto, var(--glass-grain-size, auto);
+        transparent var(--glow-stop));
   }
 
   /* ============================================================
@@ -12294,14 +12295,100 @@ German for day, and .tag is what the site has always called
        thing is flat rather than faintly domed. */
     --lit: linear-gradient(180deg,
       color-mix(in oklab, var(--pane-top) calc(var(--standing) * 100%), transparent) 0%,
-      transparent calc(10% + var(--depth) * 2.2%));
+      transparent calc(10% + var(--depth) * 2.2%),
+      transparent calc(90% - var(--depth) * 1.4%),
+      /* ---- the catch light at the base ----
 
+         Light bounces off whatever a piece of glass is sitting
+         on and catches its bottom edge, and that is most of what
+         makes a thing read as having a THICKNESS rather than
+         being printed on the page.
+
+         Scaled by depth and NOT by standing, deliberately. A rail
+         row loses its face because a list is its own affordance;
+         it does not stop being made of glass. Every reference the
+         owner sent makes the same point at once: a set of small
+         frosted shapes with a bright rim and no face highlight
+         still reads unmistakably as glass. */
+      color-mix(in oklab, var(--pane-top) calc(var(--depth) * 7%), transparent) 100%);
+
+    /* ---- the specular, which is the light coming OFF the face ----
+
+       The glow is light INSIDE the material. This is a reflection
+       of something outside it, and they are different things that
+       must stay distinguishable: the glow is the accent's colour
+       and sits deepest, the specular is white-ish and sits on the
+       very front.
+
+       It rides `--gx`, so it sweeps as the pointer crosses, which
+       is what a reflection does when the viewing angle changes.
+       105deg rather than 90 because a vertical band reads as a
+       seam and a raked one reads as a reflection.
+
+       Gated by standing, so the flat list rows have none: twelve
+       reflections in a column is the cage again in a different
+       costume. Polish decides how bright, because a polished face
+       reflects and a rough one scatters. */
+    --spec: linear-gradient(105deg,
+      transparent calc(var(--gx, 50%) - 15%),
+      color-mix(in oklab, var(--pane-top)
+        /* At rest it is barely there, and it blooms under the
+           pointer. A reflection present at full strength on 102
+           surfaces at once is not a material, it is a sheen on
+           everything, and the brief for this whole system is
+           quieter. `--glow-a` is already the "is the pointer
+           here" number, so the specular rides it rather than
+           carrying a second one. */
+        calc(var(--polish) * var(--standing) * (14% + var(--glow-a, 0) * 26%)),
+        transparent) var(--gx, 50%),
+      transparent calc(var(--gx, 50%) + 15%));
+
+    /* ---- five layers, and the order is the whole illusion ----
+
+       `--surface-image` sits in the MIDDLE and defaults to
+       `none`, which is the correction that made this work at
+       all. It used to REPLACE the whole list, so any surface
+       with a wash of its own opted out of the entire material:
+       the front door's four tiles had no specular, no bevel and
+       no grain, and looked identical before and after the
+       specular was written. A token meant to let a surface ADD
+       something must not be the token that takes everything
+       away.
+
+       ---- the old note, still true ----
+
+       Front to back, because that is what background-image order
+       means: the specular is ON the outer face, the lit edge is
+       the bevel just under it, the grain is IN the material, and
+       the glow is deepest of all. Reorder them and it stops being
+       glass: a glow in front of the grain is a lamp taped to a
+       window. */
     background-image:
-      var(--surface-image, var(--lit), var(--glass-grain)),
+      var(--spec, none),
+      var(--lit),
+      var(--surface-image, none),
+      var(--glass-grain),
       radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent) 0%,
         transparent var(--glow-stop));
-    background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
+    background-size: auto, auto, var(--surface-size, auto), var(--glass-grain-size, auto), auto;
+
+    /* ---- texture fluency ----
+
+       The grain restarted at every element's own origin, so a
+       card and the pane behind it had stipple that did not line
+       up, and a page of surfaces read as separate stickers rather
+       than as pieces cut from one sheet.
+
+       `glow.tsx` writes each surface's page offset as `--tx/--ty`
+       and the grain is positioned by it, so the pattern is
+       continuous across the whole document. The other three
+       layers stay at the origin: only the grain is a material
+       running through everything. `background-attachment: fixed`
+       would do the same and costs a repaint of every surface on
+       every scroll frame, which on a cheap Android is the whole
+       budget. */
+    background-position: 0 0, 0 0, 0 0, var(--tx, 0) var(--ty, 0), 0 0;
 
     transition: --glow-a var(--enter) var(--ease),
                 rotate var(--enter) var(--ease),

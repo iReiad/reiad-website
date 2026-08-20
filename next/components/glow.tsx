@@ -143,6 +143,55 @@ export function Glow() {
 
       el.style.setProperty("--gx", `${x.toFixed(1)}%`);
       el.style.setProperty("--gy", `${y.toFixed(1)}%`);
+
+      /* ---- texture fluency ----
+
+         The grain is positioned by this, so the stipple runs
+         CONTINUOUSLY across the page instead of restarting at
+         every element's own origin. Without it a card and the
+         pane behind it have textures that do not line up, and a
+         page of surfaces reads as separate stickers rather than
+         as pieces cut from one sheet of glass.
+
+         The page offset, not the viewport offset: scrolling must
+         not slide the texture through the material. `scrollX/Y`
+         is what makes it the document's coordinate space. */
+      el.style.setProperty("--tx", `${-(r.left + scrollX).toFixed(0)}px`);
+      el.style.setProperty("--ty", `${-(r.top + scrollY).toFixed(0)}px`);
+
+      /* ---- and the light reaches the glass underneath ----
+
+         A lit surface sitting on another glass surface spills on
+         to it, which is the one thing in the reference the site
+         had none of. There is no light transport in CSS, so this
+         is done by telling the ancestor WHERE the light is: it is
+         hovered too (the pointer is inside it), so it is already
+         lighting, and all it lacks is the position.
+
+         Without this the parent lights at its own centre while
+         the child lights under the pointer, which reads as two
+         unrelated effects rather than one light in a stack of
+         glass.
+
+         Bounded to two ancestors. A chip inside a card inside a
+         pane is the deepest stack this site builds, and an
+         unbounded walk would write on the rail and the body on
+         every frame for nothing. */
+      let up: HTMLElement | null = el.parentElement;
+      for (let n = 0; up && n < 2; n += 1) {
+        const over = surfaceAt(up);
+        if (!over) break;
+        const o = over.getBoundingClientRect();
+        if (o.width && o.height) {
+          over.style.setProperty("--gx",
+            `${Math.max(0, Math.min(100, ((e.clientX - o.left) / o.width) * 100)).toFixed(1)}%`);
+          over.style.setProperty("--gy",
+            `${Math.max(0, Math.min(100, ((e.clientY - o.top) / o.height) * 100)).toFixed(1)}%`);
+          over.style.setProperty("--tx", `${-(o.left + scrollX).toFixed(0)}px`);
+          over.style.setProperty("--ty", `${-(o.top + scrollY).toFixed(0)}px`);
+        }
+        up = over.parentElement;
+      }
     };
 
     const onMove = (e: PointerEvent) => {
