@@ -258,6 +258,8 @@ const NOT_GLASS = new Map<string, string>([
 const interactive = new Map<string, string>();
 const paintsGradient = new Map<string, string>();
 const setsSurfaceImage = new Set<string>();
+const castsShadow = new Map<string, string>();
+const setsSurfaceShadow = new Set<string>();
 
 for (const [layer, sel, body] of all) {
   if (layer === "glow") continue;
@@ -269,9 +271,21 @@ for (const [layer, sel, body] of all) {
      and was reported until this stripped them. A nested STATE
      block (`&:hover`) is left in, because a later layer does win
      over one of those. */
-  const own = body.replace(/&::[a-z-]+\s*\{[^{}]*\}/g, "");
+  /* A DESCENDANT block is somebody else's: `& .tracker-tag { box-shadow }`
+     inside `.tracker` styles the tag, and reading it as the tracker's
+     reported a surface whose shadow the material was never going to touch.
+     A STATE block (`&:hover`, `&.btn-solid`) is the same subject and stays,
+     because a later layer does win over one of those. Innermost first,
+     repeatedly, so a block inside a block comes out too. */
+  let own = body, before = "";
+  while (own !== before) {
+    before = own;
+    own = own.replace(/&(?:::[a-z-]+|\s+[^{}]*?)\s*\{[^{}]*\}/g, "");
+  }
   const gradient = /background(-image)?:[^;]*gradient\(/.test(own);
   const token = /--surface-image\s*:/.test(body);
+  const shadow = /(^|[;{\s])box-shadow\s*:\s*(?!none)/.test(own);
+  const shadowToken = /--surface-shadow\s*:/.test(body);
   for (const part of sel.split(",")) {
     const m = part.trim().match(/^\.([a-z][a-z0-9-]*)$/);
     if (!m) continue;
@@ -279,6 +293,8 @@ for (const [layer, sel, body] of all) {
     if (acts && !interactive.has(cls)) interactive.set(cls, layer);
     if (gradient && !paintsGradient.has(cls)) paintsGradient.set(cls, layer);
     if (token) setsSurfaceImage.add(cls);
+    if (shadow && !castsShadow.has(cls)) castsShadow.set(cls, layer);
+    if (shadowToken) setsSurfaceShadow.add(cls);
   }
 }
 
@@ -317,6 +333,36 @@ for (const [cls, layer] of [...paintsGradient].sort()) {
   console.error("        renders. Move it into --surface-image in its own rule:");
   console.error(`            --surface-image: <the gradient>;`);
   console.error("            background-image: var(--surface-image);");
+}
+
+/* ---------- 2b. would the material take a surface's own SHADOW away? ----
+
+   The same trap as the gradient, one property along, and worse.
+   The material sets box-shadow to draw the edge, a later layer
+   REPLACES rather than merges, and what a surface loses is not a
+   decorative wash: it is its hover lift and its focus ring.
+   Fourteen focus rings and thirteen lifts were one careless
+   declaration away from vanishing, and a focus ring that is gone
+   is an accessibility failure nobody can see in a screenshot.
+
+   `--surface-shadow` is the way through: the material's list ends
+   `var(--surface-shadow, none)`, so a lift composes with the edge
+   rather than replacing it, and a focus ring now sits BESIDE the
+   edge rather than instead of it.
+
+   A rule that groups a material class with one that is not gets
+   BOTH, deliberately: the token for the surface, the shorthand for
+   the class the material never paints. */
+
+for (const [cls, layer] of [...castsShadow].sort()) {
+  if (!placed.has(cls) || setsSurfaceShadow.has(cls)) continue;
+  bad += 1;
+  console.error(`\n  x .${cls} (@layer ${layer}) sets box-shadow and is on the material.`);
+  console.error("        @layer glow comes later and sets box-shadow to draw the edge, so");
+  console.error("        that shadow is gone: if it was a hover lift the card stops");
+  console.error("        lifting, and if it was a focus ring the control stops showing");
+  console.error("        focus at all. Move it into --surface-shadow in its own rule:");
+  console.error("            --surface-shadow: <the shadow>;");
 }
 
 /* ---------- 3. the ladder is a ladder ----------

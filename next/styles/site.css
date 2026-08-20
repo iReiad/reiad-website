@@ -1484,8 +1484,8 @@
                 box-shadow var(--fast) var(--ease),
                 translate var(--fast) var(--ease);
 
-    &:active { translate: 0 1px; box-shadow: none; }
-    &:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    &:active { translate: 0 1px; --surface-shadow: 0 0 transparent; }
+    &:focus-visible { outline: none; --surface-shadow: var(--focus-ring); }
     &:disabled { opacity: 0.45; pointer-events: none; }
   }
   /* ---------- the four kinds, and the ladder between them ----------
@@ -1521,9 +1521,9 @@
     --surface-image: none;
     background: var(--accent-strong); color: var(--accent-ink);
     border-color: transparent;
-    box-shadow: var(--glass-lift-solid);
+    --surface-shadow: var(--glass-lift-solid);
 
-    &:hover { filter: brightness(1.1); box-shadow: var(--glass-lift-solid-hi); }
+    &:hover { filter: brightness(1.1); --surface-shadow: var(--glass-lift-solid-hi); }
   }
   .btn-soft {
     background-color: var(--glass-fill-soft); color: var(--accent);
@@ -1531,7 +1531,7 @@
     background-size: auto, var(--glass-grain-size, auto);
     backdrop-filter: var(--glass-thin);
     border-color: var(--accent-line);
-    box-shadow: inset 0 1px 0 var(--pane-top);
+    
 
     &:hover { background-color: var(--panel-hover); border-color: var(--accent); }
   }
@@ -1541,7 +1541,7 @@
     background-size: auto, var(--glass-grain-size, auto);
     backdrop-filter: var(--glass-thin);
     border-color: var(--pane-edge);
-    box-shadow: inset 0 1px 0 var(--pane-top);
+    
 
     &:hover { background-color: var(--panel-hover); border-color: var(--accent-line); }
   }
@@ -1581,7 +1581,7 @@
     background-color: var(--glass-fill-soft);
     color: var(--accent);
     border-color: var(--accent);
-    box-shadow: inset 0 1px 2px var(--accent-soft);
+    --surface-shadow: inset 0 1px 2px var(--accent-soft);
 
     &:hover { background-color: var(--panel-hover); }
   }
@@ -1592,7 +1592,7 @@
     background-color: color-mix(in oklab, var(--accent-ink) 18%, transparent);
     color: var(--accent-ink);
     border-color: color-mix(in oklab, var(--accent-ink) 55%, transparent);
-    box-shadow: none;
+    --surface-shadow: 0 0 transparent;
   }
 
   /* ---------- the same four, standing ON the accent ----------
@@ -1618,7 +1618,7 @@
       background: var(--accent-ink); color: var(--accent-strong);
       border-color: transparent;
 
-      &:hover { filter: brightness(0.95); box-shadow: var(--shadow-lift); }
+      &:hover { filter: brightness(0.95); --surface-shadow: var(--shadow-lift); }
     }
     &.btn-soft {
       background: color-mix(in oklab, var(--accent-ink) 16%, transparent);
@@ -1728,7 +1728,7 @@
     width: min(400px, calc(100vw - 32px));
     border: 1px solid var(--hairline); border-radius: var(--radius);
     background: var(--panel); color: var(--ink);
-    padding: 0; box-shadow: var(--shadow-lift);
+    padding: 0; --surface-shadow: var(--shadow-lift);
 
     &::backdrop { background: oklch(12% 0.02 var(--h-green) / 0.55); }
   }
@@ -1921,7 +1921,7 @@
       background: var(--accent-soft);
     }
     &:has(input:focus-visible) {
-      box-shadow: var(--focus-ring);
+      --surface-shadow: var(--focus-ring);
     }
   }
   .choice-grid {
@@ -2098,7 +2098,7 @@
     border: 1px solid var(--hairline);
     border-radius: var(--radius);
     color: var(--ink);
-    box-shadow: var(--glass-lift-hi);
+    --surface-shadow: var(--glass-lift-hi);
 
     /* No backdrop on a laptop: this is a menu, and dimming the
        page behind a menu is what made the thing it replaced feel
@@ -2195,7 +2195,7 @@
     &:hover { background: var(--panel-hover); }
     &:focus-visible {
       outline: 0; background: var(--panel-hover);
-      box-shadow: var(--focus-ring);
+      --surface-shadow: var(--focus-ring);
     }
     & strong { display: block; font-weight: 500; font-size: var(--t-5); }
     & small { display: block; color: var(--ink-soft); font-size: var(--t-2); }
@@ -2269,7 +2269,7 @@
     &:hover { color: var(--accent); border-color: var(--accent); }
     &:focus-visible {
       outline: 0; border-color: var(--accent);
-      box-shadow: var(--focus-ring);
+      --surface-shadow: var(--focus-ring);
     }
     &[data-on] {
       color: var(--accent); border-color: var(--accent);
@@ -2302,7 +2302,7 @@
 
     &:focus {
       outline: 0; border-color: var(--accent);
-      box-shadow: var(--focus-ring);
+      --surface-shadow: var(--focus-ring);
     }
   }
   .keep-panel-actions { display: flex; align-items: center; gap: var(--s-6); flex-wrap: wrap; }
@@ -2490,7 +2490,7 @@
     background-color: var(--glass-fill-quiet); color: var(--ink);
     background-image: var(--glass-grain);
     background-size: var(--glass-grain-size, auto);
-    box-shadow: inset 0 1px 0 var(--pane-top);
+    
     font: inherit; cursor: pointer;
     transition: border-color var(--fast) var(--ease),
                 background var(--fast) var(--ease);
@@ -2501,7 +2501,7 @@
     &:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline)); }
     &:focus-visible {
       outline: 0; border-color: var(--accent);
-      box-shadow: var(--focus-ring);
+      --surface-shadow: var(--focus-ring);
     }
     &[data-on] {
       border-color: var(--accent); background: var(--accent-soft);
@@ -2576,7 +2576,7 @@
     padding: 26px;
     /* A small resting shadow gives the routes separation from the
        graph-paper field without making them feel like floating UI. */
-    box-shadow: 0 6px 18px oklch(30% 0.05 var(--h-green) / 0.08);
+    --surface-shadow: 0 6px 18px oklch(30% 0.05 var(--h-green) / 0.08);
     display: flex; flex-direction: column; gap: var(--s-6);
     container-type: inline-size;   /* children can size to the cell */
 
@@ -2865,7 +2865,7 @@
     border: 1px solid var(--hairline);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     display: flex; flex-direction: column;
-    box-shadow: 0 -18px 60px oklch(0% 0 0 / 0.3);
+    --surface-shadow: 0 -18px 60px oklch(0% 0 0 / 0.3);
   }
   #reader.entering .reader-panel { animation: slideup var(--enter) var(--ease); }
   @keyframes slideup { from { translate: 0 28px; opacity: 0; } to { translate: 0 0; opacity: 1; } }
@@ -2977,12 +2977,12 @@ it collapsed to the width of the word "Bangladesh". */
     padding: 18px; border-radius: var(--radius);
     border: 1px solid var(--hairline); background: var(--panel);
     color: var(--ink);
-    box-shadow: var(--shadow);
+    --surface-shadow: var(--shadow);
     container-type: inline-size;
     transition: border-color var(--fast) var(--ease),
                 box-shadow var(--fast) var(--ease);
 
-    &:hover { border-color: var(--accent); box-shadow: var(--shadow-lift); }
+    &:hover { border-color: var(--accent); --surface-shadow: var(--shadow-lift); }
     &:hover .news-card-title { color: var(--accent); }
   }
 
@@ -3042,7 +3042,7 @@ it collapsed to the width of the word "Bangladesh". */
     max-height: min(78dvh, 720px);
     padding: 0; border: 1px solid var(--hairline); border-radius: var(--radius);
     background: var(--paper); color: var(--ink);
-    box-shadow: var(--shadow-lift);
+    --surface-shadow: var(--shadow-lift);
     display: flex; flex-direction: column;
     overflow: hidden;
 
@@ -3122,7 +3122,7 @@ it collapsed to the width of the word "Bangladesh". */
     background: var(--ink); color: var(--paper);
     padding: 10px 18px; border-radius: var(--radius-pill);
     font-family: var(--font-mono); font-size: var(--t-3);
-    z-index: 300; box-shadow: var(--shadow-lift);
+    z-index: 300; --surface-shadow: var(--shadow-lift);
     transition: opacity var(--fast) var(--ease), translate var(--fast) var(--ease),
                 display var(--fast) allow-discrete, overlay var(--fast) allow-discrete;
 
@@ -3205,7 +3205,7 @@ it collapsed to the width of the word "Bangladesh". */
     background-image: var(--sheen), var(--glass-grain);
     background-size: auto, var(--glass-grain-size, auto);
     backdrop-filter: var(--glass-thin);
-    box-shadow: inset 0 1px 0 var(--pane-top);
+    
     text-decoration: none; color: var(--ink);
     transition: border-color var(--fast) var(--ease),
                 background-color var(--fast) var(--ease),
@@ -3262,7 +3262,7 @@ it collapsed to the width of the word "Bangladesh". */
     padding: 6px var(--bar-pad);
     border-radius: var(--radius-pill);
     border: 1px solid var(--glass-edge);
-    box-shadow: var(--glass-lift);
+    --surface-shadow: var(--glass-lift);
   }
 
   /* With one calculator on screen the card no longer needs to be
@@ -3294,7 +3294,7 @@ it collapsed to the width of the word "Bangladesh". */
     background: var(--panel);
     border: 1px solid var(--hairline);
     border-radius: var(--radius);
-    box-shadow: var(--shadow);
+    --surface-shadow: var(--shadow);
     padding: clamp(20px, 3vw, 30px);
     margin-bottom: var(--gap);
     container-type: inline-size;
@@ -3785,7 +3785,7 @@ it collapsed to the width of the word "Bangladesh". */
     &:hover { background: var(--accent-soft); }
     &:focus-visible {
       outline: 0;
-      box-shadow: var(--focus-ring);
+      --surface-shadow: var(--focus-ring);
     }
   }
   .checklist li[data-done] .checkpoint::before {
@@ -3994,7 +3994,7 @@ it collapsed to the width of the word "Bangladesh". */
     background: var(--panel);
     border: 1px solid var(--hairline);
     border-radius: var(--radius);
-    box-shadow: var(--shadow);
+    --surface-shadow: var(--shadow);
     overflow: clip;
     position: sticky; top: 76px;
   }
@@ -4180,7 +4180,7 @@ it collapsed to the width of the word "Bangladesh". */
     background: var(--panel);
     border: 1px solid var(--hairline);
     border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-lift, 0 14px 34px oklch(0% 0 0 / 0.25));
+    --surface-shadow: var(--shadow-lift, 0 14px 34px oklch(0% 0 0 / 0.25)); box-shadow: var(--shadow-lift, 0 14px 34px oklch(0% 0 0 / 0.25));
   }
 
   .slash-menu {
@@ -4349,7 +4349,7 @@ it collapsed to the width of the word "Bangladesh". */
   }
   /* A shadow only once it has actually lifted off, so a stationary
      bar is flat and a floating one reads as floating. */
-  .studio-tools[data-stuck] { box-shadow: 0 10px 24px -18px oklch(0% 0 0 / 0.55); }
+  .studio-tools[data-stuck] { --surface-shadow: 0 10px 24px -18px oklch(0% 0 0 / 0.55); }
 
   /* ---------- fifteen buttons on a 390px screen ----------
 
@@ -4423,7 +4423,7 @@ it collapsed to the width of the word "Bangladesh". */
     & .chip:hover { background: color-mix(in oklab, var(--panel) 70%, transparent); }
     & .chip[aria-pressed="true"], & .chip[data-on] {
       background: var(--panel); color: var(--ink);
-      box-shadow: 0 1px 2px oklch(0% 0 0 / 0.12);
+      --surface-shadow: 0 1px 2px oklch(0% 0 0 / 0.12);
     }
     & .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   }
@@ -4720,7 +4720,7 @@ it collapsed to the width of the word "Bangladesh". */
     background-color: var(--glass-fill-quiet); color: var(--ink-soft);
     background-image: var(--glass-grain);
     background-size: var(--glass-grain-size, auto);
-    box-shadow: inset 0 1px 0 var(--pane-top);
+    
     padding: 5px 12px; font-family: var(--font-mono); font-size: var(--t-2);
     letter-spacing: 0.05em; text-transform: uppercase;
     transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
@@ -5120,7 +5120,7 @@ it collapsed to the width of the word "Bangladesh". */
     background: var(--panel);
     border: 1px solid var(--hairline);
     border-radius: var(--radius);
-    box-shadow: var(--shadow-lift);
+    --surface-shadow: var(--shadow-lift);
     padding: clamp(24px, 4vw, 34px);
     display: flex; flex-direction: column; gap: var(--s-7);
     text-align: center;
@@ -5179,7 +5179,7 @@ it collapsed to the width of the word "Bangladesh". */
     &:hover, &:focus-visible {
       border-color: var(--accent);
       transform: translateY(-3px);
-      box-shadow: var(--shadow-lift);
+      --surface-shadow: var(--shadow-lift);
     }
     & .more { margin-top: auto; color: var(--accent); }
     /* a quiet sheen that sweeps once on hover, signals "this opens"
@@ -5469,7 +5469,7 @@ it collapsed to the width of the word "Bangladesh". */
     border: 1px solid var(--pane-edge); border-radius: var(--radius);
     background-color: var(--glass-solid);
     background-image: var(--sheen);
-    box-shadow: inset 0 1px 0 var(--pane-top);
+    
     padding: 16px 18px;
     display: grid; gap: 3px; align-content: start;
 
@@ -7166,7 +7166,7 @@ German for day, and .tag is what the site has always called
                 box-shadow var(--fast) var(--ease);
 
     &:hover {
-      border-color: var(--accent); box-shadow: var(--shadow-lift);
+      border-color: var(--accent); --surface-shadow: var(--shadow-lift);
       & .more { color: var(--accent); }
     }
   }
@@ -7697,7 +7697,7 @@ German for day, and .tag is what the site has always called
     background: var(--panel);
     border: 1px solid var(--hairline);
     border-radius: var(--radius);
-    box-shadow: var(--shadow);
+    --surface-shadow: var(--shadow);
     padding: 24px 26px; margin-block: 30px 24px;
     gap: var(--s-5);
 
@@ -7753,7 +7753,7 @@ German for day, and .tag is what the site has always called
     display: grid; justify-items: start; gap: var(--s-2);
     padding: 26px 26px 20px;
     border: 1px solid var(--hairline); border-radius: var(--radius);
-    background: var(--panel); box-shadow: var(--shadow);
+    background: var(--panel); --surface-shadow: var(--shadow);
     position: relative; overflow: clip;
 
     /* the same graph paper the hero uses, faded into the corner */
@@ -7959,7 +7959,7 @@ German for day, and .tag is what the site has always called
     &:hover, &:focus-visible {
       border-color: var(--accent);
       transform: translateY(-2px);
-      box-shadow: var(--shadow-lift);
+      --surface-shadow: var(--shadow-lift);
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -8908,7 +8908,7 @@ German for day, and .tag is what the site has always called
   .rail-item:hover {
     background: var(--glass-bg);
     border-color: color-mix(in oklab, var(--accent) 26%, transparent);
-    box-shadow: inset 0 1px 0 var(--pane-top);
+    
   }
 
   .rail-ico {
@@ -8944,7 +8944,7 @@ German for day, and .tag is what the site has always called
   .rail-item[aria-current="page"] {
     background: var(--glass-solid);
     border-color: var(--pane-edge);
-    box-shadow: var(--pane-lift);
+    --surface-shadow: var(--pane-lift);
     font-weight: 600;
   }
   .rail-item[aria-current="page"]::before {
@@ -9054,7 +9054,7 @@ German for day, and .tag is what the site has always called
     padding-inline: var(--bar-pad);
     border-radius: var(--radius-pill);
     border: 1px solid var(--glass-edge);
-    box-shadow: var(--glass-lift);
+    --surface-shadow: var(--glass-lift);
     transition: left var(--slow) var(--ease);
     view-transition-name: site-topbar;
   }
@@ -9145,7 +9145,7 @@ German for day, and .tag is what the site has always called
     margin: 0; padding: clamp(14px, 2vw, 22px);
     border-radius: var(--radius-lg);
     border: 1px solid var(--glass-edge);
-    box-shadow: var(--glass-lift-hi);
+    --surface-shadow: var(--glass-lift-hi);
     color: var(--ink);
     transition: opacity var(--fast) var(--ease), translate var(--fast) var(--ease),
                 overlay var(--fast) allow-discrete, display var(--fast) allow-discrete;
@@ -9335,7 +9335,7 @@ German for day, and .tag is what the site has always called
     border: 1px solid var(--hairline);
     border-radius: var(--radius-pill);
     background: var(--glass-fill-quiet);
-    box-shadow: inset 0 1px 0 var(--pane-top);
+    
     color: var(--ink-soft);
     cursor: pointer;
     transition: color var(--fast) var(--ease), border-color var(--fast) var(--ease);
@@ -9409,7 +9409,7 @@ German for day, and .tag is what the site has always called
       --rail-w: min(300px, 86vw);
       translate: -102% 0;
       transition: translate var(--slow) var(--ease);
-      box-shadow: var(--shadow-lift);
+      --surface-shadow: var(--shadow-lift);
     }
     html[data-drawer="open"] .rail { translate: 0 0; }
 
@@ -9875,7 +9875,7 @@ German for day, and .tag is what the site has always called
      stay, and are the whole of hover where nothing hovers. */
   a.card[data-kind="go"]:hover,
   a.card[data-kind="go"]:focus-visible {
-    box-shadow: var(--shadow-lift);
+    --surface-shadow: var(--shadow-lift);
     border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline));
   }
   a.card[data-kind="go"]:hover::after { opacity: 1; }
@@ -10322,7 +10322,7 @@ German for day, and .tag is what the site has always called
     transition: opacity var(--fast) var(--ease);
   }
   .gate-tile:hover, .gate-tile:focus-visible {
-    box-shadow: var(--shadow-lift);
+    --surface-shadow: var(--shadow-lift);
     border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline));
   }
   .gate-tile:hover::after { opacity: 1; }
@@ -10458,7 +10458,7 @@ German for day, and .tag is what the site has always called
     padding-inline: 14px;
     border-radius: var(--radius-pill);
     border: 1px solid var(--glass-edge);
-    box-shadow: var(--glass-lift);
+    --surface-shadow: var(--glass-lift);
     view-transition-name: site-topbar;
   }
 
@@ -10606,7 +10606,7 @@ German for day, and .tag is what the site has always called
     border: 1px solid var(--hairline);
     border-radius: var(--radius);
     color: var(--ink);
-    box-shadow: var(--glass-lift-hi);
+    --surface-shadow: var(--glass-lift-hi);
     /* Where anchor positioning is missing: under the bar, near
        the left of the content column. Wrong by a few pixels and
        never off-screen, which is the right way round for a
@@ -11319,7 +11319,7 @@ German for day, and .tag is what the site has always called
     transition: background var(--fast) var(--ease);
 
     &:hover { background: var(--accent-soft); }
-    &:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    &:focus-visible { outline: none; --surface-shadow: var(--focus-ring); }
   }
   .rt-task-name {
     flex: 1 1 auto; min-inline-size: 0;
@@ -11547,7 +11547,7 @@ German for day, and .tag is what the site has always called
     background-color: color-mix(in oklab, var(--accent) calc(var(--fill, 0) * 78%), var(--paper-sunk));
 
     &:hover { border-color: var(--accent); }
-    &:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    &:focus-visible { outline: none; --surface-shadow: var(--focus-ring); }
   }
   /* Today is ringed rather than filled, so it is findable without
      looking like it has been marked. */
@@ -11594,7 +11594,7 @@ German for day, and .tag is what the site has always called
     border-radius: var(--radius-sm);
 
     &:hover { background: var(--accent-soft); }
-    &:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+    &:focus-visible { outline: none; --surface-shadow: var(--focus-ring); }
   }
   .rt-jar svg { inline-size: 44px; block-size: 56px; }
   .rt-out {
@@ -12287,17 +12287,16 @@ German for day, and .tag is what the site has always called
        slab. The fill inside sits over all of it, which is right:
        the filled part of a channel is the part with something in
        it. */
-    --lit: linear-gradient(180deg,
-      color-mix(in oklab, var(--glass-under)
-        calc(var(--depth) * (8% + var(--clarity) * 14%)), transparent) 0,
-      color-mix(in oklab, var(--glass-under)
-        calc(var(--depth) * (8% + var(--clarity) * 14%)), transparent)
-        calc(var(--depth) * 1.2px),
-      transparent calc(var(--depth) * 1.2px),
-      transparent calc(100% - 1px),
-      color-mix(in oklab, var(--glass-face) calc(var(--polish) * 40%), transparent)
-        calc(100% - 1px),
-      color-mix(in oklab, var(--glass-face) calc(var(--polish) * 40%), transparent) 100%);
+    --edge:
+      /* the near wall, in shadow, at the TOP: a positive y offset throws an
+         inset shadow downwards from the upper edge. This is the whole of
+         what makes a groove a groove rather than a shallow plate. */
+      inset 0 calc(var(--depth) * 1.2px) 0 calc(var(--depth) * -0.45px)
+        color-mix(in oklab, var(--glass-under)
+          calc(var(--depth) * (8% + var(--clarity) * 14%)), transparent),
+      /* and the far wall catching it along the bottom */
+      inset 0 -1px 0
+        color-mix(in oklab, var(--glass-face) calc(var(--polish) * 40%), transparent);
   }
 
   /* ============================================================
@@ -12435,22 +12434,35 @@ German for day, and .tag is what the site has always called
        flush row in a column is not sitting ON anything and a
        card is. Depth says how thick; standing says whether there
        is anything for it to be thick against. */
-    --lit: linear-gradient(180deg,
-      color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 58%), transparent) 0,
-      color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 58%), transparent) 1px,
-      transparent 1px,
-      transparent calc(100% - var(--depth) * 1.6px),
-      color-mix(in oklab, var(--glass-under)
-        calc(var(--depth) * (2% + var(--standing) * 7%)), transparent)
-        calc(100% - var(--depth) * 1.6px),
-      color-mix(in oklab, var(--glass-under)
-        calc(var(--depth) * (2% + var(--standing) * 7%)), transparent)
-        calc(100% - var(--depth) * 0.6px),
-      color-mix(in oklab, var(--glass-face)
-        calc(var(--depth) * (3% + var(--standing) * 12%)), transparent)
-        calc(100% - var(--depth) * 0.6px),
-      color-mix(in oklab, var(--glass-face)
-        calc(var(--depth) * (3% + var(--standing) * 12%)), transparent) 100%);
+    /* ---- and it OPENS as the thing leans towards you ----
+
+       A card in `.tilt-scene` leans on hover, and a slab leaning
+       towards a reader shows more of its near edge, not the same
+       amount. It was showing the same amount, which is what "the
+       tilting ones are not revealing that they are actually thick"
+       means: the lean was a rotation of a picture rather than of
+       an object.
+
+       `--glow-a` is already the "the pointer is on this" number,
+       already registered so it animates, and already on the
+       190ms-in, 820ms-out curve. So the edge rides it and there is
+       no second piece of state: the thickness opens as the light
+       comes up and closes as it lingers out. A plate and a groove
+       never raise it, which is right, because neither leans. */
+    --depth-lit: calc(var(--depth) * (1 + var(--glow-a, 0) * 0.6));
+
+    --edge:
+      /* the catch light on the near wall, the full thickness */
+      inset 0 calc(var(--depth-lit) * -1.15px) 0 calc(var(--depth-lit) * -0.42px)
+        color-mix(in oklab, var(--glass-face)
+          calc(22% + var(--standing) * 30%), transparent),
+      /* the seat just above it, so the two read as a cut rather than a glow */
+      inset 0 calc(var(--depth-lit) * -0.42px) 0 calc(var(--depth-lit) * -0.2px)
+        color-mix(in oklab, var(--glass-under)
+          calc(var(--depth) * (2% + var(--standing) * 6%)), transparent),
+      /* and the rim, all the way round, one pixel */
+      inset 0 0 0 1px
+        color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 46%), transparent);
 
     /* ---- and the same cut edge, seen from the sides ----
 
@@ -12492,14 +12504,7 @@ German for day, and .tag is what the site has always called
       --rim-b: oklch(from var(--accent) l c calc(h + 62));
     }
 
-    --rim: linear-gradient(90deg,
-      color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 58%), transparent) 0,
-      color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 58%), transparent) 1px,
-      transparent 1px,
-      transparent calc(100% - 1px),
-      color-mix(in oklab, var(--rim-face-b) calc(var(--standing) * 58%), transparent)
-        calc(100% - 1px),
-      color-mix(in oklab, var(--rim-face-b) calc(var(--standing) * 58%), transparent) 100%);
+
 
     --rim-face-a:
       color-mix(in oklab, var(--rim-a) calc(var(--polish) * 34%), var(--glass-face));
@@ -12566,14 +12571,51 @@ German for day, and .tag is what the site has always called
        window. */
     background-image:
       var(--spec, none),
-      var(--rim),
-      var(--lit),
       var(--surface-image, none),
       var(--glass-grain),
       radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent) 0%,
         transparent var(--glow-stop));
-    background-size: auto, auto, auto, var(--surface-size, auto), var(--glass-grain-size, auto), auto;
+    background-size: auto, var(--surface-size, auto), var(--glass-grain-size, auto), auto;
+
+    /* ---- and the edge is a SHADOW, because a gradient is straight ----
+
+       The edge was two gradients in the stack above and they were
+       wrong on anything round. A gradient stop is a straight line
+       across the whole box, so the top of the bottom band was a
+       chord: on a card it read as a rule somebody had drawn under
+       the content, and on a pill it cut clean across the lower
+       curve and stopped dead where the arc began.
+
+       An inset shadow is bounded by the border radius. Offset it
+       down and shrink it with a negative spread and the band
+       becomes a crescent that hugs the bottom arc, thickest in the
+       middle and tapering into the corners, which is what the edge
+       of a rounded slab actually looks like. The rim is the same
+       primitive at zero offset: `inset 0 0 0 1px` traces the whole
+       silhouette, corners included, where two vertical gradient
+       stripes could only ever do the straight parts.
+
+       ---- why this takes over box-shadow, and what pays for it ----
+
+       A later layer REPLACES box-shadow, so this would have taken
+       every hover lift and every focus ring on the site with it.
+       `--surface-shadow` is the way through, exactly as
+       `--surface-image` is for a gradient: 44 rules now set the
+       token and the material composes it, `check-material.ts`
+       fails on a listed class that sets the shorthand instead, and
+       a focus ring now sits BESIDE the edge rather than replacing
+       it.
+
+       Eight classes were hand-writing `inset 0 1px 0 var(--pane-top)`,
+       which is this rule's top rim said by hand, once per class,
+       before there was a material. Those are gone. */
+    /* `0 0 transparent`, NEVER `none`. A `none` is legal only as the
+       WHOLE of box-shadow, so `var(--edge), none` is invalid at computed
+       value time and the declaration falls back to its initial value,
+       which is `none`: the edge disappears from every surface that has
+       no shadow of its own, silently, on a page that still renders. */
+    box-shadow: var(--edge), var(--surface-shadow, 0 0 transparent);
 
     /* ---- texture fluency ----
 
@@ -12590,18 +12632,27 @@ German for day, and .tag is what the site has always called
        would do the same and costs a repaint of every surface on
        every scroll frame, which on a cheap Android is the whole
        budget. */
-    background-position: 0 0, 0 0, 0 0, 0 0, var(--tx, 0) var(--ty, 0), 0 0;
+    background-position: 0 0, 0 0, var(--tx, 0) var(--ty, 0), 0 0;
 
     transition: --glow-a var(--glow-fade) var(--ease),
                 rotate var(--enter) var(--ease),
                 background-color var(--fast) var(--ease),
                 border-color var(--fast) var(--ease),
                 color var(--fast) var(--ease),
-                box-shadow var(--fast) var(--ease),
                 translate var(--fast) var(--ease),
                 transform var(--fast) var(--ease),
                 filter var(--fast) var(--ease),
                 opacity var(--fast) var(--ease);
+
+    /* `box-shadow` is NOT in that list any more, and that is the
+       one removal worth explaining. The edge is computed from
+       `--depth-lit`, which is computed from `--glow-a`, which is
+       registered and animates: the shadow already changes smoothly,
+       every frame, for free. Transitioning it as well sets a fresh
+       transition off on each of those frames, which is a
+       transition that never finishes. What used to ride this line
+       was `--shadow-lift`, and it rides `--surface-shadow` now, on
+       the class's own rule where its own transition covers it. */
 
     /* `--glow-fade`, not `--enter`, and the hover half is below.
        A transition reads its duration from the state it is going

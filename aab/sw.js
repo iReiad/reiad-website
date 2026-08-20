@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v163: `/fallback.css`. The edge is an inset shadow rather than a
+        gradient, so it follows the border radius instead of cutting
+        a straight chord across a rounded shape, and it opens as a
+        surface lights. Every surface's own shadow moved to
+        `--surface-shadow` so the material can own `box-shadow`
+        without taking the hover lifts and focus rings with it.
+
    v162: `/fallback.css`. A sixth kind of glass, the groove, and
         forty-nine more classes on the material: every progress
         track, segmented control, article block, popover and
@@ -1530,7 +1537,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v162";
+const VERSION = "v163";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

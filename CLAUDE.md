@@ -364,9 +364,9 @@ decide what a given thing gets.** `@layer glow` in
 --glow-w    = depth * 46px          how wide the light spreads
 --glow-i    = clarity * 32%         how strong it is
 --glow-stop = 52% + (1 - polish) * 46%   how far the falloff reaches
---lit       = a 1px rim at standing, then nothing, then depth px of edge
---rim       = the same 1px down both sides, in the accent and the
-              accent turned 62 degrees, scaled by polish
+--depth-lit = depth * (1 + glow-a * 0.6)   the edge opens as it lights
+--edge      = three inset shadows: the catch light on the near wall at
+              depth-lit, the seat above it, and a 1px rim all the way round
 ```
 
 **Flat on top. The thickness is at the CUT EDGE.** A wash fading
@@ -381,14 +381,55 @@ showing its full thickness. It was `--depth` px at the top for one
 commit, which on a card is five pixels of grey bar.
 
 **The rim goes all the way round, and it splits.** A flat face and
-a bright bottom band still reads as a painted rectangle until both
-sides have a hairline down them. One pixel, not `--depth`: seen
-from the side a cut edge is foreshortened to nothing. And a cut
-edge of real glass disperses, which is most of why a bevel reads as
-glass rather than as an outline somebody drew, so `--polish` mixes
-the section's accent into one side and that accent turned 62
-degrees into the other. The money school's edge splits green and
-Deutsch's splits blue, and neither is a colour anybody typed.
+a bright bottom band still reads as a painted rectangle until the
+edge closes. And a cut edge of real glass disperses, which is most
+of why a bevel reads as glass rather than as an outline somebody
+drew, so `--polish` mixes the section's accent into it. The money
+school's edge splits green and Deutsch's splits blue, and neither
+is a colour anybody typed.
+
+**The edge is a SHADOW, because a gradient is straight.** It was
+two gradients for one commit and they were wrong on anything round:
+a gradient stop is a straight line across the whole box, so the top
+of the bottom band was a CHORD. On a card it read as a rule
+somebody had drawn under the content; on a pill it cut clean across
+the lower curve and stopped dead where the arc began. An inset
+shadow is bounded by the border radius, so offsetting it down with
+a negative spread makes the band a crescent that hugs the bottom
+arc, thickest in the middle and tapering into the corners. The rim
+is the same primitive at zero offset: `inset 0 0 0 1px` traces the
+whole silhouette, corners included.
+
+**Which means the material owns `box-shadow`, and that is only safe
+because of `--surface-shadow`.** A later layer REPLACES box-shadow,
+so this would have taken every hover lift and every focus ring on
+the site with it: fourteen rings and thirteen lifts, and a focus
+ring that is gone is an accessibility failure nobody can see in a
+screenshot. 44 rules set the token instead, the material's list
+ends `var(--surface-shadow, 0 0 transparent)`, and a ring now sits
+BESIDE the edge rather than instead of it.
+
+**`0 0 transparent`, never `none`.** A `none` is legal only as the
+whole of box-shadow, so `var(--edge), none` is invalid at computed
+value time and falls back to the initial value, which IS `none`:
+the edge vanishes from every surface with no shadow of its own, on
+a page that renders perfectly. That shipped for about ten minutes
+and was caught by asserting the computed style rather than looking.
+
+**And the edge opens as the thing leans towards you.** A card in
+`.tilt-scene` leans on hover, and a slab leaning towards a reader
+shows more of its near edge. `--glow-a` is already the "the pointer
+is on this" number, already registered so it animates, already on
+the 190-in/820-out curve, so `--depth-lit` rides it and there is no
+second piece of state: a card's edge goes from 5.7px to 9.2px as
+the light comes up, and closes slowly behind it. A plate and a
+groove never raise it, which is right, because neither leans.
+
+`box-shadow` is deliberately NOT in the material's transition list.
+The edge is computed from a registered property that already
+animates, so it changes smoothly every frame for free, and
+transitioning it as well starts a fresh transition on each of those
+frames.
 
 **Three of the four describe the glass. `--standing` describes the
 situation**, and it is the difference between a design system and
@@ -455,7 +496,7 @@ node scripts/check-material.ts          # every pressable class is placed
 node scripts/check-material.ts --list   # what is on the system
 ```
 
-It asks seven questions, and each one is a thing that shipped:
+It asks eight questions, and each one is a thing that shipped:
 
 - **Is anything pressable off the system?** The first material
   reached 1 of 203 surface-like classes, because it was scoped to
@@ -488,6 +529,11 @@ It asks seven questions, and each one is a thing that shipped:
   pointer, and each kind block is one kind. A class can get four
   numbers from its kind and be left out of the paint rule, which
   is a surface with the numbers and none of the light.
+- **Would the material take a surface's own SHADOW away?** The same
+  trap one property along, and worse: what a surface loses is not a
+  wash but its hover lift and its focus ring. `--surface-shadow` is
+  the way through and this fails on a listed class that sets the
+  shorthand instead.
 - **Is an exemption stale?** `NOT_A_SURFACE` holds the rows of
   controls and `NOT_GLASS` holds the marks, the grid cells, the
   fills and the text fields, both keyed by class with the reason,
