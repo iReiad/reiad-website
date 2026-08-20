@@ -84,6 +84,33 @@
   @property --clarity   { syntax: "<number>"; initial-value: 0.7; inherits: false; }
   @property --glow-stop { syntax: "<percentage>"; initial-value: 80%; inherits: false; }
 
+  /* ---- and the fourth, which is not physical ----
+
+       --standing  how much a surface declares itself when
+                   NOTHING is happening.
+
+     The other three describe the glass. This one describes the
+     situation, and it is the difference between a design system
+     and a coat of paint.
+
+     A lone button has to look pressable, because nothing else on
+     the page says it is. A row in a list does not: there are
+     twenty of them, they are identical, they sit in a column, and
+     the LIST is the affordance. Drawing a lit pill around each
+     one turns a menu into a cage, which is what the rail became
+     the day every kind got the same rest state.
+
+     It drives the lit top edge, so it is also what "flat top"
+     means here. Standing 0 is flat. A chip is 0.3, which is a
+     hint of a bevel on something a millimetre thick. A pane is 1
+     at nine millimetres, which is a real one.
+
+     The GLOW is untouched by it. How a thing answers you is not
+     the same question as how much it announces itself, and a rail
+     row that lights under the pointer while sitting flat at rest
+     is exactly right. */
+  @property --standing { syntax: "<number>"; initial-value: 1; inherits: false; }
+
   :root {
     /* Follow the OS by default; the theme toggle writes
        data-theme on <html> to force one side. */
@@ -11978,7 +12005,7 @@ German for day, and .tag is what the site has always called
        which is what lets the tilt compose with a lift.
        Something transitioning an eleventh adds it here, which
        is the cost of saying it once. */
-    transition: --glow-a var(--enter) var(--ease),
+    transition: --glow-a var(--glow-fade) var(--ease),
                 rotate var(--enter) var(--ease),
                 background-color var(--fast) var(--ease),
                 border-color var(--fast) var(--ease),
@@ -12012,7 +12039,10 @@ German for day, and .tag is what the site has always called
       .desk-tile, .gate-card,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel) {
-    &:hover, &:focus-visible, &:focus-within { --glow-a: 1; }
+    &:hover, &:focus-visible, &:focus-within {
+      --glow-a: 1;
+      --glow-fade: 190ms;
+    }
   }
 
   [data-glow="chip"]    { --glow-w:  70px; --glow-i: 40%; }
@@ -12098,7 +12128,7 @@ German for day, and .tag is what the site has always called
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
       .tracker, .tag-waehler, .buch-tag) {
-    --depth: 1; --polish: 0.94; --clarity: 0.78;
+    --depth: 1; --polish: 0.94; --clarity: 0.78; --standing: 0.3;
   }
 
   /* Pressed to do something, or to go one step. A little thicker
@@ -12108,7 +12138,7 @@ German for day, and .tag is what the site has always called
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
       .rail-item, .tree-link, .tab, .course-mod, .pillar) {
-    --depth: 2.2; --polish: 0.8; --clarity: 0.7;
+    --depth: 2.2; --polish: 0.8; --clarity: 0.7; --standing: 0.9;
   }
 
   /* Something you go into. Five millimetres, half polished: the
@@ -12118,7 +12148,7 @@ German for day, and .tag is what the site has always called
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
       .desk-tile, .gate-card) {
-    --depth: 5; --polish: 0.5; --clarity: 0.5;
+    --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
 
   /* Holds other things. Heavy structural glass: thick, barely
@@ -12127,7 +12157,7 @@ German for day, and .tag is what the site has always called
      at somebody reading the page under it. */
   :is(.topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel) {
-    --depth: 9; --polish: 0.3; --clarity: 0.3;
+    --depth: 9; --polish: 0.3; --clarity: 0.3; --standing: 1;
   }
 
   /* Read, never pressed: a statistic, a verdict, a label, a card
@@ -12150,7 +12180,7 @@ German for day, and .tag is what the site has always called
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
       .advanced-card, .at-a-glance, .side-note) {
-    --depth: 3.4; --polish: 0.55; --clarity: 0.28;
+    --depth: 3.4; --polish: 0.55; --clarity: 0.28; --standing: 1;
 
     /* `--glow-w: 0` after the depth, and both are deliberate. The
        depth still shapes the light below; the zero is what tells
@@ -12162,9 +12192,33 @@ German for day, and .tag is what the site has always called
       radial-gradient(calc(var(--depth) * 34%) calc(var(--depth) * 26%) at 100% 0%,
         color-mix(in oklab, var(--accent) calc(var(--clarity) * 40%), transparent),
         transparent var(--glow-stop)),
-      var(--sheen),
+      var(--lit),
       var(--glass-grain);
     --surface-size: auto, auto, var(--glass-grain-size, auto);
+  }
+
+  /* ============================================================
+     WHAT THE CONTEXT ALREADY DECLARES
+
+     Everything here is pressable and none of it needs a surface
+     at rest, because it never appears alone. A rail item sits in
+     a column of twelve identical rail items; a crumb sits in a
+     trail; a tab sits in a strip. The repetition IS the
+     affordance, and a lit pill around each one is a cage rather
+     than a menu.
+
+     They keep the glow. How a thing answers a pointer is a
+     different question from how much it announces itself, and a
+     row that lies flat until you reach it is the whole idea.
+
+     The test for adding a name: would this ever be the only one
+     of its kind on the page? If it would, it needs to stand.
+     ============================================================ */
+  :is(.rail-item, .tree-link, .tree-btn, .acc-item, .crumb-step,
+      .audience-opt, .tab, .slash-item, .course-mod, .ladder-row,
+      .saved-row, .kept-row, .target, .rung, .page-toc, .term,
+      .quiz-option, .checkpoint, .rt-heat-day) {
+    --standing: 0;
   }
 
   /* And the one rule that lights all of them. Written apart from
@@ -12206,11 +12260,44 @@ German for day, and .tag is what the site has always called
        system means changing a material rather than editing
        ninety selectors. */
     --glow-w: calc(var(--depth) * 46px);
-    --glow-i: calc(var(--clarity) * 44%);
+    /* 32% and not 44%. A material that is on every surface of a
+       site has to be quiet or it is noise everywhere, and the
+       ladder between the kinds is what carries the meaning rather
+       than the absolute brightness. */
+    --glow-i: calc(var(--clarity) * 32%);
     --glow-stop: calc(52% + (1 - var(--polish)) * 46%);
 
+    /* ---- it comes up quickly and goes out slowly ----
+
+       A filament does not switch off, and the difference between
+       arriving and leaving is most of what makes this read as a
+       material rather than as a hover state. Leaving a card
+       should feel like the light is still in the glass for a
+       moment.
+
+       One property does both, because a transition reads its
+       duration from the state it is going TO: hovering resolves
+       `--glow-fade` to the fast value, and leaving resolves it
+       back to the slow one. */
+    --glow-fade: 820ms;
+
+    /* ---- the lit top edge, which is where thickness is SEEN ----
+
+       `--sheen` is one fixed gradient and was on every surface,
+       which is what turned the rail into twenty boxes. This is
+       the same idea with both knobs attached: how STRONG it is
+       comes from standing, and how FAR DOWN it reaches comes from
+       depth, because a thicker piece of glass has a deeper bevel
+       for the light to run down.
+
+       Standing 0 makes the colour fully transparent, so a flat
+       thing is flat rather than faintly domed. */
+    --lit: linear-gradient(180deg,
+      color-mix(in oklab, var(--pane-top) calc(var(--standing) * 100%), transparent) 0%,
+      transparent calc(10% + var(--depth) * 2.2%));
+
     background-image:
-      var(--surface-image, var(--sheen), var(--glass-grain)),
+      var(--surface-image, var(--lit), var(--glass-grain)),
       radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent) 0%,
         transparent var(--glow-stop));

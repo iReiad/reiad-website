@@ -26,6 +26,8 @@
   @property --clarity   { syntax: "<number>"; initial-value: 0.7; inherits: false; }
   @property --glow-stop { syntax: "<percentage>"; initial-value: 80%; inherits: false; }
 
+  @property --standing { syntax: "<number>"; initial-value: 1; inherits: false; }
+
   :root {
 
     color-scheme: light dark;
@@ -8165,7 +8167,7 @@
         transparent 100%);
     background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
 
-    transition: --glow-a var(--enter) var(--ease),
+    transition: --glow-a var(--glow-fade) var(--ease),
                 rotate var(--enter) var(--ease),
                 background-color var(--fast) var(--ease),
                 border-color var(--fast) var(--ease),
@@ -8192,7 +8194,10 @@
       .desk-tile, .gate-card,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel) {
-    &:hover, &:focus-visible, &:focus-within { --glow-a: 1; }
+    &:hover, &:focus-visible, &:focus-within {
+      --glow-a: 1;
+      --glow-fade: 190ms;
+    }
   }
 
   [data-glow="chip"]    { --glow-w:  70px; --glow-i: 40%; }
@@ -8204,26 +8209,26 @@
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
       .tracker, .tag-waehler, .buch-tag) {
-    --depth: 1; --polish: 0.94; --clarity: 0.78;
+    --depth: 1; --polish: 0.94; --clarity: 0.78; --standing: 0.3;
   }
 
   :is(.btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
       .rail-item, .tree-link, .tab, .course-mod, .pillar) {
-    --depth: 2.2; --polish: 0.8; --clarity: 0.7;
+    --depth: 2.2; --polish: 0.8; --clarity: 0.7; --standing: 0.9;
   }
 
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
       .desk-tile, .gate-card) {
-    --depth: 5; --polish: 0.5; --clarity: 0.5;
+    --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
 
   :is(.topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel) {
-    --depth: 9; --polish: 0.3; --clarity: 0.3;
+    --depth: 9; --polish: 0.3; --clarity: 0.3; --standing: 1;
   }
 
   :is(.tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
@@ -8232,16 +8237,23 @@
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
       .advanced-card, .at-a-glance, .side-note) {
-    --depth: 3.4; --polish: 0.55; --clarity: 0.28;
+    --depth: 3.4; --polish: 0.55; --clarity: 0.28; --standing: 1;
 
     --glow-w: 0px;
     --surface-image:
       radial-gradient(calc(var(--depth) * 34%) calc(var(--depth) * 26%) at 100% 0%,
         color-mix(in oklab, var(--accent) calc(var(--clarity) * 40%), transparent),
         transparent var(--glow-stop)),
-      var(--sheen),
+      var(--lit),
       var(--glass-grain);
     --surface-size: auto, auto, var(--glass-grain-size, auto);
+  }
+
+  :is(.rail-item, .tree-link, .tree-btn, .acc-item, .crumb-step,
+      .audience-opt, .tab, .slash-item, .course-mod, .ladder-row,
+      .saved-row, .kept-row, .target, .rung, .page-toc, .term,
+      .quiz-option, .checkpoint, .rt-heat-day) {
+    --standing: 0;
   }
 
   :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
@@ -8266,11 +8278,18 @@
       .advanced-card, .at-a-glance, .side-note) {
 
     --glow-w: calc(var(--depth) * 46px);
-    --glow-i: calc(var(--clarity) * 44%);
+
+    --glow-i: calc(var(--clarity) * 32%);
     --glow-stop: calc(52% + (1 - var(--polish)) * 46%);
 
+    --glow-fade: 820ms;
+
+    --lit: linear-gradient(180deg,
+      color-mix(in oklab, var(--pane-top) calc(var(--standing) * 100%), transparent) 0%,
+      transparent calc(10% + var(--depth) * 2.2%));
+
     background-image:
-      var(--surface-image, var(--sheen), var(--glass-grain)),
+      var(--surface-image, var(--lit), var(--glass-grain)),
       radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent) 0%,
         transparent var(--glow-stop));

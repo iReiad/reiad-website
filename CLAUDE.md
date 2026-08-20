@@ -349,13 +349,43 @@ decide what a given thing gets.** `@layer glow` in
 `next/styles/site.css` is the whole of it, in one place, and
 `scripts/check-material.ts` is what stops it rotting.
 
-|         | spread | at the centre | the light follows |
-| --- | --- | --- | --- |
-| `chip`    | 70px  | 40% | yes |
-| `control` | 110px | 34% | yes |
-| `card`    | 240px | 26% | yes |
-| `pane`    | 420px | 16% | yes |
-| `plate`   | 0     | still | no |
+| | depth | polish | clarity | standing | follows |
+| --- | --- | --- | --- | --- | --- |
+| `chip`    | 1   | 0.94 | 0.78 | 0.3 | yes |
+| `control` | 2.2 | 0.80 | 0.70 | 0.9 | yes |
+| `card`    | 5   | 0.50 | 0.50 | 1   | yes |
+| `pane`    | 9   | 0.30 | 0.30 | 1   | yes |
+| `plate`   | 3.4 | 0.55 | 0.28 | 1   | no  |
+
+**Nothing visible is authored. All of it is derived:**
+
+```
+--glow-w    = depth * 46px          how wide the light spreads
+--glow-i    = clarity * 32%         how strong it is
+--glow-stop = 52% + (1 - polish) * 46%   how far the falloff reaches
+--lit       = pane-top at standing%, ending at 10% + depth * 2.2%
+```
+
+**Three of the four describe the glass. `--standing` describes the
+situation**, and it is the difference between a design system and
+a coat of paint. A lone button has to look pressable because
+nothing else says it is; a row in a list does not, because there
+are twenty of them in a column and the LIST is the affordance.
+Every kind having the same rest state is what turned the rail into
+twenty boxes. The block naming those classes is in `@layer glow`
+and its test is one question: **would this ever be the only one of
+its kind on the page?**
+
+Standing also drives the lit top edge, so it is what "flat top"
+means here. Standing 0 is flat, a chip at 0.3 is a hint of a bevel
+on something a millimetre thick, and a pane at 1 and nine
+millimetres is a real one.
+
+**The light comes up in 190ms and goes out in 820ms.** A filament
+does not switch off, and the asymmetry is most of what makes this
+read as a material rather than as a hover state. One property does
+both, because a transition reads its duration from the state it is
+going TO.
 
 **INTERACTIVITY decides whether the light follows, not whether a
 thing is in the system.** Everything is in it, which is what makes
@@ -366,9 +396,15 @@ the corner. `--glow-w: 0` is how that is said, and it is also what
 stops `glow.tsx` tracking it, because a non-zero spread is the
 module's membership test.
 
-**FUNCTION and SIZE both land on `--glow-w`**, because they are
-the same physical fact from two directions: a small piece of glass
+**FUNCTION and SIZE both land on `--depth`**, because they are the
+same physical fact from two directions: a small piece of glass
 carries a tight bright spot and a thick one diffuses it wide.
+
+**As a surface gets thicker it must get less polished and less
+clear**, because that is what more material does to a light.
+`check-material.ts` asserts that ordering and names both kinds
+when it breaks: a sixth kind that breaks it breaks the idea rather
+than one number, and every value is plausible on its own.
 
 **A class in the wrong list is the one way to get this wrong**,
 and the test is not what a thing looks like. It is what happens
