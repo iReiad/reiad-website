@@ -8333,22 +8333,18 @@
 
     --edge:
 
-      inset 0 calc(var(--depth) * -1.15px) 0 calc(var(--depth) * -0.42px)
+      inset 0 calc(var(--depth) * -0.55px) 0 calc(var(--depth) * -0.26px)
         color-mix(in oklab, var(--glass-face)
-          calc(var(--standing) * 48%), transparent),
+          calc(var(--standing) * 38%), transparent),
 
       inset 0 calc(var(--depth) * -0.42px) 0 calc(var(--depth) * -0.2px)
         color-mix(in oklab, var(--glass-under)
           calc(var(--depth) * (2% + var(--standing) * 6%)), transparent),
 
-      inset 0 0 calc((0.6px + var(--depth) * 0.09px) * 1.8)
-                calc(0.6px + var(--depth) * 0.09px)
+      inset 0 0 calc((0.5px + var(--depth) * 0.055px) * 1.2)
+                calc(0.5px + var(--depth) * 0.055px)
         color-mix(in oklab, var(--rim-face-a)
-          calc(var(--standing) * 34%), transparent),
-      inset 0 0 calc((0.28px + var(--depth) * 0.04px) * 1.8)
-                calc(0.28px + var(--depth) * 0.04px)
-        color-mix(in oklab, var(--rim-face-b)
-          calc(var(--standing) * 13%), transparent),
+          calc(var(--standing) * 26%), transparent),
 
       inset calc(var(--gpx, 0) * -7px) calc(var(--gpy, 0) * -7px) 7px -5px
         color-mix(in oklab, var(--glass-face)
