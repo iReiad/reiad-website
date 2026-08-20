@@ -538,6 +538,10 @@ const MATERIAL = new Map([
    display. None of them is the light. */
 const MATERIAL_PROPS = new Set([
   "background-image", "background-size", "background-position", "transition",
+  /* The edge follows the border radius, which a gradient cannot. Safe only
+     because every surface's own shadow is routed through --surface-shadow
+     and check-material.ts fails on one that is not. */
+  "box-shadow",
   /* The three a surface is DESCRIBED by, and the four derived
      from them. Nothing else: a material layer says what a thing
      is made of, and every consequence of that is a light. */
@@ -546,6 +550,7 @@ const MATERIAL_PROPS = new Set([
   "--lit", "--rim", "--rim-a", "--rim-b", "--rim-face-a", "--rim-face-b",
   "--spec", "--gx", "--gy", "--tx", "--ty",
   "--surface-image", "--surface-size", "--surface-position",
+  "--surface-shadow", "--edge", "--depth-lit",
 ]);
 
 for (const cls of new Set([...studioClasses, ...serverClasses])) {
