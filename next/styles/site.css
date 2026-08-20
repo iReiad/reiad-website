@@ -43,6 +43,25 @@
   @property --gy       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --glow-a   { syntax: "<number>";  initial-value: 0;   inherits: false; }
 
+  /* ---- the three a surface ADDS with, and why they must not inherit ----
+
+     A custom property inherits by default, and these three are read by
+     the material on EVERY surface. So a pane that adds something for
+     itself hands it to every surface inside it: `.rail` sets
+     `--surface-shadow: var(--shadow-lift)` when it is a drawer on a
+     phone, and every rail item in that drawer inherited the lift and had
+     the material paint it. Eleven rows, each with a drop shadow, each
+     reading as a box, on the one layout where the rail sets it. The
+     desktop rail never does, which is why this looked like a phone bug
+     and was a scoping bug.
+
+     `syntax: "*"` because a shadow, a gradient and a size have no one
+     grammar; the only thing being declared here is that they stop at
+     the element that set them. */
+  @property --surface-shadow { syntax: "*"; inherits: false; }
+  @property --surface-image  { syntax: "*"; inherits: false; }
+  @property --surface-size   { syntax: "*"; inherits: false; }
+
   /* How wide the light spreads and how bright, which is what
      makes a chip a chip and a pane a pane. Registered for a
      second reason as well as animation, and it is the one that
