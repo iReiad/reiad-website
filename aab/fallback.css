@@ -8331,7 +8331,7 @@
       .dupont-track, .drag-track, .bridge-track, .live-bar, .rt-bar,
       .meter, .rt-balance, .audience-switch, .seg) {
 
-    --glow-w: calc(var(--depth) * 46px);
+    --glow-w: min(calc(var(--depth) * 46px), 220px);
 
     --glow-i: calc(var(--clarity) * 32%);
     --glow-stop: calc(52% + (1 - var(--polish)) * 46%);

@@ -12418,7 +12418,20 @@ German for day, and .tag is what the site has always called
        these three lines turn them into a light, so tuning the
        system means changing a material rather than editing
        ninety selectors. */
-    --glow-w: calc(var(--depth) * 46px);
+    /* Capped, and the cap is the physical statement. 46px per
+       millimetre is right for a chip and a control and it does not stay
+       right: a pane at depth 9 asks for 414px, which is wider than the
+       rail it is drawn inside. A light bigger than the object holding it
+       stops reading as a light in the glass and becomes a wash over the
+       whole panel, which is what the rail looked like.
+
+       A glow is the pointer's own light scattering in the material near
+       where it is. It gets softer and dimmer as the glass thickens, via
+       clarity, and it does not get arbitrarily larger: past a point the
+       spread is bounded by how far light carries, not by the size of the
+       sheet. A chip stays at 46px, a control at 101px, and a card and a
+       pane both settle at 220. */
+    --glow-w: min(calc(var(--depth) * 46px), 220px);
     /* 32% and not 44%. A material that is on every surface of a
        site has to be quiet or it is noise everywhere, and the
        ladder between the kinds is what carries the meaning rather
