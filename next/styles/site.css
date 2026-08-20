@@ -12249,6 +12249,27 @@ German for day, and .tag is what the site has always called
      the chip's row already makes; this is the plate saying it. */
   .card-art { --depth: 1.4; }
 
+  /* ---- a bright ground inverts the edge ----
+
+     Every colour in this material is white-ish over a dark panel:
+     `--glass-face` is white, the catch light is white, the rim is white
+     mixed with the accent. On `.btn-solid`, whose ground is
+     `--accent-strong` and therefore LIGHT, all of that is white on pale
+     purple and none of it is visible. The coloured buttons had a
+     material and no edge.
+
+     A bright object's cut edge is still lit and still lit LESS than its
+     top face, so it reads darker rather than lighter. That is the whole
+     inversion, and it is four tokens rather than a second copy of the
+     edge: `--accent-ink` is already the colour that is legible on this
+     ground, because it is what the label is written in. */
+  :is(.btn-solid, .btn-on-accent, .audience-slider) {
+    --glass-face:  color-mix(in oklab, var(--accent-ink) 30%, transparent);
+    --glass-under: color-mix(in oklab, var(--accent-ink) 24%, transparent);
+    --rim-a: var(--accent-ink);
+    --rim-b: var(--accent-ink);
+  }
+
   /* ---- the sixth kind: a channel cut IN, not a slab sitting ON ----
 
      Eleven classes on this site are the same object described
@@ -12340,7 +12361,12 @@ German for day, and .tag is what the site has always called
          is a dated list on About, and `.social` is a wrap of five. None
          of them is ever the only one of its kind on the page, which is
          this block's own test. */
-      .big-link, .cv-item, .res, .tally-item) {
+      .big-link, .cv-item, .res, .tally-item,
+      /* The footer is a BAND, full width, welded to the bottom of the
+         page and running off both sides of it. It is a pane because it
+         holds things, but it stands on nothing: closing a ring round it
+         drew a box round the bottom of every page. */
+      .deck-foot) {
     --standing: 0;
   }
 
@@ -12392,7 +12418,20 @@ German for day, and .tag is what the site has always called
        these three lines turn them into a light, so tuning the
        system means changing a material rather than editing
        ninety selectors. */
-    --glow-w: calc(var(--depth) * 46px);
+    /* Capped, and the cap is the physical statement. 46px per
+       millimetre is right for a chip and a control and it does not stay
+       right: a pane at depth 9 asks for 414px, which is wider than the
+       rail it is drawn inside. A light bigger than the object holding it
+       stops reading as a light in the glass and becomes a wash over the
+       whole panel, which is what the rail looked like.
+
+       A glow is the pointer's own light scattering in the material near
+       where it is. It gets softer and dimmer as the glass thickens, via
+       clarity, and it does not get arbitrarily larger: past a point the
+       spread is bounded by how far light carries, not by the size of the
+       sheet. A chip stays at 46px, a control at 101px, and a card and a
+       pane both settle at 220. */
+    --glow-w: min(calc(var(--depth) * 46px), 220px);
     /* 32% and not 44%. A material that is on every surface of a
        site has to be quiet or it is noise everywhere, and the
        ladder between the kinds is what carries the meaning rather
@@ -12468,9 +12507,13 @@ German for day, and .tag is what the site has always called
          light along its bottom, which is a border on an unhovered rail
          item, which is the box again in its last hiding place. A row
          flush in a column has no near edge showing, so it gets none. */
-      inset 0 calc(var(--depth) * -1.15px) 0 calc(var(--depth) * -0.42px)
+      /* And the near edge is half what it was. `depth * -1.15px` put a
+         10px offset on a pane, so the top bar carried a six pixel bright
+         band along its bottom curve: an eighth of its height, which is a
+         glow rather than a thickness. */
+      inset 0 calc(var(--depth) * -0.55px) 0 calc(var(--depth) * -0.26px)
         color-mix(in oklab, var(--glass-face)
-          calc(var(--standing) * 48%), transparent),
+          calc(var(--standing) * 38%), transparent),
       /* the seat just above it, so the two read as a cut rather than a glow */
       inset 0 calc(var(--depth) * -0.42px) 0 calc(var(--depth) * -0.2px)
         color-mix(in oklab, var(--glass-under)
@@ -12502,11 +12545,48 @@ German for day, and .tag is what the site has always called
          Thinner, too: `1px + depth * 0.14px` rather than `depth * 0.5`.
          A pane gets 2.3px and a chip gets 1.1px, which is a chamfer.
          Half a pane's depth is 4.5px, which is a frame. */
-      inset 0 0 0 calc(1px + var(--depth) * 0.14px)
+      /* Thinner again, and the inner ring much fainter. At `1px + depth
+         * 0.14` a pane's chamfer was 2.26px, its inner step 1.04px, and
+         both sat inside the bar's own 1px border: three concentric lines
+         round the top bar, which is a header that looks drawn rather
+         than cut. The right end hid it behind the buttons and the left
+         end, which is empty, did not.
+
+         A chamfer is a STEP, so the inner ring is a fraction of the
+         outer at a third of its strength, not a second line of nearly
+         the same weight. A pane gets 1.4px, a card 1.05px, a chip
+         0.7px. */
+      /* ---- and it is SOFT, so it does not close a rectangle ----
+
+         A `box-shadow` ring with a blur of zero is a drawn outline: a
+         hard line all the way round, at the same weight in the corners
+         as along the sides. Nested inside another surface it reads as a
+         box inside a box, which is what a bulleted plate inside a case
+         study card looked like, and what put a rectangle round a group
+         of pills.
+
+         Blurring it is the whole fix, and it is one number. The edge
+         becomes a soft band that falls off inwards, so where a small
+         piece of glass sits on a larger one the two grounds meet with
+         no line between them: it fades onto the glass below rather than
+         closing against it. The chamfer is still there and still scales
+         with depth; it simply has no hard outer boundary.
+
+         Blur is 1.8x the spread, which is enough to lose the line and
+         not so much that a chip's edge becomes a halo. */
+      /* ONE ring, and it is quiet. There were two, and at a pane's
+         depth of 9 the outer was 1.4px spread under 2.5px of blur,
+         which on a 44px bar is not a chamfer, it is a smudge round the
+         inside of the whole shape. The second ring under it was a third
+         concentric line nobody could resolve.
+
+         A pane gets 1.0px, a card 0.78px, a chip 0.55px, at a quarter
+         of the face colour, blurred just past its own width so it has
+         no hard boundary. That is a cut edge on a piece of glass; the
+         numbers before it were a light fitting. */
+      inset 0 0 calc((0.5px + var(--depth) * 0.055px) * 1.2)
+                calc(0.5px + var(--depth) * 0.055px)
         color-mix(in oklab, var(--rim-face-a)
-          calc(var(--standing) * 40%), transparent),
-      inset 0 0 0 calc(0.5px + var(--depth) * 0.06px)
-        color-mix(in oklab, var(--rim-face-b)
           calc(var(--standing) * 26%), transparent),
 
       /* ---- and the light reflecting off it, near the pointer only ----

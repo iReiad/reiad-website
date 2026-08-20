@@ -8264,6 +8264,13 @@
 
   .card-art { --depth: 1.4; }
 
+  :is(.btn-solid, .btn-on-accent, .audience-slider) {
+    --glass-face:  color-mix(in oklab, var(--accent-ink) 30%, transparent);
+    --glass-under: color-mix(in oklab, var(--accent-ink) 24%, transparent);
+    --rim-a: var(--accent-ink);
+    --rim-b: var(--accent-ink);
+  }
+
   :is(.track, .rng-track, .score-bar, .fv-track, .yield-track,
       .dupont-track, .drag-track, .bridge-track, .live-bar,
       .rt-bar, .meter, .rt-balance, .audience-switch, .seg) {
@@ -8287,7 +8294,9 @@
       .quiz-option, .checkpoint, .rt-heat-day,
       .rt-build-task,
 
-      .big-link, .cv-item, .res, .tally-item) {
+      .big-link, .cv-item, .res, .tally-item,
+
+      .deck-foot) {
     --standing: 0;
   }
 
@@ -8322,7 +8331,7 @@
       .dupont-track, .drag-track, .bridge-track, .live-bar, .rt-bar,
       .meter, .rt-balance, .audience-switch, .seg) {
 
-    --glow-w: calc(var(--depth) * 46px);
+    --glow-w: min(calc(var(--depth) * 46px), 220px);
 
     --glow-i: calc(var(--clarity) * 32%);
     --glow-stop: calc(52% + (1 - var(--polish)) * 46%);
@@ -8331,19 +8340,17 @@
 
     --edge:
 
-      inset 0 calc(var(--depth) * -1.15px) 0 calc(var(--depth) * -0.42px)
+      inset 0 calc(var(--depth) * -0.55px) 0 calc(var(--depth) * -0.26px)
         color-mix(in oklab, var(--glass-face)
-          calc(var(--standing) * 48%), transparent),
+          calc(var(--standing) * 38%), transparent),
 
       inset 0 calc(var(--depth) * -0.42px) 0 calc(var(--depth) * -0.2px)
         color-mix(in oklab, var(--glass-under)
           calc(var(--depth) * (2% + var(--standing) * 6%)), transparent),
 
-      inset 0 0 0 calc(1px + var(--depth) * 0.14px)
+      inset 0 0 calc((0.5px + var(--depth) * 0.055px) * 1.2)
+                calc(0.5px + var(--depth) * 0.055px)
         color-mix(in oklab, var(--rim-face-a)
-          calc(var(--standing) * 40%), transparent),
-      inset 0 0 0 calc(0.5px + var(--depth) * 0.06px)
-        color-mix(in oklab, var(--rim-face-b)
           calc(var(--standing) * 26%), transparent),
 
       inset calc(var(--gpx, 0) * -7px) calc(var(--gpy, 0) * -7px) 7px -5px
