@@ -48,6 +48,8 @@
     --panel-base:      oklch(100%  0.003 var(--h-paper));
     --hairline-base:   oklch(88.5% 0.012 var(--h-paper));
     --pane-top:        oklch(100% 0 0 / 0.55);
+
+    --glass-face:      oklch(100% 0 0 / 0.72);
     --glass-base:      oklch(99% 0.004 var(--h-paper) / var(--glass-veil));
     --glass-solid-base: oklch(99% 0.004 var(--h-paper));
     --accent-ink:      oklch(99% 0.004 var(--h-paper));
@@ -256,6 +258,7 @@
     --panel-base:      oklch(23%   0.016 var(--h-green));
     --hairline-base:   oklch(28%   0.015 var(--h-green));
     --pane-top:        oklch(100% 0 0 / 0.06);
+    --glass-face:      oklch(100% 0 0 / 0.30);
     --glass-under:     oklch(0% 0 0 / 0.22);
     --glass-base:      oklch(23% 0.014 var(--h-green) / var(--glass-veil));
     --glass-solid-base: oklch(23% 0.014 var(--h-green));
@@ -286,6 +289,7 @@
     --panel-base:      oklch(23%   0.016 var(--h-green));
     --hairline-base:   oklch(28%   0.015 var(--h-green));
     --pane-top:        oklch(100% 0 0 / 0.06);
+    --glass-face:      oklch(100% 0 0 / 0.30);
     --glass-under:     oklch(0% 0 0 / 0.22);
     --glass-base:      oklch(23% 0.014 var(--h-green) / var(--glass-veil));
     --glass-solid-base: oklch(23% 0.014 var(--h-green));
@@ -8279,33 +8283,64 @@
     --glow-fade: 820ms;
 
     --lit: linear-gradient(180deg,
-      color-mix(in oklab, var(--pane-top) calc(var(--standing) * 100%), transparent) 0%,
-      transparent calc(10% + var(--depth) * 2.2%),
-      transparent calc(90% - var(--depth) * 1.4%),
+      color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 58%), transparent) 0,
+      color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 58%), transparent) 1px,
+      transparent 1px,
+      transparent calc(100% - var(--depth) * 1.6px),
+      color-mix(in oklab, var(--glass-under)
+        calc(var(--depth) * (2% + var(--standing) * 7%)), transparent)
+        calc(100% - var(--depth) * 1.6px),
+      color-mix(in oklab, var(--glass-under)
+        calc(var(--depth) * (2% + var(--standing) * 7%)), transparent)
+        calc(100% - var(--depth) * 0.6px),
+      color-mix(in oklab, var(--glass-face)
+        calc(var(--depth) * (3% + var(--standing) * 12%)), transparent)
+        calc(100% - var(--depth) * 0.6px),
+      color-mix(in oklab, var(--glass-face)
+        calc(var(--depth) * (3% + var(--standing) * 12%)), transparent) 100%);
 
-      color-mix(in oklab, var(--pane-top) calc(var(--depth) * 7%), transparent) 100%);
+    --rim-a: var(--accent);
+    --rim-b: var(--accent);
+    @supports (color: oklch(from white l c h)) {
+      --rim-b: oklch(from var(--accent) l c calc(h + 62));
+    }
+
+    --rim: linear-gradient(90deg,
+      color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 58%), transparent) 0,
+      color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 58%), transparent) 1px,
+      transparent 1px,
+      transparent calc(100% - 1px),
+      color-mix(in oklab, var(--rim-face-b) calc(var(--standing) * 58%), transparent)
+        calc(100% - 1px),
+      color-mix(in oklab, var(--rim-face-b) calc(var(--standing) * 58%), transparent) 100%);
+
+    --rim-face-a:
+      color-mix(in oklab, var(--rim-a) calc(var(--polish) * 34%), var(--glass-face));
+    --rim-face-b:
+      color-mix(in oklab, var(--rim-b) calc(var(--polish) * 34%), var(--glass-face));
 
     --spec: linear-gradient(105deg,
       transparent calc(var(--gx, 50%) - 15%),
       color-mix(in oklab, var(--pane-top)
 
-        calc(var(--polish) * var(--standing) * (14% + var(--glow-a, 0) * 26%)),
+        calc(var(--polish) * var(--standing) * (30% + var(--glow-a, 0) * 55%)),
         transparent) var(--gx, 50%),
       transparent calc(var(--gx, 50%) + 15%));
 
     background-image:
       var(--spec, none),
+      var(--rim),
       var(--lit),
       var(--surface-image, none),
       var(--glass-grain),
       radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent) 0%,
         transparent var(--glow-stop));
-    background-size: auto, auto, var(--surface-size, auto), var(--glass-grain-size, auto), auto;
+    background-size: auto, auto, auto, var(--surface-size, auto), var(--glass-grain-size, auto), auto;
 
-    background-position: 0 0, 0 0, 0 0, var(--tx, 0) var(--ty, 0), 0 0;
+    background-position: 0 0, 0 0, 0 0, 0 0, var(--tx, 0) var(--ty, 0), 0 0;
 
-    transition: --glow-a var(--enter) var(--ease),
+    transition: --glow-a var(--glow-fade) var(--ease),
                 rotate var(--enter) var(--ease),
                 background-color var(--fast) var(--ease),
                 border-color var(--fast) var(--ease),
@@ -8316,7 +8351,10 @@
                 filter var(--fast) var(--ease),
                 opacity var(--fast) var(--ease);
 
-    &:hover, &:focus-visible, &:focus-within { --glow-a: 1; }
+    &:hover, &:focus-visible, &:focus-within {
+      --glow-a: 1;
+      --glow-fade: 190ms;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -256,6 +256,27 @@
     --panel-base:      oklch(100%  0.003 var(--h-paper));
     --hairline-base:   oklch(88.5% 0.012 var(--h-paper));
     --pane-top:        oklch(100% 0 0 / 0.55);
+    /* ---- the face light, which is NOT the inset line ----
+
+       `--pane-top` is the 1px lit line along the top of a pane,
+       and in dark mode it is 6% white. That is correct for a
+       hairline and hopeless as the source for a specular sweep or
+       a bevel: at 30% of 6% the reflection is under two per cent
+       white, which measured at 1.2 parts in 765 on a chip and is
+       another way of saying it was not drawn.
+
+       That one token is why the whole material read as absent in
+       dark mode and visible only in light: the light theme's
+       `--pane-top` is 55%, nine times the dark one, so the same
+       code produced a visible button and an invisible card on the
+       same page.
+
+       This is the material's own highlight, at a strength a piece
+       of glass actually reflects. It is achromatic on purpose: a
+       reflection carries the colour of the light rather than of
+       the page, which is what keeps it distinguishable from the
+       glow. */
+    --glass-face:      oklch(100% 0 0 / 0.72);
     --glass-base:      oklch(99% 0.004 var(--h-paper) / var(--glass-veil));
     --glass-solid-base: oklch(99% 0.004 var(--h-paper));
     --accent-ink:      oklch(99% 0.004 var(--h-paper));
@@ -888,6 +909,7 @@
     --panel-base:      oklch(23%   0.016 var(--h-green));
     --hairline-base:   oklch(28%   0.015 var(--h-green));
     --pane-top:        oklch(100% 0 0 / 0.06);
+    --glass-face:      oklch(100% 0 0 / 0.30);
     --glass-under:     oklch(0% 0 0 / 0.22);
     --glass-base:      oklch(23% 0.014 var(--h-green) / var(--glass-veil));
     --glass-solid-base: oklch(23% 0.014 var(--h-green));
@@ -918,6 +940,7 @@
     --panel-base:      oklch(23%   0.016 var(--h-green));
     --hairline-base:   oklch(28%   0.015 var(--h-green));
     --pane-top:        oklch(100% 0 0 / 0.06);
+    --glass-face:      oklch(100% 0 0 / 0.30);
     --glass-under:     oklch(0% 0 0 / 0.22);
     --glass-base:      oklch(23% 0.014 var(--h-green) / var(--glass-veil));
     --glass-solid-base: oklch(23% 0.014 var(--h-green));
@@ -12293,24 +12316,105 @@ German for day, and .tag is what the site has always called
 
        Standing 0 makes the colour fully transparent, so a flat
        thing is flat rather than faintly domed. */
+    /* ---- flat on top, and thick at the cut edge ----
+
+       This was a wash fading DOWN the face, and a wash fading
+       down a face is a dome: it reads as curvature, which is the
+       one thing a slab of glass does not have. A flat piece is
+       lit evenly across its top and shows its thickness only
+       where it has been CUT.
+
+       So every stop is doubled and the transitions are hard.
+       Bright band, hard stop, nothing at all across the whole
+       face, hard stop, dark seat, hard stop, catch light. No
+       gradient anywhere except between a colour and itself.
+
+       `--depth` is a LENGTH here, in pixels, which is the most
+       literal reading it has anywhere in this system: a chip is
+       one pixel of edge and a pane is nine.
+
+       It drives the BOTTOM band only, and the top is a hairline
+       like the two sides. That is what you actually see looking
+       slightly down at a slab: the whole top face, the far edge
+       of it foreshortened to a line, and the near edge showing
+       its full thickness. A five pixel band across the top of a
+       card is not an edge, it is a grey bar, and the seven times
+       zoom that caught it is in the bench.
+
+       Standing scales the top edge and the contact, because a
+       flush row in a column is not sitting ON anything and a
+       card is. Depth says how thick; standing says whether there
+       is anything for it to be thick against. */
     --lit: linear-gradient(180deg,
-      color-mix(in oklab, var(--pane-top) calc(var(--standing) * 100%), transparent) 0%,
-      transparent calc(10% + var(--depth) * 2.2%),
-      transparent calc(90% - var(--depth) * 1.4%),
-      /* ---- the catch light at the base ----
+      color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 58%), transparent) 0,
+      color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 58%), transparent) 1px,
+      transparent 1px,
+      transparent calc(100% - var(--depth) * 1.6px),
+      color-mix(in oklab, var(--glass-under)
+        calc(var(--depth) * (2% + var(--standing) * 7%)), transparent)
+        calc(100% - var(--depth) * 1.6px),
+      color-mix(in oklab, var(--glass-under)
+        calc(var(--depth) * (2% + var(--standing) * 7%)), transparent)
+        calc(100% - var(--depth) * 0.6px),
+      color-mix(in oklab, var(--glass-face)
+        calc(var(--depth) * (3% + var(--standing) * 12%)), transparent)
+        calc(100% - var(--depth) * 0.6px),
+      color-mix(in oklab, var(--glass-face)
+        calc(var(--depth) * (3% + var(--standing) * 12%)), transparent) 100%);
 
-         Light bounces off whatever a piece of glass is sitting
-         on and catches its bottom edge, and that is most of what
-         makes a thing read as having a THICKNESS rather than
-         being printed on the page.
+    /* ---- and the same cut edge, seen from the sides ----
 
-         Scaled by depth and NOT by standing, deliberately. A rail
-         row loses its face because a list is its own affordance;
-         it does not stop being made of glass. Every reference the
-         owner sent makes the same point at once: a set of small
-         frosted shapes with a bright rim and no face highlight
-         still reads unmistakably as glass. */
-      color-mix(in oklab, var(--pane-top) calc(var(--depth) * 7%), transparent) 100%);
+       A flat face plus a bright bottom band is a slab lit from
+       above and photographed straight on, and it still reads as
+       a painted rectangle until the edge goes ALL THE WAY ROUND.
+       That is what the reference button has that this did not: a
+       crisp hairline down both sides, thin, so the eye reads the
+       bottom band as thickness rather than as a shadow somebody
+       drew under a flat shape.
+
+       One pixel, not `--depth`, and deliberately: seen from the
+       side a cut edge is foreshortened to nothing, so the sides
+       of a nine millimetre pane and a one millimetre chip are the
+       same hairline. Depth is a HEIGHT, and a height is only
+       visible on the face you are looking down at.
+
+       Standing gates it for the same reason it gates the top
+       band: a row flush in a column has no sides to catch
+       anything, and twenty hairlines down a rail is the cage
+       again. */
+    /* ---- and the edge is not white, it splits ----
+
+       A cut edge of real glass disperses: the two sides of the
+       same piece come back at different hues, which is the whole
+       of why a bevel reads as glass rather than as a white
+       outline somebody drew. `--polish` is already the right
+       knob, because a polished edge splits cleanly and a ground
+       one scatters everything back as white.
+
+       The two hues are the section's own accent and the same
+       accent turned 62 degrees, so this stays one design system
+       with six sections in it rather than a rainbow bolted on:
+       the money school's edge splits green, Deutsch's splits
+       red, and neither is a colour anybody typed. */
+    --rim-a: var(--accent);
+    --rim-b: var(--accent);
+    @supports (color: oklch(from white l c h)) {
+      --rim-b: oklch(from var(--accent) l c calc(h + 62));
+    }
+
+    --rim: linear-gradient(90deg,
+      color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 58%), transparent) 0,
+      color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 58%), transparent) 1px,
+      transparent 1px,
+      transparent calc(100% - 1px),
+      color-mix(in oklab, var(--rim-face-b) calc(var(--standing) * 58%), transparent)
+        calc(100% - 1px),
+      color-mix(in oklab, var(--rim-face-b) calc(var(--standing) * 58%), transparent) 100%);
+
+    --rim-face-a:
+      color-mix(in oklab, var(--rim-a) calc(var(--polish) * 34%), var(--glass-face));
+    --rim-face-b:
+      color-mix(in oklab, var(--rim-b) calc(var(--polish) * 34%), var(--glass-face));
 
     /* ---- the specular, which is the light coming OFF the face ----
 
@@ -12339,7 +12443,14 @@ German for day, and .tag is what the site has always called
            quieter. `--glow-a` is already the "is the pointer
            here" number, so the specular rides it rather than
            carrying a second one. */
-        calc(var(--polish) * var(--standing) * (14% + var(--glow-a, 0) * 26%)),
+        /* 30 and 55, not 14 and 26. The first tuning was
+           measured after the fact and moved a card by six parts
+           in 765, which is under one per cent and is another way
+           of saying it was not there. "Less pronounced" was said
+           about the GLOW, which is the response; the specular is
+           the material, and a material nobody can see is not a
+           quiet material. */
+        calc(var(--polish) * var(--standing) * (30% + var(--glow-a, 0) * 55%)),
         transparent) var(--gx, 50%),
       transparent calc(var(--gx, 50%) + 15%));
 
@@ -12365,13 +12476,14 @@ German for day, and .tag is what the site has always called
        window. */
     background-image:
       var(--spec, none),
+      var(--rim),
       var(--lit),
       var(--surface-image, none),
       var(--glass-grain),
       radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent) 0%,
         transparent var(--glow-stop));
-    background-size: auto, auto, var(--surface-size, auto), var(--glass-grain-size, auto), auto;
+    background-size: auto, auto, auto, var(--surface-size, auto), var(--glass-grain-size, auto), auto;
 
     /* ---- texture fluency ----
 
@@ -12388,9 +12500,9 @@ German for day, and .tag is what the site has always called
        would do the same and costs a repaint of every surface on
        every scroll frame, which on a cheap Android is the whole
        budget. */
-    background-position: 0 0, 0 0, 0 0, var(--tx, 0) var(--ty, 0), 0 0;
+    background-position: 0 0, 0 0, 0 0, 0 0, var(--tx, 0) var(--ty, 0), 0 0;
 
-    transition: --glow-a var(--enter) var(--ease),
+    transition: --glow-a var(--glow-fade) var(--ease),
                 rotate var(--enter) var(--ease),
                 background-color var(--fast) var(--ease),
                 border-color var(--fast) var(--ease),
@@ -12401,7 +12513,17 @@ German for day, and .tag is what the site has always called
                 filter var(--fast) var(--ease),
                 opacity var(--fast) var(--ease);
 
-    &:hover, &:focus-visible, &:focus-within { --glow-a: 1; }
+    /* `--glow-fade`, not `--enter`, and the hover half is below.
+       A transition reads its duration from the state it is going
+       TO, so the fast value has to be set BY the hover and the
+       slow one left on the rest state. This block declared
+       `--glow-fade: 820ms` and then transitioned on `--enter`,
+       which is 240ms in both directions: the linger was written,
+       documented and not connected to anything. */
+    &:hover, &:focus-visible, &:focus-within {
+      --glow-a: 1;
+      --glow-fade: 190ms;
+    }
   }
 
   /* ---- a reader who asked for less motion keeps the light ----
