@@ -522,8 +522,35 @@ function definedIn(cls: string): string[] {
   return layers;
 }
 
+const MATERIAL = new Map([
+  ["glow", "the light inside the glass, which every surface carries"],
+]);
+
+/* `position` was on this list for one draft and it is the reason
+   the list is worth having. The material set `position: relative`
+   for a pseudo-element it stopped using, and a later layer saying
+   `relative` overrides `fixed` on `.rail` and on `.topbar`: the
+   rail and the bar dropped out of their fixed positions into the
+   flow and pushed every page 1300 pixels down. Both still
+   rendered, both still had their colours, and every check passed.
+
+   Position is geometry. So is isolation, so is z-index, so is
+   display. None of them is the light. */
+const MATERIAL_PROPS = new Set([
+  "background-image", "background-size", "transition",
+  "--glow-w", "--glow-i", "--glow-a", "--gx", "--gy",
+  "--surface-image", "--surface-size",
+]);
+
 for (const cls of new Set([...studioClasses, ...serverClasses])) {
-  const layers = definedIn(cls);
+  /* Material layers are filtered here for the same reason they
+     are in the wider loop below, and the reason is the same one
+     word for word: a material layer may set the light and nothing
+     else, and this file proves that rather than trusting it. An
+     article block carrying the site's own weave and a still light
+     is the design system reaching the prose, which is what "one
+     system all around" has to mean if it means anything. */
+  const layers = definedIn(cls).filter((l) => !MATERIAL.has(l));
   if (!layers.length) {
     // Some are modifiers on a selector that names the tag as well,
     // like figure.wide, so a bare rule is not required, only some
@@ -584,6 +611,66 @@ const ALLOWED = new Map([
   [".resume", "money+deck, deck adjusts the card money defines"],
 ]);
 
+/* ============================================================
+   A MATERIAL LAYER, which is the one exception that generalises
+
+   `@layer glow` names a hundred classes that other layers define,
+   and it has to: the light inside the glass is a property of what
+   a thing IS rather than of what it looks like, so it cuts across
+   every layer the way a theme does. Under the rule above that is
+   a hundred failures, and the retreat when it first fired was to
+   scope the material to an attribute, which left 203 surface-like
+   classes with one of them on the design system.
+
+   The rule the check was protecting is still right: a later layer
+   silently redefining a class is how `.ladder` drew with the
+   stock check's gap on every school page. What makes a material
+   layer different is that it CANNOT do that, and the difference
+   is checkable rather than a promise:
+
+     a material layer may set the light and nothing else.
+
+   Not a colour, not a size, not a font, not a radius, not a
+   border, not a position in a grid. If `@layer glow` ever sets
+   one of those, this fails and the exception is withdrawn for the
+   whole layer rather than for the one rule that broke it.
+
+   `transition` is on the list and is the uncomfortable one, for a
+   real reason written at the rule itself: a transition list is
+   not merged across layers, so a material layer that animates one
+   property has to restate the ones underneath it or it takes them
+   away. `.card[data-kind="go"]` in `@layer deck` carries the same
+   note, having been bitten once.
+   ============================================================ */
+
+
+for (const [name, why] of MATERIAL) {
+  const body = layerBody(name);
+  if (!body) {
+    failures++;
+    console.error(`\n@layer ${name} is listed as a material layer and is not there.`);
+    console.error("        Remove it from MATERIAL in this file: an exception to a rule");
+    console.error("        that guards nothing is the stale entry the list exists to avoid.");
+    continue;
+  }
+  /* Every property this layer sets, at any depth. A material
+     layer is small enough that reading it whole is right: the
+     claim is about the LAYER, not about one rule in it. */
+  const bare = body.replace(/\/\*[\s\S]*?\*\//g, "");
+  const props = new Set(
+    [...bare.matchAll(/(^|[;{])\s*(-{2}[a-z0-9-]+|[a-z-]+)\s*:/gm)]
+      .map((m) => m[2]),
+  );
+  const stray = [...props].filter((prop) => !MATERIAL_PROPS.has(prop));
+  if (!stray.length) continue;
+  failures++;
+  console.error(`\n@layer ${name} sets ${stray.length} thing(s) that are not the material:`);
+  console.error(`        ${stray.join(", ")}`);
+  console.error(`        It is allowed to name classes other layers define because it is`);
+  console.error(`        ${why}, and that only holds while it sets the light and nothing`);
+  console.error("        else. Move these into the layer that owns the class.");
+}
+
 /** Every class the stylesheet gives a rule of its own, with no
     leading dot. Two sections read it: the one below, which fails
     on a class two layers both define, and the dead-class ledger at
@@ -603,7 +690,9 @@ for (const name of [...css.matchAll(/@layer ([a-z]+) \{/g)].map((m) => m[1])) {
 let shared = 0;
 for (const cls of [...everyClass].sort()) {
   if (ALLOWED.has(`.${cls}`)) continue;
-  const layers = definedIn(cls);
+  /* A material layer is not a second definition, and the block
+     above is what makes that true rather than assumed. */
+  const layers = definedIn(cls).filter((l) => !MATERIAL.has(l));
   if (layers.length < 2) continue;
   failures++;
   shared++;

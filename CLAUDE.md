@@ -342,6 +342,79 @@ four practice books. If you add a third, give it the slim bar too:
 `body > header` is gone from the stylesheet and nothing will style
 a header you write.
 
+## One design system, and five kinds of glass
+
+**Every surface on this site is the same material, and three axes
+decide what a given thing gets.** `@layer glow` in
+`next/styles/site.css` is the whole of it, in one place, and
+`scripts/check-material.ts` is what stops it rotting.
+
+|         | spread | at the centre | the light follows |
+| --- | --- | --- | --- |
+| `chip`    | 70px  | 40% | yes |
+| `control` | 110px | 34% | yes |
+| `card`    | 240px | 26% | yes |
+| `pane`    | 420px | 16% | yes |
+| `plate`   | 0     | still | no |
+
+**INTERACTIVITY decides whether the light follows, not whether a
+thing is in the system.** Everything is in it, which is what makes
+it one system. A statistic reading "RETURN ON HOLDINGS, +0.5%" is
+not a chip and not a card and is never pressed, so it is a
+`plate`: the same weave, the same lit edge, and a still light in
+the corner. `--glow-w: 0` is how that is said, and it is also what
+stops `glow.tsx` tracking it, because a non-zero spread is the
+module's membership test.
+
+**FUNCTION and SIZE both land on `--glow-w`**, because they are
+the same physical fact from two directions: a small piece of glass
+carries a tight bright spot and a thick one diffuses it wide.
+
+**A class in the wrong list is the one way to get this wrong**,
+and the test is not what a thing looks like. It is what happens
+when you press it: a chip latches, a control acts, a card takes
+you in, a pane holds other things, a plate is read.
+
+```sh
+node scripts/check-material.ts          # every pressable class is placed
+node scripts/check-material.ts --list   # what is on the system
+```
+
+It asks three questions, and each one is a thing that shipped:
+
+- **Is anything pressable off the system?** The first material
+  reached 1 of 203 surface-like classes, because it was scoped to
+  an attribute only components carry, and nothing failed.
+- **Would the material take a surface's own gradient away?** A
+  later layer REPLACES `background-image` rather than merging, so
+  a listed class that paints its own loses it silently.
+  `--surface-image` is the way through and this fails on a class
+  that does not use it.
+- **Is an exemption stale?** `NOT_A_SURFACE` holds the rows of
+  controls, keyed by class with the reason, and fails when the
+  class is gone.
+
+### A material layer may set the light and nothing else
+
+`@layer glow` names a hundred classes other layers define, and it
+has to: the material is a property of what a thing IS rather than
+of what it looks like, so it cuts across every layer the way a
+theme does. `check-css.ts` used to fail that and was right to.
+
+What makes it the exception is that it CANNOT do the damage the
+rule guards against, and `check-css.ts` proves that rather than
+trusting it: `MATERIAL_PROPS` is the list, and it is short.
+
+**`position` was on that list for one draft and that is why the
+list is worth having.** The material set `position: relative` for
+a pseudo-element it had stopped using, and a later layer saying
+`relative` overrides `fixed` on `.rail` and on `.topbar`: the rail
+and the bar dropped out of their fixed positions into the flow and
+pushed every page thirteen hundred pixels down. Both still
+rendered, both kept their colours, and every check passed. Position
+is geometry, so are `isolation`, `z-index` and `display`, and none
+of them is the light.
+
 ## Two kinds of card, and a reader can tell them apart
 
 `.cell` was one card doing five jobs: a link to an article, a
@@ -849,6 +922,10 @@ node scripts/check-utility-clash.ts # a class this site styles that Tailwind als
                             # generates, which no layer order can win back
 node scripts/check-closed.ts # a new file on the old system: a browser module in
                             # aab/src/, a hand-written page, a functions/*.js
+node scripts/check-material.ts # a pressable class on none of the five kinds, or
+                            # one whose own gradient the material would erase
+node scripts/check-admin.ts # an endpoint under functions/api/ gated by neither
+                            # requireAdmin nor isAdmin, and not named as public
 node scripts/check-mjs.ts   # a .mjs, which is a file nothing typechecks and the
                             # reason the next one gets written
 node scripts/check-jsx-space.ts # a sentence running into the link inside it,

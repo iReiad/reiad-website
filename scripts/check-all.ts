@@ -100,6 +100,11 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        endpoint that answers, returns the right shape, passes
        every other check, and works for everybody. */
     "scripts/check-admin.ts",
+    /* One design system all around: every pressable class is on
+       one of the five kinds, or is named as a row of controls
+       with the reason. The first material reached 1 of 203
+       surface-like classes and nothing failed. */
+    "scripts/check-material.ts",
     /* The extension rule, which was a paragraph in CLAUDE.md
        until 19 August 2026 and was broken anyway: the
        neighbours are the pattern, so somebody adding a test

@@ -8169,6 +8169,22 @@
                 filter var(--fast) var(--ease),
                 opacity var(--fast) var(--ease);
 
+  }
+
+  :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
+      .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
+      .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
+      .tracker, .tag-waehler, .buch-tag,
+      .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
+      .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
+      .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
+      .rail-item, .tree-link, .tab, .course-mod, .pillar,
+      .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
+      .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
+      .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
+      .desk-tile, .gate-card,
+      .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
+      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel) {
     &:hover, &:focus-visible, &:focus-within { --glow-a: 1; }
   }
 
@@ -8176,6 +8192,90 @@
   [data-glow="control"] { --glow-w: 110px; --glow-i: 34%; }
   [data-glow="card"]    { --glow-w: 240px; --glow-i: 26%; }
   [data-glow="pane"]    { --glow-w: 420px; --glow-i: 16%; }
+
+  :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
+      .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
+      .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
+      .tracker, .tag-waehler, .buch-tag) {
+    --glow-w: 70px; --glow-i: 40%;
+  }
+
+  :is(.btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
+      .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
+      .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
+      .rail-item, .tree-link, .tab, .course-mod, .pillar) {
+    --glow-w: 110px; --glow-i: 34%;
+  }
+
+  :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
+      .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
+      .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
+      .desk-tile, .gate-card) {
+    --glow-w: 240px; --glow-i: 26%;
+  }
+
+  :is(.topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
+      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel) {
+    --glow-w: 420px; --glow-i: 16%;
+  }
+
+  :is(.tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
+      .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
+      .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
+      .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
+      .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
+      .advanced-card, .at-a-glance, .side-note) {
+    --glow-w: 0px;
+    --glow-i: 11%;
+    --surface-image:
+      radial-gradient(150% 110% at 100% 0%,
+        color-mix(in oklab, var(--accent) var(--glow-i), transparent),
+        transparent 68%),
+      var(--sheen),
+      var(--glass-grain);
+    --surface-size: auto, auto, var(--glass-grain-size, auto);
+  }
+
+  :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
+      .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
+      .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
+      .tracker, .tag-waehler, .buch-tag,
+      .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
+      .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
+      .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
+      .rail-item, .tree-link, .tab, .course-mod, .pillar,
+      .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
+      .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
+      .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
+      .desk-tile, .gate-card,
+      .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
+      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
+      .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
+      .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
+      .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
+      .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
+      .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
+      .advanced-card, .at-a-glance, .side-note) {
+    background-image:
+      var(--surface-image, var(--sheen), var(--glass-grain)),
+      radial-gradient(var(--glow-w, 110px) circle at var(--gx, 50%) var(--gy, 50%),
+        color-mix(in oklab, var(--accent) calc(var(--glow-i, 34%) * var(--glow-a, 0)), transparent),
+        transparent 100%);
+    background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
+
+    transition: --glow-a var(--enter) var(--ease),
+                rotate var(--enter) var(--ease),
+                background-color var(--fast) var(--ease),
+                border-color var(--fast) var(--ease),
+                color var(--fast) var(--ease),
+                box-shadow var(--fast) var(--ease),
+                translate var(--fast) var(--ease),
+                transform var(--fast) var(--ease),
+                filter var(--fast) var(--ease),
+                opacity var(--fast) var(--ease);
+
+    &:hover, &:focus-visible, &:focus-within { --glow-a: 1; }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     [data-glow] { --gx: 50%; --gy: 50%; transition: none; }
