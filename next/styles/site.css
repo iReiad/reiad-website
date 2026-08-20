@@ -11932,6 +11932,25 @@ German for day, and .tag is what the site has always called
        holding a control lights when the control inside it is
        reached: the light says where you are, and where you are
        is the card. */
+  }
+
+  /* And the light comes up only on the four that are pressed. A
+     plate's is already lit and holds still, which is the whole of
+     what makes it a plate. */
+  :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
+      .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
+      .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
+      .tracker, .tag-waehler, .buch-tag,
+      .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
+      .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
+      .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
+      .rail-item, .tree-link, .tab, .course-mod, .pillar,
+      .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
+      .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
+      .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
+      .desk-tile, .gate-card,
+      .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
+      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel) {
     &:hover, &:focus-visible, &:focus-within { --glow-a: 1; }
   }
 
@@ -11941,26 +11960,182 @@ German for day, and .tag is what the site has always called
   [data-glow="pane"]    { --glow-w: 420px; --glow-i: 16%; }
 
   /* ============================================================
-     AND THE SURFACES THAT ARE NOT COMPONENTS YET
+     THE TAXONOMY: function, size, interactivity
 
-     They do not get it here, and that is the point.
+     One design system all around, and three axes decide what a
+     given thing gets.
 
-     The first draft of this layer named all sixty of them:
-     `.cell`, `.chart-card`, `.tile`, `.scenario` and the rest,
-     so that 251 lesson cards could join without touching 251
-     call sites. `check-css.ts` failed it, correctly, and the
-     message is the reason this file exists at all: a class
-     defined in two layers is a class whose later definition
-     wins on every page, including the ones that meant the
-     other.
+     INTERACTIVITY decides whether the light FOLLOWS. It does not
+     decide whether a thing is in the system: everything is, and
+     that is the point of calling it one.
 
-     So the material is `data-glow` and nothing else, the
-     components carry it, and a surface that is still a
-     hand-written class gets it by BECOMING a component.
-     `check-components.ts` counts what is left, and that count
-     is now the distance between this design language and the
-     whole site.
+     A statistic is the case that settles it. A tile reading
+     "RETURN ON HOLDINGS, +0.5%" is not a chip and not a card, it
+     is never pressed, and leaving it outside the material makes
+     it the one flat rectangle on a page of glass. So it is a
+     PLATE: the same weave, the same lit edge, and a still light
+     that sits where it is put. `--glow-w: 0` is how that is said,
+     and it is also what stops `glow.tsx` tracking it, because the
+     module's membership test is a non-zero spread.
+
+     |         | spread | centre | follows |
+     | chip    |  70px  | 40%    | yes |
+     | control | 110px  | 34%    | yes |
+     | card    | 240px  | 26%    | yes |
+     | pane    | 420px  | 16%    | yes |
+     | plate   |     0  | still  | no  |
+
+     FUNCTION and SIZE decide how far the light spreads, together,
+     through one number: a chip is small so its light is tight and
+     bright, a pane is large so its light is wide and dim. Both
+     axes land on `--glow-w` because they are the same physical
+     fact from two directions.
+
+     `<GoCard>` and `<InfoCard>` still differ, and now they differ
+     the way the rest of the system does: one is a card and one is
+     a plate, which is the same distinction the rail, the arrow
+     and the dashed edge already draw.
+
+     ---- why these lists name classes another layer defines ----
+
+     Because the material is a property of what a thing IS rather
+     than of what it looks like, so it cuts across every layer the
+     way a theme does. `check-css.ts` used to fail this and was
+     right to: a later layer silently redefining a class is how
+     `.ladder` drew with the stock check's gap on every school
+     page for a year.
+
+     What makes this layer the exception is that it CANNOT do
+     that, and `check-css.ts` proves it rather than trusting it:
+     a MATERIAL layer may set the light and nothing else. Not a
+     colour, not a size, not a font, not a radius, not a border.
+     The moment this layer sets one of those, the exception is
+     withdrawn for the whole layer.
+
+     ---- and a name here is a promise about what a thing is ----
+
+     A class in the wrong list is the one way to get this wrong,
+     and the test is not what the thing looks like: it is what
+     happens when you press it. A chip latches, a control acts, a
+     card takes you in, a pane holds other things. Something that
+     does none of those belongs in no list.
+
+     `scripts/check-material.ts` fails on a NEW interactive class
+     that is in none of them, so this stays true without anybody
+     coming back to read this comment.
      ============================================================ */
+
+  /* Small, and pressed: a filter, a segment, a tick, a mood. */
+  :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
+      .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
+      .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
+      .tracker, .tag-waehler, .buch-tag) {
+    --glow-w: 70px; --glow-i: 40%;
+  }
+
+  /* Pressed to do something, or to go one step. */
+  :is(.btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
+      .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
+      .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
+      .rail-item, .tree-link, .tab, .course-mod, .pillar) {
+    --glow-w: 110px; --glow-i: 34%;
+  }
+
+  /* Something you go into, or read. */
+  :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
+      .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
+      .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
+      .desk-tile, .gate-card) {
+    --glow-w: 240px; --glow-i: 26%;
+  }
+
+  /* Holds other things. */
+  :is(.topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
+      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel) {
+    --glow-w: 420px; --glow-i: 16%;
+  }
+
+  /* Read, never pressed: a statistic, a verdict, a label, a card
+     that is the end of the road.
+
+     `--glow-w: 0` is not "no material". It is the material with
+     the following turned off, which is what a thing nobody
+     presses should have: `--surface-image` below gives it a still
+     light out of the top corner, over the same weave and under
+     the same lit edge as everything else. The pointer module
+     skips it for free, because a spread of zero is its own
+     membership test.
+
+     Written as one gradient rather than as a pseudo-element for
+     the reason at the top of this layer: `::after` is taken on
+     half of these already. */
+  :is(.tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
+      .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
+      .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
+      .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
+      .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
+      .advanced-card, .at-a-glance, .side-note) {
+    --glow-w: 0px;
+    --glow-i: 11%;
+    --surface-image:
+      radial-gradient(150% 110% at 100% 0%,
+        color-mix(in oklab, var(--accent) var(--glow-i), transparent),
+        transparent 68%),
+      var(--sheen),
+      var(--glass-grain);
+    --surface-size: auto, auto, var(--glass-grain-size, auto);
+  }
+
+  /* And the one rule that lights all of them. Written apart from
+     the four above so the sizes read as a table: those say what
+     KIND of glass a thing is, this is the light every kind
+     carries.
+
+     `--surface-image` is how a surface keeps its own gradient
+     through this. A later layer REPLACES a background-image
+     rather than merging with one, so any class here that paints
+     its own has to set that token instead, and
+     `scripts/check-material.ts` fails on one that does not. */
+  :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
+      .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
+      .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
+      .tracker, .tag-waehler, .buch-tag,
+      .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
+      .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
+      .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
+      .rail-item, .tree-link, .tab, .course-mod, .pillar,
+      .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
+      .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
+      .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
+      .desk-tile, .gate-card,
+      .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
+      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
+      .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
+      .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
+      .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
+      .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
+      .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
+      .advanced-card, .at-a-glance, .side-note) {
+    background-image:
+      var(--surface-image, var(--sheen), var(--glass-grain)),
+      radial-gradient(var(--glow-w, 110px) circle at var(--gx, 50%) var(--gy, 50%),
+        color-mix(in oklab, var(--accent) calc(var(--glow-i, 34%) * var(--glow-a, 0)), transparent),
+        transparent 100%);
+    background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
+
+    transition: --glow-a var(--enter) var(--ease),
+                rotate var(--enter) var(--ease),
+                background-color var(--fast) var(--ease),
+                border-color var(--fast) var(--ease),
+                color var(--fast) var(--ease),
+                box-shadow var(--fast) var(--ease),
+                translate var(--fast) var(--ease),
+                transform var(--fast) var(--ease),
+                filter var(--fast) var(--ease),
+                opacity var(--fast) var(--ease);
+
+    &:hover, &:focus-visible, &:focus-within { --glow-a: 1; }
+  }
 
   /* ---- a reader who asked for less motion keeps the light ----
 
