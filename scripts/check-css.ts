@@ -538,7 +538,11 @@ const MATERIAL = new Map([
    display. None of them is the light. */
 const MATERIAL_PROPS = new Set([
   "background-image", "background-size", "transition",
-  "--glow-w", "--glow-i", "--glow-a", "--gx", "--gy",
+  /* The three a surface is DESCRIBED by, and the four derived
+     from them. Nothing else: a material layer says what a thing
+     is made of, and every consequence of that is a light. */
+  "--depth", "--polish", "--clarity",
+  "--glow-w", "--glow-i", "--glow-stop", "--glow-a", "--gx", "--gy",
   "--surface-image", "--surface-size",
 ]);
 

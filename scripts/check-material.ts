@@ -243,7 +243,56 @@ for (const [cls, layer] of [...paintsGradient].sort()) {
   console.error("            background-image: var(--surface-image);");
 }
 
-/* ---------- 3. a stale exemption ---------- */
+/* ---------- 3. the ladder is a ladder ----------
+
+   The five kinds are a physical progression, not five rows
+   somebody tuned: as a surface gets THICKER it should get less
+   polished and less clear, because that is what more material
+   does to a light. Read down the polish column and the system is
+   there in one line.
+
+   A sixth kind, or a retune of one, that breaks the ordering
+   breaks the idea rather than one number, and it is invisible:
+   every value is plausible on its own. So the order is asserted
+   rather than remembered. `plate` is excluded because it does not
+   follow the pointer, so its depth is describing a still light
+   and is not on the same scale. */
+{
+  const kinds: Array<[string, number, number, number]> = [];
+  for (const [layer, sel, body] of all) {
+    if (layer !== "glow") continue;
+    const d = /--depth:\s*([\d.]+)/.exec(body);
+    const p = /--polish:\s*([\d.]+)/.exec(body);
+    const c = /--clarity:\s*([\d.]+)/.exec(body);
+    if (!d || !p || !c) continue;
+    /* The plate is the one that sets --glow-w back to zero. */
+    if (/--glow-w:\s*0/.test(body)) continue;
+    const name = (/\.([a-z][a-z0-9-]*)/.exec(sel) ?? [, "?"])[1];
+    kinds.push([name, Number(d[1]), Number(p[1]), Number(c[1])]);
+  }
+
+  if (kinds.length < 4) {
+    bad += 1;
+    console.error(`\n  x only ${kinds.length} following kind(s) found in @layer glow, expected 4.`);
+    console.error("        Each is a rule setting --depth, --polish and --clarity. If a kind");
+    console.error("        was renamed or removed, this is where it shows.");
+  } else {
+    const sorted = [...kinds].sort((a, b) => a[1] - b[1]);
+    for (let i = 1; i < sorted.length; i += 1) {
+      const [an, , ap, ac] = sorted[i - 1];
+      const [bn, , bp, bc] = sorted[i];
+      if (ap > bp && ac > bc) continue;
+      bad += 1;
+      console.error(`\n  x .${bn} is thicker than .${an} and is not less polished and less clear.`);
+      console.error(`        .${an}: polish ${ap}, clarity ${ac}`);
+      console.error(`        .${bn}: polish ${bp}, clarity ${bc}`);
+      console.error("        More material scatters more light and passes less of it. A kind");
+      console.error("        that breaks that is a row of plausible numbers with no idea in it.");
+    }
+  }
+}
+
+/* ---------- 4. a stale exemption ---------- */
 
 for (const [cls, why] of NOT_A_SURFACE) {
   /* Stale means GONE, not "no longer matches the interactivity
