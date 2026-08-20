@@ -18,6 +18,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
 import { Button, ButtonLink } from "../../../../components/ui/button";
+import { Chip } from "../../../../components/ui/chip";
 import { InfoCard } from "../../../../components/deck";
 import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
@@ -150,8 +151,7 @@ export default function Page() {
                 <circle className="wa-dot" cx="183" cy="19" r="3.5" />
               </svg>
               <div className="work-copy">
-                <span className="tag mono">Featured · Financial model
-                </span>
+                <Chip>Featured · Financial model</Chip>
                 <h3>Three-statement model: DSE-listed manufacturer
                 </h3>
                 <p>Linked income statement, balance sheet and cash flow, with a
@@ -187,8 +187,7 @@ export default function Page() {
                   <path className="wa-line-dash" d="M29,27 L149,42" />
                 </svg>
                 <div className="work-copy">
-                  <span className="tag mono">Valuation · Interactive
-                  </span>
+                  <Chip>Valuation · Interactive</Chip>
                   <h3>DCF with sensitivity tables
                   </h3>
                   <p>WACC built up from its parts, two terminal value methods that
@@ -216,8 +215,7 @@ export default function Page() {
                   <line className="wa-grid" x1="10" y1="62" x2="230" y2="62" />
                 </svg>
                 <div className="work-copy">
-                  <span className="tag mono">Data analysis · Interactive
-                  </span>
+                  <Chip>Data analysis · Interactive</Chip>
                   <h3>Index returns: volatility and drawdowns
                   </h3>
                   <p>Rolling volatility, drawdown episodes with their recovery times,
@@ -249,8 +247,7 @@ export default function Page() {
                   <circle className="wa-point" cx="150" cy="15" r="4" />
                 </svg>
                 <div className="work-copy">
-                  <span className="tag mono">Portfolio construction · Interactive
-                  </span>
+                  <Chip>Portfolio construction · Interactive</Chip>
                   <h3>A screened FTSE 250 fund, built in 2015 and held to 2020
                   </h3>
                   <p>Ten mid-cap holdings past a Shariah and sustainability screen that
@@ -279,8 +276,7 @@ export default function Page() {
                   <circle className="wa-point" cx="108" cy="21" r="4" />
                 </svg>
                 <div className="work-copy">
-                  <span className="tag mono">Machine learning · Interactive
-                  </span>
+                  <Chip>Machine learning · Interactive</Chip>
                   <h3>Probability of default: scorecard vs gradient boosting
                   </h3>
                   <p>The whole pipeline on a real public dataset, fitted in your browser
@@ -310,8 +306,7 @@ export default function Page() {
                   <circle className="wa-point" cx="152" cy="50" r="4" />
                 </svg>
                 <div className="work-copy">
-                  <span className="tag mono">Credit risk · Interactive
-                  </span>
+                  <Chip>Credit risk · Interactive</Chip>
                   <h3>Portfolio stress testing: macro shocks to capital
                   </h3>
                   <p>Unemployment, growth and rates driving default rates through a
@@ -341,8 +336,7 @@ export default function Page() {
                   <circle className="wa-point" cx="108" cy="50" r="4" />
                 </svg>
                 <div className="work-copy">
-                  <span className="tag mono">Empirical research · Interactive
-                  </span>
+                  <Chip>Empirical research · Interactive</Chip>
                   <h3>Islamic vs conventional funds: an MSc dissertation
                   </h3>
                   <p>The hypothesis was that Shariah-compliant funds carry less risk.
@@ -459,8 +453,7 @@ export default function Page() {
             </p>
             <div className="grid-3">
               <div className="cell svc-card">
-                <span className="tag mono">Financial modeling
-                </span>
+                <Chip>Financial modeling</Chip>
                 <h3>A model you can edit
                 </h3>
                 <p>Three-statement models, DCF and comparable-company valuations,
@@ -485,8 +478,7 @@ export default function Page() {
                 </ul>
               </div>
               <div className="cell svc-card">
-                <span className="tag mono">Data analysis
-                </span>
+                <Chip>Data analysis</Chip>
                 <h3>An answer, plus the working
                 </h3>
                 <p>Cleaning, analyzing and visualizing financial or business data in
@@ -511,8 +503,7 @@ export default function Page() {
                 </ul>
               </div>
               <div className="cell svc-card">
-                <span className="tag mono">Finance writing
-                </span>
+                <Chip>Finance writing</Chip>
                 <h3>Copy that survives an expert reader
                 </h3>
                 <p>Explainers, market write-ups, research summaries and educational
@@ -610,42 +601,30 @@ export default function Page() {
                   <span className="cred-k mono">Modeling
                   </span>
                   <ul className="chips">
-                    <li>Excel
-                    </li>
-                    <li>Three-statement
-                    </li>
-                    <li>DCF
-                    </li>
-                    <li>Credit analysis
-                    </li>
+                    <li><Chip>Excel</Chip></li>
+                    <li><Chip>Three-statement</Chip></li>
+                    <li><Chip>DCF</Chip></li>
+                    <li><Chip>Credit analysis</Chip></li>
                   </ul>
                 </div>
                 <div className="cred-group">
                   <span className="cred-k mono">Analysis
                   </span>
                   <ul className="chips">
-                    <li>Python
-                    </li>
-                    <li>R
-                    </li>
-                    <li>Stata
-                    </li>
-                    <li>SPSS
-                    </li>
-                    <li>EViews
-                    </li>
+                    <li><Chip>Python</Chip></li>
+                    <li><Chip>R</Chip></li>
+                    <li><Chip>Stata</Chip></li>
+                    <li><Chip>SPSS</Chip></li>
+                    <li><Chip>EViews</Chip></li>
                   </ul>
                 </div>
                 <div className="cred-group">
                   <span className="cred-k mono">Data
                   </span>
                   <ul className="chips">
-                    <li>Bloomberg Terminal
-                    </li>
-                    <li>DSE filings
-                    </li>
-                    <li>Time-series
-                    </li>
+                    <li><Chip>Bloomberg Terminal</Chip></li>
+                    <li><Chip>DSE filings</Chip></li>
+                    <li><Chip>Time-series</Chip></li>
                   </ul>
                 </div>
               </div>

@@ -21,6 +21,11 @@
   @property --glow-w   { syntax: "<length>"; initial-value: 0px; inherits: false; }
   @property --glow-i   { syntax: "<percentage>"; initial-value: 0%; inherits: false; }
 
+  @property --depth     { syntax: "<number>"; initial-value: 0;   inherits: false; }
+  @property --polish    { syntax: "<number>"; initial-value: 0.6; inherits: false; }
+  @property --clarity   { syntax: "<number>"; initial-value: 0.7; inherits: false; }
+  @property --glow-stop { syntax: "<percentage>"; initial-value: 80%; inherits: false; }
+
   :root {
 
     color-scheme: light dark;
@@ -1382,12 +1387,6 @@
   .chips {
     list-style: none; margin: 0; padding: 0;
     display: flex; flex-wrap: wrap; gap: 7px;
-
-    & li {
-      padding: 6px 12px; border-radius: var(--radius-pill);
-      border: 1px solid var(--hairline); background: var(--panel);
-      font-size: var(--t-3); color: var(--ink);
-    }
   }
   .pill-bd     { color: var(--accent); border-color: var(--accent); }
   .pill-global { color: var(--accent);  border-color: var(--accent); }
@@ -2984,15 +2983,23 @@
     background-size: var(--glass-grain-size, auto);
     box-shadow: inset 0 1px 0 var(--pane-top);
     padding: 5px 12px; font-family: var(--font-mono); font-size: var(--t-2);
-    cursor: pointer; letter-spacing: 0.05em; text-transform: uppercase;
+    letter-spacing: 0.05em; text-transform: uppercase;
     transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
 
-    &:hover { border-color: var(--accent); color: var(--accent); }
+    &:is(button, a) {
+      cursor: pointer;
+
+      &:hover { border-color: var(--accent); color: var(--accent); }
+    }
 
     &[aria-pressed="true"], &[aria-selected="true"] {
       border-color: var(--accent); color: var(--accent); background: var(--accent-soft);
     }
   }
+
+  .chip-accent { background-color: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .chip-warn   { color: var(--gold); border-color: color-mix(in oklab, var(--gold) 35%, transparent); }
+  .chip-danger { color: var(--danger); border-color: color-mix(in oklab, var(--danger) 35%, transparent); }
 
   .chip-move {
     border-color: var(--accent); color: var(--accent);
@@ -8197,26 +8204,26 @@
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
       .tracker, .tag-waehler, .buch-tag) {
-    --glow-w: 70px; --glow-i: 40%;
+    --depth: 1; --polish: 0.94; --clarity: 0.78;
   }
 
   :is(.btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
       .rail-item, .tree-link, .tab, .course-mod, .pillar) {
-    --glow-w: 110px; --glow-i: 34%;
+    --depth: 2.2; --polish: 0.8; --clarity: 0.7;
   }
 
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
       .desk-tile, .gate-card) {
-    --glow-w: 240px; --glow-i: 26%;
+    --depth: 5; --polish: 0.5; --clarity: 0.5;
   }
 
   :is(.topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel) {
-    --glow-w: 420px; --glow-i: 16%;
+    --depth: 9; --polish: 0.3; --clarity: 0.3;
   }
 
   :is(.tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
@@ -8225,12 +8232,13 @@
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
       .advanced-card, .at-a-glance, .side-note) {
+    --depth: 3.4; --polish: 0.55; --clarity: 0.28;
+
     --glow-w: 0px;
-    --glow-i: 11%;
     --surface-image:
-      radial-gradient(150% 110% at 100% 0%,
-        color-mix(in oklab, var(--accent) var(--glow-i), transparent),
-        transparent 68%),
+      radial-gradient(calc(var(--depth) * 34%) calc(var(--depth) * 26%) at 100% 0%,
+        color-mix(in oklab, var(--accent) calc(var(--clarity) * 40%), transparent),
+        transparent var(--glow-stop)),
       var(--sheen),
       var(--glass-grain);
     --surface-size: auto, auto, var(--glass-grain-size, auto);
@@ -8256,11 +8264,16 @@
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
       .advanced-card, .at-a-glance, .side-note) {
+
+    --glow-w: calc(var(--depth) * 46px);
+    --glow-i: calc(var(--clarity) * 44%);
+    --glow-stop: calc(52% + (1 - var(--polish)) * 46%);
+
     background-image:
       var(--surface-image, var(--sheen), var(--glass-grain)),
-      radial-gradient(var(--glow-w, 110px) circle at var(--gx, 50%) var(--gy, 50%),
-        color-mix(in oklab, var(--accent) calc(var(--glow-i, 34%) * var(--glow-a, 0)), transparent),
-        transparent 100%);
+      radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
+        color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent) 0%,
+        transparent var(--glow-stop));
     background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
 
     transition: --glow-a var(--enter) var(--ease),

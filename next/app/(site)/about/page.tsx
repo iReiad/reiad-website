@@ -25,6 +25,7 @@ import { COUNTS } from "@reiad/shared/content";
 import { pageMeta } from "../../../lib/pageMeta";
 import { Band } from "../../../components/ui/band";
 import { ButtonLink } from "../../../components/ui/button";
+import { Chip } from "../../../components/ui/chip";
 import { InfoCard } from "../../../components/deck";
 import { Eyebrow, SectionLabel } from "../../../components/ui/label";
 import { Research, type ResearchItem } from "../../../components/research";
@@ -458,54 +459,39 @@ export default function AboutPage() {
                 <span className="kit-k mono">Modelling
                 </span>
                 <ul className="chips">
-                  <li>Excel
-                  </li>
-                  <li>Three-statement
-                  </li>
-                  <li>DCF
-                  </li>
-                  <li>Credit analysis
-                  </li>
+                  <li><Chip>Excel</Chip></li>
+                  <li><Chip>Three-statement</Chip></li>
+                  <li><Chip>DCF</Chip></li>
+                  <li><Chip>Credit analysis</Chip></li>
                 </ul>
               </div>
               <div className="kit-group">
                 <span className="kit-k mono">Analysis
                 </span>
                 <ul className="chips">
-                  <li>Python
-                  </li>
-                  <li>R
-                  </li>
-                  <li>Stata
-                  </li>
-                  <li>SPSS
-                  </li>
-                  <li>EViews
-                  </li>
+                  <li><Chip>Python</Chip></li>
+                  <li><Chip>R</Chip></li>
+                  <li><Chip>Stata</Chip></li>
+                  <li><Chip>SPSS</Chip></li>
+                  <li><Chip>EViews</Chip></li>
                 </ul>
               </div>
               <div className="kit-group">
                 <span className="kit-k mono">Data
                 </span>
                 <ul className="chips">
-                  <li>Bloomberg Terminal
-                  </li>
-                  <li>DSE filings
-                  </li>
-                  <li>Time-series
-                  </li>
+                  <li><Chip>Bloomberg Terminal</Chip></li>
+                  <li><Chip>DSE filings</Chip></li>
+                  <li><Chip>Time-series</Chip></li>
                 </ul>
               </div>
               <div className="kit-group">
                 <span className="kit-k mono">Certificates
                 </span>
                 <ul className="chips">
-                  <li>Bloomberg Market Concepts
-                  </li>
-                  <li>Algorithmic Trading & Finance Models: Python, R, Stata
-                  </li>
-                  <li>Reading Corporate Financial Statements
-                  </li>
+                  <li><Chip>Bloomberg Market Concepts</Chip></li>
+                  <li><Chip>Algorithmic Trading & Finance Models: Python, R, Stata</Chip></li>
+                  <li><Chip>Reading Corporate Financial Statements</Chip></li>
                 </ul>
               </div>
             </div>

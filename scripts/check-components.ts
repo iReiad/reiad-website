@@ -93,7 +93,21 @@ const OWNED: Owned[] = [
   { id: "icon-button", find: "icon-btn", use: "<Button kind=\"quiet\"> from ui/button" },
   { id: "section-label", find: 'className="section-label mono"', use: "<SectionLabel> from ui/label" },
   { id: "chip", find: 'className="tag mono"', use: "<Chip> from ui/chip" },
-  { id: "chip-class", find: 'className="chip', use: "<Chip> from ui/chip" },
+  /* `className="chip` and not `className="chip` with anything
+     after it, because two of the names that start that way are
+     ROWS rather than chips: `.chips` is a flex list and
+     `.chip-row` is a group a browser module fills. Both used to
+     draw their own pill and both stopped on 20 August 2026, so
+     what is inside them is `<Chip>` and the row is layout.
+
+     A check that reports work which cannot be done is a check
+     that gets ignored, which is what `skip` exists for one line
+     down and what this was doing to nine call sites. */
+  {
+    id: "chip-class",
+    find: 'className="chip"',
+    use: "<Chip> from ui/chip, or <ChipButton> if it is pressed",
+  },
   { id: "stat-tile", find: 'className="tile"', use: "<StatTile> from ui/stat" },
   /* Only the boxes a person types words into.
 
@@ -108,6 +122,20 @@ const OWNED: Owned[] = [
      the stylesheet's; `@layer base` styles the text boxes on
      `:is(input:not([type="range"], …), textarea, select)`, which
      is the same list as this one and for the same reason. */
+  /* The five left are calculator inputs, and they are the awkward
+     ones rather than the forgotten ones. Each sits inside a
+     `<label>` that also holds a live value readout the tool's
+     browser module writes into, and each is found by `id` by that
+     module. `<Field>` renders its own label, so converting one is
+     a change to the markup a module reaches into as well as to
+     the field, which is a different job from this ledger's.
+
+     `skip` is line-based, which is why the honeypot in
+     `subscribe.tsx` counted for months: its `className` had
+     wrapped on to the next line and the pattern never saw it. The
+     class is back on the first line rather than the pattern made
+     cleverer, because the comment above it already says never to
+     convert it and a reader should see both at once. */
   {
     id: "input",
     find: "<input ",

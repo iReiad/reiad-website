@@ -22,6 +22,7 @@
    ============================================================ */
 
 import type { Piece } from "../lib/pieces";
+import { Chip } from "./ui/chip";
 
 /** Bangla digits, for the two sections that count in them. The
     same substitution `reads.js` does, and the reason it is a
@@ -84,7 +85,7 @@ export function SampleCard({ piece, hidden }: { piece: Piece; hidden?: boolean }
   return (
     <a className="cell sample-card" href={piece.url} hidden={hidden}
        style={{ textDecoration: "none", color: "inherit" }}>
-      <span className="tag mono">{piece.tag}</span>
+      <Chip>{piece.tag}</Chip>
       <h3>{piece.title}</h3>
       <p>{piece.dek}</p>
       <span className="more">{meta ? `${meta}  →` : "Read →"}</span>
@@ -104,7 +105,7 @@ export function ReadCard({ piece, icon }: { piece: Piece; icon: string }) {
   return (
     <a className="cell read-card" href={piece.url} data-piece={piece.slug}>
       <span className="read-art"><Art name={icon} /></span>
-      <span className="tag mono">{piece.tag}</span>
+      <Chip>{piece.tag}</Chip>
       <h3 className="bn-h">{piece.title}</h3>
       <p>{piece.dek}</p>
       {piece.topics.length ? (

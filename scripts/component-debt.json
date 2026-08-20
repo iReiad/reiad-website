@@ -2,9 +2,9 @@
   "button": 0,
   "icon-button": 0,
   "section-label": 0,
-  "chip": 12,
-  "chip-class": 19,
+  "chip": 0,
+  "chip-class": 0,
   "stat-tile": 0,
-  "input": 7,
+  "input": 5,
   "textarea": 0
 }

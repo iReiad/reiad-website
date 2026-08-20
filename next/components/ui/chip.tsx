@@ -41,26 +41,41 @@ import type {
    "this went wrong" must not turn teal on the Qur'anic school. */
 export type ChipTone = "accent" | "quiet" | "warn" | "danger";
 
-const BASE = [
-  "inline-flex items-center gap-1.5",
-  "rounded-full border px-2.5 py-1",
-  "text-t1 font-medium tracking-wide uppercase leading-none",
-  "whitespace-nowrap",
-].join(" ");
+/* ---- one chip, and the tones are its modifiers ----
 
+   This was four strings of Tailwind utilities, which made a
+   SECOND chip: the same idea as `.chip` in the stylesheet with
+   different padding, a different font and a different size, near
+   enough alike that nobody would call it a bug and far enough
+   apart that a page holding both looked slightly wrong.
+
+   `.chip` is the one chip now. What a chip DOES is decided by the
+   element rather than by a class, which is why there are three
+   exports below and not one component with a prop:
+
+       <span class="chip">    a label
+       <button class="chip">  a control
+       <a class="chip">       a link
+
+   The stylesheet keys `cursor` and the hover off `button` and
+   `a`, so a label neither looks pressable nor answers a pointer
+   that can do nothing with it. */
 const TONES: Record<ChipTone, string> = {
-  accent: "bg-accent-soft text-accent border-accent-line",
-  quiet: "bg-paper-sunk text-ink-soft border-hairline",
-  warn: "bg-panel text-gold border-gold/35",
-  danger: "bg-panel text-danger border-danger/35",
+  accent: "chip-accent",
+  quiet: "",
+  warn: "chip-warn",
+  danger: "chip-danger",
 };
+
+const classes = (tone: ChipTone, extra?: string): string =>
+  ["chip", TONES[tone], extra].filter(Boolean).join(" ");
 
 export function Chip(
   { tone = "quiet", className, children }:
   { tone?: ChipTone; className?: string; children: ReactNode },
 ) {
   return (
-    <span className={[BASE, TONES[tone], className].filter(Boolean).join(" ")}>
+    <span className={classes(tone, className)}>
       {children}
     </span>
   );
@@ -88,7 +103,7 @@ export function ChipButton({
 } & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button type={type} aria-pressed={pressed}
-            className={["chip", className].filter(Boolean).join(" ")}
+            className={classes("quiet", className)}
             data-glow="chip"
             {...rest}>
       {children}
@@ -103,11 +118,8 @@ export function ChipLink({
   & AnchorHTMLAttributes<HTMLAnchorElement>) {
   return (
     <a
-      className={[BASE, TONES[tone], "no-underline",
-        "transition-colors duration-[var(--fast)] ease-[var(--ease)]",
-        "hover:border-accent hover:text-accent",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-        className].filter(Boolean).join(" ")}
+      className={classes(tone, ["no-underline", className].filter(Boolean).join(" "))}
+      data-glow="chip"
       {...rest}
     >
       {children}
