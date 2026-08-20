@@ -29,6 +29,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "./ui/button";
+import { Field } from "./ui/field";
 import { runtimeModule } from "./account/runtime";
 
 type ApiModule = typeof import("/api.js");
@@ -82,13 +83,13 @@ export function SubscribeBox() {
     <>
       <form className="subscribe-form" id="subscribe-form"
             hidden={!ready || sent} onSubmit={submit}>
-        <label className="visually-hidden" htmlFor="sub-email">Email address</label>
-        <input type="email" id="sub-email" name="email" required
-               placeholder="you@example.com" autoComplete="email" />
+        <Field id="sub-email" name="email" type="email" required hideLabel
+               label="Email address" placeholder="you@example.com"
+               autoComplete="email" />
         {/* Never a labelled field, and never `<Field>`: a box a
             person can see is a box a person fills in. */}
-        <input type="text" name="website" tabIndex={-1} autoComplete="off"
-               aria-hidden="true" className="honeypot" />
+        <input className="honeypot" type="text" name="website" tabIndex={-1}
+               autoComplete="off" aria-hidden="true" />
         <Button kind="solid" type="submit">Email me new pieces</Button>
       </form>
 

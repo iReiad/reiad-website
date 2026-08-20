@@ -2609,15 +2609,13 @@
      beside its credentials, and a component used on two pages that
      lives inside one page's layer beats every rule those two pages
      share. */
+  /* Layout and nothing else. It drew its own pill until 20 August
+     2026: a second chip, 6px by 12px at --t-3 against the one
+     chip's 5 by 12 at --t-2, on pages that showed both. The `li`
+     is the row's item and `<Chip>` is what is in it. */
   .chips {
     list-style: none; margin: 0; padding: 0;
     display: flex; flex-wrap: wrap; gap: 7px;
-
-    & li {
-      padding: 6px 12px; border-radius: var(--radius-pill);
-      border: 1px solid var(--hairline); background: var(--panel);
-      font-size: var(--t-3); color: var(--ink);
-    }
   }
   .pill-bd     { color: var(--accent); border-color: var(--accent); }
   .pill-global { color: var(--accent);  border-color: var(--accent); }
@@ -4643,16 +4641,50 @@ it collapsed to the width of the word "Bangladesh". */
     background-size: var(--glass-grain-size, auto);
     box-shadow: inset 0 1px 0 var(--pane-top);
     padding: 5px 12px; font-family: var(--font-mono); font-size: var(--t-2);
-    cursor: pointer; letter-spacing: 0.05em; text-transform: uppercase;
+    letter-spacing: 0.05em; text-transform: uppercase;
     transition: border-color var(--fast) var(--ease), color var(--fast) var(--ease);
 
-    &:hover { border-color: var(--accent); color: var(--accent); }
+    /* ---- the ELEMENT carries the interactivity ----
+
+       `cursor: pointer` and the hover were on `.chip` itself, so
+       a chip that is a label looked pressable and answered a
+       pointer that could do nothing with it. There is one chip on
+       this site and three things it can be, and which one is
+       decided by the tag rather than by a second class:
+
+           <span class="chip">   a label. Says something.
+           <button class="chip"> a control. Latches or acts.
+           <a class="chip">      a link. Goes somewhere.
+
+       That is the same rule `<GoCard>` and `<InfoCard>` follow one
+       size up, and it is why the library has three exports rather
+       than one component with a prop. */
+    &:is(button, a) {
+      cursor: pointer;
+
+      &:hover { border-color: var(--accent); color: var(--accent); }
+    }
     /* aria-pressed is the toggle-button state, aria-selected the tab
        one. The dashboard uses real tabs now and both appear here. */
     &[aria-pressed="true"], &[aria-selected="true"] {
       border-color: var(--accent); color: var(--accent); background: var(--accent-soft);
     }
   }
+
+  /* ---- three tones, and the fourth is the chip itself ----
+
+     Named for what they SAY rather than for a colour, so that
+     "this went wrong" cannot turn teal on the Qur'anic school.
+     `accent` follows the page deliberately; the other two are
+     fixed for the same reason.
+
+     They were four strings of Tailwind utilities inside
+     `ui/chip.tsx`, which made a SECOND chip: same idea, different
+     padding, different font, different size, and near enough
+     alike that nobody would call it a bug. */
+  .chip-accent { background-color: var(--accent-soft); color: var(--accent); border-color: var(--accent-line); }
+  .chip-warn   { color: var(--gold); border-color: color-mix(in oklab, var(--gold) 35%, transparent); }
+  .chip-danger { color: var(--danger); border-color: color-mix(in oklab, var(--danger) 35%, transparent); }
 
   /* The one chip on the desk that finishes a migration rather than
      opening a thing. It is the same chip, drawn as though it were

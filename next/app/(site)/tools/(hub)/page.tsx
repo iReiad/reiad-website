@@ -30,6 +30,7 @@ import { pageMeta } from "../../../../lib/pageMeta";
 import { Legend, Key } from "../../../../components/ui/legend";
 import { Band } from "../../../../components/ui/band";
 import { ButtonLink } from "../../../../components/ui/button";
+import { ChipButton } from "../../../../components/ui/chip";
 import { Eyebrow } from "../../../../components/ui/label";
 
 export const metadata: Metadata = pageMeta({
@@ -167,8 +168,8 @@ export default function ToolsPage() {
                   <input type="range" name="years" min="1" max="40" step="1" defaultValue="20" />
                 </label>
                 <div className="tool-actions">
-                  <button className="chip copy-link" type="button">Copy link to this
-                  </button>
+                  <ChipButton className="copy-link">Copy link to this
+                  </ChipButton>
                 </div>
               </div>
               <div className="tool-out">
@@ -262,8 +263,8 @@ export default function ToolsPage() {
                   <input type="range" name="ftax" min="0" max="20" step="1" defaultValue="10" />
                 </label>
                 <div className="tool-actions">
-                  <button className="chip copy-link" type="button">Copy link to this
-                  </button>
+                  <ChipButton className="copy-link">Copy link to this
+                  </ChipButton>
                 </div>
               </div>
               <div className="tool-out">
@@ -375,8 +376,8 @@ export default function ToolsPage() {
                   <input type="range" name="years" min="1" max="30" step="1" defaultValue="10" />
                 </label>
                 <div className="tool-actions">
-                  <button className="chip copy-link" type="button">Copy link to this
-                  </button>
+                  <ChipButton className="copy-link">Copy link to this
+                  </ChipButton>
                 </div>
               </div>
               <div className="tool-out">
@@ -452,8 +453,8 @@ export default function ToolsPage() {
                   <input type="range" name="years" min="1" max="25" step="1" defaultValue="10" />
                 </label>
                 <div className="tool-actions">
-                  <button className="chip copy-link" type="button">Copy link to this
-                  </button>
+                  <ChipButton className="copy-link">Copy link to this
+                  </ChipButton>
                 </div>
               </div>
               <div className="tool-out">
@@ -534,8 +535,8 @@ export default function ToolsPage() {
                   <input type="number" name="stop" min="0" step="0.1" defaultValue="40" />
                 </label>
                 <div className="tool-actions">
-                  <button className="chip copy-link" type="button">Copy link to this
-                  </button>
+                  <ChipButton className="copy-link">Copy link to this
+                  </ChipButton>
                 </div>
               </div>
               <div className="tool-out">

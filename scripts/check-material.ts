@@ -73,6 +73,12 @@ const VARIANT_OF = new Map<string, string>([
   ["btn-quiet", "btn"],
   ["btn-on-accent", "btn"],
   ["res-live", "res"],
+  /* The chip's three tones. Never rendered without `.chip`: they
+     are colour and nothing else, which is why they are variants
+     rather than kinds. */
+  ["chip-accent", "chip"],
+  ["chip-warn", "chip"],
+  ["chip-danger", "chip"],
 ]);
 
 const NOT_A_SURFACE = new Map<string, string>([

@@ -18,6 +18,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { Band } from "../../../../components/ui/band";
 import { Button, ButtonLink } from "../../../../components/ui/button";
+import { ChipButton } from "../../../../components/ui/chip";
 import { StatTile } from "../../../../components/ui/stat";
 import { Eyebrow, SectionLabel } from "../../../../components/ui/label";
 
@@ -108,8 +109,8 @@ export default function Page() {
                 <div className="drivers-head">
                   <h2>Inputs
                   </h2>
-                  <button className="chip" type="button" id="reset-drivers" hidden>Reset
-                  </button>
+                  <ChipButton id="reset-drivers" hidden>Reset
+                  </ChipButton>
                 </div>
                 <p className="drivers-note">Everything below refits both models from scratch on
               your machine. The cut-off is the exception: it changes the decision, not
