@@ -12340,7 +12340,12 @@ German for day, and .tag is what the site has always called
          is a dated list on About, and `.social` is a wrap of five. None
          of them is ever the only one of its kind on the page, which is
          this block's own test. */
-      .big-link, .cv-item, .res, .tally-item) {
+      .big-link, .cv-item, .res, .tally-item,
+      /* The footer is a BAND, full width, welded to the bottom of the
+         page and running off both sides of it. It is a pane because it
+         holds things, but it stands on nothing: closing a ring round it
+         drew a box round the bottom of every page. */
+      .deck-foot) {
     --standing: 0;
   }
 
@@ -12502,12 +12507,43 @@ German for day, and .tag is what the site has always called
          Thinner, too: `1px + depth * 0.14px` rather than `depth * 0.5`.
          A pane gets 2.3px and a chip gets 1.1px, which is a chamfer.
          Half a pane's depth is 4.5px, which is a frame. */
-      inset 0 0 0 calc(1px + var(--depth) * 0.14px)
+      /* Thinner again, and the inner ring much fainter. At `1px + depth
+         * 0.14` a pane's chamfer was 2.26px, its inner step 1.04px, and
+         both sat inside the bar's own 1px border: three concentric lines
+         round the top bar, which is a header that looks drawn rather
+         than cut. The right end hid it behind the buttons and the left
+         end, which is empty, did not.
+
+         A chamfer is a STEP, so the inner ring is a fraction of the
+         outer at a third of its strength, not a second line of nearly
+         the same weight. A pane gets 1.4px, a card 1.05px, a chip
+         0.7px. */
+      /* ---- and it is SOFT, so it does not close a rectangle ----
+
+         A `box-shadow` ring with a blur of zero is a drawn outline: a
+         hard line all the way round, at the same weight in the corners
+         as along the sides. Nested inside another surface it reads as a
+         box inside a box, which is what a bulleted plate inside a case
+         study card looked like, and what put a rectangle round a group
+         of pills.
+
+         Blurring it is the whole fix, and it is one number. The edge
+         becomes a soft band that falls off inwards, so where a small
+         piece of glass sits on a larger one the two grounds meet with
+         no line between them: it fades onto the glass below rather than
+         closing against it. The chamfer is still there and still scales
+         with depth; it simply has no hard outer boundary.
+
+         Blur is 1.8x the spread, which is enough to lose the line and
+         not so much that a chip's edge becomes a halo. */
+      inset 0 0 calc((0.6px + var(--depth) * 0.09px) * 1.8)
+                calc(0.6px + var(--depth) * 0.09px)
         color-mix(in oklab, var(--rim-face-a)
-          calc(var(--standing) * 40%), transparent),
-      inset 0 0 0 calc(0.5px + var(--depth) * 0.06px)
+          calc(var(--standing) * 34%), transparent),
+      inset 0 0 calc((0.28px + var(--depth) * 0.04px) * 1.8)
+                calc(0.28px + var(--depth) * 0.04px)
         color-mix(in oklab, var(--rim-face-b)
-          calc(var(--standing) * 26%), transparent),
+          calc(var(--standing) * 13%), transparent),
 
       /* ---- and the light reflecting off it, near the pointer only ----
 
