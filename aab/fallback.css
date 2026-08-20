@@ -18,6 +18,10 @@
   @property --gy       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --glow-a   { syntax: "<number>";  initial-value: 0;   inherits: false; }
 
+  @property --surface-shadow { syntax: "*"; inherits: false; }
+  @property --surface-image  { syntax: "*"; inherits: false; }
+  @property --surface-size   { syntax: "*"; inherits: false; }
+
   @property --glow-w   { syntax: "<length>"; initial-value: 0px; inherits: false; }
   @property --glow-i   { syntax: "<percentage>"; initial-value: 0%; inherits: false; }
 
