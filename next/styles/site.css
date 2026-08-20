@@ -12249,6 +12249,27 @@ German for day, and .tag is what the site has always called
      the chip's row already makes; this is the plate saying it. */
   .card-art { --depth: 1.4; }
 
+  /* ---- a bright ground inverts the edge ----
+
+     Every colour in this material is white-ish over a dark panel:
+     `--glass-face` is white, the catch light is white, the rim is white
+     mixed with the accent. On `.btn-solid`, whose ground is
+     `--accent-strong` and therefore LIGHT, all of that is white on pale
+     purple and none of it is visible. The coloured buttons had a
+     material and no edge.
+
+     A bright object's cut edge is still lit and still lit LESS than its
+     top face, so it reads darker rather than lighter. That is the whole
+     inversion, and it is four tokens rather than a second copy of the
+     edge: `--accent-ink` is already the colour that is legible on this
+     ground, because it is what the label is written in. */
+  :is(.btn-solid, .btn-on-accent, .audience-slider) {
+    --glass-face:  color-mix(in oklab, var(--accent-ink) 30%, transparent);
+    --glass-under: color-mix(in oklab, var(--accent-ink) 24%, transparent);
+    --rim-a: var(--accent-ink);
+    --rim-b: var(--accent-ink);
+  }
+
   /* ---- the sixth kind: a channel cut IN, not a slab sitting ON ----
 
      Eleven classes on this site are the same object described

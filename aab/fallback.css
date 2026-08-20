@@ -8264,6 +8264,13 @@
 
   .card-art { --depth: 1.4; }
 
+  :is(.btn-solid, .btn-on-accent, .audience-slider) {
+    --glass-face:  color-mix(in oklab, var(--accent-ink) 30%, transparent);
+    --glass-under: color-mix(in oklab, var(--accent-ink) 24%, transparent);
+    --rim-a: var(--accent-ink);
+    --rim-b: var(--accent-ink);
+  }
+
   :is(.track, .rng-track, .score-bar, .fv-track, .yield-track,
       .dupont-track, .drag-track, .bridge-track, .live-bar,
       .rt-bar, .meter, .rt-balance, .audience-switch, .seg) {
