@@ -550,7 +550,7 @@ const MATERIAL_PROPS = new Set([
   "--lit", "--rim", "--gpx", "--gpy", "--rim-a", "--rim-b", "--rim-face-a", "--rim-face-b",
   "--spec", "--gx", "--gy", "--tx", "--ty",
   "--surface-image", "--surface-size", "--surface-position",
-  "--surface-shadow", "--edge", "--depth-lit",
+  "--surface-shadow", "--edge",
 ]);
 
 for (const cls of new Set([...studioClasses, ...serverClasses])) {

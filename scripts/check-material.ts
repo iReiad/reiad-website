@@ -82,6 +82,9 @@ const VARIANT_OF = new Map<string, string>([
 ]);
 
 const NOT_A_SURFACE = new Map<string, string>([
+  ["social", "a <ul> whose <a> children ARE the pills. The hover is on them, "
+             + "not on the list, and the material on the list drew a rectangle "
+             + "round the whole group inside the card that already holds it."],
   ["chip-row", "a row of chips. The chips light, the row does not."],
   ["seg", "a segmented control's frame. Its buttons are `.chip`."],
   ["segmented", "the other segmented frame, whose buttons are its own."],
@@ -251,6 +254,11 @@ const NOT_GLASS = new Map<string, string>([
                           + "that has not arrived. A lit edge on it would promise a "
                           + "surface that is about to be replaced."],
   ["field-num",           "a text field: the caret is the affordance"],
+  ["social",              "a <ul>, not a surface. Its <a> children ARE the pills, and "
+                          + "putting the material on the list drew a rectangle round the "
+                          + "whole group, sitting inside the card that already holds it. "
+                          + "A wrapper whose children are the things is layout, like "
+                          + ".chips."],
 ]);
 
 /* ---------- 1. interactive and unplaced ---------- */

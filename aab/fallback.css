@@ -8190,7 +8190,7 @@
       .tracker, .tag-waehler, .buch-tag,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
-      .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
+      .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
       .audience-slider, .skip,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
@@ -8222,7 +8222,7 @@
 
   :is(.btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
-      .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
+      .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
       .audience-slider, .skip) {
     --depth: 2.2; --polish: 0.8; --clarity: 0.7; --standing: 0.9;
@@ -8287,7 +8287,7 @@
       .quiz-option, .checkpoint, .rt-heat-day,
       .rt-build-task,
 
-      .big-link, .cv-item, .social, .res, .tally-item) {
+      .big-link, .cv-item, .res, .tally-item) {
     --standing: 0;
   }
 
@@ -8297,7 +8297,7 @@
       .tracker, .tag-waehler, .buch-tag,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
-      .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
+      .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
       .audience-slider, .skip,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
@@ -8329,28 +8329,26 @@
 
     --glow-fade: 820ms;
 
-    --depth-lit: calc(var(--depth) * (1 + var(--glow-a, 0) * 0.6));
-
     --edge:
 
-      inset 0 calc(var(--depth-lit) * -1.15px) 0 calc(var(--depth-lit) * -0.42px)
+      inset 0 calc(var(--depth) * -1.15px) 0 calc(var(--depth) * -0.42px)
         color-mix(in oklab, var(--glass-face)
-          calc(22% + var(--standing) * 30%), transparent),
+          calc(var(--standing) * 48%), transparent),
 
-      inset 0 calc(var(--depth-lit) * -0.42px) 0 calc(var(--depth-lit) * -0.2px)
+      inset 0 calc(var(--depth) * -0.42px) 0 calc(var(--depth) * -0.2px)
         color-mix(in oklab, var(--glass-under)
           calc(var(--depth) * (2% + var(--standing) * 6%)), transparent),
 
-      inset calc(var(--gpx, 0) * var(--depth-lit) * -0.5px)
-            calc(var(--gpy, 0) * var(--depth-lit) * -0.5px)
-            0 calc(var(--depth-lit) * 0.5px)
+      inset 0 0 0 calc(1px + var(--depth) * 0.14px)
         color-mix(in oklab, var(--rim-face-a)
-          calc(26% + var(--standing) * 26%), transparent),
-      inset calc(var(--gpx, 0) * var(--depth-lit) * -0.22px)
-            calc(var(--gpy, 0) * var(--depth-lit) * -0.22px)
-            0 calc(var(--depth-lit) * 0.22px)
+          calc(var(--standing) * 40%), transparent),
+      inset 0 0 0 calc(0.5px + var(--depth) * 0.06px)
         color-mix(in oklab, var(--rim-face-b)
-          calc(18% + var(--standing) * 18%), transparent);
+          calc(var(--standing) * 26%), transparent),
+
+      inset calc(var(--gpx, 0) * -7px) calc(var(--gpy, 0) * -7px) 7px -5px
+        color-mix(in oklab, var(--glass-face)
+          calc(var(--glow-a, 0) * var(--standing) * 60%), transparent);
 
     --rim-a: var(--accent);
     --rim-b: var(--accent);
