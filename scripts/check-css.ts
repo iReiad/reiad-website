@@ -541,8 +541,9 @@ const MATERIAL_PROPS = new Set([
   /* The three a surface is DESCRIBED by, and the four derived
      from them. Nothing else: a material layer says what a thing
      is made of, and every consequence of that is a light. */
-  "--depth", "--polish", "--clarity",
-  "--glow-w", "--glow-i", "--glow-stop", "--glow-a", "--gx", "--gy",
+  "--depth", "--polish", "--clarity", "--standing",
+  "--glow-w", "--glow-i", "--glow-stop", "--glow-a", "--glow-fade",
+  "--lit", "--gx", "--gy",
   "--surface-image", "--surface-size",
 ]);
 
