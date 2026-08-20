@@ -12066,7 +12066,7 @@ German for day, and .tag is what the site has always called
       .tracker, .tag-waehler, .buch-tag,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
-      .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
+      .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
       .audience-slider, .skip,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
@@ -12175,7 +12175,7 @@ German for day, and .tag is what the site has always called
      reads as a heavier object. */
   :is(.btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
-      .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
+      .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
       .audience-slider, .skip) {
     --depth: 2.2; --polish: 0.8; --clarity: 0.7; --standing: 0.9;
@@ -12340,7 +12340,7 @@ German for day, and .tag is what the site has always called
          is a dated list on About, and `.social` is a wrap of five. None
          of them is ever the only one of its kind on the page, which is
          this block's own test. */
-      .big-link, .cv-item, .social, .res, .tally-item) {
+      .big-link, .cv-item, .res, .tally-item) {
     --standing: 0;
   }
 
@@ -12360,7 +12360,7 @@ German for day, and .tag is what the site has always called
       .tracker, .tag-waehler, .buch-tag,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
-      .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
+      .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
       .audience-slider, .skip,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
@@ -12454,69 +12454,78 @@ German for day, and .tag is what the site has always called
        flush row in a column is not sitting ON anything and a
        card is. Depth says how thick; standing says whether there
        is anything for it to be thick against. */
-    /* ---- and it OPENS as the thing leans towards you ----
-
-       A card in `.tilt-scene` leans on hover, and a slab leaning
-       towards a reader shows more of its near edge, not the same
-       amount. It was showing the same amount, which is what "the
-       tilting ones are not revealing that they are actually thick"
-       means: the lean was a rotation of a picture rather than of
-       an object.
-
-       `--glow-a` is already the "the pointer is on this" number,
-       already registered so it animates, and already on the
-       190ms-in, 820ms-out curve. So the edge rides it and there is
-       no second piece of state: the thickness opens as the light
-       comes up and closes as it lingers out. A plate and a groove
-       never raise it, which is right, because neither leans. */
-    --depth-lit: calc(var(--depth) * (1 + var(--glow-a, 0) * 0.6));
+    /* The edge does NOT open as the light comes up, and it did for one
+       commit. A cut edge is a fact about the object: it is the same
+       edge in the dark. What changes when a light moves across it is
+       the REFLECTION, which is the glint in `--edge` and nothing else.
+       An edge that grows is a shape that inflates, and it was being
+       applied to the rail and the top bar, neither of which leans. */
 
     --edge:
       /* the catch light on the near wall, the full thickness */
-      inset 0 calc(var(--depth-lit) * -1.15px) 0 calc(var(--depth-lit) * -0.42px)
+      /* Gated by standing like every other part of this edge, and it was
+         not: `22% + standing * 30%` left a flat row with 22% of a catch
+         light along its bottom, which is a border on an unhovered rail
+         item, which is the box again in its last hiding place. A row
+         flush in a column has no near edge showing, so it gets none. */
+      inset 0 calc(var(--depth) * -1.15px) 0 calc(var(--depth) * -0.42px)
         color-mix(in oklab, var(--glass-face)
-          calc(22% + var(--standing) * 30%), transparent),
+          calc(var(--standing) * 48%), transparent),
       /* the seat just above it, so the two read as a cut rather than a glow */
-      inset 0 calc(var(--depth-lit) * -0.42px) 0 calc(var(--depth-lit) * -0.2px)
+      inset 0 calc(var(--depth) * -0.42px) 0 calc(var(--depth) * -0.2px)
         color-mix(in oklab, var(--glass-under)
           calc(var(--depth) * (2% + var(--standing) * 6%)), transparent),
-      /* ---- and the bevel goes round all four sides ----
+      /* ---- the cut edge, all the way round, and it does NOT move ----
 
-         This was one pixel, on the reasoning that a cut edge seen from the
-         side is foreshortened to nothing. That is true of a sheet of paper
-         and false of a slab: a nine millimetre pane has nine millimetres of
-         edge on its left as well as its bottom, and drawing a hairline
-         there says "flat" three times for every one time the bottom says
-         "thick". Look at any side other than the bottom and the depth goes
-         away, which is exactly the report.
+         Two things were wrong here and they are worth keeping written
+         down, because both looked like tuning and were not.
 
-         So the ring is `--depth` wide, like everything else here, and it is
-         two rings rather than one: the outer catches the light and the
-         inner is the shaded part of the same chamfer. Two stops is what
-         makes it read as a bevel rather than as a thick border. */
-      /* ---- and it leans with the card ----
+         THE ALPHA WAS NOT GATED BY STANDING. It was
+         `26% + standing * 26%`, so a rail row at standing 0 still got
+         26% of the rim: twenty rows in a column each closed a full
+         bright box, which is the cage this whole system has a
+         `--standing` axis to prevent. Every other edge here is gated
+         and this one was not. It is `standing * 40%` now, so a flush
+         row gets nothing at all, exactly as it did when the rim was a
+         gradient.
 
-         The ring is OFFSET by the pointer, away from it, so the edge
-         that has turned towards you thickens and the one that has
-         turned away thins. An edge that opens by the same amount all
-         the way round is a card that got brighter, not one that
-         turned, and that is what "tilting cards should truly show
-         depth while tilting" is about.
+         AND THE RING MOVED. It was offset by the pointer, on the idea
+         that a card leaning towards you shows more of one edge. A card
+         does lean; a piece of glass does not stretch, and this was
+         being applied to the rail, the top bar and every panel on the
+         site, none of which tilt. What actually happens when you move
+         a light across a fixed edge is that the EDGE stays where it
+         is and the reflection travels along it. So the ring is a
+         constant now, and the thing that moves is a separate glint
+         below.
 
-         `--gpx` and `--gpy` are the same pointer `--gx`/`--gy`
-         carries, signed and unitless, because a percentage cannot be
-         a box-shadow offset. They fall back to 0, so a surface the
-         pointer has never touched is lit square on. */
-      inset calc(var(--gpx, 0) * var(--depth-lit) * -0.5px)
-            calc(var(--gpy, 0) * var(--depth-lit) * -0.5px)
-            0 calc(var(--depth-lit) * 0.5px)
+         Thinner, too: `1px + depth * 0.14px` rather than `depth * 0.5`.
+         A pane gets 2.3px and a chip gets 1.1px, which is a chamfer.
+         Half a pane's depth is 4.5px, which is a frame. */
+      inset 0 0 0 calc(1px + var(--depth) * 0.14px)
         color-mix(in oklab, var(--rim-face-a)
-          calc(26% + var(--standing) * 26%), transparent),
-      inset calc(var(--gpx, 0) * var(--depth-lit) * -0.22px)
-            calc(var(--gpy, 0) * var(--depth-lit) * -0.22px)
-            0 calc(var(--depth-lit) * 0.22px)
+          calc(var(--standing) * 40%), transparent),
+      inset 0 0 0 calc(0.5px + var(--depth) * 0.06px)
         color-mix(in oklab, var(--rim-face-b)
-          calc(18% + var(--standing) * 18%), transparent);
+          calc(var(--standing) * 26%), transparent),
+
+      /* ---- and the light reflecting off it, near the pointer only ----
+
+         This is the part that moves, and it is the only part that
+         should: a thin bright glint on the stretch of edge closest to
+         the pointer, blurred so it falls off along the perimeter
+         rather than lighting the whole ring.
+
+         Offset AWAY from the pointer, which puts it on the pointer's
+         side: an inset shadow pushed right lands on the left inner
+         edge. `--gpx`/`--gpy` are the pointer as a signed number,
+         because a percentage cannot be a box-shadow offset. It rides
+         `--glow-a`, so it comes up in 190ms, lingers out over 820ms
+         and is absent entirely at rest, and it is gated by standing
+         like everything else on this edge. */
+      inset calc(var(--gpx, 0) * -7px) calc(var(--gpy, 0) * -7px) 7px -5px
+        color-mix(in oklab, var(--glass-face)
+          calc(var(--glow-a, 0) * var(--standing) * 60%), transparent);
 
     /* ---- and the same cut edge, seen from the sides ----
 
@@ -12700,8 +12709,8 @@ German for day, and .tag is what the site has always called
 
     /* `box-shadow` is NOT in that list any more, and that is the
        one removal worth explaining. The edge is computed from
-       `--depth-lit`, which is computed from `--glow-a`, which is
-       registered and animates: the shadow already changes smoothly,
+       the glint's `--glow-a`, which is registered and animates:
+       the shadow already changes smoothly,
        every frame, for free. Transitioning it as well sets a fresh
        transition off on each of those frames, which is a
        transition that never finishes. What used to ride this line
