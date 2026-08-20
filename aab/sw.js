@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v164: `/fallback.css`. The bevel goes round all four sides at the
+        glass's own thickness instead of a hairline, so depth reads
+        from every side rather than only the bottom, and the routine
+        dashboard's ten panels are surfaces at last.
+
    v163: `/fallback.css`. The edge is an inset shadow rather than a
         gradient, so it follows the border radius instead of cutting
         a straight chord across a rounded shape, and it opens as a
@@ -1537,7 +1542,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v163";
+const VERSION = "v164";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
