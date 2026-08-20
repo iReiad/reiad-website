@@ -8285,7 +8285,9 @@
       .audience-opt, .tab, .slash-item, .course-mod, .ladder-row,
       .saved-row, .kept-row, .target, .rung, .page-toc, .term,
       .quiz-option, .checkpoint, .rt-heat-day,
-      .rt-build-task) {
+      .rt-build-task,
+
+      .big-link, .cv-item, .social, .res, .tally-item) {
     --standing: 0;
   }
 

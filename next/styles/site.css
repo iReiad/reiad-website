@@ -12330,7 +12330,17 @@ German for day, and .tag is what the site has always called
       .audience-opt, .tab, .slash-item, .course-mod, .ladder-row,
       .saved-row, .kept-row, .target, .rung, .page-toc, .term,
       .quiz-option, .checkpoint, .rt-heat-day,
-      .rt-build-task) {
+      .rt-build-task,
+      /* Added when the bevel went round all four sides, because that is
+         when a missing name here stops being invisible. A one pixel rim
+         on a flush row was a hairline nobody read as a box; a bevel at
+         the glass's own thickness, closing the whole perimeter, turns a
+         column of rows into a column of boxes. `.big-link` is three of
+         them stacked edge to edge under "Also on this site", `.cv-item`
+         is a dated list on About, and `.social` is a wrap of five. None
+         of them is ever the only one of its kind on the page, which is
+         this block's own test. */
+      .big-link, .cv-item, .social, .res, .tally-item) {
     --standing: 0;
   }
 
