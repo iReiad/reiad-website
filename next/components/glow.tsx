@@ -144,6 +144,23 @@ export function Glow() {
       el.style.setProperty("--gx", `${x.toFixed(1)}%`);
       el.style.setProperty("--gy", `${y.toFixed(1)}%`);
 
+      /* ---- and the same position again, signed and unitless ----
+
+         `--gx` and `--gy` are percentages, which is what a gradient
+         needs and what a box-shadow offset cannot use: CSS has no way
+         to turn a percentage into a length. The material's edge is a
+         box-shadow, so it needs the pointer as a NUMBER it can
+         multiply by a pixel.
+
+         -1 to 1 from the centre, which is also the axis `tilt.ts`
+         leans the card on. That is the whole point: a card tilted so
+         its bottom right comes towards you should show its thickness
+         THERE, and an edge that opens by the same amount all the way
+         round is a card that got brighter rather than one that
+         turned. */
+      el.style.setProperty("--gpx", ((x - 50) / 50).toFixed(3));
+      el.style.setProperty("--gpy", ((y - 50) / 50).toFixed(3));
+
       /* ---- texture fluency ----
 
          The grain is positioned by this, so the stipple runs

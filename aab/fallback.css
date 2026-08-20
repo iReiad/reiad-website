@@ -8339,10 +8339,14 @@
         color-mix(in oklab, var(--glass-under)
           calc(var(--depth) * (2% + var(--standing) * 6%)), transparent),
 
-      inset 0 0 0 calc(var(--depth-lit) * 0.5px)
+      inset calc(var(--gpx, 0) * var(--depth-lit) * -0.5px)
+            calc(var(--gpy, 0) * var(--depth-lit) * -0.5px)
+            0 calc(var(--depth-lit) * 0.5px)
         color-mix(in oklab, var(--rim-face-a)
           calc(26% + var(--standing) * 26%), transparent),
-      inset 0 0 0 calc(var(--depth-lit) * 0.22px)
+      inset calc(var(--gpx, 0) * var(--depth-lit) * -0.22px)
+            calc(var(--gpy, 0) * var(--depth-lit) * -0.22px)
+            0 calc(var(--depth-lit) * 0.22px)
         color-mix(in oklab, var(--rim-face-b)
           calc(18% + var(--standing) * 18%), transparent);
 

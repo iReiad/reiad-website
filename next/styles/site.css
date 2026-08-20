@@ -12484,10 +12484,27 @@ German for day, and .tag is what the site has always called
          two rings rather than one: the outer catches the light and the
          inner is the shaded part of the same chamfer. Two stops is what
          makes it read as a bevel rather than as a thick border. */
-      inset 0 0 0 calc(var(--depth-lit) * 0.5px)
+      /* ---- and it leans with the card ----
+
+         The ring is OFFSET by the pointer, away from it, so the edge
+         that has turned towards you thickens and the one that has
+         turned away thins. An edge that opens by the same amount all
+         the way round is a card that got brighter, not one that
+         turned, and that is what "tilting cards should truly show
+         depth while tilting" is about.
+
+         `--gpx` and `--gpy` are the same pointer `--gx`/`--gy`
+         carries, signed and unitless, because a percentage cannot be
+         a box-shadow offset. They fall back to 0, so a surface the
+         pointer has never touched is lit square on. */
+      inset calc(var(--gpx, 0) * var(--depth-lit) * -0.5px)
+            calc(var(--gpy, 0) * var(--depth-lit) * -0.5px)
+            0 calc(var(--depth-lit) * 0.5px)
         color-mix(in oklab, var(--rim-face-a)
           calc(26% + var(--standing) * 26%), transparent),
-      inset 0 0 0 calc(var(--depth-lit) * 0.22px)
+      inset calc(var(--gpx, 0) * var(--depth-lit) * -0.22px)
+            calc(var(--gpy, 0) * var(--depth-lit) * -0.22px)
+            0 calc(var(--depth-lit) * 0.22px)
         color-mix(in oklab, var(--rim-face-b)
           calc(18% + var(--standing) * 18%), transparent);
 

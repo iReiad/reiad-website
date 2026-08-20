@@ -547,7 +547,7 @@ const MATERIAL_PROPS = new Set([
      is made of, and every consequence of that is a light. */
   "--depth", "--polish", "--clarity", "--standing",
   "--glow-w", "--glow-i", "--glow-stop", "--glow-a", "--glow-fade",
-  "--lit", "--rim", "--rim-a", "--rim-b", "--rim-face-a", "--rim-face-b",
+  "--lit", "--rim", "--gpx", "--gpy", "--rim-a", "--rim-b", "--rim-face-a", "--rim-face-b",
   "--spec", "--gx", "--gy", "--tx", "--ty",
   "--surface-image", "--surface-size", "--surface-position",
   "--surface-shadow", "--edge", "--depth-lit",
