@@ -177,6 +177,82 @@ for (const [layer, sel] of all) {
 
 let bad = 0;
 
+/* ---------- surface-shaped, and deliberately not glass ----------
+
+   Question 7 asks whether anything with a ground and an edge is off
+   the material. These are the answers that are "no, and here is
+   why". Four reasons, and each one is a different argument:
+
+   A MARK IS NOT A SURFACE. An icon disc, a tick, a flag, a live
+   dot: a thing the size of a full stop, drawn to be read at a
+   glance. A cut edge and a bottom bevel on a 14 pixel circle is
+   detail nobody can resolve and a compositing cost per instance.
+
+   A CELL IN A GRID IS THE GRID'S. A heat map is sixty cells in a
+   block and a correlation matrix is a hundred. Glass on each is the
+   cage the rail already taught us about, one order of magnitude
+   worse: the BLOCK is the surface and the cells are its contents.
+
+   A FILL IS WHAT IS IN A GROOVE, not another groove. It sits inside
+   one, at the accent, and giving it its own cut edge would draw a
+   channel inside a channel.
+
+   A TEXT FIELD ANSWERS DIFFERENTLY. Its affordance is the caret and
+   the focus ring, and a lit resting rim on a box you type into is a
+   box that looks like a button. The element-level `input`,
+   `select` and `textarea` rules are not classes and are not on the
+   material either, so these three would be the exception rather
+   than the rule. */
+
+const NOT_GLASS = new Map<string, string>([
+  ["acc-ico",             "a mark: the account menu's 20px icon disc"],
+  ["rail-ico",            "a mark: the rail's per-school icon disc"],
+  ["acc-avatar",          "a mark: a round profile picture, and a bevel on a photo is a frame"],
+  ["id-mark",             "a mark: the About page's initial, drawn at text size"],
+  ["flag-mark",           "a mark: a stock check flag, red or amber, read at a glance"],
+  ["palette-search-mark", "a mark: the highlight on a matched substring in the palette"],
+  ["card-tick",           "a mark: the done tick in the corner of a lesson card"],
+  ["gt-disc",             "a mark: the gate tile's icon disc"],
+  ["gt-live",             "a mark: the gate tile's live dot"],
+
+  ["heat-cell",  "a cell: one square of a year of days, and there are 365"],
+  ["conf-cell",  "a cell: one square of a correlation matrix"],
+  ["macro-cell", "a cell: one square of the macro grid"],
+  ["glance",     "the grid, not a surface: its 1px gaps ARE the hairline it paints, "
+                 + "and the material under them would show through as a wash. Its cells "
+                 + "are .glance-item and they are plates."],
+
+  ["rng-fill",      "a fill: the accent inside .rng-track"],
+  ["fv-band",       "a fill: the band inside .fv-track"],
+  ["live-fill",     "a fill: the accent inside .live-bar"],
+  ["live-col-fill", "a fill: the accent inside a live column"],
+
+  ["comment-box", "a text field: the caret is the affordance"],
+  ["desk-search", "a text field: the caret is the affordance"],
+  ["topic-field", "a text field: cursor is text, not pointer"],
+  ["field-select", "not a surface: it sets font-family and nothing else, and was "
+                   + "reported only because a nested block inside it has a ground"],
+  ["fig-bar",      "not a surface: padding and a max-width, no ground of its own. "
+                   + "The glass under it is .studio-pane."],
+  ["drawer-back",  "the scrim behind the drawer on a phone. It is the absence of a "
+                   + "surface, dimming everything so one pane reads as the only one."],
+  ["stat-lead",    "a tone on .stat, which is a plate. Colour and nothing else."],
+  ["pill-warn",    "a tone on .pill, which is an OUTLINED LABEL rather than a piece "
+                   + "of glass: a border, a radius and no ground at all. The tone adds "
+                   + "the ground, which is what made it look like a surface here."],
+
+  ["ad-dot",              "a mark: a 9px status dot in the admin list"],
+  ["comment-mark",        "a mark: the 26px initial beside a comment"],
+  ["gate-mark",           "a text highlight, drawn as a gradient under one phrase. "
+                          + "Glass on a run of words is a box around a word."],
+  ["read-aloud-highlight", "a text highlight: the sentence being spoken"],
+  ["chinho",              "an inline symbol in Qur'anic prose, padded by five pixels"],
+  ["skeleton",            "the ABSENCE of content: a shimmer standing in for a row "
+                          + "that has not arrived. A lit edge on it would promise a "
+                          + "surface that is about to be replaced."],
+  ["field-num",           "a text field: the caret is the affordance"],
+]);
+
 /* ---------- 1. interactive and unplaced ---------- */
 
 const interactive = new Map<string, string>();
@@ -307,6 +383,129 @@ for (const [cls, why] of NOT_A_SURFACE) {
   console.error(`        Reason on file: ${why}`);
   console.error("        Remove the entry. A list of exceptions nobody prunes stops being");
   console.error("        a description of anything.");
+}
+
+/* ---------- 5. a name in a kind list that reaches nothing ----------
+
+   `.prog-track` was in the groove's list for one commit. It is not
+   a class this stylesheet has, nothing failed, and the kind read as
+   though it covered a surface that does not exist. That is the
+   stale pointer `check-pointers.ts` catches in comments, happening
+   inside the design system itself. */
+
+{
+  const outside = all.filter(([layer]) => layer !== "glow");
+  for (const cls of [...placed].sort()) {
+    const real = outside.some(([, sel]) =>
+      new RegExp(`\\.${cls}(?![a-z0-9-])`).test(sel));
+    if (real) continue;
+    bad += 1;
+    console.error(`\n  x @layer glow names .${cls}, which no other layer defines.`);
+    console.error("        A kind that covers a class the stylesheet does not have is a");
+    console.error("        promise about a surface nobody can see. Remove the name, or");
+    console.error("        write the rule it was meant for.");
+  }
+}
+
+/* ---------- 6. placed on a kind and never painted ----------
+
+   The taxonomy is said in three lists and they are genuinely
+   different sets: the paint rule is every class on the system, the
+   hover rule is only the four that follow the pointer, and each
+   kind block is one kind. So a class can be given a --depth by its
+   kind and left out of the paint rule, in which case it carries
+   four numbers and no background-image, and looks exactly like a
+   surface nobody got round to.
+
+   The paint rule is the one that sets background-image from --spec.
+   Everything with a kind has to be in it. */
+
+{
+  const painted = new Set<string>();
+  for (const [layer, sel, body] of all) {
+    if (layer !== "glow") continue;
+    if (!/background-image:\s*\n?\s*var\(--spec/.test(body)) continue;
+    for (const m of sel.matchAll(/\.([a-z][a-z0-9-]*)/g)) painted.add(m[1]);
+  }
+  if (!painted.size) {
+    bad += 1;
+    console.error("\n  x no paint rule found in @layer glow.");
+    console.error("        It is the rule whose background-image starts var(--spec). If it");
+    console.error("        was renamed, this check has stopped meaning anything.");
+  } else {
+    const kinded = new Set<string>();
+    for (const [layer, sel, body] of all) {
+      if (layer !== "glow") continue;
+      if (!/--depth:\s*[\d.]+/.test(body)) continue;
+      for (const m of sel.matchAll(/\.([a-z][a-z0-9-]*)/g)) kinded.add(m[1]);
+    }
+    for (const cls of [...kinded].sort()) {
+      if (painted.has(cls)) continue;
+      bad += 1;
+      console.error(`\n  x .${cls} is given a kind and is not in the paint rule.`);
+      console.error("        It carries --depth, --polish, --clarity and --standing, and no");
+      console.error("        background-image, so it has the numbers of a surface and none");
+      console.error("        of the light. Add it to the rule that sets var(--spec).");
+    }
+  }
+}
+
+/* ---------- 7. surface-shaped and off the system ----------
+
+   Question 1 asks whether anything INTERACTIVE is missing, and for
+   a year that was the whole of it. It let a progress track sit at
+   --depth: 0 on four schools' pages while every other surface
+   around it was glass, because nobody presses a progress bar and
+   the check could not see it.
+
+   A surface here is a class whose own rule gives it both a ground
+   and an edge: a background that is not `none`, plus a border, a
+   radius or a shadow. That is the shape a reader reads as a piece
+   of the material whether or not they ever touch it.
+
+   NESTED BLOCKS ARE STRIPPED FIRST, all of them. A rule saying
+   `& .track { background: ... }` is describing a descendant, and
+   counting it made every bare flex wrapper on the site look like a
+   surface: the first run of this reported 57 where there were 39. */
+
+{
+  const shaped = new Map<string, string>();
+  for (const [layer, sel, body] of all) {
+    if (layer === "glow") continue;
+    /* Innermost-first, repeatedly, because one pass leaves the
+       outer half of a nested block behind and a rule with two
+       nested blocks keeps the second. `.contact-form` and
+       `.signin-form` are flex wrappers whose FIELDS carry the
+       ground, and a single pass reported both. */
+    let own = body, prev = "";
+    while (own !== prev) { prev = own; own = own.replace(/&[^{}]*\{[^{}]*\}/g, ""); }
+    const ground = /(^|[;{\s])background(-color|-image)?\s*:\s*(?!none|transparent|inherit|0)/.test(own);
+    const edge = /(^|[;{\s])(border(-[a-z]+)?\s*:\s*(?!0|none)|border-radius\s*:|box-shadow\s*:\s*(?!none))/.test(own);
+    if (!ground || !edge) continue;
+    for (const part of sel.split(",")) {
+      const m = part.trim().match(/^\.([a-z][a-z0-9-]*)$/);
+      if (m && !shaped.has(m[1])) shaped.set(m[1], layer);
+    }
+  }
+  for (const [cls, layer] of [...shaped].sort()) {
+    if (placed.has(cls) || NOT_GLASS.has(cls)) continue;
+    const base = VARIANT_OF.get(cls);
+    if (base && placed.has(base)) continue;
+    bad += 1;
+    console.error(`\n  x .${cls} (@layer ${layer}) has a ground and an edge and is on no kind.`);
+    console.error("        It will read as the one flat rectangle on a page of glass, which");
+    console.error("        is what the plate was invented to stop. Put it on a kind, or add");
+    console.error("        it to NOT_GLASS in this file with the reason it is not.");
+  }
+}
+
+/* ---------- 8. a stale NOT_GLASS entry ---------- */
+
+for (const [cls, why] of NOT_GLASS) {
+  if (new RegExp(`\\.${cls}[\\s,{:.)>~+]`).test(bare)) continue;
+  bad += 1;
+  console.error(`\n  x NOT_GLASS names .${cls}, which the stylesheet no longer has.`);
+  console.error(`        Reason on file: ${why}`);
 }
 
 console.log(

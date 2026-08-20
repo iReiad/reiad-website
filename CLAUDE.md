@@ -342,7 +342,7 @@ four practice books. If you add a third, give it the slim bar too:
 `body > header` is gone from the stylesheet and nothing will style
 a header you write.
 
-## One design system, and five kinds of glass
+## One design system, and six kinds of glass
 
 **Every surface on this site is the same material, and three axes
 decide what a given thing gets.** `@layer glow` in
@@ -356,6 +356,7 @@ decide what a given thing gets.** `@layer glow` in
 | `card`    | 5   | 0.50 | 0.50 | 1   | yes |
 | `pane`    | 9   | 0.30 | 0.30 | 1   | yes |
 | `plate`   | 3.4 | 0.55 | 0.28 | 1   | no  |
+| `groove`  | 1.6 | 0.88 | 0.74 | 0   | no  |
 
 **Nothing visible is authored. All of it is derived:**
 
@@ -363,8 +364,31 @@ decide what a given thing gets.** `@layer glow` in
 --glow-w    = depth * 46px          how wide the light spreads
 --glow-i    = clarity * 32%         how strong it is
 --glow-stop = 52% + (1 - polish) * 46%   how far the falloff reaches
---lit       = pane-top at standing%, ending at 10% + depth * 2.2%
+--lit       = a 1px rim at standing, then nothing, then depth px of edge
+--rim       = the same 1px down both sides, in the accent and the
+              accent turned 62 degrees, scaled by polish
 ```
+
+**Flat on top. The thickness is at the CUT EDGE.** A wash fading
+down a face is a dome, and a dome is the one thing a slab of glass
+does not have. Every stop in `--lit` is doubled and every
+transition is hard: a hairline rim, nothing at all across the whole
+face, then the seat and the catch light at the bottom. `--depth` is
+a length in pixels there, and it drives the BOTTOM band only,
+because what you see looking slightly down at a slab is the whole
+top face, the far edge foreshortened to a line, and the near edge
+showing its full thickness. It was `--depth` px at the top for one
+commit, which on a card is five pixels of grey bar.
+
+**The rim goes all the way round, and it splits.** A flat face and
+a bright bottom band still reads as a painted rectangle until both
+sides have a hairline down them. One pixel, not `--depth`: seen
+from the side a cut edge is foreshortened to nothing. And a cut
+edge of real glass disperses, which is most of why a bevel reads as
+glass rather than as an outline somebody drew, so `--polish` mixes
+the section's accent into one side and that accent turned 62
+degrees into the other. The money school's edge splits green and
+Deutsch's splits blue, and neither is a colour anybody typed.
 
 **Three of the four describe the glass. `--standing` describes the
 situation**, and it is the difference between a design system and
@@ -406,29 +430,78 @@ clear**, because that is what more material does to a light.
 when it breaks: a sixth kind that breaks it breaks the idea rather
 than one number, and every value is plausible on its own.
 
+**A GROOVE is the sixth, and it is the inverse of the other
+five.** Eleven classes on this site were the same object described
+eleven times: a thin pill, four to twenty pixels tall, ground out
+of `--paper-sunk`, clipped, with an `<i>` inside it in the accent.
+`.track` alone was written three times under three different
+parents. A groove is not a thinner plate: it is a channel cut IN,
+so the light in it runs the other way up, the near wall in shadow
+and the far wall catching the light where a slab has a lit top and
+a seated bottom. `--standing: 0` says it in the system's own words,
+because a groove stands on nothing, it IS the absence of standing.
+A segmented control is one too: a sunk track with a thumb riding in
+it, so `.audience-switch` is the groove and `.audience-slider` is a
+`control`.
+
 **A class in the wrong list is the one way to get this wrong**,
 and the test is not what a thing looks like. It is what happens
 when you press it: a chip latches, a control acts, a card takes
-you in, a pane holds other things, a plate is read.
+you in, a pane holds other things, a plate is read, a groove is
+filled.
 
 ```sh
 node scripts/check-material.ts          # every pressable class is placed
 node scripts/check-material.ts --list   # what is on the system
 ```
 
-It asks three questions, and each one is a thing that shipped:
+It asks seven questions, and each one is a thing that shipped:
 
 - **Is anything pressable off the system?** The first material
   reached 1 of 203 surface-like classes, because it was scoped to
   an attribute only components carry, and nothing failed.
+- **Is anything SURFACE-SHAPED off the system?** For a while
+  question one was the whole of it, and it only ever looked at
+  things a reader presses. `.progress-line .track` sat at
+  `--depth: 0` on four schools' pages, a bare grey bar in a page
+  of glass, because nobody presses a progress bar. A surface here
+  is a class whose own rule gives it a ground AND an edge. Nested
+  blocks are stripped first, innermost outwards: counting a
+  `& .track { background }` made every flex wrapper look like a
+  surface and reported 57 where there were 39.
 - **Would the material take a surface's own gradient away?** A
   later layer REPLACES `background-image` rather than merging, so
   a listed class that paints its own loses it silently.
   `--surface-image` is the way through and this fails on a class
   that does not use it.
+- **Is the ladder still a ladder?** Thicker must mean less
+  polished and less clear. `plate` and `groove` are skipped
+  because their spread is zero, so their depth describes a still
+  light rather than a following one.
+- **Does a kind name a class that exists?** `.prog-track` was in
+  the groove's list for one commit and is a class this stylesheet
+  has never had. Nothing failed, and the kind read as though it
+  covered a surface nobody can see.
+- **Is anything given a kind and never painted?** The taxonomy is
+  three lists and they are genuinely different sets: the paint
+  rule is everything, the hover rule is only what follows the
+  pointer, and each kind block is one kind. A class can get four
+  numbers from its kind and be left out of the paint rule, which
+  is a surface with the numbers and none of the light.
 - **Is an exemption stale?** `NOT_A_SURFACE` holds the rows of
-  controls, keyed by class with the reason, and fails when the
-  class is gone.
+  controls and `NOT_GLASS` holds the marks, the grid cells, the
+  fills and the text fields, both keyed by class with the reason,
+  and both fail when the class is gone.
+
+**`NOT_GLASS` has four arguments in it and they are different.** A
+MARK is not a surface: a bevel on a nine pixel dot is detail nobody
+can resolve. A CELL IN A GRID belongs to the grid: a year of days
+is 365 of them and glass on each is the cage one order of magnitude
+worse. A FILL is what is IN a groove, so giving it its own cut edge
+draws a channel inside a channel. And a TEXT FIELD answers
+differently: its affordance is the caret and the focus ring, and a
+lit resting rim on a box you type into is a box that looks like a
+button.
 
 ### A material layer may set the light and nothing else
 

@@ -8188,12 +8188,16 @@
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
+      .audience-slider, .skip,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card,
+      .desk-tile, .gate-card, .admin-row, .rt-build-task,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
-      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel) {
+      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
+      .reader-panel, .signin, .pane-bar, .model-drivers,
+      .news-window, .preflight, .slash-menu, .studio-tools,
+      .course-rail, .csv-panel, .deck-foot, .toast) {
     &:hover, &:focus-visible, &:focus-within {
       --glow-a: 1;
       --glow-fade: 190ms;
@@ -8215,19 +8219,23 @@
   :is(.btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
-      .rail-item, .tree-link, .tab, .course-mod, .pillar) {
+      .rail-item, .tree-link, .tab, .course-mod, .pillar,
+      .audience-slider, .skip) {
     --depth: 2.2; --polish: 0.8; --clarity: 0.7; --standing: 0.9;
   }
 
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card) {
+      .desk-tile, .gate-card, .admin-row, .rt-build-task) {
     --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
 
   :is(.topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
-      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel) {
+      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
+      .reader-panel, .signin, .pane-bar, .model-drivers,
+      .news-window, .preflight, .slash-menu, .studio-tools,
+      .course-rail, .csv-panel, .deck-foot, .toast) {
     --depth: 9; --polish: 0.3; --clarity: 0.3; --standing: 1;
   }
 
@@ -8236,7 +8244,10 @@
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
-      .advanced-card, .at-a-glance, .side-note) {
+      .advanced-card, .at-a-glance, .side-note,
+      .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
+      .ayah, .tothyo, .mukhe, .bolo, .mone, .shape, .merke, .formula,
+      .ref-details, .course-video, .rt-hours-line, .work-art, .share-card) {
     --depth: 3.4; --polish: 0.55; --clarity: 0.28; --standing: 1;
 
     --glow-w: 0px;
@@ -8247,10 +8258,33 @@
         transparent var(--glow-stop));
   }
 
+  .card-art { --depth: 1.4; }
+
+  :is(.track, .rng-track, .score-bar, .fv-track, .yield-track,
+      .dupont-track, .drag-track, .bridge-track, .live-bar,
+      .rt-bar, .meter, .rt-balance, .audience-switch, .seg) {
+    --depth: 1.6; --polish: 0.88; --clarity: 0.74; --standing: 0;
+
+    --glow-w: 0px;
+
+    --lit: linear-gradient(180deg,
+      color-mix(in oklab, var(--glass-under)
+        calc(var(--depth) * (8% + var(--clarity) * 14%)), transparent) 0,
+      color-mix(in oklab, var(--glass-under)
+        calc(var(--depth) * (8% + var(--clarity) * 14%)), transparent)
+        calc(var(--depth) * 1.2px),
+      transparent calc(var(--depth) * 1.2px),
+      transparent calc(100% - 1px),
+      color-mix(in oklab, var(--glass-face) calc(var(--polish) * 40%), transparent)
+        calc(100% - 1px),
+      color-mix(in oklab, var(--glass-face) calc(var(--polish) * 40%), transparent) 100%);
+  }
+
   :is(.rail-item, .tree-link, .tree-btn, .acc-item, .crumb-step,
       .audience-opt, .tab, .slash-item, .course-mod, .ladder-row,
       .saved-row, .kept-row, .target, .rung, .page-toc, .term,
-      .quiz-option, .checkpoint, .rt-heat-day) {
+      .quiz-option, .checkpoint, .rt-heat-day,
+      .rt-build-task) {
     --standing: 0;
   }
 
@@ -8262,18 +8296,28 @@
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
+      .audience-slider, .skip,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card,
+      .desk-tile, .gate-card, .admin-row, .rt-build-task,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
+      .reader-panel, .signin, .pane-bar, .model-drivers,
+      .news-window, .preflight, .slash-menu, .studio-tools,
+      .course-rail, .csv-panel, .deck-foot, .toast,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
-      .advanced-card, .at-a-glance, .side-note) {
+      .advanced-card, .at-a-glance, .side-note,
+      .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
+      .ayah, .tothyo, .mukhe, .bolo, .mone, .shape, .merke, .formula,
+      .ref-details, .course-video, .rt-hours-line, .work-art, .share-card,
+      .track, .rng-track, .score-bar, .fv-track, .yield-track,
+      .dupont-track, .drag-track, .bridge-track, .live-bar, .rt-bar,
+      .meter, .rt-balance, .audience-switch, .seg) {
 
     --glow-w: calc(var(--depth) * 46px);
 
