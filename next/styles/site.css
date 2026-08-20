@@ -11523,7 +11523,17 @@ German for day, and .tag is what the site has always called
     color: var(--season, var(--accent));
   }
 
-  .rt-panel { display: grid; gap: var(--s-5); justify-items: start; }
+  /* It was a bare grid: no ground, no edge, no radius, so ten panels of a
+     dashboard were the one page on this site with no glass on it at all.
+     Nothing failed, because `check-material.ts` asks whether a SURFACE is
+     off the system and this was not shaped like one. It is now. */
+  .rt-panel {
+    display: grid; gap: var(--s-5); justify-items: start;
+    padding: var(--s-6);
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+  }
   .rt-panel h3 {
     font-family: var(--font-bn); font-size: var(--t-3);
     letter-spacing: 0.06em; text-transform: uppercase;
@@ -12062,7 +12072,7 @@ German for day, and .tag is what the site has always called
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card, .admin-row, .rt-build-task,
+      .desk-tile, .gate-card, .admin-row, .rt-build-task, .rt-panel,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -12177,7 +12187,7 @@ German for day, and .tag is what the site has always called
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card, .admin-row, .rt-build-task) {
+      .desk-tile, .gate-card, .admin-row, .rt-build-task, .rt-panel) {
     --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
 
@@ -12320,7 +12330,17 @@ German for day, and .tag is what the site has always called
       .audience-opt, .tab, .slash-item, .course-mod, .ladder-row,
       .saved-row, .kept-row, .target, .rung, .page-toc, .term,
       .quiz-option, .checkpoint, .rt-heat-day,
-      .rt-build-task) {
+      .rt-build-task,
+      /* Added when the bevel went round all four sides, because that is
+         when a missing name here stops being invisible. A one pixel rim
+         on a flush row was a hairline nobody read as a box; a bevel at
+         the glass's own thickness, closing the whole perimeter, turns a
+         column of rows into a column of boxes. `.big-link` is three of
+         them stacked edge to edge under "Also on this site", `.cv-item`
+         is a dated list on About, and `.social` is a wrap of five. None
+         of them is ever the only one of its kind on the page, which is
+         this block's own test. */
+      .big-link, .cv-item, .social, .res, .tally-item) {
     --standing: 0;
   }
 
@@ -12346,7 +12366,7 @@ German for day, and .tag is what the site has always called
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card, .admin-row, .rt-build-task,
+      .desk-tile, .gate-card, .admin-row, .rt-build-task, .rt-panel,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -12460,9 +12480,43 @@ German for day, and .tag is what the site has always called
       inset 0 calc(var(--depth-lit) * -0.42px) 0 calc(var(--depth-lit) * -0.2px)
         color-mix(in oklab, var(--glass-under)
           calc(var(--depth) * (2% + var(--standing) * 6%)), transparent),
-      /* and the rim, all the way round, one pixel */
-      inset 0 0 0 1px
-        color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 46%), transparent);
+      /* ---- and the bevel goes round all four sides ----
+
+         This was one pixel, on the reasoning that a cut edge seen from the
+         side is foreshortened to nothing. That is true of a sheet of paper
+         and false of a slab: a nine millimetre pane has nine millimetres of
+         edge on its left as well as its bottom, and drawing a hairline
+         there says "flat" three times for every one time the bottom says
+         "thick". Look at any side other than the bottom and the depth goes
+         away, which is exactly the report.
+
+         So the ring is `--depth` wide, like everything else here, and it is
+         two rings rather than one: the outer catches the light and the
+         inner is the shaded part of the same chamfer. Two stops is what
+         makes it read as a bevel rather than as a thick border. */
+      /* ---- and it leans with the card ----
+
+         The ring is OFFSET by the pointer, away from it, so the edge
+         that has turned towards you thickens and the one that has
+         turned away thins. An edge that opens by the same amount all
+         the way round is a card that got brighter, not one that
+         turned, and that is what "tilting cards should truly show
+         depth while tilting" is about.
+
+         `--gpx` and `--gpy` are the same pointer `--gx`/`--gy`
+         carries, signed and unitless, because a percentage cannot be
+         a box-shadow offset. They fall back to 0, so a surface the
+         pointer has never touched is lit square on. */
+      inset calc(var(--gpx, 0) * var(--depth-lit) * -0.5px)
+            calc(var(--gpy, 0) * var(--depth-lit) * -0.5px)
+            0 calc(var(--depth-lit) * 0.5px)
+        color-mix(in oklab, var(--rim-face-a)
+          calc(26% + var(--standing) * 26%), transparent),
+      inset calc(var(--gpx, 0) * var(--depth-lit) * -0.22px)
+            calc(var(--gpy, 0) * var(--depth-lit) * -0.22px)
+            0 calc(var(--depth-lit) * 0.22px)
+        color-mix(in oklab, var(--rim-face-b)
+          calc(18% + var(--standing) * 18%), transparent);
 
     /* ---- and the same cut edge, seen from the sides ----
 

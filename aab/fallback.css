@@ -7857,7 +7857,13 @@
     color: var(--season, var(--accent));
   }
 
-  .rt-panel { display: grid; gap: var(--s-5); justify-items: start; }
+  .rt-panel {
+    display: grid; gap: var(--s-5); justify-items: start;
+    padding: var(--s-6);
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius);
+  }
   .rt-panel h3 {
     font-family: var(--font-bn); font-size: var(--t-3);
     letter-spacing: 0.06em; text-transform: uppercase;
@@ -8190,7 +8196,7 @@
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card, .admin-row, .rt-build-task,
+      .desk-tile, .gate-card, .admin-row, .rt-build-task, .rt-panel,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -8225,7 +8231,7 @@
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card, .admin-row, .rt-build-task) {
+      .desk-tile, .gate-card, .admin-row, .rt-build-task, .rt-panel) {
     --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
 
@@ -8279,7 +8285,9 @@
       .audience-opt, .tab, .slash-item, .course-mod, .ladder-row,
       .saved-row, .kept-row, .target, .rung, .page-toc, .term,
       .quiz-option, .checkpoint, .rt-heat-day,
-      .rt-build-task) {
+      .rt-build-task,
+
+      .big-link, .cv-item, .social, .res, .tally-item) {
     --standing: 0;
   }
 
@@ -8295,7 +8303,7 @@
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card, .admin-row, .rt-build-task,
+      .desk-tile, .gate-card, .admin-row, .rt-build-task, .rt-panel,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -8333,8 +8341,16 @@
         color-mix(in oklab, var(--glass-under)
           calc(var(--depth) * (2% + var(--standing) * 6%)), transparent),
 
-      inset 0 0 0 1px
-        color-mix(in oklab, var(--rim-face-a) calc(var(--standing) * 46%), transparent);
+      inset calc(var(--gpx, 0) * var(--depth-lit) * -0.5px)
+            calc(var(--gpy, 0) * var(--depth-lit) * -0.5px)
+            0 calc(var(--depth-lit) * 0.5px)
+        color-mix(in oklab, var(--rim-face-a)
+          calc(26% + var(--standing) * 26%), transparent),
+      inset calc(var(--gpx, 0) * var(--depth-lit) * -0.22px)
+            calc(var(--gpy, 0) * var(--depth-lit) * -0.22px)
+            0 calc(var(--depth-lit) * 0.22px)
+        color-mix(in oklab, var(--rim-face-b)
+          calc(18% + var(--standing) * 18%), transparent);
 
     --rim-a: var(--accent);
     --rim-b: var(--accent);
