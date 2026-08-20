@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v162: `/fallback.css`. A sixth kind of glass, the groove, and
+        forty-nine more classes on the material: every progress
+        track, segmented control, article block, popover and
+        toolbar that was sitting off it. The two pages served as
+        files link the fallback stylesheet by name.
+
    v161: `/fallback.css`. The glass material: a flat top face, a
         hairline rim all the way round that splits into the
         section's accent, and thickness shown at the bottom cut
@@ -1524,7 +1530,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v161";
+const VERSION = "v162";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

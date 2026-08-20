@@ -12058,12 +12058,16 @@ German for day, and .tag is what the site has always called
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
+      .audience-slider, .skip,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card,
+      .desk-tile, .gate-card, .admin-row, .rt-build-task,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
-      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel) {
+      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
+      .reader-panel, .signin, .pane-bar, .model-drivers,
+      .news-window, .preflight, .slash-menu, .studio-tools,
+      .course-rail, .csv-panel, .deck-foot, .toast) {
     &:hover, &:focus-visible, &:focus-within {
       --glow-a: 1;
       --glow-fade: 190ms;
@@ -12162,7 +12166,8 @@ German for day, and .tag is what the site has always called
   :is(.btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
-      .rail-item, .tree-link, .tab, .course-mod, .pillar) {
+      .rail-item, .tree-link, .tab, .course-mod, .pillar,
+      .audience-slider, .skip) {
     --depth: 2.2; --polish: 0.8; --clarity: 0.7; --standing: 0.9;
   }
 
@@ -12172,7 +12177,7 @@ German for day, and .tag is what the site has always called
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card) {
+      .desk-tile, .gate-card, .admin-row, .rt-build-task) {
     --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
 
@@ -12181,7 +12186,10 @@ German for day, and .tag is what the site has always called
      faint. A bar that lit like a chip would be a bar that shouts
      at somebody reading the page under it. */
   :is(.topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
-      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel) {
+      .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
+      .reader-panel, .signin, .pane-bar, .model-drivers,
+      .news-window, .preflight, .slash-menu, .studio-tools,
+      .course-rail, .csv-panel, .deck-foot, .toast) {
     --depth: 9; --polish: 0.3; --clarity: 0.3; --standing: 1;
   }
 
@@ -12204,7 +12212,10 @@ German for day, and .tag is what the site has always called
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
-      .advanced-card, .at-a-glance, .side-note) {
+      .advanced-card, .at-a-glance, .side-note,
+      .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
+      .ayah, .tothyo, .mukhe, .bolo, .mone, .shape, .merke, .formula,
+      .ref-details, .course-video, .rt-hours-line, .work-art, .share-card) {
     --depth: 3.4; --polish: 0.55; --clarity: 0.28; --standing: 1;
 
     /* `--glow-w: 0` after the depth, and both are deliberate. The
@@ -12219,6 +12230,74 @@ German for day, and .tag is what the site has always called
       radial-gradient(calc(var(--depth) * 34%) calc(var(--depth) * 26%) at 100% 0%,
         color-mix(in oklab, var(--accent) calc(var(--clarity) * 40%), transparent),
         transparent var(--glow-stop));
+  }
+
+  /* SIZE lands on depth as much as function does, and the plate has
+     ONE depth, written for a panel. `.card-art` is a 38 pixel icon
+     tile sitting on a card, so a five pixel bottom edge would be an
+     eighth of it. Thin glass on a small piece is the same sentence
+     the chip's row already makes; this is the plate saying it. */
+  .card-art { --depth: 1.4; }
+
+  /* ---- the sixth kind: a channel cut IN, not a slab sitting ON ----
+
+     Eleven classes on this site are the same object described
+     eleven times: a thin pill, four to twenty pixels tall, ground
+     out of `--paper-sunk` or `--hairline`, clipped, with an `<i>`
+     inside it painted in the accent. `.track` alone is written
+     three times under three different parents at 5px, 5px and
+     6px. That is a vocabulary said in eleven places, which is the
+     failure this whole stylesheet keeps returning to, and until
+     now it was invisible to `check-material.ts` because nobody
+     presses a progress bar.
+
+     A groove is not a thinner plate. It is the INVERSE of one, so
+     the light in it runs the other way up: the near wall of the
+     cut is the piece in shadow and the far wall is the piece
+     catching the light, where a slab has a lit top and a seated
+     bottom. That is the whole of `--lit` below, and it is why
+     this is a kind rather than a row of numbers.
+
+     `--standing: 0` says the same thing in the system's own
+     words. A groove stands on nothing: it IS the absence of
+     standing, so the rim goes to nothing on its own and there is
+     no side edge to write.
+
+     Depth 1.6 with polish 0.88 and clarity 0.74 puts it between
+     the chip and the control, which is where a shallow cut in a
+     thin thing belongs: finer than a button, a little deeper than
+     a chip, and thin enough to pass light. What makes a track
+     read as SUNK is the ground colour it already has, not a low
+     clarity. The ladder assertion skips it for the same reason it
+     skips the plate, a spread of zero, but the numbers are placed
+     so that it would pass. */
+  :is(.track, .rng-track, .score-bar, .fv-track, .yield-track,
+      .dupont-track, .drag-track, .bridge-track, .live-bar,
+      .rt-bar, .meter, .rt-balance, .audience-switch, .seg) {
+    --depth: 1.6; --polish: 0.88; --clarity: 0.74; --standing: 0;
+
+    /* Read, never pressed, and five pixels tall: a light that
+       followed the pointer in here would be a light nobody could
+       see chasing a target nobody aims at. */
+    --glow-w: 0px;
+
+    /* Cut in, so the shadow is at the top and the catch light is
+       at the bottom. `--depth` is the height of the near wall, in
+       pixels, exactly as it is the height of the far edge on a
+       slab. The fill inside sits over all of it, which is right:
+       the filled part of a channel is the part with something in
+       it. */
+    --lit: linear-gradient(180deg,
+      color-mix(in oklab, var(--glass-under)
+        calc(var(--depth) * (8% + var(--clarity) * 14%)), transparent) 0,
+      color-mix(in oklab, var(--glass-under)
+        calc(var(--depth) * (8% + var(--clarity) * 14%)), transparent)
+        calc(var(--depth) * 1.2px),
+      transparent calc(var(--depth) * 1.2px),
+      transparent calc(100% - 1px),
+      color-mix(in oklab, var(--glass-face) calc(var(--polish) * 40%), transparent)
+        calc(100% - 1px),
+      color-mix(in oklab, var(--glass-face) calc(var(--polish) * 40%), transparent) 100%);
   }
 
   /* ============================================================
@@ -12241,7 +12320,8 @@ German for day, and .tag is what the site has always called
   :is(.rail-item, .tree-link, .tree-btn, .acc-item, .crumb-step,
       .audience-opt, .tab, .slash-item, .course-mod, .ladder-row,
       .saved-row, .kept-row, .target, .rung, .page-toc, .term,
-      .quiz-option, .checkpoint, .rt-heat-day) {
+      .quiz-option, .checkpoint, .rt-heat-day,
+      .rt-build-task) {
     --standing: 0;
   }
 
@@ -12263,18 +12343,28 @@ German for day, and .tag is what the site has always called
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link, .social,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
+      .audience-slider, .skip,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card,
+      .desk-tile, .gate-card, .admin-row, .rt-build-task,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
+      .reader-panel, .signin, .pane-bar, .model-drivers,
+      .news-window, .preflight, .slash-menu, .studio-tools,
+      .course-rail, .csv-panel, .deck-foot, .toast,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
       .stat, .chart-box, .verdict, .shariah-verdict, .verdict-cap,
-      .advanced-card, .at-a-glance, .side-note) {
+      .advanced-card, .at-a-glance, .side-note,
+      .callout, .ex, .quiz-q, .method-step, .rt-confirm, .card-art,
+      .ayah, .tothyo, .mukhe, .bolo, .mone, .shape, .merke, .formula,
+      .ref-details, .course-video, .rt-hours-line, .work-art, .share-card,
+      .track, .rng-track, .score-bar, .fv-track, .yield-track,
+      .dupont-track, .drag-track, .bridge-track, .live-bar, .rt-bar,
+      .meter, .rt-balance, .audience-switch, .seg) {
     /* ---- everything below is DERIVED, and that is the point ----
 
        46px of spread per millimetre of depth, 44% of accent at
