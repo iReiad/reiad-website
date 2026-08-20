@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v161: `/fallback.css`. The glass material: a flat top face, a
+        hairline rim all the way round that splits into the
+        section's accent, and thickness shown at the bottom cut
+        edge rather than as a wash down the face. `--depth` is
+        pixels now. The two pages served as files link the
+        fallback stylesheet by name, so without this they keep
+        the old material.
+
    v151: `/fallback.css`. The week on paper, which is the last
         piece of ROUTINE.md: blank for a pen, or filled in with
         the week just had.
@@ -1516,7 +1524,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v160";
+const VERSION = "v161";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
