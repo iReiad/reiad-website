@@ -214,6 +214,59 @@ if (unreachable.length) {
   }
 }
 
+/* ============================================================
+   A payload is not a file, and the cache-first branch treats
+   everything that is not HTML as one.
+
+   Next fetches a React Server Component payload at the route's
+   own address with `_rsc` on it, on every client-side navigation
+   and every prefetch. It describes ONE route under ONE build, it
+   varies on four router headers, and a prefetch payload is
+   partial on purpose. Cached and served first, one captured
+   under an earlier build answers a navigation under the next.
+
+   THE FAILURE THIS EXISTS FOR. /admin drew its heading and its
+   two credential cards and none of its thirteen panels, for
+   days. The HTML, the chunks and the stylesheet on the server
+   were all correct, and every check said so, because every check
+   reads what the server sends. What it took to see was the page
+   driven in a browser with no worker in the way.
+
+   Asserted against the source for the reason the guard above is:
+   the condition needs a registered worker, a served origin and
+   two builds to reproduce, and this is the condition.
+   ============================================================ */
+{
+  /* Comments STRIPPED, and the first version of this check did
+     not strip them: it looked for the string `_rsc` before the
+     first respondWith, and the paragraph explaining the exclusion
+     says `_rsc` in it, so deleting the exclusion left the check
+     passing on its own explanation. Proved by deleting it.
+
+     And before the first respondWith, because an exclusion
+     written after the worker has answered is not an exclusion. */
+  const code = sw.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+  const head = code.slice(0, code.indexOf("respondWith"));
+  const missing = ([
+    ['searchParams.has("_rsc")', "an RSC payload"],
+    ['pathname === "/admin"', "/admin"],
+  ] as const).filter(([shape]) => !head.includes(shape));
+
+  if (missing.length) {
+    console.error(`sw.js does not exclude ${missing.map(([, what]) => what).join(" or ")} `
+      + "from the fetch handler before it answers.");
+    missing.forEach(([shape]) => console.error(`      expected: ${shape}`));
+    console.error("");
+    console.error("   Anything that is not HTML is served cache-first, so an RSC");
+    console.error("   payload from an earlier build answers a navigation under this");
+    console.error("   one, and a private page is left in a cache the next reader at");
+    console.error("   the same machine is handed. Return early for both, and bump");
+    console.error("   VERSION: a new one is the only thing that empties a cache");
+    console.error("   already holding a payload.");
+    process.exit(1);
+  }
+}
+
 /** Each precached path against the first sixteen hex characters
     of its SHA-256. Written to `sw-manifest.json` beside the
     VERSION the hashes belong to, which is the whole mechanism:
