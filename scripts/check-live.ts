@@ -134,12 +134,48 @@ const deployed = (name: string, expected: unknown, actual: unknown): void => {
     fails because nobody reads a job that never finishes. Fifteen
     seconds is far longer than any page here takes and far shorter
     than anybody's patience. */
-const ask = (url: string, init: RequestInit = {}): Promise<Response> =>
+const once = (url: string, init: RequestInit = {}): Promise<Response> =>
   fetch(url, {
     signal: AbortSignal.timeout(15_000),
     headers: { "Cache-Control": "no-cache", ...(init.headers ?? {}) },
     ...init,
   });
+
+/** A 5xx is retried. Nothing else is.
+
+    THE FAILURE THIS EXISTS FOR. This site is TWO Workers, and
+    `deploy.yml` uploads one of them and then runs this file. The
+    other, `reiad-next`, is built and rolled out by Cloudflare on
+    its own schedule from the same push, and it is the one that
+    renders an article. So there is a window, about a minute wide,
+    where the main Worker is new and forwards `/insights/<slug>`
+    to a service binding that is mid-rollout, and three of the six
+    pieces in the sitemap answered 500. The change was correct,
+    the deploy was correct, and main went red.
+
+    Retrying a 5xx is the narrow answer, and it is narrow on
+    purpose. Every OTHER status is an ANSWER: a 404, a 301, a 200
+    are all things this file has an opinion about, and retrying
+    one would be retrying until the site said what was wanted. A
+    5xx is the site saying it could not answer at all, which
+    during a rollout is a fact about the clock. A page that is
+    genuinely broken is still 500 on the third ask, three seconds
+    later, and still fails.
+
+    The alternative was making the deploy wait for the other
+    Worker, which this repository cannot see: Cloudflare builds it
+    from the push and tells nobody here when it is live. */
+const RETRY_5XX = 2;
+const SETTLE_MS = 1500;
+
+const ask = async (url: string, init: RequestInit = {}): Promise<Response> => {
+  let answer = await once(url, init);
+  for (let i = 0; answer.status >= 500 && i < RETRY_5XX; i += 1) {
+    await new Promise((done) => { setTimeout(done, SETTLE_MS); });
+    answer = await once(url, init);
+  }
+  return answer;
+};
 
 /** The same, at a path on the site, and without following what
     comes back: several of the checks below are about which
