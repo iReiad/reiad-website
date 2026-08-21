@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v165: `/fallback.css`. Three material tokens stopped inheriting,
+        which is what put a box round every row of the phone's
+        drawer. The file changed in #181 and shipped under v164
+        because `--update` recorded it rather than refusing it;
+        `check-sw.ts` will not do that again.
+
    v164: `/fallback.css`. The bevel goes round all four sides at the
         glass's own thickness instead of a hairline, so depth reads
         from every side rather than only the bottom, and the routine
@@ -1542,7 +1548,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v164";
+const VERSION = "v165";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
