@@ -60,7 +60,7 @@ import { SchoolsPanel } from "./schools-panel";
 import { BackupsPanel } from "./backups-panel";
 import { StatsPanel } from "./stats-panel";
 import { PeoplePanel } from "./people-panel";
-import { ButtonLink } from "../ui/button";
+import { Button, ButtonLink } from "../ui/button";
 import { Surface } from "../ui/surface";
 
 type AccountModule = typeof import("/account.js");
@@ -73,15 +73,26 @@ const CREDENTIALS = {
     name: "The passphrase",
     opens: "the site's own writing: pieces, comments, questions, enquiries, "
       + "subscribers, media and the backups.",
-    where: "/studio",
     press: "Sign in at the Studio",
+    /* A real navigation, unlike the account's below: the
+       passphrase is set at the Studio and nowhere else. */
+    where: "/studio",
   },
   account: {
     name: "Your account",
     opens: "what belongs to a reader: the course section, the live portfolio's "
       + "admin half, and the private routine templates.",
-    where: "/account",
     press: "Sign in to your account",
+    /* A MENU, not a navigation, and the difference is the whole
+       bug this replaced. `signInWithGoogle()` in
+       `aab/src/account.ts` sends `location.pathname` as the
+       return address, so a button that walked the reader to
+       /account first meant signing in from /admin landed them on
+       /account and left them there. The account menu is a
+       popover the shell renders on every page, so opening it
+       where they stand leaves the path at /admin and brings them
+       back to it. */
+    menu: "account-menu",
   },
 } as const;
 
@@ -94,7 +105,25 @@ function Gate({ which, held }: { which: keyof typeof CREDENTIALS; held: boolean 
         {c.name}
       </h3>
       <p className="ad-quiet">{held ? "Held. It opens " : "Not held. It would open "}{c.opens}</p>
-      {held ? null : <ButtonLink kind="ghost" size="sm" href={c.where}>{c.press}</ButtonLink>}
+      {held ? null : "where" in c ? (
+        <ButtonLink kind="ghost" size="sm" href={c.where}>{c.press}</ButtonLink>
+      ) : (
+        <Button kind="ghost" size="sm" popoverTarget={c.menu}
+                onClick={(e) => {
+                  /* The menu is built at runtime by the shell's
+                     own sign-in module. A `popovertarget` naming
+                     an element that is not there does nothing at
+                     all, silently, so this can never be an inert
+                     button: without the menu it goes to the page
+                     that has a sign-in on it. */
+                  if (!document.getElementById(c.menu)) {
+                    e.preventDefault();
+                    window.location.href = "/account";
+                  }
+                }}>
+          {c.press}
+        </Button>
+      )}
     </Surface>
   );
 }
