@@ -309,7 +309,14 @@ async function open(
       localStorage.setItem("reiad-session", JSON.stringify({
         access_token: "not-a-real-token",
         refresh_token: "nor-this",
-        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        /* MILLISECONDS, which is what `aab/src/account.ts` writes:
+           `claims.exp * 1000`. This seeded seconds, and nothing
+           noticed until a caller asked `token()` rather than
+           `current()`: seconds read as long expired, so it tried
+           to refresh against a Supabase that is not there and
+           handed back null. A fixture in the wrong unit is a
+           fixture that describes a session no browser holds. */
+        expires_at: Date.now() + 3600_000,
         user: { id: "admin-1", email: "me@example.com", user_metadata: { full_name: "Me" } },
       }));
     });
@@ -490,8 +497,6 @@ console.log("/admin with no credential");
      to sign in, `signInWithGoogle()` sent `location.pathname` as
      the return address, and they came back to /account and stayed
      there. The sign-in has to happen where the reader stands. */
-  ok("the account gate opens the sign-in menu rather than navigating",
-    await page.locator('.ad-gate button[popovertarget="account-menu"]').count() === 1);
   ok("and no gate sends the reader to /account to do it",
     await page.locator('.ad-gate a[href="/account"]').count() === 0);
 
@@ -508,6 +513,45 @@ console.log("/admin with no credential");
     body.includes("A newer one waiting to take over"));
   ok("and it offers the way out without devtools",
     await page.locator("button", { hasText: "Clear this browser's copy" }).count() === 1);
+
+  /* The account gate presses the site's OWN sign-in where the
+     reader stands. It must not be a link and it must not carry a
+     popovertarget: `#account-menu` does not exist until the top
+     bar's button is pressed, so an attribute naming it does
+     nothing and the fallback fires every time. The check this
+     replaces asserted that attribute and so passed while the
+     button behaved exactly like the link it replaced. */
+  ok("the account gate is a button, not a link to /account",
+    await page.locator(".ad-gate button").count() === 1
+    && await page.locator('.ad-gate a[href="/account"]').count() === 0);
+  ok("and it does not name a popover that is built on demand",
+    await page.locator(".ad-gate button[popovertarget]").count() === 0);
+
+  /* Pressing it presses `.account-btn`, which is the one sign-in
+     this site has. Asserted by putting one there and watching it
+     be clicked, because what went wrong last time was a control
+     that looked right and did nothing. */
+  await page.evaluate(() => {
+    /* Whichever `.account-btn` is FIRST, because the shell may
+       have rendered a real one and `querySelector` takes that
+       one. Appending a second and watching it would pass while
+       the gate pressed something else. */
+    /* Written as markup and found again by selector, rather than
+       created and appended: this config resolves `append` to the
+       body-taking signature, not the DOM one, so passing it an
+       element is a type error with nothing wrong underneath. */
+    if (!document.querySelector(".account-btn")) {
+      document.documentElement.insertAdjacentHTML(
+        "beforeend", '<button class="account-btn"></button>',
+      );
+    }
+    document.querySelector(".account-btn")?.addEventListener("click", () => {
+      document.title = "account-btn pressed";
+    });
+  });
+  await page.locator(".ad-gate button").click();
+  ok("pressing the gate presses the site's own sign-in button",
+    await page.title() === "account-btn pressed");
 
   await page.close();
 }

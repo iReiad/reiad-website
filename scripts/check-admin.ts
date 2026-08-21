@@ -54,10 +54,6 @@ const API = join(ROOT, "functions", "api");
    and a NEW ungated one is not covered by somebody else's
    entry. */
 const PUBLIC: Record<string, string> = {
-  "admin/[[route]].ts":
-    "health, and it is the one panel that has to work on the day the "
-    + "credential is what is broken. It answers booleans and shapes, never "
-    + "values: see the head of that file.",
   "news.ts":
     "the market board on the Insights hub. Public headlines, raced from two "
     + "public endpoints, cached at the edge.",

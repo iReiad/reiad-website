@@ -28,7 +28,7 @@
 import { useEffect, useState } from "react";
 import { Surface } from "../ui/surface";
 import { Row } from "./row";
-import { runtimeModule } from "../account/runtime";
+import { readerCall } from "../../lib/reader-api";
 
 type AccountModule = typeof import("/account.js");
 
@@ -46,15 +46,11 @@ export function RoutineTemplatesPanel() {
     let live = true;
     (async () => {
       try {
-        const acc = await runtimeModule<AccountModule>("/account.js");
-        if (!acc.current()) { if (live) setState("signedout"); return; }
-        const r = await fetch("/api/routine/templates", {
-          headers: { accept: "application/json" },
-        });
+        const r = await readerCall<{ templates?: Template[] }>("routine/templates");
         if (!live) return;
+        if (r.signedOut) { setState("signedout"); return; }
         if (!r.ok) { setState("error"); return; }
-        const d = await r.json() as { templates?: Template[] };
-        const list = Array.isArray(d.templates) ? d.templates : [];
+        const list = Array.isArray(r.data?.templates) ? r.data.templates : [];
         setTemplates(list);
         /* Signed in and given nothing is the endpoint saying no.
            Signed in and given something is an admin. There is no
