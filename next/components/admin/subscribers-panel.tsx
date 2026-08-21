@@ -14,11 +14,12 @@
    column is described.
    ============================================================ */
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { SubscriberRow } from "@reiad/shared/rows";
 import { adminCall, isLocked } from "../../lib/admin-api";
 import { Surface } from "../ui/surface";
 import { Button } from "../ui/button";
+import { Field } from "../ui/field";
 import { Row } from "./row";
 
 /** What the endpoint selects, which is a row without its token.
@@ -35,6 +36,17 @@ export function SubscribersPanel() {
   const [phase, setPhase] = useState<"loading" | "locked" | "error" | "ready">("loading");
   const [rows, setRows] = useState<Listed[]>([]);
   const [counts, setCounts] = useState<Counts | null>(null);
+  const [q, setQ] = useState("");
+
+  /* In the browser: the endpoint answers 500 rows in one go and
+     takes no query, so asking it again per keystroke would be the
+     same list five times. */
+  const shown = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return needle
+      ? rows.filter((s) => `${s.email} ${s.source} ${s.lang}`.toLowerCase().includes(needle))
+      : rows;
+  }, [rows, q]);
 
   useEffect(() => {
     let live = true;
@@ -82,18 +94,23 @@ export function SubscribersPanel() {
             one: the export is what a mailing tool would read.
           </p>
 
-          <div>
+          <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" kind="soft"
                     onClick={() => { location.href = "/api/subscribers/export"; }}>
               Export as CSV
             </Button>
+            <div className="ml-auto min-w-48 flex-1">
+              <Field id="subscribers-search" label="Search the addresses" hideLabel
+                     type="search" value={q} onChange={(e) => setQ(e.target.value)}
+                     placeholder="Search addresses and where they signed up" />
+            </div>
           </div>
 
-          {rows.length === 0 ? (
-            <p className="ad-quiet">Nobody yet.</p>
+          {shown.length === 0 ? (
+            <p className="ad-quiet">{q.trim() ? "Nothing matches that." : "Nobody yet."}</p>
           ) : (
             <ul className="m-0 grid max-h-96 list-none gap-1 overflow-y-auto p-0">
-              {rows.map((s) => (
+              {shown.map((s) => (
                 <li key={s.email}
                     className="flex flex-wrap items-baseline justify-between gap-2
                                border-b border-hairline py-1">

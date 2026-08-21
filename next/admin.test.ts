@@ -227,10 +227,15 @@ interface Sent { method: string; url: string; body: unknown }
 async function open(
   { signedIn, admin, nonsense = false }:
   { signedIn: boolean; admin: boolean; nonsense?: boolean },
-): Promise<{ page: Page; errors: string[]; sent: Sent[] }> {
+): Promise<{ page: Page; errors: string[]; sent: Sent[]; asked: string[] }> {
   const page = await browser.newPage();
   const errors: string[] = [];
   const sent: Sent[] = [];
+  /* Every GET the page made, so a check can say a search box
+     reached the ENDPOINT rather than filtered what was already in
+     hand. The two are different features and one of them cannot
+     search a body it was never sent. */
+  const asked: string[] = [];
   page.on("pageerror", (e: Error) => { errors.push(e.message); });
   await page.route("https://fonts.googleapis.com/**", (r: Route) => r.abort());
 
@@ -264,6 +269,7 @@ async function open(
     const url = new URL(request.url());
     const path = url.pathname.replace(/^\/api\//, "");
     const method = request.method();
+    if (method === "GET") asked.push(url.pathname + url.search);
     const json = (data: unknown, status = 200): Promise<void> =>
       route.fulfill({ status, contentType: "application/json", body: JSON.stringify(data) });
 
@@ -330,7 +336,14 @@ async function open(
       return json({ ok: true, comments: wanted === "pending" ? COMMENTS : [] });
     }
     if (path === "questions") {
-      return json({ ok: true, questions: QUESTIONS, counts: { pending: 1, published: 4 } });
+      /* The endpoint narrows on `q=`, so the fixture does too:
+         a fake that answered the same rows whatever it was asked
+         cannot tell a server search from a decorative box. */
+      const needle = (url.searchParams.get("q") ?? "").toLowerCase();
+      const rows = needle
+        ? QUESTIONS.filter((q) => `${q.name} ${q.body} ${q.slug}`.toLowerCase().includes(needle))
+        : QUESTIONS;
+      return json({ ok: true, questions: rows, counts: { pending: 1, published: 4 } });
     }
     if (path === "enquiries") return json({ ok: true, enquiries: ENQUIRIES });
     if (path === "subscribers") return json({ ok: true, ...SUBSCRIBERS });
@@ -344,7 +357,7 @@ async function open(
   /* The shell asks two endpoints before it renders anything, and
      six panels ask their own after that. */
   await page.waitForTimeout(1200);
-  return { page, errors, sent };
+  return { page, errors, sent, asked };
 }
 
 /* `textContent`, never `innerText`. This site sets
@@ -657,6 +670,82 @@ console.log("\n/admin, the three the desk never had");
     await page.locator("#backups").locator("button").count() === 0);
   ok("and writes nothing at all",
     !sent.some((s) => s.url.startsWith("/api/backup")), JSON.stringify(sent));
+
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   6. What the desk did that a queue has to keep
+
+   Each of these is a check in `app/desk.test.ts`, which is 76 of
+   them and every one a feature the old desk had. `/desk` does not
+   retire until they are covered, and a panel that renders is not
+   the same as a panel that does them.
+   ============================================================ */
+console.log("\n/admin, the desk's own features");
+{
+  const { page, asked, errors } = await open({ signedIn: true, admin: false });
+
+  /* ---- a queue is not a list ---- */
+  ok("a recent comment is marked new",
+    (await text(page, "#comments")).includes("new"));
+  ok("and so is a recent enquiry",
+    (await text(page, "#enquiries")).includes("new"));
+
+  /* ---- reaching the person ---- */
+  const asker = page.locator('#questions a[href^="mailto:"]').first();
+  ok("a question offers a reply by email", await asker.count() === 1);
+  const askerHref = await asker.getAttribute("href") ?? "";
+  ok("addressed to the asker", askerHref.startsWith("mailto:r@example.com"), askerHref);
+  ok("with a subject already written", askerHref.includes("subject="), askerHref);
+
+  const client = page.locator('#enquiries a[href^="mailto:"]').first();
+  ok("an enquiry offers one too", await client.count() === 1);
+  ok("and its subject names the kind",
+    (await client.getAttribute("href") ?? "").includes("project"));
+
+  /* ---- and where a comment was written ---- */
+  const where = await page.locator("#comments a").first().getAttribute("href") ?? "";
+  ok("a comment links to the piece it is on",
+    where.startsWith("/insights/a-live-piece"), where);
+
+  /* ---- the filters say what is behind them ---- */
+  ok("the enquiry filters count, though the endpoint sends no tally",
+    /New\s*1/.test(await text(page, "#enquiries")));
+
+  /* ---- searching, and the two kinds of it ---- */
+  /* Counted from HERE, not from the page load: Waiting asks the
+     same endpoint for the same status to count the queue, so the
+     claim is that typing adds none, not that only one was ever
+     made. */
+  const commentsAsked = () => asked.filter((u) => u.startsWith("/api/comments?status=")).length;
+  const beforeTyping = commentsAsked();
+  await page.locator("#comments-search").fill("Ayesha");
+  await page.waitForTimeout(250);
+  ok("a comment search narrows in the browser",
+    (await text(page, "#comments")).includes("Useful, thank you."));
+  await page.locator("#comments-search").fill("zzz");
+  await page.waitForTimeout(250);
+  ok("and says so when nothing matches",
+    (await text(page, "#comments")).includes("Nothing matches that"));
+  ok("without asking the endpoint again", commentsAsked() === beforeTyping,
+    `${commentsAsked() - beforeTyping} extra request(s)`);
+
+  const before = asked.filter((u) => u.startsWith("/api/questions")).length;
+  await page.locator("#questions-search").fill("টাকা");
+  await page.waitForTimeout(700);
+  const queries = asked.filter((u) => u.includes("/api/questions") && u.includes("q="));
+  ok("a question search reaches the endpoint", queries.length >= 1, asked.join(", "));
+  ok("and is debounced rather than asked per keystroke",
+    asked.filter((u) => u.startsWith("/api/questions")).length - before <= 2,
+    `${asked.filter((u) => u.startsWith("/api/questions")).length - before} requests`);
+
+  await page.locator("#subscribers-search").fill("two@");
+  await page.waitForTimeout(250);
+  const subs = await text(page, "#subscribers");
+  ok("addresses are searchable",
+    subs.includes("two@example.com") && !subs.includes("one@example.com"));
 
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();

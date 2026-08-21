@@ -26,6 +26,15 @@ type AdminComment = Pick<CommentRow,
 
 const day = (iso: string | null): string => (iso ?? "").slice(0, 10);
 
+/** Arrived within the week. Not a column and never stored: a row
+    is new relative to now, so a stored flag would be a field that
+    goes stale sitting still. */
+const NEW_FOR_DAYS = 7;
+const isNew = (iso: string | null): boolean => {
+  const at = Date.parse(iso ?? "");
+  return Number.isFinite(at) && Date.now() - at < NEW_FOR_DAYS * 86_400_000;
+};
+
 /* ---------------- comments ---------------- */
 
 const COMMENTS: QueueSpec<AdminComment> = {
@@ -43,8 +52,16 @@ const COMMENTS: QueueSpec<AdminComment> = {
   query: (f) => `status=${f}`,
   id: (c) => c.id,
   head: (c) => `${c.author_name || "somebody"} on /${c.section}/${c.slug}`,
+  href: (c) => `/${c.section}/${c.slug}.html#comments`,
   body: (c) => c.body,
   meta: (c) => `${day(c.created_at)}${c.parent_id ? " · a reply" : ""}`,
+  flag: (c) => (isNew(c.created_at) ? "new" : null),
+  /* In the browser: this endpoint answers one status at a time
+     with no `q=`, and the rows are already in hand. */
+  search: {
+    placeholder: "Search comments and authors",
+    match: (c, q) => `${c.author_name} ${c.body} ${c.slug}`.toLowerCase().includes(q),
+  },
   actions: [
     { label: "Approve", kind: "soft", patch: { status: "live" },
       when: (c) => c.status !== "live" },
@@ -83,6 +100,18 @@ const QUESTIONS: QueueSpec<QuestionRow> = {
   head: (q) => `${q.name || "anonymous"}${q.slug ? ` on ${q.slug}` : ""}`,
   body: (q) => q.body,
   meta: (q) => `${day(q.created_at)} · ${q.status}`,
+  flag: (q) => (isNew(q.created_at) ? "new" : null),
+  /* At the ENDPOINT, which searches the body in SQL across all
+     300 rows it will answer with. A browser filter over one page
+     would quietly search less than the box promises. */
+  search: { placeholder: "Search questions, names and slugs", server: true },
+  /* The whole answer to a question is replying to it, and making
+     somebody copy an address out of a page is the version of that
+     nobody uses. Absent where the asker left no address. */
+  contact: (q) => (q.email
+    ? { href: `mailto:${q.email}?subject=${encodeURIComponent("Your question on reiad.co.uk")}`,
+        label: "Reply by email" }
+    : null),
   compose: {
     key: "answer",
     label: "The answer, as it will read under the piece",
@@ -128,6 +157,15 @@ const ENQUIRIES: QueueSpec<EnquiryRow> = {
   head: (e) => `${e.name || "somebody"} · ${e.kind}`,
   body: (e) => e.message,
   meta: (e) => `${day(e.created_at)} · ${e.email}`,
+  flag: (e) => (isNew(e.created_at) ? "new" : null),
+  search: {
+    placeholder: "Search enquiries, names and addresses",
+    match: (e, q) => `${e.name} ${e.email} ${e.message} ${e.kind}`.toLowerCase().includes(q),
+  },
+  contact: (e) => ({
+    href: `mailto:${e.email}?subject=${encodeURIComponent(`Re: your enquiry (${e.kind})`)}`,
+    label: "Reply by email",
+  }),
   compose: {
     key: "notes",
     label: "A private note. Nobody but this panel reads it.",

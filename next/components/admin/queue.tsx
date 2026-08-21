@@ -36,11 +36,11 @@
    hundred bytes and it is always right.
    ============================================================ */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Surface } from "../ui/surface";
-import { Button } from "../ui/button";
-import { TextArea } from "../ui/field";
+import { Button, ButtonLink } from "../ui/button";
+import { Field, TextArea } from "../ui/field";
 import type { ButtonKind } from "../ui/button";
 
 /** One button on one row. */
@@ -67,6 +67,20 @@ export interface QueueCompose<T> {
       it: publishing an answer sets a status in the same PATCH. */
   send: string;
   also?: Record<string, unknown>;
+}
+
+/** A box over the list. Two kinds, and the difference is where
+    the narrowing happens: the questions endpoint takes `?q=` and
+    searches the BODY in SQL, which a browser filter over one page
+    of rows cannot do, while comments and enquiries answer the
+    whole list and are narrowed here. */
+export interface QueueSearch<T> {
+  placeholder: string;
+  /** Sent as `q=` and debounced, so it does not ask once per
+      keystroke. Without it the rows already in hand are filtered
+      by `match`. */
+  server?: boolean;
+  match?: (row: T, needle: string) => boolean;
 }
 
 export interface QueueSpec<T> {
@@ -97,8 +111,23 @@ export interface QueueSpec<T> {
       when. All three are plain strings, because a row here is a
       record and not an article. */
   head: (row: T) => string;
+  /** Where the row IS, if it is anywhere. A comment is on a page
+      and a moderator has to read the thread around it; a printed
+      slug makes them assemble the URL themselves. */
+  href?: (row: T) => string | null;
   body: (row: T) => string;
   meta: (row: T) => string;
+  /** How to reach the person, where there is one to reach. A
+      mailto rather than a printed address: the desk's whole answer
+      to an enquiry was replying to it, and making somebody copy an
+      address out of a page is the version of that which nobody
+      uses. */
+  contact?: (row: T) => { href: string; label: string } | null;
+  /** A word on the row, for the state a status does not carry.
+      "new" on something that arrived this week is the desk's, and
+      it is the difference between a queue and a list. */
+  flag?: (row: T) => string | null;
+  search?: QueueSearch<T>;
   actions: Array<QueueAction<T>>;
   compose?: QueueCompose<T>;
   /** Said when the list is empty and the passphrase IS held. */
@@ -114,10 +143,33 @@ export function AdminQueue<T>({ spec }: { spec: QueueSpec<T> }) {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState<number | null>(null);
   const [draft, setDraft] = useState<Record<number, string>>({});
+  /* Two states, not one. `typed` is what is in the box and
+     redraws on every keystroke; `asked` is what the endpoint has
+     been told, and only catches up when the typing stops. A
+     single state would send a request per character. */
+  const [typed, setTyped] = useState("");
+  const [asked, setAsked] = useState("");
+
+  /* The box is debounced only where it reaches the endpoint. A
+     browser filter has nothing to wait for. */
+  useEffect(() => {
+    /* A browser search never touches `asked`, and that is the
+       point rather than an optimisation: `asked` is in `load`'s
+       dependencies, so writing it here would refetch the same
+       rows on every keystroke of a box that filters what is
+       already in hand. */
+    if (!spec.search?.server) return;
+    const t = setTimeout(() => setAsked(typed), 300);
+    return () => clearTimeout(t);
+  }, [typed, spec.search?.server]);
 
   const load = useCallback(async (): Promise<void> => {
     try {
-      const query = spec.query(filter);
+      const parts = [spec.query(filter)].filter(Boolean);
+      if (spec.search?.server && asked.trim()) {
+        parts.push(`q=${encodeURIComponent(asked.trim())}`);
+      }
+      const query = parts.join("&");
       const r = await fetch(`${spec.endpoint}${query ? `?${query}` : ""}`,
         { headers: { accept: "application/json" } });
       /* 401 is the passphrase, 403 is a session that is not an
@@ -129,16 +181,32 @@ export function AdminQueue<T>({ spec }: { spec: QueueSpec<T> }) {
       const list = data[spec.listKey];
       const all = Array.isArray(list) ? list as T[] : [];
       setRows(spec.local ? all.filter((row) => spec.local!(row, filter)) : all);
+      /* The endpoint's own tally where it has one. Where it does
+         not, and the whole list is in hand anyway, count it here:
+         a filter that does not say what is behind it makes
+         somebody press it to find out. */
       setCounts(
         data.counts && typeof data.counts === "object"
           ? data.counts as Record<string, number>
-          : {},
+          : spec.local
+            ? Object.fromEntries(spec.filters.map((f) =>
+              [f.id, all.filter((row) => spec.local!(row, f.id)).length]))
+            : {},
       );
       setPhase("ready");
     } catch { setPhase("error"); }
-  }, [spec, filter]);
+  }, [spec, filter, asked]);
 
   useEffect(() => { void load(); }, [load]);
+
+  /* A server search has already narrowed what came back; a browser
+     one narrows here, and `match` is what a spec means by "matches". */
+  const shown = useMemo(() => {
+    const needle = typed.trim().toLowerCase();
+    const match = spec.search?.match;
+    if (!needle || spec.search?.server || !match) return rows;
+    return rows.filter((row) => match(row, needle));
+  }, [rows, typed, spec.search]);
 
   const act = async (row: T, action: QueueAction<T>): Promise<void> => {
     if (action.confirm && !window.confirm(action.confirm)) return;
@@ -197,7 +265,7 @@ export function AdminQueue<T>({ spec }: { spec: QueueSpec<T> }) {
 
       {phase === "ready" ? (
         <>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter">
+          <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter">
             {spec.filters.map((f) => (
               <Button key={f.id} size="sm" kind={f.id === filter ? "soft" : "quiet"}
                       pressed={f.id === filter} onClick={() => setFilter(f.id)}>
@@ -207,23 +275,40 @@ export function AdminQueue<T>({ spec }: { spec: QueueSpec<T> }) {
                 )}
               </Button>
             ))}
+            {spec.search ? (
+              <div className="ml-auto min-w-48 flex-1">
+                <Field id={`${spec.anchor}-search`} label={spec.search.placeholder}
+                       hideLabel type="search" value={typed}
+                       onChange={(e) => setTyped(e.target.value)}
+                       placeholder={spec.search.placeholder} />
+              </div>
+            ) : null}
           </div>
 
-          {rows.length === 0 ? (
-            <p className="ad-quiet">{spec.empty}</p>
+          {shown.length === 0 ? (
+            <p className="ad-quiet">
+              {typed.trim() ? "Nothing matches that." : spec.empty}
+            </p>
           ) : (
             <ul className="m-0 grid list-none gap-3 p-0">
-              {rows.map((row) => {
+              {shown.map((row) => {
                 const id = spec.id(row);
                 const working = busy === id;
+                const flag = spec.flag?.(row) ?? null;
+                const reach = spec.contact?.(row) ?? null;
                 return (
                   <li key={id}
                       className="grid gap-2 rounded-[var(--radius-sm)] border
                                  border-hairline p-3"
                       data-busy={working ? "" : undefined}>
-                    <p className="m-0 flex flex-wrap items-baseline justify-between gap-2">
-                      <strong className="min-w-0">{spec.head(row)}</strong>
-                      <span className="mono text-[var(--t-2)] text-ink-soft">
+                    <p className="m-0 flex flex-wrap items-baseline gap-2">
+                      {spec.href?.(row)
+                        ? <a className="min-w-0 font-semibold" href={spec.href(row) ?? "#"}>
+                            {spec.head(row)}
+                          </a>
+                        : <strong className="min-w-0">{spec.head(row)}</strong>}
+                      {flag ? <span className="pill">{flag}</span> : null}
+                      <span className="mono ml-auto text-[var(--t-2)] text-ink-soft">
                         {spec.meta(row)}
                       </span>
                     </p>
@@ -240,7 +325,10 @@ export function AdminQueue<T>({ spec }: { spec: QueueSpec<T> }) {
                       />
                     ) : null}
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {reach ? (
+                        <ButtonLink size="sm" href={reach.href}>{reach.label}</ButtonLink>
+                      ) : null}
                       {spec.compose ? (
                         <Button size="sm" kind="solid" disabled={working}
                                 onClick={() => void send(row)}>
