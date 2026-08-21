@@ -63,7 +63,7 @@ const COMMENTS: QueueSpec<AdminComment> = {
     match: (c, q) => `${c.author_name} ${c.body} ${c.slug}`.toLowerCase().includes(q),
   },
   actions: [
-    { label: "Approve", kind: "soft", patch: { status: "live" },
+    { label: "Approve", kind: "solid", patch: { status: "live" },
       when: (c) => c.status !== "live" },
     { label: "Bin", patch: { status: "binned" }, when: (c) => c.status !== "binned" },
     { label: "Back to waiting", patch: { status: "pending" },
