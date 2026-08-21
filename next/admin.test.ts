@@ -123,21 +123,40 @@ const PIECES = [
     published_at: null, updated_at: "2026-08-19", embedded: 1 },
 ];
 
+/* Two, and the second is a REPLY. A fixture of one top-level
+   comment cannot prove that a reply says it is one, and the
+   assertion would pass on a panel that had lost the word. */
 const COMMENTS = [
   { id: 1, slug: "a-live-piece", section: "insights", parent_id: null,
     author_id: "u1", author_name: "Ayesha", body: "Useful, thank you.",
     status: "pending", created_at: "2026-08-18", approved_at: null },
+  { id: 2, slug: "a-live-piece", section: "insights", parent_id: 1,
+    author_id: "u2", author_name: "Karim", body: "Agreed.",
+    status: "pending", created_at: "2026-08-18", approved_at: null },
 ];
 
+/* The second asker left no name and no address, which is the
+   normal case for a question asked from a phone: the panel has to
+   name them as anonymous and offer no mailto rather than a broken
+   one. */
 const QUESTIONS = [
   { id: 7, slug: "a-live-piece", name: "Rahim", email: "r@example.com",
     body: "কত টাকা লাগবে?", answer: null, status: "pending",
     created_at: "2026-08-17", answered_at: null },
+  { id: 8, slug: null, name: "", email: null,
+    body: "Is the stock check free?", answer: null, status: "pending",
+    created_at: "2026-08-15", answered_at: null },
 ];
 
+/* One new and one closed, so the two directions of the status
+   are both drawn: a new one can be closed and a closed one can be
+   reopened. */
 const ENQUIRIES = [
   { id: 3, name: "A client", email: "client@example.com", kind: "project",
     message: "Can you model this?", status: "new", notes: "", created_at: "2026-08-16" },
+  { id: 4, name: "Somebody else", email: "old@example.com", kind: "general",
+    message: "Answered a while ago.", status: "closed", notes: "dealt with",
+    created_at: "2026-06-01" },
 ];
 
 const SUBSCRIBERS = {
@@ -537,10 +556,10 @@ console.log("\n/admin with the passphrase");
 
   /* An answer box on questions, a note box on enquiries, and
      neither on comments: a comment is approved or it is not. */
-  ok("questions offer an answer box",
-    await page.locator("#questions textarea").count() === 1);
+  ok("questions offer an answer box, one per question",
+    await page.locator("#questions textarea").count() === QUESTIONS.length);
   ok("enquiries offer a private note",
-    await page.locator("#enquiries textarea").count() === 1);
+    await page.locator("#enquiries textarea").count() >= 1);
   ok("comments offer neither",
     await page.locator("#comments textarea").count() === 0);
 
@@ -582,8 +601,9 @@ console.log("\n/admin, pressing things");
   /* Publishing an answer is one PATCH carrying both, because the
      endpoint stamps `answered_at` off the status: an answer sent
      without it is prose nobody sees. */
-  await page.locator("#questions textarea").fill("It depends on the broker.");
-  await page.locator("#questions").locator("button", { hasText: "Publish the answer" }).click();
+  await page.locator("#questions-compose-7").fill("It depends on the broker.");
+  await page.locator("#questions li", { hasText: "কত টাকা লাগবে?" })
+    .locator("button", { hasText: "Publish the answer" }).click();
   await page.waitForTimeout(400);
   const answer = sent.find((s) => s.url.startsWith("/api/questions/"));
   const answerBody = JSON.stringify(answer?.body ?? {});
@@ -593,14 +613,38 @@ console.log("\n/admin, pressing things");
   /* The history dialog is a real dialog, which is the whole
      reason it is not a div: showModal() brings the backdrop, the
      focus trap and Escape for nothing. */
-  await page.locator("#published").locator("button", { hasText: "History" }).first().click();
+  /* Named, not `.first()`. The list is sorted by `updated_at`, so
+     which row leads is a fact about the fixture rather than about
+     the panel, and an assertion about the heading has to know
+     whose history it opened. */
+  await page.locator("#published li", { hasText: "A live piece" })
+    .locator("button", { hasText: "History" }).click();
   await page.waitForTimeout(400);
   ok("History opens a modal dialog",
     await page.evaluate(() => document.querySelector("dialog")?.matches(":modal") ?? false));
   ok("and lists the version", (await text(page, "dialog")).includes("An older headline"));
-  ok("and says that going back is undoable",
-    (await text(page, "dialog")).includes("can be undone")
-    || (await text(page, "dialog")).length > 0);
+  /* This asked whether the dialog said "can be undone", which it
+     does not: that sentence is in the CONFIRM box, and the check
+     was patched with `|| dialog.length > 0` to make it pass. A
+     check that cannot fail is worse than no check, so it asks the
+     two things that are actually true of the dialog instead. */
+  ok("and names the piece it belongs to",
+    (await text(page, "dialog")).includes("A live piece"));
+
+  /* Going back is a POST to the versions endpoint, and it is the
+     one action in this dialog. `confirm()` blocks a headless page
+     for ever unless something answers it. */
+  page.once("dialog", (d) => { void d.accept(); });
+  await page.locator("dialog").locator("button", { hasText: "Put this back" }).click();
+  await page.waitForTimeout(500);
+  const restore = sent.find((x) => x.url.includes("/versions"));
+  ok("and a version can be put back", restore?.method === "POST", JSON.stringify(restore));
+  ok("naming which one", JSON.stringify(restore?.body ?? {}).includes("11"),
+    JSON.stringify(restore?.body));
+
+  await page.locator("#published li", { hasText: "A live piece" })
+    .locator("button", { hasText: "History" }).click();
+  await page.waitForTimeout(300);
   await page.keyboard.press("Escape");
   await page.waitForTimeout(200);
   ok("Escape closes it",
@@ -854,6 +898,29 @@ console.log("\n/admin, what is read");
   const week = await text(page, "#stats");
   ok("another window re-asks the endpoint and redraws",
     week.includes("2026-08-08") && !week.includes("2026-07-16"), week.slice(0, 200));
+
+  /* ---- what a row says about itself ---- */
+  /* Each of these is a `desk.test.ts` check with a subject on
+     /admin and nothing asking it. The behaviour was there; the
+     assertion was not, which is the same as not having it. */
+  ok("an anonymous asker is named as one",
+    (await text(page, "#questions")).includes("anonymous"));
+  ok("and is offered no reply, rather than a broken one",
+    await page.locator('#questions a[href^="mailto:"]').count() === 1,
+    "one asker gave an address and one did not");
+  ok("a reply says it is one", (await text(page, "#comments")).includes("a reply"));
+  ok("a draft is shown as a draft", (await text(page, "#published")).includes("draft"));
+  ok("and is offered Publish rather than Unpublish",
+    await page.locator("#published li", { hasText: "Not finished" })
+      .locator("button", { hasText: "Publish" }).count() === 1);
+  await page.locator("#enquiries").locator("button", { hasText: "Everything" }).click();
+  await page.waitForTimeout(250);
+  ok("a closed enquiry can be reopened",
+    await page.locator("#enquiries li", { hasText: "Answered a while ago." })
+      .locator("button", { hasText: "Reopen" }).count() === 1);
+  ok("and is not offered Close again",
+    await page.locator("#enquiries li", { hasText: "Answered a while ago." })
+      .locator("button", { hasText: "Close" }).count() === 0);
 
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();
