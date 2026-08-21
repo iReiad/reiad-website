@@ -204,6 +204,46 @@ const SCHOOLS_AUDIT = {
   },
 };
 
+/* What `/api/signals/stats?days=` answers: a path, a day and a
+   number, which is the whole record behind that endpoint.
+
+   Four paths on purpose, and each is a different way of being
+   named. `/portfolio` and `/tools/stock` are known to
+   `shared/content.ts` and to nothing else; `/insights/a-live-piece.html`
+   is a row, so only `/api/articles` can name it; `/nothing/here` is
+   known to neither and has to be printed as it is. */
+const VIEWS = [
+  { path: "/portfolio", views: 400 },
+  { path: "/tools/stock", views: 300 },
+  { path: "/insights/a-live-piece.html", views: 200 },
+  { path: "/nothing/here", views: 5 },
+];
+
+/* A gap on purpose. Nothing was read on the 12th or the 13th, and
+   those are noughts rather than two days the line is drawn
+   straight across. */
+const DAILY = [
+  { day: "2026-08-11", views: 120 },
+  { day: "2026-08-14", views: 512 },
+  { day: "2026-08-15", views: 300 },
+];
+
+/* No date column, which is why the panel says this list is all
+   time rather than letting it read as the window's. */
+const REACTIONS = [{ slug: "a-live-piece", kind: "helpful", count: 12 }];
+
+/** The window is read off the query rather than ignored: three
+    buttons that redraw the same figures look exactly like three
+    that work. */
+const stats = (days: string): Record<string, unknown> => ({
+  days: Number(days),
+  since: days === "7" ? "2026-08-08" : days === "90" ? "2026-05-17" : "2026-07-16",
+  total: days === "7" ? 812 : 1234,
+  top: VIEWS,
+  daily: DAILY,
+  reactions: REACTIONS,
+});
+
 const BACKUP_STATUS = {
   r2: true,
   snapshots: [
@@ -347,6 +387,9 @@ async function open(
     }
     if (path === "enquiries") return json({ ok: true, enquiries: ENQUIRIES });
     if (path === "subscribers") return json({ ok: true, ...SUBSCRIBERS });
+    if (path === "signals/stats") {
+      return json({ ok: true, ...stats(url.searchParams.get("days") ?? "30") });
+    }
     if (path === "media/usage") return json({ ok: true, ...MEDIA_USAGE });
     if (path === "schools/audit") return json({ ok: true, ...SCHOOLS_AUDIT });
     if (path === "backup/status") return json({ ok: true, ...BACKUP_STATUS });
@@ -385,6 +428,7 @@ console.log("/admin with no credential");
 
   for (const heading of [
     "Waiting", "Published", "Comments", "Questions", "Enquiries", "Subscribers",
+    "What is read",
   ]) {
     ok(`${heading} is on the page`, body.includes(heading));
   }
@@ -407,6 +451,7 @@ console.log("/admin with no credential");
     ["#questions", "Nothing waiting"],
     ["#enquiries", "Nothing here."],
     ["#subscribers", "Nobody yet"],
+    ["#stats", "Nothing recorded in this window yet"],
   ] as const) {
     ok(`${panel} does not draw "${empty}" to somebody signed out`,
       !(await text(page, panel)).includes(empty));
@@ -602,7 +647,9 @@ console.log("\n/admin when an endpoint answers something else");
 
   /* Every panel is still there, each saying it could not read
      what it asked for rather than being absent. */
-  for (const heading of ["Health", "Published", "Comments", "Subscribers"]) {
+  for (const heading of [
+    "Health", "Published", "Comments", "Subscribers", "What is read",
+  ]) {
     ok(`${heading} is still on the page`, body.includes(heading));
   }
   ok("Health says the Worker gave no usable answer",
@@ -746,6 +793,67 @@ console.log("\n/admin, the desk's own features");
   const subs = await text(page, "#subscribers");
   ok("addresses are searchable",
     subs.includes("two@example.com") && !subs.includes("one@example.com"));
+
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
+  await page.close();
+}
+
+/* ============================================================
+   7. What is read
+
+   The one panel the desk had and this page did not, ported out of
+   its `Stats.tsx`. Every check below is one of the eight the
+   desk's own `desk.test.ts` made under "what's read", plus the
+   three it could not: it named a path out of one index and a piece
+   out of another, and nothing said which of the two had answered.
+
+   A port is finished when it does what the thing it replaced did,
+   not when it renders, and those two look identical from here.
+   ============================================================ */
+console.log("\n/admin, what is read");
+{
+  const { page, errors } = await open({ signedIn: true, admin: false });
+  const panel = page.locator("#stats");
+
+  ok("the panel is on the page", await panel.count() === 1,
+    "nothing carries #stats. panel.tsx is what mounts <StatsPanel/>");
+
+  const read = await text(page, "#stats");
+
+  ok("three windows to choose from",
+    await panel.locator('[role="group"] button').count() === 3);
+  ok("the line is drawn",
+    await panel.locator(".chart-box svg polyline").count() === 1);
+  ok("the busiest day is a figure of its own",
+    (await text(page, "#stats .stat-row")).includes("512"),
+    await text(page, "#stats .stat-row"));
+
+  /* Three names, three sources, and the fourth path is the one
+     nothing knows. A panel that named the first three by accident
+     would name the fourth too. */
+  ok("a path is named, not printed", read.includes("Portfolio & services"),
+    read.slice(0, 300));
+  ok("a tool is named too, and content.ts is the only thing that knows that",
+    read.includes("Stock check"));
+  ok("a piece is named out of the database, which is the only thing that knows that",
+    read.includes("A live piece"));
+  ok("and a path nothing knows is printed as it is", read.includes("/nothing/here"));
+
+  ok("reactions are shown when there are any",
+    (await panel.locator(".section-label").allTextContents()).includes("Reactions"));
+  ok("and the reactions list says it cannot follow the window",
+    read.includes("All time"));
+  ok("and the page says what it does not know",
+    (await text(page, "#stats .tool-note")).includes("No cookies"));
+
+  /* The window has to REACH the endpoint. Three buttons that
+     redraw one answer look exactly like three that work, and the
+     endpoint takes `?days=`. */
+  await panel.locator("button", { hasText: "7 days" }).click();
+  await page.waitForTimeout(500);
+  const week = await text(page, "#stats");
+  ok("another window re-asks the endpoint and redraws",
+    week.includes("2026-08-08") && !week.includes("2026-07-16"), week.slice(0, 200));
 
   ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();

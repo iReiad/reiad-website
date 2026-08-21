@@ -150,7 +150,10 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   "/tools/routine", "/tools/routine/*",
   "/admin",
   "/portfolio", "/portfolio/*", "/",
-  "/desk", "/studio",
+  # "/desk" is deliberately NOT here. It retired to archive/ and is
+  # a 301 to /admin in aab/_redirects, and a path this list claims
+  # never reaches that file.
+  "/studio",
   # The four schools, Stage 11.7. 247 pages left aab/ in the same
   # commit that added these, so with not_found_handling set the asset
   # router would answer every one of them with 404.html and the Worker

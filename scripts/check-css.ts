@@ -181,12 +181,12 @@ for (const outside of ["../next/app", "../next/components", "../next/lib"]) {
   if (existsSync(join(ROOT, outside))) walk(join(ROOT, outside));
 }
 
-/* And the Studio and the desk, which are a Vite workspace whose
-   OUTPUT is committed into `aab/` and therefore already walked.
-   The sources are here for the dead-rule count at the foot of
-   this file: `.pill-warn` is written in `app/src/Published.tsx`
-   and appears in the built bundle as a minified class string,
-   which is enough for a substring test and not enough to trust. */
+/* And the Studio, which is a Vite workspace whose OUTPUT is
+   committed into `aab/` and therefore already walked. The source
+   is here for the dead-rule count at the foot of this file: a
+   class a component writes appears in the built bundle as a
+   minified string, which is enough for a substring test and not
+   enough to trust. */
 if (existsSync(join(ROOT, "../app/src"))) walk(join(ROOT, "../app/src"));
 
 const markup = new Map(

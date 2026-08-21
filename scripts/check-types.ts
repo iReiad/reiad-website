@@ -149,7 +149,7 @@ const CONFIGS: Config[] = [
     config: join(ROOT, "functions", "tsconfig.test.json"),
   },
   {
-    what: "app/ (the desk and the Studio in a browser)",
+    what: "app/ (the Studio in a browser)",
     config: join(ROOT, "app", "tsconfig.test.json"),
     needs: [join(ROOT, "app")],
   },

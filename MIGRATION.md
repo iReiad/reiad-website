@@ -417,16 +417,16 @@ already holds the database to.
 
 ### app/
 
-Two files, and both are browser tests: `desk.test.ts` and
-`studio.test.ts`, converted on 19 August 2026. There is no JavaScript
-and no `.mjs` left in this workspace.
+One file, and it is a browser test: `studio.test.ts`, converted on 19
+August 2026. `desk.test.ts` was the other and went to
+`archive/desk-react/` on 21 August 2026 with the page it drove. There
+is no JavaScript and no `.mjs` left in this workspace.
 
-They are NOT in `app/tsconfig.json`, and that is the point of the
-second config rather than an oversight. That one is the BUILD, run by
-`tsc -b` before Vite with an `include` of `src`, so a test in it would
-hold the desk's own build to Playwright being installed. That is the
-mistake `next/tsconfig.test.json` was split out for after it failed a
-deploy. `app/tsconfig.test.json` is the second config, `check-types.ts`
+It is NOT in `app/tsconfig.json`, and that is the point of the second
+config rather than an oversight. That one is the BUILD, run by `tsc -b`
+before Vite with an `include` of `src`, so a test in it would hold the
+Studio's own build to Playwright being installed. That is the mistake
+`next/tsconfig.test.json` was split out for after it failed a deploy. `app/tsconfig.test.json` is the second config, `check-types.ts`
 runs it, and where `app/node_modules` is absent it skips and says which
 directory to install in.
 

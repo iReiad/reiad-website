@@ -16,9 +16,9 @@
    ============================================================ */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-/* The site's own components, across the workspace boundary. The
-   note above the same two imports in `app/src/Desk.tsx` says what
-   holds that up. */
+/* The site's own components, across the workspace boundary.
+   `dedupe` in `app/vite.config.ts` is what holds that up: one
+   React in the bundle, whichever directory asked for it. */
 import { Button, ButtonLink } from "../../../next/components/ui/button.tsx";
 import { Eyebrow, SectionLabel } from "../../../next/components/ui/label.tsx";
 import type { EditorHandle } from "/editor.js";

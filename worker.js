@@ -176,10 +176,12 @@ export const NEXT_ROUTES = [
   /* The admin panel. ADMIN.md is the plan; it is `unlisted` in
      lib/nav.ts for the reason the course section is. */
   /^\/admin$/i,
-  /* The two private shells. Their bundles are NOT here: those are
-     files in aab/desk/ and aab/studio/, and the asset router
-     answers them as it always has. */
-  /^\/(desk|studio)$/i,
+  /* The Studio's shell. Its bundle is NOT here: that is a file in
+     aab/studio/, and the asset router answers it as it always
+     has. `/desk` was the other one and is a 301 to /admin in
+     aab/_redirects now, which only works because this list and
+     run_worker_first both let it fall through to the rules file. */
+  /^\/studio$/i,
   /^\/portfolio\/[a-z-]+$/i,
   /* The home page, at the address its canonical link has always
      named. `/index.html` is not here: it 301s to this one, which

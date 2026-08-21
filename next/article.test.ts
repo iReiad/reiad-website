@@ -8,8 +8,8 @@
 
    Every browser test in this repository drives a PRERENDERED
    page: `interactive.test.ts` serves Next's output files from a
-   little static server, `account.test.ts` and `app/desk.test.ts`
-   do the same for theirs. An article is not prerendered. It is
+   little static server, and `account.test.ts` does the same for
+   its own. An article is not prerendered. It is
    rendered per request out of D1, so none of them could reach it,
    and a client component on it was verified for its first paint
    and for nothing an effect or a click does.

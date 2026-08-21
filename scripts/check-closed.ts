@@ -92,7 +92,7 @@ const AREAS: Area[] = [
          new SOURCE file, which the source's own entry catches. */
       && !/^(content|api|share-card|glow|tilt|app|editor|photo|auth|audience|activation|pieces|streak|prefs|signin|saved|sync|account|checkpoints|courses|routine)\.js$/.test(rel)
       && !/\/curriculum\.js$/.test(rel)
-      && !/^(desk|studio)\//.test(rel)
+      && !/^studio\//.test(rel)
       && !/^fallback\.css$/.test(rel),
     instead: "a route under next/app/ or a component under next/components/",
   },

@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v168: `/fallback.css`. The desk retired to `archive/` and
+        `/admin` answers all four spellings of its address, so
+        every rule that styled only the desk went out of the
+        stylesheet with it: the four overview tiles, the article
+        rows, the More menu and the moderation rows. A precached
+        copy of the old one is 150 lines of dead rules, which
+        costs nothing until one of those class names is reused for
+        something else.
+
    v167: `/fallback.css`. The pointer light is an ellipse rather
         than a circle, and the rail is the one surface that uses
         the second radius: a 220px circle on a column 268px wide
@@ -1562,7 +1571,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v167";
+const VERSION = "v168";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

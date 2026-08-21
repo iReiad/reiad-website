@@ -617,9 +617,9 @@ console.log("\nsigning out");
    this harness is a static server over `aab/`, and
    `/account.html` has not been a file here since Stage 11.5. What
    this is really testing is the profile path the whole file
-   shares, and that is a module. `app/desk.test.ts` is the pattern
-   for driving a rendered page and needs a build this file does
-   not.
+   shares, and that is a module. `next/admin.test.ts` is the
+   pattern for driving a rendered page and needs a build this file
+   does not.
    ============================================================ */
 console.log("\nchanging the display name");
 {

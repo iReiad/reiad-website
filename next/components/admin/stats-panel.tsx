@@ -3,11 +3,11 @@
 /* ============================================================
    Stats: what the site is being read for.
 
-   Ported from `app/src/Stats.tsx`, which is the one panel the
-   desk had and this page did not. ADMIN.md §2 names Stats among
-   the desk's nine, and §3 B, which describes those nine one at a
-   time, stops at History: a whole panel went missing between two
-   lists in the same file.
+   Ported from the React desk's `Stats.tsx`, which is the one panel
+   the desk had and this page did not. ADMIN.md §2 names Stats
+   among the desk's nine, and §3 B, which describes those nine one
+   at a time, stops at History: a whole panel went missing between
+   two lists in the same file.
 
    §4 is the constraint it is under, and what it reads already
    meets it. `POST /api/signals/view` writes a path, a day and a
@@ -198,10 +198,13 @@ export function StatsPanel() {
     return map;
   }, [pieces]);
 
-  /* Four spellings of one address. A view is recorded as
-     `location.pathname`, which is `/money/basics-1` for a route,
+  /* One address, spelled more than one way. A view is recorded as
+     `location.pathname`: `/money/basics-1` for a route,
      `/insights/x.html` where the suffix is part of the slug, and
-     `/deutsch/` for somebody whose bookmark predates task #28. */
+     `/deutsch/` for somebody whose bookmark predates task #28. The
+     suffix is tried both ways round because which of the two the
+     index holds is a fact about the page rather than about the
+     reader who arrived. */
   const name = (path: string): string =>
     titles.get(path)
     ?? titles.get(`${path}.html`)
@@ -245,7 +248,9 @@ export function StatsPanel() {
             ))}
           </div>
 
-          <p className="admin-count mono m-0">Counted since {figures.since}</p>
+          <p className="mono m-0 text-[var(--t-2)] text-ink-soft">
+            Counted since {figures.since}
+          </p>
 
           <div className="stat-row w-full">
             <div className="stat stat-lead">
@@ -285,7 +290,7 @@ export function StatsPanel() {
                 <li key={row.path}
                     className="flex flex-wrap items-baseline gap-2 border-b
                                border-hairline py-1">
-                  <a className="min-w-0 flex-1 basis-56" href={row.path}>{name(row.path)}</a>
+                  <a className="min-w-0 grow basis-56" href={row.path}>{name(row.path)}</a>
                   <span className="mono min-w-0 break-all text-[var(--t-2)] text-ink-soft">
                     {row.path}
                   </span>
@@ -306,9 +311,9 @@ export function StatsPanel() {
                         className="flex flex-wrap items-baseline gap-2 border-b
                                    border-hairline py-1">
                       {piece ? (
-                        <a className="min-w-0 flex-1 basis-56" href={piece.url}>{piece.title}</a>
+                        <a className="min-w-0 grow basis-56" href={piece.url}>{piece.title}</a>
                       ) : (
-                        <span className="mono min-w-0 flex-1 basis-56 break-all">{r.slug}</span>
+                        <span className="mono min-w-0 grow basis-56 break-all">{r.slug}</span>
                       )}
                       <span className="mono text-[var(--t-2)] text-ink-soft">{r.kind}</span>
                       <span className="mono ml-auto tabular-nums">{r.count}</span>

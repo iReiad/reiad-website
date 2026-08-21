@@ -91,7 +91,6 @@ const NOT_A_SURFACE = new Map<string, string>([
   ["driver-group", "a row of `.driver` sliders."],
   ["preview-controls", "a toolbar of buttons."],
   ["fig-bar", "the figure toolbar, which is a row of icon buttons."],
-  ["more-menu", "a menu's frame. Its items are `.acc-item`."],
   ["reader-bar", "the reader panel's bar, holding two icon buttons."],
   ["tool-inputs", "a form's frame."],
   ["prev-next", "a pager. The two links in it are `.btn`."],
@@ -113,11 +112,9 @@ const NOT_A_SURFACE = new Map<string, string>([
   ["kept-body", "the body of a `.kept-row`, which is the surface."],
   ["desk-search", "a field. Fields are `<Field>` and have their own focus ring."],
   ["notion-search", "the same."],
-  ["move-field", "the same."],
   ["topic-field", "the same."],
   ["paste-area", "a textarea. Same reason."],
   ["timeline", "a list with hoverable entries."],
-  ["admin-row", "a row in a table."],
   ["comment-box", "a form."],
   ["news-window", "the research window's frame."],
   ["palette-foot", "the palette's footer, holding hints."],
@@ -240,9 +237,6 @@ const NOT_GLASS = new Map<string, string>([
   ["drawer-back",  "the scrim behind the drawer on a phone. It is the absence of a "
                    + "surface, dimming everything so one pane reads as the only one."],
   ["stat-lead",    "a tone on .stat, which is a plate. Colour and nothing else."],
-  ["pill-warn",    "a tone on .pill, which is an OUTLINED LABEL rather than a piece "
-                   + "of glass: a border, a radius and no ground at all. The tone adds "
-                   + "the ground, which is what made it look like a surface here."],
 
   ["ad-dot",              "a mark: a 9px status dot in the admin list"],
   ["comment-mark",        "a mark: the 26px initial beside a comment"],

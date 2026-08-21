@@ -33,8 +33,8 @@
    2. NEVER SHOW A LOCKED PANEL AS AN EMPTY ONE. A panel missing
       its credential says so, with the one thing to press. An
       empty list where a credential is missing looks exactly like
-      a working panel with nothing in it, which is the failure
-      `app/desk.test.ts` exists for.
+      a working panel with nothing in it, which is the failure the
+      desk's own browser test existed for and this page inherited.
 
    All seven stages of ADMIN.md §6 are here: the route, the shell,
    the two sign-ins and Health; the account half; the three
@@ -58,6 +58,7 @@ import { SubscribersPanel } from "./subscribers-panel";
 import { MediaPanel } from "./media-panel";
 import { SchoolsPanel } from "./schools-panel";
 import { BackupsPanel } from "./backups-panel";
+import { StatsPanel } from "./stats-panel";
 import { PeoplePanel } from "./people-panel";
 import { ButtonLink } from "../ui/button";
 import { Surface } from "../ui/surface";
@@ -196,6 +197,13 @@ export function AdminPanel() {
       <EnquiriesPanel />
       <SubscribersPanel />
 
+      {/* Not in ADMIN.md's thirteen, and here because comparing the
+          desk's own browser test check by check found one whole
+          panel the desk had and this page did not. §4 bans
+          analytics BEYOND what the site already counts, which is
+          what this reads. */}
+      <StatsPanel />
+
       {/* ADMIN.md §6 stage 6: the three the desk never had. */}
       <MediaPanel />
       <SchoolsPanel />
@@ -210,11 +218,11 @@ export function AdminPanel() {
           exists.
         </p>
         <p className="ad-quiet">
-          The desk at <a href="/desk">/desk</a> is still served. It goes to
-          <code> archive/</code> once these panels have been driven in a browser
-          against the checks that describe what it did: a port is finished when it does
-          what the thing it replaced did, not when it renders, and those two look
-          identical from here.
+          The desk has retired. Its thirteen panels are the ones above, all four
+          spellings of its address are a 301 to this page, and everything it was
+          built from is in <code>archive/</code>, which is readable rather than
+          deleted: the reason to keep a replaced thing at all is so that whoever
+          has to check the replacement can read both.
         </p>
       </Surface>
     </div>

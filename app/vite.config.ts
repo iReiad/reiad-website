@@ -35,16 +35,17 @@
                                   this origin; nothing is fetched
                                   from a CDN, ever.
 
-   ---- two pages, two builds ----
+   ---- one page, one build, and TARGET is still here ----
 
-   The desk and the Studio are separate pages that share modules,
-   not one app with two routes, and they build separately because
-   of the first constraint above: one file each, at a stable path,
-   so `sw.js` and the two HTML shells keep naming something real.
-   Rollup will not inline dynamic imports for more than one input
-   at a time, which is the same constraint stated by the bundler.
+   The Studio is the whole of this workspace now: the desk retired
+   to `archive/desk-react/` when `/admin` took its thirteen panels
+   over, and `aab/desk/` went off the site with it.
 
-   `npm run build` runs both. TARGET picks one.
+   TARGET stays because the constraint that made it a table has
+   not changed: a page here is one file at a stable path, so
+   `sw.js` and the route that loads it keep naming something real,
+   and Rollup will not inline dynamic imports for more than one
+   input at a time. Adding a second page is a line in TARGETS.
    ============================================================ */
 
 import { defineConfig } from "vite";
@@ -55,13 +56,12 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 
 /* Where each page's source lives, and where the site serves it
-   from. Adding a third page is a line here. */
+   from. Adding a second page is a line here. */
 const TARGETS = {
-  desk: { root: "src", out: "aab/desk", base: "/desk/" },
   studio: { root: "src/studio", out: "aab/studio", base: "/studio/" },
 } as const;
 
-const which = (process.env.TARGET ?? "desk") as keyof typeof TARGETS;
+const which = (process.env.TARGET ?? "studio") as keyof typeof TARGETS;
 const target = TARGETS[which];
 if (!target) throw new Error(`TARGET must be one of ${Object.keys(TARGETS).join(", ")}`);
 
@@ -86,8 +86,7 @@ export default defineConfig({
   build: {
     /* Resolved from the workspace root, not from `root`: Vite
        resolves a relative outDir against the project root, which
-       is `src/studio` for one of these two and would put the
-       Studio's build inside app/. */
+       is `src/studio` here and would put the build inside app/. */
     outDir: resolve(here, "..", target.out),
     emptyOutDir: true,
     /* Minified, after trying it the other way.
@@ -107,14 +106,12 @@ export default defineConfig({
       /* A `.tsx` entry rather than the `index.html` Vite would
          find on its own, which is what stops it emitting a page.
 
-         It used to emit one, from `src/index.html`, and that file
-         was the desk's shell: the same head, header and footer as
-         every other page of this site, hand-written twice. Both
-         shells are Next.js routes as of archive/TRANSITION.md Stage 11.6,
-         so the only thing this build still has to produce is the
-         script the route loads. Leave the HTML entry in and Vite
-         writes a second answer to `/desk/index.html` on every
-         build, one the route would have to fight. */
+         The shell is a Next.js route as of archive/TRANSITION.md
+         Stage 11.6, so the only thing this build still has to
+         produce is the script that route loads. Leave an HTML
+         entry in and Vite writes a second answer to
+         `/studio/index.html` on every build, one the route would
+         have to fight. */
       input: resolve(here, target.root, "main.tsx"),
       /* The site's own modules are NOT bundled. `/app.js`,
          `/api.js`, `/auth.js`, `/content.js`, `/share-card.js`,

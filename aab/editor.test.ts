@@ -23,11 +23,10 @@
    file writes cannot.
 
    What is NOT here, deliberately: the Studio's chrome. The fields,
-   pre-flight, the three previews, the drafts, the Open sheet and
-   the desk are `app/src/**`, and `app/studio.test.ts` and
-   `app/desk.test.ts` drive the built bundles against them. Two
-   files asserting the same thing is how one of them ends up
-   asserting it wrongly.
+   pre-flight, the three previews, the drafts and the Open sheet
+   are `app/src/studio/**`, and `app/studio.test.ts` drives the
+   built bundle against them. Two files asserting the same thing is
+   how one of them ends up asserting it wrongly.
 
    ---- what it has caught ----
 

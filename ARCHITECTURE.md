@@ -154,8 +154,8 @@ answer differs:
   from a broker's numbers, a player. These stay modules, move to
   `next/scripts/`, and Next serves them.
 - **Already shared.** `sync.js`, `api.js`, `account.js` are
-  imported by the Studio and the desk as well. These are the last
-  to move, and they move to `shared/` rather than into either app.
+  imported by the Studio as well. These are the last to move, and
+  they move to `shared/` rather than into the app.
 
 Fourteen of the thirty-two have TypeScript sources in `aab/src/`
 already. The other eighteen get converted as they move, which is
@@ -166,11 +166,12 @@ the rule this repository already runs on.
 - **The account page** is a file whose entire body is built in the
   browser by `aab/src/account-page.ts`, 950 lines of it. That is
   why nothing on it uses a component. It becomes a route tree.
-- **The Studio and the desk** are a separate Vite workspace
-  (`app/`) with their own buttons, inputs and pills. They keep
-  their build (a Studio is an app, not a page) but import
-  `next/components/ui`, which is plain React with no Next imports
-  and needs none.
+- **The Studio** is a separate Vite workspace (`app/`) with its
+  own buttons, inputs and pills. It keeps its build (a Studio is an
+  app, not a page) but imports `next/components/ui`, which is plain
+  React with no Next imports and needs none. The desk was the other
+  page in that workspace and is `/admin` now, a route like every
+  other page of this site.
 
 ### Stage D. `aab/` becomes what it says
 

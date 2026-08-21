@@ -17,9 +17,9 @@
    run in fewer places and would not catch any of it, because all
    of it is true of a page that renders perfectly.
 
-   The browser half is what `app/desk.test.ts` already is for the
-   desk, and it moves across panel by panel as ADMIN.md §6 stage
-   5 moves them.
+   The browser half is `next/admin.test.ts`, which is what the
+   desk's 76 checks became when ADMIN.md §6 stage 5 moved the last
+   of its panels across.
    ============================================================ */
 
 import { readFileSync, existsSync } from "node:fs";
@@ -126,9 +126,9 @@ console.log("\nnothing locked looks empty");
   const panel = read("next/components/admin/panel.tsx");
   const health = read("next/components/admin/health.tsx");
 
-  /* The rule app/desk.test.ts was written for: an empty list
-     where a credential is missing looks exactly like a working
-     panel with nothing in it. */
+  /* The rule the desk's browser test was written for: an empty
+     list where a credential is missing looks exactly like a
+     working panel with nothing in it. */
   ok("a missing credential names what it would open",
     /Not held\. It would open/.test(panel));
   ok("and offers the one thing to press",
@@ -194,8 +194,8 @@ console.log("\nthe plan points somewhere");
     courses.includes("/api/courses/status"));
 
   /* ADMIN.md §5: a missing credential names what it would open
-     rather than drawing an empty list. That is the rule
-     `app/desk.test.ts` was written for, and an empty panel is
+     rather than drawing an empty list. That is the rule the
+     desk's browser test was written for, and an empty panel is
      indistinguishable from a broken one. */
   for (const [name, src] of [
     ["courses", courses], ["live", live], ["routine", routine],
@@ -232,10 +232,9 @@ console.log("\nthe plan points somewhere");
    6. Stages 4 and 5: the passphrase half
 
    Every claim here is one that a panel rendering perfectly would
-   still break. The browser half is app/desk.test.ts, which is
-   still pointed at /desk because /desk is still served: these
-   panels are not a replacement until they have been driven, and
-   that is the one thing this file cannot assert.
+   still break. The browser half is next/admin.test.ts, which
+   drives these panels: a panel is not a replacement until it has
+   been driven, and that is the one thing this file cannot assert.
    ============================================================ */
 {
   console.log("\n  the passphrase half");
@@ -246,7 +245,11 @@ console.log("\nthe plan points somewhere");
   const subs = read("next/components/admin/subscribers-panel.tsx");
   const overview = read("next/components/admin/overview-panel.tsx");
   const shell = read("next/components/admin/panel.tsx");
-  const desk = read("app/src/Published.tsx");
+  /* The desk it was ported from, in `archive/`, which is what
+     that directory is for: a replacement is checkable against the
+     thing it replaced. Read and nothing else, which is the line
+     `archive/README.md` draws. */
+  const desk = read("archive/desk-react/Published.tsx");
 
   /* ADMIN.md's second rule, in the one place all three queues get
      it from. 401 is the passphrase and 403 a session without the
@@ -282,7 +285,7 @@ console.log("\nthe plan points somewhere");
     "Unpublish", "Publish", "History", "Draw card", "Copy link", "Delete", "Move to",
   ]) {
     ok(`Published keeps "${action}"`, pieces.includes(action),
-      `app/src/Published.tsx has it and the port does not`);
+      `archive/desk-react/Published.tsx has it and the port does not`);
   }
   ok("and the desk it was ported from still has them too", desk.includes("Draw card"),
     "if this fails the comparison above has stopped meaning anything");
@@ -313,10 +316,13 @@ console.log("\nthe plan points somewhere");
       .every((tag) => shell.includes(tag)));
 
   /* Stage 5 is not finished until /desk goes to archive/, and the
-     panel must not claim otherwise while it is still served. */
-  /* The route, not the built bundle: `aab/desk/app.js` is what
-     the route LOADS, and it would still be sitting there the day
-     the page stopped being served. */
+     panel must not claim otherwise while it is still served.
+
+     The ROUTE decides it, because the route is what serves the
+     page. The bundle it loaded was a separate file and would have
+     gone on sitting in `aab/` the day the page stopped being
+     served, so a check keyed on that would have read a retired
+     desk as a live one. */
   const deskServed = existsSync(join(ROOT, "next/app/(site)/desk/page.tsx"));
   ok(deskServed
     ? "the panel admits /desk is still served"

@@ -930,8 +930,8 @@ the writer marked, and that is what `cover` holds and `og:image` points at.
 It is a JPEG because the scrapers behind WhatsApp, Facebook and LinkedIn
 will not read the WebP every photo here is stored as: pointing them at the
 photo itself is how a piece with a picture ends up sharing as the default
-card. The desk flags any piece whose cover is still a raw photo and can
-draw the missing card in place.
+card. The Published panel on `/admin` flags any piece whose cover is
+still a raw photo and can draw the missing card in place.
 
 **A photo is read out of the editor by decoding, never by fetching.**
 `fetch()` on a `data:` URL is governed by `connect-src`, not `img-src`,
@@ -1113,9 +1113,8 @@ node scripts/check-types.ts  # scripts/ that node strips the types out of
 node scripts/check-pointers.ts # a comment sending a reader to a file that
                             # does not exist
 node scripts/build-school-icons.ts --check   # a school drawing next/ copied
-node scripts/build-stamp.ts --check  # aab/desk/** and aab/studio/** built from
-                            # an app/src/ that is not the one committed beside
-                            # them
+node scripts/build-stamp.ts --check  # aab/studio/** built from an app/src/
+                            # that is not the one committed beside it
 node scripts/check-next.ts # a copy inside next/ that has drifted from the
                             # thing it was copied from
 ```
@@ -1224,22 +1223,17 @@ node scripts/schools-api.test.ts     # a school readable by anyone, writable by
 And when anything under `app/src/` changed, after rebuilding.
 `playwright` is a devDependency of `app/`, and it does not bring
 a browser with it: point `CHROMIUM_PATH` at one, or run
-`npx playwright install chromium`. Without either, both files say
-so and skip, which is not a pass:
+`npx playwright install chromium`. Without either, the file says
+so and skips, which is not a pass:
 
 ```sh
-node app/desk.test.ts             # a panel that renders and is not finished, and
-                                   # one that draws an empty list where it should
-                                   # say the database is unreachable
-                                   # (76 checks, needs Playwright and a browser)
 node app/studio.test.ts           # the React Studio's chrome, end to end, and the
                                    # pre-flight rules about a photo: no alt text,
                                    # or hosted on somebody else's server
                                    # (83 checks, needs Playwright and a browser)
-node scripts/check-types.ts        # and again here, because those two have a
-                                   # config of their own and it SKIPS where
-                                   # app/node_modules is absent, which is every
-                                   # CI runner
+node scripts/check-types.ts        # and again here, because it has a config of
+                                   # its own and it SKIPS where app/node_modules
+                                   # is absent, which is every CI runner
 ```
 
 And when anything under `next/` or `shared/` changed, after
@@ -1492,28 +1486,27 @@ node scripts/build-fallback.ts     # aab/fallback.css from next/styles/site.css
 node scripts/build-school-icons.ts  # next/lib/school-icons.ts from aab/*/icons.js
 node scripts/build-meta.ts              # feed.xml, sitemap.xml, robots.txt
 
-cd app && npm run build             # aab/desk/**   from app/src/** (React)
-                                    # aab/studio/** from app/src/studio/**
+cd app && npm run build             # aab/studio/** from app/src/studio/**
                                     # and app/build-stamp.json, which is what
-                                    # holds the two to their own source
+                                    # holds it to its own source
 ```
 
 `app/` is the React workspace: Vite, React and TypeScript, building to
-`aab/desk/` and `aab/studio/`. Two pages, two builds, one file each at a
-stable path, because `sw.js` and the HTML shells name real paths and a
-hashed chunk would fight them. `npm run build` runs both; `TARGET` picks
-one. **Its output is committed**, for the same reason every
-generated page here is: the site deploys by uploading `aab/`, with no
-build step in CI, and adding one would mean a build command in a
-dashboard that cannot be seen from the repository. So the rule is the
-rule: edit `app/src/**`, run the build, commit both.
+`aab/studio/`. One file at a stable path, because `sw.js` and the route
+that loads it name real paths and a hashed chunk would fight them;
+`TARGET` in `app/vite.config.ts` is still a table so that a second page
+is a line rather than a rewrite. **Its output is committed**, for the
+same reason every generated page here is: the site deploys by uploading
+`aab/`, with no build step in CI, and adding one would mean a build
+command in a dashboard that cannot be seen from the repository. So the
+rule is the rule: edit `app/src/**`, run the build, commit both.
 
 **Nothing held anybody to the second half of that until 19 August
-2026.** `aab/desk/app.js` and `aab/studio/app.js` were last built at
-#105 while `app/src/**` changed in #143, #147 and #149, so the desk
-and the Studio served a build from before `accentStyle` existed, for
-four pull requests, and every check passed: a stale generated file
-looks exactly like a correct one. `scripts/build-stamp.ts` hashes the
+2026.** The two bundles it built then were last built at #105 while
+`app/src/**` changed in #143, #147 and #149, so the desk and the Studio
+served a build from before `accentStyle` existed, for four pull
+requests, and every check passed: a stale generated file looks exactly
+like a correct one. `scripts/build-stamp.ts` hashes the
 sources and `npm run build` writes the hash, so the day they part
 company a check fails. It hashes the SOURCES rather than the output,
 because Vite's output is not reproducible across versions and the
@@ -1556,9 +1549,9 @@ JSX gets utilities; everything else keeps a class.
 
 Neither are the site's own modules. `/app.js`, `/api.js`, `/auth.js`,
 `/content.js`, `/share-card.js`, `/photo.js` and `/editor.js` are left
-external by `vite.config.ts` and imported at runtime, so the desk shares one copy
-of each with every other page instead of carrying a second that can
-drift. Most are plain JavaScript, so each is described by a
+external by `vite.config.ts` and imported at runtime, so the Studio shares
+one copy of each with every other page instead of carrying a second that
+can drift. Most are plain JavaScript, so each is described by a
 declaration in `app/src/types/` that `tsconfig.json` maps the runtime
 path to; `/content.js` is TypeScript, so the mapping points at
 `shared/content.ts` itself and there is no declaration to keep in
@@ -1678,11 +1671,11 @@ already exists for, and a second copy of this file is how you get one.
 when it renders.** Those two look identical from the outside, which is
 how the first React desk shipped as three thin panels missing the
 search boxes, the filter counts and most of the actions. So the list of
-what the old page did is written down as a test:
-`app/desk.test.ts` drives the built page in a browser against routed
-API fixtures, and every check in it is a feature `archive/desk.js` had.
-Anything ported out of `aab/*.js` gets the same treatment before it is
-called done.
+what the old page did is written down as a test: the desk's was 76
+checks, every one of them a feature `archive/desk.js` had, and it is in
+`archive/desk-react/` beside the page it drove now that `/admin` does
+that job and `next/admin.test.ts` drives it. Anything ported out of
+`aab/*.js` gets the same treatment before it is called done.
 
 That includes the `<head>`. A change to canonical links, Open Graph tags
 or the webfont link has to go into `page()` inside both builders, or the

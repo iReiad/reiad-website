@@ -19,11 +19,12 @@ counts them.** Nothing on this page is a figure typed into a
 sentence, and nothing is a figure cached at a build.
 
 The second rule is the one this repository keeps rediscovering: a
-page that renders is not a page that works. `app/desk.test.ts`
-exists because the first React desk shipped as three thin panels
-missing the search boxes, the filter counts and most of the
-actions, and it looked finished. Every panel below gets a line in
-a test that says what it must be able to do.
+page that renders is not a page that works. The desk's own browser
+test, now `archive/desk-react/desk.test.ts`, exists because the
+first React desk shipped as three thin panels missing the search
+boxes, the filter counts and most of the actions, and it looked
+finished. Every panel below gets a line in a test that says what
+it must be able to do.
 
 ## 1. Two credentials, and "together" does not mean "either"
 
@@ -75,7 +76,7 @@ it applies here word for word.
 **Never show a locked panel as an empty one.** A panel that needs
 the passphrase and does not have it says so, with the one thing to
 press. An empty list where a credential is missing is the failure
-`app/desk.test.ts` was written for: it looks exactly like a
+the desk's browser test was written for: it looks exactly like a
 working panel with nothing in it.
 
 ## 2. Where it lives
@@ -243,12 +244,13 @@ Each one exists because the failure it catches is invisible.
   value, the panel mints neither credential from the other and
   keeps no second admin list, and a missing credential names what
   it would open rather than drawing an empty list, which is the
-  rule `app/desk.test.ts` was written for.
+  rule the desk's browser test was written for.
 
   Node rather than a browser, and deliberately: every claim there
   is a claim about SOURCE, and all of it is true of a page that
-  renders perfectly. The browser half is `app/desk.test.ts`
-  already, and it moves across panel by panel with §6 stage 5.
+  renders perfectly. The browser half is `next/admin.test.ts`,
+  which is where the desk's 76 checks went as §6 stage 5 moved
+  its panels across.
 
   It also asserts that every path this file names exists, which
   is `check-pointers.ts` again, said a second time for the one
@@ -270,7 +272,7 @@ stage after it.
 | 2 | `check-admin.ts` | before there are more endpoints to forget |
 | 3 | Courses, Live portfolio, Routine templates | the account half, all three already have their endpoint. **Done.** |
 | 4 | Comments, Questions, Enquiries | the passphrase half, ported panel by panel out of `app/src/`. **Done.** |
-| 5 | Published, Subscribers, History | the rest of the desk, and `/desk` retires |
+| 5 | Published, Subscribers, History | the rest of the desk, and `/desk` retires. **Done.** |
 | 6 | Media, Schools, Backups | the three the desk never had. **Done.** |
 | 7 | People | last, because it is the only one needing both |
 
@@ -297,9 +299,38 @@ how a site ends up with two that disagree.
 
 Stage 5 is where `/desk` stops being served and goes to
 `archive/`, under the two conditions `CLAUDE.md` sets: nothing
-serves it and nothing imports it. `app/desk.test.ts` is repointed
-at the new panels rather than deleted, because every check in it
-is a feature the old desk had.
+serves it and nothing imports it. Its browser test is repointed at
+the new panels rather than deleted, because every check in it is a
+feature the old desk had.
+
+### What stage 5 shipped, and what it left behind on purpose
+
+`/desk` is retired. The route, the twelve sources it was built
+from and its browser test are in `archive/desk-react/`, the Vite
+bundle at `/desk/app.js` is deleted rather than archived because
+it was minified output nobody can read, and `aab/_redirects` sends
+all four spellings of the address to `/admin` with a 301. The
+address is a rule rather than a route now, so it is absent from
+`run_worker_first` in `wrangler.toml` and from `NEXT_ROUTES` in
+`worker.js`: a path either of those claims never reaches the rules
+file.
+
+`next/admin.test.ts` is what the desk's 76 checks became, and the
+two lists are not the same list, because `/admin` is not the same
+shape. Twelve of the 76 have no subject here: eight are about a
+tab strip and four about a More menu, and this page is one column
+of panels with a fragment each, every action a row can take
+written on the row. The desk's four overview tiles are Waiting,
+Subscribers and What is read, which is where those numbers already
+live rather than a fifth place that knows what "waiting" means.
+
+A handful of things the desk asserted are on the page and are not
+yet asserted: the anonymous asker, the reply marked as a reply,
+Reopen on a closed enquiry, the draft's own pill, and the History
+dialog naming its piece. Each is a spec field or a line of markup
+in the panel that has it, and a check for each belongs in
+`next/admin.test.ts` rather than here.
+
 ### What stage 6 shipped, and the one thing it could not
 
 Three panels: `next/components/admin/media-panel.tsx`,

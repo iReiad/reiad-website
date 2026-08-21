@@ -103,7 +103,7 @@ const walk = (dir: string, skip: string[] = []): void => {
     else if (/\.(js|mjs|ts|tsx)$/.test(entry)) files.push(full);
   }
 };
-walk(join(ROOT, "aab"), ["og", "node_modules", "desk", "studio"]);
+walk(join(ROOT, "aab"), ["og", "node_modules", "studio"]);
 walk(join(ROOT, "app", "src"), ["node_modules"]);
 /* And the routes and components, because that is where the
    browser's half of this site is going. `archive/modules/news.js` was the
