@@ -30,6 +30,7 @@ const day = (iso: string | null): string => (iso ?? "").slice(0, 10);
 
 const COMMENTS: QueueSpec<AdminComment> = {
   title: "Comments",
+  anchor: "comments",
   blurb: "The moderation queue. An admin's own comment skips it, because "
     + "approving yourself is a button with one possible answer.",
   endpoint: "/api/comments",
@@ -66,6 +67,7 @@ const COMMENTS: QueueSpec<AdminComment> = {
    shows them with the rest. */
 const QUESTIONS: QueueSpec<QuestionRow> = {
   title: "Questions",
+  anchor: "questions",
   blurb: "What readers have asked. Publishing an answer is what puts the "
     + "question on the piece it was asked on.",
   endpoint: "/api/questions",
@@ -107,6 +109,7 @@ const QUESTIONS: QueueSpec<QuestionRow> = {
 
 const ENQUIRIES: QueueSpec<EnquiryRow> = {
   title: "Enquiries",
+  anchor: "enquiries",
   blurb: "The contact form. Notes are private and are never sent anywhere.",
   endpoint: "/api/enquiries",
   listKey: "enquiries",

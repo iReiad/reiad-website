@@ -40,6 +40,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Surface } from "../ui/surface";
 import { Button } from "../ui/button";
+import { TextArea } from "../ui/field";
 import type { ButtonKind } from "../ui/button";
 
 /** One button on one row. */
@@ -70,6 +71,9 @@ export interface QueueCompose<T> {
 
 export interface QueueSpec<T> {
   title: string;
+  /** The fragment the Waiting panel links to. Overview counts what
+      is here and sends somebody straight at it. */
+  anchor: string;
   /** One or two sentences under the heading. What this list IS,
       not how to use it. */
   blurb?: ReactNode;
@@ -168,7 +172,7 @@ export function AdminQueue<T>({ spec }: { spec: QueueSpec<T> }) {
   };
 
   return (
-    <Surface material="pane" className="ad-panel">
+    <Surface material="pane" className="ad-panel" id={spec.anchor}>
       <h3>{spec.title}</h3>
       {spec.blurb ? <p className="ad-quiet">{spec.blurb}</p> : null}
 
@@ -228,14 +232,12 @@ export function AdminQueue<T>({ spec }: { spec: QueueSpec<T> }) {
                     </p>
 
                     {spec.compose ? (
-                      <label className="grid gap-1 text-[var(--t-2)] text-ink-soft">
-                        {spec.compose.label}
-                        <textarea
-                          className="field min-h-24"
-                          value={draft[id] ?? spec.compose.value(row)}
-                          onChange={(e) => setDraft((d) => ({ ...d, [id]: e.target.value }))}
-                        />
-                      </label>
+                      <TextArea
+                        id={`${spec.anchor}-compose-${id}`}
+                        label={spec.compose.label}
+                        value={draft[id] ?? spec.compose.value(row)}
+                        onChange={(e) => setDraft((d) => ({ ...d, [id]: e.target.value }))}
+                      />
                     ) : null}
 
                     <div className="flex flex-wrap gap-2">

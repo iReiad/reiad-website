@@ -49,6 +49,9 @@ import { CoursesPanel } from "./courses-panel";
 import { RoutineTemplatesPanel } from "./routine-panel";
 import { LivePanel } from "./live-panel";
 import { CommentsPanel, EnquiriesPanel, QuestionsPanel } from "./queues";
+import { OverviewPanel } from "./overview-panel";
+import { PiecesPanel } from "./pieces-panel";
+import { SubscribersPanel } from "./subscribers-panel";
 import { ButtonLink } from "../ui/button";
 import { Surface } from "../ui/surface";
 
@@ -178,28 +181,38 @@ export function AdminPanel() {
         </>
       ) : null}
 
-      {/* ADMIN.md §6 stage 4: the passphrase half, the three
-          queues. Shown whatever the credential state is, for the
-          reason above: each says what it is missing rather than
-          drawing an empty list, and the endpoint's own 401 is
-          what it reads to decide. */}
+      {/* ADMIN.md §6 stages 4 and 5: the passphrase half. Shown
+          whatever the credential state is, for the reason above:
+          each says what it is missing rather than drawing an empty
+          list, and the endpoint's own 401 is what it reads to
+          decide. Waiting leads, because it is the one that says
+          which of the others needs opening. */}
+      <OverviewPanel />
+      <PiecesPanel />
       <CommentsPanel />
       <QuestionsPanel />
       <EnquiriesPanel />
+      <SubscribersPanel />
 
       <Surface material="pane" className="ad-panel">
         <h3>Not built yet</h3>
         <p className="ad-quiet">
-          Thirteen panels, in ADMIN.md, and six of them are above. Nothing here is
-          a placeholder for the rest: an empty panel that will one day hold something reads
-          exactly like a broken panel that holds nothing, which is the whole
-          reason that file exists.
+          Thirteen panels, in ADMIN.md, and nine of them are above. Nothing here is a
+          placeholder for the rest: an empty panel that will one day hold something reads
+          exactly like a broken panel that holds nothing, which is the whole reason that
+          file exists.
         </p>
         <p className="ad-quiet">
-          Still to come, in that file's order: Published, Subscribers and History,
-          which is where <a href="/desk">/desk</a> stops being served; then Media,
-          Schools and Backups, the three the desk never had; then People, last
-          because it is the only one needing both credentials at once.
+          Still to come, in that file&apos;s order: Media, Schools and Backups, the three
+          the desk never had; then People, last because it is the only one needing both
+          credentials at once.
+        </p>
+        <p className="ad-quiet">
+          The desk at <a href="/desk">/desk</a> is still served. It goes to
+          <code> archive/</code> once these panels have been driven in a browser
+          against the checks that describe what it did: a port is finished when it does
+          what the thing it replaced did, not when it renders, and those two look
+          identical from here.
         </p>
       </Surface>
     </div>

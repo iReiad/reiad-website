@@ -10069,8 +10069,8 @@ German for day, and .tag is what the site has always called
 
   /* The wrapper's geometry, named once and used twice. The
      breadcrumb is a sibling of `.hub-wrap` rather than a child of
-     it, because `crumbs.js` puts it at the top of the page before
-     anything else runs, and it was therefore the one element on a
+     it, because the trail was put at the top of the page before
+     anything else ran, and it was therefore the one element on a
      hub with no inline padding at all: it started at x=268 on a
      1440px window while the eyebrow, the headline, the lede and
      every card started at 302. Flush against the rail's edge,
@@ -10517,8 +10517,10 @@ German for day, and .tag is what the site has always called
      that guessed. Now the mark is the first crumb and the trail
      continues out of it, on one line, from the server.
 
-     `.crumbs` is the row's own look and stays for the two pages
-     that are files; this is that look sized for a bar. The
+     `.crumbs` is the row's own look, kept because `aab/src/courses.ts`
+     finds the last crumb by that class to rename it; this is that
+     look sized for a bar. Neither `404.html` nor `offline.html` has
+     a trail at all, which is what this used to say. The
      separator before the FIRST crumb is what joins it to the
      mark: without it the mark and the section read as two
      unrelated things sitting next to each other.

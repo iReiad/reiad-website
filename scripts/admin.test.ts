@@ -219,6 +219,102 @@ console.log("\nthe plan points somewhere");
     /\} catch \{/.test(shell));
 }
 
+/* ============================================================
+   6. Stages 4 and 5: the passphrase half
+
+   Every claim here is one that a panel rendering perfectly would
+   still break. The browser half is app/desk.test.ts, which is
+   still pointed at /desk because /desk is still served: these
+   panels are not a replacement until they have been driven, and
+   that is the one thing this file cannot assert.
+   ============================================================ */
+{
+  console.log("\n  the passphrase half");
+
+  const engine = read("next/components/admin/queue.tsx");
+  const specs = read("next/components/admin/queues.tsx");
+  const pieces = read("next/components/admin/pieces-panel.tsx");
+  const subs = read("next/components/admin/subscribers-panel.tsx");
+  const overview = read("next/components/admin/overview-panel.tsx");
+  const shell = read("next/components/admin/panel.tsx");
+  const desk = read("app/src/Published.tsx");
+
+  /* ADMIN.md's second rule, in the one place all three queues get
+     it from. 401 is the passphrase and 403 a session without the
+     right; a panel that read either as "no rows" would look
+     exactly like a working one. */
+  ok("the queue engine tells a refusal from an empty list",
+    /401/.test(engine) && /403/.test(engine)
+    && engine.includes('"locked"') && /spec\.empty/.test(engine));
+
+  /* An action changes a status, and a status is what the filter
+     filters on: a row edited in place stays in a queue it is no
+     longer in, which reads as a button that did nothing. */
+  ok("and refetches after an action rather than editing in place",
+    /await load\(\)/.test(engine) && !/setRows\(\(/.test(engine));
+
+  /* Three specs, one engine. A fourth queue should be an object. */
+  for (const q of ["Comments", "Questions", "Enquiries"]) {
+    ok(`${q} is a spec rather than a component`,
+      specs.includes(`title: "${q}"`) && specs.includes("AdminQueue"));
+  }
+
+  /* `?status=published` takes /api/questions down its PUBLIC
+     branch: no email, no counts, and no 401 for somebody without
+     the passphrase. Offering it as a filter would quietly show
+     the reader's list inside the admin panel. */
+  ok("the questions queue does not offer the filter that is public",
+    !/id: "published"/.test(specs));
+
+  /* Every action the desk had. A port is finished when it does
+     what the thing it replaced did, not when it renders, and
+     those two look identical from here. */
+  for (const action of [
+    "Unpublish", "Publish", "History", "Draw card", "Copy link", "Delete", "Move to",
+  ]) {
+    ok(`Published keeps "${action}"`, pieces.includes(action),
+      `app/src/Published.tsx has it and the port does not`);
+  }
+  ok("and the desk it was ported from still has them too", desk.includes("Draw card"),
+    "if this fails the comparison above has stopped meaning anything");
+
+  /* Restoring is itself an overwrite and is snapshotted, which is
+     the sentence that makes the button pressable. */
+  ok("History says that going back is undoable",
+    /can be undone/.test(pieces));
+
+  /* ADMIN.md B 5: "there is no mailing tool on this site and this
+     panel is not the place to grow one". */
+  /* Asserted as a fact about the CALLS rather than about the
+     words: the panel's own prose says "nothing may send to that
+     state", which a search for "send" would fail on. What would
+     make this a mailing tool is a write. */
+  ok("Subscribers offers an export and makes no write",
+    /subscribers\/export/.test(subs)
+    && !/method:\s*["'](?:POST|PUT|PATCH|DELETE)["']/.test(subs));
+
+  /* Numbers come from the data. A count typed into this panel is
+     the failure CLAUDE.md opens with. */
+  ok("Waiting counts rather than remembering",
+    /adminCall/.test(overview) && !/\b(?:drafts|comments|questions):\s*\d+/.test(overview));
+
+  ok("the shell mounts the passphrase half",
+    ["<OverviewPanel />", "<PiecesPanel />", "<CommentsPanel />",
+     "<QuestionsPanel />", "<EnquiriesPanel />", "<SubscribersPanel />"]
+      .every((tag) => shell.includes(tag)));
+
+  /* Stage 5 is not finished until /desk goes to archive/, and the
+     panel must not claim otherwise while it is still served. */
+  /* The route, not the built bundle: `aab/desk/app.js` is what
+     the route LOADS, and it would still be sitting there the day
+     the page stopped being served. */
+  const deskServed = existsSync(join(ROOT, "next/app/(site)/desk/page.tsx"));
+  ok(deskServed
+    ? "the panel admits /desk is still served"
+    : "/desk has retired and the panel no longer points at it",
+    deskServed ? shell.includes("/desk") : !shell.includes("/desk"));
+}
+
 console.log(`\n${passed} checks passed`);
 if (failures.length) {
   console.log(`${failures.length} failed:\n`);
