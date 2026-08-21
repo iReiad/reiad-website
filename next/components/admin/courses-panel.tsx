@@ -42,6 +42,23 @@ interface Status {
   tickets: boolean;
 }
 
+/** Is this really a status answer?
+
+    Asserted rather than assumed, and not defensiveness for its
+    own sake: this read `data.samples.length` off whatever came
+    back, and a throw during render in a client component unmounts
+    the WHOLE route. An endpoint answering `{ ok: true }` and
+    nothing else took `/admin` down to "This page couldn't load",
+    Health included, which is the one panel whose entire purpose is
+    working on the day something is broken. `next/admin.test.ts`
+    drives exactly that. */
+const isStatus = (d: unknown): d is Status => {
+  const s = d as Status | null;
+  return !!s && typeof s === "object"
+    && typeof s.courses === "number" && typeof s.lessons === "number"
+    && Array.isArray(s.samples);
+};
+
 export function CoursesPanel() {
   const [state, setState] = useState<"loading" | "denied" | "error" | "ok">("loading");
   const [data, setData] = useState<Status | null>(null);
@@ -53,7 +70,9 @@ export function CoursesPanel() {
         if (!live) return;
         if (r.status === 401 || r.status === 403) { setState("denied"); return; }
         if (!r.ok) { setState("error"); return; }
-        setData(await r.json() as Status);
+        const answer = await r.json().catch(() => null) as unknown;
+        if (!isStatus(answer)) { setState("error"); return; }
+        setData(answer);
         setState("ok");
       })
       .catch(() => { if (live) setState("error"); });

@@ -1,6 +1,9 @@
 /* ============================================================
    /api/schools, the four curricula out of the database.
 
+   GET  /api/schools/audit                        admin: what is
+                                                  unwritten, undeclared
+                                                  or linked to nothing
    GET  /api/schools/<school>                     the ladder
    GET  /api/schools/<school>/<stage>             its lessons
    GET  /api/schools/<school>/<stage>/<lesson>    one lesson, with
@@ -54,7 +57,9 @@ import type { RouteContext } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.ts";
 import {
   isSchool, stagesOf, lessonOf, lessonsOf, countsOf, SCHOOL_IDS,
+  stageUrl, stageBase, workbookUrl, laddered,
 } from "../../../shared/schools.ts";
+import type { SchoolStage } from "../../../shared/schools.ts";
 import type { SchoolLessonRow } from "../../../shared/rows.ts";
 import { sanitiseHTML } from "../../_lib/sanitise.ts";
 
@@ -63,6 +68,51 @@ import { sanitiseHTML } from "../../_lib/sanitise.ts";
     friends: those describe a row that is already in the database,
     and this is a request that has not been believed yet. */
 type Sent = Record<string, unknown>;
+
+/* ---- the audit's small print ----
+
+   `href="..."` as the sanitiser leaves it, and the two targets
+   that are never a page on this site: anything carrying a scheme,
+   and a bare fragment. */
+const HREF = /href=["']([^"']+)["']/g;
+const SCHEME = /^[a-z][a-z0-9+.-]*:/i;
+
+/** One address, spelled the single way the comparison uses: no
+    fragment, no query, no trailing slash. `bare()` in `worker.js`
+    takes the slash off every path before the route table is
+    consulted, so `/money/` and `/money` are one address. */
+const norm = (url: string): string => {
+  const path = url.split("#")[0].split("?")[0];
+  return path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
+};
+
+/** The spellings of one address that answer through a 301 rather
+    than directly, both of them rules in `aab/_redirects`:
+    `/x/index.html` was the canonical form of every page that was a
+    directory, and `.html` came off every route in task #28. */
+const spellings = (path: string): string[] => [
+  path.endsWith("/index.html") ? path.slice(0, -"/index.html".length) : "",
+  path.endsWith(".html") ? path.slice(0, -".html".length) : `${path}.html`,
+].filter(Boolean);
+
+/** How many rows of any one list the audit returns. The count
+    beside each list is the whole number. */
+const CAP = 50;
+
+/** A lesson as the audit reads it: no body, and `written` is the
+    one thing it needs to know about one. */
+type AuditLesson =
+  Pick<SchoolLessonRow, "school" | "stage" | "slug" | "section" | "title">
+  & { written: number };
+
+/** One link: where it was written, and where it points. */
+interface AuditLink {
+  school: string;
+  stage: string;
+  slug: string;
+  href: string;
+  to: string;
+}
 
 export async function onRequest(
   context: RouteContext<DbEnv, { route?: string[] }>,
@@ -88,6 +138,170 @@ export async function onRequest(
           counts[id] = await countsOf(d1, id);
         }
         return ok({ schools: counts });
+      }
+
+      /* ---- the prose, as opposed to the ladder ----
+
+         ADMIN.md §3 B 7. `check-schools.ts` compares the two
+         ladders and runs on a laptop; this is the half that can
+         only be asked of the database: which lessons have no words
+         in them yet, which rows the ladder does not declare, and
+         which links inside a lesson body go nowhere.
+
+         Behind the passphrase like the rest of §3 B. Nothing here
+         is a secret, but a list of what is unwritten is the site
+         talking about itself rather than to a reader.
+
+         ---- what it will and will not adjudicate ----
+
+         A link is decided against the rows, so it is decided
+         COMPLETELY inside the space those rows describe: the four
+         schools and every stage's own base. Within that, "no such
+         address" is a fact. A link to `/tools` or to a piece is
+         not decided here at all and is returned as such, because
+         the route table is not in this database and a check that
+         guessed would cry wolf until nobody read it.
+         `check-routes.ts` is what walks the rest.
+
+         The three answers are three, and not two, for the same
+         reason the health dot has three states. An old spelling
+         (`/money/index.html`, `/deutsch/stufe-1/arbeitsbuch.html`)
+         still answers, through a 301 in `aab/_redirects`, so
+         calling it dead would be a wrong word for a real thing:
+         it is worth fixing and it is not broken. */
+      if (school === "audit") {
+        const denied = await requireAdmin(context);
+        if (denied) return denied;
+
+        /* One row per lesson, whatever the ladder says about it.
+           `stagesOf()` below answers the other question, which is
+           what the ladder DECLARES, and the difference between the
+           two lists is the point of this endpoint. */
+        const [lessons, linked, ...ladderList] = await Promise.all([
+          d1.prepare(
+            `SELECT school, stage, slug, section, title,
+                    CASE WHEN body <> '' THEN 1 ELSE 0 END AS written
+               FROM school_lessons ORDER BY school, stage, position`
+          ).all<AuditLesson>(),
+          d1.prepare(
+            `SELECT school, stage, slug, body FROM school_lessons
+              WHERE body LIKE '%href=%' ORDER BY school, stage, position`
+          ).all<Pick<SchoolLessonRow, "school" | "stage" | "slug" | "body">>(),
+          ...SCHOOL_IDS.map((id) => stagesOf(d1, id)),
+        ]);
+
+        const ladders: Record<string, SchoolStage[]> = {};
+        SCHOOL_IDS.forEach((id, i) => { ladders[id] = ladderList[i] ?? []; });
+        const rows = lessons.results ?? [];
+
+        /* Every address these four schools have, computed by
+           `shared/schools.ts` and not assembled here. A second
+           opinion about where a lesson lives is exactly what
+           `check-schools.ts` exists to catch, and this would be a
+           third. */
+        const known = new Set<string>();
+        const owned: string[] = [];
+        const from = new Map<string, string>();
+        for (const id of SCHOOL_IDS) {
+          known.add(`/${id}`);
+          owned.push(`/${id}/`);
+          for (const stage of ladders[id]) {
+            known.add(norm(stageUrl(id, stage)));
+            const book = workbookUrl(id, stage);
+            if (book) known.add(norm(book));
+            /* A stage's `base` is where its pages actually go, and
+               it is not always under the school: `basics-1` has
+               eighteen term pages that were published at their own
+               address for a year and do not move. */
+            owned.push(stageBase(id, stage));
+            from.set(`${id}/${stage.slug}`, stageBase(id, stage));
+            for (const lesson of laddered(id, stage)) known.add(norm(lesson.url));
+          }
+        }
+
+        const dead: AuditLink[] = [];
+        const redirected: AuditLink[] = [];
+        const elsewhere: AuditLink[] = [];
+        let checked = 0;
+        let alive = 0;
+
+        for (const row of linked.results ?? []) {
+          const here = from.get(`${row.school}/${row.stage}`)
+            ?? `/${row.school}/${row.stage}/`;
+          for (const found of String(row.body ?? "").matchAll(HREF)) {
+            const href = found[1];
+            if (!href || href.startsWith("#") || SCHEME.test(href)) continue;
+            checked += 1;
+
+            let path: string;
+            try {
+              path = norm(href.startsWith("/")
+                ? href
+                : new URL(href, `https://reiad.co.uk${here}`).pathname);
+            } catch { path = norm(href); }
+
+            if (known.has(path)) { alive += 1; continue; }
+            const at: AuditLink = {
+              school: row.school, stage: row.stage, slug: row.slug, href, to: path,
+            };
+            if (!owned.some((prefix) => path.startsWith(prefix))) elsewhere.push(at);
+            else if (spellings(path).some((one) => known.has(one))) redirected.push(at);
+            else dead.push(at);
+          }
+        }
+
+        /* A lesson the ladder does not declare renders nowhere and
+           is in no ring, and the two ways of getting there are the
+           same failure: a stage that is not a stage, and a section
+           that stage does not have. `stagesOf()` drops the second
+           silently, which is why it is named here. */
+        const undeclared = rows.flatMap((l) => {
+          const stage = (ladders[l.school] ?? []).find((s) => s.slug === l.stage);
+          const at = { school: l.school, stage: l.stage, slug: l.slug };
+          if (!stage) return [{ ...at, why: "no stage of that name" }];
+          return (stage.sections ?? []).some((s) => s.id === l.section)
+            ? []
+            : [{ ...at, why: `no section "${l.section}" in that stage` }];
+        });
+
+        return ok({
+          schools: SCHOOL_IDS.map((id) => {
+            const mine = rows.filter((l) => l.school === id);
+            return {
+              school: id,
+              total: mine.length,
+              written: mine.filter((l) => l.written).length,
+              stages: ladders[id].map((stage) => {
+                const theirs = mine.filter((l) => l.stage === stage.slug);
+                const empty = theirs.filter((l) => !l.written);
+                return {
+                  slug: stage.slug,
+                  title: String(stage.bn ?? stage.slug),
+                  status: String(stage.status ?? "live"),
+                  url: stageUrl(id, stage),
+                  total: theirs.length,
+                  written: theirs.length - empty.length,
+                  empty: empty.slice(0, CAP).map((l) => ({ slug: l.slug, title: l.title })),
+                };
+              }),
+            };
+          }),
+          undeclared: undeclared.slice(0, CAP),
+          undeclaredCount: undeclared.length,
+          links: {
+            checked,
+            alive,
+            dead: dead.slice(0, CAP),
+            deadCount: dead.length,
+            redirected: redirected.slice(0, CAP),
+            redirectedCount: redirected.length,
+            /* Returned rather than counted away: three links a
+               check cannot decide is a sentence somebody can read,
+               and a silent zero is not. */
+            elsewhere: elsewhere.slice(0, CAP),
+            elsewhereCount: elsewhere.length,
+          },
+        });
       }
 
       if (!isSchool(school)) return fail("no-such-school", 404);

@@ -135,7 +135,16 @@ console.log("\nnothing locked looks empty");
     /Sign in at the Studio/.test(panel) && /Sign in to your account/.test(panel));
 
   ok("a Worker that does not answer is said, not drawn as nothing",
-    /no answer from/.test(health));
+    /no usable answer from/.test(health));
+
+  /* And an answer that is not a health report counts as not
+     answering. It read `d.stores.d1` off whatever came back, and
+     a throw during render in a client component unmounts the
+     WHOLE route: one endpoint answering `{ ok: true }` took the
+     page to "This page couldn't load" with every panel gone,
+     Health included. `next/admin.test.ts` drives that. */
+  ok("and an answer of the wrong shape is not read as one",
+    /is d is Health|d is Health/.test(health));
 
   /* Three states and not two. "Not configured" painted as
      "broken" sends somebody looking for a fault that is a
@@ -313,6 +322,86 @@ console.log("\nthe plan points somewhere");
     ? "the panel admits /desk is still served"
     : "/desk has retired and the panel no longer points at it",
     deskServed ? shell.includes("/desk") : !shell.includes("/desk"));
+}
+
+/* ============================================================
+   Stage 6: Media, Schools and Backups
+
+   The three the desk never had. Each is read-only bar one delete,
+   each reads a 401 rather than drawing an empty list, and each
+   says on the page what no endpoint can answer.
+
+   Nothing here asserts a tag in the shell: mounting them is
+   `panel.tsx`'s job, so a test that did would fail on the change
+   that writes a panel and pass on the one that mounts it, which is
+   the wrong way round.
+   ============================================================ */
+console.log("\nthe three the desk never had");
+{
+  const media = read("next/components/admin/media-panel.tsx");
+  const schools = read("next/components/admin/schools-panel.tsx");
+  const backups = read("next/components/admin/backups-panel.tsx");
+  const mediaApi = read("functions/api/media/[[key]].ts");
+  const schoolsApi = read("functions/api/schools/[[route]].ts");
+
+  /* ADMIN.md §1's second rule, on all three. An empty bucket, an
+     empty ladder and an empty bucket of snapshots each draw the
+     same nothing a locked panel would. */
+  for (const [name, src] of [
+    ["media", media], ["schools", schools], ["backups", backups],
+  ] as const) {
+    ok(`the ${name} panel reads a refusal rather than drawing nothing`,
+      src.includes("isLocked") && /"locked"/.test(src)
+      && /passphrase is not held/.test(src));
+    ok(`and the ${name} panel mints no credential`,
+      !/service_role|SERVICE_ROLE|createSession|setAdminKey/.test(src));
+  }
+
+  /* The join between the bucket and the database is the Worker's.
+     Two fetches compared in a browser are two answers a second
+     apart, and the photo uploaded between them reads as the one
+     nothing points at, on the panel whose buttons delete bytes. */
+  ok("what nothing references is asked as one question",
+    media.includes("media/usage")
+    && !/adminCall(?:<[^>]*>)?\("media"\)/.test(media));
+  ok("and the usage branch is behind the passphrase",
+    /key === "usage"[\s\S]{0,240}requireAdmin/.test(mediaApi));
+  ok("as is the schools audit",
+    /school === "audit"[\s\S]{0,240}requireAdmin/.test(schoolsApi));
+
+  /* One delete, named, confirmed, and only on a key the endpoint
+     has just said nothing points at. ADMIN.md §4 allows that shape
+     and no more: it is "delete a comment", not "restore a
+     backup". */
+  ok("a delete is offered only where nothing points at the key",
+    /m\.refs > 0 \?/.test(media) && media.includes("m.removable")
+    && media.includes("window.confirm"));
+  ok("and the nightly snapshots are never in that list",
+    mediaApi.includes('startsWith("backups/")'));
+
+  /* Three answers about a link and not two. An old spelling still
+     answers, through a 301, so calling it dead would be a wrong
+     word for a real thing. */
+  ok("the link check keeps three answers",
+    schools.includes("redirected") && schools.includes("elsewhere")
+    && schoolsApi.includes("spellings"));
+  /* And what the rows cannot decide is returned as undecided. A
+     check that cries wolf is a check nobody reads. */
+  ok("and the panel says what it does not adjudicate",
+    /check-routes\.ts/.test(schools));
+
+  /* Numbers come from the data, which here means from the answer:
+     the headline is summed out of the schools the endpoint sent. */
+  ok("the lesson total is counted rather than stated",
+    /reduce\(\(n, s\) => n \+ s\.total/.test(schools));
+
+  /* ADMIN.md §3 B 8 asks for one thing nothing here can answer.
+     Saying so is the whole of what stage 3's routine panel did
+     with its missing verbs. */
+  ok("Backups names what it cannot know",
+    /cannot see the repository/.test(backups));
+  ok("and offers no restore and no write at all",
+    !/method:\s*["'](?:POST|PUT|PATCH|DELETE)["']/.test(backups));
 }
 
 console.log(`\n${passed} checks passed`);

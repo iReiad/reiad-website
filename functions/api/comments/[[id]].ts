@@ -3,6 +3,7 @@
 
    GET    /api/comments?slug=<slug>     public: approved comments
    GET    /api/comments?status=pending  admin:  the queue
+   GET    /api/comments?by=author       admin:  who wrote them, counted
    POST   /api/comments                 reader: leave one
    PATCH  /api/comments/<id>            admin:  approve / bin
    DELETE /api/comments/<id>            admin
@@ -70,6 +71,32 @@ type PublicComment = Pick<
 type AdminComment = PublicComment
   & Pick<CommentRow, "author_id" | "status" | "approved_at">;
 
+/** One person's comments, counted. `?by=author`, for ADMIN.md §3
+    D's People panel, which is the one panel needing both
+    credentials: this half is D1 behind the passphrase, and the
+    account half reads `profiles` in Supabase with the reader's own
+    bearer. `author_id` is the join and it is the ONLY one this
+    database offers. Questions and enquiries carry a typed name and
+    an email rather than an id, so nothing can attach one to an
+    account without joining on a string anybody can type.
+
+    Counted here rather than in the browser because the queue above
+    stops at 200 rows per state, and a total drawn from a capped
+    list is a wrong number on the one page where that is expensive. */
+interface AuthorTally {
+  author_id: string;
+  /** The name on their LATEST comment, not their name today.
+      `author_name` is a copy taken at the time of writing, so it
+      differs row to row when somebody renames themselves. */
+  author_name: string;
+  comments: number;
+  live: number;
+  pending: number;
+  binned: number;
+  /** ISO, of the latest one. */
+  last_at: string;
+}
+
 const MAX_BODY = 4000;
 const MIN_BODY = 2;
 
@@ -98,6 +125,45 @@ export async function onRequest(
 
   return methods(request, {
     GET: async () => {
+      /* ---- who has written them, counted ---- */
+      if (url.searchParams.get("by") === "author") {
+        const guard = await requireAdmin(context);
+        if (guard) return guard;
+
+        /* `author_name` is a BARE COLUMN beside an aggregate, and
+           that is legal here rather than sloppy: SQLite takes
+           every bare column from the row that produced the min or
+           max, PROVIDED the query has exactly one of them. This
+           has exactly one, `MAX(created_at)`, so the name is the
+           one on their latest comment. Add a second min or max and
+           the guarantee is gone and the name becomes whichever row
+           the planner reached, silently.
+
+           `author_id <> ''` because an id is what makes a row a
+           person: grouping an empty one would invent somebody. */
+        const authors = await all<AuthorTally>(d1,
+          `SELECT author_id, author_name,
+                  COUNT(*) AS comments,
+                  SUM(CASE WHEN status = 'live'    THEN 1 ELSE 0 END) AS live,
+                  SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending,
+                  SUM(CASE WHEN status = 'binned'  THEN 1 ELSE 0 END) AS binned,
+                  MAX(created_at) AS last_at
+             FROM comments
+            WHERE author_id <> ''
+            GROUP BY author_id
+            ORDER BY comments DESC, last_at DESC
+            LIMIT 200`);
+
+        /* The whole table's numbers, so a capped list can never be
+           read as a total. ADMIN.md §0: this is the one page where
+           a wrong number is expensive. */
+        const totals = await one<{ authors: number; comments: number }>(d1,
+          `SELECT COUNT(DISTINCT author_id) AS authors, COUNT(*) AS comments
+             FROM comments WHERE author_id <> ''`);
+
+        return ok({ authors, totals: totals ?? { authors: 0, comments: 0 } });
+      }
+
       /* ---- the moderation queue ---- */
       const wanted = url.searchParams.get("status");
       if (wanted) {

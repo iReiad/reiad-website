@@ -271,7 +271,7 @@ stage after it.
 | 3 | Courses, Live portfolio, Routine templates | the account half, all three already have their endpoint. **Done.** |
 | 4 | Comments, Questions, Enquiries | the passphrase half, ported panel by panel out of `app/src/`. **Done.** |
 | 5 | Published, Subscribers, History | the rest of the desk, and `/desk` retires |
-| 6 | Media, Schools, Backups | the three the desk never had |
+| 6 | Media, Schools, Backups | the three the desk never had. **Done.** |
 | 7 | People | last, because it is the only one needing both |
 
 
@@ -300,3 +300,44 @@ Stage 5 is where `/desk` stops being served and goes to
 serves it and nothing imports it. `app/desk.test.ts` is repointed
 at the new panels rather than deleted, because every check in it
 is a feature the old desk had.
+### What stage 6 shipped, and the one thing it could not
+
+Three panels: `next/components/admin/media-panel.tsx`,
+`schools-panel.tsx` and `backups-panel.tsx`. All three are behind
+the passphrase, all three read a 401 as an answer rather than
+drawing an empty list, and Backups is read-only outright.
+
+Two endpoints are new, and both are a branch of a route that
+already existed rather than a file of their own.
+
+`GET /api/media/usage` is the join §3 B 6 asks for: every key in
+the bucket against every `/media/` reference in an article body, a
+`cover`, an earlier version of a body, and a lesson. It is one
+question in the Worker rather than two fetches compared in the
+browser, because two answers taken a second apart disagree about a
+photo uploaded between them, and this is the panel whose one
+button deletes bytes. The nightly snapshots share that bucket and
+are counted apart, so they can never appear in a list headed
+"nothing points at this". Deleting one unreferenced object, named
+and confirmed, is the only write on any of the three: §4 allows
+that shape and it is `DELETE /api/media/<key>`, which the desk has
+had all along.
+
+`GET /api/schools/audit` is the prose half of §3 B 7: what is
+unwritten, what no stage or section declares, and where a link
+inside a lesson body points. It decides a link against the rows,
+so it decides completely inside the space the rows describe and
+returns everything else as undecided rather than guessing at it:
+the route table is not in the database, and `check-routes.ts` is
+what walks the rest. It answers three ways and not two, because an
+old spelling like `/money/index.html` still answers through a 301
+in `aab/_redirects`, and calling that dead would be a wrong word
+for a real thing.
+
+**The one thing no endpoint can answer** is the last clause of §3
+B 8: the last commit of `content/articles.backup.json`. That is a
+fact about git. The Worker cannot see the repository, the file is
+not served, and the deploy carries one commit for the whole site
+rather than a date per file. The panel says so in a sentence and
+draws no row, which is what stage 3 did with the routine
+template's missing verbs.

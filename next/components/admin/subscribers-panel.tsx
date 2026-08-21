@@ -51,7 +51,7 @@ export function SubscribersPanel() {
   }, []);
 
   return (
-    <Surface material="pane" className="ad-panel">
+    <Surface material="pane" className="ad-panel" id="subscribers">
       <h3>Subscribers</h3>
 
       {phase === "loading" ? <p className="ad-quiet" role="status">এক মুহূর্ত…</p> : null}

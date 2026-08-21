@@ -83,7 +83,7 @@ export function OverviewPanel() {
   }, []);
 
   return (
-    <Surface material="pane" className="ad-panel">
+    <Surface material="pane" className="ad-panel" id="waiting">
       <h3>Waiting</h3>
 
       {phase === "loading" ? <p className="ad-quiet" role="status">এক মুহূর্ত…</p> : null}

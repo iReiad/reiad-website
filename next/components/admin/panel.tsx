@@ -36,10 +36,13 @@
       a working panel with nothing in it, which is the failure
       `app/desk.test.ts` exists for.
 
-   ADMIN.md §6 stages 1, 3 and 4 are here: the route, the shell,
-   the two sign-ins and Health; the account half; and the three
-   moderation queues. Stages 5 to 7 arrive one at a time, each
-   shipping on its own.
+   All seven stages of ADMIN.md §6 are here: the route, the shell,
+   the two sign-ins and Health; the account half; the three
+   moderation queues; the rest of the desk; the three the desk
+   never had; and People, which is the one needing both at once.
+
+   `next/admin.test.ts` drives this page in a browser, and it is
+   what says a panel does something rather than merely rendering.
    ============================================================ */
 
 import { useEffect, useState } from "react";
@@ -52,6 +55,10 @@ import { CommentsPanel, EnquiriesPanel, QuestionsPanel } from "./queues";
 import { OverviewPanel } from "./overview-panel";
 import { PiecesPanel } from "./pieces-panel";
 import { SubscribersPanel } from "./subscribers-panel";
+import { MediaPanel } from "./media-panel";
+import { SchoolsPanel } from "./schools-panel";
+import { BackupsPanel } from "./backups-panel";
+import { PeoplePanel } from "./people-panel";
 import { ButtonLink } from "../ui/button";
 import { Surface } from "../ui/surface";
 
@@ -155,17 +162,12 @@ export function AdminPanel() {
         <Gate which="account" held={account} />
       </div>
 
-      {pass && account ? (
-        <Surface material="pane" className="ad-panel">
-          <h3>Both</h3>
-          <p className="ad-quiet">
-            One panel needs the two at once and it is the reason this page asks
-            for both: a person here is a Supabase account and a set of rows in
-            D1 written under their name, and neither store knows about the
-            other. ADMIN.md §3 D is what it will show, and what it will not.
-          </p>
-        </Surface>
-      ) : null}
+      {/* ADMIN.md §6 stage 7. The only panel needing both at once,
+          and it decides that for itself rather than being hidden
+          behind the two flags above: mounted unconditionally, it
+          says WHICH credential is missing, which is what §3 D asks
+          for and what a panel that vanishes cannot do. */}
+      <PeoplePanel />
 
       {/* ADMIN.md §6 stage 3: the account half. All three already had
           their endpoint, which is why they are the stage that comes
@@ -194,18 +196,18 @@ export function AdminPanel() {
       <EnquiriesPanel />
       <SubscribersPanel />
 
+      {/* ADMIN.md §6 stage 6: the three the desk never had. */}
+      <MediaPanel />
+      <SchoolsPanel />
+      <BackupsPanel />
+
       <Surface material="pane" className="ad-panel">
-        <h3>Not built yet</h3>
+        <h3>What is not here</h3>
         <p className="ad-quiet">
-          Thirteen panels, in ADMIN.md, and nine of them are above. Nothing here is a
-          placeholder for the rest: an empty panel that will one day hold something reads
-          exactly like a broken panel that holds nothing, which is the whole reason that
-          file exists.
-        </p>
-        <p className="ad-quiet">
-          Still to come, in that file&apos;s order: Media, Schools and Backups, the three
-          the desk never had; then People, last because it is the only one needing both
-          credentials at once.
+          Thirteen panels, in ADMIN.md, and all thirteen are above. Nothing here is a
+          placeholder: an empty panel that will one day hold something reads exactly
+          like a broken panel that holds nothing, which is the whole reason that file
+          exists.
         </p>
         <p className="ad-quiet">
           The desk at <a href="/desk">/desk</a> is still served. It goes to

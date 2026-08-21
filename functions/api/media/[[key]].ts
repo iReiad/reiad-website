@@ -4,6 +4,8 @@
    GET    /media/<key>        public: serve an image out of R2
    POST   /api/media          admin:  upload raw bytes, get a URL back
    GET    /api/media          admin:  list what's stored
+   GET    /api/media/usage    admin:  what points at each key, and what
+                                      nothing points at
    DELETE /api/media/<key>    admin:  remove one
 
    ---- why this exists ----
@@ -31,8 +33,12 @@
 import { fail, methods, notConfigured, ok, str } from "../../_lib/http.ts";
 import type { RouteContext } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.ts";
+import { db } from "../../_lib/db.ts";
 import type { DbEnv } from "../../_lib/db.ts";
-import type { MediaEnv } from "../../_lib/r2.ts";
+import type { MediaEnv, R2Object } from "../../_lib/r2.ts";
+import type {
+  ArticleRow, ArticleVersionRow, SchoolLessonRow,
+} from "../../../shared/rows.ts";
 
 /** What this route binds: the bucket, and the D1 the admin guard
     reads a session out of. Both are declared where they are
@@ -51,6 +57,16 @@ const TYPES: Record<string, string> = {
 };
 
 const MAX_BYTES = 8 * 1024 * 1024;
+
+/* A reference as prose holds it: `/media/<slug>/<hash>.<ext>`, in an
+   `<img src>` or in a `cover` column, with or without a host in
+   front. Loose about the key's shape on purpose, because the match
+   that matters is made against the keys the bucket really has. */
+const MEDIA_REF = /\/media\/([A-Za-z0-9._~%-]+\/[A-Za-z0-9._~%-]+)/g;
+
+/** How many stored objects the usage answer carries. Every total
+    beside it counts all of them; this bounds the list alone. */
+const LISTED = 500;
 
 /* The fetch proxy is admin-only, so this is not the main line of
    defence, but a Worker sits inside Cloudflare's network and there
@@ -134,6 +150,133 @@ export async function onRequest(
             "X-Content-Type-Options": "nosniff",
             "Cache-Control": "private, max-age=300",
           },
+        });
+      }
+
+      /* ---- what nothing references ----
+
+         ADMIN.md §3 B 6 asks Media for four things and this is the
+         fourth: the keys no article body, no `cover` and no lesson
+         body points at. It is a join between the bucket listing and
+         D1, and it is made HERE rather than across two fetches in a
+         panel. Two answers taken a second apart can disagree: a
+         photo uploaded between them reads as referenced by nothing,
+         and this is the panel whose buttons delete bytes.
+
+         Generous on purpose about what counts as a reference. It
+         reads drafts as well as live pieces, and `article_versions`
+         too: a photo only an earlier body names comes back the
+         moment somebody restores that version, so an unreferenced
+         list that missed it would be a list that loses a picture. */
+      if (key === "usage") {
+        const guard = await requireAdmin(context);
+        if (guard) return guard;
+
+        const d1 = await db(env);
+        if (!d1) return notConfigured();
+
+        /* The whole bucket, page by page. `list()` answers at most
+           1000 keys and every number below is a total, so a single
+           page would be a count that goes quietly wrong on the day
+           the bucket outgrows one. The ceiling here is real and is
+           reported rather than hidden. */
+        const objects: R2Object[] = [];
+        let cursor: string | undefined;
+        let more = true;
+        for (let page = 0; page < 20 && more; page += 1) {
+          const listed = await bucket.list({ limit: 1000, cursor });
+          objects.push(...listed.objects);
+          more = Boolean(listed.truncated && listed.cursor);
+          cursor = listed.cursor;
+        }
+
+        /* Only the rows that could hold one. `LIKE` is as far as
+           SQLite goes here and it is a filter rather than the
+           match: what a body holds is prose and what the bucket
+           holds is keys, so the two are compared below, key by
+           key, against what is really stored. */
+        const [articles, versions, lessons] = await Promise.all([
+          d1.prepare(
+            `SELECT slug, section, status, cover, body FROM articles
+              WHERE body LIKE '%/media/%' OR cover LIKE '%/media/%'`
+          ).all<Pick<ArticleRow, "slug" | "section" | "status" | "cover" | "body">>(),
+          d1.prepare(
+            `SELECT slug, saved_at, cover, body FROM article_versions
+              WHERE body LIKE '%/media/%' OR cover LIKE '%/media/%'`
+          ).all<Pick<ArticleVersionRow, "slug" | "saved_at" | "cover" | "body">>(),
+          d1.prepare(
+            `SELECT school, stage, slug, body FROM school_lessons
+              WHERE body LIKE '%/media/%'`
+          ).all<Pick<SchoolLessonRow, "school" | "stage" | "slug" | "body">>(),
+        ]);
+
+        const where = new Map<string, string[]>();
+        const note = (text: string | null, place: string): void => {
+          for (const found of String(text ?? "").matchAll(MEDIA_REF)) {
+            const at = where.get(found[1]);
+            if (!at) where.set(found[1], [place]);
+            else if (!at.includes(place)) at.push(place);
+          }
+        };
+
+        for (const a of articles.results ?? []) {
+          note(a.body, `${a.section}/${a.slug}${a.status === "live" ? "" : " (a draft)"}`);
+          note(a.cover, `${a.section}/${a.slug}, as its share card`);
+        }
+        for (const v of versions.results ?? []) {
+          note(v.body, `${v.slug}, saved ${String(v.saved_at).slice(0, 10)}`);
+          note(v.cover, `${v.slug}, an earlier share card`);
+        }
+        for (const l of lessons.results ?? []) {
+          note(l.body, `${l.school}/${l.stage}/${l.slug}`);
+        }
+
+        /* The nightly snapshots share this bucket and are not
+           photos. Counting them as unreferenced would put the
+           database's own backups at the top of a list headed
+           "delete these to recover space". */
+        const snaps = objects.filter((o) => o.key.startsWith("backups/"));
+        const media = objects
+          .filter((o) => !o.key.startsWith("backups/"))
+          .map((o) => {
+            const places = where.get(o.key) ?? [];
+            return {
+              key: o.key,
+              url: `/media/${o.key}`,
+              size: o.size,
+              uploaded: o.uploaded,
+              refs: places.length,
+              where: places.slice(0, 3),
+              /* Whether the DELETE below would take it, decided by
+                 the predicate that route uses. A delete button on a
+                 key that route refuses is a button that fails. */
+              removable: validKey(o.key),
+            };
+          })
+          /* Unreferenced first, and biggest first within that,
+             which is the order somebody recovering space reads in. */
+          .sort((a, b) =>
+            (a.refs === 0 ? 0 : 1) - (b.refs === 0 ? 0 : 1) || b.size - a.size);
+
+        const loose = media.filter((m) => m.refs === 0);
+
+        return ok({
+          media: media.slice(0, LISTED),
+          listed: Math.min(media.length, LISTED),
+          count: media.length,
+          bytes: media.reduce((n, m) => n + m.size, 0),
+          unreferenced: loose.length,
+          unreferencedBytes: loose.reduce((n, m) => n + m.size, 0),
+          snapshots: { count: snaps.length, bytes: snaps.reduce((n, o) => n + o.size, 0) },
+          /* What "nothing references it" was decided against, so a
+             panel can say it rather than asking a reader to take
+             the word "nothing" on trust. */
+          scanned: {
+            articles: (articles.results ?? []).length,
+            versions: (versions.results ?? []).length,
+            lessons: (lessons.results ?? []).length,
+          },
+          truncated: more,
         });
       }
 

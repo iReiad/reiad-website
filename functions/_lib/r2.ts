@@ -61,7 +61,13 @@ export interface R2Bucket {
   ): Promise<R2Object | null>;
   get(key: string): Promise<R2ObjectBody | null>;
   head(key: string): Promise<R2Object | null>;
-  list(options?: { prefix?: string; limit?: number }): Promise<{ objects: R2Object[] }>;
+  /** `cursor` and `truncated` are how a listing longer than one
+      page is read to the end. R2 answers at most 1000 keys, and the
+      media panel's headline is a TOTAL: a caller that ignored these
+      would print a number that is quietly wrong on the day the
+      bucket outgrows one page, with nothing to see. */
+  list(options?: { prefix?: string; limit?: number; cursor?: string }):
+    Promise<{ objects: R2Object[]; truncated?: boolean; cursor?: string }>;
   delete(key: string): Promise<void>;
 }
 
