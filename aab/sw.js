@@ -31,6 +31,17 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v171: this file. The fetch handler excluded cross-origin and
+        /api/ and nothing else, so a React Server Component
+        payload, which Next requests at the route's own address
+        with `_rsc` on it, fell into the cache-first branch and
+        was served from the cache for every later navigation.
+        /admin drew its heading and its two credential cards out
+        of the current build and nothing else, for days, while
+        the HTML, the chunks and the stylesheet on the server
+        were all correct and every check said so. A payload is
+        never cached now, and neither is /admin in any form.
+
    v170: no file changed, and the bump is the fix.
 
         The runtime cache kept EVERY answer `fetch` resolved
@@ -1595,7 +1606,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v170";
+const VERSION = "v171";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -1834,6 +1845,34 @@ self.addEventListener("fetch", (event) => {
   // stale headlines are worse than no headlines.
   if (url.origin !== location.origin) return;
   if (url.pathname.startsWith("/api/")) return;
+
+  /* A React Server Component payload is not a file, and the
+     branch at the bottom of this file treats everything that is
+     not HTML as one.
+
+     Next asks for one on every client-side navigation and every
+     prefetch, at the route's own address with `_rsc` on it. It is
+     THIS BUILD's description of THAT route, it varies on four
+     router headers, and a prefetch payload is deliberately
+     partial. Served cache-first, one captured under an earlier
+     build answers a navigation under the next: the chrome and the
+     heading come from the new bundle and the body comes from
+     whatever the old payload held.
+
+     /admin lost thirteen panels to this and every check passed,
+     because the HTML, the chunks and the stylesheet really were
+     correct. Reproducing it needed the page driven in a browser
+     with no worker in the way, which is the one thing a check
+     that reads files cannot do. */
+  if (url.searchParams.has("_rsc")
+      || request.headers.has("RSC")
+      || request.headers.has("Next-Router-Prefetch")) return;
+
+  /* And the admin panel is one person's. Nothing about it belongs
+     in a cache that a later reader at the same machine is handed,
+     which is the argument `sync.js` makes about ticks one level
+     up. */
+  if (url.pathname === "/admin") return;
 
   if (isHTML(request)) {
     event.respondWith(
