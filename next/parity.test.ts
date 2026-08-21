@@ -12,7 +12,7 @@
    It starts the built Worker on workerd through `wrangler dev`,
    with a local D1 seeded with a handful of rows, asks it for an
    article, and compares what comes back against what
-   `functions/insights/[slug].js` would have produced for the same
+   `functions/insights/[slug].ts` would have produced for the same
    row. No network, no deploy, no Cloudflare account.
 
    Since Stage 11.1 it also drives the three reading hubs, which
@@ -314,7 +314,7 @@ await new Promise((r) => setTimeout(r, 500));
 /* ---------- the two renderings ---------- */
 
 const ORIGIN = "https://reiad.co.uk";
-const { render } = await import("../functions/insights/[slug].js");
+const { render } = await import("../functions/insights/[slug].ts");
 const { SECURITY_HEADERS } = await import("../shared/headers.ts");
 
 /* Asked for at the address the piece actually has.

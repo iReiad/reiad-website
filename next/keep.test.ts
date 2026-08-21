@@ -7,7 +7,7 @@
    Needs Playwright and a browser. Without either it says which and
    skips, and a skip is not a pass.
 
-   `aab/src/keep.ts` was 220 lines and it did nine things: it
+   `archive/modules/keep.ts` was 220 lines and it did nine things: it
    worked out which page it was on, put a row under the byline of
    a piece and under the meta line of a lesson, drew nothing at
    all signed out, drew nothing until the account had answered

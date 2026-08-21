@@ -9,9 +9,9 @@
    learned them on an article should not have to find them again
    in a school.
 
-   `aab/src/keep.ts` was 220 lines that built this row with
-   `document.createElement` and inserted it after `.byline`, which
-   is the shape `components/scripts.tsx` is entirely about: a node
+   `archive/modules/keep.ts` was 220 lines that built this row
+   with `document.createElement` and inserted it after `.byline`,
+   which is the shape `components/scripts.tsx` is entirely about: a node
    a script adds to markup React has just adopted is a node React
    removes. It survived only because `SiteScripts` ran it from an
    effect.

@@ -59,7 +59,7 @@ export const QUESTION_STATUS = ["pending", "published", "spam", "archived"] as c
 
     `live` rather than `approved`, and `binned` rather than
     `spam`, because that is what the column actually holds:
-    `functions/api/comments/[[id]].js` writes those three and the
+    `functions/api/comments/[[id]].ts` writes those three and the
     thread query filters on `status = 'live'`. This file is a
     description of the database and not a proposal for a better
     one; renaming a state here and nowhere else would be a
@@ -117,7 +117,7 @@ export interface ArticleRow {
       `Equities|Beginner`. */
   topics: string;
   lang: string;
-  /** Sanitised HTML, by `functions/_lib/sanitise.js` on the way
+  /** Sanitised HTML, by `functions/_lib/sanitise.ts` on the way
       in. Never sanitised on the way out, which is why the way in
       is the only place that may be wrong. */
   body: string;

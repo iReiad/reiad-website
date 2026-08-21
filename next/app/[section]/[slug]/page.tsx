@@ -135,7 +135,8 @@ export default async function ReadingPage({ params }: Params) {
         <div className="note">{look.note}</div>
 
         {/* Reactions and the question box, before the prev/next
-            pair, which is where `aab/engage.js` inserted itself.
+            pair, which is where `archive/modules/engage.js`
+            inserted itself.
 
             INSIGHTS ONLY, because that is what `app.js` did: it
             imported that module on `/insights/` and nowhere else,

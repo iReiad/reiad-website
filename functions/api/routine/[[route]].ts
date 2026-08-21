@@ -36,7 +36,7 @@
    ============================================================ */
 
 import { fail, methods, ok } from "../../_lib/http.ts";
-import { readerFrom } from "../../_lib/reader.js";
+import { readerFrom } from "../../_lib/reader.ts";
 import { isAdmin } from "../../_lib/admins.ts";
 import { PRIVATE_TEMPLATES } from "../../../shared/routine.ts";
 

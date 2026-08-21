@@ -17,9 +17,9 @@
    run in fewer places and would not catch any of it, because all
    of it is true of a page that renders perfectly.
 
-   The browser half is what `app/desk.test.ts` already is for the
-   desk, and it moves across panel by panel as ADMIN.md §6 stage
-   5 moves them.
+   The browser half is `next/admin.test.ts`, which is what the
+   desk's 76 checks became when ADMIN.md §6 stage 5 moved the last
+   of its panels across.
    ============================================================ */
 
 import { readFileSync, existsSync } from "node:fs";
@@ -97,7 +97,7 @@ console.log("\nthe two credentials stay two");
   const panel = read("next/components/admin/panel.tsx");
 
   /* The browser must never be able to turn one into the other.
-     `_lib/auth.js` writes the passphrase session and lives in the
+     `_lib/auth.ts` writes the passphrase session and lives in the
      Worker; a component importing anything that mints one would
      be the failure ADMIN.md §1 names first. */
   ok("the panel mints no session",
@@ -126,16 +126,25 @@ console.log("\nnothing locked looks empty");
   const panel = read("next/components/admin/panel.tsx");
   const health = read("next/components/admin/health.tsx");
 
-  /* The rule app/desk.test.ts was written for: an empty list
-     where a credential is missing looks exactly like a working
-     panel with nothing in it. */
+  /* The rule the desk's browser test was written for: an empty
+     list where a credential is missing looks exactly like a
+     working panel with nothing in it. */
   ok("a missing credential names what it would open",
     /Not held\. It would open/.test(panel));
   ok("and offers the one thing to press",
     /Sign in at the Studio/.test(panel) && /Sign in to your account/.test(panel));
 
   ok("a Worker that does not answer is said, not drawn as nothing",
-    /no answer from/.test(health));
+    /no usable answer from/.test(health));
+
+  /* And an answer that is not a health report counts as not
+     answering. It read `d.stores.d1` off whatever came back, and
+     a throw during render in a client component unmounts the
+     WHOLE route: one endpoint answering `{ ok: true }` took the
+     page to "This page couldn't load" with every panel gone,
+     Health included. `next/admin.test.ts` drives that. */
+  ok("and an answer of the wrong shape is not read as one",
+    /is d is Health|d is Health/.test(health));
 
   /* Three states and not two. "Not configured" painted as
      "broken" sends somebody looking for a fault that is a
@@ -185,8 +194,8 @@ console.log("\nthe plan points somewhere");
     courses.includes("/api/courses/status"));
 
   /* ADMIN.md §5: a missing credential names what it would open
-     rather than drawing an empty list. That is the rule
-     `app/desk.test.ts` was written for, and an empty panel is
+     rather than drawing an empty list. That is the rule the
+     desk's browser test was written for, and an empty panel is
      indistinguishable from a broken one. */
   for (const [name, src] of [
     ["courses", courses], ["live", live], ["routine", routine],
@@ -217,6 +226,188 @@ console.log("\nthe plan points somewhere");
      cannot be the panel that throws when one is missing. */
   ok("the shell degrades rather than throwing when /account.js is absent",
     /\} catch \{/.test(shell));
+}
+
+/* ============================================================
+   6. Stages 4 and 5: the passphrase half
+
+   Every claim here is one that a panel rendering perfectly would
+   still break. The browser half is next/admin.test.ts, which
+   drives these panels: a panel is not a replacement until it has
+   been driven, and that is the one thing this file cannot assert.
+   ============================================================ */
+{
+  console.log("\n  the passphrase half");
+
+  const engine = read("next/components/admin/queue.tsx");
+  const specs = read("next/components/admin/queues.tsx");
+  const pieces = read("next/components/admin/pieces-panel.tsx");
+  const subs = read("next/components/admin/subscribers-panel.tsx");
+  const overview = read("next/components/admin/overview-panel.tsx");
+  const shell = read("next/components/admin/panel.tsx");
+  /* The desk it was ported from, in `archive/`, which is what
+     that directory is for: a replacement is checkable against the
+     thing it replaced. Read and nothing else, which is the line
+     `archive/README.md` draws. */
+  const desk = read("archive/desk-react/Published.tsx");
+
+  /* ADMIN.md's second rule, in the one place all three queues get
+     it from. 401 is the passphrase and 403 a session without the
+     right; a panel that read either as "no rows" would look
+     exactly like a working one. */
+  ok("the queue engine tells a refusal from an empty list",
+    /401/.test(engine) && /403/.test(engine)
+    && engine.includes('"locked"') && /spec\.empty/.test(engine));
+
+  /* An action changes a status, and a status is what the filter
+     filters on: a row edited in place stays in a queue it is no
+     longer in, which reads as a button that did nothing. */
+  ok("and refetches after an action rather than editing in place",
+    /await load\(\)/.test(engine) && !/setRows\(\(/.test(engine));
+
+  /* Three specs, one engine. A fourth queue should be an object. */
+  for (const q of ["Comments", "Questions", "Enquiries"]) {
+    ok(`${q} is a spec rather than a component`,
+      specs.includes(`title: "${q}"`) && specs.includes("AdminQueue"));
+  }
+
+  /* `?status=published` takes /api/questions down its PUBLIC
+     branch: no email, no counts, and no 401 for somebody without
+     the passphrase. Offering it as a filter would quietly show
+     the reader's list inside the admin panel. */
+  ok("the questions queue does not offer the filter that is public",
+    !/id: "published"/.test(specs));
+
+  /* Every action the desk had. A port is finished when it does
+     what the thing it replaced did, not when it renders, and
+     those two look identical from here. */
+  for (const action of [
+    "Unpublish", "Publish", "History", "Draw card", "Copy link", "Delete", "Move to",
+  ]) {
+    ok(`Published keeps "${action}"`, pieces.includes(action),
+      `archive/desk-react/Published.tsx has it and the port does not`);
+  }
+  ok("and the desk it was ported from still has them too", desk.includes("Draw card"),
+    "if this fails the comparison above has stopped meaning anything");
+
+  /* Restoring is itself an overwrite and is snapshotted, which is
+     the sentence that makes the button pressable. */
+  ok("History says that going back is undoable",
+    /can be undone/.test(pieces));
+
+  /* ADMIN.md B 5: "there is no mailing tool on this site and this
+     panel is not the place to grow one". */
+  /* Asserted as a fact about the CALLS rather than about the
+     words: the panel's own prose says "nothing may send to that
+     state", which a search for "send" would fail on. What would
+     make this a mailing tool is a write. */
+  ok("Subscribers offers an export and makes no write",
+    /subscribers\/export/.test(subs)
+    && !/method:\s*["'](?:POST|PUT|PATCH|DELETE)["']/.test(subs));
+
+  /* Numbers come from the data. A count typed into this panel is
+     the failure CLAUDE.md opens with. */
+  ok("Waiting counts rather than remembering",
+    /adminCall/.test(overview) && !/\b(?:drafts|comments|questions):\s*\d+/.test(overview));
+
+  ok("the shell mounts the passphrase half",
+    ["<OverviewPanel />", "<PiecesPanel />", "<CommentsPanel />",
+     "<QuestionsPanel />", "<EnquiriesPanel />", "<SubscribersPanel />"]
+      .every((tag) => shell.includes(tag)));
+
+  /* Stage 5 is not finished until /desk goes to archive/, and the
+     panel must not claim otherwise while it is still served.
+
+     The ROUTE decides it, because the route is what serves the
+     page. The bundle it loaded was a separate file and would have
+     gone on sitting in `aab/` the day the page stopped being
+     served, so a check keyed on that would have read a retired
+     desk as a live one. */
+  const deskServed = existsSync(join(ROOT, "next/app/(site)/desk/page.tsx"));
+  ok(deskServed
+    ? "the panel admits /desk is still served"
+    : "/desk has retired and the panel no longer points at it",
+    deskServed ? shell.includes("/desk") : !shell.includes("/desk"));
+}
+
+/* ============================================================
+   Stage 6: Media, Schools and Backups
+
+   The three the desk never had. Each is read-only bar one delete,
+   each reads a 401 rather than drawing an empty list, and each
+   says on the page what no endpoint can answer.
+
+   Nothing here asserts a tag in the shell: mounting them is
+   `panel.tsx`'s job, so a test that did would fail on the change
+   that writes a panel and pass on the one that mounts it, which is
+   the wrong way round.
+   ============================================================ */
+console.log("\nthe three the desk never had");
+{
+  const media = read("next/components/admin/media-panel.tsx");
+  const schools = read("next/components/admin/schools-panel.tsx");
+  const backups = read("next/components/admin/backups-panel.tsx");
+  const mediaApi = read("functions/api/media/[[key]].ts");
+  const schoolsApi = read("functions/api/schools/[[route]].ts");
+
+  /* ADMIN.md §1's second rule, on all three. An empty bucket, an
+     empty ladder and an empty bucket of snapshots each draw the
+     same nothing a locked panel would. */
+  for (const [name, src] of [
+    ["media", media], ["schools", schools], ["backups", backups],
+  ] as const) {
+    ok(`the ${name} panel reads a refusal rather than drawing nothing`,
+      src.includes("isLocked") && /"locked"/.test(src)
+      && /passphrase is not held/.test(src));
+    ok(`and the ${name} panel mints no credential`,
+      !/service_role|SERVICE_ROLE|createSession|setAdminKey/.test(src));
+  }
+
+  /* The join between the bucket and the database is the Worker's.
+     Two fetches compared in a browser are two answers a second
+     apart, and the photo uploaded between them reads as the one
+     nothing points at, on the panel whose buttons delete bytes. */
+  ok("what nothing references is asked as one question",
+    media.includes("media/usage")
+    && !/adminCall(?:<[^>]*>)?\("media"\)/.test(media));
+  ok("and the usage branch is behind the passphrase",
+    /key === "usage"[\s\S]{0,240}requireAdmin/.test(mediaApi));
+  ok("as is the schools audit",
+    /school === "audit"[\s\S]{0,240}requireAdmin/.test(schoolsApi));
+
+  /* One delete, named, confirmed, and only on a key the endpoint
+     has just said nothing points at. ADMIN.md §4 allows that shape
+     and no more: it is "delete a comment", not "restore a
+     backup". */
+  ok("a delete is offered only where nothing points at the key",
+    /m\.refs > 0 \?/.test(media) && media.includes("m.removable")
+    && media.includes("window.confirm"));
+  ok("and the nightly snapshots are never in that list",
+    mediaApi.includes('startsWith("backups/")'));
+
+  /* Three answers about a link and not two. An old spelling still
+     answers, through a 301, so calling it dead would be a wrong
+     word for a real thing. */
+  ok("the link check keeps three answers",
+    schools.includes("redirected") && schools.includes("elsewhere")
+    && schoolsApi.includes("spellings"));
+  /* And what the rows cannot decide is returned as undecided. A
+     check that cries wolf is a check nobody reads. */
+  ok("and the panel says what it does not adjudicate",
+    /check-routes\.ts/.test(schools));
+
+  /* Numbers come from the data, which here means from the answer:
+     the headline is summed out of the schools the endpoint sent. */
+  ok("the lesson total is counted rather than stated",
+    /reduce\(\(n, s\) => n \+ s\.total/.test(schools));
+
+  /* ADMIN.md §3 B 8 asks for one thing nothing here can answer.
+     Saying so is the whole of what stage 3's routine panel did
+     with its missing verbs. */
+  ok("Backups names what it cannot know",
+    /cannot see the repository/.test(backups));
+  ok("and offers no restore and no write at all",
+    !/method:\s*["'](?:POST|PUT|PATCH|DELETE)["']/.test(backups));
 }
 
 console.log(`\n${passed} checks passed`);

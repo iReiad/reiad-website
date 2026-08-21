@@ -10,8 +10,10 @@
    DOMParser pass, and allowlist-only: anything not named below is
    dropped, tags and attributes alike.
 
-   ALLOWED_CLASSES is the twin of KEEP_CLASSES in aab/editor.js and
-   the two must agree. `check-css.ts` fails if they drift, or if a
+   ALLOWED_CLASSES is the twin of KEEP_CLASSES in aab/src/editor.ts
+   and the two must agree. The source, not the built aab/editor.js
+   it becomes: editing the output looks like it works and is
+   discarded by the next build. `check-css.ts` fails if they drift, or if a
    class is allowed here and styled nowhere. */
 
 /* `class` is allowed on most of these because the article blocks
@@ -34,10 +36,11 @@ const ALLOWED: Record<string, string[]> = {
 /* Only these class names survive: they're the ones the stylesheet
    knows about. Anything else is styling smuggled in from outside.
 
-   This list is the twin of KEEP_CLASSES in aab/studio.js. When the
-   two disagreed the browser's was the stricter one, and the result
-   was a server that supported callouts nothing could produce. Add
-   to one, add to the other. */
+   This list is the twin of KEEP_CLASSES in aab/src/editor.ts. When
+   the two disagreed the browser's was the stricter one, and the
+   result was a server that supported callouts nothing could
+   produce. Add to one, add to the other; check-css.ts fails if
+   they drift. */
 const ALLOWED_CLASSES: Set<string> = new Set([
   /* photos: how big, what shape, and which part to keep */
   "wide", "full", "duo", "lead-photo",

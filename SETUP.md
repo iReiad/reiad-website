@@ -157,7 +157,7 @@ database_id = "ad23dea3-74fc-4346-8119-ab5936f1a708"
 The ID is not a secret; it names a database, it does not open one.
 
 **There is no schema step.** The tables create themselves on the first request
-that needs them (`functions/_lib/db.js` runs the migrations and caches the
+that needs them (`functions/_lib/db.ts` runs the migrations and caches the
 fact), so there is no SQL to paste and no way to end up half-migrated.
 
 If you ever need to attach it by hand instead: **Settings → Bindings → Add →
@@ -238,7 +238,7 @@ What you type is stretched **in your browser**, PBKDF2-SHA256, 210,000
 iterations, and never sent. The server stores a hash of the result. It has to
 work this way: a Worker on the free plan gets 10ms of CPU per request and those
 iterations cost about 30ms, so doing it server-side got every attempt killed
-mid-request. `functions/_lib/auth.js` explains the trade-off in full.
+mid-request. `functions/_lib/auth.ts` explains the trade-off in full.
 
 Your first page load after a deploy may still come from the service worker's
 cache. A second load picks up the new version.

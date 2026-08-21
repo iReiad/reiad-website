@@ -16,8 +16,8 @@
    HTML: the markup was right, the module was right, the module ran
    and computed the right number, and then React's hydration put
    the empty markup back. Nothing but a browser can tell those two
-   apart, which is the same argument `app/desk.test.ts` makes for
-   the desk and is why this file looks like that one.
+   apart, which is the same argument `next/admin.test.ts` makes
+   for the admin panel and is why this file looks like that one.
 
    So each case below names a page and something in it that ONLY
    that page's module can have written: a stat with a figure in it,

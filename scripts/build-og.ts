@@ -408,10 +408,12 @@ const files = globSync("**/*.html", { cwd: AAB })
 /* Pages that are nobody's business to share. The list matches
    the Disallow block in robots.txt, desk.html was in one and not
    the other, so a run quietly gave the admin desk a share card.
-   The two old pages were archived on 16 August 2026 and their
-   replacements are directories, so the names changed with them. */
+   Only files are walked here, so a private page that is a ROUTE
+   never reaches this loop: `/admin` says `robots: index: false`
+   in its own metadata, which is where the desk's entry went when
+   it retired on 21 August 2026. */
 const PRIVATE = new Set([
-  "studio/index.html", "desk/index.html", "offline.html",
+  "studio/index.html", "offline.html",
   "insights/_template.html",
 ]);
 

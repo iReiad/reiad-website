@@ -1,5 +1,5 @@
 /* ============================================================
-   tailwind.css: the source of /tailwind.css.
+   tailwind.css: the theme and the utilities, compiled by Next.
 
    archive/TRANSITION.md Stage 14. The arrangement was set up in
    step 1 and left unused on purpose, so that the first component
@@ -9,15 +9,15 @@
    The account page is that component, as of 17 August 2026. Its
    markup is almost entirely layout, which is what utilities are
    good at; the parts of it that are not, the popover menu and the
-   year grid, stayed in `styles.css` and the note at the top of
+   year grid, stayed in `site.css` and the note at the top of
    `next/app/(site)/account/page.tsx` says why each did.
 
    ---- where its utilities sit in the cascade ----
 
-   `aab/styles.css` declares the layer order in one line, and that
-   line is the one that counts: the first `@layer` statement a
-   browser sees fixes the order, and `styles.css` is loaded before
-   this file on every page. So `tw` is declared there, immediately
+   `next/styles/site.css` declares the layer order in one line, and
+   that line is the one that counts: the first `@layer` statement a
+   browser sees fixes the order, and `site.css` is imported before
+   this file by `globals.css`. So `tw` is declared there, immediately
    before `article`, and not here. It is the one placement that
    satisfies both constraints Stage 14 wrote down before it
    started:

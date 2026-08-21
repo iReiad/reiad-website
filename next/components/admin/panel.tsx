@@ -11,7 +11,7 @@
      the same thing. They authorise different data, held in
      different places, reachable only by different means.
 
-   The passphrase (`functions/_lib/auth.js`, a session cookie over
+   The passphrase (`functions/_lib/auth.ts`, a session cookie over
    D1) opens the site's own content. The account
    (`functions/_lib/admins.ts`, a reader id) opens rows in
    Supabase that row-level security answers with the reader's own
@@ -33,12 +33,16 @@
    2. NEVER SHOW A LOCKED PANEL AS AN EMPTY ONE. A panel missing
       its credential says so, with the one thing to press. An
       empty list where a credential is missing looks exactly like
-      a working panel with nothing in it, which is the failure
-      `app/desk.test.ts` exists for.
+      a working panel with nothing in it, which is the failure the
+      desk's own browser test existed for and this page inherited.
 
-   Stage 1 of ADMIN.md §6: the route, the shell, the two sign-ins
-   and Health. The panels themselves arrive in stages 3 to 7, each
-   one shipping on its own.
+   All seven stages of ADMIN.md §6 are here: the route, the shell,
+   the two sign-ins and Health; the account half; the three
+   moderation queues; the rest of the desk; the three the desk
+   never had; and People, which is the one needing both at once.
+
+   `next/admin.test.ts` drives this page in a browser, and it is
+   what says a panel does something rather than merely rendering.
    ============================================================ */
 
 import { useEffect, useState } from "react";
@@ -47,6 +51,15 @@ import { AdminHealth } from "./health";
 import { CoursesPanel } from "./courses-panel";
 import { RoutineTemplatesPanel } from "./routine-panel";
 import { LivePanel } from "./live-panel";
+import { CommentsPanel, EnquiriesPanel, QuestionsPanel } from "./queues";
+import { OverviewPanel } from "./overview-panel";
+import { PiecesPanel } from "./pieces-panel";
+import { SubscribersPanel } from "./subscribers-panel";
+import { MediaPanel } from "./media-panel";
+import { SchoolsPanel } from "./schools-panel";
+import { BackupsPanel } from "./backups-panel";
+import { StatsPanel } from "./stats-panel";
+import { PeoplePanel } from "./people-panel";
 import { ButtonLink } from "../ui/button";
 import { Surface } from "../ui/surface";
 
@@ -150,17 +163,12 @@ export function AdminPanel() {
         <Gate which="account" held={account} />
       </div>
 
-      {pass && account ? (
-        <Surface material="pane" className="ad-panel">
-          <h3>Both</h3>
-          <p className="ad-quiet">
-            One panel needs the two at once and it is the reason this page asks
-            for both: a person here is a Supabase account and a set of rows in
-            D1 written under their name, and neither store knows about the
-            other. ADMIN.md §3 D is what it will show, and what it will not.
-          </p>
-        </Surface>
-      ) : null}
+      {/* ADMIN.md §6 stage 7. The only panel needing both at once,
+          and it decides that for itself rather than being hidden
+          behind the two flags above: mounted unconditionally, it
+          says WHICH credential is missing, which is what §3 D asks
+          for and what a panel that vanishes cannot do. */}
+      <PeoplePanel />
 
       {/* ADMIN.md §6 stage 3: the account half. All three already had
           their endpoint, which is why they are the stage that comes
@@ -176,17 +184,45 @@ export function AdminPanel() {
         </>
       ) : null}
 
+      {/* ADMIN.md §6 stages 4 and 5: the passphrase half. Shown
+          whatever the credential state is, for the reason above:
+          each says what it is missing rather than drawing an empty
+          list, and the endpoint's own 401 is what it reads to
+          decide. Waiting leads, because it is the one that says
+          which of the others needs opening. */}
+      <OverviewPanel />
+      <PiecesPanel />
+      <CommentsPanel />
+      <QuestionsPanel />
+      <EnquiriesPanel />
+      <SubscribersPanel />
+
+      {/* Not in ADMIN.md's thirteen, and here because comparing the
+          desk's own browser test check by check found one whole
+          panel the desk had and this page did not. §4 bans
+          analytics BEYOND what the site already counts, which is
+          what this reads. */}
+      <StatsPanel />
+
+      {/* ADMIN.md §6 stage 6: the three the desk never had. */}
+      <MediaPanel />
+      <SchoolsPanel />
+      <BackupsPanel />
+
       <Surface material="pane" className="ad-panel">
-        <h3>Not built yet</h3>
+        <h3>What is not here</h3>
         <p className="ad-quiet">
-          Twelve panels, in ADMIN.md, and three of them are above. Nothing here is
-          a placeholder for the rest: an empty panel that will one day hold something reads
-          exactly like a broken panel that holds nothing, which is the whole
-          reason that file exists.
+          Thirteen panels, in ADMIN.md, and all thirteen are above. Nothing here is a
+          placeholder: an empty panel that will one day hold something reads exactly
+          like a broken panel that holds nothing, which is the whole reason that file
+          exists.
         </p>
         <p className="ad-quiet">
-          The desk at <a href="/desk">/desk</a> is the passphrase half today and
-          keeps answering until its last panel has moved here.
+          The desk has retired. Its thirteen panels are the ones above, all four
+          spellings of its address are a 301 to this page, and everything it was
+          built from is in <code>archive/</code>, which is readable rather than
+          deleted: the reason to keep a replaced thing at all is so that whoever
+          has to check the replacement can read both.
         </p>
       </Surface>
     </div>

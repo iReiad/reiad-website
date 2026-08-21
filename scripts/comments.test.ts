@@ -100,14 +100,22 @@ globalThis.fetch = (async (url: unknown) =>
    No stubbing of db(): the handler is given its database exactly
    the way the Worker gives it one, through `env.DB`, and the real
    db() runs the real migrations against it. So this test also
-   proves the CREATE TABLE statements in _lib/db.js are valid
+   proves the CREATE TABLE statements in _lib/db.ts are valid
    SQLite, which is the other thing that would fail in production
    and nowhere else. */
-const { onRequest } = await import("../functions/api/comments/[[id]].js");
+const { onRequest } = await import("../functions/api/comments/[[id]].ts");
 
+/* A double, not a Worker. `SqliteD1` answers the one call path
+   this handler takes and the context carries the three fields it
+   reads, so the cast is what says so: widening `RouteContext` or
+   `DbEnv` until a partial fake satisfied them would make those
+   interfaces describe this test rather than the runtime. The
+   three absent members, `waitUntil`, `passThroughOnException` and
+   `next`, are three the comments endpoint never calls. */
 const env = { DB: D1, SUPABASE_URL };
 const ctx = (request: Request, params: Record<string, string[]> = {}) =>
-  ({ request, env, params, data: {} });
+  ({ request, env, params, data: {} } as unknown as
+    Parameters<typeof onRequest>[0]);
 
 /** What this endpoint answers, across all six of its shapes, and
     every field is optional because which of them is present is

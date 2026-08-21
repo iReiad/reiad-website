@@ -7,7 +7,7 @@
    The kitchen and the travel desk are the same page with
    different words in it: a hero, a list of pieces, four cells
    saying how the pieces are written, and a closing note. They
-   were two files, and the two drifted; `aab/reads.js` already
+   were two files, and the two drifted; `archive/reads.js` already
    exists because the cards inside them had drifted twice.
 
    ---- and why the words are here rather than in a database ----

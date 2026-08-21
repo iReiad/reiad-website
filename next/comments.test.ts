@@ -3,10 +3,11 @@
 
      node next/comments.test.ts
 
-   `aab/comments.js` was 219 lines of `document.createElement` and
-   it is `components/comments.tsx` now. A port is finished when it
-   does what the thing it replaced did, not when it renders, so
-   what that module did is written down here.
+   `archive/modules/comments.js` was 219 lines of
+   `document.createElement` and it is `components/comments.tsx`
+   now. A port is finished when it does what the thing it replaced
+   did, not when it renders, so what that module did is written
+   down here.
 
    ---- what it can and cannot ask ----
 

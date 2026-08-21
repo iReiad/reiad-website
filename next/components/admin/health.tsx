@@ -33,6 +33,23 @@ interface Health {
   secrets: { drive: boolean; brokerSeal: boolean; adminReaders: number };
 }
 
+/** Is this really a health answer?
+
+    Asserted rather than assumed, and the reason is what this
+    panel is FOR. It read `d.stores.d1` off whatever came back,
+    so an endpoint answering a different shape threw during
+    render, and a throw in a client component takes the WHOLE
+    route down: the page said "This page couldn't load" and every
+    other panel went with it. The one panel that has to work on
+    the day something is broken was the one that could break
+    everything. */
+const isHealth = (d: unknown): d is Health => {
+  const h = d as Health | null;
+  return !!h && typeof h === "object"
+    && !!h.stores && !!h.stores.d1 && !!h.stores.supabase
+    && !!h.secrets;
+};
+
 export function AdminHealth() {
   const [health, setHealth] = useState<Health | null>(null);
   const [failed, setFailed] = useState(false);
@@ -41,8 +58,8 @@ export function AdminHealth() {
   useEffect(() => {
     let live = true;
     fetch("/api/admin/health", { headers: { accept: "application/json" } })
-      .then(async (r): Promise<Health | null> => (r.ok ? r.json() : null))
-      .then((d) => { if (live) { if (d) setHealth(d); else setFailed(true); } })
+      .then(async (r): Promise<unknown> => (r.ok ? r.json() : null))
+      .then((d) => { if (live) { if (isHealth(d)) setHealth(d); else setFailed(true); } })
       .catch(() => { if (live) setFailed(true); });
 
     /* What this browser is actually holding, which is a different
@@ -66,10 +83,11 @@ export function AdminHealth() {
         {/* The Worker not answering IS the answer, and saying it
             plainly beats an empty panel, which is the rule
             app/desk.test.ts was written for. */}
-        <Row label="The Worker" state="down" note="no answer from /api/admin/health" />
+        <Row label="The Worker" state="down" note="no usable answer from /api/admin/health" />
         <p className="ad-quiet">
-          Everything else on this page is served by the same Worker, so expect
-          it to be unavailable too.
+          Either it did not answer, or it answered something that is not a health
+          report. Everything else on this page is served by the same Worker, so
+          expect it to be unavailable too.
         </p>
       </Surface>
     );

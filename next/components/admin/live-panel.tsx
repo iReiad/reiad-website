@@ -55,7 +55,15 @@ export function LivePanel() {
         const r = await fetch("/api/broker/me", { headers: { accept: "application/json" } });
         if (!live) return;
         if (!r.ok) { setState("error"); return; }
-        const who = await r.json() as Me;
+        /* Read through a default rather than asserted. Every field
+           on `Me` is optional and every use of one below goes
+           through `?.`, so the only way this panel could throw
+           during render is a body that is not an object at all,
+           and a throw in a client component unmounts the WHOLE
+           route: `/admin` goes to "This page couldn't load" and
+           Health goes with it. See the same guard in health.tsx. */
+        const answer = await r.json().catch(() => null) as unknown;
+        const who: Me = (answer && typeof answer === "object" ? answer : {}) as Me;
         setMe(who);
         if (!who.admin) { setState("denied"); return; }
 
@@ -66,7 +74,8 @@ export function LivePanel() {
            working site. */
         const s = await fetch("/api/broker/site", { headers: { accept: "application/json" } });
         if (!live) return;
-        setSite(s.ok ? await s.json() as Site : null);
+        const shape = s.ok ? await s.json().catch(() => null) as unknown : null;
+        setSite(shape && typeof shape === "object" ? shape as Site : null);
         setState("ok");
       } catch { if (live) setState("error"); }
     })();

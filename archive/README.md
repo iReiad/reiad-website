@@ -16,14 +16,17 @@ in here; that is the test for whether something is ready to be
 archived, and it is worth applying literally rather than
 generously.
 
-**A test may, and two do.** That is not a loophole in the rule
+**A test may, and three do.** That is not a loophole in the rule
 above, it is the point of keeping any of this readable. The reason
 an archived thing is kept rather than deleted is so that whoever
 has to check the replacement really does what it replaced can read
 both, and a check that reads both is the most useful form that
 takes. `scripts/schools.test.mjs` reads the archived lesson prose
 and proves the rows in the database still say what those files
-said. Nothing about that reaches a reader, a page or a deploy.
+said; `next/parity.test.ts` compares a route against the page it
+replaced; and `scripts/admin.test.ts` compares the admin panel's
+Published against the desk panel it was ported out of. Nothing
+about any of that reaches a reader, a page or a deploy.
 
 The line worth holding is the one about the site, not the one
 about the word "import": a file in here must not be able to change
@@ -34,7 +37,7 @@ what anybody is served.
 | File | Replaced by | When |
 | --- | --- | --- |
 | `studio.html`, `studio.js` | `aab/studio/`, built from `app/src/studio/**` | 16 August 2026 |
-| `desk.html`, `desk.js` | `aab/desk/`, built from `app/src/**` | 16 August 2026 |
+| `desk.html`, `desk.js` | `desk-react/`, which was `aab/desk/` built from `app/src/**` | 16 August 2026 |
 | `schools/<school>/*.js` | `content/schools.backup.json`, exported from D1 | 16 August 2026 |
 | `schools-build.test.mjs` | `scripts/check-schools-built.mjs` | 16 August 2026 |
 | `work.html`, `services.html` | `_redirects`, which forwards both to `/portfolio` | 16 August 2026 |
@@ -55,6 +58,8 @@ what anybody is served.
 | `about.js` | `next/components/research.tsx`, with the words in the route | 19 August 2026 |
 | `news.js` | `next/components/news.tsx` and `next/lib/flip.ts` | 19 August 2026 |
 | `keep.js`, `keep.ts` | `next/components/keep.tsx`, rendered by the piece and lesson routes | 19 August 2026 |
+| `desk-react/` | `/admin`, thirteen panels in `next/components/admin/` | 21 August 2026 |
+| `desk-react/desk.test.ts` | `next/admin.test.ts`, which drives `/admin` in a browser | 21 August 2026 |
 
 `work.html` and `services.html` were early placeholders that still
 carried template text ("[Your Name]", "hello@yourdomain.com"), kept
@@ -190,8 +195,8 @@ Two reasons, and neither is sentiment.
 
 The first is that a port is finished when it does what the thing
 it replaced did, and the list of what the old thing did is easiest
-to check against the old thing. `app/desk.test.mjs` and
-`app/studio.test.mjs` are that list written down, 76 and 86 checks,
+to check against the old thing. `desk-react/desk.test.ts` and
+`app/studio.test.ts` are that list written down, 76 and 83 checks,
 and they were written by reading these files.
 
 The second is that the history is in git either way, but a
@@ -221,7 +226,7 @@ into `next/`.
 | `/learn/index.html`, `/deutsch/index.html`, `/quran/index.html`, `/english/index.html` | `next/app/[section]/index.html/`, from `next/lib/school-hubs.ts` |
 | `/learn/contents.html` | `next/app/[section]/contents.html/`, from the same |
 | `aab/learn/build-lessons.mjs`, `aab/quran/build-quran.mjs` | nothing: the pages they wrote are rendered on request |
-| `scripts/check-schools-built.mjs` | `next/parity.test.mjs`, against the route rather than against a file |
+| `scripts/check-schools-built.mjs` | `next/parity.test.ts`, against the route rather than against a file |
 | `scripts/build-school-hubs.mjs` | nothing: the copy it made is the original now |
 
 **Four school pages are NOT here**, and they are still in `aab/`:
@@ -232,10 +237,44 @@ none of it is in the database. `build-deutsch.mjs` and
 `build-english.mjs` are still in `aab/` too, cut down to writing only
 those.
 
-**These pages are still read, by a test.** `next/parity.test.mjs`
+**These pages are still read, by a test.** `next/parity.test.ts`
 compares what the route renders against what the page here says, fact
 by fact, and the lesson prose byte for byte. That is what this
 directory is for, said in the first paragraph of this file: a
 replacement is checkable against the thing it replaced. When these are
 eventually pruned, those checks lose their other side and should be
 deleted rather than weakened.
+
+## The React desk, 21 August 2026
+
+ADMIN.md §6 stage 5. `desk-react/` is the whole of `/desk`: the route
+(`route-page.tsx` and `route-layout.tsx`, which were
+`next/app/(site)/desk/page.tsx` and `layout.tsx`), the twelve sources
+Vite built the bundle from, which were `app/src/*`, and `desk.test.ts`,
+which was `app/desk.test.ts`.
+
+| What was here | What answers now |
+| --- | --- |
+| `/desk`, and `/desk.html`, `/desk/` and `/desk/index.html` with it | `/admin`, by a 301 in `aab/_redirects` |
+| nine panels over D1 | thirteen in `next/components/admin/`, three of which the desk never had |
+| `app/desk.test.ts`, 76 checks in a browser | `next/admin.test.ts`, which drives `/admin` in a browser |
+
+**The bundle is not here.** `aab/desk/app.js` was 222 KB of minified
+Vite output and nothing in it is readable, which is the whole test for
+whether a file belongs in this directory. Its sources are, and they
+are what a reader wanting to know what the desk did should read.
+
+**Three of the sources stayed in `app/src/`** and are not here:
+`api.ts`, `bits.tsx` and `site.ts`. The Studio imports all three, so
+they are shared modules that the desk happened to be written beside
+rather than the desk's own. `useRows.ts` and `seen.ts` are here, which
+is the same test answered the other way: nothing under
+`app/src/studio/` ever imported either.
+
+**`desk-react/Published.tsx` is read by a test**, which is the
+loophole the fourth paragraph of this file describes and is the point
+of keeping any of it. `scripts/admin.test.ts` compares the seven
+actions `next/components/admin/pieces-panel.tsx` offers against the
+panel it was ported out of, and asserts that the old panel still has
+them, so that the comparison cannot quietly stop meaning anything.
+Nothing about that reaches a reader, a page or a deploy.

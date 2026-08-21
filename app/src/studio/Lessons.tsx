@@ -227,7 +227,7 @@ export function Lessons() {
       <div className="studio-bar">
         <span className="bar-group">
           <ButtonLink href="/studio/">← The Article Studio</ButtonLink>
-          <ButtonLink href="/desk/index.html">The desk →</ButtonLink>
+          <ButtonLink href="/admin">The admin panel →</ButtonLink>
         </span>
         <span className="studio-now">
           {open

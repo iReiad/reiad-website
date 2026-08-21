@@ -16,7 +16,7 @@
 
    ---- two gates, and they are not interchangeable ----
 
-   `requireAdmin()` in `functions/_lib/auth.js` is the Studio
+   `requireAdmin()` in `functions/_lib/auth.ts` is the Studio
    passphrase: a session cookie over D1, and it opens the site's
    own content.
 
@@ -58,10 +58,10 @@ const PUBLIC: Record<string, string> = {
     "health, and it is the one panel that has to work on the day the "
     + "credential is what is broken. It answers booleans and shapes, never "
     + "values: see the head of that file.",
-  "news.js":
+  "news.ts":
     "the market board on the Insights hub. Public headlines, raced from two "
     + "public endpoints, cached at the edge.",
-  "search.js":
+  "search.ts":
     "the palette. It searches what is already published, which is what a "
     + "crawler reads anyway.",
 };

@@ -12,9 +12,9 @@
    About page has nothing to do with headlines: importing it out
    of `news.tsx` would put the feed, the card and the race into
    that page's bundle to borrow twelve lines of animation. That
-   import is exactly what `aab/about.js` did to `/news.js`, and
-   it is why `news.js` could not be archived until the research
-   window became a component.
+   import is exactly what `archive/modules/about.js` did to
+   `/news.js`, and it is why `news.js` could not be archived until
+   the research window became a component.
    ============================================================ */
 
 /** The site's own opening: long enough to be followed, short

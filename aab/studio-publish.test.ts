@@ -279,7 +279,7 @@ okay("and does not allow it under connect-src", !/connect-src[^;]*\bdata:/.test(
 
    Answering the way the real Worker does, because a fixture that
    is kinder than the endpoint hides the failure the endpoint
-   would give. `functions/api/media/[[key]].js` is the original:
+   would give. `functions/api/media/[[key]].ts` is the original:
    a key is `<slug>/<content-hash>.<ext>`, an unsupported
    Content-Type is a 415, and the same bytes twice write once.
    ============================================================ */

@@ -4,7 +4,7 @@
    research.tsx: the three research cards on the About page, and
    the window one of them opens.
 
-   `aab/about.js` was 107 lines over `el` and `flip` imported
+   `archive/modules/about.js` was 107 lines over `el` and `flip` imported
    from `/news.js`, and it was the last importer of that module.
 
    Each of these three became a case study you can open and

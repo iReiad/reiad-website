@@ -19,11 +19,12 @@ counts them.** Nothing on this page is a figure typed into a
 sentence, and nothing is a figure cached at a build.
 
 The second rule is the one this repository keeps rediscovering: a
-page that renders is not a page that works. `app/desk.test.ts`
-exists because the first React desk shipped as three thin panels
-missing the search boxes, the filter counts and most of the
-actions, and it looked finished. Every panel below gets a line in
-a test that says what it must be able to do.
+page that renders is not a page that works. The desk's own browser
+test, now `archive/desk-react/desk.test.ts`, exists because the
+first React desk shipped as three thin panels missing the search
+boxes, the filter counts and most of the actions, and it looked
+finished. Every panel below gets a line in a test that says what
+it must be able to do.
 
 ## 1. Two credentials, and "together" does not mean "either"
 
@@ -36,7 +37,7 @@ data, held in different places, reachable only by different means.
 
 | | the passphrase | the account |
 | --- | --- | --- |
-| what it is | `functions/_lib/auth.js`: PBKDF2-SHA256 in the browser, a verifier in D1, a session cookie | `functions/_lib/admins.ts`: a reader id in `ADMIN_READERS` or in `public.admins` |
+| what it is | `functions/_lib/auth.ts`: PBKDF2-SHA256 in the browser, a verifier in D1, a session cookie | `functions/_lib/admins.ts`: a reader id in `ADMIN_READERS` or in `public.admins` |
 | what it opens | the site's own content in D1 and R2 | the reader's own rows in Supabase, under RLS |
 | how it is checked | `requireAdmin(context)` | `isAdmin(env, request, readerId)` |
 | endpoints | `auth` `articles` `media` `subscribers` `notion` `signals` `comments` `questions` `enquiries` `backup` | `courses` `broker` `routine` `comments` |
@@ -75,7 +76,7 @@ it applies here word for word.
 **Never show a locked panel as an empty one.** A panel that needs
 the passphrase and does not have it says so, with the one thing to
 press. An empty list where a credential is missing is the failure
-`app/desk.test.ts` was written for: it looks exactly like a
+the desk's browser test was written for: it looks exactly like a
 working panel with nothing in it.
 
 ## 2. Where it lives
@@ -243,12 +244,13 @@ Each one exists because the failure it catches is invisible.
   value, the panel mints neither credential from the other and
   keeps no second admin list, and a missing credential names what
   it would open rather than drawing an empty list, which is the
-  rule `app/desk.test.ts` was written for.
+  rule the desk's browser test was written for.
 
   Node rather than a browser, and deliberately: every claim there
   is a claim about SOURCE, and all of it is true of a page that
-  renders perfectly. The browser half is `app/desk.test.ts`
-  already, and it moves across panel by panel with §6 stage 5.
+  renders perfectly. The browser half is `next/admin.test.ts`,
+  which is where the desk's 76 checks went as §6 stage 5 moved
+  its panels across.
 
   It also asserts that every path this file names exists, which
   is `check-pointers.ts` again, said a second time for the one
@@ -269,9 +271,9 @@ stage after it.
 | 1 | the route, the shell, the two sign-ins, Health | a page that is useful before any panel exists |
 | 2 | `check-admin.ts` | before there are more endpoints to forget |
 | 3 | Courses, Live portfolio, Routine templates | the account half, all three already have their endpoint. **Done.** |
-| 4 | Comments, Questions, Enquiries | the passphrase half, ported panel by panel out of `app/src/` |
-| 5 | Published, Subscribers, History | the rest of the desk, and `/desk` retires |
-| 6 | Media, Schools, Backups | the three the desk never had |
+| 4 | Comments, Questions, Enquiries | the passphrase half, ported panel by panel out of `app/src/`. **Done.** |
+| 5 | Published, Subscribers, History | the rest of the desk, and `/desk` retires. **Done.** |
+| 6 | Media, Schools, Backups | the three the desk never had. **Done.** |
 | 7 | People | last, because it is the only one needing both |
 
 
@@ -297,6 +299,76 @@ how a site ends up with two that disagree.
 
 Stage 5 is where `/desk` stops being served and goes to
 `archive/`, under the two conditions `CLAUDE.md` sets: nothing
-serves it and nothing imports it. `app/desk.test.ts` is repointed
-at the new panels rather than deleted, because every check in it
-is a feature the old desk had.
+serves it and nothing imports it. Its browser test is repointed at
+the new panels rather than deleted, because every check in it is a
+feature the old desk had.
+
+### What stage 5 shipped, and what it left behind on purpose
+
+`/desk` is retired. The route, the twelve sources it was built
+from and its browser test are in `archive/desk-react/`, the Vite
+bundle at `/desk/app.js` is deleted rather than archived because
+it was minified output nobody can read, and `aab/_redirects` sends
+all four spellings of the address to `/admin` with a 301. The
+address is a rule rather than a route now, so it is absent from
+`run_worker_first` in `wrangler.toml` and from `NEXT_ROUTES` in
+`worker.js`: a path either of those claims never reaches the rules
+file.
+
+`next/admin.test.ts` is what the desk's 76 checks became, and the
+two lists are not the same list, because `/admin` is not the same
+shape. Twelve of the 76 have no subject here: eight are about a
+tab strip and four about a More menu, and this page is one column
+of panels with a fragment each, every action a row can take
+written on the row. The desk's four overview tiles are Waiting,
+Subscribers and What is read, which is where those numbers already
+live rather than a fifth place that knows what "waiting" means.
+
+A handful of things the desk asserted are on the page and are not
+yet asserted: the anonymous asker, the reply marked as a reply,
+Reopen on a closed enquiry, the draft's own pill, and the History
+dialog naming its piece. Each is a spec field or a line of markup
+in the panel that has it, and a check for each belongs in
+`next/admin.test.ts` rather than here.
+
+### What stage 6 shipped, and the one thing it could not
+
+Three panels: `next/components/admin/media-panel.tsx`,
+`schools-panel.tsx` and `backups-panel.tsx`. All three are behind
+the passphrase, all three read a 401 as an answer rather than
+drawing an empty list, and Backups is read-only outright.
+
+Two endpoints are new, and both are a branch of a route that
+already existed rather than a file of their own.
+
+`GET /api/media/usage` is the join §3 B 6 asks for: every key in
+the bucket against every `/media/` reference in an article body, a
+`cover`, an earlier version of a body, and a lesson. It is one
+question in the Worker rather than two fetches compared in the
+browser, because two answers taken a second apart disagree about a
+photo uploaded between them, and this is the panel whose one
+button deletes bytes. The nightly snapshots share that bucket and
+are counted apart, so they can never appear in a list headed
+"nothing points at this". Deleting one unreferenced object, named
+and confirmed, is the only write on any of the three: §4 allows
+that shape and it is `DELETE /api/media/<key>`, which the desk has
+had all along.
+
+`GET /api/schools/audit` is the prose half of §3 B 7: what is
+unwritten, what no stage or section declares, and where a link
+inside a lesson body points. It decides a link against the rows,
+so it decides completely inside the space the rows describe and
+returns everything else as undecided rather than guessing at it:
+the route table is not in the database, and `check-routes.ts` is
+what walks the rest. It answers three ways and not two, because an
+old spelling like `/money/index.html` still answers through a 301
+in `aab/_redirects`, and calling that dead would be a wrong word
+for a real thing.
+
+**The one thing no endpoint can answer** is the last clause of §3
+B 8: the last commit of `content/articles.backup.json`. That is a
+fact about git. The Worker cannot see the repository, the file is
+not served, and the deploy carries one commit for the whole site
+rather than a date per file. The panel says so in a sentence and
+draws no row, which is what stage 3 did with the routine
+template's missing verbs.

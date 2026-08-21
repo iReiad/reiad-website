@@ -27,7 +27,7 @@
    ---- and the half that comparing them does not cover ----
 
    Two lists agreeing says nothing about whether a handler USES
-   the second one. `functions/api/subscribers/[[route]].js` built
+   the second one. `functions/api/subscribers/[[route]].ts` built
    its own `new Response` with a Content-Type and a Cache-Control
    and nothing else, so the page a reader reaches from a
    confirmation email had none of the three, for as long as that

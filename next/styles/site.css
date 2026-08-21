@@ -72,6 +72,13 @@
      non-zero `--glow-w` IS the membership test, and the
      stylesheet stays the only place that says what glows. */
   @property --glow-w   { syntax: "<length>"; initial-value: 0px; inherits: false; }
+  /* The light's OTHER radius, so it can be an ellipse on a surface
+     that is not roughly square. Every surface sets it to `--glow-w`
+     and is a circle; `.rail` is the one that does not, and why is
+     written where it overrides. Registered rather than left to a
+     var() fallback because a registered property with an initial
+     value is never unset, so the fallback would never fire. */
+  @property --glow-h   { syntax: "<length>"; initial-value: 0px; inherits: false; }
   @property --glow-i   { syntax: "<percentage>"; initial-value: 0%; inherits: false; }
 
   /* ---- and the three the two above are DERIVED from ----
@@ -4266,31 +4273,10 @@ it collapsed to the width of the word "Bangladesh". */
     &:empty { border-right: 0; padding-right: 0; margin-right: 0; }
   }
 
-  /* ---------- the desk ---------- */
-  /* Two across on a phone rather than four down it: the tiles are a
-     glance at what is waiting, and a glance should not be a scroll. */
-  .desk-tiles {
-    display: grid; gap: var(--s-6);
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
-  }
-  .desk-tile {
-    display: flex; flex-direction: column; gap: var(--s-3);
-    padding: 16px 18px; text-align: start;
-    background: var(--panel);
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: border-color var(--fast) var(--ease);
-
-    & .k { font-size: var(--t-1); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
-    & .v { font-size: 1.7rem; font-family: var(--font-sans); color: var(--ink); }
-    &:hover { border-color: var(--accent); }
-    /* Only the two that mean a person is waiting for a reply, and
-       only when the number isn't zero. */
-    &.urgent { border-inline-start: 3px solid var(--gold); }
-    &.urgent .v { color: var(--gold); }
-  }
-
+  /* ---------- the filter row and its search box ---------- */
+  /* Both are `.chip-row`/`<Field>` wrappers in `app/src/bits.tsx`,
+     which the Studio shares. The tiles that were above them went
+     to archive/desk-react/ with the desk. */
   .desk-filters { margin-bottom: 12px; }
   .desk-search {
     width: 100%; max-width: 420px; margin-bottom: 14px;
@@ -4300,12 +4286,6 @@ it collapsed to the width of the word "Bangladesh". */
     border: 1px solid var(--hairline); border-radius: var(--radius-sm);
 
     &:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-  }
-  /* Not an error, and not nothing: something that will look wrong
-     to a reader until it is published again. */
-  .pill-warn {
-    border-color: var(--accent); color: var(--accent);
-    background: color-mix(in oklch, var(--accent) 12%, transparent);
   }
 
   /* ---------- pre-flight ---------- */
@@ -4565,120 +4545,6 @@ it collapsed to the width of the word "Bangladesh". */
     &:empty { display: none; }
   }
   .publish-row { align-items: center; gap: var(--s-5); }
-
-  /* ============================================================
-     THE DESK'S ARTICLE ROWS
-
-     A row used to be seven controls in a line with the title
-     competing with the last of them. It is a grid now: what it is
-     on the left, where it lives in the middle, what you can do to
-     it on the right, wrapping to two lines on a narrow screen
-     rather than to seven.
-     ============================================================ */
-  .article-line {
-    display: grid; gap: var(--s-4) 14px; align-items: center;
-    grid-template-columns: minmax(0, 1fr) auto;
-
-    & .article-title {
-      font-family: var(--font-sans); font-size: var(--t-6);
-      overflow-wrap: anywhere; grid-column: 1;
-    }
-    /* Everything that describes the piece sits in one group on the
-       right of the title, so the eye reads title, then facts, rather
-       than four columns of different widths per row. */
-    & .line-facts {
-      grid-column: 2; justify-self: end;
-      display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap;
-    }
-    & .line-topics { display: flex; gap: var(--s-2); flex-wrap: wrap; margin: 0; }
-    & .line-actions {
-      grid-column: 1 / -1;
-      display: flex; gap: var(--s-3); flex-wrap: wrap; align-items: center;
-      padding-top: 2px;
-      /* The More panel hangs off this row rather than off the
-         button inside it. See the note on .more-body below. */
-      position: relative;
-    }
-    & .move-field { margin-inline-start: auto; }
-    &.status-draft .article-title { color: var(--ink-soft); }
-    &.status-draft .pill { border-style: dashed; }
-  }
-  @media (width <= 720px) {
-    .article-line .line-facts { grid-column: 1; justify-self: start; }
-    .article-line .move-field { margin-inline-start: 0; }
-  }
-  /* A piece that is a committed file cannot be published, moved or
-     deleted from here, and saying so quietly is better than eight
-     buttons that would need explaining. */
-  .article-line.is-file .article-title { font-style: italic; }
-
-  /* ---------- the rest of the actions ----------
-     A real <details>, so it opens with the keyboard, closes with
-     Escape in every browser that has caught up, and needs no
-     script beyond closing its neighbours. */
-  .more-menu {
-
-    & > summary {
-      list-style: none; cursor: pointer;
-      &::-webkit-details-marker { display: none; }
-      &::after { content: " ▾"; opacity: 0.6; }
-    }
-    &[open] > summary::after { content: " ▴"; }
-
-    /* ---------- and where it opens ----------
-
-       THE BUG THIS POSITIONING EXISTS FOR
-
-       This used to be `position: relative` on .more-menu with
-       `inset-inline-end: 0` here, which pins the panel's right
-       edge to the More button's right edge and grows it leftward.
-       The buttons in a row are left-aligned, so on a narrow window
-       the panel ran off the left of the page: Publish, Delete and
-       the Move to picker were all past the border and unreachable,
-       and no amount of scrolling brought them back, because the
-       page does not scroll left of its own origin.
-
-       So it hangs off .line-actions instead, which spans the whole
-       row, and it grows from that row's start edge rather than
-       from the button's end edge. The buttons are at the start of
-       that row, so it still opens directly under them at every
-       width, and both of its edges are now inside the row: it
-       cannot leave the page in either direction. */
-    & .more-body {
-      position: absolute; z-index: 6;
-      inset-inline-start: 0; inset-inline-end: auto; top: calc(100% + 6px);
-      width: max-content; max-width: min(320px, 100%);
-      display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: center;
-      padding: 10px;
-      background: var(--panel);
-      border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-      box-shadow: var(--shadow-lift);
-    }
-    & .more-note {
-      flex: 1 1 100%; margin: 0 0 2px; font-size: var(--t-3); max-width: none;
-    }
-    & .move-field { flex: 1 1 100%; margin-inline-start: 0; }
-  }
-
-  .section-pill {
-    border-color: color-mix(in oklab, var(--accent) 40%, var(--hairline));
-    color: var(--accent);
-  }
-
-  .move-field {
-    display: inline-flex; align-items: center; gap: var(--s-3);
-
-    & .mono { font-size: var(--t-0); color: var(--ink-soft); text-transform: uppercase;
-              letter-spacing: 0.06em; }
-    & select {
-      padding: 5px 8px; font-size: var(--t-3);
-      font-family: var(--font-sans);
-      color: var(--ink); background: var(--panel);
-      border: 1px solid var(--hairline); border-radius: var(--radius-pill);
-    }
-    & select:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-    & select:disabled { opacity: 0.5; }
-  }
 
   /* ---------- the Open and Notion sheets ---------- */
   .notion-search {
@@ -5094,34 +4960,13 @@ it collapsed to the width of the word "Bangladesh". */
     & button { white-space: nowrap; }
   }
 
-  /* ---------- the admin dashboard ---------- */
-  .admin-panel { margin-top: 18px; }
+  /* ---------- what the Studio's own lists are made of ----------
+     Two rules, and they are what is left of the desk's dashboard:
+     `.admin-count` is a `<Count>` in `app/src/bits.tsx` and
+     `.admin-line` is a row in the Open sheet. The rest of that
+     block went to archive/desk-react/ with the page that carried
+     it, `/admin` being `@layer admin` and Tailwind now. */
   .admin-count { color: var(--accent); margin-bottom: 14px; display: block; }
-  .admin-row {
-    border: 1px solid var(--hairline); border-left-width: 3px;
-    border-radius: var(--radius-sm);
-    padding: 16px; margin-bottom: 14px; background: var(--panel);
-  }
-  .admin-row.status-new { border-left-color: var(--accent); }
-  .admin-row.status-replied { border-left-color: var(--accent); }
-  .admin-row.status-closed { opacity: 0.62; }
-  .admin-meta {
-    display: flex; gap: var(--s-5); flex-wrap: wrap; align-items: center;
-    color: var(--ink-soft); font-size: var(--t-1); margin-bottom: 10px;
-  }
-  .admin-q {
-    font-family: var(--font-serif); font-size: var(--t-6);
-    margin-bottom: 12px; white-space: pre-wrap;
-  }
-  textarea.admin-answer {
-    width: 100%; padding: 10px 12px; margin-bottom: 12px;
-    font-family: var(--font-sans); font-size: var(--t-5);
-    color: var(--ink); background: var(--paper);
-    border: 1px solid var(--hairline); border-radius: var(--radius-sm);
-    field-sizing: content;
-  }
-  textarea.admin-answer:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .admin-table { border-top: 1px solid var(--hairline); }
   .admin-line {
     display: flex; gap: var(--s-6); align-items: center; flex-wrap: wrap;
     padding: 10px 2px; border-bottom: 1px solid var(--hairline);
@@ -10069,8 +9914,8 @@ German for day, and .tag is what the site has always called
 
   /* The wrapper's geometry, named once and used twice. The
      breadcrumb is a sibling of `.hub-wrap` rather than a child of
-     it, because `crumbs.js` puts it at the top of the page before
-     anything else runs, and it was therefore the one element on a
+     it, because the trail was put at the top of the page before
+     anything else ran, and it was therefore the one element on a
      hub with no inline padding at all: it started at x=268 on a
      1440px window while the eyebrow, the headline, the lede and
      every card started at 302. Flush against the rail's edge,
@@ -10517,8 +10362,10 @@ German for day, and .tag is what the site has always called
      that guessed. Now the mark is the first crumb and the trail
      continues out of it, on one line, from the server.
 
-     `.crumbs` is the row's own look and stays for the two pages
-     that are files; this is that look sized for a bar. The
+     `.crumbs` is the row's own look, kept because `aab/src/courses.ts`
+     finds the last crumb by that class to rename it; this is that
+     look sized for a bar. Neither `404.html` nor `offline.html` has
+     a trail at all, which is what this used to say. The
      separator before the FIRST crumb is what joins it to the
      mark: without it the mark and the section read as two
      unrelated things sitting next to each other.
@@ -12026,6 +11873,9 @@ German for day, and .tag is what the site has always called
 
   [data-glow] {
     --glow-w: 110px;
+    /* A circle, which is what a light in a roughly square piece of
+       glass is. One surface overrides it and says why. */
+    --glow-h: var(--glow-w);
     --glow-i: 34%;
 
     /* Every var() carries its own fallback, and that is not belt
@@ -12036,7 +11886,7 @@ German for day, and .tag is what the site has always called
        takes `--surface-image` down with it. */
     background-image:
       var(--surface-image, var(--sheen), var(--glass-grain)),
-      radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
+      radial-gradient(var(--glow-w) var(--glow-h) ellipse at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent),
         transparent 100%);
     background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
@@ -12091,7 +11941,7 @@ German for day, and .tag is what the site has always called
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card, .admin-row, .rt-build-task, .rt-panel,
+      .gate-card, .rt-build-task, .rt-panel,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -12206,7 +12056,7 @@ German for day, and .tag is what the site has always called
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card, .admin-row, .rt-build-task, .rt-panel) {
+      .gate-card, .rt-build-task, .rt-panel) {
     --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
 
@@ -12411,7 +12261,7 @@ German for day, and .tag is what the site has always called
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .desk-tile, .gate-card, .admin-row, .rt-build-task, .rt-panel,
+      .gate-card, .rt-build-task, .rt-panel,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -12451,6 +12301,7 @@ German for day, and .tag is what the site has always called
        sheet. A chip stays at 46px, a control at 101px, and a card and a
        pane both settle at 220. */
     --glow-w: min(calc(var(--depth) * 46px), 220px);
+    --glow-h: var(--glow-w);
     /* 32% and not 44%. A material that is on every surface of a
        site has to be quiet or it is noise everywhere, and the
        ladder between the kinds is what carries the meaning rather
@@ -12735,7 +12586,7 @@ German for day, and .tag is what the site has always called
       var(--spec, none),
       var(--surface-image, none),
       var(--glass-grain),
-      radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
+      radial-gradient(var(--glow-w) var(--glow-h) ellipse at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent) 0%,
         transparent var(--glow-stop));
     background-size: auto, var(--surface-size, auto), var(--glass-grain-size, auto), auto;
@@ -12828,6 +12679,31 @@ German for day, and .tag is what the site has always called
       --glow-fade: 190ms;
     }
   }
+
+  /* ---- and the one surface a circle is wrong on ----
+
+     The cap on `--glow-w` above is the right argument applied to
+     the wrong axis here. A pane settles at 220px because a light
+     bigger than the object holding it stops reading as a light,
+     and on the rail the object is 268px WIDE and the height of
+     the window: a 220px circle at the pointer reaches four rows
+     above and four below, so what a reader sees is a flare
+     running up and down the column rather than a light where
+     their hand is.
+
+     The bound that is right is the surface's own NARROW
+     dimension, and on a rail that is the row under the pointer
+     and its neighbours. Horizontally the light is already clipped
+     by the rail's own width and needs no cap at all, which is why
+     only the second radius moves. The phone drawer is the same
+     element and gets it for the same reason, which is the third
+     time this rail has been reported and the first fix that is
+     about its shape rather than about one of its parts.
+
+     This is the ONLY override of `--glow-h` on the site. A second
+     one means the ladder needs the axis rather than a class
+     needing an exception. */
+  .rail { --glow-h: 90px; }
 
   /* ---- a reader who asked for less motion keeps the light ----
 

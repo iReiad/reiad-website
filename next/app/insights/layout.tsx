@@ -9,8 +9,8 @@
 
    This is the root layout for its own branch: the topmost layout
    above a page is that page's root, which is why `<html>` and
-   `<body>` are in here rather than in an `app/layout.tsx` that
-   would have to be right for the articles too.
+   `<body>` are in here rather than in one at the root of
+   `next/app/`, which would have to be right for the articles too.
    ============================================================ */
 
 import type { ReactNode } from "react";

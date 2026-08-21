@@ -2,11 +2,13 @@
 User-agent: *
 Allow: /
 
-# The publishing tool and what it collected are mine, not content.
-# No trailing slash: the two pages are /studio and /desk now, and
-# "Disallow: /studio/" is a prefix that no longer covers either.
+# The publishing tool and the admin panel, and what they collected,
+# are mine rather than content. No trailing slash: the two pages are
+# /studio and /admin, and "Disallow: /studio/" is a prefix that
+# covers neither. /desk was the third and is a 301 to /admin now,
+# so a crawler that follows the old address lands inside this rule.
 Disallow: /studio
-Disallow: /desk
+Disallow: /admin
 Disallow: /insights/_template.html
 
 # One person's own copy of a third-party course, behind the admin

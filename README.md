@@ -18,7 +18,7 @@ cd next && npm run dev           # the Next routes, on :3000
 | --- | --- |
 | `aab/` | everything served as a file: the stylesheet, the browser modules, the practice books |
 | `aab/src/` | TypeScript sources for the browser modules. **Edit these, not the built `aab/*.js`** |
-| `app/src/` | the React workspace (Vite) building to `aab/desk/` and `aab/studio/` |
+| `app/src/` | the React workspace (Vite) building the Studio to `aab/studio/` |
 | `next/` | the Next.js routes: articles, schools, tools |
 | `functions/` | request handlers for `/api/*`, in the Pages Functions shape |
 | `shared/` | what the Worker, the browser and Next must all agree on |
@@ -38,7 +38,7 @@ Generated output is generated. Edit the source and rebuild:
 node scripts/build-modules.ts        # aab/*.js from aab/src/
 node scripts/build-fallback.ts       # aab/fallback.css from next/styles/
 node scripts/build-school-icons.ts   # next/lib/school-icons.ts
-cd app && npm run build               # aab/desk/, aab/studio/
+cd app && npm run build               # aab/studio/
 ```
 
 ## The rules that will bite you

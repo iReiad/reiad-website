@@ -30,7 +30,7 @@
    styled. This is that component, and the reason it is this one
    is that the markup below is almost entirely layout: sections, a
    rail, cards, a grid of tiles. Utilities are good at exactly
-   that, and `@theme` in `aab/src/styles/tailwind.css` now carries
+   that, and `@theme` in `next/styles/tailwind.css` now carries
    the site's real tokens, so `bg-panel` and `border-hairline`
    mean what `var(--panel)` and `var(--hairline)` mean in both
    themes.
@@ -54,13 +54,13 @@
      article carries    purpose and permanently: an article's body
                         is HTML in a database that Tailwind's
                         compiler cannot see. The note at the top
-                        of `aab/src/styles/tailwind.css` is the
+                        of `next/styles/tailwind.css` is the
                         long version.
 
    The class names that remain are hooks rather than styling, and
    there are fewer of them than the conversion started with.
    `ladder-list`, `kept-list`, `targets` and `saved-list` are the
-   containers `aab/account-page.ts` fills, and the rows it builds
+   containers `aab/src/account-page.ts` fills, and the rows it builds
    inside them are named classes styled in `styles.css`: a class
    name inside a `createElement` call is one Tailwind's scanner
    finds only because `aab/*.js` is in its source list, which
@@ -181,7 +181,7 @@ function Card({ id, className = "", children }: {
 /* The eight sections, in the order they are offered.
 
    ONE TABLE, and it was two: a `SECTIONS` list of ids and labels
-   for the rail, and the eight `<Section>`s underneath it, which
+   for the rail, and the `<Section>`s underneath it, which
    agreed because somebody remembered. That is the failure at the
    top of `CLAUDE.md`, and the rail is exactly where this site has
    already been bitten by it once.

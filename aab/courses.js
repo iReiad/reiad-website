@@ -44,10 +44,10 @@ import { token, current } from "/account.js";
    the catalogue is admin-only, so the title the server sent is
    generic and the real one comes down with the fetch.
 
-   It was `setHere()` in `aab/crumbs.js`, which is archived: the
-   trail is `next/lib/crumbs.ts` and the top bar now. `.crumbs`
-   is the class both the bar and the row carry, so this finds
-   whichever the page has. */
+   It was `setHere()` in `archive/modules/crumbs.js`, which is
+   archived: the trail is `next/lib/crumbs.ts` and the top bar
+   now. `.crumbs` is the class both the bar and the row carry, so
+   this finds whichever the page has. */
 function setHere(name) {
     const text = String(name ?? "").trim();
     if (!text)

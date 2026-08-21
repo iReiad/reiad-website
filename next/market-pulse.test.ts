@@ -7,8 +7,9 @@
    Needs Playwright and a browser. Without either it says which and
    skips, and a skip is not a pass.
 
-   `aab/news.js` was 246 lines and `aab/pulse.js` 83, and between
-   them they did six things: raced two endpoints, kept the answer
+   `archive/modules/news.js` was 246 lines and
+   `archive/modules/pulse.js` 83, and between them they did six
+   things: raced two endpoints, kept the answer
    on the device, drew a square per story, opened one into a modal
    window that grows out of the card it came from, said when the
    feed was last updated, and got out of the way when it could not
@@ -711,8 +712,9 @@ console.log("the market pulse on the Insights hub");
   ok("nothing precaches it", !precached.includes("/pulse.js"),
     "an install would fetch a 404 and cache it");
 
-  /* `aab/news.js` outlived this port by a day. `about.js` imported
-     `el` and `flip` from it for the About page's research window,
+  /* `archive/modules/news.js` outlived this port by a day.
+     `about.js` imported `el` and `flip` from it for the About
+     page's research window,
      so taking the file away would have taken that page with it;
      the window is `components/research.tsx` now and both modules
      are archived. `research.test.ts` is what holds the window. */

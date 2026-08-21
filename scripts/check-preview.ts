@@ -13,7 +13,7 @@
 
    `parity.test.ts` starts the built Worker under `wrangler dev`
    on workerd, with a local D1 seeded with one article, and
-   compares it against what `functions/insights/[slug].js` would
+   compares it against what `functions/insights/[slug].ts` would
    have produced for the same row. No network, no account. That is
    the better test and it stays the one to reach for.
 

@@ -30,12 +30,13 @@
 
    ---- it was two declarations before it was one module ----
 
-   `aab/src/types/account.d.ts` and `app/src/types/account.d.ts`
-   both described this file, by hand, and they disagreed: one said
-   `saveProfile` answers a boolean and the other a `Profile`, and
-   the code answers a boolean. A declaration that is wrong is
-   worse than none, because the compiler then agrees with the
-   mistake. Both are gone. This file emits the second, and
+   Two hand-written declarations described this file, one under
+   `aab/src/` and one at `app/src/types/account.d.ts`, and they
+   disagreed: one said `saveProfile` answers a boolean and the
+   other a `Profile`, and the code answers a boolean. A
+   declaration that is wrong is worse than none, because the
+   compiler then agrees with the mistake. Neither is written by
+   hand now: this file emits the second, and
    `aab/src/tsconfig.json` maps `/account.js` at the source.
 
    archive/TRANSITION.md, Stage 5 and Stage 13.

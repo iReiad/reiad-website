@@ -26,9 +26,10 @@
 # reviewing anything. Read the source and the build command.
 # ============================================================
 
-# ---------- the React builds ----------
+# ---------- the React build ----------
 # Vite's output, from app/src/**. `npm run build` in app/.
-aab/desk/app.js       linguist-generated=true
+# There were two until the desk retired to archive/desk-react/ on
+# 21 August 2026 and /desk/app.js left aab/ with it.
 aab/studio/app.js     linguist-generated=true
 
 # ---------- the four schools ----------

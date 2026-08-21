@@ -16,9 +16,9 @@
    ============================================================ */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-/* The site's own components, across the workspace boundary. The
-   note above the same two imports in `app/src/Desk.tsx` says what
-   holds that up. */
+/* The site's own components, across the workspace boundary.
+   `dedupe` in `app/vite.config.ts` is what holds that up: one
+   React in the bundle, whichever directory asked for it. */
 import { Button, ButtonLink } from "../../../next/components/ui/button.tsx";
 import { Eyebrow, SectionLabel } from "../../../next/components/ui/label.tsx";
 import type { EditorHandle } from "/editor.js";
@@ -428,8 +428,8 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
           ) : null}
         </span>
         {dynamic ? (
-          <ButtonLink id="btn-desk" href="/desk/index.html">
-            {waiting ? `The desk (${waiting}) →` : "The desk →"}
+          <ButtonLink id="btn-admin" href="/admin">
+            {waiting ? `The admin panel (${waiting}) →` : "The admin panel →"}
           </ButtonLink>
         ) : null}
         <span className="studio-now" id="now-line">{nowLine}</span>
@@ -514,7 +514,7 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
               readers can react and ask questions on it straight away.</li>
             <li>Changed your mind? <strong>Open…</strong> loads anything back in to
               edit and republish, and <strong>Published</strong> on
-              {" "}<a href="/desk/index.html">the desk</a> unpublishes with one click.</li>
+              {" "}<a href="/admin">the admin panel</a> unpublishes with one click.</li>
           </ol>
         ) : (
           <p className="note measure" id="no-database">

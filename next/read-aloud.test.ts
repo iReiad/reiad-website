@@ -6,7 +6,7 @@
    Needs Playwright and a browser. Without either it says which and
    skips, and a skip is not a pass.
 
-   `aab/read-aloud.js` was 150 lines and it is
+   `archive/modules/read-aloud.js` was 150 lines and it is
    `components/read-aloud.tsx` now. A port is finished when it does
    what the thing it replaced did, not when it renders, so what
    that module did is written down here: which paragraphs it reads

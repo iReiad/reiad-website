@@ -21,7 +21,7 @@
 
    `content/articles.backup.json` is the same shape of answer to
    the same shape of problem, and the reasoning in
-   `functions/_lib/backup.js` transfers exactly: **every byte of
+   `functions/_lib/backup.ts` transfers exactly: **every byte of
    this file is already served at a public URL.** A lesson body is
    what `/quran/dhap-1/al.html` shows to anybody who asks for it.
    There is nothing here belonging to a reader, no draft, no

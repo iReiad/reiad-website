@@ -12,10 +12,10 @@
 
 import {
   convert, inline, normaliseId, propValue, readFields, textOf,
-} from "./notion.js";
+} from "./notion.ts";
 import type {
   Block, ConvertState, NotionFetch, NotionProperty, RichText,
-} from "./notion.js";
+} from "./notion.ts";
 import { sanitiseHTML } from "./sanitise.ts";
 
 let passed = 0;

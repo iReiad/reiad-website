@@ -5,7 +5,7 @@
    It sits under both segments on purpose: `<html lang>` and the
    class on `<body>` are facts about the thing being read, and a
    layout only ever receives its own segment's params. A layout at
-   `app/layout.tsx` would know neither.
+   the root of `next/app/` would know neither.
 
    ---- why one file answers for both ----
 

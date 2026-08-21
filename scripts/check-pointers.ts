@@ -135,12 +135,84 @@ const GONE: Gone[] = [
   { file: "PLAN.md", name: "aab/english/build-english.mjs",
     why: "the same" },
 
+  /* A scratch file, downloaded, checked and removed inside one
+     job. It is named three times because the job writes it, reads
+     it and deletes it, and it has never been in the repository. */
+  { file: ".github/workflows/backup.yml", name: "content/articles.backup.raw.json",
+    why: "written and removed by the same job; never committed" },
+
+  /* The module the closed door turned back, on the morning the
+     door was shut. It was never committed: the pointer glow is
+     `next/components/glow.tsx`, and naming the file that would
+     have been is the whole of both paragraphs. */
+  { file: "CLAUDE.md", name: "aab/src/glow.ts",
+    why: "the module not built the old way; the name is the argument" },
+  { file: "scripts/check-closed.ts", name: "aab/src/glow.ts",
+    why: "the same, in the check that refused it" },
+
+  /* The stylesheet moved to `next/styles/` on 18 August 2026.
+     These three are the moved-from column of that stage, and one
+     built file that went with the compiler it needed. */
+  { file: "ARCHITECTURE.md", name: "aab/styles.css",
+    why: "the moved-from column, beside `next/styles/site.css`" },
+  { file: "ARCHITECTURE.md", name: "aab/src/styles/tailwind.css",
+    why: "the same, beside `next/styles/tailwind.css`" },
+  { file: "ARCHITECTURE.md", name: "aab/tailwind.css",
+    why: "the committed output, named as gone with the script that wrote it" },
+  { file: "MIGRATION.md", name: "aab/styles.css",
+    why: "a pointer this found: a check printed it after the file moved" },
+  { file: "MIGRATION.md", name: "aab/tailwind.css",
+    why: "the same, said three days after the file went" },
+  { file: "next/postcss.config.mjs", name: "aab/tailwind.css",
+    why: "names the committed output as gone, which is why this config exists" },
+
+  /* Six ports, each ending in a section that asserts the module it
+     replaced is not served any more. The old address IS what is
+     being asserted, and the line under each one names the
+     `archive/modules/` copy that answers instead. */
+  { file: "next/comments.test.ts", name: "aab/comments.js",
+    why: "asserts the replaced module is not served, by its address" },
+  { file: "next/insights-hub.test.ts", name: "aab/hub.js", why: "the same" },
+  { file: "next/keep.test.ts", name: "aab/keep.js", why: "the same" },
+  { file: "next/market-pulse.test.ts", name: "aab/pulse.js", why: "the same" },
+  { file: "next/read-aloud.test.ts", name: "aab/read-aloud.js", why: "the same" },
+  { file: "next/research.test.ts", name: "aab/about.js", why: "the same" },
+
   /* Precached, so editing a comment in one costs every returning
      visitor a refetch of the whole shell. Free to fix on the day
      it becomes aab/src/*.ts, and that is when it will be. The two
      curriculum modules and app.js were on this list until they
      became generated, which is exactly that day. */
   { file: "aab/tools/stock.model.js", name: "stock.test.mjs", why: "precached" },
+
+  /* The one pointer here that must NEVER resolve. `admin.test.ts`
+     asks whether the desk's route file exists and asserts the
+     opposite thing either way: while it is there the panel has to
+     admit /desk is served, and once it is gone the panel must stop
+     naming it. Naming the path is how it asks. */
+  { file: "scripts/admin.test.ts", name: "next/app/(site)/desk/page.tsx",
+    why: "the check that asserts the retired route is absent, by its path" },
+
+  /* The desk retired to `archive/desk-react/` on 21 August 2026
+     and `/admin` does its job. These eight comments name its
+     browser test, or the panel one of them was ported out of, by
+     the path each had while the desk was live. The file is still
+     readable at its new path and `next/admin.test.ts` is what
+     drives these panels now, so each of these is a sentence to
+     reword rather than a guarantee that was lost. Take the entry
+     out with the wording, one file at a time: this list fails on a
+     stale exception, which is what will ask for it. */
+  { file: "next/admin.test.ts", name: "app/desk.test.ts",
+    why: "the 76 checks this file inherited, named where they came from" },
+  { file: "next/components/admin/courses-panel.tsx", name: "app/desk.test.ts",
+    why: "names the failure a locked panel drawn as an empty one is" },
+  { file: "next/components/admin/health.tsx", name: "app/desk.test.ts", why: "the same" },
+  { file: "next/components/admin/media-panel.tsx", name: "app/desk.test.ts", why: "the same" },
+  { file: "next/components/admin/people-panel.tsx", name: "app/desk.test.ts", why: "the same" },
+  { file: "next/components/admin/queue.tsx", name: "app/desk.test.ts", why: "the same" },
+  { file: "next/components/admin/routine-panel.tsx", name: "app/desk.test.ts", why: "the same" },
+  { file: "next/components/admin/pieces-panel.tsx", name: "app/src/Published.tsx",
+    why: "names the desk panel it was ported out of, which is archive/desk-react/Published.tsx now" },
 ];
 
 const allowed = new Set(GONE.map((g) => `${g.file} ${g.name}`));
@@ -166,9 +238,30 @@ const tracked = execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" 
   .split("\n").filter(Boolean);
 
 /* `archive/` is history and is read by nothing. The build outputs
-   are somebody else's code carrying somebody else's comments. */
+   are somebody else's code carrying somebody else's comments.
+
+   The two nightly snapshots under `content/` are DATA. A generated
+   file carries the comment its generator wrote, so the file that
+   has to be right is the generator: `articles.backup.json` holds a
+   `note` naming `functions/_lib/backup.ts`, and correcting the
+   snapshot would last until the next run overwrote it. */
 const NOT_A_SOURCE =
-  /^(archive\/|next\/\.next\/|next\/\.open-next\/|next\/node_modules\/|node_modules\/)/;
+  /^(archive\/|next\/\.next\/|next\/\.open-next\/|next\/node_modules\/|node_modules\/|content\/[\w-]+\.backup\.json$)/;
+
+/* An IGNORE FILE is not prose that points at something. Every line
+   in one is a path that is expected NOT to be in the repository,
+   which is the opposite of what this check asks, and the answer
+   depends on what has been BUILT rather than on what is committed:
+   `.gitignore` names the `next-env.d.ts` that `next build` writes,
+   so this passed on a laptop that had built and failed in CI on a
+   fresh clone. That is the same trap the paragraph above describes
+   for `node_modules/`, one file along.
+
+   Note that this paragraph names that file WITHOUT its directory,
+   and has to: a path into this repository is what `PATHS` below
+   asks about, so writing it out here would fail this check on the
+   commit that adds the exemption for it. Which it did. */
+const AN_IGNORE_FILE = /(^|\/)\.[a-z]*ignore$|(^|\/)\.gitignore$/;
 const BINARY = /\.(png|jpe?g|webp|gif|svg|ico|woff2?|pdf|db|mp4|zip)$/i;
 
 /** Names shaped like one of ours. A comment naming `react.dev` or
@@ -179,6 +272,47 @@ const NAMES = new RegExp(
   + "(?:check-[\\w.-]+|build-[\\w.-]+|import-[\\w.-]+|export-[\\w.-]+|[\\w.-]+\\.test)"
   + "\\.(?:mjs|cjs|js|jsx|ts|tsx))(?![\\w-])",
   "g");
+
+/** And any name carrying one of this repository's own directories.
+
+    The list above catches a script somebody is told to RUN. It
+    caught none of the twelve found on 21 August 2026, which were
+    all of the other kind: a comment naming the MODULE that does
+    something. `worker.js` and the Notion route both named
+    `functions/_lib/sync.ts` by an old extension, quoting an
+    import that had stopped resolving; `_lib/look.js` and
+    `_lib/headers.js` in `insights/[slug].js` named a directory
+    those two files left months ago; the other eight were `.js`
+    in a comment about a file that is `.ts` now.
+
+    Converting a module renames it, and every comment naming it
+    goes stale in the same commit. That is the same failure the
+    header above describes, and the reason it was not caught is
+    that the pattern asked about a shape of NAME rather than about
+    a path into this repository.
+
+    A leading directory is what makes a bare name safe to check:
+    `sync.ts` in prose could be anybody's, `functions/_lib/sync.ts`
+    is ours.
+
+    Square brackets are in the class because a route's filename has
+    them: `functions/api/comments/[[id]].ts`. Without them thirteen
+    of the seventeen handlers in this repository were invisible
+    here, and the last stale pointer the first sweep left behind
+    was to exactly such a file. `*` stays OUT, so a glob like
+    `aab/*.js` matches nothing and is never asked about, which is
+    right: a glob describes a set rather than pointing at a file. */
+const PATHS = new RegExp(
+  "(?<![\\w/.-])((?:aab|app|functions|next|scripts|shared|supabase|content)"
+  + "/[\\w./()\\[\\]-]+\\.(?:mjs|cjs|js|jsx|ts|tsx|css|json|sql|md))(?![\\w-])",
+  "g");
+
+/** Two paths that are not a pointer at a file in this repository.
+    `node_modules/` is installed rather than committed, so whether
+    it resolves depends on whether somebody has run `npm install`,
+    and a check whose answer depends on that is a check that fails
+    in CI for a reason nobody can read. `.next/` is a build. */
+const NOT_A_POINTER = /(^|\/)(node_modules|\.next|\.open-next)\//;
 
 /** Every file in the repository, by basename, so a comment can
     name one without giving its path.
@@ -231,17 +365,42 @@ const resolves = (name: string, from: string): boolean => {
 /* ---------- the walk ---------- */
 
 const dead: Array<{ file: string; name: string }> = [];
+/** A name that resolves HERE and would not on a fresh clone.
+
+    The check reads the filesystem first, deliberately, so a file
+    written and not yet committed counts as existing. The cost of
+    that is a pointer at something BUILT: `next build` writes a
+    `next-env.d.ts` nobody commits, `.gitignore` named it, and this
+    check passed on a laptop and failed in CI on the same commit.
+    Asking the index as well is what turns that into a failure on
+    the machine that can fix it. */
+const built: Array<{ file: string; name: string }> = [];
+const inIndex = new Set(tracked);
 const used = new Set<string>();
 let read = 0;
 
 for (const file of tracked) {
-  if (NOT_A_SOURCE.test(file) || BINARY.test(file)) continue;
+  if (NOT_A_SOURCE.test(file) || BINARY.test(file) || AN_IGNORE_FILE.test(file)) continue;
   let text: string;
   try { text = readFileSync(join(ROOT, file), "utf8"); } catch { continue; }
   read += 1;
 
-  for (const name of new Set([...text.matchAll(NAMES)].map((m) => m[1]))) {
-    if (resolves(name, file)) continue;
+  const named = new Set([
+    ...[...text.matchAll(NAMES)].map((m) => m[1]),
+    ...[...text.matchAll(PATHS)].map((m) => m[1]).filter((n) => !NOT_A_POINTER.test(n)),
+  ]);
+  for (const name of named) {
+    if (resolves(name, file)) {
+      /* Resolved. On what, though? A repo-relative name that the
+         index does not carry is a generated file, and generated
+         files are not there before something has generated them. */
+      const clean = name.replace(/^\//, "");
+      if (clean.includes("/") && !clean.startsWith(".") && !inIndex.has(clean)
+          && existsSync(join(ROOT, clean))) {
+        built.push({ file, name });
+      }
+      continue;
+    }
     /* Before the allowlist, and NOT recorded as using an entry: a
        GONE line whose only remaining mention is the GONE line
        itself has stopped being needed, and should say so. */
@@ -256,7 +415,7 @@ for (const file of tracked) {
    level up: a list that was right on the day it was written. */
 const stale = GONE.filter((g) => !used.has(`${g.file} ${g.name}`));
 
-if (dead.length || stale.length) {
+if (dead.length || stale.length || built.length) {
   if (dead.length) {
     console.error(`\n${dead.length} comment(s) name a file that does not exist:\n`);
     for (const { file, name } of dead) console.error(`  x ${file}\n        names ${name}`);
@@ -265,6 +424,15 @@ if (dead.length || stale.length) {
       + "\n        say so and add it to GONE in scripts/check-pointers.ts with the"
       + "\n        reason. A pointer nobody can follow costs nothing until somebody"
       + "\n        tries, which is exactly why they survive.\n");
+  }
+  if (built.length) {
+    console.error(`\n${built.length} name(s) resolve only because something has been built:\n`);
+    for (const { file, name } of built) console.error(`  x ${file}\n        names ${name}`);
+    console.error(
+      "\n        It is not committed, so it is not there on a fresh clone and this"
+      + "\n        check goes red in CI on a commit that passed on a laptop. Name it"
+      + "\n        without its directory if the sentence still reads, or name the"
+      + "\n        source it is generated from instead.\n");
   }
   if (stale.length) {
     console.error(`\n${stale.length} GONE entr(y/ies) no longer needed:\n`);

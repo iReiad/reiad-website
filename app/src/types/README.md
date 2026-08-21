@@ -19,7 +19,7 @@ of what exists, `/share-card.js` draws the picture a pasted link
 shows, and `/photo.js` moves a photo out to R2. Vite leaves all six
 external, so the built file imports them at runtime exactly as every
 other page on this site does, and there is no second copy of any of
-them inside `aab/desk/app.js`.
+them inside `aab/studio/app.js`.
 
 They are plain JavaScript, so TypeScript has nothing to go on. The
 first version of this app answered that with a `@ts-expect-error`

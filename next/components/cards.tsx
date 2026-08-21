@@ -7,8 +7,8 @@
    which adds the little drawing and puts its metadata in three
    columns. Both are rules that already exist in `styles.css`, and
    the class names here are the ones `aab/app.js` and
-   `aab/reads.js` put on the nodes they build, because a port that
-   also restyles the page cannot be judged.
+   `archive/reads.js` put on the nodes they build, because a port
+   that also restyles the page cannot be judged.
 
    ---- what changes, and it is the point of the exercise ----
 
@@ -76,8 +76,8 @@ function Art({ name }: { name: string }) {
     attribute a script reads off the card: the chosen topic is one
     piece of state in `topic-filter.tsx` and this is one of the two
     things drawn from it. The card carried a `data-topics` list for
-    `aab/hub.js` to match against, and nothing needs it now that
-    the component filtering these has the rows. */
+    `archive/modules/hub.js` to match against, and nothing needs it
+    now that the component filtering these has the rows. */
 export function SampleCard({ piece, hidden }: { piece: Piece; hidden?: boolean }) {
   const meta = [dateLabel(piece), piece.minutes ? `${piece.minutes} min read` : ""]
     .filter(Boolean).join(" · ");

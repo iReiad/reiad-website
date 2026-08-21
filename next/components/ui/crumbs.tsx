@@ -5,7 +5,7 @@
 
    ---- what this replaces, and why it was wrong ----
 
-   `aab/src/crumbs.ts` built the same row in the browser, after
+   `archive/modules/crumbs.ts` built the same row in the browser, after
    hydration, by reading `location.pathname` and `document.title`
    and guessing. It had to guess three things and got one of them
    wrong on the course pages: where to mount, what the page is
@@ -49,10 +49,10 @@
    a labelled button when it is not, so a screen reader reads the
    words and either a control or nothing between them.
 
-   `.crumbs` is the stylesheet's and stays: `aab/crumbs.js` still
-   draws this row on the two pages that are files and cannot be
-   routes, and two looks for one thing is the drift this library
-   exists to stop.
+   `.crumbs` is the stylesheet's and stays: this component emits
+   it, and `aab/src/courses.ts` finds the last crumb by it to
+   rename one after its fetch. Two looks for one thing is the
+   drift this library exists to stop.
    ============================================================ */
 
 import type { ReactNode } from "react";

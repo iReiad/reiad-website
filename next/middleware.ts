@@ -34,7 +34,7 @@ import { SECURITY_HEADERS } from "@reiad/shared/headers";
 
 /* Fresh enough that an edit shows up quickly, cached enough that a
    popular piece is not rebuilt for every reader. The same string
-   functions/insights/[slug].js sends. */
+   functions/insights/[slug].ts sends. */
 const ARTICLE_CACHE = "public, max-age=60, stale-while-revalidate=600";
 
 export function middleware(request: NextRequest) {

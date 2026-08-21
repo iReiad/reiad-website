@@ -74,6 +74,15 @@
       ],
       "/api.js": [
         "../app/src/types/api.d.ts"
+      ],
+      "/app.js": [
+        "../app/src/types/app.d.ts"
+      ],
+      "/share-card.js": [
+        "../app/src/types/share-card.d.ts"
+      ],
+      "/photo.js": [
+        "../app/src/types/photo.d.ts"
       ]
     },
     "isolatedModules": true,

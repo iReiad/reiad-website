@@ -181,12 +181,12 @@ for (const outside of ["../next/app", "../next/components", "../next/lib"]) {
   if (existsSync(join(ROOT, outside))) walk(join(ROOT, outside));
 }
 
-/* And the Studio and the desk, which are a Vite workspace whose
-   OUTPUT is committed into `aab/` and therefore already walked.
-   The sources are here for the dead-rule count at the foot of
-   this file: `.pill-warn` is written in `app/src/Published.tsx`
-   and appears in the built bundle as a minified class string,
-   which is enough for a substring test and not enough to trust. */
+/* And the Studio, which is a Vite workspace whose OUTPUT is
+   committed into `aab/` and therefore already walked. The source
+   is here for the dead-rule count at the foot of this file: a
+   class a component writes appears in the built bundle as a
+   minified string, which is enough for a substring test and not
+   enough to trust. */
 if (existsSync(join(ROOT, "../app/src"))) walk(join(ROOT, "../app/src"));
 
 const markup = new Map(
@@ -546,7 +546,7 @@ const MATERIAL_PROPS = new Set([
      from them. Nothing else: a material layer says what a thing
      is made of, and every consequence of that is a light. */
   "--depth", "--polish", "--clarity", "--standing",
-  "--glow-w", "--glow-i", "--glow-stop", "--glow-a", "--glow-fade",
+  "--glow-w", "--glow-h", "--glow-i", "--glow-stop", "--glow-a", "--glow-fade",
   "--lit", "--rim", "--gpx", "--gpy", "--glass-face", "--glass-under", "--rim-a", "--rim-b", "--rim-face-a", "--rim-face-b",
   "--spec", "--gx", "--gy", "--tx", "--ty",
   "--surface-image", "--surface-size", "--surface-position",
@@ -857,6 +857,35 @@ for (const token of [...used].sort()) {
   } else if (dead.length < recorded && !failures) {
     console.log(`${recorded - dead.length} dead rule(s) gone since the last count. `
       + "Run --update to hold it.");
+  }
+}
+
+/* ============================================================
+   The light's second radius, overridden once
+
+   `--glow-h` exists so the pointer light can be an ellipse on a
+   surface that is not roughly square, and there is exactly one:
+   `.rail` is 268px wide and the height of the window, so a 220px
+   circle at the pointer reached four rows above it and four
+   below, and read as a flare running the column rather than a
+   light where the reader's hand was.
+
+   Every other surface sets it to `--glow-w` and is a circle. A
+   SECOND literal override means the ladder needs the axis, the
+   way `--glow-w` is derived from `--depth`, rather than a class
+   needing an exception. Written down as a check because a rule
+   that is only prose is the failure CLAUDE.md opens with.
+   ============================================================ */
+{
+  const literal = [...css.matchAll(/--glow-h:\s*([^;]+);/g)]
+    .map((m) => m[1].trim())
+    .filter((value) => !value.startsWith("var(--glow-w)"));
+  if (literal.length > 1) {
+    failures++;
+    console.error(`\n--glow-h is overridden ${literal.length} times: ${literal.join(", ")}`);
+    console.error("        One surface is an ellipse and it is the rail, for a reason");
+    console.error("        written where it is set. A second means the ladder needs the");
+    console.error("        axis rather than a class needing an exception.");
   }
 }
 

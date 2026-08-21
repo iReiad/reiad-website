@@ -69,7 +69,7 @@
 /tools/index.html     /tools                301
 /tools/stock.html     /tools/stock          301
 /tools/live.html      /tools/live           301
-/desk/index.html      /desk                 301
+/desk/index.html      /admin                301
 /studio/index.html    /studio               301
 /cooking/index.html   /cooking              301
 /travel/index.html    /travel               301
@@ -110,13 +110,18 @@
 
 # ---------- retired pages that still have links pointing at them ----------
 # Both spellings of the source, because a visitor may arrive at
-# either. The two admin pages are the React ones now, and the
-# pages they replaced are in archive/, out of the deploy, as of 16
-# August 2026.
+# either. The Studio is the React one now, and the page it replaced
+# is in archive/, out of the deploy, as of 16 August 2026.
 /studio.html          /studio               301
 /studio/              /studio               301
-/desk.html            /desk                 301
-/desk/                /desk                 301
+# The desk. Every one of its thirteen panels is on /admin, so the
+# desk retired to archive/desk-react/ and all four spellings of its
+# address go to the page that answers them now. `/desk` itself is a
+# rule rather than a route: it is absent from run_worker_first and
+# from NEXT_ROUTES, so the asset router reaches this file.
+/desk.html            /admin                301
+/desk                 /admin                301
+/desk/                /admin                301
 /work.html            /portfolio            301
 /work                 /portfolio            301
 /services.html        /portfolio            301

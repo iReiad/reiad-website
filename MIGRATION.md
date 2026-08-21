@@ -353,14 +353,31 @@ inferred as a union without one.
 `functions/` is compiled by wrangler's esbuild, which type-strips with no
 configuration, so a `.ts` there needs nothing but the rename and real types.
 
-**Done (6):** `_lib/drive.ts` `_lib/ticket.ts` `_lib/quiz.ts`
-`_lib/http.ts` `_lib/sanitise.ts` `api/courses/[[route]].ts`
+**Done (11):** `_lib/drive.ts` `_lib/ticket.ts` `_lib/quiz.ts`
+`_lib/http.ts` `_lib/sanitise.ts` `_lib/admins.ts` `_lib/db.ts`
+`_lib/input.ts` `_lib/reader.ts` `_lib/auth.ts`
+`api/courses/[[route]].ts`
 
-**Left (25):** `_lib/` (`notion` 380, `broker` 277, `auth` 264, `backup` 223,
-`sync` 210, `reader` 192, `input` 172, `db` 163, `admins` 58) and the 16
-handlers under `functions/api/`, `functions/feeds/`, `functions/insights/`.
+**Left (20):** `_lib/` (`notion` 380, `broker` 277, `backup` 223,
+`sync` 210) and the 16 handlers under `functions/api/`,
+`functions/feeds/`, `functions/insights/`.
 
-`_lib/db.js` is the remaining one nearly everything imports, so it is next.
+**`functions/tsconfig.json` is what makes any of it count.** Wrangler's
+esbuild reads no tsconfig, so a `.ts` here typechecked nowhere until
+that file existed, and a `.ts` nothing checks is a `.js` wearing types.
+`scripts/check-types.ts` runs it: 6 configs became 7.
+
+`allowJs` is ON in it and that is the setting with a date on it. Every
+file that converts is checked from that moment; the last conversion is
+what turns it off. Leaving it on afterwards would let an untyped `.js`
+back in silently.
+
+**What a D1 binding is, said once.** There is no
+`@cloudflare/workers-types` here and adding one to type six methods
+would be a dependency the Worker's build does not need, so `db.ts`
+declares the shape structurally and exports it. Nothing else describes
+D1 a second time, which is the rule `check-rows.ts` already enforces for
+the database's vocabulary.
 
 **`insights/[slug].js` was edited and NOT converted**, which is the one
 exception "convert what you touch" has taken so far and it is worth the
@@ -382,24 +399,34 @@ annotations nothing reads. `functions/tsconfig.test.json` is what holds
 them to theirs and `check-types.ts` runs it, on the root install, so it
 runs in CI as well.
 
-`notion.test.ts` imports the one module it tests that is still
-JavaScript, so `_lib/notion.d.ts` describes the six exports it uses and
-nothing else. It goes on the day `notion.js` becomes `notion.ts`: a
-module that has converted describes itself, which is the same end state
-`aab/src/types/` has.
+`_lib/notion.d.ts` went on 21 August 2026, with the module it
+described. It was six exports of `notion.js` hand-written beside it so
+`notion.test.ts` could import them; a module that has converted
+describes itself, so the interfaces are in `notion.ts` and there is
+one file where there were two. That is the end state `aab/src/types/`
+is heading for as well: a declaration file is a promise about code
+nothing checks, and it stops being needed the moment the code checks
+itself.
+
+**`_lib/` is entirely TypeScript as of 21 August 2026** except
+`broker.js`. `r2.ts` came out of that sweep: `backup.ts` had declared
+an R2 bucket for itself, `sync.ts` needed the same interface plus
+`head()`, and two structural declarations of one runtime object are
+two that drift. One vocabulary, one place, the rule `check-rows.ts`
+already holds the database to.
 
 ### app/
 
-Two files, and both are browser tests: `desk.test.ts` and
-`studio.test.ts`, converted on 19 August 2026. There is no JavaScript
-and no `.mjs` left in this workspace.
+One file, and it is a browser test: `studio.test.ts`, converted on 19
+August 2026. `desk.test.ts` was the other and went to
+`archive/desk-react/` on 21 August 2026 with the page it drove. There
+is no JavaScript and no `.mjs` left in this workspace.
 
-They are NOT in `app/tsconfig.json`, and that is the point of the
-second config rather than an oversight. That one is the BUILD, run by
-`tsc -b` before Vite with an `include` of `src`, so a test in it would
-hold the desk's own build to Playwright being installed. That is the
-mistake `next/tsconfig.test.json` was split out for after it failed a
-deploy. `app/tsconfig.test.json` is the second config, `check-types.ts`
+It is NOT in `app/tsconfig.json`, and that is the point of the second
+config rather than an oversight. That one is the BUILD, run by `tsc -b`
+before Vite with an `include` of `src`, so a test in it would hold the
+Studio's own build to Playwright being installed. That is the mistake
+`next/tsconfig.test.json` was split out for after it failed a deploy. `app/tsconfig.test.json` is the second config, `check-types.ts`
 runs it, and where `app/node_modules` is absent it skips and says which
 directory to install in.
 
@@ -471,7 +498,7 @@ trace of `--accent`, so 75 surfaces and 269 borders follow the page's
 colour without any of them being edited. A component converted to Tailwind
 inherits the same thing through `@theme`.
 
-Three things stay in `aab/styles.css` permanently, and the split is the point:
+Three things stay in `next/styles/site.css` permanently, and the split is the point:
 
 - **anything an article carries.** `tw` sits below `article` in the layer
   order. An article's body is HTML in a database and Tailwind's compiler

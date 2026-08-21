@@ -1,8 +1,8 @@
 /* ============================================================
    crumbs.ts: where you are standing, out of the one table.
 
-   The trail used to be `aab/src/crumbs.ts`: 402 lines in the
-   browser that read `location.pathname` and `document.title`,
+   The trail used to be `archive/modules/crumbs.ts`: 402 lines in
+   the browser that read `location.pathname` and `document.title`,
    imported all four curricula to do it, and had to GUESS three
    things. It is archived. A route knows its own section, its own
    parents and its own name without guessing, and `lib/nav.ts` is
@@ -169,9 +169,9 @@ export function trailFor(
  * The same trail as `application/ld+json`, which is what puts it
  * in a search result instead of a bare URL.
  *
- * `aab/crumbs.js` emitted this and is archived; it is the one
- * thing that file did which the row on the page did not, so it
- * moves here rather than being lost. Absolute URLs, because
+ * `archive/modules/crumbs.js` emitted this and is archived; it is
+ * the one thing that file did which the row on the page did not,
+ * so it moves here rather than being lost. Absolute URLs, because
  * `BreadcrumbList` items are compared by identity and a relative
  * one is not one.
  */

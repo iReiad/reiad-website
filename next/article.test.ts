@@ -8,8 +8,8 @@
 
    Every browser test in this repository drives a PRERENDERED
    page: `interactive.test.ts` serves Next's output files from a
-   little static server, `account.test.ts` and `app/desk.test.ts`
-   do the same for theirs. An article is not prerendered. It is
+   little static server, and `account.test.ts` does the same for
+   its own. An article is not prerendered. It is
    rendered per request out of D1, so none of them could reach it,
    and a client component on it was verified for its first paint
    and for nothing an effect or a click does.
@@ -501,7 +501,7 @@ console.log("the article page, in a browser");
 
 /* ---------- 8. the view is counted once, and this asks it twice ----------
 
-   `aab/engage.js` called `countView()` at its top level and
+   `archive/modules/engage.js` called `countView()` at its top level and
    `app.js` calls it for every page, so an insights piece posted
    `signals/view` twice per load and a cooking piece once. Nothing
    said so, because two rows a day is not a shape anybody looks at.

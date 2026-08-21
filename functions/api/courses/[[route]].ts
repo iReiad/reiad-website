@@ -40,7 +40,7 @@
 
    That is the same arrangement `/tools/live` uses for the
    broker's admin half, and the argument is the one in
-   `_lib/admins.js`: anything that wants to know whether somebody
+   `_lib/admins.ts`: anything that wants to know whether somebody
    is an admin asks `isAdmin()`, and nothing keeps a second list.
 
    ---- what "gated" does and does not mean ----
@@ -54,7 +54,7 @@
    ============================================================ */
 
 import { fail, methods, ok } from "../../_lib/http.ts";
-import { readerFrom } from "../../_lib/reader.js";
+import { readerFrom } from "../../_lib/reader.ts";
 import { isAdmin } from "../../_lib/admins.ts";
 import { sanitiseHTML } from "../../_lib/sanitise.ts";
 import { canReachDrive, driveFile } from "../../_lib/drive.ts";

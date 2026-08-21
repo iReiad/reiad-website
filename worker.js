@@ -12,8 +12,8 @@
    files to change nothing would be churn. What Pages did implicitly
    from the directory layout, the table below does explicitly:
 
-     functions/api/auth/[[route]].js   →  /api/auth/*    params.route  (array)
-     functions/insights/[slug].js      →  /insights/:slug params.slug  (string)
+     functions/api/auth/[[route]].ts   →  /api/auth/*    params.route  (array)
+     functions/insights/[slug].ts      →  /insights/:slug params.slug  (string)
 
    A double-bracket segment is a catch-all and hands the handler an
    array of path segments; a single-bracket one hands it a string.
@@ -34,28 +34,28 @@
    both prefixes under run_worker_first so this script decides.
    ============================================================ */
 
-import { onRequest as auth } from "./functions/api/auth/[[route]].js";
-import { onRequest as articles } from "./functions/api/articles/[[slug]].js";
-import { onRequest as questions } from "./functions/api/questions/[[id]].js";
-import { onRequest as subscribers } from "./functions/api/subscribers/[[route]].js";
-import { onRequest as enquiries } from "./functions/api/enquiries/[[id]].js";
-import { onRequest as signals } from "./functions/api/signals/[[kind]].js";
-import { onRequest as search } from "./functions/api/search.js";
-import { onRequestGet as news } from "./functions/api/news.js";
-import { onRequest as media } from "./functions/api/media/[[key]].js";
-import { onRequest as notion } from "./functions/api/notion/[[route]].js";
-import { onRequest as backup } from "./functions/api/backup/[[route]].js";
-import { onRequest as comments } from "./functions/api/comments/[[id]].js";
-import { onRequest as broker } from "./functions/api/broker/[[route]].js";
-import { onRequest as schools } from "./functions/api/schools/[[route]].js";
+import { onRequest as auth } from "./functions/api/auth/[[route]].ts";
+import { onRequest as articles } from "./functions/api/articles/[[slug]].ts";
+import { onRequest as questions } from "./functions/api/questions/[[id]].ts";
+import { onRequest as subscribers } from "./functions/api/subscribers/[[route]].ts";
+import { onRequest as enquiries } from "./functions/api/enquiries/[[id]].ts";
+import { onRequest as signals } from "./functions/api/signals/[[kind]].ts";
+import { onRequest as search } from "./functions/api/search.ts";
+import { onRequestGet as news } from "./functions/api/news.ts";
+import { onRequest as media } from "./functions/api/media/[[key]].ts";
+import { onRequest as notion } from "./functions/api/notion/[[route]].ts";
+import { onRequest as backup } from "./functions/api/backup/[[route]].ts";
+import { onRequest as comments } from "./functions/api/comments/[[id]].ts";
+import { onRequest as broker } from "./functions/api/broker/[[route]].ts";
+import { onRequest as schools } from "./functions/api/schools/[[route]].ts";
 import { onRequest as courses } from "./functions/api/courses/[[route]].ts";
 import { onRequest as routine } from "./functions/api/routine/[[route]].ts";
 import { onRequest as admin } from "./functions/api/admin/[[route]].ts";
-import { onRequest as insight } from "./functions/insights/[slug].js";
-import { onRequest as feeds } from "./functions/feeds/[kind].js";
-import { db } from "./functions/_lib/db.js";
-import { syncFromNotion } from "./functions/_lib/sync.js";
-import { writeSnapshot } from "./functions/_lib/backup.js";
+import { onRequest as insight } from "./functions/insights/[slug].ts";
+import { onRequest as feeds } from "./functions/feeds/[kind].ts";
+import { db } from "./functions/_lib/db.ts";
+import { syncFromNotion } from "./functions/_lib/sync.ts";
+import { writeSnapshot } from "./functions/_lib/backup.ts";
 
 /** prefix → handler, and the name of the catch-all parameter it
     expects (null where the route takes none). */
@@ -176,10 +176,12 @@ export const NEXT_ROUTES = [
   /* The admin panel. ADMIN.md is the plan; it is `unlisted` in
      lib/nav.ts for the reason the course section is. */
   /^\/admin$/i,
-  /* The two private shells. Their bundles are NOT here: those are
-     files in aab/desk/ and aab/studio/, and the asset router
-     answers them as it always has. */
-  /^\/(desk|studio)$/i,
+  /* The Studio's shell. Its bundle is NOT here: that is a file in
+     aab/studio/, and the asset router answers it as it always
+     has. `/desk` was the other one and is a 301 to /admin in
+     aab/_redirects now, which only works because this list and
+     run_worker_first both let it fall through to the rules file. */
+  /^\/studio$/i,
   /^\/portfolio\/[a-z-]+$/i,
   /* The home page, at the address its canonical link has always
      named. `/index.html` is not here: it 301s to this one, which
@@ -393,7 +395,7 @@ export default {
                     without anyone pressing anything. It only
                     touches articles that were already imported and
                     published, and only when the Notion page says
-                    it is ready. See _lib/sync.js for why "as you
+                    it is ready. See _lib/sync.ts for why "as you
                     type" is neither possible nor desirable.
 
      Nightly at 03:17     The snapshot into R2. Seventeen past

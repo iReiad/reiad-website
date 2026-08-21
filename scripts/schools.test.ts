@@ -46,7 +46,7 @@ const same = (name: string, a: unknown, b: unknown): void =>
 
 /* ---------- the schema, out of the file the Worker also uses ----------
 
-   Read rather than repeated. `functions/_lib/db.js` applies these
+   Read rather than repeated. `functions/_lib/db.ts` applies these
    statements to the live database and `aab/schema.sql` is the
    copy a human reads; a test carrying a third copy would be the
    one that stays right while the other two drift. */
