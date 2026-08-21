@@ -204,8 +204,38 @@ const grep = (pattern: string, path: string): string[] => {
    bundle anybody can fetch while the page looked identical. Two
    private things, one guard, rather than a second check whose
    name would have to be remembered. */
+/** A grep hit inside a COMMENT is prose, not an import.
+
+    Both rules below are worth explaining where somebody will read
+    them, and a check that fails on the explanation teaches people
+    to delete the explanation. This file's own comment style is a
+    banner whose continuation lines start with whatever the
+    sentence starts with, so "does the line begin with a star" is
+    not a test: the only honest one is to know where the comments
+    ARE.
+
+    So the file is read again and every comment is blanked, spaces
+    for characters and newlines kept, which leaves line numbers
+    exactly where grep found them. */
+const codeOnly = (file: string): string[] => {
+  let src: string;
+  try { src = readFileSync(file, "utf8"); } catch { return []; }
+  const blanked = src
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
+    .replace(/(^|[^:])\/\/[^\n]*/g, (m, p1) => p1 + " ".repeat(m.length - p1.length));
+  return blanked.split("\n");
+};
+
+/** `path:number:text`, the shape grep -rn prints. */
+const isComment = (line: string): boolean => {
+  const m = /^(.*?):(\d+):/.exec(line);
+  if (!m) return false;
+  const code = codeOnly(m[1])[Number(m[2]) - 1] ?? "";
+  return code.trim() === "";
+};
+
 for (const line of grep("PRIVATE_TEMPLATES", join(ROOT, "next"))) {
-  if (/import\s+type\s/.test(line)) continue;
+  if (/import\s+type\s/.test(line) || isComment(line)) continue;
   say(`next/ imports the private template, which publishes it: ${line.trim()}`);
 }
 
@@ -213,7 +243,7 @@ for (const line of grep("shared/courses", join(ROOT, "next"))) {
   /* `import type { … }` is erased by TypeScript before anything
      is bundled, so it costs the browser nothing and is the
      supported way for a component to know what a lesson is. */
-  if (/import\s+type\s/.test(line)) continue;
+  if (/import\s+type\s/.test(line) || isComment(line)) continue;
   say(`next/ imports the catalogue, which publishes it: ${line.trim()}`);
 }
 

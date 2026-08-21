@@ -161,6 +161,64 @@ console.log("\nthe plan points somewhere");
   ok("every path it names exists", missing.length === 0, missing.join(", "));
 }
 
+/* ============================================================
+   Stage 3: the account half
+
+   Three panels, all of which already had their endpoint. Every
+   claim here is about SOURCE and every one of them is true of a
+   page that renders perfectly, which is why this file is node
+   rather than a browser.
+   ============================================================ */
+{
+  const courses = read("next/components/admin/courses-panel.tsx");
+  const live = read("next/components/admin/live-panel.tsx");
+  const routine = read("next/components/admin/routine-panel.tsx");
+  const shell = read("next/components/admin/panel.tsx");
+
+  /* The rule `check-courses.ts` enforces, asserted here too because
+     this is the panel most likely to want the catalogue: a value
+     import would put 1,629 Drive ids in a public bundle and the
+     page would look identical. */
+  ok("the courses panel imports no catalogue values",
+    !/^import\s+(?!type\b)[^;]*@reiad\/shared\/courses/m.test(courses));
+  ok("it reads the counts from the Worker instead",
+    courses.includes("/api/courses/status"));
+
+  /* ADMIN.md §5: a missing credential names what it would open
+     rather than drawing an empty list. That is the rule
+     `app/desk.test.ts` was written for, and an empty panel is
+     indistinguishable from a broken one. */
+  for (const [name, src] of [
+    ["courses", courses], ["live", live], ["routine", routine],
+  ] as const) {
+    ok(`the ${name} panel says what a missing credential would open`,
+      /denied/.test(src) && /admin|sign in|Sign in/.test(src));
+  }
+
+  /* An empty list from /api/routine/templates means "not an admin"
+     AND "an admin with nothing", so the panel has to tell them
+     apart by whether there is a reader at all. */
+  ok("the routine panel tells an empty list from a refusal",
+    routine.includes("signedout") && routine.includes("denied"));
+
+  /* The levers that WRITE stay on /tools/live for now, and the
+     panel says so. Two write paths is how a site ends up with two
+     that disagree. */
+  ok("the live panel keeps one write path and names it",
+    live.includes("/tools/live") && !/method:\s*["']P(UT|OST)["']/.test(live));
+
+  ok("the shell mounts all three behind the account credential",
+    /account \?/.test(shell)
+    && shell.includes("<CoursesPanel />")
+    && shell.includes("<LivePanel />")
+    && shell.includes("<RoutineTemplatesPanel />"));
+
+  /* The panel that has to work on the day a credential is broken
+     cannot be the panel that throws when one is missing. */
+  ok("the shell degrades rather than throwing when /account.js is absent",
+    /\} catch \{/.test(shell));
+}
+
 console.log(`\n${passed} checks passed`);
 if (failures.length) {
   console.log(`${failures.length} failed:\n`);

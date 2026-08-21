@@ -268,11 +268,32 @@ stage after it.
 | --- | --- | --- |
 | 1 | the route, the shell, the two sign-ins, Health | a page that is useful before any panel exists |
 | 2 | `check-admin.ts` | before there are more endpoints to forget |
-| 3 | Courses, Live portfolio, Routine templates | the account half, all three already have their endpoint |
+| 3 | Courses, Live portfolio, Routine templates | the account half, all three already have their endpoint. **Done.** |
 | 4 | Comments, Questions, Enquiries | the passphrase half, ported panel by panel out of `app/src/` |
 | 5 | Published, Subscribers, History | the rest of the desk, and `/desk` retires |
 | 6 | Media, Schools, Backups | the three the desk never had |
 | 7 | People | last, because it is the only one needing both |
+
+
+### What stage 3 shipped, and what it deliberately did not
+
+Three read-only panels. Each one says which credential is missing
+rather than drawing an empty list, and each is mounted only behind
+the account half.
+
+`/api/courses/status` is new and is the only new endpoint: it
+counts the catalogue in the WORKER and returns totals, because
+`next/` may not import the value half of `shared/courses.ts` and a
+bundle carrying it would look identical. `check-courses.ts` guards
+that, and it now blanks comments before grepping, because it was
+failing on the sentence explaining the rule.
+
+Two things ADMIN.md asks for are not here and say so on the page.
+Adding, editing and retiring a routine template needs PUT and
+DELETE that the endpoint does not answer. The broker's levers stay
+on `/tools/live` until they can move with their tests: a second
+write path against a broker nobody wants to call from a test is
+how a site ends up with two that disagree.
 
 Stage 5 is where `/desk` stops being served and goes to
 `archive/`, under the two conditions `CLAUDE.md` sets: nothing

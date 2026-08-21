@@ -60,6 +60,7 @@ import { sanitiseHTML } from "../../_lib/sanitise.ts";
 import { canReachDrive, driveFile } from "../../_lib/drive.ts";
 import {
   courseOf, forBrowser, listForBrowser, isCourseFile, lessonForFile,
+  COURSES, ID_FIELDS,
 } from "../../../shared/courses.ts";
 import { canTicket, checkTicket, mintTicket } from "../../_lib/ticket.ts";
 import { parseQuiz } from "../../_lib/quiz.ts";
@@ -187,6 +188,60 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
     if (parts[0] === "reading") return serveReading(env, id);
     if (parts[0] === "quiz") return serveQuiz(env, id);
     return ok({ url: `/api/courses/file/${id}?t=${await mintTicket(env, id)}` });
+  }
+
+  /* ---- what the admin panel asks, and why it is answered HERE ----
+
+     ADMIN.md §3 C wants a panel saying whether this section works:
+     how much catalogue there is, whether Drive is reachable, and
+     which videos ship without captions.
+
+     Every one of those numbers is counted out of
+     `shared/courses.data.json` rather than typed, which is the
+     rule at the top of `CLAUDE.md`. It is counted in the WORKER
+     because `next/` may not import the value half of
+     `shared/courses.ts`: a page that did would put 1,629 Drive
+     ids into a bundle anybody can fetch, and would look identical.
+     So the panel gets totals and a handful of lesson titles, and
+     never the ids. */
+  if (route === "status") {
+    return methods(request, {
+      GET: async () => {
+        let modules = 0;
+        let lessons = 0;
+        let ids = 0;
+        let videos = 0;
+        let missingCaptions = 0;
+        /* A handful of titles, not the list. The panel's job is to
+           say IF something is wrong and roughly how much; the id
+           behind each one is the thing that must not travel. */
+        const samples: Array<{ course: string; lesson: string }> = [];
+        for (const c of COURSES) {
+          modules += c.modules.length;
+          for (const m of c.modules) {
+            for (const l of m.lessons) {
+              lessons += 1;
+              for (const f of ID_FIELDS) if (l[f]) ids += 1;
+              if (l.video) {
+                videos += 1;
+                if (!l.captions) {
+                  missingCaptions += 1;
+                  if (samples.length < 12) samples.push({ course: c.title, lesson: l.title });
+                }
+              }
+            }
+          }
+        }
+        return ok({
+          courses: COURSES.length,
+          modules, lessons, ids, videos,
+          missingCaptions,
+          samples,
+          drive: canReachDrive(env),
+          tickets: canTicket(env),
+        });
+      },
+    });
   }
 
   const course = courseOf(route);
