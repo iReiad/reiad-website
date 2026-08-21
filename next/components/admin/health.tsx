@@ -23,6 +23,7 @@
 
 import { useEffect, useState } from "react";
 import { Surface } from "../ui/surface";
+import { Row, type State } from "./row";
 
 interface Store { bound?: boolean; configured?: boolean; ok: boolean; ms: number }
 
@@ -30,24 +31,6 @@ interface Health {
   commit: string | null;
   stores: { d1: Store; supabase: Store };
   secrets: { drive: boolean; brokerSeal: boolean; adminReaders: number };
-}
-
-/** A green dot, an amber one, or a grey one. Three states and not
-    two, because "not configured" is not the same as "broken" and
-    a panel that paints them the same sends somebody looking for a
-    fault that is a setting. */
-type State = "up" | "down" | "unset";
-
-function Row({ label, state, note }: { label: string; state: State; note?: string }) {
-  return (
-    <div className="ad-row" data-state={state}>
-      <span className="ad-dot" aria-hidden="true" />
-      <span className="ad-row-label">{label}</span>
-      <span className="ad-row-note mono">{note ?? (
-        state === "up" ? "ok" : state === "down" ? "unreachable" : "not set"
-      )}</span>
-    </div>
-  );
 }
 
 export function AdminHealth() {
