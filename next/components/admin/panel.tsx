@@ -62,6 +62,7 @@ import { StatsPanel } from "./stats-panel";
 import { PeoplePanel } from "./people-panel";
 import { Button, ButtonLink } from "../ui/button";
 import { Surface } from "../ui/surface";
+import { WorkerPanel } from "./worker";
 
 type AccountModule = typeof import("/account.js");
 const accountModule = () => runtimeModule<AccountModule>("/account.js");
@@ -179,12 +180,27 @@ export function AdminPanel() {
     return () => { live = false; };
   }, []);
 
-  if (!ready) return <p className="ad-quiet" role="status">এক মুহূর্ত…</p>;
+  /* The browser panel draws in BOTH branches, and that is the
+     point of it rather than an oversight. Everything else here
+     waits on a credential check, and the day that check is what
+     is stuck is the day somebody needs to be told what their
+     browser is holding. It asks no endpoint, so nothing can
+     leave it pending. */
+  if (!ready) {
+    return (
+      <div className="ad-page">
+        <WorkerPanel />
+        <p className="ad-quiet" role="status">এক মুহূর্ত…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="ad-page">
-      {/* Health first and always, because it is the panel that has
-          to work on the day a credential is what is broken. */}
+      <WorkerPanel />
+
+      {/* Health first among the rest, because it is the panel that
+          has to work on the day a credential is what is broken. */}
       <AdminHealth />
 
       <div className="ad-gates">
@@ -241,10 +257,11 @@ export function AdminPanel() {
       <Surface material="pane" className="ad-panel">
         <h3>What is not here</h3>
         <p className="ad-quiet">
-          Thirteen panels, in ADMIN.md, and all thirteen are above. Nothing here is a
-          placeholder: an empty panel that will one day hold something reads exactly
-          like a broken panel that holds nothing, which is the whole reason that file
-          exists.
+          Thirteen panels, in ADMIN.md, and all thirteen are above, plus two that
+          are not on that list: the statistics the desk had, and what this browser
+          is holding. Nothing here is a placeholder: an empty panel that will one
+          day hold something reads exactly like a broken panel that holds nothing,
+          which is the whole reason that file exists.
         </p>
         <p className="ad-quiet">
           The desk has retired. Its thirteen panels are the ones above, all four
