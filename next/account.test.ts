@@ -511,16 +511,32 @@ console.log("\nthe account page");
      already needs an id, because the account menu in the header
      links straight into them by fragment. A class hook would be a
      third name for a thing that has two. */
-  is("the eight sections are all there",
-    await page.locator("#account-in section[id]").count(), 8);
-  is("and the strip offers each",
-    await page.getByRole("tablist", { name: "This page" }).getByRole("tab").count(), 8);
+  /* Named, not counted. This asserted 8 and the page has held 9
+     since the routine became a section in #168: three checks red
+     on main for as long as that, saying "got 9, want 8", which is
+     a number that was right on the day it was typed. What is
+     actually load bearing is that the strip and the panels are
+     the SAME set, because the account menu in the header links
+     into them by fragment and a section with no tab is a section
+     nothing can reach. */
+  const SECTIONS = [
+    "you", "ladders", "reading-list", "notes", "targets",
+    "routine", "scenarios", "preferences", "data",
+  ];
+  const panelIds = await page.locator("#account-in section[id]")
+    .evaluateAll((els: Element[]) => els.map((el) => el.id));
+  is("every section is there, and no more", panelIds.sort().join(","),
+    [...SECTIONS].sort().join(","));
+  is("and the strip offers one tab each",
+    await page.getByRole("tablist", { name: "This page" }).getByRole("tab").count(),
+    SECTIONS.length);
   /* `role="tablist"` is only true while something is hiding the
      other panels, which is the argument at the top of
      `components/ui/tabs.tsx`. This is what says it is true. */
   is("one panel on screen",
     await page.locator('[role="tabpanel"]:not([hidden])').count(), 1);
-  is("and seven are not", await page.locator('[role="tabpanel"][hidden]').count(), 7);
+  is("and the rest are not", await page.locator('[role="tabpanel"][hidden]').count(),
+    SECTIONS.length - 1);
   is("four numbers above the fold", await page.locator(".acct-tile").count(), 4);
 
   /* The tiles and the greeting are above the strip and belong to
@@ -766,8 +782,9 @@ console.log("\nadding a target");
 /* ============================================================
    4a. The strip, which is what makes `role="tablist"` true
 
-   Eight sections and eight screens of scrolling became eight
-   sections and one on screen. The four decisions that took, from
+   A section per screen of scrolling became one on screen. There
+   were eight when this was written and there are nine, which is
+   why nothing here counts them. The four decisions that took, from
    `components/ui/tab-panels.tsx`, are the four checked here: the
    fragment chooses, the address follows, a link from elsewhere on
    the site opens the panel rather than scrolling to it, and the

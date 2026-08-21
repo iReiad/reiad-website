@@ -7,12 +7,12 @@ node_modules/
 
 # TypeScript's incremental build cache. Per-machine, rewritten on
 # every build, and says nothing about the source. The React app's
-# real output is aab/desk/, which IS committed and on purpose.
+# real output is aab/studio/, which IS committed and on purpose.
 app/tsconfig.tsbuildinfo
 
 # The Next.js workspace's build output and its copy of shared/.
 # `.open-next/` is a Worker bundle that only the deploy needs, and
-# unlike aab/desk/ it is not something the site serves as a file.
+# unlike aab/studio/ it is not something the site serves as a file.
 next/.next/
 # And the one at the ROOT, which is not the same path and was not
 # covered. `npx next build` run from the repository root rather

@@ -71,20 +71,19 @@ if (!chromium) {
 
 /* ---------- the shell the bundle mounts into ----------
 
-   `/desk/index.html` and `/studio/index.html` are Next.js routes
-   as of archive/TRANSITION.md Stage 11.6, so there is no file at either
+   `/studio/index.html` is a Next.js route as of
+   archive/TRANSITION.md Stage 11.6, so there is no file at that
    address for this server to hand back. That is the right place
-   for them and the wrong thing to drag into a browser test: the
+   for it and the wrong thing to drag into a browser test: the
    subject here is the bundle, and starting a Next server to get a
    header and a footer would make a test of the panels depend on
    a renderer that has its own test.
 
-   So the server answers those two addresses with the two things
-   the bundle actually needs, the stylesheet and the element it
-   mounts into, and nothing else. Everything this file checks is
-   inside that element. */
+   So the server answers that address with the two things the
+   bundle actually needs, the stylesheet and the element it mounts
+   into, and nothing else. Everything this file checks is inside
+   that element. */
 const SHELLS: Record<string, [root: string, bundle: string]> = {
-  "/desk/index.html": ["desk-root", "/desk/app.js"],
   "/studio/index.html": ["studio-root", "/studio/app.js"],
 };
 
@@ -94,9 +93,8 @@ const shellFor = ([root, bundle]: [string, string]): string =>
      at the second since the stylesheet moved into Next: it is
      emitted with a content hash now, which a hand-written
      shell cannot know. The link 404ed, so this page was
-     unstyled, which failed the desk's "nothing threw" check
-     and made the Studio's two preview-theme checks compare
-     `rgba(0, 0, 0, 0)` with itself. `/fallback.css` is the
+     unstyled, which made the Studio's two preview-theme checks
+     compare `rgba(0, 0, 0, 0)` with itself. `/fallback.css` is the
      whole stylesheet with its comments stripped, at a stable
      name, which is exactly what the two file pages link and
      exactly what a shell like this one wants. */
@@ -294,8 +292,8 @@ const type = async (page: Page, text: string): Promise<void> => {
     await page.locator("#btn-publish").count() === 0);
   check("and the page says why",
     await page.locator("#no-database").isVisible());
-  check("the desk link stays hidden too",
-    await page.locator("#btn-desk").count() === 0);
+  check("the admin link stays hidden too",
+    await page.locator("#btn-admin").count() === 0);
   check("pre-flight is quiet on an empty editor",
     !(await page.locator("#preflight").isVisible()));
 
@@ -586,12 +584,16 @@ const type = async (page: Page, text: string): Promise<void> => {
     await page.locator("#btn-save-draft").count() === 1);
   check("and the Notion import, because the token is set",
     await page.locator("#btn-notion").count() === 1);
-  check("the Studio points at the desk", await page.locator("#btn-desk").count() === 1);
+  check("the Studio points at the admin panel",
+    await page.locator("#btn-admin").count() === 1);
   check("and says how many people are waiting",
-    said(await page.locator("#btn-desk").textContent()).includes("(3)"),
-    await page.locator("#btn-desk").textContent() ?? "");
-  check("which is the React desk, not the old page",
-    said(await page.locator("#btn-desk").getAttribute("href")).startsWith("/desk/"));
+    said(await page.locator("#btn-admin").textContent()).includes("(3)"),
+    await page.locator("#btn-admin").textContent() ?? "");
+  /* `/admin`, and the desk's four addresses all 301 to it. A link
+     left at one of those is a hop a reader pays for and a page
+     that is in archive/. */
+  check("at the address that answers, not one that redirects",
+    said(await page.locator("#btn-admin").getAttribute("href")) === "/admin");
 
   check("publishing is refused while the editor is empty",
     await page.locator("#btn-publish").isDisabled());

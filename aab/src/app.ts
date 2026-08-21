@@ -488,8 +488,13 @@ function initSpeculation(): void {
         where: {
           and: [
             { href_matches: "/*" },
+            /* The two private pages. A hover is not a decision to
+               open one, and prerendering /admin runs its two
+               credential checks and thirteen panels' fetches for
+               somebody who was moving the pointer past a link.
+               "/desk/*" was here until that page retired. */
             { not: { href_matches: "/studio/*" } },
-            { not: { href_matches: "/desk/*" } },
+            { not: { href_matches: "/admin" } },
             /* a.term opens in the modal reader and never navigates,
                so prerendering its target is a whole page built for
                nothing. learn.js prefetches those instead, which is

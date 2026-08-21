@@ -181,7 +181,7 @@ function Card({ id, className = "", children }: {
 /* The eight sections, in the order they are offered.
 
    ONE TABLE, and it was two: a `SECTIONS` list of ids and labels
-   for the rail, and the eight `<Section>`s underneath it, which
+   for the rail, and the `<Section>`s underneath it, which
    agreed because somebody remembered. That is the failure at the
    top of `CLAUDE.md`, and the rail is exactly where this site has
    already been bitten by it once.

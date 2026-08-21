@@ -428,8 +428,8 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
           ) : null}
         </span>
         {dynamic ? (
-          <ButtonLink id="btn-desk" href="/desk/index.html">
-            {waiting ? `The desk (${waiting}) →` : "The desk →"}
+          <ButtonLink id="btn-admin" href="/admin">
+            {waiting ? `The admin panel (${waiting}) →` : "The admin panel →"}
           </ButtonLink>
         ) : null}
         <span className="studio-now" id="now-line">{nowLine}</span>
@@ -514,7 +514,7 @@ export function Studio({ dynamic }: { dynamic: boolean }) {
               readers can react and ask questions on it straight away.</li>
             <li>Changed your mind? <strong>Open…</strong> loads anything back in to
               edit and republish, and <strong>Published</strong> on
-              {" "}<a href="/desk/index.html">the desk</a> unpublishes with one click.</li>
+              {" "}<a href="/admin">the admin panel</a> unpublishes with one click.</li>
           </ol>
         ) : (
           <p className="note measure" id="no-database">

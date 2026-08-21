@@ -774,11 +774,14 @@ at.
 `next/account.test.ts` is the guard: 117 checks in a real browser
 against a routed Supabase.
 
-### Eight sections, one on screen
+### One section on screen
 
-`/account` was one long page with a strip of links down
-it, and reaching the last of eight sections was eight screens
-of scrolling. `next/components/ui/tab-panels.tsx` is the
+`/account` was one long page with a strip of links down it, and
+reaching the last section was a screen of scrolling per section.
+There were eight when that was written and there are nine, which
+is why neither this paragraph nor `next/account.test.ts` counts
+them any more: the test names them and asserts the strip and the
+panels are the same set. `next/components/ui/tab-panels.tsx` is the
 calculators' arrangement in React, and the four decisions in
 it are the four that make a `role="tablist"` honest:
 

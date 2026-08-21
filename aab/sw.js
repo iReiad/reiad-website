@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v169: `/app.js`. The speculation rules excluded `/desk/*` from
+        prerender-on-hover, because a hover is not a decision to
+        open a private page. That address retired in v168 and the
+        exclusion is `/admin` now. A cached `app.js` would go on
+        building the admin panel, its two credential checks and
+        thirteen panels' fetches, for somebody moving a pointer
+        past the link in the Studio's bar.
+
    v168: `/fallback.css`. The desk retired to `archive/` and
         `/admin` answers all four spellings of its address, so
         every rule that styled only the desk went out of the
@@ -1571,7 +1579,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v168";
+const VERSION = "v169";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
