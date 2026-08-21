@@ -218,6 +218,21 @@ const tracked = execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" 
    snapshot would last until the next run overwrote it. */
 const NOT_A_SOURCE =
   /^(archive\/|next\/\.next\/|next\/\.open-next\/|next\/node_modules\/|node_modules\/|content\/[\w-]+\.backup\.json$)/;
+
+/* An IGNORE FILE is not prose that points at something. Every line
+   in one is a path that is expected NOT to be in the repository,
+   which is the opposite of what this check asks, and the answer
+   depends on what has been BUILT rather than on what is committed:
+   `.gitignore` names the `next-env.d.ts` that `next build` writes,
+   so this passed on a laptop that had built and failed in CI on a
+   fresh clone. That is the same trap the paragraph above describes
+   for `node_modules/`, one file along.
+
+   Note that this paragraph names that file WITHOUT its directory,
+   and has to: a path into this repository is what `PATHS` below
+   asks about, so writing it out here would fail this check on the
+   commit that adds the exemption for it. Which it did. */
+const AN_IGNORE_FILE = /(^|\/)\.[a-z]*ignore$|(^|\/)\.gitignore$/;
 const BINARY = /\.(png|jpe?g|webp|gif|svg|ico|woff2?|pdf|db|mp4|zip)$/i;
 
 /** Names shaped like one of ours. A comment naming `react.dev` or
@@ -321,11 +336,22 @@ const resolves = (name: string, from: string): boolean => {
 /* ---------- the walk ---------- */
 
 const dead: Array<{ file: string; name: string }> = [];
+/** A name that resolves HERE and would not on a fresh clone.
+
+    The check reads the filesystem first, deliberately, so a file
+    written and not yet committed counts as existing. The cost of
+    that is a pointer at something BUILT: `next build` writes a
+    `next-env.d.ts` nobody commits, `.gitignore` named it, and this
+    check passed on a laptop and failed in CI on the same commit.
+    Asking the index as well is what turns that into a failure on
+    the machine that can fix it. */
+const built: Array<{ file: string; name: string }> = [];
+const inIndex = new Set(tracked);
 const used = new Set<string>();
 let read = 0;
 
 for (const file of tracked) {
-  if (NOT_A_SOURCE.test(file) || BINARY.test(file)) continue;
+  if (NOT_A_SOURCE.test(file) || BINARY.test(file) || AN_IGNORE_FILE.test(file)) continue;
   let text: string;
   try { text = readFileSync(join(ROOT, file), "utf8"); } catch { continue; }
   read += 1;
@@ -335,7 +361,17 @@ for (const file of tracked) {
     ...[...text.matchAll(PATHS)].map((m) => m[1]).filter((n) => !NOT_A_POINTER.test(n)),
   ]);
   for (const name of named) {
-    if (resolves(name, file)) continue;
+    if (resolves(name, file)) {
+      /* Resolved. On what, though? A repo-relative name that the
+         index does not carry is a generated file, and generated
+         files are not there before something has generated them. */
+      const clean = name.replace(/^\//, "");
+      if (clean.includes("/") && !clean.startsWith(".") && !inIndex.has(clean)
+          && existsSync(join(ROOT, clean))) {
+        built.push({ file, name });
+      }
+      continue;
+    }
     /* Before the allowlist, and NOT recorded as using an entry: a
        GONE line whose only remaining mention is the GONE line
        itself has stopped being needed, and should say so. */
@@ -350,7 +386,7 @@ for (const file of tracked) {
    level up: a list that was right on the day it was written. */
 const stale = GONE.filter((g) => !used.has(`${g.file} ${g.name}`));
 
-if (dead.length || stale.length) {
+if (dead.length || stale.length || built.length) {
   if (dead.length) {
     console.error(`\n${dead.length} comment(s) name a file that does not exist:\n`);
     for (const { file, name } of dead) console.error(`  x ${file}\n        names ${name}`);
@@ -359,6 +395,15 @@ if (dead.length || stale.length) {
       + "\n        say so and add it to GONE in scripts/check-pointers.ts with the"
       + "\n        reason. A pointer nobody can follow costs nothing until somebody"
       + "\n        tries, which is exactly why they survive.\n");
+  }
+  if (built.length) {
+    console.error(`\n${built.length} name(s) resolve only because something has been built:\n`);
+    for (const { file, name } of built) console.error(`  x ${file}\n        names ${name}`);
+    console.error(
+      "\n        It is not committed, so it is not there on a fresh clone and this"
+      + "\n        check goes red in CI on a commit that passed on a laptop. Name it"
+      + "\n        without its directory if the sentence still reads, or name the"
+      + "\n        source it is generated from instead.\n");
   }
   if (stale.length) {
     console.error(`\n${stale.length} GONE entr(y/ies) no longer needed:\n`);
