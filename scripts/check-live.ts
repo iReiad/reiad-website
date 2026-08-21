@@ -134,12 +134,79 @@ const deployed = (name: string, expected: unknown, actual: unknown): void => {
     fails because nobody reads a job that never finishes. Fifteen
     seconds is far longer than any page here takes and far shorter
     than anybody's patience. */
-const ask = (url: string, init: RequestInit = {}): Promise<Response> =>
+const once = (url: string, init: RequestInit = {}): Promise<Response> =>
   fetch(url, {
     signal: AbortSignal.timeout(15_000),
     headers: { "Cache-Control": "no-cache", ...(init.headers ?? {}) },
     ...init,
   });
+
+/** A 5xx is retried. Nothing else is.
+
+    THE FAILURE THIS EXISTS FOR. This site is TWO Workers, and
+    `deploy.yml` uploads one of them and then runs this file. The
+    other, `reiad-next`, is built and rolled out by Cloudflare on
+    its own schedule from the same push, and it is the one that
+    renders an article. So there is a window, about a minute wide,
+    where the main Worker is new and forwards `/insights/<slug>`
+    to a service binding that is mid-rollout, and three of the six
+    pieces in the sitemap answered 500. The change was correct,
+    the deploy was correct, and main went red.
+
+    Retrying a 5xx is the narrow answer, and it is narrow on
+    purpose. Every OTHER status is an ANSWER: a 404, a 301, a 200
+    are all things this file has an opinion about, and retrying
+    one would be retrying until the site said what was wanted. A
+    5xx is the site saying it could not answer at all, which
+    during a rollout is a fact about the clock.
+
+    The alternative was making the deploy wait for the other
+    Worker, which this repository cannot see: Cloudflare builds it
+    from the push and tells nobody here when it is live. */
+/* Four more asks, backing off 1s, 2s, 4s, 8s: fifteen seconds of
+   settling. The first version waited three and was not enough,
+   which is the useful half of what it found out. What is being
+   waited for is not a slow response, it is a ROLLOUT: a Worker
+   version going live across a network, and a cold isolate then
+   reading D1 for a page that renders 250 lessons. Three seconds
+   is a request; fifteen is a deploy.
+
+   The number is that, and not a number raised until the check
+   passed. Fifteen seconds is bounded, it is spent only on a 5xx,
+   and a page that is genuinely broken is still 500 at the end of
+   it and still fails. */
+const BACKOFF_MS = [1000, 2000, 4000, 8000];
+
+/* A THROW is retried too, and on the same reasoning. `once()`
+   carries a fifteen second deadline and `fetch` rejects when it
+   fires or when the connection is refused, which is a request
+   that never landed: the same situation as a 502 and not a
+   different one. Leaving it uncaught was worse than not retrying
+   at all, because the whole script died on the first blip with no
+   report of the thirty-two checks that had passed. Two runs did
+   exactly that before this line existed.
+
+   The last attempt's rejection is deliberately NOT swallowed. If
+   the site cannot be reached at all after fifteen seconds, that
+   is the answer, and a check that turned it into a pass would be
+   the green tick for the wrong build this file opens by
+   refusing. */
+const ask = async (url: string, init: RequestInit = {}): Promise<Response> => {
+  let answer: Response | null = null;
+  for (const wait of [0, ...BACKOFF_MS]) {
+    if (wait) await new Promise((done) => { setTimeout(done, wait); });
+    try {
+      answer = await once(url, init);
+      if (answer.status < 500) return answer;
+    } catch (err) {
+      /* Out of attempts: the site really is unreachable. */
+      if (wait === BACKOFF_MS[BACKOFF_MS.length - 1]) throw err;
+      answer = null;
+    }
+  }
+  if (!answer) throw new Error(`${url} never answered`);
+  return answer;
+};
 
 /** The same, at a path on the site, and without following what
     comes back: several of the checks below are about which

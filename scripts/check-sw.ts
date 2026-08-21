@@ -173,6 +173,47 @@ if (unreachable.length) {
   process.exit(1);
 }
 
+/* ============================================================
+   A worker that caches an error is worse than no cache
+
+   `fetch` rejects on a network failure and on NOTHING else: a
+   500, a 404 and a 302 all resolve, so a navigation handler that
+   writes every answer it gets into the cache writes those too,
+   and hands them back from its own offline branch later.
+
+   THE FAILURE THIS EXISTS FOR. On 21 August 2026 two Workers
+   rolled out a minute apart and half a dozen pages answered 500
+   while they did. Every reader who loaded one had that error page
+   stored. A cached error outlives the minute that caused it, and
+   nothing here could see it: the page renders, the worker
+   installs, every other check passes.
+
+   Asserted as a fact about the SOURCE rather than by driving a
+   worker, because registering one and forcing a 500 through it
+   needs a browser, a served origin and an install cycle to catch
+   one condition. This is the condition.
+   ============================================================ */
+{
+  /* Per PUT, not per file. Asking whether `response.ok` appears
+     anywhere in sw.js is a check that cannot fail: there are two
+     places that write to a cache, the other one was already
+     guarded, and removing the guard from the navigation branch
+     left the file still containing the words. This looks at the
+     two hundred characters before each put. */
+  const unguarded = [...sw.matchAll(/\bc(?:ache)?\.put\(/g)]
+    .filter((m) => !/response\.ok/.test(sw.slice(Math.max(0, m.index - 200), m.index)));
+  if (unguarded.length) {
+    console.error(`sw.js writes to a cache ${unguarded.length} time(s) `
+      + "without asking whether the answer was ok.");
+    console.error("");
+    console.error("   `fetch` resolves for a 500 and for a 404, so both get stored and");
+    console.error("   both come back from the offline branch. Guard the put with");
+    console.error("   `if (response.ok)`, and bump VERSION: a new one is the only thing");
+    console.error("   that empties the caches already holding an error page.");
+    process.exit(1);
+  }
+}
+
 /** Each precached path against the first sixteen hex characters
     of its SHA-256. Written to `sw-manifest.json` beside the
     VERSION the hashes belong to, which is the whole mechanism:
