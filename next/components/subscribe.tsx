@@ -20,9 +20,9 @@
 
    ---- what this replaces ----
 
-   The second half of `archive/modules/hub.js`, which found the form and the
-   status line by id and wrote `hidden`, `textContent`,
-   `innerHTML` and `className` into them. The `innerHTML` was the
+   The second half of `archive/modules/hub.js`, which found the
+   form and the status line by id and wrote `hidden`,
+   `textContent`, `innerHTML` and `className` into them. The `innerHTML` was the
    confirm link, and it is ordinary JSX here: one fewer place on
    this site where a string becomes markup.
    ============================================================ */

@@ -269,7 +269,7 @@ stage after it.
 | 1 | the route, the shell, the two sign-ins, Health | a page that is useful before any panel exists |
 | 2 | `check-admin.ts` | before there are more endpoints to forget |
 | 3 | Courses, Live portfolio, Routine templates | the account half, all three already have their endpoint. **Done.** |
-| 4 | Comments, Questions, Enquiries | the passphrase half, ported panel by panel out of `app/src/` |
+| 4 | Comments, Questions, Enquiries | the passphrase half, ported panel by panel out of `app/src/`. **Done.** |
 | 5 | Published, Subscribers, History | the rest of the desk, and `/desk` retires |
 | 6 | Media, Schools, Backups | the three the desk never had |
 | 7 | People | last, because it is the only one needing both |

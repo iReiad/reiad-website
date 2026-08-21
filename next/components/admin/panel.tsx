@@ -36,9 +36,10 @@
       a working panel with nothing in it, which is the failure
       `app/desk.test.ts` exists for.
 
-   Stage 1 of ADMIN.md §6: the route, the shell, the two sign-ins
-   and Health. The panels themselves arrive in stages 3 to 7, each
-   one shipping on its own.
+   ADMIN.md §6 stages 1, 3 and 4 are here: the route, the shell,
+   the two sign-ins and Health; the account half; and the three
+   moderation queues. Stages 5 to 7 arrive one at a time, each
+   shipping on its own.
    ============================================================ */
 
 import { useEffect, useState } from "react";
@@ -47,6 +48,7 @@ import { AdminHealth } from "./health";
 import { CoursesPanel } from "./courses-panel";
 import { RoutineTemplatesPanel } from "./routine-panel";
 import { LivePanel } from "./live-panel";
+import { CommentsPanel, EnquiriesPanel, QuestionsPanel } from "./queues";
 import { ButtonLink } from "../ui/button";
 import { Surface } from "../ui/surface";
 
@@ -176,17 +178,28 @@ export function AdminPanel() {
         </>
       ) : null}
 
+      {/* ADMIN.md §6 stage 4: the passphrase half, the three
+          queues. Shown whatever the credential state is, for the
+          reason above: each says what it is missing rather than
+          drawing an empty list, and the endpoint's own 401 is
+          what it reads to decide. */}
+      <CommentsPanel />
+      <QuestionsPanel />
+      <EnquiriesPanel />
+
       <Surface material="pane" className="ad-panel">
         <h3>Not built yet</h3>
         <p className="ad-quiet">
-          Twelve panels, in ADMIN.md, and three of them are above. Nothing here is
+          Thirteen panels, in ADMIN.md, and six of them are above. Nothing here is
           a placeholder for the rest: an empty panel that will one day hold something reads
           exactly like a broken panel that holds nothing, which is the whole
           reason that file exists.
         </p>
         <p className="ad-quiet">
-          The desk at <a href="/desk">/desk</a> is the passphrase half today and
-          keeps answering until its last panel has moved here.
+          Still to come, in that file's order: Published, Subscribers and History,
+          which is where <a href="/desk">/desk</a> stops being served; then Media,
+          Schools and Backups, the three the desk never had; then People, last
+          because it is the only one needing both credentials at once.
         </p>
       </Surface>
     </div>

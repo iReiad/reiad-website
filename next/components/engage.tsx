@@ -25,9 +25,9 @@
 
    ---- what this replaces ----
 
-   `archive/modules/engage.js`, 186 lines, dynamically imported by `app.js` on
-   `/insights/` paths and appending itself into the article it
-   found by selector.
+   `archive/modules/engage.js`, 186 lines, dynamically imported by
+   `app.js` on `/insights/` paths and appending itself into the
+   article it found by selector.
 
    AND IT COUNTED EVERY VIEW TWICE. `initDynamic()` in `app.js`
    calls `countView()` for every page on the site and then imports

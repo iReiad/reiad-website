@@ -5,9 +5,9 @@
    cards they hide.
 
    The chips and the cards are ONE component because filtering is
-   one fact: which topic is chosen. `archive/modules/hub.js` kept that fact in
-   two places, `aria-pressed` on a chip and `hidden` on a card,
-   and wrote both by hand on every click. Here it is a piece of
+   one fact: which topic is chosen. `archive/modules/hub.js` kept
+   that fact in two places, `aria-pressed` on a chip and `hidden`
+   on a card, and wrote both by hand on every click. Here it is a piece of
    state and both are read off it, so the two cannot disagree.
 
    ---- what it does not do ----

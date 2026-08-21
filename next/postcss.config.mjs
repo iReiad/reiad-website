@@ -1,6 +1,6 @@
 /* Tailwind, compiled by Next rather than by a script.
 
-   `scripts/build-styles.mjs` ran the Tailwind CLI over
+   `scripts/build-styles.mjs` ran the Tailwind CLI over what is now
    `next/styles/tailwind.css` and committed the output as
    `aab/tailwind.css`, because `aab/` is what the site was served
    from and nothing there had a build step. The stylesheet is

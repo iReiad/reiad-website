@@ -180,8 +180,8 @@ export function Comments({ slug, section = "insights" }: {
      `current()` is synchronous and answers off the session the
      module already holds, but the MODULE is fetched, so the first
      answer arrives a tick late and the box appears then. That is
-     the same shape `archive/modules/comments.js` had, where the import was
-     the page's rather than this file's. */
+     the same shape `archive/modules/comments.js` had, where the
+     import was the page's rather than this file's. */
   useEffect(() => {
     let alive = true;
     let account: AccountModule | null = null;

@@ -233,8 +233,8 @@ export const AUDIENCES = [
    rules and every focus ring on the page.
 
    This table is DERIVED from NAV above rather than written out,
-   because it was written out once already: `next/styles/site.css` had
-   five `body.deutsch { --accent: ... }` rules, which covered five
+   because it was written out once already: `next/styles/site.css`
+   had five `body.deutsch { --accent: ... }` rules, which covered five
    of the sixteen destinations and disagreed with nothing only
    because nobody had added the sixth. An item's own accent wins,
    its group's is the fallback, and a destination that names

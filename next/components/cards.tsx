@@ -7,8 +7,8 @@
    which adds the little drawing and puts its metadata in three
    columns. Both are rules that already exist in `styles.css`, and
    the class names here are the ones `aab/app.js` and
-   `archive/reads.js` put on the nodes they build, because a port that
-   also restyles the page cannot be judged.
+   `archive/reads.js` put on the nodes they build, because a port
+   that also restyles the page cannot be judged.
 
    ---- what changes, and it is the point of the exercise ----
 

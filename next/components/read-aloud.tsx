@@ -3,9 +3,10 @@
 /* ============================================================
    read-aloud.tsx: the speech control under a piece's byline.
 
-   `archive/modules/read-aloud.js` was 150 lines that built this toolbar with
-   `document.createElement`, inserted it after `.byline`, and
-   appended a `<style>` to the head for the one class it needed.
+   `archive/modules/read-aloud.js` was 150 lines that built this
+   toolbar with `document.createElement`, inserted it after
+   `.byline`, and appended a `<style>` to the head for the one
+   class it needed.
    Both of those are the shape `components/scripts.tsx` is entirely
    about: a node a script adds to a document React is about to
    adopt is a node React removes. It survived only because it was
