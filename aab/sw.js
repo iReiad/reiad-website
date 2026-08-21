@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v167: `/fallback.css`. The pointer light is an ellipse rather
+        than a circle, and the rail is the one surface that uses
+        the second radius: a 220px circle on a column 268px wide
+        reached four rows above the pointer and four below, which
+        reads as a flare running the height of the rail rather
+        than a light where the hand is.
+
    v166: `/account.js`. A comment in `aab/src/account.ts` named a
         hand-written declaration that went when that module
         converted, so the built file changed with it. Prose only,
@@ -1555,7 +1562,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v166";
+const VERSION = "v167";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

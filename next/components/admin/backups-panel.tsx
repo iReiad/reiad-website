@@ -85,7 +85,7 @@ export function BackupsPanel() {
   const bytes = (status?.snapshots ?? []).reduce((n, s) => n + s.bytes, 0);
 
   return (
-    <Surface material="pane" className="ad-panel">
+    <Surface material="pane" className="ad-panel" id="backups">
       <h3>Backups</h3>
 
       {phase === "loading" ? <p className="ad-quiet" role="status">এক মুহূর্ত…</p> : null}

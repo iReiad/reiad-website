@@ -72,6 +72,13 @@
      non-zero `--glow-w` IS the membership test, and the
      stylesheet stays the only place that says what glows. */
   @property --glow-w   { syntax: "<length>"; initial-value: 0px; inherits: false; }
+  /* The light's OTHER radius, so it can be an ellipse on a surface
+     that is not roughly square. Every surface sets it to `--glow-w`
+     and is a circle; `.rail` is the one that does not, and why is
+     written where it overrides. Registered rather than left to a
+     var() fallback because a registered property with an initial
+     value is never unset, so the fallback would never fire. */
+  @property --glow-h   { syntax: "<length>"; initial-value: 0px; inherits: false; }
   @property --glow-i   { syntax: "<percentage>"; initial-value: 0%; inherits: false; }
 
   /* ---- and the three the two above are DERIVED from ----
@@ -12028,6 +12035,9 @@ German for day, and .tag is what the site has always called
 
   [data-glow] {
     --glow-w: 110px;
+    /* A circle, which is what a light in a roughly square piece of
+       glass is. One surface overrides it and says why. */
+    --glow-h: var(--glow-w);
     --glow-i: 34%;
 
     /* Every var() carries its own fallback, and that is not belt
@@ -12038,7 +12048,7 @@ German for day, and .tag is what the site has always called
        takes `--surface-image` down with it. */
     background-image:
       var(--surface-image, var(--sheen), var(--glass-grain)),
-      radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
+      radial-gradient(var(--glow-w) var(--glow-h) ellipse at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent),
         transparent 100%);
     background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
@@ -12453,6 +12463,7 @@ German for day, and .tag is what the site has always called
        sheet. A chip stays at 46px, a control at 101px, and a card and a
        pane both settle at 220. */
     --glow-w: min(calc(var(--depth) * 46px), 220px);
+    --glow-h: var(--glow-w);
     /* 32% and not 44%. A material that is on every surface of a
        site has to be quiet or it is noise everywhere, and the
        ladder between the kinds is what carries the meaning rather
@@ -12737,7 +12748,7 @@ German for day, and .tag is what the site has always called
       var(--spec, none),
       var(--surface-image, none),
       var(--glass-grain),
-      radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
+      radial-gradient(var(--glow-w) var(--glow-h) ellipse at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent) 0%,
         transparent var(--glow-stop));
     background-size: auto, var(--surface-size, auto), var(--glass-grain-size, auto), auto;
@@ -12830,6 +12841,31 @@ German for day, and .tag is what the site has always called
       --glow-fade: 190ms;
     }
   }
+
+  /* ---- and the one surface a circle is wrong on ----
+
+     The cap on `--glow-w` above is the right argument applied to
+     the wrong axis here. A pane settles at 220px because a light
+     bigger than the object holding it stops reading as a light,
+     and on the rail the object is 268px WIDE and the height of
+     the window: a 220px circle at the pointer reaches four rows
+     above and four below, so what a reader sees is a flare
+     running up and down the column rather than a light where
+     their hand is.
+
+     The bound that is right is the surface's own NARROW
+     dimension, and on a rail that is the row under the pointer
+     and its neighbours. Horizontally the light is already clipped
+     by the rail's own width and needs no cap at all, which is why
+     only the second radius moves. The phone drawer is the same
+     element and gets it for the same reason, which is the third
+     time this rail has been reported and the first fix that is
+     about its shape rather than about one of its parts.
+
+     This is the ONLY override of `--glow-h` on the site. A second
+     one means the ladder needs the axis rather than a class
+     needing an exception. */
+  .rail { --glow-h: 90px; }
 
   /* ---- a reader who asked for less motion keeps the light ----
 

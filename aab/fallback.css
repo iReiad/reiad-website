@@ -23,6 +23,8 @@
   @property --surface-size   { syntax: "*"; inherits: false; }
 
   @property --glow-w   { syntax: "<length>"; initial-value: 0px; inherits: false; }
+
+  @property --glow-h   { syntax: "<length>"; initial-value: 0px; inherits: false; }
   @property --glow-i   { syntax: "<percentage>"; initial-value: 0%; inherits: false; }
 
   @property --depth     { syntax: "<number>"; initial-value: 0;   inherits: false; }
@@ -8166,11 +8168,13 @@
 
   [data-glow] {
     --glow-w: 110px;
+
+    --glow-h: var(--glow-w);
     --glow-i: 34%;
 
     background-image:
       var(--surface-image, var(--sheen), var(--glass-grain)),
-      radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
+      radial-gradient(var(--glow-w) var(--glow-h) ellipse at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent),
         transparent 100%);
     background-size: var(--surface-size, auto, var(--glass-grain-size, auto));
@@ -8336,6 +8340,7 @@
       .meter, .rt-balance, .audience-switch, .seg) {
 
     --glow-w: min(calc(var(--depth) * 46px), 220px);
+    --glow-h: var(--glow-w);
 
     --glow-i: calc(var(--clarity) * 32%);
     --glow-stop: calc(52% + (1 - var(--polish)) * 46%);
@@ -8384,7 +8389,7 @@
       var(--spec, none),
       var(--surface-image, none),
       var(--glass-grain),
-      radial-gradient(var(--glow-w) circle at var(--gx, 50%) var(--gy, 50%),
+      radial-gradient(var(--glow-w) var(--glow-h) ellipse at var(--gx, 50%) var(--gy, 50%),
         color-mix(in oklab, var(--accent) calc(var(--glow-i) * var(--glow-a, 0)), transparent) 0%,
         transparent var(--glow-stop));
     background-size: auto, var(--surface-size, auto), var(--glass-grain-size, auto), auto;
@@ -8408,6 +8413,8 @@
       --glow-fade: 190ms;
     }
   }
+
+  .rail { --glow-h: 90px; }
 
   @media (prefers-reduced-motion: reduce) {
     [data-glow] { --gx: 50%; --gy: 50%; transition: none; }

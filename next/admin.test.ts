@@ -150,6 +150,68 @@ const SUBSCRIBERS = {
   counts: { total: 2, confirmed: 1, pending: 1 },
 };
 
+/* One key nothing points at and one that something does, plus the
+   snapshots that share the bucket and are counted apart. The shape
+   is `GET /api/media/usage`, which does the join in the Worker. */
+const MEDIA_USAGE = {
+  media: [
+    { key: "a-piece/1111222233334444.webp",
+      url: "/media/a-piece/1111222233334444.webp",
+      size: 900_000, uploaded: "2026-07-01T00:00:00.000Z",
+      refs: 0, where: [], removable: true },
+    { key: "a-piece/aaaabbbbccccdddd.webp",
+      url: "/media/a-piece/aaaabbbbccccdddd.webp",
+      size: 40_000, uploaded: "2026-08-10T00:00:00.000Z",
+      refs: 1, where: ["insights/a-live-piece"], removable: true },
+  ],
+  listed: 2, count: 2, bytes: 940_000,
+  unreferenced: 1, unreferencedBytes: 900_000,
+  snapshots: { count: 3, bytes: 3_000_000 },
+  scanned: { articles: 3, versions: 1, lessons: 94 },
+  truncated: false,
+};
+
+/* A live stage with a lesson nobody has written, a `soon` stage
+   with none of them written, a row no section declares, and one
+   link of each of the three kinds. */
+const SCHOOLS_AUDIT = {
+  schools: [
+    {
+      school: "money", total: 3, written: 1,
+      stages: [
+        { slug: "basics-1", title: "প্রথম ধাপ", status: "live", url: "/money/basics-1",
+          total: 2, written: 1, empty: [{ slug: "share", title: "শেয়ার" }] },
+        { slug: "advanced", title: "গবেষণা", status: "soon", url: "/money/advanced",
+          total: 1, written: 0, empty: [{ slug: "asset-pricing", title: "Asset pricing" }] },
+      ],
+    },
+  ],
+  undeclared: [
+    { school: "money", stage: "basics-1", slug: "stray", why: 'no section "old" in that stage' },
+  ],
+  undeclaredCount: 1,
+  links: {
+    checked: 4, alive: 1,
+    dead: [{ school: "money", stage: "basics-1", slug: "share",
+      href: "/money/basics-9/gone.html", to: "/money/basics-9/gone.html" }],
+    deadCount: 1,
+    redirected: [{ school: "money", stage: "basics-1", slug: "share",
+      href: "/money/index.html", to: "/money/index.html" }],
+    redirectedCount: 1,
+    elsewhere: [{ school: "money", stage: "basics-1", slug: "share",
+      href: "/tools/index.html#compounding", to: "/tools/index.html" }],
+    elsewhereCount: 1,
+  },
+};
+
+const BACKUP_STATUS = {
+  r2: true,
+  snapshots: [
+    { key: "backups/2026-08-20.json", bytes: 1_200_000, at: "2026-08-20T03:17:00.000Z" },
+    { key: "backups/2026-08-19.json", bytes: 1_100_000, at: "2026-08-19T03:17:00.000Z" },
+  ],
+};
+
 /** Every write the page made, so a check can say a button did
     something rather than that it looked pressable. */
 interface Sent { method: string; url: string; body: unknown }
@@ -272,6 +334,9 @@ async function open(
     }
     if (path === "enquiries") return json({ ok: true, enquiries: ENQUIRIES });
     if (path === "subscribers") return json({ ok: true, ...SUBSCRIBERS });
+    if (path === "media/usage") return json({ ok: true, ...MEDIA_USAGE });
+    if (path === "schools/audit") return json({ ok: true, ...SCHOOLS_AUDIT });
+    if (path === "backup/status") return json({ ok: true, ...BACKUP_STATUS });
     return json({ ok: true });
   });
 
@@ -530,6 +595,70 @@ console.log("\n/admin when an endpoint answers something else");
   ok("Health says the Worker gave no usable answer",
     /no usable answer/.test(body));
 
+  await page.close();
+}
+
+/* ============================================================
+   6. The three the desk never had
+
+   ADMIN.md §6 stage 6. Media, Schools and Backups each read one
+   endpoint and each is easy to ship as a panel that renders and
+   says nothing, which is the failure this whole file exists for.
+   ============================================================ */
+console.log("\n/admin, the three the desk never had");
+{
+  const { page, sent, errors } = await open({ signedIn: true, admin: false });
+
+  /* ---- Media ---- */
+  const media = await text(page, "#media");
+  ok("Media says what points at a key", media.includes("insights/a-live-piece"));
+  ok("and says plainly when nothing does", media.includes("Nothing points at this"));
+  ok("and counts the snapshots apart from the photos",
+    media.includes("Nightly snapshots"), media.slice(0, 300));
+  /* The one that matters: a delete offered on a key something
+     points at is a delete that breaks a page. */
+  ok("Delete is offered once, on the key nothing points at",
+    await page.locator("#media").locator("button", { hasText: "Delete" }).count() === 1);
+
+  page.on("dialog", (d) => void d.accept());
+  await page.locator("#media").locator("button", { hasText: "Delete" }).click();
+  await page.waitForTimeout(400);
+  const deleted = sent.find((s) => s.url.startsWith("/api/media/"));
+  ok("and pressing it sends a DELETE for that key",
+    deleted?.method === "DELETE"
+    && deleted.url === "/api/media/a-piece/1111222233334444.webp",
+    JSON.stringify(deleted));
+
+  /* ---- Schools ---- */
+  const schools = await text(page, "#schools");
+  ok("Schools names a link that answers nothing",
+    schools.includes("/money/basics-9/gone.html"));
+  ok("and keeps the old spelling apart from it",
+    schools.includes("/money/index.html") && schools.includes("301"));
+  ok("and says what it does not adjudicate",
+    schools.includes("/tools/index.html") && schools.includes("check-routes.ts"));
+  ok("it names the unwritten lesson of a LIVE stage", schools.includes("share"));
+  ok("and the row no section declares", schools.includes("stray"));
+
+  /* A `soon` stage with nothing written is the ladder keeping a
+     promise, not a fault, so only the live stage and the
+     undeclared row are painted as one. */
+  ok("a soon stage is not painted as broken",
+    await page.locator('#schools .ad-row[data-state="down"]').count() === 2,
+    `${await page.locator('#schools .ad-row[data-state="down"]').count()} rows down`);
+
+  /* ---- Backups ---- */
+  const backups = await text(page, "#backups");
+  ok("Backups says when the last snapshot ran", backups.includes("2026-08-20"));
+  ok("and how big it was", /1\.1 MB/.test(backups), backups.slice(0, 400));
+  ok("and names the half it cannot know",
+    backups.includes("cannot see the repository"));
+  ok("and offers no restore button",
+    await page.locator("#backups").locator("button").count() === 0);
+  ok("and writes nothing at all",
+    !sent.some((s) => s.url.startsWith("/api/backup")), JSON.stringify(sent));
+
+  ok("and none of it threw", errors.length === 0, errors.join(" | "));
   await page.close();
 }
 

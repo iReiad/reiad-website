@@ -151,7 +151,7 @@ export function SchoolsPanel() {
   const written = (audit?.schools ?? []).reduce((n, s) => n + s.written, 0);
 
   return (
-    <Surface material="pane" className="ad-panel">
+    <Surface material="pane" className="ad-panel" id="schools">
       <h3>Schools</h3>
 
       {phase === "loading" ? <p className="ad-quiet" role="status">এক মুহূর্ত…</p> : null}
