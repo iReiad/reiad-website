@@ -192,27 +192,6 @@ const GONE: Gone[] = [
      naming it. Naming the path is how it asks. */
   { file: "scripts/admin.test.ts", name: "next/app/(site)/desk/page.tsx",
     why: "the check that asserts the retired route is absent, by its path" },
-
-  /* The desk retired to `archive/desk-react/` on 21 August 2026
-     and `/admin` does its job. These eight comments name its
-     browser test, or the panel one of them was ported out of, by
-     the path each had while the desk was live. The file is still
-     readable at its new path and `next/admin.test.ts` is what
-     drives these panels now, so each of these is a sentence to
-     reword rather than a guarantee that was lost. Take the entry
-     out with the wording, one file at a time: this list fails on a
-     stale exception, which is what will ask for it. */
-  { file: "next/admin.test.ts", name: "app/desk.test.ts",
-    why: "the 76 checks this file inherited, named where they came from" },
-  { file: "next/components/admin/courses-panel.tsx", name: "app/desk.test.ts",
-    why: "names the failure a locked panel drawn as an empty one is" },
-  { file: "next/components/admin/health.tsx", name: "app/desk.test.ts", why: "the same" },
-  { file: "next/components/admin/media-panel.tsx", name: "app/desk.test.ts", why: "the same" },
-  { file: "next/components/admin/people-panel.tsx", name: "app/desk.test.ts", why: "the same" },
-  { file: "next/components/admin/queue.tsx", name: "app/desk.test.ts", why: "the same" },
-  { file: "next/components/admin/routine-panel.tsx", name: "app/desk.test.ts", why: "the same" },
-  { file: "next/components/admin/pieces-panel.tsx", name: "app/src/Published.tsx",
-    why: "names the desk panel it was ported out of, which is archive/desk-react/Published.tsx now" },
 ];
 
 const allowed = new Set(GONE.map((g) => `${g.file} ${g.name}`));

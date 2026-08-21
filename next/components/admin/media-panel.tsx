@@ -28,7 +28,7 @@
 
    `requireAdmin()` answers 401 without a passphrase session and
    this reads it. An empty bucket and a locked one draw the same
-   nothing, which is the failure `app/desk.test.ts` exists for.
+   nothing, which is the failure `next/admin.test.ts` exists for.
    ============================================================ */
 
 import { useCallback, useEffect, useState } from "react";

@@ -262,7 +262,7 @@ export function PeoplePanel() {
 
       {/* Two credentials, so a missing one has to say WHICH. An
           empty list here would read exactly like a site with no
-          readers on it, which is the failure app/desk.test.ts
+          readers on it, which is the failure next/admin.test.ts
           exists for. */}
       {!waiting && !both ? (
         <>
