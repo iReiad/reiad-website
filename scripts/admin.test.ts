@@ -167,10 +167,26 @@ console.log("\nnothing locked looks empty");
 
   /* The rule the desk's browser test was written for: an empty
      list where a credential is missing looks exactly like a
-     working panel with nothing in it. */
-  ok("a missing credential names what it would open",
-    /Not held\. It would open/.test(panel));
-  ok("and offers the one thing to press",
+     working panel with nothing in it.
+
+     It has a boundary now, and finding it took a screenshot of
+     this page signed out. The rule is about somebody ALREADY
+     through the door, deciding which of their two credentials to
+     go and get. Read as licence to render the whole shell to
+     anybody, it printed an inventory of the private surface:
+     what is behind the passphrase, what is behind the account,
+     thirteen panel headings and Health.
+
+     So: hold NEITHER and the page is a sign-in and nothing else.
+     Hold one and every locked panel still names what the other
+     would open, which is what these two assert. */
+  ok("holding neither credential draws a sign-in page",
+    /!pass && !account/.test(panel) && /This page needs a credential/.test(panel));
+  ok("and it names nothing that is behind either door",
+    !/Not held\. It would open/.test(panel));
+  ok("a credential that is held says what it opens",
+    /Held\. It opens/.test(panel));
+  ok("and both ways in are offered",
     /Sign in at the Studio/.test(panel) && /Sign in to your account/.test(panel));
 
   ok("a Worker that does not answer is said, not drawn as nothing",

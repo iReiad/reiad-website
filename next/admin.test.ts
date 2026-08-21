@@ -348,8 +348,15 @@ async function open(
     /* Every GET answers `{ ok: true }` and nothing else: a body
        that is JSON, that is a success, and that carries none of
        the fields a panel reads. This is the shape an endpoint
-       takes on the day somebody changes it. */
-    if (nonsense) return json({ ok: true });
+       takes on the day somebody changes it.
+
+       EXCEPT the credential probe. `/api/auth/me` answering
+       `{ ok: true }` carries no `signedIn`, so the page reads it
+       as nobody and draws the sign-in page, and this block stops
+       exercising a single panel while still passing every
+       assertion it can reach. A fixture that talks the page out
+       of rendering its subject is a check that tests nothing. */
+    if (nonsense && url.pathname !== "/api/auth/me") return json({ ok: true });
 
     if (path === "auth/me") return json({ ok: true, signedIn });
     if (path === "routine/templates") {
@@ -452,94 +459,50 @@ console.log("/admin with no credential");
   ok("the page renders", body.length > 200, `${body.length} characters`);
   ok("and nothing threw", errors.length === 0, errors.join(" | "));
 
+  /* ---- what a stranger must NOT be shown ----
+
+     This block used to assert the opposite, panel by panel, and
+     it was faithful to ADMIN.md: a locked panel says which
+     credential it wants rather than drawing an empty list. That
+     rule is about somebody already through the door, and it was
+     read as licence to render the whole shell to the street.
+
+     What that meant in practice: thirteen panel headings, both
+     gate cards, Health, and an inventory of what each credential
+     opens. A stranger learnt that this site keeps pieces,
+     comments, questions, enquiries, subscribers, media and
+     backups behind one credential and a course section, a
+     broker's admin half and private routine templates behind
+     another, without holding either. */
   for (const heading of [
     "Waiting", "Published", "Comments", "Questions", "Enquiries", "Subscribers",
-    "What is read",
+    "What is read", "Health", "Media", "Schools", "Backups", "People",
+    "What is not here",
   ]) {
-    ok(`${heading} is on the page`, body.includes(heading));
+    ok(`${heading} is NOT shown to somebody with no credential`,
+      !body.includes(heading), body.slice(0, 200));
   }
 
-  /* Every one of the six has to SAY the credential is missing.
-     Counted rather than checked one at a time, because the number
-     is the claim: six panels, six sentences. */
-  const said = await page.locator("text=/passphrase is not held|not be counted/i").count();
-  ok("every passphrase panel says the credential is missing", said >= 6, `${said} of 6`);
-
-  /* And none of them may draw the empty-state sentence, which is
-     what a working panel with nothing in it says.
-
-     Scoped to the panel rather than searched for in the whole
-     page: "Nothing here" also appears in the shell's own closing
-     paragraph, about placeholders, and a page-wide search failed
-     on that sentence rather than on anything being wrong. */
-  for (const [panel, empty] of [
-    ["#comments", "Nothing in this state"],
-    ["#questions", "Nothing waiting"],
-    ["#enquiries", "Nothing here."],
-    ["#subscribers", "Nobody yet"],
-    ["#stats", "Nothing recorded in this window yet"],
-  ] as const) {
-    ok(`${panel} does not draw "${empty}" to somebody signed out`,
-      !(await text(page, panel)).includes(empty));
+  /* Nor the inventory itself, which is the sentence that names
+     what is behind each door. */
+  for (const inventory of [
+    "pieces, comments, questions", "the course section", "the backups",
+    "live portfolio's admin half", "private routine templates",
+  ]) {
+    ok(`and it does not enumerate "${inventory}"`, !body.includes(inventory));
   }
 
-  /* The two gates say what each credential opens and offer the
-     one thing to press. */
-  ok("both gates are shown", body.includes("The passphrase") && body.includes("Your account"));
-  ok("the passphrase gate goes to the Studio, which is where it is set",
-    await page.locator('.ad-gate a[href="/studio"]').count() === 1);
+  /* ---- what it must be instead ---- */
+  ok("it is a sign-in page", body.includes("Sign in")
+    && body.includes("This page needs a credential"));
+  ok("with the Studio, which is where a passphrase is set",
+    await page.locator('a[href="/studio"]').count() >= 1);
 
-  /* The account gate is a BUTTON, and the assertion this replaced
-     could not have caught the bug it shipped with: it asked
-     whether `a[href="/account"]` existed anywhere on the page,
-     and the footer carries one, so it passed without ever looking
-     at the gate. Meanwhile the gate walked the reader to /account
-     to sign in, `signInWithGoogle()` sent `location.pathname` as
-     the return address, and they came back to /account and stayed
-     there. The sign-in has to happen where the reader stands. */
-  ok("and no gate sends the reader to /account to do it",
-    await page.locator('.ad-gate a[href="/account"]').count() === 0);
-
-  /* The browser panel, which is the one that has to be there when
-     everything else is not. It asks no endpoint, so no credential
-     and no failure can leave it pending, and it is what tells a
-     reader looking at a wrong page that their own worker is
-     serving it. */
-  ok("the browser panel is there with no credential",
-    body.includes("This browser"));
-  ok("it says whether a worker is answering this page",
-    body.includes("Worker answering this page"));
-  ok("it says whether a newer one is waiting, which is the state that traps a reader",
-    body.includes("A newer one waiting to take over"));
-  ok("and it offers the way out without devtools",
-    await page.locator("button", { hasText: "Clear this browser's copy" }).count() === 1);
-
-  /* The account gate presses the site's OWN sign-in where the
-     reader stands. It must not be a link and it must not carry a
-     popovertarget: `#account-menu` does not exist until the top
-     bar's button is pressed, so an attribute naming it does
-     nothing and the fallback fires every time. The check this
-     replaces asserted that attribute and so passed while the
-     button behaved exactly like the link it replaced. */
-  ok("the account gate is a button, not a link to /account",
-    await page.locator(".ad-gate button").count() === 1
-    && await page.locator('.ad-gate a[href="/account"]').count() === 0);
-  ok("and it does not name a popover that is built on demand",
-    await page.locator(".ad-gate button[popovertarget]").count() === 0);
-
-  /* Pressing it presses `.account-btn`, which is the one sign-in
-     this site has. Asserted by putting one there and watching it
-     be clicked, because what went wrong last time was a control
-     that looked right and did nothing. */
+  /* The account control is a BUTTON pressing the site's own
+     sign-in, not a link to /account: `signInWithGoogle()` sends
+     `location.pathname` as the return address, so walking the
+     reader to /account first is what stranded them there. */
   await page.evaluate(() => {
-    /* Whichever `.account-btn` is FIRST, because the shell may
-       have rendered a real one and `querySelector` takes that
-       one. Appending a second and watching it would pass while
-       the gate pressed something else. */
-    /* Written as markup and found again by selector, rather than
-       created and appended: this config resolves `append` to the
-       body-taking signature, not the DOM one, so passing it an
-       element is a type error with nothing wrong underneath. */
     if (!document.querySelector(".account-btn")) {
       document.documentElement.insertAdjacentHTML(
         "beforeend", '<button class="account-btn"></button>',
@@ -549,9 +512,18 @@ console.log("/admin with no credential");
       document.title = "account-btn pressed";
     });
   });
-  await page.locator(".ad-gate button").click();
-  ok("pressing the gate presses the site's own sign-in button",
+  await page.locator("button", { hasText: "Sign in to your account" }).click();
+  ok("and pressing the account control presses the site's own sign-in",
     await page.title() === "account-btn pressed");
+
+  /* The browser panel is the one thing that stays, and it is
+     about the VISITOR's device rather than the site: it names no
+     store, no secret and no count, and it is the way out of a
+     stale cache for somebody who cannot load the page well
+     enough to sign in. */
+  ok("the browser panel is still there", body.includes("This browser"));
+  ok("and it says whether a newer worker is waiting",
+    body.includes("A newer one waiting to take over"));
 
   await page.close();
 }
