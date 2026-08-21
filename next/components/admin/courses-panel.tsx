@@ -27,6 +27,7 @@
    ============================================================ */
 
 import { useEffect, useState } from "react";
+import { readerCall } from "../../lib/reader-api";
 import { Surface } from "../ui/surface";
 import { Row } from "./row";
 
@@ -65,14 +66,13 @@ export function CoursesPanel() {
 
   useEffect(() => {
     let live = true;
-    fetch("/api/courses/status", { headers: { accept: "application/json" } })
+    readerCall<unknown>("courses/status")
       .then(async (r) => {
         if (!live) return;
-        if (r.status === 401 || r.status === 403) { setState("denied"); return; }
+        if (r.signedOut || r.status === 401 || r.status === 403) { setState("denied"); return; }
         if (!r.ok) { setState("error"); return; }
-        const answer = await r.json().catch(() => null) as unknown;
-        if (!isStatus(answer)) { setState("error"); return; }
-        setData(answer);
+        if (!isStatus(r.data)) { setState("error"); return; }
+        setData(r.data);
         setState("ok");
       })
       .catch(() => { if (live) setState("error"); });

@@ -87,6 +87,45 @@ console.log("\nhealth gives nothing away");
   ok("it is a GET and nothing else", /methods\(request,\s*\{\s*GET:/.test(src));
   ok("and any other route under /api/admin is a 404",
     /route !== "health"/.test(src));
+
+  /* ---- and a stranger is told ONE thing ----
+
+     CALLED, not read, because the four checks above passed
+     throughout the leak: they assert that a secret's VALUE never
+     leaves, and nothing here ever leaked a value. What it served
+     to anybody who opened /admin signed out was the shape: that
+     D1 answers in 66ms, that Supabase is unreachable, that a
+     Drive credential and a broker seal are configured, and that
+     there is exactly one admin reader. None of that is inferable
+     from outside and together it is a map of what to attack and
+     which parts are already weak.
+
+     The endpoint's own header set the rule that catches it, in
+     the first version of this file: could somebody work this out
+     by using the site for a minute? A rule enforced by whoever
+     last read the prose is the failure this repository opens
+     with, so it is a call now. */
+  const { onRequest } = await import("../functions/api/admin/[[route]].ts");
+  const stranger = await onRequest({
+    request: new Request("https://reiad.co.uk/api/admin/health"),
+    /* Every store bound and every secret set, so that anything
+       that leaks has something to leak. */
+    env: {
+      SUPABASE_URL: "https://example.supabase.co", SUPABASE_KEY: "k",
+      GOOGLE_SA_EMAIL: "a@b.iam.gserviceaccount.com", GOOGLE_SA_KEY: "key",
+      BROKER_TOKEN_KEY: "seal", ADMIN_READERS: "one,two", COMMIT: "deadbeef",
+    },
+    params: { route: ["health"] },
+  });
+  const body = await stranger.text();
+
+  ok("a caller with no credential still gets an answer", stranger.status === 200);
+  ok("and it says the Worker is up, which is what it is FOR",
+    /"worker":\s*true/.test(body));
+  for (const leak of ["stores", "secrets", "commit", "supabase", "d1",
+    "adminReaders", "brokerSeal", "drive", "deadbeef"]) {
+    ok(`and never ${leak}`, !body.includes(leak), body);
+  }
 }
 
 /* ============================================================

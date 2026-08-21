@@ -43,6 +43,13 @@ interface Health {
     other panel went with it. The one panel that has to work on
     the day something is broken was the one that could break
     everything. */
+/** The endpoint's answer to a caller with no credential. It is a
+    success, not a failure, and drawing it as one would be the
+    "locked panel shown as a broken panel" mistake this page is
+    built to avoid. */
+const isLockedHealth = (d: unknown): boolean =>
+  Boolean(d) && typeof d === "object" && (d as { detail?: boolean }).detail === false;
+
 const isHealth = (d: unknown): d is Health => {
   const h = d as Health | null;
   return !!h && typeof h === "object"
@@ -53,13 +60,19 @@ const isHealth = (d: unknown): d is Health => {
 export function AdminHealth() {
   const [health, setHealth] = useState<Health | null>(null);
   const [failed, setFailed] = useState(false);
+  const [locked, setLocked] = useState(false);
   const [sw, setSw] = useState<string | null>(null);
 
   useEffect(() => {
     let live = true;
     fetch("/api/admin/health", { headers: { accept: "application/json" } })
       .then(async (r): Promise<unknown> => (r.ok ? r.json() : null))
-      .then((d) => { if (live) { if (isHealth(d)) setHealth(d); else setFailed(true); } })
+      .then((d) => {
+        if (!live) return;
+        if (isHealth(d)) setHealth(d);
+        else if (isLockedHealth(d)) setLocked(true);
+        else setFailed(true);
+      })
       .catch(() => { if (live) setFailed(true); });
 
     /* What this browser is actually holding, which is a different
@@ -88,6 +101,29 @@ export function AdminHealth() {
           Either it did not answer, or it answered something that is not a health
           report. Everything else on this page is served by the same Worker, so
           expect it to be unavailable too.
+        </p>
+      </Surface>
+    );
+  }
+
+  /* The Worker answered and would not say more, which is itself
+     the answer worth having: whatever is wrong with this page is
+     not the Worker. What it used to say here instead was which
+     stores are up, which secrets are set and how many admin
+     readers there are, to anybody at all. */
+  if (locked) {
+    return (
+      <Surface material="pane" className="ad-panel">
+        <h3>Health</h3>
+        <div className="ad-rows">
+          <Row label="The Worker" state="up" note="answering" />
+        </div>
+        <p className="ad-quiet">
+          The rest needs a credential. Which stores are reachable, which secrets
+          are configured and how many admin readers there are is a map of this
+          site for anybody who asks, so it is not something a stranger is told.
+          The Worker answering is, because a panel that is not working when it
+          does is not the Worker&apos;s fault.
         </p>
       </Surface>
     );

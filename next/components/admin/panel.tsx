@@ -47,6 +47,7 @@
 
 import { useEffect, useState } from "react";
 import { runtimeModule } from "../account/runtime";
+import { readerCall } from "../../lib/reader-api";
 import { AdminHealth } from "./health";
 import { CoursesPanel } from "./courses-panel";
 import { RoutineTemplatesPanel } from "./routine-panel";
@@ -84,16 +85,27 @@ const CREDENTIALS = {
     opens: "what belongs to a reader: the course section, the live portfolio's "
       + "admin half, and the private routine templates.",
     press: "Sign in to your account",
-    /* A MENU, not a navigation, and the difference is the whole
-       bug this replaced. `signInWithGoogle()` in
-       `aab/src/account.ts` sends `location.pathname` as the
-       return address, so a button that walked the reader to
-       /account first meant signing in from /admin landed them on
-       /account and left them there. The account menu is a
-       popover the shell renders on every page, so opening it
-       where they stand leaves the path at /admin and brings them
-       back to it. */
-    menu: "account-menu",
+    /* THE SITE'S OWN SIGN-IN BUTTON, pressed where it already is.
+
+       `signInWithGoogle()` in `aab/src/account.ts` sends
+       `location.pathname` as the return address, so a control
+       that walks the reader to /account first means signing in
+       from /admin lands them on /account and leaves them there.
+       The sign-in has to happen HERE.
+
+       This was `popovertarget="account-menu"` and that was wrong
+       in a way worth writing down, because it looked right and
+       shipped: `#account-menu` does not exist until the top bar's
+       button is pressed, since `open()` in `aab/src/signin.ts`
+       builds it on demand. A `popovertarget` naming an element
+       that is not there does nothing, so the fallback fired every
+       single time and the button behaved exactly like the link it
+       replaced. The check written beside it asserted the
+       ATTRIBUTE and so passed throughout.
+
+       `.account-btn` is that button, and clicking it is the one
+       sign-in this site has rather than a second copy of it. */
+    trigger: ".account-btn",
   },
 } as const;
 
@@ -109,18 +121,17 @@ function Gate({ which, held }: { which: keyof typeof CREDENTIALS; held: boolean 
       {held ? null : "where" in c ? (
         <ButtonLink kind="ghost" size="sm" href={c.where}>{c.press}</ButtonLink>
       ) : (
-        <Button kind="ghost" size="sm" popoverTarget={c.menu}
-                onClick={(e) => {
-                  /* The menu is built at runtime by the shell's
-                     own sign-in module. A `popovertarget` naming
-                     an element that is not there does nothing at
-                     all, silently, so this can never be an inert
-                     button: without the menu it goes to the page
-                     that has a sign-in on it. */
-                  if (!document.getElementById(c.menu)) {
-                    e.preventDefault();
-                    window.location.href = "/account";
-                  }
+        <Button kind="ghost" size="sm"
+                onClick={() => {
+                  /* The top bar's sign-in, pressed. It opens the
+                     menu anchored to itself and leaves the
+                     address at /admin, which is the whole point.
+                     Only if the bar is not there at all does this
+                     fall back to the page that has a sign-in on
+                     it, so it can never be an inert button. */
+                  const bar = document.querySelector<HTMLElement>(c.trigger);
+                  if (bar) { bar.click(); return; }
+                  window.location.href = "/account";
                 }}>
           {c.press}
         </Button>
@@ -153,15 +164,17 @@ export function AdminPanel() {
            copy of it. An empty list means not an admin, which is
            the same answer /api/routine/templates gives the page
            that uses it. */
-        const acc = await accountModule();
-        const mine = acc.current()
-          ? await fetch("/api/routine/templates", {
-            headers: { accept: "application/json" },
-          })
-            .then(async (r): Promise<{ templates?: unknown[] }> => (r.ok ? r.json() : {}))
-            .then((d) => Array.isArray(d.templates) && d.templates.length > 0)
-            .catch(() => false)
-          : false;
+        /* Through `readerCall`, which attaches the reader's own
+           bearer. A plain fetch sends none, `readerFrom()` reads
+           nothing else, and `isAdmin()` then says no before it
+           consults either list: this gate read "Not held" for the
+           real admin on every device, and the endpoint answering
+           an empty list to a non-admin is by design, so nothing
+           anywhere looked wrong. */
+        const templates = await readerCall<{ templates?: unknown[] }>("routine/templates");
+        const mine = templates.ok
+          && Array.isArray(templates.data?.templates)
+          && templates.data.templates.length > 0;
 
         const held = await seen;
         if (!live) return;

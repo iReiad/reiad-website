@@ -27,6 +27,7 @@
    ============================================================ */
 
 import { useEffect, useState } from "react";
+import { readerCall } from "../../lib/reader-api";
 import { Surface } from "../ui/surface";
 import { Row } from "./row";
 
@@ -52,9 +53,12 @@ export function LivePanel() {
     let live = true;
     (async () => {
       try {
-        const r = await fetch("/api/broker/me", { headers: { accept: "application/json" } });
+        const r = await readerCall<unknown>("broker/me");
         if (!live) return;
-        if (!r.ok) { setState("error"); return; }
+        /* Signed out is "denied" and not "error": there was nobody
+           to ask on behalf of, which is the same thing this panel
+           already says when the account is not an admin. */
+        if (!r.ok) { setState(r.signedOut ? "denied" : "error"); return; }
         /* Read through a default rather than asserted. Every field
            on `Me` is optional and every use of one below goes
            through `?.`, so the only way this panel could throw
@@ -62,8 +66,7 @@ export function LivePanel() {
            and a throw in a client component unmounts the WHOLE
            route: `/admin` goes to "This page couldn't load" and
            Health goes with it. See the same guard in health.tsx. */
-        const answer = await r.json().catch(() => null) as unknown;
-        const who: Me = (answer && typeof answer === "object" ? answer : {}) as Me;
+        const who: Me = (r.data && typeof r.data === "object" ? r.data : {}) as Me;
         setMe(who);
         if (!who.admin) { setState("denied"); return; }
 
@@ -72,9 +75,9 @@ export function LivePanel() {
            reading a 403. A panel that learns what it is allowed to
            do from an error is a panel that logs errors on a
            working site. */
-        const s = await fetch("/api/broker/site", { headers: { accept: "application/json" } });
+        const s = await readerCall<unknown>("broker/site");
         if (!live) return;
-        const shape = s.ok ? await s.json().catch(() => null) as unknown : null;
+        const shape = s.ok ? s.data : null;
         setSite(shape && typeof shape === "object" ? shape as Site : null);
         setState("ok");
       } catch { if (live) setState("error"); }

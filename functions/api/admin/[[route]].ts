@@ -1,10 +1,10 @@
 /* ============================================================
    /api/admin/*
 
-   ONE ROUTE so far, `health`, and it is deliberately the only
-   thing on this whole panel that needs no credential.
+   ONE ROUTE so far, `health`, and it answers TWO different things
+   depending on whether the caller has a credential.
 
-   ---- why an ungated route on an admin panel ----
+   ---- why it answers a stranger at all ----
 
    Because the panel has to be useful on the day the credential is
    the thing that is broken. A page that can only tell you the
@@ -12,37 +12,45 @@
    you that the sign-in is what is down, which is the one moment
    somebody opens it in a hurry.
 
-   ---- so it answers only what a stranger could already infer ----
+   That argument justifies exactly ONE fact, and this used to give
+   away six. A stranger gets `{ worker: true }`: this Worker
+   answered. Everything after that needs the passphrase session or
+   an admin reader.
 
-   Every field below is a BOOLEAN or a shape, never a value. That
-   the database is reachable, not what is in it. That a secret is
-   configured, not what it is. That the site is on a commit, which
-   is public in the repository anyway.
+   ---- what it was leaking, and the rule that should have caught it ----
 
-   The test for adding a field is: could somebody work this out by
-   using the site for a minute? A count of drafts could not, so a
-   count of drafts does not go here; it goes in a panel behind the
-   passphrase where `ADMIN.md` puts it.
+   The rule was already written here: could somebody work this out
+   by using the site for a minute? Every field failed it. That D1
+   answers in 66ms, that Supabase is unreachable, that a Drive
+   credential and a broker seal are configured, that there is
+   exactly ONE admin reader. None of that is inferable from
+   outside, all of it was served to anybody who opened /admin
+   signed out, and together it is a map of what to attack and
+   which parts are already weak.
 
-   `scripts/check-admin.ts`, which ADMIN.md stage 2 adds, is what
-   will hold that line: every endpoint under `functions/api/` is
-   gated, or is named in a list with its reason. This route is the
-   first entry in that list.
+   A rule enforced by whoever last read the prose is the failure
+   this repository opens with, and this route was IN the `PUBLIC`
+   list in `scripts/check-admin.ts` with that reasoning written
+   beside it. The list was right about what it was told. It is
+   `scripts/admin.test.ts` that asks now, by CALLING this with no
+   credential and reading what comes back.
+
    ============================================================ */
 
 import { fail, methods, ok } from "../../_lib/http.ts";
-
-/** The one thing this asks of D1, declared rather than pulled in
-    from `@cloudflare/workers-types`: nothing else under
-    `functions/` is typed against that package, and adding a
-    dependency to describe one call is a bigger commitment than
-    the call. */
-interface D1Like {
-  prepare(sql: string): { first(): Promise<unknown> };
-}
+import { readSession } from "../../_lib/auth.ts";
+import { readerFrom } from "../../_lib/reader.ts";
+import { isAdmin } from "../../_lib/admins.ts";
+import type { D1Database } from "../../_lib/db.ts";
 
 export interface AdminEnv {
-  DB?: D1Like;
+  /* `D1Database` out of `_lib/db.ts`, which is where the rest of
+     `functions/` gets it. This declared its own one-method shape
+     so as not to depend on the package, and that stopped being
+     possible the moment the route had to read a session: two
+     descriptions of one binding is the second copy `check-rows.ts`
+     exists to ban, one level down. */
+  DB?: D1Database;
   SUPABASE_URL?: string;
   SUPABASE_KEY?: string;
   /** The two Drive secrets, asked about and never read. */
@@ -82,19 +90,52 @@ export async function onRequest(context: AdminContext): Promise<Response> {
 
   return methods(request, {
     GET: async () => {
+      /* Either credential opens the detail, because either one
+         means the caller is already trusted with more than this.
+         The passphrase is a cookie the Worker can read on its
+         own; the account half goes through `isAdmin()`, which is
+         the ONE place that answers that question. */
+      const session = await readSession(context);
+      let allowed = Boolean(session);
+      if (!allowed) {
+        const reader = await readerFrom(request, env);
+        allowed = reader ? await isAdmin(env, request, reader.id) : false;
+      }
+
+      /* The one fact a stranger gets, and the whole of what the
+         ungated version was FOR: this Worker answered, so a panel
+         that is not working is not the Worker. Nothing here is a
+         store, a secret or a count. */
+      if (!allowed) return ok({ worker: true, detail: false });
+
       const d1 = env.DB
         ? await reach(() => env.DB!.prepare("select 1").first())
         : { ok: false, ms: 0 };
 
-      /* Asked WITHOUT a reader's bearer, so what this establishes
-         is that the project answers at all. Whether a given
-         reader can see their rows is row-level security's answer
-         and belongs to the reader, not to this. */
+      /* A REAL resource, and the reason is that this reported a
+         healthy project as unreachable for as long as the row
+         existed. It asked for `/rest/v1/`, which is PostgREST's
+         OpenAPI root, and Supabase does not serve that to a
+         publishable key: it answers 401, the probe read any
+         non-2xx as down, and /admin drew a red dot beside a
+         project that was ACTIVE_HEALTHY and answering every
+         query the site made.
+
+         PostgREST rather than `/auth/v1/health`, which would also
+         have answered 200: what this site needs Supabase FOR is
+         rows. A sign-in service that is up while PostgREST is
+         down is exactly the state a green dot must not describe.
+
+         `limit=0` so no row is read and row-level security has
+         nothing to decide. Asked without a reader's bearer, so
+         what it establishes is that the service answers, not what
+         any one reader can see. */
       const supa = env.SUPABASE_URL && env.SUPABASE_KEY
         ? await reach(async () => {
-          const res = await fetch(`${env.SUPABASE_URL}/rest/v1/`, {
-            headers: { apikey: env.SUPABASE_KEY! },
-          });
+          const res = await fetch(
+            `${env.SUPABASE_URL}/rest/v1/progress?select=user_id&limit=0`,
+            { headers: { apikey: env.SUPABASE_KEY! } },
+          );
           if (!res.ok) throw new Error(String(res.status));
         })
         : { ok: false, ms: 0 };
