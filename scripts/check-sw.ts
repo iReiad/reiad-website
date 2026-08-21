@@ -28,6 +28,7 @@
 
 import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -199,6 +200,40 @@ if (missing.length) {
 }
 
 if (update) {
+  /* ---- --update may RECORD a bump. It may not EXCUSE one ----
+
+     This wrote the manifest at whatever VERSION sw.js currently
+     said and exited 0, without ever looking at the manifest it was
+     overwriting. So the sequence that feels natural while working,
+     edit a precached file and then run `--update` because the
+     check just complained, is the sequence that disarms the check:
+     the new hashes are recorded under the OLD version, every later
+     run compares clean, and every returning reader keeps the file
+     they already had.
+
+     That is not hypothetical. `/fallback.css` changed in #181 and
+     shipped under v164 because `--update` was run as a reflex on
+     every commit that day, and `check-all` was green each time.
+
+     So `--update` now refuses the one case it must: content moved,
+     version did not. Bumping first and recording second is the
+     order the changelog at the top of sw.js already describes. */
+  const prior = existsSync(MANIFEST)
+    ? JSON.parse(await readFile(MANIFEST, "utf8")) as Manifest
+    : null;
+  if (prior && prior.version === version) {
+    const moved = Object.keys(hashes)
+      .filter(p => prior.hashes[p] && prior.hashes[p] !== hashes[p]);
+    if (moved.length) {
+      console.error(`STALE CACHE RISK: ${moved.length} precached file(s) changed`
+        + ` and VERSION is still ${version}:`);
+      for (const m of moved) console.error(`   ${m}`);
+      console.error("\nRecording this would hide the change rather than ship it.");
+      console.error("Bump VERSION in aab/sw.js with a changelog line saying what");
+      console.error("changed and why it needs the bump, then run this again.");
+      process.exit(1);
+    }
+  }
   await writeFile(MANIFEST, `${JSON.stringify({ version, hashes }, null, 2)}\n`);
   console.log(`sw-manifest.json written: ${version}, ${paths.length} files`
     + (rendered.length ? ` and ${rendered.length} rendered page(s)` : ""));
