@@ -31,6 +31,22 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v170: no file changed, and the bump is the fix.
+
+        The runtime cache kept EVERY answer `fetch` resolved
+        with, and it resolves for a 500 and a 404 as readily as
+        for a 200: only a network failure rejects. So when two
+        Workers rolled out a minute apart on 21 August 2026 and
+        half a dozen pages answered 500 while they did, every
+        reader who loaded one had that error page stored, and the
+        next time their network failed the worker handed it back
+        instead of offline.html. A cached error outlives the
+        minute that caused it.
+
+        `response.ok` is the condition now. The VERSION is what
+        empties the caches already holding one, which is why this
+        entry exists without a file beside it.
+
    v169: `/app.js`. The speculation rules excluded `/desk/*` from
         prerender-on-hover, because a hover is not a decision to
         open a private page. That address retired in v168 and the
@@ -1579,7 +1595,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v169";
+const VERSION = "v170";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
@@ -1823,8 +1839,24 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(RUNTIME).then((c) => c.put(request, copy));
+          /* Only a 200 is worth keeping, and this cached EVERY
+             answer.
+
+             `fetch` rejects on a network failure and on nothing
+             else: a 500, a 404 and a 302 all RESOLVE, so all
+             three were written into the runtime cache and served
+             back later from the branch below. On 21 August 2026
+             two Workers rolled out a minute apart and half a
+             dozen pages answered 500 while they did; every reader
+             who loaded one had that error page stored, and the
+             next time their network failed the worker handed it
+             back instead of offline.html. A cached error is worse
+             than no cache, because it outlives the minute that
+             caused it. */
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(RUNTIME).then((c) => c.put(request, copy));
+          }
           return response;
         })
         .catch(async () =>
