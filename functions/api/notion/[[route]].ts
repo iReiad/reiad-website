@@ -29,18 +29,31 @@
    ============================================================ */
 
 import { fail, methods, notConfigured, ok, str } from "../../_lib/http.ts";
+import type { RouteContext } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.ts";
 import { db } from "../../_lib/db.ts";
+import type { DbEnv } from "../../_lib/db.ts";
 import { syncFromNotion } from "../../_lib/sync.ts";
+import type { SyncEnv } from "../../_lib/sync.ts";
 import {
-  client, convert, fetchBlocks, normaliseId, pageTitle, proxyURL, readFields,
+  NotionError, client, convert, fetchBlocks, normaliseId, pageTitle,
+  proxyURL, readFields,
 } from "../../_lib/notion.ts";
+import type { ConvertState, NotionPage } from "../../_lib/notion.ts";
+
+/** What this route binds. `SITE_ORIGIN` is the address an imported
+    photo is proxied through, and falls back to the request's own. */
+interface NotionRouteEnv extends SyncEnv, DbEnv {
+  SITE_ORIGIN?: string;
+}
 
 /* Where a Notion file can legitimately come from. */
 const ASSET_HOSTS =
   /(^|\.)((notion\.so)|(notion-static\.com)|(amazonaws\.com)|(notion\.site))$/i;
 
-export async function onRequest(context) {
+export async function onRequest(
+  context: RouteContext<NotionRouteEnv, { route?: string[] }>,
+): Promise<Response> {
   const { request, env, params } = context;
   const route = params.route ?? [];
   const url = new URL(request.url);
@@ -92,7 +105,7 @@ export async function onRequest(context) {
           const target = url.searchParams.get("u");
           if (!target) return fail("url-required");
 
-          let parsed;
+          let parsed: URL;
           try { parsed = new URL(target); } catch { return fail("bad-url"); }
           if (parsed.protocol !== "https:" || !ASSET_HOSTS.test(parsed.hostname)) {
             return fail("host-not-allowed", 403, { host: parsed.hostname });
@@ -134,7 +147,7 @@ export async function onRequest(context) {
                 },
               });
 
-          const pages = (result.results ?? [])
+          const pages = ((result.results ?? []) as NotionPage[])
             .filter((p) => p.object === "page")
             .map((p) => ({
               id: p.id,
@@ -151,8 +164,8 @@ export async function onRequest(context) {
           const id = normaliseId(route[1]);
           if (!id) return fail("bad-page-id");
 
-          const page = await notion(`/pages/${id}`);
-          const state = { fetches: 0, truncated: false };
+          const page = await notion(`/pages/${id}`) as NotionPage;
+          const state: ConvertState = { fetches: 0, truncated: false };
           const blocks = await fetchBlocks(notion, id, state);
           const html = await convert(blocks, { notion, origin, state });
 
@@ -183,12 +196,17 @@ export async function onRequest(context) {
 
         return fail("not-found", 404);
       } catch (err) {
-        if (err.status === 401) {
+        /* Only the client throws a status; a refusal between here
+           and Notion is an ordinary Error and falls to the 502
+           below, which is the distinction the last branch exists
+           to keep. */
+        const status = err instanceof NotionError ? err.status : null;
+        if (status === 401) {
           return fail("notion-unauthorised", 401, {
             message: "NOTION_TOKEN was rejected. Check the integration still exists.",
           });
         }
-        if (err.status === 403) {
+        if (status === 403) {
           // Notion answers 403 when the token is valid but the
           // integration lacks the capability being used, reading
           // content, most often, which is off by default on an
@@ -199,25 +217,25 @@ export async function onRequest(context) {
               + "the page.",
           });
         }
-        if (err.status === 404) {
+        if (status === 404) {
           return fail("notion-not-shared", 404, {
             message: "Notion can't see that page. Open it in Notion, then "
               + "Connections → add the integration.",
           });
         }
-        if (err.status === 429) {
+        if (status === 429) {
           return fail("notion-rate-limited", 429, {
             message: "Notion is throttling. Try again shortly.",
           });
         }
-        console.error("notion", err?.stack ?? err);
+        console.error("notion", err instanceof Error ? err.stack ?? err.message : err);
         // Carrying the upstream status through matters: without it a
         // network-level refusal between here and Notion is
         // indistinguishable from Notion itself saying no, and the two
         // have completely different fixes.
         return fail("notion-error", 502, {
-          upstream: err?.status ?? null,
-          message: String(err?.message ?? err),
+          upstream: status,
+          message: String(err instanceof Error ? err.message : err),
         });
       }
     },

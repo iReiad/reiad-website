@@ -59,7 +59,7 @@ export const QUESTION_STATUS = ["pending", "published", "spam", "archived"] as c
 
     `live` rather than `approved`, and `binned` rather than
     `spam`, because that is what the column actually holds:
-    `functions/api/comments/[[id]].js` writes those three and the
+    `functions/api/comments/[[id]].ts` writes those three and the
     thread query filters on `status = 'live'`. This file is a
     description of the database and not a proposal for a better
     one; renaming a state here and nowhere else would be a

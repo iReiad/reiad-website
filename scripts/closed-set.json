@@ -79,22 +79,5 @@
   "aab/tools/stock.i18n.js",
   "aab/tools/stock.js",
   "aab/tools/stock.model.js",
-  "aab/tools/tools.js",
-  "functions/_lib/broker.js",
-  "functions/api/articles/[[slug]].js",
-  "functions/api/auth/[[route]].js",
-  "functions/api/backup/[[route]].js",
-  "functions/api/broker/[[route]].js",
-  "functions/api/comments/[[id]].js",
-  "functions/api/enquiries/[[id]].js",
-  "functions/api/media/[[key]].js",
-  "functions/api/news.js",
-  "functions/api/notion/[[route]].js",
-  "functions/api/questions/[[id]].js",
-  "functions/api/schools/[[route]].js",
-  "functions/api/search.js",
-  "functions/api/signals/[[kind]].js",
-  "functions/api/subscribers/[[route]].js",
-  "functions/feeds/[kind].js",
-  "functions/insights/[slug].js"
+  "aab/tools/tools.js"
 ]

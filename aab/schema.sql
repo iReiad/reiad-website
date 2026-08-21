@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS throttle (
 --
 -- `author_id` is a Supabase user id, written only after the Worker
 -- has verified the signature on the reader's access token; see
--- functions/_lib/reader.js. `author_name` is a COPY of the display
+-- functions/_lib/reader.ts. `author_name` is a COPY of the display
 -- name at the time of writing, which is the seam in TRANSITION.md
 -- section 1 doing its job: D1 holds what a signed-out reader needs
 -- to render the page, Supabase holds who people are, and the two

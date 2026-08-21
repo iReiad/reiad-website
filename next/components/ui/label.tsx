@@ -31,10 +31,10 @@
    under it, on the same site, for the same thing, and the two
    are meant to be the same page rendered two ways.
 
-   `aab/engage.js` also builds one, in the browser, under every
-   piece on the site. Same argument as `ui/stat.tsx` at more
-   length: the class is the interface while anything outside React
-   still writes it.
+   `aab/404.html` carries one, and it is one of the two pages
+   React never renders. Same argument as `ui/stat.tsx` at more
+   length: the class is the interface while anything outside
+   React still writes it.
 
    ---- it is not a heading ----
 

@@ -498,7 +498,7 @@ trace of `--accent`, so 75 surfaces and 269 borders follow the page's
 colour without any of them being edited. A component converted to Tailwind
 inherits the same thing through `@theme`.
 
-Three things stay in `aab/styles.css` permanently, and the split is the point:
+Three things stay in `next/styles/site.css` permanently, and the split is the point:
 
 - **anything an article carries.** `tw` sits below `article` in the layer
   order. An article's body is HTML in a database and Tailwind's compiler

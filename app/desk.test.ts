@@ -27,7 +27,7 @@
    from the outside.
 
    So this file is a list of the things the old desk did. Every
-   check below is a feature `aab/desk.js` had. If the React desk
+   check below is a feature `archive/desk.js` had. If the React desk
    loses one of them again, this fails.
    ============================================================ */
 

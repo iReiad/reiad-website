@@ -19,11 +19,12 @@
                                   every commit would fight it every
                                   time.
 
-     no CSS from here             `aab/styles.css` is the design
-                                  system and the page loads it as
-                                  it always has. React renders the
-                                  same class names into the same
-                                  @layer rules. archive/TRANSITION.md calls
+     no CSS from here             `next/styles/site.css` is the
+                                  design system and the route that
+                                  mounts this bundle already carries
+                                  it. React renders the same class
+                                  names into the same @layer rules.
+                                  archive/TRANSITION.md calls
                                   this the single most important
                                   constraint of Stage 9, so there
                                   is no CSS-in-JS, no Tailwind and

@@ -20,7 +20,7 @@
 #
 # Then set the admin passphrase by visiting /studio once.
 # The tables create themselves on the first request that needs
-# them (see functions/_lib/db.js), so there is no schema step.
+# them (see functions/_lib/db.ts), so there is no schema step.
 # ============================================================
 
 name = "reiad-website"
@@ -217,7 +217,7 @@ bucket_name = "reiad-media"
 # Every quarter hour, any article that came from Notion is checked
 # against its page and pulled in again if it changed. Nothing happens
 # without NOTION_TOKEN, and nothing happens to a page whose Status
-# column says it isn't ready, see functions/_lib/sync.js.
+# column says it isn't ready, see functions/_lib/sync.ts.
 #
 # Cron triggers are free and are not billed as requests. Fifteen
 # minutes is a deliberate floor: Notion rate-limits at roughly three
@@ -228,7 +228,7 @@ bucket_name = "reiad-media"
 # into R2, under backups/. It is the private half of the backup; the
 # public half is live articles committed to this repository nightly
 # by .github/workflows/backup.yml. The split is about who can read
-# the result, and the reasoning is in functions/_lib/backup.js.
+# the result, and the reasoning is in functions/_lib/backup.ts.
 #
 # worker.js tells the two apart by matching event.cron against these
 # exact strings, so changing one here without changing it there
@@ -237,7 +237,7 @@ bucket_name = "reiad-media"
 crons = ["*/15 * * * *", "17 3 * * *"]
 
 # ---------- Workers AI (optional) ----------
-# functions/api/news.js uses an `AI` binding to translate headlines
+# functions/api/news.ts uses an `AI` binding to translate headlines
 # into Bangla, and skips the translation when it isn't there.
 #
 # It is deliberately NOT declared here: an [ai] binding forces
@@ -252,7 +252,7 @@ SITE_ORIGIN = "https://reiad.co.uk"
 
 # Where reader accounts live. The Worker needs it to fetch the public
 # keys it verifies a reader's access token against, see
-# functions/_lib/reader.js.
+# functions/_lib/reader.ts.
 #
 # This is a URL, not a secret: it is already in aab/account.js, which
 # every browser downloads. The thing that must never appear here is
@@ -282,7 +282,7 @@ SUPABASE_KEY = "sb_publishable_lvckv69CrjRyF1_urwDrCQ_PWoTH3UW"
 # public.admins table in Supabase (see
 # supabase/migrations/20260818030907_broker_admins.sql); this list
 # is the half that works before that migration has run, and the
-# two are OR'd together in functions/_lib/broker.js.
+# two are OR'd together in functions/_lib/broker.ts.
 ADMIN_READERS = "f8278696-caa3-4321-938c-ead22d86d144"
 
 # ---------- the live portfolio (optional) ----------

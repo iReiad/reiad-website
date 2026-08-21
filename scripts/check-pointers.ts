@@ -135,6 +135,49 @@ const GONE: Gone[] = [
   { file: "PLAN.md", name: "aab/english/build-english.mjs",
     why: "the same" },
 
+  /* A scratch file, downloaded, checked and removed inside one
+     job. It is named three times because the job writes it, reads
+     it and deletes it, and it has never been in the repository. */
+  { file: ".github/workflows/backup.yml", name: "content/articles.backup.raw.json",
+    why: "written and removed by the same job; never committed" },
+
+  /* The module the closed door turned back, on the morning the
+     door was shut. It was never committed: the pointer glow is
+     `next/components/glow.tsx`, and naming the file that would
+     have been is the whole of both paragraphs. */
+  { file: "CLAUDE.md", name: "aab/src/glow.ts",
+    why: "the module not built the old way; the name is the argument" },
+  { file: "scripts/check-closed.ts", name: "aab/src/glow.ts",
+    why: "the same, in the check that refused it" },
+
+  /* The stylesheet moved to `next/styles/` on 18 August 2026.
+     These three are the moved-from column of that stage, and one
+     built file that went with the compiler it needed. */
+  { file: "ARCHITECTURE.md", name: "aab/styles.css",
+    why: "the moved-from column, beside `next/styles/site.css`" },
+  { file: "ARCHITECTURE.md", name: "aab/src/styles/tailwind.css",
+    why: "the same, beside `next/styles/tailwind.css`" },
+  { file: "ARCHITECTURE.md", name: "aab/tailwind.css",
+    why: "the committed output, named as gone with the script that wrote it" },
+  { file: "MIGRATION.md", name: "aab/styles.css",
+    why: "a pointer this found: a check printed it after the file moved" },
+  { file: "MIGRATION.md", name: "aab/tailwind.css",
+    why: "the same, said three days after the file went" },
+  { file: "next/postcss.config.mjs", name: "aab/tailwind.css",
+    why: "names the committed output as gone, which is why this config exists" },
+
+  /* Six ports, each ending in a section that asserts the module it
+     replaced is not served any more. The old address IS what is
+     being asserted, and the line under each one names the
+     `archive/modules/` copy that answers instead. */
+  { file: "next/comments.test.ts", name: "aab/comments.js",
+    why: "asserts the replaced module is not served, by its address" },
+  { file: "next/insights-hub.test.ts", name: "aab/hub.js", why: "the same" },
+  { file: "next/keep.test.ts", name: "aab/keep.js", why: "the same" },
+  { file: "next/market-pulse.test.ts", name: "aab/pulse.js", why: "the same" },
+  { file: "next/read-aloud.test.ts", name: "aab/read-aloud.js", why: "the same" },
+  { file: "next/research.test.ts", name: "aab/about.js", why: "the same" },
+
   /* Precached, so editing a comment in one costs every returning
      visitor a refetch of the whole shell. Free to fix on the day
      it becomes aab/src/*.ts, and that is when it will be. The two
@@ -166,9 +209,15 @@ const tracked = execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8" 
   .split("\n").filter(Boolean);
 
 /* `archive/` is history and is read by nothing. The build outputs
-   are somebody else's code carrying somebody else's comments. */
+   are somebody else's code carrying somebody else's comments.
+
+   The two nightly snapshots under `content/` are DATA. A generated
+   file carries the comment its generator wrote, so the file that
+   has to be right is the generator: `articles.backup.json` holds a
+   `note` naming `functions/_lib/backup.ts`, and correcting the
+   snapshot would last until the next run overwrote it. */
 const NOT_A_SOURCE =
-  /^(archive\/|next\/\.next\/|next\/\.open-next\/|next\/node_modules\/|node_modules\/)/;
+  /^(archive\/|next\/\.next\/|next\/\.open-next\/|next\/node_modules\/|node_modules\/|content\/[\w-]+\.backup\.json$)/;
 const BINARY = /\.(png|jpe?g|webp|gif|svg|ico|woff2?|pdf|db|mp4|zip)$/i;
 
 /** Names shaped like one of ours. A comment naming `react.dev` or
@@ -179,6 +228,47 @@ const NAMES = new RegExp(
   + "(?:check-[\\w.-]+|build-[\\w.-]+|import-[\\w.-]+|export-[\\w.-]+|[\\w.-]+\\.test)"
   + "\\.(?:mjs|cjs|js|jsx|ts|tsx))(?![\\w-])",
   "g");
+
+/** And any name carrying one of this repository's own directories.
+
+    The list above catches a script somebody is told to RUN. It
+    caught none of the twelve found on 21 August 2026, which were
+    all of the other kind: a comment naming the MODULE that does
+    something. `worker.js` and the Notion route both named
+    `functions/_lib/sync.ts` by an old extension, quoting an
+    import that had stopped resolving; `_lib/look.js` and
+    `_lib/headers.js` in `insights/[slug].js` named a directory
+    those two files left months ago; the other eight were `.js`
+    in a comment about a file that is `.ts` now.
+
+    Converting a module renames it, and every comment naming it
+    goes stale in the same commit. That is the same failure the
+    header above describes, and the reason it was not caught is
+    that the pattern asked about a shape of NAME rather than about
+    a path into this repository.
+
+    A leading directory is what makes a bare name safe to check:
+    `sync.ts` in prose could be anybody's, `functions/_lib/sync.ts`
+    is ours.
+
+    Square brackets are in the class because a route's filename has
+    them: `functions/api/comments/[[id]].ts`. Without them thirteen
+    of the seventeen handlers in this repository were invisible
+    here, and the last stale pointer the first sweep left behind
+    was to exactly such a file. `*` stays OUT, so a glob like
+    `aab/*.js` matches nothing and is never asked about, which is
+    right: a glob describes a set rather than pointing at a file. */
+const PATHS = new RegExp(
+  "(?<![\\w/.-])((?:aab|app|functions|next|scripts|shared|supabase|content)"
+  + "/[\\w./()\\[\\]-]+\\.(?:mjs|cjs|js|jsx|ts|tsx|css|json|sql|md))(?![\\w-])",
+  "g");
+
+/** Two paths that are not a pointer at a file in this repository.
+    `node_modules/` is installed rather than committed, so whether
+    it resolves depends on whether somebody has run `npm install`,
+    and a check whose answer depends on that is a check that fails
+    in CI for a reason nobody can read. `.next/` is a build. */
+const NOT_A_POINTER = /(^|\/)(node_modules|\.next|\.open-next)\//;
 
 /** Every file in the repository, by basename, so a comment can
     name one without giving its path.
@@ -240,7 +330,11 @@ for (const file of tracked) {
   try { text = readFileSync(join(ROOT, file), "utf8"); } catch { continue; }
   read += 1;
 
-  for (const name of new Set([...text.matchAll(NAMES)].map((m) => m[1]))) {
+  const named = new Set([
+    ...[...text.matchAll(NAMES)].map((m) => m[1]),
+    ...[...text.matchAll(PATHS)].map((m) => m[1]).filter((n) => !NOT_A_POINTER.test(n)),
+  ]);
+  for (const name of named) {
     if (resolves(name, file)) continue;
     /* Before the allowlist, and NOT recorded as using an entry: a
        GONE line whose only remaining mention is the GONE line

@@ -33,20 +33,42 @@
    ============================================================ */
 
 import { all, db, one, run } from "../../_lib/db.ts";
+import type { DbEnv } from "../../_lib/db.ts";
 import {
   body, fail, methods, notConfigured, ok, str, nowISO,
 } from "../../_lib/http.ts";
+import type { RouteContext } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.ts";
 import { throttle } from "../../_lib/auth.ts";
 import { readerFrom } from "../../_lib/reader.ts";
+import type { Reader, ReaderEnv } from "../../_lib/reader.ts";
 import { isAdmin } from "../../_lib/admins.ts";
+import type { AdminEnv } from "../../_lib/admins.ts";
 import { SECTIONS, COMMENT_STATUS, allowed } from "../../../shared/rows.ts";
+import type { CommentRow } from "../../../shared/rows.ts";
 import { read, safeSlug } from "../../_lib/input.ts";
+
+/** What this route binds: D1 for the thread, and whatever
+    `readerFrom()` and `isAdmin()` read for themselves. Narrow on
+    purpose: adding a binding is a change to a type as well as to
+    wrangler.toml. */
+type CommentsEnv = DbEnv & ReaderEnv & AdminEnv;
 
 /* Never `author_id`. The site shows a name, not an identifier, and
    a reader's Supabase id is not the public's business. */
 const PUBLIC = `id, slug, section, parent_id, author_name, body, created_at`;
 const ADMIN = `${PUBLIC}, author_id, status, approved_at`;
+
+/** The two SELECT lists above, as types. Picked out of `CommentRow`
+    rather than written again, and picked rather than used whole: a
+    row selected without a column is not a row that has it, and a
+    type saying otherwise is believed. */
+type PublicComment = Pick<
+  CommentRow,
+  "id" | "slug" | "section" | "parent_id" | "author_name" | "body" | "created_at"
+>;
+type AdminComment = PublicComment
+  & Pick<CommentRow, "author_id" | "status" | "approved_at">;
 
 const MAX_BODY = 4000;
 const MIN_BODY = 2;
@@ -56,14 +78,17 @@ const MIN_BODY = 2;
    second copy of the list in the articles endpoint, under a
    comment saying so, which is how a copy gets kept until it is
    not. */
-const safeSection = (v) => (allowed(SECTIONS, v) ? String(v) : "insights");
+const safeSection = (v: unknown): string =>
+  (allowed(SECTIONS, v) ? String(v) : "insights");
 
 /* `safeSlug` is imported from _lib/input.ts as of Stage 12 step
    2. It was written out here and in the articles endpoint, and
    both said the same thing: lower case, and nothing in it that
    could become a path segment somewhere else. */
 
-export async function onRequest(context) {
+export async function onRequest(
+  context: RouteContext<CommentsEnv, { id?: string[] }>,
+): Promise<Response> {
   const { request, params, env } = context;
   const id = Number((params.id ?? [])[0]) || null;
   const url = new URL(request.url);
@@ -78,7 +103,7 @@ export async function onRequest(context) {
       if (wanted) {
         const guard = await requireAdmin(context);
         if (guard) return guard;
-        const rows = await all(d1,
+        const rows = await all<AdminComment>(d1,
           `SELECT ${ADMIN} FROM comments WHERE status = ?
             ORDER BY created_at DESC LIMIT 200`,
           wanted === "all" ? "pending" : str(wanted, 20));
@@ -89,7 +114,7 @@ export async function onRequest(context) {
       const slug = safeSlug(url.searchParams.get("slug"));
       if (!slug) return fail("slug-required");
 
-      const rows = await all(d1,
+      const rows = await all<PublicComment>(d1,
         `SELECT ${PUBLIC} FROM comments
           WHERE slug = ? AND status = 'live'
           ORDER BY created_at ASC LIMIT 500`, slug);
@@ -98,10 +123,12 @@ export async function onRequest(context) {
          page: the page should not have to know the shape of a
          thread to draw one. */
       const top = rows.filter((r) => !r.parent_id);
-      const byParent = new Map();
-      for (const r of rows.filter((x) => x.parent_id)) {
-        if (!byParent.has(r.parent_id)) byParent.set(r.parent_id, []);
-        byParent.get(r.parent_id).push(r);
+      const byParent = new Map<number, PublicComment[]>();
+      for (const r of rows) {
+        if (!r.parent_id) continue;
+        const kids = byParent.get(r.parent_id);
+        if (kids) kids.push(r);
+        else byParent.set(r.parent_id, [r]);
       }
       return ok({
         comments: top.map((r) => ({ ...r, replies: byParent.get(r.id) ?? [] })),
@@ -111,7 +138,7 @@ export async function onRequest(context) {
 
     /* ---- leaving one ---- */
     POST: async () => {
-      let reader;
+      let reader: Reader | null;
       try {
         reader = await readerFrom(request, env);
       } catch (err) {
@@ -119,7 +146,9 @@ export async function onRequest(context) {
            apart from not being signed in: the browser can react by
            refreshing its session rather than by asking the reader
            to sign in again. */
-        return fail("bad-token", 401, { message: String(err.message ?? err) });
+        return fail("bad-token", 401, {
+          message: String(err instanceof Error ? err.message : err),
+        });
       }
       if (!reader) return fail("sign-in-required", 401);
 
@@ -145,9 +174,9 @@ export async function onRequest(context) {
          piece, or "one level of replies" is a suggestion rather
          than a rule, and a reply can be smuggled under a thread it
          was never written for. */
-      let parent = null;
+      let parent: number | null = null;
       if (input.parent_id) {
-        const found = await one(d1,
+        const found = await one<Pick<CommentRow, "id" | "slug" | "parent_id">>(d1,
           `SELECT id, slug, parent_id FROM comments
             WHERE id = ? AND status = 'live'`, Number(input.parent_id) || 0);
         if (!found || found.slug !== slug) return fail("no-such-parent", 400);
@@ -190,14 +219,21 @@ export async function onRequest(context) {
       if (!id) return fail("id-required");
 
       const input = await body(request);
-      const status = allowed(COMMENT_STATUS, input.status) ? input.status : null;
+      /* `allowed()` answers a boolean and narrows nothing, so the
+         value is stringified rather than asserted: anything that
+         passes stringifies to one of the three states already. */
+      const status: string | null =
+        allowed(COMMENT_STATUS, input.status) ? String(input.status) : null;
       if (!status) return fail("bad-status");
 
       await run(d1,
         `UPDATE comments SET status = ?, approved_at = ? WHERE id = ?`,
         status, status === "live" ? nowISO() : null, id);
 
-      return ok({ comment: await one(d1, `SELECT ${ADMIN} FROM comments WHERE id = ?`, id) });
+      return ok({
+        comment: await one<AdminComment>(
+          d1, `SELECT ${ADMIN} FROM comments WHERE id = ?`, id),
+      });
     },
 
     DELETE: async () => {

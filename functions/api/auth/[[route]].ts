@@ -1,10 +1,11 @@
 /* ============================================================
    /api/auth/*, setup, login, logout, me
 
-   GET  /api/auth/params                 → { salt, iterations }
+   GET  /api/auth/params                 → { configured, scheme, salt, iterations }
    POST /api/auth/setup   { salt, iterations, dk }   once, when nothing is set
    POST /api/auth/login   { dk }         → HttpOnly session cookie
    POST /api/auth/logout
+   POST /api/auth/revoke                 admin: every other device out
    GET  /api/auth/me                     → { configured, signedIn }
 
    `dk` is PBKDF2-SHA256(passphrase, salt, iterations), derived in
@@ -15,14 +16,20 @@
    ============================================================ */
 
 import { db, setting } from "../../_lib/db.ts";
+import type { DbEnv } from "../../_lib/db.ts";
 import { body, fail, methods, notConfigured, ok, str } from "../../_lib/http.ts";
+import type { RouteContext } from "../../_lib/http.ts";
 import {
   ADMIN_KEY, CLIENT_ITERATIONS, createSession, destroySession, isConfigured,
   isKey, isSalt, isSecure, keyParams, newSalt, readSession, requireAdmin,
   sessionCookie, setAdminKey, throttle, verifyKey, verifyPassword,
 } from "../../_lib/auth.ts";
 
-export async function onRequest(context) {
+/* D1 and nothing else. The passphrase is a row in `settings` and a
+   session is a row in `sessions`, so there is no secret to bind. */
+export async function onRequest(
+  context: RouteContext<DbEnv, { route?: string[] }>,
+): Promise<Response> {
   const action = (context.params.route ?? [])[0] ?? "me";
   const d1 = await db(context.env);
   if (!d1) return notConfigured();

@@ -7,9 +7,9 @@
    Needs Playwright and a browser. Without either it says which and
    skips, and a skip is not a pass.
 
-   `aab/hub.js` was 97 lines and it did two things: the topic chips
-   above the article cards, and the subscribe box under the RSS
-   line. They are `components/topic-filter.tsx` and
+   `archive/modules/hub.js` was 97 lines and it did two things:
+   the topic chips above the article cards, and the subscribe box
+   under the RSS line. They are `components/topic-filter.tsx` and
    `components/subscribe.tsx` now, and a port is finished when it
    does what the thing it replaced did, not when it renders, so
    what that module did is written down here.
@@ -198,7 +198,7 @@ console.log("the Insights hub's own behaviour");
     /id="sub-msg"[^>]*><\/p>/.test(served), served);
   ok("nothing on a card carries a topic list for a script to match on",
     !served.includes("data-topics"),
-    "the component filtering these has the rows; the attribute was aab/hub.js's");
+    "the component filtering these has the rows; the attribute was the archived module's");
 }
 
 /* ============================================================

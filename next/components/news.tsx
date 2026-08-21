@@ -7,7 +7,7 @@
    JSX element, so React escapes all of it; nothing from the feed
    is ever handed to `dangerouslySetInnerHTML`.
 
-   Three things, which is what `aab/news.js` held:
+   Three things, which is what `archive/modules/news.js` held:
 
      1. FETCHING. Two endpoints, raced, first usable answer wins:
         `/api/news` and the same job running as a standalone
@@ -46,7 +46,7 @@ import { Button, ButtonLink } from "./ui/button";
    what a story is
    ------------------------------------------------------------ */
 
-/** One story as `functions/api/news.js` sends it. Everything but
+/** One story as `functions/api/news.ts` sends it. Everything but
     the title and the URL is optional, because the feeds belong to
     somebody else: a missing standfirst is ordinary, and
     `title_bn` is only there once the translator has answered. */

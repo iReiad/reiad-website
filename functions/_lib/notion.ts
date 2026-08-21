@@ -537,8 +537,18 @@ export function readFields(properties: Record<string, NotionProperty> = {}): Fie
     purpose: a page carries dozens of fields and this repository
     asks it three questions. */
 export interface NotionPage {
+  /** "page" or "database". The search endpoint answers both and
+      only the first is importable. */
+  object?: string;
   id?: string;
+  url?: string;
+  created_time?: string;
   last_edited_time?: string;
+  icon?: { emoji?: string } | null;
+  /** A page's own cover photo, which becomes the piece's lead. Two
+      shapes because Notion stores an uploaded file and a linked one
+      differently, and both arrive here. */
+  cover?: { file?: { url?: string }; external?: { url?: string } } | null;
   properties?: Record<string, NotionProperty>;
 }
 

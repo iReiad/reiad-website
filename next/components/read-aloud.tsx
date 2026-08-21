@@ -3,7 +3,7 @@
 /* ============================================================
    read-aloud.tsx: the speech control under a piece's byline.
 
-   `aab/read-aloud.js` was 150 lines that built this toolbar with
+   `archive/modules/read-aloud.js` was 150 lines that built this toolbar with
    `document.createElement`, inserted it after `.byline`, and
    appended a `<style>` to the head for the one class it needed.
    Both of those are the shape `components/scripts.tsx` is entirely

@@ -13,9 +13,12 @@
    ============================================================ */
 
 import { all, db, one, run } from "../../_lib/db.ts";
+import type { DbEnv } from "../../_lib/db.ts";
 import { body, fail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.ts";
+import type { RouteContext } from "../../_lib/http.ts";
 import { requireAdmin, throttle } from "../../_lib/auth.ts";
 import { ENQUIRY_KIND, ENQUIRY_STATUS, allowed } from "../../../shared/rows.ts";
+import type { EnquiryRow } from "../../../shared/rows.ts";
 import { read } from "../../_lib/input.ts";
 
 /* archive/TRANSITION.md Stage 12, step 1: the list is shared/rows.ts now. */
@@ -28,7 +31,11 @@ const KINDS = ENQUIRY_KIND;
    it was going to unify. */
 const MIN_MESSAGE = 10;
 
-export async function onRequest(context) {
+/* D1 and nothing else. Nothing here sends mail: an enquiry is a
+   row, and the pipeline is that row's status. */
+export async function onRequest(
+  context: RouteContext<DbEnv, { id?: string[] }>,
+): Promise<Response> {
   const { request, params } = context;
   const id = Number((params.id ?? [])[0]) || null;
 
@@ -70,7 +77,7 @@ export async function onRequest(context) {
     GET: async () => {
       const guard = await requireAdmin(context);
       if (guard) return guard;
-      const rows = await all(d1,
+      const rows = await all<EnquiryRow>(d1,
         `SELECT * FROM enquiries ORDER BY
            CASE status WHEN 'new' THEN 0 WHEN 'replied' THEN 1 ELSE 2 END,
            created_at DESC
@@ -83,15 +90,20 @@ export async function onRequest(context) {
       if (guard) return guard;
       if (!id) return fail("id-required");
 
-      const existing = await one(d1, `SELECT * FROM enquiries WHERE id = ?`, id);
+      const existing = await one<EnquiryRow>(d1, `SELECT * FROM enquiries WHERE id = ?`, id);
       if (!existing) return fail("not-found", 404);
 
       const input = await body(request);
+      /* `str()` before `allowed()`, because `allowed()` asks its
+         question of `String(value)` and this writes the value
+         itself: a body carrying `["closed"]` passed the check as a
+         string and reached `bind()` as an array, which D1 refuses. */
+      const asked = str(input.status, 20);
       await run(d1, `UPDATE enquiries SET status = ?, notes = ? WHERE id = ?`,
-        allowed(ENQUIRY_STATUS, input.status) ? input.status : existing.status,
+        allowed(ENQUIRY_STATUS, asked) ? asked : existing.status,
         input.notes === undefined ? existing.notes : str(input.notes, 4000),
         id);
-      return ok({ enquiry: await one(d1, `SELECT * FROM enquiries WHERE id = ?`, id) });
+      return ok({ enquiry: await one<EnquiryRow>(d1, `SELECT * FROM enquiries WHERE id = ?`, id) });
     },
 
     DELETE: async () => {

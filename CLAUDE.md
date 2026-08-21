@@ -908,7 +908,7 @@ steps, a checklist, a row of key figures, a note, a worked example and a
 scrolling table. Each one is plain HTML with a class on it, and that class
 has to be in three places or it does not survive the trip:
 
-1. a rule in `@layer article` in `aab/styles.css`,
+1. a rule in `@layer article` in `next/styles/site.css`,
 2. `KEEP_CLASSES` in `aab/editor.js`, the browser's sanitiser,
 3. `ALLOWED_CLASSES` in `functions/_lib/sanitise.ts`, the server's.
 
@@ -1519,7 +1519,7 @@ company a check fails. It hashes the SOURCES rather than the output,
 because Vite's output is not reproducible across versions and the
 thing that actually goes wrong is that nobody re-ran the build.
 
-The stylesheet was not part of it, and now partly is. `aab/styles.css`
+The stylesheet was not part of it, and now partly is. `next/styles/site.css`
 is still the design system: the rule that a port must not also be a
 redesign held for every page ported in stages 9 to 12, which is what
 made those ports judgeable.
@@ -1541,7 +1541,7 @@ carries a content hash. `scripts/build-fallback.ts` writes it and
 the arrangement up and deliberately left it unused so the first
 conversion would be a change to one component. `/account` is
 that component, because its markup is almost entirely layout.
-`@theme` in `aab/src/styles/tailwind.css` names the site's own
+`@theme` in `next/styles/tailwind.css` names the site's own
 tokens, so `bg-panel` means `var(--panel)` in both themes.
 
 Three things stay in the stylesheet and the split is the point:
@@ -1680,7 +1680,7 @@ how the first React desk shipped as three thin panels missing the
 search boxes, the filter counts and most of the actions. So the list of
 what the old page did is written down as a test:
 `app/desk.test.ts` drives the built page in a browser against routed
-API fixtures, and every check in it is a feature `aab/desk.js` had.
+API fixtures, and every check in it is a feature `archive/desk.js` had.
 Anything ported out of `aab/*.js` gets the same treatment before it is
 called done.
 
@@ -2011,7 +2011,7 @@ unsanitised.
 
 **The browser never speaks to the broker.** `aab/tools/live.js`
 calls `/api/broker/*` and nothing else; the Worker
-(`functions/api/broker/[[route]].js` over `functions/_lib/broker.js`)
+(`functions/api/broker/[[route]].ts` over `functions/_lib/broker.ts`)
 is the only caller of `live.trading212.com`, which is why
 `connect-src` did not change. The broker's rate limits are per
 ACCOUNT, so the one place that can meter requests honestly is the

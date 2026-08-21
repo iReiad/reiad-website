@@ -62,9 +62,17 @@ const enc = new TextEncoder();
 /** What a handler is handed. The Worker passes the request and the
     environment through every one of these, so the shape is
     declared once here rather than as `any` at each entry point. */
+/** What the four functions below need off a route's context: the
+    request, and enough of the environment to reach D1.
+
+    `env` is `DbEnv` and not `DbEnv & Record<string, unknown>`,
+    which it was: an interface has no index signature, so every
+    route that declared its own bindings failed to satisfy the
+    second half and had to widen or cast to call `throttle`. All
+    four of these read `env.DB` and nothing else. */
 export interface AuthContext {
   request: Request;
-  env: DbEnv & Record<string, unknown>;
+  env: DbEnv;
 }
 
 /** The three fields the browser needs before it can derive a key:

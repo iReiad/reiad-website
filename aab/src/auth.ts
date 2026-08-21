@@ -103,7 +103,7 @@ async function checkLocal(passphrase: string): Promise<boolean | null> {
 }
 
 /** What `GET /api/auth/params` answers when it is `ok`.
-    `functions/api/auth/[[route]].js` is the one place that shape
+    `functions/api/auth/[[route]].ts` is the one place that shape
     is decided, and `salt` and `iterations` are read only on the
     `pbkdf2c` branch below, which is why this is read off the
     reply rather than asserted on to it. */

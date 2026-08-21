@@ -1,5 +1,5 @@
 /* ============================================================
-   functions/api/news.js, Cloudflare Pages Function
+   functions/api/news.ts, Cloudflare Pages Function
    Served automatically at /api/news (the /functions folder maps
    to URL routes). Fetches trusted RSS feeds server-side, keeps
    only market-relevant stories via keyword scoring, dedupes,
@@ -7,7 +7,22 @@
    No servers to run, no keys, deploys with every git push.
    ============================================================ */
 
-const FEEDS = [
+/* `caches.default` is a Worker global rather than a module, so it
+   arrives by reference. Named here because a program that reaches
+   this file through an import (scripts/ does, through worker.js)
+   pulls in no ambient declaration it was not told about. */
+import type { RouteContext } from "../_lib/http.ts";
+
+/** One upstream feed. Nothing is read off the far end but the XML
+    itself: `source` and `region` are this site's own labels for it,
+    so a publisher renaming a field cannot change them. */
+interface Feed {
+  url: string;
+  source: string;
+  region: string;
+}
+
+const FEEDS: Feed[] = [
   { url: "https://www.tbsnews.net/economy/rss.xml",
     source: "The Business Standard", region: "BD" },
   { url: "https://www.tbsnews.net/international/business/rss.xml",
@@ -18,7 +33,7 @@ const FEEDS = [
 
 /* Importance filter: a story must hit these keywords to appear.
    Weights are rough editorial judgment, tune freely. */
-const KEYWORDS = [
+const KEYWORDS: [string, number][] = [
   // strongly Bangladesh-market relevant
   ["dse", 3], ["dsex", 3], ["cse", 2], ["bsec", 3], ["dhaka stock", 3],
   ["stock market", 3], ["share market", 3], ["bangladesh bank", 3],
@@ -41,7 +56,60 @@ const MAX_ITEMS = 10;
 const CACHE_SECONDS = 1800; // 30 minutes
 const SUMMARY_CHARS = 240;  // a standfirst, not an article
 
-function decode(s) {
+/** One headline as this endpoint answers with it, and the whole of
+    what a caller may read. `title_bn` is filled in afterwards where
+    the AI binding exists, so it is optional rather than absent. */
+interface NewsItem {
+  title: string;
+  url: string;
+  source: string;
+  region: string;
+  published: string | null;
+  summary?: string;
+  title_bn?: string;
+}
+
+/** A story while it is still being judged. The two underscored
+    fields are this file's working notes and never leave it. */
+interface Story {
+  title: string;
+  url: string;
+  summary: string;
+  source: string;
+  region: string;
+  published: string | null;
+  _ts: number;
+  _text: string;
+}
+
+interface Scored extends Story {
+  _score: number;
+}
+
+/** The Workers AI binding, as far as this file uses one: a model
+    name and a translation, which comes back as `unknown` because
+    the answer is a service's and not this site's. */
+interface WorkersAI {
+  run(
+    model: string,
+    input: { text: string; source_lang: string; target_lang: string },
+  ): Promise<unknown>;
+}
+
+/** What this route binds. Optional, and checked before use: the
+    pulse must never break over a nice-to-have. */
+interface NewsEnv {
+  AI?: WorkersAI;
+}
+
+/** `cf` is Cloudflare's own addition to `RequestInit`, and node's
+    fetch has no notion of it. One caller, so it is declared here
+    rather than in `_lib/workers.d.ts`. */
+interface EdgeRequestInit extends RequestInit {
+  cf?: { cacheTtl?: number };
+}
+
+function decode(s: string): string {
   return s
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
     .replace(/<[^>]+>/g, "")
@@ -53,20 +121,20 @@ function decode(s) {
 
 /** Cut at a word boundary, never mid-word, and only add the
     ellipsis when something was actually cut off. */
-function trim(s, max) {
+function trim(s: string, max: number): string {
   if (!s || s.length <= max) return s;
   const cut = s.slice(0, max);
   const at = cut.lastIndexOf(" ");
   return `${(at > max * 0.6 ? cut.slice(0, at) : cut).replace(/[\s.,;:]+$/, "")}…`;
 }
 
-function pick(chunk, tag) {
+function pick(chunk: string, tag: string): string {
   const m = chunk.match(new RegExp("<" + tag + "[^>]*>([\\s\\S]*?)</" + tag + ">", "i"));
   return m ? decode(m[1]) : "";
 }
 
-function parseFeed(xml, feed) {
-  const out = [];
+function parseFeed(xml: string, feed: Feed): Story[] {
+  const out: Story[] = [];
   const chunks = xml.split(/<item[\s>]/i).slice(1, 31); // up to 30 items
   for (const c of chunks) {
     const title = pick(c, "title");
@@ -94,7 +162,7 @@ function parseFeed(xml, feed) {
   return out;
 }
 
-function score(item) {
+function score(item: Story): number {
   let s = 0;
   for (const [kw, w] of KEYWORDS) if (item._text.includes(kw)) s += w;
   // freshness: small boost under 24h, penalty past 4 days
@@ -104,7 +172,7 @@ function score(item) {
   return s;
 }
 
-export async function onRequestGet(context) {
+export async function onRequestGet(context: RouteContext<NewsEnv>): Promise<Response> {
   const cache = caches.default;
   const cacheKey = new Request(new URL("/api/news", context.request.url));
   const hit = await cache.match(cacheKey);
@@ -112,27 +180,28 @@ export async function onRequestGet(context) {
 
   const results = await Promise.allSettled(
     FEEDS.map(async (f) => {
-      const r = await fetch(f.url, {
+      const init: EdgeRequestInit = {
         headers: { "User-Agent": "reiad.co.uk market-pulse (personal site)" },
         cf: { cacheTtl: CACHE_SECONDS },
-      });
+      };
+      const r = await fetch(f.url, init);
       if (!r.ok) throw new Error(f.url + " " + r.status);
       return parseFeed(await r.text(), f);
     })
   );
 
-  let items = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+  const stories = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
 
   // score, filter, sort
-  items = items
-    .map((it) => ({ ...it, _score: score(it) }))
+  const items = stories
+    .map((it): Scored => ({ ...it, _score: score(it) }))
     .filter((it) => it._score >= MIN_SCORE)
     .sort((a, b) => b._score - a._score || b._ts - a._ts);
 
   // dedupe near-identical titles + cap per source
-  const seen = new Set();
-  const perSource = {};
-  const picked = [];
+  const seen = new Set<string>();
+  const perSource: Record<string, number> = {};
+  const picked: NewsItem[] = [];
   for (const it of items) {
     const key = it.title.toLowerCase().replace(/[^a-z0-9\u0980-\u09FF]+/g, " ").slice(0, 60);
     if (seen.has(key)) continue;
@@ -148,14 +217,22 @@ export async function onRequestGet(context) {
   // Bangla summaries via Cloudflare Workers AI (free tier).
   // Defensive: if the AI binding isn't configured, skip silently and
   // serve English-only, the pulse must never break over a nice-to-have.
-  if (context.env && context.env.AI) {
+  const ai = context.env?.AI;
+  if (ai) {
     await Promise.allSettled(picked.map(async (it) => {
       try {
-        const r = await context.env.AI.run("@cf/meta/m2m100-1.2b", {
+        const r = await ai.run("@cf/meta/m2m100-1.2b", {
           text: it.title, source_lang: "english", target_lang: "bengali",
         });
-        if (r && r.translated_text) it.title_bn = r.translated_text.trim();
-      } catch (e) { /* leave this item English-only */ }
+        /* The model's answer is a service's, so it is narrowed
+           rather than believed: a shape that changes upstream
+           leaves the item English-only, which is the same outcome
+           as no binding at all. */
+        if (r && typeof r === "object" && "translated_text" in r
+          && typeof r.translated_text === "string") {
+          it.title_bn = r.translated_text.trim();
+        }
+      } catch { /* leave this item English-only */ }
     }));
   }
 

@@ -13,7 +13,7 @@
 # Drafts, reader questions, subscriber emails and the admin password
 # hash never come near this file. The repository is private as of
 # 15 August 2026 and that changes nothing: see the note in
-# functions/_lib/backup.js for why the rule does not relax.
+# functions/_lib/backup.ts for why the rule does not relax.
 #
 # The private half of the backup is a nightly snapshot into R2,
 # written by the Worker's own cron. See wrangler.toml.

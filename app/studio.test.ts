@@ -25,7 +25,7 @@
    So this file is the chrome: the fields, the section picker, the
    topic chips, the three previews, the weight meter, pre-flight,
    the Open sheet, the drafts, and the publish. Every check is
-   something `aab/studio.js` did. There are two passes, because
+   something `archive/studio.js` did. There are two passes, because
    half the behaviour is about whether there is a database: the
    Studio has always run as a local editor without one and says so.
    ============================================================ */

@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v166: `/account.js`. A comment in `aab/src/account.ts` named a
+        hand-written declaration that went when that module
+        converted, so the built file changed with it. Prose only,
+        and it is precached prose: a returning browser holds the
+        old copy of a served module until VERSION moves, whatever
+        it was that changed inside it.
+
    v165: `/fallback.css`. Three material tokens stopped inheriting,
         which is what put a box round every row of the phone's
         drawer. The file changed in #181 and shipped under v164
@@ -1548,7 +1555,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v165";
+const VERSION = "v166";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

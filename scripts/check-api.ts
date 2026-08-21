@@ -83,7 +83,7 @@ const mounts = [...table.matchAll(/\["\/api\/([a-z-]+)"/g)].map((m) => m[1]);
    lands.
 
    And `next/components/comments.tsx` calls `fetch("/api/comments")`
-   directly, as `aab/comments.js` did before it was a component.
+   directly, as `archive/modules/comments.js` did before it was a component.
    That is not an oversight to tidy here: a comment thread wants
    the status code and the error body, and `api()` deliberately
    flattens both into `null` so that every other caller can have a
@@ -105,7 +105,7 @@ const walk = (dir: string, skip: string[] = []): void => {
 walk(join(ROOT, "aab"), ["og", "node_modules", "desk", "studio"]);
 walk(join(ROOT, "app", "src"), ["node_modules"]);
 /* And the routes and components, because that is where the
-   browser's half of this site is going. `aab/news.js` was the
+   browser's half of this site is going. `archive/modules/news.js` was the
    only caller of `/api/news` until the market pulse became
    `components/news.tsx`, and archiving the module left a live
    endpoint reading as dead. The three shipped directories only:

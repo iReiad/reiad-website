@@ -9,7 +9,7 @@
 
    ---- what this replaces, and what was wrong with it ----
 
-   Four modules: `aab/money/progress.js`, and one each in the
+   Four modules: `archive/shell-2026/progress.js`, and one each in the
    three language schools. They agreed on nothing. The money
    school stored a set under `learn-read` and a bookmark under
    `learn-last`; the Qur'anic Arabic school called its set

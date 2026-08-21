@@ -102,7 +102,7 @@ export const cardSlug = (slug) => `${slug}-card`;
     of unknown shape, in a format half the scrapers refuse. */
 export const isDrawnCard = (url) => /^\/media\/[a-z0-9-]*-card\/[0-9a-f]+\.jpg$/.test(url ?? "");
 /* What to say about the image in the tags. Twinned with cardShape()
-   in functions/insights/[slug].js, which has to say the same thing
+   in functions/insights/[slug].ts, which has to say the same thing
    about a stored cover without a DOM to look at.
 
    Only two kinds of image are known to be 1200x630: a section's own

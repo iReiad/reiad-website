@@ -56,13 +56,14 @@ The oldest debts. Some were reported in the first round of
 screenshots and are still there, which is why they come before
 anything structural.
 
-1. **The breadcrumb.** `ui/crumbs.tsx` is written and unwired.
-   `aab/src/crumbs.ts` guesses three things from `location.pathname`
-   and `document.title`, and gets the mount point wrong on the
-   course pages: it targets `main > .wrap`, falls back to bare
-   `main`, and the course shell has no wrap, so the trail sits
-   against the window edge. A route knows its own trail. Wire it,
-   leave the module for `404.html` and `offline.html`.
+1. **The breadcrumb. Done.** `shell.tsx` draws `ui/crumbs.tsx` in
+   the top bar, from the trail `next/lib/crumbs.ts` reads out of
+   `lib/nav.ts`, so a route knows its own trail rather than
+   guessing three things off `location.pathname` and
+   `document.title` and getting the mount point wrong on the
+   course pages. The module was to stay for `404.html` and
+   `offline.html`; it is in `archive/modules/` instead and
+   neither page has a trail at all.
 2. **The lesson footer.** "Mark complete and continue" and the
    status chip are different heights and share no baseline. One
    control height governs both.

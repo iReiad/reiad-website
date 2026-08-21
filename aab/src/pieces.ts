@@ -67,7 +67,7 @@ export interface Piece {
 /** One row of `GET /api/articles`: the public columns of an
     article with `topics` already split out of the pipe-separated
     column it is stored in. That splitting is `shape()` in
-    `functions/api/articles/[[slug]].js`, which is the one place
+    `functions/api/articles/[[slug]].ts`, which is the one place
     this shape is decided, so it is asserted at this one boundary
     the way `saved.ts` asserts its three tables. */
 interface ArticleCard {

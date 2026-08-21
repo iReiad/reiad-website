@@ -30,7 +30,7 @@
    styled. This is that component, and the reason it is this one
    is that the markup below is almost entirely layout: sections, a
    rail, cards, a grid of tiles. Utilities are good at exactly
-   that, and `@theme` in `aab/src/styles/tailwind.css` now carries
+   that, and `@theme` in `next/styles/tailwind.css` now carries
    the site's real tokens, so `bg-panel` and `border-hairline`
    mean what `var(--panel)` and `var(--hairline)` mean in both
    themes.
@@ -54,13 +54,13 @@
      article carries    purpose and permanently: an article's body
                         is HTML in a database that Tailwind's
                         compiler cannot see. The note at the top
-                        of `aab/src/styles/tailwind.css` is the
+                        of `next/styles/tailwind.css` is the
                         long version.
 
    The class names that remain are hooks rather than styling, and
    there are fewer of them than the conversion started with.
    `ladder-list`, `kept-list`, `targets` and `saved-list` are the
-   containers `aab/account-page.ts` fills, and the rows it builds
+   containers `aab/src/account-page.ts` fills, and the rows it builds
    inside them are named classes styled in `styles.css`: a class
    name inside a `createElement` call is one Tailwind's scanner
    finds only because `aab/*.js` is in its source list, which

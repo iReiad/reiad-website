@@ -12,13 +12,27 @@
    ============================================================ */
 
 import { all, db, one, run } from "../../_lib/db.ts";
+import type { DbEnv } from "../../_lib/db.ts";
 import { body, fail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.ts";
-import { requireAdmin } from "../../_lib/auth.ts";
-import { throttle } from "../../_lib/auth.ts";
+import type { RouteContext } from "../../_lib/http.ts";
+import { requireAdmin, throttle } from "../../_lib/auth.ts";
 import { QUESTION_STATUS, allowed } from "../../../shared/rows.ts";
+import type { QuestionRow, QuestionStatus } from "../../../shared/rows.ts";
 import { read } from "../../_lib/input.ts";
 
 const PUBLIC = `id, slug, name, body, answer, created_at, answered_at`;
+
+/** What a reader may see, which is the row without `email` and
+    without `status`. This and `PUBLIC` name the same columns and
+    have to keep doing so. */
+type PublicQuestion = Pick<QuestionRow,
+  "id" | "slug" | "name" | "body" | "answer" | "created_at" | "answered_at">;
+
+/** One row per status, from the GROUP BY below. */
+interface Tally {
+  status: QuestionStatus;
+  n: number;
+}
 
 /* What a question has to be. Named rather than inline so that
    the number and the reason sit together, and so that the
@@ -27,7 +41,11 @@ const PUBLIC = `id, slug, name, body, answer, created_at, answered_at`;
 const MIN_BODY = 10;
 const MAX_BODY = 4000;
 
-export async function onRequest(context) {
+/* D1 and nothing else: a question is a row, and the moderation
+   queue is the same row read by an admin. */
+export async function onRequest(
+  context: RouteContext<DbEnv, { id?: string[] }>,
+): Promise<Response> {
   const { request, params } = context;
   const id = Number((params.id ?? [])[0]) || null;
   const url = new URL(request.url);
@@ -53,11 +71,11 @@ export async function onRequest(context) {
         const like = `%${q.replace(/[%_]/g, "")}%`;
 
         const rows = status === "all"
-          ? await all(d1,
+          ? await all<QuestionRow>(d1,
               `SELECT * FROM questions
                 WHERE (? = '' OR body LIKE ? OR name LIKE ? OR slug LIKE ?)
                 ORDER BY created_at DESC LIMIT 300`, q, like, like, like)
-          : await all(d1,
+          : await all<QuestionRow>(d1,
               `SELECT * FROM questions
                 WHERE status = ?
                   AND (? = '' OR body LIKE ? OR name LIKE ? OR slug LIKE ?)
@@ -65,7 +83,7 @@ export async function onRequest(context) {
 
         // Counts for every status, so the desk can show what is where
         // without fetching all of it.
-        const tally = await all(d1,
+        const tally = await all<Tally>(d1,
           `SELECT status, COUNT(*) AS n FROM questions GROUP BY status`);
 
         return ok({
@@ -76,10 +94,10 @@ export async function onRequest(context) {
 
       const slug = str(url.searchParams.get("slug"), 80);
       const rows = slug
-        ? await all(d1,
+        ? await all<PublicQuestion>(d1,
             `SELECT ${PUBLIC} FROM questions
              WHERE slug = ? AND status = 'published' ORDER BY answered_at DESC LIMIT 50`, slug)
-        : await all(d1,
+        : await all<PublicQuestion>(d1,
             `SELECT ${PUBLIC} FROM questions
              WHERE status = 'published' ORDER BY answered_at DESC LIMIT 50`);
       return ok({ questions: rows });
@@ -134,11 +152,16 @@ export async function onRequest(context) {
       if (!id) return fail("id-required");
 
       const input = await body(request);
-      const existing = await one(d1, `SELECT * FROM questions WHERE id = ?`, id);
+      const existing = await one<QuestionRow>(d1, `SELECT * FROM questions WHERE id = ?`, id);
       if (!existing) return fail("not-found", 404);
 
-      const status = allowed(QUESTION_STATUS, input.status)
-        ? input.status : existing.status;
+      /* `str()` before `allowed()`, because `allowed()` asks its
+         question of `String(value)` and this writes the value
+         itself: a body carrying `["published"]` passed the check
+         as a string and reached `bind()` as an array, which D1
+         refuses. */
+      const asked = str(input.status, 20);
+      const status = allowed(QUESTION_STATUS, asked) ? asked : existing.status;
       const answer = input.answer === undefined
         ? existing.answer : str(input.answer, 8000);
 
@@ -148,7 +171,7 @@ export async function onRequest(context) {
         status === "published" ? (existing.answered_at ?? nowISO()) : existing.answered_at,
         id);
 
-      return ok({ question: await one(d1, `SELECT * FROM questions WHERE id = ?`, id) });
+      return ok({ question: await one<QuestionRow>(d1, `SELECT * FROM questions WHERE id = ?`, id) });
     },
 
     DELETE: async () => {

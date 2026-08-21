@@ -20,7 +20,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { webcrypto } from "node:crypto";
 import { d1Over } from "./sqlite-d1.ts";
-import { onRequest } from "../functions/api/schools/[[route]].js";
+import { onRequest } from "../functions/api/schools/[[route]].ts";
 import { WITHIN } from "../shared/schools.ts";
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
@@ -103,10 +103,16 @@ const call = async <T = Read>(
     body: json ? JSON.stringify(json) : undefined,
   });
   const route = path.replace(/^\//, "").split("/").filter(Boolean);
+  /* A double, not a Worker. `SqliteD1` implements the narrower
+     `D1Database` in `shared/schools.ts` rather than `_lib/db.ts`'s
+     generic one, and `passThroughOnException` is a member nothing
+     under `functions/` calls. The cast says both: widening the
+     real interfaces until this object satisfied them would make
+     them describe the test. */
   const res = await onRequest({
     request, env, params: { route },
     waitUntil: () => {}, next: async () => new Response("next"), data: {},
-  });
+  } as unknown as Parameters<typeof onRequest>[0]);
   return { status: res.status, body: await res.json() as T };
 };
 

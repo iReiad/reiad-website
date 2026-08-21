@@ -15,10 +15,10 @@
 
    ---- nothing here is HTML ----
 
-   `aab/comments.js` wrote every body with `textContent` and said
-   at length that it never parses one: a body is text on the way
-   in, text in the column, and text on the way out, and every
-   injection this site has had came from parsing something.
+   `archive/modules/comments.js` wrote every body with `textContent`
+   and said at length that it never parses one: a body is text on
+   the way in, text in the column, and text on the way out, and
+   every injection this site has had came from parsing something.
 
    That guarantee is stronger here rather than weaker, and it is
    worth knowing why: `{c.body}` in JSX is a text node by
@@ -35,7 +35,7 @@
 
    ---- what this replaces ----
 
-   `aab/comments.js`, 219 lines, lazily imported by an inline
+   `archive/modules/comments.js`, 219 lines, lazily imported by an inline
    `<script type="module">` at the bottom of the article route
    into an empty `<section>` the route rendered for it.
 
@@ -47,7 +47,7 @@
    for React to disagree with. A client component has no such
    edge to stand on.
 
-   The Worker's own renderer, `functions/insights/[slug].js`, drew
+   The Worker's own renderer, `functions/insights/[slug].ts`, drew
    the same empty section and imported the same module. It no
    longer does, and that is deliberate rather than an omission:
    see the note there. It answers only when the service binding is
@@ -180,7 +180,7 @@ export function Comments({ slug, section = "insights" }: {
      `current()` is synchronous and answers off the session the
      module already holds, but the MODULE is fetched, so the first
      answer arrives a tick late and the box appears then. That is
-     the same shape `aab/comments.js` had, where the import was
+     the same shape `archive/modules/comments.js` had, where the import was
      the page's rather than this file's. */
   useEffect(() => {
     let alive = true;

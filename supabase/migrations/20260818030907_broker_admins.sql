@@ -42,7 +42,7 @@ create table if not exists public.broker_tokens (
   user_id    uuid primary key default auth.uid() references auth.users (id) on delete cascade,
   broker     text not null default 'trading212' check (broker in ('trading212')),
   -- AES-GCM ciphertext, base64, IV in front. Sealed and unsealed
-  -- only by functions/_lib/broker.js. If this column ever holds
+  -- only by functions/_lib/broker.ts. If this column ever holds
   -- something a human can read, that is the bug.
   cipher     text not null check (char_length(cipher) between 20 and 2000),
   label      text not null default '' check (char_length(label) <= 40),

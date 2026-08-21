@@ -7,7 +7,7 @@
    Needs Playwright and a browser. Without either it says which and
    skips, and a skip is not a pass.
 
-   `aab/about.js` was 107 lines over `el` and `flip` imported from
+   `archive/modules/about.js` was 107 lines over `el` and `flip` imported from
    `/news.js`, and it did six things: it turned each research card
    into a control, it took away the plain link that was the way in
    without JavaScript, it built one window and reused it, it filled

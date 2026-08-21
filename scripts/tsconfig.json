@@ -54,7 +54,18 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["**/*.ts", "../shared/**/*.ts"],
+  "//include": [
+    "The last entry is the Worker runtime globals. This program",
+    "reaches functions/** through worker.js's imports, and an",
+    "ambient declaration arrives through no import, so without it",
+    "`caches` is unresolved in broker.ts and in news.ts. That was",
+    "answered once with a triple-slash reference inside one route,",
+    "which is a config's job done in a source file: the next module",
+    "to touch `caches` would have needed its own copy."
+  ],
+  "include": [
+    "**/*.ts", "../shared/**/*.ts", "../functions/_lib/workers.d.ts"
+  ],
   "//exclude": [
     "build-og.ts is the one generator here that drives a browser,",
     "and playwright is a devDependency of app/ rather than of the",

@@ -25,7 +25,7 @@
 
    ---- what this replaces ----
 
-   `aab/engage.js`, 186 lines, dynamically imported by `app.js` on
+   `archive/modules/engage.js`, 186 lines, dynamically imported by `app.js` on
    `/insights/` paths and appending itself into the article it
    found by selector.
 

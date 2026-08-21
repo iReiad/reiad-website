@@ -501,7 +501,7 @@ console.log("the article page, in a browser");
 
 /* ---------- 8. the view is counted once, and this asks it twice ----------
 
-   `aab/engage.js` called `countView()` at its top level and
+   `archive/modules/engage.js` called `countView()` at its top level and
    `app.js` calls it for every page, so an insights piece posted
    `signals/view` twice per load and a cooking piece once. Nothing
    said so, because two rows a day is not a shape anybody looks at.

@@ -21,30 +21,52 @@
    ============================================================ */
 
 import { all, db } from "../_lib/db.ts";
+import type { DbEnv } from "../_lib/db.ts";
+import type { RouteContext } from "../_lib/http.ts";
 
-const esc = (s) =>
-  String(s ?? "").replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[c]));
+/** The five characters XML will not take raw. A
+    `Record<string, string>` and not an object literal, because a
+    literal cannot be indexed by a plain string. */
+const ENTITIES: Record<string, string> =
+  { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };
+
+const esc = (s: unknown): string =>
+  String(s ?? "").replace(/[&<>"']/g, (c) => ENTITIES[c]);
 
 /* Where a piece is served from, by section. The same three mounts
    the Studio publishes to and worker.js routes; a row with an
    unknown section is served from /insights/, which is where every
    row lived before sections existed. */
-const MOUNTS = { insights: "/insights/", cooking: "/cooking/", travel: "/travel/" };
-const mountOf = (a) => MOUNTS[a?.section] ?? MOUNTS.insights;
-const urlOf = (a, origin) => `${origin}${mountOf(a)}${a.slug}.html`;
+const MOUNTS: Record<string, string> =
+  { insights: "/insights/", cooking: "/cooking/", travel: "/travel/" };
+
+/** The columns the SELECT below names. `section` is a plain string
+    and not `Section`: the fallback below exists precisely because a
+    row can hold one this site does not know. */
+interface FeedRow {
+  slug: string;
+  title: string;
+  dek: string;
+  section: string;
+  published_at: string | null;
+  updated_at: string | null;
+}
+
+const mountOf = (a: FeedRow): string => MOUNTS[a.section] ?? MOUNTS.insights;
+const urlOf = (a: FeedRow, origin: string): string =>
+  `${origin}${mountOf(a)}${a.slug}.html`;
 
 /** Slugs the generated file already lists, so nothing appears twice.
     Any of the three mounts, because a piece written by hand in
     /cooking/ is in the committed sitemap under that path. */
-function existingSlugs(xml) {
-  const found = new Set();
+function existingSlugs(xml: string): Set<string> {
+  const found = new Set<string>();
   const re = /\/(?:insights|cooking|travel)\/([a-z0-9-]+)\.html/gi;
   for (const m of xml.matchAll(re)) found.add(m[1].toLowerCase());
   return found;
 }
 
-const rssItem = (a, origin) => {
+const rssItem = (a: FeedRow, origin: string): string => {
   const url = urlOf(a, origin);
   return `
     <item>
@@ -56,7 +78,7 @@ const rssItem = (a, origin) => {
     </item>`;
 };
 
-const sitemapEntry = (a, origin) => `
+const sitemapEntry = (a: FeedRow, origin: string): string => `
   <url>
     <loc>${urlOf(a, origin)}</loc>
     <lastmod>${String(a.updated_at ?? a.published_at ?? "").slice(0, 10)}</lastmod>
@@ -64,7 +86,23 @@ const sitemapEntry = (a, origin) => `
     <priority>0.7</priority>
   </url>`;
 
-export async function onRequest(context) {
+/** The asset router, which is where the generated file comes from.
+    Not optional: with no assets bound there is no site to merge
+    into. */
+interface AssetsBinding {
+  fetch(request: Request): Promise<Response>;
+}
+
+/** What this route binds. Narrow on purpose: adding a binding is a
+    change to a type as well as to wrangler.toml. */
+interface FeedsEnv extends DbEnv {
+  ASSETS: AssetsBinding;
+  SITE_ORIGIN?: string;
+}
+
+export async function onRequest(
+  context: RouteContext<FeedsEnv, { kind?: string }>,
+): Promise<Response> {
   const { request, env, params } = context;
 
   const kind = params.kind === "sitemap.xml" ? "sitemap"
@@ -76,14 +114,14 @@ export async function onRequest(context) {
   const d1 = await db(env);
   if (!d1) return base;
 
-  let xml;
+  let xml: string;
   try {
     xml = await base.text();
   } catch {
     return base;
   }
 
-  let rows;
+  let rows: FeedRow[];
   try {
     /* `section` is not optional, and leaving it out is how both
        Bangla pieces came to be advertised at an address that 404s.
@@ -101,7 +139,7 @@ export async function onRequest(context) {
        merged, and the fallback started firing: the first deploy
        after that put two dead URLs in front of every crawler that
        reads this. */
-    rows = await all(d1,
+    rows = await all<FeedRow>(d1,
       `SELECT slug, title, dek, section, published_at, updated_at
          FROM articles
         WHERE status = 'live' AND published_at IS NOT NULL
@@ -114,7 +152,7 @@ export async function onRequest(context) {
   const extra = rows.filter((a) => !already.has(a.slug.toLowerCase()));
   if (!extra.length) return new Response(xml, { headers: base.headers });
 
-  let merged;
+  let merged: string;
   if (kind === "feed") {
     const origin = env.SITE_ORIGIN || new URL(request.url).origin;
     const items = extra.map((a) => rssItem(a, origin)).join("");

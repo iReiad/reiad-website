@@ -19,11 +19,36 @@
    ============================================================ */
 
 import { all, db, one, run } from "../../_lib/db.ts";
+import type { DbEnv } from "../../_lib/db.ts";
 import { body, fail, isEmail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.ts";
+import type { RouteContext } from "../../_lib/http.ts";
 import { requireAdmin, throttle } from "../../_lib/auth.ts";
 import { htmlResponse } from "../../../shared/headers.ts";
+import type { SubscriberRow } from "../../../shared/rows.ts";
 
-const token = () =>
+/** What this route binds. `SITE_ORIGIN` is what the confirm link
+    is built on, and it is optional because the request's own
+    origin is the right answer everywhere but a branch preview. */
+interface SubscriberEnv extends DbEnv {
+  SITE_ORIGIN?: string;
+}
+
+/** The columns the list and the CSV both name. Two queries, one
+    column list, so a column added to one has to be added to the
+    other or this stops describing it. */
+type Listed = Pick<SubscriberRow,
+  "email" | "status" | "lang" | "source" | "created_at" | "confirmed_at">;
+
+/** The one row the aggregate below returns. `SUM()` over no rows
+    is NULL, so an empty list is two nulls and a nought rather
+    than three noughts. */
+interface Counts {
+  total: number;
+  confirmed: number | null;
+  pending: number | null;
+}
+
+const token = (): string =>
   btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(18))))
     .replace(/[+/=]/g, "");
 
@@ -47,7 +72,7 @@ const token = () =>
     its own: no CSP, no HSTS, no X-Frame-Options on a page a
     reader reaches from their email. `check-headers.ts` now fails
     on any HTML response that does not go through it. */
-const page = (title, message, tone = "ok") =>
+const page = (title: string, message: string, tone: "ok" | "err" = "ok"): Response =>
   htmlResponse(
     `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -62,7 +87,9 @@ const page = (title, message, tone = "ok") =>
     { cache: "no-store" }
   );
 
-export async function onRequest(context) {
+export async function onRequest(
+  context: RouteContext<SubscriberEnv, { route?: string[] }>,
+): Promise<Response> {
   const { request, params } = context;
   const route = (params.route ?? [])[0] ?? "";
   const url = new URL(request.url);
@@ -73,7 +100,7 @@ export async function onRequest(context) {
   /* ---------- confirm ---------- */
   if (route === "confirm") {
     const t = str(url.searchParams.get("t"), 40);
-    const row = t && await one(d1, `SELECT * FROM subscribers WHERE token = ?`, t);
+    const row = t && await one<SubscriberRow>(d1, `SELECT * FROM subscribers WHERE token = ?`, t);
     if (!row) return page("That link has expired", "Sign up again and I'll send a fresh one.", "err");
     await run(d1,
       `UPDATE subscribers SET status = 'confirmed', confirmed_at = ? WHERE token = ?`,
@@ -96,7 +123,7 @@ export async function onRequest(context) {
   if (route === "export") {
     const guard = await requireAdmin(context);
     if (guard) return guard;
-    const rows = await all(d1,
+    const rows = await all<Listed>(d1,
       `SELECT email, status, lang, source, created_at, confirmed_at
        FROM subscribers ORDER BY created_at DESC`);
     const csv = ["email,status,lang,source,created_at,confirmed_at"]
@@ -123,7 +150,8 @@ export async function onRequest(context) {
       const email = str(input.email, 200).toLowerCase();
       if (!isEmail(email)) return fail("bad-email");
 
-      const existing = await one(d1, `SELECT status, token FROM subscribers WHERE email = ?`, email);
+      const existing = await one<Pick<SubscriberRow, "status" | "token">>(
+        d1, `SELECT status, token FROM subscribers WHERE email = ?`, email);
       if (existing?.status === "confirmed") return ok({ already: true });
 
       const t = existing?.token ?? token();
@@ -142,10 +170,10 @@ export async function onRequest(context) {
     GET: async () => {
       const guard = await requireAdmin(context);
       if (guard) return guard;
-      const rows = await all(d1,
+      const rows = await all<Listed>(d1,
         `SELECT email, status, lang, source, created_at, confirmed_at
          FROM subscribers ORDER BY created_at DESC LIMIT 500`);
-      const counts = await one(d1,
+      const counts = await one<Counts>(d1,
         `SELECT
            COUNT(*) AS total,
            SUM(status = 'confirmed') AS confirmed,

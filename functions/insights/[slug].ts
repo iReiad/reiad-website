@@ -21,6 +21,8 @@
    ============================================================ */
 
 import { db, one } from "../_lib/db.ts";
+import type { DbEnv } from "../_lib/db.ts";
+import type { RouteContext } from "../_lib/http.ts";
 /* The per-section table, the share-image rules and the head facts
    all live in shared/look/ now. They were written twice, here and
    in the Studio, under a comment asking whoever changed one to
@@ -31,17 +33,28 @@ import { db, one } from "../_lib/db.ts";
    It is a package rather than another file under _lib/ because the
    Next.js route reads it too, and Turbopack will not resolve an
    import above its own root. See the note in next/next.config.ts. */
-import { LOOK, lookFor, dateLabel, headFacts, FONTS } from "../../shared/look.ts";
+import { LOOK, dateLabel, headFacts, FONTS } from "../../shared/look.ts";
+import type { Article } from "../../shared/look.ts";
 import { htmlResponse } from "../../shared/headers.ts";
 
-const esc = (s) =>
-  String(s ?? "").replace(/[&<>\"]/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+/** What this route binds. `SITE_ORIGIN` is what a canonical link
+    and every og: tag are built from; without it the request's own
+    origin is used, which is right for a preview and wrong for a
+    shared link. */
+interface ArticleRouteEnv extends DbEnv {
+  SITE_ORIGIN?: string;
+}
 
-export function render(article, origin) {
+const ESCAPES: Record<string, string> =
+  { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" };
+
+const esc = (s: unknown): string =>
+  String(s ?? "").replace(/[&<>"]/g, (c) => ESCAPES[c]);
+
+export function render(article: Article, origin: string): string {
   /* Every fact the head states, worked out once in shared/look.ts so
      that the Next.js route can state exactly the same ones. */
-  const { look, url, cover, image, sized, type, locale, title, jsonLd } =
+  const { look, url, image, sized, type, locale, title, jsonLd } =
     headFacts(article, origin);
   const date = dateLabel(article);
 
@@ -202,12 +215,15 @@ ${article.body}
 </html>`;
 }
 
-export async function onRequest(context) {
+export async function onRequest(
+  context: RouteContext<ArticleRouteEnv, { slug?: string; section?: string }>,
+): Promise<Response> {
   const slug = String(context.params.slug ?? "").replace(/\.html$/, "");
   /* Which mount the request came in on. worker.js passes it; a Pages
      deployment of this folder would only ever serve /insights/, and
      that is the right default for it. */
-  const asked = LOOK[context.params.section] ? context.params.section : "insights";
+  const section = context.params.section ?? "";
+  const asked = LOOK[section] ? section : "insights";
 
   // Anything that isn't a plausible slug is not ours to answer.
   if (!/^[a-z0-9-]{1,80}$/i.test(slug)) return context.next();
@@ -215,7 +231,7 @@ export async function onRequest(context) {
   const d1 = await db(context.env);
   if (!d1) return context.next();
 
-  const article = await one(d1,
+  const article = await one<Article>(d1,
     `SELECT * FROM articles WHERE slug = ? AND status = 'live'`, slug);
   if (!article) return context.next();      // static file, or a genuine 404
 

@@ -15,12 +15,20 @@
    ============================================================ */
 
 import { all, db, one, run } from "../../_lib/db.ts";
+import type { D1Database, DbEnv } from "../../_lib/db.ts";
 import {
   body, fail, methods, notConfigured, ok, str, nowISO, today,
 } from "../../_lib/http.ts";
+import type { RouteContext } from "../../_lib/http.ts";
 import { requireAdmin, readSession } from "../../_lib/auth.ts";
 import { sanitiseHTML, readingMinutes } from "../../_lib/sanitise.ts";
 import { SECTIONS, allowed } from "../../../shared/rows.ts";
+import type { ArticleRow, ArticleVersionRow, Section } from "../../../shared/rows.ts";
+
+/** What `PUBLIC_COLUMNS` below selects: an article minus its body,
+    plus the one column that is computed rather than stored. The
+    body is added back by name where a route wants it. */
+type PublicArticle = Omit<ArticleRow, "body"> & { embedded: number; body?: string };
 
 /* `embedded` is computed rather than stored: it says whether the
    body still carries a photo as a data: URL instead of a /media
@@ -30,7 +38,9 @@ import { SECTIONS, allowed } from "../../../shared/rows.ts";
    It exists at all because for a while no photo could reach R2:
    reading a data: URL back is governed by connect-src, and the
    policy allowed data: under img-src only, so every upload was
-   blocked before it left the browser. See aab/photo.js. */
+   blocked before it left the browser. See aab/photo.js.
+
+   Any change to this list is a change to `PublicArticle` above. */
 const PUBLIC_COLUMNS =
   `slug, title, dek, tag, topics, lang, minutes, status, section, cover,
    published_at, updated_at, notion_page_id, notion_synced_at,
@@ -46,17 +56,21 @@ const PUBLIC_COLUMNS =
    now. It was written out here and again in the comments handler,
    and a mount added to one and not the other is a thread that can
    be attached to a section no article can be published into. */
-const safeSection = (value) =>
-  allowed(SECTIONS, value) ? String(value) : "insights";
+const safeSection = (value: unknown): Section =>
+  (allowed(SECTIONS, value) ? value as Section : "insights");
 
 /* D1 caps a single value at 2 MB. A body is measured in bytes rather
    than characters because Bangla costs three of them per character,
    so a character count would let a Bangla piece through at three
    times the size of the English one it was meant to match. */
 const MAX_BODY_BYTES = 1_000_000;
-const bytes = (s) => new TextEncoder().encode(s).length;
+const bytes = (s: string): number => new TextEncoder().encode(s).length;
 
-const shape = (row) => ({
+/* Generic rather than typed to one row, so a row selected with the
+   body still carries it out. Splitting the pipe list is the only
+   thing this does, and it should not also decide which columns
+   survive. */
+const shape = <T extends { topics?: string | null }>(row: T): Omit<T, "topics"> & { topics: string[] } => ({
   ...row,
   topics: row.topics ? row.topics.split("|").filter(Boolean) : [],
 });
@@ -64,7 +78,7 @@ const shape = (row) => ({
 /* A cover ends up in an og:image tag, so it has to be a path this
    site serves. An off-site URL there is someone else's bandwidth and
    someone else's uptime on our social cards. */
-const safeCover = (value) => {
+const safeCover = (value: unknown): string => {
   const v = str(value, 300);
   return /^\/(media|og)\/[A-Za-z0-9._/-]+$/.test(v) ? v : "";
 };
@@ -72,7 +86,7 @@ const safeCover = (value) => {
 /** Keep the last twenty bodies for a slug, and no more. */
 const KEEP_VERSIONS = 20;
 
-async function snapshot(d1, row) {
+async function snapshot(d1: D1Database, row: ArticleRow | null): Promise<void> {
   if (!row) return;
   await run(d1,
     `INSERT INTO article_versions (slug, title, dek, tag, lang, body, cover, saved_at)
@@ -90,7 +104,9 @@ async function snapshot(d1, row) {
     row.slug, row.slug, KEEP_VERSIONS);
 }
 
-export async function onRequest(context) {
+export async function onRequest(
+  context: RouteContext<DbEnv, { slug?: string[] }>,
+): Promise<Response> {
   const { request, params } = context;
   const parts = params.slug ?? [];
   const slug = parts[0] ?? null;
@@ -110,7 +126,7 @@ export async function onRequest(context) {
       if (slug && section === "versions") {
         const guard = await requireAdmin(context);
         if (guard) return guard;
-        const rows = await all(d1,
+        const rows = await all<Omit<ArticleVersionRow, "body"> & { size: number }>(d1,
           `SELECT id, title, dek, tag, lang, cover, saved_at, length(body) AS size
              FROM article_versions WHERE slug = ?
             ORDER BY saved_at DESC, id DESC`, slug);
@@ -118,7 +134,7 @@ export async function onRequest(context) {
       }
 
       if (slug) {
-        const row = await one(d1,
+        const row = await one<PublicArticle>(d1,
           `SELECT ${PUBLIC_COLUMNS}, body FROM articles WHERE slug = ?`, slug);
         if (!row) return fail("not-found", 404);
         if (row.status !== "live" && !signedIn) return fail("not-found", 404);
@@ -126,10 +142,10 @@ export async function onRequest(context) {
       }
 
       const rows = wantsAll
-        ? await all(d1,
+        ? await all<PublicArticle>(d1,
             `SELECT ${PUBLIC_COLUMNS} FROM articles
              ORDER BY COALESCE(published_at, updated_at) DESC`)
-        : await all(d1,
+        : await all<PublicArticle>(d1,
             `SELECT ${PUBLIC_COLUMNS} FROM articles
              WHERE status = 'live' ORDER BY published_at DESC`);
 
@@ -144,11 +160,11 @@ export async function onRequest(context) {
       /* ---- put an older body back ---- */
       if (slug && section === "versions") {
         const wanted = Number((await body(request)).id) || 0;
-        const version = await one(d1,
+        const version = await one<ArticleVersionRow>(d1,
           `SELECT * FROM article_versions WHERE id = ? AND slug = ?`, wanted, slug);
         if (!version) return fail("not-found", 404);
 
-        const live = await one(d1, `SELECT * FROM articles WHERE slug = ?`, slug);
+        const live = await one<ArticleRow>(d1, `SELECT * FROM articles WHERE slug = ?`, slug);
         if (!live) return fail("not-found", 404);
 
         // Restoring replaces a body too, so it is itself snapshotted.
@@ -163,10 +179,10 @@ export async function onRequest(context) {
           version.title, version.dek, version.tag, version.lang,
           version.body, version.cover, readingMinutes(version.body), nowISO(), slug);
 
-        return ok({
-          article: shape(await one(d1, `SELECT ${PUBLIC_COLUMNS} FROM articles WHERE slug = ?`, slug)),
-          restored: version.id,
-        });
+        const back = await one<PublicArticle>(
+          d1, `SELECT ${PUBLIC_COLUMNS} FROM articles WHERE slug = ?`, slug);
+        if (!back) return fail("not-saved", 500);
+        return ok({ article: shape(back), restored: version.id });
       }
 
       const input = await body(request);
@@ -192,8 +208,8 @@ export async function onRequest(context) {
       /* An unguarded upsert means one repeated headline silently
          replaces a published piece, with no version to go back to.
          The Studio asks first; anything else has to say so too. */
-      const existing = await one(d1,
-        `SELECT slug, title, status, updated_at FROM articles WHERE slug = ?`, newSlug);
+      const existing = await one<Pick<ArticleRow, "slug" | "title" | "status" | "updated_at">>(
+        d1, `SELECT slug, title, status, updated_at FROM articles WHERE slug = ?`, newSlug);
       if (existing && input.overwrite !== true) {
         return fail("slug-exists", 409, { existing });
       }
@@ -204,7 +220,8 @@ export async function onRequest(context) {
 
       // Keep what is about to be replaced, before replacing it.
       if (existing) {
-        await snapshot(d1, await one(d1, `SELECT * FROM articles WHERE slug = ?`, newSlug));
+        await snapshot(d1,
+          await one<ArticleRow>(d1, `SELECT * FROM articles WHERE slug = ?`, newSlug));
       }
 
       await run(d1,
@@ -236,7 +253,9 @@ export async function onRequest(context) {
         str(input.notion_page_id, 64) || null,
         input.notion_page_id ? now : null);
 
-      const saved = await one(d1, `SELECT ${PUBLIC_COLUMNS} FROM articles WHERE slug = ?`, newSlug);
+      const saved = await one<PublicArticle>(
+        d1, `SELECT ${PUBLIC_COLUMNS} FROM articles WHERE slug = ?`, newSlug);
+      if (!saved) return fail("not-saved", 500);
       return ok({ article: shape(saved), replaced: !!existing });
     },
 
@@ -246,7 +265,7 @@ export async function onRequest(context) {
       if (guard) return guard;
       if (!slug) return fail("slug-required");
 
-      const existing = await one(d1, `SELECT * FROM articles WHERE slug = ?`, slug);
+      const existing = await one<ArticleRow>(d1, `SELECT * FROM articles WHERE slug = ?`, slug);
       if (!existing) return fail("not-found", 404);
 
       const input = await body(request);
@@ -256,7 +275,8 @@ export async function onRequest(context) {
       /* Everything here is optional: a PATCH that names only a status
          is the publish/unpublish button, and one that names a title
          is fixing a typo without republishing the whole body. */
-      const pick = (key, value) => (key in input ? value : existing[key]);
+      const pick = (key: keyof ArticleRow, value: unknown): unknown =>
+        (key in input ? value : existing[key]);
 
       await run(d1,
         `UPDATE articles
@@ -272,14 +292,16 @@ export async function onRequest(context) {
         /* Moving a piece between sections is a PATCH with one key in
            it, sent by the desk. It changes the URL the piece is
            served at, which is why the old one has to stop answering:
-           see the section check in functions/insights/[slug].js. */
+           see the section check in functions/insights/[slug].ts. */
         pick("section", safeSection(input.section)),
         pick("cover", safeCover(input.cover)),
         status,
         status === "live" ? (existing.published_at ?? today()) : existing.published_at,
         nowISO(), slug);
 
-      const saved = await one(d1, `SELECT ${PUBLIC_COLUMNS} FROM articles WHERE slug = ?`, slug);
+      const saved = await one<PublicArticle>(
+        d1, `SELECT ${PUBLIC_COLUMNS} FROM articles WHERE slug = ?`, slug);
+      if (!saved) return fail("not-saved", 500);
       return ok({ article: shape(saved) });
     },
 

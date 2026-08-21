@@ -12,18 +12,33 @@
    ============================================================ */
 
 import { all, db } from "../_lib/db.ts";
+import type { DbEnv } from "../_lib/db.ts";
 import { methods, notConfigured, ok, str } from "../_lib/http.ts";
+import type { RouteContext } from "../_lib/http.ts";
 import { textOf } from "../_lib/sanitise.ts";
 
-/* Where each section is served, the same table feeds/[kind].js
+/* Where each section is served, the same table feeds/[kind].ts
    keeps. A result has to point at the piece's own mount: this used
    to be a template literal with /insights/ in it, whatever the
    piece's section was. */
-const MOUNTS = { insights: "/insights/", cooking: "/cooking/", travel: "/travel/" };
+const MOUNTS: Record<string, string> =
+  { insights: "/insights/", cooking: "/cooking/", travel: "/travel/" };
 
-const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** The columns the SELECT below names. `body` is the whole article
+    and is read only to cut the matching sentence out of it. */
+interface Hit {
+  slug: string;
+  title: string;
+  dek: string;
+  tag: string;
+  section: string;
+  body: string;
+  published_at: string | null;
+}
 
-export async function onRequest(context) {
+const escapeRe = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+export async function onRequest(context: RouteContext<DbEnv>): Promise<Response> {
   const d1 = await db(context.env);
   if (!d1) return notConfigured();
 
@@ -33,7 +48,7 @@ export async function onRequest(context) {
       if (q.length < 2) return ok({ results: [], q });
 
       const like = `%${q.replace(/[%_]/g, "")}%`;
-      const rows = await all(d1,
+      const rows = await all<Hit>(d1,
         `SELECT slug, title, dek, tag, section, body, published_at
          FROM articles
          WHERE status = 'live' AND (title LIKE ? OR dek LIKE ? OR body LIKE ?)

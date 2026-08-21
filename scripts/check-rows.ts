@@ -140,7 +140,7 @@ for (const [table, iface] of Object.entries(DESCRIBES)) {
   const columns = columnsOf(table);
   const props = propsOf(iface);
   if (!columns) { fail(`no CREATE TABLE for ${table} in aab/schema.sql`); continue; }
-  if (!props) { fail(`no interface ${iface} in shared/rows.d.ts`); continue; }
+  if (!props) { fail(`no interface ${iface} in shared/rows.ts`); continue; }
 
   for (const column of columns) {
     if (!props.includes(column)) {
@@ -180,14 +180,26 @@ for (const [table, iface] of Object.entries(DESCRIBES)) {
    caught, and a handler that pastes it back in will be, which is
    the way it actually happens. */
 
-const HANDLERS = [
-  "functions/api/articles/[[slug]].js",
-  "functions/api/comments/[[id]].js",
-  "functions/api/questions/[[id]].js",
-  "functions/api/enquiries/[[id]].js",
-  "functions/api/subscribers/[[route]].js",
-  "functions/api/schools/[[route]].js",
-];
+/* Walked, not listed. This was six paths written out here, and
+   every one of them carried a `.js` that stopped being true on 21
+   August 2026 when `functions/` converted: `read()` threw on the
+   first, so the check died before it asked its question of any of
+   them, and it had been silently covering nothing for as long as
+   it took somebody to notice. A hand-kept list of the files a
+   check reads is the same second copy this file exists to ban,
+   one level up. */
+const HANDLERS = ((): string[] => {
+  const out: string[] = [];
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(join(ROOT, dir), { withFileTypes: true })) {
+      const rel = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) { walk(rel); continue; }
+      if (/\.(js|ts)$/.test(entry.name) && !/\.test\./.test(entry.name)) out.push(rel);
+    }
+  };
+  walk("functions/api");
+  return out.sort();
+})();
 
 let scanned = 0;
 

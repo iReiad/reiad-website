@@ -48,14 +48,25 @@
    ============================================================ */
 
 import { db } from "../../_lib/db.ts";
+import type { DbEnv } from "../../_lib/db.ts";
 import { body, fail, methods, notConfigured, ok, nowISO } from "../../_lib/http.ts";
+import type { RouteContext } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.ts";
 import {
   isSchool, stagesOf, lessonOf, lessonsOf, countsOf, SCHOOL_IDS,
 } from "../../../shared/schools.ts";
+import type { SchoolLessonRow } from "../../../shared/rows.ts";
 import { sanitiseHTML } from "../../_lib/sanitise.ts";
 
-export async function onRequest(context) {
+/** What a caller sends: JSON, so every field is unknown until the
+    write below coerces it. Deliberately NOT `SchoolLessonRow` and
+    friends: those describe a row that is already in the database,
+    and this is a request that has not been believed yet. */
+type Sent = Record<string, unknown>;
+
+export async function onRequest(
+  context: RouteContext<DbEnv, { route?: string[] }>,
+): Promise<Response> {
   const { request, params } = context;
   const [school, stage, lesson] = params.route ?? [];
 
@@ -70,7 +81,7 @@ export async function onRequest(context) {
            rather than one somebody typed, which is the rule at the
            top of CLAUDE.md and the reason four pages once
            disagreed about the same figure. */
-        const counts = {};
+        const counts: Record<string, { total: number; written: number }> = {};
         /* The four, from the one place that names them. This was
            written out here as well until Stage 12 step 1. */
         for (const id of SCHOOL_IDS) {
@@ -82,7 +93,7 @@ export async function onRequest(context) {
       if (!isSchool(school)) return fail("no-such-school", 404);
 
       if (lesson) {
-        const found = await lessonOf(d1, school, stage, lesson);
+        const found = await lessonOf(d1, school, String(stage), lesson);
         /* 404 rather than an empty object, because the caller's
            fallback is the committed page and it needs to be able
            to tell "not here" from "here and empty". A lesson
@@ -121,10 +132,13 @@ export async function onRequest(context) {
         const patch = await body(request);
         const slug = String(lesson).replace(/\.html$/i, "");
 
+        /* Typed at the query, out of `shared/rows.ts`, because
+           `SELECT *` on this table IS that interface and the four
+           fields read below are the whole contract with it. */
         const existing = await d1.prepare(
           `SELECT * FROM school_lessons
             WHERE school = ? AND stage = ? AND slug = ?`
-        ).bind(school, String(stage), slug).first();
+        ).bind(school, String(stage), slug).first<SchoolLessonRow>();
         if (!existing) return fail("no-such-lesson", 404);
 
         /* The same sanitiser an article goes through. A lesson
@@ -152,7 +166,7 @@ export async function onRequest(context) {
           nowISO(), school, String(stage), slug
         ).run();
 
-        return ok({ lesson: await lessonOf(d1, school, stage, slug) });
+        return ok({ lesson: await lessonOf(d1, school, String(stage), slug) });
       }
 
       /* Anything shorter than a lesson is a school or a stage,
@@ -161,9 +175,9 @@ export async function onRequest(context) {
       if (school) return fail("write-the-whole-school", 400);
 
       const payload = await body(request);
-      const stages = Array.isArray(payload?.stages) ? payload.stages : [];
-      const sections = Array.isArray(payload?.sections) ? payload.sections : [];
-      const lessons = Array.isArray(payload?.lessons) ? payload.lessons : [];
+      const stages: Sent[] = Array.isArray(payload.stages) ? payload.stages : [];
+      const sections: Sent[] = Array.isArray(payload.sections) ? payload.sections : [];
+      const lessons: Sent[] = Array.isArray(payload.lessons) ? payload.lessons : [];
 
       if (!lessons.length) return fail("nothing-to-write", 400);
 
@@ -171,13 +185,16 @@ export async function onRequest(context) {
          that wrote every school at once could half-succeed across
          all four, and the recovery from that is worse than the
          import. */
-      const named = new Set([
+      const named = new Set<unknown>([
         ...stages.map((s) => s.school),
         ...sections.map((s) => s.school),
         ...lessons.map((l) => l.school),
       ]);
       if (named.size !== 1) return fail("one-school-at-a-time", 400);
 
+      /* Still `unknown`: `isSchool()` answers a boolean rather
+         than narrowing, and what goes into the bind below is the
+         value the caller sent either way. */
       const [only] = [...named];
       if (!isSchool(only)) return fail("no-such-school", 400);
 

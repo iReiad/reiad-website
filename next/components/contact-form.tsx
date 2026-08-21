@@ -25,7 +25,7 @@
 
    ---- what this replaces ----
 
-   `aab/contact-form.js`, which was an inline module at the bottom
+   `archive/modules/contact-form.js`, which was an inline module at the bottom
    of `aab/contact.html` before that page was a route, and a
    served module afterwards because a route cannot carry an inline
    module without putting the lines inside a template string.

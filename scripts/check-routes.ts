@@ -314,7 +314,7 @@ for (const pattern of WORKER_FIRST) {
 
    Two things answer it instead, and both are needed:
 
-     `functions/api/articles/[[slug]].js` strips anything outside
+     `functions/api/articles/[[slug]].ts` strips anything outside
      `[a-z0-9-]` before it writes, and rejects what is left if it
      is empty. Nothing published through the Studio can be wrong.
 

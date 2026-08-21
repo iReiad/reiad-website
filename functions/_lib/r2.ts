@@ -29,11 +29,15 @@ export interface R2HttpMetadata {
   cacheControl?: string;
 }
 
-/** One stored object, as far as anything here reads one. */
+/** One stored object, as far as anything here reads one.
+    `uploaded` is a Date and is only ever serialised: both listings
+    that read it (the media inventory and the snapshot status) hand
+    it straight to JSON.stringify. */
 export interface R2Object {
   key: string;
   size: number;
   httpEtag: string;
+  uploaded: Date;
   httpMetadata?: R2HttpMetadata;
 }
 

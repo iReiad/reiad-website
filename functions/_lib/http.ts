@@ -3,6 +3,36 @@
    An underscore-prefixed name under functions/ is not routed, so
    this is a module rather than a URL. */
 
+/** The Pages Functions context, as `worker.js` rebuilds it.
+
+    Nothing here has run on Pages Functions since Stage 10:
+    `worker.js` is one Worker that routes by prefix and hands every
+    handler an object of this shape. The name is kept because every
+    handler's parameter is called `context` and the shape is the one
+    Pages documented, so a reader arriving from that documentation
+    is not misled by the difference.
+
+    `Env` is a type parameter rather than one union of every binding
+    this site has, and that is the point of it: a handler needing D1
+    and a handler needing R2 are two different contracts, and a
+    single type listing all of them as optional would describe
+    neither. Each route names what it binds.
+
+    `next()` is the fall-through to a static asset, which is what
+    these handlers have always taken it to mean. */
+export interface RouteContext<
+  Env = unknown,
+  Params = Record<string, string | string[] | undefined>,
+> {
+  request: Request;
+  env: Env;
+  params: Params;
+  waitUntil(promise: Promise<unknown>): void;
+  passThroughOnException(): void;
+  next(): Promise<Response>;
+  data: Record<string, unknown>;
+}
+
 export type JSONValue =
   | string | number | boolean | null
   | JSONValue[] | { [key: string]: JSONValue };
@@ -22,8 +52,15 @@ export const json = (
 
 /* `headers` is how Set-Cookie reaches the browser. Dropping it
    gives a login that reports success and issues no session. */
+/** `object` rather than `Record<string, unknown>`, which it was.
+    The second requires an INDEX SIGNATURE, which an interface does
+    not have, so every handler answering a declared shape (a sync
+    report, a row, a snapshot) had to cast on the way through the
+    commonest helper in this file. A cast at every call site is a
+    cast nobody reads. All this needs is something `ok: true` can
+    be spread on to. */
 export const ok = (
-  data: Record<string, unknown> = {}, headers: Record<string, string> = {},
+  data: object = {}, headers: Record<string, string> = {},
 ): Response => json({ ok: true, ...data }, 200, headers);
 
 export const fail = (

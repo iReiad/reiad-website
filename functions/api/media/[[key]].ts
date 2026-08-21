@@ -29,11 +29,20 @@
    ============================================================ */
 
 import { fail, methods, notConfigured, ok, str } from "../../_lib/http.ts";
+import type { RouteContext } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.ts";
+import type { DbEnv } from "../../_lib/db.ts";
+import type { MediaEnv } from "../../_lib/r2.ts";
+
+/** What this route binds: the bucket, and the D1 the admin guard
+    reads a session out of. Both are declared where they are
+    owned, `_lib/r2.ts` and `_lib/db.ts`, because other modules
+    bind the same two. */
+interface MediaRouteEnv extends DbEnv, MediaEnv {}
 
 /* No SVG. It is a document format that can carry script, and this
    endpoint hands back whatever it was given with that content type. */
-const TYPES = {
+const TYPES: Record<string, string> = {
   "image/webp": "webp",
   "image/jpeg": "jpg",
   "image/png": "png",
@@ -49,25 +58,32 @@ const MAX_BYTES = 8 * 1024 * 1024;
 const PRIVATE_HOST =
   /^(localhost$|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1\]?$|.*\.internal$|.*\.local$)/i;
 
-const extFor = (type) => TYPES[String(type ?? "").split(";")[0].trim().toLowerCase()];
-const typeFor = (key) =>
+/* A miss is `undefined`, and the annotation says so: the index
+   signature above answers `string` for every key, so the caller's
+   `if (!ext)` is the only thing that knows better. */
+const extFor = (type: unknown): string | undefined =>
+  TYPES[String(type ?? "").split(";")[0].trim().toLowerCase()];
+const typeFor = (key: string): string =>
   Object.keys(TYPES).find((t) => TYPES[t] === key.split(".").pop()) ?? "application/octet-stream";
 
 /** First 16 hex characters of the SHA-256, 64 bits, which is far
     more than enough to tell one person's photo library apart. */
-async function contentHash(buffer) {
+async function contentHash(buffer: ArrayBuffer): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", buffer);
   return [...new Uint8Array(digest, 0, 8)]
     .map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-const safeSlug = (value) =>
+const safeSlug = (value: unknown): string =>
   str(value, 80).toLowerCase().replace(/[^a-z0-9-]/g, "") || "loose";
 
 /** A key we built, and not a path someone talked us into. */
-const validKey = (key) => /^[a-z0-9-]{1,80}\/[0-9a-f]{16}\.[a-z0-9]{3,4}$/.test(key);
+const validKey = (key: string): boolean =>
+  /^[a-z0-9-]{1,80}\/[0-9a-f]{16}\.[a-z0-9]{3,4}$/.test(key);
 
-export async function onRequest(context) {
+export async function onRequest(
+  context: RouteContext<MediaRouteEnv, { key?: string[] }>,
+): Promise<Response> {
   const { request, env, params } = context;
   const key = (params.key ?? []).join("/");
   const url = new URL(request.url);
@@ -96,7 +112,7 @@ export async function onRequest(context) {
         const target = url.searchParams.get("u");
         if (!target) return fail("url-required");
 
-        let parsed;
+        let parsed: URL;
         try { parsed = new URL(target); } catch { return fail("bad-url"); }
         if (parsed.protocol !== "https:") return fail("https-only", 400);
         if (PRIVATE_HOST.test(parsed.hostname)) {
@@ -160,7 +176,11 @@ export async function onRequest(context) {
       const guard = await requireAdmin(context);
       if (guard) return guard;
 
-      const ext = extFor(request.headers.get("Content-Type"));
+      /* One read, and it is used twice: to choose the extension,
+         and to store the type. `.get()` answers `string | null`,
+         and the second read was written as though it could not. */
+      const sent = request.headers.get("Content-Type") ?? "";
+      const ext = extFor(sent);
       if (!ext) return fail("unsupported-type", 415, { accepts: Object.keys(TYPES) });
 
       const buffer = await request.arrayBuffer();
@@ -177,7 +197,7 @@ export async function onRequest(context) {
       if (!already) {
         await bucket.put(newKey, buffer, {
           httpMetadata: {
-            contentType: request.headers.get("Content-Type").split(";")[0].trim(),
+            contentType: sent.split(";")[0].trim(),
             cacheControl: "public, max-age=31536000, immutable",
           },
         });

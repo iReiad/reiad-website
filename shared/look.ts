@@ -8,8 +8,8 @@
 
    ---- why this is its own file ----
 
-   It was written three times. `functions/insights/[slug].js` had
-   it as `LOOK`, `aab/studio.js` had it as `PAGE_STYLE`, and the
+   It was written three times. `functions/insights/[slug].ts` had
+   it as `LOOK`, `archive/studio.js` had it as `PAGE_STYLE`, and the
    comment above each one said "change one, change both". That
    instruction is a promise a comment cannot keep: the two had
    already drifted once on the disclaimer's punctuation, which is

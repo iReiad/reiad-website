@@ -15,12 +15,25 @@
    ============================================================ */
 
 import { all, db, one, run } from "../../_lib/db.ts";
+import type { DbEnv } from "../../_lib/db.ts";
 import { body, fail, methods, notConfigured, ok, str, today } from "../../_lib/http.ts";
+import type { RouteContext } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.ts";
+import type { ReactionRow, ViewRow } from "../../../shared/rows.ts";
 
 const REACTIONS = ["helpful", "confusing", "more"];
 
-export async function onRequest(context) {
+/** What the queries below name, picked out of the row descriptions
+    rather than written again. The two `views` shapes are not
+    `ViewRow`: a `SUM(count)` is grouped and comes back under a
+    column name the table does not have. */
+type ReactionCount = Pick<ReactionRow, "kind" | "count">;
+type PathViews = Pick<ViewRow, "path"> & { views: number };
+type DayViews = Pick<ViewRow, "day"> & { views: number };
+
+export async function onRequest(
+  context: RouteContext<DbEnv, { kind?: string[] }>,
+): Promise<Response> {
   const { request, params } = context;
   const kind = (params.kind ?? [])[0] ?? "";
 
@@ -58,15 +71,22 @@ export async function onRequest(context) {
            ON CONFLICT(slug, kind) DO UPDATE SET count = count + 1`,
           slug, reaction);
 
-        const rows = await all(d1,
+        const rows = await all<ReactionCount>(d1,
           `SELECT kind, count FROM reactions WHERE slug = ?`, slug);
-        return ok({ counts: Object.fromEntries(rows.map((r) => [r.kind, r.count])) });
+        return ok({
+          counts: Object.fromEntries(
+            rows.map((r): [string, number] => [r.kind, r.count])),
+        });
       },
 
       GET: async () => {
         const slug = str(new URL(request.url).searchParams.get("slug"), 120);
-        const rows = await all(d1, `SELECT kind, count FROM reactions WHERE slug = ?`, slug);
-        return ok({ counts: Object.fromEntries(rows.map((r) => [r.kind, r.count])) });
+        const rows = await all<ReactionCount>(
+          d1, `SELECT kind, count FROM reactions WHERE slug = ?`, slug);
+        return ok({
+          counts: Object.fromEntries(
+            rows.map((r): [string, number] => [r.kind, r.count])),
+        });
       },
     });
   }
@@ -82,12 +102,16 @@ export async function onRequest(context) {
         const since = new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
 
         const [top, daily, totals, reactions] = await Promise.all([
-          all(d1, `SELECT path, SUM(count) AS views FROM views WHERE day >= ?
+          all<PathViews>(d1, `SELECT path, SUM(count) AS views FROM views WHERE day >= ?
                    GROUP BY path ORDER BY views DESC LIMIT 25`, since),
-          all(d1, `SELECT day, SUM(count) AS views FROM views WHERE day >= ?
+          all<DayViews>(d1, `SELECT day, SUM(count) AS views FROM views WHERE day >= ?
                    GROUP BY day ORDER BY day`, since),
-          one(d1, `SELECT SUM(count) AS views FROM views WHERE day >= ?`, since),
-          all(d1, `SELECT slug, kind, count FROM reactions ORDER BY count DESC LIMIT 40`),
+          /* No rows in range means `SUM` over nothing, which is one
+             row holding null rather than no row at all. */
+          one<{ views: number | null }>(
+            d1, `SELECT SUM(count) AS views FROM views WHERE day >= ?`, since),
+          all<ReactionRow>(d1,
+            `SELECT slug, kind, count FROM reactions ORDER BY count DESC LIMIT 40`),
         ]);
 
         return ok({ days, since, total: totals?.views ?? 0, top, daily, reactions });

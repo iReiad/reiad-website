@@ -27,7 +27,7 @@
                                exist.
 
    Every route that reads the broker does it through one seam,
-   `_lib/broker.js`, and every reader-facing route works the same
+   `_lib/broker.ts`, and every reader-facing route works the same
    two ways: with the key saved to the account, or with a key the
    browser holds for the session and sends per request in the
    `x-broker-key` header, which this endpoint uses and forgets.
@@ -41,15 +41,70 @@
    ============================================================ */
 
 import { db, setting, setSetting } from "../../_lib/db.ts";
+import type { D1Database, DbEnv } from "../../_lib/db.ts";
 import { body, fail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.ts";
+import type { RouteContext } from "../../_lib/http.ts";
 import { throttle } from "../../_lib/auth.ts";
 import { readerFrom } from "../../_lib/reader.ts";
+import type { ReaderEnv } from "../../_lib/reader.ts";
 import { isAdmin } from "../../_lib/admins.ts";
+import type { AdminEnv } from "../../_lib/admins.ts";
 import {
-  BROKER_ENVS, DEFAULT_VIEW, brokerFail, cacheGet, cachePut, canSeal,
-  deleteKeyRow, hashOf, publicView, saveKeyRow, savedKeyRow,
+  DEFAULT_VIEW, brokerFail, cacheGet, cachePut, canSeal,
+  deleteKeyRow, hashOf, isBrokerEnv, publicView, saveKeyRow, savedKeyRow,
   seal, t212, unseal,
-} from "../../_lib/broker.js";
+} from "../../_lib/broker.ts";
+import type {
+  BrokerAnswer, BrokerEnvName, BrokerSnapshot, BrokerStoreEnv, SealEnv, ViewSettings,
+} from "../../_lib/broker.ts";
+
+/** Everything this route binds. Five interfaces because five
+    separate things are being reached: D1, the sealing secret, the
+    Supabase row store, the reader's identity, and the admin list.
+    They overlap on the two Supabase fields and that is fine; what
+    they do not do is add up to one object called "the env". */
+interface BrokerRouteEnv extends DbEnv, SealEnv, BrokerStoreEnv, ReaderEnv, AdminEnv {
+  /** A key set as a wrangler secret, which wins over a stored one. */
+  T212_PUBLIC_TOKEN?: string;
+}
+
+/** The key behind the public page, wherever it came from. */
+interface SiteKey {
+  key: string;
+  env: BrokerEnvName;
+  source: "secret" | "saved";
+}
+
+/** A snapshot as it is stored: the broker's two answers with the
+    moment they were taken. `at` is not optional here, unlike on
+    `BrokerSnapshot`, because staleness is measured from it. */
+interface StoredSnapshot extends BrokerSnapshot {
+  at: string;
+}
+
+/** Either a snapshot or the reason there is not one. A union,
+    because `{ error }` and a snapshot share no field and an
+    interface with both optional would let a caller read neither. */
+type SnapshotResult = StoredSnapshot | { error: [string, number] };
+
+const failed = (r: SnapshotResult): r is { error: [string, number] } => "error" in r;
+
+/** The broker's summary answers a `currency`, and `data` is
+    `unknown` because it is somebody else's JSON. Narrowed once,
+    for the two places that label a key with it. */
+const currencyOf = (data: unknown): string => {
+  const currency = (data as { currency?: unknown } | null)?.currency;
+  return typeof currency === "string" ? currency : "";
+};
+
+/** One page of history, or null where the broker refused it. Null
+    and an empty list are different answers and the dashboard draws
+    them differently: nothing yet, against could not ask. */
+const itemsOf = (answer: BrokerAnswer): unknown[] | null => {
+  if (answer.status !== 200) return null;
+  const items = (answer.data as { items?: unknown } | null)?.items;
+  return Array.isArray(items) ? items : [];
+};
 
 /* The snapshot behind the public page is refreshed at most this
    often. The broker allows one summary call every five seconds;
@@ -67,26 +122,29 @@ const SNAPSHOT_KEY = "broker-snapshot";
 const SITE_KEY_KEY = "broker-site-key";
 const VIEW_KEY = "broker-view";
 
-const safeEnv = (value) =>
-  (BROKER_ENVS.includes(value) ? value : "live");
+const safeEnv = (value: unknown): BrokerEnvName =>
+  (isBrokerEnv(value) ? value : "live");
 
 /* ---------- the site's own key ---------- */
 
-async function siteKey(env, d1) {
+async function siteKey(
+  env: BrokerRouteEnv, d1: D1Database | null,
+): Promise<SiteKey | null> {
   if (env.T212_PUBLIC_TOKEN) {
     return { key: env.T212_PUBLIC_TOKEN, env: "live", source: "secret" };
   }
   if (!d1 || !canSeal(env)) return null;
   const row = await setting(d1, SITE_KEY_KEY);
   if (!row) return null;
-  const stored = JSON.parse(row);
+  const stored = JSON.parse(row) as { cipher?: string; env?: unknown };
+  if (!stored.cipher) return null;
   const key = await unseal(env, stored.cipher);
   return key ? { key, env: safeEnv(stored.env), source: "saved" } : null;
 }
 
 /* ---------- the site snapshot ---------- */
 
-async function fetchSnapshot(sk) {
+async function fetchSnapshot(sk: { key: string; env: BrokerEnvName }): Promise<SnapshotResult> {
   const summary = await t212(sk.key, "/equity/account/summary", sk.env);
   if (summary.status !== 200) return { error: brokerFail(summary.status) };
   const positions = await t212(sk.key, "/equity/positions", sk.env);
@@ -102,9 +160,13 @@ async function fetchSnapshot(sk) {
     while the refresh runs in the background, because a public
     page would rather be five minutes old than slow, and a broker
     hiccup should never take the page down. */
-async function snapshot(env, d1, waitUntil, { force = false } = {}) {
+async function snapshot(
+  env: BrokerRouteEnv, d1: D1Database,
+  waitUntil: (promise: Promise<unknown>) => void,
+  { force = false }: { force?: boolean } = {},
+): Promise<StoredSnapshot | null> {
   const raw = await setting(d1, SNAPSHOT_KEY);
-  const held = raw ? JSON.parse(raw) : null;
+  const held = raw ? JSON.parse(raw) as StoredSnapshot : null;
   const age = held ? Date.now() - Date.parse(held.at) : Infinity;
 
   if (held && !force && age < SNAPSHOT_SECONDS * 1000) return held;
@@ -112,10 +174,11 @@ async function snapshot(env, d1, waitUntil, { force = false } = {}) {
   const sk = await siteKey(env, d1);
   if (!sk) return held;
 
-  const refresh = async () => {
+  const refresh = async (): Promise<StoredSnapshot | null> => {
     const fresh = await fetchSnapshot(sk);
-    if (!fresh.error) await setSetting(d1, SNAPSHOT_KEY, JSON.stringify(fresh));
-    return fresh.error ? null : fresh;
+    if (failed(fresh)) return null;
+    await setSetting(d1, SNAPSHOT_KEY, JSON.stringify(fresh));
+    return fresh;
   };
 
   if (held && !force) {
@@ -125,14 +188,24 @@ async function snapshot(env, d1, waitUntil, { force = false } = {}) {
   return (await refresh()) ?? held;
 }
 
-async function viewConfig(d1) {
+async function viewConfig(d1: D1Database | null): Promise<typeof DEFAULT_VIEW> {
   const raw = d1 ? await setting(d1, VIEW_KEY) : null;
-  return { ...DEFAULT_VIEW, ...(raw ? JSON.parse(raw) : {}) };
+  return { ...DEFAULT_VIEW, ...(raw ? JSON.parse(raw) as ViewSettings : {}) };
 }
 
 /* ---------- a reader's key, from either place ---------- */
 
-async function readerKey(env, request) {
+/** A reader's key, from the header they pasted it into or from
+    their account. `stale` is the third answer and not an error: a
+    row sealed under a rotated secret is one they have to save
+    again, which the dashboard says in those words. */
+type ReaderKey =
+  | { stale?: false; key: string; env: BrokerEnvName; saved: boolean }
+  | { stale: true };
+
+async function readerKey(
+  env: BrokerRouteEnv, request: Request,
+): Promise<ReaderKey | null> {
   const pasted = str(request.headers.get("x-broker-key") ?? "", 200);
   if (pasted) {
     return { key: pasted, env: safeEnv(request.headers.get("x-broker-env")), saved: false };
@@ -146,7 +219,9 @@ async function readerKey(env, request) {
 
 /* ============================================================ */
 
-export async function onRequest(context) {
+export async function onRequest(
+  context: RouteContext<BrokerRouteEnv, { route?: string[] }>,
+): Promise<Response> {
   const { request, env, params } = context;
   const route = (params.route ?? []).join("/");
   const d1 = await db(env);
@@ -166,11 +241,13 @@ export async function onRequest(context) {
   }
 
   /* Everything below is somebody signed in. */
-  let reader;
+  let reader: Awaited<ReturnType<typeof readerFrom>>;
   try {
     reader = await readerFrom(request, env);
   } catch (err) {
-    return fail("bad-token", 401, { message: String(err?.message ?? err) });
+    return fail("bad-token", 401, {
+      message: String(err instanceof Error ? err.message : err),
+    });
   }
   if (!reader) return fail("sign-in-required", 401);
 
@@ -218,11 +295,11 @@ export async function onRequest(context) {
 
           const stored = await saveKeyRow(env, request, {
             cipher: await seal(env, key),
-            label: str(input.label, 40) || `Trading 212 (${probe.data?.currency ?? "?"})`,
+            label: str(input.label, 40) || `Trading 212 (${currencyOf(probe.data) || "?"})`,
             env: brokerEnv,
           });
           if (!stored) return fail("not-saved", 502);
-          return ok({ currency: probe.data?.currency ?? "" });
+          return ok({ currency: currencyOf(probe.data) });
         },
         DELETE: async () => {
           const gone = await deleteKeyRow(env, request, reader.id);
@@ -288,9 +365,9 @@ export async function onRequest(context) {
           ]);
           const history = {
             at: nowISO(),
-            dividends: dividends.status === 200 ? dividends.data?.items ?? [] : null,
-            orders: orders.status === 200 ? orders.data?.items ?? [] : null,
-            transactions: transactions.status === 200 ? transactions.data?.items ?? [] : null,
+            dividends: itemsOf(dividends),
+            orders: itemsOf(orders),
+            transactions: itemsOf(transactions),
           };
           await cachePut(name, history, HISTORY_SECONDS, context.waitUntil);
           return ok({ history });
@@ -369,8 +446,8 @@ export async function onRequest(context) {
           }));
           /* The old snapshot came from the old key. */
           const fresh = await fetchSnapshot({ key, env: brokerEnv });
-          await setSetting(d1, SNAPSHOT_KEY, fresh.error ? "" : JSON.stringify(fresh));
-          return ok({ currency: probe.data?.currency ?? "" });
+          await setSetting(d1, SNAPSHOT_KEY, failed(fresh) ? "" : JSON.stringify(fresh));
+          return ok({ currency: currencyOf(probe.data) });
         },
         DELETE: async () => {
           if (!d1) return notConfigured();

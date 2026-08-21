@@ -26,11 +26,22 @@
    ============================================================ */
 
 import { db } from "../../_lib/db.ts";
+import type { DbEnv } from "../../_lib/db.ts";
 import { fail, json, methods, notConfigured } from "../../_lib/http.ts";
+import type { RouteContext } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.ts";
 import { articleBackup, fullSnapshot, writeSnapshot } from "../../_lib/backup.ts";
+import type { BackupEnv } from "../../_lib/backup.ts";
 
-export async function onRequest(context) {
+/** What this route binds: D1, plus whatever a snapshot needs to
+    reach R2. `BackupEnv` is that second half and it is declared in
+    `_lib/backup.ts`, so the bucket is named in one place and this
+    route cannot disagree with `writeSnapshot()` about it. */
+interface BackupRouteEnv extends DbEnv, BackupEnv {}
+
+export async function onRequest(
+  context: RouteContext<BackupRouteEnv, { route?: string[] }>,
+): Promise<Response> {
   const { request, params } = context;
   const route = (params.route ?? [])[0] ?? "";
 
