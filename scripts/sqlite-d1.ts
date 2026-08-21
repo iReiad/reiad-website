@@ -1,7 +1,7 @@
 /* ============================================================
    sqlite-d1.ts: the D1 binding, over node:sqlite.
 
-   `shared/schools.ts`, `functions/_lib/db.js` and every endpoint
+   `shared/schools.ts`, `functions/_lib/db.ts` and every endpoint
    under `functions/` are written against the binding the Worker
    hands them: `prepare(sql).bind(...).all()`, `.first()`,
    `.run()`, and `batch()` for a list of statements. A builder or
@@ -40,7 +40,7 @@ export const bindable = (v: unknown): Bindable =>
 /** One prepared statement, bound or not.
 
     `bind()` and the three answers sit on the same object because
-    both spellings are in use: `functions/_lib/db.js` always binds
+    both spellings are in use: `functions/_lib/db.ts` always binds
     before it reads, and a query with no parameters is read
     directly. */
 export interface SqliteStatement {
@@ -78,7 +78,7 @@ export function d1Over(db: DatabaseSync): SqliteD1 {
       };
       return make([]);
     },
-    /* `db()` in `functions/_lib/db.js` applies the schema through
+    /* `db()` in `functions/_lib/db.ts` applies the schema through
        batch() the first time it is used, so a test that hands this
        over is running the real migrations. Sequential rather than
        in a transaction, which is what D1's batch does too. */

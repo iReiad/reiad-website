@@ -14,7 +14,7 @@
    endpoint has to be cleaned where it can't be bypassed.
    ============================================================ */
 
-import { all, db, one, run } from "../../_lib/db.js";
+import { all, db, one, run } from "../../_lib/db.ts";
 import {
   body, fail, methods, notConfigured, ok, str, nowISO, today,
 } from "../../_lib/http.ts";

@@ -29,7 +29,7 @@
    skipped rather than stored, and said so in the result.
    ============================================================ */
 
-import { all, one, run } from "./db.js";
+import { all, one, run } from "./db.ts";
 import { nowISO } from "./http.ts";
 import { sanitiseHTML, readingMinutes } from "./sanitise.ts";
 import { client, convert, fetchBlocks, readFields } from "./notion.js";

@@ -40,10 +40,10 @@
    nicer off a person than off the world's proxies.
    ============================================================ */
 
-import { db, setting, setSetting } from "../../_lib/db.js";
+import { db, setting, setSetting } from "../../_lib/db.ts";
 import { body, fail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.ts";
 import { throttle } from "../../_lib/auth.js";
-import { readerFrom } from "../../_lib/reader.js";
+import { readerFrom } from "../../_lib/reader.ts";
 import { isAdmin } from "../../_lib/admins.ts";
 import {
   BROKER_ENVS, DEFAULT_VIEW, brokerFail, cacheGet, cachePut, canSeal,

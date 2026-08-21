@@ -14,7 +14,7 @@
    the only question worth asking: which explainers are landing?
    ============================================================ */
 
-import { all, db, one, run } from "../../_lib/db.js";
+import { all, db, one, run } from "../../_lib/db.ts";
 import { body, fail, methods, notConfigured, ok, str, today } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.js";
 

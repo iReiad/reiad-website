@@ -20,7 +20,7 @@
    untouched, which is exactly what it used to serve.
    ============================================================ */
 
-import { all, db } from "../_lib/db.js";
+import { all, db } from "../_lib/db.ts";
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) =>

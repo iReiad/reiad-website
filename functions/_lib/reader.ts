@@ -1,5 +1,5 @@
 /* ============================================================
-   _lib/reader.js: proving who a reader is, on the server.
+   _lib/reader.ts: proving who a reader is, on the server.
 
    `aab/account.js` reads the name out of an access token to put it
    in the corner of a header, and says in capitals that this is NOT
@@ -42,14 +42,39 @@
    archive/TRANSITION.md, Stage 7.
    ============================================================ */
 
+/** Whatever this needs off the Worker's environment. Narrow on
+    purpose, like `AdminEnv` next door: adding a record to consult
+    is a change to a type as well as to a dashboard. */
+export interface ReaderEnv {
+  SUPABASE_URL?: string;
+  /** Set only where the project still signs with a shared secret.
+      Its absence is what sends this down the JWKS path. */
+  SUPABASE_JWT_SECRET?: string;
+}
+
+/** Who is asking. `id` is the Supabase user id and the only field
+    anything else keys on. */
+export interface Reader {
+  id: string;
+  email: string;
+  name: string;
+}
+
+/** A JSON Web Key, as far as this file reads one. */
+interface Jwk { kid?: string; alg?: string; [k: string]: unknown }
+
 const ALLOWED = new Set(["ES256", "RS256", "HS256"]);
 
 /* The public keys, fetched once per isolate per hour. A JWKS is
    public by definition; caching it is about latency, not secrecy. */
-let jwks = { at: 0, keys: null, url: null };
+let jwks: { at: number; keys: Jwk[] | null; url: string | null } = { at: 0, keys: null, url: null };
 const JWKS_TTL = 60 * 60 * 1000;
 
-const b64urlToBytes = (s) => {
+/* `Uint8Array<ArrayBufferLike>` is not assignable to `BufferSource`
+   under this lib, and the bytes really are a plain ArrayBuffer's:
+   this returns the buffer view crypto.subtle wants rather than
+   casting at each of the two call sites. */
+const b64urlToBytes = (s: string): Uint8Array<ArrayBuffer> => {
   const pad = s.length % 4 === 0 ? "" : "=".repeat(4 - (s.length % 4));
   const binary = atob(s.replace(/-/g, "+").replace(/_/g, "/") + pad);
   const bytes = new Uint8Array(binary.length);
@@ -57,23 +82,24 @@ const b64urlToBytes = (s) => {
   return bytes;
 };
 
-const decodeJSON = (segment) =>
+const decodeJSON = (segment: string): Record<string, any> =>
   JSON.parse(new TextDecoder().decode(b64urlToBytes(segment)));
 
-async function publicKeys(url) {
+async function publicKeys(url: string | undefined): Promise<Jwk[]> {
   const now = Date.now();
   if (jwks.keys && jwks.url === url && now - jwks.at < JWKS_TTL) return jwks.keys;
 
   const res = await fetch(`${url}/auth/v1/.well-known/jwks.json`);
   if (!res.ok) throw new Error(`jwks ${res.status}`);
-  const body = await res.json();
-  jwks = { at: now, keys: body.keys ?? [], url };
-  return jwks.keys;
+  const body = await res.json() as { keys?: Jwk[] };
+  const keys = body.keys ?? [];
+  jwks = { at: now, keys, url: url ?? null };
+  return keys;
 }
 
 const CURVES = { ES256: { name: "ECDSA", namedCurve: "P-256", hash: "SHA-256" } };
 
-async function importKey(jwk, alg) {
+async function importKey(jwk: Jwk, alg: string): Promise<CryptoKey> {
   if (alg === "ES256") {
     return crypto.subtle.importKey("jwk", jwk, CURVES.ES256, false, ["verify"]);
   }
@@ -85,7 +111,11 @@ async function importKey(jwk, alg) {
   throw new Error(`unsupported alg ${alg}`);
 }
 
-const verifyParams = (alg) =>
+/* The Web Crypto parameter types are DOM lib types and this
+   config is node-only on purpose, so the shape is written out.
+   `crypto.subtle.verify` takes either a name or an object with
+   one, which is exactly this union. */
+const verifyParams = (alg: string): string | { name: string; hash: string } =>
   (alg === "ES256" ? { name: "ECDSA", hash: "SHA-256" } : "RSASSA-PKCS1-v1_5");
 
 /**
@@ -100,7 +130,9 @@ const verifyParams = (alg) =>
  * and is not good, because that is worth telling the browser
  * apart from not being signed in at all.
  */
-export async function readerFrom(request, env) {
+export async function readerFrom(
+  request: Request, env: ReaderEnv,
+): Promise<Reader | null> {
   const auth = request.headers.get("Authorization") ?? "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
   if (!token) return null;
@@ -108,7 +140,7 @@ export async function readerFrom(request, env) {
   const parts = token.split(".");
   if (parts.length !== 3) throw new Error("malformed token");
 
-  let header;
+  let header: Record<string, any>;
   try {
     header = decodeJSON(parts[0]);
   } catch {

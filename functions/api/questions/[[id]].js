@@ -11,12 +11,12 @@
    DELETE /api/questions/<id>         admin
    ============================================================ */
 
-import { all, db, one, run } from "../../_lib/db.js";
+import { all, db, one, run } from "../../_lib/db.ts";
 import { body, fail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.js";
 import { throttle } from "../../_lib/auth.js";
 import { QUESTION_STATUS, allowed } from "../../../shared/rows.ts";
-import { read } from "../../_lib/input.js";
+import { read } from "../../_lib/input.ts";
 
 const PUBLIC = `id, slug, name, body, answer, created_at, answered_at`;
 

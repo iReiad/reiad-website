@@ -13,7 +13,7 @@
    The handler is given its database exactly the way the Worker
    gives it one, through `env.DB`, and the real `db()` runs the
    real migrations against it. So this also proves the CREATE
-   TABLE statements in `_lib/db.js` are valid SQLite, which is the
+   TABLE statements in `_lib/db.ts` are valid SQLite, which is the
    other thing that would only fail in production.
    ============================================================ */
 

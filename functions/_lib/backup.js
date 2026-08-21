@@ -69,7 +69,7 @@
    archive/TRANSITION.md, Stage 2.
    ============================================================ */
 
-import { all } from "./db.js";
+import { all } from "./db.ts";
 
 /** Bumped when the shape below changes, so a restore can refuse a
     file it does not understand rather than half-applying it. */

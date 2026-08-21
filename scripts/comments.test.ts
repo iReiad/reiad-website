@@ -100,7 +100,7 @@ globalThis.fetch = (async (url: unknown) =>
    No stubbing of db(): the handler is given its database exactly
    the way the Worker gives it one, through `env.DB`, and the real
    db() runs the real migrations against it. So this test also
-   proves the CREATE TABLE statements in _lib/db.js are valid
+   proves the CREATE TABLE statements in _lib/db.ts are valid
    SQLite, which is the other thing that would fail in production
    and nowhere else. */
 const { onRequest } = await import("../functions/api/comments/[[id]].js");

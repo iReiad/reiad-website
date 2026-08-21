@@ -1,5 +1,5 @@
 /* ============================================================
-   _lib/input.js: what a bad request looks like, decided once.
+   _lib/input.ts: what a bad request looks like, decided once.
 
    archive/TRANSITION.md Stage 12, step 2. The error SHAPE has been one
    thing since the beginning: `_lib/http.ts` writes
@@ -46,6 +46,54 @@
 
 import { body as readBody, fail, isEmail, str } from "./http.ts";
 
+/* ---- the four kinds a field can be ----
+
+   Written out rather than left as an index signature, because the
+   whole point of this file is that a declaration is checkable. A
+   rule with a `slug` and a `min` is a rule whose `min` does
+   nothing, and that is now a compile error rather than a quiet
+   no-op.
+
+   `required`, `short`, `long` and `invalid` are REASON STRINGS
+   rather than booleans, and the comment above says why they are
+   not free to rename: `aab/api.js` and the two React apps switch
+   on them. */
+
+interface Common {
+  /** The reason to answer with when the field is missing. A rule
+      naming none cannot fail the request: the value is cleaned
+      and handed back, which is what an optional field wants. */
+  required?: string;
+}
+
+export interface SlugRule extends Common { slug: boolean; max?: number }
+export interface IdRule extends Common { id: boolean }
+export interface EmailRule extends Common { email: boolean; max?: number; invalid?: string }
+export interface OneOfRule extends Common { oneOf: readonly string[]; invalid?: string }
+export interface TextRule extends Common {
+  /* `boolean` and not the literal `true`, because a caller writing
+     `{ text: true, min: 10 }` in a variable has an inferred `boolean`
+     and this flag is only ever truthiness-tested. Text is the default
+     branch: nothing reads the flag, it is there to be read by a
+     person. */
+  text?: boolean; min?: number; max?: number; short?: string; long?: string;
+}
+
+export type Rule = SlugRule | IdRule | EmailRule | OneOfRule | TextRule;
+export type Spec = Record<string, Rule>;
+
+/** What a checked body looks like. A field is a string or a
+    number depending on its rule, which is more than the old
+    `Record<string, any>` said and less than a mapped type worth
+    the reading. */
+export type Checked = Record<string, string | number>;
+
+/** Either the value or the Response to return. Never both, which
+    is why this is a union rather than two optional fields. */
+export type ReadResult =
+  | { value: Checked; input: Record<string, unknown>; bad?: undefined }
+  | { bad: Response; value?: undefined; input?: undefined };
+
 /** A slug, or "".
 
     The same test three endpoints were making separately: lower
@@ -53,7 +101,7 @@ import { body as readBody, fail, isEmail, str } from "./http.ts";
     somewhere else. A slug from a request body becomes a URL
     prefix, and a URL prefix from a request body is how you end up
     serving /etc/passwd.html. */
-export const safeSlug = (value, max = 120) => {
+export const safeSlug = (value: unknown, max = 120): string => {
   const s = str(value, max).toLowerCase();
   return /^[a-z0-9-]+$/.test(s) ? s : "";
 };
@@ -62,7 +110,7 @@ export const safeSlug = (value, max = 120) => {
 
     `Number(x) || 0` is what six endpoints wrote, and it says yes
     to 3.7 and to -1. A row id is neither. */
-export const safeId = (value) => {
+export const safeId = (value: unknown): number => {
   const n = Number(value);
   return Number.isInteger(n) && n > 0 ? n : 0;
 };
@@ -91,28 +139,28 @@ export const safeId = (value) => {
  * that cannot fail the request: the value is cleaned and handed
  * back, which is what an optional field wants.
  */
-export async function read(request, spec) {
-  const input = await readBody(request);
-  const value = {};
+export async function read(request: Request, spec: Spec): Promise<ReadResult> {
+  const input = await readBody(request) as Record<string, unknown>;
+  const value: Checked = {};
 
   for (const [name, rule] of Object.entries(spec)) {
     const raw = input[name];
 
-    if (rule.slug) {
+    if ("slug" in rule && rule.slug) {
       const s = safeSlug(raw, rule.max ?? 120);
       if (!s && rule.required) return { bad: fail(rule.required) };
       value[name] = s;
       continue;
     }
 
-    if (rule.id) {
+    if ("id" in rule && rule.id) {
       const n = safeId(raw);
       if (!n && rule.required) return { bad: fail(rule.required) };
       value[name] = n;
       continue;
     }
 
-    if (rule.email) {
+    if ("email" in rule && rule.email) {
       const e = str(raw, rule.max ?? 200);
       if (!e) {
         if (rule.required) return { bad: fail(rule.required) };
@@ -131,7 +179,7 @@ export async function read(request, spec) {
       continue;
     }
 
-    if (rule.oneOf) {
+    if ("oneOf" in rule && rule.oneOf) {
       const s = str(raw, 80);
       if (!s) {
         if (rule.required) return { bad: fail(rule.required) };
@@ -155,10 +203,11 @@ export async function read(request, spec) {
        10, which is the right answer. Checking the minimum against
        the raw value would pass the same body and then store the
        truncated one, which is the same outcome by luck. */
-    const text = str(raw, rule.max ?? 4000);
+    const text = str(raw, ("max" in rule ? rule.max : undefined) ?? 4000);
     if (!text && rule.required) return { bad: fail(rule.required) };
-    if (rule.min !== undefined && text.length < rule.min && (rule.short || rule.required)) {
-      return { bad: fail(rule.short ?? rule.required) };
+    const t = rule as TextRule;
+    if (t.min !== undefined && text.length < t.min && (t.short || t.required)) {
+      return { bad: fail((t.short ?? t.required) as string) };
     }
     value[name] = text;
   }

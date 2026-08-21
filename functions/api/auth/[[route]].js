@@ -14,7 +14,7 @@
    note at the top of _lib/auth.js for why this gives up nothing.
    ============================================================ */
 
-import { db, setting } from "../../_lib/db.js";
+import { db, setting } from "../../_lib/db.ts";
 import { body, fail, methods, notConfigured, ok, str } from "../../_lib/http.ts";
 import {
   ADMIN_KEY, CLIENT_ITERATIONS, createSession, destroySession, isConfigured,

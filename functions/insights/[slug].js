@@ -20,7 +20,7 @@
    the same stylesheet and scripts drive both.
    ============================================================ */
 
-import { db, one } from "../_lib/db.js";
+import { db, one } from "../_lib/db.ts";
 /* The per-section table, the share-image rules and the head facts
    all live in shared/look/ now. They were written twice, here and
    in the Studio, under a comment asking whoever changed one to

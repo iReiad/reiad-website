@@ -18,7 +18,8 @@ import { webcrypto } from "node:crypto";
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
-const { readerFrom, forgetKeys } = await import("../functions/_lib/reader.js");
+import type { ReaderEnv } from "../functions/_lib/reader.ts";
+const { readerFrom, forgetKeys } = await import("../functions/_lib/reader.ts");
 
 let failures = 0;
 const check = (name: string, got: unknown, want: unknown): void => {
@@ -31,7 +32,7 @@ const check = (name: string, got: unknown, want: unknown): void => {
    The compiler is what noticed. */
 
 /** Did it refuse, and roughly why? */
-async function refuses(name: string, request: Request, env: unknown): Promise<void> {
+async function refuses(name: string, request: Request, env: ReaderEnv): Promise<void> {
   try {
     const who = await readerFrom(request, env);
     failures += 1;

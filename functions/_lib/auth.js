@@ -50,7 +50,7 @@
    after first use, and login is still throttled.
    ============================================================ */
 
-import { db, one, run, setting, setSetting } from "./db.js";
+import { db, one, run, setting, setSetting } from "./db.ts";
 import { fail, nowISO } from "./http.ts";
 
 const ITERATIONS = 210_000;

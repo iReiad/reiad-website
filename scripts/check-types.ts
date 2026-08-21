@@ -141,6 +141,10 @@ const CONFIGS: Config[] = [
      the modules under test and @types/node, so this one runs on
      the root install and therefore in CI. */
   {
+    what: "functions/ (the Worker's own code)",
+    config: join(ROOT, "functions", "tsconfig.json"),
+  },
+  {
     what: "functions/ (the Worker's own tests)",
     config: join(ROOT, "functions", "tsconfig.test.json"),
   },

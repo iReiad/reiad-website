@@ -32,16 +32,16 @@
    archive/TRANSITION.md, Stage 7.
    ============================================================ */
 
-import { all, db, one, run } from "../../_lib/db.js";
+import { all, db, one, run } from "../../_lib/db.ts";
 import {
   body, fail, methods, notConfigured, ok, str, nowISO,
 } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.js";
 import { throttle } from "../../_lib/auth.js";
-import { readerFrom } from "../../_lib/reader.js";
+import { readerFrom } from "../../_lib/reader.ts";
 import { isAdmin } from "../../_lib/admins.ts";
 import { SECTIONS, COMMENT_STATUS, allowed } from "../../../shared/rows.ts";
-import { read, safeSlug } from "../../_lib/input.js";
+import { read, safeSlug } from "../../_lib/input.ts";
 
 /* Never `author_id`. The site shows a name, not an identifier, and
    a reader's Supabase id is not the public's business. */
@@ -58,7 +58,7 @@ const MIN_BODY = 2;
    not. */
 const safeSection = (v) => (allowed(SECTIONS, v) ? String(v) : "insights");
 
-/* `safeSlug` is imported from _lib/input.js as of Stage 12 step
+/* `safeSlug` is imported from _lib/input.ts as of Stage 12 step
    2. It was written out here and in the articles endpoint, and
    both said the same thing: lower case, and nothing in it that
    could become a path segment somewhere else. */

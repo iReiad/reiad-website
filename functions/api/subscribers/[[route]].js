@@ -18,7 +18,7 @@
    is a small job, and the list is yours in the meantime.
    ============================================================ */
 
-import { all, db, one, run } from "../../_lib/db.js";
+import { all, db, one, run } from "../../_lib/db.ts";
 import { body, fail, isEmail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.ts";
 import { requireAdmin, throttle } from "../../_lib/auth.js";
 import { htmlResponse } from "../../../shared/headers.ts";

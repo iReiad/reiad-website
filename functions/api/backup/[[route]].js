@@ -25,7 +25,7 @@
    hash. See the long note at the top of _lib/backup.js.
    ============================================================ */
 
-import { db } from "../../_lib/db.js";
+import { db } from "../../_lib/db.ts";
 import { fail, json, methods, notConfigured } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.js";
 import { articleBackup, fullSnapshot, writeSnapshot } from "../../_lib/backup.js";

@@ -30,7 +30,7 @@
 
 import { fail, methods, notConfigured, ok, str } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.js";
-import { db } from "../../_lib/db.js";
+import { db } from "../../_lib/db.ts";
 import { syncFromNotion } from "../../_lib/sync.js";
 import {
   client, convert, fetchBlocks, normaliseId, pageTitle, proxyURL, readFields,

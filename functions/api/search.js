@@ -11,7 +11,7 @@
    available, so nothing breaks without a database.
    ============================================================ */
 
-import { all, db } from "../_lib/db.js";
+import { all, db } from "../_lib/db.ts";
 import { methods, notConfigured, ok, str } from "../_lib/http.ts";
 import { textOf } from "../_lib/sanitise.ts";
 

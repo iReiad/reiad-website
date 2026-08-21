@@ -229,7 +229,7 @@ function Ask({ slug }: { slug: string }) {
             />
           </div>
           {/* Honeypot: invisible to people, irresistible to bots.
-              `functions/_lib/input.js` is what reads it, and
+              `functions/_lib/input.ts` is what reads it, and
               `scripts/input.test.ts` holds it to still being read. */}
           <input
             type="text" name="website" tabIndex={-1} autoComplete="off"

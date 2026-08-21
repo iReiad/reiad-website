@@ -163,7 +163,7 @@ export const insert = (
   + ");";
 
 /** The one table both callers need. Written here rather than in
-    each, because a column added to `functions/_lib/db.js` has to
+    each, because a column added to `functions/_lib/db.ts` has to
     reach both or one of them tests a shape the site does not
     have. */
 export const ARTICLES_TABLE = `CREATE TABLE IF NOT EXISTS articles (

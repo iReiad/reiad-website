@@ -47,7 +47,7 @@
    at the editor is a lesson no page links to.
    ============================================================ */
 
-import { db } from "../../_lib/db.js";
+import { db } from "../../_lib/db.ts";
 import { body, fail, methods, notConfigured, ok, nowISO } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.js";
 import {

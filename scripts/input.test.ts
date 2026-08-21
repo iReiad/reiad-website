@@ -4,7 +4,7 @@
 
        node scripts/input.test.ts
 
-   archive/TRANSITION.md Stage 12, step 2. `functions/_lib/input.js` is
+   archive/TRANSITION.md Stage 12, step 2. `functions/_lib/input.ts` is
    now the one place that decides whether a request body is good
    enough, for three endpoints that used to decide it three ways.
    That makes it the kind of file where a small mistake is a
@@ -17,7 +17,7 @@
    either a value or a `Response`.
    ============================================================ */
 
-import { read, safeId, safeSlug } from "../functions/_lib/input.js";
+import { read, safeId, safeSlug } from "../functions/_lib/input.ts";
 
 /* `input.js` is the one place three endpoints read a request
    body, and it has no declaration beside it. What it answers is

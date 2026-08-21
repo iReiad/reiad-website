@@ -54,7 +54,7 @@
    ============================================================ */
 
 import { fail, methods, ok } from "../../_lib/http.ts";
-import { readerFrom } from "../../_lib/reader.js";
+import { readerFrom } from "../../_lib/reader.ts";
 import { isAdmin } from "../../_lib/admins.ts";
 import { sanitiseHTML } from "../../_lib/sanitise.ts";
 import { canReachDrive, driveFile } from "../../_lib/drive.ts";

@@ -53,7 +53,7 @@ import { onRequest as routine } from "./functions/api/routine/[[route]].ts";
 import { onRequest as admin } from "./functions/api/admin/[[route]].ts";
 import { onRequest as insight } from "./functions/insights/[slug].js";
 import { onRequest as feeds } from "./functions/feeds/[kind].js";
-import { db } from "./functions/_lib/db.js";
+import { db } from "./functions/_lib/db.ts";
 import { syncFromNotion } from "./functions/_lib/sync.js";
 import { writeSnapshot } from "./functions/_lib/backup.js";
 
