@@ -97,7 +97,7 @@ console.log("\nthe two credentials stay two");
   const panel = read("next/components/admin/panel.tsx");
 
   /* The browser must never be able to turn one into the other.
-     `_lib/auth.js` writes the passphrase session and lives in the
+     `_lib/auth.ts` writes the passphrase session and lives in the
      Worker; a component importing anything that mints one would
      be the failure ADMIN.md §1 names first. */
   ok("the panel mints no session",

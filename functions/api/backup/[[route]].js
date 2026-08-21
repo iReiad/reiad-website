@@ -27,7 +27,7 @@
 
 import { db } from "../../_lib/db.ts";
 import { fail, json, methods, notConfigured } from "../../_lib/http.ts";
-import { requireAdmin } from "../../_lib/auth.js";
+import { requireAdmin } from "../../_lib/auth.ts";
 import { articleBackup, fullSnapshot, writeSnapshot } from "../../_lib/backup.js";
 
 export async function onRequest(context) {

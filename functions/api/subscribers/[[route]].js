@@ -20,7 +20,7 @@
 
 import { all, db, one, run } from "../../_lib/db.ts";
 import { body, fail, isEmail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.ts";
-import { requireAdmin, throttle } from "../../_lib/auth.js";
+import { requireAdmin, throttle } from "../../_lib/auth.ts";
 import { htmlResponse } from "../../../shared/headers.ts";
 
 const token = () =>

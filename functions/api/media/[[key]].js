@@ -29,7 +29,7 @@
    ============================================================ */
 
 import { fail, methods, notConfigured, ok, str } from "../../_lib/http.ts";
-import { requireAdmin } from "../../_lib/auth.js";
+import { requireAdmin } from "../../_lib/auth.ts";
 
 /* No SVG. It is a document format that can carry script, and this
    endpoint hands back whatever it was given with that content type. */

@@ -36,8 +36,8 @@ import { all, db, one, run } from "../../_lib/db.ts";
 import {
   body, fail, methods, notConfigured, ok, str, nowISO,
 } from "../../_lib/http.ts";
-import { requireAdmin } from "../../_lib/auth.js";
-import { throttle } from "../../_lib/auth.js";
+import { requireAdmin } from "../../_lib/auth.ts";
+import { throttle } from "../../_lib/auth.ts";
 import { readerFrom } from "../../_lib/reader.ts";
 import { isAdmin } from "../../_lib/admins.ts";
 import { SECTIONS, COMMENT_STATUS, allowed } from "../../../shared/rows.ts";

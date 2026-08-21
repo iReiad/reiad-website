@@ -11,7 +11,7 @@
    the browser. It has to be: 210,000 iterations costs about 30ms
    of CPU and a Worker on the free plan gets 10ms per request, so
    deriving it here got the request killed every time. See the long
-   note at the top of _lib/auth.js for why this gives up nothing.
+   note at the top of _lib/auth.ts for why this gives up nothing.
    ============================================================ */
 
 import { db, setting } from "../../_lib/db.ts";
@@ -20,7 +20,7 @@ import {
   ADMIN_KEY, CLIENT_ITERATIONS, createSession, destroySession, isConfigured,
   isKey, isSalt, isSecure, keyParams, newSalt, readSession, requireAdmin,
   sessionCookie, setAdminKey, throttle, verifyKey, verifyPassword,
-} from "../../_lib/auth.js";
+} from "../../_lib/auth.ts";
 
 export async function onRequest(context) {
   const action = (context.params.route ?? [])[0] ?? "me";

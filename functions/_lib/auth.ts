@@ -1,5 +1,5 @@
 /* ============================================================
-   _lib/auth.js, real authentication, at last.
+   _lib/auth.ts, real authentication, at last.
 
    The old Studio gate ran entirely in the browser, which I was
    careful to describe honestly as a lock on a glass house: with
@@ -51,6 +51,7 @@
    ============================================================ */
 
 import { db, one, run, setting, setSetting } from "./db.ts";
+import type { D1Database, DbEnv } from "./db.ts";
 import { fail, nowISO } from "./http.ts";
 
 const ITERATIONS = 210_000;
@@ -58,24 +59,42 @@ const SESSION_DAYS = 30;
 const COOKIE = "reiad_session";
 const enc = new TextEncoder();
 
+/** What a handler is handed. The Worker passes the request and the
+    environment through every one of these, so the shape is
+    declared once here rather than as `any` at each entry point. */
+export interface AuthContext {
+  request: Request;
+  env: DbEnv & Record<string, unknown>;
+}
+
+/** The three fields the browser needs before it can derive a key:
+    which scheme is stored, over which salt, at how many rounds. */
+export interface KeyParams {
+  scheme: string;
+  iterations: number;
+  salt: string;
+}
+
 /* ---------- encoding ---------- */
-const toB64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
-const fromB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+const toB64 = (buf: ArrayBuffer | Uint8Array): string => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const fromB64 = (s: string): Uint8Array<ArrayBuffer> => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 /* base64url, unpadded. A session token travels in a cookie, and
    padded base64 puts "=" inside the value, which trips up naive
    cookie parsers (including, briefly, the one below). Sticking to
    [A-Za-z0-9_-] sidesteps the entire class of problem. */
-const randomToken = (bytes = 32) =>
+const randomToken = (bytes = 32): string =>
   toB64(crypto.getRandomValues(new Uint8Array(bytes)))
     .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 
-async function sha256(text) {
+async function sha256(text: string): Promise<string> {
   return toB64(await crypto.subtle.digest("SHA-256", enc.encode(text)));
 }
 
 /* ---------- password hashing ---------- */
 
-async function derive(password, salt, iterations = ITERATIONS) {
+async function derive(
+  password: string, salt: Uint8Array<ArrayBuffer>, iterations = ITERATIONS,
+): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]
   );
@@ -92,13 +111,13 @@ async function derive(password, salt, iterations = ITERATIONS) {
     free plan's CPU budget. Kept only so a database written by an
     older deploy can still be signed into (and then re-set), never
     used for anything created from here on. */
-export async function hashPassword(password) {
+export async function hashPassword(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const hash = await derive(password, salt);
   return `pbkdf2$${ITERATIONS}$${toB64(salt)}$${hash}`;
 }
 
-export async function verifyPassword(password, stored) {
+export async function verifyPassword(password: string, stored: unknown): Promise<boolean> {
   const [scheme, iterations, salt, expected] = String(stored ?? "").split("$");
   if (scheme !== "pbkdf2" || !salt || !expected) return false;
   const actual = await derive(password, fromB64(salt), Number(iterations) || ITERATIONS);
@@ -120,16 +139,18 @@ export const newSalt = () => toB64(crypto.getRandomValues(new Uint8Array(16)));
 
 /** What the browser needs before it can derive: which scheme is
     stored, over which salt, at how many iterations. */
-export function keyParams(stored) {
+export function keyParams(stored: unknown): KeyParams {
   const [scheme, iterations, salt] = String(stored ?? "").split("$");
   return { scheme, iterations: Number(iterations) || ITERATIONS, salt: salt ?? "" };
 }
 
-export async function setAdminKey(d1, { salt, iterations, dk }) {
+export async function setAdminKey(
+  d1: D1Database, { salt, iterations, dk }: { salt: string; iterations: number; dk: string },
+): Promise<void> {
   await setSetting(d1, ADMIN_KEY, `pbkdf2c$${iterations}$${salt}$${await sha256(dk)}`);
 }
 
-export async function verifyKey(dk, stored) {
+export async function verifyKey(dk: string, stored: unknown): Promise<boolean> {
   const [scheme, , , expected] = String(stored ?? "").split("$");
   if (scheme !== "pbkdf2c" || !expected) return false;
   return timingSafeEqual(await sha256(dk), expected);
@@ -137,10 +158,10 @@ export async function verifyKey(dk, stored) {
 
 /* base64 of 16 random bytes is 24 chars; of 256 derived bits, 44.
    Both are checked before they reach the database. */
-export const isSalt = (s) => /^[A-Za-z0-9+/]{20,48}={0,2}$/.test(String(s ?? ""));
-export const isKey = (s) => /^[A-Za-z0-9+/]{40,86}={0,2}$/.test(String(s ?? ""));
+export const isSalt = (s: unknown): boolean => /^[A-Za-z0-9+/]{20,48}={0,2}$/.test(String(s ?? ""));
+export const isKey = (s: unknown): boolean => /^[A-Za-z0-9+/]{40,86}={0,2}$/.test(String(s ?? ""));
 
-function timingSafeEqual(a, b) {
+function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
@@ -152,8 +173,8 @@ function timingSafeEqual(a, b) {
 /* Split on the FIRST "=" only: a cookie value may legitimately
    contain more of them, and splitting on all of them silently
    throws such cookies away. */
-function cookieFrom(request) {
-  const out = {};
+function cookieFrom(request: Request): Record<string, string> {
+  const out: Record<string, string> = {};
   for (const part of (request.headers.get("Cookie") ?? "").split(";")) {
     const at = part.indexOf("=");
     if (at < 1) continue;
@@ -167,7 +188,9 @@ function cookieFrom(request) {
     `wrangler pages dev` on http://localhost impossible to sign into.
     Anything that isn't localhost is https in production, Cloudflare
     redirects and HSTS see to that, so this gives up nothing real. */
-export function sessionCookie(token, { clear = false, secure = true } = {}) {
+export function sessionCookie(
+  token: string, { clear = false, secure = true }: { clear?: boolean; secure?: boolean } = {},
+): string {
   return [
     `${COOKIE}=${clear ? "" : token}`,
     "Path=/",
@@ -179,13 +202,13 @@ export function sessionCookie(token, { clear = false, secure = true } = {}) {
 }
 
 /** False only on a local development server. */
-export const isSecure = (request) => {
+export const isSecure = (request: Request): boolean => {
   const url = new URL(request.url);
   return url.protocol === "https:" ||
     !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
 };
 
-export async function createSession(d1, label = "") {
+export async function createSession(d1: D1Database, label = ""): Promise<string> {
   const token = randomToken(32);
   const expires = new Date(Date.now() + SESSION_DAYS * 86400_000).toISOString();
   // Only a hash of the token is stored, so a database dump doesn't
@@ -196,7 +219,7 @@ export async function createSession(d1, label = "") {
   return token;
 }
 
-export async function readSession(context) {
+export async function readSession(context: AuthContext) {
   const d1 = await db(context.env);
   if (!d1) return null;
   const token = cookieFrom(context.request)[COOKIE];
@@ -208,7 +231,7 @@ export async function readSession(context) {
   return row ?? null;
 }
 
-export async function destroySession(context) {
+export async function destroySession(context: AuthContext) {
   const d1 = await db(context.env);
   const token = cookieFrom(context.request)[COOKIE];
   if (d1 && token) await run(d1, `DELETE FROM sessions WHERE token = ?`, await sha256(token));
@@ -217,7 +240,7 @@ export async function destroySession(context) {
 /** Use at the top of any admin endpoint:
       const guard = await requireAdmin(context);
       if (guard) return guard;                */
-export async function requireAdmin(context) {
+export async function requireAdmin(context: AuthContext) {
   const session = await readSession(context);
   return session ? null : fail("unauthorised", 401);
 }
@@ -226,9 +249,9 @@ export async function requireAdmin(context) {
 
 export const ADMIN_KEY = "admin_password";
 
-export const isConfigured = async (d1) => !!(await setting(d1, ADMIN_KEY));
+export const isConfigured = async (d1: D1Database): Promise<boolean> => !!(await setting(d1, ADMIN_KEY));
 
-export async function setAdminPassword(d1, password) {
+export async function setAdminPassword(d1: D1Database, password: string): Promise<void> {
   await setSetting(d1, ADMIN_KEY, await hashPassword(password));
 }
 
@@ -236,7 +259,9 @@ export async function setAdminPassword(d1, password) {
    Keyed by a hash of the caller and the day, so the table can slow
    an abuser down without ever holding an address. */
 
-export async function throttle(context, name, limit, windowMinutes = 15) {
+export async function throttle(
+  context: AuthContext, name: string, limit: number, windowMinutes = 15,
+) {
   const d1 = await db(context.env);
   if (!d1) return false;
 
@@ -250,7 +275,8 @@ export async function throttle(context, name, limit, windowMinutes = 15) {
   const bucket = `${name}:${await sha256(`${ip}|${day}|${name}`)}`;
   const resets = new Date(Date.now() + windowMinutes * 60_000).toISOString();
 
-  const row = await one(d1, `SELECT count, resets FROM throttle WHERE bucket = ?`, bucket);
+  const row = await one<{ count: number; resets: string }>(
+    d1, `SELECT count, resets FROM throttle WHERE bucket = ?`, bucket);
   if (!row || row.resets < nowISO()) {
     await run(d1,
       `INSERT INTO throttle (bucket, count, resets) VALUES (?, 1, ?)

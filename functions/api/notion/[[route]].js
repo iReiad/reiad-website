@@ -29,7 +29,7 @@
    ============================================================ */
 
 import { fail, methods, notConfigured, ok, str } from "../../_lib/http.ts";
-import { requireAdmin } from "../../_lib/auth.js";
+import { requireAdmin } from "../../_lib/auth.ts";
 import { db } from "../../_lib/db.ts";
 import { syncFromNotion } from "../../_lib/sync.js";
 import {

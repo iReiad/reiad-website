@@ -1,7 +1,7 @@
 /* ============================================================
    _lib/admins.js: is this reader one of the site's own people?
 
-   Not the Studio's passphrase admin, which is _lib/auth.js and
+   Not the Studio's passphrase admin, which is _lib/auth.ts and
    one person with a password. This is about a signed-in READER
    holding extra rights: the live-portfolio dashboard's admin
    half, and a comment that goes live without the queue.

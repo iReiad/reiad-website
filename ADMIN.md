@@ -36,7 +36,7 @@ data, held in different places, reachable only by different means.
 
 | | the passphrase | the account |
 | --- | --- | --- |
-| what it is | `functions/_lib/auth.js`: PBKDF2-SHA256 in the browser, a verifier in D1, a session cookie | `functions/_lib/admins.ts`: a reader id in `ADMIN_READERS` or in `public.admins` |
+| what it is | `functions/_lib/auth.ts`: PBKDF2-SHA256 in the browser, a verifier in D1, a session cookie | `functions/_lib/admins.ts`: a reader id in `ADMIN_READERS` or in `public.admins` |
 | what it opens | the site's own content in D1 and R2 | the reader's own rows in Supabase, under RLS |
 | how it is checked | `requireAdmin(context)` | `isAdmin(env, request, readerId)` |
 | endpoints | `auth` `articles` `media` `subscribers` `notion` `signals` `comments` `questions` `enquiries` `backup` | `courses` `broker` `routine` `comments` |

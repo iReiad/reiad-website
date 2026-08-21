@@ -49,7 +49,7 @@
 
 import { db } from "../../_lib/db.ts";
 import { body, fail, methods, notConfigured, ok, nowISO } from "../../_lib/http.ts";
-import { requireAdmin } from "../../_lib/auth.js";
+import { requireAdmin } from "../../_lib/auth.ts";
 import {
   isSchool, stagesOf, lessonOf, lessonsOf, countsOf, SCHOOL_IDS,
 } from "../../../shared/schools.ts";

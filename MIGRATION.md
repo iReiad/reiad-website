@@ -353,14 +353,31 @@ inferred as a union without one.
 `functions/` is compiled by wrangler's esbuild, which type-strips with no
 configuration, so a `.ts` there needs nothing but the rename and real types.
 
-**Done (6):** `_lib/drive.ts` `_lib/ticket.ts` `_lib/quiz.ts`
-`_lib/http.ts` `_lib/sanitise.ts` `api/courses/[[route]].ts`
+**Done (11):** `_lib/drive.ts` `_lib/ticket.ts` `_lib/quiz.ts`
+`_lib/http.ts` `_lib/sanitise.ts` `_lib/admins.ts` `_lib/db.ts`
+`_lib/input.ts` `_lib/reader.ts` `_lib/auth.ts`
+`api/courses/[[route]].ts`
 
-**Left (25):** `_lib/` (`notion` 380, `broker` 277, `auth` 264, `backup` 223,
-`sync` 210, `reader` 192, `input` 172, `db` 163, `admins` 58) and the 16
-handlers under `functions/api/`, `functions/feeds/`, `functions/insights/`.
+**Left (20):** `_lib/` (`notion` 380, `broker` 277, `backup` 223,
+`sync` 210) and the 16 handlers under `functions/api/`,
+`functions/feeds/`, `functions/insights/`.
 
-`_lib/db.js` is the remaining one nearly everything imports, so it is next.
+**`functions/tsconfig.json` is what makes any of it count.** Wrangler's
+esbuild reads no tsconfig, so a `.ts` here typechecked nowhere until
+that file existed, and a `.ts` nothing checks is a `.js` wearing types.
+`scripts/check-types.ts` runs it: 6 configs became 7.
+
+`allowJs` is ON in it and that is the setting with a date on it. Every
+file that converts is checked from that moment; the last conversion is
+what turns it off. Leaving it on afterwards would let an untyped `.js`
+back in silently.
+
+**What a D1 binding is, said once.** There is no
+`@cloudflare/workers-types` here and adding one to type six methods
+would be a dependency the Worker's build does not need, so `db.ts`
+declares the shape structurally and exports it. Nothing else describes
+D1 a second time, which is the rule `check-rows.ts` already enforces for
+the database's vocabulary.
 
 **`insights/[slug].js` was edited and NOT converted**, which is the one
 exception "convert what you touch" has taken so far and it is worth the

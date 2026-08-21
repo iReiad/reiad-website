@@ -13,8 +13,8 @@
 
 import { all, db, one, run } from "../../_lib/db.ts";
 import { body, fail, methods, notConfigured, ok, str, nowISO } from "../../_lib/http.ts";
-import { requireAdmin } from "../../_lib/auth.js";
-import { throttle } from "../../_lib/auth.js";
+import { requireAdmin } from "../../_lib/auth.ts";
+import { throttle } from "../../_lib/auth.ts";
 import { QUESTION_STATUS, allowed } from "../../../shared/rows.ts";
 import { read } from "../../_lib/input.ts";
 

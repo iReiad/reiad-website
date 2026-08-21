@@ -16,7 +16,7 @@
 
    ---- two gates, and they are not interchangeable ----
 
-   `requireAdmin()` in `functions/_lib/auth.js` is the Studio
+   `requireAdmin()` in `functions/_lib/auth.ts` is the Studio
    passphrase: a session cookie over D1, and it opens the site's
    own content.
 

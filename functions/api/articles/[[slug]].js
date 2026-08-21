@@ -18,7 +18,7 @@ import { all, db, one, run } from "../../_lib/db.ts";
 import {
   body, fail, methods, notConfigured, ok, str, nowISO, today,
 } from "../../_lib/http.ts";
-import { requireAdmin, readSession } from "../../_lib/auth.js";
+import { requireAdmin, readSession } from "../../_lib/auth.ts";
 import { sanitiseHTML, readingMinutes } from "../../_lib/sanitise.ts";
 import { SECTIONS, allowed } from "../../../shared/rows.ts";
 
