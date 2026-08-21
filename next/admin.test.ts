@@ -8,9 +8,9 @@
    `scripts/admin.test.ts` asserts what the SOURCE says. This
    drives the page, and the two catch different things: a panel
    that renders perfectly and does nothing looks exactly like one
-   that works, which is the failure `app/desk.test.ts` was written
-   for and the reason ADMIN.md stage 5 does not retire `/desk`
-   until this file covers what that one covers.
+   that works, which is the failure
+   `archive/desk-react/desk.test.ts` was written for and what this
+   file inherited when the desk retired.
 
    ---- the one rule this exists to hold ----
 
@@ -769,10 +769,10 @@ console.log("\n/admin, the three the desk never had");
 /* ============================================================
    6. What the desk did that a queue has to keep
 
-   Each of these is a check in `app/desk.test.ts`, which is 76 of
-   them and every one a feature the old desk had. `/desk` does not
-   retire until they are covered, and a panel that renders is not
-   the same as a panel that does them.
+   Each of these is a check in `archive/desk-react/desk.test.ts`,
+   which is 76 of them and every one a feature the desk had. A
+   panel that renders is not the same as a panel that does them,
+   which is why they came here rather than retiring with it.
    ============================================================ */
 console.log("\n/admin, the desk's own features");
 {

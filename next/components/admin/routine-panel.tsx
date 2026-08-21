@@ -10,7 +10,7 @@
    That is deliberate at the endpoint and it costs this panel one
    piece of care. An empty list means "not an admin" and it also
    means "an admin with no templates", and a panel that drew
-   nothing for both would be the failure `app/desk.test.ts` exists
+   nothing for both would be the failure `next/admin.test.ts` exists
    to catch: an empty list reads exactly like a broken one. So the
    two are told apart by whether there is a signed-in reader at
    all, and each says which it is.

@@ -23,7 +23,7 @@
    ADMIN.md's second rule is that a panel missing its credential
    must never draw as an empty one: an empty list reads exactly
    like a working panel with nothing in it, and that is the bug
-   `app/desk.test.ts` exists for. So there are five states here and
+   `next/admin.test.ts` exists for. So there are five states here and
    not three, and every one of them says something.
 
    ---- why it refetches rather than patching in place ----

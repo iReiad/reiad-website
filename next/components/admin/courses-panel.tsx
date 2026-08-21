@@ -23,7 +23,7 @@
    without them. So a red row here is a statement about
    configuration, not a bug, and it says which secret is missing
    rather than drawing an empty list. That is the rule
-   `app/desk.test.ts` was written for.
+   `next/admin.test.ts` was written for.
    ============================================================ */
 
 import { useEffect, useState } from "react";

@@ -82,7 +82,7 @@ export function AdminHealth() {
         <h3>Health</h3>
         {/* The Worker not answering IS the answer, and saying it
             plainly beats an empty panel, which is the rule
-            app/desk.test.ts was written for. */}
+            next/admin.test.ts was written for. */}
         <Row label="The Worker" state="down" note="no usable answer from /api/admin/health" />
         <p className="ad-quiet">
           Either it did not answer, or it answered something that is not a health

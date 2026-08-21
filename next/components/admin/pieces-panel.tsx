@@ -3,7 +3,7 @@
 /* ============================================================
    Published: everything in the database, and what is wrong with it.
 
-   ADMIN.md §3 B 2, ported out of `app/src/Published.tsx`. A port
+   ADMIN.md §3 B 2, ported out of `archive/desk-react/Published.tsx`. A port
    is finished when it does what the thing it replaced did, not
    when it renders, so every action the desk had is here: publish
    and unpublish, move between sections, copy the link, delete,
