@@ -189,6 +189,38 @@ console.log("\nnothing locked looks empty");
   ok("and both ways in are offered",
     /Sign in at the Studio/.test(panel) && /Sign in to your account/.test(panel));
 
+  /* ---- and nothing in the middle may keep a copy ----
+
+     The middleware sent `public, max-age=60,
+     stale-while-revalidate=600` for every path, /admin and
+     /account included. `public` invites every shared cache
+     between here and the reader to keep one person's page, and
+     `stale-while-revalidate` lets one serve it ten minutes past
+     its own expiry.
+
+     THE FAILURE THIS EXISTS FOR. /admin drew its heading and two
+     cards and none of its panels, in one browser and not
+     another, for days. Clearing every byte of site data did not
+     fix it, which is what ruled out the service worker: what a
+     cache in the middle holds is not the browser's to clear. */
+  const middleware = read("next/middleware.ts");
+  ok("private pages are sent private, no-store",
+    /private, no-store/.test(middleware));
+  for (const path of ["/admin", "/account", "/studio", "/skills\\/courses"]) {
+    ok(`and ${path.replace("\\", "")} is one of them`,
+      new RegExp(`\\^\\\\/${path.replace("/", "").replace("\\/", "\\\\/")}`).test(middleware)
+      || middleware.includes(path));
+  }
+
+  /* The page names the build that served it, in the HTML, so a
+     screenshot of a wrong page says which build drew it. Server
+     side deliberately: everything else that could report it is
+     client code, and a browser running an older bundle reports
+     the older bundle's answer or nothing. */
+  const route = read("next/app/(site)/admin/page.tsx");
+  ok("and /admin names its build in the server-rendered HTML",
+    /SITE_BUILD/.test(route) && /build \$\{|`build /.test(route));
+
   ok("a Worker that does not answer is said, not drawn as nothing",
     /no usable answer from/.test(health));
 

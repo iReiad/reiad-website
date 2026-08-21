@@ -44,9 +44,33 @@
    ============================================================ */
 
 import type { NextConfig } from "next";
+
+/* ---- which build is this ----
+
+   Cloudflare Workers Builds sets WORKERS_CI_COMMIT_SHA; the other
+   two are what the same fact is called elsewhere, so a build
+   started by hand or by an action still has a name.
+
+   It exists because /admin rendered its heading and two cards and
+   none of its panels, in one browser and not another, and nothing
+   on the page could say which build was answering. Every check
+   reads what the server sends; none of them can see what a
+   reader's own machine, or a cache between the two, decided to
+   hand over instead. A page that names its build turns that from
+   an investigation into a screenshot. */
+const BUILD = process.env.WORKERS_CI_COMMIT_SHA
+  ?? process.env.CF_PAGES_COMMIT_SHA
+  ?? process.env.GITHUB_SHA
+  ?? "";
+
 export default {
   reactStrictMode: true,
   transpilePackages: ["@reiad/shared"],
+  /* Only when it is known: Next's own default is a fresh id per
+     build, and replacing it with a constant would make two
+     different builds claim the same one. */
+  ...(BUILD ? { generateBuildId: () => BUILD } : {}),
+  env: { SITE_BUILD: BUILD },
 } satisfies NextConfig;
 
 /* There is no setting here that reduces what a reading page ships.

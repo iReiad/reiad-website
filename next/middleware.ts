@@ -37,6 +37,34 @@ import { SECURITY_HEADERS } from "@reiad/shared/headers";
    functions/insights/[slug].ts sends. */
 const ARTICLE_CACHE = "public, max-age=60, stale-while-revalidate=600";
 
+/* ---- and the pages that are one person's ----
+
+   `public` invites every shared cache between here and the reader
+   to keep a copy and hand it to the next request for the same
+   address, and `stale-while-revalidate` lets one serve a copy up
+   to ten minutes past its own expiry. Both were being sent for
+   /admin, /account and /studio.
+
+   THE FAILURE THIS EXISTS FOR. /admin rendered its heading and
+   its two credential cards and none of the panels above or below
+   them, for days, in one browser and not another. Clearing every
+   byte of site data did not fix it, which is what finally ruled
+   out the service worker: what a shared cache holds is not the
+   browser's to clear.
+
+   A page whose whole content depends on who is asking cannot be
+   cached by anything that does not know who is asking, and no
+   cache in the middle does. */
+const PRIVATE_CACHE = "private, no-store";
+
+/* Matched on the path so that a route added under one of these
+   gets it without knowing this file exists. `/skills/courses` is
+   here for the reason at the top of its own section in CLAUDE.md:
+   it is somebody else's course, behind `isAdmin()`, and a shared
+   copy of it is a redistribution. */
+const PRIVATE = [/^\/admin(\/|$)/, /^\/account(\/|$)/, /^\/studio(\/|$)/,
+  /^\/skills\/courses(\/|$)/];
+
 export function middleware(request: NextRequest) {
   const res = NextResponse.next();
 
@@ -47,8 +75,10 @@ export function middleware(request: NextRequest) {
   /* Only the article itself. Next's own assets under /_next/ are
      content-hashed and already immutable, and overwriting their
      Cache-Control with a one-minute one would be a downgrade. */
-  if (!request.nextUrl.pathname.startsWith("/_next/")) {
-    res.headers.set("Cache-Control", ARTICLE_CACHE);
+  const path = request.nextUrl.pathname;
+  if (!path.startsWith("/_next/")) {
+    res.headers.set("Cache-Control",
+      PRIVATE.some((re) => re.test(path)) ? PRIVATE_CACHE : ARTICLE_CACHE);
   }
 
   return res;

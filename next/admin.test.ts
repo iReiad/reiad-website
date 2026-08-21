@@ -525,6 +525,18 @@ console.log("/admin with no credential");
   ok("and it says whether a newer worker is waiting",
     body.includes("A newer one waiting to take over"));
 
+  /* SERVER-rendered, so it survives whatever the client bundle
+     turns out to be. Every other thing that could report which
+     build answered is client code, and a browser running an older
+     one reports the older one's answer or nothing: /admin rendered
+     two cards and nothing else, in one browser and not another,
+     for days, and no screenshot of it could say which build had
+     served it. */
+  ok("the page names the build that served it, in the HTML",
+    /build (?:[0-9a-f]{8}|not named by this deploy)/.test(body), body.slice(0, 300));
+  ok("and when it was built, so a stale copy is visible as one",
+    /built \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC/.test(body));
+
   await page.close();
 }
 
