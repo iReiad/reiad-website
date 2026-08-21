@@ -117,7 +117,12 @@ function Gate({ which, held }: { which: keyof typeof CREDENTIALS; held: boolean 
         <span className="ad-dot" aria-hidden="true" data-state={held ? "up" : "unset"} />
         {c.name}
       </h3>
-      <p className="ad-quiet">{held ? "Held. It opens " : "Not held. It would open "}{c.opens}</p>
+      {/* What a credential OPENS is said only to somebody who
+          already holds one. "pieces, comments, questions,
+          enquiries, subscribers, media and the backups" is an
+          inventory of this site's private surface, and it was
+          printed for anybody who opened the page. */}
+      <p className="ad-quiet">{held ? <>Held. It opens {c.opens}</> : "Not held."}</p>
       {held ? null : "where" in c ? (
         <ButtonLink kind="ghost" size="sm" href={c.where}>{c.press}</ButtonLink>
       ) : (
@@ -204,6 +209,55 @@ export function AdminPanel() {
       <div className="ad-page">
         <WorkerPanel />
         <p className="ad-quiet" role="status">এক মুহূর্ত…</p>
+      </div>
+    );
+  }
+
+  /* ---- neither credential: a sign-in page, and that is all ----
+
+     This used to render the whole shell to anybody: Health, both
+     gate cards with an inventory of what each one opens, and
+     thirteen panel headings under them. Every one of those is a
+     description of a private surface, and a stranger reading it
+     learns what this site keeps and where, without holding
+     anything.
+
+     ADMIN.md's rule that a locked panel must never look like an
+     empty one still stands, and it is about somebody who is
+     ALREADY through the door: which of their two credentials is
+     missing, and what it would open. It was never an argument
+     for showing the door's shape to the street.
+
+     The browser panel stays, and it is the one thing that
+     should: it reports what this VISITOR's own device is
+     holding, tells a stranger nothing about the site, and is the
+     way out of a stale cache for somebody who cannot load the
+     page well enough to sign in. */
+  if (!pass && !account) {
+    return (
+      <div className="ad-page">
+        <Surface material="pane" className="ad-panel">
+          <h3>Sign in</h3>
+          <p className="ad-quiet">
+            This page needs a credential. There are two, they open different
+            things, and neither can stand in for the other.
+          </p>
+          <div className="ad-gates">
+            <ButtonLink kind="ghost" size="sm" href={CREDENTIALS.pass.where}>
+              {CREDENTIALS.pass.press}
+            </ButtonLink>
+            <Button kind="ghost" size="sm"
+                    onClick={() => {
+                      const bar = document.querySelector<HTMLElement>(CREDENTIALS.account.trigger);
+                      if (bar) { bar.click(); return; }
+                      window.location.href = "/account";
+                    }}>
+              {CREDENTIALS.account.press}
+            </Button>
+          </div>
+        </Surface>
+
+        <WorkerPanel />
       </div>
     );
   }
