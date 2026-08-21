@@ -479,9 +479,21 @@ console.log("/admin with no credential");
   /* The two gates say what each credential opens and offer the
      one thing to press. */
   ok("both gates are shown", body.includes("The passphrase") && body.includes("Your account"));
-  ok("and each offers somewhere to sign in",
-    await page.locator('a[href="/studio"]').count() > 0
-    && await page.locator('a[href="/account"]').count() > 0);
+  ok("the passphrase gate goes to the Studio, which is where it is set",
+    await page.locator('.ad-gate a[href="/studio"]').count() === 1);
+
+  /* The account gate is a BUTTON, and the assertion this replaced
+     could not have caught the bug it shipped with: it asked
+     whether `a[href="/account"]` existed anywhere on the page,
+     and the footer carries one, so it passed without ever looking
+     at the gate. Meanwhile the gate walked the reader to /account
+     to sign in, `signInWithGoogle()` sent `location.pathname` as
+     the return address, and they came back to /account and stayed
+     there. The sign-in has to happen where the reader stands. */
+  ok("the account gate opens the sign-in menu rather than navigating",
+    await page.locator('.ad-gate button[popovertarget="account-menu"]').count() === 1);
+  ok("and no gate sends the reader to /account to do it",
+    await page.locator('.ad-gate a[href="/account"]').count() === 0);
 
   await page.close();
 }
