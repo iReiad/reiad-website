@@ -495,6 +495,20 @@ console.log("/admin with no credential");
   ok("and no gate sends the reader to /account to do it",
     await page.locator('.ad-gate a[href="/account"]').count() === 0);
 
+  /* The browser panel, which is the one that has to be there when
+     everything else is not. It asks no endpoint, so no credential
+     and no failure can leave it pending, and it is what tells a
+     reader looking at a wrong page that their own worker is
+     serving it. */
+  ok("the browser panel is there with no credential",
+    body.includes("This browser"));
+  ok("it says whether a worker is answering this page",
+    body.includes("Worker answering this page"));
+  ok("it says whether a newer one is waiting, which is the state that traps a reader",
+    body.includes("A newer one waiting to take over"));
+  ok("and it offers the way out without devtools",
+    await page.locator("button", { hasText: "Clear this browser's copy" }).count() === 1);
+
   await page.close();
 }
 
