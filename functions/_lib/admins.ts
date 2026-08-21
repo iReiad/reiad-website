@@ -1,5 +1,5 @@
 /* ============================================================
-   _lib/admins.js: is this reader one of the site's own people?
+   _lib/admins.ts: is this reader one of the site's own people?
 
    Not the Studio's passphrase admin, which is _lib/auth.ts and
    one person with a password. This is about a signed-in READER

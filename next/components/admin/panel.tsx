@@ -11,7 +11,7 @@
      the same thing. They authorise different data, held in
      different places, reachable only by different means.
 
-   The passphrase (`functions/_lib/auth.js`, a session cookie over
+   The passphrase (`functions/_lib/auth.ts`, a session cookie over
    D1) opens the site's own content. The account
    (`functions/_lib/admins.ts`, a reader id) opens rows in
    Supabase that row-level security answers with the reader's own

@@ -117,7 +117,7 @@ export interface ArticleRow {
       `Equities|Beginner`. */
   topics: string;
   lang: string;
-  /** Sanitised HTML, by `functions/_lib/sanitise.js` on the way
+  /** Sanitised HTML, by `functions/_lib/sanitise.ts` on the way
       in. Never sanitised on the way out, which is why the way in
       is the only place that may be wrong. */
   body: string;

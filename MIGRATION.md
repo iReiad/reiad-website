@@ -399,11 +399,21 @@ annotations nothing reads. `functions/tsconfig.test.json` is what holds
 them to theirs and `check-types.ts` runs it, on the root install, so it
 runs in CI as well.
 
-`notion.test.ts` imports the one module it tests that is still
-JavaScript, so `_lib/notion.d.ts` describes the six exports it uses and
-nothing else. It goes on the day `notion.js` becomes `notion.ts`: a
-module that has converted describes itself, which is the same end state
-`aab/src/types/` has.
+`_lib/notion.d.ts` went on 21 August 2026, with the module it
+described. It was six exports of `notion.js` hand-written beside it so
+`notion.test.ts` could import them; a module that has converted
+describes itself, so the interfaces are in `notion.ts` and there is
+one file where there were two. That is the end state `aab/src/types/`
+is heading for as well: a declaration file is a promise about code
+nothing checks, and it stops being needed the moment the code checks
+itself.
+
+**`_lib/` is entirely TypeScript as of 21 August 2026** except
+`broker.js`. `r2.ts` came out of that sweep: `backup.ts` had declared
+an R2 bucket for itself, `sync.ts` needed the same interface plus
+`head()`, and two structural declarations of one runtime object are
+two that drift. One vocabulary, one place, the rule `check-rows.ts`
+already holds the database to.
 
 ### app/
 

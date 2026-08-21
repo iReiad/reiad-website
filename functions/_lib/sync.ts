@@ -1,5 +1,5 @@
 /* ============================================================
-   _lib/sync.js, keeping Notion and the site in step.
+   _lib/sync.ts, keeping Notion and the site in step.
 
    Run from a Cron trigger (see wrangler.toml) and from
    /api/notion/sync for an on-demand pass. For every article that
@@ -30,9 +30,59 @@
    ============================================================ */
 
 import { all, one, run } from "./db.ts";
+import type { D1Database } from "./db.ts";
+import type { MediaEnv, R2Bucket } from "./r2.ts";
 import { nowISO } from "./http.ts";
 import { sanitiseHTML, readingMinutes } from "./sanitise.ts";
-import { client, convert, fetchBlocks, readFields } from "./notion.js";
+import { client, convert, fetchBlocks, readFields } from "./notion.ts";
+import type { NotionPage } from "./notion.ts";
+
+/** What this needs off the Worker's environment: the token, and the
+    bucket the photos are copied into. Both optional, and the two
+    absences are different: no token is "not configured" and the run
+    ends; no bucket leaves the photos where they are. */
+export interface SyncEnv extends MediaEnv {
+  NOTION_TOKEN?: string;
+}
+
+/** The columns the query below names. Written out because the
+    handful of fields this loop reads is the whole contract with
+    that SELECT, and a `Row` would hand back `unknown` for each. */
+interface LinkedArticle {
+  slug: string;
+  notion_page_id: string;
+  notion_synced_at: string | null;
+  status: string;
+}
+
+/** The article being replaced, as far as the version it is saved
+    into needs it. */
+interface ArticleRow {
+  slug: string;
+  title?: string;
+  dek?: string;
+  tag?: string;
+  lang?: string;
+  body?: string;
+  cover?: string;
+}
+
+/** What one pass says it did. A run that dies silently is worse
+    than one that says what it managed, so every branch below ends
+    in a line here. */
+export interface SyncRan {
+  ok: true;
+  checked: number;
+  updated: Array<{ slug: string; photos: number; photosSkipped?: number; truncated?: boolean }>;
+  skipped: Array<{ slug: string; why: string }>;
+  failed: Array<{ slug: string; error: string }>;
+}
+
+/** A pass that never started, which is not the same as one that
+    found nothing to do. Zeroed counts would say "I looked at three
+    articles and none had changed", and the answer here is "there is
+    no Notion token, so nothing was looked at". */
+export type SyncReport = SyncRan | { ok: false; reason: string };
 
 /* A Cron run gets the same subrequest budget as any other request,
    50 on the free plan, and each article costs at least one page
@@ -45,12 +95,12 @@ const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 /** Words in a Notion Status/State column that mean "put it out". */
 const READY = /^(live|published|publish|ready|done|complete[d]?)$/i;
 
-const IMAGE_EXT = {
+const IMAGE_EXT: Record<string, string> = {
   "image/webp": "webp", "image/jpeg": "jpg", "image/png": "png",
   "image/gif": "gif", "image/avif": "avif",
 };
 
-async function hash(buffer) {
+async function hash(buffer: ArrayBuffer): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", buffer);
   return [...new Uint8Array(digest, 0, 8)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
@@ -63,11 +113,13 @@ async function hash(buffer) {
  * useless in a stored article, because the signature expires. This
  * turns them into /media paths.
  */
-async function rehost(html, slug, bucket) {
+async function rehost(
+  html: string, slug: string, bucket: R2Bucket | undefined,
+): Promise<{ html: string; copied: number; skipped: number }> {
   if (!bucket) return { html, copied: 0, skipped: 0 };
 
   const pattern = /<img\b[^>]*\bsrc="([^"]*\/api\/notion\/asset\?u=([^"&]+))"/g;
-  const seen = new Map();
+  const seen = new Map<string, string>();
   let copied = 0;
   let skipped = 0;
 
@@ -100,7 +152,7 @@ async function rehost(html, slug, bucket) {
 
   // Replace whole src attributes, so a signed URL cannot survive by
   // being a substring of something else.
-  const out = html.replace(pattern, (whole, src, encoded) => {
+  const out = html.replace(pattern, (whole: string, src: string, encoded: string) => {
     const hosted = seen.get(encoded);
     return hosted ? whole.replace(src, hosted) : whole;
   });
@@ -112,34 +164,41 @@ async function rehost(html, slug, bucket) {
  * One pass. Returns a report rather than throwing, because a Cron run
  * that dies silently is worse than one that says what it managed.
  */
-export async function syncFromNotion(env, d1, { origin, force = false } = {}) {
+export async function syncFromNotion(
+  env: SyncEnv, d1: D1Database,
+  { origin, force = false }: { origin: string; force?: boolean },
+): Promise<SyncReport> {
   if (!env.NOTION_TOKEN) return { ok: false, reason: "not-configured" };
 
   const notion = client(env.NOTION_TOKEN);
-  const linked = await all(d1,
+  const linked = await all<LinkedArticle>(d1,
     `SELECT slug, notion_page_id, notion_synced_at, status
        FROM articles
       WHERE notion_page_id IS NOT NULL AND notion_page_id != ''
       ORDER BY COALESCE(notion_synced_at, '') ASC
       LIMIT ?`, MAX_ARTICLES_PER_RUN);
 
-  const report = { ok: true, checked: 0, updated: [], skipped: [], failed: [] };
+  const report: SyncRan = { ok: true, checked: 0, updated: [], skipped: [], failed: [] };
 
   for (const article of linked) {
     report.checked++;
     try {
-      const page = await notion(`/pages/${article.notion_page_id}`);
+      const page = await notion(`/pages/${article.notion_page_id}`) as NotionPage;
 
       // Untouched since the last pass? Nothing to do, and no block
       // fetches spent finding that out.
       if (!force && article.notion_synced_at
-          && page.last_edited_time <= article.notion_synced_at) {
+          && (page.last_edited_time ?? "") <= article.notion_synced_at) {
         report.skipped.push({ slug: article.slug, why: "unchanged" });
         continue;
       }
 
       const fields = readFields(page.properties);
-      if (fields.status && !READY.test(fields.status)) {
+      /* A multi-select status answers a list, and `String()` on one
+         is exactly what `.test()` did when this file was untyped:
+         a column holding two values is not one of the ready words
+         and the page is left alone, which is the right answer. */
+      if (fields.status && !READY.test(String(fields.status))) {
         report.skipped.push({ slug: article.slug, why: `status is "${fields.status}"` });
         continue;
       }
@@ -162,7 +221,8 @@ export async function syncFromNotion(env, d1, { origin, force = false } = {}) {
 
       // Same body as last time? Then this was a Notion edit that did
       // not change anything we render, and the article is left alone.
-      const current = await one(d1, `SELECT * FROM articles WHERE slug = ?`, article.slug);
+      const current = await one<ArticleRow>(
+        d1, `SELECT * FROM articles WHERE slug = ?`, article.slug);
       if (current && current.body === clean && !force) {
         await run(d1, `UPDATE articles SET notion_synced_at = ? WHERE slug = ?`, now, article.slug);
         report.skipped.push({ slug: article.slug, why: "no rendered change" });
@@ -202,7 +262,10 @@ export async function syncFromNotion(env, d1, { origin, force = false } = {}) {
         ...(state.truncated ? { truncated: true } : {}),
       });
     } catch (err) {
-      report.failed.push({ slug: article.slug, error: String(err?.message ?? err) });
+      report.failed.push({
+        slug: article.slug,
+        error: String(err instanceof Error ? err.message : err),
+      });
     }
   }
 

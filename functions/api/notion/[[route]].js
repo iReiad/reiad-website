@@ -6,7 +6,7 @@
    GET /api/notion/pages/<id>          admin: one page, as article HTML
    GET /api/notion/asset?u=<url>       admin: proxy one Notion image
 
-   The conversion itself lives in _lib/notion.js, which is pure and
+   The conversion itself lives in _lib/notion.ts, which is pure and
    tested. What's left here is the HTTP: who's allowed, what the
    errors mean, and the image proxy.
 
@@ -31,10 +31,10 @@
 import { fail, methods, notConfigured, ok, str } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.ts";
 import { db } from "../../_lib/db.ts";
-import { syncFromNotion } from "../../_lib/sync.js";
+import { syncFromNotion } from "../../_lib/sync.ts";
 import {
   client, convert, fetchBlocks, normaliseId, pageTitle, proxyURL, readFields,
-} from "../../_lib/notion.js";
+} from "../../_lib/notion.ts";
 
 /* Where a Notion file can legitimately come from. */
 const ASSET_HOSTS =

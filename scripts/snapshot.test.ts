@@ -20,7 +20,9 @@
    ============================================================ */
 
 import { writeSnapshot, articleBackup, fullSnapshot, BACKUP_FORMAT }
-  from "../functions/_lib/backup.js";
+  from "../functions/_lib/backup.ts";
+import type { BackupEnv } from "../functions/_lib/backup.ts";
+import type { D1Database } from "../functions/_lib/db.ts";
 
 /** One row of any table, which is all a stub database needs to
     know about one. The ten tables below are ten different shapes
@@ -76,6 +78,11 @@ const TABLES: Record<string, Row[]> = {
  * `all()` in db.js calls prepare().bind().all(), and this mirrors
  * exactly that shape and nothing else.
  */
+/* A double, not a database. It answers the one call path these
+   three functions take, `prepare().bind().all()`, and the cast at
+   each use says so: widening `D1Database` until a partial fake
+   satisfied it would make the interface describe the test rather
+   than D1. */
 const d1 = (missing = new Set<string>()) => ({
   prepare(sql: string) {
     const table = sql.match(/FROM (\w+)/)?.[1];
@@ -119,7 +126,7 @@ console.log("the nightly snapshot");
 
 /* ---------- 1. the public backup, again, through the real function ---------- */
 {
-  const backup = await articleBackup(d1());
+  const backup = await articleBackup(d1() as unknown as D1Database);
   const text = JSON.stringify(backup);
 
   check("format", backup.format, BACKUP_FORMAT);
@@ -136,7 +143,7 @@ console.log("the nightly snapshot");
 
 /* ---------- 2. the private snapshot ---------- */
 {
-  const snap = await fullSnapshot(d1());
+  const snap = await fullSnapshot(d1() as unknown as D1Database);
   const names = Object.keys(snap.tables).sort();
   const articles = tableOf(snap, "articles");
 
@@ -156,7 +163,7 @@ console.log("the nightly snapshot");
 
 /* ---------- 3. a table that does not exist yet ---------- */
 {
-  const snap = await fullSnapshot(d1(new Set(["reactions", "views"])));
+  const snap = await fullSnapshot(d1(new Set(["reactions", "views"])) as unknown as D1Database);
   check("the missing ones are named", snap.missing.sort(), ["reactions", "views"]);
   check("and the rest survived", Object.keys(snap.tables).length, 6);
   okay("articles still there", tableOf(snap, "articles").length === 2);
@@ -185,7 +192,13 @@ console.log("the nightly snapshot");
     },
   };
 
-  const report = await writeSnapshot(env, d1());
+  /* Two methods, and the cast is the point rather than a way round
+     the type. `writeSnapshot` deletes an aged-out snapshot BY NAME
+     and never lists the bucket, because that bucket also holds every
+     photo on the site, so a stub carrying a `list()` would be a stub
+     inviting the version of this function that has one. */
+  const report = await writeSnapshot(
+    env as unknown as BackupEnv, d1() as unknown as D1Database);
   const today = new Date().toISOString().slice(0, 10);
 
   okay("it reports success", report.ok);
@@ -207,7 +220,7 @@ console.log("the nightly snapshot");
   /* The one that would matter at three in the morning: no R2
      binding must be a report, not a throw, or the cron dies and
      takes the log line with it. */
-  const none = await writeSnapshot({}, d1());
+  const none = await writeSnapshot({}, d1() as unknown as D1Database);
   check("no R2 is a reason, not an exception", none, { ok: false, reason: "no-r2" });
 }
 

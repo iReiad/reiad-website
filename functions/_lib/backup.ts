@@ -1,5 +1,5 @@
 /* ============================================================
-   _lib/backup.js: a copy of the database that is not the database.
+   _lib/backup.ts: a copy of the database that is not the database.
 
    Until the Studio existed, the repository WAS the backup: every
    article was a file in git with its whole history. The moment D1
@@ -70,9 +70,39 @@
    ============================================================ */
 
 import { all } from "./db.ts";
+import type { MediaEnv } from "./r2.ts";
 
 /** Bumped when the shape below changes, so a restore can refuse a
     file it does not understand rather than half-applying it. */
+import type { D1Database, Row } from "./db.ts";
+
+/** What this file needs off the Worker's environment: the bucket,
+    and nothing else. `MediaEnv` is the declaration, in `r2.ts`,
+    because two other modules bind the same thing. */
+export type BackupEnv = MediaEnv;
+
+/** What goes in git: live articles and nothing else. Every byte of
+    it is already served at a public URL, which is the whole reason
+    it is safe to commit. */
+export interface BackupFile {
+  format: number;
+  kind: "articles";
+  taken_at: string;
+  note: string;
+  count: number;
+  articles: Row[];
+}
+
+/** What goes to R2: every table except the two that are state. */
+export interface Snapshot {
+  format: number;
+  kind: "full";
+  taken_at: string;
+  counts: Record<string, number>;
+  missing: string[];
+  tables: Record<string, Row[]>;
+}
+
 export const BACKUP_FORMAT = 1;
 
 /* Every table in the R2 snapshot, and the order they have to be
@@ -120,7 +150,7 @@ const NEVER = new Set(["sessions", "throttle"]);
  * other half of the boundary: a draft is unpublished writing, and
  * committing it to a public repository publishes it.
  */
-export async function articleBackup(d1) {
+export async function articleBackup(d1: D1Database): Promise<BackupFile> {
   const rows = await all(
     d1,
     `SELECT slug, section, title, dek, tag, topics, lang, body, minutes,
@@ -138,7 +168,7 @@ export async function articleBackup(d1) {
       "Live articles only. Generated nightly; do not edit by hand. "
       + "Drafts, anything belonging to a reader, and any identifier "
       + "of a system outside this site are deliberately absent: see "
-      + "functions/_lib/backup.js.",
+      + "functions/_lib/backup.ts.",
     count: rows.length,
     articles: rows,
   };
@@ -151,9 +181,9 @@ export async function articleBackup(d1) {
  * than an empty list, and that must not lose the other seven, so
  * each one is caught on its own and recorded as missing.
  */
-export async function fullSnapshot(d1) {
-  const tables = {};
-  const missing = [];
+export async function fullSnapshot(d1: D1Database): Promise<Snapshot> {
+  const tables: Record<string, Row[]> = {};
+  const missing: string[] = [];
 
   for (const table of SNAPSHOT_TABLES) {
     if (NEVER.has(table)) continue;          // see the note above
@@ -183,7 +213,7 @@ export async function fullSnapshot(d1) {
 /** One snapshot a day, kept for a fortnight, plus `latest`. */
 const KEEP_DAYS = 14;
 
-const dayKey = (at) => `backups/${at.toISOString().slice(0, 10)}.json`;
+const dayKey = (at: Date): string => `backups/${at.toISOString().slice(0, 10)}.json`;
 
 /**
  * Take a snapshot and put it in R2. Returns what happened, so the
@@ -194,7 +224,7 @@ const dayKey = (at) => `backups/${at.toISOString().slice(0, 10)}.json`;
  * and a list-then-delete loop over it is one typo away from being
  * the worst function in this repository.
  */
-export async function writeSnapshot(env, d1) {
+export async function writeSnapshot(env: BackupEnv, d1: D1Database) {
   if (!env?.MEDIA) return { ok: false, reason: "no-r2" };
 
   const at = new Date();

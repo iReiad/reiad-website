@@ -1,5 +1,5 @@
 /* ============================================================
-   _lib/notion.js, turning a Notion page into this site's HTML.
+   _lib/notion.ts, turning a Notion page into this site's HTML.
 
    Kept apart from the route that serves it for one reason: this is
    the intricate half and it is pure, so it can be tested without a
@@ -11,6 +11,121 @@
    to survive that allowlist afterwards anyway. So every block maps
    to something the stylesheet already draws, or to nothing at all.
    ============================================================ */
+
+/* ---- what a Notion payload is ----
+
+   These were `_lib/notion.d.ts`, a hand-written declaration beside
+   a JavaScript module. A module that has been converted describes
+   itself, so they live here and that file is gone. */
+
+/** One run of Notion rich text. */
+export interface RichText {
+  plain_text?: string;
+  annotations?: {
+    bold?: boolean;
+    italic?: boolean;
+    underline?: boolean;
+    code?: boolean;
+  };
+  href?: string | null;
+  text?: { link?: { url?: string } | null } | null;
+}
+
+/** A block, which carries its own data under a key named by its
+    type: a paragraph has a `paragraph`. That is what the index
+    signature is, rather than a way of allowing anything. */
+export interface Block {
+  id?: string;
+  type?: string;
+  has_children?: boolean;
+  [data: string]: unknown;
+}
+
+/** Whatever Notion answered. `results` and the two pagination
+    fields are what this module reads; the index signature is for
+    the callers that read a page's own properties off it, and is
+    `unknown` rather than `any` so they have to look. */
+export interface NotionResponse {
+  results?: Block[];
+  has_more?: boolean;
+  next_cursor?: string | null;
+  [key: string]: unknown;
+}
+
+/** The client `convert` is handed: a path in, Notion's answer out.
+    The test passes a fake one, which is the whole reason this
+    module takes it as an argument. The options exist for the two
+    callers that POST (search, and a database query); everything in
+    this file GETs and passes none. */
+export type NotionFetch = (
+  path: string,
+  options?: { method?: string; body?: unknown },
+) => Promise<NotionResponse>;
+
+/** What the client throws. Notion answers a JSON body with its own
+    `code` in it and an HTTP status, and the route turns each into a
+    different sentence for the writer: 401 is a bad token, 404 is a
+    page the integration has not been given. A plain `Error` loses
+    both, so it is a class rather than two properties bolted on to
+    one. */
+export class NotionError extends Error {
+  status: number;
+  code: string;
+
+  constructor(message: string, status: number, code: string) {
+    super(message);
+    this.name = "NotionError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
+/** Shared across one import, so the recursion counts its fetches
+    against a single budget. `truncated` is how a half-converted
+    page says so. */
+export interface ConvertState {
+  fetches: number;
+  truncated: boolean;
+}
+
+/** One property of a Notion page, whatever type it happens to be.
+
+    Every field here is read by `propValue` below and the two lists
+    have to stay the same length: a case in that switch reading a
+    field absent from this interface is the shape of the bug the
+    hand-written declaration beside the old `.js` had. */
+export interface NotionProperty {
+  type?: string;
+  title?: RichText[];
+  rich_text?: RichText[];
+  select?: { name?: string } | null;
+  status?: { name?: string } | null;
+  multi_select?: Array<{ name?: string }>;
+  date?: { start?: string } | null;
+  url?: string | null;
+  email?: string | null;
+  number?: number | null;
+  checkbox?: boolean;
+  created_time?: string;
+  formula?: { string?: string | null; number?: number | null } | null;
+}
+
+/** What a page's columns come out as.
+
+    `dek` and `status` are whatever the column was, because a
+    multi-select answers a list and neither is folded back into a
+    string. `tag`, `topics`, `date`, `lang` and `slug` are, which
+    is why they are narrower here. */
+export interface Fields {
+  title: string;
+  dek: string | string[];
+  tag: string;
+  slug: string;
+  date: string;
+  lang: "bn" | "en";
+  status: string | string[];
+  topics: string[];
+}
 
 const API = "https://api.notion.com/v1";
 const VERSION = "2022-06-28";
@@ -24,9 +139,11 @@ const VERSION = "2022-06-28";
 export const MAX_BLOCK_FETCHES = 24;
 export const MAX_DEPTH = 3;
 
-export const esc = (s) =>
-  String(s ?? "").replace(/[&<>"]/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const ESCAPES: Record<string, string> =
+  { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" };
+
+export const esc = (s: unknown): string =>
+  String(s ?? "").replace(/[&<>"]/g, (c) => ESCAPES[c]);
 
 const SAFE_URL = /^(https?:\/\/|mailto:|\/|#)/i;
 
@@ -34,7 +151,7 @@ const SAFE_URL = /^(https?:\/\/|mailto:|\/|#)/i;
    The client
    ============================================================ */
 
-export function client(token, fetchImpl = fetch) {
+export function client(token: string, fetchImpl: typeof fetch = fetch): NotionFetch {
   const headers = {
     Authorization: `Bearer ${token}`,
     "Notion-Version": VERSION,
@@ -45,14 +162,17 @@ export function client(token, fetchImpl = fetch) {
     const res = await fetchImpl(`${API}${path}`, {
       method, headers, body: body ? JSON.stringify(body) : undefined,
     });
-    const data = await res.json().catch(() => null);
+    /* Notion answers JSON for an error as well as for a success, and
+       a gateway in front of it may answer neither. `null` on a parse
+       failure is why every read below goes through `?.`. */
+    const data = await res.json().catch(() => null) as
+      { message?: string; code?: string } & NotionResponse | null;
     if (!res.ok) {
-      const err = new Error(data?.message || `Notion ${res.status}`);
-      err.status = res.status;
-      err.code = data?.code;
-      throw err;
+      throw new NotionError(
+        data?.message || `Notion ${res.status}`, res.status, data?.code ?? "",
+      );
     }
-    return data;
+    return data ?? {};
   };
 }
 
@@ -63,7 +183,7 @@ export function client(token, fetchImpl = fetch) {
     it: half the letters in "https://notion.so/Some-Title-..." are
     themselves hex digits, so stripping the non-hex characters from a
     URL returns the id with the words still attached to it. */
-export function normaliseId(raw) {
+export function normaliseId(raw: unknown): string | null {
   const s = String(raw ?? "");
   const found =
     s.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i)
@@ -79,7 +199,7 @@ export function normaliseId(raw) {
    Rich text → inline HTML
    ============================================================ */
 
-export function inline(rich) {
+export function inline(rich: RichText[] | undefined): string {
   if (!Array.isArray(rich)) return "";
   return rich.map((t) => {
     let html = esc(t.plain_text ?? "");
@@ -101,7 +221,7 @@ export function inline(rich) {
   }).join("");
 }
 
-export const textOf = (rich) =>
+export const textOf = (rich: RichText[] | undefined): string =>
   Array.isArray(rich) ? rich.map((t) => t.plain_text ?? "").join("") : "";
 
 /* ============================================================
@@ -111,10 +231,24 @@ export const textOf = (rich) =>
 /** Notion's own file URLs are signed and expire within the hour, so
     an imported image points at our proxy and gets re-hosted by the
     Studio before anything is published. */
-export const proxyURL = (origin, url) =>
+export const proxyURL = (origin: string, url: string): string =>
   `${origin}/api/notion/asset?u=${encodeURIComponent(url)}`;
 
-function figure(data, origin) {
+/** The data hanging off one block, which is whatever its type
+    carries. Read field by field with `?.`, because the block type is
+    a string and TypeScript cannot know which of these it brought. */
+interface BlockData {
+  rich_text?: RichText[];
+  caption?: RichText[];
+  file?: { url?: string };
+  external?: { url?: string };
+  url?: string;
+  checked?: boolean;
+  has_column_header?: boolean;
+  table_row?: { cells?: RichText[][] };
+}
+
+function figure(data: BlockData, origin: string): string {
   const src = data.file?.url || data.external?.url;
   if (!src) return "";
   const caption = inline(data.caption);
@@ -124,9 +258,11 @@ function figure(data, origin) {
     + `</figure>`;
 }
 
-function tableHtml(rows, hasHeader) {
-  const line = (row, tag) =>
-    `<tr>${(row.table_row?.cells ?? []).map((c) => `<${tag}>${inline(c)}</${tag}>`).join("")}</tr>`;
+function tableHtml(rows: Block[], hasHeader: boolean): string {
+  const line = (row: Block, tag: "th" | "td") => {
+    const cells = (row.table_row as BlockData["table_row"])?.cells ?? [];
+    return `<tr>${cells.map((c) => `<${tag}>${inline(c)}</${tag}>`).join("")}</tr>`;
+  };
 
   const head = hasHeader && rows.length ? `<thead>${line(rows[0], "th")}</thead>` : "";
   const rest = (hasHeader ? rows.slice(1) : rows).map((r) => line(r, "td")).join("\n");
@@ -136,9 +272,11 @@ function tableHtml(rows, hasHeader) {
 }
 
 /** Every child of a block, following Notion's pagination. */
-export async function fetchBlocks(notion, id, state) {
-  const blocks = [];
-  let cursor;
+export async function fetchBlocks(
+  notion: NotionFetch, id: string, state: ConvertState,
+): Promise<Block[]> {
+  const blocks: Block[] = [];
+  let cursor: string | null = null;
   do {
     if (state.fetches >= MAX_BLOCK_FETCHES) { state.truncated = true; break; }
     state.fetches++;
@@ -146,7 +284,7 @@ export async function fetchBlocks(notion, id, state) {
     if (cursor) query.set("start_cursor", cursor);
     const page = await notion(`/blocks/${id}/children?${query}`);
     blocks.push(...(page.results ?? []));
-    cursor = page.has_more ? page.next_cursor : null;
+    cursor = page.has_more ? page.next_cursor ?? null : null;
   } while (cursor);
   return blocks;
 }
@@ -158,9 +296,14 @@ export async function fetchBlocks(notion, id, state) {
  * its fetches against one budget rather than each branch getting a
  * fresh one.
  */
-export async function convert(blocks, { notion, origin, state, depth = 0 }) {
-  const out = [];
-  let list = null;
+export async function convert(
+  blocks: Block[],
+  { notion, origin, state, depth = 0 }: {
+    notion: NotionFetch; origin: string; state: ConvertState; depth?: number;
+  },
+): Promise<string> {
+  const out: string[] = [];
+  let list: { tag: "ul" | "ol"; items: string[] } | null = null;
 
   const flush = () => {
     if (!list) return;
@@ -170,22 +313,22 @@ export async function convert(blocks, { notion, origin, state, depth = 0 }) {
 
   // Consecutive list items are one list; a different kind of item,
   // or anything that isn't one, closes it.
-  const push = (tag, html) => {
+  const push = (tag: "ul" | "ol", html: string) => {
     if (list && list.tag !== tag) flush();
     if (!list) list = { tag, items: [] };
     list.items.push(html);
   };
 
-  const childrenOf = async (block) => {
-    if (!block.has_children || depth >= MAX_DEPTH) return "";
+  const childrenOf = async (block: Block): Promise<string> => {
+    if (!block.has_children || !block.id || depth >= MAX_DEPTH) return "";
     if (state.fetches >= MAX_BLOCK_FETCHES) { state.truncated = true; return ""; }
     const kids = await fetchBlocks(notion, block.id, state);
     return convert(kids, { notion, origin, state, depth: depth + 1 });
   };
 
   for (const block of blocks) {
-    const type = block.type;
-    const data = block[type] ?? {};
+    const type = block.type ?? "";
+    const data = (block[type] ?? {}) as BlockData;
 
     switch (type) {
       case "paragraph": {
@@ -253,7 +396,10 @@ export async function convert(blocks, { notion, origin, state, depth = 0 }) {
       case "table": {
         flush();
         if (state.fetches >= MAX_BLOCK_FETCHES) { state.truncated = true; break; }
-        out.push(tableHtml(await fetchBlocks(notion, block.id, state), data.has_column_header));
+        if (!block.id) break;
+        out.push(tableHtml(
+          await fetchBlocks(notion, block.id, state), !!data.has_column_header,
+        ));
         break;
       }
 
@@ -319,33 +465,38 @@ export const FIELD_NAMES = {
 };
 
 /** One property, whatever Notion type it happens to be. */
-export function propValue(prop) {
+export function propValue(prop: NotionProperty | undefined): string | string[] {
   if (!prop) return "";
   switch (prop.type) {
     case "title": return textOf(prop.title);
     case "rich_text": return textOf(prop.rich_text);
     case "select": return prop.select?.name ?? "";
     case "status": return prop.status?.name ?? "";
-    case "multi_select": return (prop.multi_select ?? []).map((s) => s.name);
+    case "multi_select": return (prop.multi_select ?? []).map((s) => s.name ?? "");
     case "date": return prop.date?.start ?? "";
     case "url": return prop.url ?? "";
     case "email": return prop.email ?? "";
     case "number": return prop.number == null ? "" : String(prop.number);
     case "checkbox": return prop.checkbox ? "yes" : "";
     case "created_time": return prop.created_time ?? "";
-    case "formula": return prop.formula?.string ?? prop.formula?.number ?? "";
+    /* A number formula came back as a number and every caller
+       stringified it anyway. It is stringified once, here. */
+    case "formula": return prop.formula?.string
+      ?? (prop.formula?.number == null ? "" : String(prop.formula.number));
     default: return "";
   }
 }
 
-export function readFields(properties = {}) {
+type FieldName = keyof typeof FIELD_NAMES;
+
+export function readFields(properties: Record<string, NotionProperty> = {}): Fields {
   // Matched lowercased, so "Standfirst" and "standfirst" are the same
   // column to whoever set the database up.
   const byName = new Map(
     Object.entries(properties).map(([name, prop]) => [name.trim().toLowerCase(), prop])
   );
 
-  const find = (candidates) => {
+  const find = (candidates: string[]): string | string[] => {
     for (const name of candidates) {
       const value = propValue(byName.get(name));
       if (Array.isArray(value) ? value.length : value) return value;
@@ -354,27 +505,44 @@ export function readFields(properties = {}) {
   };
 
   const titleProp = Object.values(properties).find((p) => p?.type === "title");
-  const out = { title: titleProp ? textOf(titleProp.title) : "" };
-  for (const [key, names] of Object.entries(FIELD_NAMES)) out[key] = find(names);
 
-  // A multi-select is the natural shape for topics; a text column
-  // gives one string, and the Studio wants a list either way.
-  out.topics = Array.isArray(out.topics)
-    ? out.topics
-    : String(out.topics || "").split(/[,·|]/).map((t) => t.trim()).filter(Boolean);
-  if (Array.isArray(out.tag)) out.tag = out.tag.join(" · ");
+  /* Read out of FIELD_NAMES rather than named seven times over, so
+     adding a column name stays one edit. What comes back is whatever
+     the column was, which is why the returned object narrows each
+     one rather than spreading this. */
+  const raw = {} as Record<FieldName, string | string[]>;
+  for (const key of Object.keys(FIELD_NAMES) as FieldName[]) raw[key] = find(FIELD_NAMES[key]);
 
-  // Whatever the column actually says. "bn" was the only spelling
-  // accepted at first, which quietly published every Bangla piece
-  // as English: the column usually says "Bangla".
-  out.lang = /^(bn|bng|bangla|bengali|bangladesh|বাংলা)/i
-    .test(String(out.lang || "").trim()) ? "bn" : "en";
-  out.date = String(out.date || "").slice(0, 10);
-  out.slug = String(out.slug || "").toLowerCase().replace(/[^a-z0-9-]/g, "");
-  return out;
+  return {
+    title: titleProp ? textOf(titleProp.title) : "",
+    dek: raw.dek,
+    status: raw.status,
+    tag: Array.isArray(raw.tag) ? raw.tag.join(" · ") : raw.tag,
+    // A multi-select is the natural shape for topics; a text column
+    // gives one string, and the Studio wants a list either way.
+    topics: Array.isArray(raw.topics)
+      ? raw.topics
+      : String(raw.topics || "").split(/[,·|]/).map((t) => t.trim()).filter(Boolean),
+    // Whatever the column actually says. "bn" was the only spelling
+    // accepted at first, which quietly published every Bangla piece
+    // as English: the column usually says "Bangla".
+    lang: /^(bn|bng|bangla|bengali|bangladesh|বাংলা)/i
+      .test(String(raw.lang || "").trim()) ? "bn" : "en",
+    date: String(raw.date || "").slice(0, 10),
+    slug: String(raw.slug || "").toLowerCase().replace(/[^a-z0-9-]/g, ""),
+  };
 }
 
-export const pageTitle = (page) => {
+/** A Notion page, as much of one as anything here reads. Narrow on
+    purpose: a page carries dozens of fields and this repository
+    asks it three questions. */
+export interface NotionPage {
+  id?: string;
+  last_edited_time?: string;
+  properties?: Record<string, NotionProperty>;
+}
+
+export const pageTitle = (page: NotionPage): string => {
   const prop = Object.values(page.properties ?? {}).find((p) => p?.type === "title");
   return prop ? textOf(prop.title) : "";
 };

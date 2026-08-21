@@ -26,7 +26,7 @@
    What a page may import is the TYPES, with `import type`, which
    TypeScript erases before anything is bundled. The catalogue
    itself reaches the browser exactly one way: a signed-in admin
-   asks `/api/courses`, `functions/_lib/admins.js` says yes, and
+   asks `/api/courses`, `functions/_lib/admins.ts` says yes, and
    the Worker answers with JSON. That is the same shape
    `/tools/live` uses for the broker, and for the same
    reason: the one place that can be trusted to check is the one

@@ -22,13 +22,13 @@
    ---- and why /full is not ----
 
    Because it holds readers' email addresses and the admin password
-   hash. See the long note at the top of _lib/backup.js.
+   hash. See the long note at the top of _lib/backup.ts.
    ============================================================ */
 
 import { db } from "../../_lib/db.ts";
 import { fail, json, methods, notConfigured } from "../../_lib/http.ts";
 import { requireAdmin } from "../../_lib/auth.ts";
-import { articleBackup, fullSnapshot, writeSnapshot } from "../../_lib/backup.js";
+import { articleBackup, fullSnapshot, writeSnapshot } from "../../_lib/backup.ts";
 
 export async function onRequest(context) {
   const { request, params } = context;

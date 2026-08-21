@@ -39,7 +39,7 @@ const esc = (s) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 export function render(article, origin) {
-  /* Every fact the head states, worked out once in _lib/look.js so
+  /* Every fact the head states, worked out once in shared/look.ts so
      that the Next.js route can state exactly the same ones. */
   const { look, url, cover, image, sized, type, locale, title, jsonLd } =
     headFacts(article, origin);
@@ -229,7 +229,7 @@ export async function onRequest(context) {
   const origin = context.env.SITE_ORIGIN || new URL(context.request.url).origin;
   /* With the security headers, which a response built here does not
      get from aab/_headers: that file is read by the static asset
-     server, and this is not a static asset. See _lib/headers.js. */
+     server, and this is not a static asset. See shared/headers.ts. */
   return htmlResponse(render(article, origin), {
     // Fresh enough that an edit shows up quickly, cached enough
     // that a popular piece isn't rebuilt for every reader.

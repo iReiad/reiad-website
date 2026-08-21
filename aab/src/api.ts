@@ -31,7 +31,7 @@ const JSON_HEADERS = { "Content-Type": "application/json" };
 
 /** What every endpoint on this site answers with, at minimum.
 
-    `_lib/http.js` writes `{ ok: true, ... }` or
+    `_lib/http.ts` writes `{ ok: true, ... }` or
     `{ ok: false, reason }`, and `status` is added below so a
     caller can tell a 404 from a 400 without a second argument. */
 export interface ApiReply {

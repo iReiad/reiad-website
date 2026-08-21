@@ -910,7 +910,7 @@ has to be in three places or it does not survive the trip:
 
 1. a rule in `@layer article` in `aab/styles.css`,
 2. `KEEP_CLASSES` in `aab/editor.js`, the browser's sanitiser,
-3. `ALLOWED_CLASSES` in `functions/_lib/sanitise.js`, the server's.
+3. `ALLOWED_CLASSES` in `functions/_lib/sanitise.ts`, the server's.
 
 `check-css.ts` fails if the two allowlists disagree, if a class is allowed
 into an article and styled nowhere, or if two cascade layers both define
@@ -1375,7 +1375,7 @@ rule.
 byte of it is already served at a public URL. Drafts, reader questions,
 subscriber emails, the admin password hash and any identifier of a
 system outside this site are deliberately absent, and
-`functions/_lib/backup.js` says why at length. Do not widen that
+`functions/_lib/backup.ts` says why at length. Do not widen that
 `SELECT` without reading it.
 
 Everything else goes nightly into R2 under `backups/`, written by the
@@ -2040,7 +2040,7 @@ exist.
 nothing else set up; `public.admins` in Supabase is the durable one,
 granted only in SQL, with a select policy that shows a reader their
 own row and no write policies at all, so no combination of browser
-tokens can mint an admin. `functions/_lib/admins.js` asks both and
+tokens can mint an admin. `functions/_lib/admins.ts` asks both and
 is the ONLY place that asks: anything that wants to know goes
 through `isAdmin()`. What an admin currently gets: the dashboard's
 admin panel, the full site account, and their comments go live

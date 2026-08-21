@@ -54,8 +54,8 @@ import { onRequest as admin } from "./functions/api/admin/[[route]].ts";
 import { onRequest as insight } from "./functions/insights/[slug].js";
 import { onRequest as feeds } from "./functions/feeds/[kind].js";
 import { db } from "./functions/_lib/db.ts";
-import { syncFromNotion } from "./functions/_lib/sync.js";
-import { writeSnapshot } from "./functions/_lib/backup.js";
+import { syncFromNotion } from "./functions/_lib/sync.ts";
+import { writeSnapshot } from "./functions/_lib/backup.ts";
 
 /** prefix → handler, and the name of the catch-all parameter it
     expects (null where the route takes none). */
@@ -393,7 +393,7 @@ export default {
                     without anyone pressing anything. It only
                     touches articles that were already imported and
                     published, and only when the Notion page says
-                    it is ready. See _lib/sync.js for why "as you
+                    it is ready. See _lib/sync.ts for why "as you
                     type" is neither possible nor desirable.
 
      Nightly at 03:17     The snapshot into R2. Seventeen past

@@ -40,7 +40,7 @@
 
    That is the same arrangement `/tools/live` uses for the
    broker's admin half, and the argument is the one in
-   `_lib/admins.js`: anything that wants to know whether somebody
+   `_lib/admins.ts`: anything that wants to know whether somebody
    is an admin asks `isAdmin()`, and nothing keeps a second list.
 
    ---- what "gated" does and does not mean ----
