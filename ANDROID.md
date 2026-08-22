@@ -200,9 +200,25 @@ plan touches the site.
    advance, because it is the public half of a key that must not
    exist yet: a release key generated in a build container and
    committed beside the site is a worse outcome than a late
-   assetlinks file. It arrives from Play App Signing once there
-   is an app entry, and pasting it into the array above is the
-   whole of the remaining work.
+   assetlinks file.
+
+   **It comes from whatever key signs the build, and the app is
+   installed as an APK first.** The store is a later decision, so
+   the key is the author's own rather than Play's: a debug build
+   is signed by `~/.android/debug.keystore` and a release APK by
+   a keystore made once and kept, and either fingerprint can go
+   in the array. **Make that release keystore once and back it
+   up.** Losing it is not a bad afternoon: the same package can
+   never be signed by another key, so an installed app cannot be
+   updated, only uninstalled and replaced, and every reader loses
+   what the device was holding.
+
+   Enrolling in Play later takes that same key, so the
+   fingerprint carries over and this file does not change. Letting
+   Play generate its own instead is also fine and costs one more
+   line in the array, because the array takes several: an app link
+   should verify for the sideloaded build and the store build
+   alike.
 3. **One Supabase dashboard entry**, and it is one of the two
    things in this whole plan that cannot be done from a
    repository: the project's auth configuration is not in the
@@ -248,17 +264,18 @@ blocking, so nothing waits on them:
 | Supabase | add `uk.co.reiad.library://auth` under Authentication, URL Configuration | before anybody signs in, so start of phase 2 |
 | assetlinks | paste a SHA-256 into `sha256_cert_fingerprints` | before an `https://reiad.co.uk` link opens the app, which is a convenience and gates nothing |
 
-Both need an account this repository has no business holding a
-credential for. Neither is needed to build phase 1, which is
-signed out, which is why phase 1 is first.
+Neither is needed to build phase 1, which is signed out, which is
+why phase 1 is first. **The first row was done on 22 August
+2026**, so the only one left is the second, and the second gates
+nothing.
 
-**They are also independent of each other, deliberately.** The
-custom scheme above is what keeps sign-in off the fingerprint's
-critical path: the second row is a nicety about how links behave,
-not a gate on the account. The debug keystore's fingerprint
+**They are independent of each other, deliberately.** The custom
+scheme above is what keeps sign-in off the fingerprint's critical
+path: the second row is a nicety about how links behave, not a
+gate on the account. The debug keystore's fingerprint
 (`~/.android/debug.keystore`, alias `androiddebugkey`, password
-`android`) is enough to try App Links on a handset long before
-there is a Play Console entry, and the array takes both.
+`android`) is enough to try App Links on a handset, with no store
+account involved at all, and the array takes several.
 
 ## The app itself
 
@@ -482,11 +499,25 @@ tickets, captions, quizzes that mark nothing, the same
 `courses-*` keys), gated by the same `isAdmin()` answer the site
 uses; nothing course-shaped ships in the binary, the catalogue
 arrives only over the authenticated API, which is the same rule
-`scripts/check-courses.ts` enforces on the web bundle. Play
-release: signing, the data-safety form (what the app holds is the
-session, the ticks and, if saved, a sealed broker key reference;
-there is no analytics SDK, matching a site that has none),
-staged rollout.
+`scripts/check-courses.ts` enforces on the web bundle.
+
+**How it is installed, which is a decision and not a formality.**
+An APK, signed by the author's own key, carried to the handset.
+That is the whole of it until the app is worth publishing, and it
+is the right order: a store listing is a promise to strangers,
+and the first reader is the person who wrote it. What it costs is
+what sideloading always costs, and each is worth knowing rather
+than discovering: the device has to be told to allow the install,
+nothing updates itself so every build is carried over by hand,
+and an https link will not open the app until that key's
+fingerprint is in the assetlinks array. None of the three touches
+sign-in, which is on a scheme the app declares.
+
+**Phase 6.5, when it is worth publishing.** Play: the same
+keystore if it is kept, the data-safety form (what the app holds
+is the session, the ticks and, if saved, a sealed broker key
+reference; there is no analytics SDK, matching a site that has
+none), staged rollout.
 
 **Phase 7, only if wanted. Notifications**, per the section above.
 
