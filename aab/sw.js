@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v172: /fallback.css. Two alignments that were guesses became
+        sums: the tick on a checklist item and the numeral beside
+        a practice book's writing box were both positioned
+        against the top of a line BOX rather than against the
+        letters in it, which is 1.9px out in English and further
+        in Bangla, where the leading is 1.9 rather than 1.7. The
+        writing boxes are ruled now, at exactly one line, which is
+        what a practice book is.
+
    v171: this file. The fetch handler excluded cross-origin and
         /api/ and nothing else, so a React Server Component
         payload, which Next requests at the route's own address
@@ -1606,7 +1615,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v171";
+const VERSION = "v172";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

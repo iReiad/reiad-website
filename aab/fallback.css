@@ -14,6 +14,8 @@
   @property --shine    { syntax: "<angle>";   initial-value: 0deg; inherits: false; }
   @property --reveal   { syntax: "<number>";  initial-value: 1;   inherits: false; }
 
+  @property --tick-top { syntax: "<length>"; initial-value: 4px; inherits: true; }
+
   @property --gx       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --gy       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --glow-a   { syntax: "<number>";  initial-value: 0;   inherits: false; }
@@ -2223,10 +2225,11 @@
     & li {
       position: relative; padding-left: 30px; margin-bottom: 0;
       max-width: var(--measure);
+      --tick-top: calc((1lh - 20px) / 2);
     }
     & li::before {
       content: "✓";
-      position: absolute; left: 0; top: 0.05em;
+      position: absolute; left: 0; top: var(--tick-top);
       width: 20px; height: 20px; display: grid; place-items: center;
       border: 1px solid var(--accent); border-radius: var(--radius-xs);
       color: var(--accent); font-size: var(--t-2); line-height: 1;
@@ -2242,6 +2245,7 @@
   .checkpoint {
     display: grid; grid-template-columns: 20px 1fr;
     align-items: start; gap: var(--s-5);
+    --tick-top: calc((1lh - 20px) / 2);
     width: 100%; padding: 3px 6px 3px 0; margin-inline-start: -6px;
     font: inherit; text-align: start; color: inherit;
     background: none; border: 0; border-radius: var(--radius-sm);
@@ -2250,7 +2254,7 @@
 
     &::before {
       content: "✓";
-      width: 20px; height: 20px; margin-top: 0.05em;
+      width: 20px; height: 20px; margin-top: var(--tick-top);
       display: grid; place-items: center;
       border: 1px solid var(--accent); border-radius: var(--radius-xs);
       color: transparent; font-size: var(--t-2); line-height: 1;
@@ -4116,7 +4120,27 @@
   .feld, .sag-zeile {
     display: grid; grid-template-columns: 26px 1fr; gap: var(--s-4); align-items: start;
   }
-  .feld-num { color: var(--accent); font-size: var(--t-3); padding-top: 9px; }
+
+  .feld-num {
+    color: var(--accent);
+    font-size: var(--t-5);
+    padding-top: 11px;
+    opacity: 0.75;
+    transition: opacity var(--fast) var(--ease);
+  }
+  :is(.feld, .sag-zeile):focus-within .feld-num { opacity: 1; }
+
+  .buch-tag textarea[data-schrift] {
+    background-image:
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0 calc(1lh - 1px),
+        var(--pane-edge) calc(1lh - 1px) 1lh),
+      var(--sheen);
+    background-origin: content-box, padding-box;
+    background-clip: content-box, border-box;
+    background-attachment: local, scroll;
+  }
   .buch-tag textarea[data-schrift]:focus-visible {
 
     outline: 2px solid var(--accent);

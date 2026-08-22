@@ -39,6 +39,27 @@
      `--gx`/`--gy` default to the centre, which is what a surface
      reached by the keyboard gets: there is no pointer to follow,
      so the light sits in the middle of it rather than nowhere. */
+  /* How far below the top of a line BOX a 20px tick has to sit to
+     be centred on the letters in it.
+
+     REGISTERED, and that is the whole reason this exists rather
+     than the sum being written where it is used. `lh` resolves
+     against the line-height of the element it is computed on, and
+     an unregistered custom property is substituted as tokens and
+     computed on the element that USES it. The users are
+     `.checklist li::before` and `.checkpoint::before`, which set
+     `line-height: 1` so the tick sits in the middle of its own
+     box, so the sum would come out against a leading of 1 and put
+     the tick back where it started.
+
+     Registered, it is computed on the `li`, where the leading is
+     the prose's. That matters more than it sounds: Bangla body
+     text is set at 1.9 and English at 1.7, so there is no one
+     number that is right for both, and most of these lists are
+     Bangla. Measured before and after: 1.9px above the line,
+     0.7px after. */
+  @property --tick-top { syntax: "<length>"; initial-value: 4px; inherits: true; }
+
   @property --gx       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --gy       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --glow-a   { syntax: "<number>";  initial-value: 0;   inherits: false; }
@@ -3761,10 +3782,11 @@ it collapsed to the width of the word "Bangladesh". */
     & li {
       position: relative; padding-left: 30px; margin-bottom: 0;
       max-width: var(--measure);
+      --tick-top: calc((1lh - 20px) / 2);
     }
     & li::before {
       content: "✓";
-      position: absolute; left: 0; top: 0.05em;
+      position: absolute; left: 0; top: var(--tick-top);
       width: 20px; height: 20px; display: grid; place-items: center;
       border: 1px solid var(--accent); border-radius: var(--radius-xs);
       color: var(--accent); font-size: var(--t-2); line-height: 1;
@@ -3792,6 +3814,7 @@ it collapsed to the width of the word "Bangladesh". */
   .checkpoint {
     display: grid; grid-template-columns: 20px 1fr;
     align-items: start; gap: var(--s-5);
+    --tick-top: calc((1lh - 20px) / 2);
     width: 100%; padding: 3px 6px 3px 0; margin-inline-start: -6px;
     font: inherit; text-align: start; color: inherit;
     background: none; border: 0; border-radius: var(--radius-sm);
@@ -3802,7 +3825,7 @@ it collapsed to the width of the word "Bangladesh". */
        tick and the words move together. */
     &::before {
       content: "✓";
-      width: 20px; height: 20px; margin-top: 0.05em;
+      width: 20px; height: 20px; margin-top: var(--tick-top);
       display: grid; place-items: center;
       border: 1px solid var(--accent); border-radius: var(--radius-xs);
       color: transparent; font-size: var(--t-2); line-height: 1;
@@ -6280,7 +6303,57 @@ German for day, and .tag is what the site has always called
   .feld, .sag-zeile {
     display: grid; grid-template-columns: 26px 1fr; gap: var(--s-4); align-items: start;
   }
-  .feld-num { color: var(--accent); font-size: var(--t-3); padding-top: 9px; }
+  /* ---------- the numeral in the gutter ----------
+
+     It sat on `padding-top: 9px`, a guess at where the first line
+     inside the box beside it starts, and the numbers floated
+     above their boxes down the whole page.
+
+     Two facts line them up exactly. The first line inside a
+     textarea begins at its border plus its padding, which this
+     stylesheet sets in one place: 1px and 10px. And a line box is
+     `line-height × font-size`, so giving this span the BOX's type
+     size rather than a smaller one makes its line box the same
+     height, and the two first lines then start and end together
+     whatever the leading is. Bangla is set at 1.9 and English at
+     1.7, so no single pixel value could have been right for both.
+     Measured after: 0.0px apart.
+
+     The numeral stays quieter than the writing by weight and
+     colour rather than by size, which is the part that was doing
+     no work. */
+  .feld-num {
+    color: var(--accent);
+    font-size: var(--t-5);
+    padding-top: 11px;
+    opacity: 0.75;
+    transition: opacity var(--fast) var(--ease);
+  }
+  :is(.feld, .sag-zeile):focus-within .feld-num { opacity: 1; }
+
+  /* ---------- and the box is ruled, like the book it is ----------
+
+     A practice book is a page somebody writes eight sentences on
+     by hand. Ruled lines are what that page has, they cost one
+     gradient, and they are drawn at exactly `1lh` so the writing
+     sits ON them rather than near them.
+
+     `local` so the rules scroll with the text rather than staying
+     put behind it, and `content-box` so the first rule is under
+     the first line rather than under the padding. The sheen the
+     base rule gives every field is kept as the second layer: this
+     adds paper to it rather than replacing the material. */
+  .buch-tag textarea[data-schrift] {
+    background-image:
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0 calc(1lh - 1px),
+        var(--pane-edge) calc(1lh - 1px) 1lh),
+      var(--sheen);
+    background-origin: content-box, padding-box;
+    background-clip: content-box, border-box;
+    background-attachment: local, scroll;
+  }
   .buch-tag textarea[data-schrift]:focus-visible {
     /* A ring, not just a colour.
 
