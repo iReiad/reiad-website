@@ -8015,7 +8015,11 @@
   .rt-spark path { stroke: var(--accent); vector-effect: non-scaling-stroke; }
   .rt-spark-dot { fill: var(--accent); }
 
-  .rt-today-bands { display: grid; gap: var(--s-6); inline-size: 100%; }
+  .rt-today-bands {
+    display: grid; gap: var(--s-6); inline-size: 100%;
+
+    align-items: start;
+  }
   @media (min-width: 48rem) {
     .rt-today-bands { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
   }
@@ -8029,6 +8033,46 @@
     list-style: none; margin: 0; padding: 0;
     display: flex; flex-wrap: wrap; gap: var(--s-3);
   }
+
+  .rt-log {
+    display: inline-flex; align-items: center; gap: var(--s-4);
+
+    text-transform: none; letter-spacing: 0;
+    font-family: var(--font-bn); font-size: var(--t-3);
+    padding-inline: 10px 12px;
+  }
+
+  .rt-log-mark {
+    flex: 0 0 auto;
+    inline-size: 13px; block-size: 13px; border-radius: 50%;
+    border: 1.5px solid var(--accent-line);
+    position: relative;
+    transition: background var(--fast) var(--ease),
+                border-color var(--fast) var(--ease);
+  }
+  .rt-log[aria-pressed="true"] .rt-log-mark {
+    background: var(--accent); border-color: var(--accent);
+  }
+
+  .rt-log[aria-pressed="true"] .rt-log-mark::after {
+    content: ""; position: absolute;
+    inset-block-start: 1px; inset-inline-start: 3.5px;
+    inline-size: 3.5px; block-size: 6.5px;
+    border: solid var(--panel);
+    border-width: 0 1.5px 1.5px 0;
+    rotate: 45deg;
+  }
+
+  .rt-log-name { min-inline-size: 0; }
+
+  .rt-log-times {
+    flex: 0 0 auto;
+    padding-inline-start: var(--s-4);
+    border-inline-start: 1px solid var(--hairline);
+    font-size: var(--t-1); color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .rt-log[aria-pressed="true"] .rt-log-times { color: var(--accent); }
 
   .rt-ribbon {
     display: flex; gap: 2px; inline-size: 100%; flex-wrap: wrap;
@@ -8238,6 +8282,8 @@
       .meter, .rt-balance, .audience-switch, .seg) {
 
     --glow-w: calc(min(var(--depth) * 46px, 220px) * var(--follows, 1));
+
+    & * { --glass-grain: none; }
     --glow-h: var(--glow-w);
 
     --glow-i: calc(var(--clarity) * 32%);

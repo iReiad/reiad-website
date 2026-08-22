@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v174: /fallback.css. The paper weave was painted twice: a
+        ground carries it and so did every row and control drawn
+        on that ground, two identical 45-degree gratings at a 5px
+        pitch offset by each element's own origin, which stacks
+        into dirt rather than cloth. Only paper showed it, because
+        it is the one finish whose grain is a hatch. Measured:
+        rail 2 weave layers, rail-item 2 more; now 2 and 0.
+
    v173: /fallback.css. The light stops following the pointer on
         a pane, and starts holding still on a plate, which it was
         already documented to do and never did: a `--glow-w: 0`
@@ -1623,7 +1631,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v173";
+const VERSION = "v174";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

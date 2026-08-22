@@ -11811,7 +11811,15 @@ German for day, and .tag is what the site has always called
 
   /* ---------- today, on the dashboard ---------- */
 
-  .rt-today-bands { display: grid; gap: var(--s-6); inline-size: 100%; }
+  .rt-today-bands {
+    display: grid; gap: var(--s-6); inline-size: 100%;
+    /* Each column starts at the TOP of its own row. Without this
+       every row of the grid is as tall as its tallest band, so a
+       group with one task sat a long way below its heading while
+       the group beside it had four, and the card opened with a
+       hole in the middle of it. */
+    align-items: start;
+  }
   @media (min-width: 48rem) {
     .rt-today-bands { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
   }
@@ -11825,6 +11833,64 @@ German for day, and .tag is what the site has always called
     list-style: none; margin: 0; padding: 0;
     display: flex; flex-wrap: wrap; gap: var(--s-3);
   }
+
+  /* ---------- the log chip: a mark, a phrase and a tally ----------
+
+     `components/routine/log.tsx` is the markup and says at length
+     what was wrong with the three bare children it replaced. The
+     short of it: `.chip` is not a flex container, so a state
+     glyph, a Bangla phrase and a count ran together as one word.
+
+     Everything below is scoped to `.rt-log` rather than added to
+     `.chip`, because a chip is a label on most of the site and
+     these three parts are this button's own shape. */
+  .rt-log {
+    display: inline-flex; align-items: center; gap: var(--s-4);
+    /* Bangla has no case and its conjuncts should not be pulled
+       apart. `.crumbs` turns both off for the same reason. */
+    text-transform: none; letter-spacing: 0;
+    font-family: var(--font-bn); font-size: var(--t-3);
+    padding-inline: 10px 12px;
+  }
+
+  /* A drawn ring that fills, not a character. `○` at this size
+     beside Bangla is `০`, so the state of the button was being
+     carried by something that reads as a digit in the language
+     the button is labelled in. */
+  .rt-log-mark {
+    flex: 0 0 auto;
+    inline-size: 13px; block-size: 13px; border-radius: 50%;
+    border: 1.5px solid var(--accent-line);
+    position: relative;
+    transition: background var(--fast) var(--ease),
+                border-color var(--fast) var(--ease);
+  }
+  .rt-log[aria-pressed="true"] .rt-log-mark {
+    background: var(--accent); border-color: var(--accent);
+  }
+  /* The tick inside it, drawn rather than typed, and only once
+     the ring is filled. Two lines of a border, rotated. */
+  .rt-log[aria-pressed="true"] .rt-log-mark::after {
+    content: ""; position: absolute;
+    inset-block-start: 1px; inset-inline-start: 3.5px;
+    inline-size: 3.5px; block-size: 6.5px;
+    border: solid var(--panel);
+    border-width: 0 1.5px 1.5px 0;
+    rotate: 45deg;
+  }
+
+  .rt-log-name { min-inline-size: 0; }
+
+  /* How many days this has ever been marked, behind a hairline so
+     it reads as a count rather than as the end of the phrase. */
+  .rt-log-times {
+    flex: 0 0 auto;
+    padding-inline-start: var(--s-4);
+    border-inline-start: 1px solid var(--hairline);
+    font-size: var(--t-1); color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .rt-log[aria-pressed="true"] .rt-log-times { color: var(--accent); }
 
   /* ---------- how the days felt ---------- */
 
@@ -12426,6 +12492,28 @@ German for day, and .tag is what the site has always called
        was written. Measured, not read: a `.stat` reported
        `--glow-w: 156.4px`. */
     --glow-w: calc(min(var(--depth) * 46px, 220px) * var(--follows, 1));
+
+    /* ---- and the ground's texture does not nest ----
+
+       The weave belongs to the sheet. A surface drawn ON another
+       surface is a mark on it, not a second sheet, and both were
+       painting it: a rail carries the hatch and so did every row
+       on the rail. Two identical 45° gratings at a 5px pitch,
+       offset by each row's own background origin, stack into a
+       denser pattern that reads as dirt rather than as cloth.
+
+       Only `paper` showed it, and that is the tell rather than
+       luck: it is the one finish whose grain is a hatch. Frost is
+       a 3px stipple, where two copies land on each other and look
+       like one, and plain has none.
+
+       `& *` rather than a second list of the classes that are
+       grounds. This rule already names every surface on the site,
+       and a copy of that list is what `check-css.ts` exists to
+       stop one file down.
+
+       Measured: `.rail` two weave layers, `.rail-item` two more. */
+    & * { --glass-grain: none; }
     --glow-h: var(--glow-w);
     /* 32% and not 44%. A material that is on every surface of a
        site has to be quiet or it is noise everywhere, and the

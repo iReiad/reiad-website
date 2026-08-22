@@ -60,7 +60,7 @@ import {
 } from "@reiad/shared/routine";
 import { runtimeModule } from "../account/runtime";
 import { Button, ButtonLink } from "../ui/button";
-import { ChipButton } from "../ui/chip";
+import { LogChip } from "./log";
 import { Surface } from "../ui/surface";
 
 type AccountModule = typeof import("/account.js");
@@ -340,12 +340,13 @@ export function RoutineDashboard() {
                     const m = now?.marks[t.id] ?? 0;
                     return (
                       <li key={t.id}>
-                        <ChipButton pressed={m >= 1}
-                                    onClick={() => mark(t.id, m >= 1 ? 0 : 1)}>
-                          <span aria-hidden="true">{m >= 1 ? "✓" : "○"}</span>
-                          <span lang="bn">{t.bn}</span>
-                          {t.counts ? <em className="mono">{bn(everMarked(entries, t.id))}</em> : null}
-                        </ChipButton>
+                        <LogChip
+                          name={t.bn}
+                          done={m >= 1}
+                          times={t.counts ? everMarked(entries, t.id) : 0}
+                          numeral={t.counts ? bn(everMarked(entries, t.id)) : ""}
+                          onPress={() => mark(t.id, m >= 1 ? 0 : 1)}
+                        />
                       </li>
                     );
                   })}

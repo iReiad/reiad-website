@@ -547,6 +547,12 @@ const MATERIAL_PROPS = new Set([
      is made of, and every consequence of that is a light. */
   "--depth", "--polish", "--clarity", "--standing",
   "--glow-w", "--glow-h", "--glow-i", "--glow-stop", "--glow-a", "--glow-fade",
+  /* The ground's own texture, which this layer sets to `none` on
+     everything drawn ON a surface. It is the material's by
+     definition: the weave is what the sheet is made of, and a row
+     on the sheet repainting it is two gratings stacking into
+     dirt rather than one piece of cloth. */
+  "--glass-grain",
   /* Whether the light FOLLOWS the pointer on this surface, which
      is a fact about the light and not about the thing under it:
      the size formula multiplies by it, so a plate and a pane
