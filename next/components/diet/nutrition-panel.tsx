@@ -26,9 +26,9 @@
    coverage.
    ============================================================ */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
-  COVERAGE_FLOOR, byWeekday, topSources, totalFor,
+  COVERAGE_FLOOR, byHour, byWeekday, topSources, totalFor,
   type Day, type Entry,
 } from "@reiad/shared/diet";
 import {
@@ -88,6 +88,21 @@ export function NutritionPanel() {
 
   const todays = useMemo(() => totalFor(entries.filter((e) => e.date === today)), [entries, today]);
   const top = useMemo(() => topSources(entries), [entries]);
+
+  /* WHEN the calories land. The claim that most over-target days
+     are made in the evening is a general one, and this is the
+     only reading that can confirm or contradict it from the
+     reader's own log. The hour comes off the entry's meal label,
+     which is where the board stamps it. */
+  const hours = useMemo(() => {
+    const at = (e: Entry): number => {
+      const m = /^(\d{1,2}):/.exec(e.meal ?? "");
+      return m ? Number(m[1]) : -1;
+    };
+    const timed = entries.filter((e) => !e.planned && at(e) >= 0)
+      .map((e) => ({ hour: at(e), kcal: e.kcal ?? 0 }));
+    return { buckets: byHour(timed), n: timed.length };
+  }, [entries]);
   const week = useMemo(() => byWeekday(days), [days]);
 
   const DAY_NAMES = lang === "bn"
@@ -178,6 +193,60 @@ export function NutritionPanel() {
                bn="এক মাস লিখলে এটাই এখানকার সবচেয়ে কাজের জিনিস হয়ে ওঠে, আর প্রায় সবসময়ই তিনটে জিনিস।" />
           </p>
         )}
+      </section>
+
+      <section aria-labelledby="dt-hour-h">
+        <h2 id="dt-hour-h"><T en="When they land" bn="কখন আসে" /></h2>
+        {hours.n >= 20
+          ? (
+            <>
+              {/* A row of columns, one per hour, with the peak
+                  named underneath. Nothing here is red and
+                  nothing is a target: it is a shape, and the
+                  shape is the reading. */}
+              <div className="dt-hourbars" role="img"
+                   aria-label={lang === "bn"
+                     ? "দিনের কোন সময়ে কত ক্যালোরি"
+                     : "How the day's calories fall across the hours"}>
+                {hours.buckets.map((v, h) => {
+                  const peak = Math.max(...hours.buckets, 1);
+                  return (
+                    <span key={h} className="dt-hourbar"
+                          data-label={h % 6 === 0 ? String(h) : undefined}
+                          style={{ "--h": `${Math.round((v / peak) * 100)}%` } as CSSProperties} />
+                  );
+                })}
+              </div>
+              <p className="dt-said">
+                {(() => {
+                  const peak = hours.buckets.indexOf(Math.max(...hours.buckets));
+                  const evening = hours.buckets.slice(18).reduce((a, b) => a + b, 0);
+                  const all = hours.buckets.reduce((a, b) => a + b, 0) || 1;
+                  const share = Math.round((evening / all) * 100);
+                  return (
+                    <T
+                      en={`Your biggest hour is around ${peak}:00, and ${share}% of what you log arrives after six in the evening.`}
+                      bn={`আপনার সবচেয়ে বড় সময়টা প্রায় ${digits(peak, "bn")}টা, আর যা লেখেন তার ${digits(share, "bn")}% আসে সন্ধ্যা ছয়টার পরে।`}
+                    />
+                  );
+                })()}
+              </p>
+              <p className="dt-why">
+                <T
+                  en="Described, not judged. Eating late is not a failure and this does not say it is: it is here because knowing the shape of your own day is what makes a target reachable rather than a surprise at nine in the evening."
+                  bn="বর্ণনা, বিচার নয়। দেরিতে খাওয়া ব্যর্থতা নয় আর এটা সেটা বলছেও না: এটা এখানে আছে কারণ নিজের দিনের ধরনটা জানলেই লক্ষ্যটা রাতে নয়টার চমক না হয়ে নাগালের মধ্যে থাকে।"
+                />
+              </p>
+            </>
+          )
+          : (
+            <p className="dt-hint">
+              <T
+                en="Twenty logged items with a time on them, and this shows when your calories actually land. It is the one reading that can confirm or contradict the claim that most over-target days are made in the evening, from your own log rather than in general."
+                bn="সময়সহ কুড়িটা জিনিস লিখলে এটা দেখাবে আপনার ক্যালোরি আসলে কখন আসে। সাধারণভাবে নয়, আপনার নিজের খাতা থেকেই এটাই একমাত্র হিসাব যা বলতে পারে সন্ধ্যাতেই বেশিরভাগ দিন লক্ষ্য ছাড়ায় কি না।"
+              />
+            </p>
+          )}
       </section>
 
       <section aria-labelledby="dt-week-h">

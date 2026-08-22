@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v182: /fallback.css. The prices page, and when a day's
+        calories actually land: twenty-four columns off the
+        reader's own log, which is the one reading that can
+        confirm or contradict the claim that most over-target
+        days are made in the evening.
+
    v181: /fallback.css. The expect page's first week, hour by
         hour, with the fat share drawn as a bar beside its own
         number: it starts near nothing and climbs all week, and
@@ -1685,7 +1691,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v181";
+const VERSION = "v182";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

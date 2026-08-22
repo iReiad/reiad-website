@@ -205,6 +205,11 @@ let bad = 0;
    than the rule. */
 
 const NOT_GLASS = new Map<string, string>([
+  /* A MARK, and twenty-four of them: one column per hour of the
+     day. A bevel on a two pixel wide bar is invisible, and the
+     row reads as a shape rather than as twenty-four small
+     panes. */
+  ["dt-hourbar", "a mark: one of 24 columns, as narrow as 2px, read as a shape"],
   /* A MARK, six pixels tall: it is the fat share drawn as a
      line, and a bevel on it would be detail nobody can resolve.
      The groove kind exists for a track somebody aims at, and

@@ -8785,6 +8785,31 @@
       var(--hairline) var(--share, 0%) 100%);
   }
 
+  .dt-hourbars {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    align-items: end;
+    gap: 2px;
+    block-size: 84px;
+    margin-block: var(--s-5) var(--s-7);
+  }
+  .dt-hourbar {
+    position: relative;
+    block-size: max(var(--h, 0%), 2px);
+    border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+    background: color-mix(in oklab, var(--accent) 60%, transparent);
+  }
+  .dt-hourbar[data-label]::after {
+    content: attr(data-label);
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-start: 0;
+    font-family: var(--font-mono);
+    font-size: var(--t-0);
+    color: var(--ink-soft);
+    padding-block-start: 2px;
+  }
+
   .dt-symptoms, .dt-diary { max-inline-size: 70ch; }
 
   .dt-invite { display: grid; gap: var(--s-5); max-inline-size: 52ch; justify-items: start; }
