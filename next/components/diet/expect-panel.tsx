@@ -272,7 +272,18 @@ function HourByHour({ what, kg, burn, lang }: {
   return (
     <div className="dt-hours">
       <div className="dt-hours-head">
-        <h3><T en="The first week, hour by hour" bn="প্রথম সপ্তাহ, ঘণ্টায় ঘণ্টায়" /></h3>
+        {/* THE FULL WEEK, whatever duration was chosen above, and
+            the heading says so. The card above answers "what if I
+            do this for two days"; this answers "what does the
+            first week of it look like", and a reader who picked
+            two days and then read a seven day total as their own
+            would be reading a number that is not about them. */}
+        <h3>
+          <T
+            en="The first week, hour by hour, if you kept going"
+            bn="প্রথম সপ্তাহ, ঘণ্টায় ঘণ্টায়, চালিয়ে গেলে"
+          />
+        </h3>
         <div className="dt-tags" role="group" aria-label="How fine">
           {[6, 12, 24].map((n) => (
             <ChipButton key={n} pressed={step === n} onClick={() => setStep(n)}>
@@ -306,11 +317,19 @@ function HourByHour({ what, kg, burn, lang }: {
               const opens = !!band && p.hour === band.from;
               return (
                 <tr key={p.hour} data-opens={opens ? "" : undefined}>
+                  {/* `Math.round` collided: hour 60 and hour 72 both
+                      rendered "day 3", so half the table carried a
+                      label that was already above it. Days and the
+                      remainder, written out. */}
                   <th scope="row" className="mono">
                     {p.hour < 48
                       ? <T en={`${p.hour}h`} bn={`${digits(p.hour, "bn")} ঘ`} />
-                      : <T en={`day ${Math.round(p.hour / 24)}`}
-                           bn={`${digits(Math.round(p.hour / 24), "bn")} দিন`} />}
+                      : (
+                        <T
+                          en={`day ${Math.floor(p.hour / 24)}${p.hour % 24 ? ` +${p.hour % 24}h` : ""}`}
+                          bn={`${digits(Math.floor(p.hour / 24), "bn")} দিন${p.hour % 24 ? ` +${digits(p.hour % 24, "bn")} ঘ` : ""}`}
+                        />
+                      )}
                   </th>
                   <td className="dt-why">
                     {opens && band ? <T en={band.en} bn={band.bn} /> : null}
@@ -333,8 +352,8 @@ function HourByHour({ what, kg, burn, lang }: {
 
       <p className="dt-why">
         <T
-          en={`At its lowest the scale reads about ${lowest.toFixed(1)} kg down, and about ${endShare}% of that is fat by the end of the week. The rest comes back when ordinary eating does, and the tool will not call that a gain.`}
-          bn={`সবচেয়ে কমে দাঁড়িপাল্লা প্রায় ${digits(lowest.toFixed(1), "bn")} কেজি নিচে দেখাবে, আর সপ্তাহের শেষে তার প্রায় ${digits(endShare, "bn")}% চর্বি। বাকিটা স্বাভাবিক খাওয়া ফিরলেই ফিরে আসে, আর যন্ত্রটি সেটাকে বাড়া বলবে না।`}
+          en={`Held for a full week, the scale would read about ${lowest.toFixed(1)} kg down and about ${endShare}% of that would be fat. The rest comes back when ordinary eating does, and the tool will not call that a gain.`}
+          bn={`পুরো এক সপ্তাহ চললে দাঁড়িপাল্লা প্রায় ${digits(lowest.toFixed(1), "bn")} কেজি নিচে দেখাত, আর তার প্রায় ${digits(endShare, "bn")}% হত চর্বি। বাকিটা স্বাভাবিক খাওয়া ফিরলেই ফিরে আসে, আর যন্ত্রটি সেটাকে বাড়া বলবে না।`}
         />
       </p>
     </div>
