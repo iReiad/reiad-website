@@ -433,6 +433,67 @@ pass on that. Concretely:
 | Two implementations of the stock model | fixture-locked, and the model file is small and stable |
 | Course content on a personal device | same boundary as the web: nothing in the binary, API behind admin, tickets name one file for thirty minutes |
 
+## Starting the build
+
+The plan above is the what and the why. This is the first hand of
+work, written so a build session can start without re-deriving any
+of it.
+
+**Phase 0, in this repository.** Three small changes:
+
+1. The manifest endpoint: a handler under `functions/api/`,
+   mounted in `API_ROUTES` in `worker.js`, serialising the
+   sections, tools, pages, skills, term groups and counts out of
+   `shared/content.ts` plus the public half of the nav table in
+   `next/lib/nav.ts`, cached like `/api/news`, and registered in
+   `SERVER_ONLY` in `scripts/check-api.ts` with the app named as
+   its caller.
+2. `assetlinks.json` under a `.well-known/` directory in `aab/`,
+   carrying the release signing fingerprints, verified live after
+   a deploy.
+3. The app's redirect URL added to the Supabase auth allowlist,
+   in the dashboard rather than in code.
+
+**The app repository.** Suggested name `reiad-android`. Kotlin,
+one module. The dependency list, chosen to stay short: the
+Compose BOM with Material 3 and Navigation, Room, DataStore,
+Ktor client with kotlinx serialisation (one HTTP stack, not
+two), Coil for images, Media3 for the player, WorkManager for
+sync, Browser for the Custom Tab. Nothing else until a phase
+demands it.
+
+**What the building session reads first, from this repository:**
+
+| File | What it is to the app |
+| --- | --- |
+| this file | the plan |
+| `CLAUDE.md` | the rules, above all "What a reader has read" |
+| `aab/src/sync.ts` | the sync contract and the key list |
+| `aab/src/account.ts` | the auth flows and the session shape |
+| `functions/_lib/sanitise.ts` | the whole grammar a body can hold |
+| `shared/schools.ts` and `shared/curricula/` | ladder shapes, id and address arithmetic |
+| `next/lib/progress.ts` | tick semantics and the money mapping |
+| `next/styles/site.css` | every design token and the six kinds |
+| `shared/look.ts` | the fonts, the sections, the head facts |
+| `content/schools.backup.json` | the first parity fixture |
+
+**The first slice of phase 1, in order:** fetch
+`/api/schools/money` and render the ladder; fetch one lesson and
+render its body through the block parser; wire the tick (a
+button, `learn-read`); then the same for `deutsch`, where opening
+marks; then the pieces list and one piece. Each step lands with
+its parity test against the fixtures before the next starts. The
+design tokens arrive with the first screen rather than after it:
+a ladder drawn in framework defaults is a port that is also a
+redesign, which is the thing the site's own ports never allowed
+themselves.
+
+**What proves phase 1 done:** every hub, ladder, lesson and piece
+renders offline after one online visit; ticks and bookmarks
+survive process death; the fixture suite passes against a fresh
+pull of the public API; and the storage keys the app writes are
+asserted by name in one test.
+
 ## What is not in here, deliberately
 
 **iOS.** Everything above is the Android plan; the contracts
