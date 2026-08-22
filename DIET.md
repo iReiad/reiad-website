@@ -2093,24 +2093,38 @@ a fresh one** (`§10`, which a naive implementation gets wrong in
 the flattering direction), and the cut-off table read back out of
 this file so the prose and the code cannot drift.
 
-**A `check-diet` script under `scripts/`**, for the rules that
-are about pages rather than about numbers:
+**`scripts/check-diet.ts`**, for the rules that are about pages
+rather than about numbers. It is in `check-all.ts` beside every
+other check. Six of the nine below are held; the three not yet
+held are marked, and each is waiting on the thing it would check
+existing:
 
-- the floors are the ones `scripts/diet.test.ts` asserts, and no
-  route recomputes a formula rather than importing it.
-- the Asian cut-off table is used whenever ancestry says so.
-- every food in both libraries carries a source and a price date,
-  and every rice, grain and pasta row names its state.
-- the generated sentences in `§16` and the stage card in `§11`
+- ○ the floors are the ones `scripts/diet.test.ts` asserts, and
+  no route recomputes a formula rather than importing it.
+- ○ the Asian cut-off table is used whenever ancestry says so.
+- ○ every food in both libraries carries a source and a price
+  date, and every rice, grain and pasta row names its state.
+- ○ the generated sentences in `§16` and the stage card in `§11`
   come only from the listed templates, and the list contains no
-  second person judgement.
-- the fixed journal tag set is the one in `§11` and has not grown
-  a forty-first tag.
-- **no widget in `§24` is defined without an empty state.**
-- **no page prints a target without the disclaimer beside it.**
-- both language files cover the same keys, so a Bangla reader
-  never meets an English fallback string. `§23`.
-- the glossary defines every term the pages use.
+  second person judgement. There is no template list yet.
+- ✓ the fixed journal tag set is the one in `§11` and has not
+  grown a forty-first tag, and the day marks are the ones the
+  migration names. Neither column has a CHECK constraint, so the
+  check IS the constraint.
+- ✓ **no widget in `§24` is defined without an empty state.**
+- ✓ **no page prints a target without the disclaimer beside it**,
+  in both languages.
+- ✓ both language files cover the same keys, so a Bangla reader
+  never meets an English fallback string. `§23`. Every `<T>` has
+  both halves, and no `aria-label`, `title` or `placeholder` is
+  an English string literal.
+- ✓ the glossary defines every term the pages use, and every
+  entry is linked to from somewhere.
+- ✓ and one the list did not ask for: every `diet_*` column in
+  `§27` is either filled by the tool or named as not built yet
+  with the section that will build it. A column nothing can fill
+  breaks nothing, which is why it needed a check rather than a
+  paragraph.
 
 **A `diet.test` under `next/`**, in a real browser, the way
 `next/admin.test.ts` drives `/admin`:
@@ -2135,8 +2149,11 @@ are about pages rather than about numbers:
 
 **And two that belong to the site rather than the tool:**
 
-- the export in `§30` contains all six tables and the erase
-  removes all six. This is a check rather than a paragraph
-  because it is the one that will rot first.
+- ✓ the export in `§30` contains all six tables and the erase
+  removes all six. `aab/src/account-page.ts` does both, and the
+  confirm text names the diet log, the medicines and the cycle
+  rather than folding them into "everything": a confirm that
+  lists five of six things is a reader agreeing to something
+  else.
 - `COUNTS` in `shared/content.ts` if any page says how many tools
   this site has, because a sentence that counts must count.

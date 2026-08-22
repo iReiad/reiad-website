@@ -35,7 +35,7 @@ import {
   UNLOCKS, activityFactor, bandsFor, estimatedBurn, fatEstimate, forecastChange,
   hourlyArc, learnedHere, protocolName, restingBurn, settlingDays,
   slopePerWeek, trend, weighings,
-  type Body, type Day, type Phase, type Point, type Protocol,
+  type Body, type Day, type Phase, type Protocol,
 } from "@reiad/shared/diet";
 import {
   who, getDays, getPhases, getProfile, dayNumber, isoDate, shiftDate,

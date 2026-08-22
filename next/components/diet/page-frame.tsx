@@ -6,14 +6,15 @@
    of them drifts is the day the section stops looking like one
    section.
 
-   It is a SERVER component: the switch inside it is the only
-   client part, and `LangSwitch` is already marked. A frame that
+   It is a SERVER component: the switch and the strip inside it
+   are the only client parts, and both are marked. A frame that
    was client would drag every page's markup into the payload
    for a heading.
    ============================================================ */
 
 import type { ReactNode } from "react";
 import { LangSwitch, TBlock } from "./lang";
+import { DietStrip } from "./strip";
 
 export function DietPage({ title, lede, children }: {
   title: ReactNode;
@@ -32,6 +33,7 @@ export function DietPage({ title, lede, children }: {
           bn={<p className="dt-lede">{lede.bn}</p>}
         />
       </header>
+      <DietStrip />
       {children}
     </main>
   );

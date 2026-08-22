@@ -11,8 +11,9 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../../lib/pageMeta";
+import { DietPage } from "../../../../../components/diet/page-frame";
 import { Glossary } from "../../../../../components/diet/glossary";
-import { LangSwitch, T, TBlock } from "../../../../../components/diet/lang";
+import { T } from "../../../../../components/diet/lang";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/diet/glossary",
@@ -27,29 +28,14 @@ export const metadata: Metadata = pageMeta({
 
 export default function DietGlossaryPage() {
   return (
-    <main id="main" className="wrap dt-page">
-      <header className="dt-head">
-        <div className="dt-head-row">
-          <h1><T en="What the words mean" bn="শব্দগুলোর মানে" /></h1>
-          <LangSwitch />
-        </div>
-        <TBlock
-          en={(
-            <p className="dt-lede">
-              Everything this tool says about your body uses one of these. None
-              of them is complicated once somebody writes it out.
-            </p>
-          )}
-          bn={(
-            <p className="dt-lede">
-              আপনার শরীর নিয়ে এই যন্ত্র যা কিছু বলে, তার সবই এগুলোর কোনো একটা
-              ব্যবহার করে। কেউ একবার লিখে দিলে কোনোটাই কঠিন নয়।
-            </p>
-          )}
-        />
-      </header>
-
+    <DietPage
+      title={<T en="What the words mean" bn="শব্দগুলোর মানে" />}
+      lede={{
+        en: "Everything this tool says about your body uses one of these. None of them is complicated once somebody writes it out.",
+        bn: "আপনার শরীর নিয়ে এই যন্ত্র যা কিছু বলে, তার সবই এগুলোর কোনো একটা ব্যবহার করে। কেউ একবার লিখে দিলে কোনোটাই কঠিন নয়।",
+      }}
+    >
       <Glossary />
-    </main>
+    </DietPage>
   );
 }

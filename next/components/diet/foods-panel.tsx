@@ -104,7 +104,8 @@ export function FoodsPanel() {
 
   return (
     <div className="dt-foods">
-      <div className="dt-tags" role="group" aria-label="Which library">
+      <div className="dt-tags" role="group"
+           aria-label={lang === "bn" ? "কোন তালিকা" : "Which library"}>
         <ChipButton pressed={place === "bd"} onClick={() => setPlace("bd")}>
           <T en="Bangladesh" bn="বাংলাদেশ" />
         </ChipButton>

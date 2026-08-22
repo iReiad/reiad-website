@@ -12092,12 +12092,12 @@ German for day, and .tag is what the site has always called
   :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
-      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn,
+      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn, .dt-drop,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip,
+      .audience-slider, .skip, .dt-strip-tab,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
@@ -12231,7 +12231,7 @@ German for day, and .tag is what the site has always called
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip, .dt-hit) {
+      .audience-slider, .skip, .dt-hit, .dt-strip-tab) {
     --depth: 2.2; --polish: 0.8; --clarity: 0.7; --standing: 0.9;
   }
 
@@ -12468,12 +12468,12 @@ German for day, and .tag is what the site has always called
   :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
-      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn,
+      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn, .dt-drop,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip, .dt-hit,
+      .audience-slider, .skip, .dt-hit, .dt-strip-tab,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
@@ -13076,7 +13076,61 @@ German for day, and .tag is what the site has always called
      through. */
   .dt-page { padding-block: var(--step); }
 
-  .dt-head { margin-block-end: var(--step); }
+  .dt-head { margin-block-end: var(--s-6); }
+
+  /* ---- the way from any page of this tool to any other ----
+
+     The account page's second floating object, one level down.
+     It is `.topbar` again: the same pill, the same glass, the
+     same edge and shadow, one `--top-gap` under the site's bar
+     and inside the page's own column, so a reader who has
+     learnt that the floating thing at the top is the site's
+     controls reads this one as this page's.
+
+     Links rather than tabs, because these are eleven separate
+     routes. `aria-current="page"` is what marks the one you are
+     on, which is the right word for a link and is also what the
+     stylesheet draws, so the two cannot disagree. */
+  .dt-strip {
+    display: flex;
+    gap: var(--s-2);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    position: sticky;
+    top: calc(var(--top-space) + var(--top-gap));
+    z-index: 20;
+    padding: 6px var(--bar-pad);
+    margin-block-end: var(--step);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--glass-edge);
+    --surface-shadow: var(--glass-lift);
+  }
+  .dt-strip::-webkit-scrollbar { display: none; }
+
+  .dt-strip-tab {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    font-size: var(--t-1);
+    padding: var(--s-2) var(--s-4);
+    border-radius: var(--radius-pill);
+    color: var(--ink-soft);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .dt-strip-tab:hover { color: var(--ink); }
+  .dt-strip-tab[aria-current="page"] {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  /* Under the strip a section leading with `--step` reads as a
+     gap rather than as air, for the same reason the account
+     page's panels drop theirs. */
+  .dt-page > .dt-strip + * { padding-block-start: 0; }
+
+  @media print { .dt-strip { display: none; } }
 
   .dt-head-row {
     display: flex;

@@ -521,7 +521,7 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
           <input
             className="dt-picker-box dt-picker-num" type="number" inputMode="numeric"
             aria-label={lang === "bn" ? "ক্যালোরি" : "Calories"}
-            placeholder="kcal"
+            placeholder={lang === "bn" ? "ক্যালোরি" : "kcal"}
             value={free.kcal}
             onChange={(e) => setFree((f) => ({ ...f, kcal: e.target.value }))}
           />

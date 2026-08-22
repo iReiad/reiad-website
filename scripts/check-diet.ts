@@ -68,10 +68,9 @@
 
    The tags come out of DIET.md, the marks out of the migration,
    the columns out of the migration, the terms out of the
-   glossary. Retyping any of them here would make this file the
-   fourteenth place the same list is said, which is the failure
-   the top of CLAUDE.md is about happening to the thing that
-   catches it.
+   glossary. Retyping any of them here would make this file one
+   more place the same list is said, which is the failure the top
+   of CLAUDE.md is about happening to the thing that catches it.
    ============================================================ */
 
 import { readFileSync, readdirSync } from "node:fs";
@@ -85,7 +84,17 @@ const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
 const COMPONENTS = "next/components/diet";
 const ROUTES = "next/app/(site)/tools/diet";
 const API = "next/lib/diet-api.ts";
-const MIGRATION = "supabase/migrations/20260822120000_diet.sql";
+
+/** Every migration that touches a diet table, found rather than
+    named. A migration's filename is the primary key of a row in
+    `supabase_migrations.schema_migrations` and may never be
+    renamed, so a second one adding a column is how this schema
+    will grow, and a check reading one file by name would go on
+    reporting on the schema of August. */
+const MIGRATIONS = "supabase/migrations";
+const migrationFiles = readdirSync(join(ROOT, MIGRATIONS)).sort()
+  .filter((f) => f.endsWith(".sql")
+    && readFileSync(join(ROOT, MIGRATIONS, f), "utf8").includes("public.diet_"));
 
 let failures = 0;
 const fail = (line: string, ...detail: string[]): void => {
@@ -224,14 +233,14 @@ function reaches(file: string, seen = new Set<string>()): Set<string> {
   seen.add(file);
   const src = SOURCE.get(file) ?? "";
   for (const m of src.matchAll(/from\s+"([^"]*components\/diet\/[\w-]+)"/g)) {
-    const name = m[1].split("/").pop() as string;
-    const target = `${COMPONENTS}/${name}.tsx`;
-    if (SOURCE.has(target)) reaches(target, seen);
+    const component = `${COMPONENTS}/${m[1].split("/").pop() as string}.tsx`;
+    if (SOURCE.has(component)) reaches(component, seen);
   }
   return seen;
 }
 
 const pages = TOOL_FILES.filter((f) => f.startsWith(ROUTES) && f.endsWith("/page.tsx"));
+let targeted = 0;
 let disclaimed = 0;
 
 for (const page of pages) {
@@ -240,12 +249,15 @@ for (const page of pages) {
     (fn) => new RegExp(`\\b${fn}\\(`).test(uncommented(SOURCE.get(f) ?? "")),
   ));
   if (!prints.length) continue;
+  targeted += 1;
 
-  const said = set.filter((f) => {
-    const src = SOURCE.get(f) ?? "";
+  /* Comments stripped, so a paragraph explaining why a page has
+     no disclaimer does not read as the disclaimer. */
+  const said = set.some((f) => {
+    const src = uncommented(SOURCE.get(f) ?? "");
     return SAYS_EN.test(src) && SAYS_BN.test(src);
   });
-  if (said.length) { disclaimed += 1; continue; }
+  if (said) { disclaimed += 1; continue; }
 
   const address = `/${relative(join(ROOT, "next/app/(site)"), join(ROOT, dirname(page)))}`;
   fail(`${address} prints a target and carries no medical advice line`,
@@ -468,12 +480,12 @@ if (!wanted.length) {
   }
 }
 
-const migration = read(MIGRATION);
+const migration = migrationFiles.map((f) => read(`${MIGRATIONS}/${f}`)).join("\n");
 const markComment = migration.match(/((?:'[a-z-]+',\s*)+'[a-z-]+')\.\s*A marked day/);
 const markNames = [...(markComment?.[1].matchAll(/'([a-z-]+)'/g) ?? [])].map((m) => m[1]);
 
 if (!markNames.length) {
-  fail(`${MIGRATION} no longer names the marks beside diet_days.marks`,
+  fail("no migration names the marks beside diet_days.marks any more",
     "The column has no CHECK constraint, so that comment is the only",
     "statement of what may be in it, and this check reads it.");
 } else {
@@ -749,10 +761,8 @@ for (const key of Object.keys(UNUSED)) {
 console.log(failures
   ? `\n${failures} problem(s): the diet tool has stopped keeping one of DIET.md's\n`
     + "rules about pages. Each line above names the section.\n"
-  : `diet: ${pages.length} pages walked and ${disclaimed} of them print a target\n`
-    + `      with the disclaimer beside it, ${phrases} phrases said in both\n`
-    + `      languages, ${widgets} widgets with an empty state, ${entries.length} glossary\n`
-    + `      entries defined and linked, ${TAGS.length} tags and ${MARKS.length} marks the same\n`
-    + `      as DIET.md and the migration, and ${columns} columns across ${tables.length} tables\n`
-    + `      either filled by the tool or named as not built yet.\n`);
+  : `diet: ${disclaimed} of the ${targeted} pages that print a target say so, ${phrases} phrases\n`
+    + `      in both languages across ${pages.length} pages, ${widgets} widgets with an empty\n`
+    + `      state, ${entries.length} glossary entries linked, ${TAGS.length} tags and ${MARKS.length} marks as written\n`
+    + `      down, and ${columns} columns across ${tables.length} tables filled or named.\n`);
 process.exit(failures ? 1 : 0);
