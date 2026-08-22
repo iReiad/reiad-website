@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v187: /fallback.css. The deck's heading belongs to the section
+        it names, so the section's own top padding no longer opens
+        ninety pixels under it.
+
    v186: /fallback.css. The readout on four pages has a name, so
         a reader moving by heading no longer meets an `h3` under
         an `h1`, and a first use of a term is linked to its
@@ -1715,7 +1719,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v186";
+const VERSION = "v187";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
