@@ -47,6 +47,23 @@ const MONEY: Record<string, string> = { BDT: "৳", GBP: "£" };
 const perProtein = (f: Portion): number | null =>
   f.price != null && f.protein > 0 ? (f.price / f.protein) * 100 : null;
 
+/** PRECISION FOLLOWS THE MEASUREMENT, NEVER THE FLOAT, and here
+    it also has to follow the CURRENCY.
+
+    Cost per 100 g of protein lands between one and three pounds
+    in Britain and between fifty and three hundred taka in
+    Bangladesh. Rounding both to whole units made three different
+    foods all read "£1" in a table that had just sorted them by
+    that exact number: a table that sorts by a figure and then
+    hides the figure is a table telling the reader to trust an
+    order they cannot check.
+
+    Two decimals under ten, one under a hundred, whole above it.
+    The rule is about the size of the number rather than about
+    the currency, so a third currency needs nothing added. */
+const money = (n: number): string =>
+  n < 10 ? n.toFixed(2) : n < 100 ? n.toFixed(1) : n.toFixed(0);
+
 export function FoodsPanel() {
   const lang = useToolLang();
   const [place, setPlace] = useState<"bd" | "uk">("uk");
@@ -104,7 +121,7 @@ export function FoodsPanel() {
                 <tr key={f.id}>
                   <th scope="row">{lang === "bn" ? f.bn : f.en}</th>
                   <td className="mono">
-                    {MONEY[f.currency ?? ""] ?? ""}{digits(per.toFixed(0), lang)}
+                    {MONEY[f.currency ?? ""] ?? ""}{digits(money(per), lang)}
                   </td>
                   <td className="mono">{digits(f.protein.toFixed(1), lang)} g</td>
                 </tr>
@@ -157,7 +174,7 @@ export function FoodsPanel() {
                   <td className="mono">{digits(f.fibre.toFixed(1), lang)}</td>
                   <td className="mono">
                     {f.price != null
-                      ? `${MONEY[f.currency ?? ""] ?? ""}${digits(f.price.toFixed(2), lang)}`
+                      ? `${MONEY[f.currency ?? ""] ?? ""}${digits(money(f.price), lang)}`
                       : "-"}
                   </td>
                 </tr>

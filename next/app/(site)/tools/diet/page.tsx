@@ -11,7 +11,7 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
-import { GoCard, InfoCard, SoonCard } from "../../../../components/deck";
+import { GoCard, InfoCard } from "../../../../components/deck";
 import { LangSwitch, T, TBlock } from "../../../../components/diet/lang";
 import { DietBoard } from "../../../../components/diet/board";
 
@@ -140,13 +140,26 @@ export default function DietPage() {
           )}
         />
 
-        <SoonCard
+        <GoCard
+          href="/tools/diet/foods"
           title={<T en="What it costs to eat" bn="খেতে কত খরচ" />}
-          soon={<T en="Coming" bn="আসছে" />}
+          go={<T en="Compare" bn="তুলনা করুন" />}
           dek={(
             <T
               en="Cost per gram of protein, in taka and in pounds. This is a personal finance site, and a diet tool here that never priced a meal would be the one place the obvious question goes unasked."
               bn="প্রতি গ্রাম প্রোটিনের দাম, টাকায় আর পাউন্ডে। এটা টাকার সাইট, আর এখানকার খাদ্য যন্ত্র যদি কখনো দামের কথা না বলে, তবে এটাই একমাত্র জায়গা যেখানে সবচেয়ে স্পষ্ট প্রশ্নটা করা হয় না।"
+            />
+          )}
+        />
+
+        <GoCard
+          href="/tools/diet/health"
+          title={<T en="The clinic's numbers" bn="ক্লিনিকের সংখ্যা" />}
+          go={<T en="Read it" bn="পড়ুন" />}
+          dek={(
+            <T
+              en="Blood pressure, HbA1c, the lipid panel, and the ordinary medicines that change what these charts mean. The only objective measurements in the whole tool."
+              bn="রক্তচাপ, এইচবিএ১সি, চর্বির পরীক্ষা, আর যে সাধারণ ওষুধগুলো এই চার্টের মানে বদলে দেয়। পুরো যন্ত্রের একমাত্র বস্তুনিষ্ঠ মাপ এগুলোই।"
             />
           )}
         />

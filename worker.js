@@ -177,7 +177,7 @@ export const NEXT_ROUTES = [
   /^\/(about|contact|account|skills|tools|portfolio)$/i,
   /^\/tools\/(stock|live|routine|diet)$/i,
   /^\/tools\/routine\/(settings|print|day|year)$/i,
-  /^\/tools\/diet\/(you|glossary|goal|trend|journal|nutrition|expect|foods)$/i,
+  /^\/tools\/diet\/(you|glossary|goal|trend|journal|nutrition|expect|foods|health)$/i,
   /* The admin panel. ADMIN.md is the plan; it is `unlisted` in
      shared/nav.ts for the reason the course section is. */
   /^\/admin$/i,

@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v183: /fallback.css. The clinic numbers page, and a price
+        table that shows the figure it sorted by: cost per 100g
+        of protein was rounded to whole units, so three different
+        foods all read pound one in a table that had just ranked
+        them by that exact number.
+
    v182: /fallback.css. The prices page, and when a day's
         calories actually land: twenty-four columns off the
         reader's own log, which is the one reading that can
@@ -1691,7 +1697,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v182";
+const VERSION = "v183";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
