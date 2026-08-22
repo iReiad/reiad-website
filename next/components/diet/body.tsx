@@ -62,6 +62,7 @@ import { Button } from "../ui/button";
 import { getProfile, saveProfile, who, type Profile, type Who } from "../../lib/diet-api";
 import { T, TBlock, digits, useToolLang, type ToolLang } from "./lang";
 import { BAND_WORDS, WHTR_WORDS } from "./words";
+import { Term } from "./glossary";
 
 /** A number typed into a box, which is a string until it is not.
     Empty is absent rather than zero: a waist of 0 is not a
@@ -398,9 +399,10 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
             </p>
             <p className="dt-why">
               <T
-                en="Predicts cardiometabolic risk better than BMI across ethnicities, and needs one tape measure."
-                bn="বিভিন্ন জাতিগোষ্ঠীর ক্ষেত্রে বিএমআইয়ের চেয়ে ভালো ইঙ্গিত দেয়, আর লাগে শুধু একটা ফিতা।"
+                en="Predicts cardiometabolic risk better than BMI across ethnicities, and needs one tape measure. "
+                bn="বিভিন্ন জাতিগোষ্ঠীর ক্ষেত্রে বিএমআইয়ের চেয়ে ভালো ইঙ্গিত দেয়, আর লাগে শুধু একটা ফিতা। "
               />
+              <Term id="whtr" en="What this ratio is" bn="এই অনুপাতটা কী" />
             </p>
           </div>
         )}
@@ -413,9 +415,10 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
         </p>
         <p className="dt-why">
           <T
-            en="Mass over height squared. It cannot tell muscle from fat and says nothing about where the fat is, which is the part that matters."
-            bn="ওজনকে উচ্চতার বর্গ দিয়ে ভাগ। এটি পেশি আর চর্বির পার্থক্য বোঝে না, আর চর্বি কোথায় জমেছে তা বলে না, যেটাই আসল ব্যাপার।"
+            en="Mass over height squared. It cannot tell muscle from fat and says nothing about where the fat is, which is the part that matters. "
+            bn="ওজনকে উচ্চতার বর্গ দিয়ে ভাগ। এটি পেশি আর চর্বির পার্থক্য বোঝে না, আর চর্বি কোথায় জমেছে তা বলে না, যেটাই আসল ব্যাপার। "
           />
+          <Term id="bmi" en="More on BMI" bn="বিএমআই নিয়ে আরও" />
         </p>
       </div>
 
@@ -458,9 +461,10 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
         </p>
         <p className="dt-why">
           <T
-            en="What the protein floor is worked out from, and the number that tells a lifter their BMI is lying."
-            bn="প্রোটিনের সর্বনিম্ন হিসাব এখান থেকেই আসে, আর যিনি ভার তোলেন তাঁকে এটাই বলে দেয় বিএমআই ভুল বলছে।"
+            en="What the protein floor is worked out from, and the number that tells a lifter their BMI is lying. "
+            bn="প্রোটিনের সর্বনিম্ন হিসাব এখান থেকেই আসে, আর যিনি ভার তোলেন তাঁকে এটাই বলে দেয় বিএমআই ভুল বলছে। "
           />
+          <Term id="lean" en="Lean mass and FFMI" bn="চর্বি ছাড়া ভর আর এফএফএমআই" />
         </p>
       </div>
 
@@ -487,6 +491,8 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
                 + `হিসাব করে। ফিতা ছাড়া হত ${digits(Math.round(mifflin(body) / 10) * 10, "bn")}।`
               : "কিছু না করেও আপনার শরীর যা খরচ করে। ফিতার মাপ দিলে এর জায়গায় আরও ভালো একটা হিসাব আসে।"}
           />
+          {" "}
+          <Term id="bmr" en="What a resting burn is" bn="বিশ্রামে খরচ মানে কী" />
         </p>
       </div>
     </div>

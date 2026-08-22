@@ -398,11 +398,12 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
                 en={`That is ${Math.round(preview.kcal)} kcal${
                   preview.macros.protein !== undefined
                     ? `, ${preview.macros.protein} g protein` : ""
-                }${preview.grams !== undefined ? `, ${preview.grams} g` : ""}.`}
+                }${preview.grams !== undefined && unit !== "g"
+                  ? `, ${preview.grams} g` : ""}.`}
                 bn={`মানে ${digits(Math.round(preview.kcal), "bn")} ক্যালোরি${
                   preview.macros.protein !== undefined
                     ? `, ${digits(preview.macros.protein, "bn")} গ্রাম প্রোটিন` : ""
-                }${preview.grams !== undefined
+                }${preview.grams !== undefined && unit !== "g"
                   ? `, ${digits(preview.grams, "bn")} গ্রাম` : ""}।`}
               />
             ) : (
@@ -478,6 +479,19 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
             </li>
           ))}
         </ul>
+      ) : null}
+
+      {/* An answer came back and it was empty, which is a
+          different sentence from "still looking" and from "one
+          database is down" below. A barcode that nobody has
+          added yet is the common case of it. */}
+      {sources && !looking && hits.length === 0 && !chosen ? (
+        <p className="dt-hint">
+          <T
+            en="Nothing found. Type it in below, or read it off the packet."
+            bn="কিছু পাওয়া যায়নি। নিচে নিজে লিখুন, অথবা প্যাকেট দেখে লিখুন।"
+          />
+        </p>
       ) : null}
 
       {/* One down means the other's results, and the page says

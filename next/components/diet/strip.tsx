@@ -67,14 +67,14 @@ export function DietStrip() {
 
   return (
     <nav
-      className="dt-strip topbar"
+      className="dt-tabs topbar"
       ref={bar as React.RefObject<HTMLElement>}
       onKeyDown={onKey}
       aria-label={lang === "bn" ? "খাদ্য ও ওজনের পাতাগুলো" : "Diet tool pages"}
     >
       <Link
         href={DIET_HOME}
-        className="dt-strip-tab"
+        className="dt-tab"
         aria-current={onHome ? "page" : undefined}
         tabIndex={onHome ? 0 : -1}
       >
@@ -86,7 +86,7 @@ export function DietStrip() {
           <Link
             key={p.href}
             href={p.href}
-            className="dt-strip-tab"
+            className="dt-tab"
             aria-current={here ? "page" : undefined}
             /* Focus lands on the page you are on. Where that is
                the home entry, the first link takes it, so the

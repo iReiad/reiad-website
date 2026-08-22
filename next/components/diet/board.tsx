@@ -29,11 +29,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  UNLOCKS, dayPace, streak, totalFor, trend, slopePerWeek, learnedBurn,
+  UNLOCKS, dayPace, streak, totalFor, trend, slopePerWeek, learnedHere, weighings, entryHour,
   restingBurn, estimatedBurn, activityFactor, target, fatEstimate,
   proteinFloor, whtr, bmi,
   type Body, type Day, type Entry, type Point,
 } from "@reiad/shared/diet";
+import { DEFAULT_PLACE } from "@reiad/shared/foods";
 import {
   who, getDays, saveDay, getEntries, addEntry, removeEntry, getProfile,
   isoDate, clockTime, shiftDate, dayNumber, pendingCount,
@@ -41,8 +42,13 @@ import {
 } from "../../lib/diet-api";
 import { ButtonLink } from "../ui/button";
 import { T, digits, useToolLang } from "./lang";
-import { Ring, Spark, Strip, Waiting, Widget } from "./widgets";
+import { Spark, Strip, Waiting, Widget } from "./widgets";
+/* THE RING IS THE SITE'S. `deck.tsx` has drawn one since the
+   schools were built, and this tool wrote a second with its own
+   four classes drawing the same circle. */
+import { Ring } from "../deck";
 import { LogForm } from "./log-form";
+import { Term } from "./glossary";
 
 /** How far back the board reads. A year is 365 rows, which is
     one request and nothing to paginate, and it is what the
@@ -133,13 +139,19 @@ export function DietBoard() {
      is the line a page draws; `slopePerWeek()` fits the
      READINGS, and the comment on it says why an average's
      endpoints cannot be used for a rate. */
-  const points: Point[] = useMemo(
-    () => days.filter((d) => d.weightKg != null)
-      .map((d) => ({ day: dayNumber(d.date), kg: d.weightKg as number })),
-    [days],
+  /* DRAWN AND FITTABLE ARE TWO LISTS. A day marked ill, or on a
+     week away, is still somebody's weight and is still drawn;
+     what it must not do is bend a rate. `weighings()` is the one
+     place that split is made, so the board, the trend page and
+     the doctor's sheet cannot come to disagree about which days
+     count. */
+  const scale = useMemo(
+    () => weighings({ days, dayOf: dayNumber, today: dayNumber(realToday) }),
+    [days, realToday],
   );
+  const points: Point[] = scale.drawn;
   const line = useMemo(() => trend(points), [points]);
-  const rate = useMemo(() => slopePerWeek(points), [points]);
+  const rate = useMemo(() => slopePerWeek(scale.fittable), [scale]);
 
   /* THE TREND, NOT THE NEWEST READING. `shared/diet.ts` opens
      with "NOTHING READS A SINGLE WEIGHT" and this read one: a
@@ -163,10 +175,19 @@ export function DietBoard() {
     };
   }, [profile, line, days]);
 
-  const learned = useMemo(() => learnedBurn(
-    points,
-    days.filter((d) => d.kcal != null).map((d) => ({ day: dayNumber(d.date), kcal: d.kcal as number })),
-  ), [points, days]);
+  /* PER PHASE, NEVER ACROSS A BOUNDARY. Mean intake during a
+     complete fast is zero, and the formula fed a window holding
+     one returns a number with no meaning. `learnedHere()`
+     measures inside the last readable stretch and returns null
+     rather than spanning. Every intake goes in, including a
+     marked day's: that food was really eaten, and it is the
+     WEIGHT on a marked day that means nothing. */
+  const learned = useMemo(() => learnedHere({
+    weights: scale.fittable,
+    intakes: days.filter((d) => d.kcal != null)
+      .map((d) => ({ day: dayNumber(d.date), kcal: d.kcal as number })),
+    today: dayNumber(realToday),
+  }), [scale, days, realToday]);
 
   const burn = useMemo(() => {
     if (!body) return null;
@@ -188,16 +209,17 @@ export function DietBoard() {
      the day, and a tool that implied it was would be telling
      somebody they had failed by one o'clock. */
   const pace = useMemo(() => {
-    /* `at_time` first, and the old spelling second: rows written
-       before section 11 was fixed carry the clock in `meal`, and
-       dropping the fallback would take their hour off them. */
-    const at = (e: Entry): number => {
-      const h = /^(\d{1,2}):/.exec(e.atTime ?? e.meal ?? "");
-      return h ? Number(h[1]) : 12;
-    };
+    /* `entryHour()` reads `at_time` first and the old clock in
+       `meal` second, and returns null rather than noon, so a row
+       with no time of its own is left out of a distribution
+       rather than piled on to lunchtime. */
+    const at = (e: Entry): number | null => entryHour(e);
+    const timed = (list: Entry[]) => list
+      .map((e) => ({ hour: at(e), kcal: e.kcal ?? 0 }))
+      .filter((x): x is { hour: number; kcal: number } => x.hour !== null);
     return dayPace({
-      history: entries.filter((e) => e.date !== today).map((e) => ({ hour: at(e), kcal: e.kcal ?? 0 })),
-      today: todayEntries.map((e) => ({ hour: at(e), kcal: e.kcal ?? 0 })),
+      history: timed(entries.filter((e) => e.date !== today)),
+      today: timed(todayEntries),
       hourNow,
     });
   }, [entries, todayEntries, today, hourNow]);
@@ -320,7 +342,7 @@ export function DietBoard() {
           day={day}
           entries={todayEntries}
           saving={saving}
-          place={profile?.place ?? "bd"}
+          place={profile?.place ?? DEFAULT_PLACE}
           date={today}
           today={realToday}
           ready={loaded}
@@ -337,8 +359,8 @@ export function DietBoard() {
           {goal
             ? (
               <Ring
-                done={totals.kcal} total={goal.kcal}
-                label={<span className="mono">{digits(Math.abs(Math.round(remaining)), lang)}</span>}
+                value={totals.kcal} total={goal.kcal}
+                label={digits(Math.abs(Math.round(remaining)), lang)}
               />
             )
             : <Waiting
@@ -386,6 +408,18 @@ export function DietBoard() {
             number that can only fall is a number people stop
             looking at. */}
         <Widget href="/tools/diet/trend" title={<T en="Days logged" bn="যত দিন লেখা" />}>
+          {/* A ZERO IS NOT A COUNT OF NOTHING, it is a run that
+              has not started, and a big grey 0 on the widget
+              that is supposed to be encouraging is the one place
+              in this tool where a figure would read as a mark
+              out of ten. */}
+          {run.current === 0 && run.best === 0 ? (
+            <Waiting
+              en="A weight, a glass of water or one thing you ate, and this starts counting. It counts showing up, never hitting a target."
+              bn="একটা ওজন, এক গ্লাস পানি বা একটা কিছু খাওয়ার কথা লিখলেই এটা গোনা শুরু করবে। এটা লেখার দিন গোনে, লক্ষ্য ছোঁয়া গোনে না।"
+            />
+          ) : (
+            <>
           <span className="dt-w-big mono">{digits(run.current, lang)}</span>
           <span className="dt-w-said">
             <T
@@ -396,7 +430,9 @@ export function DietBoard() {
                 : run.current > 0 ? "দিন টানা, আর এটাই আপনার সেরা" : "আজ কিছু লিখলেই শুরু"}
             />
           </span>
-          <Strip days={stripDays} />
+          <Strip days={stripDays} lang={lang} />
+            </>
+          )}
         </Widget>
 
         <Widget href="/tools/diet/trend" title={<T en="Trend" bn="ধারা" />}>
@@ -414,6 +450,8 @@ export function DietBoard() {
                         bn={`সপ্তাহে ${digits(rate.mid.toFixed(2), "bn")} কেজি`}
                       />
                     : <T en="A week of weighings gives a rate." bn="এক সপ্তাহ ওজন দিলে হার আসবে।" />}
+                  {" "}
+                  <Term id="trend" en="why a line, not a reading" bn="কেন রেখা, একটা মাপ নয়" />
                 </span>
               </>
             )
@@ -433,6 +471,8 @@ export function DietBoard() {
                     en={burn.learned ? "measured from your own log" : "estimated, until fourteen days of logs"}
                     bn={burn.learned ? "আপনার নিজের খাতা থেকে মাপা" : "আন্দাজ, চৌদ্দ দিন লেখা না হওয়া পর্যন্ত"}
                   />
+                  {" "}
+                  <Term id="tdee" en="what this is" bn="এটা কী" />
                 </span>
               </>
             )
@@ -529,6 +569,8 @@ export function DietBoard() {
             first rule, held on `/you` and on `/goal` and missing
             here, which is the page a reader actually lands on. */}
         <p className="dt-w-legal" data-wide>
+          <Term id="deficit" en="What a deficit is" bn="ঘাটতি মানে কী" />
+          {". "}
           <T
             en="These numbers are general education and not medical advice. They do not know your history, your medicines or anything a clinician would ask about first."
             bn="এই সংখ্যাগুলো সাধারণ তথ্যের জন্য, চিকিৎসা পরামর্শ নয়। আপনার রোগের ইতিহাস, ওষুধ বা একজন চিকিৎসক প্রথমেই যা জিজ্ঞেস করতেন, তার কিছুই এগুলো জানে না।"

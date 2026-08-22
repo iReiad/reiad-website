@@ -80,7 +80,8 @@ this repository got written.
   people actually eat in Bangladesh and in the UK, each row said
   in both languages, with the nutrients that tool tracks where
   they are known and a price carrying the month it was checked.
-  Data and four lookups, and no arithmetic at all. Two rules a
+  Data, four lookups, and the arithmetic that scales a found food
+  to the amount that was eaten. Two rules a
   reader has to keep: an `id` is written into somebody's log, so
   renaming one loses what they logged, and every rice, dal and
   pasta row states whether the figure is for the raw food or the

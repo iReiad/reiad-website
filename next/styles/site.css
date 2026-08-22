@@ -12097,7 +12097,7 @@ German for day, and .tag is what the site has always called
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip, .dt-strip-tab,
+      .audience-slider, .skip, .dt-tab,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
@@ -12231,7 +12231,7 @@ German for day, and .tag is what the site has always called
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip, .dt-hit, .dt-strip-tab) {
+      .audience-slider, .skip, .dt-hit, .dt-tab) {
     --depth: 2.2; --polish: 0.8; --clarity: 0.7; --standing: 0.9;
   }
 
@@ -12473,7 +12473,7 @@ German for day, and .tag is what the site has always called
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip, .dt-hit, .dt-strip-tab,
+      .audience-slider, .skip, .dt-hit, .dt-tab,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
@@ -13091,7 +13091,7 @@ German for day, and .tag is what the site has always called
      routes. `aria-current="page"` is what marks the one you are
      on, which is the right word for a link and is also what the
      stylesheet draws, so the two cannot disagree. */
-  .dt-strip {
+  .dt-tabs {
     display: flex;
     gap: var(--s-2);
     flex-wrap: nowrap;
@@ -13107,9 +13107,9 @@ German for day, and .tag is what the site has always called
     border: 1px solid var(--glass-edge);
     --surface-shadow: var(--glass-lift);
   }
-  .dt-strip::-webkit-scrollbar { display: none; }
+  .dt-tabs::-webkit-scrollbar { display: none; }
 
-  .dt-strip-tab {
+  .dt-tab {
     flex: 0 0 auto;
     scroll-snap-align: start;
     font-size: var(--t-1);
@@ -13119,8 +13119,8 @@ German for day, and .tag is what the site has always called
     text-decoration: none;
     white-space: nowrap;
   }
-  .dt-strip-tab:hover { color: var(--ink); }
-  .dt-strip-tab[aria-current="page"] {
+  .dt-tab:hover { color: var(--ink); }
+  .dt-tab[aria-current="page"] {
     background: var(--accent);
     color: var(--accent-ink);
   }
@@ -13128,9 +13128,9 @@ German for day, and .tag is what the site has always called
   /* Under the strip a section leading with `--step` reads as a
      gap rather than as air, for the same reason the account
      page's panels drop theirs. */
-  .dt-page > .dt-strip + * { padding-block-start: 0; }
+  .dt-page > .dt-tabs + * { padding-block-start: 0; }
 
-  @media print { .dt-strip { display: none; } }
+  @media print { .dt-tabs { display: none; } }
 
   .dt-head-row {
     display: flex;
@@ -13164,9 +13164,24 @@ German for day, and .tag is what the site has always called
     cursor: pointer;
   }
 
+  /* LIT BEFORE HYDRATION. `aria-pressed` is undefined until an
+     effect has run, so the switch showed neither half pressed on
+     first paint, which reads as broken on the one control a
+     reader looks at first. The attribute on `<html>` is already
+     right by then: the boot script sets it, and it is the state.
+     Both selectors are here so the two never disagree, and the
+     attribute one comes second so a press wins immediately. */
+  :root:not([data-tool-lang="bn"]) .dt-lang-btn[data-half="en"],
+  :root[data-tool-lang="bn"] .dt-lang-btn[data-half="bn"],
   .dt-lang-btn[aria-pressed="true"] {
     background: var(--accent);
     color: var(--accent-ink);
+  }
+  /* And the attribute takes it OFF the other half, for the paint
+     between a press and the re-render. */
+  .dt-lang-btn[aria-pressed="false"] {
+    background: transparent;
+    color: var(--ink-soft);
   }
 
   /* The measurements and the readout, side by side where there
@@ -13302,6 +13317,14 @@ German for day, and .tag is what the site has always called
     font-variant-numeric: tabular-nums;
   }
 
+  .dt-deck-h {
+    font-size: var(--t-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin-block: 0 var(--s-5);
+  }
+
   .dt-deck {
     display: grid;
     gap: var(--s-4);
@@ -13416,22 +13439,7 @@ German for day, and .tag is what the site has always called
     border-block-start: 1px solid var(--hairline);
   }
 
-  /* A RING, not a bar. A bar fills and then overflows, and an
-     overflowing bar wants to be red. A ring closes. */
-  .dt-ring { position: relative; display: block; inline-size: 64px; }
-  .dt-ring svg { inline-size: 64px; block-size: 64px; display: block; }
-  .dt-ring-track {
-    fill: none; stroke: var(--hairline); stroke-width: 6;
-  }
-  .dt-ring-fill {
-    fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round;
-    transition: stroke-dasharray 190ms ease-out;
-  }
-  .dt-ring-mid {
-    position: absolute; inset: 0;
-    display: grid; place-items: center;
-    font-size: var(--t-2);
-  }
+
 
   .dt-spark { inline-size: 100%; block-size: 34px; display: block; }
   .dt-spark-line { fill: none; stroke: var(--accent); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
@@ -13780,6 +13788,130 @@ German for day, and .tag is what the site has always called
     .dt-sheet a::after { content: " (" attr(href) ")"; font-size: 0.85em; }
   }
 
+
+  /* ---- the food picker's measure step, and what a price says ---- */
+
+/* ============================================================
+   For @layer diet in next/styles/site.css, from the food-picker
+   and foods-panel agent. Every class below is in the markup of
+   next/components/diet/food-picker.tsx or foods-panel.tsx.
+
+   Nothing here gives a class BOTH a ground and an edge, so
+   check-material.ts's second question does not pick any of them
+   up as a surface off the system.
+   ============================================================ */
+
+  /* What a figure is FOR, on every result. Both databases answer
+     per 100 g and the library answers per cup, so a list that
+     hides which is which is a list that logs one as the other. */
+  .dt-hit-por {
+    display: block;
+    font-size: var(--t-1);
+    color: var(--ink-soft);
+  }
+
+  /* How much of an upstream record is actually there. A
+     crowdsourced row missing half its fields has to LOOK worse
+     than a laboratory one, so this is not uppercased with the
+     source word above it. */
+  .dt-hit-fill {
+    display: block;
+    font-size: var(--t-0);
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--ink-soft);
+  }
+
+  /* The step between tapping a result and writing a row. */
+  .dt-measure {
+    display: grid;
+    gap: var(--s-3);
+    padding-block: var(--s-4);
+    border-block-start: 1px solid var(--hairline);
+    border-block-end: 1px solid var(--hairline);
+  }
+  .dt-measure-what { margin: 0; font-weight: 600; }
+  .dt-measure-row {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .dt-measure-sum { margin: 0; font-size: var(--t-1); }
+
+  /* The label reader: per 100 g figures off the back of a packet,
+     and the weight that was actually eaten. */
+  .dt-label-form { display: grid; gap: var(--s-3); }
+  .dt-label-cell {
+    display: flex;
+    gap: var(--s-3);
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  /* A price is a fact with a date on it, and an undated price is
+     worse than none. */
+  .dt-priced {
+    display: block;
+    font-size: var(--t-0);
+    color: var(--ink-soft);
+  }
+  /* Where a row's composition figure came from. A number with no
+     source is a number this tool invented. */
+  .dt-row-src {
+    display: block;
+    font-weight: normal;
+    font-size: var(--t-0);
+    color: var(--ink-soft);
+  }
+
+  /* ---- what to expect: the controls, and a marked weighing ---- */
+
+/* For @layer diet in next/styles/site.css.
+
+   From the arithmetic agent: expect-panel.tsx and
+   trend-panel.tsx. Two rules, both purely additive. NEITHER IS
+   LOAD BEARING: both pages render correctly without them, so
+   nothing is broken by not merging this. The first is spacing
+   and the second is a shape. Everything else those two panels
+   needed is a class the stylesheet already had.
+
+   ---- 1. the control rows on the expect panel ---- */
+
+/* Four labelled rows of chips: "What you are about to do", "For
+   how long", "And before that you were doing", and "For how
+   long already". Each row is `.dt-scale` and its label is
+   `.dt-scale-label`, which are already the pair the log form
+   uses for a small label beside a control, so the rows are
+   right on their own. What they have no gap between them is
+   this: `.dt-tags` carries no margin, and the section they sit
+   in spaces what is around them rather than what is inside.
+
+   Smaller than `--step`, because the four of them are one
+   control rather than four sections. */
+.dt-cast-controls {
+  display: grid;
+  gap: var(--s-4);
+  margin-block-end: var(--s-5);
+}
+
+/* ---- 2. a marked day on the trend chart ---- */
+
+/* A ring rather than a dot, and a SHAPE rather than a colour,
+   because nothing on this chart is encoded in colour alone. A
+   marked day is drawn and is left out of the rate, and the
+   table under the chart carries a Marked column saying the same
+   thing in words for a reader who cannot see the difference.
+   The radius is set on the element, so without this rule the
+   day is still visibly larger than its neighbours. */
+.dt-dot[data-marked] {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 1.4;
+  opacity: 0.8;
+}
+
   .dt-symptoms, .dt-diary { max-inline-size: 70ch; }
 
   .dt-invite { display: grid; gap: var(--s-5); max-inline-size: 52ch; justify-items: start; }
@@ -13800,6 +13932,26 @@ German for day, and .tag is what the site has always called
   .dt-board-wait { min-block-size: 12rem; }
 
   .dt-glossary { display: grid; gap: var(--step); max-inline-size: 70ch; }
+
+  /* A first use, linked to its definition. A dotted underline
+     rather than the site's link colour: it is a footnote in the
+     middle of a sentence, and colouring it would make every
+     paragraph in this tool read as a list of links. */
+  .dt-term-link {
+    color: inherit;
+    text-decoration: underline dotted;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+  .dt-term-link:hover, .dt-term-link:focus-visible {
+    text-decoration-style: solid;
+    color: var(--accent);
+  }
+
+  /* Arriving by anchor: the definition has to clear the two
+     floating bars above it. */
+  .dt-term { scroll-margin-top: calc(var(--top-space) + var(--step) * 2); }
+  .dt-term:target dt { color: var(--accent); }
 
   .dt-term {
     border-block-start: 1px solid var(--hairline);

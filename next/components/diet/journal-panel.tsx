@@ -23,6 +23,7 @@ import { TAGS, hungerTrend, type Day } from "@reiad/shared/diet";
 import { who, getDays, isoDate, shiftDate, type Who } from "../../lib/diet-api";
 import { Note } from "../ui/note";
 import { T, TBlock, digits, useToolLang } from "./lang";
+import { Term } from "./glossary";
 
 const SYMPTOMS: Array<{ en: string; bn: string; withEn: string; withBn: string }> = [
   { en: "Headache, fatigue or cramp in the first fortnight of keto",
@@ -151,6 +152,33 @@ export function JournalPanel() {
             </div>
           ))}
         </dl>
+        {/* FOUR WORDS THAT EXPLAIN MOST OF THAT LIST, and the
+            glossary is where each is written out. A tool that
+            uses them without defining them is written for people
+            who already know. */}
+        <p className="dt-why">
+          <T
+            en="Most of the first week of any of this is "
+            bn="এসবের প্রথম সপ্তাহের বেশিরভাগটাই "
+          />
+          <Term id="glycogen" en="glycogen and its water" bn="গ্লাইকোজেন আর তার পানি" />
+          <T
+            en=" leaving, not fat. A very low carbohydrate week puts a body into "
+            bn=" চলে যাওয়া, চর্বি নয়। খুব কম শর্করার এক সপ্তাহ শরীরকে নিয়ে যায় "
+          />
+          <Term id="ketosis" en="ketosis" bn="কিটোসিসে" />
+          <T
+            en=", which takes about a fortnight to settle. A long deficit lowers "
+            bn=", আর সেটা থিতু হতে প্রায় দুই সপ্তাহ লাগে। লম্বা ঘাটতি কমিয়ে দেয় "
+          />
+          <Term id="neat" en="the moving you do not plan" bn="না ভেবে যে নড়াচড়া" />
+          <T
+            en=" long before it shows anywhere else, and part of a slowing burn is "
+            bn=" , অন্য কোথাও দেখা দেওয়ার অনেক আগেই, আর খরচ কমার একটা অংশ হলো "
+          />
+          <Term id="adaptation" en="adaptive thermogenesis" bn="খাপ খাওয়ানো বিপাক" />
+          <T en="." bn="।" />
+        </p>
         <Note tone="warn" title={<T en="Where this stops" bn="এখানে যন্ত্র থামে" />}>
           <TBlock
             en={<p>Chest pain, fainting, palpitations, anything severe, anything
@@ -163,7 +191,7 @@ export function JournalPanel() {
       </section>
 
       {written.length ? (
-        <section className="dt-diary" aria-label="Your lines">
+        <section className="dt-diary" aria-label={lang === "bn" ? "আপনার লেখা" : "Your lines"}>
           <h2><T en="Your lines" bn="আপনার লেখা" /></h2>
           <ul className="dt-diary-list">
             {written.map((d) => (

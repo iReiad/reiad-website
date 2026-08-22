@@ -65,8 +65,19 @@ export default function DietPage() {
           site's rule for that is at the top of `CLAUDE.md`: a
           list of things that exist elsewhere is built from the
           data, and the markup is not the source. */}
-      <section className="dt-deck"
-               aria-label="What is here">
+      {/* A HEADING RATHER THAN AN `aria-label`. The label was
+          English, on a page whose whole point is a switch that
+          changes everything, and this page is rendered on the
+          server so it cannot read the reader's choice. A
+          bilingual heading renders both halves and the
+          stylesheet chooses, which is the pattern the rest of
+          this tool already uses, and
+          it gives the ten cards the `h2` they were hanging
+          under with nothing above them. */}
+      <h2 className="dt-deck-h" id="dt-deck-h">
+        <T en="What is here" bn="এখানে কী আছে" />
+      </h2>
+      <section className="dt-deck" aria-labelledby="dt-deck-h">
         {DIET_PAGES.map((p) => (
           <GoCard
             key={p.href}

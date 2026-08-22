@@ -27,7 +27,7 @@
    ============================================================ */
 
 import { useEffect, useState } from "react";
-import { MARKS, TAGS, totalFor, type Day, type Entry } from "@reiad/shared/diet";
+import { MARKS, TAGS, markNamed, totalFor, type Day, type Entry } from "@reiad/shared/diet";
 import { Button } from "../ui/button";
 import { ChipButton } from "../ui/chip";
 import { Field } from "../ui/field";
@@ -275,15 +275,29 @@ export function LogForm({
           target the following week: the tool's position on a bad
           fortnight is that it happened. */}
       <div className="dt-marks" role="group" aria-label={lang === "bn" ? "আজকের দিনটা চিহ্নিত করুন" : "Mark today"}>
-        {MARKS.map((m) => (
-          <ChipButton
-            key={m.id}
-            pressed={marks.has(m.id)}
-            onClick={() => onDay({ marks: toggle(marks, m.id) })}
-          >
-            <T en={m.en} bn={m.bn} />
-          </ChipButton>
-        ))}
+        {/* PRESSED IS ASKED THROUGH `markNamed()`, because one
+            mark has been stored under two spellings: this list
+            wrote `off` for a while and the column has always
+            said `off-protocol`. Asking `marks.has(m.id)`
+            directly would show the chip unpressed on a day that
+            really is marked, and pressing it would add a SECOND
+            mark rather than clearing the first. */}
+        {MARKS.map((m) => {
+          const on = [...marks].some((id) => markNamed(id)?.id === m.id);
+          return (
+            <ChipButton
+              key={m.id}
+              pressed={on}
+              onClick={() => onDay({
+                marks: on
+                  ? [...marks].filter((id) => markNamed(id)?.id !== m.id)
+                  : [...marks, m.id],
+              })}
+            >
+              <T en={m.en} bn={m.bn} />
+            </ChipButton>
+          );
+        })}
       </div>
       <p className="dt-hint">
         <T

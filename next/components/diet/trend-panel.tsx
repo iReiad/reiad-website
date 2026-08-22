@@ -32,7 +32,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  MARKS, learnedHere, protocolName, slopePerWeek, stretches, trend, weighings,
+  learnedHere, markNamed, protocolName, slopePerWeek, stretches, trend, weighings,
   type Day, type Phase, type Point,
 } from "@reiad/shared/diet";
 import {
@@ -134,7 +134,8 @@ export function TrendPanel() {
 
   return (
     <div className="dt-trend">
-      <div className="dt-tags" role="group" aria-label="How far back">
+      <div className="dt-tags" role="group"
+           aria-label={lang === "bn" ? "কত দিন পেছনে" : "How far back"}>
         {[30, 90, 365].map((n) => (
           <ChipButton key={n} pressed={span === n} onClick={() => setSpan(n)}>
             <T en={`${n} days`} bn={`${digits(n, "bn")} দিন`} />
@@ -207,7 +208,7 @@ export function TrendPanel() {
                 <td className="mono">{digits((d.weightKg as number).toFixed(1), lang)}</td>
                 <td className="mono">{digits((line[i]?.kg ?? 0).toFixed(1), lang)}</td>
                 <td>
-                  {(d.marks ?? []).map((id) => MARKS.find((m) => m.id === id))
+                  {(d.marks ?? []).map((id) => markNamed(id))
                     .filter((m) => !!m)
                     .map((m, n) => (
                       <span key={m.id}>{n ? ", " : ""}<T en={m.en} bn={m.bn} /></span>

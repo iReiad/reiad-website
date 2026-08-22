@@ -35,6 +35,7 @@ import { ChipButton } from "../ui/chip";
 import { Note } from "../ui/note";
 import { T, TBlock, useToolLang } from "./lang";
 import { MEDS } from "./words";
+import { Term } from "./glossary";
 
 const MARKERS: Array<{ en: string; bn: string; why: string; whyBn: string }> = [
   { en: "Blood pressure", bn: "রক্তচাপ",
@@ -107,6 +108,17 @@ export function HealthPanel() {
             </div>
           ))}
         </dl>
+        <p className="dt-why">
+          <T
+            en="The one on that list worth reading about before the appointment rather than after it is "
+            bn="এই তালিকার যেটি নিয়ে সাক্ষাতের পরে নয়, আগেই পড়া উচিত সেটি হলো "
+          />
+          <Term id="hba1c" en="HbA1c" bn="এইচবিএ১সি" />
+          <T
+            en=", because it is an average of three months rather than a reading of this morning."
+            bn=", কারণ এটা আজ সকালের মাপ নয়, তিন মাসের গড়।"
+          />
+        </p>
         <Note tone="quiet">
           <TBlock
             en={(
@@ -191,6 +203,48 @@ export function HealthPanel() {
                 জন্য যন্ত্রটি কোনো সংখ্যা বদলায় না। ওষুধের জন্য সূত্র বদলানো মানে
                 হিসাব দিয়ে চিকিৎসা করা; ওষুধ একটা মাপে কী করে তা বলা মানে চার্ট
                 বুঝিয়ে দেওয়া।
+              </p>
+            )}
+          />
+        </Note>
+      </section>
+
+      {/* SECTION 18'S FIRST PIECE. A monthly cycle moves the
+          scale one to two kilograms with no change in fat at
+          all, and a reader who does not know that reads a
+          fortnight of it as a stall and quits. Named here rather
+          than on the trend page because it belongs with the
+          other things about a body that change what a chart
+          means, and because nothing on the trend page can see
+          it: this tool does not ask, and will not. */}
+      <section aria-labelledby="dt-cycle-h">
+        <h2 id="dt-cycle-h"><T en="A month is longer than a week" bn="মাস সপ্তাহের চেয়ে বড়" /></h2>
+        <p className="dt-hint">
+          <T
+            en="Water retention rises through "
+            bn="শরীরে পানি জমে "
+          />
+          <Term id="luteal" en="the luteal phase" bn="মাসিক চক্রের শেষ পর্বে" />
+          <T
+            en=", the roughly two weeks before a period, so the scale can climb one to two kilograms and then drop it in a day. Across a whole cycle the trend is honest; across ten days inside one it is not, and a fortnight that reads as a stall is the commonest reason people stop."
+            bn="। মাসিকের আগের প্রায় দুই সপ্তাহে, তাই দাঁড়িপাল্লা এক দুই কেজি উঠতে পারে আর তারপর একদিনেই নেমে যায়। পুরো চক্র ধরে দেখলে ধারা সৎ; ভেতরের দশ দিন ধরে দেখলে নয়, আর দুই সপ্তাহ আটকে আছে মনে হওয়াই মানুষের ছেড়ে দেওয়ার সবচেয়ে সাধারণ কারণ।"
+          />
+        </p>
+        <Note tone="quiet">
+          <TBlock
+            en={(
+              <p>
+                This tool does not ask where you are in a cycle and does not
+                keep a date. Knowing the shape is what is useful here; a
+                calendar of somebody's periods is not something this site needs
+                in order to draw a weight chart.
+              </p>
+            )}
+            bn={(
+              <p>
+                আপনি চক্রের কোথায় আছেন এই যন্ত্র তা জিজ্ঞেস করে না আর কোনো তারিখ
+                রাখে না। এখানে কাজে লাগে ধরনটা জানা; ওজনের চার্ট আঁকতে কারও
+                মাসিকের পঞ্জিকা এই সাইটের দরকার নেই।
               </p>
             )}
           />

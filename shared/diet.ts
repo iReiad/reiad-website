@@ -1078,13 +1078,35 @@ export const TAGS: Array<{ id: string; en: string; bn: string }> = [
 /** A day that was marked as not counting towards the slope. The
     same idea as the keto adaptation window and for the same
     reason: a fever puts water on, and a week of one produces
-    trend data that means nothing. Drawn either way. */
+    trend data that means nothing. Drawn either way.
+
+    THE ID IS THE STRING THAT GOES INTO `diet_days.marks`, and
+    that column has no CHECK constraint, so nothing at write time
+    stops these drifting from the names the migration lists
+    beside it. `check-diet.ts` reads both and fails on either
+    side holding a name the other does not. */
 export const MARKS: Array<{ id: string; en: string; bn: string }> = [
-  { id: "ill",    en: "Unwell",        bn: "অসুস্থ" },
-  { id: "travel", en: "Travelling",    bn: "ভ্রমণে" },
-  { id: "refeed", en: "A big meal",    bn: "বড় খাওয়া" },
-  { id: "off",    en: "Off protocol",  bn: "নিয়মের বাইরে" },
+  { id: "ill",          en: "Unwell",       bn: "অসুস্থ" },
+  { id: "travel",       en: "Travelling",   bn: "ভ্রমণে" },
+  { id: "refeed",       en: "A big meal",   bn: "বড় খাওয়া" },
+  { id: "off-protocol", en: "Off protocol", bn: "নিয়মের বাইরে" },
 ];
+
+/** The one spelling that is not in the list above and may be in
+    a real row.
+
+    This list wrote `off` while the column has said
+    `off-protocol` since it was created, and `off` is taken:
+    `diet_entries.source` uses it for Open Food Facts, so one
+    word meant two things in one schema. A day marked before that
+    was noticed still counts as marked, because everything
+    reading marks asks whether there are any rather than which
+    one. What it loses without this is its name on the chart and
+    its pressed chip in the form. */
+const MARK_WAS: Record<string, string> = { off: "off-protocol" };
+
+export const markNamed = (id: string): { id: string; en: string; bn: string } | null =>
+  MARKS.find((m) => m.id === (MARK_WAS[id] ?? id)) ?? null;
 
 /* ---------------------------------------------------------- */
 /* which weighings a rate may be read from                    */

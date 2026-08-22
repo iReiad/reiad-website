@@ -31,7 +31,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { T } from "./lang";
+import { T, digits } from "./lang";
 
 /** The frame. `href` is required rather than optional, because
     the rule above is easier to keep when the type will not let
@@ -54,34 +54,6 @@ export function Widget({ href, title, children, wide }: {
     rather than a shrug: a reader can see it coming. */
 export function Waiting({ en, bn }: { en: string; bn: string }) {
   return <span className="dt-w-waiting"><T en={en} bn={bn} /></span>;
-}
-
-/** A ring, for how much of today is left.
-
-    A RING RATHER THAN A BAR, and that is not decoration: a bar
-    fills up and then overflows, and an overflowing bar wants to
-    be red. A ring closes. Over the target simply completes it
-    and the number underneath says by how much, in the same
-    weight as any other number. */
-export function Ring({ done, total, label }: {
-  done: number; total: number; label: ReactNode;
-}) {
-  const share = total > 0 ? Math.min(done / total, 1) : 0;
-  const R = 26;
-  const C = 2 * Math.PI * R;
-  return (
-    <span className="dt-ring">
-      <svg viewBox="0 0 64 64" aria-hidden="true">
-        <circle className="dt-ring-track" cx="32" cy="32" r={R} />
-        <circle
-          className="dt-ring-fill" cx="32" cy="32" r={R}
-          strokeDasharray={`${C * share} ${C}`}
-          transform="rotate(-90 32 32)"
-        />
-      </svg>
-      <span className="dt-ring-mid">{label}</span>
-    </span>
-  );
 }
 
 /** A sparkline of the trend with the scale faint behind it.
@@ -123,9 +95,21 @@ export function Spark({ points, scale }: {
     place the board shows absence without making it a reproach:
     an unlogged day is a lighter mark, never a gap and never a
     cross. */
-export function Strip({ days }: { days: Array<{ date: string; kind: string }> }) {
+export function Strip({ days, lang = "en" }: {
+  days: Array<{ date: string; kind: string }>;
+  lang?: "en" | "bn";
+}) {
+  /* FOURTEEN COLOURED SQUARES ARE NOTHING TO A SCREEN READER,
+     and a colour-only signal to everybody else. The sentence is
+     the fact the squares draw, said once, so the marks can stay
+     `aria-hidden` and stay quiet. */
+  const on = days.filter((d) => d.kind !== "none").length;
+  const said = lang === "bn"
+    ? `শেষ ${digits(days.length, "bn")} দিনের ${digits(on, "bn")} দিনে কিছু না কিছু লেখা হয়েছে।`
+    : `${on} of the last ${days.length} days have something logged.`;
   return (
     <span className="dt-strip">
+      <span className="visually-hidden">{said}</span>
       {days.map((d) => (
         <span key={d.date} className="dt-strip-day" data-kind={d.kind}
               title={d.date} aria-hidden="true" />

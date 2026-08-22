@@ -371,6 +371,16 @@ ok("every unit in the library has a word in both languages",
 ok("and neither half of one is empty",
   Object.values(UNIT_WORDS).every((w) => w.en && w.ens && w.bn));
 
+/* A row measured in grams whose `qty` and `grams` disagreed
+   would state two different weights for one portion, and
+   `scaleTo` would answer differently depending on which unit the
+   reader picked. */
+const twoWeights = FOODS.filter(
+  (f) => f.unit === "g" && f.grams !== undefined && f.grams !== f.qty,
+);
+ok("a row measured in grams states one weight and not two",
+  twoWeights.length === 0, twoWeights.map((f) => f.id).join(" | "));
+
 ok("a portion is said with its unit", portionWords(1, "cup", "en") === "1 cup");
 ok("plurals are written out, not derived", portionWords(2, "cup", "en") === "2 cups"
   && portionWords(2, "g", "en") === "2 g",
@@ -422,9 +432,15 @@ ok("and the gram weight of what was eaten comes back with it",
 
 console.log("\n--- and where it cannot be scaled honestly, nothing is logged ---");
 
-const plate: Stated = { qty: 1, unit: "plate", kcal: 900 };
+/* Three real rows carry no weight and they are the three nobody
+   weighs: a restaurant plate, a meal deal and a pint. */
+const plate = byId("biryani-plate");
+ok("that row is real and says no weight",
+  Boolean(plate) && plate?.grams === undefined);
 ok("grams asked of a row that never says what it weighs is a refusal",
-  scaleTo(plate, { n: 300, unit: "g" }) === null);
+  scaleTo(plate as Stated, { n: 300, unit: "g" }) === null);
+ok("but it still logs in its own unit",
+  scaleTo(plate as Stated, { n: 1, unit: "plate" })?.factor === 1);
 ok("a unit the row does not know is a refusal",
   scaleTo(cupOfRice as Stated, { n: 1, unit: "tin" }) === null);
 ok("nothing eaten is not an entry",
@@ -538,6 +554,18 @@ ok("seven digits is nothing", barcodeOf("1234567") === undefined);
 ok("and neither is a word", barcodeOf("chicken") === undefined);
 ok("the Worker and the browser ask the same question of a string",
   isBarcode("5000112637922") && barcodeOf("5000112637922") !== undefined);
+
+/* `shared/README.md` describes every file in that directory and
+   `check-types.ts` fails on one it does not. It cannot see a
+   description that has stopped being true, and this file grew
+   `scaleTo` and `loggedFrom`, so the sentence saying it holds no
+   arithmetic is now the failure `CLAUDE.md` opens with. */
+const readme = sourceOf("shared/README.md");
+ok("shared/README.md still describes foods.ts truthfully",
+  !readme.includes("no arithmetic at all"),
+  'replace "Data and four lookups, and no arithmetic at all." with'
+  + ' "Data, four lookups, and the arithmetic that scales a found'
+  + ' food to the amount that was eaten."');
 
 console.log("\n--- what the two panels have to draw ---");
 

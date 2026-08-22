@@ -35,6 +35,7 @@ import {
   who, getDays, getEntries, isoDate, shiftDate, type Who,
 } from "../../lib/diet-api";
 import { T, digits, useToolLang } from "./lang";
+import { Term } from "./glossary";
 
 /** What is worth tracking, and the range to aim for. Each one is
     here because it actually goes wrong for this tool's two
@@ -169,6 +170,26 @@ export function NutritionPanel() {
           <T
             en="No score out of a hundred, no letter grade and no green tick for complete. Those imply a precision this data does not have, and they turn eating into a test."
             bn="একশোতে কোনো নম্বর নেই, কোনো গ্রেড নেই, সম্পূর্ণ হওয়ার সবুজ টিকও নেই। ওগুলো এমন নিখুঁততা দাবি করে যা এই তথ্যে নেই, আর খাওয়াকে পরীক্ষা বানিয়ে ফেলে।"
+          />
+        </p>
+
+        {/* TWO THINGS ABOUT CARBOHYDRATE THAT CHANGE WHAT THE
+            NUMBER ABOVE MEANS, and the second one matters more
+            here than almost anywhere else. */}
+        <p className="dt-why">
+          <T
+            en="Fibre is carbohydrate your body cannot break down, so a carbohydrate figure with the fibre taken off is a different number: "
+            bn="আঁশ এমন শর্করা যা শরীর ভাঙতে পারে না, তাই মোট শর্করা থেকে আঁশ বাদ দিলে সংখ্যাটা আলাদা হয়ে যায়: "
+          />
+          <Term id="netcarbs" en="net carbs" bn="কার্যকর শর্করা" />
+          <T
+            en=". And rice that has been cooked and then cooled behaves partly like fibre rather than like sugar, which is "
+            bn="। আর রান্নার পর ঠান্ডা হওয়া ভাত চিনির মতো নয়, আংশিক আঁশের মতো আচরণ করে, একে বলে "
+          />
+          <Term id="resistant" en="resistant starch" bn="প্রতিরোধী শ্বেতসার" />
+          <T
+            en=". Neither is on a label in either country, so both are worked out rather than read."
+            bn="। দুই দেশের কোনো মোড়কেই এগুলো লেখা থাকে না, তাই দুটোই পড়া হয় না, হিসাব করা হয়।"
           />
         </p>
       </section>

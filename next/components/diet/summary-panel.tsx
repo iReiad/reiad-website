@@ -32,7 +32,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  bmi, bmiBand, fatEstimate, learnedBurn, restingBurn, slopePerWeek,
+  bmi, bmiBand, fatEstimate, learnedHere, weighings, restingBurn, slopePerWeek,
   trend, whtr, type Body, type Day, type Point,
 } from "@reiad/shared/diet";
 import {
@@ -95,34 +95,40 @@ export function SummaryPanel() {
   const from = shiftDate(today, -span);
   const inSpan = useMemo(() => days.filter((d) => d.date >= from), [days, from]);
 
-  const points: Point[] = useMemo(
-    () => inSpan.filter((d) => d.weightKg != null)
-      .map((d) => ({ day: dayNumber(d.date), kg: d.weightKg as number })),
-    [inSpan],
+  /* THE SHEET IS THE ONE PAGE A CLINICIAN READS, so it must not
+     be the page where a marked day bends a rate or where a BMI
+     is worked out from a different weight than the trend beside
+     it printed. Both were true: it printed "Now, trend 81.2 kg"
+     and a BMI from 82.6. */
+  const scale = useMemo(
+    () => weighings({ days: inSpan, dayOf: dayNumber, today: dayNumber(today) }),
+    [inSpan, today],
   );
+  const points: Point[] = scale.drawn;
   const line = useMemo(() => trend(points), [points]);
-  const rate = useMemo(() => slopePerWeek(points), [points]);
+  const rate = useMemo(() => slopePerWeek(scale.fittable), [scale]);
 
   const body: Body | null = useMemo(() => {
-    const latest = [...points].sort((a, b) => b.day - a.day)[0];
-    if (!profile?.height_cm || !profile.birth_year || !latest) return null;
+    const now = line.length ? line[line.length - 1] : null;
+    if (!profile?.height_cm || !profile.birth_year || !now) return null;
     return {
       heightCm: profile.height_cm,
-      weightKg: latest.kg,
-      ageYears: new Date().getUTCFullYear() - profile.birth_year,
+      weightKg: now.kg,
+      ageYears: new Date().getFullYear() - profile.birth_year,
       sex: profile.sex ?? "male",
       ancestry: profile.ancestry ?? "general",
       waistCm: [...inSpan].reverse().find((d) => d.waistCm != null)?.waistCm,
       neckCm: [...inSpan].reverse().find((d) => d.neckCm != null)?.neckCm,
       hipCm: [...inSpan].reverse().find((d) => d.hipCm != null)?.hipCm,
     };
-  }, [profile, points, inSpan]);
+  }, [profile, line, inSpan]);
 
-  const learned = useMemo(() => learnedBurn(
-    points,
-    inSpan.filter((d) => d.kcal != null)
+  const learned = useMemo(() => learnedHere({
+    weights: scale.fittable,
+    intakes: inSpan.filter((d) => d.kcal != null)
       .map((d) => ({ day: dayNumber(d.date), kcal: d.kcal as number })),
-  ), [points, inSpan]);
+    today: dayNumber(today),
+  }), [scale, inSpan, today]);
 
   const intakes = inSpan.filter((d) => d.kcal != null).map((d) => d.kcal as number);
   const meanIntake = intakes.length
@@ -143,7 +149,7 @@ export function SummaryPanel() {
   return (
     <div className="dt-summary">
       <div className="dt-sum-controls">
-        <div className="dt-tags" role="group" aria-label="How far back">
+        <div className="dt-tags" role="group" aria-label={lang === "bn" ? "কত দিন আগে থেকে" : "How far back"}>
           {[90, 180, 365].map((n) => (
             <ChipButton key={n} pressed={span === n} onClick={() => setSpan(n)}>
               <T en={`${n} days`} bn={`${digits(n, "bn")} দিন`} />

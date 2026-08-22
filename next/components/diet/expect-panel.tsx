@@ -184,7 +184,7 @@ export function ExpectPanel() {
      produces a stranger's forecast: the learned figure first,
      the estimate from their own body second, and the stand-in
      last and labelled. */
-  const from: "learned" | "estimated" | "stand-in" =
+  const burnFrom: "learned" | "estimated" | "stand-in" =
     learned ? "learned" : estimated != null ? "estimated" : "stand-in";
   const burn = Math.round(learned?.kcal.mid ?? estimated ?? STAND_IN_BURN);
 
@@ -250,66 +250,68 @@ export function ExpectPanel() {
             by an `aria-label`, which is an attribute and can
             hold one language. A Bangla reader was getting the
             English one. */}
-        <div className="dt-scale">
-          <span className="dt-scale-label" id="dt-cast-what">
-            <T en="What you are about to do" bn="আপনি যা করতে যাচ্ছেন" />
-          </span>
-          <div className="dt-tags" role="group" aria-labelledby="dt-cast-what">
-            {OFFERED.map((id) => (
-              <ChipButton key={id} pressed={what === id} onClick={() => setWhat(id)}>
-                <T en={protocolName(id).en} bn={protocolName(id).bn} />
-              </ChipButton>
-            ))}
-          </div>
-        </div>
-        <div className="dt-scale">
-          <span className="dt-scale-label" id="dt-cast-long">
-            <T en="For how long" bn="কত দিন ধরে" />
-          </span>
-          <div className="dt-tags" role="group" aria-labelledby="dt-cast-long">
-            {[2, 3, 7, 14].map((n) => (
-              <ChipButton key={n} pressed={howLong === n} onClick={() => setHowLong(n)}>
-                <T en={`${n} days`} bn={`${digits(n, "bn")} দিন`} />
-              </ChipButton>
-            ))}
-          </div>
-        </div>
-
-        {/* WHAT WAS RUNNING BEFORE IT, which is the whole of the
-            stacking arithmetic. Two water-losing protocols do
-            not take the same water off twice: a fast starting on
-            the third day of keto finds a third of the store
-            left, so its drop is mostly gut contents instead. */}
-        <div className="dt-scale">
-          <span className="dt-scale-label" id="dt-cast-before">
-            <T en="And before that you were doing" bn="আর তার আগে আপনি করছিলেন" />
-          </span>
-          <div className="dt-tags" role="group" aria-labelledby="dt-cast-before">
-            {BEFORE.map((id) => (
-              <ChipButton key={id ?? "none"} pressed={before === id}
-                          onClick={() => setBefore(id)}>
-                {id
-                  ? <T en={protocolName(id).en} bn={protocolName(id).bn} />
-                  : <T en="Nothing in particular" bn="বিশেষ কিছু নয়" />}
-              </ChipButton>
-            ))}
-          </div>
-        </div>
-        {before ? (
+        <div className="dt-cast-controls">
           <div className="dt-scale">
-            <span className="dt-scale-label" id="dt-cast-before-long">
-              <T en="For how long already" bn="এর মধ্যে কত দিন" />
+            <span className="dt-scale-label" id="dt-cast-what">
+              <T en="What you are about to do" bn="আপনি যা করতে যাচ্ছেন" />
             </span>
-            <div className="dt-tags" role="group" aria-labelledby="dt-cast-before-long">
+            <div className="dt-tags" role="group" aria-labelledby="dt-cast-what">
+              {OFFERED.map((id) => (
+                <ChipButton key={id} pressed={what === id} onClick={() => setWhat(id)}>
+                  <T en={protocolName(id).en} bn={protocolName(id).bn} />
+                </ChipButton>
+              ))}
+            </div>
+          </div>
+          <div className="dt-scale">
+            <span className="dt-scale-label" id="dt-cast-long">
+              <T en="For how long" bn="কত দিন ধরে" />
+            </span>
+            <div className="dt-tags" role="group" aria-labelledby="dt-cast-long">
               {[2, 3, 7, 14].map((n) => (
-                <ChipButton key={n} pressed={beforeDays === n}
-                            onClick={() => setBeforeDays(n)}>
+                <ChipButton key={n} pressed={howLong === n} onClick={() => setHowLong(n)}>
                   <T en={`${n} days`} bn={`${digits(n, "bn")} দিন`} />
                 </ChipButton>
               ))}
             </div>
           </div>
-        ) : null}
+
+          {/* WHAT WAS RUNNING BEFORE IT, which is the whole of the
+              stacking arithmetic. Two water-losing protocols do
+              not take the same water off twice: a fast starting on
+              the third day of keto finds a third of the store
+              left, so its drop is mostly gut contents instead. */}
+          <div className="dt-scale">
+            <span className="dt-scale-label" id="dt-cast-before">
+              <T en="And before that you were doing" bn="আর তার আগে আপনি করছিলেন" />
+            </span>
+            <div className="dt-tags" role="group" aria-labelledby="dt-cast-before">
+              {BEFORE.map((id) => (
+                <ChipButton key={id ?? "none"} pressed={before === id}
+                            onClick={() => setBefore(id)}>
+                  {id
+                    ? <T en={protocolName(id).en} bn={protocolName(id).bn} />
+                    : <T en="Nothing in particular" bn="বিশেষ কিছু নয়" />}
+                </ChipButton>
+              ))}
+            </div>
+          </div>
+          {before ? (
+            <div className="dt-scale">
+              <span className="dt-scale-label" id="dt-cast-before-long">
+                <T en="For how long already" bn="এর মধ্যে কত দিন" />
+              </span>
+              <div className="dt-tags" role="group" aria-labelledby="dt-cast-before-long">
+                {[2, 3, 7, 14].map((n) => (
+                  <ChipButton key={n} pressed={beforeDays === n}
+                              onClick={() => setBeforeDays(n)}>
+                    <T en={`${n} days`} bn={`${digits(n, "bn")} দিন`} />
+                  </ChipButton>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
 
         <div className="dt-readout">
           <div className="dt-figure dt-figure-lead">
@@ -371,7 +373,7 @@ export function ExpectPanel() {
             who had logged no weight at all, so anybody with a
             weight read their own kilos beside a stranger's
             2,500 with nothing saying so. */}
-        <Basis kg={kg} mine={mine != null} burn={burn} from={from} what={what} />
+        <Basis kg={kg} mine={mine != null} burn={burn} from={burnFrom} what={what} />
 
         <HourByHour what={what} kg={kg} burn={burn} lang={lang} prior={prior} />
       </section>
@@ -488,7 +490,8 @@ function HourByHour({ what, kg, burn, lang, prior }: {
             bn="প্রথম সপ্তাহ, ঘণ্টায় ঘণ্টায়, চালিয়ে গেলে"
           />
         </h3>
-        <div className="dt-tags" role="group" aria-label="How fine">
+        <div className="dt-tags" role="group"
+             aria-label={lang === "bn" ? "কত সূক্ষ্মভাবে" : "How fine"}>
           {[6, 12, 24].map((n) => (
             <ChipButton key={n} pressed={step === n} onClick={() => setStep(n)}>
               <T en={`every ${n}h`} bn={`প্রতি ${digits(n, "bn")} ঘণ্টা`} />

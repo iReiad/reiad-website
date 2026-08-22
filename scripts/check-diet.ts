@@ -187,6 +187,7 @@ function attr(attrs: string, key: string): string | null {
   if (opener !== "{") return null;
   let depth = 0;
   let quote = "";
+  let last = "";
   for (let j = i; j < attrs.length; j += 1) {
     const c = attrs[j];
     if (quote) {
@@ -194,12 +195,22 @@ function attr(attrs: string, key: string): string | null {
       if (c === quote) quote = "";
       continue;
     }
-    if (c === '"' || c === "'" || c === "`") { quote = c; continue; }
+    /* AN APOSTROPHE IN PROSE IS NOT A STRING. `en={(<p>somebody's
+       periods</p>)}` opened a string here and swallowed the rest
+       of the file looking for a closing quote, so a `TBlock`
+       whose English half contains one reported as having no
+       English half. Both real cases inside these braces open in
+       EXPRESSION position, after an operator or a bracket, so
+       that is the test. A double quote and a backtick cannot
+       appear in JSX text unescaped, so they need no test. */
+    const expr = last === "" || "=(,:[{&|?!<>+-*/;".includes(last);
+    if (c === '"' || c === "`" || (c === "'" && expr)) { quote = c; continue; }
     if (c === "{") depth += 1;
     else if (c === "}") {
       depth -= 1;
       if (depth === 0) return attrs.slice(i, j + 1);
     }
+    if (!/\s/.test(c)) last = c;
   }
   return null;
 }
@@ -395,12 +406,37 @@ if (!entries.length) fail(`${COMPONENTS}/glossary.tsx defines no terms`);
 const everywhere = filesUnder("next/components").concat(filesUnder("next/app"))
   .map((f) => read(f)).join("\n");
 
+/* A LINK IS EITHER THE ADDRESS OR THE COMPONENT THAT BUILDS IT.
+   `<Term id="bmi">` in `glossary.tsx` writes the href out of the
+   id, so the literal `diet/glossary#bmi` appears nowhere and this
+   rule read every entry as unlinked. Reading only the raw string
+   would push the tool back to writing addresses out by hand,
+   which is the thing `Term` exists to stop.
+
+   Both spellings count, and a `<Term>` naming an id the glossary
+   does not define is its own failure below. */
+const termUses = new Set(
+  [...everywhere.matchAll(/<Term\s[^>]*\bid=["']([a-z0-9-]+)["']/g)].map((m) => m[1]),
+);
+
 for (const entry of entries) {
   if (everywhere.includes(`diet/glossary#${entry.id}`)) continue;
+  if (termUses.has(entry.id)) continue;
   fail(`the glossary defines "${entry.en}" and nothing links to it`,
-    `nothing under next/ contains diet/glossary#${entry.id}`,
+    `nothing under next/ links it, by address or by <Term id="${entry.id}">`,
     "glossary.tsx: every entry is linked to from the first use of its term.",
     "It is a table rather than prose for exactly that reason.");
+}
+
+/* And the other way round: a `<Term>` pointing at nothing is a
+   dotted underline that takes a reader to the top of a page. */
+const defined = new Set(entries.map((e) => e.id));
+for (const id of termUses) {
+  if (defined.has(id)) continue;
+  fail(`<Term id="${id}"> names no glossary entry`,
+    `glossary.tsx defines ${[...defined].join(", ")}`,
+    "A first use linked to a definition that is not there lands a",
+    "reader at the top of the glossary with nothing highlighted.");
 }
 
 /* Section 23's list, read out of the paragraph that states it.
@@ -422,11 +458,12 @@ const terms = listed.replace(/\s+/g, " ").split(/[,.]/)
   .map((t) => t.trim().replace(/^the\s+/i, ""))
   .filter(Boolean);
 
-/* Prose only: an id, a class name or an import is not a reader
-   meeting a word. The pages and the panels, minus the glossary
-   itself, which is where the words are supposed to be. */
+/* What a READER meets, so comments are out: a term explained to
+   the next programmer in a block comment is not a term put in
+   front of somebody. The glossary is out too, which is where the
+   words are supposed to be. */
 const prose = TOOL_FILES.filter((f) => !f.endsWith("glossary.tsx"))
-  .map((f) => SOURCE.get(f) as string).join("\n");
+  .map((f) => uncommented(SOURCE.get(f) as string)).join("\n");
 
 for (const term of terms) {
   const used = new RegExp(`\\b${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`)
