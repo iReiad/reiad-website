@@ -608,7 +608,16 @@ const UNUSED: Record<string, string> = {
   "diet_phases.ended_on": "section 10, a phase that ends with nothing after it",
 
   /* Two tables with no caller at all. */
-  "diet_foods.*": "section 13, the reader's own items, pots, recipes and meals",
+  /* THE WILDCARD IS GONE, and its going is what this check is
+     for. `diet_foods` had no writer at all, so one exemption
+     covered the table; the recipe maker landed a writer and the
+     exemption went stale in the same commit, which is the check
+     asking about every column one at a time instead. Four of
+     them are still nobody's. */
+  "diet_foods.price": "section 17, what a dish you cooked yourself actually cost",
+  "diet_foods.currency": "section 17, the same figure in taka or in pounds",
+  "diet_foods.priced_on": "section 17, and an undated price is worse than none",
+  "diet_foods.fetched_on": "section 12, so a stale figure can be found and refreshed deliberately",
   "diet_labs.*": "section 20, the numbers a clinic gives you",
 };
 
