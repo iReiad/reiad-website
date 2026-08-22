@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v181: /tools/stock.i18n.js. The stock check's 366 phrases moved
+        to `shared/tool-strings.ts` and that file is now the
+        compiled output of it, so the bytes changed although not
+        one string did: tsc reformats the object. The move is
+        what lets `/api/tools` serve the same table to the
+        Android app, so an edited Bangla sentence reaches a phone
+        with no app release.
+
    v180: /fallback.css. The diet pages had `main section`'s own
         top padding on top of a grid gap already spacing them,
         which measured about 130px of nothing between a lede and
@@ -1679,7 +1687,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v180";
+const VERSION = "v181";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

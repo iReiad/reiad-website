@@ -73,6 +73,11 @@ const PUBLIC: Record<string, string> = {
     + "/content.js and a native client cannot. Every value in it is already "
     + "public; a private page and an unlisted menu entry are filtered out, "
     + "and the course catalogue is never named in it.",
+  "tools.ts":
+    "the calculators' own words, which the browser gets as an ES module at "
+    + "/tools/stock.i18n.js and a native client cannot. Every phrase in it is "
+    + "already rendered on a public page, in both languages, and there is "
+    + "nothing else in it: no reader, no row, no number about anybody.",
 };
 
 const files: string[] = [];

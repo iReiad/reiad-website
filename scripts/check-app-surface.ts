@@ -28,11 +28,16 @@
 
    ---- what it asks ----
 
-   Every `export const NAME` in `shared/content.ts` and
-   `shared/nav.ts` whose name is a data table (SHOUTING_CASE) must
-   either be imported by `functions/api/site.ts`, which is what
-   sends it to the app, or be named in `NOT_FOR_APP` below with a
-   reason.
+   Every `export const NAME` in the files `SOURCES` names whose
+   name is a data table (SHOUTING_CASE) must either be imported by
+   one of the endpoints in `ENDPOINTS`, which is what sends it to
+   the app, or be named in `NOT_FOR_APP` below with a reason.
+
+   Both lists are read from this file rather than assumed, because
+   both have grown: `shared/nav.ts` arrived in `SOURCES` when the
+   menu moved out of `next/lib/`, and `functions/api/tools.ts`
+   arrived in `ENDPOINTS` when the calculators' 366 phrases became
+   something the app fetches rather than bundles.
 
    The reason is the point, exactly as it is in `GONE`,
    `SERVER_ONLY`, `NOT_GLASS` and every other list in this
@@ -89,7 +94,7 @@ const tablesIn = (path: string): string[] => {
   return [...text.matchAll(TABLE)].map((m) => m[1]);
 };
 
-const SOURCES = ["shared/content.ts", "shared/nav.ts"];
+const SOURCES = ["shared/content.ts", "shared/nav.ts", "shared/tool-strings.ts"];
 const tables = SOURCES.flatMap((path) => tablesIn(path).map((name) => ({ name, path })));
 
 /* ---------- what the endpoint sends ---------- */
@@ -98,19 +103,29 @@ const tables = SOURCES.flatMap((path) => tablesIn(path).map((name) => ({ name, p
    A payload key can be renamed for the app's convenience, and the
    question here is whether the table LEAVES this repository at
    all, which is what an import answers. */
-const ENDPOINT = "functions/api/site.ts";
-const endpoint = readFileSync(join(ROOT, ENDPOINT), "utf8");
+/* More than one endpoint answers the app now, and the question
+   this check asks is whether a table leaves the repository AT
+   ALL, so it reads every one of them rather than the first.
+
+   It was one path until `shared/tool-strings.ts` arrived, and a
+   second endpoint listed nowhere would have made every table in a
+   new file read as held back. The failure that shape produces is
+   this check reporting a problem that is not one, which is worse
+   than useless: it teaches a reader to add an exemption. */
+const ENDPOINTS = ["functions/api/site.ts", "functions/api/tools.ts"];
 const imported = new Set(
-  [...endpoint.matchAll(/^import\s*\{([^}]+)\}\s*from\s*"[^"]*shared\/[^"]+"/gms)]
-    .flatMap((m) => m[1].split(","))
-    .map((name) => name.replace(/\s+as\s+.*/, "").trim())
-    .filter((name) => /^[A-Z][A-Z0-9_]*$/.test(name)),
+  ENDPOINTS.flatMap((path) =>
+    [...readFileSync(join(ROOT, path), "utf8")
+      .matchAll(/^import\s*\{([^}]+)\}\s*from\s*"[^"]*shared\/[^"]+"/gms)]
+      .flatMap((m) => m[1].split(","))
+      .map((name) => name.replace(/\s+as\s+.*/, "").trim())
+      .filter((name) => /^[A-Z][A-Z0-9_]*$/.test(name))),
 );
 
 /* ---------- ask ---------- */
 
 if (process.argv.includes("--list")) {
-  console.log("\nsent to the app by /api/site:\n");
+  console.log(`\nsent to the app by ${ENDPOINTS.join(" and ")}:\n`);
   for (const { name, path } of tables) {
     if (imported.has(name)) console.log(`  ->  ${name.padEnd(16)} ${path}`);
   }
@@ -137,7 +152,8 @@ if (missing.length) {
     "\n        ANDROID.md promises that anything which is DATA reaches the app"
     + "\n        with no app release, and /api/site keeps that promise by sending"
     + "\n        these tables. A new one is not sent until somebody says so."
-    + `\n\n        Either import it in ${ENDPOINT} and spread it into the payload,`
+    + `\n\n        Either import it in one of ${ENDPOINTS.join(", ")} and spread it`
+    + "\n        into that payload,"
     + "\n        or add it to NOT_FOR_APP in this file with the reason it stays"
     + "\n        behind. A table nobody decided about is the silent half: the"
     + "\n        site is correct, every check passes, and the app is missing a"
@@ -169,6 +185,6 @@ if (failures) process.exit(1);
 
 const sent = tables.filter((t) => imported.has(t.name)).length;
 console.log(
-  `app surface: ${sent} table(s) reach the app through /api/site, `
+  `app surface: ${sent} table(s) reach the app through ${ENDPOINTS.length} endpoint(s), `
   + `${Object.keys(NOT_FOR_APP).length} held back on purpose.`,
 );

@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is ten files and a directory of four, and
+Today that is eleven files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -85,6 +85,19 @@ this repository got written.
   renaming one loses what they logged, and every rice, dal and
   pasta row states whether the figure is for the raw food or the
   cooked, in the name, in both languages.
+
+- **`tool-strings.ts`** every word the calculators say, in both
+  languages: 366 phrases keyed by name, plus the five formatters
+  that print a number in Bengali or Latin digits. It was
+  `aab/tools/stock.i18n.js` until the Android app needed it, and
+  the browser still fetches it at that exact address, compiled
+  there by `build-modules.ts`, because `sw.js` precaches the name.
+  `functions/api/tools.ts` serves the same table to the app, which
+  is the whole reason it moved: **an edited Bangla sentence
+  reaches a phone with no app release.** The formatters are the
+  other half of that and go the other way, being code rather than
+  data. Both halves of a phrase are required by the type, so a key
+  added with only English compiles nowhere.
 
 ## TypeScript, and nothing compiled beside it
 

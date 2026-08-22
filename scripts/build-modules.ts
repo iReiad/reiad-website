@@ -148,11 +148,11 @@ export const MODULES = [
   "editor",
 ];
 
-/** The five served modules whose source is in `shared/` rather
-    than in `aab/src/`: the site's manifest and the four schools'
-    ladders. The Worker, the checks under `scripts/`, the Next.js
-    routes and the browser read the same five, and only the last of
-    them needs a file at a URL.
+/** The six served modules whose source is in `shared/` rather
+    than in `aab/src/`: the site's manifest, the four schools'
+    ladders, and the stock check's words. The Worker, the checks
+    under `scripts/`, the Next.js routes and the browser read the
+    same six, and only the last of them needs a file at a URL.
 
     They are compiled on their own, by
     `scripts/tsconfig.shared.json`, and that is the compile whose
@@ -179,6 +179,11 @@ const SHARED = {
     "curricula/deutsch.js": "aab/deutsch/curriculum.js",
     "curricula/quran.js": "aab/quran/curriculum.js",
     "curricula/english.js": "aab/english/curriculum.js",
+    /* The stock check's words, which keep the address they have
+       always had: it is in `sw.js`'s precache list and in the one
+       import at the top of `aab/tools/stock.js`, so the file moved
+       and the URL did not. */
+    "tool-strings.js": "aab/tools/stock.i18n.js",
   } as Record<string, string>,
 };
 

@@ -120,11 +120,17 @@ function verdict(input: Record<string, unknown>) {
 
   return {
     ratios: r,
-    /* The metric scores by id, so a renamed metric shows up as a
-       missing key rather than as a shifted array. */
-    scored: Object.fromEntries(
-      Object.entries(scored).map(([id, v]) => [id, v]),
-    ),
+    /* Keyed by the metric's OWN id, so a renamed or reordered
+       metric shows up as a missing key rather than as a shifted
+       array.
+
+       It was `Object.entries(scored)` for one commit, which on an
+       array gives "0", "1", "2", and the comment above it claimed
+       exactly what this now does. That is the worst shape this
+       file can have: a port asserted against a fixture whose
+       thirty-eighth entry silently became a different metric
+       would go on passing while comparing the wrong two numbers. */
+    scored: Object.fromEntries(scored.map((m: { id: string }) => [m.id, m])),
     pillars,
     score,
     grade: M.grade(score),
@@ -141,6 +147,20 @@ function verdict(input: Record<string, unknown>) {
 }
 
 const built = {
+  /* Every field a reader can type in, at the value it starts at.
+
+     Not a convenience. These fifty-odd numbers are the whole of
+     what a shared link leaves OUT, because `writeUrl` on the site
+     only writes what differs from a default. So the two sides
+     agreeing about `DEFAULTS` is what makes a link portable, and
+     the two drifting is a link that opens a different company on
+     the other side while looking perfectly correct on both.
+
+     A field added here has to reach the app, and this is what
+     says so: the port asserts its own defaults against this
+     object, key for key, and fails on one it does not have. */
+  defaults: M.DEFAULTS,
+
   /* No timestamp, deliberately, and for the reason
      `content/schools.backup.json` carries none: identical content
      has to be identical bytes, so the git log answers "did the

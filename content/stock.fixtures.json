@@ -1,4 +1,62 @@
 {
+  "defaults": {
+    "price": 210,
+    "shares": 1200,
+    "high52": 246,
+    "low52": 168,
+    "ma50": 205,
+    "ma200": 198,
+    "turnover": 85,
+    "freeFloat": 38,
+    "category": "A",
+    "sector": "pharma",
+    "benchmark": "dsex",
+    "stockReturn12m": 12,
+    "indexReturn12m": 7,
+    "revenue": 95000,
+    "grossProfit": 45600,
+    "ebit": 20900,
+    "depreciation": 5200,
+    "interestExpense": 1300,
+    "netIncome": 14800,
+    "totalAssets": 132000,
+    "currentAssets": 52000,
+    "inventory": 21000,
+    "cash": 9500,
+    "currentLiabilities": 26000,
+    "totalDebt": 19000,
+    "equity": 92000,
+    "reserves": 80000,
+    "cfo": 19500,
+    "capex": 11000,
+    "dps": 4.5,
+    "divTax": 10,
+    "yearsPaid": 12,
+    "revenuePrev": 84000,
+    "grossProfitPrev": 39500,
+    "netIncomePrev": 12900,
+    "totalAssetsPrev": 121000,
+    "currentAssetsPrev": 47500,
+    "currentLiabilitiesPrev": 25000,
+    "totalDebtPrev": 21000,
+    "cfoPrev": 17200,
+    "sharesPrev": 1200,
+    "netIncome3y": 9600,
+    "car": 0,
+    "npl": 0,
+    "provisionCover": 0,
+    "costIncome": 0,
+    "adr": 0,
+    "sectorPE": 16,
+    "sectorPB": 2.6,
+    "sectorROE": 15,
+    "sectorMargin": 13,
+    "marketPE": 12.5,
+    "riskFree": 11.04,
+    "fdr": 8.5,
+    "inflation": 9.7,
+    "nonCompliantIncome": 3
+  },
   "cases": [
     {
       "name": "healthy-pharma",
@@ -123,7 +181,7 @@
           ]
         },
         "scored": {
-          "0": {
+          "peRel": {
             "id": "peRel",
             "pillar": "value",
             "w": 3,
@@ -135,7 +193,7 @@
             "grade": "fair",
             "na": false
           },
-          "1": {
+          "pbRel": {
             "id": "pbRel",
             "pillar": "value",
             "w": 2,
@@ -147,7 +205,7 @@
             "grade": "fair",
             "na": false
           },
-          "2": {
+          "evEbitda": {
             "id": "evEbitda",
             "pillar": "value",
             "w": 2,
@@ -159,7 +217,7 @@
             "grade": "fair",
             "na": false
           },
-          "3": {
+          "earningsYieldSpread": {
             "id": "earningsYieldSpread",
             "pillar": "value",
             "w": 3,
@@ -171,7 +229,7 @@
             "grade": "poor",
             "na": false
           },
-          "4": {
+          "fcfYield": {
             "id": "fcfYield",
             "pillar": "value",
             "w": 2,
@@ -183,7 +241,7 @@
             "grade": "fair",
             "na": false
           },
-          "5": {
+          "peg": {
             "id": "peg",
             "pillar": "value",
             "w": 2,
@@ -195,7 +253,7 @@
             "grade": "good",
             "na": false
           },
-          "6": {
+          "peVsMarket": {
             "id": "peVsMarket",
             "pillar": "value",
             "w": 1,
@@ -207,7 +265,7 @@
             "grade": "weak",
             "na": false
           },
-          "7": {
+          "ps": {
             "id": "ps",
             "pillar": "value",
             "w": 1,
@@ -219,7 +277,7 @@
             "grade": "weak",
             "na": false
           },
-          "8": {
+          "roe": {
             "id": "roe",
             "pillar": "quality",
             "w": 3,
@@ -231,7 +289,7 @@
             "grade": "good",
             "na": false
           },
-          "9": {
+          "roce": {
             "id": "roce",
             "pillar": "quality",
             "w": 2,
@@ -243,7 +301,7 @@
             "grade": "strong",
             "na": false
           },
-          "10": {
+          "marginRel": {
             "id": "marginRel",
             "pillar": "quality",
             "w": 2,
@@ -255,7 +313,7 @@
             "grade": "good",
             "na": false
           },
-          "11": {
+          "roeRel": {
             "id": "roeRel",
             "pillar": "quality",
             "w": 2,
@@ -267,7 +325,7 @@
             "grade": "good",
             "na": false
           },
-          "12": {
+          "grossMargin": {
             "id": "grossMargin",
             "pillar": "quality",
             "w": 1,
@@ -279,7 +337,7 @@
             "grade": "strong",
             "na": false
           },
-          "13": {
+          "cashConversion": {
             "id": "cashConversion",
             "pillar": "quality",
             "w": 3,
@@ -291,7 +349,7 @@
             "grade": "strong",
             "na": false
           },
-          "14": {
+          "accruals": {
             "id": "accruals",
             "pillar": "quality",
             "w": 2,
@@ -303,7 +361,7 @@
             "grade": "strong",
             "na": false
           },
-          "15": {
+          "assetTurnover": {
             "id": "assetTurnover",
             "pillar": "quality",
             "w": 1,
@@ -315,7 +373,7 @@
             "grade": "fair",
             "na": false
           },
-          "16": {
+          "revGrowth": {
             "id": "revGrowth",
             "pillar": "growth",
             "w": 3,
@@ -327,7 +385,7 @@
             "grade": "good",
             "na": false
           },
-          "17": {
+          "niGrowth": {
             "id": "niGrowth",
             "pillar": "growth",
             "w": 3,
@@ -339,7 +397,7 @@
             "grade": "good",
             "na": false
           },
-          "18": {
+          "epsCagr3y": {
             "id": "epsCagr3y",
             "pillar": "growth",
             "w": 3,
@@ -351,7 +409,7 @@
             "grade": "good",
             "na": false
           },
-          "19": {
+          "cfoGrowth": {
             "id": "cfoGrowth",
             "pillar": "growth",
             "w": 2,
@@ -363,7 +421,7 @@
             "grade": "good",
             "na": false
           },
-          "20": {
+          "marginTrend": {
             "id": "marginTrend",
             "pillar": "growth",
             "w": 2,
@@ -375,7 +433,7 @@
             "grade": "fair",
             "na": false
           },
-          "21": {
+          "debtEquity": {
             "id": "debtEquity",
             "pillar": "health",
             "w": 3,
@@ -387,7 +445,7 @@
             "grade": "strong",
             "na": false
           },
-          "22": {
+          "netDebtEbitda": {
             "id": "netDebtEbitda",
             "pillar": "health",
             "w": 3,
@@ -399,7 +457,7 @@
             "grade": "strong",
             "na": false
           },
-          "23": {
+          "interestCover": {
             "id": "interestCover",
             "pillar": "health",
             "w": 3,
@@ -411,7 +469,7 @@
             "grade": "strong",
             "na": false
           },
-          "24": {
+          "currentRatio": {
             "id": "currentRatio",
             "pillar": "health",
             "w": 2,
@@ -423,7 +481,7 @@
             "grade": "strong",
             "na": false
           },
-          "25": {
+          "quickRatio": {
             "id": "quickRatio",
             "pillar": "health",
             "w": 2,
@@ -435,7 +493,7 @@
             "grade": "good",
             "na": false
           },
-          "26": {
+          "altmanZ": {
             "id": "altmanZ",
             "pillar": "health",
             "w": 3,
@@ -447,7 +505,7 @@
             "grade": "strong",
             "na": false
           },
-          "27": {
+          "fScore": {
             "id": "fScore",
             "pillar": "health",
             "w": 2,
@@ -459,7 +517,7 @@
             "grade": "strong",
             "na": false
           },
-          "28": {
+          "car": {
             "id": "car",
             "pillar": "health",
             "w": 3,
@@ -471,7 +529,7 @@
             "grade": "na",
             "na": true
           },
-          "29": {
+          "npl": {
             "id": "npl",
             "pillar": "health",
             "w": 3,
@@ -483,7 +541,7 @@
             "grade": "na",
             "na": true
           },
-          "30": {
+          "provisionCover": {
             "id": "provisionCover",
             "pillar": "health",
             "w": 2,
@@ -495,7 +553,7 @@
             "grade": "na",
             "na": true
           },
-          "31": {
+          "costIncome": {
             "id": "costIncome",
             "pillar": "health",
             "w": 2,
@@ -507,7 +565,7 @@
             "grade": "na",
             "na": true
           },
-          "32": {
+          "adr": {
             "id": "adr",
             "pillar": "health",
             "w": 2,
@@ -519,7 +577,7 @@
             "grade": "na",
             "na": true
           },
-          "33": {
+          "yieldSpread": {
             "id": "yieldSpread",
             "pillar": "income",
             "w": 6,
@@ -531,7 +589,7 @@
             "grade": "poor",
             "na": false
           },
-          "34": {
+          "payout": {
             "id": "payout",
             "pillar": "income",
             "w": 2,
@@ -543,7 +601,7 @@
             "grade": "good",
             "na": false
           },
-          "35": {
+          "divCover": {
             "id": "divCover",
             "pillar": "income",
             "w": 2,
@@ -555,7 +613,7 @@
             "grade": "strong",
             "na": false
           },
-          "36": {
+          "fcfCoverDiv": {
             "id": "fcfCoverDiv",
             "pillar": "income",
             "w": 2,
@@ -567,7 +625,7 @@
             "grade": "strong",
             "na": false
           },
-          "37": {
+          "divYears": {
             "id": "divYears",
             "pillar": "income",
             "w": 1,
@@ -579,7 +637,7 @@
             "grade": "strong",
             "na": false
           },
-          "38": {
+          "range52": {
             "id": "range52",
             "pillar": "momentum",
             "w": 2,
@@ -591,7 +649,7 @@
             "grade": "good",
             "na": false
           },
-          "39": {
+          "vsMa200": {
             "id": "vsMa200",
             "pillar": "momentum",
             "w": 3,
@@ -603,7 +661,7 @@
             "grade": "good",
             "na": false
           },
-          "40": {
+          "maCross": {
             "id": "maCross",
             "pillar": "momentum",
             "w": 2,
@@ -615,7 +673,7 @@
             "grade": "good",
             "na": false
           },
-          "41": {
+          "relStrength": {
             "id": "relStrength",
             "pillar": "momentum",
             "w": 3,
@@ -627,7 +685,7 @@
             "grade": "good",
             "na": false
           },
-          "42": {
+          "liquidity": {
             "id": "liquidity",
             "pillar": "momentum",
             "w": 3,
@@ -639,7 +697,7 @@
             "grade": "strong",
             "na": false
           },
-          "43": {
+          "freeFloat": {
             "id": "freeFloat",
             "pillar": "momentum",
             "w": 2,
@@ -983,7 +1041,7 @@
           ]
         },
         "scored": {
-          "0": {
+          "peRel": {
             "id": "peRel",
             "pillar": "value",
             "w": 3,
@@ -995,7 +1053,7 @@
             "grade": "fair",
             "na": false
           },
-          "1": {
+          "pbRel": {
             "id": "pbRel",
             "pillar": "value",
             "w": 2,
@@ -1007,7 +1065,7 @@
             "grade": "fair",
             "na": false
           },
-          "2": {
+          "evEbitda": {
             "id": "evEbitda",
             "pillar": "value",
             "w": 2,
@@ -1019,7 +1077,7 @@
             "grade": "na",
             "na": true
           },
-          "3": {
+          "earningsYieldSpread": {
             "id": "earningsYieldSpread",
             "pillar": "value",
             "w": 3,
@@ -1031,7 +1089,7 @@
             "grade": "poor",
             "na": false
           },
-          "4": {
+          "fcfYield": {
             "id": "fcfYield",
             "pillar": "value",
             "w": 2,
@@ -1043,7 +1101,7 @@
             "grade": "strong",
             "na": false
           },
-          "5": {
+          "peg": {
             "id": "peg",
             "pillar": "value",
             "w": 2,
@@ -1055,7 +1113,7 @@
             "grade": "good",
             "na": false
           },
-          "6": {
+          "peVsMarket": {
             "id": "peVsMarket",
             "pillar": "value",
             "w": 1,
@@ -1067,7 +1125,7 @@
             "grade": "weak",
             "na": false
           },
-          "7": {
+          "ps": {
             "id": "ps",
             "pillar": "value",
             "w": 1,
@@ -1079,7 +1137,7 @@
             "grade": "na",
             "na": true
           },
-          "8": {
+          "roe": {
             "id": "roe",
             "pillar": "quality",
             "w": 3,
@@ -1091,7 +1149,7 @@
             "grade": "good",
             "na": false
           },
-          "9": {
+          "roce": {
             "id": "roce",
             "pillar": "quality",
             "w": 2,
@@ -1103,7 +1161,7 @@
             "grade": "na",
             "na": true
           },
-          "10": {
+          "marginRel": {
             "id": "marginRel",
             "pillar": "quality",
             "w": 2,
@@ -1115,7 +1173,7 @@
             "grade": "strong",
             "na": false
           },
-          "11": {
+          "roeRel": {
             "id": "roeRel",
             "pillar": "quality",
             "w": 2,
@@ -1127,7 +1185,7 @@
             "grade": "good",
             "na": false
           },
-          "12": {
+          "grossMargin": {
             "id": "grossMargin",
             "pillar": "quality",
             "w": 1,
@@ -1139,7 +1197,7 @@
             "grade": "na",
             "na": true
           },
-          "13": {
+          "cashConversion": {
             "id": "cashConversion",
             "pillar": "quality",
             "w": 3,
@@ -1151,7 +1209,7 @@
             "grade": "strong",
             "na": false
           },
-          "14": {
+          "accruals": {
             "id": "accruals",
             "pillar": "quality",
             "w": 2,
@@ -1163,7 +1221,7 @@
             "grade": "strong",
             "na": false
           },
-          "15": {
+          "assetTurnover": {
             "id": "assetTurnover",
             "pillar": "quality",
             "w": 1,
@@ -1175,7 +1233,7 @@
             "grade": "na",
             "na": true
           },
-          "16": {
+          "revGrowth": {
             "id": "revGrowth",
             "pillar": "growth",
             "w": 3,
@@ -1187,7 +1245,7 @@
             "grade": "poor",
             "na": false
           },
-          "17": {
+          "niGrowth": {
             "id": "niGrowth",
             "pillar": "growth",
             "w": 3,
@@ -1199,7 +1257,7 @@
             "grade": "good",
             "na": false
           },
-          "18": {
+          "epsCagr3y": {
             "id": "epsCagr3y",
             "pillar": "growth",
             "w": 3,
@@ -1211,7 +1269,7 @@
             "grade": "good",
             "na": false
           },
-          "19": {
+          "cfoGrowth": {
             "id": "cfoGrowth",
             "pillar": "growth",
             "w": 2,
@@ -1223,7 +1281,7 @@
             "grade": "good",
             "na": false
           },
-          "20": {
+          "marginTrend": {
             "id": "marginTrend",
             "pillar": "growth",
             "w": 2,
@@ -1235,7 +1293,7 @@
             "grade": "strong",
             "na": false
           },
-          "21": {
+          "debtEquity": {
             "id": "debtEquity",
             "pillar": "health",
             "w": 3,
@@ -1247,7 +1305,7 @@
             "grade": "na",
             "na": true
           },
-          "22": {
+          "netDebtEbitda": {
             "id": "netDebtEbitda",
             "pillar": "health",
             "w": 3,
@@ -1259,7 +1317,7 @@
             "grade": "na",
             "na": true
           },
-          "23": {
+          "interestCover": {
             "id": "interestCover",
             "pillar": "health",
             "w": 3,
@@ -1271,7 +1329,7 @@
             "grade": "na",
             "na": true
           },
-          "24": {
+          "currentRatio": {
             "id": "currentRatio",
             "pillar": "health",
             "w": 2,
@@ -1283,7 +1341,7 @@
             "grade": "na",
             "na": true
           },
-          "25": {
+          "quickRatio": {
             "id": "quickRatio",
             "pillar": "health",
             "w": 2,
@@ -1295,7 +1353,7 @@
             "grade": "na",
             "na": true
           },
-          "26": {
+          "altmanZ": {
             "id": "altmanZ",
             "pillar": "health",
             "w": 3,
@@ -1307,7 +1365,7 @@
             "grade": "na",
             "na": true
           },
-          "27": {
+          "fScore": {
             "id": "fScore",
             "pillar": "health",
             "w": 2,
@@ -1319,7 +1377,7 @@
             "grade": "strong",
             "na": false
           },
-          "28": {
+          "car": {
             "id": "car",
             "pillar": "health",
             "w": 3,
@@ -1331,7 +1389,7 @@
             "grade": "good",
             "na": false
           },
-          "29": {
+          "npl": {
             "id": "npl",
             "pillar": "health",
             "w": 3,
@@ -1343,7 +1401,7 @@
             "grade": "good",
             "na": false
           },
-          "30": {
+          "provisionCover": {
             "id": "provisionCover",
             "pillar": "health",
             "w": 2,
@@ -1355,7 +1413,7 @@
             "grade": "fair",
             "na": false
           },
-          "31": {
+          "costIncome": {
             "id": "costIncome",
             "pillar": "health",
             "w": 2,
@@ -1367,7 +1425,7 @@
             "grade": "fair",
             "na": false
           },
-          "32": {
+          "adr": {
             "id": "adr",
             "pillar": "health",
             "w": 2,
@@ -1379,7 +1437,7 @@
             "grade": "strong",
             "na": false
           },
-          "33": {
+          "yieldSpread": {
             "id": "yieldSpread",
             "pillar": "income",
             "w": 6,
@@ -1391,7 +1449,7 @@
             "grade": "poor",
             "na": false
           },
-          "34": {
+          "payout": {
             "id": "payout",
             "pillar": "income",
             "w": 2,
@@ -1403,7 +1461,7 @@
             "grade": "good",
             "na": false
           },
-          "35": {
+          "divCover": {
             "id": "divCover",
             "pillar": "income",
             "w": 2,
@@ -1415,7 +1473,7 @@
             "grade": "strong",
             "na": false
           },
-          "36": {
+          "fcfCoverDiv": {
             "id": "fcfCoverDiv",
             "pillar": "income",
             "w": 2,
@@ -1427,7 +1485,7 @@
             "grade": "strong",
             "na": false
           },
-          "37": {
+          "divYears": {
             "id": "divYears",
             "pillar": "income",
             "w": 1,
@@ -1439,7 +1497,7 @@
             "grade": "strong",
             "na": false
           },
-          "38": {
+          "range52": {
             "id": "range52",
             "pillar": "momentum",
             "w": 2,
@@ -1451,7 +1509,7 @@
             "grade": "good",
             "na": false
           },
-          "39": {
+          "vsMa200": {
             "id": "vsMa200",
             "pillar": "momentum",
             "w": 3,
@@ -1463,7 +1521,7 @@
             "grade": "good",
             "na": false
           },
-          "40": {
+          "maCross": {
             "id": "maCross",
             "pillar": "momentum",
             "w": 2,
@@ -1475,7 +1533,7 @@
             "grade": "good",
             "na": false
           },
-          "41": {
+          "relStrength": {
             "id": "relStrength",
             "pillar": "momentum",
             "w": 3,
@@ -1487,7 +1545,7 @@
             "grade": "good",
             "na": false
           },
-          "42": {
+          "liquidity": {
             "id": "liquidity",
             "pillar": "momentum",
             "w": 3,
@@ -1499,7 +1557,7 @@
             "grade": "strong",
             "na": false
           },
-          "43": {
+          "freeFloat": {
             "id": "freeFloat",
             "pillar": "momentum",
             "w": 2,
@@ -1843,7 +1901,7 @@
           ]
         },
         "scored": {
-          "0": {
+          "peRel": {
             "id": "peRel",
             "pillar": "value",
             "w": 3,
@@ -1855,7 +1913,7 @@
             "grade": "fair",
             "na": false
           },
-          "1": {
+          "pbRel": {
             "id": "pbRel",
             "pillar": "value",
             "w": 2,
@@ -1867,7 +1925,7 @@
             "grade": "fair",
             "na": false
           },
-          "2": {
+          "evEbitda": {
             "id": "evEbitda",
             "pillar": "value",
             "w": 2,
@@ -1879,7 +1937,7 @@
             "grade": "fair",
             "na": false
           },
-          "3": {
+          "earningsYieldSpread": {
             "id": "earningsYieldSpread",
             "pillar": "value",
             "w": 3,
@@ -1891,7 +1949,7 @@
             "grade": "poor",
             "na": false
           },
-          "4": {
+          "fcfYield": {
             "id": "fcfYield",
             "pillar": "value",
             "w": 2,
@@ -1903,7 +1961,7 @@
             "grade": "fair",
             "na": false
           },
-          "5": {
+          "peg": {
             "id": "peg",
             "pillar": "value",
             "w": 2,
@@ -1915,7 +1973,7 @@
             "grade": "na",
             "na": true
           },
-          "6": {
+          "peVsMarket": {
             "id": "peVsMarket",
             "pillar": "value",
             "w": 1,
@@ -1927,7 +1985,7 @@
             "grade": "weak",
             "na": false
           },
-          "7": {
+          "ps": {
             "id": "ps",
             "pillar": "value",
             "w": 1,
@@ -1939,7 +1997,7 @@
             "grade": "weak",
             "na": false
           },
-          "8": {
+          "roe": {
             "id": "roe",
             "pillar": "quality",
             "w": 3,
@@ -1951,7 +2009,7 @@
             "grade": "good",
             "na": false
           },
-          "9": {
+          "roce": {
             "id": "roce",
             "pillar": "quality",
             "w": 2,
@@ -1963,7 +2021,7 @@
             "grade": "strong",
             "na": false
           },
-          "10": {
+          "marginRel": {
             "id": "marginRel",
             "pillar": "quality",
             "w": 2,
@@ -1975,7 +2033,7 @@
             "grade": "good",
             "na": false
           },
-          "11": {
+          "roeRel": {
             "id": "roeRel",
             "pillar": "quality",
             "w": 2,
@@ -1987,7 +2045,7 @@
             "grade": "good",
             "na": false
           },
-          "12": {
+          "grossMargin": {
             "id": "grossMargin",
             "pillar": "quality",
             "w": 1,
@@ -1999,7 +2057,7 @@
             "grade": "strong",
             "na": false
           },
-          "13": {
+          "cashConversion": {
             "id": "cashConversion",
             "pillar": "quality",
             "w": 3,
@@ -2011,7 +2069,7 @@
             "grade": "strong",
             "na": false
           },
-          "14": {
+          "accruals": {
             "id": "accruals",
             "pillar": "quality",
             "w": 2,
@@ -2023,7 +2081,7 @@
             "grade": "strong",
             "na": false
           },
-          "15": {
+          "assetTurnover": {
             "id": "assetTurnover",
             "pillar": "quality",
             "w": 1,
@@ -2035,7 +2093,7 @@
             "grade": "fair",
             "na": false
           },
-          "16": {
+          "revGrowth": {
             "id": "revGrowth",
             "pillar": "growth",
             "w": 3,
@@ -2047,7 +2105,7 @@
             "grade": "na",
             "na": true
           },
-          "17": {
+          "niGrowth": {
             "id": "niGrowth",
             "pillar": "growth",
             "w": 3,
@@ -2059,7 +2117,7 @@
             "grade": "na",
             "na": true
           },
-          "18": {
+          "epsCagr3y": {
             "id": "epsCagr3y",
             "pillar": "growth",
             "w": 3,
@@ -2071,7 +2129,7 @@
             "grade": "na",
             "na": true
           },
-          "19": {
+          "cfoGrowth": {
             "id": "cfoGrowth",
             "pillar": "growth",
             "w": 2,
@@ -2083,7 +2141,7 @@
             "grade": "na",
             "na": true
           },
-          "20": {
+          "marginTrend": {
             "id": "marginTrend",
             "pillar": "growth",
             "w": 2,
@@ -2095,7 +2153,7 @@
             "grade": "na",
             "na": true
           },
-          "21": {
+          "debtEquity": {
             "id": "debtEquity",
             "pillar": "health",
             "w": 3,
@@ -2107,7 +2165,7 @@
             "grade": "strong",
             "na": false
           },
-          "22": {
+          "netDebtEbitda": {
             "id": "netDebtEbitda",
             "pillar": "health",
             "w": 3,
@@ -2119,7 +2177,7 @@
             "grade": "strong",
             "na": false
           },
-          "23": {
+          "interestCover": {
             "id": "interestCover",
             "pillar": "health",
             "w": 3,
@@ -2131,7 +2189,7 @@
             "grade": "strong",
             "na": false
           },
-          "24": {
+          "currentRatio": {
             "id": "currentRatio",
             "pillar": "health",
             "w": 2,
@@ -2143,7 +2201,7 @@
             "grade": "strong",
             "na": false
           },
-          "25": {
+          "quickRatio": {
             "id": "quickRatio",
             "pillar": "health",
             "w": 2,
@@ -2155,7 +2213,7 @@
             "grade": "good",
             "na": false
           },
-          "26": {
+          "altmanZ": {
             "id": "altmanZ",
             "pillar": "health",
             "w": 3,
@@ -2167,7 +2225,7 @@
             "grade": "strong",
             "na": false
           },
-          "27": {
+          "fScore": {
             "id": "fScore",
             "pillar": "health",
             "w": 2,
@@ -2179,7 +2237,7 @@
             "grade": "na",
             "na": true
           },
-          "28": {
+          "car": {
             "id": "car",
             "pillar": "health",
             "w": 3,
@@ -2191,7 +2249,7 @@
             "grade": "na",
             "na": true
           },
-          "29": {
+          "npl": {
             "id": "npl",
             "pillar": "health",
             "w": 3,
@@ -2203,7 +2261,7 @@
             "grade": "na",
             "na": true
           },
-          "30": {
+          "provisionCover": {
             "id": "provisionCover",
             "pillar": "health",
             "w": 2,
@@ -2215,7 +2273,7 @@
             "grade": "na",
             "na": true
           },
-          "31": {
+          "costIncome": {
             "id": "costIncome",
             "pillar": "health",
             "w": 2,
@@ -2227,7 +2285,7 @@
             "grade": "na",
             "na": true
           },
-          "32": {
+          "adr": {
             "id": "adr",
             "pillar": "health",
             "w": 2,
@@ -2239,7 +2297,7 @@
             "grade": "na",
             "na": true
           },
-          "33": {
+          "yieldSpread": {
             "id": "yieldSpread",
             "pillar": "income",
             "w": 6,
@@ -2251,7 +2309,7 @@
             "grade": "poor",
             "na": false
           },
-          "34": {
+          "payout": {
             "id": "payout",
             "pillar": "income",
             "w": 2,
@@ -2263,7 +2321,7 @@
             "grade": "good",
             "na": false
           },
-          "35": {
+          "divCover": {
             "id": "divCover",
             "pillar": "income",
             "w": 2,
@@ -2275,7 +2333,7 @@
             "grade": "strong",
             "na": false
           },
-          "36": {
+          "fcfCoverDiv": {
             "id": "fcfCoverDiv",
             "pillar": "income",
             "w": 2,
@@ -2287,7 +2345,7 @@
             "grade": "strong",
             "na": false
           },
-          "37": {
+          "divYears": {
             "id": "divYears",
             "pillar": "income",
             "w": 1,
@@ -2299,7 +2357,7 @@
             "grade": "strong",
             "na": false
           },
-          "38": {
+          "range52": {
             "id": "range52",
             "pillar": "momentum",
             "w": 2,
@@ -2311,7 +2369,7 @@
             "grade": "good",
             "na": false
           },
-          "39": {
+          "vsMa200": {
             "id": "vsMa200",
             "pillar": "momentum",
             "w": 3,
@@ -2323,7 +2381,7 @@
             "grade": "good",
             "na": false
           },
-          "40": {
+          "maCross": {
             "id": "maCross",
             "pillar": "momentum",
             "w": 2,
@@ -2335,7 +2393,7 @@
             "grade": "good",
             "na": false
           },
-          "41": {
+          "relStrength": {
             "id": "relStrength",
             "pillar": "momentum",
             "w": 3,
@@ -2347,7 +2405,7 @@
             "grade": "good",
             "na": false
           },
-          "42": {
+          "liquidity": {
             "id": "liquidity",
             "pillar": "momentum",
             "w": 3,
@@ -2359,7 +2417,7 @@
             "grade": "strong",
             "na": false
           },
-          "43": {
+          "freeFloat": {
             "id": "freeFloat",
             "pillar": "momentum",
             "w": 2,
@@ -2699,7 +2757,7 @@
           ]
         },
         "scored": {
-          "0": {
+          "peRel": {
             "id": "peRel",
             "pillar": "value",
             "w": 3,
@@ -2711,7 +2769,7 @@
             "grade": "na",
             "na": true
           },
-          "1": {
+          "pbRel": {
             "id": "pbRel",
             "pillar": "value",
             "w": 2,
@@ -2723,7 +2781,7 @@
             "grade": "fair",
             "na": false
           },
-          "2": {
+          "evEbitda": {
             "id": "evEbitda",
             "pillar": "value",
             "w": 2,
@@ -2735,7 +2793,7 @@
             "grade": "poor",
             "na": false
           },
-          "3": {
+          "earningsYieldSpread": {
             "id": "earningsYieldSpread",
             "pillar": "value",
             "w": 3,
@@ -2747,7 +2805,7 @@
             "grade": "na",
             "na": true
           },
-          "4": {
+          "fcfYield": {
             "id": "fcfYield",
             "pillar": "value",
             "w": 2,
@@ -2759,7 +2817,7 @@
             "grade": "poor",
             "na": false
           },
-          "5": {
+          "peg": {
             "id": "peg",
             "pillar": "value",
             "w": 2,
@@ -2771,7 +2829,7 @@
             "grade": "na",
             "na": true
           },
-          "6": {
+          "peVsMarket": {
             "id": "peVsMarket",
             "pillar": "value",
             "w": 1,
@@ -2783,7 +2841,7 @@
             "grade": "na",
             "na": true
           },
-          "7": {
+          "ps": {
             "id": "ps",
             "pillar": "value",
             "w": 1,
@@ -2795,7 +2853,7 @@
             "grade": "weak",
             "na": false
           },
-          "8": {
+          "roe": {
             "id": "roe",
             "pillar": "quality",
             "w": 3,
@@ -2807,7 +2865,7 @@
             "grade": "poor",
             "na": false
           },
-          "9": {
+          "roce": {
             "id": "roce",
             "pillar": "quality",
             "w": 2,
@@ -2819,7 +2877,7 @@
             "grade": "poor",
             "na": false
           },
-          "10": {
+          "marginRel": {
             "id": "marginRel",
             "pillar": "quality",
             "w": 2,
@@ -2831,7 +2889,7 @@
             "grade": "na",
             "na": true
           },
-          "11": {
+          "roeRel": {
             "id": "roeRel",
             "pillar": "quality",
             "w": 2,
@@ -2843,7 +2901,7 @@
             "grade": "na",
             "na": true
           },
-          "12": {
+          "grossMargin": {
             "id": "grossMargin",
             "pillar": "quality",
             "w": 1,
@@ -2855,7 +2913,7 @@
             "grade": "strong",
             "na": false
           },
-          "13": {
+          "cashConversion": {
             "id": "cashConversion",
             "pillar": "quality",
             "w": 3,
@@ -2867,7 +2925,7 @@
             "grade": "na",
             "na": true
           },
-          "14": {
+          "accruals": {
             "id": "accruals",
             "pillar": "quality",
             "w": 2,
@@ -2879,7 +2937,7 @@
             "grade": "strong",
             "na": false
           },
-          "15": {
+          "assetTurnover": {
             "id": "assetTurnover",
             "pillar": "quality",
             "w": 1,
@@ -2891,7 +2949,7 @@
             "grade": "fair",
             "na": false
           },
-          "16": {
+          "revGrowth": {
             "id": "revGrowth",
             "pillar": "growth",
             "w": 3,
@@ -2903,7 +2961,7 @@
             "grade": "good",
             "na": false
           },
-          "17": {
+          "niGrowth": {
             "id": "niGrowth",
             "pillar": "growth",
             "w": 3,
@@ -2915,7 +2973,7 @@
             "grade": "poor",
             "na": false
           },
-          "18": {
+          "epsCagr3y": {
             "id": "epsCagr3y",
             "pillar": "growth",
             "w": 3,
@@ -2927,7 +2985,7 @@
             "grade": "na",
             "na": true
           },
-          "19": {
+          "cfoGrowth": {
             "id": "cfoGrowth",
             "pillar": "growth",
             "w": 2,
@@ -2939,7 +2997,7 @@
             "grade": "poor",
             "na": false
           },
-          "20": {
+          "marginTrend": {
             "id": "marginTrend",
             "pillar": "growth",
             "w": 2,
@@ -2951,7 +3009,7 @@
             "grade": "poor",
             "na": false
           },
-          "21": {
+          "debtEquity": {
             "id": "debtEquity",
             "pillar": "health",
             "w": 3,
@@ -2963,7 +3021,7 @@
             "grade": "strong",
             "na": false
           },
-          "22": {
+          "netDebtEbitda": {
             "id": "netDebtEbitda",
             "pillar": "health",
             "w": 3,
@@ -2975,7 +3033,7 @@
             "grade": "fair",
             "na": false
           },
-          "23": {
+          "interestCover": {
             "id": "interestCover",
             "pillar": "health",
             "w": 3,
@@ -2987,7 +3045,7 @@
             "grade": "poor",
             "na": false
           },
-          "24": {
+          "currentRatio": {
             "id": "currentRatio",
             "pillar": "health",
             "w": 2,
@@ -2999,7 +3057,7 @@
             "grade": "strong",
             "na": false
           },
-          "25": {
+          "quickRatio": {
             "id": "quickRatio",
             "pillar": "health",
             "w": 2,
@@ -3011,7 +3069,7 @@
             "grade": "good",
             "na": false
           },
-          "26": {
+          "altmanZ": {
             "id": "altmanZ",
             "pillar": "health",
             "w": 3,
@@ -3023,7 +3081,7 @@
             "grade": "strong",
             "na": false
           },
-          "27": {
+          "fScore": {
             "id": "fScore",
             "pillar": "health",
             "w": 2,
@@ -3035,7 +3093,7 @@
             "grade": "fair",
             "na": false
           },
-          "28": {
+          "car": {
             "id": "car",
             "pillar": "health",
             "w": 3,
@@ -3047,7 +3105,7 @@
             "grade": "na",
             "na": true
           },
-          "29": {
+          "npl": {
             "id": "npl",
             "pillar": "health",
             "w": 3,
@@ -3059,7 +3117,7 @@
             "grade": "na",
             "na": true
           },
-          "30": {
+          "provisionCover": {
             "id": "provisionCover",
             "pillar": "health",
             "w": 2,
@@ -3071,7 +3129,7 @@
             "grade": "na",
             "na": true
           },
-          "31": {
+          "costIncome": {
             "id": "costIncome",
             "pillar": "health",
             "w": 2,
@@ -3083,7 +3141,7 @@
             "grade": "na",
             "na": true
           },
-          "32": {
+          "adr": {
             "id": "adr",
             "pillar": "health",
             "w": 2,
@@ -3095,7 +3153,7 @@
             "grade": "na",
             "na": true
           },
-          "33": {
+          "yieldSpread": {
             "id": "yieldSpread",
             "pillar": "income",
             "w": 6,
@@ -3107,7 +3165,7 @@
             "grade": "poor",
             "na": false
           },
-          "34": {
+          "payout": {
             "id": "payout",
             "pillar": "income",
             "w": 2,
@@ -3119,7 +3177,7 @@
             "grade": "na",
             "na": true
           },
-          "35": {
+          "divCover": {
             "id": "divCover",
             "pillar": "income",
             "w": 2,
@@ -3131,7 +3189,7 @@
             "grade": "na",
             "na": true
           },
-          "36": {
+          "fcfCoverDiv": {
             "id": "fcfCoverDiv",
             "pillar": "income",
             "w": 2,
@@ -3143,7 +3201,7 @@
             "grade": "na",
             "na": true
           },
-          "37": {
+          "divYears": {
             "id": "divYears",
             "pillar": "income",
             "w": 1,
@@ -3155,7 +3213,7 @@
             "grade": "poor",
             "na": false
           },
-          "38": {
+          "range52": {
             "id": "range52",
             "pillar": "momentum",
             "w": 2,
@@ -3167,7 +3225,7 @@
             "grade": "good",
             "na": false
           },
-          "39": {
+          "vsMa200": {
             "id": "vsMa200",
             "pillar": "momentum",
             "w": 3,
@@ -3179,7 +3237,7 @@
             "grade": "good",
             "na": false
           },
-          "40": {
+          "maCross": {
             "id": "maCross",
             "pillar": "momentum",
             "w": 2,
@@ -3191,7 +3249,7 @@
             "grade": "good",
             "na": false
           },
-          "41": {
+          "relStrength": {
             "id": "relStrength",
             "pillar": "momentum",
             "w": 3,
@@ -3203,7 +3261,7 @@
             "grade": "good",
             "na": false
           },
-          "42": {
+          "liquidity": {
             "id": "liquidity",
             "pillar": "momentum",
             "w": 3,
@@ -3215,7 +3273,7 @@
             "grade": "strong",
             "na": false
           },
-          "43": {
+          "freeFloat": {
             "id": "freeFloat",
             "pillar": "momentum",
             "w": 2,
@@ -3552,7 +3610,7 @@
           ]
         },
         "scored": {
-          "0": {
+          "peRel": {
             "id": "peRel",
             "pillar": "value",
             "w": 3,
@@ -3564,7 +3622,7 @@
             "grade": "fair",
             "na": false
           },
-          "1": {
+          "pbRel": {
             "id": "pbRel",
             "pillar": "value",
             "w": 2,
@@ -3576,7 +3634,7 @@
             "grade": "fair",
             "na": false
           },
-          "2": {
+          "evEbitda": {
             "id": "evEbitda",
             "pillar": "value",
             "w": 2,
@@ -3588,7 +3646,7 @@
             "grade": "fair",
             "na": false
           },
-          "3": {
+          "earningsYieldSpread": {
             "id": "earningsYieldSpread",
             "pillar": "value",
             "w": 3,
@@ -3600,7 +3658,7 @@
             "grade": "poor",
             "na": false
           },
-          "4": {
+          "fcfYield": {
             "id": "fcfYield",
             "pillar": "value",
             "w": 2,
@@ -3612,7 +3670,7 @@
             "grade": "fair",
             "na": false
           },
-          "5": {
+          "peg": {
             "id": "peg",
             "pillar": "value",
             "w": 2,
@@ -3624,7 +3682,7 @@
             "grade": "good",
             "na": false
           },
-          "6": {
+          "peVsMarket": {
             "id": "peVsMarket",
             "pillar": "value",
             "w": 1,
@@ -3636,7 +3694,7 @@
             "grade": "weak",
             "na": false
           },
-          "7": {
+          "ps": {
             "id": "ps",
             "pillar": "value",
             "w": 1,
@@ -3648,7 +3706,7 @@
             "grade": "weak",
             "na": false
           },
-          "8": {
+          "roe": {
             "id": "roe",
             "pillar": "quality",
             "w": 3,
@@ -3660,7 +3718,7 @@
             "grade": "good",
             "na": false
           },
-          "9": {
+          "roce": {
             "id": "roce",
             "pillar": "quality",
             "w": 2,
@@ -3672,7 +3730,7 @@
             "grade": "strong",
             "na": false
           },
-          "10": {
+          "marginRel": {
             "id": "marginRel",
             "pillar": "quality",
             "w": 2,
@@ -3684,7 +3742,7 @@
             "grade": "good",
             "na": false
           },
-          "11": {
+          "roeRel": {
             "id": "roeRel",
             "pillar": "quality",
             "w": 2,
@@ -3696,7 +3754,7 @@
             "grade": "good",
             "na": false
           },
-          "12": {
+          "grossMargin": {
             "id": "grossMargin",
             "pillar": "quality",
             "w": 1,
@@ -3708,7 +3766,7 @@
             "grade": "strong",
             "na": false
           },
-          "13": {
+          "cashConversion": {
             "id": "cashConversion",
             "pillar": "quality",
             "w": 3,
@@ -3720,7 +3778,7 @@
             "grade": "strong",
             "na": false
           },
-          "14": {
+          "accruals": {
             "id": "accruals",
             "pillar": "quality",
             "w": 2,
@@ -3732,7 +3790,7 @@
             "grade": "strong",
             "na": false
           },
-          "15": {
+          "assetTurnover": {
             "id": "assetTurnover",
             "pillar": "quality",
             "w": 1,
@@ -3744,7 +3802,7 @@
             "grade": "fair",
             "na": false
           },
-          "16": {
+          "revGrowth": {
             "id": "revGrowth",
             "pillar": "growth",
             "w": 3,
@@ -3756,7 +3814,7 @@
             "grade": "good",
             "na": false
           },
-          "17": {
+          "niGrowth": {
             "id": "niGrowth",
             "pillar": "growth",
             "w": 3,
@@ -3768,7 +3826,7 @@
             "grade": "good",
             "na": false
           },
-          "18": {
+          "epsCagr3y": {
             "id": "epsCagr3y",
             "pillar": "growth",
             "w": 3,
@@ -3780,7 +3838,7 @@
             "grade": "good",
             "na": false
           },
-          "19": {
+          "cfoGrowth": {
             "id": "cfoGrowth",
             "pillar": "growth",
             "w": 2,
@@ -3792,7 +3850,7 @@
             "grade": "good",
             "na": false
           },
-          "20": {
+          "marginTrend": {
             "id": "marginTrend",
             "pillar": "growth",
             "w": 2,
@@ -3804,7 +3862,7 @@
             "grade": "fair",
             "na": false
           },
-          "21": {
+          "debtEquity": {
             "id": "debtEquity",
             "pillar": "health",
             "w": 3,
@@ -3816,7 +3874,7 @@
             "grade": "strong",
             "na": false
           },
-          "22": {
+          "netDebtEbitda": {
             "id": "netDebtEbitda",
             "pillar": "health",
             "w": 3,
@@ -3828,7 +3886,7 @@
             "grade": "strong",
             "na": false
           },
-          "23": {
+          "interestCover": {
             "id": "interestCover",
             "pillar": "health",
             "w": 3,
@@ -3840,7 +3898,7 @@
             "grade": "strong",
             "na": false
           },
-          "24": {
+          "currentRatio": {
             "id": "currentRatio",
             "pillar": "health",
             "w": 2,
@@ -3852,7 +3910,7 @@
             "grade": "strong",
             "na": false
           },
-          "25": {
+          "quickRatio": {
             "id": "quickRatio",
             "pillar": "health",
             "w": 2,
@@ -3864,7 +3922,7 @@
             "grade": "good",
             "na": false
           },
-          "26": {
+          "altmanZ": {
             "id": "altmanZ",
             "pillar": "health",
             "w": 3,
@@ -3876,7 +3934,7 @@
             "grade": "strong",
             "na": false
           },
-          "27": {
+          "fScore": {
             "id": "fScore",
             "pillar": "health",
             "w": 2,
@@ -3888,7 +3946,7 @@
             "grade": "strong",
             "na": false
           },
-          "28": {
+          "car": {
             "id": "car",
             "pillar": "health",
             "w": 3,
@@ -3900,7 +3958,7 @@
             "grade": "na",
             "na": true
           },
-          "29": {
+          "npl": {
             "id": "npl",
             "pillar": "health",
             "w": 3,
@@ -3912,7 +3970,7 @@
             "grade": "na",
             "na": true
           },
-          "30": {
+          "provisionCover": {
             "id": "provisionCover",
             "pillar": "health",
             "w": 2,
@@ -3924,7 +3982,7 @@
             "grade": "na",
             "na": true
           },
-          "31": {
+          "costIncome": {
             "id": "costIncome",
             "pillar": "health",
             "w": 2,
@@ -3936,7 +3994,7 @@
             "grade": "na",
             "na": true
           },
-          "32": {
+          "adr": {
             "id": "adr",
             "pillar": "health",
             "w": 2,
@@ -3948,7 +4006,7 @@
             "grade": "na",
             "na": true
           },
-          "33": {
+          "yieldSpread": {
             "id": "yieldSpread",
             "pillar": "income",
             "w": 6,
@@ -3960,7 +4018,7 @@
             "grade": "poor",
             "na": false
           },
-          "34": {
+          "payout": {
             "id": "payout",
             "pillar": "income",
             "w": 2,
@@ -3972,7 +4030,7 @@
             "grade": "poor",
             "na": false
           },
-          "35": {
+          "divCover": {
             "id": "divCover",
             "pillar": "income",
             "w": 2,
@@ -3984,7 +4042,7 @@
             "grade": "na",
             "na": true
           },
-          "36": {
+          "fcfCoverDiv": {
             "id": "fcfCoverDiv",
             "pillar": "income",
             "w": 2,
@@ -3996,7 +4054,7 @@
             "grade": "na",
             "na": true
           },
-          "37": {
+          "divYears": {
             "id": "divYears",
             "pillar": "income",
             "w": 1,
@@ -4008,7 +4066,7 @@
             "grade": "poor",
             "na": false
           },
-          "38": {
+          "range52": {
             "id": "range52",
             "pillar": "momentum",
             "w": 2,
@@ -4020,7 +4078,7 @@
             "grade": "good",
             "na": false
           },
-          "39": {
+          "vsMa200": {
             "id": "vsMa200",
             "pillar": "momentum",
             "w": 3,
@@ -4032,7 +4090,7 @@
             "grade": "good",
             "na": false
           },
-          "40": {
+          "maCross": {
             "id": "maCross",
             "pillar": "momentum",
             "w": 2,
@@ -4044,7 +4102,7 @@
             "grade": "good",
             "na": false
           },
-          "41": {
+          "relStrength": {
             "id": "relStrength",
             "pillar": "momentum",
             "w": 3,
@@ -4056,7 +4114,7 @@
             "grade": "good",
             "na": false
           },
-          "42": {
+          "liquidity": {
             "id": "liquidity",
             "pillar": "momentum",
             "w": 3,
@@ -4068,7 +4126,7 @@
             "grade": "strong",
             "na": false
           },
-          "43": {
+          "freeFloat": {
             "id": "freeFloat",
             "pillar": "momentum",
             "w": 2,
@@ -4412,7 +4470,7 @@
           ]
         },
         "scored": {
-          "0": {
+          "peRel": {
             "id": "peRel",
             "pillar": "value",
             "w": 3,
@@ -4424,7 +4482,7 @@
             "grade": "fair",
             "na": false
           },
-          "1": {
+          "pbRel": {
             "id": "pbRel",
             "pillar": "value",
             "w": 2,
@@ -4436,7 +4494,7 @@
             "grade": "poor",
             "na": false
           },
-          "2": {
+          "evEbitda": {
             "id": "evEbitda",
             "pillar": "value",
             "w": 2,
@@ -4448,7 +4506,7 @@
             "grade": "poor",
             "na": false
           },
-          "3": {
+          "earningsYieldSpread": {
             "id": "earningsYieldSpread",
             "pillar": "value",
             "w": 3,
@@ -4460,7 +4518,7 @@
             "grade": "poor",
             "na": false
           },
-          "4": {
+          "fcfYield": {
             "id": "fcfYield",
             "pillar": "value",
             "w": 2,
@@ -4472,7 +4530,7 @@
             "grade": "poor",
             "na": false
           },
-          "5": {
+          "peg": {
             "id": "peg",
             "pillar": "value",
             "w": 2,
@@ -4484,7 +4542,7 @@
             "grade": "good",
             "na": false
           },
-          "6": {
+          "peVsMarket": {
             "id": "peVsMarket",
             "pillar": "value",
             "w": 1,
@@ -4496,7 +4554,7 @@
             "grade": "weak",
             "na": false
           },
-          "7": {
+          "ps": {
             "id": "ps",
             "pillar": "value",
             "w": 1,
@@ -4508,7 +4566,7 @@
             "grade": "weak",
             "na": false
           },
-          "8": {
+          "roe": {
             "id": "roe",
             "pillar": "quality",
             "w": 3,
@@ -4520,7 +4578,7 @@
             "grade": "strong",
             "na": false
           },
-          "9": {
+          "roce": {
             "id": "roce",
             "pillar": "quality",
             "w": 2,
@@ -4532,7 +4590,7 @@
             "grade": "fair",
             "na": false
           },
-          "10": {
+          "marginRel": {
             "id": "marginRel",
             "pillar": "quality",
             "w": 2,
@@ -4544,7 +4602,7 @@
             "grade": "good",
             "na": false
           },
-          "11": {
+          "roeRel": {
             "id": "roeRel",
             "pillar": "quality",
             "w": 2,
@@ -4556,7 +4614,7 @@
             "grade": "strong",
             "na": false
           },
-          "12": {
+          "grossMargin": {
             "id": "grossMargin",
             "pillar": "quality",
             "w": 1,
@@ -4568,7 +4626,7 @@
             "grade": "strong",
             "na": false
           },
-          "13": {
+          "cashConversion": {
             "id": "cashConversion",
             "pillar": "quality",
             "w": 3,
@@ -4580,7 +4638,7 @@
             "grade": "poor",
             "na": false
           },
-          "14": {
+          "accruals": {
             "id": "accruals",
             "pillar": "quality",
             "w": 2,
@@ -4592,7 +4650,7 @@
             "grade": "poor",
             "na": false
           },
-          "15": {
+          "assetTurnover": {
             "id": "assetTurnover",
             "pillar": "quality",
             "w": 1,
@@ -4604,7 +4662,7 @@
             "grade": "fair",
             "na": false
           },
-          "16": {
+          "revGrowth": {
             "id": "revGrowth",
             "pillar": "growth",
             "w": 3,
@@ -4616,7 +4674,7 @@
             "grade": "good",
             "na": false
           },
-          "17": {
+          "niGrowth": {
             "id": "niGrowth",
             "pillar": "growth",
             "w": 3,
@@ -4628,7 +4686,7 @@
             "grade": "good",
             "na": false
           },
-          "18": {
+          "epsCagr3y": {
             "id": "epsCagr3y",
             "pillar": "growth",
             "w": 3,
@@ -4640,7 +4698,7 @@
             "grade": "good",
             "na": false
           },
-          "19": {
+          "cfoGrowth": {
             "id": "cfoGrowth",
             "pillar": "growth",
             "w": 2,
@@ -4652,7 +4710,7 @@
             "grade": "poor",
             "na": false
           },
-          "20": {
+          "marginTrend": {
             "id": "marginTrend",
             "pillar": "growth",
             "w": 2,
@@ -4664,7 +4722,7 @@
             "grade": "fair",
             "na": false
           },
-          "21": {
+          "debtEquity": {
             "id": "debtEquity",
             "pillar": "health",
             "w": 3,
@@ -4676,7 +4734,7 @@
             "grade": "poor",
             "na": false
           },
-          "22": {
+          "netDebtEbitda": {
             "id": "netDebtEbitda",
             "pillar": "health",
             "w": 3,
@@ -4688,7 +4746,7 @@
             "grade": "poor",
             "na": false
           },
-          "23": {
+          "interestCover": {
             "id": "interestCover",
             "pillar": "health",
             "w": 3,
@@ -4700,7 +4758,7 @@
             "grade": "poor",
             "na": false
           },
-          "24": {
+          "currentRatio": {
             "id": "currentRatio",
             "pillar": "health",
             "w": 2,
@@ -4712,7 +4770,7 @@
             "grade": "poor",
             "na": false
           },
-          "25": {
+          "quickRatio": {
             "id": "quickRatio",
             "pillar": "health",
             "w": 2,
@@ -4724,7 +4782,7 @@
             "grade": "poor",
             "na": false
           },
-          "26": {
+          "altmanZ": {
             "id": "altmanZ",
             "pillar": "health",
             "w": 3,
@@ -4736,7 +4794,7 @@
             "grade": "poor",
             "na": false
           },
-          "27": {
+          "fScore": {
             "id": "fScore",
             "pillar": "health",
             "w": 2,
@@ -4748,7 +4806,7 @@
             "grade": "fair",
             "na": false
           },
-          "28": {
+          "car": {
             "id": "car",
             "pillar": "health",
             "w": 3,
@@ -4760,7 +4818,7 @@
             "grade": "na",
             "na": true
           },
-          "29": {
+          "npl": {
             "id": "npl",
             "pillar": "health",
             "w": 3,
@@ -4772,7 +4830,7 @@
             "grade": "na",
             "na": true
           },
-          "30": {
+          "provisionCover": {
             "id": "provisionCover",
             "pillar": "health",
             "w": 2,
@@ -4784,7 +4842,7 @@
             "grade": "na",
             "na": true
           },
-          "31": {
+          "costIncome": {
             "id": "costIncome",
             "pillar": "health",
             "w": 2,
@@ -4796,7 +4854,7 @@
             "grade": "na",
             "na": true
           },
-          "32": {
+          "adr": {
             "id": "adr",
             "pillar": "health",
             "w": 2,
@@ -4808,7 +4866,7 @@
             "grade": "na",
             "na": true
           },
-          "33": {
+          "yieldSpread": {
             "id": "yieldSpread",
             "pillar": "income",
             "w": 6,
@@ -4820,7 +4878,7 @@
             "grade": "poor",
             "na": false
           },
-          "34": {
+          "payout": {
             "id": "payout",
             "pillar": "income",
             "w": 2,
@@ -4832,7 +4890,7 @@
             "grade": "good",
             "na": false
           },
-          "35": {
+          "divCover": {
             "id": "divCover",
             "pillar": "income",
             "w": 2,
@@ -4844,7 +4902,7 @@
             "grade": "strong",
             "na": false
           },
-          "36": {
+          "fcfCoverDiv": {
             "id": "fcfCoverDiv",
             "pillar": "income",
             "w": 2,
@@ -4856,7 +4914,7 @@
             "grade": "poor",
             "na": false
           },
-          "37": {
+          "divYears": {
             "id": "divYears",
             "pillar": "income",
             "w": 1,
@@ -4868,7 +4926,7 @@
             "grade": "strong",
             "na": false
           },
-          "38": {
+          "range52": {
             "id": "range52",
             "pillar": "momentum",
             "w": 2,
@@ -4880,7 +4938,7 @@
             "grade": "good",
             "na": false
           },
-          "39": {
+          "vsMa200": {
             "id": "vsMa200",
             "pillar": "momentum",
             "w": 3,
@@ -4892,7 +4950,7 @@
             "grade": "good",
             "na": false
           },
-          "40": {
+          "maCross": {
             "id": "maCross",
             "pillar": "momentum",
             "w": 2,
@@ -4904,7 +4962,7 @@
             "grade": "good",
             "na": false
           },
-          "41": {
+          "relStrength": {
             "id": "relStrength",
             "pillar": "momentum",
             "w": 3,
@@ -4916,7 +4974,7 @@
             "grade": "good",
             "na": false
           },
-          "42": {
+          "liquidity": {
             "id": "liquidity",
             "pillar": "momentum",
             "w": 3,
@@ -4928,7 +4986,7 @@
             "grade": "strong",
             "na": false
           },
-          "43": {
+          "freeFloat": {
             "id": "freeFloat",
             "pillar": "momentum",
             "w": 2,
@@ -5321,7 +5379,7 @@
           ]
         },
         "scored": {
-          "0": {
+          "peRel": {
             "id": "peRel",
             "pillar": "value",
             "w": 3,
@@ -5333,7 +5391,7 @@
             "grade": "strong",
             "na": false
           },
-          "1": {
+          "pbRel": {
             "id": "pbRel",
             "pillar": "value",
             "w": 2,
@@ -5345,7 +5403,7 @@
             "grade": "strong",
             "na": false
           },
-          "2": {
+          "evEbitda": {
             "id": "evEbitda",
             "pillar": "value",
             "w": 2,
@@ -5357,7 +5415,7 @@
             "grade": "strong",
             "na": false
           },
-          "3": {
+          "earningsYieldSpread": {
             "id": "earningsYieldSpread",
             "pillar": "value",
             "w": 3,
@@ -5369,7 +5427,7 @@
             "grade": "strong",
             "na": false
           },
-          "4": {
+          "fcfYield": {
             "id": "fcfYield",
             "pillar": "value",
             "w": 2,
@@ -5381,7 +5439,7 @@
             "grade": "strong",
             "na": false
           },
-          "5": {
+          "peg": {
             "id": "peg",
             "pillar": "value",
             "w": 2,
@@ -5393,7 +5451,7 @@
             "grade": "strong",
             "na": false
           },
-          "6": {
+          "peVsMarket": {
             "id": "peVsMarket",
             "pillar": "value",
             "w": 1,
@@ -5405,7 +5463,7 @@
             "grade": "strong",
             "na": false
           },
-          "7": {
+          "ps": {
             "id": "ps",
             "pillar": "value",
             "w": 1,
@@ -5417,7 +5475,7 @@
             "grade": "strong",
             "na": false
           },
-          "8": {
+          "roe": {
             "id": "roe",
             "pillar": "quality",
             "w": 3,
@@ -5429,7 +5487,7 @@
             "grade": "good",
             "na": false
           },
-          "9": {
+          "roce": {
             "id": "roce",
             "pillar": "quality",
             "w": 2,
@@ -5441,7 +5499,7 @@
             "grade": "strong",
             "na": false
           },
-          "10": {
+          "marginRel": {
             "id": "marginRel",
             "pillar": "quality",
             "w": 2,
@@ -5453,7 +5511,7 @@
             "grade": "good",
             "na": false
           },
-          "11": {
+          "roeRel": {
             "id": "roeRel",
             "pillar": "quality",
             "w": 2,
@@ -5465,7 +5523,7 @@
             "grade": "good",
             "na": false
           },
-          "12": {
+          "grossMargin": {
             "id": "grossMargin",
             "pillar": "quality",
             "w": 1,
@@ -5477,7 +5535,7 @@
             "grade": "strong",
             "na": false
           },
-          "13": {
+          "cashConversion": {
             "id": "cashConversion",
             "pillar": "quality",
             "w": 3,
@@ -5489,7 +5547,7 @@
             "grade": "strong",
             "na": false
           },
-          "14": {
+          "accruals": {
             "id": "accruals",
             "pillar": "quality",
             "w": 2,
@@ -5501,7 +5559,7 @@
             "grade": "strong",
             "na": false
           },
-          "15": {
+          "assetTurnover": {
             "id": "assetTurnover",
             "pillar": "quality",
             "w": 1,
@@ -5513,7 +5571,7 @@
             "grade": "fair",
             "na": false
           },
-          "16": {
+          "revGrowth": {
             "id": "revGrowth",
             "pillar": "growth",
             "w": 3,
@@ -5525,7 +5583,7 @@
             "grade": "good",
             "na": false
           },
-          "17": {
+          "niGrowth": {
             "id": "niGrowth",
             "pillar": "growth",
             "w": 3,
@@ -5537,7 +5595,7 @@
             "grade": "good",
             "na": false
           },
-          "18": {
+          "epsCagr3y": {
             "id": "epsCagr3y",
             "pillar": "growth",
             "w": 3,
@@ -5549,7 +5607,7 @@
             "grade": "good",
             "na": false
           },
-          "19": {
+          "cfoGrowth": {
             "id": "cfoGrowth",
             "pillar": "growth",
             "w": 2,
@@ -5561,7 +5619,7 @@
             "grade": "good",
             "na": false
           },
-          "20": {
+          "marginTrend": {
             "id": "marginTrend",
             "pillar": "growth",
             "w": 2,
@@ -5573,7 +5631,7 @@
             "grade": "fair",
             "na": false
           },
-          "21": {
+          "debtEquity": {
             "id": "debtEquity",
             "pillar": "health",
             "w": 3,
@@ -5585,7 +5643,7 @@
             "grade": "strong",
             "na": false
           },
-          "22": {
+          "netDebtEbitda": {
             "id": "netDebtEbitda",
             "pillar": "health",
             "w": 3,
@@ -5597,7 +5655,7 @@
             "grade": "strong",
             "na": false
           },
-          "23": {
+          "interestCover": {
             "id": "interestCover",
             "pillar": "health",
             "w": 3,
@@ -5609,7 +5667,7 @@
             "grade": "strong",
             "na": false
           },
-          "24": {
+          "currentRatio": {
             "id": "currentRatio",
             "pillar": "health",
             "w": 2,
@@ -5621,7 +5679,7 @@
             "grade": "strong",
             "na": false
           },
-          "25": {
+          "quickRatio": {
             "id": "quickRatio",
             "pillar": "health",
             "w": 2,
@@ -5633,7 +5691,7 @@
             "grade": "good",
             "na": false
           },
-          "26": {
+          "altmanZ": {
             "id": "altmanZ",
             "pillar": "health",
             "w": 3,
@@ -5645,7 +5703,7 @@
             "grade": "strong",
             "na": false
           },
-          "27": {
+          "fScore": {
             "id": "fScore",
             "pillar": "health",
             "w": 2,
@@ -5657,7 +5715,7 @@
             "grade": "strong",
             "na": false
           },
-          "28": {
+          "car": {
             "id": "car",
             "pillar": "health",
             "w": 3,
@@ -5669,7 +5727,7 @@
             "grade": "na",
             "na": true
           },
-          "29": {
+          "npl": {
             "id": "npl",
             "pillar": "health",
             "w": 3,
@@ -5681,7 +5739,7 @@
             "grade": "na",
             "na": true
           },
-          "30": {
+          "provisionCover": {
             "id": "provisionCover",
             "pillar": "health",
             "w": 2,
@@ -5693,7 +5751,7 @@
             "grade": "na",
             "na": true
           },
-          "31": {
+          "costIncome": {
             "id": "costIncome",
             "pillar": "health",
             "w": 2,
@@ -5705,7 +5763,7 @@
             "grade": "na",
             "na": true
           },
-          "32": {
+          "adr": {
             "id": "adr",
             "pillar": "health",
             "w": 2,
@@ -5717,7 +5775,7 @@
             "grade": "na",
             "na": true
           },
-          "33": {
+          "yieldSpread": {
             "id": "yieldSpread",
             "pillar": "income",
             "w": 6,
@@ -5729,7 +5787,7 @@
             "grade": "strong",
             "na": false
           },
-          "34": {
+          "payout": {
             "id": "payout",
             "pillar": "income",
             "w": 2,
@@ -5741,7 +5799,7 @@
             "grade": "poor",
             "na": false
           },
-          "35": {
+          "divCover": {
             "id": "divCover",
             "pillar": "income",
             "w": 2,
@@ -5753,7 +5811,7 @@
             "grade": "strong",
             "na": false
           },
-          "36": {
+          "fcfCoverDiv": {
             "id": "fcfCoverDiv",
             "pillar": "income",
             "w": 2,
@@ -5765,7 +5823,7 @@
             "grade": "strong",
             "na": false
           },
-          "37": {
+          "divYears": {
             "id": "divYears",
             "pillar": "income",
             "w": 1,
@@ -5777,7 +5835,7 @@
             "grade": "strong",
             "na": false
           },
-          "38": {
+          "range52": {
             "id": "range52",
             "pillar": "momentum",
             "w": 2,
@@ -5789,7 +5847,7 @@
             "grade": "weak",
             "na": false
           },
-          "39": {
+          "vsMa200": {
             "id": "vsMa200",
             "pillar": "momentum",
             "w": 3,
@@ -5801,7 +5859,7 @@
             "grade": "poor",
             "na": false
           },
-          "40": {
+          "maCross": {
             "id": "maCross",
             "pillar": "momentum",
             "w": 2,
@@ -5813,7 +5871,7 @@
             "grade": "poor",
             "na": false
           },
-          "41": {
+          "relStrength": {
             "id": "relStrength",
             "pillar": "momentum",
             "w": 3,
@@ -5825,7 +5883,7 @@
             "grade": "poor",
             "na": false
           },
-          "42": {
+          "liquidity": {
             "id": "liquidity",
             "pillar": "momentum",
             "w": 3,
@@ -5837,7 +5895,7 @@
             "grade": "poor",
             "na": false
           },
-          "43": {
+          "freeFloat": {
             "id": "freeFloat",
             "pillar": "momentum",
             "w": 2,
