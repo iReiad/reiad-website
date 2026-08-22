@@ -523,6 +523,17 @@ export function DietBoard() {
                 bn="খরচের সবচেয়ে বড় পরিবর্তনশীল অংশ হাঁটা, আর ডায়েটের সময় এটাই চুপচাপ কমে যায়।"
               />}
         </Widget>
+
+        {/* EVERY PAGE THAT PRINTS A TARGET PRINTS THIS, and this
+            page prints one in the first widget. Section 31's
+            first rule, held on `/you` and on `/goal` and missing
+            here, which is the page a reader actually lands on. */}
+        <p className="dt-w-legal" data-wide>
+          <T
+            en="These numbers are general education and not medical advice. They do not know your history, your medicines or anything a clinician would ask about first."
+            bn="এই সংখ্যাগুলো সাধারণ তথ্যের জন্য, চিকিৎসা পরামর্শ নয়। আপনার রোগের ইতিহাস, ওষুধ বা একজন চিকিৎসক প্রথমেই যা জিজ্ঞেস করতেন, তার কিছুই এগুলো জানে না।"
+          />
+        </p>
       </aside>
     </div>
   );

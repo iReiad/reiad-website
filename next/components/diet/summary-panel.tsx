@@ -42,16 +42,25 @@ import {
 import { Button } from "../ui/button";
 import { ChipButton } from "../ui/chip";
 import { T, digits, useToolLang } from "./lang";
+import { BAND_WORDS, CUTS_WORDS, SEX_WORDS, medWords } from "./words";
 
 /** A row of the sheet. `value` is a string because every one of
     them is already formatted to its own precision by the time it
     gets here, and a number would invite this component to round
     it a second time. */
-function Row({ label, value, note }: { label: React.ReactNode; value: string; note?: React.ReactNode }) {
+function Row({ label, value, note, words }: {
+  label: React.ReactNode;
+  value: React.ReactNode;
+  note?: React.ReactNode;
+  /** A row whose value is words rather than a figure. The mono
+      face is for numbers a clinician compares down a column; a
+      sentence set in it reads as a code. */
+  words?: boolean;
+}) {
   return (
     <div className="dt-sum-row">
       <span className="dt-sum-label">{label}</span>
-      <span className="dt-sum-value mono">{value}</span>
+      <span className={words ? "dt-sum-value" : "dt-sum-value mono"}>{value}</span>
       {note ? <span className="dt-sum-note">{note}</span> : null}
     </div>
   );
@@ -167,18 +176,23 @@ export function SummaryPanel() {
 
         <section className="dt-sum-block">
           <h3><T en="Who" bn="কে" /></h3>
+          {/* NOT A TOKEN, IN EITHER LANGUAGE. This page is the one
+              thing here that gets handed to a stranger, and it
+              printed `raised`, `male form` and `glp1, insulin,
+              steroid` on it. `words.ts` is where the readable
+              spelling of each of those already lives. */}
           {profile?.birth_year
             ? <Row label={<T en="Age" bn="বয়স" />}
-                   value={String(new Date().getUTCFullYear() - profile.birth_year)} />
+                   value={String(new Date().getFullYear() - profile.birth_year)} />
             : null}
           {profile?.height_cm
             ? <Row label={<T en="Height" bn="উচ্চতা" />} value={`${profile.height_cm} cm`} /> : null}
           {profile?.sex
             ? <Row label={<T en="Equations used" bn="যে সূত্র ব্যবহার হয়েছে" />}
-                   value={profile.sex === "male" ? "male form" : "female form"} /> : null}
+                   words value={<T en={SEX_WORDS[profile.sex].en} bn={SEX_WORDS[profile.sex].bn} />} /> : null}
           {profile?.ancestry
             ? <Row label={<T en="BMI cut-offs" bn="বিএমআই সীমা" />}
-                   value={profile.ancestry === "asian" ? "23 / 27.5 (Asian)" : "25 / 30 (general)"} /> : null}
+                   words value={<T en={CUTS_WORDS[profile.ancestry].en} bn={CUTS_WORDS[profile.ancestry].bn} />} /> : null}
         </section>
 
         <section className="dt-sum-block">
@@ -220,7 +234,8 @@ export function SummaryPanel() {
             <Row
               label="BMI"
               value={value.toFixed(1)}
-              note={<T en={bmiBand(value, body.ancestry)} bn={bmiBand(value, body.ancestry)} />}
+              note={<T en={BAND_WORDS[bmiBand(value, body.ancestry)].en}
+                       bn={BAND_WORDS[bmiBand(value, body.ancestry)].bn} />}
             />
             <Row
               label={<T en="Body fat" bn="শরীরের চর্বি" />}
@@ -262,7 +277,11 @@ export function SummaryPanel() {
         {profile?.meds?.length ? (
           <section className="dt-sum-block">
             <h3><T en="Reported medicines" bn="যে ওষুধ জানানো হয়েছে" /></h3>
-            <p className="dt-sum-meds">{profile.meds.join(", ")}</p>
+            <ul className="dt-sum-meds">
+              {profile.meds.map((id) => (
+                <li key={id}><T en={medWords(id).en} bn={medWords(id).bn} /></li>
+              ))}
+            </ul>
           </section>
         ) : null}
 

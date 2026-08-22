@@ -23,7 +23,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  RATES, bmi, fatEstimate, restingBurn, estimatedBurn, activityFactor,
+  RATES, MAX_GAIN_PCT_PER_WEEK, MAX_LOSS_PCT_PER_WEEK,
+  bmi, fatEstimate, restingBurn, estimatedBurn, activityFactor,
   learnedBurn, projection, proteinFloor, slopePerWeek, target, whtr,
   type Body, type Day, type FloorHit, type Point,
 } from "@reiad/shared/diet";
@@ -128,6 +129,16 @@ export function GoalPanel() {
     return { fat, rest, maintenance, t, learned: !!learned };
   }, [body, learned, profile]);
 
+  /* THE RATES OFFERED ARE THE RATES THE DATABASE WILL TAKE.
+     `MAX_GAIN_PCT_PER_WEEK` is 0.5 and there is a constraint on
+     the column saying the same thing, so pressing Fast while
+     gaining wrote 1.0, was refused, and reported Saved. Gaining
+     is capped here and the reason is written under the chips
+     rather than left to a rejected write. */
+  const kind = profile?.goal_kind ?? "maintain";
+  const cap = kind === "gain" ? MAX_GAIN_PCT_PER_WEEK : MAX_LOSS_PCT_PER_WEEK;
+  const offered = useMemo(() => RATES.filter((r) => r.high <= cap), [cap]);
+
   const weeks = useMemo(() => {
     if (!body || !profile?.goal_weight_kg) return null;
     const rate = slopePerWeek(points);
@@ -137,10 +148,16 @@ export function GoalPanel() {
 
   const set = async (patch: Profile): Promise<void> => {
     if (!w) return;
+    const before = profile;
     setProfile((p) => ({ ...(p ?? {}), ...patch }));
     const ok = await saveProfile(w, { ...(profile ?? {}), ...patch });
+    /* PUT IT BACK IF IT DID NOT LAND. The optimistic update left
+       the chip looking pressed until a reload, over a row the
+       database had refused, so the page and the account
+       disagreed and only the page was on screen. */
+    if (!ok) setProfile(before);
     setSaid(ok ? "saved" : "failed");
-    window.setTimeout(() => setSaid(""), 1600);
+    window.setTimeout(() => setSaid(""), ok ? 1600 : 4000);
   };
 
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
@@ -159,7 +176,8 @@ export function GoalPanel() {
     <div className="dt-goal">
       <fieldset className="dt-set">
         <legend><T en="What you are doing" bn="আপনি কী করছেন" /></legend>
-        <div className="dt-tags" role="group" aria-label="Direction">
+        <div className="dt-tags" role="group"
+             aria-label={lang === "bn" ? "দিক" : "Direction"}>
           {(["lose", "maintain", "gain"] as const).map((k) => (
             <ChipButton key={k} pressed={(profile?.goal_kind ?? "maintain") === k}
                         onClick={() => void set({ goal_kind: k })}>
@@ -172,15 +190,25 @@ export function GoalPanel() {
         </div>
 
         {(profile?.goal_kind ?? "maintain") !== "maintain" ? (
-          <div className="dt-tags" role="group" aria-label="Rate">
-            {RATES.map((r) => (
-              <ChipButton key={r.key} pressed={(profile?.goal_rate ?? 0.5) === r.high}
+          <div className="dt-tags" role="group"
+               aria-label={lang === "bn" ? "হার" : "Rate"}>
+            {offered.map((r) => (
+              <ChipButton key={r.key} pressed={Math.min(profile?.goal_rate ?? 0.5, cap) === r.high}
                           onClick={() => void set({ goal_rate: r.high })}>
                 <T en={`${r.en}, ${r.low} to ${r.high}%`}
                    bn={`${r.bn}, ${digits(r.low, "bn")} থেকে ${digits(r.high, "bn")}%`} />
               </ChipButton>
             ))}
           </div>
+        ) : null}
+
+        {kind === "gain" ? (
+          <p className="dt-hint">
+            <T
+              en="Half a percent a week is the ceiling for gaining, and it is not a motivation setting: above roughly that, a surplus adds fat faster than any body adds muscle, whatever the training."
+              bn="বাড়ানোর সর্বোচ্চ হার সপ্তাহে শূন্য দশমিক পাঁচ শতাংশ, আর এটা ইচ্ছার ব্যাপার নয়: এর বেশি হলে যত অনুশীলনই হোক, পেশির চেয়ে চর্বি দ্রুত বাড়ে।"
+            />
+          </p>
         ) : null}
       </fieldset>
 
@@ -211,8 +239,16 @@ export function GoalPanel() {
             />
           </p>
         ) : null}
-        <span className="dt-save" data-state={said ? "saved" : "idle"}>
-          <T en="Saved" bn="জমা হয়েছে" />
+        {/* THE WORD FOLLOWS THE ANSWER. This rendered "Saved"
+            for `said` of any kind, including "failed", so a
+            write the database refused reported success. */}
+        <span className="dt-save" data-state={said || "idle"}
+              role="status" aria-live="polite">
+          {said === "failed"
+            ? <T en="Not saved. Nothing changed." bn="জমা হয়নি। কিছুই বদলায়নি।" />
+            : said === "saved"
+              ? <T en="Saved" bn="জমা হয়েছে" />
+              : null}
         </span>
       </fieldset>
 

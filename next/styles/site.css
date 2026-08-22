@@ -13259,6 +13259,14 @@ German for day, and .tag is what the site has always called
 
   .dt-defs { display: grid; gap: var(--s-3); margin-block: var(--s-4); }
   .dt-defs dt { font-weight: 600; }
+  /* Which of these the reader ticked. A mark, not a filter: the
+     list stays whole. */
+  .dt-yours {
+    font-weight: 400;
+    font-size: var(--t-1);
+    color: var(--accent);
+    margin-inline-start: var(--s-3);
+  }
   .dt-defs dd { margin: 0 0 var(--s-3); color: var(--ink-soft); }
 
   /* ---- today: the log on the left, the board on the upper right ----
@@ -13340,6 +13348,20 @@ German for day, and .tag is what the site has always called
   .dt-w-said { font-size: var(--t-1); color: var(--ink-soft); }
   .dt-w-waiting { font-size: var(--t-1); color: var(--ink-soft); }
 
+  /* The one sentence that has to sit beside a target, wherever a
+     target is printed. Quiet and unmissable are not opposites:
+     it is small, it is not hidden behind anything, and it is not
+     a card, because it is not a reading. */
+  .dt-w-legal {
+    grid-column: 1 / -1;
+    font-size: var(--t-1);
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin: 0;
+    padding-block-start: var(--s-4);
+    border-block-start: 1px solid var(--hairline);
+  }
+
   /* A RING, not a bar. A bar fills and then overflows, and an
      overflowing bar wants to be red. A ring closes. */
   .dt-ring { position: relative; display: block; inline-size: 64px; }
@@ -13386,6 +13408,8 @@ German for day, and .tag is what the site has always called
     transition: opacity 190ms;
   }
   .dt-save[data-state="idle"] { opacity: 0; }
+  /* A refusal is not a quieter success. */
+  .dt-save[data-state="failed"] { color: var(--danger); }
 
   .dt-quick {
     display: grid;
@@ -13678,7 +13702,7 @@ German for day, and .tag is what the site has always called
      A figure whose interval is a footnote is a figure read
      without one. */
   .dt-sum-note { font-size: var(--t-1); color: var(--ink-soft); }
-  .dt-sum-meds { margin: 0; }
+  .dt-sum-meds { margin: 0; padding-inline-start: 1.2em; }
   .dt-sheet-foot { font-size: var(--t-1); color: var(--ink-soft); margin: 0; }
 
   /* On paper: the sheet and nothing else. The rail, the bar, the

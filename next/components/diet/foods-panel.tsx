@@ -34,7 +34,9 @@
    ============================================================ */
 
 import { useMemo, useState } from "react";
-import { FOODS, forPlace, type Portion } from "@reiad/shared/foods";
+import {
+  DEFAULT_PLACE, FOODS, forPlace, type Place, type Portion,
+} from "@reiad/shared/foods";
 import { ChipButton } from "../ui/chip";
 import { T, digits, useToolLang } from "./lang";
 
@@ -64,9 +66,26 @@ const perProtein = (f: Portion): number | null =>
 const money = (n: number): string =>
   n < 10 ? n.toFixed(2) : n < 100 ? n.toFixed(1) : n.toFixed(0);
 
+/** The month a price was checked, drawn WITH the price and never
+    instead of it.
+
+    An undated price is worse than none, which is section 17 and
+    the header above, and this panel drew none of them for its
+    first two releases: the rows carried `pricedOn` and the table
+    printed a figure with nothing to date it. `YYYY-MM` is passed
+    through as it is written rather than made into a month name,
+    because a month name is a third thing to say in two
+    languages. */
+const Priced = ({ on, lang }: { on?: string; lang: "en" | "bn" }) =>
+  (on ? <span className="dt-priced">{digits(on, lang)}</span> : null);
+
 export function FoodsPanel() {
   const lang = useToolLang();
-  const [place, setPlace] = useState<"bd" | "uk">("uk");
+  /* One default, in `shared/foods.ts`. This panel and the
+     picker asked for the UK while the Worker ranked
+     Bangladesh first, which is one reader getting two
+     libraries out of one tool. */
+  const [place, setPlace] = useState<Place>(DEFAULT_PLACE);
   const [q, setQ] = useState("");
 
   const rows = useMemo(() => {
@@ -119,9 +138,13 @@ export function FoodsPanel() {
             <tbody>
               {protein.map(({ f, per }) => (
                 <tr key={f.id}>
-                  <th scope="row">{lang === "bn" ? f.bn : f.en}</th>
+                  <th scope="row">
+                    {lang === "bn" ? f.bn : f.en}
+                    <span className="dt-row-src">{f.source}</span>
+                  </th>
                   <td className="mono">
                     {MONEY[f.currency ?? ""] ?? ""}{digits(money(per), lang)}
+                    <Priced on={f.pricedOn} lang={lang} />
                   </td>
                   <td className="mono">{digits(f.protein.toFixed(1), lang)} g</td>
                 </tr>
@@ -162,13 +185,22 @@ export function FoodsPanel() {
                 <th scope="col">kcal</th>
                 <th scope="col"><T en="Protein" bn="প্রোটিন" /></th>
                 <th scope="col"><T en="Fibre" bn="আঁশ" /></th>
-                <th scope="col"><T en="Price" bn="দাম" /></th>
+                <th scope="col">
+                  <T en="Price, and when it was checked" bn="দাম, আর কবে যাচাই করা" />
+                </th>
               </tr>
             </thead>
             <tbody>
               {rows.map((f) => (
                 <tr key={f.id}>
-                  <th scope="row">{lang === "bn" ? f.bn : f.en}</th>
+                  <th scope="row">
+                    {lang === "bn" ? f.bn : f.en}
+                    {/* WHERE THE FIGURE CAME FROM, on every row.
+                        A number with no source is a number this
+                        tool invented, which is the rule the rows
+                        themselves are written under. */}
+                    <span className="dt-row-src">{f.source}</span>
+                  </th>
                   <td className="mono">{digits(f.kcal, lang)}</td>
                   <td className="mono">{digits(f.protein.toFixed(1), lang)}</td>
                   <td className="mono">{digits(f.fibre.toFixed(1), lang)}</td>
@@ -176,6 +208,7 @@ export function FoodsPanel() {
                     {f.price != null
                       ? `${MONEY[f.currency ?? ""] ?? ""}${digits(money(f.price), lang)}`
                       : "-"}
+                    <Priced on={f.pricedOn} lang={lang} />
                   </td>
                 </tr>
               ))}

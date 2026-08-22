@@ -682,6 +682,31 @@ export type Protocol =
   | "window" | "5:2" | "omad" | "fast" | "ramadan"
   | "maintain" | "gain" | "break";
 
+/** What each one is called, in both languages, once.
+
+    A panel that names three of them and a panel that names a
+    fourth are two tables, and the day they disagree one page
+    calls a thing a fast and another calls it something else. The
+    row is here beside the `WATER` row for the same protocol. */
+export const PROTOCOL_NAMES: Array<{ id: Protocol; en: string; bn: string }> = [
+  { id: "standard",    en: "An ordinary deficit", bn: "সাধারণ ঘাটতি" },
+  { id: "keto",        en: "Keto",                bn: "কিটো" },
+  { id: "lowfat",      en: "Low fat",             bn: "কম চর্বি" },
+  { id: "highprotein", en: "High protein",        bn: "বেশি প্রোটিন" },
+  { id: "med",         en: "Mediterranean",       bn: "ভূমধ্যসাগরীয় ধরন" },
+  { id: "window",      en: "An eating window",    bn: "সময় বেঁধে খাওয়া" },
+  { id: "5:2",         en: "5:2",                 bn: "৫:২" },
+  { id: "omad",        en: "One meal a day",      bn: "দিনে এক বেলা" },
+  { id: "fast",        en: "A complete fast",     bn: "পূর্ণ উপবাস" },
+  { id: "ramadan",     en: "Ramadan",             bn: "রমজান" },
+  { id: "maintain",    en: "Maintaining",         bn: "ধরে রাখা" },
+  { id: "gain",        en: "Gaining",             bn: "ওজন বাড়ানো" },
+  { id: "break",       en: "A diet break",        bn: "বিরতি" },
+];
+
+export const protocolName = (p: Protocol): { en: string; bn: string } =>
+  PROTOCOL_NAMES.find((r) => r.id === p) ?? { en: p, bn: p };
+
 /** Glycogen, in kilograms, scaled to bodyweight rather than
     fixed at "400 to 500 grams", which is a figure for an average
     adult and is a third too high for a 55kg person. Roughly
@@ -844,12 +869,15 @@ export interface Forecast {
   fatShare: number;
   /** Whether that share may be PRINTED.
 
-      False where the model has no water term acting at all,
-      which is `maintain`, `gain` and `break`: there the drop is
-      a bare energy sum and calling it 100% fat would be a claim
-      about the one thing this model cannot see there. A caller
-      that prints `fatShare` without reading this is back to the
-      bug the `WATER` table was written for. */
+      False where the scale MOVES and the model has no water term
+      to explain any of it, which is `maintain`, `gain` and
+      `break`: a surplus refills the store rather than emptying
+      it, so calling the rise 100% fat is a claim about the one
+      thing the model cannot see there. Nothing moving at all is
+      not that case and comes back true.
+
+      A caller that prints `fatShare` without reading this is
+      back to the bug the `WATER` table was written for. */
   fatShareKnown: boolean;
 }
 
@@ -922,7 +950,7 @@ export function forecastChange(c: Change): Forecast {
     scale, fat, water, rebound,
     settling: settlingDays(c.to),
     fatShare: drop > 0 ? Math.min(Math.abs(fat) / drop, 1) : 0,
-    fatShareKnown: drop > 0 && water.mid > 0,
+    fatShareKnown: water.mid > 0 || drop === 0,
   };
 }
 

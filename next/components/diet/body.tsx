@@ -61,6 +61,7 @@ import { Note } from "../ui/note";
 import { Button } from "../ui/button";
 import { getProfile, saveProfile, who, type Profile, type Who } from "../../lib/diet-api";
 import { T, TBlock, digits, useToolLang, type ToolLang } from "./lang";
+import { BAND_WORDS, WHTR_WORDS } from "./words";
 
 /** A number typed into a box, which is a string until it is not.
     Empty is absent rather than zero: a waist of 0 is not a
@@ -72,19 +73,6 @@ const num = (raw: string): number | undefined => {
 
 const round = (n: number, dp = 1): string => n.toFixed(dp);
 
-const BAND_WORDS: Record<string, { en: string; bn: string }> = {
-  under:   { en: "under the healthy range", bn: "স্বাস্থ্যকর সীমার নিচে" },
-  healthy: { en: "in the healthy range", bn: "স্বাস্থ্যকর সীমার মধ্যে" },
-  raised:  { en: "above the healthy range", bn: "স্বাস্থ্যকর সীমার উপরে" },
-  high:    { en: "well above the healthy range", bn: "অনেকটাই উপরে" },
-};
-
-const WHTR_WORDS: Record<string, { en: string; bn: string }> = {
-  low:     { en: "below 0.4", bn: "০.৪ এর নিচে" },
-  healthy: { en: "under 0.5, which is the mark to aim for", bn: "০.৫ এর নিচে, যেটাই লক্ষ্য" },
-  raised:  { en: "0.5 or above", bn: "০.৫ বা তার বেশি" },
-  high:    { en: "0.6 or above", bn: "০.৬ বা তার বেশি" },
-};
 
 export function BodyPanel() {
   /* Only the `<option>` text needs this, and `lang.tsx` says
