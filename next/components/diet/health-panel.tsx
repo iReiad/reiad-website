@@ -30,33 +30,18 @@
    ============================================================ */
 
 import { useEffect, useState } from "react";
-import { getProfile, saveProfile, who, type Profile, type Who } from "../../lib/diet-api";
+import {
+  getLabs, getProfile, isoDate, removeLab, saveLab, saveProfile, who,
+  type Lab, type Profile, type Who,
+} from "../../lib/diet-api";
+import { Button } from "../ui/button";
 import { ChipButton } from "../ui/chip";
+import { Field, Select } from "../ui/field";
 import { Note } from "../ui/note";
-import { T, TBlock, useToolLang } from "./lang";
-import { MEDS } from "./words";
+import { T, TBlock, digits, useToolLang } from "./lang";
+import { MARKERS, MEDS, markerById } from "./words";
 import { Term } from "./glossary";
 
-const MARKERS: Array<{ en: string; bn: string; why: string; whyBn: string }> = [
-  { en: "Blood pressure", bn: "রক্তচাপ",
-    why: "The thing weight loss improves fastest and most reliably. Two numbers, a home cuff, and it responds within weeks.",
-    whyBn: "ওজন কমালে যেটা সবচেয়ে দ্রুত আর নিশ্চিতভাবে ভালো হয়। দুটো সংখ্যা, ঘরের একটা যন্ত্র, আর কয়েক সপ্তাহেই সাড়া দেয়।" },
-  { en: "HbA1c and fasting glucose", bn: "এইচবিএ১সি আর খালি পেটে গ্লুকোজ",
-    why: "Bangladesh has one of the highest diabetes prevalences in the region and much of it is undiagnosed. HbA1c is a three month average, which is exactly the timescale this tool works on.",
-    whyBn: "এই অঞ্চলে ডায়াবেটিসের হার বাংলাদেশে সবচেয়ে বেশির একটি, আর তার অনেকটাই ধরা পড়ে না। এইচবিএ১সি তিন মাসের গড়, আর এই যন্ত্র ঠিক ওই সময়ের মাপেই কাজ করে।" },
-  { en: "The lipid panel", bn: "চর্বির পরীক্ষা",
-    why: "Total, HDL, LDL and triglycerides. The panel that answers the keto argument for you in particular rather than in general, and triglycerides move fast with carbohydrate and with weight.",
-    whyBn: "মোট, এইচডিএল, এলডিএল আর ট্রাইগ্লিসারাইড। কিটো নিয়ে তর্কটা সাধারণভাবে নয়, আপনার বেলায় এই পরীক্ষাই মেটায়, আর ট্রাইগ্লিসারাইড শর্করা আর ওজনের সঙ্গে দ্রুত বদলায়।" },
-  { en: "Liver enzymes", bn: "যকৃতের এনজাইম",
-    why: "Fatty liver is extremely common at these body compositions and improves with loss. ALT is the number that shows it.",
-    whyBn: "এই ধরনের শরীরে ফ্যাটি লিভার খুবই সাধারণ আর ওজন কমলে ভালো হয়। এএলটি সংখ্যাটাই সেটা দেখায়।" },
-  { en: "Haemoglobin and ferritin", bn: "হিমোগ্লোবিন আর ফেরিটিন",
-    why: "The other half of the iron question, and the one that turns it from a guess into a measurement.",
-    whyBn: "আয়রনের প্রশ্নের বাকি অর্ধেক, আর এটাই সেটাকে আন্দাজ থেকে মাপে বদলে দেয়।" },
-  { en: "Thyroid", bn: "থাইরয়েড",
-    why: "An underactive thyroid is a real explanation for a real stall, and it is also the explanation people reach for when it is not the explanation. A logged TSH settles it either way.",
-    whyBn: "থাইরয়েড কম কাজ করা সত্যিই আটকে যাওয়ার একটা কারণ হতে পারে, আবার কারণ না হলেও মানুষ এটাকেই ধরে। একটা টিএসএইচ লিখে রাখলে দুদিকেই মীমাংসা হয়।" },
-];
 
 
 export function HealthPanel() {
@@ -81,6 +66,59 @@ export function HealthPanel() {
   }, [w]);
 
   const taking = new Set(profile?.meds ?? []);
+  /* THE READINGS THEMSELVES, which this page has described and
+     never held. `diet_labs` has had a table, four policies and an
+     index since the migration was written and no reader and no
+     writer at all, while the card on the front door calls these
+     "the only objective measurements in the whole tool". */
+  const [labs, setLabs] = useState<Lab[]>([]);
+  const [marker, setMarker] = useState(MARKERS[0].id);
+  const [value, setValue] = useState("");
+  const [taken, setTaken] = useState(() => isoDate());
+  const [ownLow, setOwnLow] = useState("");
+  const [ownHigh, setOwnHigh] = useState("");
+  const [note, setNote] = useState("");
+  const [said, setSaid] = useState<"" | "saved" | "failed">("");
+
+  useEffect(() => {
+    if (!w) { setLabs([]); return; }
+    let alive = true;
+    void getLabs(w).then((got) => { if (alive) setLabs(got); });
+    return () => { alive = false; };
+  }, [w]);
+
+  const chosen = markerById(marker) ?? MARKERS[0];
+
+  /* THE RANGE ON THE ROW, THE READER'S FIRST. A reference
+     interval is a property of an assay and a population and is
+     printed on the report they are holding; two labs differ by
+     more than the changes this tool would be drawing. The
+     default is offered, the boxes overwrite it, and anything
+     drawn against the default says so. */
+  const add = async (): Promise<void> => {
+    const n = Number(value.trim());
+    if (!w || !value.trim() || !Number.isFinite(n)) return;
+    const saved = await saveLab(w, {
+      takenOn: taken,
+      marker: chosen.id,
+      value: n,
+      unit: chosen.unit,
+      refLow: Number(ownLow) || chosen.low,
+      refHigh: Number(ownHigh) || chosen.high,
+      note: note.trim() || undefined,
+    });
+    if (!saved) { setSaid("failed"); window.setTimeout(() => setSaid(""), 4000); return; }
+    setLabs((prev) => [...prev, saved].sort((a, b) => a.takenOn.localeCompare(b.takenOn)));
+    setValue(""); setOwnLow(""); setOwnHigh(""); setNote("");
+    setSaid("saved");
+    window.setTimeout(() => setSaid(""), 1600);
+  };
+
+  const drop = async (id: string): Promise<void> => {
+    if (!w) return;
+    if (await removeLab(w, id)) setLabs((prev) => prev.filter((l) => l.id !== id));
+  };
+
   const toggle = async (id: string): Promise<void> => {
     if (!w) return;
     const next = new Set(taking);
@@ -100,9 +138,86 @@ export function HealthPanel() {
             bn="বছরে দুবার রক্ত পরীক্ষা হয়, একটা কাগজ হাতে আসে যেটা পড়া যায় না, তারপর সেটা ড্রয়ারে যায়। এই পুরো যন্ত্রের একমাত্র বস্তুনিষ্ঠ মাপ ওগুলোই।"
           />
         </p>
+        {/* WRITE ONE DOWN, which is the whole point of the page.
+            Signed out this is still the list and the reasons: a
+            reader can read what each marker is for without an
+            account, and only keeping one needs a row. */}
+        {answered && w ? (
+          <div className="dt-lab-form">
+            <Select
+              id="dt-lab-marker" value={marker}
+              onChange={(e) => setMarker(e.target.value)}
+              label={<T en="Which number" bn="কোন সংখ্যা" />}
+            >
+              {MARKERS.map((m) => (
+                <option key={m.id} value={m.id}>{lang === "bn" ? m.bn : m.en}</option>
+              ))}
+            </Select>
+            <Field
+              id="dt-lab-value" type="number" inputMode="decimal" step="any"
+              label={<T en={`The reading, ${chosen.unit}`} bn={`মাপ, ${chosen.unit}`} />}
+              value={value} onChange={(e) => setValue(e.target.value)}
+            />
+            <Field
+              id="dt-lab-date" type="date" max={isoDate()}
+              label={<T en="The date on the report" bn="রিপোর্টের তারিখ" />}
+              value={taken} onChange={(e) => setTaken(e.target.value)}
+            />
+            <Field
+              id="dt-lab-note" type="text"
+              label={<T en="A note, if the week was unusual" bn="সপ্তাহটা অন্যরকম হলে একটা নোট" />}
+              hint={(
+                <T
+                  en="Fasting or not, ill, a new medicine. Six months later this is the difference between a reading you can use and one you cannot."
+                  bn="খালি পেটে কি না, অসুস্থ ছিলেন, নতুন ওষুধ। ছয় মাস পরে এই কথাটাই ঠিক করে দেয় মাপটা কাজে লাগবে কি না।"
+                />
+              )}
+              value={note} onChange={(e) => setNote(e.target.value)}
+            />
+            <details className="dt-lab-own">
+              <summary>
+                <T en="My report's own range is different" bn="আমার রিপোর্টের সীমা আলাদা" />
+              </summary>
+              <p className="dt-hint">
+                <T
+                  en={`Left empty this uses ${chosen.from}. A reference interval belongs to the laboratory that ran the test, and two of them differ by more than the changes this tool would be drawing, so the one printed on your report is the one to use.`}
+                  bn={`খালি রাখলে ব্যবহার হবে: ${chosen.from}। রেফারেন্স সীমা যে ল্যাব পরীক্ষা করেছে তার, আর দুই ল্যাবের পার্থক্য এই যন্ত্র যা আঁকবে তার চেয়ে বেশি, তাই আপনার রিপোর্টে ছাপা সীমাটাই ব্যবহার করুন।`}
+                />
+              </p>
+              <div className="dt-lab-range">
+                <Field
+                  id="dt-lab-low" type="number" inputMode="decimal" step="any"
+                  label={<T en="Low" bn="নিচের" />}
+                  value={ownLow} onChange={(e) => setOwnLow(e.target.value)}
+                />
+                <Field
+                  id="dt-lab-high" type="number" inputMode="decimal" step="any"
+                  label={<T en="High" bn="উপরের" />}
+                  value={ownHigh} onChange={(e) => setOwnHigh(e.target.value)}
+                />
+              </div>
+            </details>
+            <div className="dt-lab-go">
+              <Button kind="soft" onClick={() => void add()} disabled={!value.trim()}>
+                <T en="Keep this reading" bn="এই মাপটা রাখুন" />
+              </Button>
+              <span className="dt-save" data-state={said || "idle"}
+                    role="status" aria-live="polite">
+                {said === "failed"
+                  ? <T en="Not saved. Nothing changed." bn="জমা হয়নি। কিছুই বদলায়নি।" />
+                  : said === "saved"
+                    ? <T en="Kept" bn="রাখা হয়েছে" />
+                    : null}
+              </span>
+            </div>
+          </div>
+        ) : null}
+
+        <LabHistory labs={labs} lang={lang} onDrop={drop} />
+
         <dl className="dt-defs">
           {MARKERS.map((m) => (
-            <div key={m.en}>
+            <div key={m.id}>
               <dt><T en={m.en} bn={m.bn} /></dt>
               <dd><T en={m.why} bn={m.whyBn} /></dd>
             </div>
@@ -250,6 +365,103 @@ export function HealthPanel() {
           />
         </Note>
       </section>
+    </div>
+  );
+}
+
+/** WHAT HAS BEEN KEPT, one marker at a time.
+
+    A reading of any of these is a line over time rather than a
+    latest value, and the whole reason a sheet of them goes in a
+    drawer is that one number on one day says almost nothing. So
+    every marker with more than one reading gets the direction it
+    moved, in its own units, and the reader is told which range
+    it is being read against.
+
+    IT NEVER GRADES. No red, no "high", no verdict: `worseHigh`
+    is used to say which way a change went and nothing else.
+    Deciding what a number means about a person is what the
+    appointment is for, and a calculator that did it here would
+    be practising medicine with arithmetic. */
+function LabHistory({ labs, lang, onDrop }: {
+  labs: Lab[];
+  lang: "en" | "bn";
+  onDrop: (id: string) => void;
+}) {
+  if (!labs.length) return null;
+
+  const byMarker = MARKERS
+    .map((m) => ({ m, rows: labs.filter((l) => l.marker === m.id) }))
+    .filter((g) => g.rows.length);
+
+  return (
+    <div className="dt-labs">
+      {byMarker.map(({ m, rows }) => {
+        const last = rows[rows.length - 1];
+        const first = rows[0];
+        const moved = rows.length > 1 ? last.value - first.value : null;
+        const own = last.refLow !== m.low || last.refHigh !== m.high;
+        return (
+          <div className="dt-figure" key={m.id}>
+            <h3><T en={m.en} bn={m.bn} /></h3>
+            <p className="dt-value">
+              <T en={`${last.value} ${last.unit}`}
+                 bn={`${digits(last.value, "bn")} ${last.unit}`} />
+            </p>
+            <p className="dt-said">
+              {moved === null
+                ? <T en={`one reading, ${last.takenOn}`}
+                     bn={`একটি মাপ, ${last.takenOn}`} />
+                : <T
+                    en={`${moved === 0 ? "unchanged" : moved > 0 ? "up" : "down"}`
+                      + `${moved === 0 ? "" : ` ${Math.abs(moved).toFixed(2).replace(/\.?0+$/, "")} ${last.unit}`}`
+                      + ` over ${rows.length} readings since ${first.takenOn}`}
+                    bn={`${first.takenOn} থেকে ${digits(rows.length, "bn")}টি মাপে `
+                      + `${moved === 0 ? "বদলায়নি"
+                        : `${digits(Math.abs(moved).toFixed(2).replace(/\.?0+$/, ""), "bn")} ${last.unit} `
+                          + `${moved > 0 ? "বেড়েছে" : "কমেছে"}`}`}
+                  />}
+            </p>
+            <p className="dt-why">
+              {last.refLow != null || last.refHigh != null ? (
+                <T
+                  en={`Read against ${last.refLow != null && last.refHigh != null
+                    ? `${last.refLow} to ${last.refHigh}`
+                    : last.refLow != null ? `${last.refLow} and above` : `${last.refHigh} and below`}`
+                    + `${own ? ", off your own report." : `, which is this tool's default: ${m.from}.`}`}
+                  bn={`যে সীমার বিপরীতে পড়া হচ্ছে: ${last.refLow != null && last.refHigh != null
+                    ? `${digits(last.refLow, "bn")} থেকে ${digits(last.refHigh, "bn")}`
+                    : last.refLow != null ? `${digits(last.refLow, "bn")} বা তার বেশি`
+                      : `${digits(last.refHigh as number, "bn")} বা তার কম`}`
+                    + `${own ? ", আপনার নিজের রিপোর্ট থেকে।" : `, এটি এই যন্ত্রের ধরে নেওয়া সীমা: ${m.from}।`}`}
+                />
+              ) : (
+                <T en="No range on this one, so it is a figure over time and nothing else."
+                   bn="এটির কোনো সীমা দেওয়া নেই, তাই এটা কেবল সময়ের সঙ্গে একটা সংখ্যা, আর কিছু নয়।" />
+              )}
+            </p>
+            <ul className="dt-lab-rows">
+              {[...rows].reverse().map((l) => (
+                <li key={l.id ?? `${l.takenOn}-${l.value}`}>
+                  <span className="mono">{digits(l.value, lang)}</span>
+                  <span>{l.takenOn}{l.note ? `, ${l.note}` : ""}</span>
+                  {l.id ? (
+                    <button
+                      type="button" className="dt-drop"
+                      onClick={() => onDrop(l.id as string)}
+                      aria-label={lang === "bn"
+                        ? `${l.takenOn} এর ${m.bn} মুছুন`
+                        : `Remove the ${m.en} from ${l.takenOn}`}
+                    >
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
     </div>
   );
 }

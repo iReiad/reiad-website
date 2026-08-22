@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v191: /fallback.css. The clinic's own numbers can be entered
+        and are drawn as a line over time: `diet_labs` had a
+        table, four policies and an index and no reader and no
+        writer at all, while the front door called them the only
+        objective measurements in the tool.
+
    v190: /fallback.css. A section's opening paragraph was set at
         0.66rem, because one class was both a hint beside a box
         and the first thing said about a section. And the rule
@@ -1738,7 +1744,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v190";
+const VERSION = "v191";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

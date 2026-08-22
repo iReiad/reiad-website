@@ -439,6 +439,100 @@ export async function startPhase(w: Who, style: string, on: string): Promise<boo
 }
 
 /* ---------------------------------------------------------- */
+/* the clinic's numbers                                       */
+/* ---------------------------------------------------------- */
+
+/** One reading off one report.
+
+    `ref_low` and `ref_high` are on the ROW rather than derived
+    from the marker, because a reference interval is a property
+    of an assay and a population and is printed on the report the
+    reader is holding. Two labs differ by more than the changes
+    this tool would be drawing, so a figure judged against a
+    borrowed range is a figure judged wrongly. */
+export interface Lab {
+  id?: string;
+  /** The date on the report, not the date it was typed in. */
+  takenOn: string;
+  /** A `MARKERS` id from `components/diet/words.ts`. A stored
+      value: it is in real rows and is renamed the way a storage
+      key is renamed, which is to say not at all. */
+  marker: string;
+  value: number;
+  unit: string;
+  refLow?: number;
+  refHigh?: number;
+  note?: string;
+}
+
+interface LabRow {
+  id?: string;
+  taken_on: string;
+  marker: string;
+  value: number;
+  unit: string;
+  ref_low?: number | null;
+  ref_high?: number | null;
+  note?: string | null;
+}
+
+const toLab = (r: LabRow): Lab => ({
+  id: r.id,
+  takenOn: r.taken_on,
+  marker: r.marker,
+  value: Number(r.value),
+  unit: r.unit,
+  refLow: r.ref_low ?? undefined,
+  refHigh: r.ref_high ?? undefined,
+  note: r.note ?? undefined,
+});
+
+/** Everything, oldest first, because every reading of these is a
+    line over time rather than a latest value. There are a dozen
+    markers and a person is tested twice a year, so the whole
+    history is smaller than one day of food. */
+export async function getLabs(w: Who): Promise<Lab[]> {
+  const r = await call<LabRow[]>(
+    `diet_labs?user_id=eq.${w.id}&select=*&order=taken_on.asc&limit=500`,
+    { method: "GET" }, w,
+  );
+  return r.ok && r.data ? r.data.map(toLab) : [];
+}
+
+export async function saveLab(w: Who, lab: Lab): Promise<Lab | null> {
+  const row: LabRow & { user_id: string } = {
+    user_id: w.id,
+    taken_on: lab.takenOn,
+    marker: lab.marker,
+    value: lab.value,
+    unit: lab.unit,
+    ref_low: lab.refLow ?? null,
+    ref_high: lab.refHigh ?? null,
+    note: lab.note ?? null,
+  };
+  const r = await call<LabRow[]>("diet_labs", {
+    method: "POST",
+    headers: { prefer: "return=representation" },
+    body: JSON.stringify(row),
+  }, w);
+  if (!r.ok && r.status === 0) {
+    queue(async () => (await call("diet_labs", {
+      method: "POST",
+      headers: { prefer: "return=minimal" },
+      body: JSON.stringify(row),
+    }, w)).ok);
+  }
+  return r.ok && r.data?.length ? toLab(r.data[0]) : null;
+}
+
+/** A number typed off the wrong line of a report is worse than
+    no number, so it has to be removable. */
+export async function removeLab(w: Who, id: string): Promise<boolean> {
+  const r = await call(`diet_labs?id=eq.${id}`, { method: "DELETE" }, w);
+  return r.ok;
+}
+
+/* ---------------------------------------------------------- */
 /* dates, said once                                           */
 /* ---------------------------------------------------------- */
 

@@ -618,7 +618,6 @@ const UNUSED: Record<string, string> = {
   "diet_foods.currency": "section 17, the same figure in taka or in pounds",
   "diet_foods.priced_on": "section 17, and an undated price is worse than none",
   "diet_foods.fetched_on": "section 12, so a stale figure can be found and refreshed deliberately",
-  "diet_labs.*": "section 20, the numbers a clinic gives you",
 };
 
 const used = new Set<string>();

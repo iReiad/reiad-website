@@ -14048,6 +14048,51 @@ German for day, and .tag is what the site has always called
 
   @media print { .dt-nearby { display: none; } }
 
+  /* ---- the clinic's own numbers ---- */
+
+  .dt-lab-form {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    align-items: end;
+    margin-block-end: var(--step);
+  }
+  /* The two that are a whole row: the override, which is folded
+     away because it is the uncommon case, and the button. */
+  .dt-lab-own, .dt-lab-go { grid-column: 1 / -1; }
+  .dt-lab-own summary { cursor: pointer; font-size: var(--t-1); color: var(--ink-soft); }
+  .dt-lab-range {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    margin-block-start: var(--s-4);
+    max-inline-size: 24rem;
+  }
+  .dt-lab-go { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; }
+
+  .dt-labs {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    margin-block-end: var(--step);
+  }
+
+  /* Every reading, newest first, under the figure it belongs to.
+     A number on one day says almost nothing, which is the whole
+     reason a sheet of these ends up in a drawer. */
+  .dt-lab-rows {
+    list-style: none; margin: var(--s-4) 0 0; padding: 0;
+    display: grid; gap: var(--s-2);
+    font-size: var(--t-1);
+  }
+  .dt-lab-rows li {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--s-3);
+    align-items: baseline;
+    color: var(--ink-soft);
+  }
+
   .dt-symptoms, .dt-diary { max-inline-size: 70ch; }
 
   .dt-invite { display: grid; gap: var(--s-5); max-inline-size: 52ch; justify-items: start; }
