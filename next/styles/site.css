@@ -13074,7 +13074,15 @@ German for day, and .tag is what the site has always called
      clearance and not room: measured, the routine's heading sits
      at 140 and this one sat at 72, a hair below a bar it shows
      through. */
-  .dt-page { padding-block: var(--step); }
+  /* IT HAS TO BE ABLE TO SHRINK TO ITS COLUMN. `main` is an item
+     in the shell's column, and an item's `min-inline-size: auto`
+     is its content's min-content size, so the strip of fourteen
+     tabs pushed the whole page 83px past the column and the site
+     grew a horizontal scrollbar: the language switch and the
+     right-hand end of every panel sat off the screen at 1280.
+     The strip already scrolls inside itself; this is what lets
+     it. */
+  .dt-page { padding-block: var(--step); min-inline-size: 0; }
 
   .dt-head { margin-block-end: var(--s-6); }
 
@@ -13096,6 +13104,16 @@ German for day, and .tag is what the site has always called
     gap: var(--s-2);
     flex-wrap: nowrap;
     overflow-x: auto;
+    /* AND IT MUST NOT WIDEN THE PAGE. `overflow-x: auto` zeroes
+       the min-content contribution of a FLEX ITEM and not of a
+       block in normal flow, so fourteen tabs set this strip's
+       min-content to 1227px, `main.wrap` is `fit-content` because
+       its auto inline margins opt it out of stretch, and the
+       whole page went 83px past its column: a horizontal
+       scrollbar on the site, the language switch off the right
+       edge, and every panel below it clipped. `contain` is what
+       actually says "size me from my parent, not my contents". */
+    contain: inline-size;
     scrollbar-width: none;
     scroll-snap-type: x proximity;
     position: sticky;

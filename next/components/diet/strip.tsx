@@ -27,7 +27,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { DIET_HOME, DIET_PAGES, DIET_TONE } from "../../lib/diet-pages";
 import { T, useToolLang } from "./lang";
 
@@ -55,6 +55,21 @@ export function DietStrip() {
     e.preventDefault();
     links[next].focus();
   }, []);
+
+  /* THE TAB YOU ARE ON HAS TO BE ON SCREEN. The strip is wider
+     than its column and scrolls, so from the twelfth page of
+     fourteen a reader saw eleven grey tabs and no lit one, which
+     reads as a strip that has lost track of where they are.
+
+     `inline: "center"` rather than `"nearest"`, because nearest
+     leaves the current tab flush against an edge where it looks
+     like the end of the list. `block: "nearest"` so scrolling the
+     strip does not scroll the page under a sticky bar, which is
+     the bug the account page's tab strip was caught by. */
+  useEffect(() => {
+    const here = bar.current?.querySelector<HTMLAnchorElement>('[aria-current="page"]');
+    here?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [path]);
 
   /* A trailing slash is the same address. `bare()` in `worker.js`
      takes one off before the route table is consulted, so a

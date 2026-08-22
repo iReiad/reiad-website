@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v189: /fallback.css. The diet tool went 83px past its column
+        and the site grew a horizontal scrollbar: a strip that
+        scrolls inside itself still contributes its content width
+        to a block in normal flow, and `contain` is what says
+        otherwise.
+
    v188: /fallback.css. Every page of the diet tool has its own
         colour out of the seven the rail already uses, the strip
         carries a dot in each, an empty readout draws the figures
@@ -1725,7 +1731,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v188";
+const VERSION = "v189";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

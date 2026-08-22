@@ -8420,7 +8420,7 @@
   :root[data-tool-lang="bn"] span.t-en,
   :root:not([data-tool-lang="bn"]) span.t-bn { display: none; }
 
-  .dt-page { padding-block: var(--step); }
+  .dt-page { padding-block: var(--step); min-inline-size: 0; }
 
   .dt-head { margin-block-end: var(--s-6); }
 
@@ -8429,6 +8429,8 @@
     gap: var(--s-2);
     flex-wrap: nowrap;
     overflow-x: auto;
+
+    contain: inline-size;
     scrollbar-width: none;
     scroll-snap-type: x proximity;
     position: sticky;
