@@ -24,9 +24,10 @@
    scale about 3.6kg and under a quarter of it is fat.
    ============================================================ */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
-  UNLOCKS, forecastChange, settlingDays, slopePerWeek, trend,
+  UNLOCKS, bandsFor, forecastChange, hourlyArc, settlingDays,
+  slopePerWeek, trend,
   type Day, type Point, type Protocol,
 } from "@reiad/shared/diet";
 import { who, getDays, dayNumber, isoDate, shiftDate, type Who } from "../../lib/diet-api";
@@ -217,6 +218,8 @@ export function ExpectPanel() {
                bn="৮০ কেজি শরীর আর দিনে ২,৫০০ ধরে হিসাব করা, কারণ আপনি এখনো ওজন লেখেননি। একটা লিখলেই এটা আপনার হয়ে যাবে।" />
           </p>
         ) : null}
+
+        <HourByHour what={what} kg={kg} burn={burn} lang={lang} />
       </section>
 
       <section aria-labelledby="dt-unlock-h">
@@ -234,6 +237,106 @@ export function ExpectPanel() {
           ))}
         </ul>
       </section>
+    </div>
+  );
+}
+
+/* ============================================================
+   The first week, hour by hour.
+
+   The weekly table above is right and too coarse for the days
+   that decide whether somebody carries on. The fat SHARE column
+   is the point of the whole thing: it starts near nothing and
+   climbs all week, and a reader who can see that at hour twelve
+   does not read a two kilo drop as two kilos of fat, and does
+   not read day four's much smaller movement as the diet having
+   stopped working.
+
+   A BAR rather than a bare percentage on that column, because
+   the shape of it climbing IS the message and a column of
+   numbers hides a shape.
+   ============================================================ */
+function HourByHour({ what, kg, burn, lang }: {
+  what: Protocol; kg: number; burn: number; lang: "en" | "bn";
+}) {
+  const [step, setStep] = useState(12);
+  const arc = useMemo(() => hourlyArc({
+    from: null, to: what, days: 7, weightKg: kg, burn,
+    intake: what === "fast" ? 0 : burn - 500,
+  }, step), [what, kg, burn, step]);
+
+  const bands = bandsFor(what);
+  const lowest = Math.min(...arc.map((p) => p.scale.mid));
+  const endShare = Math.round((arc[arc.length - 1]?.fatShare ?? 0) * 100);
+
+  return (
+    <div className="dt-hours">
+      <div className="dt-hours-head">
+        <h3><T en="The first week, hour by hour" bn="প্রথম সপ্তাহ, ঘণ্টায় ঘণ্টায়" /></h3>
+        <div className="dt-tags" role="group" aria-label="How fine">
+          {[6, 12, 24].map((n) => (
+            <ChipButton key={n} pressed={step === n} onClick={() => setStep(n)}>
+              <T en={`every ${n}h`} bn={`প্রতি ${digits(n, "bn")} ঘণ্টা`} />
+            </ChipButton>
+          ))}
+        </div>
+      </div>
+
+      <p className="dt-hint">
+        <T
+          en="Everything that makes week one confusing happens inside the first seventy-two hours. Watch the last column: it starts near nothing and climbs all week, which is the whole reason a big early drop and a small later one can mean the same thing."
+          bn="প্রথম সপ্তাহকে যা কিছু বিভ্রান্তিকর করে তার সবই প্রথম বাহাত্তর ঘণ্টার মধ্যে ঘটে। শেষ কলামটা দেখুন: শুরুতে প্রায় শূন্য, তারপর সারা সপ্তাহ ধরে বাড়ে, আর এই কারণেই শুরুর বড় কমা আর পরের ছোট কমা একই কথা বলতে পারে।"
+        />
+      </p>
+
+      <div className="dt-table-wrap">
+        <table className="dt-table dt-hours-table">
+          <thead>
+            <tr>
+              <th scope="col"><T en="Hour" bn="ঘণ্টা" /></th>
+              <th scope="col"><T en="What is happening" bn="কী ঘটছে" /></th>
+              <th scope="col"><T en="Scale" bn="দাঁড়িপাল্লা" /></th>
+              <th scope="col"><T en="Fat" bn="চর্বি" /></th>
+              <th scope="col"><T en="Of the drop, fat" bn="কমার মধ্যে চর্বি" /></th>
+            </tr>
+          </thead>
+          <tbody>
+            {arc.map((p) => {
+              const band = bands.find((b) => p.hour >= b.from && p.hour < b.to);
+              const opens = !!band && p.hour === band.from;
+              return (
+                <tr key={p.hour} data-opens={opens ? "" : undefined}>
+                  <th scope="row" className="mono">
+                    {p.hour < 48
+                      ? <T en={`${p.hour}h`} bn={`${digits(p.hour, "bn")} ঘ`} />
+                      : <T en={`day ${Math.round(p.hour / 24)}`}
+                           bn={`${digits(Math.round(p.hour / 24), "bn")} দিন`} />}
+                  </th>
+                  <td className="dt-why">
+                    {opens && band ? <T en={band.en} bn={band.bn} /> : null}
+                  </td>
+                  <td className="mono">{digits(p.scale.mid.toFixed(2), lang)}</td>
+                  <td className="mono">{digits(p.fat.toFixed(2), lang)}</td>
+                  <td className="dt-hours-share">
+                    <span
+                      className="dt-hours-bar"
+                      style={{ "--share": `${Math.round(p.fatShare * 100)}%` } as CSSProperties}
+                    />
+                    <span className="mono">{digits(Math.round(p.fatShare * 100), lang)}%</span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="dt-why">
+        <T
+          en={`At its lowest the scale reads about ${lowest.toFixed(1)} kg down, and about ${endShare}% of that is fat by the end of the week. The rest comes back when ordinary eating does, and the tool will not call that a gain.`}
+          bn={`সবচেয়ে কমে দাঁড়িপাল্লা প্রায় ${digits(lowest.toFixed(1), "bn")} কেজি নিচে দেখাবে, আর সপ্তাহের শেষে তার প্রায় ${digits(endShare, "bn")}% চর্বি। বাকিটা স্বাভাবিক খাওয়া ফিরলেই ফিরে আসে, আর যন্ত্রটি সেটাকে বাড়া বলবে না।`}
+        />
+      </p>
     </div>
   );
 }

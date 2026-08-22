@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v181: /fallback.css. The expect page's first week, hour by
+        hour, with the fat share drawn as a bar beside its own
+        number: it starts near nothing and climbs all week, and
+        the shape of that climbing is what stops a two kilo drop
+        reading as two kilos of fat.
+
    v180: /fallback.css. The diet pages had `main section`'s own
         top padding on top of a grid gap already spacing them,
         which measured about 130px of nothing between a lede and
@@ -1679,7 +1685,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v180";
+const VERSION = "v181";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

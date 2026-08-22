@@ -13461,6 +13461,39 @@ German for day, and .tag is what the site has always called
   .dt-tag-counts li { grid-template-columns: 1fr auto; }
   .dt-weekdays li { grid-template-columns: 1fr auto; }
 
+  /* ---- the first week, hour by hour ----
+
+     A band opens on the row where it starts, and that row gets a
+     rule above it and the accent on its hour. The mechanism is
+     what a reader is missing, so the row that names one is the
+     row that should catch the eye. */
+  .dt-hours { display: grid; gap: var(--s-5); }
+  .dt-hours-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: var(--s-4); flex-wrap: wrap;
+  }
+  .dt-hours-head h3 { margin: 0; }
+
+  .dt-hours-table tr[data-opens] > * { border-block-start: 1px solid var(--hairline); }
+  .dt-hours-table tr[data-opens] > th[scope="row"] { color: var(--accent); font-weight: 600; }
+  .dt-hours-table td.dt-why { max-inline-size: 34ch; }
+
+  /* The share column is a BAR as well as a number, because the
+     shape of it climbing all week IS the message and a column of
+     percentages hides a shape. */
+  .dt-hours-share {
+    display: flex; align-items: center; gap: var(--s-3);
+    white-space: nowrap;
+  }
+  .dt-hours-bar {
+    flex: 0 0 auto;
+    inline-size: 54px; block-size: 6px;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(to right,
+      var(--accent) 0 var(--share, 0%),
+      var(--hairline) var(--share, 0%) 100%);
+  }
+
   .dt-symptoms, .dt-diary { max-inline-size: 70ch; }
 
   .dt-invite { display: grid; gap: var(--s-5); max-inline-size: 52ch; justify-items: start; }

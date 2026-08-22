@@ -205,6 +205,11 @@ let bad = 0;
    than the rule. */
 
 const NOT_GLASS = new Map<string, string>([
+  /* A MARK, six pixels tall: it is the fat share drawn as a
+     line, and a bevel on it would be detail nobody can resolve.
+     The groove kind exists for a track somebody aims at, and
+     nobody aims at this. */
+  ["dt-hours-bar", "a mark: 6px tall, read at a glance beside its own number, never pressed"],
   /* A MARK, ten pixels tall and fourteen of them in a row: a
      bevel on one is detail nobody can resolve, and the strip
      reads as a calendar rather than as fourteen small panes. */

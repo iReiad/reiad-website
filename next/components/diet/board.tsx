@@ -29,7 +29,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  UNLOCKS, streak, totalFor, trend, slopePerWeek, learnedBurn,
+  UNLOCKS, dayPace, streak, totalFor, trend, slopePerWeek, learnedBurn,
   restingBurn, estimatedBurn, activityFactor, target, fatEstimate,
   proteinFloor, whtr, bmi,
   type Body, type Day, type Entry, type Point,
@@ -93,6 +93,16 @@ export function DietBoard() {
   const todayEntries = useMemo(
     () => entries.filter((e) => e.date === today), [entries, today],
   );
+
+  /* The hour, refreshed on a timer so the pace below moves with
+     the day rather than with the last render. A minute is fine:
+     nothing here changes faster than that, and a second would be
+     a re-render a second for a number that shows hours. */
+  const [hourNow, setHourNow] = useState(() => new Date().getHours());
+  useEffect(() => {
+    const tick = window.setInterval(() => setHourNow(new Date().getHours()), 60000);
+    return () => window.clearInterval(tick);
+  }, []);
   const totals = useMemo(() => totalFor(todayEntries), [todayEntries]);
   const run = useMemo(() => streak(days, today), [days, today]);
 
@@ -141,6 +151,25 @@ export function DietBoard() {
     };
   }, [body, learned, profile]);
 
+  /* WHERE TODAY IS GOING, from the reader's OWN distribution of
+     intake across the day rather than an assumed one. `dayPace()`
+     says at length why: if three quarters of your calories
+     usually land after six, then 900 at lunchtime is not most of
+     the day, and a tool that implied it was would be telling
+     somebody they had failed by one o'clock. */
+  const pace = useMemo(() => {
+    const at = (e: Entry): number => {
+      const t = e.meal ?? "";
+      const h = /^(\d{1,2}):/.exec(t);
+      return h ? Number(h[1]) : 12;
+    };
+    return dayPace({
+      history: entries.filter((e) => e.date !== today).map((e) => ({ hour: at(e), kcal: e.kcal ?? 0 })),
+      today: todayEntries.map((e) => ({ hour: at(e), kcal: e.kcal ?? 0 })),
+      hourNow,
+    });
+  }, [entries, todayEntries, today, hourNow]);
+
   const goal = useMemo(() => {
     if (!body || !burn) return null;
     return target({
@@ -166,7 +195,14 @@ export function DietBoard() {
   const log = useCallback(async (e: Omit<Entry, "date">) => {
     if (!w) return;
     setSaving("saving");
-    const saved = await addEntry(w, { ...e, date: today });
+    /* The hour it was eaten, so `dayPace()` and the by-hour
+       reading have something to work from. Written as the meal
+       label because that is the column that exists; a page that
+       invented a field the table does not have would save and
+       silently drop it. */
+    const stamp = new Date();
+    const at = `${String(stamp.getHours()).padStart(2, "0")}:${String(stamp.getMinutes()).padStart(2, "0")}`;
+    const saved = await addEntry(w, { ...e, date: today, meal: e.meal ?? at });
     if (saved) setEntries((prev) => [...prev, saved]);
     const after = totalFor([...todayEntries, { ...e, date: today }]);
     await write({ kcal: Math.round(after.kcal), proteinG: after.protein,
@@ -246,6 +282,29 @@ export function DietBoard() {
                 />
               : null}
           </span>
+        </Widget>
+
+        {/* WHERE THE DAY IS GOING, live. It appears only once
+            there is enough history to know this reader's own
+            shape, because a projection from an assumed shape is
+            a projection from somebody else's day. */}
+        <Widget href="/tools/diet/nutrition" title={<T en="Where today lands" bn="আজ কোথায় গিয়ে দাঁড়াবে" />}>
+          {pace
+            ? (
+              <>
+                <span className="dt-w-big mono">{digits(Math.round(pace.landing), lang)}</span>
+                <span className="dt-w-said">
+                  <T
+                    en={`if today goes the way your days usually go. ${Math.round(pace.usualShare * 100)}% of a day is normally in by now.`}
+                    bn={`আপনার দিন সাধারণত যেভাবে যায় সেভাবে গেলে। এই সময়ের মধ্যে সাধারণত দিনের ${digits(Math.round(pace.usualShare * 100), "bn")}% হয়ে যায়।`}
+                  />
+                </span>
+              </>
+            )
+            : <Waiting
+                en="A few weeks of logging shows when your calories actually land, and then this can say where the day is going."
+                bn="কয়েক সপ্তাহ লিখলে বোঝা যায় আপনার ক্যালোরি আসলে কখন আসে, তখন এটা বলতে পারবে দিনটা কোথায় গিয়ে দাঁড়াবে।"
+              />}
         </Widget>
 
         {/* The streak. It counts SHOWING UP, never hitting a
