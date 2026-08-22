@@ -1,0 +1,174 @@
+#!/usr/bin/env node
+/* ============================================================
+   export-stock-fixtures.ts: the stock model's answers, frozen.
+
+       node scripts/export-stock-fixtures.ts          write them
+       node scripts/export-stock-fixtures.ts --check  fail on drift
+
+   ---- why this exists ----
+
+   `aab/tools/stock.model.js` is twelve hundred lines of
+   arithmetic and judgement: forty-four metrics, six pillars,
+   vetoes, flags, Altman, Piotroski, a fair value, a Shariah
+   screen and a verdict band. The Android app has to produce the
+   SAME answers, and two implementations of a model this size do
+   not stay in step by being written carefully. They stay in step
+   by one of them being checked against the other's output.
+
+   So this runs the model over a set of companies and writes down
+   what it said. The app's own test reads the same file and
+   asserts the same numbers, which means a change to a threshold
+   here fails a test there rather than quietly giving two readers
+   two different verdicts on the same company.
+
+   ---- what the cases are ----
+
+   Not random. Each one is a shape the model has a branch for: a
+   bank (where half the ratios are meaningless and the financial
+   path takes over), a company with no prior year (where the trend
+   metrics must report "not testable" rather than scoring zero), a
+   loss-maker, a company with no dividend, and one carrying enough
+   debt to trip the vetoes. A fixture set that only holds healthy
+   pharma companies proves that the happy path agrees and nothing
+   else.
+
+   `--check` is what CI runs, and it fails on a difference rather
+   than rewriting: a generated file that quietly regenerates is a
+   generated file that never disagrees with anything.
+   ============================================================ */
+
+import { readFileSync, writeFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const OUT = join(ROOT, "content", "stock.fixtures.json");
+
+const M = await import(join(ROOT, "aab", "tools", "stock.model.js"));
+
+/** The companies, and what each one is FOR. */
+const CASES: Array<{ name: string; why: string; input: Record<string, unknown> }> = [
+  {
+    name: "healthy-pharma",
+    why: "the defaults: everything present, nothing extreme",
+    input: {},
+  },
+  {
+    name: "bank",
+    why: "the financial path, where half the ordinary ratios do not apply "
+      + "and the sector extras take over",
+    input: {
+      sector: "bank", car: 13.5, npl: 4.2, provisionCover: 85, costIncome: 52, adr: 78,
+      revenue: 42000, grossProfit: 42000, inventory: 0, capex: 900,
+    },
+  },
+  {
+    name: "no-prior-year",
+    why: "every trend metric and the whole Piotroski score must report "
+      + "NOT TESTABLE rather than scoring a zero, which is the difference "
+      + "between 'we cannot tell' and 'it is bad'",
+    input: {
+      revenuePrev: 0, grossProfitPrev: 0, netIncomePrev: 0, totalAssetsPrev: 0,
+      currentAssetsPrev: 0, currentLiabilitiesPrev: 0, totalDebtPrev: 0,
+      cfoPrev: 0, sharesPrev: 0, netIncome3y: 0,
+    },
+  },
+  {
+    name: "loss-maker",
+    why: "a negative bottom line, where a P/E is meaningless and several "
+      + "ratios divide by something that is not there",
+    input: {
+      netIncome: -4200, ebit: -1800, netIncomePrev: 900, cfo: -600,
+      dps: 0, yearsPaid: 0,
+    },
+  },
+  {
+    name: "no-dividend",
+    why: "the income pillar with nothing in it, which must not read as a "
+      + "failure on a company that has never claimed to pay one",
+    input: { dps: 0, yearsPaid: 0, divTax: 0 },
+  },
+  {
+    name: "heavily-indebted",
+    why: "the vetoes and the flags, which is the half of this model that "
+      + "overrides a score rather than contributing to it",
+    input: {
+      totalDebt: 96000, equity: 21000, currentLiabilities: 61000, cash: 900,
+      interestExpense: 9800, ebit: 8100, reserves: 4000, cfo: 2100,
+    },
+  },
+  {
+    name: "tiny-illiquid",
+    why: "a Z category company nobody trades, where liquidity and float "
+      + "are the things that actually decide the answer",
+    input: {
+      category: "Z", turnover: 0.4, freeFloat: 6, shares: 90, price: 11,
+      high52: 34, low52: 9, ma50: 12, ma200: 19,
+      stockReturn12m: -46, indexReturn12m: 7,
+    },
+  },
+];
+
+/** Everything the model says about one company. */
+function verdict(input: Record<string, unknown>) {
+  const d = { ...M.DEFAULTS, ...input };
+  const r = M.ratios(d);
+  const scored = M.scoreMetrics(d, r);
+  const pillars = M.scorePillars(scored);
+  const weights = M.WEIGHT_PRESETS.balanced;
+  const score = M.composite(pillars, weights);
+
+  return {
+    ratios: r,
+    /* The metric scores by id, so a renamed metric shows up as a
+       missing key rather than as a shifted array. */
+    scored: Object.fromEntries(
+      Object.entries(scored).map(([id, v]) => [id, v]),
+    ),
+    pillars,
+    score,
+    grade: M.grade(score),
+    band: M.bandFor(score),
+    flags: M.checkFlags(d, r),
+    signals: M.signals(d, r, pillars),
+    altman: M.altman(d),
+    piotroski: M.piotroski(d, r),
+    fairValue: M.fairValue(d, r),
+    shariah: M.shariahScreen(d, r),
+    drags: M.drags(scored, pillars, weights),
+    priceCap: M.priceCap(pillars),
+  };
+}
+
+const built = {
+  /* No timestamp, deliberately, and for the reason
+     `content/schools.backup.json` carries none: identical content
+     has to be identical bytes, so the git log answers "did the
+     model change" rather than "was this regenerated". */
+  cases: CASES.map((c) => ({
+    name: c.name,
+    why: c.why,
+    input: c.input,
+    out: verdict(c.input),
+  })),
+};
+
+const text = `${JSON.stringify(built, null, 2)}\n`;
+
+if (process.argv.includes("--check")) {
+  const have = readFileSync(OUT, "utf8");
+  if (have === text) {
+    console.log(`stock fixtures: ${built.cases.length} cases, unchanged.`);
+    process.exit(0);
+  }
+  console.error("\n  x content/stock.fixtures.json is not what the model produces.");
+  console.error("        Either the model changed and the fixtures were not regenerated,");
+  console.error("        or the fixtures were edited by hand. Run:");
+  console.error("          node scripts/export-stock-fixtures.ts");
+  console.error("        and read the diff: every line of it is a number the Android app");
+  console.error("        is asserting, so a change here is a change there.\n");
+  process.exit(1);
+}
+
+writeFileSync(OUT, text);
+console.log(`stock fixtures: ${built.cases.length} cases written to content/stock.fixtures.json`);
