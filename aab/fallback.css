@@ -6,7 +6,7 @@
    a stylesheet whose name carries a hash. Edit the source and run
    the generator. */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, admin, glow, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, diet, admin, glow, utilities;
 
 @layer tokens {
 
@@ -8136,7 +8136,7 @@
   :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
-      .tracker, .tag-waehler, .buch-tag,
+      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
@@ -8150,7 +8150,7 @@
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
       .news-window, .preflight, .slash-menu, .studio-tools,
-      .course-rail, .csv-panel, .deck-foot, .toast) {
+      .course-rail, .csv-panel, .deck-foot, .toast, .dt-set, .dt-lang) {
     &:hover, &:focus-visible, &:focus-within {
       --glow-a: 1;
       --glow-fade: 190ms;
@@ -8166,7 +8166,7 @@
   :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
-      .tracker, .tag-waehler, .buch-tag) {
+      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn) {
     --depth: 1; --polish: 0.94; --clarity: 0.78; --standing: 0.3;
   }
 
@@ -8189,11 +8189,12 @@
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
       .news-window, .preflight, .slash-menu, .studio-tools,
-      .course-rail, .csv-panel, .deck-foot, .toast) {
+      .course-rail, .csv-panel, .deck-foot, .toast, .dt-set, .dt-lang) {
     --depth: 9; --polish: 0.3; --clarity: 0.3; --standing: 1;
   }
 
-  :is(.tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
+  :is(.dt-figure,
+      .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
@@ -8253,7 +8254,7 @@
   :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
-      .tracker, .tag-waehler, .buch-tag,
+      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
@@ -8267,7 +8268,8 @@
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
       .news-window, .preflight, .slash-menu, .studio-tools,
-      .course-rail, .csv-panel, .deck-foot, .toast,
+      .course-rail, .csv-panel, .deck-foot, .toast, .dt-set, .dt-lang,
+      .dt-figure,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
@@ -8401,4 +8403,161 @@
   .ad-dot[data-state="down"] { background: var(--danger); }
   .ad-row[data-state="up"] .ad-dot { background: var(--accent); }
   .ad-row[data-state="down"] .ad-dot { background: var(--danger); }
+}
+
+@layer diet {
+  :root[data-tool-lang="bn"] .t-en,
+  :root:not([data-tool-lang="bn"]) .t-bn { display: none; }
+
+  .t-bn { line-height: 1.9; text-transform: none; letter-spacing: 0; }
+  .t-en { line-height: inherit; }
+
+  span.t-en, span.t-bn { display: inline; }
+  :root[data-tool-lang="bn"] span.t-en,
+  :root:not([data-tool-lang="bn"]) span.t-bn { display: none; }
+
+  .dt-page { padding-block: var(--step); }
+
+  .dt-head { margin-block-end: var(--step); }
+
+  .dt-head-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+  }
+
+  .dt-lede { color: var(--ink-soft); max-inline-size: 60ch; }
+
+  .dt-lang {
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-pill);
+    background: var(--panel);
+  }
+
+  .dt-lang-btn {
+    font: inherit;
+    font-size: var(--t-1);
+    padding: var(--s-2) var(--s-3);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+
+  .dt-lang-btn[aria-pressed="true"] {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .dt-body {
+    display: grid;
+    gap: var(--step);
+    grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  @media (width < 56rem) { .dt-body { grid-template-columns: 1fr; } }
+
+  .dt-form { display: grid; gap: var(--step); align-content: start; }
+
+  .dt-set {
+    display: grid;
+    gap: var(--s-4);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    padding: var(--s-5);
+    background: var(--panel);
+  }
+
+  .dt-set legend {
+    font-size: var(--t-1);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    padding-inline: var(--s-2);
+  }
+
+  .dt-hint { font-size: var(--t-1); color: var(--ink-soft); }
+
+  .dt-readout {
+    display: grid;
+    gap: var(--s-4);
+
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    align-items: start;
+  }
+
+  .dt-readout-waiting { display: block; color: var(--ink-soft); }
+
+  .dt-figure {
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    padding: var(--s-5);
+    background: var(--panel);
+  }
+
+  .dt-figure-lead {
+    grid-column: 1 / -1;
+    border-inline-start: 3px solid var(--accent);
+  }
+
+  .dt-figure-empty { color: var(--ink-soft); }
+
+  .dt-figure h3 {
+    font-size: var(--t-1);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .dt-value {
+    font-family: var(--font-mono);
+    font-size: var(--t-6);
+    line-height: 1.1;
+    margin-block: var(--s-3) var(--s-2);
+  }
+
+  .dt-said { margin: 0; }
+  .dt-why { font-size: var(--t-1); color: var(--ink-soft); margin-block-start: var(--s-3); }
+
+  .dt-cuts {
+    font-family: var(--font-mono);
+    font-size: var(--t-1);
+    color: var(--ink-soft);
+  }
+
+  .dt-deck {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    margin-block-end: var(--step);
+  }
+
+  .dt-tape { margin-block-start: var(--step); max-inline-size: 66ch; }
+
+  .dt-defs { display: grid; gap: var(--s-3); margin-block: var(--s-4); }
+  .dt-defs dt { font-weight: 600; }
+  .dt-defs dd { margin: 0 0 var(--s-3); color: var(--ink-soft); }
+
+  .dt-glossary { display: grid; gap: var(--step); max-inline-size: 70ch; }
+
+  .dt-term {
+    border-block-start: 1px solid var(--hairline);
+    padding-block-start: var(--s-4);
+  }
+
+  .dt-term dt {
+    font-size: var(--t-3);
+    font-weight: 600;
+    margin-block-end: var(--s-2);
+  }
+
+  .dt-term dd { margin: 0; color: var(--ink-soft); }
 }

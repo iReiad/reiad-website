@@ -31,6 +31,23 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v177: /fallback.css. The diet tool's readout dropped a column
+        in Bangla and not in English: Bangla's leading is 1.9, the
+        page grew a scrollbar, and the wrap came in by enough to
+        lose a 15rem track. A layout that reflows on a language
+        switch is a layout tuned to one language. The pages also
+        pad themselves clear of the floating bar now, measured
+        against the routine's 68px where these had 10.
+
+   v176: /fallback.css. The diet tool's own layer, which draws
+        each phrase twice and lets the stylesheet show one: both
+        languages are in the markup because a component that
+        picked one in the browser would render English on the
+        server and Bangla on the client, and React discards the
+        difference. `data-tool-lang` on the root is what chooses,
+        set before the first paint from the key the calculators
+        have always used.
+
    v175: /fallback.css. The paper weave was painted twice: a
         ground carries it and so did every row and control drawn
         on that ground, two identical 45-degree gratings at a 5px
@@ -1639,7 +1656,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v175";
+const VERSION = "v177";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

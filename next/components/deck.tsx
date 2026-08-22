@@ -27,8 +27,11 @@ type Common = {
   icon?: string;
   /** A colour token, `var(--green)` by default. */
   accent?: string;
-  /** The little mono label above the title. */
-  chip?: string;
+  /** The little mono label above the title. A node rather than a
+      string for the reason `go` below is one: the diet tool
+      renders both languages and lets the stylesheet choose, so a
+      chip there is two spans rather than a word. */
+  chip?: ReactNode;
   title: ReactNode;
   /** The language the title and blurb are in, when it is not the
       page's. A Bangla title needs the Bangla serif face. */
@@ -111,7 +114,7 @@ export function InfoCard({ fill, ...props }: Common & { fill?: boolean }) {
 /** A card for something that has been promised and not written.
     It is a `div` for the same reason a chip that goes nowhere is
     not a link. */
-export function SoonCard({ soon = "আসছে", ...props }: Common & { soon?: string }) {
+export function SoonCard({ soon = "আসছে", ...props }: Common & { soon?: ReactNode }) {
   return (
     <div className={["card", props.className].filter(Boolean).join(" ")}
          data-kind="soon" lang={props.lang} style={style(props.accent)}>

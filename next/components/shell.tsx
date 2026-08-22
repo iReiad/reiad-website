@@ -95,8 +95,23 @@ const BOOT = `(function(){var d=document.documentElement;try{`
   + `var b={soft:"0.55",normal:"1",deep:"1.7"}[p.blur];`
   + `if(b)d.style.setProperty("--glass-amount",b);`
   + `var v={clear:"0.54",normal:"0.72",dense:"0.9"}[p.veil];`
-  + `if(v)d.style.setProperty("--glass-veil",v)}catch(e){`
-  + `d.setAttribute("data-rail","open");d.setAttribute("data-glass","frost")}})()`;
+  + `if(v)d.style.setProperty("--glass-veil",v);`
+  /* WHICH LANGUAGE THE TOOLS SPEAK. `tool-lang` is the key the
+     calculators have written since long before there were
+     accounts, and `prefs.ts` writes that same one, so there is
+     one key and no second switch to keep in step.
+
+     It has to be an attribute set before the first paint because
+     of how the diet tool renders two languages: both are in the
+     HTML and the stylesheet shows one. That is the only
+     arrangement that survives hydration, because a component
+     that picked a language in the browser would render one on
+     the server and the other on the client, which is the error
+     that blanked every calculator on this site for a day. */
+  + `var l=localStorage.getItem("tool-lang");`
+  + `d.setAttribute("data-tool-lang",l==="bn"?"bn":"en")}catch(e){`
+  + `d.setAttribute("data-rail","open");d.setAttribute("data-glass","frost");`
+  + `d.setAttribute("data-tool-lang","en")}})()`;
 
 /** Which nav item is marked as where you are.
 
@@ -106,7 +121,8 @@ const BOOT = `(function(){var d=document.documentElement;try{`
     school is in the money school. `null` is for a page the rail
     does not list, a case study or an article. */
 export type Current =
-  | "money" | "skills" | "tools" | "stock" | "live" | "routine" | "insights"
+  | "money" | "skills" | "tools" | "stock" | "live" | "routine" | "diet"
+  | "insights"
   | "portfolio"
   | "about" | "contact" | "account" | "deutsch" | "quran" | "english"
   | "cooking" | "travel" | "home" | "admin"

@@ -173,8 +173,9 @@ export const NEXT_ROUTES = [
      both answer, because run_worker_first takes the address away
      from the asset router in the same commit. */
   /^\/(about|contact|account|skills|tools|portfolio)$/i,
-  /^\/tools\/(stock|live|routine)$/i,
+  /^\/tools\/(stock|live|routine|diet)$/i,
   /^\/tools\/routine\/(settings|print|day|year)$/i,
+  /^\/tools\/diet\/(you|glossary)$/i,
   /* The admin panel. ADMIN.md is the plan; it is `unlisted` in
      shared/nav.ts for the reason the course section is. */
   /^\/admin$/i,

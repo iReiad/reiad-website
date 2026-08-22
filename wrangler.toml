@@ -148,6 +148,7 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   # matches what comes AFTER the slash. That is exactly what took
   # /skills/courses off the site, so it is written out here.
   "/tools/routine", "/tools/routine/*",
+  "/tools/diet", "/tools/diet/*",
   "/admin",
   "/portfolio", "/portfolio/*", "/",
   # "/desk" is deliberately NOT here. It retired to archive/ and is

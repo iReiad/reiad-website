@@ -30,7 +30,7 @@ export type IconName =
   | "compass" | "calculator" | "gauge" | "pen" | "briefcase" | "person"
   | "mail" | "user" | "search" | "theme" | "chevron" | "menu" | "close"
   | "check" | "spark" | "seed" | "magnifier" | "cap" | "microscope"
-  | "wallet" | "id" | "shield" | "door" | "calendar" | "warning";
+  | "wallet" | "id" | "shield" | "door" | "calendar" | "warning" | "leaf";
 
 export interface NavItem {
   label: string;
@@ -163,6 +163,11 @@ export const NAV: NavGroup[] = [
          promise `unlisted` exists to avoid, and this page keeps
          its promise to anybody. */
       { label: "Routine", sub: "রুটিন", href: "/tools/routine", icon: "calendar", key: "routine" },
+      /* Listed for the same reason the routine is: it explains
+         itself signed out and the body half needs no account at
+         all, so the entry keeps its promise to anybody who
+         presses it. */
+      { label: "Diet", sub: "খাদ্য ও ওজন", href: "/tools/diet", icon: "leaf", key: "diet" },
     ],
   },
   {

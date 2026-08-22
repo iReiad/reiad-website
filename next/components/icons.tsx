@@ -43,6 +43,12 @@ const SHELL: Partial<Record<IconName, string>> = {
   menu: `<path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/>`,
   close: `<path d="M6 6 18 18"/><path d="M18 6 6 18"/>`,
   spark: `<path d="M12 3.5 13.9 9l5.6 1.9-5.6 1.9L12 18.4l-1.9-5.6L4.5 10.9 10.1 9 12 3.5Z"/>`,
+  /* The diet tool's, in the rail. A leaf on a stem: two arcs
+     meeting at the tip, with the stem running through and out
+     the bottom, so it reads at 20px where a drawn vein would
+     close up. */
+  leaf: `<path d="M19 5c0 7.2-4.4 11.5-9.6 11.9C7 17.1 5 15.2 5 12.6 5 7.7 10.4 5 19 5Z"/>`
+    + `<path d="M16 8 5.5 18.5"/>`,
   person: SCHOOL_ICONS.deutsch?.person,
 };
 
