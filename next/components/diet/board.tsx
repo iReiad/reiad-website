@@ -211,25 +211,28 @@ export function DietBoard() {
 
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
 
+  /* SIGNED OUT, THE CARDS ARE THE PAGE. Four of them work
+     completely without an account: the body, the glossary, the
+     prices and what to expect. A tall sign-in block above them
+     pushes the usable half of this tool below the fold in order
+     to advertise the half that needs a login, which is the wrong
+     way round for somebody who has just arrived. One line, and it
+     gets out of the way. */
   if (!w) {
     return (
-      <div className="dt-invite">
-        <p>
-          <T
-            en="Signing in keeps your log on your account rather than in this browser, so it is there on your phone too."
-            bn="সাইন ইন করলে আপনার খাতা এই ব্রাউজারে নয়, আপনার অ্যাকাউন্টে থাকে, তাই ফোনেও পাবেন।"
-          />
-        </p>
-        <p>
-          <T
-            en="You do not need one to work out what your body is: that page stores nothing at all."
-            bn="আপনার শরীর কী দিয়ে গড়া তা বের করতে অ্যাকাউন্ট লাগে না: ওই পাতাটি কিছুই জমা রাখে না।"
-          />
-        </p>
-        <ButtonLink kind="solid" href="/account">
+      <p className="dt-invite-line">
+        <T
+          en="Logging a weight and what you ate needs an account, so that it is on your phone too."
+          bn="ওজন আর খাওয়া লিখতে অ্যাকাউন্ট লাগে, তাহলে ফোনেও পাবেন।"
+        />
+        <ButtonLink href="/account" size="sm">
           <T en="Sign in" bn="সাইন ইন" />
         </ButtonLink>
-      </div>
+        <T
+          en="Everything below works without one."
+          bn="নিচের সবকিছু অ্যাকাউন্ট ছাড়াই চলে।"
+        />
+      </p>
     );
   }
 
