@@ -43,10 +43,11 @@ const num = (raw: string): number | undefined => {
   return raw.trim() !== "" && Number.isFinite(n) && n > 0 ? n : undefined;
 };
 
-export function LogForm({ day, entries, saving, onDay, onEntry }: {
+export function LogForm({ day, entries, saving, place, onDay, onEntry }: {
   day?: Day;
   entries: Entry[];
   saving: "idle" | "saving" | "saved" | "queued";
+  place?: "bd" | "uk";
   onDay: (patch: Partial<Day>) => void;
   onEntry: (e: Omit<Entry, "date">) => void;
 }) {
@@ -131,7 +132,7 @@ export function LogForm({ day, entries, saving, onDay, onEntry }: {
         ) : null}
       </div>
 
-      <FoodPicker onPick={onEntry} />
+      <FoodPicker onPick={onEntry} place={place} />
 
       <div className="dt-eaten">
         <h3>

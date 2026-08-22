@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v180: /fallback.css. The diet pages had `main section`'s own
+        top padding on top of a grid gap already spacing them,
+        which measured about 130px of nothing between a lede and
+        the first table. The grid owns the rhythm on those five.
+
    v179: /fallback.css. The diet tool became a tool: a board of
         widgets beside a log that saves to the account, a chart
         with a table under it and its axis labelled, and five
@@ -1674,7 +1679,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v179";
+const VERSION = "v180";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

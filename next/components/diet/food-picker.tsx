@@ -34,6 +34,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Entry } from "@reiad/shared/diet";
+import { search as searchLibrary } from "@reiad/shared/foods";
 import { Button } from "../ui/button";
 import { T, digits, useToolLang } from "./lang";
 
@@ -57,7 +58,13 @@ const SOURCE_WORD: Record<string, { en: string; bn: string }> = {
   free:    { en: "typed in", bn: "নিজে লেখা" },
 };
 
-export function FoodPicker({ onPick }: { onPick: (e: Omit<Entry, "date">) => void }) {
+export function FoodPicker({ onPick, place = "uk" }: {
+  onPick: (e: Omit<Entry, "date">) => void;
+  /** Which portion library leads. The other country's is
+      still searched, because a reader in Dhaka who eats
+      porridge should still find it. */
+  place?: "bd" | "uk";
+}) {
   const lang = useToolLang();
   const [q, setQ] = useState("");
   const [hits, setHits] = useState<Hit[]>([]);
@@ -71,16 +78,43 @@ export function FoodPicker({ onPick }: { onPick: (e: Omit<Entry, "date">) => voi
     /* Debounced, because a request per keystroke is a request
        per keystroke for everybody, and the Worker caches by
        query rather than by reader. */
+    /* THE SITE'S OWN LIBRARY LEADS, and it answers with no
+       request at all. It is small on purpose, it is the only
+       source with real Bangladeshi home cooking in it, it is the
+       only one written in both languages, and it is the only one
+       whose figures this site has checked. A reader typing
+       "rice" should not wait on a round trip to find out what a
+       cup of it is.
+
+       The two open databases come from the Worker underneath,
+       and their results are appended rather than merged, so the
+       ranking never mixes a checked figure into a list of
+       strangers' ones. */
+    const own: Hit[] = searchLibrary(q.trim(), place).slice(0, 6).map((f) => ({
+      id: `library:${f.id}`,
+      source: "library",
+      label: lang === "bn" ? f.bn : f.en,
+      qty: f.qty,
+      unit: f.unit,
+      kcal: f.kcal,
+      protein: f.protein,
+      carbs: f.carbs,
+      fat: f.fat,
+      fibre: f.fibre,
+      completeness: 1,
+    }));
+    setHits(own);
+
     timer.current = window.setTimeout(() => {
       setLooking(true);
-      void fetch(`/api/diet/food?q=${encodeURIComponent(q.trim())}`)
+      void fetch(`/api/diet/food?q=${encodeURIComponent(q.trim())}&place=${place}`)
         .then((r) => (r.ok ? r.json() as Promise<{ results?: Hit[] }> : { results: [] }))
-        .then((d) => setHits(d.results ?? []))
-        .catch(() => setHits([]))
+        .then((d) => setHits([...own, ...(d.results ?? [])]))
+        .catch(() => setHits(own))
         .finally(() => setLooking(false));
     }, 300);
     return () => { if (timer.current) window.clearTimeout(timer.current); };
-  }, [q]);
+  }, [q, place, lang]);
 
   const take = (h: Hit): void => {
     onPick({
@@ -92,6 +126,12 @@ export function FoodPicker({ onPick }: { onPick: (e: Omit<Entry, "date">) => voi
         protein: h.protein ?? 0, carbs: h.carbs ?? 0,
         fat: h.fat ?? 0, fibre: h.fibre ?? 0,
       },
+      /* Composition attached is what `totalFor()` counts as
+         covered, so a library item raises the day's coverage and
+         a free-typed one does not. That is the honest
+         arithmetic: the gap is real. */
+      micros: h.source === "library" || h.source === "fdc"
+        ? { fibre: h.fibre ?? 0 } : undefined,
       source: h.source,
       sourceId: h.id,
     });

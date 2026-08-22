@@ -13420,6 +13420,21 @@ German for day, and .tag is what the site has always called
   .dt-goal, .dt-journal, .dt-nutrition, .dt-expect, .dt-trend {
     display: grid; gap: var(--step);
   }
+
+  /* `main section` already carries `--step` of top padding, which
+     is right for a hub built of sections and doubles the gap on a
+     grid that is already spacing them. Measured on the expect
+     page: about 130px of nothing between the lede and the first
+     table. The grid owns the rhythm here. */
+  .dt-goal > section, .dt-journal > section,
+  .dt-nutrition > section, .dt-expect > section, .dt-trend > section {
+    padding-block-start: 0;
+  }
+
+  .dt-goal > section > h2, .dt-journal > section > h2,
+  .dt-nutrition > section > h2, .dt-expect > section > h2 {
+    margin-block: 0 var(--s-6);
+  }
   .dt-goal .dt-readout, .dt-journal .dt-readout { margin-block-start: 0; }
 
   .dt-coverage {

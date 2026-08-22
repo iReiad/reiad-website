@@ -216,6 +216,7 @@ export function DietBoard() {
           day={day}
           entries={todayEntries}
           saving={saving}
+          place={profile?.place ?? "uk"}
           onDay={write}
           onEntry={log}
         />
