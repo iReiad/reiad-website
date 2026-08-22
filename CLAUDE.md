@@ -1452,11 +1452,12 @@ which lessons exist, in what order, in which section. Titles and
 prose are not compared: those are the Studio's now.
 
 **A stage's `base` says where its pages go, not whether anybody
-can write them.** `basics-1` carries a `base` of `/learn/terms/`
-because its eighteen term pages were published there for a year
-before this school had a builder, and their URLs do not move. They
-are written from the rows like everything else; the builder just
-writes them to that address.
+can write them.** `basics-1` carries a `base` of `/money/terms/`
+because its eighteen term pages were the glossary for a year
+before this school had a builder, and they keep the terms shape
+of address (it was `/learn/terms/` until the whole school moved).
+They are written from the rows like everything else; the builder
+just writes them to that address.
 
 **Every stage is editable, as of 17 August 2026.** `start` was
 `inline` until then: its eight steps were accordion sections of
@@ -1851,7 +1852,7 @@ a query string, which puts a long-lived credential in history and
 in every proxy log, or a cookie, which is a third way of being
 signed in on a site that already has two. A ticket names one file,
 expires, and grants nothing else. Its key is derived from
-`GOOGLE_CLIENT_SECRET` rather than being a fourth secret to
+`GOOGLE_SA_KEY` rather than being a fourth secret to
 manage, with domain separation so it signs tickets and nothing
 else.
 
