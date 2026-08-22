@@ -813,6 +813,193 @@ export const STRINGS: Record<string, Phrase> = {
     en: "Money figures are in lakh BDT and share counts in lakh shares, which is how DSE reports are written. Prices, EPS and dividends are plain BDT per share.",
     bn: "টাকার অঙ্ক লাখ টাকায় আর শেয়ার সংখ্যা লাখ শেয়ারে, ডিএসই-র প্রতিবেদন এভাবেই লেখা হয়। দাম, ইপিএস আর লভ্যাংশ শেয়ারপ্রতি সাধারণ টাকায়।",
   },
+
+  /* ============================================================
+     THE OTHER FIVE CALCULATORS
+
+     Compounding, sanchayapatra against FDR, inflation, loan EMI
+     and position sizing. Their arithmetic is
+     `shared/calculators.ts` and every word of them is here, which
+     is the same split the stock check above already uses: a
+     calculator returns numbers by name and the key of a sentence,
+     and both the browser and the Android app fill the
+     `{placeholders}` from those numbers.
+
+     **These were English only until they moved here**, and that
+     was not a decision anybody took: the verdicts were template
+     literals inside the module that drew them, so translating one
+     meant editing code. A Bangla reader should never have to read
+     English to find out that something exists in their own
+     language, and five of this site's six calculators were
+     failing that rule in the one place they actually explain
+     themselves.
+
+     `{placeholders}` are looked up in the calculator's own
+     `values` and printed the way `FORMATS` in that file says, so
+     `{growth}` is money in both languages without either sentence
+     having to know it.
+     ============================================================ */
+
+  /* The three labels under a chart. Not one key per year, which
+     would be four hundred keys: a number with one word in front
+     of it. */
+  "calc.chart.now": { en: "now", bn: "এখন" },
+  "calc.chart.year": { en: "year {n}", bn: "{n} বছর" },
+
+  /* ---------------- 1 · compounding ---------------- */
+  "calc.compounding.f.start": { en: "Starting amount", bn: "শুরুর টাকা" },
+  "calc.compounding.f.monthly": { en: "Added every month", bn: "প্রতি মাসে যোগ" },
+  "calc.compounding.f.rate": { en: "Annual return", bn: "বছরে রিটার্ন" },
+  "calc.compounding.f.years": { en: "For how long", bn: "কত বছর" },
+
+  "calc.compounding.final": { en: "You end with", bn: "শেষে থাকবে" },
+  "calc.compounding.final.note": { en: "after {years} years", bn: "{years} বছর পরে" },
+  "calc.compounding.paid": { en: "You put in", bn: "আপনি দিয়েছেন" },
+  "calc.compounding.paid.note": { en: "your own money", bn: "নিজের টাকা" },
+  "calc.compounding.growth": { en: "Growth", bn: "বৃদ্ধি" },
+  "calc.compounding.growth.note": { en: "{growthPct}% on top", bn: "তার ওপরে {growthPct}%" },
+
+  "calc.compounding.grows": {
+    en: "At {rate}%, money roughly doubles every {doubles} years: that is the rule of 72, and it is an approximation rather than a promise. Of your {final}, {growth} is growth you did not have to earn, and the larger half of it arrives in the final third of the time.",
+    bn: "{rate}% হারে টাকা মোটামুটি প্রতি {doubles} বছরে দ্বিগুণ হয়। একে বলে ৭২-এর নিয়ম, এটা আন্দাজ, নিশ্চয়তা নয়। আপনার {final} টাকার মধ্যে {growth} হলো বৃদ্ধি, যেটা আপনাকে রোজগার করতে হয়নি, আর তার বড় অংশটা আসে একদম শেষ তিন ভাগের এক ভাগ সময়ে।",
+  },
+  "calc.compounding.flat": {
+    en: "Set a rate above zero to see compounding do anything.",
+    bn: "শূন্যের ওপরে একটা হার বসান, তবেই চক্রবৃদ্ধি কিছু করে দেখাবে।",
+  },
+
+  /* ---------------- 2 · sanchayapatra vs FDR ---------------- */
+  "calc.sanchayapatra.f.amount": { en: "Amount", bn: "টাকার পরিমাণ" },
+  "calc.sanchayapatra.f.years": { en: "Years", bn: "বছর" },
+  "calc.sanchayapatra.f.srate": { en: "Sanchayapatra rate", bn: "সঞ্চয়পত্রের হার" },
+  "calc.sanchayapatra.f.stax": { en: "Tax at source", bn: "উৎসে কর" },
+  "calc.sanchayapatra.f.frate": { en: "FDR rate", bn: "এফডিআরের হার" },
+  "calc.sanchayapatra.f.ftax": { en: "FDR tax at source", bn: "এফডিআরে উৎসে কর" },
+
+  "calc.sanchayapatra.sTotal": { en: "সঞ্চয়পত্র, after tax", bn: "সঞ্চয়পত্র, কর কাটার পরে" },
+  "calc.sanchayapatra.sTotal.note": {
+    en: "profit paid out, so nothing compounds",
+    bn: "মুনাফা হাতে আসে, তাই কিছু চক্রবৃদ্ধি হয় না",
+  },
+  "calc.sanchayapatra.fTotal": { en: "FDR, after tax", bn: "এফডিআর, কর কাটার পরে" },
+  "calc.sanchayapatra.fTotal.note": {
+    en: "interest rolls up year on year",
+    bn: "সুদ প্রতি বছর জমতে থাকে",
+  },
+  "calc.sanchayapatra.gap": { en: "The difference", bn: "পার্থক্য" },
+  "calc.sanchayapatra.gap.note.s": {
+    en: "in সঞ্চয়পত্র's favour",
+    bn: "সঞ্চয়পত্রের পক্ষে",
+  },
+  "calc.sanchayapatra.gap.note.f": { en: "in FDR's favour", bn: "এফডিআরের পক্ষে" },
+
+  "calc.sanchayapatra.close": {
+    en: "Over {years} years these land within {gap} of each other, close enough that the RULES matter more than the rate: the purchase ceiling on সঞ্চয়পত্র, and how quickly you can get the money out.",
+    bn: "{years} বছরে দুটোর ফারাক মাত্র {gap}, এত কাছাকাছি যে হারের চেয়ে নিয়মগুলোই বেশি গুরুত্বপূর্ণ: সঞ্চয়পত্রে কেনার সর্বোচ্চ সীমা, আর টাকা কত তাড়াতাড়ি তুলতে পারবেন।",
+  },
+  "calc.sanchayapatra.sanchayapatra": {
+    en: "সঞ্চয়পত্র comes out ahead by {gap} over {years} years, about {gapPct}% of what you put in. Check the early-encashment penalty before you decide: that is usually where the difference goes.",
+    bn: "{years} বছরে সঞ্চয়পত্র {gap} টাকা এগিয়ে থাকে, যা আপনার রাখা টাকার প্রায় {gapPct}%। সিদ্ধান্তের আগে আগাম ভাঙানোর জরিমানাটা দেখে নিন: পার্থক্যটা সাধারণত ওখানেই চলে যায়।",
+  },
+  "calc.sanchayapatra.fdr": {
+    en: "FDR comes out ahead by {gap} over {years} years, about {gapPct}% of what you put in. Check the early-encashment penalty before you decide: that is usually where the difference goes.",
+    bn: "{years} বছরে এফডিআর {gap} টাকা এগিয়ে থাকে, যা আপনার রাখা টাকার প্রায় {gapPct}%। সিদ্ধান্তের আগে আগাম ভাঙানোর জরিমানাটা দেখে নিন: পার্থক্যটা সাধারণত ওখানেই চলে যায়।",
+  },
+
+  /* ---------------- 3 · inflation ---------------- */
+  "calc.inflation.f.amount": { en: "Amount today", bn: "আজকের টাকা" },
+  "calc.inflation.f.inflation": { en: "Inflation", bn: "মূল্যস্ফীতি" },
+  "calc.inflation.f.nominal": { en: "Your return", bn: "আপনার রিটার্ন" },
+  "calc.inflation.f.years": { en: "Years", bn: "বছর" },
+
+  "calc.inflation.worth": { en: "Same money buys", bn: "একই টাকায় কেনা যাবে" },
+  "calc.inflation.worth.note": {
+    en: "today's taka, in {years} years",
+    bn: "{years} বছর পরে, আজকের টাকায়",
+  },
+  "calc.inflation.lost": { en: "Purchasing power lost", bn: "যত ক্রয়ক্ষমতা গেল" },
+  "calc.inflation.lost.note": {
+    en: "{lostPct}% of its power gone",
+    bn: "ক্ষমতার {lostPct}% শেষ",
+  },
+  "calc.inflation.real": { en: "Real return", bn: "প্রকৃত রিটার্ন" },
+  "calc.inflation.real.note": {
+    en: "real return, after inflation",
+    bn: "মূল্যস্ফীতি বাদ দেওয়ার পরে",
+  },
+  "calc.inflation.real.note.losing": {
+    en: "you are losing ground",
+    bn: "আপনি পিছিয়ে পড়ছেন",
+  },
+
+  "calc.inflation.beats": {
+    en: "A {nominal}% return against {inflation}% inflation is really {real}%. Your {amount} becomes {grown} on paper, but only {grownReal} in what it can actually buy.",
+    bn: "{inflation}% মূল্যস্ফীতির বিপরীতে {nominal}% রিটার্ন আসলে {real}%। কাগজে আপনার {amount} হবে {grown}, কিন্তু যা সত্যিই কেনা যাবে তার হিসাবে {grownReal}।",
+  },
+  "calc.inflation.loses": {
+    en: "A {nominal}% return does not keep up with {inflation}% inflation. On paper you would have {grown}; in real buying power that is {grownReal}, less than the {amount} you started with. This is the quiet way safe savings lose money.",
+    bn: "{inflation}% মূল্যস্ফীতির সঙ্গে {nominal}% রিটার্ন পাল্লা দিতে পারছে না। কাগজে আপনার থাকবে {grown}; সত্যিকারের ক্রয়ক্ষমতায় সেটা {grownReal}, যা শুরুর {amount} টাকার চেয়েও কম। নিরাপদ সঞ্চয় এভাবেই চুপচাপ টাকা হারায়।",
+  },
+
+  /* ---------------- 4 · loan EMI ---------------- */
+  "calc.emi.f.principal": { en: "Loan amount", bn: "ঋণের পরিমাণ" },
+  "calc.emi.f.rate": { en: "Interest rate", bn: "সুদের হার" },
+  "calc.emi.f.years": { en: "Term", bn: "মেয়াদ" },
+
+  "calc.emi.emi": { en: "Instalment", bn: "কিস্তি" },
+  "calc.emi.emi.note": { en: "every month", bn: "প্রতি মাসে" },
+  "calc.emi.interest": { en: "Total interest", bn: "মোট সুদ" },
+  "calc.emi.interest.note": {
+    en: "{interestPct}% of what you borrowed",
+    bn: "যা ধার নিয়েছেন তার {interestPct}%",
+  },
+  "calc.emi.total": { en: "Total repaid", bn: "মোট ফেরত" },
+  "calc.emi.total.note": { en: "over {years} years", bn: "{years} বছরে" },
+
+  "calc.emi.shorter": {
+    en: "Paying it off in {shorter} years instead of {years} raises the instalment to {shorterEmi} but saves {saved} in interest. The length of a loan costs more than most people expect.",
+    bn: "{years} বছরের বদলে {shorter} বছরে শোধ করলে কিস্তি বেড়ে {shorterEmi} হয়, কিন্তু সুদে বাঁচে {saved}। ঋণের মেয়াদ যত লম্বা, খরচ তত বেশি, বেশিরভাগ মানুষ যা ভাবেন তার চেয়েও বেশি।",
+  },
+  "calc.emi.plain": {
+    en: "Interest adds {interest} to what you borrowed.",
+    bn: "যা ধার নিয়েছেন তার সঙ্গে সুদ যোগ করে আরও {interest}।",
+  },
+
+  /* ---------------- 5 · position sizing ---------------- */
+  "calc.position.f.capital": { en: "Portfolio", bn: "মোট পুঁজি" },
+  "calc.position.f.risk": { en: "Risk per trade", bn: "প্রতি ট্রেডে ঝুঁকি" },
+  "calc.position.f.entry": { en: "Entry price", bn: "কেনার দাম" },
+  "calc.position.f.stop": { en: "Stop-loss price", bn: "স্টপ-লসের দাম" },
+
+  "calc.position.shares": { en: "Buy at most", bn: "সর্বোচ্চ কিনুন" },
+  "calc.position.shares.note": { en: "shares", bn: "শেয়ার" },
+  "calc.position.cost": { en: "That costs", bn: "খরচ পড়বে" },
+  "calc.position.cost.note": {
+    en: "{exposure}% of the portfolio",
+    bn: "মোট পুঁজির {exposure}%",
+  },
+  "calc.position.cost.note.over": {
+    en: "more than your capital",
+    bn: "আপনার পুঁজির চেয়েও বেশি",
+  },
+  "calc.position.riskTaka": { en: "Planned loss", bn: "পরিকল্পিত ক্ষতি" },
+  "calc.position.riskTaka.note": {
+    en: "at risk if the stop is hit",
+    bn: "স্টপ ছুঁলে যতটা যাবে",
+  },
+
+  "calc.position.noStop": {
+    en: "Your stop needs to sit BELOW your entry price; otherwise there is no defined loss to size against.",
+    bn: "স্টপ-লস কেনার দামের নিচে থাকতে হবে; নইলে নির্দিষ্ট কোনো ক্ষতি নেই যার হিসাবে পজিশনের মাপ ঠিক হবে।",
+  },
+  "calc.position.tooBig": {
+    en: "A {risk}% risk rule with a stop that close would need {cost} of stock, more than your whole {capital}. That is the signal: either the stop is too tight, or this trade does not fit the account.",
+    bn: "স্টপ এত কাছে রেখে {risk}% ঝুঁকির নিয়ম মানতে গেলে {cost} টাকার শেয়ার লাগবে, যা আপনার পুরো {capital} টাকার চেয়েও বেশি। এটাই সংকেত: হয় স্টপটা বেশি কাছে, নয়তো এই ট্রেড এই অ্যাকাউন্টে খাটে না।",
+  },
+  "calc.position.fits": {
+    en: "Risking {risk}% of {capital} means {shares} shares at {entry}, costing {cost}. If the stop at {stop} is hit you lose {riskTaka}: a planned number, not a surprise. Twenty losses in a row at this size would still leave you {after20}.",
+    bn: "{capital} টাকার {risk}% ঝুঁকি নেওয়া মানে {entry} দামে {shares}টা শেয়ার, খরচ {cost}। {stop}-এ স্টপ ছুঁলে ক্ষতি {riskTaka}: এটা আগে থেকে ঠিক করা সংখ্যা, হঠাৎ পাওয়া ধাক্কা নয়। পরপর বিশবার এই মাপে ক্ষতি হলেও আপনার হাতে থাকবে {after20}।",
+  },
 };
 
 /* ------------------------------------------------------------

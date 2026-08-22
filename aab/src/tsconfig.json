@@ -77,6 +77,8 @@
       "/signin.js": ["./signin.ts"],
       "/account-page.js": ["./account-page.ts"],
       "/content.js": ["../../shared/content.ts"],
+      "/calculators.js": ["../../shared/calculators.ts"],
+      "/tools/stock.i18n.js": ["../../shared/tool-strings.ts"],
       "/streak.js": ["./streak.ts"],
       "/*/curriculum.js": ["../../shared/curricula/*.ts"]
     }

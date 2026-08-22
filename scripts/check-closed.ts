@@ -53,6 +53,7 @@
 import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { MODULES, SHARED } from "./build-modules.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const LEDGER = join(ROOT, "scripts", "closed-set.json");
@@ -83,14 +84,29 @@ interface Area {
 
 const TOOLING = /(^|\/)(check|build|import|export)-[^/]+$|\.test\.[a-z]+$/;
 
+/** Every path under `aab/` that `build-modules.ts` writes, out of
+    that generator's own two tables. */
+const BUILT = new Set<string>([
+  ...MODULES.map((stem) => `${stem}.js`),
+  ...Object.values(SHARED.files)
+    .filter((path) => path.startsWith("aab/"))
+    .map((path) => path.slice("aab/".length)),
+]);
+
 const AREAS: Area[] = [
   {
     dir: "aab",
     holds: (rel) => /\.(js|ts|tsx|html)$/.test(rel) && !TOOLING.test(rel)
       /* Output, not source. `build-modules.ts` writes these from
          `aab/src/` and from `shared/`, so a new one here is a
-         new SOURCE file, which the source's own entry catches. */
-      && !/^(content|api|share-card|glow|tilt|app|editor|photo|auth|audience|activation|pieces|streak|prefs|signin|saved|sync|account|checkpoints|courses|routine)\.js$/.test(rel)
+         new SOURCE file, which the source's own entry catches.
+
+         Read from that generator rather than listed here, and
+         that is not tidiness: it WAS a list of twenty names, and
+         the twenty-first arrived the day `shared/calculators.ts`
+         did. A ledger of what is old, gone stale about what is
+         new, reports a conversion as a regression. */
+      && !BUILT.has(rel)
       && !/\/curriculum\.js$/.test(rel)
       && !/^studio\//.test(rel)
       && !/^fallback\.css$/.test(rel),

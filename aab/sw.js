@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v182: /tools/stock.i18n.js. The other five calculators' words
+        moved into it, 68 phrases, and they are in Bangla for the
+        first time: their verdicts were template literals inside
+        the module that drew them, so translating one meant
+        editing code. Their arithmetic is `shared/calculators.ts`
+        now and /tools/tools.js is the drawing only, which is what
+        lets the Android app share the model rather than copy it.
+
    v181: /tools/stock.i18n.js. The stock check's 366 phrases moved
         to `shared/tool-strings.ts` and that file is now the
         compiled output of it, so the bytes changed although not
@@ -1687,7 +1695,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v181";
+const VERSION = "v182";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

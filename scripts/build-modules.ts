@@ -148,11 +148,12 @@ export const MODULES = [
   "editor",
 ];
 
-/** The six served modules whose source is in `shared/` rather
+/** The seven served modules whose source is in `shared/` rather
     than in `aab/src/`: the site's manifest, the four schools'
-    ladders, and the stock check's words. The Worker, the checks
-    under `scripts/`, the Next.js routes and the browser read the
-    same six, and only the last of them needs a file at a URL.
+    ladders, the stock check's words and the calculators'
+    arithmetic. The Worker, the checks under `scripts/`, the
+    Next.js routes and the browser read the same seven, and only
+    the last of them needs a file at a URL.
 
     They are compiled on their own, by
     `scripts/tsconfig.shared.json`, and that is the compile whose
@@ -167,7 +168,7 @@ export const MODULES = [
     source, which is what `app/tsconfig.json`,
     `aab/src/tsconfig.json` and `next/tsconfig.json` do: one
     description, and it is the module. */
-const SHARED = {
+export const SHARED = {
   config: "scripts/tsconfig.shared.json",
   /** Where that config's `rootDir` puts each output, against the
       path in `aab/` it belongs at. Those four addresses are in
@@ -184,6 +185,9 @@ const SHARED = {
        import at the top of `aab/tools/stock.js`, so the file moved
        and the URL did not. */
     "tool-strings.js": "aab/tools/stock.i18n.js",
+    /* And the five calculators' arithmetic, which the browser,
+       the fixture generator and the Kotlin port all read. */
+    "calculators.js": "aab/calculators.js",
   } as Record<string, string>,
 };
 

@@ -1,10 +1,11 @@
 {
   "//": [
-    "shared/content.ts, the four ladders under shared/curricula/ and",
-    "shared/tool-strings.ts, compiled to the six files the browser",
-    "fetches: /content.js, /money/curriculum.js,",
-    "/deutsch/curriculum.js, /quran/curriculum.js,",
-    "/english/curriculum.js and /tools/stock.i18n.js.",
+    "shared/content.ts, the four ladders under shared/curricula/,",
+    "shared/tool-strings.ts and shared/calculators.ts, compiled to",
+    "the seven files the browser fetches: /content.js,",
+    "/money/curriculum.js, /deutsch/curriculum.js,",
+    "/quran/curriculum.js, /english/curriculum.js,",
+    "/tools/stock.i18n.js and /calculators.js.",
     "",
     "scripts/build-modules.ts runs this and rebases the four",
     "specifiers content.ts uses to reach a ladder, because the",
@@ -44,5 +45,5 @@
     "outDir": "../.content-build"
   },
   "include": ["../shared/content.ts", "../shared/curricula/*.ts",
-              "../shared/tool-strings.ts"]
+              "../shared/tool-strings.ts", "../shared/calculators.ts"]
 }

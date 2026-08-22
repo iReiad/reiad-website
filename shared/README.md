@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is eleven files and a directory of four, and
+Today that is twelve files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -98,6 +98,18 @@ this repository got written.
   other half of that and go the other way, being code rather than
   data. Both halves of a phrase are required by the type, so a key
   added with only English compiles nowhere.
+
+- **`calculators.ts`** the five calculators' arithmetic:
+  compounding, sanchayapatra against FDR, inflation, loan EMI and
+  position sizing. It was inline in `aab/src/tools/tools.ts`,
+  tangled with the DOM that drew it, and three runtimes read it
+  now. **Nothing in it is prose and nothing in it is a format:** a
+  calculator returns numbers BY NAME and the key of a sentence,
+  and both the browser and the app fill that sentence's
+  `{placeholders}` from those numbers, printing each the way
+  `FORMATS` says. `check-calculators.ts` is what holds the two
+  halves together, and the thing it catches is a placeholder with
+  no number behind it, in one language, on one branch.
 
 ## TypeScript, and nothing compiled beside it
 

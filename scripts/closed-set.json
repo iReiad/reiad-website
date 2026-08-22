@@ -1,7 +1,5 @@
 [
   "aab/404.html",
-  "aab/account-page.js",
-  "aab/auth-config.js",
   "aab/deutsch/arbeitsbuch.data.js",
   "aab/deutsch/arbeitsbuch.js",
   "aab/deutsch/hub.js",
@@ -74,9 +72,6 @@
   "aab/src/tools/live.ts",
   "aab/src/tools/tools.ts",
   "aab/sw.js",
-  "aab/tools/live.js",
-  "aab/tools/stock.i18n.js",
   "aab/tools/stock.js",
-  "aab/tools/stock.model.js",
-  "aab/tools/tools.js"
+  "aab/tools/stock.model.js"
 ]
