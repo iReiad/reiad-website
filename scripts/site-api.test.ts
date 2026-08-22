@@ -65,7 +65,12 @@ const { status, headers, body } = await call();
 console.log("\nthe answer");
 check("200", status, 200);
 check("ok: true", body.ok, true);
-check("cached for half an hour", headers.get("Cache-Control"), "public, max-age=1800");
+/* What this handler SETS, which is not what a reader gets: the
+   edge rewrites Cache-Control on /api/* and answers no-store.
+   The head of site.ts has the measurement. Asserted anyway, so
+   the day somebody drops the header here it is a failure rather
+   than a silent agreement with the edge. */
+check("says half an hour", headers.get("Cache-Control"), "public, max-age=1800");
 check("json", headers.get("Content-Type"), "application/json; charset=utf-8");
 okay("nosniff", headers.get("X-Content-Type-Options") === "nosniff");
 

@@ -158,8 +158,11 @@ plan touches the site.
    answers `GET /api/site`: the site, the menu, the accents, the
    sections, the tools, the skills, the term groups, the public
    pages and the counts, serialised out of `shared/content.ts`
-   and `shared/nav.ts` at request time and cached half an hour
-   like `/api/news`. The browser gets the same tables as an ES
+   and `shared/nav.ts` at request time. It asks for half an hour
+   of caching and does not get it: something at the edge answers
+   `/api/*` with `no-store`, which the head of that file
+   measures. The app holds its own copy, so this costs one fetch
+   a launch. The browser gets the same tables as an ES
    module at `/content.js` and does not call this, so it is in
    `SERVER_ONLY` in `scripts/check-api.ts` and in `PUBLIC` in
    `scripts/check-admin.ts`, each with the reason written out.
@@ -170,15 +173,41 @@ plan touches the site.
    imported it from node and a migration comment already quoted
    its school ids. A file three runtimes read belongs in the
    directory this repository keeps for exactly that.
-2. **`/.well-known/assetlinks.json`**, so `https://reiad.co.uk`
-   links open the app. A static JSON under `aab/` with the release
-   signing fingerprints. Nothing claims that path today:
-   `run_worker_first` does not list it, no route matches it, and
-   `aab/.assetsignore` does not cover it. Whether the asset upload
-   carries a dot-directory is platform behaviour this repo cannot
-   prove from the inside, so this is verified on a deploy, the
-   same caveat `aab/_headers` already carries about itself.
-3. **One Supabase dashboard entry.** The app's redirect URL added
+2. **`/.well-known/assetlinks.json`. Written, and one value
+   short.** `aab/.well-known/assetlinks.json` names the package
+   and carries an empty fingerprint list, which is a valid
+   statement that authorises nothing. Nothing else claims the
+   path: `run_worker_first` does not list it, no route matches
+   it, and `aab/.assetsignore` does not cover it.
+
+   **A dot-directory IS uploaded, and that is measured rather
+   than assumed.** It was written here as a thing this repository
+   could not prove from the inside, and it can:
+   `npx wrangler@4 deploy --dry-run`, which is what `deploy.yml`
+   runs, prints the size of the asset manifest. Adding a second
+   file inside `aab/.well-known/` took it from 191 to 192 and
+   removing it put it back, so the directory is read like any
+   other. The file is here early anyway, because the deploy that
+   ships the real fingerprint is a bad moment to discover
+   otherwise.
+
+   **The package is `uk.co.reiad.library`**: the domain
+   backwards, then the site's own name. It is a permanent
+   identifier, so it is decided once, here, rather than at the
+   first `gradle init`.
+
+   The fingerprint is the one thing that cannot be decided in
+   advance, because it is the public half of a key that must not
+   exist yet: a release key generated in a build container and
+   committed beside the site is a worse outcome than a late
+   assetlinks file. It arrives from Play App Signing once there
+   is an app entry, and pasting it into the array above is the
+   whole of the remaining work.
+3. **One Supabase dashboard entry**, and it is one of the two
+   things in this whole plan that cannot be done from a
+   repository: the project's auth configuration is not in the
+   database and not in the tooling, so no migration, no script
+   and no API call here reaches it. The app's redirect URL added
    to the auth allowlist. The site's flow is the implicit one:
    `GET /auth/v1/authorize?provider=google&redirect_to=...` and
    the tokens come back in the URL fragment, which an Android App
@@ -196,6 +225,21 @@ plan touches the site.
    Worker, and a decision about what is worth interrupting
    somebody for. That is phase 7 if it is anything, and the app is
    whole without it.
+
+## The two things a repository cannot do
+
+Everything else in this plan is decided here, written here, or
+checked here. These two are not, and both are late rather than
+blocking, so nothing waits on them:
+
+| | When it is needed |
+| --- | --- |
+| The release signing fingerprint, pasted into `sha256_cert_fingerprints` | before a link opens the app, so end of phase 1 |
+| The redirect URL added to the Supabase auth allowlist | before anybody signs in, so start of phase 2 |
+
+Both need an account this repository has no business holding a
+credential for. Neither is needed to build phase 1, which is
+signed out, which is why phase 1 is first.
 
 ## The app itself
 
@@ -267,6 +311,17 @@ The engine renders article prose and lesson prose alike; it is
 one module, for the reason `aab/editor.js` is one module on the
 web: two renderers that disagree is the class of bug the
 three-place rule exists for.
+
+**The allowlist is a floor, not a promise, and that was measured
+rather than assumed.** `/money/basics-1/share` carries a `<b>` in
+its stored body, which the server's tag list does not include:
+the browser's sanitiser renames `B` to `STRONG` on the way in and
+some prose predates or bypassed that. So the renderer maps the
+synonyms the editor already maps (`b` to `strong`, `i` and `u` to
+`em`, a heading above `h3` down to one) and renders anything it
+still does not know as plain styled text, logged. A parser that
+trusted the documented list would have dropped a word's emphasis
+on day one and nothing would have said so.
 
 ### Media, speech, and the platform's own things
 
