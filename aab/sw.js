@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v173: /fallback.css. The light stops following the pointer on
+        a pane, and starts holding still on a plate, which it was
+        already documented to do and never did: a `--glow-w: 0`
+        beside each of their depths was overridden by the derived
+        size formula later in the same layer, at equal
+        specificity. A `.stat` measured 156px of moving light.
+        One factor, `--follows`, decides it now.
+
    v172: /fallback.css. Two alignments that were guesses became
         sums: the tick on a checklist item and the numeral beside
         a practice book's writing box were both positioned
@@ -1615,7 +1623,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v172";
+const VERSION = "v173";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

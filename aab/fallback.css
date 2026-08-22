@@ -16,6 +16,8 @@
 
   @property --tick-top { syntax: "<length>"; initial-value: 4px; inherits: true; }
 
+  @property --follows  { syntax: "<number>";  initial-value: 1;   inherits: false; }
+
   @property --gx       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --gy       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --glow-a   { syntax: "<number>";  initial-value: 0;   inherits: false; }
@@ -8114,7 +8116,8 @@
   [data-glow="chip"]    { --glow-w:  70px; --glow-i: 40%; }
   [data-glow="control"] { --glow-w: 110px; --glow-i: 34%; }
   [data-glow="card"]    { --glow-w: 240px; --glow-i: 26%; }
-  [data-glow="pane"]    { --glow-w: 420px; --glow-i: 16%; }
+
+  [data-glow="pane"]    { --follows: 0; --glow-i: 16%; }
 
   :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
@@ -8157,7 +8160,7 @@
       .ref-details, .course-video, .rt-hours-line, .work-art, .share-card) {
     --depth: 3.4; --polish: 0.55; --clarity: 0.28; --standing: 1;
 
-    --glow-w: 0px;
+    --follows: 0;
 
     --surface-image:
       radial-gradient(calc(var(--depth) * 34%) calc(var(--depth) * 26%) at 100% 0%,
@@ -8234,7 +8237,7 @@
       .dupont-track, .drag-track, .bridge-track, .live-bar, .rt-bar,
       .meter, .rt-balance, .audience-switch, .seg) {
 
-    --glow-w: min(calc(var(--depth) * 46px), 220px);
+    --glow-w: calc(min(var(--depth) * 46px, 220px) * var(--follows, 1));
     --glow-h: var(--glow-w);
 
     --glow-i: calc(var(--clarity) * 32%);

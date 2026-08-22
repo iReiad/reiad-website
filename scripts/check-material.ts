@@ -389,8 +389,17 @@ for (const [cls, layer] of [...castsShadow].sort()) {
     const p = /--polish:\s*([\d.]+)/.exec(body);
     const c = /--clarity:\s*([\d.]+)/.exec(body);
     if (!d || !p || !c) continue;
-    /* The plate is the one that sets --glow-w back to zero. */
-    if (/--glow-w:\s*0/.test(body)) continue;
+    /* The kinds whose light HOLDS STILL are out of the ordering:
+       a plate and a pane are placed by what they are for rather
+       than by how far a moving light carries in them.
+
+       `--follows: 0` is how that is said. It was `--glow-w: 0`
+       written beside each of their depths, and the derived size
+       formula later in the same layer overrode both at equal
+       specificity, so neither ever held still: a `.stat`
+       measured 156px of moving light. The formula multiplies by
+       this factor now, so there is one place that decides. */
+    if (/--follows:\s*0/.test(body)) continue;
     const name = (/\.([a-z][a-z0-9-]*)/.exec(sel) ?? [, "?"])[1];
     kinds.push([name, Number(d[1]), Number(p[1]), Number(c[1])]);
   }

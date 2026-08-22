@@ -60,6 +60,18 @@
      0.7px after. */
   @property --tick-top { syntax: "<length>"; initial-value: 4px; inherits: true; }
 
+  /* Does the light FOLLOW the pointer on this surface. 1 for the
+     three kinds you press, 0 for the two you do not, and it is a
+     number rather than a keyword because the size formula
+     multiplies by it.
+
+     REGISTERED for the reason `--glow-a` is: an unregistered
+     custom property is a string, a multiply against one is
+     invalid at computed value time, and an invalid `--glow-w`
+     takes the whole background-image down to `none` rather than
+     to the previous layer's. */
+  @property --follows  { syntax: "<number>";  initial-value: 1;   inherits: false; }
+
   @property --gx       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --gy       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --glow-a   { syntax: "<number>";  initial-value: 0;   inherits: false; }
@@ -12029,7 +12041,32 @@ German for day, and .tag is what the site has always called
   [data-glow="chip"]    { --glow-w:  70px; --glow-i: 40%; }
   [data-glow="control"] { --glow-w: 110px; --glow-i: 34%; }
   [data-glow="card"]    { --glow-w: 240px; --glow-i: 26%; }
-  [data-glow="pane"]    { --glow-w: 420px; --glow-i: 16%; }
+  /* A PANE DOES NOT FOLLOW, and this is the second thing on this
+     site to be told so.
+
+     It was a 420px ellipse tracking the pointer across a whole
+     panel, which is a light the size of a wall sliding around
+     behind whatever you are reading. Two readings of it, a week
+     apart, described it the same way: a flare, going further out
+     than it should, bothersome. A soft 16% smudge that never
+     quite arrives anywhere is worse than no light at all, because
+     the eye keeps checking whether something is happening.
+
+     The reason is in the taxonomy rather than in the number. The
+     moving light MEANS this responds to you: it is the same
+     signal as the lift on a card and the arrow that slides on a
+     GoCard. A chip, a control and a card are all things you press.
+     A pane is the thing you read inside. Making it glow at the
+     pointer said "press me" about a wall, and shrinking it would
+     only have said it more quietly.
+
+     So it keeps the material and loses the movement: the weave,
+     the bevel and the lit edge are untouched, and `--glow-w: 0`
+     is how a still surface is said here, exactly as `plate` says
+     it. It also stops `glow.tsx` tracking the pointer over every
+     panel on the page, because a non-zero spread is that module's
+     membership test. */
+  [data-glow="pane"]    { --follows: 0; --glow-i: 16%; }
 
   /* ============================================================
      THE TAXONOMY: function, size, interactivity
@@ -12054,7 +12091,7 @@ German for day, and .tag is what the site has always called
      | chip    |  1    | 0.94   | 0.78    | yes |
      | control |  2.2  | 0.80   | 0.70    | yes |
      | card    |  5    | 0.50   | 0.50    | yes |
-     | pane    |  9    | 0.30   | 0.30    | yes |
+     | pane    |  9    | 0.30   | 0.30    | no  |
      | plate   |  3.4  | 0.55   | 0.28    | no  |
 
      Read down the polish column and the system is there in one
@@ -12170,12 +12207,16 @@ German for day, and .tag is what the site has always called
       .ref-details, .course-video, .rt-hours-line, .work-art, .share-card) {
     --depth: 3.4; --polish: 0.55; --clarity: 0.28; --standing: 1;
 
-    /* `--glow-w: 0` after the depth, and both are deliberate. The
-       depth still shapes the light below; the zero is what tells
-       `glow.tsx` not to track this, because a non-zero spread is
-       the module's membership test. A plate is lit and holds
-       still. */
-    --glow-w: 0px;
+    /* The depth still shapes the light below; `--follows: 0` is
+       what takes the MOVEMENT off it, and it is also what tells
+       `glow.tsx` not to track this, because the size formula
+       multiplies by it and a zero spread is that module's
+       membership test. A plate is lit and holds still.
+
+       This was `--glow-w: 0px` here, which the derived formula
+       later in this layer overrode at equal specificity, so no
+       plate on the site has ever held still. */
+    --follows: 0;
     /* A tint like any other surface's now, so it composes with
        the bevel and the grain instead of replacing them. */
     --surface-image:
@@ -12373,7 +12414,16 @@ German for day, and .tag is what the site has always called
        spread is bounded by how far light carries, not by the size of the
        sheet. A chip stays at 46px, a control at 101px, and a card and a
        pane both settle at 220. */
-    --glow-w: min(calc(var(--depth) * 46px), 220px);
+    /* Times `--follows`, which is 0 on the two kinds that hold
+       still. That factor is here rather than as a `--glow-w: 0`
+       beside their depth, and the difference was not academic:
+       this rule is LATER than both of those blocks and has the
+       same specificity, so it won, and a plate measured 156px of
+       moving light while three paragraphs above said a plate is
+       lit and holds still. It had been untrue since the formula
+       was written. Measured, not read: a `.stat` reported
+       `--glow-w: 156.4px`. */
+    --glow-w: calc(min(var(--depth) * 46px, 220px) * var(--follows, 1));
     --glow-h: var(--glow-w);
     /* 32% and not 44%. A material that is on every surface of a
        site has to be quiet or it is noise everywhere, and the
