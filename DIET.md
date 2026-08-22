@@ -1,9 +1,16 @@
 # The diet tool
 
-`/tools/diet`. A calculator and a log, for one person eating in
-Bangladesh or in the UK, who wants to know what their body is
-made of, how much it costs to run, how much it costs to feed, and
-whether the last three weeks meant anything.
+`/tools/diet`. A calculator, a log and a dashboard, for one
+person eating in Bangladesh or in the UK, who wants to know what
+their body is made of, how much it costs to run, how much it
+costs to feed, what is likely to happen next, and whether the
+last three weeks meant anything.
+
+**One place, in two languages.** Not a calculator here and a food
+log somewhere else: the body, the food, the money, the calendar,
+the clinic numbers and the explanation of every one of them, on
+one set of pages, with a switch at the top that turns the whole
+thing into Bangla.
 
 This file is the plan. It is prose, and a `check-diet` script under `scripts/`
 is what will hold the parts of it that can be broken silently,
@@ -26,9 +33,14 @@ money and this is a stronger case: somebody can hurt themselves
 with a calorie target in a way they cannot with a compound
 interest curve.
 
-**It is not a food database.** Building one is a decade of
-someone else's work and a licence fee. What it has instead is a
-portion library, `§17`, and free entry for everything else.
+**It does not build a food database, and it does not pretend one
+is unnecessary.** Building one is a decade of someone else's work
+and a licence fee. What it has instead is a small curated portion
+library, `§21`, two open databases searched through the Worker,
+`§11`, the reader's own items, and free entry for everything else.
+**Every figure says which of those it came from**, because the
+difference between a checked number and a stranger's number is
+the only thing that makes either usable.
 
 **It has no streak, no flame and nothing counting down.** That is
 already written down for the routine tool and it matters more
@@ -228,7 +240,7 @@ more useful than either number alone:
 
 That paragraph does not accuse anybody of lying, because nobody
 is lying: under-recording is close to universal and it is mostly
-the four things in `§11`. Naming the gap turns an invisible error
+the four things in `§13`. Naming the gap turns an invisible error
 into a number the reader can decide to close or to simply subtract
 from the target. Both are valid, and the tool supports the second
 without moralising about it: if the log reads 20% low every week,
@@ -243,7 +255,7 @@ target set in week one is wrong by week ten. The learned TDEE
 picks it up without the reader having to know the word.
 
 Most of that adaptation is not the furnace burning cooler. It is
-`§14`: the body moves less, unconsciously and all day. That
+`§18`: the body moves less, unconsciously and all day. That
 matters because it is the one part a reader can do something
 about, and because it makes a step count a real input rather than
 a vanity metric.
@@ -256,7 +268,7 @@ A scale reading is real weight plus a large error term. Daily
 swings of one to two kilos come from sodium, carbohydrate and its
 glycogen water, gut contents, the luteal phase of the menstrual
 cycle (commonly half a kilo to two kilos), unaccustomed training,
-alcohol, illness and travel. `§13` is the calendar all of those
+alcohol, illness and travel. `§17` is the calendar all of those
 sit on.
 
 **Nothing in this tool ever reacts to a single reading.** The
@@ -299,7 +311,7 @@ the tool's:
 | **water masking** | trend flat, then a sudden drop | fat was lost, water replaced it. Common on keto after a refeed, when starting creatine, or with new training |
 | **the target has drifted** | trend flat, learned TDEE has fallen | maintenance moved. Recalculate from the trend |
 | **the log has drifted** | trend flat, intake unchanged on paper | portions crept, or something is not being logged. The most common of the four, and the tool says so without accusing anybody |
-| **it is not a stall** | trend flat, waist falling | recomposition. `§14`, and the tool can see this one on its own |
+| **it is not a stall** | trend flat, waist falling | recomposition. `§18`, and the tool can see this one on its own |
 
 The "whoosh" belongs here. Fat cells that have given up their
 triglyceride hold water for a while and then release it, which
@@ -509,13 +521,13 @@ wrong.
 ### The things keto is quietly hard on
 
 - **Fibre**, which falls off a cliff when grains and most fruit
-  go. `§9` tracks it and this is the main reason it does.
+  go. `§14` tracks it and this is the main reason it does.
 - **Uric acid** rises in the first weeks of both keto and rapid
   loss, which matters to anybody who has ever had gout. One line,
   once, on the diet-style page.
 - **Cholesterol** moves in different directions in different
   people, sometimes sharply. That is a reason to log the panel in
-  `§15` rather than a reason for this tool to have an opinion.
+  `§19` rather than a reason for this tool to have an opinion.
 - **Long-term evidence is thinner than the internet suggests.**
   Keto works for weight loss because it produces a deficit, and
   the head-to-head trials against other diets at matched calories
@@ -526,7 +538,7 @@ wrong.
 
 Rice and roti are the staples. Keto in Dhaka is a much larger
 behavioural change than keto in Manchester, and it is more
-expensive per calorie, which `§12` can now put a number on. The
+expensive per calorie, which `§16` can now put a number on. The
 tool says this once, plainly, on the diet-style page, and then
 helps either way. Pretending otherwise would be the same failure
 as using the European BMI cut-off.
@@ -550,7 +562,7 @@ a way of eating less.
 | **5:2** | two low days a week | the same, weekly. Suits people who prefer two hard days to seven medium ones |
 | **OMAD** | one meal | hard to hit a protein floor in, so the tool warns rather than blocks |
 | **low fat** | the 1990s answer | works, at matched calories, exactly as well as keto does |
-| **Ramadan** | `§13` | a religious obligation that happens to be a fasting protocol, and the tool treats it as the former |
+| **Ramadan** | `§17` | a religious obligation that happens to be a fasting protocol, and the tool treats it as the former |
 
 **Only keto gets the adaptation window**, because only keto has
 that water artefact at the scale it has it. A 16:8 window does
@@ -558,147 +570,294 @@ not empty glycogen.
 
 **The tool never ranks them.** It shows what each one does to the
 macro split and the eating window, and it lets the reader's own
-adherence data from `§10` be the argument. The best diet is the
+adherence data from `§15` be the argument. The best diet is the
 one this particular person actually followed for six months, and
 after six months the tool can say which one that was, from the
 reader's own log, which is worth more than any table.
 
 ---
 
-## 9. Nutrition beyond calories, and how honest it can be
+## 9. What to expect, and when
 
-Calories decide the weight. Everything in this section decides
-whether the weight you keep is muscle, whether you feel well
-enough to carry on, and whether a year of this leaves you short
-of something.
+A tracker tells you what happened. Nobody tells you what is about
+to happen, and almost everybody who quits does so at a point that
+was entirely predictable a fortnight earlier.
 
-### The honesty problem, first
+**So the tool states the expectation before the week, and puts
+the reader's own number beside it afterwards.** Not a promise and
+not a target: a range, with the reason for it.
 
-Micronutrients cannot be estimated from a number of calories.
-They come from knowing what was actually eaten, and this tool has
-a curated portion library rather than a food database, `§17`. So:
+### The arc of an ordinary deficit
 
-**Every micronutrient figure is shown with its coverage.** "Iron:
-about 9 mg, from 62% of today's food." The other 38% was free
-entry with no composition attached, and pretending otherwise
-would be the worst thing this tool could do, because a confident
-number that is missing a third of the day is more dangerous than
-no number.
+| | what usually happens | why |
+| --- | --- | --- |
+| **days 1 to 7** | a fast drop, often 1 to 3 kg, and most of it is not fat | glycogen and its water, less food in the gut, less sodium |
+| **days 8 to 14** | almost nothing, and this is the first place people quit | the water has gone and what is left is the real rate |
+| **days 15 to 28** | the first honest reading. The learned maintenance appears at day 14 | enough trend to have a slope |
+| **weeks 4 to 8** | steady loss, and hunger rises somewhat | normal, and `§10` is where it gets watched |
+| **weeks 6 to 10** | the target set in week one is now wrong | adaptive thermogenesis, `§3` |
+| **weeks 8 to 12** | a diet break is worth taking | `§5` |
+| **month 3 and after** | the same percentage is fewer kilos every month | arithmetic, not failure |
 
-Coverage under about half, and the panel says the day is too
-sparse to read rather than drawing a bar.
+Keto's arc has the same shape with larger numbers in the first
+fortnight, and `§7` is where that is set out.
 
-### What is worth tracking, and why each one is on the list
+### Predicted against actual, which is the whole point
 
-Not everything. A list of forty nutrients is a list nobody reads.
-These earn their place because they are the ones that actually go
-wrong for this tool's two readerships, on the diets it supports.
+Each week, one line: what was expected, what happened, in the
+same units, with no verdict attached.
 
-| | why it is here |
+> Week 2. Expected 0.2 to 0.6 kg. Trend fell 0.3 kg.
+
+A reader who sees that in week two does not quit in week two, and
+a reader who sees four weeks of actuals below the expected range
+has evidence that something needs changing rather than a feeling
+that they are failing. **The expectation is what turns a
+disappointing number into information.**
+
+### The shape of a day
+
+The same idea one level down, and the same rule: what is typical,
+then the reader's own pattern beside it.
+
+- **Morning is the reliable reading.** `§4` has the conditions.
+- **Hunger usually peaks in the late afternoon**, and after a
+  short night, which is `§17`.
+- **Protein early flattens the afternoon.** This is the one
+  timing change with an evidence base worth the sentence.
+- **Most over-target days are made in the evening**, and the
+  reader's own weekday and mealtime data from `§15` will confirm
+  that or contradict it.
+
+### And what the tool itself unlocks, and when
+
+Nothing is held back as a reward. Each of these appears when
+there is enough data for it to be honest, and the page says the
+date it will arrive, so a reader can see it coming.
+
+| day | what appears |
 | --- | --- |
-| **protein** | already a floor in `§5`. Tracked per meal as well as per day, because distribution matters for keeping muscle |
-| **fibre** | 25 to 30 g. Low on almost every deficit and very low on keto, and it is the single thing most likely to make somebody feel unwell without knowing why |
-| **sodium, potassium, magnesium** | the keto three from `§7`. Also the ones a very low carb diet strips fastest, and sodium is the one a Bangladeshi diet is most likely to be high in already |
-| **iron** | anaemia is common among women in Bangladesh, and a deficit plus less red meat makes it worse. Tracked with vitamin C alongside, because non-haem iron absorption roughly doubles with it and that is an actionable pairing rather than a fact. Tea with a meal works the other way, which is worth knowing in a country that drinks tea with meals |
-| **calcium and vitamin D** | UK winter genuinely runs short: the NHS advises supplementing October to March. In Bangladesh the sun is not the problem, but indoor work and covering clothing can be, so the tool asks rather than assumes |
-| **B12** | vegetarian and vegan diets, which are common in both places for different reasons |
-| **iodine** | Bangladesh's salt is iodised and that is the main source, so a low sodium push can quietly take iodine with it. Worth one line rather than a bar |
-| **zinc and folate** | both fall on restricted diets, both cheap to mention |
-| **water** | logged, not calculated. On keto it matters more, and the reason is in `§7` |
-
-### Saturated fat, and the one place the tool takes a position
-
-Keto raises saturated fat intake for most people who try it, and
-what that does to a lipid panel varies enormously between
-individuals. The tool does not tell anybody what to eat. It does
-two smaller things: it tracks saturated fat as a share of total
-fat where the portion library knows it, and it puts a lipid panel
-in `§15` so that the answer for **this** reader can be a
-measurement rather than an argument on the internet.
-
-That is the pattern for every contested nutrition question here.
-Where the evidence is genuinely split, the tool logs the thing
-that would settle it for this person and declines to settle it in
-general.
-
-### What it will not do
-
-No RDA scoring out of 100, no letter grades, no green ticks for
-"complete". Those imply a precision the data does not have and
-turn eating into a test. Each nutrient shows a figure, a range to
-aim for, and its coverage.
-
-No supplement recommendations. It can say "this has been under
-the range most days for three weeks", which is a fact about the
-log. What to do about it is a conversation with a clinician, and
-the page says that.
+| 1 | BMI, WHtR, composition, an estimated maintenance, a target |
+| 7 | a trend with a slope worth drawing |
+| 14 | the learned maintenance, the under-logging gap, the first predicted against actual |
+| 21 | stall detection, `§4` |
+| 28 | weekday patterns, the top calorie sources, how protein is spread |
+| 60 | cycle to cycle comparison, `§17` |
+| 90 | this reader's own calibration: what their deficit actually does, measured on the only body in question |
+| 365 | the year page |
 
 ---
+## 10. Where you are right now, and what you are facing
 
-## 10. Food insights, which are patterns and never diagnoses
+### One card, at the top, in a sentence
 
-The log is worth more than the running total. These are the
-readings that come out of it, all of them descriptive.
+Not a dashboard of eleven numbers. A status, in the language the
+page is set in:
 
-**Where the calories actually are.** The top handful of foods by
-contribution over the last month, which is almost always a
-surprise, and almost always three items. This is the most
-actionable thing in the tool and it costs one sort.
+> Week 3 of a standard deficit. The trend is down 1.4 kg since
+> you started. This week the tool expects 0.3 to 0.6 kg. Your
+> learned maintenance is about 2,280, which is 180 below the
+> estimate you began with. One thing worth doing: protein has
+> been under the floor on nine of the last fourteen days.
 
-**Which days go over.** Grouped by weekday. A Friday that is
-consistently 700 kcal above the rest is a fact worth seeing
-rather than a failure worth hiding, and it is usually a routine
-rather than a lapse.
+Four parts and no more: **where you are, what has happened, what
+is expected, and one next thing.** Never three next things. A
+list of five improvements is a list nobody acts on, and the tool
+picks the one with the largest effect rather than showing all of
+them and calling it thorough.
 
-**How protein is spread.** Total protein hit with 80% of it at
-dinner is not the same as the same total spread over three meals.
-The tool shows the split.
+### The journal, which is the only record of what this felt like
 
-**What a swap would do.** From the portion library only, and
-arithmetic only: "half the rice for the same dal is about 140
-kcal". It never suggests a different cuisine, never says a food
-is bad, and never proposes anything not already in the reader's
-own log.
+One line a day, free text, plus a short fixed set of tags:
 
-**How full a hundred calories is.** For every item in the portion
-library, protein and fibre per 100 kcal, sorted. That is a
-descriptive property that ranks foods by how long they hold you
-without ever calling one of them bad, and it is the honest form
-of every "good food, bad food" list ever written.
+`hungry` `tired` `headache` `craving` `low energy` `good day`
+`ate out` `stressed` `slept badly` `unwell` `sore` `strong`
 
-**How this week compares to the reader's own average**, never to
-anybody else's. There is no leaderboard and no cohort.
+Fixed, because free text cannot be counted, and short, because a
+list of forty tags is a list nobody uses. These are the ones that
+recur.
 
-**Adherence against the trend.** The one place the log and the
-weight meet: weeks where the target was held plotted against what
-the trend did. That is the evidence for whether the target is
-right, and it feeds the stall reading in `§4`.
+**What they are for** is the one association the tool can honestly
+make:
 
-**What this reader's own deficit actually does.** After a few
-months there is enough data to say: the last time you held about
-500 under, the trend fell 0.4 kg a week, not the 0.5 the
-arithmetic predicted. That is a personal calibration constant,
-and it is better than any equation in `§3` because it is measured
-on the only body in question.
+> You logged a headache on five of your first seven keto days.
+> That is the most commonly reported effect of the sodium loss
+> described in `§7`, and there is a note about it there.
 
-**A year in one page.** Twelve months of trend, phases marked,
-the seasons from `§13` visible, weight at the start and the end,
-and the total logged days. Once a year, and it is the thing
-somebody actually keeps.
+Reported, associated, pointed at its own note. Never "caused by",
+never a diagnosis, and `§15`'s rule about correlations governs
+every sentence of it.
 
-### The rule these all obey
+### Hunger is the early warning, and it arrives first
 
-**A correlation is described, never explained.** "Your heavier
-days are usually Fridays" is a fact. "Fridays are ruining your
-progress" is a judgement, and this tool does not make them. The
-routine tool's no-shame rule from `§1` applies to every sentence
-generated here, and it is worth a check of its own: the generated
-sentences come from a small, listed set of templates, and the
-check reads that list.
+One number a day, 1 to 5.
+
+A hunger score climbing steadily over three weeks is the best
+available signal that a target is too aggressive, and it shows up
+**before the trend does, before adherence breaks, and before the
+reader concludes they have no willpower.** That ordering is why
+this field is worth its friction: everything else in the tool is
+a lagging indicator.
+
+When it climbs for three weeks the tool says so once, and offers
+the gentler rate from `§5` or the diet break. It does not insist,
+it does not repeat itself weekly, and it never says the word
+willpower.
+
+### Symptoms, described and pointed at
+
+| what gets reported | usually associated with | what the log can show |
+| --- | --- | --- |
+| headache, fatigue, cramp in the first fortnight of keto | sodium and water loss | the phase start date, sodium and its coverage |
+| constipation | low fibre, low water | both, with their coverage, `§14` |
+| dizzy on standing | low sodium, or a large deficit | intake against BMR, sodium |
+| always cold, poor sleep, flat mood in a long deficit | a long deficit | weeks in deficit, and the rate |
+| hair shedding two to three months after rapid loss | a known response to a stressor, and usually temporary | the rate over the preceding months |
+| the scale up 2 kg overnight | `§4`, almost always | sodium, carbohydrate, the cycle, travel |
+
+**And the line where the tool stops.** Chest pain, fainting,
+palpitations, anything severe, anything that persists, anything
+frightening: see a doctor, and do not consult a calculator. That
+sentence is printed on the symptom panel itself and not in a
+footer.
+
+### What is not here
+
+No "you are doing great". No encouragement written by a machine,
+no badges, no celebration of a number. The stage card is a
+status, and **a status that praises you is a status people stop
+reading**, which would take the four honest sentences above down
+with it.
 
 ---
+## 11. Food found rather than typed
 
-## 11. The four things that make a log wrong, and what to do about each
+`§1` says this tool does not build a food database, and that
+stays true: this repository will not hold one and this site will
+not maintain one. But a tool that makes somebody type "chicken
+curry, 380" from memory is a tool they use for four days.
+
+**So food is searched, and the search reaches three places.**
+
+| | what it is | good for | what is wrong with it |
+| --- | --- | --- | --- |
+| **the portion library** | this site's own, `§21` | Bangladeshi home cooking, both languages, real portions, and prices | small, on purpose |
+| **Open Food Facts** | an open, crowdsourced database of packaged food with a public API and barcodes | UK supermarket products, packaged food in both countries, and the barcode path | crowdsourced, so an entry can be wrong, incomplete or duplicated. Bangladeshi coverage is thin |
+| **USDA FoodData Central** | the US government's food composition database, public domain, free API | raw and generic foods, which is what home cooking is made of, and the only one of the three with dependable micronutrients | American names and American portions |
+
+Ranked in that order, always, and **the source is printed on
+every result**. A reader has to be able to tell a figure this
+site checked from a figure a stranger typed into a public
+database from a figure out of a government laboratory. Almost no
+app shows this, and it is the difference between a number and a
+rumour.
+
+### Barcodes
+
+A packaged product in Britain has one and Open Food Facts is
+keyed on it. The browser's own `BarcodeDetector` reads it from
+the camera where the browser has it, and where it does not, the
+number is typed in, which is thirteen digits and still faster
+than searching.
+
+**No image leaves the device.** The frame is decoded in the
+browser and only the digits are sent. There is no library, no
+third-party SDK and no upload, which is the only version of a
+camera feature this site would ship.
+
+### The Worker is the only caller
+
+The browser asks `/api/diet/food?q=` and
+`/api/diet/food/<barcode>` and nothing else, exactly as
+`/tools/live` asks `/api/broker/*` rather than talking to
+Trading 212. Four reasons and all four are load bearing:
+
+- **the CSP does not change.** `check-csp.ts` scans every string
+  in `aab/` and `next/` and would rightly fail a third-party host
+  written into a browser module.
+- **one normaliser.** Three sources with three shapes become one
+  shape in one place, rather than three parsers inside a
+  component.
+- **caching and rate limits.** A search for "chicken" is the same
+  search for everybody, so it is cached at the edge and neither
+  upstream sees this site's readers one at a time.
+- **the FoodData Central key stays a wrangler secret**, and the
+  section degrades honestly without it the way the Drive section
+  already does: a page that says which sources are connected
+  rather than one that fails oddly.
+
+### A found food is copied, not referenced
+
+The moment a result is used, its numbers are written into the
+reader's own row, and a food used twice becomes their own item.
+
+**The log must not depend on a third party still being there next
+year.** A diet history that changed silently because somebody
+edited a public database entry would be worse than one that went
+missing, because nothing would announce it. The row keeps the
+source, the upstream id and the date it was fetched, so a stale
+figure can be found and refreshed deliberately rather than
+drifting.
+
+### Everything is editable, and free entry never goes away
+
+A found food is a starting point. A reader whose portion is one
+and a half times the label's says so, and the correction becomes
+theirs from then on. **A search result that cannot be corrected
+is worse than free entry, because it is wrong with authority.**
+
+And a name and a number is always a valid entry. The coverage
+rule in `§14` already says what that costs and says it on screen.
+
+### No third-party account, ever
+
+No signing into a food app, no OAuth to somebody's calorie
+tracker, no importing a stranger's diary. The reader has one
+account and it is this site's. Both databases above are read
+anonymously, by the Worker, on this site's behalf.
+
+---
+## 12. Three taps, or it does not get logged
+
+Everything above is worth nothing if logging dinner takes ninety
+seconds. **The reason food diaries get abandoned is friction, not
+motivation**, and the fix is that most people eat the same forty
+things.
+
+- **Copy yesterday**, whole or one meal of it. The most pressed
+  button in any food log, and it is usually right.
+- **Your usuals**, worked out rather than asked for: anything
+  logged three times becomes a one-tap item, and the six most
+  likely for this time of day sit at the top. Breakfast at eight
+  in the morning should offer breakfast.
+- **Meals, not only foods.** "My breakfast" is one tap for four
+  items, made by saving a day's meal as a template.
+- **Recipes**, which are `§13`'s pot with a yield on it: build the
+  dish once, say it serves five, and a portion is a fraction
+  forever after. Editing the recipe does not rewrite history,
+  because a logged entry holds its own numbers.
+- **A plan for the week**, optional: the same list with dates on
+  it. Plan on Sunday, tick through the week, and the difference
+  between planned and eaten becomes a reading in `§15` rather
+  than a scolding.
+- **A shopping list out of the plan**, with the prices from `§16`
+  giving a total before the shop rather than a shock after it. A
+  list of items and a figure. **No links, no shop, no affiliate,
+  ever.**
+- **Quick add**, a bare number with no name, for the times when
+  the honest choice is a rough figure now rather than an exact
+  figure never.
+- **And a keyboard.** The whole log works without a mouse: type,
+  arrow, enter. The account page's roving tabindex is already the
+  pattern and there is no reason to invent a second one.
+
+**The measure of this section is a stopwatch, and it belongs in
+the test**: a repeat dinner in three interactions, a packaged
+food by barcode in four, a completely new home-cooked dish in
+under a minute. A target nobody measures is a wish.
+
+---
+## 13. The four things that make a log wrong, and what to do about each
 
 `§3` said the gap between the estimate and the learned figure is
 usually 20 to 30 percent. This is where that gap comes from, and
@@ -806,7 +965,140 @@ out of the way.
 
 ---
 
-## 12. What food costs, which is the one question this site is already for
+## 14. Nutrition beyond calories, and how honest it can be
+
+Calories decide the weight. Everything in this section decides
+whether the weight you keep is muscle, whether you feel well
+enough to carry on, and whether a year of this leaves you short
+of something.
+
+### The honesty problem, first
+
+Micronutrients cannot be estimated from a number of calories.
+They come from knowing what was actually eaten, and this tool has
+a curated portion library rather than a food database, `§21`. So:
+
+**Every micronutrient figure is shown with its coverage.** "Iron:
+about 9 mg, from 62% of today's food." The other 38% was free
+entry with no composition attached, and pretending otherwise
+would be the worst thing this tool could do, because a confident
+number that is missing a third of the day is more dangerous than
+no number.
+
+Coverage under about half, and the panel says the day is too
+sparse to read rather than drawing a bar.
+
+### What is worth tracking, and why each one is on the list
+
+Not everything. A list of forty nutrients is a list nobody reads.
+These earn their place because they are the ones that actually go
+wrong for this tool's two readerships, on the diets it supports.
+
+| | why it is here |
+| --- | --- |
+| **protein** | already a floor in `§5`. Tracked per meal as well as per day, because distribution matters for keeping muscle |
+| **fibre** | 25 to 30 g. Low on almost every deficit and very low on keto, and it is the single thing most likely to make somebody feel unwell without knowing why |
+| **sodium, potassium, magnesium** | the keto three from `§7`. Also the ones a very low carb diet strips fastest, and sodium is the one a Bangladeshi diet is most likely to be high in already |
+| **iron** | anaemia is common among women in Bangladesh, and a deficit plus less red meat makes it worse. Tracked with vitamin C alongside, because non-haem iron absorption roughly doubles with it and that is an actionable pairing rather than a fact. Tea with a meal works the other way, which is worth knowing in a country that drinks tea with meals |
+| **calcium and vitamin D** | UK winter genuinely runs short: the NHS advises supplementing October to March. In Bangladesh the sun is not the problem, but indoor work and covering clothing can be, so the tool asks rather than assumes |
+| **B12** | vegetarian and vegan diets, which are common in both places for different reasons |
+| **iodine** | Bangladesh's salt is iodised and that is the main source, so a low sodium push can quietly take iodine with it. Worth one line rather than a bar |
+| **zinc and folate** | both fall on restricted diets, both cheap to mention |
+| **water** | logged, not calculated. On keto it matters more, and the reason is in `§7` |
+
+### Saturated fat, and the one place the tool takes a position
+
+Keto raises saturated fat intake for most people who try it, and
+what that does to a lipid panel varies enormously between
+individuals. The tool does not tell anybody what to eat. It does
+two smaller things: it tracks saturated fat as a share of total
+fat where the portion library knows it, and it puts a lipid panel
+in `§19` so that the answer for **this** reader can be a
+measurement rather than an argument on the internet.
+
+That is the pattern for every contested nutrition question here.
+Where the evidence is genuinely split, the tool logs the thing
+that would settle it for this person and declines to settle it in
+general.
+
+### What it will not do
+
+No RDA scoring out of 100, no letter grades, no green ticks for
+"complete". Those imply a precision the data does not have and
+turn eating into a test. Each nutrient shows a figure, a range to
+aim for, and its coverage.
+
+No supplement recommendations. It can say "this has been under
+the range most days for three weeks", which is a fact about the
+log. What to do about it is a conversation with a clinician, and
+the page says that.
+
+---
+
+## 15. Food insights, which are patterns and never diagnoses
+
+The log is worth more than the running total. These are the
+readings that come out of it, all of them descriptive.
+
+**Where the calories actually are.** The top handful of foods by
+contribution over the last month, which is almost always a
+surprise, and almost always three items. This is the most
+actionable thing in the tool and it costs one sort.
+
+**Which days go over.** Grouped by weekday. A Friday that is
+consistently 700 kcal above the rest is a fact worth seeing
+rather than a failure worth hiding, and it is usually a routine
+rather than a lapse.
+
+**How protein is spread.** Total protein hit with 80% of it at
+dinner is not the same as the same total spread over three meals.
+The tool shows the split.
+
+**What a swap would do.** From the portion library only, and
+arithmetic only: "half the rice for the same dal is about 140
+kcal". It never suggests a different cuisine, never says a food
+is bad, and never proposes anything not already in the reader's
+own log.
+
+**How full a hundred calories is.** For every item in the portion
+library, protein and fibre per 100 kcal, sorted. That is a
+descriptive property that ranks foods by how long they hold you
+without ever calling one of them bad, and it is the honest form
+of every "good food, bad food" list ever written.
+
+**How this week compares to the reader's own average**, never to
+anybody else's. There is no leaderboard and no cohort.
+
+**Adherence against the trend.** The one place the log and the
+weight meet: weeks where the target was held plotted against what
+the trend did. That is the evidence for whether the target is
+right, and it feeds the stall reading in `§4`.
+
+**What this reader's own deficit actually does.** After a few
+months there is enough data to say: the last time you held about
+500 under, the trend fell 0.4 kg a week, not the 0.5 the
+arithmetic predicted. That is a personal calibration constant,
+and it is better than any equation in `§3` because it is measured
+on the only body in question.
+
+**A year in one page.** Twelve months of trend, phases marked,
+the seasons from `§17` visible, weight at the start and the end,
+and the total logged days. Once a year, and it is the thing
+somebody actually keeps.
+
+### The rule these all obey
+
+**A correlation is described, never explained.** "Your heavier
+days are usually Fridays" is a fact. "Fridays are ruining your
+progress" is a judgement, and this tool does not make them. The
+routine tool's no-shame rule from `§1` applies to every sentence
+generated here, and it is worth a check of its own: the generated
+sentences come from a small, listed set of templates, and the
+check reads that list.
+
+---
+
+## 16. What food costs, which is the one question this site is already for
 
 This is a personal finance site. It teaches money in Bangla, it
 has a school called টাকা ও শেয়ার, and it holds a portfolio tool
@@ -858,7 +1150,7 @@ should be honest about it:
 `targets` in the account already holds a goal with a number on
 it, of three kinds, and `scenarios` already holds a filled-in
 calculator under a name. A food budget is a spending target and a
-weight goal is a metric target, and `§22` is where those wires
+weight goal is a metric target, and `§29` is where those wires
 get connected rather than duplicated.
 
 **No affiliate links, no product recommendations, no shopping
@@ -869,7 +1161,7 @@ advertisement, and it will not.
 
 ---
 
-## 13. The body has a calendar, and ignoring it makes the tool wrong
+## 17. The body has a calendar, and ignoring it makes the tool wrong
 
 Every number in `§4` assumes the reader is the same person from
 week to week. They are not, and the ways they are not are
@@ -900,7 +1192,7 @@ date, and then
   becomes visible rather than mysterious.
 
 It is off by default, it is one field, and it is stored like
-everything else in `§19`. The tool asks once and never again.
+everything else in `§26`. The tool asks once and never again.
 
 ### Sleep
 
@@ -910,7 +1202,7 @@ all day after a bad night. It also affects the morning weight
 directly through hydration and cortisol.
 
 One optional field, hours. The insight it earns is a plain
-observation of the kind `§10` allows: on this reader's own data,
+observation of the kind `§15` allows: on this reader's own data,
 days after short nights average so much above target. Described,
 not explained, and never turned into a sleep score.
 
@@ -940,7 +1232,7 @@ case. A travel mark does what the illness mark does.
 | --- | --- |
 | **Ramadan** | the eating window moves to suhoor and iftar. The tool must not nag during fasting hours, must not read an empty afternoon as a missed day, and must not treat the pre-dawn meal as a midnight binge. Morning weight during a fast is largely a dehydration reading and is trended with that said |
 | **Eid** | two of them, and the week after each is a refeed in the sense of `§7` rather than a failure. Annotated, not counted |
-| **UK winter** | weight rises on average from late autumn, vitamin D falls (`§9`), and daylight ends the outdoor half of `§14`. A December rise is the norm and a tool that treats it as an emergency is wrong about a whole country |
+| **UK winter** | weight rises on average from late autumn, vitamin D falls (`§14`), and daylight ends the outdoor half of `§18`. A December rise is the norm and a tool that treats it as an emergency is wrong about a whole country |
 | **Christmas and New Year** | the single most annotated fortnight in the British year |
 | **the monsoon and the summer heat** | appetite falls in extreme heat, activity falls in heavy rain, and both move the numbers in Dhaka in a way no Northern European app has ever modelled |
 | **Durga Puja, Pohela Boishakh** | food-centred, annotated the same way |
@@ -951,7 +1243,7 @@ the tool rather than in the reader's head.
 
 ---
 
-## 14. Movement, and the stall that is not a stall
+## 18. Movement, and the stall that is not a stall
 
 ### NEAT is the biggest variable in the whole equation
 
@@ -1005,7 +1297,7 @@ anybody having to estimate a burn.
 
 Training is logged as **what was done**, not as calories: type,
 duration, and how hard it felt. That is enough to draw the
-association in `§10` and it does not pretend to an accuracy that
+association in `§15` and it does not pretend to an accuracy that
 does not exist.
 
 **No heart rate, no VO2 max, no recovery score.** Those need a
@@ -1014,7 +1306,7 @@ could not check.
 
 ---
 
-## 15. The numbers a clinic gives you
+## 19. The numbers a clinic gives you
 
 Twice a year somebody has blood taken and is handed a sheet of
 numbers they cannot read, which then goes in a drawer. Those
@@ -1027,9 +1319,9 @@ and putting them on the same axis as the trend is close to free.
 | **fasting glucose and HbA1c** | Bangladesh has one of the highest diabetes prevalences in the region and much of it is undiagnosed. HbA1c is a three-month average, which is exactly the timescale this tool works on |
 | **lipid panel** | total, HDL, LDL, triglycerides. The panel that answers the keto argument in `§7` for this particular reader rather than in general. Triglycerides in particular move fast with carbohydrate and with weight |
 | **liver enzymes** | fatty liver is extremely common at these body compositions and improves with loss, and ALT is the number that shows it |
-| **haemoglobin and ferritin** | the other half of the iron paragraph in `§9`, and the one that turns "am I short of iron" from a guess into a measurement |
+| **haemoglobin and ferritin** | the other half of the iron paragraph in `§14`, and the one that turns "am I short of iron" from a guess into a measurement |
 | **thyroid** | because an underactive thyroid is a real explanation for a real stall, and because it is the explanation people reach for when it is not the explanation. A logged TSH settles it either way |
-| **vitamin D** | UK winter, `§9` |
+| **vitamin D** | UK winter, `§14` |
 
 **The tool prints reference ranges and nothing else.** No
 interpretation, no colour coding of an out-of-range value, no
@@ -1048,7 +1340,7 @@ in the tool where that could happen.
 
 ---
 
-## 16. Medicine that changes the arithmetic
+## 20. Medicine that changes the arithmetic
 
 Several very ordinary medicines change what this tool's equations
 mean, and a tracker that does not know about them silently
@@ -1066,21 +1358,21 @@ that nothing here is a reason to start, stop or change a dose.
 | **thyroid replacement** | changes BMR directly. A dose change invalidates a learned TDEE, and the tool offers to restart the fourteen day window rather than averaging across it |
 | **corticosteroids** | appetite up, fluid retention up. The scale can rise several kilos in a week with no change in fat, which is a `§4` water artefact with a cause worth naming |
 | **some antidepressants and antipsychotics** | weight gain is a well documented effect of several. Naming it stops a reader concluding their metabolism has broken |
-| **beta blockers** | slightly lower resting energy expenditure and blunted exercise heart rate, which matters mostly because it makes perceived effort a better guide than a heart rate anyway (`§14`) |
+| **beta blockers** | slightly lower resting energy expenditure and blunted exercise heart rate, which matters mostly because it makes perceived effort a better guide than a heart rate anyway (`§18`) |
 | **insulin and sulfonylureas** | a calorie deficit changes glucose control quickly, which is precisely why this row exists: the dose that was right last month may be too much this month. **This is the strongest "speak to your doctor first" in the whole file** and it is printed before any target is offered to somebody who has ticked this box |
 | **diuretics** | make weight readings and the electrolyte notes in `§7` unreliable in different directions |
-| **hormonal contraception** | changes or removes the cycle pattern in `§13`, which is worth knowing before drawing a phase on a chart |
+| **hormonal contraception** | changes or removes the cycle pattern in `§17`, which is worth knowing before drawing a phase on a chart |
 
 It is one optional set of checkboxes, stored like everything else,
 and its only effects are the sentences above and the warnings in
-`§23`. **The tool never adjusts a number because of a medicine.**
+`§30`. **The tool never adjusts a number because of a medicine.**
 Adjusting an equation for a drug would be practising medicine
 with arithmetic; saying what the drug does to a reading is
 explaining a chart.
 
 ---
 
-## 17. Two countries, one tool
+## 21. Two countries, one tool
 
 **Units.** Kilograms and centimetres by default. The UK also uses
 stone and pounds, and feet and inches, so both are offered and
@@ -1093,8 +1385,8 @@ actually uses, with kJ available because UK labels carry it.
 
 **Food.** No database. A **portion library** instead: a short list
 per place of the things people actually eat, each with energy,
-macros, the micronutrients in `§9` where they are known, and a
-price with a date on it from `§12`.
+macros, the micronutrients in `§14` where they are known, and a
+price with a date on it from `§16`.
 
 - Bangladesh: cooked rice by cup, roti, dal, hilsa and other
   small fish, chicken curry, egg, sugared tea, muri, khichuri,
@@ -1132,11 +1424,128 @@ reader's own item always sorts above the library's. After a
 month, most logging is three taps on things the reader defined.
 
 **Ramadan** changes the eating window rather than the arithmetic,
-and `§13` is where it is handled.
+and `§17` is where it is handled.
 
 ---
 
-## 18. The page you take to a doctor
+## 22. Two languages, one switch
+
+The site's rule is that a Bangla reader should never have to read
+English to find out that something exists in their own language.
+This tool will be the largest body of explanatory prose on the
+site outside its schools, so the rule bites hardest here.
+
+**One switch, at the top of every page in the tool, and it
+changes everything on the page**: the labels, the food names, the
+explanations, the sentences generated in `§15`, the numerals, and
+the names of the units.
+
+**It is `tool-lang`**, the key the calculators have used since
+long before there were accounts, carried between devices by
+`sync.ts` under `reader-prefs`. Not a second key, not a second
+switch, not a second copy of that logic. One choice, one key, and
+a reader who set the stock check to Bangla arrives here already
+in Bangla.
+
+**Bangla numerals inside `[lang="bn"]`**, out of the one `bnNum`
+in `shared/`, which had a Devanagari bug once and does not need a
+second implementation to have it again.
+
+**No transliterated jargon where a Bangla word exists.**
+"ক্যালোরি" is a borrowed word genuinely in use and it stays.
+"টিডিইই" is not a word: it is four English letters written in
+Bangla script, and putting it on a page would be exactly the
+failure this rule exists to prevent. Where a concept has no
+everyday Bangla word, it is explained in a phrase rather than
+spelled out phonetically.
+
+**A glossary, in both, linked from the first use of each term.**
+BMR, TDEE, NEAT, glycogen, ketosis, adaptive thermogenesis,
+WHtR, FFMI, net carbs, resistant starch, the luteal phase,
+HbA1c. A tool that uses those words without defining them is
+written for people who already know, and this site is not for
+those people.
+
+### Every number can explain itself
+
+Any figure, on any page, opens a short panel: the formula, the
+inputs it was given, where those came from, and how wide its
+error is.
+
+That is the stock check's personality applied here, and it is the
+only honest way to show somebody a number about their own body
+that they did not compute. **The alternative is asking a reader
+to trust a website**, which is precisely what `§1` refuses to do
+anywhere else in this file.
+
+---
+## 23. The dashboard, and the widgets on it
+
+`/tools/diet` is the page somebody opens once or five times a
+day, and it has two jobs that pull in opposite directions:
+**doing** (log a weight, log a meal) and **reading** (how is this
+going). One column cannot serve both.
+
+**On a wide screen, two columns.** The log is on the left,
+because it is what the reader came to do. The dashboard is a rail
+on the **upper right**, because it is what they came to see and
+it is the first thing in the eye's path on the way to the log.
+
+**On a phone, three bands**: a compact strip of the three numbers
+that matter today, then the log, then the widgets. Nothing is
+hidden behind a tab that the wide layout shows, because a phone
+reader is not a lesser reader.
+
+### The widgets
+
+Each one is a small self-contained panel and each one answers
+exactly one question.
+
+| | answers |
+| --- | --- |
+| **today** | how much is left, drawn as a ring rather than a bar that can fill up and go red |
+| **trend** | the trend as a sparkline with the scale faint behind it, and this week's number |
+| **stage** | `§10`'s card: which week, what is expected, one next thing |
+| **learned maintenance** | `§3`, with its confidence, and how far it has moved since the start |
+| **protein** | against the floor, because it is the one macro with a floor |
+| **the body** | waist and WHtR, and when they were last measured |
+| **nutrients** | `§14`, with coverage, showing only what is currently short |
+| **cost** | this week against the budget, `§16` |
+| **movement** | steps, and the seven-day average `§18` reads |
+| **water** | a tap per glass |
+| **the window** | for anybody fasting: where you are in it, as a clock face. A display, never an alarm |
+| **the strip** | the last fourteen days as fourteen small marks: logged, weighed, both, neither |
+| **quick add** | copy yesterday, your usuals, barcode, search. `§12` |
+| **ketones and electrolytes** | only on a keto phase, `§7` |
+
+**The reader arranges them**, and the arrangement is stored with
+everything else. Somebody on keto wants ketones and electrolytes
+at the top; somebody lifting wants protein and the waist;
+somebody in maintenance wants the trend and almost nothing else.
+
+### The rules for the board, because this is where discipline dies
+
+- **Every widget is legible with no data.** Not a spinner, not an
+  empty box, not a zero: a sentence saying what it will show and
+  when, out of `§9`'s unlock table.
+- **Nothing on it goes red and nothing counts down.** `§30`.
+- **A widget is a link.** Whatever it summarises has a page, and
+  pressing it goes there. A number with no way through to its
+  working is a decoration.
+- **The board renders on the server**, and the interactive parts
+  hydrate on top of something that was already correct. `§27`,
+  and the reason is the day every calculator on this site was
+  blank.
+- **A widget with nothing to say hides itself.** Ketones off
+  keto, cost with no budget, the fasting clock outside a fasting
+  protocol. A board of empty panels reads exactly like a broken
+  page, which is the rule `/admin` already exists under.
+- **The board is not the tool.** Everything on it is a summary of
+  a page that says it properly, and no reading exists only as a
+  widget.
+
+---
+## 24. The page you take to a doctor
 
 A GP appointment in the UK is ten minutes. A consultation in
 Dhaka is often shorter and frequently the first time anybody has
@@ -1150,9 +1559,9 @@ arrives with a memory and leaves with a guess.
 - the tape: waist, WHtR, and the composition estimate with its
   range and the name of the method that produced it.
 - intake: mean, and the learned TDEE with its confidence.
-- the clinic numbers from `§15`, each against its own reference
+- the clinic numbers from `§19`, each against its own reference
   range and the date it was taken.
-- medicines ticked in `§16`, listed plainly.
+- medicines ticked in `§20`, listed plainly.
 - and a single line at the top saying this was produced by a
   calculator from self-reported data, so that nobody reads it as
   a clinical record.
@@ -1164,11 +1573,81 @@ stylesheet and a layout.
 
 **It never leaves the reader's control.** No email, no share
 link, no upload. A print dialogue and a page, and if they want a
-file, the export in `§22` already exists.
+file, the export in `§29` already exists.
 
 ---
 
-## 19. What gets stored, and where
+## 25. Getting in, and getting out
+
+### The first ninety seconds
+
+A first screen of thirty fields is a tool nobody finishes setting
+up. **Four questions, and then a number**: height, weight, age
+and which formula to use. That is enough for a BMI, a BMR, an
+estimated maintenance and a first target, and the reader has
+something true before they have decided to trust anything.
+
+Everything else is asked **when it would change an answer**, and
+never before:
+
+| asked | when |
+| --- | --- |
+| the tape | when body fat is first offered, not at sign-up |
+| ancestry | at the first BMI, because it changes the cut-off, and the page says so there |
+| the place | at the first food search or the first price |
+| a goal and a rate | on the goal page, once there is a maintenance figure worth setting a rate against |
+| medicines, the cycle, clinic numbers | never asked. They are offered on their own pages and the whole tool works without any of them |
+
+**And the weight half can be skipped entirely.** A reader who
+wants to log food and nothing else gets `§14` and `§15` with no
+weight field at all. That is the same mode `§30` requires for a
+completely different reason, and building it once serves both.
+
+### Arriving from another app
+
+"Leaving should be as easy as arriving" is already this site's
+rule about accounts. **The reverse is what stops somebody
+arriving at all**: a reader with three years of data elsewhere is
+being asked to abandon it.
+
+A CSV importer with column mapping, which is all this needs.
+MyFitnessPal, Cronometer and LoseIt all export CSV; Apple Health
+and Google Fit export weight; a Withings, Renpho or Xiaomi scale
+exports a file of readings. Anything else is a file, a preview of
+the first rows, and a screen that maps columns to fields.
+
+**The preview screen is the whole feature.** An importer that
+guesses silently is an importer that fills a year of somebody's
+history with the wrong column, and the reader finds out in March.
+
+Imported rows are marked with their origin, so an imported year
+and a logged year can be told apart, and a bad import is undone
+as one operation rather than three hundred.
+
+### Leaving
+
+The site's rule, unchanged: one JSON file with all of it, and an
+erase that removes all of it. `§29`. **The importer reads the
+exporter's format**, so this tool can be left and returned to,
+which is the only real test of whether an export is honest.
+
+### And offline, because Dhaka
+
+The network is not dependable everywhere this will be used, and a
+log that fails silently when the connection drops is a log that
+loses somebody's dinner.
+
+**A queued write is not a local copy.** `§26` says the account is
+the record and there is no mirror, and that stands: what is held
+here is a **request that has not gone yet**. It is shown to the
+reader as pending, retried when the connection returns, and gone
+the moment it succeeds. It is never read back as data, it never
+answers a query, and nothing renders from it except its own
+pending state. That distinction is the whole reason this does not
+reopen the argument `sync.ts` settled.
+
+---
+## 26. What gets stored, and where
 
 In Supabase, behind the same row level security everything else
 uses, and **no local copy**. The precedent is exact and
@@ -1191,26 +1670,36 @@ public.diet_profile   -- one row per person
   activity, goal_kind ('lose' | 'maintain' | 'gain'), goal_rate,
   goal_waist_cm, goal_weight_kg, band_low_kg, band_high_kg,
   cycle_tracking, meds text[], food_budget, budget_currency,
-  oil_ml_week, oil_people, oil_meals, updated_at
+  oil_ml_week, oil_people, oil_meals,
+  board jsonb,          -- which widgets, in what order (§23)
+  onboarded_at, updated_at
 
 public.diet_days      -- one row per person per day
   user_id, entry_date, weight_kg, kcal,
   protein_g, carbs_g, fat_g, fibre_g, sodium_mg,
-  ketones_mmol, steps, sleep_hours, water_ml,
+  ketones_mmol, steps, sleep_hours, water_ml, hunger,
   waist_cm, hip_cm, neck_cm, chest_cm, thigh_cm, arm_cm,
   marks text[],   -- 'ill', 'travel', 'refeed', 'off-protocol'
-  note,
+  tags  text[],   -- the fixed journal set (§10)
+  note, origin,   -- 'logged' | 'import:<what>', for §25
   unique (user_id, entry_date)
 
-public.diet_entries   -- one row per food logged
-  user_id, entry_date, meal, item_ref, label,
+public.diet_entries   -- one row per food logged, and per food planned
+  user_id, entry_date, meal, at_time, label, label_bn,
   qty, unit, kcal, macros jsonb, micros jsonb,
-  est_low, est_high,        -- a range, for food eaten out
-  source ('library' | 'own' | 'free' | 'label' | 'pot')
+  est_low, est_high,        -- a range, for food eaten out (§13)
+  planned bool,             -- a week's plan is the same rows, dated ahead
+  source ('library' | 'own' | 'off' | 'fdc' | 'label' | 'free' | 'recipe'),
+  source_id, fetched_on,    -- what it was copied from, and when (§11)
+  origin
 
-public.diet_foods     -- the reader's own items and pots
+public.diet_foods     -- the reader's own items, pots and recipes
   user_id, label, label_bn, qty, unit, kcal, macros jsonb,
-  price, currency, is_pot, pot_of jsonb, updated_at
+  micros jsonb, price, currency, priced_on,
+  kind ('item' | 'pot' | 'recipe' | 'meal'),
+  parts jsonb, serves,      -- a recipe is parts and a yield (§12)
+  uses, last_used,          -- what makes something one of "your usuals"
+  source, source_id, fetched_on, updated_at
 
 public.diet_phases    -- what protocol was running, and when
   user_id, started_on, ended_on, style, note
@@ -1225,12 +1714,25 @@ result has a unit and a reference range, and a profile is one
 row. Folding any pair together would mean nulls in most columns
 of most rows, which is the shape that makes a query lie.
 
-**Nothing here goes through a Worker.** The browser reads and
-writes as the reader, with the reader's own bearer, exactly as
-the routine tool does. This project holds no service-role key
-and this tool is not a reason to start. There is therefore no
-`functions/api/diet/`, and that absence is a design decision
-rather than an omission.
+**A plan is not a seventh table.** A planned meal is an entry
+with a future date and `planned` set, which means the week's plan,
+the shopping list and the planned-against-eaten reading in `§15`
+all come out of rows that already exist, and a plan becomes a log
+by clearing one flag.
+
+**None of the reader's data goes through a Worker.** The browser
+reads and writes as the reader, with the reader's own bearer,
+exactly as the routine tool does. This project holds no
+service-role key and this tool is not a reason to start.
+
+**The one thing that does is food search**, and only food search:
+`/api/diet/food` in `functions/api/diet/`, for the four reasons
+in `§11`. It is a read-only proxy over two public databases. It
+never sees a reader's log, it takes no bearer, it writes nothing,
+and if it is unavailable the tool still works with the portion
+library, the reader's own items and free entry. That split is the
+whole of the API surface: **the reader's rows are the browser's,
+somebody else's database is the Worker's.**
 
 **The arithmetic is in `shared/`,** so a formula cannot say one
 thing in a route and another in a check. The portion library is
@@ -1244,12 +1746,12 @@ anything else.
 **`meds` and the cycle field are the most sensitive rows in this
 database.** They are optional, they are never required to use the
 tool, they are covered by the same row level security, and they
-appear in the export in `§22` like everything else, because a
+appear in the export in `§29` like everything else, because a
 person leaving should take all of it.
 
 ---
 
-## 20. How a number is written, and how a chart is read
+## 27. How a number is written, and how a chart is read
 
 The site already has rules about counting things. This tool
 generates more numbers per screen than anything else on it, so
@@ -1272,7 +1774,7 @@ rest of the site uses. Not a second copy of that function: the
 one in `shared/` that already had a Devanagari bug once.
 
 **Nothing is red and nothing is a grade.** Over target is drawn
-in the same weight as under target. `§23`.
+in the same weight as under target. `§30`.
 
 ### Charts
 
@@ -1301,33 +1803,42 @@ and there are four rules for it.
 
 ---
 
-## 21. The pages
+## 28. The pages
 
 | | |
 | --- | --- |
-| `/tools/diet` | today. Weight in, food in, the trend, today's target, what the tool has learned |
+| `/tools/diet` | today. The log on the left, the dashboard on the upper right, `§23`. Weight, food, the stage card, the widgets |
 | `/tools/diet/you` | the body: measurements, composition, the cut-offs and which set is in use, the tape guide |
 | `/tools/diet/goal` | rate, style, macros, the floors, the goal in waist first, and what the projection actually says |
-| `/tools/diet/trend` | the long view: trend against scale, learned TDEE over time, stalls, phases, the calendar from `§13` |
-| `/tools/diet/foods` | the portion library for this place, the reader's own items and pots, the label reader, and the price table from `§12` |
-| `/tools/diet/nutrition` | `§9` and `§10`: the nutrients with their coverage, and the readings out of the log |
-| `/tools/diet/health` | `§15` and `§16`: the clinic numbers and the medicines list |
-| `/tools/diet/summary` | `§18`, the printable page |
+| `/tools/diet/trend` | the long view: trend against scale, learned maintenance over time, stalls, phases, and the calendar from `§17` |
+| `/tools/diet/expect` | `§9`: the arc, this week's expectation against what happened, the shape of a day, and what unlocks when |
+| `/tools/diet/log` | the food log in full: search, barcode, recipes, your usuals, the week's plan and the shopping list. `§11` and `§12` |
+| `/tools/diet/foods` | the portion library for this place, the reader's own items, and the price table from `§16` |
+| `/tools/diet/nutrition` | `§14` and `§15`: the nutrients with their coverage, and the readings out of the log |
+| `/tools/diet/journal` | `§10`: the line a day, the tags, hunger, and the symptom table |
+| `/tools/diet/health` | `§19` and `§20`: the clinic numbers and the medicines list |
+| `/tools/diet/summary` | `§24`, the printable page |
 
 All Next routes under `next/app/(site)/tools/diet/`, components in
 `next/components/diet/`, arithmetic in `shared/`. A nav entry in
 `shared/nav.ts` under Tools, which is what puts it in the rail,
 the footer and the palette at once.
 
-**Eight pages is too many to scroll and exactly right to tab
-through**, which is a solved problem here: `next/components/ui/tab-panels.tsx`
-is the account page's arrangement, the fragment chooses the
-panel, and the panels are built on the server and handed over as
-a prop. This tool uses it rather than inventing a second one.
+**Eleven pages is too many to scroll and exactly right to tab
+through**, which is a solved problem here:
+`next/components/ui/tab-panels.tsx` is the account page's
+arrangement, the fragment chooses the panel, and the panels are
+built on the server and handed over as a prop. This tool uses it
+rather than inventing a second one.
+
+**The dashboard is not one of them and never becomes one.** `§23`
+says every widget links to the page that says the thing properly.
+The moment a reading exists only on the board, the board has
+become the tool and the pages have become decoration.
 
 ---
 
-## 22. Where this meets the rest of the site
+## 29. Where this meets the rest of the site
 
 Nothing in this tool is allowed to be a second copy of something
 the site already has.
@@ -1337,15 +1848,18 @@ the site already has.
 | **`targets`** | already holds a goal with a number on it, of three kinds: a `course` reads ticks, a `habit` reads `days-active`, a `metric` is typed in because the site cannot see it. **A weight goal is a `metric` today and stops being one the moment `diet_days` exists.** That is not a fourth kind, it is the third kind gaining a source, which is exactly the test the existing rule sets: if the site can measure it, the bar is not a decoration |
 | **`scenarios`** | already holds a filled-in calculator under a name. A saved plan here is a scenario, encoded the way the stock check encodes its own, so there is one encoder and a saved plan is a link |
 | **the routine tool** | logs `days-active`, which is the same calendar this tool draws on. A day logged here should count as an active day there rather than being counted twice |
-| **the export** | "take a copy of everything" is one JSON file with progress, library, targets, scenarios and profile in it. The six tables in `§19` go in it, in the same commit that creates them. An export that silently omits the newest feature is the failure this site keeps a check for |
+| **the export** | "take a copy of everything" is one JSON file with progress, library, targets, scenarios and profile in it. The six tables in `§26` go in it, in the same commit that creates them. An export that silently omits the newest feature is the failure this site keeps a check for |
 | **erase everything** | the same, in the same commit, and it is the more important half |
 | **`COUNTS`** | if any page says how many tools this site has, it counts them |
 | **the money school** | this tool prices food; `/money/` teaches budgeting. A link each way, and no duplicated arithmetic |
-| **`bnNum`, `GoCard`, `InfoCard`, the tab panels, the chip, the crumbs** | all of it already exists. This tool writes no new chrome |
+| **`tool-lang`** | the calculators' language switch, already carried between devices by `sync.ts` under `reader-prefs`. `§22` uses that key and does not add a second one |
+| **the routine tool's mood ribbon** | `moodRibbon()` already exists in `shared/routine.ts` and draws a run of days as a band. `§10`'s hunger and tags are the same shape and use the same drawing |
+| **`/tools/live`'s Worker pattern** | one proxy, one credential, one place that meters. `§11`'s food search is that pattern a second time and deliberately not a second design |
+| **`bnNum`, `GoCard`, `InfoCard`, `SoonCard`, the tab panels, the chip, the crumbs, the ring** | all of it already exists. This tool writes no new chrome, and `§23`'s widgets are those components arranged, not new ones |
 
 ---
 
-## 23. Safety, written before the code
+## 30. Safety, written before the code
 
 - Every page that prints a target prints, next to it, that this
   is general education and not medical advice.
@@ -1353,7 +1867,7 @@ the site already has.
 - Under 18: the equations are for adults and the tool says so and
   stops. This is not a soft warning; there is no child mode.
 - Pregnancy or breastfeeding: not supported, said plainly.
-- Diabetes on insulin or sulfonylureas: the line from `§16`,
+- Diabetes on insulin or sulfonylureas: the line from `§20`,
   before any target is offered, because a deficit changes a dose
   and only a clinician can change a dose.
 - Kidney disease, blood pressure medication, or a history of
@@ -1366,76 +1880,113 @@ the site already has.
   argue with anybody who takes it.
 - **A weight-free mode**, which is the honest answer to the line
   above: the log, the nutrition panel and the tape, with no
-  weight field, no trend and no projection. Everything in `§9`,
-  `§10` and `§14` still works. A tool that can only be used one
+  weight field, no trend and no projection. Everything in `§14`,
+  `§15` and `§18` still works. A tool that can only be used one
   way is a tool that some people should not use at all.
 - No shame language anywhere. Not "you failed", not "over
   budget", not red, not a streak, not a flame, not a
   notification that a day was missed. The routine tool's rule,
   and it holds here.
-- The generated sentences in `§10` come from a listed set of
+- The generated sentences in `§15` come from a listed set of
   templates, and that list is what a check reads. A tool that
   writes free prose about somebody's eating will eventually write
   something cruel.
 
 ---
 
-## 24. Stages
+## 31. Stages
 
 Each stage ships. None of them ships a placeholder: an empty
 panel that will one day hold something reads exactly like a
 broken one, which is the rule `/admin` already exists under.
 
-1. **The arithmetic**, in `shared/`, with a unit test per formula.
-   BMI both ways, WHtR, Navy, Deurenberg, Mifflin, Katch, the EMA
-   and the learned TDEE. Nothing renders yet.
-2. **The migration**: the six tables and their policies.
-3. **`/tools/diet/you`**: measurements in, composition out. The
-   first page that shows a number, and the first that shows a
-   range.
-4. **`/tools/diet`**: log a weight, log an intake, draw the trend.
-   The server-rendered chart from `§20` lands here.
-5. **`/tools/diet/goal`**: the engine, the floors, the waist-first
-   goal, the projection with its interval.
-6. **`/tools/diet/trend`**: learned TDEE, the under-logging gap,
-   stalls, the four kinds.
-7. **Keto**: the adaptation window, refeed annotation,
-   electrolytes, ketones.
-8. **The portion library** for both places, the reader's own
-   items, and the label reader.
-9. **The four log corrections** from `§11`: the oil calibration,
-   the shared pot, cooked-versus-raw naming, ranges for food
-   eaten out, and hand portions.
-10. **Nutrition and insights**: `§9` and `§10`, coverage first.
-11. **Cost**: `§12`, prices in the library and the budget plot.
-12. **The calendar**: `§13`, marks, cycle, seasons, and Ramadan.
-13. **Movement**: `§14`, steps and the recomposition reading.
-14. **Health**: `§15` and `§16`.
-15. **Maintenance and gaining**: `§6`, which is last only because
-   it is the phase that comes after everything above.
-16. **The doctor's page** and the export wiring in `§22`.
+**The order is chosen so the tool is usable at stage 6 and every
+stage after it adds a reason to come back**, rather than so that
+the architecture is tidy. A plan that puts every foundation
+first is a plan that has nothing to show for four weeks.
+
+| | | |
+| --- | --- | --- |
+| 1 | **the arithmetic** | `shared/`, a unit test per formula. BMI both ways, WHtR, Navy, Deurenberg, Mifflin, Katch, the time-weighted EMA and the learned maintenance. Nothing renders |
+| 2 | **the migration** | the six tables and their policies |
+| 3 | **the shell and the switch** | the routes, the tab panels, the language switch on `tool-lang`, and the glossary. `§22`. Everything after this is bilingual by construction rather than by retrofit |
+| 4 | **`/tools/diet/you`** | measurements in, composition out. The first page that shows a number, and the first that shows a range |
+| 5 | **`/tools/diet`, first pass** | log a weight, log an intake by hand, draw the trend. The server-rendered chart from `§27` |
+| 6 | **`/tools/diet/goal`** | the engine, the floors, the waist-first goal, the projection with its interval. **The tool is worth using from here** |
+| 7 | **the food log** | `§11` and `§12`: search across the three sources, the source label on every result, snapshot on use, barcode, your usuals, copy yesterday |
+| 8 | **`/tools/diet/trend`** | learned maintenance, the under-logging gap, stalls, the four kinds |
+| 9 | **`/tools/diet/expect`** | `§9`: the arc, the expectation before the week, the actual beside it afterwards, the unlock table |
+| 10 | **the stage card and the journal** | `§10`: where you are, one next thing, the tags, hunger, and the symptom table |
+| 11 | **the dashboard** | `§23`: the widgets, the arrangement, and the empty state of every one of them |
+| 12 | **the portion library** | both places, both languages, the reader's own items, recipes, meals, and the label reader |
+| 13 | **the log corrections** | `§13`: the oil calibration, the shared pot, cooked against raw, ranges for eating out, hand portions |
+| 14 | **nutrition and insights** | `§14` and `§15`, coverage first, and nothing drawn under half |
+| 15 | **cost** | `§16`: prices with dates, cost per gram of protein, the budget plot |
+| 16 | **the calendar** | `§17`: marks, the cycle, the seasons, Ramadan |
+| 17 | **movement** | `§18`: steps, and the recomposition reading that needs the tape |
+| 18 | **health** | `§19` and `§20`: the clinic numbers, the units question, the medicines list |
+| 19 | **the plan and the shopping list** | `§12`, which needs the library and the prices to exist first |
+| 20 | **getting in and out** | `§25`: onboarding, the CSV importer with its preview, the export wiring in `§29`, and the offline queue |
+| 21 | **maintenance and gaining** | `§6`, last only because it is the phase that comes after all of the above |
+| 22 | **the doctor's page** | `§24`, which is a print stylesheet over numbers that all already exist |
+
+**Two things are deliberately not staged at the end**: the
+language switch, because retrofitting a second language is twice
+the work and never finishes, and the empty states, because they
+are what every stage before the last one actually looks like.
 
 ---
 
-## 25. What must be checked
+## 32. What must be checked
 
-- a `check-diet` script under `scripts/`: every formula in
-  `shared/` has a test; no page prints a target without the
-  disclaimer beside it; the floors in `§5` cannot be crossed by
-  any input, including the gaining direction in `§6`; the Asian
-  cut-off table is used whenever ancestry says so; every food in
-  both libraries carries a source and a price date; every rice,
-  grain and pasta row names its state; and the generated
-  sentences in `§10` come only from the listed templates.
-- a `diet.test` under `next/`: the pages in a real browser, the
-  way `next/admin.test.ts` drives `/admin`. A panel that renders
-  and computes nothing looks exactly like one that works, which
-  is the failure `next/interactive.test.ts` exists for and this
-  tool is the largest surface on the site for it.
-- the chart's table alternative and its `aria-describedby`, in
-  that same test, because `§20` is only true if something says
-  so.
-- the export in `§22` contains all six tables, and the erase
+A check for every place in this file where a rule could be
+quietly broken and the page would still render. That list is
+long because most of this file is about numbers that look fine
+when they are wrong.
+
+**A `check-diet` script under `scripts/`**, needing no browser:
+
+- every formula in `shared/` has a test, and the floors in `§5`
+  cannot be crossed by any input, including the gaining direction
+  in `§6`.
+- the Asian cut-off table is used whenever ancestry says so.
+- every food in both libraries carries a source and a price date,
+  and every rice, grain and pasta row names its state.
+- the generated sentences in `§15` and the stage card in `§10`
+  come only from the listed templates, and the list contains no
+  second person judgement.
+- the fixed journal tag set is the one in `§10` and has not grown
+  a forty-first tag.
+- **no widget in `§23` is defined without an empty state.**
+- **no page prints a target without the disclaimer beside it.**
+- both language files cover the same keys, so a Bangla reader
+  never meets an English fallback string. `§22`.
+- the glossary defines every term the pages use.
+
+**A `diet.test` under `next/`**, in a real browser, the way
+`next/admin.test.ts` drives `/admin`:
+
+- every page renders and every number is computed rather than
+  placeholder. A panel that renders and computes nothing looks
+  exactly like one that works, which is what
+  `next/interactive.test.ts` exists for and this tool is the
+  largest surface on the site for it.
+- **the language switch changes every string on the page**, not
+  the headings only. This is the check that catches the retrofit
+  the stage list is ordered to avoid.
+- the chart's table alternative and its `aria-describedby`,
+  because `§27` is only true if something says so.
+- **the stopwatch from `§12`**: a repeat dinner in three
+  interactions, a barcode in four, a new dish in under a minute.
+- a searched food is copied into the reader's own row rather than
+  referenced, and the row keeps its source and fetch date. `§11`.
+- the importer shows its preview before it writes anything, and
+  an import can be undone as one operation. `§25`.
+- the offline queue is never read back as data. `§25`.
+
+**And two that belong to the site rather than the tool:**
+
+- the export in `§29` contains all six tables and the erase
   removes all six. This is a check rather than a paragraph
   because it is the one that will rot first.
 - `COUNTS` in `shared/content.ts` if any page says how many tools
