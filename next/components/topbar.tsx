@@ -33,7 +33,7 @@
    ============================================================ */
 
 import type { ReactNode } from "react";
-import { AUDIENCES } from "../lib/nav";
+import { AUDIENCES } from "@reiad/shared/nav";
 import { Icon } from "./icons";
 import { DrawerButton } from "./sidebar";
 

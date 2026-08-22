@@ -65,7 +65,6 @@ next/
     school/                hub, ladder, lesson, workbook
     course/                the third-party player
   lib/                     data access and pure helpers
-    nav.ts                 the one table
     db/                    D1 and Supabase reads
   styles/
     tokens.css             palette, scales, the @layer declaration
@@ -76,6 +75,9 @@ next/
 
 functions/                 the API. 28 handlers, TypeScript
 shared/                    what more than one runtime must agree on
+                           nav.ts, the one table, is here: four
+                           runtimes read it and next/ was three
+                           of them
 
 aab/                       sw.js, 404.html, offline.html, fallback.css
 ```

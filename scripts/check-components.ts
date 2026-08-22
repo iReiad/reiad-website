@@ -43,7 +43,7 @@
    ---- and no route names a colour ----
 
    The second half of the same idea. `--accent` is set on <html>
-   from the one table in `next/lib/nav.ts`, and every component
+   from the one table in `shared/nav.ts`, and every component
    reads it, so a page wears its section's colour by doing
    nothing. A route that writes `var(--blue)` or a hex opts itself
    out of that, permanently and silently. That is a hard failure
@@ -309,7 +309,7 @@ for (const at of colours) {
   problems.push(
     `a route names a colour: ${at}\n`
     + "        Everything reads var(--accent), which <html> sets from the one\n"
-    + "        table in next/lib/nav.ts. A named colour is a page that stops\n"
+    + "        table in shared/nav.ts. A named colour is a page that stops\n"
     + "        following its own section.");
 }
 

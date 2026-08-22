@@ -1316,7 +1316,7 @@ and there are four rules for it.
 
 All Next routes under `next/app/(site)/tools/diet/`, components in
 `next/components/diet/`, arithmetic in `shared/`. A nav entry in
-`next/lib/nav.ts` under Tools, which is what puts it in the rail,
+`shared/nav.ts` under Tools, which is what puts it in the rail,
 the footer and the palette at once.
 
 **Eight pages is too many to scroll and exactly right to tab

@@ -55,4 +55,4 @@ cd app && npm run build               # aab/studio/
 
 `CLAUDE.md` is the working reference: why each rule exists and what breaks
 without it. `SETUP.md` is first-time setup. `MIGRATION.md` tracks the move to
-TypeScript and Tailwind.
+TypeScript and Tailwind. `ANDROID.md` is the plan for the native Android app.

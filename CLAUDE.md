@@ -307,7 +307,7 @@ reader.
 Every page of this site is a rail down the left, a bar across the
 top and a footer. All three are rendered on the server by
 `next/components/`, and all three read **one** table:
-`next/lib/nav.ts`. Add a school there and it appears in the rail,
+`shared/nav.ts`. Add a school there and it appears in the rail,
 in the footer and on `/skills` at once.
 
 That is not tidiness. The menu used to be said in four places: the
@@ -1452,11 +1452,12 @@ which lessons exist, in what order, in which section. Titles and
 prose are not compared: those are the Studio's now.
 
 **A stage's `base` says where its pages go, not whether anybody
-can write them.** `basics-1` carries a `base` of `/learn/terms/`
-because its eighteen term pages were published there for a year
-before this school had a builder, and their URLs do not move. They
-are written from the rows like everything else; the builder just
-writes them to that address.
+can write them.** `basics-1` carries a `base` of `/money/terms/`
+because its eighteen term pages were the glossary for a year
+before this school had a builder, and they keep the terms shape
+of address (it was `/learn/terms/` until the whole school moved).
+They are written from the rows like everything else; the builder
+just writes them to that address.
 
 **Every stage is editable, as of 17 August 2026.** `start` was
 `inline` until then: its eight steps were accordion sections of
@@ -1565,7 +1566,7 @@ silences the next complaint too.
 ## What more than one runtime has to agree on
 
 `shared/` is for anything the Worker, the browser and the Next.js
-route must all say the same way. Six files and a directory:
+route must all say the same way. Eight files and a directory:
 `content.ts`, the site's own manifest and every number the site
 states about itself; `curricula/`, the four schools' ladders, one
 file each; `look.ts`, the per-section table and the head facts
@@ -1573,8 +1574,20 @@ every article page states; `headers.ts`, the security headers a
 response has to carry when it was not served as a static file;
 `schools.ts`, the same four curricula read out of D1, plus the
 ladder's arithmetic; `rows.ts`, what a row of this database is;
-and `courses.ts`, the third-party catalogue, which is the one
-`next/` may not import for its values.
+`nav.ts`, the one table the whole menu comes from; `routine.ts`,
+what a routine's bands and tasks are and the templates the site
+ships; and `courses.ts`, the third-party catalogue, which is the
+one `next/` may not import for its values.
+
+**`nav.ts` moved here on 22 August 2026, and the move is the rule
+working rather than a tidy-up.** It sat in `next/lib/` because
+the rail, the footer and the drawer were the only readers. They
+had stopped being: four checks import it from node, a migration
+comment quotes its school ids because Postgres cannot import it,
+and `/api/site` serves it to the Android app. A file three
+runtimes read is what this section is for, and the count above
+had already gone stale once, `routine.ts` having arrived without
+being written down.
 
 **Five of them have an output, and it is one argument.** The
 browser reads the manifest at `/content.js` and a ladder at
@@ -1851,7 +1864,7 @@ a query string, which puts a long-lived credential in history and
 in every proxy log, or a cookie, which is a third way of being
 signed in on a site that already has two. A ticket names one file,
 expires, and grants nothing else. Its key is derived from
-`GOOGLE_CLIENT_SECRET` rather than being a fourth secret to
+`GOOGLE_SA_KEY` rather than being a fourth secret to
 manage, with domain separation so it signs tickets and nothing
 else.
 
@@ -1987,7 +2000,7 @@ it: one person with an admin account has more devices than
 anybody.
 
 **Nothing in the rail or the footer links to it.** `unlisted` in
-`next/lib/nav.ts` is that flag, and it exists so the menu can
+`shared/nav.ts` is that flag, and it exists so the menu can
 still be said once: the entry is in the one table like everything
 else, the two menus skip it, and `/skills` gives it a
 card of its own under a heading that says it is not published. A

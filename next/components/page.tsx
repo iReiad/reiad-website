@@ -22,7 +22,7 @@ import type { Crumb } from "./ui/crumbs";
 type Options = {
   current?: Current;
   /** The trail in the bar, for a page deeper than its section.
-      Left out, the section's own is built from `lib/nav.ts`. */
+      Left out, the section's own is built from `shared/nav.ts`. */
   crumbs?: Crumb[];
   /** A section that draws its OWN trail, in place of the row the
       bar builds from `crumbs`. One does, and `shell.tsx` says

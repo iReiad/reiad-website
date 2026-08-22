@@ -87,7 +87,7 @@ boilerplate: `/tools/routine` shipped without one and rendered as
 bare HTML with no stylesheet for four pull requests.
 `check-routes.ts` fails on it now.
 
-`unlisted: true` in `next/lib/nav.ts`, exactly as
+`unlisted: true` in `shared/nav.ts`, exactly as
 `/skills/courses/` is. The entry is in the one table so the menu
 is still said once, the rail and the footer skip it, and a link in
 the footer to a page that answers 403 is a promise the site cannot

@@ -31,7 +31,7 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
-   v174: /fallback.css. The paper weave was painted twice: a
+   v175: /fallback.css. The paper weave was painted twice: a
         ground carries it and so did every row and control drawn
         on that ground, two identical 45-degree gratings at a 5px
         pitch offset by each element's own origin, which stacks
@@ -39,7 +39,7 @@
         it is the one finish whose grain is a hatch. Measured:
         rail 2 weave layers, rail-item 2 more; now 2 and 0.
 
-   v173: /fallback.css. The light stops following the pointer on
+   v174: /fallback.css. The light stops following the pointer on
         a pane, and starts holding still on a plate, which it was
         already documented to do and never did: a `--glow-w: 0`
         beside each of their depths was overridden by the derived
@@ -47,7 +47,7 @@
         specificity. A `.stat` measured 156px of moving light.
         One factor, `--follows`, decides it now.
 
-   v172: /fallback.css. Two alignments that were guesses became
+   v173: /fallback.css. Two alignments that were guesses became
         sums: the tick on a checklist item and the numeral beside
         a practice book's writing box were both positioned
         against the top of a line BOX rather than against the
@@ -55,6 +55,14 @@
         in Bangla, where the leading is 1.9 rather than 1.7. The
         writing boxes are ruled now, at exactly one line, which is
         what a practice book is.
+
+   v172: comments only, in app.js and audience.js, and the bump
+        is what stops them being served stale for ever. The one
+        table the menu comes from moved from next/lib to
+        shared/nav.ts, because four runtimes read it and next/
+        was three of them. Both modules name that file in prose,
+        check-pointers fails on a pointer that reaches nothing,
+        so both had to be re-emitted. No behaviour changed.
 
    v171: this file. The fetch handler excluded cross-origin and
         /api/ and nothing else, so a React Server Component
@@ -707,7 +715,7 @@
 
    v99: A page wears the colour of its own icon in the rail.
         --accent arrives inline on <html> from the one table in
-        next/lib/nav.ts, so /styles.css lost the five body rules
+        shared/nav.ts, so /styles.css lost the five body rules
         that said five of the sixteen destinations by hand, and
         the practice books gained the attribute their school owns.
 
@@ -1631,7 +1639,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v174";
+const VERSION = "v175";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

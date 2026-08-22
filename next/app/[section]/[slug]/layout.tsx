@@ -74,7 +74,7 @@ export default async function ReadingLayout({
       current={current}
       /* The piece names itself as the last crumb. The row is
          already read here, so this costs nothing, and it is the
-         one level `lib/nav.ts` cannot know: a piece is a row. */
+         one level `shared/nav.ts` cannot know: a piece is a row. */
       crumbs={trailFor(current, [{ label: article.title }])}
       beforeMain={<div className="read-progress" aria-hidden="true" />}
     >

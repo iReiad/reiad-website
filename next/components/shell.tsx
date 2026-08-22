@@ -23,7 +23,7 @@ import "../styles/globals.css";
    nav is a rail down the left now (`sidebar.tsx`), the bar at the
    top carries the audience switch and nothing else
    (`topbar.tsx`), and the footer spells the whole site out
-   (`footer.tsx`). All three read one table, `lib/nav.ts`.
+   (`footer.tsx`). All three read one table, `shared/nav.ts`.
 
    Two elements are deliberately not `<header>` and `<footer>` as
    direct children of `<body>`: `styles.css` has rules for
@@ -42,7 +42,7 @@ import { Sidebar, DrawerBackdrop } from "./sidebar";
 import { TopBar } from "./topbar";
 import { NavTree } from "./nav-tree";
 import { SiteFooter } from "./footer";
-import { accentStyle } from "../lib/nav";
+import { accentStyle } from "@reiad/shared/nav";
 import { trailFor, trailJsonLd } from "../lib/crumbs";
 import { siteOrigin } from "../lib/article";
 import { Crumbs, type Crumb } from "./ui/crumbs";
@@ -177,7 +177,7 @@ export function SiteShell({
   current?: Current;
   /** The trail in the bar, for a page deeper than its section: a
       stage, a lesson, a case study. Left out, the section's own
-      trail is built from `lib/nav.ts`, which is right for every
+      trail is built from `shared/nav.ts`, which is right for every
       page that IS a section. */
   crumbs?: Crumb[];
   /** A section that renders its OWN trail, in place of the row
@@ -223,7 +223,7 @@ export function SiteShell({
          naming blue.
 
          Inline rather than a stylesheet of `[data-section]` rules,
-         so the table in `lib/nav.ts` stays the only place the
+         so the table in `shared/nav.ts` stays the only place the
          mapping exists and there is nothing to regenerate.
          `data-section` is written too, for the few rules that
          need to know WHICH section rather than what colour. */

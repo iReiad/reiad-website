@@ -5,7 +5,7 @@
    the browser that read `location.pathname` and `document.title`,
    imported all four curricula to do it, and had to GUESS three
    things. It is archived. A route knows its own section, its own
-   parents and its own name without guessing, and `lib/nav.ts` is
+   parents and its own name without guessing, and `shared/nav.ts` is
    already the one table the rail, the footer and `/skills/` are
    all drawn from.
 
@@ -28,7 +28,7 @@
 
 import { stageUrl, type SchoolStage } from "@reiad/shared/schools";
 import type { Crumb, CrumbLink } from "../components/ui/crumbs";
-import { NAV, type NavGroup, type NavItem } from "./nav";
+import { NAV, type NavGroup, type NavItem } from "@reiad/shared/nav";
 import { SCHOOL_STAGES } from "./school-stages";
 
 /** The label of a crumb the server cannot fill in, rewritten by

@@ -341,7 +341,7 @@ type Kid = Node | string | false | null | undefined;
    `content.js`, plus a hover panel under the header's "Skills"
    link. Both are gone, with the header that held them: the menu
    is a rail down the left of every page, rendered on the server
-   by `next/components/sidebar.tsx` out of `next/lib/nav.ts`, and
+   by `next/components/sidebar.tsx` out of `shared/nav.ts`, and
    it is in the HTML before this file runs.
 
    That is not a tidier arrangement, it is a different one. The

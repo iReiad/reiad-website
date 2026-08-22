@@ -41,6 +41,7 @@ import { onRequest as subscribers } from "./functions/api/subscribers/[[route]].
 import { onRequest as enquiries } from "./functions/api/enquiries/[[id]].ts";
 import { onRequest as signals } from "./functions/api/signals/[[kind]].ts";
 import { onRequest as search } from "./functions/api/search.ts";
+import { onRequest as site } from "./functions/api/site.ts";
 import { onRequestGet as news } from "./functions/api/news.ts";
 import { onRequest as media } from "./functions/api/media/[[key]].ts";
 import { onRequest as notion } from "./functions/api/notion/[[route]].ts";
@@ -67,6 +68,7 @@ const API_ROUTES = [
   ["/api/enquiries", enquiries, "id"],
   ["/api/signals", signals, "kind"],
   ["/api/search", search, null],
+  ["/api/site", site, null],
   ["/api/news", news, null],
   ["/api/media", media, "key"],
   ["/api/notion", notion, "route"],
@@ -174,7 +176,7 @@ export const NEXT_ROUTES = [
   /^\/tools\/(stock|live|routine)$/i,
   /^\/tools\/routine\/(settings|print|day|year)$/i,
   /* The admin panel. ADMIN.md is the plan; it is `unlisted` in
-     lib/nav.ts for the reason the course section is. */
+     shared/nav.ts for the reason the course section is. */
   /^\/admin$/i,
   /* The Studio's shell. Its bundle is NOT here: that is a file in
      aab/studio/, and the asset router answers it as it always

@@ -13,7 +13,7 @@
 
    ---- and it is not in the sitemap ----
 
-   `unlisted: true` in `lib/nav.ts`, the same flag the course
+   `unlisted: true` in `shared/nav.ts`, the same flag the course
    section carries, plus a robots line: a page in the chrome that
    answers 403 is a promise the site cannot keep, and a page in
    the sitemap that answers 403 is the same promise made to a

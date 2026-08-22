@@ -56,7 +56,7 @@ console.log("\nthe route");
   ok("it is noindex", /robots:\s*\{[^}]*index:\s*false/.test(src),
     "an admin page in the index is a 403 promised to a crawler");
 
-  const nav = read("next/lib/nav.ts");
+  const nav = read("shared/nav.ts");
   const entry = nav.slice(nav.indexOf('href: "/admin"') - 200,
     nav.indexOf('href: "/admin"') + 200);
   ok("and unlisted in the one nav table", /unlisted:\s*true/.test(entry),
