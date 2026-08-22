@@ -32,13 +32,47 @@ export interface DietPage {
   dek: { en: string; bn: string };
   /** Nothing on this page works signed out. */
   needsAccount?: true;
+  /** THIS PAGE'S COLOUR, and it is the site's own token rather
+      than a value: `--green`, `--blue`, `--teal`, `--violet`,
+      `--rose`, `--plum` and `--gold` are the seven the rail
+      already themes six schools with, and `check-contrast.ts`
+      has measured every one of them against both grounds.
+
+      Eleven pages that look identical are eleven pages a reader
+      navigates by reading. A colour is what makes the strip
+      scannable and what tells somebody which page they are on
+      before they have read the heading. */
+  tone: string;
+  /** THE PAGES THIS ONE READS FROM. Not a "see also": a page
+      that draws nothing until a height is on the account has to
+      say where a height is set, and a reader who lands on it
+      cold otherwise sees an empty panel and no way out of it.
+
+      Only this direction is written. What a page FEEDS is the
+      reverse lookup below, so there is one list to keep true
+      rather than two that can come to disagree. */
+  needs?: string[];
 }
 
 export const DIET_HOME = "/tools/diet";
 
+/** The front door's own, which is the section's. Every other page
+    of this tool borrows one of the seven from the rail; this one
+    keeps the colour the rail already gives Diet, so arriving from
+    the rail is not a colour change. */
+export const DIET_TONE = "var(--green)";
+
+/** One page, by address. A trailing slash is the same address:
+    `bare()` in `worker.js` takes one off before the route table
+    is consulted, so a reader who arrived at `/tools/diet/goal/`
+    is on the goal page. */
+export const dietPage = (href: string): DietPage | undefined =>
+  DIET_PAGES.find((p) => p.href === href || `${p.href}/` === href);
+
 export const DIET_PAGES: DietPage[] = [
   {
     href: "/tools/diet/you",
+    tone: "var(--teal)",
     tab: { en: "Your body", bn: "শরীর" },
     title: { en: "Your body", bn: "আপনার শরীর" },
     go: { en: "Work it out", bn: "হিসাব করুন" },
@@ -49,6 +83,8 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/goal",
+    needs: ["/tools/diet/you"],
+    tone: "var(--gold)",
     tab: { en: "Goal", bn: "লক্ষ্য" },
     title: { en: "Your goal", bn: "আপনার লক্ষ্য" },
     go: { en: "Set it", bn: "ঠিক করুন" },
@@ -60,6 +96,8 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/trend",
+    needs: ["/tools/diet/you", "/tools/diet/goal"],
+    tone: "var(--blue)",
     tab: { en: "Trend", bn: "ধারা" },
     title: { en: "The long view", bn: "লম্বা হিসাব" },
     go: { en: "See it", bn: "দেখুন" },
@@ -71,6 +109,8 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/expect",
+    needs: ["/tools/diet/you", "/tools/diet/trend"],
+    tone: "var(--violet)",
     tab: { en: "What to expect", bn: "কখন কী" },
     title: { en: "What to expect, and when", bn: "কখন কী হবে" },
     go: { en: "Read it", bn: "পড়ুন" },
@@ -81,6 +121,8 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/nutrition",
+    needs: ["/tools/diet/foods"],
+    tone: "var(--green)",
     tab: { en: "Nutrients", bn: "পুষ্টি" },
     title: { en: "Beyond calories", bn: "ক্যালোরির বাইরে" },
     go: { en: "Look", bn: "দেখুন" },
@@ -92,6 +134,8 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/journal",
+    needs: ["/tools/diet/goal"],
+    tone: "var(--rose)",
     tab: { en: "How it is going", bn: "কেমন যাচ্ছে" },
     title: { en: "How it is going", bn: "কেমন যাচ্ছে" },
     go: { en: "Open it", bn: "খুলুন" },
@@ -103,6 +147,8 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/foods",
+    needs: ["/tools/diet/nutrition"],
+    tone: "var(--plum)",
     tab: { en: "What it costs", bn: "খরচ" },
     title: { en: "What it costs to eat", bn: "খেতে কত খরচ" },
     go: { en: "Compare", bn: "তুলনা করুন" },
@@ -113,6 +159,8 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/health",
+    needs: ["/tools/diet/glossary"],
+    tone: "var(--teal)",
     tab: { en: "The clinic", bn: "ক্লিনিক" },
     title: { en: "The clinic's numbers", bn: "ক্লিনিকের সংখ্যা" },
     go: { en: "Read it", bn: "পড়ুন" },
@@ -123,6 +171,8 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/summary",
+    needs: ["/tools/diet/you", "/tools/diet/trend", "/tools/diet/health"],
+    tone: "var(--blue)",
     tab: { en: "For a doctor", bn: "ডাক্তারের জন্য" },
     title: { en: "One page for a doctor", bn: "ডাক্তারের জন্য এক পাতা" },
     go: { en: "Print it", bn: "প্রিন্ট করুন" },
@@ -134,6 +184,7 @@ export const DIET_PAGES: DietPage[] = [
   },
   {
     href: "/tools/diet/glossary",
+    tone: "var(--gold)",
     tab: { en: "The words", bn: "শব্দ" },
     title: { en: "What the words mean", bn: "শব্দগুলোর মানে" },
     go: { en: "Read it", bn: "পড়ুন" },
@@ -143,3 +194,16 @@ export const DIET_PAGES: DietPage[] = [
     },
   },
 ];
+
+/** What a page FEEDS: every page that names it in `needs`.
+    Derived, never written, for the reason on `needs`. */
+export const dietFeeds = (href: string): DietPage[] =>
+  DIET_PAGES.filter((p) => p.needs?.includes(href));
+
+/** What a page NEEDS, resolved to entries and never to strings,
+    so an href that names no page is a type error at the call
+    site rather than a dead link on a page. */
+export const dietNeeds = (href: string): DietPage[] =>
+  (dietPage(href)?.needs ?? [])
+    .map((h) => dietPage(h))
+    .filter((p): p is DietPage => p !== undefined);

@@ -237,9 +237,21 @@ const fill = async (page: Page, vals: Record<string, string>): Promise<void> => 
 {
   const { page, errors } = await load("/tools/diet/you");
 
+  /* IT DRAWS WHAT IS COMING, not a sentence about it. The empty
+     readout was two lines of grey text beside a form and half a
+     wide screen of nothing; it is the five figures it will fill,
+     each naming the measurement it is waiting for, so a reader
+     can see both how many answers there will be and which box on
+     the left produces each one. */
   const before = await seen(page);
-  ok("you: says what it needs before it has it",
-    before.includes("Height, weight and age"), before.slice(0, 120));
+  const ghosts = await page.$$eval(".dt-figure-empty", (els) => els.length);
+  ok("you: draws every figure it is going to fill", ghosts === 5, String(ghosts));
+  ok("you: and each one says which measurement it is waiting for",
+    before.includes("Waiting for a waist and a height")
+    && before.includes("Waiting for a height, a weight and an age"),
+    before.slice(0, 200));
+  ok("you: and still says nothing is stored",
+    before.includes("Nothing above is stored"), before.slice(0, 200));
 
   await fill(page, { "dt-height": "180", "dt-weight": "80", "dt-age": "30" });
   const out = await page.$$eval(".dt-figure .dt-value", (els) =>

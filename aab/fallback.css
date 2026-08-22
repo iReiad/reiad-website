@@ -8445,6 +8445,9 @@
   .dt-tab {
     flex: 0 0 auto;
     scroll-snap-align: start;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-3);
     font-size: var(--t-1);
     padding: var(--s-2) var(--s-4);
     border-radius: var(--radius-pill);
@@ -8452,10 +8455,26 @@
     text-decoration: none;
     white-space: nowrap;
   }
+
+  .dt-tab-dot {
+    inline-size: 7px;
+    block-size: 7px;
+    border-radius: 50%;
+    background: var(--tone, var(--accent));
+    flex: 0 0 auto;
+    opacity: 0.75;
+  }
   .dt-tab:hover { color: var(--ink); }
+  .dt-tab:hover .dt-tab-dot { opacity: 1; }
+
   .dt-tab[aria-current="page"] {
-    background: var(--accent);
+    background: var(--tone, var(--accent));
     color: var(--accent-ink);
+  }
+
+  .dt-tab[aria-current="page"] .dt-tab-dot {
+    background: var(--accent-ink);
+    opacity: 0.6;
   }
 
   .dt-page > .dt-tabs + * { padding-block-start: 0; }
@@ -8542,8 +8561,6 @@
     align-items: start;
   }
 
-  .dt-readout-waiting { display: block; color: var(--ink-soft); }
-
   .dt-readout-h {
     grid-column: 1 / -1;
     font-size: var(--t-2);
@@ -8565,7 +8582,22 @@
     border-inline-start: 3px solid var(--accent);
   }
 
-  .dt-figure-empty { color: var(--ink-soft); }
+  .dt-figure-empty {
+    color: var(--ink-soft);
+    border-style: dashed;
+  }
+  .dt-value-ghost {
+    color: var(--hairline);
+    user-select: none;
+  }
+
+  .dt-figure-empty .dt-said { font-size: var(--t-2); }
+  .dt-readout-foot {
+    grid-column: 1 / -1;
+    font-size: var(--t-1);
+    color: var(--ink-soft);
+    margin: 0;
+  }
 
   .dt-figure h3 {
     font-size: var(--t-1);
@@ -9066,6 +9098,45 @@
   stroke-width: 1.4;
   opacity: 0.8;
 }
+
+  .dt-nearby {
+    display: grid;
+    gap: var(--s-5);
+    margin-block-start: var(--step);
+    padding-block-start: var(--s-6);
+    border-block-start: 1px solid var(--hairline);
+    max-inline-size: 70ch;
+  }
+
+  .dt-nearby-row { display: grid; gap: var(--s-4); }
+  .dt-nearby-lead { font-size: var(--t-2); color: var(--ink-soft); margin: 0; }
+  .dt-nearby-lead strong { color: var(--ink); font-weight: 600; }
+
+  .dt-nearby-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+  }
+
+  .dt-nearby-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-3);
+    font-size: var(--t-1);
+    padding: var(--s-2) var(--s-4);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-pill);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .dt-nearby-link:hover, .dt-nearby-link:focus-visible {
+    border-color: var(--tone, var(--accent));
+  }
+
+  @media print { .dt-nearby { display: none; } }
 
   .dt-symptoms, .dt-diary { max-inline-size: 70ch; }
 

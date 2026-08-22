@@ -46,7 +46,7 @@ import {
   proteinFloor, projection, outsideAdaptation, floorKcal,
   toStone, stoneLabel, toFeetInches,
   glycogenKg, GLYCOGEN_WATER_RATIO, drained, drainedBy, gutTaken,
-  forecastChange, settlingDays, protocolName,
+  forecastChange, settlingDays, protocolName, bandAt, hourlyArc,
   stretches, readable, weighings, learnedHere, entryHour,
   type Body, type Day, type Point, type Phase, type Protocol,
   totalFor,
@@ -744,6 +744,151 @@ ok("an empty day divides by no zero",
 const freeOnly = totalFor([{ date: "2026-08-22", label: "a guess", kcal: 500 }]);
 ok("free entry leaves every nutrient uncovered",
   freeOnly.coverage === 0 && Object.keys(freeOnly.microCoverage).length === 0);
+
+/* ---- the keto page's live clock, and the three numbers on it ----
+
+   `next/components/diet/keto-panel.tsx` draws a reader's own
+   position on the arc `hourlyArc()` already returns, so what is
+   asserted here is what that page says out loud: an 80kg reader
+   on keto, at hour 6, at hour 30 and on day 5, against a
+   maintenance of 2,500 and 500 under it.
+
+   THE FAT SHARE HAS TO CLIMB. It is the column the whole page
+   exists for, and a version that started high would be telling
+   somebody their first two days were fat, which is the one thing
+   keto's first fortnight is not. */
+
+const clockAt = (hours: number) => forecastChange({
+  from: null, to: "keto", days: hours / 24, weightKg: 80, burn: 2500, intake: 2000,
+});
+const H6 = clockAt(6);
+const H30 = clockAt(30);
+const D5 = clockAt(120);
+
+near("clock: hour 6 of keto is about a quarter of a kilo", H6.scale.mid, -0.25, 0.03);
+near("clock: hour 30 is about a kilo", H30.scale.mid, -1.02, 0.05);
+near("clock: day 5 is about two and a fifth", D5.scale.mid, -2.18, 0.06);
+
+ok("clock: a kilo off the scale at hour 30 is under a tenth of a kilo of fat",
+  Math.abs(H30.fat) < 0.1 && Math.abs(H30.scale.mid) > 0.7,
+  `scale ${H30.scale.mid.toFixed(2)}, fat ${H30.fat.toFixed(3)}`);
+
+ok("clock: and the share of the drop that is fat climbs all week",
+  H6.fatShare < H30.fatShare && H30.fatShare < D5.fatShare,
+  `${(H6.fatShare * 100).toFixed(0)}%, ${(H30.fatShare * 100).toFixed(0)}%, `
+  + `${(D5.fatShare * 100).toFixed(0)}%`);
+
+ok("clock: every one of the three may print that share",
+  H6.fatShareKnown && H30.fatShareKnown && D5.fatShareKnown);
+
+ok("clock: nothing the scale showed at hour 6 was mostly fat",
+  H6.fatShare < 0.1, `${(H6.fatShare * 100).toFixed(0)}%`);
+
+/* AND THE PAGE IS NOT A SECOND MODEL. The clock calls
+   `forecastChange()` at the hour the reader is at; the table on
+   the expect page calls `hourlyArc()`. Both have to answer the
+   same thing at the same hour or two pages of this tool disagree
+   about the same body on the same day. */
+const arc6 = hourlyArc(
+  { from: null, to: "keto", days: 7, weightKg: 80, burn: 2500, intake: 2000 }, 6,
+).find((p) => p.hour === 6);
+near("clock: and it agrees with the arc the expect page draws",
+  arc6?.scale.mid ?? 0, H6.scale.mid, 1e-9);
+
+/* The bands the clock reads its sentence out of, and the one
+   state it has to have words for: past the end of the first week
+   there is no band at all, and a page that printed nothing there
+   would go blank on day eight. */
+ok("clock: hour 6 is in the first band and the next one opens at 24",
+  bandAt("keto", 6).now?.from === 0 && bandAt("keto", 6).next?.from === 24);
+ok("clock: hour 30 is the band where the bulk of the water goes",
+  bandAt("keto", 30).now?.from === 24);
+ok("clock: day 5 is the last band of the week and nothing follows it",
+  bandAt("keto", 120).now?.from === 120 && bandAt("keto", 120).next === null);
+ok("clock: and after the first week there is no band, which the page says in words",
+  bandAt("keto", 200).now === null && bandAt("keto", 200).next === null);
+
+/* The adaptation window, which is the other half of the same
+   page: five days into a keto phase there is no rate to print,
+   and the honest answer is that there is not one yet. */
+const started = 100;
+const fortnight: Point[] = Array.from({ length: 6 }, (_, i) =>
+  ({ day: started + i, kg: 80 - i * 0.3 }));
+const ketoPhase: Phase[] = [{ protocol: "keto", startDay: started }];
+ok("clock: five days into keto no slope may be fitted at all",
+  readable(fortnight, ketoPhase, started + 5).length === 0);
+ok("clock: and every one of those weighings is inside the window",
+  outsideAdaptation(fortnight, started).length === 0);
+
+/* ---- the keto page's own numbers, against the prose ----
+
+   Section 7 states three amounts and this is the section most
+   likely to hurt somebody if it is wrong: the sodium note is
+   actively wrong for two groups of people, and the sentence
+   saying so has to be beside the numbers rather than in a footer.
+   The numbers are read out of DIET.md rather than retyped, for
+   the reason the cut-off table above is. */
+
+const KETO_PAGE = readFileSync(
+  join(ROOT, "next/components/diet/keto-panel.tsx"), "utf8");
+const PAGE = KETO_PAGE.replace(/\s+/g, " ");
+const PROSE = PLAN.replace(/\s+/g, " ");
+
+const salts = PROSE.match(
+  /Sodium roughly (\d+) to (\d+) g a day, potassium (\d+) to (\d+) g, magnesium (\d+) to (\d+) mg/,
+);
+ok("DIET.md still states the keto three", !!salts,
+  "section 7 is where the page reads them from.");
+if (salts) {
+  ok(`the keto page states sodium as ${salts[1]} to ${salts[2]} g a day`,
+    PAGE.includes(`${salts[1]} to ${salts[2]} g a day`));
+  ok(`the keto page states potassium as ${salts[3]} to ${salts[4]} g a day`,
+    PAGE.includes(`${salts[3]} to ${salts[4]} g a day`));
+  ok(`the keto page states magnesium as ${salts[5]} to ${salts[6]} mg a day`,
+    PAGE.includes(`${salts[5]} to ${salts[6]} mg a day`));
+}
+
+ok("the keto page warns about blood pressure medicine and kidney disease, beside the numbers",
+  /blood pressure/.test(PAGE) && /kidney disease/.test(PAGE),
+  "section 7: for those two groups this advice is actively wrong.");
+ok("and it carries the medical advice line in both languages",
+  PAGE.includes("general education and not medical advice")
+  && PAGE.includes("চিকিৎসা পরামর্শ নয়"));
+ok("and it names the one interaction that has to be settled before starting",
+  /insulin or a sulfonylurea/.test(PAGE) && /BEFORE/.test(PAGE));
+
+/* Every row of that table is said twice or a Bangla reader meets
+   a blank where an amount should be. `check-diet.ts` asks this of
+   every `<T>`; a table of strings is not a `<T>`. */
+const halves = ["en", "bn", "muchEn", "muchBn", "whyEn", "whyBn", "fromEn", "fromBn"]
+  .map((k) => (KETO_PAGE.match(new RegExp(`\\b${k}:`, "g")) ?? []).length);
+ok("the keto page says all three of them twice over",
+  new Set(halves).size === 1 && halves[0] >= 3, halves.join(", "));
+
+const carbs = PROSE.match(/Net carbs typically under (\d+) to (\d+) g/);
+ok("DIET.md still states the net carb range", !!carbs);
+if (carbs) {
+  ok(`the keto page draws both marks, ${carbs[1]} g and ${carbs[2]} g`,
+    PAGE.includes(`const TIGHT = ${carbs[1]};`)
+    && PAGE.includes(`const LOOSE = ${carbs[2]};`),
+    "Section 7 calls the limit individual, so the page draws both rather than"
+    + " inventing one.");
+}
+
+const meter = PROSE.match(/blood ketone log, ([\d.]+) to ([\d.]+) mmol/);
+ok("DIET.md still states what a blood meter reads", !!meter);
+if (meter) {
+  ok(`the keto page states ${meter[1]} to ${meter[2]} mmol/L`,
+    PAGE.includes(`const KETONE_LOW = ${meter[1]};`)
+    && PAGE.includes(`const KETONE_HIGH = ${meter[2]};`));
+}
+
+ok("the keto page says a ketone level is not how fast fat is going, where the field is",
+  /says nothing at all about how fast fat is being lost/.test(PAGE),
+  "Section 7: not a score, and said where the field is rather than in a help"
+  + " article.");
+ok("and it says urine strips stop being reliable rather than letting somebody chase a colour",
+  /Urine strips get unreliable after adaptation/.test(PAGE));
 
 /* ------------------------------------------------------------ */
 

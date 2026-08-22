@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v188: /fallback.css. Every page of the diet tool has its own
+        colour out of the seven the rail already uses, the strip
+        carries a dot in each, an empty readout draws the figures
+        it is waiting for, and a footer says which pages feed
+        this one and which read from it.
+
    v187: /fallback.css. The deck's heading belongs to the section
         it names, so the section's own top padding no longer opens
         ninety pixels under it.
@@ -1719,7 +1725,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v187";
+const VERSION = "v188";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

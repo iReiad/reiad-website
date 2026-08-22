@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is ten files and a directory of four, and
+Today that is eleven files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -75,6 +75,18 @@ this repository got written.
   range rather than a number, so a caller cannot take the point
   value without having been handed its width. `DIET.md` is the
   plan and `scripts/diet.test.ts` is what holds the two together.
+
+- **`activity.ts`** the diet tool's other half of the same
+  arithmetic: what a step is worth to a body of a given weight,
+  where the last fortnight of weighings points, and the seven
+  daily habits, each read off a column `diet_days` already
+  carries rather than off a form. Two rules a reader has to keep:
+  nothing here is ever added to a target, because `DIET.md`
+  section 19 is firm that exercise calories are not an allowance,
+  and every reading has `null` as well as true and false, because
+  a column nothing writes has to come back as silence rather than
+  as a fortnight of missed days. `scripts/activity.test.ts` is
+  the guard.
 
 - **`foods.ts`** the diet tool's portion library: the things
   people actually eat in Bangladesh and in the UK, each row said

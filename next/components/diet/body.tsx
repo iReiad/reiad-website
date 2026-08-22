@@ -50,7 +50,7 @@
 
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   BMI_CUTS, bmi, bmiBand, whtr, whtrBand, fatEstimate, ffmiNormalised,
   restingBurn, mifflin,
@@ -270,15 +270,7 @@ export function BodyPanel() {
 
       {body === null
         ? (
-          <div className="dt-readout dt-readout-waiting">
-            <h2 className="dt-readout-h"><T en="What that says about you" bn="এতে আপনার সম্পর্কে যা বোঝা যায়" /></h2>
-            <p>
-              <T
-                en="Height, weight and age, and the numbers appear here. Nothing is stored and nothing is sent anywhere."
-                bn="উচ্চতা, ওজন আর বয়স দিন, সংখ্যাগুলো এখানে আসবে। কিছুই জমা থাকে না, কোথাও যায় না।"
-              />
-            </p>
-          </div>
+          <Coming />
         )
         : body.ageYears < 18
           ? <TooYoung />
@@ -308,6 +300,72 @@ export function BodyPanel() {
             + `${cuts.raised} and ${cuts.high}.`}
           bn={`${ancestry === "asian" ? "এশীয়" : "সাধারণ"} সীমা ব্যবহার হচ্ছে: `
             + `${digits(cuts.raised, "bn")} আর ${digits(cuts.high, "bn")}।`}
+        />
+      </p>
+    </div>
+  );
+}
+
+/** THE SHAPE OF WHAT IS COMING, rather than a blank half a page.
+
+    An empty readout was two lines of grey text beside a form,
+    and the whole right side of a wide screen was nothing at all.
+    A reader could not tell whether the page was going to answer
+    with one number or six, or which of the boxes on the left
+    each one needed.
+
+    So it draws the five figures it will fill, each naming what
+    it is waiting for. That is not decoration: a placeholder that
+    says "a waist" is the shortest route to the reader typing a
+    waist, and it is the same five cards, in the same order and
+    the same sizes, that arrive when they do. */
+function Coming() {
+  const WAITING: Array<{ h: ReactNode; needs: { en: string; bn: string }; lead?: true }> = [
+    {
+      h: <T en="Waist to height" bn="কোমর ও উচ্চতার অনুপাত" />,
+      needs: { en: "a waist and a height", bn: "কোমর আর উচ্চতা" },
+      lead: true,
+    },
+    { h: <>BMI</>, needs: { en: "a height and a weight", bn: "উচ্চতা আর ওজন" } },
+    {
+      h: <T en="Body fat" bn="শরীরের চর্বি" />,
+      needs: { en: "a waist and a neck", bn: "কোমর আর গলা" },
+    },
+    {
+      h: <T en="Lean mass" bn="চর্বি ছাড়া ভর" />,
+      needs: { en: "the same tape measurements", bn: "ওই একই ফিতার মাপ" },
+    },
+    {
+      h: <T en="Resting burn" bn="বিশ্রামে খরচ" />,
+      needs: { en: "a height, a weight and an age", bn: "উচ্চতা, ওজন আর বয়স" },
+    },
+  ];
+
+  return (
+    <div className="dt-readout">
+      <h2 className="dt-readout-h">
+        <T en="What that says about you" bn="এতে আপনার সম্পর্কে যা বোঝা যায়" />
+      </h2>
+      {WAITING.map((w, i) => (
+        <div
+          key={i}
+          className={`dt-figure dt-figure-empty${w.lead ? " dt-figure-lead" : ""}`}
+        >
+          <h3>{w.h}</h3>
+          {/* An EN dash. `&mdash;` would render the one character
+              this site bans, on every empty figure, which is the
+              rule at the top of `CLAUDE.md` broken by an entity
+              rather than by a keystroke. */}
+          <p className="dt-value dt-value-ghost" aria-hidden="true">&ndash;</p>
+          <p className="dt-said">
+            <T en={`Waiting for ${w.needs.en}.`} bn={`${w.needs.bn} দিলেই আসবে।`} />
+          </p>
+        </div>
+      ))}
+      <p className="dt-readout-foot">
+        <T
+          en="Nothing above is stored and nothing is sent anywhere. The arithmetic happens in this browser."
+          bn="উপরের কিছুই জমা থাকে না, কোথাও যায় না। হিসাবটা এই ব্রাউজারেই হয়।"
         />
       </p>
     </div>

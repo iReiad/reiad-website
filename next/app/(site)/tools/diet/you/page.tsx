@@ -33,7 +33,7 @@ export const metadata: Metadata = pageMeta({
 export default function DietYouPage() {
   return (
     <DietPage
-      title={<T en="Your body" bn="আপনার শরীর" />}
+      href="/tools/diet/you"
       lede={{
         en: "Type what you know. Nothing is stored and nothing is sent anywhere until you press the button that says so, and no account is needed for any of the arithmetic.",
         bn: "যা জানেন লিখুন। যতক্ষণ না আপনি নিজে বোতামটা চাপছেন, কিছুই জমা থাকে না আর কোথাও যায় না, আর হিসাবের কোনো অংশের জন্যই অ্যাকাউন্ট লাগে না।",

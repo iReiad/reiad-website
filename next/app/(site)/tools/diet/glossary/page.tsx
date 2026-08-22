@@ -29,7 +29,7 @@ export const metadata: Metadata = pageMeta({
 export default function DietGlossaryPage() {
   return (
     <DietPage
-      title={<T en="What the words mean" bn="শব্দগুলোর মানে" />}
+      href="/tools/diet/glossary"
       lede={{
         en: "Everything this tool says about your body uses one of these. None of them is complicated once somebody writes it out.",
         bn: "আপনার শরীর নিয়ে এই যন্ত্র যা কিছু বলে, তার সবই এগুলোর কোনো একটা ব্যবহার করে। কেউ একবার লিখে দিলে কোনোটাই কঠিন নয়।",

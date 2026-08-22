@@ -18,7 +18,7 @@ export const metadata: Metadata = pageMeta({
 export default function Page() {
   return (
     <DietPage
-      title={<T en="The clinic's numbers" bn="ক্লিনিকের সংখ্যা" />}
+      href="/tools/diet/health"
       lede={{
         en: "Blood tests are the only objective measurements here. Everything else is you, a tape and a scale.",
         bn: "রক্ত পরীক্ষাই এখানকার একমাত্র বস্তুনিষ্ঠ মাপ। বাকি সব আপনি, একটা ফিতা আর একটা দাঁড়িপাল্লা।",

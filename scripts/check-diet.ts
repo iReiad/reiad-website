@@ -585,7 +585,6 @@ const UNUSED: Record<string, string> = {
   /* The day. The tape's other three and the fields no form
      offers yet. */
   "diet_days.sodium_mg": "section 15, the day's rollup of what the entries already carry",
-  "diet_days.ketones_mmol": "section 7, keto, which needs a phase before it needs a field",
   "diet_days.sleep_hours": "section 18, the calendar",
   "diet_days.chest_cm": "section 2, the rest of the measurement set",
   "diet_days.thigh_cm": "section 2, the same",
@@ -600,9 +599,16 @@ const UNUSED: Record<string, string> = {
   "diet_entries.fetched_on": "section 12, so a stale figure can be found and refreshed",
   "diet_entries.origin": "section 26, the importer",
 
-  /* Three tables with no caller at all. */
+  /* The phase a reader is on. `/tools/diet/keto` starts one and
+     ends one, and it ends one by STARTING THE NEXT: a phase runs
+     until the next begins, which is the end `stretches()` already
+     reads, so a second statement of the same end would be one too
+     many. `ended_on` is for a phase that ends with nothing after
+     it, and that needs an `endPhase()` in `diet-api.ts`. */
+  "diet_phases.ended_on": "section 10, a phase that ends with nothing after it",
+
+  /* Two tables with no caller at all. */
   "diet_foods.*": "section 13, the reader's own items, pots, recipes and meals",
-  "diet_phases.*": "section 10, phases and settling",
   "diet_labs.*": "section 20, the numbers a clinic gives you",
 };
 

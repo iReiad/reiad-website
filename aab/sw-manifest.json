@@ -1,8 +1,8 @@
 {
-  "version": "v187",
+  "version": "v188",
   "hashes": {
     "/offline.html": "bd9144e7162be323",
-    "/fallback.css": "69b3e495d5c5b36e",
+    "/fallback.css": "ef31b136e1f2808e",
     "/app.js": "d0b5bf300691d393",
     "/content.js": "5a856b45b3b36596",
     "/api.js": "a7bab41d860a4806",

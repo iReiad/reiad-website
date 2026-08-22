@@ -28,7 +28,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useRef } from "react";
-import { DIET_HOME, DIET_PAGES } from "../../lib/diet-pages";
+import { DIET_HOME, DIET_PAGES, DIET_TONE } from "../../lib/diet-pages";
 import { T, useToolLang } from "./lang";
 
 export function DietStrip() {
@@ -75,9 +75,11 @@ export function DietStrip() {
       <Link
         href={DIET_HOME}
         className="dt-tab"
+        style={{ "--tone": DIET_TONE } as React.CSSProperties}
         aria-current={onHome ? "page" : undefined}
         tabIndex={onHome ? 0 : -1}
       >
+        <span className="dt-tab-dot" aria-hidden="true" />
         <T en="Today" bn="আজ" />
       </Link>
       {DIET_PAGES.map((p) => {
@@ -87,12 +89,19 @@ export function DietStrip() {
             key={p.href}
             href={p.href}
             className="dt-tab"
+            /* Its own colour, on every tab rather than only the
+               current one: a strip where ten tabs are grey and
+               one is coloured says which page you are on and
+               nothing about where the others go. The dot carries
+               it; the pill only fills on the current page. */
+            style={{ "--tone": p.tone } as React.CSSProperties}
             aria-current={here ? "page" : undefined}
             /* Focus lands on the page you are on. Where that is
                the home entry, the first link takes it, so the
                strip is never a dead tab stop. */
             tabIndex={here || (onHome && false) ? 0 : -1}
           >
+            <span className="dt-tab-dot" aria-hidden="true" />
             <T en={p.tab.en} bn={p.tab.bn} />
           </Link>
         );

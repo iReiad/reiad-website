@@ -24,43 +24,83 @@
    "complete". Those imply a precision the data does not have and
    turn eating into a test. A figure, a range to aim for, and the
    coverage.
+
+   ---- nineteen figures, in four groups, or nobody reads any ----
+
+   A wall of nineteen is worse than a wall of five, because a
+   reader came for ONE of them. `NUTRIENTS` in `shared/foods.ts`
+   is the list, in the order it is drawn, grouped so the eye has
+   somewhere to land. That table is not inline here on purpose:
+   the Android app reads the same reference intakes, and a watch
+   list said twice is a watch list that will disagree with
+   itself.
+
+   A NUTRIENT WITH NO DATA TODAY IS STILL DRAWN, saying it is
+   not known. A list that hides what it cannot measure teaches a
+   reader that the list is complete.
+
+   TWO OF THEM CARRY NO RANGE and that is the honest shape.
+   Carbohydrate and fat are the split the reader CHOSE, so
+   printing a range beside them would tell somebody on keto they
+   were failing at the thing they had decided to do.
    ============================================================ */
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   COVERAGE_FLOOR, byHour, byWeekday, topSources, totalFor,
-  type Day, type Entry,
+  type Day, type DayTotal, type Entry,
 } from "@reiad/shared/diet";
+import { NUTRIENTS, NUTRIENT_GROUPS, type Nutrient } from "@reiad/shared/foods";
 import {
   who, getDays, getEntries, isoDate, shiftDate, type Who,
 } from "../../lib/diet-api";
 import { T, digits, useToolLang } from "./lang";
 import { Term } from "./glossary";
 
-/** What is worth tracking, and the range to aim for. Each one is
-    here because it actually goes wrong for this tool's two
-    readerships, on the diets it supports. A list of forty
-    nutrients is a list nobody reads. */
-const WATCHED: Array<{
-  key: string; unit: string; low: number; high: number;
-  en: string; bn: string; whyEn: string; whyBn: string;
-}> = [
-  { key: "fibre", unit: "g", low: 25, high: 30, en: "Fibre", bn: "আঁশ",
-    whyEn: "Low on almost every deficit and very low on keto, and it is the single thing most likely to make somebody feel unwell without knowing why.",
-    whyBn: "প্রায় প্রতিটি ঘাটতিতেই কম, আর কিটোতে খুবই কম, আর কারণ না বুঝেই খারাপ লাগার পেছনে সবচেয়ে বড় কারণ এটাই।" },
-  { key: "sodium", unit: "mg", low: 1500, high: 2300, en: "Sodium", bn: "সোডিয়াম",
-    whyEn: "The one a very low carb diet strips fastest, and the one a Bangladeshi diet is most likely to be high in already.",
-    whyBn: "খুব কম শর্করার খাবারে এটাই সবচেয়ে দ্রুত কমে, আবার বাংলাদেশি খাবারে এটাই বেশি থাকার সম্ভাবনা সবচেয়ে বেশি।" },
-  { key: "iron", unit: "mg", low: 8, high: 18, en: "Iron", bn: "আয়রন",
-    whyEn: "Anaemia is common among women in Bangladesh, and a deficit with less red meat makes it worse. Vitamin C alongside roughly doubles absorption from plants; tea with a meal works the other way.",
-    whyBn: "বাংলাদেশে নারীদের মধ্যে রক্তস্বল্পতা সাধারণ, আর কম লাল মাংসসহ ঘাটতি সেটা বাড়ায়। সঙ্গে ভিটামিন সি থাকলে উদ্ভিদ থেকে শোষণ প্রায় দ্বিগুণ হয়; খাবারের সঙ্গে চা উল্টোটা করে।" },
-  { key: "calcium", unit: "mg", low: 700, high: 1000, en: "Calcium", bn: "ক্যালসিয়াম",
-    whyEn: "Worth watching on any restricted diet, and it travels with vitamin D.",
-    whyBn: "যেকোনো সীমিত খাবারে খেয়াল রাখার মতো, আর এটা ভিটামিন ডির সঙ্গে চলে।" },
-  { key: "potassium", unit: "mg", low: 3000, high: 4000, en: "Potassium", bn: "পটাশিয়াম",
-    whyEn: "One of the keto three, and one of the first to go when carbohydrate does.",
-    whyBn: "কিটোর তিনটির একটি, আর শর্করা কমলে সবার আগে যেগুলো কমে তার একটি।" },
-];
+/** The four a `DayTotal` totals at the top level rather than
+    keeping in `micros`. Named rather than indexed, so a macro
+    renamed in `shared/diet.ts` is a compile error here instead
+    of a figure that quietly reads "not known". */
+const TOTALS: Record<string, (d: DayTotal) => number> = {
+  protein: (d) => d.protein,
+  carbs: (d) => d.carbs,
+  fat: (d) => d.fat,
+  fibre: (d) => d.fibre,
+};
+
+/** A figure and how much of the day knows about it.
+
+    `value` ABSENT is "not known" and is not the same thing as
+    nought: nothing today carried the key at all. `seen` is the
+    share of the day's ENERGY that did, which is the number
+    printed under the figure and never the day's own. */
+interface Reading { value?: number; seen: number }
+
+function readingFor(n: Nutrient, day: DayTotal, drunk: number): Reading {
+  if (n.reads === "total") {
+    const at = TOTALS[n.key];
+    return { value: at ? at(day) : undefined, seen: day.coverage };
+  }
+  if (n.reads === "micros") {
+    return { value: day.micros[n.key], seen: day.microCoverage[n.key] ?? 0 };
+  }
+  /* WATER IS THE ONE THAT IS BOTH. The glasses are logged and
+     exact; the water in the food is estimated from the library
+     and is a fifth to a third of most days. Adding only the
+     glasses is a figure wrong by that much every day, and
+     adding only the food is a figure about somebody who does
+     not drink. */
+  const food = day.micros.water;
+  const seen = day.microCoverage.water ?? 0;
+  if (food === undefined && drunk === 0) return { value: undefined, seen };
+  return { value: drunk + (food ?? 0), seen };
+}
+
+/** Rounded for reading rather than for arithmetic. A whole
+    number above ten, one decimal below it: `Math.round` alone
+    turns 1.4 µg of B12 into 1 and a fifth of the range into
+    nothing. */
+const show = (v: number): number => (v >= 10 ? Math.round(v) : Math.round(v * 10) / 10);
 
 export function NutritionPanel() {
   const lang = useToolLang();
@@ -89,6 +129,15 @@ export function NutritionPanel() {
 
   const todays = useMemo(() => totalFor(entries.filter((e) => e.date === today)), [entries, today]);
   const top = useMemo(() => topSources(entries), [entries]);
+
+  /* What was DRUNK, in millilitres, which is the one figure on
+     this page that is logged rather than worked out: the board
+     writes a glass at a time. It is half of the water reading
+     and the food is the other half. */
+  const drunk = useMemo(
+    () => days.find((d) => d.date === today)?.waterMl ?? 0,
+    [days, today],
+  );
 
   /* WHEN the calories land. The claim that most over-target days
      are made in the evening is a general one, and this is the
@@ -144,50 +193,99 @@ export function NutritionPanel() {
             />
           </p>
         ) : (
-          <ul className="dt-nutrients">
-            {WATCHED.map((n) => {
-              const got = todays.micros[n.key];
-              /* THIS NUTRIENT'S OWN COVERAGE, not the day's. A
-                 crowdsourced row may carry sodium and nothing
-                 else, so the day read 100% while four of these
-                 five said "not known" underneath it. A figure
-                 drawn from a third of the day says so. */
-              const seen = todays.microCoverage[n.key] ?? 0;
-              const thin = got != null && seen < COVERAGE_FLOOR;
-              return (
-                <li key={n.key} className="dt-figure">
-                  <h3><T en={n.en} bn={n.bn} /></h3>
-                  <p className="dt-value">
-                    {got != null && !thin
-                      ? <T en={`about ${Math.round(got)} ${n.unit}`}
-                           bn={`প্রায় ${digits(Math.round(got), "bn")} ${n.unit}`} />
-                      : thin
-                        ? <T en={`at least ${Math.round(got as number)} ${n.unit}`}
-                             bn={`কমপক্ষে ${digits(Math.round(got as number), "bn")} ${n.unit}`} />
-                        : <T en="not known" bn="জানা নেই" />}
-                  </p>
-                  <p className="dt-said">
-                    <T en={`aim for ${n.low} to ${n.high} ${n.unit}`}
-                       bn={`লক্ষ্য ${digits(n.low, "bn")} থেকে ${digits(n.high, "bn")} ${n.unit}`} />
-                  </p>
-                  {got != null ? (
-                    <p className="dt-coverage">
-                      <T
-                        en={`from ${Math.round(seen * 100)}% of today's food`}
-                        bn={`আজকের খাবারের ${digits(Math.round(seen * 100), "bn")}% থেকে`}
-                      />
-                    </p>
-                  ) : null}
-                  <p className="dt-why"><T en={n.whyEn} bn={n.whyBn} /></p>
-                </li>
-              );
-            })}
-          </ul>
+          NUTRIENT_GROUPS.map((g) => (
+            <div className="dt-nut-group" key={g.id}>
+              <h3 className="dt-nut-group-h"><T en={g.en} bn={g.bn} /></h3>
+              <ul className="dt-nutrients">
+                {NUTRIENTS.filter((n) => n.group === g.id).map((n) => {
+                  const { value, seen } = readingFor(n, todays, drunk);
+                  /* THIS NUTRIENT'S OWN COVERAGE, not the day's.
+                     A crowdsourced row may carry sodium and
+                     nothing else, so the day read 100% while
+                     four of the five said "not known"
+                     underneath it. A figure drawn from a third
+                     of the day says at least rather than about. */
+                  const thin = value != null && seen < COVERAGE_FLOOR;
+                  const n0 = value == null ? 0 : show(value);
+                  return (
+                    <li key={n.key} className="dt-figure">
+                      <h4><T en={n.en} bn={n.bn} /></h4>
+                      <p className="dt-value">
+                        {value == null
+                          ? <T en="not known" bn="জানা নেই" />
+                          : thin
+                            ? <T en={`at least ${n0} ${n.unit}`}
+                                 bn={`কমপক্ষে ${digits(n0, "bn")} ${n.unitBn}`} />
+                            : <T en={`about ${n0} ${n.unit}`}
+                                 bn={`প্রায় ${digits(n0, "bn")} ${n.unitBn}`} />}
+                      </p>
+                      <p className="dt-said">
+                        {n.low != null && n.high != null
+                          ? <T en={`aim for ${n.low} to ${n.high} ${n.unit}`}
+                               bn={`লক্ষ্য ${digits(n.low, "bn")} থেকে ${digits(n.high, "bn")} ${n.unitBn}`} />
+                          : n.low != null
+                            ? <T en={`at least ${n.low} ${n.unit} a day`}
+                                 bn={`দিনে অন্তত ${digits(n.low, "bn")} ${n.unitBn}`} />
+                            : n.high != null
+                              ? <T en={`keep it under ${n.high} ${n.unit}`}
+                                   bn={`${digits(n.high, "bn")} ${n.unitBn} এর নিচে রাখুন`} />
+                              : <T en="no single figure to aim for"
+                                   bn="লক্ষ্য করার মতো একটাও নির্দিষ্ট সংখ্যা নেই" />}
+                      </p>
+                      {/* THE SHARE, which is the whole of what
+                          section 15 promised about saturated
+                          fat: not a verdict, the proportion. */}
+                      {n.key === "satfat" && value != null && todays.fat > 0 ? (
+                        <p className="dt-said">
+                          <T
+                            en={`${Math.round((value / todays.fat) * 100)}% of today's fat`}
+                            bn={`আজকের চর্বির ${digits(Math.round((value / todays.fat) * 100), "bn")}%`}
+                          />
+                        </p>
+                      ) : null}
+                      {value == null ? null : n.reads === "both" ? (
+                        /* Two halves and two different kinds of
+                           knowing: the glasses are what somebody
+                           tapped and the rest is estimated, so
+                           one percentage over both would be a
+                           lie about the exact half. */
+                        <p className="dt-coverage">
+                          <T
+                            en={`${Math.round(drunk)} ml tapped as glasses, the rest from ${Math.round(seen * 100)}% of today's food`}
+                            bn={`গ্লাস হিসেবে লেখা ${digits(Math.round(drunk), "bn")} মিলিলিটার, বাকিটা আজকের খাবারের ${digits(Math.round(seen * 100), "bn")}% থেকে`}
+                          />
+                        </p>
+                      ) : (
+                        <p className="dt-coverage">
+                          <T
+                            en={`from ${Math.round(seen * 100)}% of today's food`}
+                            bn={`আজকের খাবারের ${digits(Math.round(seen * 100), "bn")}% থেকে`}
+                          />
+                        </p>
+                      )}
+                      <p className="dt-why"><T en={n.whyEn} bn={n.whyBn} /></p>
+                      <p className="dt-ref"><T en={n.refEn} bn={n.refBn} /></p>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))
         )}
         <p className="dt-why">
           <T
             en="No score out of a hundred, no letter grade and no green tick for complete. Those imply a precision this data does not have, and they turn eating into a test."
             bn="একশোতে কোনো নম্বর নেই, কোনো গ্রেড নেই, সম্পূর্ণ হওয়ার সবুজ টিকও নেই। ওগুলো এমন নিখুঁততা দাবি করে যা এই তথ্যে নেই, আর খাওয়াকে পরীক্ষা বানিয়ে ফেলে।"
+          />
+        </p>
+        {/* AND NO SUPPLEMENTS. Section 15 is explicit: this can
+            say a figure has been under its range, which is a
+            fact about the log, and what to do about it is
+            somebody else's job. */}
+        <p className="dt-why">
+          <T
+            en="Every range above is somebody's published reference intake, with whose it is written under it, and several of them disagree with each other by more than a rounding. None of it is a recommendation to take anything: a figure under its range for weeks is a fact about your log and what to do about it is a conversation with a clinician. This is general education and not medical advice."
+            bn="উপরের প্রতিটি সীমা কোনো না কোনো সংস্থার প্রকাশিত হিসাব, আর কার হিসাব সেটা নিচে লেখা আছে, আর কয়েকটা একে অপরের সঙ্গে বেশ খানিকটা মেলে না। এর কোনোটাই কিছু খাওয়ার পরামর্শ নয়: সপ্তাহের পর সপ্তাহ সীমার নিচে থাকা একটা সংখ্যা আপনার খাতার তথ্য, আর তা নিয়ে কী করবেন সেটা ডাক্তারের সঙ্গে কথা। এটা সাধারণ শিক্ষা, চিকিৎসা পরামর্শ নয়।"
           />
         </p>
 

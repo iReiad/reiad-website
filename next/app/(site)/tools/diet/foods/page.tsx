@@ -18,7 +18,7 @@ export const metadata: Metadata = pageMeta({
 export default function Page() {
   return (
     <DietPage
-      title={<T en="What it costs to eat" bn="খেতে কত খরচ" />}
+      href="/tools/diet/foods"
       lede={{
         en: "This is a personal finance site, and protein is the expensive macronutrient with a floor under it. So the obvious question gets asked.",
         bn: "এটা টাকার সাইট, আর প্রোটিনই দামি অংশ যার একটা সর্বনিম্ন আছে। তাই স্পষ্ট প্রশ্নটা করাই হয়।",

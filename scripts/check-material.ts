@@ -227,6 +227,12 @@ const NOT_GLASS = new Map<string, string>([
      bevel on one is detail nobody can resolve, and the strip
      reads as a calendar rather than as fourteen small panes. */
   ["dt-strip-day", "a mark: 10px tall, fourteen in a row, and a cut edge on one is invisible"],
+  /* A MARK, seven pixels across and round: it is the page's own
+     colour beside the page's own name, in a strip of eleven. A
+     bevel and a moving light on a dot that size is not detail
+     anybody can resolve, and eleven of them lit would turn a
+     strip into a string of bulbs. */
+  ["dt-tab-dot", "a mark: a 7px dot carrying one page's colour, eleven in a row"],
   ["acc-ico",             "a mark: the account menu's 20px icon disc"],
   ["rail-ico",            "a mark: the rail's per-school icon disc"],
   ["acc-avatar",          "a mark: a round profile picture, and a bevel on a photo is a frame"],
