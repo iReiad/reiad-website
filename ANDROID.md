@@ -176,13 +176,20 @@ plan touches the site.
 2. **`/.well-known/assetlinks.json`. Written, and one value
    short.** `aab/.well-known/assetlinks.json` names the package
    and carries an empty fingerprint list, which is a valid
-   statement that authorises nothing. It is there early on
-   purpose: whether the asset upload carries a dot-directory is
-   platform behaviour this repository cannot prove from the
-   inside, and shipping the real file is a bad moment to find
-   out. Nothing else claims the path: `run_worker_first` does not
-   list it, no route matches it, and `aab/.assetsignore` does not
-   cover it.
+   statement that authorises nothing. Nothing else claims the
+   path: `run_worker_first` does not list it, no route matches
+   it, and `aab/.assetsignore` does not cover it.
+
+   **A dot-directory IS uploaded, and that is measured rather
+   than assumed.** It was written here as a thing this repository
+   could not prove from the inside, and it can:
+   `npx wrangler@4 deploy --dry-run`, which is what `deploy.yml`
+   runs, prints the size of the asset manifest. Adding a second
+   file inside `aab/.well-known/` took it from 191 to 192 and
+   removing it put it back, so the directory is read like any
+   other. The file is here early anyway, because the deploy that
+   ships the real fingerprint is a bad moment to discover
+   otherwise.
 
    **The package is `uk.co.reiad.library`**: the domain
    backwards, then the site's own name. It is a permanent
