@@ -5,7 +5,7 @@
 -- WHAT WAS BROKEN. Saving anything on /account.html answered
 -- "Could not save that (400)." The settings form sends the whole
 -- patch at once, `following` included, and `following` holds
--- school ids: the ids in `next/lib/nav.ts`, which are `money`,
+-- school ids: the ids in `shared/nav.ts`, which are `money`,
 -- `deutsch`, `quran` and `english`. This constraint has allowed
 -- `learn` since 15 August and the school stopped being called
 -- that on the 17th, when it moved to /money/. PostgREST refuses

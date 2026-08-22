@@ -174,7 +174,7 @@ export const NEXT_ROUTES = [
   /^\/tools\/(stock|live|routine)$/i,
   /^\/tools\/routine\/(settings|print|day|year)$/i,
   /* The admin panel. ADMIN.md is the plan; it is `unlisted` in
-     lib/nav.ts for the reason the course section is. */
+     shared/nav.ts for the reason the course section is. */
   /^\/admin$/i,
   /* The Studio's shell. Its bundle is NOT here: that is a file in
      aab/studio/, and the asset router answers it as it always

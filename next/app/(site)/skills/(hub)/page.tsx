@@ -20,7 +20,7 @@
 
    ---- and it is rendered from the table, not typed ----
 
-   `lib/nav.ts` holds the seven. This page draws a card per entry
+   `shared/nav.ts` holds the seven. This page draws a card per entry
    and counts them; the sentence above the list says how many
    there are by counting the cards it is about to draw, which is
    the rule at the top of `CLAUDE.md`. The old page had a
@@ -31,7 +31,7 @@
 
 import type { Metadata } from "next";
 import { GoCard, InfoCard, SoonCard } from "../../../../components/deck";
-import { NAV } from "../../../../lib/nav";
+import { NAV } from "@reiad/shared/nav";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { SectionLabel } from "../../../../components/ui/label";
 
@@ -57,7 +57,7 @@ export default function SkillsPage() {
   /* The unlisted ones are not skills this site teaches, so they
      are out of the list AND out of the number above it. They get
      their own band at the foot, which is the whole reason the
-     flag exists: see `lib/nav.ts`. */
+     flag exists: see `shared/nav.ts`. */
   const skills = learn.filter((item) => !item.unlisted);
   const mine = learn.filter((item) => item.unlisted);
 
@@ -100,7 +100,7 @@ export default function SkillsPage() {
               ) : (
                 <GoCard
                   key={skill.href} href={skill.href}
-                  /* The school's own colour, out of `lib/nav.ts`,
+                  /* The school's own colour, out of `shared/nav.ts`,
                      which is where every other place on this site
                      reads it: the rail, the footer and the page a
                      card takes you to. This said gold for money and

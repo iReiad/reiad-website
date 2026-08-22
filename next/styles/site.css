@@ -3174,7 +3174,7 @@ it collapsed to the width of the word "Bangladesh". */
      a reader with JavaScript off had no menu and a crawler saw
      none of it. The menu is a rail down the left now, rendered on
      the server from one table: `@layer shell`, and
-     `next/lib/nav.ts`.
+     `shared/nav.ts`.
 
      Two rules from that block are kept below, and neither is the
      menu's: the `kbd` styling is shared with the shortcuts sheet
@@ -8516,7 +8516,7 @@ German for day, and .tag is what the site has always called
      without any of them naming it.
 
      THE MAPPING IS NOT HERE. `--accent` arrives inline on <html>,
-     read off the one table in `next/lib/nav.ts` by whatever is
+     read off the one table in `shared/nav.ts` by whatever is
      rendering: `accentStyle()` for a route, `htmlAttrs()` for the
      generated books and the two file-served pages.
 

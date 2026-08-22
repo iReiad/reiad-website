@@ -41,7 +41,7 @@
    ============================================================ */
 
 import { stageUrl, type SchoolStage } from "@reiad/shared/schools";
-import { NAV, type NavGroup, type NavItem } from "../lib/nav";
+import { NAV, type NavGroup, type NavItem } from "@reiad/shared/nav";
 import { SCHOOL_STAGES, type TreeStage } from "../lib/school-stages";
 import { Icon } from "./icons";
 import type { Current } from "./shell";

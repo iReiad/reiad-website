@@ -126,7 +126,7 @@ plan touches the site.
    serialising the same objects the module build already reads:
    the sections, the tools, the pages, the skills, the term
    groups, the counts, and the nav table's public half from
-   `next/lib/nav.ts`. One source, a second serialisation, cached
+   `shared/nav.ts`. One source, a second serialisation, cached
    like `/api/news`. No browser code will call it, so it is
    registered in `SERVER_ONLY` in `scripts/check-api.ts` with the
    app named as the caller, which is the discipline that check
@@ -445,7 +445,7 @@ of it.
    mounted in `API_ROUTES` in `worker.js`, serialising the
    sections, tools, pages, skills, term groups and counts out of
    `shared/content.ts` plus the public half of the nav table in
-   `next/lib/nav.ts`, cached like `/api/news`, and registered in
+   `shared/nav.ts`, cached like `/api/news`, and registered in
    `SERVER_ONLY` in `scripts/check-api.ts` with the app named as
    its caller.
 2. `assetlinks.json` under a `.well-known/` directory in `aab/`,

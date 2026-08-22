@@ -3,7 +3,7 @@
    drew a resume card above them, in the browser, after the page
    had painted: a reader with no JavaScript got the hand-written
    fallback list underneath, and a crawler got the same. The cards
-   are rendered by the route now, out of `lib/nav.ts`, and the
+   are rendered by the route now, out of `shared/nav.ts`, and the
    resume card is on the front door where a reader passes it
    whichever school they are in. */
 

@@ -27,7 +27,7 @@ are pills; a card is `--radius`; a field is the card's, because a
 box you type a paragraph into wants a corner and not a capsule.
 
 **The page wears its section's colour.** `--accent` is set on
-`<html>` from the one table in `next/lib/nav.ts`, and every
+`<html>` from the one table in `shared/nav.ts`, and every
 component reads it. `check-accents.ts` fails on any rule that
 names one of the seven directly. Twenty golds survive because they
 mean warn, risk and not-written-yet rather than a section.

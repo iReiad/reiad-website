@@ -131,7 +131,7 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   # BOTH, and the star alone was wrong. A `*` matches what comes
   # AFTER the slash, so "/skills/courses/*" covers the hub's
   # trailing-slash form and everything under it and does NOT cover
-  # "/skills/courses" itself. That is the address in `lib/nav.ts`,
+  # "/skills/courses" itself. That is the address in `shared/nav.ts`,
   # the one the rail links, and it 404ed: the asset router
   # answered it, there is no file, and the reader got the site's
   # 404 page while the Worker sat behind a route it was never

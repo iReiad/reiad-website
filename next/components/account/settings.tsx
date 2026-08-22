@@ -34,7 +34,7 @@ import {
   useCallback, useEffect, useState, type FormEvent, type ReactNode,
 } from "react";
 import type { Profile } from "/account.js";
-import { LADDER_SCHOOLS } from "../../lib/nav";
+import { LADDER_SCHOOLS } from "@reiad/shared/nav";
 import { subscribe } from "../../lib/progress";
 import { Button } from "../ui/button";
 import { Field } from "../ui/field";

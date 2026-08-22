@@ -14,7 +14,7 @@
    ============================================================ */
 
 import { useEffect, useState } from "react";
-import { schoolName } from "../../lib/nav";
+import { schoolName } from "@reiad/shared/nav";
 import { subscribe } from "../../lib/progress";
 import { KEPT, countOf, plural } from "./mirror";
 

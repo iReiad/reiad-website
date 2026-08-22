@@ -40,7 +40,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { LADDER_SCHOOLS } from "../next/lib/nav.ts";
+import { LADDER_SCHOOLS } from "../shared/nav.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
@@ -231,7 +231,7 @@ for (const file of HANDLERS) {
 
    Same rule as the handlers above, one database along.
    `public.profiles.following` holds SCHOOL IDS, and Postgres
-   cannot import `next/lib/nav.ts`, so the list is written out in
+   cannot import `shared/nav.ts`, so the list is written out in
    a constraint and there is no way for it not to be.
 
    THE BUG THIS EXISTS FOR. It said `learn`, and the money school
