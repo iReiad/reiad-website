@@ -8554,6 +8554,11 @@
   }
 
   .dt-hint { font-size: var(--t-1); color: var(--ink-soft); }
+  .dt-intro {
+    color: var(--ink-soft);
+    max-inline-size: 66ch;
+    margin-block: 0 var(--s-5);
+  }
 
   .dt-readout {
     display: grid;
@@ -8881,22 +8886,13 @@
   .dt-table thead th { color: var(--ink-soft); font-size: var(--t-1); text-transform: uppercase; letter-spacing: 0.05em; }
 
   .dt-goal, .dt-journal, .dt-nutrition, .dt-expect, .dt-trend,
-  .dt-foods, .dt-health, .dt-summary {
+  .dt-foods, .dt-health, .dt-summary, .dt-keto, .dt-habits,
+  .dt-recipes, .dt-usuals {
     display: grid; gap: var(--step);
   }
 
-  .dt-goal > section, .dt-journal > section,
-  .dt-nutrition > section, .dt-expect > section, .dt-trend > section,
-  .dt-foods > section, .dt-health > section, .dt-summary > section {
-    padding-block-start: 0;
-  }
-
-  .dt-goal > section > h2, .dt-journal > section > h2,
-  .dt-nutrition > section > h2, .dt-expect > section > h2,
-  .dt-trend > section > h2, .dt-foods > section > h2,
-  .dt-health > section > h2, .dt-summary > section > h2 {
-    margin-block: 0 var(--s-6);
-  }
+  .dt-page > * > section { padding-block-start: 0; }
+  .dt-page > * > section > h2 { margin-block: 0 var(--s-6); }
   .dt-goal .dt-readout, .dt-journal .dt-readout { margin-block-start: 0; }
 
   .dt-coverage {

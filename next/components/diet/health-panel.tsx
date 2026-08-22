@@ -94,7 +94,7 @@ export function HealthPanel() {
     <div className="dt-health">
       <section aria-labelledby="dt-lab-h">
         <h2 id="dt-lab-h"><T en="The numbers a clinic gives you" bn="ক্লিনিক যে সংখ্যাগুলো দেয়" /></h2>
-        <p className="dt-hint">
+        <p className="dt-intro">
           <T
             en="Twice a year somebody has blood taken and is handed a sheet of numbers they cannot read, which then goes in a drawer. Those are the only objective measurements in this entire tool."
             bn="বছরে দুবার রক্ত পরীক্ষা হয়, একটা কাগজ হাতে আসে যেটা পড়া যায় না, তারপর সেটা ড্রয়ারে যায়। এই পুরো যন্ত্রের একমাত্র বস্তুনিষ্ঠ মাপ ওগুলোই।"
@@ -148,7 +148,7 @@ export function HealthPanel() {
 
       <section aria-labelledby="dt-med-h">
         <h2 id="dt-med-h"><T en="Medicine that changes the arithmetic" bn="যে ওষুধ হিসাব বদলে দেয়" /></h2>
-        <p className="dt-hint">
+        <p className="dt-intro">
           <T
             en="Several very ordinary medicines change what these equations mean, and a tracker that does not know about them silently produces wrong readings and lets the reader conclude something about themselves. This is not a drug database and it interacts with nothing."
             bn="খুব সাধারণ কয়েকটি ওষুধ এই হিসাবগুলোর মানে বদলে দেয়, আর যে খাতা সেটা জানে না সে চুপচাপ ভুল হিসাব দেয় আর পাঠককে নিজের সম্পর্কে ভুল সিদ্ধান্তে পৌঁছে দেয়। এটা ওষুধের ডেটাবেস নয় আর কিছুর সঙ্গে মেলায় না।"
@@ -219,7 +219,7 @@ export function HealthPanel() {
           it: this tool does not ask, and will not. */}
       <section aria-labelledby="dt-cycle-h">
         <h2 id="dt-cycle-h"><T en="A month is longer than a week" bn="মাস সপ্তাহের চেয়ে বড়" /></h2>
-        <p className="dt-hint">
+        <p className="dt-intro">
           <T
             en="Water retention rises through "
             bn="শরীরে পানি জমে "

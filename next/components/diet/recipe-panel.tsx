@@ -266,7 +266,7 @@ export function RecipePanel() {
         <h2 id="dt-rec-mine-h"><T en="Your dishes" bn="আপনার রান্না" /></h2>
 
         {!loaded ? (
-          <p className="dt-hint">
+          <p className="dt-intro">
             <T en="Fetching what you have built." bn="আপনি যা বানিয়েছেন তা আনা হচ্ছে।" />
           </p>
         ) : null}
@@ -372,10 +372,10 @@ export function RecipePanel() {
       <section className="dt-recipe-build" aria-labelledby="dt-rec-build-h">
         <h2 id="dt-rec-build-h"><T en="Build a dish" bn="একটা রান্না বানান" /></h2>
         <TBlock
-          en={<p className="dt-hint">Put in what went in the pot, then say how many
+          en={<p className="dt-intro">Put in what went in the pot, then say how many
             portions it made. From then on, eating it is one tap and a
             fraction.</p>}
-          bn={<p className="dt-hint">পাত্রে যা যা গেছে সব দিন, তারপর বলুন কয় ভাগ
+          bn={<p className="dt-intro">পাত্রে যা যা গেছে সব দিন, তারপর বলুন কয় ভাগ
             হয়েছে। এরপর থেকে এটা খাওয়া মানে এক চাপ আর একটা ভাগ।</p>}
         />
 
@@ -522,7 +522,7 @@ export function RecipePanel() {
         <h2 id="dt-shop-h"><T en="A list for the shop" bn="বাজারের তালিকা" /></h2>
 
         {!chosen.length ? (
-          <p className="dt-hint">
+          <p className="dt-intro">
             <T
               en="Press On the list against a dish above, or several, and what you need for them is added up here with a price where this site has checked one."
               bn="উপরের কোনো রান্নার পাশে বাজারের তালিকায় চাপুন, একটা বা কয়েকটা, তাহলে ওগুলোর জন্য যা লাগবে এখানে যোগ হয়ে যাবে, আর যেখানে এই সাইট দাম যাচাই করেছে সেখানে দামসহ।"

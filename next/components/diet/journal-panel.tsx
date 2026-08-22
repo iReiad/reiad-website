@@ -137,10 +137,10 @@ export function JournalPanel() {
       <section className="dt-symptoms" aria-labelledby="dt-sym-h">
         <h2 id="dt-sym-h"><T en="What gets reported" bn="মানুষ যা বলে" /></h2>
         <TBlock
-          en={<p className="dt-hint">Described, and pointed at the tool&apos;s own
+          en={<p className="dt-intro">Described, and pointed at the tool&apos;s own
             note. Never explained, never diagnosed: these are things people
             report, and what they are usually associated with.</p>}
-          bn={<p className="dt-hint">বর্ণনা করা হচ্ছে, আর যন্ত্রের নিজের নোটের দিকে
+          bn={<p className="dt-intro">বর্ণনা করা হচ্ছে, আর যন্ত্রের নিজের নোটের দিকে
             দেখানো হচ্ছে। ব্যাখ্যা নয়, রোগ নির্ণয় তো নয়ই: এগুলো মানুষ যা বলে,
             আর সাধারণত কীসের সঙ্গে মিলে যায়।</p>}
         />

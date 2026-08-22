@@ -449,7 +449,7 @@ function Clock({ running, now, kg, mine, burn, from, lang }: {
 }) {
   if (!running) {
     return (
-      <p className="dt-hint">
+      <p className="dt-intro">
         <T
           en="Nothing is running, so there is no clock yet. Start a phase below and this becomes the hour you are at, what the body is doing at that hour, and what the scale is doing because of it."
           bn="এখন কিছুই চলছে না, তাই ঘড়িও নেই। নিচে একটা পর্ব শুরু করলে এখানে দেখাবে আপনি কত ঘণ্টায় আছেন, সেই ঘণ্টায় শরীর কী করছে, আর সেজন্য দাঁড়িপাল্লা কী করছে।"
@@ -463,7 +463,7 @@ function Clock({ running, now, kg, mine, burn, from, lang }: {
        than a spinner, and it is the truth: the server has a
        different clock and the hour is the browser's to compute. */
     return (
-      <p className="dt-hint">
+      <p className="dt-intro">
         <T en="Reading the clock." bn="ঘড়ি দেখা হচ্ছে।" />
       </p>
     );
@@ -808,7 +808,7 @@ function Window({ running, today, points, phases, rate, lang }: {
 }) {
   if (!running) {
     return (
-      <p className="dt-hint">
+      <p className="dt-intro">
         <T
           en="The first fourteen days of a keto phase are left out of the trend's slope, because what leaves in them is water. Start a phase and this fills in with your own days."
           bn="কিটো পর্বের প্রথম চৌদ্দ দিন ধারার ঢালের হিসাব থেকে বাদ থাকে, কারণ ওই সময়ে যা যায় তা পানি। একটা পর্ব শুরু করলে এখানে আপনার নিজের দিনগুলো বসবে।"

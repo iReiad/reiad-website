@@ -122,7 +122,7 @@ export function FoodsPanel() {
             bn="যে প্রোটিন আপনি সত্যিই খাবেন, সবচেয়ে সস্তা"
           />
         </h2>
-        <p className="dt-hint">
+        <p className="dt-intro">
           <T
             en="Per 100 g of protein. This is the number that changes behaviour: protein is the expensive macronutrient and the one with a floor, so it is a real optimisation with a real answer."
             bn="প্রতি ১০০ গ্রাম প্রোটিনের দাম। এই সংখ্যাটাই আচরণ বদলায়: প্রোটিনই দামি অংশ আর এরই একটা সর্বনিম্ন আছে, তাই এটা সত্যিকারের একটা হিসাব যার সত্যিকারের উত্তর আছে।"
@@ -164,7 +164,7 @@ export function FoodsPanel() {
 
       <section aria-labelledby="dt-lib-h">
         <h2 id="dt-lib-h"><T en="The library" bn="তালিকা" /></h2>
-        <p className="dt-hint">
+        <p className="dt-intro">
           <T
             en={`${FOODS.length} portions across both places. Every rice, dal and pasta row says whether it is cooked or dry: rice roughly triples in weight when cooked, and that is the most common single error in calorie counting.`}
             bn={`দুই জায়গা মিলিয়ে ${digits(FOODS.length, "bn")}টি ভাগ। প্রতিটি ভাত, ডাল আর পাস্তার সারিতে লেখা আছে সেটা রান্না করা না কাঁচা: রান্না হলে চালের ওজন প্রায় তিন গুণ হয়, আর ক্যালোরি গোনার সবচেয়ে সাধারণ ভুলটাই এটা।`}

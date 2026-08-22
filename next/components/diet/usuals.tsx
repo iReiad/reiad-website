@@ -156,7 +156,7 @@ export function Usuals() {
         <h2 id="dt-usual-h"><T en="Your usuals" bn="আপনি যা নিয়মিত খান" /></h2>
 
         {!loaded ? (
-          <p className="dt-hint">
+          <p className="dt-intro">
             <T en="Counting what you log most." bn="আপনি সবচেয়ে বেশি যা লেখেন তা গোনা হচ্ছে।" />
           </p>
         ) : null}
@@ -220,7 +220,7 @@ export function Usuals() {
         <h2 id="dt-yest-h"><T en="Yesterday again" bn="গতকালেরটাই আবার" /></h2>
 
         {loaded && !lastNight.length ? (
-          <p className="dt-hint">
+          <p className="dt-intro">
             <T
               en="Nothing was logged yesterday, so there is nothing to copy. It is the most pressed button in any food diary once there is."
               bn="গতকাল কিছু লেখা হয়নি, তাই কপি করার কিছু নেই। একবার লেখা শুরু হলে যেকোনো খাবারের খাতায় এই বোতামটাই সবচেয়ে বেশি চাপা পড়ে।"

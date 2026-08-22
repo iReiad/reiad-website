@@ -13258,7 +13258,18 @@ German for day, and .tag is what the site has always called
     padding-inline: var(--s-2);
   }
 
+  /* TWO JOBS, TWO CLASSES. `.dt-hint` is 0.66rem, which is right
+     under a box and unreadable as a section's opening paragraph,
+     and it was doing both: a page could open with a sentence set
+     at ten and a half pixels. A hint sits beside a control; an
+     intro is the first thing said about a section, and it is
+     read at reading size. */
   .dt-hint { font-size: var(--t-1); color: var(--ink-soft); }
+  .dt-intro {
+    color: var(--ink-soft);
+    max-inline-size: 66ch;
+    margin-block: 0 var(--s-5);
+  }
 
   .dt-readout {
     display: grid;
@@ -13675,14 +13686,13 @@ German for day, and .tag is what the site has always called
 
   /* ---- the other panels ---- */
 
-  /* EVERY PANEL PAGE, and it has to be every one: the three
-     newest were added to neither list below and all three grew
-     the doubled gap the comment under this one measures. A list
-     of page classes is a thing somebody has to remember, which
-     is the failure this whole stylesheet keeps being caught by,
-     so anything with `dt-` and a panel goes in both. */
+  /* EVERY PANEL PAGE, and it has to be every one. This was a list
+     of page classes and it went stale twice, three pages at a
+     time. `.dt-page > *` is every panel, and the two that are not
+     grids say so themselves below. */
   .dt-goal, .dt-journal, .dt-nutrition, .dt-expect, .dt-trend,
-  .dt-foods, .dt-health, .dt-summary {
+  .dt-foods, .dt-health, .dt-summary, .dt-keto, .dt-habits,
+  .dt-recipes, .dt-usuals {
     display: grid; gap: var(--step);
   }
 
@@ -13690,19 +13700,17 @@ German for day, and .tag is what the site has always called
      is right for a hub built of sections and doubles the gap on a
      grid that is already spacing them. Measured on the expect
      page: about 130px of nothing between the lede and the first
-     table. The grid owns the rhythm here. */
-  .dt-goal > section, .dt-journal > section,
-  .dt-nutrition > section, .dt-expect > section, .dt-trend > section,
-  .dt-foods > section, .dt-health > section, .dt-summary > section {
-    padding-block-start: 0;
-  }
+     table. The grid owns the rhythm here.
 
-  .dt-goal > section > h2, .dt-journal > section > h2,
-  .dt-nutrition > section > h2, .dt-expect > section > h2,
-  .dt-trend > section > h2, .dt-foods > section > h2,
-  .dt-health > section > h2, .dt-summary > section > h2 {
-    margin-block: 0 var(--s-6);
-  }
+     A PANEL, NOT A LIST OF PANELS. This was eight page classes
+     written out, and it was wrong twice: three pages were added
+     and put in neither list, then three more, and each time the
+     gap silently doubled on the new ones while every check
+     passed. A panel is a direct child of `main.dt-page` and its
+     sections are the grandchildren, so that shape is the rule
+     and a page added next week gets it without knowing. */
+  .dt-page > * > section { padding-block-start: 0; }
+  .dt-page > * > section > h2 { margin-block: 0 var(--s-6); }
   .dt-goal .dt-readout, .dt-journal .dt-readout { margin-block-start: 0; }
 
   .dt-coverage {

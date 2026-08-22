@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v190: /fallback.css. A section's opening paragraph was set at
+        0.66rem, because one class was both a hint beside a box
+        and the first thing said about a section. And the rule
+        that stops a section's padding doubling the grid's gap is
+        a shape now rather than a list of page classes that went
+        stale twice.
+
    v189: /fallback.css. The diet tool went 83px past its column
         and the site grew a horizontal scrollbar: a strip that
         scrolls inside itself still contributes its content width
@@ -1731,7 +1738,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v189";
+const VERSION = "v190";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
