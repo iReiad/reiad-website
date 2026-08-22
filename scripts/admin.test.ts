@@ -212,6 +212,23 @@ console.log("\nnothing locked looks empty");
       || middleware.includes(path));
   }
 
+  /* A page that stops halfway says so. An admin page is the one
+     somebody opens BECAUSE something is broken, so it failing
+     quietly is the worse of the two.
+
+     It is honest about its reach, and the check asserts that
+     too: a boundary catches a throw, and a component whose
+     module never arrived, or that something outside the page
+     removes afterwards, throws nothing. That was the failure
+     this was written after, and it would not have caught it. A
+     boundary that implies more cover than it has is worse than
+     none. */
+  const boundary = read("next/app/(site)/admin/error.tsx");
+  ok("a throw in the panel tree says the page did not finish",
+    /did not finish/.test(boundary));
+  ok("and it names what an extension looks like, which is the case it cannot catch",
+    /ERR_BLOCKED_BY_CLIENT/.test(boundary));
+
   /* The page names the build that served it, in the HTML, so a
      screenshot of a wrong page says which build drew it. Server
      side deliberately: everything else that could report it is
