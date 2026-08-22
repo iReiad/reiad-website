@@ -50,9 +50,12 @@
    words and either a control or nothing between them.
 
    `.crumbs` is the stylesheet's and stays: this component emits
-   it, and `aab/src/courses.ts` finds the last crumb by it to
-   rename one after its fetch. Two looks for one thing is the
-   drift this library exists to stop.
+   it and nothing else does. It was also how `aab/src/courses.ts`
+   reached in to rename the last crumb after its fetch, which is
+   gone: that section renders its own trail through this
+   component now, in `components/courses/trail.tsx`, so there is
+   one piece of markup rather than one piece and a hand written
+   over it.
    ============================================================ */
 
 import type { ReactNode } from "react";

@@ -1,0 +1,171 @@
+"use client";
+
+/* ============================================================
+   courses/trail.tsx: the whole path, down to the lesson.
+
+   Every other section's trail is the server's, out of
+   `lib/crumbs.ts` and the one table in `lib/nav.ts`. This section
+   cannot be: the catalogue is admin-only, so a route here has no
+   names to render and `check-courses.ts` refuses a value import
+   of it into anything under `next/`. The shape is the URL's and
+   is known at once; the names arrive with a fetch.
+
+   ---- what this replaces ----
+
+   A single `…` crumb, and `setHere()` in `aab/src/courses.ts`
+   rewriting it after the fetch with:
+
+       last.textContent = text;
+
+   That `<li>` holds three things: the separator, the popover of
+   what else is at that level, and the label. `textContent` on it
+   replaces all three with one text node, so the arrow in front of
+   the last crumb disappeared and the trail read
+
+       › দক্ষতা › কোর্সOptional familiar with data analytics…
+
+   with the course and module levels missing entirely, because
+   there was only ever one crumb to rename.
+
+   ---- the shape is known before anything is fetched ----
+
+   `usePathname()` runs on the server render of a client component
+   too, so the full trail, with every href and a name read out of
+   each slug, is in the first HTML. The fetch only upgrades the
+   words. A reader on a slow connection gets a complete, working
+   trail immediately rather than an ellipsis that may never
+   resolve.
+
+   ---- and each arrow opens its own level ----
+
+   The arrow before a crumb opens what else is at that level: the
+   other courses, the other modules of this course, the other
+   lessons of this module. That is what the arrow already does for
+   schools and stages, and one fetch of `/api/courses/<course>`
+   carries all three, so it costs nothing extra to be the fastest
+   way sideways through a course rather than only the way back up.
+   ============================================================ */
+
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { Crumbs, type Crumb, type CrumbLink } from "../ui/crumbs";
+import { trailFor } from "../../lib/crumbs";
+import { readerCall } from "../../lib/reader-api";
+
+/* The half of the catalogue's shape this needs, written out
+   because the values may not be imported. `check-courses.ts` is
+   what holds these names to the ones `forBrowser()` emits. */
+interface LessonRow { slug: string; title?: string; position?: number }
+interface ModuleRow {
+  slug: string; title?: string; position?: number; lessons?: LessonRow[];
+}
+interface CourseRow { slug: string; title?: string; modules?: ModuleRow[] }
+interface CourseCard { slug: string; title?: string; modules?: number }
+
+/** A slug read as words. What a crumb says before the catalogue
+    answers, and what it goes on saying for anybody the catalogue
+    never answers for. Better than `…`, which says nothing and is
+    indistinguishable from a trail that is still loading when it
+    is in fact one that failed. */
+const fromSlug = (slug: string): string =>
+  decodeURIComponent(slug).replace(/[-_]+/g, " ").replace(/^./, (c) => c.toUpperCase());
+
+const at = (course?: string, mod?: string, lesson?: string): string =>
+  ["/skills/courses", course, mod, lesson].filter(Boolean).join("/");
+
+export function CourseTrail() {
+  const path = usePathname() ?? "";
+  const [, , course, mod, lesson] = path.split("/").filter(Boolean);
+
+  const [row, setRow] = useState<CourseRow | null>(null);
+  const [all, setAll] = useState<CourseCard[]>([]);
+
+  useEffect(() => {
+    if (!course) return () => {};
+    let live = true;
+    /* Both at once, and neither is fatal. A trail that failed to
+       find its names still has the ones out of the URL, which is
+       the whole reason those are the starting value rather than
+       a spinner. */
+    void Promise.all([
+      readerCall<{ course?: CourseRow }>(`courses/${course}`),
+      readerCall<{ courses?: CourseCard[] }>("courses"),
+    ]).then(([one, list]) => {
+      if (!live) return;
+      if (one.ok && one.data?.course) setRow(one.data.course);
+      if (list.ok && Array.isArray(list.data?.courses)) setAll(list.data.courses);
+    });
+    return () => { live = false; };
+  }, [course]);
+
+  if (!course) {
+    return <Bar trail={trailFor("skills", [{ href: "/skills/courses", label: "কোর্স" }])} />;
+  }
+
+  const modules = row?.modules ?? [];
+  const here = modules.find((m) => m.slug === mod);
+  const lessons = here?.lessons ?? [];
+
+  /* Every course beside this one. `here` marks the one you are
+     on, which is listed rather than linked, the same way a
+     school's menu lists the school you are reading. */
+  const courseMenu: CrumbLink[] = all.map((c) => ({
+    href: at(c.slug),
+    label: c.title ?? fromSlug(c.slug),
+    count: c.modules,
+    here: c.slug === course,
+  }));
+
+  const moduleMenu: CrumbLink[] = modules.map((m) => ({
+    href: at(course, m.slug),
+    kicker: typeof m.position === "number" ? `${m.position}` : undefined,
+    label: m.title ?? fromSlug(m.slug),
+    count: m.lessons?.length,
+    here: m.slug === mod,
+  }));
+
+  const lessonMenu: CrumbLink[] = lessons.map((l) => ({
+    href: at(course, mod, l.slug),
+    kicker: typeof l.position === "number" ? `${l.position}` : undefined,
+    label: l.title ?? fromSlug(l.slug),
+    here: l.slug === lesson,
+  }));
+
+  const deep: Crumb[] = [{ href: "/skills/courses", label: "কোর্স" }];
+
+  deep.push({
+    href: at(course),
+    label: row?.title ?? fromSlug(course),
+    menu: courseMenu,
+    menuLabel: "The other courses",
+  });
+
+  if (mod) {
+    deep.push({
+      href: at(course, mod),
+      label: here?.title ?? fromSlug(mod),
+      menu: moduleMenu,
+      menuLabel: "The other modules of this course",
+    });
+  }
+
+  if (lesson) {
+    deep.push({
+      href: at(course, mod, lesson),
+      label: lessons.find((l) => l.slug === lesson)?.title ?? fromSlug(lesson),
+      menu: lessonMenu,
+      menuLabel: "The other lessons in this module",
+    });
+  }
+
+  return <Bar trail={trailFor("skills", deep)} />;
+}
+
+/** The bar's own trail, said once. Every prop here has to match
+    what `shell.tsx` passes for every other page: this replaces
+    that row rather than sitting beside it, and a trail that
+    looked slightly different on one section would read as a
+    different site. */
+function Bar({ trail }: { trail: Crumb[] }) {
+  return <Crumbs trail={trail} skip={1} label="পথ" className="crumbs-bar" min={2} />;
+}

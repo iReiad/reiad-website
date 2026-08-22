@@ -17,7 +17,7 @@
    hide content on an older engine.
    ============================================================ */
 
-@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, admin, glow, utilities;
+@layer tokens, base, layout, components, menu, tools, tw, article, studio, work, money, workbook, deutsch, quran, english, reads, check, about, shell, deck, courses, routine, diet, admin, glow, utilities;
 
 /* ============================================================
    TOKENS
@@ -39,6 +39,39 @@
      `--gx`/`--gy` default to the centre, which is what a surface
      reached by the keyboard gets: there is no pointer to follow,
      so the light sits in the middle of it rather than nowhere. */
+  /* How far below the top of a line BOX a 20px tick has to sit to
+     be centred on the letters in it.
+
+     REGISTERED, and that is the whole reason this exists rather
+     than the sum being written where it is used. `lh` resolves
+     against the line-height of the element it is computed on, and
+     an unregistered custom property is substituted as tokens and
+     computed on the element that USES it. The users are
+     `.checklist li::before` and `.checkpoint::before`, which set
+     `line-height: 1` so the tick sits in the middle of its own
+     box, so the sum would come out against a leading of 1 and put
+     the tick back where it started.
+
+     Registered, it is computed on the `li`, where the leading is
+     the prose's. That matters more than it sounds: Bangla body
+     text is set at 1.9 and English at 1.7, so there is no one
+     number that is right for both, and most of these lists are
+     Bangla. Measured before and after: 1.9px above the line,
+     0.7px after. */
+  @property --tick-top { syntax: "<length>"; initial-value: 4px; inherits: true; }
+
+  /* Does the light FOLLOW the pointer on this surface. 1 for the
+     three kinds you press, 0 for the two you do not, and it is a
+     number rather than a keyword because the size formula
+     multiplies by it.
+
+     REGISTERED for the reason `--glow-a` is: an unregistered
+     custom property is a string, a multiply against one is
+     invalid at computed value time, and an invalid `--glow-w`
+     takes the whole background-image down to `none` rather than
+     to the previous layer's. */
+  @property --follows  { syntax: "<number>";  initial-value: 1;   inherits: false; }
+
   @property --gx       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --gy       { syntax: "<percentage>"; initial-value: 50%; inherits: false; }
   @property --glow-a   { syntax: "<number>";  initial-value: 0;   inherits: false; }
@@ -3768,10 +3801,11 @@ it collapsed to the width of the word "Bangladesh". */
     & li {
       position: relative; padding-left: 30px; margin-bottom: 0;
       max-width: var(--measure);
+      --tick-top: calc((1lh - 20px) / 2);
     }
     & li::before {
       content: "✓";
-      position: absolute; left: 0; top: 0.05em;
+      position: absolute; left: 0; top: var(--tick-top);
       width: 20px; height: 20px; display: grid; place-items: center;
       border: 1px solid var(--accent); border-radius: var(--radius-xs);
       color: var(--accent); font-size: var(--t-2); line-height: 1;
@@ -3799,6 +3833,7 @@ it collapsed to the width of the word "Bangladesh". */
   .checkpoint {
     display: grid; grid-template-columns: 20px 1fr;
     align-items: start; gap: var(--s-5);
+    --tick-top: calc((1lh - 20px) / 2);
     width: 100%; padding: 3px 6px 3px 0; margin-inline-start: -6px;
     font: inherit; text-align: start; color: inherit;
     background: none; border: 0; border-radius: var(--radius-sm);
@@ -3809,7 +3844,7 @@ it collapsed to the width of the word "Bangladesh". */
        tick and the words move together. */
     &::before {
       content: "✓";
-      width: 20px; height: 20px; margin-top: 0.05em;
+      width: 20px; height: 20px; margin-top: var(--tick-top);
       display: grid; place-items: center;
       border: 1px solid var(--accent); border-radius: var(--radius-xs);
       color: transparent; font-size: var(--t-2); line-height: 1;
@@ -6287,7 +6322,57 @@ German for day, and .tag is what the site has always called
   .feld, .sag-zeile {
     display: grid; grid-template-columns: 26px 1fr; gap: var(--s-4); align-items: start;
   }
-  .feld-num { color: var(--accent); font-size: var(--t-3); padding-top: 9px; }
+  /* ---------- the numeral in the gutter ----------
+
+     It sat on `padding-top: 9px`, a guess at where the first line
+     inside the box beside it starts, and the numbers floated
+     above their boxes down the whole page.
+
+     Two facts line them up exactly. The first line inside a
+     textarea begins at its border plus its padding, which this
+     stylesheet sets in one place: 1px and 10px. And a line box is
+     `line-height × font-size`, so giving this span the BOX's type
+     size rather than a smaller one makes its line box the same
+     height, and the two first lines then start and end together
+     whatever the leading is. Bangla is set at 1.9 and English at
+     1.7, so no single pixel value could have been right for both.
+     Measured after: 0.0px apart.
+
+     The numeral stays quieter than the writing by weight and
+     colour rather than by size, which is the part that was doing
+     no work. */
+  .feld-num {
+    color: var(--accent);
+    font-size: var(--t-5);
+    padding-top: 11px;
+    opacity: 0.75;
+    transition: opacity var(--fast) var(--ease);
+  }
+  :is(.feld, .sag-zeile):focus-within .feld-num { opacity: 1; }
+
+  /* ---------- and the box is ruled, like the book it is ----------
+
+     A practice book is a page somebody writes eight sentences on
+     by hand. Ruled lines are what that page has, they cost one
+     gradient, and they are drawn at exactly `1lh` so the writing
+     sits ON them rather than near them.
+
+     `local` so the rules scroll with the text rather than staying
+     put behind it, and `content-box` so the first rule is under
+     the first line rather than under the padding. The sheen the
+     base rule gives every field is kept as the second layer: this
+     adds paper to it rather than replacing the material. */
+  .buch-tag textarea[data-schrift] {
+    background-image:
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0 calc(1lh - 1px),
+        var(--pane-edge) calc(1lh - 1px) 1lh),
+      var(--sheen);
+    background-origin: content-box, padding-box;
+    background-clip: content-box, border-box;
+    background-attachment: local, scroll;
+  }
   .buch-tag textarea[data-schrift]:focus-visible {
     /* A ring, not just a colour.
 
@@ -10369,9 +10454,11 @@ German for day, and .tag is what the site has always called
      that guessed. Now the mark is the first crumb and the trail
      continues out of it, on one line, from the server.
 
-     `.crumbs` is the row's own look, kept because `aab/src/courses.ts`
-     finds the last crumb by that class to rename it; this is that
-     look sized for a bar. Neither `404.html` nor `offline.html` has
+     `.crumbs` is the row's own look and this is that look sized
+     for a bar. The class was also what `aab/src/courses.ts`
+     reached for to rename the last crumb; that is gone, and the
+     course section renders its whole trail through the same
+     component as everything else. Neither `404.html` nor `offline.html` has
      a trail at all, which is what this used to say. The
      separator before the FIRST crumb is what joins it to the
      mark: without it the mark and the section read as two
@@ -11731,7 +11818,15 @@ German for day, and .tag is what the site has always called
 
   /* ---------- today, on the dashboard ---------- */
 
-  .rt-today-bands { display: grid; gap: var(--s-6); inline-size: 100%; }
+  .rt-today-bands {
+    display: grid; gap: var(--s-6); inline-size: 100%;
+    /* Each column starts at the TOP of its own row. Without this
+       every row of the grid is as tall as its tallest band, so a
+       group with one task sat a long way below its heading while
+       the group beside it had four, and the card opened with a
+       hole in the middle of it. */
+    align-items: start;
+  }
   @media (min-width: 48rem) {
     .rt-today-bands { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
   }
@@ -11745,6 +11840,64 @@ German for day, and .tag is what the site has always called
     list-style: none; margin: 0; padding: 0;
     display: flex; flex-wrap: wrap; gap: var(--s-3);
   }
+
+  /* ---------- the log chip: a mark, a phrase and a tally ----------
+
+     `components/routine/log.tsx` is the markup and says at length
+     what was wrong with the three bare children it replaced. The
+     short of it: `.chip` is not a flex container, so a state
+     glyph, a Bangla phrase and a count ran together as one word.
+
+     Everything below is scoped to `.rt-log` rather than added to
+     `.chip`, because a chip is a label on most of the site and
+     these three parts are this button's own shape. */
+  .rt-log {
+    display: inline-flex; align-items: center; gap: var(--s-4);
+    /* Bangla has no case and its conjuncts should not be pulled
+       apart. `.crumbs` turns both off for the same reason. */
+    text-transform: none; letter-spacing: 0;
+    font-family: var(--font-bn); font-size: var(--t-3);
+    padding-inline: 10px 12px;
+  }
+
+  /* A drawn ring that fills, not a character. `○` at this size
+     beside Bangla is `০`, so the state of the button was being
+     carried by something that reads as a digit in the language
+     the button is labelled in. */
+  .rt-log-mark {
+    flex: 0 0 auto;
+    inline-size: 13px; block-size: 13px; border-radius: 50%;
+    border: 1.5px solid var(--accent-line);
+    position: relative;
+    transition: background var(--fast) var(--ease),
+                border-color var(--fast) var(--ease);
+  }
+  .rt-log[aria-pressed="true"] .rt-log-mark {
+    background: var(--accent); border-color: var(--accent);
+  }
+  /* The tick inside it, drawn rather than typed, and only once
+     the ring is filled. Two lines of a border, rotated. */
+  .rt-log[aria-pressed="true"] .rt-log-mark::after {
+    content: ""; position: absolute;
+    inset-block-start: 1px; inset-inline-start: 3.5px;
+    inline-size: 3.5px; block-size: 6.5px;
+    border: solid var(--panel);
+    border-width: 0 1.5px 1.5px 0;
+    rotate: 45deg;
+  }
+
+  .rt-log-name { min-inline-size: 0; }
+
+  /* How many days this has ever been marked, behind a hairline so
+     it reads as a count rather than as the end of the phrase. */
+  .rt-log-times {
+    flex: 0 0 auto;
+    padding-inline-start: var(--s-4);
+    border-inline-start: 1px solid var(--hairline);
+    font-size: var(--t-1); color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .rt-log[aria-pressed="true"] .rt-log-times { color: var(--accent); }
 
   /* ---------- how the days felt ---------- */
 
@@ -11939,7 +12092,7 @@ German for day, and .tag is what the site has always called
   :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
-      .tracker, .tag-waehler, .buch-tag,
+      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
@@ -11953,7 +12106,7 @@ German for day, and .tag is what the site has always called
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
       .news-window, .preflight, .slash-menu, .studio-tools,
-      .course-rail, .csv-panel, .deck-foot, .toast) {
+      .course-rail, .csv-panel, .deck-foot, .toast, .dt-set, .dt-lang) {
     &:hover, &:focus-visible, &:focus-within {
       --glow-a: 1;
       --glow-fade: 190ms;
@@ -11963,7 +12116,32 @@ German for day, and .tag is what the site has always called
   [data-glow="chip"]    { --glow-w:  70px; --glow-i: 40%; }
   [data-glow="control"] { --glow-w: 110px; --glow-i: 34%; }
   [data-glow="card"]    { --glow-w: 240px; --glow-i: 26%; }
-  [data-glow="pane"]    { --glow-w: 420px; --glow-i: 16%; }
+  /* A PANE DOES NOT FOLLOW, and this is the second thing on this
+     site to be told so.
+
+     It was a 420px ellipse tracking the pointer across a whole
+     panel, which is a light the size of a wall sliding around
+     behind whatever you are reading. Two readings of it, a week
+     apart, described it the same way: a flare, going further out
+     than it should, bothersome. A soft 16% smudge that never
+     quite arrives anywhere is worse than no light at all, because
+     the eye keeps checking whether something is happening.
+
+     The reason is in the taxonomy rather than in the number. The
+     moving light MEANS this responds to you: it is the same
+     signal as the lift on a card and the arrow that slides on a
+     GoCard. A chip, a control and a card are all things you press.
+     A pane is the thing you read inside. Making it glow at the
+     pointer said "press me" about a wall, and shrinking it would
+     only have said it more quietly.
+
+     So it keeps the material and loses the movement: the weave,
+     the bevel and the lit edge are untouched, and `--glow-w: 0`
+     is how a still surface is said here, exactly as `plate` says
+     it. It also stops `glow.tsx` tracking the pointer over every
+     panel on the page, because a non-zero spread is that module's
+     membership test. */
+  [data-glow="pane"]    { --follows: 0; --glow-i: 16%; }
 
   /* ============================================================
      THE TAXONOMY: function, size, interactivity
@@ -11988,7 +12166,7 @@ German for day, and .tag is what the site has always called
      | chip    |  1    | 0.94   | 0.78    | yes |
      | control |  2.2  | 0.80   | 0.70    | yes |
      | card    |  5    | 0.50   | 0.50    | yes |
-     | pane    |  9    | 0.30   | 0.30    | yes |
+     | pane    |  9    | 0.30   | 0.30    | no  |
      | plate   |  3.4  | 0.55   | 0.28    | no  |
 
      Read down the polish column and the system is there in one
@@ -12042,7 +12220,7 @@ German for day, and .tag is what the site has always called
   :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
-      .tracker, .tag-waehler, .buch-tag) {
+      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn) {
     --depth: 1; --polish: 0.94; --clarity: 0.78; --standing: 0.3;
   }
 
@@ -12075,7 +12253,7 @@ German for day, and .tag is what the site has always called
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
       .news-window, .preflight, .slash-menu, .studio-tools,
-      .course-rail, .csv-panel, .deck-foot, .toast) {
+      .course-rail, .csv-panel, .deck-foot, .toast, .dt-set, .dt-lang) {
     --depth: 9; --polish: 0.3; --clarity: 0.3; --standing: 1;
   }
 
@@ -12093,7 +12271,8 @@ German for day, and .tag is what the site has always called
      Written as one gradient rather than as a pseudo-element for
      the reason at the top of this layer: `::after` is taken on
      half of these already. */
-  :is(.tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
+  :is(.dt-figure,
+      .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
       .keep-note, .gate-hint, .balance-check, .work-facts, .cred,
@@ -12104,12 +12283,16 @@ German for day, and .tag is what the site has always called
       .ref-details, .course-video, .rt-hours-line, .work-art, .share-card) {
     --depth: 3.4; --polish: 0.55; --clarity: 0.28; --standing: 1;
 
-    /* `--glow-w: 0` after the depth, and both are deliberate. The
-       depth still shapes the light below; the zero is what tells
-       `glow.tsx` not to track this, because a non-zero spread is
-       the module's membership test. A plate is lit and holds
-       still. */
-    --glow-w: 0px;
+    /* The depth still shapes the light below; `--follows: 0` is
+       what takes the MOVEMENT off it, and it is also what tells
+       `glow.tsx` not to track this, because the size formula
+       multiplies by it and a zero spread is that module's
+       membership test. A plate is lit and holds still.
+
+       This was `--glow-w: 0px` here, which the derived formula
+       later in this layer overrode at equal specificity, so no
+       plate on the site has ever held still. */
+    --follows: 0;
     /* A tint like any other surface's now, so it composes with
        the bevel and the grain instead of replacing them. */
     --surface-image:
@@ -12259,7 +12442,7 @@ German for day, and .tag is what the site has always called
   :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
-      .tracker, .tag-waehler, .buch-tag,
+      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
@@ -12273,7 +12456,8 @@ German for day, and .tag is what the site has always called
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
       .news-window, .preflight, .slash-menu, .studio-tools,
-      .course-rail, .csv-panel, .deck-foot, .toast,
+      .course-rail, .csv-panel, .deck-foot, .toast, .dt-set, .dt-lang,
+      .dt-figure,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
@@ -12307,7 +12491,38 @@ German for day, and .tag is what the site has always called
        spread is bounded by how far light carries, not by the size of the
        sheet. A chip stays at 46px, a control at 101px, and a card and a
        pane both settle at 220. */
-    --glow-w: min(calc(var(--depth) * 46px), 220px);
+    /* Times `--follows`, which is 0 on the two kinds that hold
+       still. That factor is here rather than as a `--glow-w: 0`
+       beside their depth, and the difference was not academic:
+       this rule is LATER than both of those blocks and has the
+       same specificity, so it won, and a plate measured 156px of
+       moving light while three paragraphs above said a plate is
+       lit and holds still. It had been untrue since the formula
+       was written. Measured, not read: a `.stat` reported
+       `--glow-w: 156.4px`. */
+    --glow-w: calc(min(var(--depth) * 46px, 220px) * var(--follows, 1));
+
+    /* ---- and the ground's texture does not nest ----
+
+       The weave belongs to the sheet. A surface drawn ON another
+       surface is a mark on it, not a second sheet, and both were
+       painting it: a rail carries the hatch and so did every row
+       on the rail. Two identical 45° gratings at a 5px pitch,
+       offset by each row's own background origin, stack into a
+       denser pattern that reads as dirt rather than as cloth.
+
+       Only `paper` showed it, and that is the tell rather than
+       luck: it is the one finish whose grain is a hatch. Frost is
+       a 3px stipple, where two copies land on each other and look
+       like one, and plain has none.
+
+       `& *` rather than a second list of the classes that are
+       grounds. This rule already names every surface on the site,
+       and a copy of that list is what `check-css.ts` exists to
+       stop one file down.
+
+       Measured: `.rail` two weave layers, `.rail-item` two more. */
+    & * { --glass-grain: none; }
     --glow-h: var(--glow-w);
     /* 32% and not 44%. A material that is on every surface of a
        site has to be quiet or it is noise everywhere, and the
@@ -12782,4 +12997,214 @@ German for day, and .tag is what the site has always called
   .ad-dot[data-state="down"] { background: var(--danger); }
   .ad-row[data-state="up"] .ad-dot { background: var(--accent); }
   .ad-row[data-state="down"] .ad-dot { background: var(--danger); }
+}
+
+/* ============================================================
+   @layer diet: the diet tool.
+
+   `DIET.md` is the plan. Two things here are not decoration.
+
+   ---- 1. both languages are in the markup ----
+
+   `components/diet/lang.tsx` renders each phrase twice and this
+   shows one, keyed on `data-tool-lang` on the root, which the
+   boot script in `shell.tsx` sets before the first paint from
+   the same `tool-lang` key the calculators have always used.
+
+   `display: none` rather than `visibility` or a clip, because
+   the hidden half must not be read out: a screen reader on a
+   page carrying both would announce every sentence twice.
+
+   The switch writes the attribute and the page changes in the
+   same frame. A component that picked a language in the browser
+   instead would render one on the server and the other on the
+   client, which is React error #418 and the day every calculator
+   on this site went blank.
+
+   ---- 2. Bangla has its own leading and no tracking ----
+
+   `html[lang="bn"]` already sets 1.9 against English's 1.7, and
+   that applies to a PAGE. Here the two languages sit inside one
+   element, so the rule has to be on the halves. Bangla has no
+   case, so `uppercase` does nothing to it, and letter-spacing
+   pulls apart conjuncts that belong together: both are turned
+   off wherever a label carries them.
+   ============================================================ */
+@layer diet {
+  :root[data-tool-lang="bn"] .t-en,
+  :root:not([data-tool-lang="bn"]) .t-bn { display: none; }
+
+  .t-bn { line-height: 1.9; text-transform: none; letter-spacing: 0; }
+  .t-en { line-height: inherit; }
+
+  /* Inline by default so a phrase sits inside a sentence, and a
+     block only where the component says block. */
+  span.t-en, span.t-bn { display: inline; }
+  :root[data-tool-lang="bn"] span.t-en,
+  :root:not([data-tool-lang="bn"]) span.t-bn { display: none; }
+
+  /* The same top and bottom as every other tool page. `main`
+     starts 10px under the floating bar on its own, which is
+     clearance and not room: measured, the routine's heading sits
+     at 140 and this one sat at 72, a hair below a bar it shows
+     through. */
+  .dt-page { padding-block: var(--step); }
+
+  .dt-head { margin-block-end: var(--step); }
+
+  .dt-head-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+  }
+
+  .dt-lede { color: var(--ink-soft); max-inline-size: 60ch; }
+
+  /* The switch. Two buttons in one pill, the pressed one lit,
+     which is the same shape the audience switch already has. */
+  .dt-lang {
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-pill);
+    background: var(--panel);
+  }
+
+  .dt-lang-btn {
+    font: inherit;
+    font-size: var(--t-1);
+    padding: var(--s-2) var(--s-3);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+
+  .dt-lang-btn[aria-pressed="true"] {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  /* The measurements and the readout, side by side where there
+     is room and stacked where there is not. `start` rather than
+     `stretch`, because a short form beside a tall readout should
+     not grow a chasm under it. */
+  .dt-body {
+    display: grid;
+    gap: var(--step);
+    grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  @media (width < 56rem) { .dt-body { grid-template-columns: 1fr; } }
+
+  .dt-form { display: grid; gap: var(--step); align-content: start; }
+
+  .dt-set {
+    display: grid;
+    gap: var(--s-4);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    padding: var(--s-5);
+    background: var(--panel);
+  }
+
+  .dt-set legend {
+    font-size: var(--t-1);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    padding-inline: var(--s-2);
+  }
+
+  .dt-hint { font-size: var(--t-1); color: var(--ink-soft); }
+
+  .dt-readout {
+    display: grid;
+    gap: var(--s-4);
+    /* 13rem rather than 15: at 15 the right column fits two
+       figures in English and one in Bangla, because Bangla's
+       leading is 1.9 and the page grows a scrollbar, which takes
+       the wrap in by enough to drop a track. A layout that
+       reflows on a language switch is a layout tuned to one
+       language. */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    align-items: start;
+  }
+
+  .dt-readout-waiting { display: block; color: var(--ink-soft); }
+
+  .dt-figure {
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    padding: var(--s-5);
+    background: var(--panel);
+  }
+
+  /* Waist to height leads, so it is the wide one and the only
+     one with the accent rail. `DIET.md` section 2: it needs one
+     tape measure and no assumption about population, which is
+     exactly the property BMI lacks. */
+  .dt-figure-lead {
+    grid-column: 1 / -1;
+    border-inline-start: 3px solid var(--accent);
+  }
+
+  .dt-figure-empty { color: var(--ink-soft); }
+
+  .dt-figure h3 {
+    font-size: var(--t-1);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .dt-value {
+    font-family: var(--font-mono);
+    font-size: var(--t-6);
+    line-height: 1.1;
+    margin-block: var(--s-3) var(--s-2);
+  }
+
+  .dt-said { margin: 0; }
+  .dt-why { font-size: var(--t-1); color: var(--ink-soft); margin-block-start: var(--s-3); }
+
+  .dt-cuts {
+    font-family: var(--font-mono);
+    font-size: var(--t-1);
+    color: var(--ink-soft);
+  }
+
+  .dt-deck {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    margin-block-end: var(--step);
+  }
+
+  .dt-tape { margin-block-start: var(--step); max-inline-size: 66ch; }
+
+  .dt-defs { display: grid; gap: var(--s-3); margin-block: var(--s-4); }
+  .dt-defs dt { font-weight: 600; }
+  .dt-defs dd { margin: 0 0 var(--s-3); color: var(--ink-soft); }
+
+  .dt-glossary { display: grid; gap: var(--step); max-inline-size: 70ch; }
+
+  .dt-term {
+    border-block-start: 1px solid var(--hairline);
+    padding-block-start: var(--s-4);
+  }
+
+  .dt-term dt {
+    font-size: var(--t-3);
+    font-weight: 600;
+    margin-block-end: var(--s-2);
+  }
+
+  .dt-term dd { margin: 0; color: var(--ink-soft); }
 }

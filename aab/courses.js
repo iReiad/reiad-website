@@ -39,23 +39,6 @@
    opening is not finishing.
    ============================================================ */
 import { token, current } from "/account.js";
-/* Rename the last crumb, for a page whose own name arrives after
-   the server rendered the trail. This section's pages are shells:
-   the catalogue is admin-only, so the title the server sent is
-   generic and the real one comes down with the fetch.
-
-   It was `setHere()` in `archive/modules/crumbs.js`, which is
-   archived: the trail is `next/lib/crumbs.ts` and the top bar
-   now. `.crumbs` is the class both the bar and the row carry, so
-   this finds whichever the page has. */
-function setHere(name) {
-    const text = String(name ?? "").trim();
-    if (!text)
-        return;
-    const last = document.querySelector('.crumbs li[aria-current="page"]');
-    if (last)
-        last.textContent = text;
-}
 /* ============================================================
    Progress
 
@@ -694,7 +677,16 @@ function name(title) {
     if (!clean)
         return;
     document.title = `${clean} · Reiad's Library`;
-    setHere(clean);
+    /* The TAB's name, and nothing else. The trail used to be
+       renamed from here too, with `last.textContent = text` on the
+       current crumb, and that `<li>` holds a separator, a popover
+       of what else is at that level and a label: one text node
+       replaced all three, so the arrow in front of the last crumb
+       vanished and the row read `কোর্সOptional familiar with…`.
+       It also only ever had one crumb to rename, so the course and
+       module levels were never in the trail at all.
+       `next/components/courses/trail.tsx` draws the whole path
+       now, from the address and its own fetch. */
 }
 function saySo(box, message) {
     box.replaceChildren(el("p", { class: "course-empty" }, [message]));

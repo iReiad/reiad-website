@@ -10,6 +10,7 @@
     "./rows": "./rows.ts",
     "./content": "./content.ts",
     "./nav": "./nav.ts",
-    "./routine": "./routine.ts"
+    "./routine": "./routine.ts",
+    "./diet": "./diet.ts"
   }
 }

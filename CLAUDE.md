@@ -34,11 +34,20 @@ The same rule applies to code comments in new work. The comments in this
 repo are long and explanatory on purpose, and they read better without the
 dash too.
 
-Quick check before committing:
+Quick check before committing, and it runs inside
+`check-all.ts` too:
 
 ```sh
-grep -rn $'\u2014' aab/ functions/
+node scripts/check-dashes.ts
 ```
+
+That was a grep in `.github/workflows/checks.yml` and nowhere
+else, which made it the one rule in that file `check-all.ts` did
+not run: a laptop could not catch what CI would fail on. It duly
+failed on a test whose own assertion that no em dash exists was
+written with one in it, on a commit where every local check
+passed. It reads every tracked file now rather than six named
+directories, so this file and every migration are covered too.
 
 ## React or a route. `aab/` is closed, and it is a check now.
 
@@ -1125,6 +1134,8 @@ node scripts/check-admin.ts # an endpoint under functions/api/ gated by neither
                             # requireAdmin nor isAdmin, and not named as public
 node scripts/check-mjs.ts   # a .mjs, which is a file nothing typechecks and the
                             # reason the next one gets written
+node scripts/check-dashes.ts # the one character this file opens by banning,
+                            # in any tracked file outside archive/
 node scripts/check-jsx-space.ts # a sentence running into the link inside it,
                             # because JSX ate the line break before the element
 node scripts/check-crons.ts # a scheduled job the Worker is no longer listening for
@@ -1609,7 +1620,9 @@ silences the next complaint too.
 ## What more than one runtime has to agree on
 
 `shared/` is for anything the Worker, the browser and the Next.js
-route must all say the same way. Eight files and a directory:
+route must all say the same way. Nine files and a directory, and
+`check-types.ts` fails on one that `shared/README.md` does not
+describe, because that file said six while nine were there:
 `content.ts`, the site's own manifest and every number the site
 states about itself; `curricula/`, the four schools' ladders, one
 file each; `look.ts`, the per-section table and the head facts
@@ -1619,8 +1632,10 @@ response has to carry when it was not served as a static file;
 ladder's arithmetic; `rows.ts`, what a row of this database is;
 `nav.ts`, the one table the whole menu comes from; `routine.ts`,
 what a routine's bands and tasks are and the templates the site
-ships; and `courses.ts`, the third-party catalogue, which is the
-one `next/` may not import for its values.
+ships; `courses.ts`, the third-party catalogue, which is the
+one `next/` may not import for its values; and `diet.ts`, the
+diet tool's arithmetic, where every estimate comes back as a
+range so a caller cannot take a point value without its width.
 
 **`nav.ts` moved here on 22 August 2026, and the move is the rule
 working rather than a tidy-up.** It sat in `next/lib/` because
@@ -2152,7 +2167,8 @@ every check still runs first:
 - anything that touched a precached file bumped `VERSION` in
   `aab/sw.js` and re-ran `scripts/check-sw.ts --update`,
 - generated pages were regenerated from their source, not edited,
-- and `grep -rn $'\u2014' aab/ functions/` comes back empty.
+- and `scripts/check-dashes.ts` passes, which `check-all.ts`
+  already runs.
 
 A red check is a reason to fix it, or to say plainly what is broken
 and why it is not fixable here. It is never a reason to merge anyway,

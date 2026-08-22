@@ -31,6 +31,48 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v177: /fallback.css. The diet tool's readout dropped a column
+        in Bangla and not in English: Bangla's leading is 1.9, the
+        page grew a scrollbar, and the wrap came in by enough to
+        lose a 15rem track. A layout that reflows on a language
+        switch is a layout tuned to one language. The pages also
+        pad themselves clear of the floating bar now, measured
+        against the routine's 68px where these had 10.
+
+   v176: /fallback.css. The diet tool's own layer, which draws
+        each phrase twice and lets the stylesheet show one: both
+        languages are in the markup because a component that
+        picked one in the browser would render English on the
+        server and Bangla on the client, and React discards the
+        difference. `data-tool-lang` on the root is what chooses,
+        set before the first paint from the key the calculators
+        have always used.
+
+   v175: /fallback.css. The paper weave was painted twice: a
+        ground carries it and so did every row and control drawn
+        on that ground, two identical 45-degree gratings at a 5px
+        pitch offset by each element's own origin, which stacks
+        into dirt rather than cloth. Only paper showed it, because
+        it is the one finish whose grain is a hatch. Measured:
+        rail 2 weave layers, rail-item 2 more; now 2 and 0.
+
+   v174: /fallback.css. The light stops following the pointer on
+        a pane, and starts holding still on a plate, which it was
+        already documented to do and never did: a `--glow-w: 0`
+        beside each of their depths was overridden by the derived
+        size formula later in the same layer, at equal
+        specificity. A `.stat` measured 156px of moving light.
+        One factor, `--follows`, decides it now.
+
+   v173: /fallback.css. Two alignments that were guesses became
+        sums: the tick on a checklist item and the numeral beside
+        a practice book's writing box were both positioned
+        against the top of a line BOX rather than against the
+        letters in it, which is 1.9px out in English and further
+        in Bangla, where the leading is 1.9 rather than 1.7. The
+        writing boxes are ruled now, at exactly one line, which is
+        what a practice book is.
+
    v172: comments only, in app.js and audience.js, and the bump
         is what stops them being served stale for ever. The one
         table the menu comes from moved from next/lib to
@@ -1614,7 +1656,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v172";
+const VERSION = "v177";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

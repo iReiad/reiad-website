@@ -7,7 +7,12 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is six files and a directory of four:
+Today that is nine files and a directory of four, and
+`check-types.ts` fails if one of them is not described below.
+That check exists because this line said six while nine were
+here: `nav.ts` and `routine.ts` arrived in two changes that had
+no reason to open this file, which is how every stale tracker in
+this repository got written.
 
 - **`content.ts`** the site's own manifest: `SITE`, `SECTIONS`,
   `SKILLS`, `TOOLS`, `PAGES`, `COUNTS` and the palette's index.
@@ -51,6 +56,25 @@ Today that is six files and a directory of four:
   VALUES from `next/`: the catalogue is somebody else's course and
   a bundle carrying it would be publishing it. `check-courses.ts`
   fails on that import.
+
+- **`nav.ts`** the one table the menu comes from. A school added
+  there appears in the rail, in the footer and on `/skills` at
+  once, and `unlisted` is how a section stays out of both menus
+  while still being said once.
+
+- **`routine.ts`** what a routine is, plus `done()`, the tool's
+  only arithmetic. Four places want that sum and four copies is
+  four chances for one of them to count leisure, which is the day
+  somebody can fail at watching television.
+
+- **`diet.ts`** the diet tool's arithmetic: BMI on both sets of
+  cut-offs, waist to height, the two body fat estimates with
+  their error bars, Mifflin and Katch, the time weighted trend,
+  the learned maintenance, and `target()`, which is the one
+  function here that can refuse. Every estimate comes back as a
+  range rather than a number, so a caller cannot take the point
+  value without having been handed its width. `DIET.md` is the
+  plan and `scripts/diet.test.ts` is what holds the two together.
 
 ## TypeScript, and nothing compiled beside it
 
