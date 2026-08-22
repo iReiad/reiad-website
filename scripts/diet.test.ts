@@ -44,7 +44,9 @@ import {
   activityFactor, trend, fit, slopePerWeek, learnedBurn, target,
   proteinFloor, projection, outsideAdaptation, floorKcal,
   toStone, stoneLabel, toFeetInches,
-  type Body, type Point,
+  glycogenKg, GLYCOGEN_WATER_RATIO, drained, forecastChange, settlingDays,
+  stretches, readable,
+  type Body, type Point, type Phase,
 } from "../shared/diet.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -359,7 +361,110 @@ ok("rates: none exceeds the ceiling",
 ok("rates: every one is written in both languages",
   RATES.every((r) => r.en.length > 0 && r.bn.length > 0));
 
-/* ---- 14. and no em dash reached the plan ----
+/* ---- 14. changing protocol mid-flight ----
+
+   The case this whole block exists for, and it is a real one
+   somebody asked: three days of keto, then two days of a
+   complete fast. Every naive tool reads that as 0.8kg a day and
+   projects a goal weight inside a month. */
+
+near("glycogen: about 440g at 80kg", glycogenKg(80), 0.44, 0.001);
+ok("glycogen: it scales with the body, rather than being a fixed 450g",
+  glycogenKg(55) < glycogenKg(110) && Math.abs(glycogenKg(110) - 2 * glycogenKg(55)) < 1e-9,
+  "a fixed store is a third too high for a 55kg reader");
+ok("glycogen: three grams of water per gram", GLYCOGEN_WATER_RATIO === 3);
+
+ok("drain: a complete fast empties faster than very low carb",
+  drained("fast", 1) > drained("keto", 1));
+ok("drain: and it is a curve rather than a line",
+  drained("keto", 1) > drained("keto", 4) - drained("keto", 3),
+  "most of the store goes in the first two days and the tail takes a week");
+ok("drain: a protocol that does not touch carbohydrate drains nothing",
+  drained("standard", 10) === 0 && drained("med", 10) === 0);
+
+const KETO3 = forecastChange({
+  from: null, to: "keto", days: 3, weightKg: 80, burn: 2500, intake: 2000,
+});
+ok("keto week one: the scale falls further than the fat does",
+  KETO3.scale.mid < KETO3.fat,
+  `scale ${KETO3.scale.mid.toFixed(2)}, fat ${KETO3.fat.toFixed(2)}`);
+near("keto week one: the fat is just the deficit", KETO3.fat, -(500 * 3) / 7700, 1e-9);
+ok("keto week one: and barely any of the drop is fat",
+  KETO3.fatShare < 0.2,
+  `${Math.round(KETO3.fatShare * 100)}% of a three day keto drop being fat would be wrong`);
+
+/* THE STACKING CASE. The second protocol finds the store already
+   two thirds empty, so it cannot take that water off twice. */
+const FAST2 = forecastChange({
+  from: { protocol: "keto", days: 3 }, to: "fast", days: 2,
+  weightKg: 80, burn: 2500, intake: 0,
+});
+const FAST2_FRESH = forecastChange({
+  from: null, to: "fast", days: 2, weightKg: 80, burn: 2500, intake: 0,
+});
+ok("stacking: a fast after three days of keto sheds less water than a fresh one",
+  FAST2.water.mid < FAST2_FRESH.water.mid,
+  `${FAST2.water.mid.toFixed(2)} against ${FAST2_FRESH.water.mid.toFixed(2)}: `
+  + "two water-losing protocols do not take the same water off twice");
+near("stacking: but exactly the same fat, because that is the deficit",
+  FAST2.fat, FAST2_FRESH.fat, 1e-9);
+ok("stacking: a complete fast empties the gut and keto does not",
+  FAST2.water.mid > 0.8,
+  "two days with nothing going in is a kilogram of food that is simply not there");
+ok("fast: a third of the drop is fat, not none of it",
+  FAST2.fatShare > 0.25 && FAST2.fatShare < 0.5,
+  `${Math.round(FAST2.fatShare * 100)}%`);
+
+const fiveDayScale = KETO3.scale.mid + FAST2.scale.mid;
+const fiveDayFat = KETO3.fat + FAST2.fat;
+ok("five days of both: the scale says about three and a half kilos",
+  fiveDayScale < -3 && fiveDayScale > -4.5, fiveDayScale.toFixed(2));
+ok("five days of both: and about a fifth to a quarter of it is fat",
+  Math.abs(fiveDayFat / fiveDayScale) > 0.15 && Math.abs(fiveDayFat / fiveDayScale) < 0.35,
+  `${Math.round(Math.abs(fiveDayFat / fiveDayScale) * 100)}%: `
+  + "a tool that projected from the scale here would promise a goal inside a month");
+
+ok("the rebound is the whole of what was drained, and it comes back",
+  FAST2.rebound.mid > 1.5,
+  "a reader who eats normally after this watches two to three kilos return in days");
+ok("and the rebound is not counted as a gain",
+  FAST2.rebound.low > 0 && FAST2.rebound.mid > Math.abs(FAST2.fat),
+  "it is larger than everything that was actually lost");
+
+ok("settling: keto is the fortnight section 7 already names",
+  settlingDays("keto") === KETO_ADAPTATION_DAYS);
+ok("settling: a fast is slower to read than it is to act",
+  settlingDays("fast") >= 7);
+ok("settling: an ordinary deficit needs none", settlingDays("standard") === 0);
+
+/* ---- and no slope ever crosses a boundary ---- */
+
+const PHASES: Phase[] = [
+  { protocol: "keto", startDay: 0 },
+  { protocol: "fast", startDay: 3 },
+  { protocol: "keto", startDay: 5 },
+];
+const SPANS = stretches(PHASES, 40);
+ok("stretches: one per phase", SPANS.length === 3);
+ok("stretches: three days of keto is not readable, it is still settling",
+  SPANS[0].readable === false && SPANS[0].why === "settling");
+ok("stretches: two days of fasting is not readable either",
+  SPANS[1].readable === false);
+ok("stretches: and the long stretch after it is, once its window has passed",
+  SPANS[2].readable === true && SPANS[2].from === 5 + KETO_ADAPTATION_DAYS,
+  JSON.stringify(SPANS[2]));
+
+const RUN: Point[] = Array.from({ length: 41 }, (_, d) => ({ day: d, kg: 80 - d * 0.05 }));
+const KEPT = readable(RUN, PHASES, 40);
+ok("readable: nothing from inside a settling window is fitted",
+  KEPT.every((p) => p.day >= 5 + KETO_ADAPTATION_DAYS),
+  `earliest kept is day ${KEPT[0]?.day}`);
+ok("readable: and the rest of the run is kept", KEPT.length === 41 - (5 + KETO_ADAPTATION_DAYS));
+ok("readable: a run with no readable stretch fits nothing at all",
+  readable(RUN, [{ protocol: "fast", startDay: 0 }], 4).length === 0,
+  "an empty answer is the honest one; a slope here would be invented");
+
+/* ---- 15. and no em dash reached the plan ----
 
    BUILT FROM ITS CODE POINT, NEVER TYPED. The first version of
    these two lines wrote the character out, so a test asserting

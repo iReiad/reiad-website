@@ -644,3 +644,227 @@ export const toFeetInches = (cm: number): { ft: number; inch: number } => {
   const ft = Math.floor(total / 12);
   return { ft, inch: Math.round((total - ft * 12) * 10) / 10 };
 };
+
+/* ---------------------------------------------------------- */
+/* changing what you are doing, mid-flight                    */
+/* ---------------------------------------------------------- */
+
+/** What somebody is doing. `fast` is a complete fast and is a
+    protocol rather than a mark, because it has to be a span with
+    a start and an end: what it does to the scale depends
+    entirely on how long it ran and on what was running before
+    it. */
+export type Protocol =
+  | "standard" | "keto" | "lowfat" | "highprotein" | "med"
+  | "window" | "5:2" | "omad" | "fast" | "ramadan"
+  | "maintain" | "gain" | "break";
+
+/** Glycogen, in kilograms, scaled to bodyweight rather than
+    fixed at "400 to 500 grams", which is a figure for an average
+    adult and is a third too high for a 55kg person. Roughly
+    0.55% of bodyweight across muscle and liver. */
+export const glycogenKg = (weightKg: number): number => 0.0055 * weightKg;
+
+/** Each gram of glycogen is held with about three grams of
+    water, so emptying the store moves four times its own mass. */
+export const GLYCOGEN_WATER_RATIO = 3;
+
+/** How fast a protocol empties that store, as a time constant in
+    days. A complete fast is far quicker than very low carb
+    because there is no intake replacing any of it. */
+const DRAIN_TAU: Partial<Record<Protocol, number>> = {
+  keto: 2.0,
+  fast: 0.8,
+  omad: 6.0,
+  "5:2": 8.0,
+};
+
+/** What a fed gut holds at any moment, and only a complete fast
+    empties it. It is not water and it is not fat: it is food
+    that has not finished being food yet, and on a two day fast
+    it is a kilogram of the drop. */
+const GUT_KG: Range = { low: 0.5, mid: 0.9, high: 1.5 };
+
+/** How much of the glycogen store a protocol has emptied after
+    so many days of it. Exponential rather than linear, because
+    the store does not drain at a constant rate: most of it goes
+    in the first two days of very low carb and the tail takes a
+    week. */
+export function drained(protocol: Protocol, days: number): number {
+  const tau = DRAIN_TAU[protocol];
+  if (!tau || days <= 0) return 0;
+  return 1 - Math.exp(-days / tau);
+}
+
+export interface Change {
+  /** What was running, and for how long. `null` for somebody
+      starting from ordinary eating. */
+  from: { protocol: Protocol; days: number } | null;
+  to: Protocol;
+  /** How long the new one will run, or has run. */
+  days: number;
+  weightKg: number;
+  /** Maintenance, from `learnedBurn()` where there is one. */
+  burn: number;
+  /** Mean daily intake under the NEW protocol. Zero for a
+      complete fast, which is the case this exists for. */
+  intake: number;
+}
+
+export interface Forecast {
+  /** What the scale will show. Negative is down. */
+  scale: Range;
+  /** What of it is fat, and this is the only number a projection
+      may be built from. */
+  fat: number;
+  /** The difference, which is water and gut contents. */
+  water: Range;
+  /** What comes back when ordinary eating resumes. Positive. */
+  rebound: Range;
+  /** Days from the change before the trend means anything again:
+      the settling of the new protocol, plus the rebound after it
+      if it is one that ends. */
+  settling: number;
+  /** What share of the drop is fat, as a fraction. The sentence
+      the reader actually needs. */
+  fatShare: number;
+}
+
+/** What a change of protocol will do, and how much of it is
+    real.
+
+    THIS IS THE FUNCTION FOR STACKING. Somebody three days into
+    keto who then fasts for two days does not get twice the water
+    loss: the store is already two thirds empty, so the second
+    protocol finds a third of it left, and the drop it produces
+    is mostly gut contents and sodium instead. `from.days` is
+    what carries that, and leaving it out is the difference
+    between a forecast and an encouragement.
+
+    Everything is returned as a range except the fat, which is
+    arithmetic on a deficit and has no business pretending to a
+    spread it does not have. */
+export function forecastChange(c: Change): Forecast {
+  const store = glycogenKg(c.weightKg) * (1 + GLYCOGEN_WATER_RATIO);
+
+  /* What the previous protocol had already taken. A fresh start
+     finds a full store; a stacked one does not. */
+  const already = c.from ? drained(c.from.protocol, c.from.days) : 0;
+  const after = Math.max(already, drained(c.to, c.days));
+  const newlyDrained = Math.max(after - already, 0) * store;
+
+  /* A complete fast empties the gut as well, over about two
+     days. Nothing else here does: on every other protocol the
+     reader is still eating. */
+  const gutShare = c.to === "fast" ? Math.min(c.days / 2, 1) : 0;
+
+  /* Sodium goes with the water on any large carbohydrate or
+     energy drop, and takes more water with it. A third of the
+     glycogen figure is the usual order, and it is inside the
+     range rather than stated as its own number because nothing
+     here can measure it. */
+  const water: Range = {
+    low: newlyDrained * 0.8 + GUT_KG.low * gutShare,
+    mid: newlyDrained * 1.15 + GUT_KG.mid * gutShare,
+    high: newlyDrained * 1.5 + GUT_KG.high * gutShare,
+  };
+
+  const fat = ((c.intake - c.burn) * c.days) / KCAL_PER_KG;
+
+  const scale: Range = {
+    low: fat - water.high,
+    mid: fat - water.mid,
+    high: fat - water.low,
+  };
+
+  /* Everything drained so far comes back when ordinary eating
+     resumes, and the gut refills within a day or two of it. */
+  const back = after * store;
+  const rebound: Range = {
+    low: back * 0.8 + GUT_KG.low * gutShare,
+    mid: back * 1.15 + GUT_KG.mid * gutShare,
+    high: back * 1.5 + GUT_KG.high * gutShare,
+  };
+
+  const drop = Math.abs(scale.mid);
+  return {
+    scale, fat, water, rebound,
+    settling: settlingDays(c.to),
+    fatShare: drop > 0 ? Math.min(Math.abs(fat) / drop, 1) : 0,
+  };
+}
+
+/** Days after a change before a slope through the trend means
+    anything.
+
+    Not a preference: it is the drain plus the refill. Very low
+    carb takes about a fortnight to settle, which is `§7`'s
+    adaptation window and the same number. A complete fast is
+    quicker to take the water off and slower to be readable
+    afterwards, because the rebound is what has to finish. */
+export function settlingDays(protocol: Protocol): number {
+  if (protocol === "keto") return KETO_ADAPTATION_DAYS;
+  if (protocol === "fast") return 10;
+  if (protocol === "omad" || protocol === "5:2" || protocol === "ramadan") return 7;
+  if (protocol === "break" || protocol === "gain") return 7;
+  return 0;
+}
+
+/** A span of days under one protocol, and whether a slope
+    through it says anything. */
+export interface Phase {
+  protocol: Protocol;
+  /** Days from the same origin `Point.day` uses. */
+  startDay: number;
+  endDay?: number;
+}
+
+export interface Stretch {
+  protocol: Protocol;
+  from: number;
+  to: number;
+  readable: boolean;
+  /** Why not, where it is not. Shown on the chart rather than
+      kept as a reason the code knows and the reader does not. */
+  why?: "settling" | "too short" | "rebound";
+}
+
+/** Split a run of days at every protocol boundary and say which
+    stretches a rate may be read from.
+
+    THE RULE IS THAT A SLOPE NEVER CROSSES A BOUNDARY. A
+    regression fitted across a change of protocol is fitted
+    across a step in body water, and it will report a rate that
+    nobody is running: three days of keto followed by two days of
+    fasting looks like 0.8kg a day, which projects a goal weight
+    inside a month and is a lie about somebody's body.
+
+    A stretch shorter than about a week carries no readable rate
+    either, whatever protocol it is under, because the noise
+    `trend()` exists to suppress is larger than a week of signal. */
+export function stretches(phases: Phase[], today: number): Stretch[] {
+  const ordered = [...phases].sort((a, b) => a.startDay - b.startDay);
+  return ordered.map((p, i) => {
+    const end = p.endDay ?? ordered[i + 1]?.startDay ?? today;
+    const settle = settlingDays(p.protocol);
+    const from = p.startDay + settle;
+    const span = end - from;
+    if (end - p.startDay < settle) {
+      return { protocol: p.protocol, from: p.startDay, to: end,
+               readable: false, why: "settling" };
+    }
+    if (span < 7) {
+      return { protocol: p.protocol, from, to: end, readable: false, why: "too short" };
+    }
+    return { protocol: p.protocol, from, to: end, readable: true };
+  });
+}
+
+/** The weighings a rate may honestly be fitted to: everything
+    inside a readable stretch, and nothing else. Drawn either
+    way, which is the same rule the adaptation window follows. */
+export function readable(points: Point[], phases: Phase[], today: number): Point[] {
+  const spans = stretches(phases, today).filter((s) => s.readable);
+  if (!spans.length) return [];
+  return points.filter((p) => spans.some((s) => p.day >= s.from && p.day <= s.to));
+}
