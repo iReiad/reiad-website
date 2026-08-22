@@ -119,6 +119,13 @@ export function HealthPanel() {
     if (await removeLab(w, id)) setLabs((prev) => prev.filter((l) => l.id !== id));
   };
 
+  const setCycle = async (patch: Profile): Promise<void> => {
+    if (!w) return;
+    const before = profile;
+    setProfile((p) => ({ ...(p ?? {}), ...patch }));
+    if (!await saveProfile(w, { ...(profile ?? {}), ...patch })) setProfile(before);
+  };
+
   const toggle = async (id: string): Promise<void> => {
     if (!w) return;
     const next = new Set(taking);
@@ -345,21 +352,73 @@ export function HealthPanel() {
             bn="। মাসিকের আগের প্রায় দুই সপ্তাহে, তাই দাঁড়িপাল্লা এক দুই কেজি উঠতে পারে আর তারপর একদিনেই নেমে যায়। পুরো চক্র ধরে দেখলে ধারা সৎ; ভেতরের দশ দিন ধরে দেখলে নয়, আর দুই সপ্তাহ আটকে আছে মনে হওয়াই মানুষের ছেড়ে দেওয়ার সবচেয়ে সাধারণ কারণ।"
           />
         </p>
+        {/* OFF BY DEFAULT, ONE DATE, ASKED ONCE. The tool stores a
+            start and a length rather than a log of periods,
+            because everything it does with this is arithmetic on
+            a repeating interval: a calendar of somebody's
+            periods would be a more sensitive record collected
+            for no extra answer, and not collecting it is the
+            only way to be sure it cannot leak. */}
+        {answered && w ? (
+          <div className="dt-cycle-set">
+            <ChipButton
+              pressed={!!profile?.cycle_tracking}
+              onClick={() => void setCycle({ cycle_tracking: !profile?.cycle_tracking })}
+            >
+              <T en="Read my cycle into the trend" bn="আমার চক্র ধারার হিসাবে ধরুন" />
+            </ChipButton>
+
+            {profile?.cycle_tracking ? (
+              <div className="dt-cycle-when">
+                <Field
+                  id="dt-cycle-start" type="date" max={isoDate()}
+                  label={<T en="The first day of your last period" bn="শেষ মাসিকের প্রথম দিন" />}
+                  hint={(
+                    <T
+                      en="One date. The tool works the rest out and does not ask again."
+                      bn="একটা তারিখ। বাকিটা যন্ত্র নিজেই হিসাব করে, আর আর জিজ্ঞেস করে না।"
+                    />
+                  )}
+                  value={profile.cycle_start ?? ""}
+                  onChange={(e) => void setCycle({ cycle_start: e.target.value || undefined })}
+                />
+                <Field
+                  id="dt-cycle-days" type="number" inputMode="numeric" min={21} max={35}
+                  label={<T en="How many days it usually runs" bn="সাধারণত কত দিনের চক্র" />}
+                  hint={(
+                    <T
+                      en="Left empty this assumes 28, which is the median, and says so wherever it uses it."
+                      bn="খালি রাখলে ২৮ ধরে নেওয়া হয়, যেটা মাঝামাঝি সংখ্যা, আর যেখানেই ব্যবহার হয় সেখানে সেটা বলা থাকে।"
+                    />
+                  )}
+                  value={profile.cycle_days ? String(profile.cycle_days) : ""}
+                  onChange={(e) => void setCycle({
+                    cycle_days: Number(e.target.value) || undefined,
+                  })}
+                />
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
         <Note tone="quiet">
           <TBlock
             en={(
               <p>
-                This tool does not ask where you are in a cycle and does not
-                keep a date. Knowing the shape is what is useful here; a
-                calendar of somebody's periods is not something this site needs
-                in order to draw a weight chart.
+                Turned off, this tool asks nothing about a cycle and keeps no
+                date. Turned on it keeps one date and one number, never a log of
+                periods: everything it does with them is arithmetic on a
+                repeating interval, so a diary would be a more sensitive record
+                collected for no extra answer.
               </p>
             )}
             bn={(
               <p>
-                আপনি চক্রের কোথায় আছেন এই যন্ত্র তা জিজ্ঞেস করে না আর কোনো তারিখ
-                রাখে না। এখানে কাজে লাগে ধরনটা জানা; ওজনের চার্ট আঁকতে কারও
-                মাসিকের পঞ্জিকা এই সাইটের দরকার নেই।
+                বন্ধ থাকলে এই যন্ত্র চক্র নিয়ে কিছুই জিজ্ঞেস করে না আর কোনো তারিখ
+                রাখে না। চালু করলে একটা তারিখ আর একটা সংখ্যা রাখে, মাসিকের কোনো
+                খাতা নয়: এগুলো দিয়ে যা করা হয় তার সবটাই একটা পুনরাবৃত্ত ব্যবধানের
+                হিসাব, তাই খাতা রাখা মানে বাড়তি কোনো উত্তর ছাড়াই আরও স্পর্শকাতর
+                তথ্য জমানো।
               </p>
             )}
           />

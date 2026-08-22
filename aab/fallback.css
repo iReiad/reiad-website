@@ -9136,6 +9136,16 @@
 
   @media print { .dt-nearby { display: none; } }
 
+  .dt-cycle { display: grid; gap: var(--s-5); max-inline-size: 70ch; }
+  .dt-cycle-set { display: grid; gap: var(--s-5); justify-items: start; }
+  .dt-cycle-when {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    inline-size: 100%;
+    max-inline-size: 34rem;
+  }
+
   .dt-stall {
     display: grid;
     gap: var(--s-5);

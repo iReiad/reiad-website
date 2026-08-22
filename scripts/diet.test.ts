@@ -50,7 +50,7 @@ import {
   stretches, readable, weighings, learnedHere, entryHour,
   type Body, type Day, type Point, type Phase, type Protocol,
   totalFor,
-  stall, STALL_DAYS,
+  stall, STALL_DAYS, cyclePlace, cycleOverCycle, LUTEAL_DAYS,
 } from "../shared/diet.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -974,6 +974,67 @@ const hard = stall({
 });
 ok("and where nothing fits, the honest answer is that this is a hard part",
   hard?.kind === "hard-part");
+
+/* ------------------------------------------------------------
+   the body has a calendar
+
+   The costly mistake here is reporting a stall in the second
+   half of a cycle. It arrives on a schedule, it arrives for half
+   the population, and the drop that disproves it arrives a few
+   days after the reader has already quit.
+   ------------------------------------------------------------ */
+
+ok("no start date is nothing to say",
+  cyclePlace({ day: 100 }) === null);
+ok("and a length outside 21 to 35 is refused rather than drawn",
+  cyclePlace({ day: 100, startDay: 90, length: 60 }) === null);
+ok("a day before the start is nothing to say",
+  cyclePlace({ day: 80, startDay: 90 }) === null);
+
+ok("day zero is the start",
+  cyclePlace({ day: 90, startDay: 90 })?.day === 0);
+ok("and it wraps at the length",
+  cyclePlace({ day: 90 + 28, startDay: 90 })?.day === 0);
+ok("the first half is follicular",
+  cyclePlace({ day: 95, startDay: 90 })?.phase === "follicular");
+ok("and the last fourteen days are luteal",
+  cyclePlace({ day: 90 + 28 - LUTEAL_DAYS, startDay: 90 })?.phase === "luteal"
+  && cyclePlace({ day: 90 + 27, startDay: 90 })?.phase === "luteal");
+ok("on a 35 day cycle the luteal phase is still the last fourteen",
+  cyclePlace({ day: 90 + 20, startDay: 90, length: 35 })?.phase === "follicular"
+  && cyclePlace({ day: 90 + 21, startDay: 90, length: 35 })?.phase === "luteal");
+
+/* The whole reason any of this exists. */
+ok("a flat trend inside the luteal phase is NOT reported as a stall",
+  stall({
+    weights: run(80, 0, 0.2),
+    intakes: fed(1800),
+    today: TODAY,
+    cycle: cyclePlace({ day: TODAY, startDay: TODAY - 20 }),
+  }) === null);
+
+ok("and the same three weeks outside it still are",
+  stall({
+    weights: run(80, 0, 0.2),
+    intakes: fed(1800),
+    today: TODAY,
+    cycle: cyclePlace({ day: TODAY, startDay: TODAY - 3 }),
+  }) !== null);
+
+/* Cycle to cycle is the comparison that removes the artefact. */
+const cyc = (kgStart: number, perCycle: number, cycles: number) =>
+  Array.from({ length: cycles * 7 }, (_, i) => {
+    const day = 900 + Math.floor(i / 7) * 28 + (i % 7) * 4;
+    return { day, kg: kgStart + perCycle * Math.floor(i / 7) + (i % 2 ? 0.6 : -0.6) };
+  });
+
+ok("one cycle is not a comparison",
+  cycleOverCycle({ weights: cyc(80, -1, 1), startDay: 900, today: 990 }) === null);
+
+const over = cycleOverCycle({ weights: cyc(80, -1, 3), startDay: 900, today: 990 });
+ok("three cycles give a rate per cycle", over?.cycles === 3);
+ok("and the water cancels, because both sides of the subtraction hold it",
+  over !== null && Math.abs(over.kgPerCycle - -1) < 0.2);
 
 /* ------------------------------------------------------------ */
 

@@ -1695,6 +1695,105 @@ export function byHour(entries: Array<{ hour: number; kcal: number }>): number[]
 }
 
 /* ---------------------------------------------------------- */
+/* the body has a calendar                                    */
+/* ---------------------------------------------------------- */
+
+/** Where a day falls in a cycle, from one start date and a
+    length.
+
+    `DIET.md` section 18. Water retention in the luteal phase is
+    commonly half a kilo to two kilos, appetite rises, and the
+    net effect on the scale is AN APPARENT STALL IN THE SECOND
+    HALF OF EVERY CYCLE followed by a drop that looks like a
+    whoosh and is not. That makes a large fraction of women quit
+    on a schedule, and it is invisible in every tracker that
+    treats a month as four identical weeks.
+
+    ONE DATE AND A LENGTH, NOT A DIARY. Everything below is
+    arithmetic on a repeating interval, so a log of periods would
+    be a more sensitive record collected for no extra answer. */
+export interface CyclePlace {
+  /** Days since the last start, 0 on the day itself. */
+  day: number;
+  /** The length being assumed. */
+  length: number;
+  /** Ovulation is roughly mid-cycle and the luteal phase is the
+      stretch after it, which is the half that holds water. The
+      fourteen days BEFORE the next start is the better estimate
+      than fourteen after this one, because the luteal phase is
+      the more constant half. */
+  phase: "follicular" | "luteal";
+}
+
+export const LUTEAL_DAYS = 14;
+
+/** Null where there is nothing to say: tracking off, no start
+    date, a length outside what this can read, or a day before
+    the start. Null is the ordinary answer. */
+export function cyclePlace(opts: {
+  /** The day being asked about, in `Point.day` numbers. */
+  day: number;
+  /** The recorded start, in the same numbers. */
+  startDay?: number;
+  /** The recorded length. Defaults to 28 where tracking is on
+      and no length was given, which is the median and is stated
+      as an assumption wherever it is used. */
+  length?: number;
+}): CyclePlace | null {
+  if (opts.startDay == null) return null;
+  const length = opts.length ?? 28;
+  if (length < 21 || length > 35) return null;
+  if (opts.day < opts.startDay) return null;
+  const day = (opts.day - opts.startDay) % length;
+  return {
+    day,
+    length,
+    phase: day >= length - LUTEAL_DAYS ? "luteal" : "follicular",
+  };
+}
+
+/** The trend read CYCLE TO CYCLE rather than week to week, which
+    is the comparison that actually removes the artefact.
+
+    A week inside the luteal phase is compared against a week
+    that was also inside one, so the water is on both sides of
+    the subtraction and cancels. Returns null under two full
+    cycles, because one is not a comparison. */
+export function cycleOverCycle(opts: {
+  weights: Point[];
+  startDay: number;
+  length?: number;
+  today: number;
+}): { kgPerCycle: number; cycles: number; length: number } | null {
+  const length = opts.length ?? 28;
+  if (length < 21 || length > 35) return null;
+
+  /* Which cycle each weighing is in, counted from the start. */
+  const bucket = new Map<number, number[]>();
+  for (const p of opts.weights) {
+    if (p.day < opts.startDay) continue;
+    const n = Math.floor((p.day - opts.startDay) / length);
+    const got = bucket.get(n) ?? [];
+    got.push(p.kg);
+    bucket.set(n, got);
+  }
+  const full = [...bucket.entries()]
+    .filter(([, kgs]) => kgs.length >= 4)
+    .sort((a, b) => a[0] - b[0]);
+  if (full.length < 2) return null;
+
+  const mean = (xs: number[]): number => xs.reduce((a, b) => a + b, 0) / xs.length;
+  const first = mean(full[0][1]);
+  const last = mean(full[full.length - 1][1]);
+  const spanned = full[full.length - 1][0] - full[0][0];
+  return {
+    kgPerCycle: (last - first) / spanned,
+    cycles: full.length,
+    length,
+  };
+}
+
+/* ---------------------------------------------------------- */
 /* stalls, and telling the four kinds apart                   */
 /* ---------------------------------------------------------- */
 
@@ -1779,7 +1878,18 @@ export function stall(opts: {
       the target having drifted. */
   burnThen?: number;
   burnNow?: number;
+  /** Where today falls in a cycle, where the reader has turned
+      that on. Section 18: a flat trend inside the luteal phase
+      is not reported as a stall, because it is the artefact this
+      whole tool is meant to see through rather than repeat. */
+  cycle?: CyclePlace | null;
 }): Stall | null {
+  /* THE LUTEAL PHASE IS NOT A STALL, and reporting one there is
+     the single most costly false positive this function can
+     produce: it arrives on a schedule, it arrives for half the
+     population, and the drop that disproves it arrives a few
+     days after the reader has already quit. */
+  if (opts.cycle?.phase === "luteal") return null;
   const from = opts.today - STALL_DAYS;
   const window = opts.weights.filter((p) => p.day >= from);
   /* Three weeks of weighings, and enough of them: nine readings

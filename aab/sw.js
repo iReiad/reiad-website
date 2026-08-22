@@ -31,6 +31,10 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v193: /fallback.css. The cycle reading: a flat trend in the
+        luteal phase is no longer reported as a stall, and the
+        trend can be read cycle to cycle.
+
    v192: /fallback.css. Three flat weeks with the deficit logged
         is a stall, and the trend page now says which of the four
         it is. One of them is not a stall at all.
@@ -1748,7 +1752,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v192";
+const VERSION = "v193";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

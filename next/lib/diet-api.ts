@@ -125,6 +125,13 @@ export interface Profile {
   band_low_kg?: number;
   band_high_kg?: number;
   cycle_tracking?: boolean;
+  /** One date and a length, not a diary: everything the cycle
+      reading does is arithmetic on a repeating interval, so a
+      log of periods would be a more sensitive record collected
+      for no extra answer. Both are behind `cycle_tracking`,
+      which is off by default. */
+  cycle_start?: string;
+  cycle_days?: number;
   meds?: string[];
   food_budget?: number;
   budget_currency?: string;

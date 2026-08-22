@@ -14055,6 +14055,18 @@ German for day, and .tag is what the site has always called
      not a stall at all, so drawing it as an alert would tell a
      reader the opposite of what it says. The rail is the page's
      own accent, like every other lead figure. */
+  /* Where the reader is in a month, and the rate that actually
+     removes the water rather than averaging over it. */
+  .dt-cycle { display: grid; gap: var(--s-5); max-inline-size: 70ch; }
+  .dt-cycle-set { display: grid; gap: var(--s-5); justify-items: start; }
+  .dt-cycle-when {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    inline-size: 100%;
+    max-inline-size: 34rem;
+  }
+
   .dt-stall {
     display: grid;
     gap: var(--s-5);

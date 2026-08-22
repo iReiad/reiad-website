@@ -32,12 +32,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  learnedHere, markNamed, protocolName, slopePerWeek, stall, STALL_DAYS,
+  cycleOverCycle, cyclePlace, learnedHere, markNamed, protocolName,
+  slopePerWeek, stall, STALL_DAYS,
   stretches, trend, weighings,
   type Day, type Phase, type Point, type Stall, type StallKind,
 } from "@reiad/shared/diet";
 import {
-  who, getDays, getPhases, dayNumber, isoDate, shiftDate, type Who,
+  who, getDays, getPhases, getProfile, dayNumber, isoDate, shiftDate,
+  type Profile, type Who,
 } from "../../lib/diet-api";
 import { ChipButton } from "../ui/chip";
 import { T, digits, useToolLang } from "./lang";
@@ -52,6 +54,7 @@ export function TrendPanel() {
   const [answered, setAnswered] = useState(false);
   const [days, setDays] = useState<Day[]>([]);
   const [phases, setPhases] = useState<Phase[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [span, setSpan] = useState(90);
 
   const today = isoDate();
@@ -67,8 +70,11 @@ export function TrendPanel() {
   useEffect(() => {
     if (!w) return;
     let alive = true;
-    void Promise.all([getDays(w, shiftDate(today, -365)), getPhases(w)])
-      .then(([d, p]) => { if (alive) { setDays(d); setPhases(p); } });
+    void Promise.all([getDays(w, shiftDate(today, -365)), getPhases(w), getProfile(w)])
+      .then(([d, ph, pr]) => {
+        if (!alive) return;
+        setDays(d); setPhases(ph); setProfile(pr);
+      });
     return () => { alive = false; };
   }, [w, today]);
 
@@ -115,6 +121,30 @@ export function TrendPanel() {
      a maintenance that has fallen can be told from a log that has
      drifted. Both figures come from the same function, over two
      spans, rather than one figure and a guess. */
+  /* WHERE THE READER IS IN A CYCLE, if they turned that on. Null
+     for everybody else, which is the ordinary answer, and the
+     stall reading takes null to mean "no reason not to speak". */
+  const place = useMemo(() => (
+    profile?.cycle_tracking && profile.cycle_start
+      ? cyclePlace({
+        day: dayNumber(today),
+        startDay: dayNumber(profile.cycle_start),
+        length: profile.cycle_days,
+      })
+      : null
+  ), [profile, today]);
+
+  const perCycle = useMemo(() => (
+    profile?.cycle_tracking && profile.cycle_start
+      ? cycleOverCycle({
+        weights: fittable,
+        startDay: dayNumber(profile.cycle_start),
+        length: profile.cycle_days,
+        today: dayNumber(today),
+      })
+      : null
+  ), [profile, fittable, today]);
+
   const stalled = useMemo(() => {
     const now = dayNumber(today);
     const intakes = inSpan.filter((d) => d.kcal != null)
@@ -136,8 +166,9 @@ export function TrendPanel() {
       today: now,
       burnThen: burnAt(now - STALL_DAYS),
       burnNow: burnAt(now),
+      cycle: place,
     });
-  }, [fittable, inSpan, phases, today]);
+  }, [fittable, inSpan, phases, today, place]);
 
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
   if (!w) {
@@ -252,6 +283,52 @@ export function TrendPanel() {
           </tbody>
         </table>
       </details>
+
+      {place ? (
+        <section className="dt-cycle" aria-labelledby="dt-cycle-h">
+          <h2 id="dt-cycle-h"><T en="Where you are in the month" bn="মাসের কোথায় আছেন" /></h2>
+          <p className="dt-intro">
+            <T
+              en={`Day ${place.day + 1} of a ${place.length} day cycle`
+                + `${profile?.cycle_days ? "" : ", assuming 28 because you have not said"}`
+                + `. ${place.phase === "luteal"
+                  ? "That is the second half, where water goes on: half a kilo to two, appetite up, and a scale that looks flat until it drops. Nothing here reads a flat trend as a stall while you are in it."
+                  : "That is the first half, where the scale reads most honestly."}`}
+              bn={`${place.length} দিনের চক্রের ${digits(place.day + 1, "bn")} নম্বর দিন`
+                + `${profile?.cycle_days ? "" : ", আপনি বলেননি বলে ২৮ ধরে নেওয়া হয়েছে"}`
+                + `। ${place.phase === "luteal"
+                  ? "এটা দ্বিতীয় ভাগ, যখন শরীরে পানি জমে: আধা থেকে দুই কেজি, ক্ষুধা বাড়ে, আর দাঁড়িপাল্লা স্থির মনে হয় যতক্ষণ না হঠাৎ নামে। এই সময়ে স্থির ধারাকে এখানে কিছুই আটকে যাওয়া বলে ধরে না।"
+                  : "এটা প্রথম ভাগ, যখন দাঁড়িপাল্লার মাপ সবচেয়ে সৎ।"}`}
+            />
+          </p>
+          {perCycle ? (
+            <div className="dt-figure dt-figure-lead">
+              <h3><T en="Cycle to cycle" bn="চক্র থেকে চক্র" /></h3>
+              <p className="dt-value">
+                <T en={`${perCycle.kgPerCycle >= 0 ? "+" : ""}${perCycle.kgPerCycle.toFixed(2)} kg`}
+                   bn={`${perCycle.kgPerCycle >= 0 ? "+" : ""}${digits(perCycle.kgPerCycle.toFixed(2), "bn")} কেজি`} />
+              </p>
+              <p className="dt-said">
+                <T en={`a cycle, over ${perCycle.cycles} of them`}
+                   bn={`প্রতি চক্রে, ${digits(perCycle.cycles, "bn")}টি চক্রের হিসাবে`} />
+              </p>
+              <p className="dt-why">
+                <T
+                  en="This is the comparison that actually removes the artefact: a week inside the second half is compared against a week that was also inside one, so the water sits on both sides of the subtraction and cancels. Week to week, it does not."
+                  bn="এই তুলনাটাই আসলে ব্যাপারটা সরিয়ে দেয়: দ্বিতীয় ভাগের একটা সপ্তাহকে তুলনা করা হয় এমন আরেকটা সপ্তাহের সঙ্গে যেটাও দ্বিতীয় ভাগে ছিল, তাই পানি বিয়োগের দুই পাশেই থাকে আর কাটাকাটি হয়ে যায়। সপ্তাহে সপ্তাহে তুলনায় সেটা হয় না।"
+                />
+              </p>
+            </div>
+          ) : (
+            <p className="dt-hint">
+              <T
+                en="Two full cycles of weighings give a cycle to cycle rate, which is the comparison that removes the water rather than averaging over it."
+                bn="দুটি পূর্ণ চক্রের ওজন হলে চক্র থেকে চক্রের হার পাওয়া যায়, আর এই তুলনাটাই পানির প্রভাব গড় করে নয়, সরিয়ে দেয়।"
+              />
+            </p>
+          )}
+        </section>
+      ) : null}
 
       {stalled ? <Stalled it={stalled} /> : null}
 

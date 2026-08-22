@@ -573,7 +573,6 @@ const UNUSED: Record<string, string> = {
   "diet_profile.goal_weight_kg": "section 5, for the reader who names one anyway",
   "diet_profile.band_low_kg": "section 6, maintenance is a band rather than a number",
   "diet_profile.band_high_kg": "section 6, the other end of the same band",
-  "diet_profile.cycle_tracking": "section 18, the body has a calendar",
   "diet_profile.food_budget": "section 17, what food costs",
   "diet_profile.budget_currency": "section 17, beside the budget",
   "diet_profile.oil_ml_week": "section 14, the oil calibration",
