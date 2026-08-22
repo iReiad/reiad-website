@@ -10,18 +10,28 @@
 import { siteLayout } from "../../../../components/page";
 import { SiteScripts } from "../../../../components/scripts";
 import { trailFor, PENDING } from "../../../../lib/crumbs";
+import { CourseTrail } from "../../../../components/courses/trail";
 
-/* The trail past the section. `current: "skills"` gets Home and
-   দক্ষতা out of the table; the two below it cannot come from
-   there, because the catalogue is admin-only and the page's own
-   name arrives with the fetch. The last crumb is a placeholder
-   that `name()` in `aab/src/courses.ts` rewrites, which is why
-   this section is the one place a crumb is written twice. */
+/* The trail past the section, and this is the one section that
+   draws its own.
+
+   `current: "skills"` gets Home and দক্ষতা out of the table. What
+   is below cannot come from there, because the catalogue is
+   admin-only: a route here knows the shape of the path and none
+   of the names. `CourseTrail` is that trail, a client component
+   that reads course, module and lesson out of the address and
+   their titles out of a fetch.
+
+   `crumbs` is still given, and it is what the JSON-LD is built
+   from. It stops at `PENDING` on purpose: a machine-readable
+   trail cannot say a name the server does not have, and
+   `trailJsonLd` drops the placeholder rather than publishing it. */
 export default siteLayout({
   current: "skills",
   crumbs: trailFor("skills", [
     { href: "/skills/courses", label: "কোর্স" },
     { label: PENDING },
   ]),
+  liveTrail: <CourseTrail />,
   scripts: <SiteScripts srcs={["/courses.js"]} />,
 });

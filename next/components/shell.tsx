@@ -159,6 +159,7 @@ export function SiteShell({
   footerName,
   current = null,
   crumbs,
+  liveTrail,
   fixed = false,
   beforeMain, scripts, children,
 }: {
@@ -179,6 +180,21 @@ export function SiteShell({
       trail is built from `lib/nav.ts`, which is right for every
       page that IS a section. */
   crumbs?: Crumb[];
+  /** A section that renders its OWN trail, in place of the row
+      the bar draws from `crumbs`.
+
+      One section does: the course catalogue is admin-only, so a
+      route there has no names to render and `check-courses.ts`
+      refuses a value import of the catalogue into `next/`. Its
+      trail is `components/courses/trail.tsx`, a client component
+      that reads the shape out of the path and the names out of a
+      fetch.
+
+      `crumbs` is still passed and is still what the JSON-LD is
+      built from: a machine-readable trail of what the server
+      could not name is worse than a short one, which is the same
+      reason `PENDING` is left out of it. */
+  liveTrail?: ReactNode;
   /** One page is not a scrolling column: the front door fills the
       viewport exactly and has no footer under it, because there is
       nothing under it to scroll to. Everything else is a page. */
@@ -249,7 +265,7 @@ export function SiteShell({
                that the first crumb it DOES draw still knows it has
                a level in front of it and keeps the arrow that
                opens its siblings. Slicing here lost that. */
-            crumbs={<Crumbs trail={trail} skip={1}
+            crumbs={liveTrail ?? <Crumbs trail={trail} skip={1}
                             label="পথ" className="crumbs-bar" min={2} />}
           />
           {beforeMain}

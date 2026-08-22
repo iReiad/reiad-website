@@ -10447,9 +10447,11 @@ German for day, and .tag is what the site has always called
      that guessed. Now the mark is the first crumb and the trail
      continues out of it, on one line, from the server.
 
-     `.crumbs` is the row's own look, kept because `aab/src/courses.ts`
-     finds the last crumb by that class to rename it; this is that
-     look sized for a bar. Neither `404.html` nor `offline.html` has
+     `.crumbs` is the row's own look and this is that look sized
+     for a bar. The class was also what `aab/src/courses.ts`
+     reached for to rename the last crumb; that is gone, and the
+     course section renders its whole trail through the same
+     component as everything else. Neither `404.html` nor `offline.html` has
      a trail at all, which is what this used to say. The
      separator before the FIRST crumb is what joins it to the
      mark: without it the mark and the section read as two
