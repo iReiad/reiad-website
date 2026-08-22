@@ -1158,3 +1158,185 @@ export const UNLOCKS: Array<{ day: number; en: string; bn: string }> = [
   { day: 365, en: "The year page",
     bn: "বছরের পাতা" },
 ];
+
+/* ---------------------------------------------------------- */
+/* the first week, hour by hour                               */
+/* ---------------------------------------------------------- */
+
+/** One point on the first week's curve.
+
+    The weekly table is right and it is too coarse for the days
+    that actually decide whether somebody carries on. Almost
+    everything that makes week one confusing happens INSIDE the
+    first seventy-two hours: the gut empties, the liver's
+    glycogen goes, the sodium follows it, and the scale moves
+    several kilos while the fat that has actually left is
+    measured in grams.
+
+    `drained()` is already an exponential in days and takes a
+    fraction, so this is the same arithmetic read at a finer
+    resolution rather than a second model. Nothing here is
+    invented that the weekly table does not already imply. */
+export interface HourPoint {
+  hour: number;
+  /** Cumulative, in kilograms. Positive is gone. */
+  water: Range;
+  fat: number;
+  /** What the scale would read against the start. Negative is
+      down. */
+  scale: Range;
+  /** How much of the drop SO FAR is fat. The column that makes
+      the first two days readable, and it climbs all week. */
+  fatShare: number;
+}
+
+/** The first week as a curve, at whatever resolution is asked
+    for. Twelve hours is the default because it is the coarsest
+    step that still separates "the gut emptied" from "the liver
+    ran out", which are different days and feel identical on a
+    scale. */
+export function hourlyArc(c: Change, everyHours = 12, upTo = 168): HourPoint[] {
+  const out: HourPoint[] = [];
+  for (let hour = 0; hour <= upTo; hour += everyHours) {
+    const at = forecastChange({ ...c, days: hour / 24 });
+    out.push({ hour, water: at.water, fat: at.fat, scale: at.scale, fatShare: at.fatShare });
+  }
+  return out;
+}
+
+/** A stretch of the first week, in the protocol's own terms.
+
+    Each one names a MECHANISM rather than a feeling, because the
+    feeling is what the reader already has and the mechanism is
+    what they are missing. "Hour 30: the liver's glycogen has
+    gone and its water with it" is the sentence that stops
+    somebody reading a two kilo drop as two kilos of fat. */
+export interface Band {
+  from: number;
+  to: number;
+  en: string;
+  bn: string;
+}
+
+const FAST_BANDS: Band[] = [
+  { from: 0, to: 12,
+    en: "The gut is emptying. Most of the first movement on the scale is food that has not finished being food.",
+    bn: "পেট খালি হচ্ছে। দাঁড়িপাল্লার প্রথম নড়াচড়ার বেশিরভাগই এমন খাবার যার হজম এখনো শেষ হয়নি।" },
+  { from: 12, to: 24,
+    en: "The liver's glycogen is going, about a hundred grams of it, and roughly three times its own weight in water goes with it.",
+    bn: "যকৃতের গ্লাইকোজেন যাচ্ছে, প্রায় একশো গ্রাম, আর সঙ্গে যাচ্ছে তার নিজের ওজনের প্রায় তিন গুণ পানি।" },
+  { from: 24, to: 48,
+    en: "The biggest water day. Muscle glycogen, and the sodium that leaves with it. Expect the largest single drop of the week here, and expect almost none of it to be fat.",
+    bn: "পানি সবচেয়ে বেশি যাওয়ার দিন। পেশির গ্লাইকোজেন আর তার সঙ্গে যাওয়া লবণ। সপ্তাহের সবচেয়ে বড় একদিনের কমাটা এখানেই, আর তার প্রায় কিছুই চর্বি নয়।" },
+  { from: 48, to: 72,
+    en: "Water is tapering. The store is mostly empty, so what leaves now is increasingly the real thing.",
+    bn: "পানি যাওয়া কমে আসছে। জমা প্রায় শেষ, তাই এখন যা যাচ্ছে তার বেশিরভাগই আসল।" },
+  { from: 72, to: 168,
+    en: "Most of what leaves now is fat, and the daily movement is much smaller because of it. This is what the real rate looks like.",
+    bn: "এখন যা যাচ্ছে তার বেশিরভাগই চর্বি, আর সেজন্যই প্রতিদিনের নড়াচড়া অনেক কম। আসল হার দেখতে এমনই।" },
+];
+
+const KETO_BANDS: Band[] = [
+  { from: 0, to: 24,
+    en: "Glycogen starts draining. The scale will move and none of it is fat yet.",
+    bn: "গ্লাইকোজেন কমতে শুরু করেছে। দাঁড়িপাল্লা নড়বে, আর তার কিছুই এখনো চর্বি নয়।" },
+  { from: 24, to: 72,
+    en: "The bulk of the water leaves. This is the triumphant part, and it is the part that sets up the disappointment in week two.",
+    bn: "পানির বড় অংশটা এখন যাচ্ছে। এই সময়টাই আনন্দের, আর এই সময়টাই দ্বিতীয় সপ্তাহের হতাশা তৈরি করে।" },
+  { from: 72, to: 120,
+    en: "The adaptation window. If there is going to be a headache, fatigue or cramp it sits here, and it is mostly the sodium that left with the water.",
+    bn: "খাপ খাওয়ানোর সময়। মাথাব্যথা, ক্লান্তি বা খিঁচুনি হলে এই সময়েই হয়, আর তার বেশিরভাগই পানির সঙ্গে চলে যাওয়া লবণের জন্য।" },
+  { from: 120, to: 168,
+    en: "Water is nearly done. From here the trend starts to mean something, and the adaptation window closes on day fourteen.",
+    bn: "পানি যাওয়া প্রায় শেষ। এখান থেকে ধারার মানে দাঁড়াতে শুরু করে, আর খাপ খাওয়ানোর সময় শেষ হয় চৌদ্দতম দিনে।" },
+];
+
+const PLAIN_BANDS: Band[] = [
+  { from: 0, to: 24,
+    en: "Gut contents and sodium. Nothing that moves today is fat.",
+    bn: "পেটের খাবার আর লবণ। আজ যা নড়ছে তার কিছুই চর্বি নয়।" },
+  { from: 24, to: 72,
+    en: "The first drop is still mostly water. A deficit takes about three days to show anything real.",
+    bn: "প্রথম কমাটা এখনো বেশিরভাগই পানি। ঘাটতির আসল কিছু দেখাতে প্রায় তিন দিন লাগে।" },
+  { from: 72, to: 168,
+    en: "The real rate starts showing, and it is a great deal smaller than the first two days suggested.",
+    bn: "আসল হার দেখা দিতে শুরু করেছে, আর সেটা প্রথম দুই দিন যা মনে হয়েছিল তার চেয়ে অনেক কম।" },
+];
+
+export const bandsFor = (p: Protocol): Band[] =>
+  p === "fast" ? FAST_BANDS : p === "keto" ? KETO_BANDS : PLAIN_BANDS;
+
+/** Where you are now, and what is next.
+
+    `hoursIn` is passed rather than computed, because this file
+    never touches a clock: a check seeds it and a page seeds it
+    and both get the same answer. */
+export function bandAt(p: Protocol, hoursIn: number): {
+  now: Band | null; next: Band | null; intoNext: number;
+} {
+  const bands = bandsFor(p);
+  const now = bands.find((b) => hoursIn >= b.from && hoursIn < b.to) ?? null;
+  const next = bands.find((b) => b.from > hoursIn) ?? null;
+  return { now, next, intoNext: next ? next.from - hoursIn : 0 };
+}
+
+/* ---------------------------------------------------------- */
+/* the day as it happens                                      */
+/* ---------------------------------------------------------- */
+
+/** Where today is going, from what has been logged so far.
+
+    NOT A PREDICTION OF BEHAVIOUR. It is the reader's OWN typical
+    distribution of intake across the day, applied to what they
+    have logged: if three quarters of your calories usually land
+    after six in the evening, then 900 at lunchtime is not most
+    of the day, and a tool that implied it was would be telling
+    somebody they had failed by one o'clock.
+
+    Returns null before there is enough history to know the
+    shape, because a projection from an ASSUMED shape is a
+    projection from somebody else's day. */
+export interface DayPace {
+  soFar: number;
+  /** Where the day lands if it goes the way this reader's days
+      usually go. */
+  landing: number;
+  /** The share of a day's energy that has usually arrived by
+      this hour. */
+  usualShare: number;
+  target?: number;
+}
+
+export function dayPace(opts: {
+  history: Array<{ hour: number; kcal: number }>;
+  today: Array<{ hour: number; kcal: number }>;
+  hourNow: number;
+  target?: number;
+}): DayPace | null {
+  const { history, today, hourNow, target } = opts;
+  const soFar = today.reduce((s, e) => s + e.kcal, 0);
+  if (history.length < 20) return null;
+
+  const total = history.reduce((s, e) => s + e.kcal, 0);
+  if (total <= 0) return null;
+  const by = history.filter((e) => e.hour <= hourNow).reduce((s, e) => s + e.kcal, 0);
+  const usualShare = by / total;
+
+  /* A share of zero would divide to infinity and a share of one
+     means the day is done. Both are answered honestly rather
+     than arithmetically. */
+  if (usualShare <= 0.05) return { soFar, landing: soFar, usualShare, target };
+  return { soFar, landing: soFar / Math.min(usualShare, 1), usualShare, target };
+}
+
+/** When the calories actually land, as 24 buckets. Most
+    over-target days are made in the evening, and this is the one
+    reading that can say so from the reader's own log rather than
+    as a general claim. */
+export function byHour(entries: Array<{ hour: number; kcal: number }>): number[] {
+  const buckets = new Array<number>(24).fill(0);
+  for (const e of entries) {
+    if (e.hour >= 0 && e.hour < 24) buckets[e.hour] += e.kcal;
+  }
+  return buckets;
+}
