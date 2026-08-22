@@ -587,9 +587,15 @@ export function projection(opts: {
 
   const fastest = togo < 0 ? weekly.low : weekly.high;
   const slowest = togo < 0 ? weekly.high : weekly.low;
+  /* A `Range` built by hand rather than by `range()` can carry a
+     mid of zero between two same-signed bounds, and dividing by
+     it puts `-Infinity weeks` on the page. The bounds have
+     already been checked, so they are what to fall back to. */
+  const mid = weekly.mid !== 0 && Math.sign(weekly.mid) === Math.sign(fastest)
+    ? weekly.mid : (fastest + slowest) / 2;
   return {
     low: togo / fastest,
-    mid: togo / weekly.mid,
+    mid: togo / mid,
     high: togo / slowest,
   };
 }

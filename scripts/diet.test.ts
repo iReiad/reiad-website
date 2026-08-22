@@ -319,6 +319,11 @@ ok("projection: null when the trend is going the wrong way",
 ok("projection: null when the band spans flat",
   projection({ currentKg: 80, goalKg: 75, weekly: { low: -0.3, mid: 0, high: 0.3 } }) === null,
   "a slope whose error bar contains zero cannot date anything");
+ok("projection: a hand-built range with a zero mid does not divide by it",
+  Number.isFinite(projection({
+    currentKg: 80, goalKg: 75, weekly: { low: -0.7, mid: 0, high: -0.3 },
+  })?.mid ?? Infinity),
+  "-Infinity weeks would render as a number");
 ok("projection: already there is zero weeks",
   projection({ currentKg: 75, goalKg: 75, weekly: { low: -0.7, mid: -0.5, high: -0.3 } })?.mid === 0);
 
