@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v186: /fallback.css. The readout on four pages has a name, so
+        a reader moving by heading no longer meets an `h3` under
+        an `h1`, and a first use of a term is linked to its
+        definition.
+
    v185: /account-page.js and /fallback.css. Take a copy of
         everything and erase everything now know the six diet
         tables exist, so a medicine and a cycle no longer survive
@@ -1710,7 +1715,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v185";
+const VERSION = "v186";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

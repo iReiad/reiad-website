@@ -254,6 +254,7 @@ export function GoalPanel() {
 
       {engine ? (
         <div className="dt-readout">
+        <h2 className="dt-readout-h"><T en="What that gives you" bn="এতে আপনি যা পাচ্ছেন" /></h2>
           <div className="dt-figure dt-figure-lead">
             <h3><T en="Today's target" bn="আজকের লক্ষ্য" /></h3>
             <p className="dt-value">

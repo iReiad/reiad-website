@@ -8544,6 +8544,15 @@
 
   .dt-readout-waiting { display: block; color: var(--ink-soft); }
 
+  .dt-readout-h {
+    grid-column: 1 / -1;
+    font-size: var(--t-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
   .dt-figure {
     border: 1px solid var(--hairline);
     border-radius: var(--radius-card);

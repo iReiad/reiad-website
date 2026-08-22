@@ -271,6 +271,7 @@ export function BodyPanel() {
       {body === null
         ? (
           <div className="dt-readout dt-readout-waiting">
+            <h2 className="dt-readout-h"><T en="What that says about you" bn="এতে আপনার সম্পর্কে যা বোঝা যায়" /></h2>
             <p>
               <T
                 en="Height, weight and age, and the numbers appear here. Nothing is stored and nothing is sent anywhere."
@@ -329,6 +330,7 @@ export function BodyPanel() {
 function TooYoung() {
   return (
     <div className="dt-readout dt-readout-stop" role="note">
+      <h2 className="dt-readout-h"><T en="What that says about you" bn="এতে আপনার সম্পর্কে যা বোঝা যায়" /></h2>
       <div className="dt-figure dt-figure-lead">
         <h3><T en="This tool cannot answer for you" bn="এই টুল আপনার জন্য উত্তর দিতে পারে না" /></h3>
         <TBlock
@@ -375,6 +377,9 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
 
   return (
     <div className="dt-readout">
+      <h2 className="dt-readout-h">
+        <T en="What that says about you" bn="এতে আপনার সম্পর্কে যা বোঝা যায়" />
+      </h2>
       {/* Waist to height leads. It is the number with the better
           evidence behind it and the one that needs no assumption
           about population. */}

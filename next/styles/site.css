@@ -13233,6 +13233,20 @@ German for day, and .tag is what the site has always called
 
   .dt-readout-waiting { display: block; color: var(--ink-soft); }
 
+  /* THE READOUT'S OWN NAME. Four pages went `h1` straight to
+     `h3`, because the figures are `h3`s inside a section nothing
+     had named, so a reader moving by heading found a level that
+     was not there. It spans the grid rather than taking a
+     track. */
+  .dt-readout-h {
+    grid-column: 1 / -1;
+    font-size: var(--t-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
   .dt-figure {
     border: 1px solid var(--hairline);
     border-radius: var(--radius-card);

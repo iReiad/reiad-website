@@ -66,6 +66,7 @@ import {
 } from "@reiad/shared/foods";
 import { Button } from "../ui/button";
 import { ChipButton } from "../ui/chip";
+import { Field } from "../ui/field";
 import { T, digits, useToolLang } from "./lang";
 
 /** A result, whatever it came from. It IS a `FoundFood`, so it
@@ -326,11 +327,9 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
 
   return (
     <div className="dt-picker">
-      <label className="dt-picker-label" htmlFor="dt-food-q">
-        <T en="Add something you ate" bn="যা খেয়েছেন যোগ করুন" />
-      </label>
-      <input
-        id="dt-food-q" className="dt-picker-box" type="search" autoComplete="off"
+      <Field
+        id="dt-food-q" type="search" autoComplete="off"
+        label={<T en="Add something you ate" bn="যা খেয়েছেন যোগ করুন" />}
         placeholder={lang === "bn" ? "ভাত, ডিম, রুটি…" : "rice, egg, bread…"}
         value={q}
         onChange={(e) => setQ(e.target.value)}
@@ -565,11 +564,9 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
           />
         </p>
         <div className="dt-label-form">
-          <label className="dt-picker-label" htmlFor="dt-lab-name">
-            <T en="What it is" bn="জিনিসটা কী" />
-          </label>
-          <input
-            id="dt-lab-name" className="dt-picker-box" type="text"
+          <Field
+            id="dt-lab-name" type="text"
+            label={<T en="What it is" bn="জিনিসটা কী" />}
             value={sheet.name}
             onChange={(e) => setSheet((s) => ({ ...s, name: e.target.value }))}
           />

@@ -39,6 +39,7 @@ import {
 } from "@reiad/shared/foods";
 import { ChipButton } from "../ui/chip";
 import { T, digits, useToolLang } from "./lang";
+import { Field } from "../ui/field";
 
 const MONEY: Record<string, string> = { BDT: "৳", GBP: "£" };
 
@@ -169,10 +170,10 @@ export function FoodsPanel() {
             bn={`দুই জায়গা মিলিয়ে ${digits(FOODS.length, "bn")}টি ভাগ। প্রতিটি ভাত, ডাল আর পাস্তার সারিতে লেখা আছে সেটা রান্না করা না কাঁচা: রান্না হলে চালের ওজন প্রায় তিন গুণ হয়, আর ক্যালোরি গোনার সবচেয়ে সাধারণ ভুলটাই এটা।`}
           />
         </p>
-        <input
-          className="dt-picker-box" type="search" value={q}
+        <Field
+          id="dt-lib-q" type="search" value={q} hideLabel
           onChange={(e) => setQ(e.target.value)}
-          aria-label={lang === "bn" ? "তালিকায় খুঁজুন" : "Search the library"}
+          label={<T en="Search the library" bn="তালিকায় খুঁজুন" />}
           placeholder={lang === "bn" ? "খুঁজুন" : "Search"}
         />
         <div className="dt-table-wrap">

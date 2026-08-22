@@ -91,6 +91,7 @@ export function JournalPanel() {
   return (
     <div className="dt-journal">
       <div className="dt-readout">
+        <h2 className="dt-readout-h"><T en="How the last three months went" bn="গত তিন মাস কেমন গেল" /></h2>
         <div className="dt-figure dt-figure-lead">
           <h3><T en="Hunger" bn="ক্ষুধা" /></h3>
           <p className="dt-value">

@@ -221,6 +221,7 @@ export function TrendPanel() {
       </details>
 
       <div className="dt-readout">
+        <h2 className="dt-readout-h"><T en="What the weighings say" bn="ওজনগুলো যা বলছে" /></h2>
         <div className="dt-figure dt-figure-lead">
           <h3><T en="The rate" bn="হার" /></h3>
           <p className="dt-value">
