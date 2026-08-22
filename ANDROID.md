@@ -271,6 +271,17 @@ one module, for the reason `aab/editor.js` is one module on the
 web: two renderers that disagree is the class of bug the
 three-place rule exists for.
 
+**The allowlist is a floor, not a promise, and that was measured
+rather than assumed.** `/money/basics-1/share` carries a `<b>` in
+its stored body, which the server's tag list does not include:
+the browser's sanitiser renames `B` to `STRONG` on the way in and
+some prose predates or bypassed that. So the renderer maps the
+synonyms the editor already maps (`b` to `strong`, `i` and `u` to
+`em`, a heading above `h3` down to one) and renders anything it
+still does not know as plain styled text, logged. A parser that
+trusted the documented list would have dropped a word's emphasis
+on day one and nothing would have said so.
+
 ### Media, speech, and the platform's own things
 
 - **Course video is Media3/ExoPlayer** over the ticket URLs. The
