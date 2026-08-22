@@ -12255,6 +12255,19 @@ German for day, and .tag is what the site has always called
       .news-window, .preflight, .slash-menu, .studio-tools,
       .course-rail, .csv-panel, .deck-foot, .toast, .dt-set, .dt-lang) {
     --depth: 9; --polish: 0.3; --clarity: 0.3; --standing: 1;
+
+    /* HERE, NOT ON `[data-glow="pane"]`, AND THAT IS THE WHOLE
+       BUG. The material is applied by CLASS: `data-glow` only
+       carries the light's size for the few components that set
+       it directly, so a `--follows: 0` written there reaches
+       almost nothing. It was written there, it measured as
+       fixed, and every bar and rail on the site went on throwing
+       220px of light after the pointer for two more releases.
+
+       A pane is what you read INSIDE. A 220px light sweeping
+       across a nine millimetre sheet under somebody's prose is
+       the flare this was reported as, twice. */
+    --follows: 0;
   }
 
   /* Read, never pressed: a statistic, a verdict, a label, a card
@@ -12368,8 +12381,17 @@ German for day, and .tag is what the site has always called
 
     /* Read, never pressed, and five pixels tall: a light that
        followed the pointer in here would be a light nobody could
-       see chasing a target nobody aims at. */
-    --glow-w: 0px;
+       see chasing a target nobody aims at.
+
+       `--follows: 0` and not `--glow-w: 0px`, which is what stood
+       here and never worked: the derived size formula later in
+       this layer has the same specificity and wins, so every
+       track, meter and segmented control on the site carried
+       73.6px of moving light while this comment said it carried
+       none. The plate had the identical bug and was fixed; this
+       one was missed, along with the pane, because the fix went
+       onto `[data-glow=...]` rather than onto the class. */
+    --follows: 0;
 
     /* Cut in, so the shadow is at the top and the catch light is
        at the bottom. `--depth` is the height of the near wall, in

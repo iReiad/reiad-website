@@ -31,6 +31,17 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v178: /fallback.css. THE FLARE, for real this time. A pane and
+        a groove never held still: the pane's stillness was
+        written on `[data-glow="pane"]` and the material is
+        applied by CLASS, so it reached almost nothing, and the
+        groove still said `--glow-w: 0px`, which the derived size
+        formula overrides at equal specificity. Measured on the
+        live stylesheet: `.rail` 220px, `.topbar` 220px,
+        `.audience-switch` 73.6px, all now 0. The plate was fixed
+        in v174 and these two were missed. check-material's ninth
+        question is what asks.
+
    v177: /fallback.css. The diet tool's readout dropped a column
         in Bangla and not in English: Bangla's leading is 1.9, the
         page grew a scrollbar, and the wrap came in by enough to
@@ -1656,7 +1667,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v177";
+const VERSION = "v178";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

@@ -404,9 +404,13 @@ for (const [cls, layer] of [...castsShadow].sort()) {
     kinds.push([name, Number(d[1]), Number(p[1]), Number(c[1])]);
   }
 
-  if (kinds.length < 4) {
+  /* THREE, not four. A pane joined the still kinds when the
+     flare was finally fixed on the class block rather than on
+     the attribute, so what is left on the ordering is the chip,
+     the control and the card: the three you press. */
+  if (kinds.length < 3) {
     bad += 1;
-    console.error(`\n  x only ${kinds.length} following kind(s) found in @layer glow, expected 4.`);
+    console.error(`\n  x only ${kinds.length} following kind(s) found in @layer glow, expected 3.`);
     console.error("        Each is a rule setting --depth, --polish and --clarity. If a kind");
     console.error("        was renamed or removed, this is where it shows.");
   } else {
@@ -563,6 +567,84 @@ for (const [cls, why] of NOT_GLASS) {
   bad += 1;
   console.error(`\n  x NOT_GLASS names .${cls}, which the stylesheet no longer has.`);
   console.error(`        Reason on file: ${why}`);
+}
+
+/* ---------- 9. does a still kind say so where it is applied? ----------
+
+   THE BUG THIS EXISTS FOR, THREE TIMES OVER.
+
+   A kind that holds still is written `--follows: 0`, and the
+   derived size formula multiplies by it. Two ways to get that
+   wrong, and both shipped:
+
+   1. `--glow-w: 0px` beside the depth. The formula is LATER in
+      the same layer at the same specificity, so it wins, and the
+      surface goes on throwing light while the comment above it
+      says it does not. The plate had this for as long as the
+      formula existed and a `.stat` measured 156px. The groove
+      had it too and was missed when the plate was fixed: every
+      track, meter and segmented control carried 73.6px.
+
+   2. `--follows: 0` on `[data-glow="pane"]` instead of on the
+      class block. THE MATERIAL IS APPLIED BY CLASS. That
+      attribute only carries the light's size for the handful of
+      components that set it directly, so a rule there reaches
+      almost nothing: `.rail` and `.topbar` measured 220px each,
+      through two releases, after the flare had been reported
+      twice and declared fixed once.
+
+   Neither is visible in a diff and neither fails anything else:
+   the page renders, the colours are right, and the only symptom
+   is a light that follows the pointer across something nobody
+   presses. So the question is asked here instead. */
+
+const STILL: Array<{ member: string; kind: string; why: string }> = [
+  { member: "topbar", kind: "pane",
+    why: "a pane is what you read INSIDE, and a 220px light sweeping across a "
+      + "nine millimetre sheet under somebody's prose is the flare this was "
+      + "reported as twice" },
+  { member: "tile", kind: "plate",
+    why: "read, never pressed: the same weave and lit edge, and a still light "
+      + "in the corner" },
+  { member: "track", kind: "groove",
+    why: "five pixels tall, so a light following the pointer in one is a light "
+      + "nobody can see chasing a target nobody aims at" },
+];
+
+for (const { member, kind, why } of STILL) {
+  const block = all.find(([layer, sel, body]) =>
+    layer === "glow"
+    && /--depth:\s*[\d.]/.test(body)
+    && new RegExp(`\\.${member}[\\s,)]`).test(sel));
+
+  if (!block) {
+    bad += 1;
+    console.error(`\n  x STILL names .${member} for the ${kind}, and no kind block lists it.`);
+    console.error("        Either the class was renamed, or the kind was. Point this at a");
+    console.error(`        class the ${kind}'s own block lists.`);
+    console.error(`        Reason on file: ${why}`);
+    continue;
+  }
+
+  const [, , body] = block;
+  if (/--glow-w:\s*0/.test(body)) {
+    bad += 1;
+    console.error(`\n  x the ${kind} holds still with --glow-w: 0, which does nothing.`);
+    console.error("        The derived size formula later in @layer glow has the same");
+    console.error("        specificity and wins. Write --follows: 0 instead: the formula");
+    console.error("        multiplies by it, so there is one place that decides.");
+    continue;
+  }
+
+  if (!/--follows:\s*0/.test(body)) {
+    bad += 1;
+    console.error(`\n  x the ${kind} is meant to hold still and its CLASS block does not say so.`);
+    console.error(`        Add --follows: 0 to the block listing .${member}. Putting it on`);
+    console.error(`        [data-glow="${kind}"] instead reaches almost nothing: the material`);
+    console.error("        is applied by class, and that attribute only carries the light's");
+    console.error("        size for components that set it directly.");
+    console.error(`        Why it holds still: ${why}`);
+  }
 }
 
 console.log(

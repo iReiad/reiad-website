@@ -402,7 +402,7 @@ decide what a given thing gets.** `@layer glow` in
 | `chip`    | 1   | 0.94 | 0.78 | 0.3 | yes |
 | `control` | 2.2 | 0.80 | 0.70 | 0.9 | yes |
 | `card`    | 5   | 0.50 | 0.50 | 1   | yes |
-| `pane`    | 9   | 0.30 | 0.30 | 1   | yes |
+| `pane`    | 9   | 0.30 | 0.30 | 1   | no  |
 | `plate`   | 3.4 | 0.55 | 0.28 | 1   | no  |
 | `groove`  | 1.6 | 0.88 | 0.74 | 0   | no  |
 
@@ -500,6 +500,16 @@ read as a material rather than as a hover state. One property does
 both, because a transition reads its duration from the state it is
 going TO.
 
+**Three of the six follow the pointer and three hold still**, and
+the still ones say so with `--follows: 0` **on their class
+block**. Not with `--glow-w: 0`, which the derived formula
+overrides at equal specificity, and not on `[data-glow="pane"]`,
+which reaches almost nothing because the material is applied by
+class. Both mistakes shipped: a `.stat` measured 156px of moving
+light, then `.rail` and `.topbar` measured 220px each through two
+more releases with the flare reported twice and declared fixed
+once. `check-material.ts`'s ninth question is what asks now.
+
 **INTERACTIVITY decides whether the light follows, not whether a
 thing is in the system.** Everything is in it, which is what makes
 it one system. A statistic reading "RETURN ON HOLDINGS, +0.5%" is
@@ -544,7 +554,7 @@ node scripts/check-material.ts          # every pressable class is placed
 node scripts/check-material.ts --list   # what is on the system
 ```
 
-It asks eight questions, and each one is a thing that shipped:
+It asks nine questions, and each one is a thing that shipped:
 
 - **Is anything pressable off the system?** The first material
   reached 1 of 203 surface-like classes, because it was scoped to
