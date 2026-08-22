@@ -471,18 +471,25 @@
     --accent-ink:   light-dark(oklch(99% 0.004 var(--h-paper)), oklch(14% 0.012 var(--h-green)));
 
     /* --- lines, glass, depth ---
-       Contrast on the warm paper, measured in a browser rather
-       than eyeballed. Light mode, ground in brackets:
+       Contrast on the warm paper. These four were hand-measured
+       in a browser and were out of date by as much as a ratio
+       point, which is the thing `check-contrast.ts` was written
+       to stop and which its header describes happening once
+       already. They are read out of that check now, so this block
+       says what the palette actually does:
 
-         heading   --ink on --panel        16.2:1
-         body      --ink-soft on --paper    7.7:1
-         links     --green on --panel       8.3:1
-         labels    --gold on --paper        4.9:1   (was 4.45,
-                   which is why --gold moved; see the note there)
+                          light   dark
+         heading   --ink on --panel      15.88   10.82
+         body      --ink-soft on --paper  7.23    7.27
+         links     --green on --panel     7.18    5.52
+         labels    --gold on --paper      7.08    7.10
 
-       Dark mode, for the record: 14.6, 7.8, 7.2, 7.7. Nothing in
-       dark mode was touched by the warm paper, and these are the
-       numbers to re-measure if any of it ever is. */
+       Do not hand-edit these. `node scripts/check-contrast.ts
+       --table` prints all 126 pairs, and the tightest of them is
+       what a change here should be judged against rather than
+       these four. The gold row is the reason the check exists:
+       it measured 4.50 against the old paper, the paper turned
+       warm, it fell to 4.45, and only a person noticed. */
     /* 269 rules draw a border with this, so tinting it here is
        how every edge on a German page goes faintly blue without
        one of those rules being touched. Same argument as the
