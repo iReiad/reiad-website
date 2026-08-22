@@ -158,8 +158,11 @@ plan touches the site.
    answers `GET /api/site`: the site, the menu, the accents, the
    sections, the tools, the skills, the term groups, the public
    pages and the counts, serialised out of `shared/content.ts`
-   and `shared/nav.ts` at request time and cached half an hour
-   like `/api/news`. The browser gets the same tables as an ES
+   and `shared/nav.ts` at request time. It asks for half an hour
+   of caching and does not get it: something at the edge answers
+   `/api/*` with `no-store`, which the head of that file
+   measures. The app holds its own copy, so this costs one fetch
+   a launch. The browser gets the same tables as an ES
    module at `/content.js` and does not call this, so it is in
    `SERVER_ONLY` in `scripts/check-api.ts` and in `PUBLIC` in
    `scripts/check-admin.ts`, each with the reason written out.

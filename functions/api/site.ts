@@ -64,8 +64,22 @@ import { ACCENTS, AUDIENCES, LADDER_SCHOOLS, NAV, ORDER } from "../../shared/nav
 
 /** Half an hour, the same as the market board next door. The
     furniture changes when somebody deploys, so a stale answer is
-    at worst one deploy behind, and the app holds its own copy
-    anyway. */
+    at worst one deploy behind.
+
+    **What the reader actually gets today is `no-store`, and that
+    is not this handler.** Something at the edge rewrites
+    Cache-Control on `/api/*`, outside this repository: measured
+    22 August 2026, `/api/site` and `/api/backup/articles` both
+    answer `no-store` live while setting a public max-age here,
+    and `/api/news`, which returns a `caches.default` hit rather
+    than a fresh Response, keeps its own. `worker.js` returns a
+    handler's Response verbatim, so nothing in the tree does it.
+
+    The header is set anyway, because it is the true statement
+    about this answer and the day that rule changes it starts
+    working. Do not read the test's assertion as proof the edge
+    caches: it asserts what this file SETS. An app holds its own
+    copy regardless, which is why this is a note and not a bug. */
 const CACHE_SECONDS = 1800;
 
 /** A section without its `pieces()` reader. The function cannot
