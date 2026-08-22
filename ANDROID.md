@@ -29,13 +29,23 @@ accident, a real video player for the courses, text that scrolls
 like the platform's own, widgets, share targets, and a UI thread
 that never pays for hydration.
 
-**Not React Native or Flutter either.** The argument for either
-would be reuse, and there is nothing to reuse: the React here is
-server components rendering database rows into HTML, and the
-client code is browser modules wiring served pages. What transfers
-to a phone is not a view tree. It is the API, the storage keys,
-the sync algorithm, the sanitised HTML vocabulary and the design
-tokens, and those transfer to Kotlin exactly as well.
+**Not React Native, and the trade was weighed rather than waved
+off.** The case for it is real: the site is written in React and
+TypeScript, the fluency transfers whole, and the site's hardest
+pure logic (the sync engine in `aab/src/sync.ts`, the stock model
+in `aab/tools/stock.model.js`, the shapes in `shared/`) has no
+DOM in it and would import into a JavaScript runtime nearly
+as-is, where Kotlin has to port each one under fixture tests.
+What would not transfer is the part that looks most transferable:
+the React here is server components rendering database rows into
+HTML for a stylesheet React Native cannot read, and much of the
+interactivity is plain browser modules wiring served pages. The
+choice was made with that cost in view, 22 August 2026: Kotlin,
+for no JavaScript layer between the app and the platform,
+first-class widgets and media, and one runtime to maintain for
+years. The price is the ports, and the plan treats them as
+first-class work: fixture-locked, in the risks table, never
+assumed.
 
 **So: Kotlin and Jetpack Compose.** One activity, Compose
 navigation, Material 3 as the substrate with this site's own
@@ -136,9 +146,10 @@ plan touches the site.
    Link delivers intact. The magic link lands the same way. The
    app opens the authorize URL in a Custom Tab, catches the
    redirect, and stores the session; `aab/src/account.ts` is the
-   contract for everything after that, including refreshing 60
-   seconds early and never letting a failed refresh sign anybody
-   out.
+   contract for everything after that: refresh 60 seconds early,
+   treat a refresh that fails as signed out (locally, with no
+   request), and never let a failed user lookup downgrade a live
+   session.
 4. **Push, only when it is wanted, and it is a real project.**
    Nothing push-shaped exists today: no listener in `aab/sw.js`,
    no subscription table, no mail provider behind the subscriber
@@ -313,8 +324,11 @@ live, sufficient API.
 audience orderings, theme), the four school hubs, ladders and
 lesson pages, the three reading hubs and the article page, the
 native body renderer, the content cache, local ticks with each
-school's own semantics, checkpoints, bookmarks, the home screen's
-continue card. No account yet: the site's own rule that everything
+school's own semantics, checkpoints, bookmarks, the money
+glossary (its term pages are basics-1 lessons and arrive through
+the same API; the in-prose term links open in place, as they do
+on the web), and the home screen's cards: continue, featured,
+pulse. No account yet: the site's own rule that everything
 works signed out makes phase 1 shippable alone, and it is the
 biggest phase because the renderer and the design system land
 here.
@@ -340,7 +354,8 @@ the broker key never stored unsealed anywhere on the device.
 one-level reply rule), questions and reactions, the market pulse
 board with its honesty-about-staleness, search (the local index
 the palette builds, backed by `/api/search` for body text), the
-subscribe flow.
+subscribe flow, and the two work-facing pages: about as a native
+screen, contact as a native form posting to `/api/enquiries`.
 
 **Phase 5. Practice and speech.** The practice books natively: day
 walker, typed answers autosaved under the device-only keys, answer
@@ -373,6 +388,14 @@ sanitiser and a second editor. The app is the reader's (and, at
 phase 6, the admin-as-reader's). An admin who needs the desk on a
 phone has it: the site works there, and the app can hand off to it
 with one intent.
+
+The portfolio case studies also stay the web's. Each one is an
+interactive model built for a desk and a hiring audience: a DCF
+with sensitivity grids, a three-statement model that recomputes as
+assumptions move, a stress engine. Porting them would be a second
+product, and their audience is not holding a phone. The app's
+portfolio screen renders the cards natively and opens a model in
+the browser, which is one intent.
 
 Also not moving: the feeds (a feed reader already reads them), the
 break-glass article renderer, and the PWA itself, which keeps
