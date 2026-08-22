@@ -1,0 +1,368 @@
+"use client";
+
+/* ============================================================
+   diet/board.tsx: today. The log on the left, the board on the
+   upper right.
+
+   `DIET.md` sections 11 and 24. This page has two jobs that pull
+   in opposite directions: DOING (log a weight, log a meal) and
+   READING (how is this going). One column cannot serve both, so
+   on a wide screen the log is on the left because it is what the
+   reader came to do, and the board is a rail on the upper right
+   because it is what they came to see and it is the first thing
+   in the eye's path on the way to the log.
+
+   ---- everything here is client-filled, and that is the rule ----
+
+   The same arrangement as `/account`, `/tools/live` and
+   `/tools/routine`, for the same reason: what this page shows is
+   one person's own private rows, read with their own token out
+   of their own localStorage. The server has neither, and HTML it
+   rendered would be one reader's day cached at an address every
+   reader shares.
+
+   So the server renders the frame and this fills it. Signed out
+   it draws a short invitation rather than an empty shell: a
+   redirect would lose the address somebody was sent, and a blank
+   page looks broken.
+   ============================================================ */
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  UNLOCKS, streak, totalFor, trend, slopePerWeek, learnedBurn,
+  restingBurn, estimatedBurn, activityFactor, target, fatEstimate,
+  proteinFloor, whtr, bmi,
+  type Body, type Day, type Entry, type Point,
+} from "@reiad/shared/diet";
+import {
+  who, getDays, saveDay, getEntries, addEntry, getProfile,
+  isoDate, shiftDate, dayNumber, pendingCount,
+  type Profile, type Who,
+} from "../../lib/diet-api";
+import { ButtonLink } from "../ui/button";
+import { T, digits, useToolLang } from "./lang";
+import { Ring, Spark, Strip, Waiting, Widget } from "./widgets";
+import { LogForm } from "./log-form";
+
+/** How far back the board reads. A year is 365 rows, which is
+    one request and nothing to paginate, and it is what the
+    streak's `best` and the year page both need. */
+const WINDOW = 365;
+
+export function DietBoard() {
+  const lang = useToolLang();
+  const [w, setW] = useState<Who | null>(null);
+  const [answered, setAnswered] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [days, setDays] = useState<Day[]>([]);
+  const [entries, setEntries] = useState<Entry[]>([]);
+  const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "queued">("idle");
+
+  const today = isoDate();
+
+  /* Who is signed in, and staying up to date with it: signing in
+     on this page should fill it without a reload. `account:changed`
+     is the event the rest of the site already listens for. */
+  useEffect(() => {
+    let alive = true;
+    const paint = () => { void who().then((found) => {
+      if (!alive) return;
+      setW(found);
+      setAnswered(true);
+    }); };
+    paint();
+    document.addEventListener("account:changed", paint);
+    return () => { alive = false; document.removeEventListener("account:changed", paint); };
+  }, []);
+
+  useEffect(() => {
+    if (!w) { setDays([]); setEntries([]); setProfile(null); return; }
+    let alive = true;
+    const from = shiftDate(today, -WINDOW);
+    void Promise.all([getProfile(w), getDays(w, from), getEntries(w, from)])
+      .then(([p, d, e]) => {
+        if (!alive) return;
+        setProfile(p);
+        setDays(d);
+        setEntries(e);
+      });
+    return () => { alive = false; };
+  }, [w, today]);
+
+  const day = days.find((d) => d.date === today);
+  const todayEntries = useMemo(
+    () => entries.filter((e) => e.date === today), [entries, today],
+  );
+  const totals = useMemo(() => totalFor(todayEntries), [todayEntries]);
+  const run = useMemo(() => streak(days, today), [days, today]);
+
+  /* The trend, and the rate, off the weighings alone. `trend()`
+     is the line a page draws; `slopePerWeek()` fits the
+     READINGS, and the comment on it says why an average's
+     endpoints cannot be used for a rate. */
+  const points: Point[] = useMemo(
+    () => days.filter((d) => d.weightKg != null)
+      .map((d) => ({ day: dayNumber(d.date), kg: d.weightKg as number })),
+    [days],
+  );
+  const line = useMemo(() => trend(points), [points]);
+  const rate = useMemo(() => slopePerWeek(points), [points]);
+
+  const body: Body | null = useMemo(() => {
+    const latest = [...points].sort((a, b) => b.day - a.day)[0];
+    if (!profile?.height_cm || !profile.birth_year || !latest) return null;
+    return {
+      heightCm: profile.height_cm,
+      weightKg: latest.kg,
+      ageYears: new Date().getUTCFullYear() - profile.birth_year,
+      sex: profile.sex ?? "male",
+      ancestry: profile.ancestry ?? "general",
+      waistCm: [...days].reverse().find((d) => d.waistCm != null)?.waistCm,
+      neckCm: [...days].reverse().find((d) => d.neckCm != null)?.neckCm,
+      hipCm: [...days].reverse().find((d) => d.hipCm != null)?.hipCm,
+    };
+  }, [profile, points, days]);
+
+  const learned = useMemo(() => learnedBurn(
+    points,
+    days.filter((d) => d.kcal != null).map((d) => ({ day: dayNumber(d.date), kcal: d.kcal as number })),
+  ), [points, days]);
+
+  const burn = useMemo(() => {
+    if (!body) return null;
+    const fat = fatEstimate(body);
+    const rest = restingBurn(body, fat.method === "navy" ? fat.leanKg : undefined);
+    return {
+      resting: rest.kcal,
+      lean: fat.leanKg,
+      maintenance: learned?.kcal.mid
+        ?? estimatedBurn(rest.kcal, activityFactor(profile?.activity ?? "sedentary")),
+      learned: !!learned,
+    };
+  }, [body, learned, profile]);
+
+  const goal = useMemo(() => {
+    if (!body || !burn) return null;
+    return target({
+      body, maintenance: burn.maintenance, restingKcal: burn.resting,
+      kind: profile?.goal_kind ?? "maintain",
+      ratePct: profile?.goal_rate ?? 0.5,
+    });
+  }, [body, burn, profile]);
+
+  const write = useCallback(async (patch: Partial<Day>) => {
+    if (!w) return;
+    setSaving("saving");
+    const next: Day = { ...(day ?? { date: today }), ...patch, date: today };
+    setDays((prev) => {
+      const rest = prev.filter((d) => d.date !== today);
+      return [...rest, next].sort((a, b) => a.date.localeCompare(b.date));
+    });
+    const ok = await saveDay(w, next);
+    setSaving(ok ? "saved" : pendingCount() > 0 ? "queued" : "idle");
+    if (ok) window.setTimeout(() => setSaving("idle"), 1600);
+  }, [w, day, today]);
+
+  const log = useCallback(async (e: Omit<Entry, "date">) => {
+    if (!w) return;
+    setSaving("saving");
+    const saved = await addEntry(w, { ...e, date: today });
+    if (saved) setEntries((prev) => [...prev, saved]);
+    const after = totalFor([...todayEntries, { ...e, date: today }]);
+    await write({ kcal: Math.round(after.kcal), proteinG: after.protein,
+      carbsG: after.carbs, fatG: after.fat, fibreG: after.fibre });
+  }, [w, today, todayEntries, write]);
+
+  if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
+
+  if (!w) {
+    return (
+      <div className="dt-invite">
+        <p>
+          <T
+            en="Signing in keeps your log on your account rather than in this browser, so it is there on your phone too."
+            bn="সাইন ইন করলে আপনার খাতা এই ব্রাউজারে নয়, আপনার অ্যাকাউন্টে থাকে, তাই ফোনেও পাবেন।"
+          />
+        </p>
+        <p>
+          <T
+            en="You do not need one to work out what your body is: that page stores nothing at all."
+            bn="আপনার শরীর কী দিয়ে গড়া তা বের করতে অ্যাকাউন্ট লাগে না: ওই পাতাটি কিছুই জমা রাখে না।"
+          />
+        </p>
+        <ButtonLink kind="solid" href="/account">
+          <T en="Sign in" bn="সাইন ইন" />
+        </ButtonLink>
+      </div>
+    );
+  }
+
+  const remaining = goal ? goal.kcal - totals.kcal : 0;
+  const protein = body ? proteinFloor(burn?.lean ?? 0, profile?.goal_rate ?? 0.5) : null;
+  const waist = [...days].reverse().find((d) => d.waistCm != null);
+  const stripDays = Array.from({ length: 14 }, (_, i) => {
+    const date = shiftDate(today, i - 13);
+    const d = days.find((x) => x.date === date);
+    const kind = !d ? "none"
+      : d.weightKg != null && d.kcal != null ? "both"
+        : d.weightKg != null ? "weighed" : "logged";
+    return { date, kind };
+  });
+
+  return (
+    <div className="dt-today">
+      <section className="dt-doing" aria-label="Log today">
+        <LogForm
+          day={day}
+          entries={todayEntries}
+          saving={saving}
+          onDay={write}
+          onEntry={log}
+        />
+      </section>
+
+      <aside className="dt-board" aria-label="Today at a glance">
+        <Widget href="/tools/diet/goal" title={<T en="Today" bn="আজ" />}>
+          {goal
+            ? (
+              <Ring
+                done={totals.kcal} total={goal.kcal}
+                label={<span className="mono">{digits(Math.abs(Math.round(remaining)), lang)}</span>}
+              />
+            )
+            : <Waiting
+                en="Your height, weight and age give a target."
+                bn="উচ্চতা, ওজন আর বয়স দিলে একটা লক্ষ্য আসবে।"
+              />}
+          <span className="dt-w-said">
+            {goal
+              ? <T
+                  en={remaining >= 0 ? `${Math.round(remaining)} left of ${goal.kcal}`
+                    : `${Math.abs(Math.round(remaining))} over ${goal.kcal}`}
+                  bn={remaining >= 0
+                    ? `${digits(Math.round(remaining), "bn")} বাকি, ${digits(goal.kcal, "bn")} এর মধ্যে`
+                    : `${digits(Math.abs(Math.round(remaining)), "bn")} বেশি, ${digits(goal.kcal, "bn")} এর চেয়ে`}
+                />
+              : null}
+          </span>
+        </Widget>
+
+        {/* The streak. It counts SHOWING UP, never hitting a
+            target, and `best` sits beside `current` because a
+            number that can only fall is a number people stop
+            looking at. */}
+        <Widget href="/tools/diet/trend" title={<T en="Days logged" bn="যত দিন লেখা" />}>
+          <span className="dt-w-big mono">{digits(run.current, lang)}</span>
+          <span className="dt-w-said">
+            <T
+              en={run.best > run.current ? `in a row. Your best is ${run.best}`
+                : run.current > 0 ? "in a row, and that is your best" : "Log anything today to start"}
+              bn={run.best > run.current
+                ? `দিন টানা। আপনার সেরা ${digits(run.best, "bn")}`
+                : run.current > 0 ? "দিন টানা, আর এটাই আপনার সেরা" : "আজ কিছু লিখলেই শুরু"}
+            />
+          </span>
+          <Strip days={stripDays} />
+        </Widget>
+
+        <Widget href="/tools/diet/trend" title={<T en="Trend" bn="ধারা" />}>
+          {line.length > 1
+            ? (
+              <>
+                <Spark
+                  points={line.map((p) => ({ x: p.day, y: p.kg }))}
+                  scale={points.map((p) => ({ x: p.day, y: p.kg }))}
+                />
+                <span className="dt-w-said">
+                  {rate
+                    ? <T
+                        en={`${rate.mid >= 0 ? "+" : ""}${rate.mid.toFixed(2)} kg a week`}
+                        bn={`সপ্তাহে ${digits(rate.mid.toFixed(2), "bn")} কেজি`}
+                      />
+                    : <T en="A week of weighings gives a rate." bn="এক সপ্তাহ ওজন দিলে হার আসবে।" />}
+                </span>
+              </>
+            )
+            : <Waiting
+                en="Two weighings draw a line. Seven make it mean something."
+                bn="দুই দিনের ওজনে রেখা আঁকা হয়। সাত দিনে সেটার মানে দাঁড়ায়।"
+              />}
+        </Widget>
+
+        <Widget href="/tools/diet/trend" title={<T en="What you burn" bn="আপনার খরচ" />}>
+          {burn
+            ? (
+              <>
+                <span className="dt-w-big mono">{digits(Math.round(burn.maintenance / 10) * 10, lang)}</span>
+                <span className="dt-w-said">
+                  <T
+                    en={burn.learned ? "measured from your own log" : "estimated, until fourteen days of logs"}
+                    bn={burn.learned ? "আপনার নিজের খাতা থেকে মাপা" : "আন্দাজ, চৌদ্দ দিন লেখা না হওয়া পর্যন্ত"}
+                  />
+                </span>
+              </>
+            )
+            : <Waiting
+                en={UNLOCKS[2].en} bn={UNLOCKS[2].bn}
+              />}
+        </Widget>
+
+        <Widget href="/tools/diet/nutrition" title={<T en="Protein" bn="প্রোটিন" />}>
+          {protein
+            ? (
+              <>
+                <span className="dt-w-big mono">
+                  {digits(Math.round(totals.protein), lang)}
+                </span>
+                <span className="dt-w-said">
+                  <T
+                    en={`of at least ${Math.round(protein.low)} g`}
+                    bn={`কমপক্ষে ${digits(Math.round(protein.low), "bn")} গ্রামের মধ্যে`}
+                  />
+                </span>
+              </>
+            )
+            : <Waiting
+                en="A tape measurement gives a lean mass, and the floor follows from it."
+                bn="ফিতার মাপ দিলে চর্বি ছাড়া ভর পাওয়া যায়, আর সর্বনিম্ন সেখান থেকেই আসে।"
+              />}
+        </Widget>
+
+        <Widget href="/tools/diet/you" title={<T en="The body" bn="শরীর" />}>
+          {waist?.waistCm && profile?.height_cm
+            ? (
+              <>
+                <span className="dt-w-big mono">
+                  {digits(whtr(waist.waistCm, profile.height_cm).toFixed(2), lang)}
+                </span>
+                <span className="dt-w-said">
+                  <T
+                    en={`waist to height${body ? `, BMI ${bmi(body.weightKg, body.heightCm).toFixed(1)}` : ""}`}
+                    bn={`কোমর ও উচ্চতা${body ? `, বিএমআই ${digits(bmi(body.weightKg, body.heightCm).toFixed(1), "bn")}` : ""}`}
+                  />
+                </span>
+              </>
+            )
+            : <Waiting
+                en="A waist measurement gives the better of the two numbers."
+                bn="কোমরের মাপ দিলে দুটোর মধ্যে ভালোটা পাওয়া যায়।"
+              />}
+        </Widget>
+
+        <Widget href="/tools/diet/journal" title={<T en="Water" bn="পানি" />}>
+          <span className="dt-w-big mono">{digits(((day?.waterMl ?? 0) / 250) | 0, lang)}</span>
+          <span className="dt-w-said"><T en="glasses today" bn="গ্লাস আজ" /></span>
+        </Widget>
+
+        <Widget href="/tools/diet/journal" title={<T en="Steps" bn="পদক্ষেপ" />}>
+          {day?.steps
+            ? <span className="dt-w-big mono">{digits(day.steps, lang)}</span>
+            : <Waiting
+                en="Steps are the largest variable in what you burn, and the one that quietly falls on a diet."
+                bn="খরচের সবচেয়ে বড় পরিবর্তনশীল অংশ হাঁটা, আর ডায়েটের সময় এটাই চুপচাপ কমে যায়।"
+              />}
+        </Widget>
+      </aside>
+    </div>
+  );
+}

@@ -13,6 +13,7 @@ import type { Metadata } from "next";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { GoCard, InfoCard, SoonCard } from "../../../../components/deck";
 import { LangSwitch, T, TBlock } from "../../../../components/diet/lang";
+import { DietBoard } from "../../../../components/diet/board";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/diet",
@@ -52,23 +53,83 @@ export default function DietPage() {
         />
       </header>
 
+      <DietBoard />
+
       <section className="dt-deck" aria-label="What is here">
         <GoCard
           href="/tools/diet/you"
-          chip={<T en="Ready" bn="তৈরি" />}
           title={<T en="Your body" bn="আপনার শরীর" />}
           go={<T en="Work it out" bn="হিসাব করুন" />}
           dek={(
             <T
-              en="Measurements in, composition out: waist to height first, BMI on the cut-offs that apply to you, body fat as a range, and what you burn at rest. Nothing is stored and no account is needed."
-              bn="মাপ দিন, গঠন পান: প্রথমে কোমর ও উচ্চতার অনুপাত, তারপর আপনার জন্য প্রযোজ্য সীমায় বিএমআই, একটা সীমার মধ্যে চর্বি, আর বিশ্রামে কত খরচ। কিছুই জমা থাকে না, অ্যাকাউন্টও লাগে না।"
+              en="Waist to height first, BMI on the cut-offs that apply to you, body fat as a range, and what you burn at rest. Nothing is stored and no account is needed."
+              bn="প্রথমে কোমর ও উচ্চতার অনুপাত, তারপর আপনার জন্য প্রযোজ্য সীমায় বিএমআই, একটা সীমার মধ্যে চর্বি, আর বিশ্রামে কত খরচ। কিছুই জমা থাকে না, অ্যাকাউন্টও লাগে না।"
+            />
+          )}
+        />
+
+        <GoCard
+          href="/tools/diet/goal"
+          title={<T en="Your goal" bn="আপনার লক্ষ্য" />}
+          go={<T en="Set it" bn="ঠিক করুন" />}
+          dek={(
+            <T
+              en="A rate as a percentage of bodyweight, the floors the tool will not cross, and how long it will take as a band rather than a date."
+              bn="শরীরের ওজনের শতাংশে একটা হার, যে সীমাগুলো পেরোনো হবে না, আর কত দিন লাগবে তা তারিখ নয়, একটা সীমা হিসেবে।"
+            />
+          )}
+        />
+
+        <GoCard
+          href="/tools/diet/trend"
+          title={<T en="The long view" bn="লম্বা হিসাব" />}
+          go={<T en="See it" bn="দেখুন" />}
+          dek={(
+            <T
+              en="The trend against the scale, the rate with its error bar, and what your own log says you burn rather than what an equation guesses."
+              bn="দাঁড়িপাল্লার বিপরীতে ধারা, ভুলের সীমাসহ হার, আর সূত্রের আন্দাজ নয়, আপনার নিজের খাতা যা বলে সেই খরচ।"
+            />
+          )}
+        />
+
+        <GoCard
+          href="/tools/diet/expect"
+          title={<T en="What to expect, and when" bn="কখন কী হবে" />}
+          go={<T en="Read it" bn="পড়ুন" />}
+          dek={(
+            <T
+              en="The arc of a deficit week by week, said before the week. Almost everybody who quits does so at a point that was predictable a fortnight earlier."
+              bn="ঘাটতির ধাপ সপ্তাহে সপ্তাহে, আগেই বলা। যাঁরা ছেড়ে দেন তাঁদের প্রায় সবাই এমন জায়গায় ছাড়েন যেটা দুই সপ্তাহ আগেই বলা যেত।"
+            />
+          )}
+        />
+
+        <GoCard
+          href="/tools/diet/nutrition"
+          title={<T en="Beyond calories" bn="ক্যালোরির বাইরে" />}
+          go={<T en="Look" bn="দেখুন" />}
+          dek={(
+            <T
+              en="Fibre, sodium, iron and the rest, each shown with how much of the day it was computed from. Under half and nothing is drawn at all."
+              bn="আঁশ, সোডিয়াম, আয়রন আর বাকিগুলো, প্রতিটির সঙ্গে সেটা দিনের কতটুকু থেকে এসেছে। অর্ধেকের কম হলে কিছুই আঁকা হয় না।"
+            />
+          )}
+        />
+
+        <GoCard
+          href="/tools/diet/journal"
+          title={<T en="How it is going" bn="কেমন যাচ্ছে" />}
+          go={<T en="Open it" bn="খুলুন" />}
+          dek={(
+            <T
+              en="Hunger, which climbs before the trend moves and before adherence breaks, and what people report on a deficit, described and never diagnosed."
+              bn="ক্ষুধা, যেটা ধারা নড়ার আগেই আর নিয়ম ভাঙার আগেই বাড়ে, আর ঘাটতিতে মানুষ যা বলে, বর্ণনা করা, রোগ নির্ণয় নয়।"
             />
           )}
         />
 
         <GoCard
           href="/tools/diet/glossary"
-          chip={<T en="Ready" bn="তৈরি" />}
           title={<T en="What the words mean" bn="শব্দগুলোর মানে" />}
           go={<T en="Read it" bn="পড়ুন" />}
           dek={(
@@ -80,23 +141,12 @@ export default function DietPage() {
         />
 
         <SoonCard
-          title={<T en="Today" bn="আজ" />}
+          title={<T en="What it costs to eat" bn="খেতে কত খরচ" />}
           soon={<T en="Coming" bn="আসছে" />}
           dek={(
             <T
-              en="Log a weight and what you ate, and watch the trend rather than the scale. A single reading is real weight plus one to two kilos of water, so nothing here will ever react to one."
-              bn="ওজন আর যা খেয়েছেন লিখুন, আর দাঁড়িপাল্লার বদলে ধারা দেখুন। একদিনের মাপ মানে আসল ওজনের সঙ্গে এক থেকে দুই কেজি পানি, তাই এখানে কিছুই একটামাত্র মাপে সাড়া দেবে না।"
-            />
-          )}
-        />
-
-        <SoonCard
-          title={<T en="What to expect, and when" bn="কখন কী হবে" />}
-          soon={<T en="Coming" bn="আসছে" />}
-          dek={(
-            <T
-              en="The arc of a deficit, week by week, said before the week rather than explained after it. Almost everybody who quits does so at a point that was predictable a fortnight earlier."
-              bn="ঘাটতির পুরো ধাপ, সপ্তাহে সপ্তাহে, ঘটার পরে ব্যাখ্যা নয়, আগেই বলা। যাঁরা ছেড়ে দেন তাঁদের প্রায় সবাই এমন এক জায়গায় ছাড়েন যেটা দুই সপ্তাহ আগেই বলে দেওয়া যেত।"
+              en="Cost per gram of protein, in taka and in pounds. This is a personal finance site, and a diet tool here that never priced a meal would be the one place the obvious question goes unasked."
+              bn="প্রতি গ্রাম প্রোটিনের দাম, টাকায় আর পাউন্ডে। এটা টাকার সাইট, আর এখানকার খাদ্য যন্ত্র যদি কখনো দামের কথা না বলে, তবে এটাই একমাত্র জায়গা যেখানে সবচেয়ে স্পষ্ট প্রশ্নটা করা হয় না।"
             />
           )}
         />
@@ -106,8 +156,11 @@ export default function DietPage() {
         <TBlock
           en={(
             <ul>
-              <li>No streak, no flame, nothing counting down. A tracker that
-                shames you is one you delete on the day you most need it.</li>
+              <li>The streak counts days LOGGED, never days on target, and your
+                best sits beside it. A number that can only fall is a number
+                people stop looking at.</li>
+              <li>Nothing counts down and nothing turns red. Over target is
+                drawn in the same weight as under it.</li>
               <li>No target below your resting burn, and never below 1200 for
                 women or 1500 for men. Not behind a warning: the number does not
                 get calculated.</li>
@@ -117,9 +170,11 @@ export default function DietPage() {
           )}
           bn={(
             <ul>
-              <li>কোনো ধারাবাহিকতার হিসাব নেই, আগুনের চিহ্ন নেই, উল্টো গোনা নেই।
-                যে খাতা আপনাকে লজ্জা দেয়, সেটা যেদিন সবচেয়ে বেশি দরকার সেদিনই মুছে
-                ফেলা হয়।</li>
+              <li>ধারাবাহিকতা গোনা হয় কত দিন লিখেছেন তা দিয়ে, লক্ষ্য পূরণ করেছেন
+                কি না তা দিয়ে নয়, আর পাশেই থাকে আপনার সেরা রেকর্ড। যে সংখ্যা কেবল
+                কমতে পারে, মানুষ সেটা দেখা ছেড়ে দেয়।</li>
+              <li>উল্টো গোনা নেই, লাল হয়ে যাওয়াও নেই। লক্ষ্যের বেশি আর কম, দুটোই
+                একই রকম করে দেখানো হয়।</li>
               <li>বিশ্রামের খরচের নিচে কোনো লক্ষ্য নয়, আর নারীদের ১২০০ বা পুরুষদের
                 ১৫০০ এর নিচে কখনোই নয়। সতর্কবাণী দিয়ে নয়: সংখ্যাটা হিসাবই করা হয় না।</li>
               <li>যা জানা সম্ভব নয় তা বলা হয় না। প্রতিটি আন্দাজের সঙ্গে তার ভুলের

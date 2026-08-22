@@ -11,6 +11,7 @@
     "./content": "./content.ts",
     "./nav": "./nav.ts",
     "./routine": "./routine.ts",
-    "./diet": "./diet.ts"
+    "./diet": "./diet.ts",
+    "./foods": "./foods.ts"
   }
 }

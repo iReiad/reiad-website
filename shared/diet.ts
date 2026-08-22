@@ -868,3 +868,293 @@ export function readable(points: Point[], phases: Phase[], today: number): Point
   if (!spans.length) return [];
   return points.filter((p) => spans.some((s) => p.day >= s.from && p.day <= s.to));
 }
+
+/* ---------------------------------------------------------- */
+/* what a day is, and what a run of them says                 */
+/* ---------------------------------------------------------- */
+
+/** One day, as the browser holds it. Mirrors `public.diet_days`
+    and nothing here invents a field that table does not have:
+    two shapes for one row is how a save silently drops a
+    column. */
+export interface Day {
+  date: string;
+  weightKg?: number;
+  kcal?: number;
+  proteinG?: number; carbsG?: number; fatG?: number; fibreG?: number;
+  sodiumMg?: number;
+  ketonesMmol?: number;
+  steps?: number;
+  sleepHours?: number;
+  waterMl?: number;
+  /** One to five. The only leading indicator here. */
+  hunger?: number;
+  waistCm?: number; hipCm?: number; neckCm?: number;
+  chestCm?: number; thighCm?: number; armCm?: number;
+  marks?: string[];
+  tags?: string[];
+  note?: string;
+}
+
+/** The fixed journal set. FIXED, because free text cannot be
+    counted, and SHORT, because a list of forty tags is a list
+    nobody uses. Adding a forty-first is a decision, not a tweak,
+    and `check-diet` reads this list. */
+export const TAGS: Array<{ id: string; en: string; bn: string }> = [
+  { id: "hungry",  en: "Hungry",       bn: "ক্ষুধা লেগেছে" },
+  { id: "tired",   en: "Tired",        bn: "ক্লান্ত" },
+  { id: "headache", en: "Headache",    bn: "মাথাব্যথা" },
+  { id: "craving", en: "Craving",      bn: "কিছু খেতে ইচ্ছে করছে" },
+  { id: "low",     en: "Low energy",   bn: "শক্তি কম" },
+  { id: "good",    en: "Good day",     bn: "ভালো দিন" },
+  { id: "out",     en: "Ate out",      bn: "বাইরে খেয়েছি" },
+  { id: "stress",  en: "Stressed",     bn: "চাপে আছি" },
+  { id: "badsleep", en: "Slept badly", bn: "ঘুম ভালো হয়নি" },
+  { id: "unwell",  en: "Unwell",       bn: "অসুস্থ" },
+  { id: "sore",    en: "Sore",         bn: "গা ব্যথা" },
+  { id: "strong",  en: "Strong",       bn: "শরীর ভালো লাগছে" },
+];
+
+/** A day that was marked as not counting towards the slope. The
+    same idea as the keto adaptation window and for the same
+    reason: a fever puts water on, and a week of one produces
+    trend data that means nothing. Drawn either way. */
+export const MARKS: Array<{ id: string; en: string; bn: string }> = [
+  { id: "ill",    en: "Unwell",        bn: "অসুস্থ" },
+  { id: "travel", en: "Travelling",    bn: "ভ্রমণে" },
+  { id: "refeed", en: "A big meal",    bn: "বড় খাওয়া" },
+  { id: "off",    en: "Off protocol",  bn: "নিয়মের বাইরে" },
+];
+
+/* ---------------------------------------------------------- */
+/* the streak, which is a count of showing up                 */
+/* ---------------------------------------------------------- */
+
+export interface Streak {
+  /** Days up to and including today, or up to yesterday when
+      today has not been logged yet. */
+  current: number;
+  /** The longest run there has ever been. */
+  best: number;
+  /** Whether today is already in it. What decides whether the
+      widget invites a log or acknowledges one. */
+  today: boolean;
+  /** Total days logged, ever. The number that only goes up. */
+  total: number;
+}
+
+/** A run of days with something in them.
+
+    IT COUNTS SHOWING UP, NEVER HITTING A TARGET, and that
+    distinction is the whole of whether this is usable. A streak
+    of days under a calorie target is a number that punishes
+    somebody for a birthday; a streak of days LOGGED is a record
+    of paying attention, and paying attention is the entire ask.
+
+    `best` sits beside `current` for the same reason: a number
+    that can only fall is a number people stop looking at, and
+    the best run is a fact that never goes down once it has
+    happened.
+
+    Yesterday still counts as unbroken when today has not been
+    logged yet. A streak that breaks at midnight punishes
+    somebody for not having eaten breakfast. */
+export function streak(days: Day[], todayISO: string): Streak {
+  const logged = new Set(
+    days.filter((d) => d.weightKg != null || d.kcal != null
+      || (d.tags?.length ?? 0) > 0 || d.note)
+      .map((d) => d.date),
+  );
+  if (!logged.size) return { current: 0, best: 0, today: false, total: 0 };
+
+  const step = (iso: string, by: number): string => {
+    const [y, m, d] = iso.split("-").map(Number);
+    const at = Date.UTC(y, m - 1, d + by);
+    return new Date(at).toISOString().slice(0, 10);
+  };
+
+  const today = logged.has(todayISO);
+  let cursor = today ? todayISO : step(todayISO, -1);
+  let current = 0;
+  while (logged.has(cursor)) { current += 1; cursor = step(cursor, -1); }
+
+  const sorted = [...logged].sort();
+  let best = 0;
+  let run = 0;
+  let last = "";
+  for (const date of sorted) {
+    run = last && step(last, 1) === date ? run + 1 : 1;
+    best = Math.max(best, run);
+    last = date;
+  }
+
+  return { current, best: Math.max(best, current), today, total: logged.size };
+}
+
+/* ---------------------------------------------------------- */
+/* what the day adds up to, and how much of it is known       */
+/* ---------------------------------------------------------- */
+
+/** One thing eaten, as the browser holds it. Mirrors
+    `public.diet_entries`. */
+export interface Entry {
+  id?: string;
+  date: string;
+  meal?: string;
+  label: string;
+  labelBn?: string;
+  qty?: number;
+  unit?: string;
+  kcal?: number;
+  macros?: Record<string, number>;
+  micros?: Record<string, number>;
+  estLow?: number;
+  estHigh?: number;
+  planned?: boolean;
+  source?: string;
+  sourceId?: string;
+}
+
+export interface DayTotal {
+  kcal: number;
+  protein: number; carbs: number; fat: number; fibre: number;
+  micros: Record<string, number>;
+  /** The share of the day's energy that came from an entry with
+      composition attached. EVERY MICRONUTRIENT FIGURE IS SHOWN
+      WITH THIS, because a confident number missing a third of
+      the day is more dangerous than no number. */
+  coverage: number;
+  /** How wide the day's own estimate is, from entries logged as
+      a range. A restaurant plate is not knowable, so the width
+      goes into the day's confidence rather than into a false
+      decimal. */
+  spread: number;
+  count: number;
+}
+
+/** Under this and the panel says the day is too sparse to read,
+    rather than drawing a bar. */
+export const COVERAGE_FLOOR = 0.5;
+
+export function totalFor(entries: Entry[]): DayTotal {
+  const eaten = entries.filter((e) => !e.planned);
+  const micros: Record<string, number> = {};
+  let kcal = 0, protein = 0, carbs = 0, fat = 0, fibre = 0, known = 0, spread = 0;
+
+  for (const e of eaten) {
+    const c = e.kcal ?? 0;
+    kcal += c;
+    protein += e.macros?.protein ?? 0;
+    carbs += e.macros?.carbs ?? 0;
+    fat += e.macros?.fat ?? 0;
+    fibre += e.macros?.fibre ?? 0;
+    if (e.estLow != null && e.estHigh != null) spread += e.estHigh - e.estLow;
+    /* Composition attached is what counts as covered, and the
+       weight is ENERGY rather than the number of entries: a
+       logged 700 kcal plate with nothing attached leaves a much
+       bigger hole than a logged apple does. */
+    if (e.micros && Object.keys(e.micros).length) {
+      known += c;
+      for (const [k, v] of Object.entries(e.micros)) {
+        micros[k] = (micros[k] ?? 0) + v;
+      }
+    }
+  }
+
+  return {
+    kcal, protein, carbs, fat, fibre, micros,
+    coverage: kcal > 0 ? known / kcal : 0,
+    spread,
+    count: eaten.length,
+  };
+}
+
+/* ---------------------------------------------------------- */
+/* the readings that come out of a month of it                */
+/* ---------------------------------------------------------- */
+
+/** Where the calories actually are: the top few foods by
+    contribution. Almost always a surprise and almost always
+    three items, and it costs one sort. */
+export function topSources(entries: Entry[], n = 5): Array<{
+  label: string; kcal: number; times: number; share: number;
+}> {
+  const by = new Map<string, { label: string; kcal: number; times: number }>();
+  let total = 0;
+  for (const e of entries.filter((x) => !x.planned)) {
+    const c = e.kcal ?? 0;
+    total += c;
+    const row = by.get(e.label) ?? { label: e.label, kcal: 0, times: 0 };
+    row.kcal += c;
+    row.times += 1;
+    by.set(e.label, row);
+  }
+  return [...by.values()]
+    .sort((a, b) => b.kcal - a.kcal)
+    .slice(0, n)
+    .map((r) => ({ ...r, share: total > 0 ? r.kcal / total : 0 }));
+}
+
+/** Which days go over, grouped by weekday. A Friday that is
+    consistently above the rest is a fact worth seeing rather
+    than a failure worth hiding, and it is usually a routine
+    rather than a lapse. */
+export function byWeekday(days: Day[]): Array<{ day: number; mean: number; n: number }> {
+  const buckets: Array<{ sum: number; n: number }> = Array.from(
+    { length: 7 }, () => ({ sum: 0, n: 0 }),
+  );
+  for (const d of days) {
+    if (d.kcal == null) continue;
+    const [y, m, dd] = d.date.split("-").map(Number);
+    const wd = new Date(Date.UTC(y, m - 1, dd)).getUTCDay();
+    buckets[wd].sum += d.kcal;
+    buckets[wd].n += 1;
+  }
+  return buckets.map((b, day) => ({ day, mean: b.n ? b.sum / b.n : 0, n: b.n }));
+}
+
+/** Hunger over a run of days, and whether it is climbing.
+
+    THE ONLY LEADING INDICATOR IN THE TOOL. A hunger score rising
+    steadily over three weeks says a target is too aggressive
+    BEFORE the trend does, before adherence breaks, and before
+    the reader concludes they have no willpower. Everything else
+    here is a lagging measure. */
+export function hungerTrend(days: Day[]): { mean: number; rising: boolean; n: number } {
+  const points = days
+    .filter((d) => typeof d.hunger === "number")
+    .map((d, i) => ({ day: i, kg: d.hunger as number }));
+  if (points.length < 10) {
+    return { mean: points.reduce((s, p) => s + p.kg, 0) / (points.length || 1),
+             rising: false, n: points.length };
+  }
+  const f = fit(points);
+  const mean = points.reduce((s, p) => s + p.kg, 0) / points.length;
+  /* Rising means the slope is positive AND bigger than its own
+     error, which is the whole difference between a pattern and a
+     fortnight of noise. */
+  return { mean, rising: !!f && f.slope > 0 && f.slope > f.se, n: points.length };
+}
+
+/** What the tool can honestly show, and on which day it starts.
+    Nothing is held back as a reward: each appears when there is
+    enough data for it to be honest, and the page says the date
+    it will arrive. */
+export const UNLOCKS: Array<{ day: number; en: string; bn: string }> = [
+  { day: 1, en: "BMI, waist to height, composition, a first target",
+    bn: "বিএমআই, কোমর ও উচ্চতা, গঠন, আর প্রথম লক্ষ্য" },
+  { day: 7, en: "A trend with a slope worth drawing",
+    bn: "যে ধারার ঢাল আঁকার মতো হয়েছে" },
+  { day: LEARN_AFTER_DAYS, en: "Your learned maintenance, and the under-logging gap",
+    bn: "আপনার নিজের খরচ, আর কম লেখার ফাঁক" },
+  { day: 21, en: "Stall detection",
+    bn: "আটকে যাওয়া ধরা পড়বে" },
+  { day: 28, en: "Weekday patterns, your top calorie sources, how protein is spread",
+    bn: "বারের ধরন, সবচেয়ে বেশি ক্যালোরি কোথা থেকে, প্রোটিন কেমন ছড়ানো" },
+  { day: 60, en: "Cycle to cycle comparison",
+    bn: "চক্র থেকে চক্র তুলনা" },
+  { day: 90, en: "What your own deficit actually does, measured on you",
+    bn: "আপনার ঘাটতি আসলে কী করে, আপনার শরীরেই মাপা" },
+  { day: 365, en: "The year page",
+    bn: "বছরের পাতা" },
+];

@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is nine files and a directory of four, and
+Today that is ten files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -75,6 +75,16 @@ this repository got written.
   range rather than a number, so a caller cannot take the point
   value without having been handed its width. `DIET.md` is the
   plan and `scripts/diet.test.ts` is what holds the two together.
+
+- **`foods.ts`** the diet tool's portion library: the things
+  people actually eat in Bangladesh and in the UK, each row said
+  in both languages, with the nutrients that tool tracks where
+  they are known and a price carrying the month it was checked.
+  Data and four lookups, and no arithmetic at all. Two rules a
+  reader has to keep: an `id` is written into somebody's log, so
+  renaming one loses what they logged, and every rice, dal and
+  pasta row states whether the figure is for the raw food or the
+  cooked, in the name, in both languages.
 
 ## TypeScript, and nothing compiled beside it
 
