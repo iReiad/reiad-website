@@ -142,7 +142,7 @@ export const moduleOf = (course: Course, slug: string): CourseModule | null =>
 
    Tolerating costs nothing here that it would cost anywhere else.
    The whole section is behind `isAdmin()`, it is `unlisted` in
-   `next/lib/nav.ts`, no crawler can reach it and nothing links to
+   `shared/nav.ts`, no crawler can reach it and nothing links to
    it, so the only holder of an old address is one person's
    browser history. There is no canonical to split. */
 export const lessonOf = (

@@ -58,7 +58,7 @@ anything structural.
 
 1. **The breadcrumb. Done.** `shell.tsx` draws `ui/crumbs.tsx` in
    the top bar, from the trail `next/lib/crumbs.ts` reads out of
-   `lib/nav.ts`, so a route knows its own trail rather than
+   `shared/nav.ts`, so a route knows its own trail rather than
    guessing three things off `location.pathname` and
    `document.title` and getting the mount point wrong on the
    course pages. The module was to stay for `404.html` and
@@ -299,7 +299,7 @@ time that folder changed. `shared/courses.ts` says so beside
 | `next/app/[section]/[slug]/index.html/` | merged into the article's own `page.tsx`, which dispatches on `isSchool()`: a stage's ladder and an article now share one address shape |
 | `NEXT_ROUTES` in `worker.js` | the patterns lost the extension |
 | `run_worker_first` in `wrangler.toml` | same, and `/money/*` replaced `/money/*/*` because a two-segment ladder cannot be named without a star |
-| `next/lib/nav.ts` | sixteen hrefs, and it is the one table |
+| `shared/nav.ts` | sixteen hrefs, and it is the one table |
 | `stageUrl` and `workbookUrl` in `shared/schools.ts` and the four `shared/curricula/` | where the school addresses are computed |
 | the canonicals, `sitemap.xml`, `feed.xml`, `og:url`, the JSON-LD | `build-meta.ts` and `shared/look.ts` |
 | `robots.txt` | `Disallow: /studio/` stopped covering `/studio` the moment the trailing slash left the address |

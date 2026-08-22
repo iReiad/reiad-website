@@ -83,6 +83,43 @@ inherits them rather than negotiating them.
 | A checkpoint is not a lesson | `.checklist` items tick under `<lesson id>#<n>` in `<school>-checks` and count toward no ladder |
 | What a learner types is theirs | the practice books' written answers (`deutsch-schrift`, `english-write`) are device-only on the web and stay device-only in the app |
 
+## New work reaches the app on its own, or it is a release
+
+The rule, and it is worth stating before the phases because
+everything after it depends on the answer: **the app reads the
+same tables the site reads, so anything that is DATA reaches it
+with no app release, and anything that is CODE needs one.**
+
+| Added to the site | The app |
+| --- | --- |
+| a piece, a lesson, a stage, edited prose | has it, next fetch |
+| a school, a tool, a case study, a term, a menu entry, a count | has it, next fetch |
+| a section's new field, a nav item's new flag | has it, next fetch |
+| a new calculator's arithmetic | needs a release |
+| a new article block class, a new sanitiser class | needs a release |
+| a new storage key or sync rule | needs a release, and a migration of nothing |
+
+The first two rows are true because of one decision in
+`functions/api/site.ts`: it SPREADS the tables rather than
+mapping them field by field. Hand-picked fields would look
+identical on the day they were written and would silently drop
+whatever somebody added a year later, which is the failure this
+repository is built around. `scripts/site-api.test.ts` walks the
+source objects and fails if a field stops surviving the trip, so
+the property is held by a test rather than by intention.
+
+The third row is the honest half. A block class is a renderer
+change, a calculator is arithmetic, a storage key is a contract
+with real accounts. What keeps that list short is pushing work
+into the data half wherever it will go: a lesson is prose in a
+row, not a screen; a school is a table entry, not a module.
+
+**So the obligation runs both ways.** Anything added to those
+tables IS published at `/api/site` the moment it is added, which
+is why the endpoint filters a `private` page, an `unlisted` menu
+entry and the course catalogue, and why the test asserts each one
+by name.
+
 ## What the site already serves an app
 
 Verified against `worker.js`, `functions/api/` and the browser
@@ -117,20 +154,22 @@ against the same token. Nothing about that changes for a phone.
 Four things, three of them one-line-shaped. Nothing else in this
 plan touches the site.
 
-1. **A JSON manifest endpoint.** The one thing the browser gets
-   that an app cannot: the site manifest is served as an ES module
-   at `/content.js`, compiled from `shared/content.ts` by
-   `scripts/build-modules.ts`, and an app must not evaluate
-   JavaScript to learn what the site contains. One new GET handler
-   under `functions/api/`, mounted in `API_ROUTES` in `worker.js`,
-   serialising the same objects the module build already reads:
-   the sections, the tools, the pages, the skills, the term
-   groups, the counts, and the nav table's public half from
-   `next/lib/nav.ts`. One source, a second serialisation, cached
-   like `/api/news`. No browser code will call it, so it is
-   registered in `SERVER_ONLY` in `scripts/check-api.ts` with the
-   app named as the caller, which is the discipline that check
-   already runs on.
+1. **A JSON manifest endpoint. Done.** `functions/api/site.ts`
+   answers `GET /api/site`: the site, the menu, the accents, the
+   sections, the tools, the skills, the term groups, the public
+   pages and the counts, serialised out of `shared/content.ts`
+   and `shared/nav.ts` at request time and cached half an hour
+   like `/api/news`. The browser gets the same tables as an ES
+   module at `/content.js` and does not call this, so it is in
+   `SERVER_ONLY` in `scripts/check-api.ts` and in `PUBLIC` in
+   `scripts/check-admin.ts`, each with the reason written out.
+   `scripts/site-api.test.ts` is the guard.
+
+   The nav table moved to `shared/nav.ts` to make it possible,
+   and the move was overdue rather than new: four checks already
+   imported it from node and a migration comment already quoted
+   its school ids. A file three runtimes read belongs in the
+   directory this repository keeps for exactly that.
 2. **`/.well-known/assetlinks.json`**, so `https://reiad.co.uk`
    links open the app. A static JSON under `aab/` with the release
    signing fingerprints. Nothing claims that path today:
@@ -445,7 +484,7 @@ of it.
    mounted in `API_ROUTES` in `worker.js`, serialising the
    sections, tools, pages, skills, term groups and counts out of
    `shared/content.ts` plus the public half of the nav table in
-   `next/lib/nav.ts`, cached like `/api/news`, and registered in
+   `shared/nav.ts`, cached like `/api/news`, and registered in
    `SERVER_ONLY` in `scripts/check-api.ts` with the app named as
    its caller.
 2. `assetlinks.json` under a `.well-known/` directory in `aab/`,

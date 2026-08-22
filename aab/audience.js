@@ -49,7 +49,7 @@
 const KEY = "audience";
 const TRACK_KEY = "track";
 /* The two vocabularies, said once. `AUDIENCES` in
-   `next/lib/nav.ts` is the same pair and the boot script in
+   `shared/nav.ts` is the same pair and the boot script in
    `shell.tsx` accepts the same pair: a third value written here
    and nowhere else would be an attribute the stylesheet has no
    rule for. The unions below are derived rather than written out

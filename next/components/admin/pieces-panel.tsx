@@ -29,7 +29,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SECTIONS, findSection, pieceUrl } from "@reiad/shared/content";
 import type { ArticleStatus, Section as SectionId } from "@reiad/shared/rows";
-import { accentStyle } from "../../lib/nav";
+import { accentStyle } from "@reiad/shared/nav";
 import { adminCall, isLocked } from "../../lib/admin-api";
 import { runtimeModule } from "../account/runtime";
 import { Surface } from "../ui/surface";

@@ -74,7 +74,7 @@ loaded by something not counted here, and both were worth checking.
 | `app.js` | 605 | ts | **shell.** Eight jobs; the theme and the boot are already `shell.tsx`'s. What is left that a route cannot do: the palette, the shortcut sheet, speculation rules and the service-worker registration. `noUnusedLocals` found six bindings imported from `/content.js` and never read: `PAGES` `TOOLS` `STAGES` `STUFEN` `stufeUrl` `SITE`. It also carried the last pointer `check-pointers.ts` excused, and that entry is out of `GONE` with it: the comment names `check-content.ts` now |
 | `sync.js` | 513 | ts | **service.** The account is the record and this is the mirror. Nothing about it is a page |
 | `account.js` | 417 | ts | **service.** The session. Eighteen importers, more than anything else here. Converted with the change that brought the Google picture through, and it took TWO hand-written declarations with it: `aab/src/types/` and `app/src/types/` each described this file and they disagreed about what `saveProfile` answers |
-| `crumbs.js` | 351 | ✔ | **interface**, and done: `next/lib/crumbs.ts` builds the trail out of `lib/nav.ts` and the top bar draws it, JSON-LD included. The module is in `archive/modules/` |
+| `crumbs.js` | 351 | ✔ | **interface**, and done: `next/lib/crumbs.ts` builds the trail out of `shared/nav.ts` and the top bar draws it, JSON-LD included. The module is in `archive/modules/` |
 | `signin.js` | 347 | ts | **interface.** The account menu, which is a `popover` |
 | `tilt.js` | 282 | ts | **interface.** A pointer effect on cards. Converted clean: the only thing types changed is that the three closure variables the phone half schedules a frame against are checked before the frame reads them |
 | `audience.js` | 281 | ts | **shell.** The learn/work switch, whose markup is already `sidebar.tsx`'s. Deriving its two unions from its two vocabularies found three comparisons against `"money"`, which this module has never stored: the audience is `learn` or `work`, in `AUDIENCES` in `nav.ts`, in the boot script and in the stylesheet. So `data-track` was never set on any page, the footer's switcher could not take a recruiter back to the library and reloaded on a value it had just dropped, and the track switcher was hidden everywhere. The same `"money"` is still in the boot scripts of `404.html` and `offline.html` |
@@ -590,7 +590,7 @@ two builders.
 They are precached, and the service worker already precaches six rendered
 routes, so offline is not the obstacle it looks like.
 
-`htmlAttrs()` in `next/lib/nav.ts` is a stopgap that gives the generated
+`htmlAttrs()` in `shared/nav.ts` is a stopgap that gives the generated
 books the right accent until they are routes. It goes when they do.
 
 **Not moving:** `404.html` and `offline.html`. They have to answer when the

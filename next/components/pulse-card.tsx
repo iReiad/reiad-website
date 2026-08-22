@@ -28,7 +28,7 @@
    ============================================================ */
 
 import { useEffect, useRef, useState } from "react";
-import { accentStyle } from "../lib/nav";
+import { accentStyle } from "@reiad/shared/nav";
 import { Icon } from "./icons";
 
 type Piece = {
@@ -80,7 +80,7 @@ export function PulseCard() {
       /* The colour of whichever piece is showing, not a fixed one.
          This tile cycles between the three reading sections, so a
          cooking piece makes it rose and a travel piece plum, out
-         of the one table in lib/nav.ts. It named a colour once and
+         of the one table in shared/nav.ts. It named a colour once and
          so a kitchen piece arrived wearing Insights' colour.
 
          `accentStyle` returns undefined for a section the rail

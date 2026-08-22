@@ -1,9 +1,9 @@
 {
-  "version": "v171",
+  "version": "v172",
   "hashes": {
     "/offline.html": "bd9144e7162be323",
     "/fallback.css": "29560b8ede507851",
-    "/app.js": "05d496963d73d708",
+    "/app.js": "d0b5bf300691d393",
     "/content.js": "64dcb3db8e637904",
     "/api.js": "a7bab41d860a4806",
     "/pieces.js": "abb6a19a6cc1ea76",
@@ -16,7 +16,7 @@
     "/saved.js": "a19be7d350dc2498",
     "/prefs.js": "833cad34b4e1dd1b",
     "/checkpoints.js": "8903c0d041e563b3",
-    "/audience.js": "4237825587923880",
+    "/audience.js": "1722399ba587b201",
     "/activation.js": "f3233d3de4e153e7",
     "/tilt.js": "e8e4e9e8c10e7810",
     "/money/reader.js": "4abf83585f45cfbb",

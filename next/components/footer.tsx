@@ -2,7 +2,7 @@
    footer.tsx: the end of every page.
 
    It is the menu again, spelled out, from the same table the rail
-   and the drawer read, `lib/nav.ts`. A school added there appears
+   and the drawer read, `shared/nav.ts`. A school added there appears
    here by itself and the two cannot drift.
 
    The per-page note is the last line rather than the first. It is
@@ -18,10 +18,10 @@
 
    `unlisted` items are skipped. A link in the footer is a promise
    the address opens, and `/skills/courses/` answers 403 to
-   everybody but one person. See `lib/nav.ts`.
+   everybody but one person. See `shared/nav.ts`.
    ============================================================ */
 
-import { NAV } from "../lib/nav";
+import { NAV } from "@reiad/shared/nav";
 import { Icon } from "./icons";
 
 export function SiteFooter({

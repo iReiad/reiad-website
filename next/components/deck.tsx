@@ -15,7 +15,7 @@
    Every card carries one colour, passed as `accent` and used for
    the rail, the icon tile, the chip and the arrow. Passing it
    rather than deriving it from a section means one list of
-   sections, in `lib/nav.ts`, decides what colour a thing is
+   sections, in `shared/nav.ts`, decides what colour a thing is
    wherever it appears: in the rail, in the footer and on a card.
    ============================================================ */
 

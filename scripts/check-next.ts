@@ -67,7 +67,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { icon } from "../aab/money/icons.js";
 import { SCHOOL_ICONS } from "../next/lib/school-icons.ts";
-import { NAV, LADDER_SCHOOLS } from "../next/lib/nav.ts";
+import { NAV, LADDER_SCHOOLS } from "../shared/nav.ts";
 import { SCHOOL_LADDERS } from "../next/lib/school-ladders.ts";
 import { STAGES, allLessons } from "../shared/curricula/money.ts";
 import { STUFEN } from "../shared/curricula/deutsch.ts";
@@ -155,7 +155,7 @@ const flagged = LADDER_SCHOOLS.map((s) => s.key).sort();
 const generated = Object.keys(SCHOOL_LADDERS).sort();
 
 if (flagged.join() !== generated.join()) {
-  fail("the schools flagged `ladder: true` in next/lib/nav.ts are not the"
+  fail("the schools flagged `ladder: true` in shared/nav.ts are not the"
     + " schools next/lib/school-ladders.ts holds a ladder for.",
     `nav.ts:            ${flagged.join(", ") || "(none)"}`,
     `school-ladders.ts: ${generated.join(", ") || "(none)"}`);
@@ -337,7 +337,7 @@ for (const rung of [...STUFEN, ...TERMS] as Rung[]) {
    So the vocabulary is written out three times, and it drifted.
    The two file pages tested `a === "money"` where the stored
    value is `learn` or `work`, which is `AUDIENCES` in
-   `next/lib/nav.ts`, what `shell.tsx` writes, and what
+   `shared/nav.ts`, what `shell.tsx` writes, and what
    `html[data-audience="learn"]` in the stylesheet answers to. The
    money school moved from `/learn/` to `/money/` on 17 August
    2026 and this comparison moved with it, which is the one thing

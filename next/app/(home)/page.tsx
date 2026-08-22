@@ -43,7 +43,7 @@ import { FeaturedCard } from "../../components/featured";
 import { PulseCard } from "../../components/pulse-card";
 import { Icon } from "../../components/icons";
 import { pageMeta } from "../../lib/pageMeta";
-import { SCHOOL_ACCENTS } from "../../lib/nav";
+import { SCHOOL_ACCENTS } from "@reiad/shared/nav";
 
 export const metadata: Metadata = pageMeta({
   path: "/",
@@ -58,7 +58,7 @@ export const metadata: Metadata = pageMeta({
 
 /** The three numbers the door states about itself, and every one
     of them is a fact about a list somewhere else on this site: six
-    schools in `lib/nav.ts`, five calculators, seven case studies.
+    schools in `shared/nav.ts`, five calculators, seven case studies.
     They are small enough to be checked by `CLAIMS` in
     `check-content.ts`, which is where a sentence that cannot hold
     a counting slot goes. */

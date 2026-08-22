@@ -14,7 +14,7 @@
    WHAT WENT WRONG. The two bundles this watched were last built
    at #105 and `app/src/**` changed in #143, #147 and #149. The
    desk's `Published.tsx` imports `accentStyle` from
-   `next/lib/nav.ts`; the committed bundle contained no such
+   `shared/nav.ts`; the committed bundle contained no such
    string, so the desk and the Studio were serving a build from
    before that table grew, for four pull requests, and every check
    in this repository passed. A generated file that is stale looks
@@ -55,7 +55,7 @@ const OUT = join(ROOT, "app", "build-stamp.json");
    the day the last import of it goes: a source this cannot see is
    the exact staleness the note above describes, and one it can see
    that nothing imports asks for a rebuild that changes nothing.
-   `next/lib/nav.ts` was here for the desk's `Published.tsx`, which
+   `shared/nav.ts` was here for the desk's `Published.tsx`, which
    is how this drift became visible in the first place, and left
    with it. */
 const SOURCES = [

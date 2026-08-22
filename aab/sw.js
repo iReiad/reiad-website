@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v172: comments only, in app.js and audience.js, and the bump
+        is what stops them being served stale for ever. The one
+        table the menu comes from moved from next/lib to
+        shared/nav.ts, because four runtimes read it and next/
+        was three of them. Both modules name that file in prose,
+        check-pointers fails on a pointer that reaches nothing,
+        so both had to be re-emitted. No behaviour changed.
+
    v171: this file. The fetch handler excluded cross-origin and
         /api/ and nothing else, so a React Server Component
         payload, which Next requests at the route's own address
@@ -682,7 +690,7 @@
 
    v99: A page wears the colour of its own icon in the rail.
         --accent arrives inline on <html> from the one table in
-        next/lib/nav.ts, so /styles.css lost the five body rules
+        shared/nav.ts, so /styles.css lost the five body rules
         that said five of the sixteen destinations by hand, and
         the practice books gained the attribute their school owns.
 
@@ -1606,7 +1614,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v171";
+const VERSION = "v172";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

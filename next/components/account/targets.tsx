@@ -35,7 +35,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { Target, TargetKind } from "/saved.js";
 import type { LadderLesson } from "../../lib/school-ladders";
-import { LADDER_SCHOOLS } from "../../lib/nav";
+import { LADDER_SCHOOLS } from "@reiad/shared/nav";
 import { subscribe } from "../../lib/progress";
 import { Button } from "../ui/button";
 import { Field, Select } from "../ui/field";

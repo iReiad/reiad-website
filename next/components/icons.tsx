@@ -25,7 +25,7 @@
    ============================================================ */
 
 import { SCHOOL_ICONS } from "../lib/school-icons";
-import type { IconName } from "../lib/nav";
+import type { IconName } from "@reiad/shared/nav";
 
 /** The ones no school draws. */
 const SHELL: Partial<Record<IconName, string>> = {

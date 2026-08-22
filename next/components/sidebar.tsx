@@ -12,7 +12,7 @@
    JavaScript had no menu at all and a crawler saw none of it. And
    a hover panel under "Skills" that opened on a timer.
 
-   One list, rendered on the server, in `lib/nav.ts`. It is in the
+   One list, rendered on the server, in `shared/nav.ts`. It is in the
    HTML before anything runs, which is the whole difference: the
    menu is now a fact about the page rather than something built
    on top of it.
@@ -35,7 +35,7 @@
    ============================================================ */
 
 import { useEffect } from "react";
-import { NAV, ORDER, type NavGroup } from "../lib/nav";
+import { NAV, ORDER, type NavGroup } from "@reiad/shared/nav";
 import { Icon } from "./icons";
 import { AudienceSwitch } from "./topbar";
 import type { Current } from "./shell";

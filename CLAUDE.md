@@ -307,7 +307,7 @@ reader.
 Every page of this site is a rail down the left, a bar across the
 top and a footer. All three are rendered on the server by
 `next/components/`, and all three read **one** table:
-`next/lib/nav.ts`. Add a school there and it appears in the rail,
+`shared/nav.ts`. Add a school there and it appears in the rail,
 in the footer and on `/skills` at once.
 
 That is not tidiness. The menu used to be said in four places: the
@@ -1566,7 +1566,7 @@ silences the next complaint too.
 ## What more than one runtime has to agree on
 
 `shared/` is for anything the Worker, the browser and the Next.js
-route must all say the same way. Six files and a directory:
+route must all say the same way. Eight files and a directory:
 `content.ts`, the site's own manifest and every number the site
 states about itself; `curricula/`, the four schools' ladders, one
 file each; `look.ts`, the per-section table and the head facts
@@ -1574,8 +1574,20 @@ every article page states; `headers.ts`, the security headers a
 response has to carry when it was not served as a static file;
 `schools.ts`, the same four curricula read out of D1, plus the
 ladder's arithmetic; `rows.ts`, what a row of this database is;
-and `courses.ts`, the third-party catalogue, which is the one
-`next/` may not import for its values.
+`nav.ts`, the one table the whole menu comes from; `routine.ts`,
+what a routine's bands and tasks are and the templates the site
+ships; and `courses.ts`, the third-party catalogue, which is the
+one `next/` may not import for its values.
+
+**`nav.ts` moved here on 22 August 2026, and the move is the rule
+working rather than a tidy-up.** It sat in `next/lib/` because
+the rail, the footer and the drawer were the only readers. They
+had stopped being: four checks import it from node, a migration
+comment quotes its school ids because Postgres cannot import it,
+and `/api/site` serves it to the Android app. A file three
+runtimes read is what this section is for, and the count above
+had already gone stale once, `routine.ts` having arrived without
+being written down.
 
 **Five of them have an output, and it is one argument.** The
 browser reads the manifest at `/content.js` and a ladder at
@@ -1988,7 +2000,7 @@ it: one person with an admin account has more devices than
 anybody.
 
 **Nothing in the rail or the footer links to it.** `unlisted` in
-`next/lib/nav.ts` is that flag, and it exists so the menu can
+`shared/nav.ts` is that flag, and it exists so the menu can
 still be said once: the entry is in the one table like everything
 else, the two menus skip it, and `/skills` gives it a
 card of its own under a heading that says it is not published. A

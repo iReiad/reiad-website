@@ -38,7 +38,7 @@ import { nextOwns } from "../worker.js";
 /* The one table the rail, the footer and /skills are drawn from.
    Read here so that a link in the site's own chrome is held to
    the same standard as a link inside a page. */
-import { NAV } from "../next/lib/nav.ts";
+import { NAV } from "../shared/nav.ts";
 /* The four ladders, for the practice-book check at the end: a
    stage has a book only if it declares one, which no route
    pattern can tell. */
@@ -528,7 +528,7 @@ for (const url of [...targets].sort()) {
 /* ============================================================
    EVERY LINK IN THE SITE'S OWN CHROME RESOLVES.
 
-   `lib/nav.ts` is the one table the rail, the footer and /skills
+   `shared/nav.ts` is the one table the rail, the footer and /skills
    are all drawn from, so an address in it is on all 251 pages.
    Nothing checked it. This file walks `aab/` for links, and the
    chrome stopped being a file when the rail became a component,
@@ -560,7 +560,7 @@ for (const url of [...targets].sort()) {
       if (got.status === "ok") continue;
       failures++;
       console.error(`NAV      ${href} (${item.label}) does not resolve: ${got.status}`);
-      console.error("        It is in lib/nav.ts, so it is a link in the rail, the footer");
+      console.error("        It is in shared/nav.ts, so it is a link in the rail, the footer");
       console.error("        and /skills, which is every page of this site.");
       console.error(`        ${got.chain.join(" \u2192 ")}`);
     }

@@ -142,11 +142,15 @@ for (const [mount, where] of asked) {
 
 /* ---------- 2. every mount is asked for ---------- */
 
-/* Three are not called from a browser and are not meant to be.
-   Listed rather than inferred, so that adding a fourth is a
-   decision somebody wrote down. */
+/* Not called from a browser, and not meant to be. Listed rather
+   than inferred, so that adding another is a decision somebody
+   wrote down. The prose here said "three" while the table held
+   one, which is the same drift one level up from the thing this
+   check watches for. */
 const SERVER_ONLY = {
   backup: "a cron writes it to R2, and scripts/restore.ts reads the file",
+  site: "the Android app reads the site's own furniture from it. No browser "
+    + "does: a browser imports the same tables as an ES module at /content.js",
 };
 
 for (const mount of mounts) {

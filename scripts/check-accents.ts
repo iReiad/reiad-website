@@ -4,7 +4,7 @@
 
        node scripts/check-accents.ts
 
-   `next/lib/nav.ts` says which colour each destination owns, and
+   `shared/nav.ts` says which colour each destination owns, and
    `--accent` is the single property every component reads. The
    whole design rests on that mapping existing once.
 
@@ -19,7 +19,7 @@
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { NAV, ACCENTS, accentFor, htmlAttrs } from "../next/lib/nav.ts";
+import { NAV, ACCENTS, accentFor, htmlAttrs } from "../shared/nav.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
@@ -39,7 +39,7 @@ const css = read("next/styles/site.css");
    mapping, so neither of those counts. */
 for (const m of css.matchAll(/^\s*(body\.[a-z-]+|\[data-section[^\]]*\])[^{]*\{[^}]*--accent\s*:/gmi)) {
   say(`next/styles/site.css maps a section to a colour: \`${m[1].trim()}\`.\n`
-    + "        That mapping belongs in next/lib/nav.ts and nowhere else.");
+    + "        That mapping belongs in shared/nav.ts and nowhere else.");
 }
 
 /* ============================================================
@@ -178,7 +178,7 @@ const painted: string[] = [];
 for (const at of painted) {
   say(`a rule names a section colour: ${at}\n`
     + "        Every component reads var(--accent), which <html> carries from\n"
-    + "        the table in next/lib/nav.ts. A named colour is a rule that\n"
+    + "        the table in shared/nav.ts. A named colour is a rule that\n"
     + "        paints green on a page wearing blue.");
 }
 

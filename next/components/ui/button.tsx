@@ -28,7 +28,7 @@
    `--accent`, which is set on <html> from the rail's own table,
    so the solid button on a German page is blue and on the
    calculators is gold without a variant per school.
-   `next/lib/nav.ts` is where that comes from.
+   `shared/nav.ts` is where that comes from.
 
    ---- and it is a real button ----
 

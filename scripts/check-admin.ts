@@ -60,6 +60,11 @@ const PUBLIC: Record<string, string> = {
   "search.ts":
     "the palette. It searches what is already published, which is what a "
     + "crawler reads anyway.",
+  "site.ts":
+    "the site's own furniture, which the browser gets as an ES module at "
+    + "/content.js and a native client cannot. Every value in it is already "
+    + "public; a private page and an unlisted menu entry are filtered out, "
+    + "and the course catalogue is never named in it.",
 };
 
 const files: string[] = [];

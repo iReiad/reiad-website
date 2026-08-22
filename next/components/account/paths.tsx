@@ -26,7 +26,7 @@
 
 import { useEffect, useState } from "react";
 import type { LadderLesson } from "../../lib/school-ladders";
-import { LADDER_SCHOOLS, schoolName } from "../../lib/nav";
+import { LADDER_SCHOOLS, schoolName } from "@reiad/shared/nav";
 import { subscribe } from "../../lib/progress";
 import { useProfile } from "./profile";
 import { checkpointsModule, standing, NO_CHECKS, type Standing } from "./standing";

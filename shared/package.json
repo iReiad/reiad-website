@@ -9,6 +9,7 @@
     "./schools": "./schools.ts",
     "./rows": "./rows.ts",
     "./content": "./content.ts",
+    "./nav": "./nav.ts",
     "./routine": "./routine.ts"
   }
 }
