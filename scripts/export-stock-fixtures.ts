@@ -32,6 +32,18 @@
    pharma companies proves that the happy path agrees and nothing
    else.
 
+   ---- and the formatters, which are the other half ----
+
+   `formats` at the foot of the file is the same trick one level
+   down. `fmtNum` and its four neighbours go through
+   `Intl.NumberFormat`, which the app has no equivalent of that
+   can be trusted to agree: Bangla groups in the South Asian way,
+   the last three digits and then twos, and an app printing
+   `১,০০০,০০০` where the site prints `১০,০০,০০০` is wrong in a
+   way a reader notices instantly and cannot explain. So what
+   `Intl` actually produced is written down, and the port asserts
+   against it rather than against a second reading of the spec.
+
    `--check` is what CI runs, and it fails on a difference rather
    than rewriting: a generated file that quietly regenerates is a
    generated file that never disagrees with anything.
@@ -45,6 +57,12 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "content", "stock.fixtures.json");
 
 const M = await import(join(ROOT, "aab", "tools", "stock.model.js"));
+
+/* The formatters, out of `shared/tool-strings.ts` itself rather
+   than out of its compiled copy: the source is what an editor
+   changes, and the built module is checked against it by
+   `build-modules.ts --check` already. */
+const I18N = await import(join(ROOT, "shared", "tool-strings.ts"));
 
 /** The companies, and what each one is FOR. */
 const CASES: Array<{ name: string; why: string; input: Record<string, unknown> }> = [
@@ -146,6 +164,45 @@ function verdict(input: Record<string, unknown>) {
   };
 }
 
+/* Every shape a number takes on that page, at both ends of its
+   range and at the boundaries where the printing changes: the
+   crore threshold, a negative, a rounding tie, and a value that
+   is not there at all. */
+const NUMBERS = [
+  0, 1, 1.5, -1.5, 4.25, -4.25, 0.005, 9.995, 99, 99.5, 100, 100.5,
+  999, 1000, 1234.5, 12345, 99999, 100000, 1000000, 12345678,
+  -0.4, -12345.678, 1e9, 0.0001,
+];
+
+/** What `Intl` really printed, for every formatter and both
+    languages. */
+function formats(): Record<string, Record<string, string>> {
+  const out: Record<string, Record<string, string>> = {};
+  for (const lang of I18N.LANGS) {
+    const row: Record<string, string> = {};
+    for (const v of NUMBERS) {
+      row[`num0:${v}`] = I18N.fmtNum(v, lang, 0);
+      row[`num1:${v}`] = I18N.fmtNum(v, lang, 1);
+      row[`num2:${v}`] = I18N.fmtNum(v, lang, 2);
+      row[`int:${v}`] = I18N.fmtInt(v, lang);
+      row[`tk:${v}`] = I18N.fmtTk(v, lang);
+      row[`lakh:${v}`] = I18N.fmtLakh(v, lang);
+      for (const kind of ["x", "%", "pp", "lakh", "n"]) {
+        row[`value:${kind}:${v}`] = I18N.fmtValue(v, kind, lang);
+      }
+    }
+    /* And the one thing every formatter has to agree about:
+       what a number that is not there looks like. */
+    row["num2:nan"] = I18N.fmtNum(NaN, lang, 2);
+    row["int:nan"] = I18N.fmtInt(NaN, lang);
+    row["tk:nan"] = I18N.fmtTk(NaN, lang);
+    row["lakh:nan"] = I18N.fmtLakh(NaN, lang);
+    row["value:x:nan"] = I18N.fmtValue(NaN, "x", lang);
+    out[lang] = row;
+  }
+  return out;
+}
+
 const built = {
   /* Every field a reader can type in, at the value it starts at.
 
@@ -165,6 +222,19 @@ const built = {
      `content/schools.backup.json` carries none: identical content
      has to be identical bytes, so the git log answers "did the
      model change" rather than "was this regenerated". */
+  formats: formats(),
+
+  /* Just the NAMES, not the phrases: the app fetches the table
+     itself from /api/tools, and this is what lets its own test
+     say "every id I render has a phrase" without shipping 52KB of
+     Bangla into a test resource.
+
+     The failure it catches is a reader seeing `f.debtHeavy` where
+     a sentence should be. That happens the moment a metric, flag
+     or signal is added to the model and not to the words, which
+     are two files, and nothing else compares them. */
+  stringKeys: Object.keys(I18N.STRINGS).sort(),
+
   cases: CASES.map((c) => ({
     name: c.name,
     why: c.why,
