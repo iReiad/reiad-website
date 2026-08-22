@@ -42,10 +42,18 @@ library, `§22`, two open databases searched through the Worker,
 difference between a checked number and a stranger's number is
 the only thing that makes either usable.
 
-**It has no streak, no flame and nothing counting down.** That is
-already written down for the routine tool and it matters more
-here. A missed day on a diet tracker that shames you is a tool
-somebody deletes on the day they most need it.
+**Its streak counts days LOGGED, never days on target.** That
+distinction is the whole of whether the number is usable: a run
+of days under a calorie ceiling punishes somebody for a birthday,
+and a run of days RECORDED is a count of paying attention, which
+is the entire ask. The best run sits beside the current one,
+because a number that can only fall is a number people stop
+looking at, and a best is a fact that never goes down once it has
+happened.
+
+**Nothing counts down, nothing turns red, and no missed day is
+announced.** A tracker that shames you is one somebody deletes on
+the day they most need it.
 
 **It will not produce a target below the floors in `§5`.** Not
 with a warning, not behind a confirmation. The number does not
@@ -2011,8 +2019,11 @@ the site already has.
   `§16` and `§19` still works. A tool that can only be used one
   way is a tool that some people should not use at all.
 - No shame language anywhere. Not "you failed", not "over
-  budget", not red, not a streak, not a flame, not a
-  notification that a day was missed. The routine tool's rule,
+  budget", not red, not a flame, not a notification that a day
+  was missed. The streak is the one count and it counts showing
+  up: `streak()` says why at length, and it can be read as a
+  record rather than as a demand precisely because it never asks
+  whether a target was met. The routine tool's rule,
   and it holds here.
 - The generated sentences in `§16` come from a listed set of
   templates, and that list is what a check reads. A tool that

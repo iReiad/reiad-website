@@ -8174,7 +8174,7 @@
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip) {
+      .audience-slider, .skip, .dt-hit) {
     --depth: 2.2; --polish: 0.8; --clarity: 0.7; --standing: 0.9;
   }
 
@@ -8243,6 +8243,8 @@
 
   :is(.rail-item, .tree-link, .tree-btn, .acc-item, .crumb-step,
       .audience-opt, .tab, .slash-item, .course-mod, .ladder-row,
+
+      .dt-hit,
       .saved-row, .kept-row, .target, .rung, .page-toc, .term,
       .quiz-option, .checkpoint, .rt-heat-day,
       .rt-build-task,
@@ -8261,7 +8263,7 @@
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip,
+      .audience-slider, .skip, .dt-hit,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
@@ -8547,6 +8549,222 @@
   .dt-defs { display: grid; gap: var(--s-3); margin-block: var(--s-4); }
   .dt-defs dt { font-weight: 600; }
   .dt-defs dd { margin: 0 0 var(--s-3); color: var(--ink-soft); }
+
+  .dt-today {
+    display: grid;
+    gap: var(--step);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 21rem);
+    align-items: start;
+    margin-block-end: var(--step);
+  }
+
+  @media (width < 62rem) {
+    .dt-today { grid-template-columns: 1fr; }
+
+    .dt-board { order: 2; }
+  }
+
+  .dt-board {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    align-content: start;
+    position: sticky;
+    top: calc(var(--top-space) + var(--s-4));
+  }
+
+  @media (width < 62rem) { .dt-board { position: static; } }
+
+  .dt-w {
+    display: grid;
+    gap: var(--s-2);
+    align-content: start;
+    padding: var(--s-5);
+    border-radius: var(--radius-card);
+    text-decoration: none;
+    color: inherit;
+    min-block-size: 6.5rem;
+  }
+
+  .dt-w[data-wide] { grid-column: 1 / -1; }
+
+  .dt-w-title {
+    font-size: var(--t-0);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+
+  .dt-w-body { display: grid; gap: var(--s-2); }
+  .dt-w-big { font-size: var(--t-7); line-height: 1.1; }
+  .dt-w-said { font-size: var(--t-1); color: var(--ink-soft); }
+  .dt-w-waiting { font-size: var(--t-1); color: var(--ink-soft); }
+
+  .dt-ring { position: relative; display: block; inline-size: 64px; }
+  .dt-ring svg { inline-size: 64px; block-size: 64px; display: block; }
+  .dt-ring-track {
+    fill: none; stroke: var(--hairline); stroke-width: 6;
+  }
+  .dt-ring-fill {
+    fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round;
+    transition: stroke-dasharray 190ms ease-out;
+  }
+  .dt-ring-mid {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    font-size: var(--t-2);
+  }
+
+  .dt-spark { inline-size: 100%; block-size: 34px; display: block; }
+  .dt-spark-line { fill: none; stroke: var(--accent); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+  .dt-spark-raw { fill: none; stroke: var(--ink-soft); stroke-width: 1; opacity: 0.35; vector-effect: non-scaling-stroke; }
+
+  .dt-strip { display: flex; gap: 3px; }
+  .dt-strip-day {
+    flex: 1; block-size: 10px; border-radius: var(--radius-xs);
+    background: var(--hairline);
+  }
+  .dt-strip-day[data-kind="logged"]  { background: color-mix(in oklab, var(--accent) 45%, transparent); }
+  .dt-strip-day[data-kind="weighed"] { background: color-mix(in oklab, var(--accent) 70%, transparent); }
+  .dt-strip-day[data-kind="both"]    { background: var(--accent); }
+
+  .dt-log { display: grid; gap: var(--s-6); }
+  .dt-log-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-4); }
+  .dt-log-head h2 { margin: 0; }
+
+  .dt-save {
+    font-size: var(--t-0);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    transition: opacity 190ms;
+  }
+  .dt-save[data-state="idle"] { opacity: 0; }
+
+  .dt-quick {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  }
+
+  .dt-water { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; }
+  .dt-water-label { font-size: var(--t-1); color: var(--ink-soft); }
+
+  .dt-picker { display: grid; gap: var(--s-3); }
+  .dt-picker-label {
+    font-size: var(--t-1); text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--ink-soft);
+  }
+  .dt-picker-box { inline-size: 100%; }
+  .dt-picker-num { inline-size: 7rem; }
+
+  .dt-hits { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+
+  .dt-hit {
+    inline-size: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: var(--s-4);
+    align-items: baseline;
+    text-align: start;
+    padding: var(--s-3) var(--s-4);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+  }
+  .dt-hit:hover, .dt-hit:focus-visible { background: var(--panel); }
+  .dt-hit-brand { color: var(--ink-soft); font-size: var(--t-1); }
+
+  .dt-hit-src, .dt-src {
+    font-size: var(--t-0);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+
+  .dt-free-row { display: flex; gap: var(--s-3); flex-wrap: wrap; align-items: center; }
+
+  .dt-eaten-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2); }
+  .dt-eaten-list li {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: var(--s-4);
+    align-items: baseline;
+    padding-block: var(--s-2);
+    border-block-end: 1px solid var(--hairline);
+  }
+
+  .dt-scale { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+  .dt-scale-label { font-size: var(--t-1); color: var(--ink-soft); }
+  .dt-tags, .dt-marks { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+
+  .dt-chart { margin: 0 0 var(--step); }
+  .dt-chart svg { inline-size: 100%; block-size: auto; display: block; }
+
+  .dt-trend-line { fill: none; stroke: var(--accent); stroke-width: 2.2; }
+  .dt-scale-line { fill: none; stroke: var(--ink-soft); stroke-width: 1; opacity: 0.4; }
+  .dt-dot { fill: var(--ink-soft); opacity: 0.5; }
+  .dt-ax { fill: var(--ink-soft); font-size: 10px; font-family: var(--font-mono); }
+  .dt-ax-line { stroke: var(--hairline); stroke-width: 1; }
+  .dt-settling {
+    fill: var(--ink-soft); opacity: 0.06;
+  }
+
+  .dt-table-wrap { overflow-x: auto; margin-block-end: var(--step); }
+  .dt-table { border-collapse: collapse; inline-size: 100%; font-size: var(--t-2); }
+  .dt-table caption { text-align: start; color: var(--ink-soft); font-size: var(--t-1); padding-block-end: var(--s-3); }
+  .dt-table th, .dt-table td {
+    text-align: start; padding: var(--s-3) var(--s-4);
+    border-block-end: 1px solid var(--hairline); vertical-align: top;
+  }
+  .dt-table thead th { color: var(--ink-soft); font-size: var(--t-1); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .dt-goal, .dt-journal, .dt-nutrition, .dt-expect, .dt-trend {
+    display: grid; gap: var(--step);
+  }
+
+  .dt-goal > section, .dt-journal > section,
+  .dt-nutrition > section, .dt-expect > section, .dt-trend > section {
+    padding-block-start: 0;
+  }
+
+  .dt-goal > section > h2, .dt-journal > section > h2,
+  .dt-nutrition > section > h2, .dt-expect > section > h2 {
+    margin-block: 0 var(--s-6);
+  }
+  .dt-goal .dt-readout, .dt-journal .dt-readout { margin-block-start: 0; }
+
+  .dt-coverage {
+    font-family: var(--font-mono);
+    font-size: var(--t-2);
+    color: var(--ink-soft);
+  }
+
+  .dt-nutrients {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  }
+
+  .dt-tag-counts, .dt-weekdays, .dt-diary-list {
+    list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2);
+  }
+  .dt-tag-counts li, .dt-weekdays li, .dt-diary-list li {
+    display: grid; grid-template-columns: auto 1fr; gap: var(--s-4);
+    align-items: baseline;
+    padding-block: var(--s-2);
+    border-block-end: 1px solid var(--hairline);
+  }
+  .dt-tag-counts li { grid-template-columns: 1fr auto; }
+  .dt-weekdays li { grid-template-columns: 1fr auto; }
+
+  .dt-symptoms, .dt-diary { max-inline-size: 70ch; }
+
+  .dt-invite { display: grid; gap: var(--s-5); max-inline-size: 52ch; justify-items: start; }
+  .dt-board-wait { min-block-size: 12rem; }
 
   .dt-glossary { display: grid; gap: var(--step); max-inline-size: 70ch; }
 

@@ -60,6 +60,14 @@ const PUBLIC: Record<string, string> = {
   "search.ts":
     "the palette. It searches what is already published, which is what a "
     + "crawler reads anyway.",
+  "diet/[[route]].ts":
+    "the diet tool's food search. A read-only proxy over two public food "
+    + "databases, Open Food Facts and FoodData Central, which the browser may "
+    + "not call itself because the CSP does not name either host. It takes no "
+    + "bearer, writes nothing and never sees a reader's log: DIET.md section "
+    + "27 puts the reader's own rows in the browser and only this behind a "
+    + "Worker. Gating it would only mean the food search stopped working on "
+    + "the one page of that tool needing no account.",
   "site.ts":
     "the site's own furniture, which the browser gets as an ES module at "
     + "/content.js and a native client cannot. Every value in it is already "

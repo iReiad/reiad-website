@@ -51,6 +51,7 @@ import { onRequest as broker } from "./functions/api/broker/[[route]].ts";
 import { onRequest as schools } from "./functions/api/schools/[[route]].ts";
 import { onRequest as courses } from "./functions/api/courses/[[route]].ts";
 import { onRequest as routine } from "./functions/api/routine/[[route]].ts";
+import { onRequest as diet } from "./functions/api/diet/[[route]].ts";
 import { onRequest as admin } from "./functions/api/admin/[[route]].ts";
 import { onRequest as insight } from "./functions/insights/[slug].ts";
 import { onRequest as feeds } from "./functions/feeds/[kind].ts";
@@ -78,6 +79,7 @@ const API_ROUTES = [
   ["/api/schools", schools, "route"],
   ["/api/courses", courses, "route"],
   ["/api/routine", routine, "route"],
+  ["/api/diet", diet, "route"],
   ["/api/admin", admin, "route"],
 ];
 
@@ -175,7 +177,7 @@ export const NEXT_ROUTES = [
   /^\/(about|contact|account|skills|tools|portfolio)$/i,
   /^\/tools\/(stock|live|routine|diet)$/i,
   /^\/tools\/routine\/(settings|print|day|year)$/i,
-  /^\/tools\/diet\/(you|glossary)$/i,
+  /^\/tools\/diet\/(you|glossary|goal|trend|journal|nutrition|expect)$/i,
   /* The admin panel. ADMIN.md is the plan; it is `unlisted` in
      shared/nav.ts for the reason the course section is. */
   /^\/admin$/i,
