@@ -173,15 +173,34 @@ plan touches the site.
    imported it from node and a migration comment already quoted
    its school ids. A file three runtimes read belongs in the
    directory this repository keeps for exactly that.
-2. **`/.well-known/assetlinks.json`**, so `https://reiad.co.uk`
-   links open the app. A static JSON under `aab/` with the release
-   signing fingerprints. Nothing claims that path today:
-   `run_worker_first` does not list it, no route matches it, and
-   `aab/.assetsignore` does not cover it. Whether the asset upload
-   carries a dot-directory is platform behaviour this repo cannot
-   prove from the inside, so this is verified on a deploy, the
-   same caveat `aab/_headers` already carries about itself.
-3. **One Supabase dashboard entry.** The app's redirect URL added
+2. **`/.well-known/assetlinks.json`. Written, and one value
+   short.** `aab/.well-known/assetlinks.json` names the package
+   and carries an empty fingerprint list, which is a valid
+   statement that authorises nothing. It is there early on
+   purpose: whether the asset upload carries a dot-directory is
+   platform behaviour this repository cannot prove from the
+   inside, and shipping the real file is a bad moment to find
+   out. Nothing else claims the path: `run_worker_first` does not
+   list it, no route matches it, and `aab/.assetsignore` does not
+   cover it.
+
+   **The package is `uk.co.reiad.library`**: the domain
+   backwards, then the site's own name. It is a permanent
+   identifier, so it is decided once, here, rather than at the
+   first `gradle init`.
+
+   The fingerprint is the one thing that cannot be decided in
+   advance, because it is the public half of a key that must not
+   exist yet: a release key generated in a build container and
+   committed beside the site is a worse outcome than a late
+   assetlinks file. It arrives from Play App Signing once there
+   is an app entry, and pasting it into the array above is the
+   whole of the remaining work.
+3. **One Supabase dashboard entry**, and it is one of the two
+   things in this whole plan that cannot be done from a
+   repository: the project's auth configuration is not in the
+   database and not in the tooling, so no migration, no script
+   and no API call here reaches it. The app's redirect URL added
    to the auth allowlist. The site's flow is the implicit one:
    `GET /auth/v1/authorize?provider=google&redirect_to=...` and
    the tokens come back in the URL fragment, which an Android App
@@ -199,6 +218,21 @@ plan touches the site.
    Worker, and a decision about what is worth interrupting
    somebody for. That is phase 7 if it is anything, and the app is
    whole without it.
+
+## The two things a repository cannot do
+
+Everything else in this plan is decided here, written here, or
+checked here. These two are not, and both are late rather than
+blocking, so nothing waits on them:
+
+| | When it is needed |
+| --- | --- |
+| The release signing fingerprint, pasted into `sha256_cert_fingerprints` | before a link opens the app, so end of phase 1 |
+| The redirect URL added to the Supabase auth allowlist | before anybody signs in, so start of phase 2 |
+
+Both need an account this repository has no business holding a
+credential for. Neither is needed to build phase 1, which is
+signed out, which is why phase 1 is first.
 
 ## The app itself
 
