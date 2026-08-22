@@ -122,10 +122,19 @@ export const bnWord = (n: number): string =>
    that in twenty.
    ============================================================ */
 
-import deutschStufe1 from "./workbooks/deutsch-stufe-1";
-import deutschStufe2 from "./workbooks/deutsch-stufe-2";
-import deutschStufe3 from "./workbooks/deutsch-stufe-3";
-import englishTerm1 from "./workbooks/english-term-1";
+/* The extensions are written out, and they are not decoration.
+
+   `allowImportingTsExtensions` is on in `next/tsconfig.json` and
+   `moduleResolution` is `bundler`, so both forms typecheck and
+   both build. What only ONE of them does is run under plain node,
+   which resolves a real filename and nothing else, and
+   `book-api.test.ts` imports this file to prove the answer key
+   never leaves in a book. Without the extension that test cannot
+   load the module it exists to check. */
+import deutschStufe1 from "./workbooks/deutsch-stufe-1.ts";
+import deutschStufe2 from "./workbooks/deutsch-stufe-2.ts";
+import deutschStufe3 from "./workbooks/deutsch-stufe-3.ts";
+import englishTerm1 from "./workbooks/english-term-1.ts";
 
 /* The two source shapes, described exactly as the files write
    them, so the adapters below are checked rather than trusted. */

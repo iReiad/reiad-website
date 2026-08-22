@@ -142,6 +142,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "aab/schools/progress.test.ts",
     "next/progress.test.ts",
     "next/comments.test.ts",
+    "next/book-api.test.ts",
     "aab/schools/hub.test.ts",
     "aab/schools/workbook.test.ts",
     "aab/courses.test.ts",

@@ -245,6 +245,34 @@ export const NEXT_ROUTES = [
      now have. */
   /^\/(money|deutsch|quran|english)\/[a-z0-9-]+\/[a-z0-9-]+$/i,
   /^\/_next\//,
+
+  /* ---- the one /api/ path this Worker does not answer ----
+
+     Every other `/api/` prefix is in `API_ROUTES` above and is
+     handled here. `/api/book/` is Next's, and it is an exception
+     with a reason rather than an oversight.
+
+     The practice books are 450KB of TypeScript in
+     `next/lib/workbooks/`, and they are read on the server and
+     deliberately never sent to a browser as data, because every
+     prompt in them has its answer beside it. The Android app
+     needs the book without the key, so there is a route for it,
+     and the question was only where to put the route.
+
+     Importing the books into `functions/` would bundle all of it
+     into THIS Worker, parsed on every request to every endpoint
+     on the site. Putting them in D1 would be a migration, an
+     import script and a file-and-database pair to keep in step.
+     They already live in the Next Worker, which already renders
+     them, so the route lives where the data is and nothing is
+     copied.
+
+     This entry is what makes it reachable: the API table above is
+     consulted FIRST, and `/api/book/...` matches no prefix in it,
+     so it falls through to here. `/api/*` is already in
+     `run_worker_first`, so the request reaches this Worker at
+     all. Both halves are needed and neither is obvious. */
+  /^\/api\/book\//,
 ];
 
 /** A trailing slash off the path, so that the table above is
