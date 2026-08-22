@@ -8191,6 +8191,8 @@
       .news-window, .preflight, .slash-menu, .studio-tools,
       .course-rail, .csv-panel, .deck-foot, .toast, .dt-set, .dt-lang) {
     --depth: 9; --polish: 0.3; --clarity: 0.3; --standing: 1;
+
+    --follows: 0;
   }
 
   :is(.dt-figure,
@@ -8227,7 +8229,7 @@
       .rt-bar, .meter, .rt-balance, .audience-switch, .seg) {
     --depth: 1.6; --polish: 0.88; --clarity: 0.74; --standing: 0;
 
-    --glow-w: 0px;
+    --follows: 0;
 
     --edge:
 
