@@ -43,6 +43,7 @@ import { readFile, stat } from "node:fs/promises";
 import { extname, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ConsoleMessage, Page, Request } from "playwright";
+import { DIET_PAGES } from "./lib/diet-pages.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BUILD = join(HERE, ".next");
@@ -102,10 +103,15 @@ const TYPES: Record<string, string> = {
   ".ico": "image/x-icon",
 };
 
+/* BUILT FROM THE TABLE, NEVER TYPED OUT. This named three routes
+   while the tool had ten, because it was written when seven of
+   them were promises, and the assertion that every card goes
+   somewhere real then failed on every card that had since been
+   built. A test whose idea of the site is a hand-kept list stops
+   describing the site the first time a page lands. */
 const PRERENDERED: Record<string, string> = {
   "/tools/diet": "tools/diet.html",
-  "/tools/diet/you": "tools/diet/you.html",
-  "/tools/diet/glossary": "tools/diet/glossary.html",
+  ...Object.fromEntries(DIET_PAGES.map((p) => [p.href, `${p.href.slice(1)}.html`])),
 };
 
 const server = createServer(async (req, res) => {
@@ -322,10 +328,30 @@ const fill = async (page: Page, vals: Record<string, string>): Promise<void> => 
   const soon = await page.$$eval('[data-kind="soon"]', (els) => els.length);
   const go = await page.$$eval('[data-kind="go"]', (els) =>
     els.map((e) => e.getAttribute("href")));
-  ok("diet: what is not built is a soon card, not an empty panel", soon >= 2);
-  ok("diet: and every card that takes you somewhere goes somewhere real",
-    go.length >= 2 && go.every((h) => h !== null && PRERENDERED[h] !== undefined),
+  /* EVERY PAGE IN THE TABLE IS BUILT, so there is nothing left
+     to promise. The rule is unchanged and its answer moved: a
+     card for a page that does not render would be a soon card,
+     and there are none because there are no such pages. */
+  ok("diet: nothing on the front door is still a promise", soon === 0);
+  ok("diet: and the deck names every page in the table, once each",
+    go.length === DIET_PAGES.length
+    && DIET_PAGES.every((p) => go.includes(p.href)),
     go.join(" "));
+  ok("diet: and every card that takes you somewhere goes somewhere real",
+    go.every((h) => h !== null && PRERENDERED[h] !== undefined),
+    go.join(" "));
+
+  /* THE STRIP AND THE DECK ARE THE SAME TABLE, which is the whole
+     reason the table exists. Two lists of the same ten pages is
+     what this replaced. */
+  const tabs = await page.$$eval(".dt-tab", (els) =>
+    els.map((e) => e.getAttribute("href")));
+  ok("diet: the strip carries the home page and every entry",
+    tabs[0] === "/tools/diet"
+    && DIET_PAGES.every((p) => tabs.includes(p.href)),
+    tabs.join(" "));
+  ok("diet: and the strip marks the page it is on",
+    await page.$$eval('.dt-tab[aria-current="page"]', (els) => els.length) === 1);
   await page.close();
 }
 

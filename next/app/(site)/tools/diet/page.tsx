@@ -74,10 +74,11 @@ export default function DietPage() {
           this tool already uses, and
           it gives the ten cards the `h2` they were hanging
           under with nothing above them. */}
-      <h2 className="dt-deck-h" id="dt-deck-h">
-        <T en="What is here" bn="এখানে কী আছে" />
-      </h2>
-      <section className="dt-deck" aria-labelledby="dt-deck-h">
+      <section className="dt-deck-wrap" aria-labelledby="dt-deck-h">
+        <h2 className="dt-deck-h" id="dt-deck-h">
+          <T en="What is here" bn="এখানে কী আছে" />
+        </h2>
+        <div className="dt-deck">
         {DIET_PAGES.map((p) => (
           <GoCard
             key={p.href}
@@ -87,6 +88,7 @@ export default function DietPage() {
             dek={<T en={p.dek.en} bn={p.dek.bn} />}
           />
         ))}
+        </div>
       </section>
 
       <InfoCard title={<T en="What it refuses to do" bn="যা এটি করবে না" />}>

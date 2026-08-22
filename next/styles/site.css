@@ -13331,6 +13331,12 @@ German for day, and .tag is what the site has always called
     font-variant-numeric: tabular-nums;
   }
 
+  /* The heading BELONGS TO the section it names. It was a
+     sibling above it, so `main section`'s own top padding opened
+     ninety pixels between the two, which reads as the heading
+     belonging to the thing above instead. */
+  .dt-deck-wrap { padding-block-start: 0; }
+
   .dt-deck-h {
     font-size: var(--t-2);
     text-transform: uppercase;
