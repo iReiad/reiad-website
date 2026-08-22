@@ -19,7 +19,9 @@
       exists only as a path is a page a screen reader cannot read
       at all.
    2. NOTHING IS ENCODED IN COLOUR ALONE. The scale is thin and
-      faint, the trend is heavy, the marked days are ticks.
+      faint, the trend is heavy, a settling window is a hatch,
+      and a marked day is a ring rather than a dot, with a column
+      of its own in the table.
    3. THE Y AXIS DOES NOT START AT ZERO AND SAYS SO. A weight
       chart starting at zero is unreadable; one with a clipped
       axis and no label exaggerates every wobble.
@@ -30,7 +32,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  learnedBurn, readable, slopePerWeek, stretches, trend,
+  learnedHere, markNamed, protocolName, slopePerWeek, stretches, trend, weighings,
   type Day, type Phase, type Point,
 } from "@reiad/shared/diet";
 import {
@@ -72,30 +74,37 @@ export function TrendPanel() {
   const inSpan = useMemo(
     () => days.filter((d) => d.date >= shiftDate(today, -span)), [days, today, span],
   );
-  const points: Point[] = useMemo(
-    () => inSpan.filter((d) => d.weightKg != null)
-      .map((d) => ({ day: dayNumber(d.date), kg: d.weightKg as number })),
-    [inSpan],
+  /* DRAWN AND FITTED ARE TWO LISTS, and `weighings()` is the one
+     place that says which is which: a marked day and a settling
+     window are both drawn and both left out of the slope. */
+  const { drawn: points, fittable, marked } = useMemo(
+    () => weighings({ days: inSpan, dayOf: dayNumber, phases, today: dayNumber(today) }),
+    [inSpan, phases, today],
   );
   const line = useMemo(() => trend(points), [points]);
+  const markedDays = useMemo(() => new Set(marked.map((p) => p.day)), [marked]);
 
-  /* THE SLOPE NEVER CROSSES A PHASE BOUNDARY. A regression
-     fitted across a change of protocol is fitted across a step
-     in body water, and it reports a rate nobody is running. */
-  const fittable = useMemo(
-    () => (phases.length ? readable(points, phases, dayNumber(today)) : points),
-    [points, phases, today],
-  );
   const rate = useMemo(() => slopePerWeek(fittable), [fittable]);
   const spans = useMemo(
     () => (phases.length ? stretches(phases, dayNumber(today)) : []),
     [phases, today],
   );
 
-  const learned = useMemo(() => learnedBurn(
-    points,
-    inSpan.filter((d) => d.kcal != null).map((d) => ({ day: dayNumber(d.date), kcal: d.kcal as number })),
-  ), [points, inSpan]);
+  /* PER PHASE, NEVER ACROSS ONE. The slope above already knew
+     that and this did not: it was handed the raw run, so a
+     window with a complete fast in the middle of it returned a
+     maintenance built on an intake nobody ate.
+
+     Every intake in the stretch is kept, marked days included: a
+     big meal is energy that was really eaten and belongs in the
+     mean. It is the WEIGHT on that day that means nothing. */
+  const learned = useMemo(() => learnedHere({
+    weights: fittable,
+    intakes: inSpan.filter((d) => d.kcal != null)
+      .map((d) => ({ day: dayNumber(d.date), kcal: d.kcal as number })),
+    phases,
+    today: dayNumber(today),
+  }), [fittable, inSpan, phases, today]);
 
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
   if (!w) {
@@ -125,7 +134,8 @@ export function TrendPanel() {
 
   return (
     <div className="dt-trend">
-      <div className="dt-tags" role="group" aria-label="How far back">
+      <div className="dt-tags" role="group"
+           aria-label={lang === "bn" ? "কত দিন পেছনে" : "How far back"}>
         {[30, 90, 365].map((n) => (
           <ChipButton key={n} pressed={span === n} onClick={() => setSpan(n)}>
             <T en={`${n} days`} bn={`${digits(n, "bn")} দিন`} />
@@ -156,14 +166,20 @@ export function TrendPanel() {
 
           <path className="dt-scale-line" d={path(points)} />
           <path className="dt-trend-line" d={path(line)} />
+          {/* A marked day is a ring and an ordinary one a dot: a
+              shape rather than a colour, and it is still drawn.
+              Left out of the slope is not hidden from the
+              reader. */}
           {points.map((p) => (
-            <circle key={p.day} className="dt-dot" cx={px(p.day)} cy={py(p.kg)} r={1.8} />
+            <circle key={p.day} className="dt-dot"
+                    data-marked={markedDays.has(p.day) ? "" : undefined}
+                    cx={px(p.day)} cy={py(p.kg)} r={markedDays.has(p.day) ? 3.2 : 1.8} />
           ))}
         </svg>
         <figcaption className="dt-why">
           <T
-            en="The heavy line is the trend. The thin one behind it is what the scale actually said, drawn because hiding it would make this look like flattery. The vertical axis does not start at zero."
-            bn="মোটা রেখাটি ধারা। পেছনের সরু রেখাটি দাঁড়িপাল্লা আসলে যা বলেছে, দেখানো হয়েছে কারণ লুকালে এটাকে তোষামোদ মনে হতো। উল্লম্ব অক্ষ শূন্য থেকে শুরু হয় না।"
+            en="The heavy line is the trend. The thin one behind it is what the scale actually said, drawn because hiding it would make this look like flattery. A ring instead of a dot is a day you marked: it is drawn and it is left out of the rate. The vertical axis does not start at zero."
+            bn="মোটা রেখাটি ধারা। পেছনের সরু রেখাটি দাঁড়িপাল্লা আসলে যা বলেছে, দেখানো হয়েছে কারণ লুকালে এটাকে তোষামোদ মনে হতো। বিন্দুর বদলে বৃত্ত মানে আপনার চিহ্ন দেওয়া দিন: সেটা আঁকা হয়, কিন্তু হারের হিসাবে ধরা হয় না। উল্লম্ব অক্ষ শূন্য থেকে শুরু হয় না।"
           />
         </figcaption>
       </figure>
@@ -179,6 +195,10 @@ export function TrendPanel() {
               <th scope="col"><T en="Date" bn="তারিখ" /></th>
               <th scope="col"><T en="Scale" bn="দাঁড়িপাল্লা" /></th>
               <th scope="col"><T en="Trend" bn="ধারা" /></th>
+              {/* The chart's ring, in words. A reader who cannot
+                  see the shape still has to be told which days
+                  the rate was not fitted to. */}
+              <th scope="col"><T en="Marked" bn="চিহ্ন" /></th>
             </tr>
           </thead>
           <tbody>
@@ -187,6 +207,13 @@ export function TrendPanel() {
                 <td>{d.date}</td>
                 <td className="mono">{digits((d.weightKg as number).toFixed(1), lang)}</td>
                 <td className="mono">{digits((line[i]?.kg ?? 0).toFixed(1), lang)}</td>
+                <td>
+                  {(d.marks ?? []).map((id) => markNamed(id))
+                    .filter((m) => !!m)
+                    .map((m, n) => (
+                      <span key={m.id}>{n ? ", " : ""}<T en={m.en} bn={m.bn} /></span>
+                    ))}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -194,6 +221,7 @@ export function TrendPanel() {
       </details>
 
       <div className="dt-readout">
+        <h2 className="dt-readout-h"><T en="What the weighings say" bn="ওজনগুলো যা বলছে" /></h2>
         <div className="dt-figure dt-figure-lead">
           <h3><T en="The rate" bn="হার" /></h3>
           <p className="dt-value">
@@ -226,14 +254,27 @@ export function TrendPanel() {
           <p className="dt-why">
             {learned
               ? <T
-                  en={`Between ${Math.round(learned.kcal.low)} and ${Math.round(learned.kcal.high)}, from ${learned.logged} logged days out of ${learned.days}. Your log averages ${Math.round(learned.meanIntake)}: the gap between the two is the under-logging estimate, and it is normal.`}
-                  bn={`${digits(Math.round(learned.kcal.low), "bn")} আর ${digits(Math.round(learned.kcal.high), "bn")} এর মধ্যে, ${digits(learned.days, "bn")} দিনের মধ্যে ${digits(learned.logged, "bn")} দিন লেখা থেকে। আপনার খাতার গড় ${digits(Math.round(learned.meanIntake), "bn")}: দুটোর ফাঁকই কম লেখার হিসাব, আর এটা স্বাভাবিক।`}
+                  en={`Between ${Math.round(learned.kcal.low)} and ${Math.round(learned.kcal.high)}, from ${learned.logged} logged days out of ${learned.days}. The fewer of those days carry a log, the wider that gets. Your log averages ${Math.round(learned.meanIntake)}: the gap between the two is the under-logging estimate, and it is normal.`}
+                  bn={`${digits(Math.round(learned.kcal.low), "bn")} আর ${digits(Math.round(learned.kcal.high), "bn")} এর মধ্যে, ${digits(learned.days, "bn")} দিনের মধ্যে ${digits(learned.logged, "bn")} দিন লেখা থেকে। যত কম দিন লেখা থাকে, ফাঁকটা তত চওড়া হয়। আপনার খাতার গড় ${digits(Math.round(learned.meanIntake), "bn")}: দুটোর ফাঁকই কম লেখার হিসাব, আর এটা স্বাভাবিক।`}
                 />
               : <T
                   en="After fourteen days the tool stops believing an activity multiplier and measures instead."
                   bn="চৌদ্দ দিন পর যন্ত্রটি চলাফেরার আন্দাজে বিশ্বাস করা বন্ধ করে নিজে মাপে।"
                 />}
           </p>
+          {/* WHICH STRETCH IT WAS MEASURED OVER. A maintenance
+              figure fitted across a change of protocol is fitted
+              across a step in body water, so this one never is,
+              and the reader is told which run of days it came
+              from rather than being left to assume all of them. */}
+          {learned?.protocol ? (
+            <p className="dt-why">
+              <T
+                en={`Measured inside one stretch of your log: ${protocolName(learned.protocol).en}. A maintenance figure never spans a change of protocol.`}
+                bn={`আপনার খাতার একটি সময়ের ভেতরে মাপা: ${protocolName(learned.protocol).bn}। নিয়ম বদলের উপর দিয়ে খরচের হিসাব কখনো টানা হয় না।`}
+              />
+            </p>
+          ) : null}
         </div>
       </div>
     </div>

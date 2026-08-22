@@ -133,7 +133,67 @@ export const TERMS: Term[] = [
       + "যেটা চর্বির বেলায় ঠিক আর পানির বেলায় ভুল, আর সেজন্যই হিসাবটা "
       + "দাঁড়িপাল্লার নয়, ধারার বিপরীতে করা হয়।",
   },
+  {
+    id: "hba1c", en: "HbA1c", bn: "এইচবিএ১সি",
+    saysEn: "The share of your haemoglobin that has sugar stuck to it. Because "
+      + "a red blood cell lives about three months, it is an average of your "
+      + "blood sugar over that time rather than a reading of this morning, "
+      + "which is exactly the timescale this tool works on.",
+    saysBn: "আপনার হিমোগ্লোবিনের যতটুকুতে চিনি লেগে আছে তার হার। লোহিত রক্তকণিকা "
+      + "প্রায় তিন মাস বাঁচে, তাই এটা আজ সকালের মাপ নয়, ওই তিন মাসের রক্তের "
+      + "চিনির গড়, আর এই যন্ত্র ঠিক ওই সময়ের মাপেই কাজ করে।",
+  },
+  {
+    id: "netcarbs", en: "Net carbs", bn: "কার্যকর শর্করা (net carbs)",
+    saysEn: "Total carbohydrate with the fibre taken off, because fibre is "
+      + "carbohydrate your body cannot break down. It is the number a keto "
+      + "limit is counted in, and it is not on most labels in either country, "
+      + "so it is worked out rather than read.",
+    saysBn: "মোট শর্করা থেকে আঁশ বাদ দিলে যা থাকে, কারণ আঁশ এমন শর্করা যা শরীর "
+      + "ভাঙতে পারে না। কিটোর সীমা এই সংখ্যাতেই গোনা হয়, আর দুই দেশের "
+      + "বেশিরভাগ মোড়কেই এটা লেখা থাকে না, তাই এটা পড়া হয় না, হিসাব করা হয়।",
+  },
+  {
+    id: "resistant", en: "Resistant starch", bn: "প্রতিরোধী শ্বেতসার",
+    saysEn: "Starch that has been cooked and then cooled, in rice or in "
+      + "potatoes, and behaves partly like fibre instead of like sugar. It is "
+      + "the one thing on this list that matters more here than in most "
+      + "places, because cooled rice is an ordinary meal in Bangladesh.",
+    saysBn: "রান্নার পর ঠান্ডা হওয়া শ্বেতসার, ভাতে বা আলুতে, যেটা চিনির মতো নয়, "
+      + "আংশিক আঁশের মতো আচরণ করে। এই তালিকার একমাত্র জিনিস যেটা অন্য অনেক "
+      + "জায়গার চেয়ে এখানে বেশি কাজে লাগে, কারণ বাংলাদেশে ঠান্ডা ভাত রোজকার খাবার।",
+  },
+  {
+    id: "luteal", en: "The luteal phase", bn: "মাসিক চক্রের শেষ পর্ব",
+    saysEn: "The roughly two weeks between ovulation and a period. Water "
+      + "retention rises through it, so the scale can climb one to two "
+      + "kilograms with no change in fat at all, and then drop it in a day. "
+      + "A trend read across a whole cycle is the only honest reading.",
+    saysBn: "ডিম্বস্ফোটন আর মাসিকের মাঝের প্রায় দুই সপ্তাহ। এই সময়ে শরীরে পানি "
+      + "জমে, তাই চর্বি একটুও না বদলেও দাঁড়িপাল্লা এক দুই কেজি উঠতে পারে, আর "
+      + "তারপর একদিনেই নেমে যায়। পুরো চক্র ধরে ধারা দেখাই একমাত্র সৎ পাঠ।",
+  },
 ];
+
+/** A first use, linked to its definition.
+
+    The header above says every entry is linked to from the first
+    use of its term, and for a while nothing anywhere linked to
+    one: a grep for `diet/glossary#` across `next/` returned
+    nothing at all, so eleven definitions sat at an address only
+    reachable by scrolling the glossary itself.
+
+    It renders the term in whichever language it was given, so a
+    sentence keeps reading as a sentence, and `scripts/check-diet.ts`
+    fails on a term used in these pages that this file does not
+    define AND on an entry nothing links to. */
+export function Term({ id, en, bn }: { id: string; en: string; bn?: string }) {
+  return (
+    <a className="dt-term-link" href={`/tools/diet/glossary#${id}`}>
+      <T en={en} bn={bn ?? en} />
+    </a>
+  );
+}
 
 export function Glossary() {
   return (

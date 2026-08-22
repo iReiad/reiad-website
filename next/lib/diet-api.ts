@@ -243,14 +243,25 @@ export async function getDays(w: Who, from: string): Promise<Day[]> {
     upsert on `(user_id, entry_date)` rather than a read, a
     branch and two code paths. */
 export async function saveDay(w: Who, day: Day): Promise<boolean> {
-  const r = await call("diet_days?on_conflict=user_id,entry_date", {
+  const r = await writeDay(w, day);
+  /* Only a network failure is worth holding. A 400 is a refusal
+     and retrying it for ever is a loop. */
+  if (!r.ok && r.status === 0) queue(async () => (await writeDay(w, day)).ok);
+  return r.ok;
+}
+
+/** The write with no queueing in it, which is what the queue
+    itself must call. `saveDay` queued a retry of `saveDay`, so
+    every failed attempt pushed ANOTHER copy of itself on to an
+    array `drain()` had already refused to shift, and a reader on
+    a bad connection grew a queue rather than emptying one. */
+function writeDay(w: Who, day: Day): Promise<{ ok: boolean; status: number }> {
+  return call("diet_days?on_conflict=user_id,entry_date", {
     method: "POST",
     headers: { prefer: "resolution=merge-duplicates,return=minimal" },
     body: JSON.stringify({ ...fromDay(day), user_id: w.id,
       updated_at: new Date().toISOString() }),
   }, w);
-  if (!r.ok && r.status === 0) queue(() => saveDay(w, day));
-  return r.ok;
 }
 
 /* ---------------------------------------------------------- */
@@ -260,6 +271,7 @@ export async function saveDay(w: Who, day: Day): Promise<boolean> {
 interface EntryRow {
   id?: string;
   entry_date: string;
+  at_time?: string | null;
   meal?: string | null;
   label: string;
   label_bn?: string | null;
@@ -278,6 +290,7 @@ interface EntryRow {
 const toEntry = (r: EntryRow): Entry => ({
   id: r.id,
   date: r.entry_date,
+  atTime: r.at_time ?? undefined,
   meal: r.meal ?? undefined,
   label: r.label,
   labelBn: r.label_bn ?? undefined,
@@ -306,6 +319,13 @@ export async function addEntry(w: Who, e: Entry): Promise<Entry | null> {
   const row: EntryRow & { user_id: string } = {
     user_id: w.id,
     entry_date: e.date,
+    /* THE CLOCK GOES IN `at_time` AND THE MEAL STAYS A MEAL.
+       This wrote "HH:MM" into `meal` for a while, which left the
+       hour readable only by a regex and left no row on this site
+       carrying a breakfast, a lunch or a dinner, so section 16's
+       reading of how protein is spread across a day had nothing
+       to read. */
+    at_time: e.atTime ?? null,
     meal: e.meal ?? null,
     label: e.label,
     label_bn: e.labelBn ?? null,
@@ -330,7 +350,19 @@ export async function addEntry(w: Who, e: Entry): Promise<Entry | null> {
     headers: { prefer: "return=representation" },
     body: JSON.stringify(row),
   }, w);
-  if (!r.ok && r.status === 0) queue(() => addEntry(w, e).then(() => true));
+  /* Not `addEntry` again: that would push a fresh copy on to the
+     queue on every failed retry. The queued job is the request
+     and nothing else, and it reports whether the row landed. */
+  if (!r.ok && r.status === 0) {
+    queue(async () => {
+      const again = await call<EntryRow[]>("diet_entries", {
+        method: "POST",
+        headers: { prefer: "return=representation" },
+        body: JSON.stringify(row),
+      }, w);
+      return again.ok;
+    });
+  }
   return r.ok && r.data?.length ? toEntry(r.data[0]) : null;
 }
 
@@ -410,19 +442,37 @@ export async function startPhase(w: Who, style: string, on: string): Promise<boo
 /* dates, said once                                           */
 /* ---------------------------------------------------------- */
 
-/** Days since 1970, from an ISO date, in UTC.
+/** Days since 1970, from an ISO date.
 
-    UTC AND NOT LOCAL, deliberately: a reader who logs at 11pm in
-    Dhaka and 11pm in Manchester must not have two different
-    ideas of which day it was, and a difference of one day is a
-    whole entry in a table keyed on `(user_id, entry_date)`. */
+    The STRING is read in UTC, which is arithmetic and not a
+    timezone decision: `2026-08-22` is a day rather than an
+    instant, and parsing it in local time makes the difference
+    between two of them wrong by an hour twice a year. */
 export const dayNumber = (iso: string): number => {
   const [y, m, d] = iso.split("-").map(Number);
   return Math.round(Date.UTC(y, m - 1, d) / 86400000);
 };
 
+/** Which day it is WHERE THE READER IS, never in UTC.
+
+    This was `toISOString().slice(0, 10)` and the argument for it
+    was that two cities must agree which day it was. They must
+    not: `entry_date` is the reader's own day, and section 4's
+    morning weight is a local-morning fact. At UTC+6 that spelling
+    filed everything logged between midnight and 6am on
+    YESTERDAY'S row, and because `diet_days` is unique on
+    `(user_id, entry_date)` and `saveDay` merges, weighing at
+    5:30am in Dhaka overwrote the previous morning's reading. The
+    streak, the strip and the by-weekday reading all moved with
+    it. */
 export const isoDate = (at: Date = new Date()): string =>
-  at.toISOString().slice(0, 10);
+  `${at.getFullYear()}-${String(at.getMonth() + 1).padStart(2, "0")}`
+  + `-${String(at.getDate()).padStart(2, "0")}`;
+
+/** The reader's own clock as "HH:MM", which is what `at_time`
+    holds. Local for the same reason the date is. */
+export const clockTime = (at: Date = new Date()): string =>
+  `${String(at.getHours()).padStart(2, "0")}:${String(at.getMinutes()).padStart(2, "0")}`;
 
 export const shiftDate = (iso: string, by: number): string => {
   const [y, m, d] = iso.split("-").map(Number);
@@ -436,6 +486,8 @@ export const shiftDate = (iso: string, by: number): string => {
 type Pending = () => Promise<boolean>;
 const pending: Pending[] = [];
 let draining = false;
+let timer: ReturnType<typeof setTimeout> | null = null;
+const listeners = new Set<() => void>();
 
 /** Hold a write that failed on the NETWORK, and only on the
     network: a 400 is a refusal and retrying it forever is a
@@ -444,15 +496,56 @@ let draining = false;
 
     It is never read back. Nothing renders from it except
     `pendingCount()`, which is how the page says "not saved yet"
-    rather than pretending it did. */
+    rather than pretending it did.
+
+    ---- three things it has to do that it did not ----
+
+    RETRY ON A TIMER AS WELL AS ON `online`. The listener fires
+    on a transition, so a request that died on a timeout while
+    the browser still believed it was online waited for an event
+    that never came.
+
+    HOLD THE REAL ANSWER. `drain()` shifts a job off the queue
+    only when the job says it landed, so a retry that returns
+    `true` unconditionally is a write dropped in silence. The one
+    caller that did that is `addEntry`, and its `.then(() =>
+    true)` is gone.
+
+    SAY THAT A CLOSED TAB LOSES IT. This is memory, deliberately:
+    a persisted queue would be a second record of what somebody
+    ate, which is the argument `sync.ts` settled. So the page
+    tells the reader it has not gone yet, and `subscribePending`
+    is how the count on screen stays true. */
 function queue(job: Pending): void {
   pending.push(job);
-  if (typeof window !== "undefined") {
-    window.addEventListener("online", () => void drain(), { once: true });
-  }
+  announce();
+  if (typeof window === "undefined") return;
+  window.addEventListener("online", () => void drain(), { once: true });
+  schedule(4000);
 }
 
+/** Back off to a minute, so a reader who is genuinely off the
+    network is not retried at every four seconds for an hour. */
+function schedule(ms: number): void {
+  if (timer !== null || !pending.length) return;
+  timer = setTimeout(() => {
+    timer = null;
+    void drain().then(() => { if (pending.length) schedule(Math.min(ms * 2, 60000)); });
+  }, ms);
+}
+
+function announce(): void { for (const f of listeners) f(); }
+
 export function pendingCount(): number { return pending.length; }
+
+/** Anything drawing the pending count subscribes, for the same
+    reason every meter reading a progress key does: a component
+    that reads it once on mount is drawn against the queue as it
+    was before the write it is reporting on. */
+export function subscribePending(f: () => void): () => void {
+  listeners.add(f);
+  return () => { listeners.delete(f); };
+}
 
 export async function drain(): Promise<void> {
   if (draining) return;
@@ -462,6 +555,7 @@ export async function drain(): Promise<void> {
       const job = pending[0];
       if (!await job()) break;
       pending.shift();
+      announce();
     }
   } finally { draining = false; }
 }

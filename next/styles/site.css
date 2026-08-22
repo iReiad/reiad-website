@@ -12092,16 +12092,16 @@ German for day, and .tag is what the site has always called
   :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
-      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn,
+      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn, .dt-drop,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip,
+      .audience-slider, .skip, .dt-tab,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .rt-build-task, .rt-panel,
+      .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -12231,7 +12231,7 @@ German for day, and .tag is what the site has always called
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip, .dt-hit) {
+      .audience-slider, .skip, .dt-hit, .dt-tab) {
     --depth: 2.2; --polish: 0.8; --clarity: 0.7; --standing: 0.9;
   }
 
@@ -12241,7 +12241,7 @@ German for day, and .tag is what the site has always called
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .rt-build-task, .rt-panel) {
+      .gate-card, .rt-build-task, .rt-panel, .dt-w) {
     --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
 
@@ -12468,16 +12468,16 @@ German for day, and .tag is what the site has always called
   :is(.chip, .chip-move, .topic-chip, .pref-chip, .scenario, .toggle,
       .tick-btn, .keep-btn, .react, .choice, .quiz-option, .checkpoint,
       .rt-mark, .rt-heat-day, .term, .horizon-picker, .driver,
-      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn,
+      .tracker, .tag-waehler, .buch-tag, .dt-lang-btn, .dt-drop,
       .btn, .icon-btn, .top-btn, .drawer-close, .link-btn, .acc-item,
       .ladder-go, .tree-btn, .audience-opt, .crumb-step, .rail-toggle,
       .slash-item, .quiz-reset, .rt-jar, .big-link,
       .rail-item, .tree-link, .tab, .course-mod, .pillar,
-      .audience-slider, .skip, .dt-hit,
+      .audience-slider, .skip, .dt-hit, .dt-tab,
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .rt-build-task, .rt-panel,
+      .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -13076,7 +13076,85 @@ German for day, and .tag is what the site has always called
      through. */
   .dt-page { padding-block: var(--step); }
 
-  .dt-head { margin-block-end: var(--step); }
+  .dt-head { margin-block-end: var(--s-6); }
+
+  /* ---- the way from any page of this tool to any other ----
+
+     The account page's second floating object, one level down.
+     It is `.topbar` again: the same pill, the same glass, the
+     same edge and shadow, one `--top-gap` under the site's bar
+     and inside the page's own column, so a reader who has
+     learnt that the floating thing at the top is the site's
+     controls reads this one as this page's.
+
+     Links rather than tabs, because these are eleven separate
+     routes. `aria-current="page"` is what marks the one you are
+     on, which is the right word for a link and is also what the
+     stylesheet draws, so the two cannot disagree. */
+  .dt-tabs {
+    display: flex;
+    gap: var(--s-2);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    position: sticky;
+    top: calc(var(--top-space) + var(--top-gap));
+    z-index: 20;
+    padding: 6px var(--bar-pad);
+    margin-block-end: var(--step);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--glass-edge);
+    --surface-shadow: var(--glass-lift);
+  }
+  .dt-tabs::-webkit-scrollbar { display: none; }
+
+  .dt-tab {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-3);
+    font-size: var(--t-1);
+    padding: var(--s-2) var(--s-4);
+    border-radius: var(--radius-pill);
+    color: var(--ink-soft);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* THE PAGE'S OWN COLOUR, on every tab. Eleven grey words with
+     one of them filled says which page you are on and nothing at
+     all about where the other ten go. The dot is the colour and
+     the pill only fills on the page you are on, so the strip
+     stays a strip rather than becoming a paint chart. */
+  .dt-tab-dot {
+    inline-size: 7px;
+    block-size: 7px;
+    border-radius: 50%;
+    background: var(--tone, var(--accent));
+    flex: 0 0 auto;
+    opacity: 0.75;
+  }
+  .dt-tab:hover { color: var(--ink); }
+  .dt-tab:hover .dt-tab-dot { opacity: 1; }
+
+  .dt-tab[aria-current="page"] {
+    background: var(--tone, var(--accent));
+    color: var(--accent-ink);
+  }
+  /* On the filled pill the dot would be a hole. */
+  .dt-tab[aria-current="page"] .dt-tab-dot {
+    background: var(--accent-ink);
+    opacity: 0.6;
+  }
+
+  /* Under the strip a section leading with `--step` reads as a
+     gap rather than as air, for the same reason the account
+     page's panels drop theirs. */
+  .dt-page > .dt-tabs + * { padding-block-start: 0; }
+
+  @media print { .dt-tabs { display: none; } }
 
   .dt-head-row {
     display: flex;
@@ -13110,9 +13188,24 @@ German for day, and .tag is what the site has always called
     cursor: pointer;
   }
 
+  /* LIT BEFORE HYDRATION. `aria-pressed` is undefined until an
+     effect has run, so the switch showed neither half pressed on
+     first paint, which reads as broken on the one control a
+     reader looks at first. The attribute on `<html>` is already
+     right by then: the boot script sets it, and it is the state.
+     Both selectors are here so the two never disagree, and the
+     attribute one comes second so a press wins immediately. */
+  :root:not([data-tool-lang="bn"]) .dt-lang-btn[data-half="en"],
+  :root[data-tool-lang="bn"] .dt-lang-btn[data-half="bn"],
   .dt-lang-btn[aria-pressed="true"] {
     background: var(--accent);
     color: var(--accent-ink);
+  }
+  /* And the attribute takes it OFF the other half, for the paint
+     between a press and the re-render. */
+  .dt-lang-btn[aria-pressed="false"] {
+    background: transparent;
+    color: var(--ink-soft);
   }
 
   /* The measurements and the readout, side by side where there
@@ -13162,7 +13255,19 @@ German for day, and .tag is what the site has always called
     align-items: start;
   }
 
-  .dt-readout-waiting { display: block; color: var(--ink-soft); }
+  /* THE READOUT'S OWN NAME. Four pages went `h1` straight to
+     `h3`, because the figures are `h3`s inside a section nothing
+     had named, so a reader moving by heading found a level that
+     was not there. It spans the grid rather than taking a
+     track. */
+  .dt-readout-h {
+    grid-column: 1 / -1;
+    font-size: var(--t-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin: 0;
+  }
 
   .dt-figure {
     border: 1px solid var(--hairline);
@@ -13180,7 +13285,29 @@ German for day, and .tag is what the site has always called
     border-inline-start: 3px solid var(--accent);
   }
 
-  .dt-figure-empty { color: var(--ink-soft); }
+  /* A FIGURE THAT IS WAITING LOOKS LIKE THE FIGURE IT WILL BE,
+     in the same place and at the same size, with a dashed edge
+     so nobody reads it as a number that failed to load. The dash
+     is the site's own "this is the end of the road" edge from
+     `@layer deck`, borrowed for "this is not here yet". */
+  .dt-figure-empty {
+    color: var(--ink-soft);
+    border-style: dashed;
+  }
+  .dt-value-ghost {
+    color: var(--hairline);
+    user-select: none;
+  }
+  /* The sentence under a ghost is a caption, not the figure. At
+     body size it outweighed the heading above it and the card
+     read as a paragraph with a label. */
+  .dt-figure-empty .dt-said { font-size: var(--t-2); }
+  .dt-readout-foot {
+    grid-column: 1 / -1;
+    font-size: var(--t-1);
+    color: var(--ink-soft);
+    margin: 0;
+  }
 
   .dt-figure h3 {
     font-size: var(--t-1);
@@ -13190,20 +13317,76 @@ German for day, and .tag is what the site has always called
     margin: 0;
   }
 
+  /* THE ONE NUMBER ON A FIGURE IS SET LIKE ONE. This was
+     `--t-6`, 1.03rem, which is the size of the sentence under
+     it: the BMI, the body fat range, the target and the rate
+     were all typeset as body text with a label above them. Every
+     comparable figure on this site is a clamp, `.stat .v` at
+     3.4cqi and `.strip div .n` at 4vw, and this now matches the
+     first of them. */
   .dt-value {
     font-family: var(--font-mono);
-    font-size: var(--t-6);
+    font-size: clamp(1.25rem, 3.4cqi, 1.7rem);
+    font-variant-numeric: tabular-nums;
     line-height: 1.1;
     margin-block: var(--s-3) var(--s-2);
   }
 
   .dt-said { margin: 0; }
+
+  /* An honest save. `saved` and `failed` are two different
+     facts and were one word: the chip read "Saved" whatever the
+     write returned, so a rate the database refuses looked
+     accepted until the page was reloaded. */
+  .dt-said[data-state="failed"] { color: var(--danger); }
+  .dt-said[data-state="saved"] { color: var(--ink-soft); }
+
+  /* The offer to keep four facts on an account, under the four
+     boxes that hold them. */
+  .dt-keep {
+    display: grid;
+    gap: var(--s-3);
+    justify-items: start;
+    margin-block-start: var(--s-5);
+    padding-block-start: var(--s-5);
+    border-block-start: 1px solid var(--hairline);
+  }
+
+  /* A refusal is not an empty state. It fills the readout, so
+     nothing beside it reads as a number that is still coming. */
+  .dt-readout-stop { --accent-rail: var(--danger); }
+  .dt-readout-stop .dt-figure-lead { border-inline-start-color: var(--accent-rail); }
   .dt-why { font-size: var(--t-1); color: var(--ink-soft); margin-block-start: var(--s-3); }
 
   .dt-cuts {
     font-family: var(--font-mono);
     font-size: var(--t-1);
     color: var(--ink-soft);
+  }
+
+  /* TABULAR EVERYWHERE A FIGURE IS SET IN MONO. The price table
+     sorts by a number whose digits did not line up under each
+     other, so the order was right and unreadable. Proportional
+     digits in a column are the one typographic default on this
+     site that is wrong for what this tool draws. */
+  .dt-page :is(td, th),
+  .dt-coverage,
+  .dt-sheet :is(td, th, dd) {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The heading BELONGS TO the section it names. It was a
+     sibling above it, so `main section`'s own top padding opened
+     ninety pixels between the two, which reads as the heading
+     belonging to the thing above instead. */
+  .dt-deck-wrap { padding-block-start: 0; }
+
+  .dt-deck-h {
+    font-size: var(--t-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    margin-block: 0 var(--s-5);
   }
 
   .dt-deck {
@@ -13217,6 +13400,14 @@ German for day, and .tag is what the site has always called
 
   .dt-defs { display: grid; gap: var(--s-3); margin-block: var(--s-4); }
   .dt-defs dt { font-weight: 600; }
+  /* Which of these the reader ticked. A mark, not a filter: the
+     list stays whole. */
+  .dt-yours {
+    font-weight: 400;
+    font-size: var(--t-1);
+    color: var(--accent);
+    margin-inline-start: var(--s-3);
+  }
   .dt-defs dd { margin: 0 0 var(--s-3); color: var(--ink-soft); }
 
   /* ---- today: the log on the left, the board on the upper right ----
@@ -13244,6 +13435,12 @@ German for day, and .tag is what the site has always called
     .dt-board { order: 2; }
   }
 
+  /* STICKY, AND SHORTER THAN THE SCREEN. Nine widgets at six and
+     a half rem each is about 36rem before the empty-state
+     sentences, which are paragraphs in a ten-rem column, so a
+     sticky board pinned with its lower half off the bottom of
+     the window and stayed there. It scrolls inside itself now
+     and the page scrolls past it. */
   .dt-board {
     display: grid;
     gap: var(--s-4);
@@ -13251,6 +13448,12 @@ German for day, and .tag is what the site has always called
     align-content: start;
     position: sticky;
     top: calc(var(--top-space) + var(--s-4));
+    max-block-size: calc(100dvh - var(--top-space) - var(--step));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* Room for the light, which is drawn outside the box. */
+    padding: 2px;
+    margin: -2px;
   }
 
   @media (width < 62rem) { .dt-board { position: static; } }
@@ -13278,26 +13481,29 @@ German for day, and .tag is what the site has always called
   }
 
   .dt-w-body { display: grid; gap: var(--s-2); }
-  .dt-w-big { font-size: var(--t-7); line-height: 1.1; }
+  .dt-w-big {
+    font-size: clamp(1.13rem, 2.6cqi, 1.5rem);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
   .dt-w-said { font-size: var(--t-1); color: var(--ink-soft); }
   .dt-w-waiting { font-size: var(--t-1); color: var(--ink-soft); }
 
-  /* A RING, not a bar. A bar fills and then overflows, and an
-     overflowing bar wants to be red. A ring closes. */
-  .dt-ring { position: relative; display: block; inline-size: 64px; }
-  .dt-ring svg { inline-size: 64px; block-size: 64px; display: block; }
-  .dt-ring-track {
-    fill: none; stroke: var(--hairline); stroke-width: 6;
+  /* The one sentence that has to sit beside a target, wherever a
+     target is printed. Quiet and unmissable are not opposites:
+     it is small, it is not hidden behind anything, and it is not
+     a card, because it is not a reading. */
+  .dt-w-legal {
+    grid-column: 1 / -1;
+    font-size: var(--t-1);
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin: 0;
+    padding-block-start: var(--s-4);
+    border-block-start: 1px solid var(--hairline);
   }
-  .dt-ring-fill {
-    fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round;
-    transition: stroke-dasharray 190ms ease-out;
-  }
-  .dt-ring-mid {
-    position: absolute; inset: 0;
-    display: grid; place-items: center;
-    font-size: var(--t-2);
-  }
+
+
 
   .dt-spark { inline-size: 100%; block-size: 34px; display: block; }
   .dt-spark-line { fill: none; stroke: var(--accent); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
@@ -13328,12 +13534,25 @@ German for day, and .tag is what the site has always called
     transition: opacity 190ms;
   }
   .dt-save[data-state="idle"] { opacity: 0; }
+  /* A refusal is not a quieter success. */
+  .dt-save[data-state="failed"] { color: var(--danger); }
 
   .dt-quick {
     display: grid;
     gap: var(--s-4);
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
   }
+
+  /* Which day is being written. Quiet, because it is today
+     almost always and a control that shouts about the ordinary
+     case is a control in the way. */
+  .dt-when {
+    display: flex;
+    align-items: end;
+    gap: var(--s-4);
+    flex-wrap: wrap;
+  }
+  .dt-when .field { max-inline-size: 12rem; }
 
   .dt-water { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; }
   .dt-water-label { font-size: var(--t-1); color: var(--ink-soft); }
@@ -13379,12 +13598,33 @@ German for day, and .tag is what the site has always called
   .dt-eaten-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2); }
   .dt-eaten-list li {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto auto auto;
     gap: var(--s-4);
     align-items: baseline;
     padding-block: var(--s-2);
     border-block-end: 1px solid var(--hairline);
   }
+
+  /* Removing a row. Faint until the row is under the pointer,
+     because a list of what somebody ate should not read as a
+     list of things to delete, and always reachable from the
+     keyboard, because "visible on hover" is invisible to
+     anybody not using a mouse. */
+  .dt-drop {
+    font: inherit;
+    line-height: 1;
+    padding: var(--s-2);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    opacity: 0.35;
+    transition: opacity 190ms, color 190ms;
+  }
+  .dt-eaten-list li:hover .dt-drop,
+  .dt-drop:focus-visible { opacity: 1; color: var(--danger); }
+  .dt-drop:disabled { opacity: 0.15; cursor: default; }
 
   .dt-scale { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
   .dt-scale-label { font-size: var(--t-1); color: var(--ink-soft); }
@@ -13417,7 +13657,14 @@ German for day, and .tag is what the site has always called
 
   /* ---- the other panels ---- */
 
-  .dt-goal, .dt-journal, .dt-nutrition, .dt-expect, .dt-trend {
+  /* EVERY PANEL PAGE, and it has to be every one: the three
+     newest were added to neither list below and all three grew
+     the doubled gap the comment under this one measures. A list
+     of page classes is a thing somebody has to remember, which
+     is the failure this whole stylesheet keeps being caught by,
+     so anything with `dt-` and a panel goes in both. */
+  .dt-goal, .dt-journal, .dt-nutrition, .dt-expect, .dt-trend,
+  .dt-foods, .dt-health, .dt-summary {
     display: grid; gap: var(--step);
   }
 
@@ -13427,12 +13674,15 @@ German for day, and .tag is what the site has always called
      page: about 130px of nothing between the lede and the first
      table. The grid owns the rhythm here. */
   .dt-goal > section, .dt-journal > section,
-  .dt-nutrition > section, .dt-expect > section, .dt-trend > section {
+  .dt-nutrition > section, .dt-expect > section, .dt-trend > section,
+  .dt-foods > section, .dt-health > section, .dt-summary > section {
     padding-block-start: 0;
   }
 
   .dt-goal > section > h2, .dt-journal > section > h2,
-  .dt-nutrition > section > h2, .dt-expect > section > h2 {
+  .dt-nutrition > section > h2, .dt-expect > section > h2,
+  .dt-trend > section > h2, .dt-foods > section > h2,
+  .dt-health > section > h2, .dt-summary > section > h2 {
     margin-block: 0 var(--s-6);
   }
   .dt-goal .dt-readout, .dt-journal .dt-readout { margin-block-start: 0; }
@@ -13461,12 +13711,357 @@ German for day, and .tag is what the site has always called
   .dt-tag-counts li { grid-template-columns: 1fr auto; }
   .dt-weekdays li { grid-template-columns: 1fr auto; }
 
+  /* ---- the first week, hour by hour ----
+
+     A band opens on the row where it starts, and that row gets a
+     rule above it and the accent on its hour. The mechanism is
+     what a reader is missing, so the row that names one is the
+     row that should catch the eye. */
+  .dt-hours { display: grid; gap: var(--s-5); }
+  .dt-hours-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: var(--s-4); flex-wrap: wrap;
+  }
+  .dt-hours-head h3 { margin: 0; }
+
+  .dt-hours-table tr[data-opens] > * { border-block-start: 1px solid var(--hairline); }
+  .dt-hours-table tr[data-opens] > th[scope="row"] { color: var(--accent); font-weight: 600; }
+  .dt-hours-table td.dt-why { max-inline-size: 34ch; }
+
+  /* The share column is a BAR as well as a number, because the
+     shape of it climbing all week IS the message and a column of
+     percentages hides a shape. */
+  .dt-hours-share {
+    display: flex; align-items: center; gap: var(--s-3);
+    white-space: nowrap;
+  }
+  .dt-hours-bar {
+    flex: 0 0 auto;
+    inline-size: 54px; block-size: 6px;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(to right,
+      var(--accent) 0 var(--share, 0%),
+      var(--hairline) var(--share, 0%) 100%);
+  }
+
+  /* Twenty-four columns, one per hour of the day. `align-items:
+     end` so they grow from the baseline, and the labelled hours
+     carry their number under them via a pseudo, because
+     twenty-four labels is a wall and four is a scale. */
+  .dt-hourbars {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    align-items: end;
+    gap: 2px;
+    block-size: 84px;
+    margin-block: var(--s-5) var(--s-7);
+  }
+  .dt-hourbar {
+    position: relative;
+    block-size: max(var(--h, 0%), 2px);
+    border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+    background: color-mix(in oklab, var(--accent) 60%, transparent);
+  }
+  .dt-hourbar[data-label]::after {
+    content: attr(data-label);
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-start: 0;
+    font-family: var(--font-mono);
+    font-size: var(--t-0);
+    color: var(--ink-soft);
+    padding-block-start: 2px;
+  }
+
+  /* ---- the sheet you take to a doctor ----
+
+     Deliberately plain. Everything else in this tool is glass and
+     accent; a sheet somebody hands across a desk is a sheet, and
+     a clinician reading a translucent panel with a moving light
+     on it would be reading a website rather than a record. */
+  .dt-summary { display: grid; gap: var(--step); }
+  .dt-sum-controls {
+    display: flex; gap: var(--s-4); align-items: center;
+    justify-content: space-between; flex-wrap: wrap;
+  }
+
+  .dt-sheet {
+    max-inline-size: 46rem;
+    padding: var(--s-9);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    background: var(--panel);
+    display: grid;
+    gap: var(--s-7);
+  }
+
+  .dt-sheet-what {
+    font-size: var(--t-1);
+    color: var(--ink-soft);
+    border-inline-start: 3px solid var(--hairline);
+    padding-inline-start: var(--s-4);
+    margin: 0;
+  }
+  .dt-sheet-title { margin: 0; }
+  .dt-sheet-when { font-family: var(--font-mono); font-size: var(--t-1); color: var(--ink-soft); margin: 0; }
+
+  .dt-sum-block { display: grid; gap: var(--s-2); }
+  .dt-sum-block h3 {
+    font-size: var(--t-1); text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--ink-soft); margin: 0 0 var(--s-3);
+    border-block-end: 1px solid var(--hairline); padding-block-end: var(--s-2);
+  }
+
+  .dt-sum-row {
+    display: grid;
+    grid-template-columns: minmax(0, 12rem) minmax(0, 9rem) minmax(0, 1fr);
+    gap: var(--s-4);
+    align-items: baseline;
+    padding-block: var(--s-2);
+  }
+  @media (width < 40rem) {
+    .dt-sum-row { grid-template-columns: 1fr auto; }
+    .dt-sum-note { grid-column: 1 / -1; }
+  }
+  .dt-sum-value { font-size: var(--t-5); }
+  /* THE WIDTH OF THE ESTIMATE, on the same line as the estimate.
+     A figure whose interval is a footnote is a figure read
+     without one. */
+  .dt-sum-note { font-size: var(--t-1); color: var(--ink-soft); }
+  .dt-sum-meds { margin: 0; padding-inline-start: 1.2em; }
+  .dt-sheet-foot { font-size: var(--t-1); color: var(--ink-soft); margin: 0; }
+
+  /* On paper: the sheet and nothing else. The rail, the bar, the
+     footer and the controls are the website, and a clinician
+     does not need the website. */
+  @media print {
+    .dt-sum-controls { display: none; }
+    /* THE HEADING STAYS, THE SWITCH GOES. Hiding the whole of
+       `.dt-head` took the page's `h1` with it, so the one page
+       here that gets handed to a stranger printed with no title
+       on it at all. */
+    .dt-head .dt-lang, .dt-head .dt-lede { display: none; }
+    .dt-head { margin-block-end: var(--s-6); }
+    .dt-sheet {
+      border: 0; padding: 0; background: none;
+      max-inline-size: none;
+    }
+    .dt-sum-block { break-inside: avoid; }
+    /* A printed page has no back button, so a URL that is only
+       a colour is a URL nobody can follow. */
+    .dt-sheet a::after { content: " (" attr(href) ")"; font-size: 0.85em; }
+  }
+
+
+  /* ---- the food picker's measure step, and what a price says ---- */
+
+/* ============================================================
+   For @layer diet in next/styles/site.css, from the food-picker
+   and foods-panel agent. Every class below is in the markup of
+   next/components/diet/food-picker.tsx or foods-panel.tsx.
+
+   Nothing here gives a class BOTH a ground and an edge, so
+   check-material.ts's second question does not pick any of them
+   up as a surface off the system.
+   ============================================================ */
+
+  /* What a figure is FOR, on every result. Both databases answer
+     per 100 g and the library answers per cup, so a list that
+     hides which is which is a list that logs one as the other. */
+  .dt-hit-por {
+    display: block;
+    font-size: var(--t-1);
+    color: var(--ink-soft);
+  }
+
+  /* How much of an upstream record is actually there. A
+     crowdsourced row missing half its fields has to LOOK worse
+     than a laboratory one, so this is not uppercased with the
+     source word above it. */
+  .dt-hit-fill {
+    display: block;
+    font-size: var(--t-0);
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--ink-soft);
+  }
+
+  /* The step between tapping a result and writing a row. */
+  .dt-measure {
+    display: grid;
+    gap: var(--s-3);
+    padding-block: var(--s-4);
+    border-block-start: 1px solid var(--hairline);
+    border-block-end: 1px solid var(--hairline);
+  }
+  .dt-measure-what { margin: 0; font-weight: 600; }
+  .dt-measure-row {
+    display: flex;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .dt-measure-sum { margin: 0; font-size: var(--t-1); }
+
+  /* The label reader: per 100 g figures off the back of a packet,
+     and the weight that was actually eaten. */
+  .dt-label-form { display: grid; gap: var(--s-3); }
+  .dt-label-cell {
+    display: flex;
+    gap: var(--s-3);
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  /* A price is a fact with a date on it, and an undated price is
+     worse than none. */
+  .dt-priced {
+    display: block;
+    font-size: var(--t-0);
+    color: var(--ink-soft);
+  }
+  /* Where a row's composition figure came from. A number with no
+     source is a number this tool invented. */
+  .dt-row-src {
+    display: block;
+    font-weight: normal;
+    font-size: var(--t-0);
+    color: var(--ink-soft);
+  }
+
+  /* ---- what to expect: the controls, and a marked weighing ---- */
+
+/* For @layer diet in next/styles/site.css.
+
+   From the arithmetic agent: expect-panel.tsx and
+   trend-panel.tsx. Two rules, both purely additive. NEITHER IS
+   LOAD BEARING: both pages render correctly without them, so
+   nothing is broken by not merging this. The first is spacing
+   and the second is a shape. Everything else those two panels
+   needed is a class the stylesheet already had.
+
+   ---- 1. the control rows on the expect panel ---- */
+
+/* Four labelled rows of chips: "What you are about to do", "For
+   how long", "And before that you were doing", and "For how
+   long already". Each row is `.dt-scale` and its label is
+   `.dt-scale-label`, which are already the pair the log form
+   uses for a small label beside a control, so the rows are
+   right on their own. What they have no gap between them is
+   this: `.dt-tags` carries no margin, and the section they sit
+   in spaces what is around them rather than what is inside.
+
+   Smaller than `--step`, because the four of them are one
+   control rather than four sections. */
+.dt-cast-controls {
+  display: grid;
+  gap: var(--s-4);
+  margin-block-end: var(--s-5);
+}
+
+/* ---- 2. a marked day on the trend chart ---- */
+
+/* A ring rather than a dot, and a SHAPE rather than a colour,
+   because nothing on this chart is encoded in colour alone. A
+   marked day is drawn and is left out of the rate, and the
+   table under the chart carries a Marked column saying the same
+   thing in words for a reader who cannot see the difference.
+   The radius is set on the element, so without this rule the
+   day is still visibly larger than its neighbours. */
+.dt-dot[data-marked] {
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 1.4;
+  opacity: 0.8;
+}
+
+  /* ---- how a page connects to the rest of the tool ----
+
+     Quiet, at the foot, and not a card: it is a signpost rather
+     than a reading, and a bordered panel here would compete with
+     the figures above it for the same attention. The dot is the
+     other page's own colour, the same one its tab wears, so the
+     eye can go straight from this list to that tab. */
+  .dt-nearby {
+    display: grid;
+    gap: var(--s-5);
+    margin-block-start: var(--step);
+    padding-block-start: var(--s-6);
+    border-block-start: 1px solid var(--hairline);
+    max-inline-size: 70ch;
+  }
+
+  .dt-nearby-row { display: grid; gap: var(--s-4); }
+  .dt-nearby-lead { font-size: var(--t-2); color: var(--ink-soft); margin: 0; }
+  .dt-nearby-lead strong { color: var(--ink); font-weight: 600; }
+
+  .dt-nearby-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+  }
+
+  .dt-nearby-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-3);
+    font-size: var(--t-1);
+    padding: var(--s-2) var(--s-4);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-pill);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .dt-nearby-link:hover, .dt-nearby-link:focus-visible {
+    border-color: var(--tone, var(--accent));
+  }
+
+  @media print { .dt-nearby { display: none; } }
+
   .dt-symptoms, .dt-diary { max-inline-size: 70ch; }
 
   .dt-invite { display: grid; gap: var(--s-5); max-inline-size: 52ch; justify-items: start; }
+
+  /* One line, wrapping around its own button. `align-items:
+     center` so the button sits on the text's baseline band
+     rather than on the line box's top, which is the alignment
+     bug this stylesheet has already been caught by twice. */
+  .dt-invite-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3);
+    color: var(--ink-soft);
+    font-size: var(--t-2);
+    margin-block-end: var(--step);
+  }
   .dt-board-wait { min-block-size: 12rem; }
 
   .dt-glossary { display: grid; gap: var(--step); max-inline-size: 70ch; }
+
+  /* A first use, linked to its definition. A dotted underline
+     rather than the site's link colour: it is a footnote in the
+     middle of a sentence, and colouring it would make every
+     paragraph in this tool read as a list of links. */
+  .dt-term-link {
+    color: inherit;
+    text-decoration: underline dotted;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+  .dt-term-link:hover, .dt-term-link:focus-visible {
+    text-decoration-style: solid;
+    color: var(--accent);
+  }
+
+  /* Arriving by anchor: the definition has to clear the two
+     floating bars above it. */
+  .dt-term { scroll-margin-top: calc(var(--top-space) + var(--step) * 2); }
+  .dt-term:target dt { color: var(--accent); }
 
   .dt-term {
     border-block-start: 1px solid var(--hairline);

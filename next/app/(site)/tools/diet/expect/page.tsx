@@ -16,7 +16,7 @@ export const metadata: Metadata = pageMeta({
 export default function Page() {
   return (
     <DietPage
-      title={<T en="What to expect" bn="কী আশা করবেন" />}
+      href="/tools/diet/expect"
       lede={{ en: "Almost everybody who quits does so at a point that was predictable a fortnight earlier.", bn: "যাঁরা ছেড়ে দেন তাঁদের প্রায় সবাই এমন এক জায়গায় ছাড়েন, যেটা দুই সপ্তাহ আগেই বলে দেওয়া যেত।" }}
     >
       <ExpectPanel />

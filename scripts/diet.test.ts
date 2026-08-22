@@ -39,14 +39,17 @@ import {
   BMI_CUTS, ACTIVITY, RATES, KCAL_PER_KG, LEARN_AFTER_DAYS,
   TREND_HALF_LIFE_DAYS, KETO_ADAPTATION_DAYS, KETO_WEEK_ONE_KG,
   MAX_LOSS_PCT_PER_WEEK, MAX_GAIN_PCT_PER_WEEK, NO_LOSS_BELOW_BMI,
+  MARKS, PROTOCOL_NAMES, UNLOGGED_SE_SHARE,
   bmi, bmiBand, whtr, whtrBand, navyFat, deurenbergFat, fatEstimate,
   ffmi, ffmiNormalised, mifflin, katch, restingBurn, estimatedBurn,
   activityFactor, trend, fit, slopePerWeek, learnedBurn, target,
   proteinFloor, projection, outsideAdaptation, floorKcal,
   toStone, stoneLabel, toFeetInches,
-  glycogenKg, GLYCOGEN_WATER_RATIO, drained, forecastChange, settlingDays,
-  stretches, readable,
-  type Body, type Point, type Phase,
+  glycogenKg, GLYCOGEN_WATER_RATIO, drained, drainedBy, gutTaken,
+  forecastChange, settlingDays, protocolName, bandAt, hourlyArc,
+  stretches, readable, weighings, learnedHere, entryHour,
+  type Body, type Day, type Point, type Phase, type Protocol,
+  totalFor,
 } from "../shared/diet.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -379,8 +382,40 @@ ok("drain: a complete fast empties faster than very low carb",
 ok("drain: and it is a curve rather than a line",
   drained("keto", 1) > drained("keto", 4) - drained("keto", 3),
   "most of the store goes in the first two days and the tail takes a week");
-ok("drain: a protocol that does not touch carbohydrate drains nothing",
-  drained("standard", 10) === 0 && drained("med", 10) === 0);
+/* THE TABLE HAS TO BE TOTAL. It held four protocols and the nine
+   missing ones were forecast as taking no water off at all, so
+   an ordinary deficit's drop came back 100% fat. An absent row
+   read as a measured zero. */
+ok("drain: an ordinary deficit lowers the store rather than emptying it",
+  drained("standard", 30) > 0.4 && drained("standard", 30) < 0.7,
+  `${drained("standard", 30).toFixed(2)}: eating less lowers glycogen, it does not clear it`);
+ok("drain: and it never reaches as far as very low carb does",
+  drained("standard", 30) < drained("keto", 30));
+ok("drain: what is not a deficit drains nothing at all",
+  drained("maintain", 30) === 0 && drained("gain", 30) === 0
+  && drained("break", 30) === 0,
+  "a surplus refills the store; it does not empty it");
+ok("drain: an ordinary deficit's water follows how much less is eaten",
+  drainedBy("standard", 7, 0.1) < drainedBy("standard", 7, 0.3)
+  && drainedBy("standard", 7, 0.4) === drained("standard", 7),
+  "half the cut cannot take the same water off");
+ok("drain: an unknown depth of cut claims no drain at all",
+  drainedBy("standard", 30, null) === 0,
+  "credited water makes the NEXT drop look realer than it is, which is the flattering way round");
+ok("drain: keto and a fast do not scale with the cut, because their water is the carbohydrate",
+  drainedBy("keto", 3, 0.05) === drained("keto", 3)
+  && drainedBy("fast", 2, null) === drained("fast", 2));
+ok("gut: only a complete fast empties it, and over about two days",
+  gutTaken("fast", 2, 1) === 1 && gutTaken("fast", 1, 1) === 0.5
+  && gutTaken("keto", 7, 1) === 0);
+ok("gut: an ordinary deficit lowers it, because there is less food in it",
+  gutTaken("standard", 7, 0.4) > 0 && gutTaken("standard", 7, 0.4) < 1);
+ok("protocols: every one is written in both languages and named once",
+  PROTOCOL_NAMES.length === 13
+  && PROTOCOL_NAMES.every((p) => p.en.length > 0 && p.bn.length > 0)
+  && new Set(PROTOCOL_NAMES.map((p) => p.id)).size === 13);
+ok("protocols: an unknown id does not come back undefined",
+  protocolName("keto").bn === "কিটো");
 
 const KETO3 = forecastChange({
   from: null, to: "keto", days: 3, weightKg: 80, burn: 2500, intake: 2000,
@@ -464,7 +499,203 @@ ok("readable: a run with no readable stretch fits nothing at all",
   readable(RUN, [{ protocol: "fast", startDay: 0 }], 4).length === 0,
   "an empty answer is the honest one; a slope here would be invented");
 
-/* ---- 15. and no em dash reached the plan ----
+/* ---- 15. the ordinary deficit, which is what most readers do ----
+
+   The panel printed "of which about 100% is fat" for it, one
+   line above a paragraph saying that nothing moving on the first
+   day is fat. Neither sentence was written wrongly: the water
+   table had four rows and this protocol was not one of them, so
+   an absent row was read as a measurement of nothing. */
+
+const B80 = { weightKg: 80, burn: 2500 } as const;
+const PLAIN7 = forecastChange({ from: null, to: "standard", days: 7, ...B80, intake: 2000 });
+const PLAIN1 = forecastChange({ from: null, to: "standard", days: 1, ...B80, intake: 2000 });
+
+ok("ordinary deficit: most of the first week is not fat",
+  PLAIN7.fatShare < 0.5,
+  `${Math.round(PLAIN7.fatShare * 100)}% of the first week being fat contradicts the arc on the same page`);
+ok("ordinary deficit: and day one is nearly none of it",
+  PLAIN1.fatShare < 0.25,
+  `${Math.round(PLAIN1.fatShare * 100)}%: "gut contents and sodium" is what the page says beside this`);
+ok("ordinary deficit: the scale falls the 1 to 3 kg the plan states",
+  -PLAIN7.scale.mid > 1 && -PLAIN7.scale.mid < 3, PLAIN7.scale.mid.toFixed(2));
+near("ordinary deficit: and the fat in it is exactly the deficit",
+  PLAIN7.fat, -(500 * 7) / KCAL_PER_KG, 1e-9);
+ok("DIET.md states the first week this now forecasts",
+  PLAN.includes("often 1 to 3 kg, and most of it is not fat"),
+  "the arc table in the plan and the water model have drifted");
+ok("ordinary deficit: the share holds whatever the depth of the cut",
+  Math.abs(PLAIN7.fatShare
+    - forecastChange({ from: null, to: "standard", days: 7, ...B80, intake: 1500 }).fatShare) < 0.02,
+  "a deeper cut takes proportionally more water with it, so the share is stable");
+ok("ordinary deficit: eating at maintenance moves nothing at all",
+  forecastChange({ from: null, to: "standard", days: 7, ...B80, intake: 2500 }).water.mid === 0,
+  "water follows the cut, so no cut is no water");
+
+/* And the other half of it: refusing, where the model has no
+   water term to divide by. */
+const GAINING = forecastChange({ from: null, to: "gain", days: 14, ...B80, intake: 2800 });
+ok("a gain gets no fat share, because a surplus refills the store this cannot see",
+  GAINING.fatShareKnown === false && GAINING.scale.mid > 0);
+ok("and every protocol the panel offers does get one",
+  (["keto", "fast", "standard"] as Protocol[]).every((p) =>
+    forecastChange({ from: null, to: p, days: 3, ...B80, intake: p === "fast" ? 0 : 2000 })
+      .fatShareKnown),
+  "a protocol a reader can pick and cannot be answered about is a control that does nothing");
+ok("nothing moving is not the same as nothing known",
+  forecastChange({ from: null, to: "maintain", days: 7, ...B80, intake: 2500 }).fatShareKnown,
+  "none of a movement of zero is fat, and that is an answer rather than a refusal");
+
+/* ---- 16. a marked day is drawn and fitted to nothing ---- */
+
+const dayOf = (iso: string): number =>
+  Math.round(Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) / 86400000);
+
+const LOGGED: Day[] = [
+  { date: "2026-08-03", weightKg: 79.6 },
+  { date: "2026-08-01", weightKg: 80.0 },
+  { date: "2026-08-02", weightKg: 79.8, marks: ["ill"] },
+  { date: "2026-08-04", kcal: 2000 },
+];
+const WEIGH = weighings({ days: LOGGED, dayOf });
+ok("marks: a marked day is drawn", WEIGH.drawn.length === 3);
+ok("marks: and is fitted to nothing",
+  WEIGH.fittable.length === 2 && !WEIGH.fittable.some((p) => p.kg === 79.8),
+  "a fortnight of fever water in the slope is a rate nobody is running");
+ok("marks: and is handed back, so a chart can tick it",
+  WEIGH.marked.length === 1 && WEIGH.marked[0].kg === 79.8,
+  "excluded from the fit is not hidden from the reader");
+ok("marks: a day with no weighing on it is neither",
+  WEIGH.drawn.length + 1 === LOGGED.length);
+ok("marks: and the readings come back in day order whatever order they arrived in",
+  WEIGH.drawn.map((p) => p.kg).join() === "80,79.8,79.6");
+ok("marks: every mark is written in both languages",
+  MARKS.every((m) => m.en.length > 0 && m.bn.length > 0));
+
+const SETTLING: Day[] = Array.from({ length: 20 }, (_, i) => ({
+  date: `2026-08-${String(i + 1).padStart(2, "0")}`,
+  weightKg: 80 - i * 0.05,
+}));
+const WITH_PHASE = weighings({
+  days: SETTLING,
+  dayOf,
+  phases: [{ protocol: "keto", startDay: dayOf("2026-08-01") }],
+  today: dayOf("2026-08-20"),
+});
+ok("marks: a settling window is drawn and not fitted, on the same footing",
+  WITH_PHASE.drawn.length === 20 && WITH_PHASE.fittable.length < 20
+  && WITH_PHASE.fittable.every((p) => p.day >= dayOf("2026-08-01") + KETO_ADAPTATION_DAYS));
+
+/* ---- 17. and the learned maintenance never spans a boundary ----
+
+   The panel got the slope right, with `readable()`, and then
+   handed the raw run to the one calculation the plan singles
+   out. A window with a complete fast in it is a window whose
+   weight change is a step in body water. */
+
+const STACKED: Point[] = Array.from({ length: 46 }, (_, d) => ({
+  day: d, kg: 80 - 0.05 * d - (d >= 25 ? 2 : 0),
+}));
+const STACKED_IN = STACKED.map((p) => ({
+  day: p.day, kcal: p.day >= 25 && p.day < 27 ? 0 : 2000,
+}));
+const STACKED_PH: Phase[] = [
+  { protocol: "keto", startDay: 0 },
+  { protocol: "fast", startDay: 25 },
+  { protocol: "standard", startDay: 27 },
+];
+const HERE = learnedHere({
+  weights: STACKED, intakes: STACKED_IN, phases: STACKED_PH, today: 45,
+});
+const WHOLE = learnedBurn(STACKED, STACKED_IN);
+ok("learned: the window is the stretch the reader is in, not the run",
+  HERE?.from === 27 && HERE?.days === 18 && HERE?.protocol === "standard",
+  JSON.stringify({ from: HERE?.from, days: HERE?.days }));
+near("learned: 2000 a day and 0.35 kg a week off is a burn of 2385",
+  (HERE as { kcal: { mid: number } }).kcal.mid, 2385, 1);
+ok("learned: the whole run says something else, because two days of it were water",
+  (WHOLE as { kcal: { mid: number } }).kcal.mid - (HERE as { kcal: { mid: number } }).kcal.mid > 200,
+  `${Math.round((WHOLE as { kcal: { mid: number } }).kcal.mid)} against ${Math.round((HERE as { kcal: { mid: number } }).kcal.mid)}`);
+ok("learned: and the run's answer is the flattering one, as usual",
+  (WHOLE as { kcal: { mid: number } }).kcal.mid > (HERE as { kcal: { mid: number } }).kcal.mid,
+  "a maintenance that is too high sets a target that is too high");
+ok("learned: with no phases there is no boundary and the whole run is the window",
+  learnedHere({ weights: STACKED, intakes: STACKED_IN, today: 45 })?.protocol === null);
+ok("learned: and nothing at all rather than a window that spans the change",
+  learnedHere({
+    weights: STACKED, intakes: STACKED_IN, today: 26,
+    phases: [{ protocol: "keto", startDay: 0 }, { protocol: "fast", startDay: 25 }],
+  }) === null,
+  "no stretch here is both readable and a fortnight long, and the honest answer is that "
+  + "there is not one yet rather than the whole run's");
+
+/* ---- 18. and the band widens when the log is patchy ---- */
+
+const FULL_LOG = learnedBurn(noisy, line.map((q) => ({ day: q.day, kcal: 2000 })));
+const PATCHY = learnedBurn(noisy, [
+  { day: 3, kcal: 2000 }, { day: 14, kcal: 2000 }, { day: 25, kcal: 2000 },
+]);
+const widthOf = (l: { kcal: { low: number; high: number } } | null): number =>
+  (l ? l.kcal.high - l.kcal.low : NaN);
+ok("learned: three logged days in a month is a visibly wider band than a full month",
+  widthOf(PATCHY) > 2 * widthOf(FULL_LOG),
+  `${Math.round(widthOf(PATCHY))} against ${Math.round(widthOf(FULL_LOG))}: `
+  + "the same variance in three identical days measured nothing about the other twenty-six");
+near("learned: and the middle is unmoved, because the mean is the same",
+  (PATCHY as { kcal: { mid: number } }).kcal.mid,
+  (FULL_LOG as { kcal: { mid: number } }).kcal.mid, 1e-9);
+ok("learned: the widening is the plan's own under-recording figure",
+  UNLOGGED_SE_SHARE >= 0.2 && UNLOGGED_SE_SHARE <= 0.3);
+ok("DIET.md states the under-recording that widening is built on",
+  PLAN.includes("20 to 30 percent"));
+
+/* ---- 19. what an entry says about when it was eaten ---- */
+
+ok("hour: the clock column first", entryHour({ atTime: "07:30", meal: "breakfast" }) === 7);
+ok("hour: and the rows that carry a clock where a meal name goes",
+  entryHour({ meal: "19:05" }) === 19,
+  "there are real rows in that shape and dropping the fallback empties the by-hour reading");
+ok("hour: null rather than noon when the row does not say",
+  entryHour({ meal: "lunch" }) === null && entryHour({}) === null,
+  "a silent midday puts somebody's breakfast in the middle of the afternoon");
+ok("hour: and a clock that is not one is not an hour",
+  entryHour({ atTime: "31:00" }) === null && entryHour({ atTime: "7" }) === null);
+
+/* ---- 20. and the panels use all of it ----
+
+   Every fix above is arithmetic that already existed once. The
+   stacking was written, tested and passed `from: null` by the
+   one page that could reach it, which is why these four are
+   greps rather than sums. */
+
+/* Comments stripped first. Every one of these lines is written
+   out in the prose above the code that fixed it, so a grep over
+   the whole file would pass on the paragraph describing the bug
+   and fail to notice the bug coming back. */
+const code = (s: string): string =>
+  s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+const EXPECT = code(readFileSync(
+  join(ROOT, "next", "components", "diet", "expect-panel.tsx"), "utf8"));
+const TREND = code(readFileSync(
+  join(ROOT, "next", "components", "diet", "trend-panel.tsx"), "utf8"));
+
+ok("panel: the forecast is handed what was running before it",
+  !/from:\s*null/.test(EXPECT),
+  "the stacking arithmetic is the difference between a forecast and an encouragement");
+ok("panel: and the fat share is printed only where it is known",
+  EXPECT.includes("fatShareKnown"));
+ok("panel: the week's total is read off the end of the arc rather than a signed minimum",
+  !EXPECT.includes("Math.min(...arc"),
+  '"about -5.2 kg down" is a minus sign inside a sentence that already says which way');
+ok("panel: and the settling window says the same thing in both languages",
+  !EXPECT.includes('|| "no"'),
+  "one half read \"no days after it ends\" while the other rendered a nought");
+ok("panel: the trend's maintenance is measured inside one stretch",
+  TREND.includes("learnedHere") && !TREND.includes("learnedBurn"));
+ok("panel: and both panels take their points from the one splitter",
+  TREND.includes("weighings(") && EXPECT.includes("weighings("));
+
+/* ---- 21. and no em dash reached the plan ----
 
    BUILT FROM ITS CODE POINT, NEVER TYPED. The first version of
    these two lines wrote the character out, so a test asserting
@@ -479,6 +710,185 @@ const EM = String.fromCharCode(0x2014);
 ok("DIET.md carries no em dash", !PLAN.includes(EM));
 ok("shared/diet.ts carries no em dash",
   !readFileSync(join(ROOT, "shared", "diet.ts"), "utf8").includes(EM));
+
+/* ------------------------------------------------------------
+   coverage is per nutrient, because one key is not five
+
+   A crowdsourced row may carry sodium and nothing else. Counting
+   an entry as covered because `micros` has ANY key took a day
+   made of one of those to 100%, and the panel then printed
+   "computed from 100% of today's food" above four nutrients
+   reading "not known". A confident number missing most of the
+   day is the failure this whole file is arranged around, and it
+   ran in the flattering direction.
+   ------------------------------------------------------------ */
+
+const oneSided = totalFor([
+  { date: "2026-08-22", label: "a plate", kcal: 700, micros: { sodium: 900 } },
+  { date: "2026-08-22", label: "rice", kcal: 300, micros: { sodium: 3, iron: 1.9 } },
+]);
+
+ok("the day's own coverage still counts any composition",
+  oneSided.coverage === 1);
+ok("sodium is known across the whole day",
+  oneSided.microCoverage.sodium === 1);
+ok("iron is known across three tenths of it, not all of it",
+  Math.abs((oneSided.microCoverage.iron ?? 0) - 0.3) < 1e-9);
+ok("a nutrient nothing carries is absent rather than zero",
+  !("calcium" in oneSided.microCoverage));
+
+const nothingLogged = totalFor([]);
+ok("an empty day divides by no zero",
+  nothingLogged.coverage === 0 && Object.keys(nothingLogged.microCoverage).length === 0);
+
+const freeOnly = totalFor([{ date: "2026-08-22", label: "a guess", kcal: 500 }]);
+ok("free entry leaves every nutrient uncovered",
+  freeOnly.coverage === 0 && Object.keys(freeOnly.microCoverage).length === 0);
+
+/* ---- the keto page's live clock, and the three numbers on it ----
+
+   `next/components/diet/keto-panel.tsx` draws a reader's own
+   position on the arc `hourlyArc()` already returns, so what is
+   asserted here is what that page says out loud: an 80kg reader
+   on keto, at hour 6, at hour 30 and on day 5, against a
+   maintenance of 2,500 and 500 under it.
+
+   THE FAT SHARE HAS TO CLIMB. It is the column the whole page
+   exists for, and a version that started high would be telling
+   somebody their first two days were fat, which is the one thing
+   keto's first fortnight is not. */
+
+const clockAt = (hours: number) => forecastChange({
+  from: null, to: "keto", days: hours / 24, weightKg: 80, burn: 2500, intake: 2000,
+});
+const H6 = clockAt(6);
+const H30 = clockAt(30);
+const D5 = clockAt(120);
+
+near("clock: hour 6 of keto is about a quarter of a kilo", H6.scale.mid, -0.25, 0.03);
+near("clock: hour 30 is about a kilo", H30.scale.mid, -1.02, 0.05);
+near("clock: day 5 is about two and a fifth", D5.scale.mid, -2.18, 0.06);
+
+ok("clock: a kilo off the scale at hour 30 is under a tenth of a kilo of fat",
+  Math.abs(H30.fat) < 0.1 && Math.abs(H30.scale.mid) > 0.7,
+  `scale ${H30.scale.mid.toFixed(2)}, fat ${H30.fat.toFixed(3)}`);
+
+ok("clock: and the share of the drop that is fat climbs all week",
+  H6.fatShare < H30.fatShare && H30.fatShare < D5.fatShare,
+  `${(H6.fatShare * 100).toFixed(0)}%, ${(H30.fatShare * 100).toFixed(0)}%, `
+  + `${(D5.fatShare * 100).toFixed(0)}%`);
+
+ok("clock: every one of the three may print that share",
+  H6.fatShareKnown && H30.fatShareKnown && D5.fatShareKnown);
+
+ok("clock: nothing the scale showed at hour 6 was mostly fat",
+  H6.fatShare < 0.1, `${(H6.fatShare * 100).toFixed(0)}%`);
+
+/* AND THE PAGE IS NOT A SECOND MODEL. The clock calls
+   `forecastChange()` at the hour the reader is at; the table on
+   the expect page calls `hourlyArc()`. Both have to answer the
+   same thing at the same hour or two pages of this tool disagree
+   about the same body on the same day. */
+const arc6 = hourlyArc(
+  { from: null, to: "keto", days: 7, weightKg: 80, burn: 2500, intake: 2000 }, 6,
+).find((p) => p.hour === 6);
+near("clock: and it agrees with the arc the expect page draws",
+  arc6?.scale.mid ?? 0, H6.scale.mid, 1e-9);
+
+/* The bands the clock reads its sentence out of, and the one
+   state it has to have words for: past the end of the first week
+   there is no band at all, and a page that printed nothing there
+   would go blank on day eight. */
+ok("clock: hour 6 is in the first band and the next one opens at 24",
+  bandAt("keto", 6).now?.from === 0 && bandAt("keto", 6).next?.from === 24);
+ok("clock: hour 30 is the band where the bulk of the water goes",
+  bandAt("keto", 30).now?.from === 24);
+ok("clock: day 5 is the last band of the week and nothing follows it",
+  bandAt("keto", 120).now?.from === 120 && bandAt("keto", 120).next === null);
+ok("clock: and after the first week there is no band, which the page says in words",
+  bandAt("keto", 200).now === null && bandAt("keto", 200).next === null);
+
+/* The adaptation window, which is the other half of the same
+   page: five days into a keto phase there is no rate to print,
+   and the honest answer is that there is not one yet. */
+const started = 100;
+const fortnight: Point[] = Array.from({ length: 6 }, (_, i) =>
+  ({ day: started + i, kg: 80 - i * 0.3 }));
+const ketoPhase: Phase[] = [{ protocol: "keto", startDay: started }];
+ok("clock: five days into keto no slope may be fitted at all",
+  readable(fortnight, ketoPhase, started + 5).length === 0);
+ok("clock: and every one of those weighings is inside the window",
+  outsideAdaptation(fortnight, started).length === 0);
+
+/* ---- the keto page's own numbers, against the prose ----
+
+   Section 7 states three amounts and this is the section most
+   likely to hurt somebody if it is wrong: the sodium note is
+   actively wrong for two groups of people, and the sentence
+   saying so has to be beside the numbers rather than in a footer.
+   The numbers are read out of DIET.md rather than retyped, for
+   the reason the cut-off table above is. */
+
+const KETO_PAGE = readFileSync(
+  join(ROOT, "next/components/diet/keto-panel.tsx"), "utf8");
+const PAGE = KETO_PAGE.replace(/\s+/g, " ");
+const PROSE = PLAN.replace(/\s+/g, " ");
+
+const salts = PROSE.match(
+  /Sodium roughly (\d+) to (\d+) g a day, potassium (\d+) to (\d+) g, magnesium (\d+) to (\d+) mg/,
+);
+ok("DIET.md still states the keto three", !!salts,
+  "section 7 is where the page reads them from.");
+if (salts) {
+  ok(`the keto page states sodium as ${salts[1]} to ${salts[2]} g a day`,
+    PAGE.includes(`${salts[1]} to ${salts[2]} g a day`));
+  ok(`the keto page states potassium as ${salts[3]} to ${salts[4]} g a day`,
+    PAGE.includes(`${salts[3]} to ${salts[4]} g a day`));
+  ok(`the keto page states magnesium as ${salts[5]} to ${salts[6]} mg a day`,
+    PAGE.includes(`${salts[5]} to ${salts[6]} mg a day`));
+}
+
+ok("the keto page warns about blood pressure medicine and kidney disease, beside the numbers",
+  /blood pressure/.test(PAGE) && /kidney disease/.test(PAGE),
+  "section 7: for those two groups this advice is actively wrong.");
+ok("and it carries the medical advice line in both languages",
+  PAGE.includes("general education and not medical advice")
+  && PAGE.includes("চিকিৎসা পরামর্শ নয়"));
+ok("and it names the one interaction that has to be settled before starting",
+  /insulin or a sulfonylurea/.test(PAGE) && /BEFORE/.test(PAGE));
+
+/* Every row of that table is said twice or a Bangla reader meets
+   a blank where an amount should be. `check-diet.ts` asks this of
+   every `<T>`; a table of strings is not a `<T>`. */
+const halves = ["en", "bn", "muchEn", "muchBn", "whyEn", "whyBn", "fromEn", "fromBn"]
+  .map((k) => (KETO_PAGE.match(new RegExp(`\\b${k}:`, "g")) ?? []).length);
+ok("the keto page says all three of them twice over",
+  new Set(halves).size === 1 && halves[0] >= 3, halves.join(", "));
+
+const carbs = PROSE.match(/Net carbs typically under (\d+) to (\d+) g/);
+ok("DIET.md still states the net carb range", !!carbs);
+if (carbs) {
+  ok(`the keto page draws both marks, ${carbs[1]} g and ${carbs[2]} g`,
+    PAGE.includes(`const TIGHT = ${carbs[1]};`)
+    && PAGE.includes(`const LOOSE = ${carbs[2]};`),
+    "Section 7 calls the limit individual, so the page draws both rather than"
+    + " inventing one.");
+}
+
+const meter = PROSE.match(/blood ketone log, ([\d.]+) to ([\d.]+) mmol/);
+ok("DIET.md still states what a blood meter reads", !!meter);
+if (meter) {
+  ok(`the keto page states ${meter[1]} to ${meter[2]} mmol/L`,
+    PAGE.includes(`const KETONE_LOW = ${meter[1]};`)
+    && PAGE.includes(`const KETONE_HIGH = ${meter[2]};`));
+}
+
+ok("the keto page says a ketone level is not how fast fat is going, where the field is",
+  /says nothing at all about how fast fat is being lost/.test(PAGE),
+  "Section 7: not a score, and said where the field is rather than in a help"
+  + " article.");
+ok("and it says urine strips stop being reliable rather than letting somebody chase a colour",
+  /Urine strips get unreliable after adaptation/.test(PAGE));
 
 /* ------------------------------------------------------------ */
 

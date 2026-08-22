@@ -27,7 +27,7 @@
    ============================================================ */
 
 import { useEffect, useState } from "react";
-import { MARKS, TAGS, totalFor, type Day, type Entry } from "@reiad/shared/diet";
+import { MARKS, TAGS, markNamed, totalFor, type Day, type Entry } from "@reiad/shared/diet";
 import { Button } from "../ui/button";
 import { ChipButton } from "../ui/chip";
 import { Field } from "../ui/field";
@@ -43,13 +43,38 @@ const num = (raw: string): number | undefined => {
   return raw.trim() !== "" && Number.isFinite(n) && n > 0 ? n : undefined;
 };
 
-export function LogForm({ day, entries, saving, place, onDay, onEntry }: {
+/** The date written out, for the heading when it is not today.
+    `Intl` rather than a table of month names, because it already
+    knows both, and `bn-BD` gives Bangla numerals with them. */
+const dayWords = (iso: string, lang: "en" | "bn"): string => {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(
+    lang === "bn" ? "bn-BD" : "en-GB",
+    { weekday: "long", day: "numeric", month: "long" },
+  );
+};
+
+export function LogForm({
+  day, entries, saving, place, date, today, ready,
+  onDay, onEntry, onRemove, onDate,
+}: {
   day?: Day;
   entries: Entry[];
   saving: "idle" | "saving" | "saved" | "queued";
   place?: "bd" | "uk";
+  /** The day being written, which is `today` until the reader
+      moves it back. Both are passed because the heading has to
+      say WHICH day, and "Today" is only right for one of them. */
+  date: string;
+  today: string;
+  /** The rows are back. Nothing may be written before they are:
+      `saveDay` merges a whole row and would null what has not
+      arrived yet. */
+  ready: boolean;
   onDay: (patch: Partial<Day>) => void;
   onEntry: (e: Omit<Entry, "date">) => void;
+  onRemove: (id: string) => void;
+  onDate: (iso: string) => void;
 }) {
   const lang = useToolLang();
   const [weight, setWeight] = useState("");
@@ -79,7 +104,11 @@ export function LogForm({ day, entries, saving, place, onDay, onEntry }: {
   return (
     <div className="dt-log">
       <div className="dt-log-head">
-        <h2><T en="Today" bn="আজ" /></h2>
+        <h2>
+          {date === today
+            ? <T en="Today" bn="আজ" />
+            : <T en={dayWords(date, "en")} bn={dayWords(date, "bn")} />}
+        </h2>
         <span className="dt-save" data-state={saving}>
           <T
             en={saving === "saving" ? "Saving" : saving === "saved" ? "Saved"
@@ -88,6 +117,26 @@ export function LogForm({ day, entries, saving, place, onDay, onEntry }: {
               : saving === "queued" ? "এখনো যায়নি, নেট এলে চলে যাবে" : ""}
           />
         </span>
+      </div>
+
+      {/* A DAY THAT WAS MISSED CAN BE FILLED IN. This form wrote
+          only ever to the current date, so a day away from a
+          phone was a hole nothing could close, and a reader who
+          weighed themselves before the app loaded had nowhere to
+          put the number. Capped at today: a log of the future is
+          a plan, and section 13 puts plans somewhere else. */}
+      <div className="dt-when">
+        <Field
+          id="dt-log-date" type="date" max={today}
+          label={<T en="Which day" bn="কোন দিনের" />}
+          value={date}
+          onChange={(e) => { if (e.target.value) onDate(e.target.value); }}
+        />
+        {date !== today ? (
+          <Button size="sm" onClick={() => onDate(today)}>
+            <T en="Back to today" bn="আজকে ফিরুন" />
+          </Button>
+        ) : null}
       </div>
 
       <div className="dt-quick">
@@ -159,6 +208,22 @@ export function LogForm({ day, entries, saving, place, onDay, onEntry }: {
                       site checked from a stranger's. */}
                   {e.source && e.source !== "free"
                     ? <span className="dt-src">{e.source}</span> : null}
+                  {/* A MISTYPE HAS TO BE UNDOABLE. Without this
+                      the list was a list that could only grow,
+                      and one wrong 2,500 sat in the day's total
+                      and in the learned maintenance for ever. */}
+                  {e.id ? (
+                    <button
+                      type="button" className="dt-drop"
+                      onClick={() => onRemove(e.id as string)}
+                      disabled={!ready}
+                      aria-label={lang === "bn"
+                        ? `${e.labelBn ?? e.label} মুছুন`
+                        : `Remove ${e.label}`}
+                    >
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -171,7 +236,7 @@ export function LogForm({ day, entries, saving, place, onDay, onEntry }: {
             rises before the trend moves and before adherence
             breaks. One tap, five choices. */}
         <div className="dt-scale" role="group"
-             aria-label="Hunger today, one to five">
+             aria-label={lang === "bn" ? "আজকের ক্ষুধা, এক থেকে পাঁচ" : "Hunger today, one to five"}>
           <span className="dt-scale-label"><T en="Hunger" bn="ক্ষুধা" /></span>
           {[1, 2, 3, 4, 5].map((n) => (
             <ChipButton
@@ -184,7 +249,7 @@ export function LogForm({ day, entries, saving, place, onDay, onEntry }: {
           ))}
         </div>
 
-        <div className="dt-tags" role="group" aria-label="Tags for today">
+        <div className="dt-tags" role="group" aria-label={lang === "bn" ? "আজকের ট্যাগ" : "Tags for today"}>
           {TAGS.map((t) => (
             <ChipButton
               key={t.id}
@@ -209,16 +274,30 @@ export function LogForm({ day, entries, saving, place, onDay, onEntry }: {
           is no penalty, no broken anything, and no catch-up
           target the following week: the tool's position on a bad
           fortnight is that it happened. */}
-      <div className="dt-marks" role="group" aria-label="Mark today">
-        {MARKS.map((m) => (
-          <ChipButton
-            key={m.id}
-            pressed={marks.has(m.id)}
-            onClick={() => onDay({ marks: toggle(marks, m.id) })}
-          >
-            <T en={m.en} bn={m.bn} />
-          </ChipButton>
-        ))}
+      <div className="dt-marks" role="group" aria-label={lang === "bn" ? "আজকের দিনটা চিহ্নিত করুন" : "Mark today"}>
+        {/* PRESSED IS ASKED THROUGH `markNamed()`, because one
+            mark has been stored under two spellings: this list
+            wrote `off` for a while and the column has always
+            said `off-protocol`. Asking `marks.has(m.id)`
+            directly would show the chip unpressed on a day that
+            really is marked, and pressing it would add a SECOND
+            mark rather than clearing the first. */}
+        {MARKS.map((m) => {
+          const on = [...marks].some((id) => markNamed(id)?.id === m.id);
+          return (
+            <ChipButton
+              key={m.id}
+              pressed={on}
+              onClick={() => onDay({
+                marks: on
+                  ? [...marks].filter((id) => markNamed(id)?.id !== m.id)
+                  : [...marks, m.id],
+              })}
+            >
+              <T en={m.en} bn={m.bn} />
+            </ChipButton>
+          );
+        })}
       </div>
       <p className="dt-hint">
         <T

@@ -114,6 +114,12 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/check-dashes.ts",
     "scripts/check-next.ts",
     "scripts/check-courses.ts",
+    /* DIET.md section 33's page-level half: a target printed with
+       no medical advice line beside it, a widget whose empty
+       state is a zero, a Bangla reader meeting an English string,
+       and a column in the migration nothing can ever fill. The
+       arithmetic is scripts/diet.test.ts in the tests stage. */
+    "scripts/check-diet.ts",
     "scripts/check-accents.ts",
   ]],
   ["generated", [

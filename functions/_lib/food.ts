@@ -66,7 +66,14 @@
    shares.
    ============================================================ */
 
+import { barcodeOf, isBarcode } from "../../shared/foods.ts";
 import type { Place } from "../../shared/diet.ts";
+
+/* What a barcode IS lives in `shared/foods.ts`, because the
+   browser decides the same thing before it asks and cannot
+   import this file: both hostnames below are written out here
+   and `check-csp.ts` scans every string under `next/`. */
+export { isBarcode };
 
 /** Which database a row came from. Printed on every result and
     never omitted: the difference between a figure out of a
@@ -273,8 +280,6 @@ const kcalFromKj = (kj: number | undefined): number | undefined =>
 const mgFromG = (grams: number | undefined): number | undefined =>
   (grams === undefined ? undefined : grams * 1000);
 
-const BARCODE = /^\d{8,14}$/;
-
 /** One Open Food Facts product, or nothing.
 
     Three ways a row is dropped and each one is a row a reader
@@ -304,7 +309,7 @@ export function offHit(product: unknown): FoodHit | null {
     source: "off",
     label,
     brand: brand || undefined,
-    barcode: BARCODE.test(code) ? code : undefined,
+    barcode: barcodeOf(code),
     kcal,
     protein: num(n.proteins_100g),
     carbs: num(n.carbohydrates_100g),
@@ -439,14 +444,12 @@ export function fdcHit(food: unknown): FoodHit | null {
   const kcal = asKcal(m.get(FDC.kcal)) ?? asKcal(m.get(FDC.kj));
   if (kcal === undefined) return null;
 
-  const barcode = text(f.gtinUpc);
-
   return finish({
     id: `fdc:${id}`,
     source: "fdc",
     label,
     brand: text(f.brandName) || text(f.brandOwner) || undefined,
-    barcode: BARCODE.test(barcode) ? barcode : undefined,
+    barcode: barcodeOf(text(f.gtinUpc)),
     kcal,
     protein: asGrams(m.get(FDC.protein)),
     carbs: asGrams(m.get(FDC.carbs)),
@@ -473,12 +476,6 @@ export function fdcHits(payload: unknown): FoodHit[] {
 /* ---------- which source leads ---------- */
 
 export type QueryKind = "barcode" | "packaged" | "generic";
-
-/** Eight to fourteen digits: EAN-8, UPC-A, EAN-13, GTIN-14.
-    Spaces and hyphens come off first, because that is how a
-    number read off a packet gets typed. */
-export const isBarcode = (query: string): boolean =>
-  BARCODE.test(query.replace(/[\s-]/g, ""));
 
 /**
  * What the reader appears to be looking for.

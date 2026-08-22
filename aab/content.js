@@ -381,6 +381,17 @@ export const PAGES = [
         hint: "Tool", group: "tool", blurb: "Forty-odd ratios across six pillars, a verdict that shows its own arithmetic, in English or Bangla." },
     { title: "Live portfolio: a real account, live", url: "/tools/live",
         hint: "Tool", group: "tool", blurb: "The site's own Trading 212 portfolio in percentages, live from the broker, and the full dashboard for your own account when you connect a key." },
+    /* THE OTHER TWO TOOLS WERE IN NO SITEMAP AND NO PALETTE. Both
+       are in `nav.ts`, so the rail and the footer reached them and
+       nothing else did: `build-meta.ts` builds the sitemap out of
+       this table, and Ctrl+K reads it too. The eleven diet pages
+       and the four routine pages are one entry each, the way
+       `/tools/stock` is, because a palette is a way in rather than
+       a table of contents. */
+    { title: "Diet: what your body is, and what it costs", url: "/tools/diet",
+        hint: "Tool", group: "tool", blurb: "Waist to height, BMI on the cut-offs that apply to you, body fat with its error bars, a food log priced in taka and in pounds, and what to expect at each hour of a change." },
+    { title: "Routine: the day, and the year behind it", url: "/tools/routine",
+        hint: "Tool", group: "tool", blurb: "One day at a time, with the year drawn behind it, so a habit is read off what happened rather than off a streak that only falls." },
     { title: "Insights", url: "/insights",
         hint: "Page", blurb: "Longer pieces, plus an auto-updating pulse of market news." },
     { title: "Three-statement model: interactive case study", url: "/portfolio/three-statement",

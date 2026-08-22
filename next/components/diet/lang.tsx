@@ -125,7 +125,16 @@ export const digits = (n: number | string, lang: ToolLang): string =>
     lazy: the attribute is the state, the stylesheet has already
     answered it before this component exists, and giving the
     server a guess at which half to mark would reintroduce the
-    hydration mismatch this whole file exists to avoid. */
+    hydration mismatch this whole file exists to avoid.
+
+    WHICH LEFT IT LOOKING BROKEN FOR A PAINT. Neither half was
+    lit until an effect ran, so a Bangla reader's first sight of
+    their own switch was two grey buttons. `@layer diet` lights
+    it off `:root[data-tool-lang]`, which the boot script has
+    already set, so the drawing is right before this component
+    exists and `aria-pressed` catches up. `data-half` is what the
+    stylesheet needs to tell the two apart without depending on
+    child order. */
 export function LangSwitch() {
   const [lang, setLang] = useState<ToolLang | null>(null);
 
@@ -153,6 +162,7 @@ export function LangSwitch() {
       <button
         type="button"
         className="dt-lang-btn"
+        data-half="en"
         aria-pressed={lang === null ? undefined : lang === "en"}
         onClick={() => choose("en")}
       >
@@ -161,6 +171,7 @@ export function LangSwitch() {
       <button
         type="button"
         className="dt-lang-btn"
+        data-half="bn"
         aria-pressed={lang === null ? undefined : lang === "bn"}
         onClick={() => choose("bn")}
         lang="bn"

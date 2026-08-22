@@ -205,10 +205,34 @@ let bad = 0;
    than the rule. */
 
 const NOT_GLASS = new Map<string, string>([
+  /* THE ONE SURFACE ON THIS SITE THAT IS MEANT TO BE PAPER.
+     It is the sheet somebody hands across a desk in a ten minute
+     appointment, and a clinician reading a translucent panel with
+     a light moving across it would be reading a website rather
+     than a record. Its print rules take the rail, the bar and the
+     footer away for the same reason. Plain on purpose, and the
+     purpose is that it stops looking like this site. */
+  ["dt-sheet", "a printable record: deliberately not glass, because it is handed to a clinician"],
+  /* A MARK, and twenty-four of them: one column per hour of the
+     day. A bevel on a two pixel wide bar is invisible, and the
+     row reads as a shape rather than as twenty-four small
+     panes. */
+  ["dt-hourbar", "a mark: one of 24 columns, as narrow as 2px, read as a shape"],
+  /* A MARK, six pixels tall: it is the fat share drawn as a
+     line, and a bevel on it would be detail nobody can resolve.
+     The groove kind exists for a track somebody aims at, and
+     nobody aims at this. */
+  ["dt-hours-bar", "a mark: 6px tall, read at a glance beside its own number, never pressed"],
   /* A MARK, ten pixels tall and fourteen of them in a row: a
      bevel on one is detail nobody can resolve, and the strip
      reads as a calendar rather than as fourteen small panes. */
   ["dt-strip-day", "a mark: 10px tall, fourteen in a row, and a cut edge on one is invisible"],
+  /* A MARK, seven pixels across and round: it is the page's own
+     colour beside the page's own name, in a strip of eleven. A
+     bevel and a moving light on a dot that size is not detail
+     anybody can resolve, and eleven of them lit would turn a
+     strip into a string of bulbs. */
+  ["dt-tab-dot", "a mark: a 7px dot carrying one page's colour, eleven in a row"],
   ["acc-ico",             "a mark: the account menu's 20px icon disc"],
   ["rail-ico",            "a mark: the rail's per-school icon disc"],
   ["acc-avatar",          "a mark: a round profile picture, and a bevel on a photo is a frame"],

@@ -43,6 +43,7 @@ import { readFile, stat } from "node:fs/promises";
 import { extname, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ConsoleMessage, Page, Request } from "playwright";
+import { DIET_PAGES } from "./lib/diet-pages.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const BUILD = join(HERE, ".next");
@@ -102,10 +103,15 @@ const TYPES: Record<string, string> = {
   ".ico": "image/x-icon",
 };
 
+/* BUILT FROM THE TABLE, NEVER TYPED OUT. This named three routes
+   while the tool had ten, because it was written when seven of
+   them were promises, and the assertion that every card goes
+   somewhere real then failed on every card that had since been
+   built. A test whose idea of the site is a hand-kept list stops
+   describing the site the first time a page lands. */
 const PRERENDERED: Record<string, string> = {
   "/tools/diet": "tools/diet.html",
-  "/tools/diet/you": "tools/diet/you.html",
-  "/tools/diet/glossary": "tools/diet/glossary.html",
+  ...Object.fromEntries(DIET_PAGES.map((p) => [p.href, `${p.href.slice(1)}.html`])),
 };
 
 const server = createServer(async (req, res) => {
@@ -231,9 +237,21 @@ const fill = async (page: Page, vals: Record<string, string>): Promise<void> => 
 {
   const { page, errors } = await load("/tools/diet/you");
 
+  /* IT DRAWS WHAT IS COMING, not a sentence about it. The empty
+     readout was two lines of grey text beside a form and half a
+     wide screen of nothing; it is the five figures it will fill,
+     each naming the measurement it is waiting for, so a reader
+     can see both how many answers there will be and which box on
+     the left produces each one. */
   const before = await seen(page);
-  ok("you: says what it needs before it has it",
-    before.includes("Height, weight and age"), before.slice(0, 120));
+  const ghosts = await page.$$eval(".dt-figure-empty", (els) => els.length);
+  ok("you: draws every figure it is going to fill", ghosts === 5, String(ghosts));
+  ok("you: and each one says which measurement it is waiting for",
+    before.includes("Waiting for a waist and a height")
+    && before.includes("Waiting for a height, a weight and an age"),
+    before.slice(0, 200));
+  ok("you: and still says nothing is stored",
+    before.includes("Nothing above is stored"), before.slice(0, 200));
 
   await fill(page, { "dt-height": "180", "dt-weight": "80", "dt-age": "30" });
   const out = await page.$$eval(".dt-figure .dt-value", (els) =>
@@ -322,10 +340,30 @@ const fill = async (page: Page, vals: Record<string, string>): Promise<void> => 
   const soon = await page.$$eval('[data-kind="soon"]', (els) => els.length);
   const go = await page.$$eval('[data-kind="go"]', (els) =>
     els.map((e) => e.getAttribute("href")));
-  ok("diet: what is not built is a soon card, not an empty panel", soon >= 2);
-  ok("diet: and every card that takes you somewhere goes somewhere real",
-    go.length >= 2 && go.every((h) => h !== null && PRERENDERED[h] !== undefined),
+  /* EVERY PAGE IN THE TABLE IS BUILT, so there is nothing left
+     to promise. The rule is unchanged and its answer moved: a
+     card for a page that does not render would be a soon card,
+     and there are none because there are no such pages. */
+  ok("diet: nothing on the front door is still a promise", soon === 0);
+  ok("diet: and the deck names every page in the table, once each",
+    go.length === DIET_PAGES.length
+    && DIET_PAGES.every((p) => go.includes(p.href)),
     go.join(" "));
+  ok("diet: and every card that takes you somewhere goes somewhere real",
+    go.every((h) => h !== null && PRERENDERED[h] !== undefined),
+    go.join(" "));
+
+  /* THE STRIP AND THE DECK ARE THE SAME TABLE, which is the whole
+     reason the table exists. Two lists of the same ten pages is
+     what this replaced. */
+  const tabs = await page.$$eval(".dt-tab", (els) =>
+    els.map((e) => e.getAttribute("href")));
+  ok("diet: the strip carries the home page and every entry",
+    tabs[0] === "/tools/diet"
+    && DIET_PAGES.every((p) => tabs.includes(p.href)),
+    tabs.join(" "));
+  ok("diet: and the strip marks the page it is on",
+    await page.$$eval('.dt-tab[aria-current="page"]', (els) => els.length) === 1);
   await page.close();
 }
 

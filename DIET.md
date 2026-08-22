@@ -497,6 +497,28 @@ built phase here rather than an empty screen.
 Keto gets its own handling because its first three weeks lie to
 you, and a tracker that does not say so is worse than no tracker.
 
+**Built, and it is `/tools/diet/keto`.**
+`next/components/diet/keto-panel.tsx`. A live clock on the phase
+that is running: which hour, what the body is doing at that
+hour, what the scale has done and how much of that is real, and
+what comes next, redrawn every minute the page is open. Starting
+a phase and ending one are on it too, which is what makes every
+phase-aware reading in this tool reach a reader at all: a phase
+ends where the next one begins, and that is the end
+`stretches()` already reads. The three amounts below sit beside
+the sentence about blood pressure medicine and kidney disease,
+net carbs are drawn against both marks rather than one invented
+limit, the adaptation window is drawn rather than described, and
+`diet_days.ketones_mmol` has a field at last. The clock's own
+numbers are asserted in `scripts/diet.test.ts`, hour by hour,
+against the amounts stated here.
+
+**What is not built.** The carbohydrate limit is still not a
+setting, because `diet_profile` has no column for one: the page
+draws both ends of the range and says which is which rather than
+picking. And `diet_phases.ended_on` is still unwritten, for the
+reason above.
+
 ### Week one is water, and the tool says it before it happens
 
 Full glycogen stores are roughly 400 to 500 g, and each gram is
@@ -959,32 +981,61 @@ seconds. **The reason food diaries get abandoned is friction, not
 motivation**, and the fix is that most people eat the same forty
 things.
 
-- **Copy yesterday**, whole or one meal of it. The most pressed
-  button in any food log, and it is usually right.
-- **Your usuals**, worked out rather than asked for: anything
+- ✓ **Copy yesterday**, whole or one meal of it. The most pressed
+  button in any food log, and it is usually right. Whole, or one
+  row of it; a meal of it waits on `diet_entries.meal` being
+  filled, which is what names one.
+- ✓ **Your usuals**, worked out rather than asked for: anything
   logged three times becomes a one-tap item, and the six most
   likely for this time of day sit at the top. Breakfast at eight
   in the morning should offer breakfast.
-- **Meals, not only foods.** "My breakfast" is one tap for four
-  items, made by saving a day's meal as a template.
-- **Recipes**, which are `§14`'s pot with a yield on it: build the
+- ○ **Meals, not only foods.** "My breakfast" is one tap for four
+  items, made by saving a day's meal as a template. `diet_foods`
+  already carries the `meal` kind for it.
+- ✓ **Recipes**, which are `§14`'s pot with a yield on it: build the
   dish once, say it serves five, and a portion is a fraction
   forever after. Editing the recipe does not rewrite history,
-  because a logged entry holds its own numbers.
-- **A plan for the week**, optional: the same list with dates on
+  because a logged entry holds its own numbers. Changing a saved
+  dish and removing one are the two halves still to come: both
+  need `diet_foods` to be writable a second time, which is an
+  update in `next/lib/diet-api.ts` rather than a decision.
+- ○ **A plan for the week**, optional: the same list with dates on
   it. Plan on Sunday, tick through the week, and the difference
   between planned and eaten becomes a reading in `§16` rather
   than a scolding.
-- **A shopping list out of the plan**, with the prices from `§17`
-  giving a total before the shop rather than a shock after it. A
-  list of items and a figure. **No links, no shop, no affiliate,
-  ever.**
-- **Quick add**, a bare number with no name, for the times when
+- ✓ **A shopping list**, with the prices from `§17` giving a total
+  before the shop rather than a shock after it. A list of items
+  and a figure. **No links, no shop, no affiliate, ever.** It is
+  built out of the recipes rather than out of a week's plan,
+  which is the same list one stage early and needs no table of
+  its own; a total is a floor the moment anything on it carries
+  no checked price.
+- ✓ **Quick add**, a bare number with no name, for the times when
   the honest choice is a rough figure now rather than an exact
-  figure never.
-- **And a keyboard.** The whole log works without a mouse: type,
+  figure never. The food picker's own free entry is it.
+- ○ **And a keyboard.** The whole log works without a mouse: type,
   arrow, enter. The account page's roving tabindex is already the
   pattern and there is no reason to invent a second one.
+
+**Where it is.** `/tools/diet/recipes` is the page,
+`next/components/diet/recipe-panel.tsx` and
+`next/components/diet/usuals.tsx` are the two halves of it, and
+`next/lib/recipes.ts` is the arithmetic under both. It divides
+nothing itself: a pot is a food stated for `serves` portions, so
+`scaleTo()` and `loggedFrom()` in `shared/foods.ts` do the
+scaling that already scales a searched food to an amount eaten,
+and their refusal comes with it. `next/recipes.test.ts` asserts
+all of it with no browser.
+
+**A recipe is somebody's real dinner, so a total refuses rather
+than guesses.** An ingredient that states no energy contributes
+NOTHING and is named on the page; the totals it belongs to read
+"at least" rather than carrying a figure. A macro one ingredient
+is silent about is a floor for the whole dish. And a
+micronutrient is all or nothing, because `totalFor()` counts an
+entry's WHOLE energy as covered for any key it carries: a pot
+claiming iron that only two of its three ingredients stated
+would buy the day coverage it does not have.
 
 **The measure of this section is a stopwatch, and it belongs in
 the test**: a repeat dinner in three interactions, a packaged
@@ -2093,24 +2144,38 @@ a fresh one** (`§10`, which a naive implementation gets wrong in
 the flattering direction), and the cut-off table read back out of
 this file so the prose and the code cannot drift.
 
-**A `check-diet` script under `scripts/`**, for the rules that
-are about pages rather than about numbers:
+**`scripts/check-diet.ts`**, for the rules that are about pages
+rather than about numbers. It is in `check-all.ts` beside every
+other check. Six of the nine below are held; the three not yet
+held are marked, and each is waiting on the thing it would check
+existing:
 
-- the floors are the ones `scripts/diet.test.ts` asserts, and no
-  route recomputes a formula rather than importing it.
-- the Asian cut-off table is used whenever ancestry says so.
-- every food in both libraries carries a source and a price date,
-  and every rice, grain and pasta row names its state.
-- the generated sentences in `§16` and the stage card in `§11`
+- ○ the floors are the ones `scripts/diet.test.ts` asserts, and
+  no route recomputes a formula rather than importing it.
+- ○ the Asian cut-off table is used whenever ancestry says so.
+- ○ every food in both libraries carries a source and a price
+  date, and every rice, grain and pasta row names its state.
+- ○ the generated sentences in `§16` and the stage card in `§11`
   come only from the listed templates, and the list contains no
-  second person judgement.
-- the fixed journal tag set is the one in `§11` and has not grown
-  a forty-first tag.
-- **no widget in `§24` is defined without an empty state.**
-- **no page prints a target without the disclaimer beside it.**
-- both language files cover the same keys, so a Bangla reader
-  never meets an English fallback string. `§23`.
-- the glossary defines every term the pages use.
+  second person judgement. There is no template list yet.
+- ✓ the fixed journal tag set is the one in `§11` and has not
+  grown a forty-first tag, and the day marks are the ones the
+  migration names. Neither column has a CHECK constraint, so the
+  check IS the constraint.
+- ✓ **no widget in `§24` is defined without an empty state.**
+- ✓ **no page prints a target without the disclaimer beside it**,
+  in both languages.
+- ✓ both language files cover the same keys, so a Bangla reader
+  never meets an English fallback string. `§23`. Every `<T>` has
+  both halves, and no `aria-label`, `title` or `placeholder` is
+  an English string literal.
+- ✓ the glossary defines every term the pages use, and every
+  entry is linked to from somewhere.
+- ✓ and one the list did not ask for: every `diet_*` column in
+  `§27` is either filled by the tool or named as not built yet
+  with the section that will build it. A column nothing can fill
+  breaks nothing, which is why it needed a check rather than a
+  paragraph.
 
 **A `diet.test` under `next/`**, in a real browser, the way
 `next/admin.test.ts` drives `/admin`:
@@ -2135,8 +2200,11 @@ are about pages rather than about numbers:
 
 **And two that belong to the site rather than the tool:**
 
-- the export in `§30` contains all six tables and the erase
-  removes all six. This is a check rather than a paragraph
-  because it is the one that will rot first.
+- ✓ the export in `§30` contains all six tables and the erase
+  removes all six. `aab/src/account-page.ts` does both, and the
+  confirm text names the diet log, the medicines and the cycle
+  rather than folding them into "everything": a confirm that
+  lists five of six things is a reader agreeing to something
+  else.
 - `COUNTS` in `shared/content.ts` if any page says how many tools
   this site has, because a sentence that counts must count.
