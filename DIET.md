@@ -211,13 +211,32 @@ nothing more.
 multiplier and starts measuring.**
 
 ```
-TDEE_observed = mean daily intake + (trend weight change in kg × 7700) / days
+burn = mean daily intake − (change in kg × 7700) / days
 ```
+
+**Minus a signed change**, because a loss is a negative number
+and a deficit is a positive addition to intake. Written as a plus
+and meaning the magnitude, it reads correctly in prose and comes
+out inverted in code for anybody gaining, which is a test rather
+than a comment.
 
 7700 kcal per kilogram of body tissue is the standard
 approximation, right for fat and wrong for water, which is
-precisely why it is computed against the **trend** weight from
-`§4` rather than against two scale readings.
+precisely why it is never computed from two scale readings.
+
+**And the change comes from a regression over the readings, not
+from the trend's endpoints.** An exponentially weighted average
+is the right estimator of a LEVEL and the wrong one for a RATE:
+seeded from the first reading it lags the true line by about 1.44
+half lives, so on a month of data its endpoints understate a real
+loss by roughly a third, **in the flattering direction**. The
+line looks right and the number is wrong. Ordinary least squares
+over the readings has no lag, and the noise the trend exists to
+suppress is exactly what its standard error should be measuring:
+a reader who weighs erratically gets an honestly wide band and
+one who weighs every morning gets an honestly narrow one. The
+trend stays what the page draws and what "your weight today"
+means.
 
 This one calculation is the tool's best feature. It absorbs
 metabolic adaptation, an inaccurate activity guess and consistent
@@ -1944,11 +1963,18 @@ quietly broken and the page would still render. That list is
 long because most of this file is about numbers that look fine
 when they are wrong.
 
-**A `check-diet` script under `scripts/`**, needing no browser:
+**`scripts/diet.test.ts`**, the arithmetic, needing no browser
+and no database, so it runs in CI: every formula in
+`shared/diet.ts`, every floor in `§5` asserted from the wrong
+side including the gaining direction in `§6`, the sign of the
+learned burn from both directions, and the cut-off table read
+back out of this file so the prose and the code cannot drift.
 
-- every formula in `shared/` has a test, and the floors in `§5`
-  cannot be crossed by any input, including the gaining direction
-  in `§6`.
+**A `check-diet` script under `scripts/`**, for the rules that
+are about pages rather than about numbers:
+
+- the floors are the ones `scripts/diet.test.ts` asserts, and no
+  route recomputes a formula rather than importing it.
 - the Asian cut-off table is used whenever ancestry says so.
 - every food in both libraries carries a source and a price date,
   and every rice, grain and pasta row names its state.

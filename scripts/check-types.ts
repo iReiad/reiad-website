@@ -91,7 +91,7 @@
    ============================================================ */
 
 import { execFileSync } from "node:child_process";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -211,6 +211,36 @@ if (stray.length) {
     + " with no build step,\nso there is nothing to trade for keeping one."
     + " Rename it and give it real types;\nthis check is what says the"
     + " second half happened.\n");
+  process.exit(1);
+}
+
+/* ---- and shared/README.md describes what is actually in it ----
+
+   That file opens with a count and then a list, and the list is
+   the only description of `shared/` there is. It said "six files
+   and a directory" while nine were there: `nav.ts` and
+   `routine.ts` were added by two changes that had no reason to
+   read it, which is how every stale tracker in this repository
+   was written.
+
+   It is here rather than in a check of its own because this is
+   already the check that walks `shared/` and already exists to
+   say that directory is what it claims to be. Naming a file is
+   enough; `check-pointers.ts` is what holds the other direction,
+   that a name in there resolves. */
+const README = join(ROOT, "shared", "README.md");
+const described = readFileSync(README, "utf8");
+const undescribed = readdirSync(join(ROOT, "shared"))
+  .filter((name) => name.endsWith(".ts"))
+  .filter((name) => !described.includes(name));
+
+if (undescribed.length) {
+  console.error(`${undescribed.length} file(s) in shared/ that shared/README.md`
+    + " does not mention:");
+  for (const name of undescribed) console.error(`   shared/${name}`);
+  console.error("\nThat list is the only description of shared/ there is, and it"
+    + " is read by anybody deciding whether a thing belongs there.\n"
+    + "Add the file, and the count at the top of it.\n");
   process.exit(1);
 }
 

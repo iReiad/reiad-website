@@ -1566,7 +1566,9 @@ silences the next complaint too.
 ## What more than one runtime has to agree on
 
 `shared/` is for anything the Worker, the browser and the Next.js
-route must all say the same way. Eight files and a directory:
+route must all say the same way. Nine files and a directory, and
+`check-types.ts` fails on one that `shared/README.md` does not
+describe, because that file said six while nine were there:
 `content.ts`, the site's own manifest and every number the site
 states about itself; `curricula/`, the four schools' ladders, one
 file each; `look.ts`, the per-section table and the head facts
@@ -1576,8 +1578,10 @@ response has to carry when it was not served as a static file;
 ladder's arithmetic; `rows.ts`, what a row of this database is;
 `nav.ts`, the one table the whole menu comes from; `routine.ts`,
 what a routine's bands and tasks are and the templates the site
-ships; and `courses.ts`, the third-party catalogue, which is the
-one `next/` may not import for its values.
+ships; `courses.ts`, the third-party catalogue, which is the
+one `next/` may not import for its values; and `diet.ts`, the
+diet tool's arithmetic, where every estimate comes back as a
+range so a caller cannot take a point value without its width.
 
 **`nav.ts` moved here on 22 August 2026, and the move is the rule
 working rather than a tidy-up.** It sat in `next/lib/` because
