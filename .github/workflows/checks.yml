@@ -146,14 +146,14 @@ jobs:
       - name: Run the tests
         run: node scripts/check-all.ts --stage=tests
 
-      # A guard on the one rule this repository opens with. The
-      # character is not written out anywhere here on purpose: a
-      # rule that contains the character it bans always matches
-      # itself.
-      - name: No em dashes
-        run: |
-          if grep -rn $'—' aab/ functions/ shared/ scripts/ next/app next/lib next/components; then
-            echo "::error::An em dash. See the top of CLAUDE.md."
-            exit 1
-          fi
-          echo "No em dashes."
+      # The em dash rule was a step here, written out as a grep,
+      # which made it the one thing in this file that
+      # `check-all.ts` did not run: a laptop could not catch what
+      # CI would fail on, and it duly failed a commit where every
+      # local check passed. It is `check-dashes.ts` now, inside
+      # the checks stage above, and it reads every tracked file
+      # rather than the six directories this grep named.
+      #
+      # The comment that stood here said the character is not
+      # written out anywhere on purpose, one line above a grep
+      # that wrote it out.

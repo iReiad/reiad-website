@@ -359,11 +359,21 @@ ok("rates: none exceeds the ceiling",
 ok("rates: every one is written in both languages",
   RATES.every((r) => r.en.length > 0 && r.bn.length > 0));
 
-/* ---- 14. and no em dash reached the plan ---- */
+/* ---- 14. and no em dash reached the plan ----
 
-ok("DIET.md carries no em dash", !PLAN.includes("—"));
+   BUILT FROM ITS CODE POINT, NEVER TYPED. The first version of
+   these two lines wrote the character out, so a test asserting
+   that no em dash exists was itself an em dash in `scripts/`,
+   and CI failed on the assertion rather than on what it was
+   asserting about. That is the exact failure the top of
+   `CLAUDE.md` describes, happening to the thing meant to catch
+   it. `scripts/check-dashes.ts` covers the whole tree now; these
+   two stay because this file's subject is the plan and the
+   module. */
+const EM = String.fromCharCode(0x2014);
+ok("DIET.md carries no em dash", !PLAN.includes(EM));
 ok("shared/diet.ts carries no em dash",
-  !readFileSync(join(ROOT, "shared", "diet.ts"), "utf8").includes("—"));
+  !readFileSync(join(ROOT, "shared", "diet.ts"), "utf8").includes(EM));
 
 /* ------------------------------------------------------------ */
 

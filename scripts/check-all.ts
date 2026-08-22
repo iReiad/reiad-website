@@ -110,6 +110,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        neighbours are the pattern, so somebody adding a test
        opens the one beside it and writes another `.mjs`. */
     "scripts/check-mjs.ts",
+    "scripts/check-dashes.ts",
     "scripts/check-next.ts",
     "scripts/check-courses.ts",
     "scripts/check-accents.ts",
