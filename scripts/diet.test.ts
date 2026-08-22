@@ -49,6 +49,7 @@ import {
   forecastChange, settlingDays, protocolName,
   stretches, readable, weighings, learnedHere, entryHour,
   type Body, type Day, type Point, type Phase, type Protocol,
+  totalFor,
 } from "../shared/diet.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -709,6 +710,40 @@ const EM = String.fromCharCode(0x2014);
 ok("DIET.md carries no em dash", !PLAN.includes(EM));
 ok("shared/diet.ts carries no em dash",
   !readFileSync(join(ROOT, "shared", "diet.ts"), "utf8").includes(EM));
+
+/* ------------------------------------------------------------
+   coverage is per nutrient, because one key is not five
+
+   A crowdsourced row may carry sodium and nothing else. Counting
+   an entry as covered because `micros` has ANY key took a day
+   made of one of those to 100%, and the panel then printed
+   "computed from 100% of today's food" above four nutrients
+   reading "not known". A confident number missing most of the
+   day is the failure this whole file is arranged around, and it
+   ran in the flattering direction.
+   ------------------------------------------------------------ */
+
+const oneSided = totalFor([
+  { date: "2026-08-22", label: "a plate", kcal: 700, micros: { sodium: 900 } },
+  { date: "2026-08-22", label: "rice", kcal: 300, micros: { sodium: 3, iron: 1.9 } },
+]);
+
+ok("the day's own coverage still counts any composition",
+  oneSided.coverage === 1);
+ok("sodium is known across the whole day",
+  oneSided.microCoverage.sodium === 1);
+ok("iron is known across three tenths of it, not all of it",
+  Math.abs((oneSided.microCoverage.iron ?? 0) - 0.3) < 1e-9);
+ok("a nutrient nothing carries is absent rather than zero",
+  !("calcium" in oneSided.microCoverage));
+
+const nothingLogged = totalFor([]);
+ok("an empty day divides by no zero",
+  nothingLogged.coverage === 0 && Object.keys(nothingLogged.microCoverage).length === 0);
+
+const freeOnly = totalFor([{ date: "2026-08-22", label: "a guess", kcal: 500 }]);
+ok("free entry leaves every nutrient uncovered",
+  freeOnly.coverage === 0 && Object.keys(freeOnly.microCoverage).length === 0);
 
 /* ------------------------------------------------------------ */
 

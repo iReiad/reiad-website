@@ -147,19 +147,37 @@ export function NutritionPanel() {
           <ul className="dt-nutrients">
             {WATCHED.map((n) => {
               const got = todays.micros[n.key];
+              /* THIS NUTRIENT'S OWN COVERAGE, not the day's. A
+                 crowdsourced row may carry sodium and nothing
+                 else, so the day read 100% while four of these
+                 five said "not known" underneath it. A figure
+                 drawn from a third of the day says so. */
+              const seen = todays.microCoverage[n.key] ?? 0;
+              const thin = got != null && seen < COVERAGE_FLOOR;
               return (
                 <li key={n.key} className="dt-figure">
                   <h3><T en={n.en} bn={n.bn} /></h3>
                   <p className="dt-value">
-                    {got != null
+                    {got != null && !thin
                       ? <T en={`about ${Math.round(got)} ${n.unit}`}
                            bn={`প্রায় ${digits(Math.round(got), "bn")} ${n.unit}`} />
-                      : <T en="not known" bn="জানা নেই" />}
+                      : thin
+                        ? <T en={`at least ${Math.round(got as number)} ${n.unit}`}
+                             bn={`কমপক্ষে ${digits(Math.round(got as number), "bn")} ${n.unit}`} />
+                        : <T en="not known" bn="জানা নেই" />}
                   </p>
                   <p className="dt-said">
                     <T en={`aim for ${n.low} to ${n.high} ${n.unit}`}
                        bn={`লক্ষ্য ${digits(n.low, "bn")} থেকে ${digits(n.high, "bn")} ${n.unit}`} />
                   </p>
+                  {got != null ? (
+                    <p className="dt-coverage">
+                      <T
+                        en={`from ${Math.round(seen * 100)}% of today's food`}
+                        bn={`আজকের খাবারের ${digits(Math.round(seen * 100), "bn")}% থেকে`}
+                      />
+                    </p>
+                  ) : null}
                   <p className="dt-why"><T en={n.whyEn} bn={n.whyBn} /></p>
                 </li>
               );

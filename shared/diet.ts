@@ -1345,10 +1345,22 @@ export interface DayTotal {
   protein: number; carbs: number; fat: number; fibre: number;
   micros: Record<string, number>;
   /** The share of the day's energy that came from an entry with
-      composition attached. EVERY MICRONUTRIENT FIGURE IS SHOWN
-      WITH THIS, because a confident number missing a third of
-      the day is more dangerous than no number. */
+      ANY composition attached. It is the honest headline for the
+      day and it is the WRONG number to print beside one
+      nutrient: see `microCoverage`. */
   coverage: number;
+  /** The same share, per nutrient. A row from a crowdsourced
+      database may carry sodium and nothing else, so a day made
+      of one of those reported 100% coverage while potassium,
+      calcium and iron all read "not known" underneath it. That
+      is a confident number missing most of the day, which is the
+      one thing this whole file is arranged to prevent.
+
+      A key absent from here is a nutrient nothing today carries.
+      A key present with 0.3 is a nutrient a third of today's
+      energy knows about, and the panel prints that third rather
+      than the day's. */
+  microCoverage: Record<string, number>;
   /** How wide the day's own estimate is, from entries logged as
       a range. A restaurant plate is not knowable, so the width
       goes into the day's confidence rather than into a false
@@ -1364,6 +1376,7 @@ export const COVERAGE_FLOOR = 0.5;
 export function totalFor(entries: Entry[]): DayTotal {
   const eaten = entries.filter((e) => !e.planned);
   const micros: Record<string, number> = {};
+  const knownPer: Record<string, number> = {};
   let kcal = 0, protein = 0, carbs = 0, fat = 0, fibre = 0, known = 0, spread = 0;
 
   for (const e of eaten) {
@@ -1382,12 +1395,21 @@ export function totalFor(entries: Entry[]): DayTotal {
       known += c;
       for (const [k, v] of Object.entries(e.micros)) {
         micros[k] = (micros[k] ?? 0) + v;
+        /* Per nutrient, by energy, for the reason on
+           `microCoverage`. An entry that carries a key at all
+           counts towards that key and towards no other. */
+        knownPer[k] = (knownPer[k] ?? 0) + c;
       }
     }
   }
 
+  const microCoverage: Record<string, number> = {};
+  if (kcal > 0) {
+    for (const [k, v] of Object.entries(knownPer)) microCoverage[k] = v / kcal;
+  }
+
   return {
-    kcal, protein, carbs, fat, fibre, micros,
+    kcal, protein, carbs, fat, fibre, micros, microCoverage,
     coverage: kcal > 0 ? known / kcal : 0,
     spread,
     count: eaten.length,

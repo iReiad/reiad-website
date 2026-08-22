@@ -31,6 +31,14 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v185: /account-page.js and /fallback.css. Take a copy of
+        everything and erase everything now know the six diet
+        tables exist, so a medicine and a cycle no longer survive
+        an erase and no longer go missing from an export. The
+        stylesheet gained the tool's own tab strip, a first use
+        linked to its definition, and a headline figure set at a
+        headline size.
+
    v184: /fallback.css. The page you take to a doctor, and its
         print rules: on paper the rail, the bar, the footer and
         the controls are the website, and a clinician does not
@@ -1702,7 +1710,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v184";
+const VERSION = "v185";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
