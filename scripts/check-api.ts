@@ -63,6 +63,25 @@ if (!table) {
 }
 const mounts = [...table.matchAll(/\["\/api\/([a-z-]+)"/g)].map((m) => m[1]);
 
+/* ---------- and the ones the OTHER Worker answers ----------
+
+   `API_ROUTES` was the whole of "what worker.js routes" until
+   `/api/book/` existed, and reading only that table now reports a
+   live endpoint as dead.
+
+   A `/api/` path can reach the Next Worker, and one does. The API
+   table is consulted first, so a path matching no prefix in it
+   falls through to `NEXT_ROUTES`, and a pattern there beginning
+   `/api/` is that path being routed just as surely as an entry in
+   the table above. `worker.js` says why the books are the one
+   thing served that way.
+
+   Read from the same file rather than listed here, so the day a
+   second one is added this check knows without being told. */
+const nextTable = worker.slice(worker.indexOf("NEXT_ROUTES"));
+const nextMounts = [...nextTable.matchAll(/\/\^\\\/api\\\/([a-z-]+)\\\//g)]
+  .map((m) => m[1]);
+
 /* ---------- what the browser asks for ---------- */
 
 /* Two ways of calling this API exist, and the check has to see
@@ -132,7 +151,7 @@ for (const file of files) {
 /* ---------- 1. every mount asked for exists ---------- */
 
 for (const [mount, where] of asked) {
-  if (mounts.includes(mount)) continue;
+  if (mounts.includes(mount) || nextMounts.includes(mount)) continue;
   fail(`the browser asks for /api/${mount}, which worker.js does not route`,
     `Asked for in: ${[...where].join(", ")}`,
     `worker.js routes: ${mounts.map((m) => `/api/${m}`).join(", ")}`,
@@ -164,6 +183,6 @@ for (const mount of mounts) {
 console.log(failures
   ? `\n${failures} problem(s) between the browser and worker.js.\n`
   : `api: ${asked.size} mount(s) the browser asks for, all routed;\n`
-    + `     ${mounts.length} routed, ${Object.keys(SERVER_ONLY).length} of them`
-    + " deliberately not called from a browser.\n");
+    + `     ${mounts.length} routed here, ${nextMounts.length} forwarded to Next,`
+    + ` ${Object.keys(SERVER_ONLY).length} deliberately not called from a browser.\n`);
 process.exit(failures ? 1 : 0);

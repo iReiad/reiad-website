@@ -72,11 +72,25 @@ export function middleware(request: NextRequest) {
     res.headers.set(key, value);
   }
 
-  /* Only the article itself. Next's own assets under /_next/ are
-     content-hashed and already immutable, and overwriting their
-     Cache-Control with a one-minute one would be a downgrade. */
+  /* ---- whose Cache-Control this is ----
+
+     Only a PAGE's. Two kinds of response set their own and must
+     keep it.
+
+     Next's assets under `/_next/` are content-hashed and already
+     immutable, so a one-minute line would be a downgrade.
+
+     And a route handler under `/api/` has an opinion about
+     caching that this file cannot have: one endpoint wants half
+     an hour at the edge and the next wants nothing kept at all,
+     and which is which is a fact about the endpoint. Overwriting
+     it here would make a handler's own `no-store` publicly
+     cacheable for a minute, silently, on a response that looks
+     exactly right. Nothing under `/api/` existed here until the
+     practice books needed one, which is why this could sit
+     latent. */
   const path = request.nextUrl.pathname;
-  if (!path.startsWith("/_next/")) {
+  if (!path.startsWith("/_next/") && !path.startsWith("/api/")) {
     res.headers.set("Cache-Control",
       PRIVATE.some((re) => re.test(path)) ? PRIVATE_CACHE : ARTICLE_CACHE);
   }
