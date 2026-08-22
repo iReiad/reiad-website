@@ -48,6 +48,7 @@ import {
   searchFdc, searchOff,
 } from "../../_lib/food.ts";
 import type { FdcEnv, FoodHit, SourceState, UpstreamAnswer } from "../../_lib/food.ts";
+import { DEFAULT_PLACE } from "../../../shared/foods.ts";
 import type { Place } from "../../../shared/diet.ts";
 
 /** D1 only for the throttle, which degrades to nothing without
@@ -81,10 +82,11 @@ const MIN_QUERY = 2;
 const isPlace = (value: string): value is Place => value === "bd" || value === "uk";
 
 /** The browser knows the place before the page renders and sends
-    it. The default covers a caller that did not, and it is `bd`
-    because this site's reader is in Bangladesh unless they say
-    otherwise. */
-const placeFrom = (value: string): Place => (isPlace(value) ? value : "bd");
+    it. The default covers a caller that did not, and it is the
+    one in `shared/foods.ts`: this Worker ranked Bangladesh first
+    while the picker asked for the UK, which is one reader
+    getting two libraries out of one search. */
+const placeFrom = (value: string): Place => (isPlace(value) ? value : DEFAULT_PLACE);
 
 interface Sources {
   off: SourceState;

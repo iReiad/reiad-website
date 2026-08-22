@@ -79,7 +79,7 @@
     Imported rather than declared again: `diet.ts` already says
     this, and two files spelling one vocabulary is how a place
     gets added to one of them. */
-import type { Place } from "./diet.ts";
+import type { Entry, Place } from "./diet.ts";
 export type { Place };
 
 /** What a row is for, as a search aid rather than a taxonomy.
@@ -1200,3 +1200,256 @@ export const COVERAGE_KEYS = [
 ] as const satisfies readonly (keyof Portion)[];
 
 export type CoverageKey = (typeof COVERAGE_KEYS)[number];
+
+/* ------------------------------------------------------------
+   Where the reader eats, said once
+   ------------------------------------------------------------ */
+
+/** The place a caller assumes when nobody has said.
+
+    ONE constant because three callers with three defaults is
+    three different libraries leading for one reader: the Worker
+    ranked Bangladesh first while the picker and the price table
+    asked for the UK, so a reader in Dhaka typing "dal" waited on
+    a British list. `bd` because this site's reader is in
+    Bangladesh unless they say otherwise. */
+export const DEFAULT_PLACE: Place = "bd";
+
+/* ------------------------------------------------------------
+   A barcode is digits, said once
+   ------------------------------------------------------------ */
+
+/** The digits of a barcode, or nothing. EAN-8, UPC-A, EAN-13,
+    GTIN-14, with spaces and hyphens taken off first because that
+    is how a number read off a packet gets typed.
+
+    Here rather than in the Worker's `_lib/food.ts` because the
+    browser has to decide the same thing before it asks, and a
+    browser module may not import that file at all: it writes out
+    both upstream hostnames and `check-csp.ts` scans every string
+    under `next/`. */
+export const barcodeOf = (typed: string): string | undefined => {
+  const digits = typed.replace(/[\s-]/g, "");
+  return /^\d{8,14}$/.test(digits) ? digits : undefined;
+};
+
+export const isBarcode = (typed: string): boolean => barcodeOf(typed) !== undefined;
+
+/* ------------------------------------------------------------
+   Saying a portion out loud
+   ------------------------------------------------------------ */
+
+export interface UnitWord {
+  en: string;
+  /** The English plural, written out rather than derived,
+      because deriving it gives "2 gs". */
+  ens: string;
+  bn: string;
+  /** Bangla counts with the numeral attached: `২টা`, never
+      `২ টা`. */
+  tight?: true;
+}
+
+/** Every unit any row here is measured in, in both languages.
+
+    A unit is half of what a figure is FOR, so a portion a Bangla
+    reader is shown an English word inside is a portion said in
+    one language. `food.test.ts` fails on a unit in `FOODS` with
+    no entry here, which is what stops a new row quietly
+    introducing one. */
+export const UNIT_WORDS: Record<string, UnitWord> = {
+  biscuit: { en: "biscuit", ens: "biscuits", bn: "টা", tight: true },
+  bowl: { en: "bowl", ens: "bowls", bn: "বাটি" },
+  cup: { en: "cup", ens: "cups", bn: "কাপ" },
+  g: { en: "g", ens: "g", bn: "গ্রাম" },
+  meal: { en: "meal", ens: "meals", bn: "বেলা" },
+  pack: { en: "pack", ens: "packs", bn: "প্যাকেট" },
+  piece: { en: "piece", ens: "pieces", bn: "টা", tight: true },
+  pint: { en: "pint", ens: "pints", bn: "পাইন্ট" },
+  plate: { en: "plate", ens: "plates", bn: "প্লেট" },
+  portion: { en: "portion", ens: "portions", bn: "ভাগ" },
+  pot: { en: "pot", ens: "pots", bn: "পট" },
+  slice: { en: "slice", ens: "slices", bn: "স্লাইস" },
+  tablespoon: { en: "tablespoon", ens: "tablespoons", bn: "টেবিল চামচ" },
+  teaspoon: { en: "teaspoon", ens: "teaspoons", bn: "চা চামচ" },
+  tin: { en: "tin", ens: "tins", bn: "টিন" },
+};
+
+/**
+ * The portion a figure is for: "2 biscuits", "২টা".
+ *
+ * `qty` arrives in the language's own numerals already, so this
+ * stays free of `bnNum` and of every other digit conversion.
+ *
+ * An unknown unit falls back to the token itself, because a
+ * portion reading "1 sachet" is readable and one reading "1" is
+ * a number with nothing under it. The fallback is for a row out
+ * of a public database rather than for this library: a unit here
+ * with no word fails the test.
+ */
+export function portionWords(
+  qty: number | string, unit: string, lang: "en" | "bn",
+): string {
+  const word = UNIT_WORDS[unit];
+  if (!word) return `${qty} ${unit}`;
+  if (lang === "bn") return `${qty}${word.tight ? "" : " "}${word.bn}`;
+  return `${qty} ${Number(qty) === 1 ? word.en : word.ens}`;
+}
+
+/* ------------------------------------------------------------
+   What was actually eaten, which is never what was found
+   ------------------------------------------------------------ */
+
+/** Rounded on the way out: a float artefact on a page
+    ("0.21000000000000002 g") makes a tool look broken. */
+const round = (value: number, places: number): number => {
+  const scale = 10 ** places;
+  return Math.round(value * scale) / scale;
+};
+
+/** The nutrients a row states, and the portion it states them
+    for. A `Portion` above satisfies this and so does a hit out
+    of either public database, which is the point: the
+    arithmetic below has one input shape and cannot be given a
+    per-100 g row and a per-cup row to add up. */
+export interface Stated extends Partial<Record<CoverageKey, number>> {
+  qty: number;
+  unit: string;
+  grams?: number;
+  kcal: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  fibre?: number;
+}
+
+/** How much of it went in: a number, in the row's own unit or in
+    grams. */
+export interface Ate {
+  n: number;
+  unit: string;
+}
+
+export interface ScaledPortion {
+  kcal: number;
+  /** Only the macros the row states. An absent one is absent
+      here too, and a zero somebody measured is kept, because
+      presence is the question and a zero is a figure. */
+  macros: Record<string, number>;
+  /** The §15 coverage list, and only the keys the row carries.
+      `totalFor()` counts an entry with ANY key here as covered,
+      so a key invented with a nought in it buys the day coverage
+      the log does not have. */
+  micros: Record<string, number>;
+  /** What the row's own portion was multiplied by. */
+  factor: number;
+  /** What that weighs, where the row says what its portion
+      weighs. */
+  grams?: number;
+}
+
+const MACRO_KEYS = ["protein", "carbs", "fat", "fibre"] as const;
+
+/**
+ * The row at the amount that was actually eaten, or `null`.
+ *
+ * NULL IS A REFUSAL AND IT IS THE POINT. A log wrong in the
+ * flattering direction is the failure this tool is built around,
+ * and a found food is stated per 100 g or per cup with no idea
+ * what was on the plate. So an amount that cannot be turned into
+ * a factor honestly (not a positive number, or grams asked of a
+ * row that never says what it weighs) logs NOTHING, rather than
+ * logging the row's own portion and hoping.
+ *
+ * EVERY nutrient is scaled by the one factor. Scaling the
+ * calories alone is how a log ends up with a day of 2,400 kcal
+ * and 40 g of protein in it.
+ */
+export function scaleTo(row: Stated, ate: Ate): ScaledPortion | null {
+  const n = round(ate.n, 2);
+  if (!Number.isFinite(n) || n <= 0) return null;
+
+  /* The basis is what the row's figures are FOR: its own `qty`
+     where the reader answered in its own unit, and its weight
+     where they answered in grams. A row with no weight cannot
+     answer a question in grams, and inventing one is the error
+     this returns null for. */
+  const basis = ate.unit === row.unit ? row.qty
+    : ate.unit === "g" ? row.grams
+      : undefined;
+  if (basis === undefined || !(basis > 0)) return null;
+
+  const factor = n / basis;
+  const at = (value: number | undefined): number | undefined =>
+    (value === undefined ? undefined : round(value * factor, 2));
+
+  const macros: Record<string, number> = {};
+  for (const key of MACRO_KEYS) {
+    const value = at(row[key]);
+    if (value !== undefined) macros[key] = value;
+  }
+
+  const micros: Record<string, number> = {};
+  for (const key of COVERAGE_KEYS) {
+    const value = at(row[key]);
+    if (value !== undefined) micros[key] = value;
+  }
+
+  return {
+    /* One decimal, which is what `diet_entries.kcal` holds. A
+       figure the column would round is a row saying one thing
+       and storing another. */
+    kcal: round(row.kcal * factor, 1),
+    macros,
+    micros,
+    factor,
+    grams: row.grams === undefined ? undefined : round(row.grams * factor, 1),
+  };
+}
+
+/** A food from any of the three sources, ready to be copied into
+    a log row.
+
+    `en` and `bn` are the row's name in each language, and a
+    source that has only one of them sets `en` and leaves `bn`
+    off: an English database is not a translation waiting to
+    happen. Deliberately NOT called `source`, because a
+    `Portion`'s own `source` is its citation ("USDA FoodData
+    Central, SR Legacy") and an entry's is the word for where it
+    came from. */
+export interface FoundFood extends Stated {
+  en: string;
+  bn?: string;
+}
+
+/**
+ * What the log stores, or `null` where `scaleTo` refused.
+ *
+ * `qty` is rounded to two places before anything is scaled by
+ * it, because `diet_entries.qty` is `numeric(9,2)`: a row that
+ * scaled by 1.333 and stored 1.33 is a row whose own numbers do
+ * not follow from each other.
+ *
+ * BOTH NAMES ARE WRITTEN. `label` is the English and `labelBn`
+ * the Bangla, always in that order whichever language the reader
+ * has on: a Bangla name in the English column is a log that
+ * turns to Bangla when the tool is switched to English and
+ * cannot be switched back.
+ */
+export function loggedFrom(
+  food: FoundFood, ate: Ate, from: { source: string; sourceId?: string },
+): Omit<Entry, "date"> | null {
+  const scaled = scaleTo(food, ate);
+  if (!scaled) return null;
+  return {
+    label: food.en,
+    labelBn: food.bn,
+    qty: round(ate.n, 2),
+    unit: ate.unit,
+    kcal: scaled.kcal,
+    macros: Object.keys(scaled.macros).length ? scaled.macros : undefined,
+    micros: Object.keys(scaled.micros).length ? scaled.micros : undefined,
+    source: from.source,
+    sourceId: from.sourceId,
+  };
+}

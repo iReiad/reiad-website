@@ -35,8 +35,8 @@ import {
   type Body, type Day, type Entry, type Point,
 } from "@reiad/shared/diet";
 import {
-  who, getDays, saveDay, getEntries, addEntry, getProfile,
-  isoDate, shiftDate, dayNumber, pendingCount,
+  who, getDays, saveDay, getEntries, addEntry, removeEntry, getProfile,
+  isoDate, clockTime, shiftDate, dayNumber, pendingCount,
   type Profile, type Who,
 } from "../../lib/diet-api";
 import { ButtonLink } from "../ui/button";
@@ -57,8 +57,27 @@ export function DietBoard() {
   const [days, setDays] = useState<Day[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "queued">("idle");
+  /* THE ROWS HAVE TO BE BACK BEFORE ANYTHING MAY BE WRITTEN.
+     `saveDay` is a merge-upsert of a whole row and `fromDay()`
+     writes an explicit null for every field the object lacks, so
+     a write built on `day === undefined` because the fetch had
+     not landed yet erased this morning's weight, the tags and
+     the note. On a slow connection that is one tap on "A glass".
+     The form is disabled until this is true. */
+  const [loaded, setLoaded] = useState(false);
 
-  const today = isoDate();
+  /* WHICH DAY IS BEING LOGGED, which is today until the reader
+     says otherwise. A log that can only ever be written for the
+     current date cannot record the evening somebody was
+     travelling, and section 13's copy-yesterday has nowhere to
+     put its copy. */
+  const [today, setToday] = useState(() => isoDate());
+
+  /* The real one, which is what caps the date box and what the
+     heading compares against. Recomputed on every render rather
+     than held: a tab left open across midnight would otherwise
+     go on calling yesterday today. */
+  const realToday = isoDate();
 
   /* Who is signed in, and staying up to date with it: signing in
      on this page should fill it without a reload. `account:changed`
@@ -76,18 +95,22 @@ export function DietBoard() {
   }, []);
 
   useEffect(() => {
-    if (!w) { setDays([]); setEntries([]); setProfile(null); return; }
+    if (!w) { setDays([]); setEntries([]); setProfile(null); setLoaded(false); return; }
     let alive = true;
-    const from = shiftDate(today, -WINDOW);
+    /* Anchored on the CURRENT date rather than on the day being
+       edited, so moving the date back a week does not refetch
+       and does not narrow the window the trend is drawn over. */
+    const from = shiftDate(isoDate(), -WINDOW);
     void Promise.all([getProfile(w), getDays(w, from), getEntries(w, from)])
       .then(([p, d, e]) => {
         if (!alive) return;
         setProfile(p);
         setDays(d);
         setEntries(e);
+        setLoaded(true);
       });
     return () => { alive = false; };
-  }, [w, today]);
+  }, [w]);
 
   const day = days.find((d) => d.date === today);
   const todayEntries = useMemo(
@@ -118,20 +141,27 @@ export function DietBoard() {
   const line = useMemo(() => trend(points), [points]);
   const rate = useMemo(() => slopePerWeek(points), [points]);
 
+  /* THE TREND, NOT THE NEWEST READING. `shared/diet.ts` opens
+     with "NOTHING READS A SINGLE WEIGHT" and this read one: a
+     kilo of Saturday's salt moved the target by about 100 kcal
+     and the BMI band by 0.3, and the doctor's sheet printed a
+     trend of 81.2 beside a BMI worked out from 82.6. `trend()`
+     returns the line, and its last point is what the reader
+     weighs. */
   const body: Body | null = useMemo(() => {
-    const latest = [...points].sort((a, b) => b.day - a.day)[0];
-    if (!profile?.height_cm || !profile.birth_year || !latest) return null;
+    const now = line.length ? line[line.length - 1] : null;
+    if (!profile?.height_cm || !profile.birth_year || !now) return null;
     return {
       heightCm: profile.height_cm,
-      weightKg: latest.kg,
-      ageYears: new Date().getUTCFullYear() - profile.birth_year,
+      weightKg: now.kg,
+      ageYears: new Date().getFullYear() - profile.birth_year,
       sex: profile.sex ?? "male",
       ancestry: profile.ancestry ?? "general",
       waistCm: [...days].reverse().find((d) => d.waistCm != null)?.waistCm,
       neckCm: [...days].reverse().find((d) => d.neckCm != null)?.neckCm,
       hipCm: [...days].reverse().find((d) => d.hipCm != null)?.hipCm,
     };
-  }, [profile, points, days]);
+  }, [profile, line, days]);
 
   const learned = useMemo(() => learnedBurn(
     points,
@@ -158,9 +188,11 @@ export function DietBoard() {
      the day, and a tool that implied it was would be telling
      somebody they had failed by one o'clock. */
   const pace = useMemo(() => {
+    /* `at_time` first, and the old spelling second: rows written
+       before section 11 was fixed carry the clock in `meal`, and
+       dropping the fallback would take their hour off them. */
     const at = (e: Entry): number => {
-      const t = e.meal ?? "";
-      const h = /^(\d{1,2}):/.exec(t);
+      const h = /^(\d{1,2}):/.exec(e.atTime ?? e.meal ?? "");
       return h ? Number(h[1]) : 12;
     };
     return dayPace({
@@ -169,6 +201,20 @@ export function DietBoard() {
       hourNow,
     });
   }, [entries, todayEntries, today, hourNow]);
+
+  const glasses = Math.floor((day?.waterMl ?? 0) / 250);
+
+  /* SECTION 19'S ONE READING THAT COSTS NOTHING. `steps` was
+     written by the form and read by its own widget and nothing
+     else, so "your steps have fallen from 8,000 to 4,500" could
+     not be said. Seven days, and only where there are at least
+     three of them: a mean of one day is that day. */
+  const stepAvg = useMemo(() => {
+    const week = days
+      .filter((d) => d.steps != null && dayNumber(d.date) > dayNumber(realToday) - 8)
+      .map((d) => d.steps as number);
+    return week.length >= 3 ? week.reduce((a, b) => a + b, 0) / week.length : null;
+  }, [days, realToday]);
 
   const goal = useMemo(() => {
     if (!body || !burn) return null;
@@ -180,7 +226,7 @@ export function DietBoard() {
   }, [body, burn, profile]);
 
   const write = useCallback(async (patch: Partial<Day>) => {
-    if (!w) return;
+    if (!w || !loaded) return;
     setSaving("saving");
     const next: Day = { ...(day ?? { date: today }), ...patch, date: today };
     setDays((prev) => {
@@ -190,24 +236,42 @@ export function DietBoard() {
     const ok = await saveDay(w, next);
     setSaving(ok ? "saved" : pendingCount() > 0 ? "queued" : "idle");
     if (ok) window.setTimeout(() => setSaving("idle"), 1600);
-  }, [w, day, today]);
+  }, [w, day, today, loaded]);
 
   const log = useCallback(async (e: Omit<Entry, "date">) => {
-    if (!w) return;
+    if (!w || !loaded) return;
     setSaving("saving");
-    /* The hour it was eaten, so `dayPace()` and the by-hour
-       reading have something to work from. Written as the meal
-       label because that is the column that exists; a page that
-       invented a field the table does not have would save and
-       silently drop it. */
-    const stamp = new Date();
-    const at = `${String(stamp.getHours()).padStart(2, "0")}:${String(stamp.getMinutes()).padStart(2, "0")}`;
-    const saved = await addEntry(w, { ...e, date: today, meal: e.meal ?? at });
+    /* The hour goes in `at_time`, which is the column for it.
+       Backdating writes noon rather than the clock, because the
+       clock is now and now is not when that food was eaten: a
+       reader filling in Tuesday on Thursday would otherwise put
+       every one of Tuesday's meals at half past nine at night
+       and skew their own by-hour reading. */
+    const at = today === isoDate() ? clockTime() : "12:00";
+    const saved = await addEntry(w, { ...e, date: today, atTime: e.atTime ?? at });
     if (saved) setEntries((prev) => [...prev, saved]);
     const after = totalFor([...todayEntries, { ...e, date: today }]);
     await write({ kcal: Math.round(after.kcal), proteinG: after.protein,
       carbsG: after.carbs, fatG: after.fat, fibreG: after.fibre });
-  }, [w, today, todayEntries, write]);
+  }, [w, today, todayEntries, write, loaded]);
+
+  /* A MISTYPED 2,500 WAS PERMANENT. `removeEntry` has existed
+     since the day this file was written and nothing called it,
+     so the eaten list was a list of things that could only ever
+     be added to. The day's totals are recomputed from what is
+     left rather than subtracted from, so a row removed twice
+     cannot take the total below what is there. */
+  const unlog = useCallback(async (id: string) => {
+    if (!w || !loaded) return;
+    setSaving("saving");
+    const ok = await removeEntry(w, id);
+    if (!ok) { setSaving("idle"); return; }
+    const left = todayEntries.filter((x) => x.id !== id);
+    setEntries((prev) => prev.filter((x) => x.id !== id));
+    const after = totalFor(left);
+    await write({ kcal: Math.round(after.kcal), proteinG: after.protein,
+      carbsG: after.carbs, fatG: after.fat, fibreG: after.fibre });
+  }, [w, todayEntries, write, loaded]);
 
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
 
@@ -250,18 +314,25 @@ export function DietBoard() {
 
   return (
     <div className="dt-today">
-      <section className="dt-doing" aria-label="Log today">
+      <section className="dt-doing"
+               aria-label={lang === "bn" ? "আজকের হিসাব লিখুন" : "Log today"}>
         <LogForm
           day={day}
           entries={todayEntries}
           saving={saving}
-          place={profile?.place ?? "uk"}
+          place={profile?.place ?? "bd"}
+          date={today}
+          today={realToday}
+          ready={loaded}
           onDay={write}
           onEntry={log}
+          onRemove={unlog}
+          onDate={setToday}
         />
       </section>
 
-      <aside className="dt-board" aria-label="Today at a glance">
+      <aside className="dt-board"
+             aria-label={lang === "bn" ? "আজকের এক নজর" : "Today at a glance"}>
         <Widget href="/tools/diet/goal" title={<T en="Today" bn="আজ" />}>
           {goal
             ? (
@@ -412,14 +483,41 @@ export function DietBoard() {
               />}
         </Widget>
 
-        <Widget href="/tools/diet/journal" title={<T en="Water" bn="পানি" />}>
-          <span className="dt-w-big mono">{digits(((day?.waterMl ?? 0) / 250) | 0, lang)}</span>
-          <span className="dt-w-said"><T en="glasses today" bn="গ্লাস আজ" /></span>
+        {/* A ZERO IS NOT AN EMPTY STATE. Section 24 names it,
+            `widgets.tsx` repeats it fifteen lines above the
+            component, and this widget rendered a bare 0 on every
+            board before the first glass of the day. Both of
+            these also pointed at `/journal`, which draws neither
+            a water figure nor a step count. */}
+        <Widget href="/tools/diet/health" title={<T en="Water" bn="পানি" />}>
+          {glasses > 0
+            ? (
+              <>
+                <span className="dt-w-big mono">{digits(glasses, lang)}</span>
+                <span className="dt-w-said"><T en="glasses today" bn="গ্লাস আজ" /></span>
+              </>
+            )
+            : <Waiting
+                en="Tap a glass on the left as you drink one. Thirst is read as hunger more often than not."
+                bn="এক গ্লাস খেলে বাঁ পাশে চাপ দিন। তেষ্টাকে অনেক সময় ক্ষুধা বলে ভুল হয়।"
+              />}
         </Widget>
 
-        <Widget href="/tools/diet/journal" title={<T en="Steps" bn="পদক্ষেপ" />}>
+        <Widget href="/tools/diet/trend" title={<T en="Steps" bn="পদক্ষেপ" />}>
           {day?.steps
-            ? <span className="dt-w-big mono">{digits(day.steps, lang)}</span>
+            ? (
+              <>
+                <span className="dt-w-big mono">{digits(day.steps, lang)}</span>
+                {stepAvg !== null ? (
+                  <span className="dt-w-said">
+                    <T
+                      en={`a week's average is ${Math.round(stepAvg / 100) * 100}`}
+                      bn={`সপ্তাহের গড় ${digits(Math.round(stepAvg / 100) * 100, "bn")}`}
+                    />
+                  </span>
+                ) : null}
+              </>
+            )
             : <Waiting
                 en="Steps are the largest variable in what you burn, and the one that quietly falls on a diet."
                 bn="খরচের সবচেয়ে বড় পরিবর্তনশীল অংশ হাঁটা, আর ডায়েটের সময় এটাই চুপচাপ কমে যায়।"

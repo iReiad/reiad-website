@@ -12101,7 +12101,7 @@ German for day, and .tag is what the site has always called
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .rt-build-task, .rt-panel,
+      .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -12241,7 +12241,7 @@ German for day, and .tag is what the site has always called
   :is(.cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .rt-build-task, .rt-panel) {
+      .gate-card, .rt-build-task, .rt-panel, .dt-w) {
     --depth: 5; --polish: 0.5; --clarity: 0.5; --standing: 1;
   }
 
@@ -12477,7 +12477,7 @@ German for day, and .tag is what the site has always called
       .cell, .card, .gate-tile, .news-card, .work-card, .lesson-card,
       .rung, .res-live, .tally-item, .read-card, .ladder-row, .target,
       .saved-row, .kept-row, .rt-template, .resume, .acct-tile,
-      .gate-card, .rt-build-task, .rt-panel,
+      .gate-card, .rt-build-task, .rt-panel, .dt-w,
       .topbar, .rail, .slimbar, .acc-menu, .tree-panel, .crumb-menu,
       .tabs-nav, .tool, .studio-pane, .band, .rt-sheet, .keep-panel,
       .reader-panel, .signin, .pane-bar, .model-drivers,
@@ -13190,20 +13190,62 @@ German for day, and .tag is what the site has always called
     margin: 0;
   }
 
+  /* THE ONE NUMBER ON A FIGURE IS SET LIKE ONE. This was
+     `--t-6`, 1.03rem, which is the size of the sentence under
+     it: the BMI, the body fat range, the target and the rate
+     were all typeset as body text with a label above them. Every
+     comparable figure on this site is a clamp, `.stat .v` at
+     3.4cqi and `.strip div .n` at 4vw, and this now matches the
+     first of them. */
   .dt-value {
     font-family: var(--font-mono);
-    font-size: var(--t-6);
+    font-size: clamp(1.25rem, 3.4cqi, 1.7rem);
+    font-variant-numeric: tabular-nums;
     line-height: 1.1;
     margin-block: var(--s-3) var(--s-2);
   }
 
   .dt-said { margin: 0; }
+
+  /* An honest save. `saved` and `failed` are two different
+     facts and were one word: the chip read "Saved" whatever the
+     write returned, so a rate the database refuses looked
+     accepted until the page was reloaded. */
+  .dt-said[data-state="failed"] { color: var(--danger); }
+  .dt-said[data-state="saved"] { color: var(--ink-soft); }
+
+  /* The offer to keep four facts on an account, under the four
+     boxes that hold them. */
+  .dt-keep {
+    display: grid;
+    gap: var(--s-3);
+    justify-items: start;
+    margin-block-start: var(--s-5);
+    padding-block-start: var(--s-5);
+    border-block-start: 1px solid var(--hairline);
+  }
+
+  /* A refusal is not an empty state. It fills the readout, so
+     nothing beside it reads as a number that is still coming. */
+  .dt-readout-stop { --accent-rail: var(--danger); }
+  .dt-readout-stop .dt-figure-lead { border-inline-start-color: var(--accent-rail); }
   .dt-why { font-size: var(--t-1); color: var(--ink-soft); margin-block-start: var(--s-3); }
 
   .dt-cuts {
     font-family: var(--font-mono);
     font-size: var(--t-1);
     color: var(--ink-soft);
+  }
+
+  /* TABULAR EVERYWHERE A FIGURE IS SET IN MONO. The price table
+     sorts by a number whose digits did not line up under each
+     other, so the order was right and unreadable. Proportional
+     digits in a column are the one typographic default on this
+     site that is wrong for what this tool draws. */
+  .dt-page :is(td, th),
+  .dt-coverage,
+  .dt-sheet :is(td, th, dd) {
+    font-variant-numeric: tabular-nums;
   }
 
   .dt-deck {
@@ -13244,6 +13286,12 @@ German for day, and .tag is what the site has always called
     .dt-board { order: 2; }
   }
 
+  /* STICKY, AND SHORTER THAN THE SCREEN. Nine widgets at six and
+     a half rem each is about 36rem before the empty-state
+     sentences, which are paragraphs in a ten-rem column, so a
+     sticky board pinned with its lower half off the bottom of
+     the window and stayed there. It scrolls inside itself now
+     and the page scrolls past it. */
   .dt-board {
     display: grid;
     gap: var(--s-4);
@@ -13251,6 +13299,12 @@ German for day, and .tag is what the site has always called
     align-content: start;
     position: sticky;
     top: calc(var(--top-space) + var(--s-4));
+    max-block-size: calc(100dvh - var(--top-space) - var(--step));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* Room for the light, which is drawn outside the box. */
+    padding: 2px;
+    margin: -2px;
   }
 
   @media (width < 62rem) { .dt-board { position: static; } }
@@ -13278,7 +13332,11 @@ German for day, and .tag is what the site has always called
   }
 
   .dt-w-body { display: grid; gap: var(--s-2); }
-  .dt-w-big { font-size: var(--t-7); line-height: 1.1; }
+  .dt-w-big {
+    font-size: clamp(1.13rem, 2.6cqi, 1.5rem);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
   .dt-w-said { font-size: var(--t-1); color: var(--ink-soft); }
   .dt-w-waiting { font-size: var(--t-1); color: var(--ink-soft); }
 
@@ -13335,6 +13393,17 @@ German for day, and .tag is what the site has always called
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
   }
 
+  /* Which day is being written. Quiet, because it is today
+     almost always and a control that shouts about the ordinary
+     case is a control in the way. */
+  .dt-when {
+    display: flex;
+    align-items: end;
+    gap: var(--s-4);
+    flex-wrap: wrap;
+  }
+  .dt-when .field { max-inline-size: 12rem; }
+
   .dt-water { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; }
   .dt-water-label { font-size: var(--t-1); color: var(--ink-soft); }
 
@@ -13379,12 +13448,33 @@ German for day, and .tag is what the site has always called
   .dt-eaten-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-2); }
   .dt-eaten-list li {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto auto auto;
     gap: var(--s-4);
     align-items: baseline;
     padding-block: var(--s-2);
     border-block-end: 1px solid var(--hairline);
   }
+
+  /* Removing a row. Faint until the row is under the pointer,
+     because a list of what somebody ate should not read as a
+     list of things to delete, and always reachable from the
+     keyboard, because "visible on hover" is invisible to
+     anybody not using a mouse. */
+  .dt-drop {
+    font: inherit;
+    line-height: 1;
+    padding: var(--s-2);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    opacity: 0.35;
+    transition: opacity 190ms, color 190ms;
+  }
+  .dt-eaten-list li:hover .dt-drop,
+  .dt-drop:focus-visible { opacity: 1; color: var(--danger); }
+  .dt-drop:disabled { opacity: 0.15; cursor: default; }
 
   .dt-scale { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
   .dt-scale-label { font-size: var(--t-1); color: var(--ink-soft); }
@@ -13417,7 +13507,14 @@ German for day, and .tag is what the site has always called
 
   /* ---- the other panels ---- */
 
-  .dt-goal, .dt-journal, .dt-nutrition, .dt-expect, .dt-trend {
+  /* EVERY PANEL PAGE, and it has to be every one: the three
+     newest were added to neither list below and all three grew
+     the doubled gap the comment under this one measures. A list
+     of page classes is a thing somebody has to remember, which
+     is the failure this whole stylesheet keeps being caught by,
+     so anything with `dt-` and a panel goes in both. */
+  .dt-goal, .dt-journal, .dt-nutrition, .dt-expect, .dt-trend,
+  .dt-foods, .dt-health, .dt-summary {
     display: grid; gap: var(--step);
   }
 
@@ -13427,12 +13524,15 @@ German for day, and .tag is what the site has always called
      page: about 130px of nothing between the lede and the first
      table. The grid owns the rhythm here. */
   .dt-goal > section, .dt-journal > section,
-  .dt-nutrition > section, .dt-expect > section, .dt-trend > section {
+  .dt-nutrition > section, .dt-expect > section, .dt-trend > section,
+  .dt-foods > section, .dt-health > section, .dt-summary > section {
     padding-block-start: 0;
   }
 
   .dt-goal > section > h2, .dt-journal > section > h2,
-  .dt-nutrition > section > h2, .dt-expect > section > h2 {
+  .dt-nutrition > section > h2, .dt-expect > section > h2,
+  .dt-trend > section > h2, .dt-foods > section > h2,
+  .dt-health > section > h2, .dt-summary > section > h2 {
     margin-block: 0 var(--s-6);
   }
   .dt-goal .dt-readout, .dt-journal .dt-readout { margin-block-start: 0; }
@@ -13585,12 +13685,21 @@ German for day, and .tag is what the site has always called
      footer and the controls are the website, and a clinician
      does not need the website. */
   @media print {
-    .dt-sum-controls, .dt-head { display: none; }
+    .dt-sum-controls { display: none; }
+    /* THE HEADING STAYS, THE SWITCH GOES. Hiding the whole of
+       `.dt-head` took the page's `h1` with it, so the one page
+       here that gets handed to a stranger printed with no title
+       on it at all. */
+    .dt-head .dt-lang, .dt-head .dt-lede { display: none; }
+    .dt-head { margin-block-end: var(--s-6); }
     .dt-sheet {
       border: 0; padding: 0; background: none;
       max-inline-size: none;
     }
     .dt-sum-block { break-inside: avoid; }
+    /* A printed page has no back button, so a URL that is only
+       a colour is a URL nobody can follow. */
+    .dt-sheet a::after { content: " (" attr(href) ")"; font-size: 0.85em; }
   }
 
   .dt-symptoms, .dt-diary { max-inline-size: 70ch; }
