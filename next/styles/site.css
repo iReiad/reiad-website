@@ -14048,6 +14048,20 @@ German for day, and .tag is what the site has always called
 
   @media print { .dt-nearby { display: none; } }
 
+  /* ---- three flat weeks, and which of the four it is ----
+
+     Not a warning and not red. Almost everything this section
+     says is a reason NOT to worry, and one of the four kinds is
+     not a stall at all, so drawing it as an alert would tell a
+     reader the opposite of what it says. The rail is the page's
+     own accent, like every other lead figure. */
+  .dt-stall {
+    display: grid;
+    gap: var(--s-5);
+    max-inline-size: 70ch;
+  }
+  .dt-stall .dt-defs { margin-block: 0; }
+
   /* ---- the clinic's own numbers ---- */
 
   .dt-lab-form {

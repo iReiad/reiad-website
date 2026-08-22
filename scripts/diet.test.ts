@@ -50,6 +50,7 @@ import {
   stretches, readable, weighings, learnedHere, entryHour,
   type Body, type Day, type Point, type Phase, type Protocol,
   totalFor,
+  stall, STALL_DAYS,
 } from "../shared/diet.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -889,6 +890,90 @@ ok("the keto page says a ketone level is not how fast fat is going, where the fi
   + " article.");
 ok("and it says urine strips stop being reliable rather than letting somebody chase a colour",
   /Urine strips get unreliable after adaptation/.test(PAGE));
+
+/* ------------------------------------------------------------
+   a stall is three weeks, not a Tuesday
+
+   The dangerous mistake here is the FALSE POSITIVE. A reader who
+   is told they have stalled and has not is the commonest reason
+   people stop, so most of these assert that nothing is reported.
+   ------------------------------------------------------------ */
+
+const TODAY = 1000;
+/** A run of weighings, one every other day, at a given rate. */
+const run = (kgStart: number, perWeek: number, noise = 0) =>
+  Array.from({ length: 11 }, (_, i) => {
+    const day = TODAY - STALL_DAYS + i * 2;
+    return {
+      day,
+      kg: kgStart + (perWeek / 7) * (i * 2) + (noise ? (i % 2 ? noise : -noise) : 0),
+    };
+  });
+const fed = (kcal: number, from = TODAY - STALL_DAYS) =>
+  Array.from({ length: 18 }, (_, i) => ({ day: from + i, kcal }));
+
+ok("a moving trend is not a stall, however slow",
+  stall({ weights: run(80, -0.25), intakes: fed(1800), today: TODAY }) === null);
+
+ok("a flat trend with nothing logged is not a stall, it is three weeks nobody wrote down",
+  stall({ weights: run(80, 0, 0.2), intakes: [], today: TODAY }) === null);
+
+ok("and half a window of logging is the floor",
+  stall({
+    weights: run(80, 0, 0.2),
+    intakes: fed(1800).slice(0, 8),
+    today: TODAY,
+  }) === null);
+
+ok("a fortnight is not three weeks",
+  stall({
+    weights: run(80, 0, 0.2).filter((p) => p.day > TODAY - 14),
+    intakes: fed(1800),
+    today: TODAY,
+  }) === null);
+
+const flatRun = stall({ weights: run(80, 0, 0.2), intakes: fed(1800), today: TODAY });
+ok("three flat weeks with the deficit logged IS a stall", flatRun !== null);
+ok("and its rate spans zero, which is what flat means",
+  flatRun !== null && flatRun.rate.low <= 0 && flatRun.rate.high >= 0);
+
+/* The one kind the tool can settle on its own. */
+const recomp = stall({
+  weights: run(80, 0, 0.2),
+  intakes: fed(1800),
+  waists: [{ day: TODAY - STALL_DAYS, cm: 92 }, { day: TODAY, cm: 90.5 }],
+  today: TODAY,
+});
+ok("a waist falling through a flat trend is recomposition, not a stall",
+  recomp?.kind === "recomposition");
+
+const drifted = stall({
+  weights: run(80, 0, 0.2),
+  intakes: fed(1800),
+  today: TODAY,
+  burnThen: 2500,
+  burnNow: 2280,
+});
+ok("a learned burn that has fallen is the target having drifted",
+  drifted?.kind === "target-drifted");
+
+const logDrift = stall({ weights: run(80, 0, 0.2), intakes: fed(1800), today: TODAY });
+ok("an intake that has not moved on paper is the log having drifted",
+  logDrift?.kind === "log-drifted");
+
+ok("water is always offered, because a whoosh looks like a stall until day ten",
+  logDrift !== null && logDrift.also.includes("water"));
+
+/* Section 4: a tool that always has an answer is making some of
+   them up. */
+const hard = stall({
+  weights: run(80, 0, 0.2),
+  intakes: [...fed(1600, TODAY - STALL_DAYS).slice(0, 9),
+    ...fed(2000, TODAY - 9).slice(0, 9)],
+  today: TODAY,
+});
+ok("and where nothing fits, the honest answer is that this is a hard part",
+  hard?.kind === "hard-part");
 
 /* ------------------------------------------------------------ */
 

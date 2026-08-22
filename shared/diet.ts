@@ -1693,3 +1693,177 @@ export function byHour(entries: Array<{ hour: number; kcal: number }>): number[]
   }
   return buckets;
 }
+
+/* ---------------------------------------------------------- */
+/* stalls, and telling the four kinds apart                   */
+/* ---------------------------------------------------------- */
+
+/** A STALL IS THREE WEEKS, NOT A TUESDAY.
+
+    `DIET.md` section 4: a flat trend over three weeks or more
+    WHILE THE LOG SAYS THE DEFICIT IS BEING HELD. Both halves
+    matter. A flat trend with nothing logged is not a stall, it is
+    a fortnight nobody wrote down, and calling it a stall would be
+    the tool inventing a problem out of its own missing data.
+
+    A reader who believes they have stalled and has not is the
+    commonest reason people stop, so what this returns is mostly
+    reasons NOT to worry. */
+export const STALL_DAYS = 21;
+
+export type StallKind =
+  /** Trend flat and the waist is falling. Not a stall at all:
+      section 19's recomposition, and the one kind the tool can
+      settle on its own. */
+  | "recomposition"
+  /** Trend flat and the learned maintenance has fallen. The
+      target was right and has stopped being right. */
+  | "target-drifted"
+  /** Trend flat and the logged intake has not moved. The most
+      common of the four, and the tool says so WITHOUT ACCUSING
+      ANYBODY: portions creep, and a kitchen scale is not a
+      character test. */
+  | "log-drifted"
+  /** Flat and then a drop, or flat with a jump in sodium or a
+      protocol change behind it. Fat left and water took its
+      place. */
+  | "water"
+  /** None of the above fits, and that is an answer. A body
+      defends a weight it has held, and not every flat month is a
+      mistake to be corrected. */
+  | "hard-part";
+
+export interface Stall {
+  /** The window read, in days, and how flat it was. */
+  days: number;
+  /** Kilograms a week over the window, with its interval. Flat
+      means the interval SPANS ZERO: a rate whose error bars
+      exclude zero is a rate, however small. */
+  rate: Range;
+  /** What is most likely, and what else is consistent. Never one
+      answer presented as the answer: only some of the
+      information is the tool's.
+
+      `kind` excludes `"water"` in the type, because water can
+      never be ruled out and can never be chosen: see where
+      `also` is built. */
+  kind: Exclude<StallKind, "water">;
+  also: StallKind[];
+  /** The evidence, so a page can print the reason rather than
+      the verdict. */
+  waistCmChange?: number;
+  burnKcalChange?: number;
+  intakeKcalChange?: number;
+  /** How much of the window has an intake logged. Under a half
+      and no stall is reported at all. */
+  coverage: number;
+}
+
+/** Whether the last three weeks are a stall, and which kind.
+
+    Returns null for every honest reason not to say anything: not
+    enough days, not enough logging, or a trend that is actually
+    moving. Null is the ordinary answer and is not a failure. */
+export function stall(opts: {
+  /** The fittable weighings, marked days already removed. */
+  weights: Point[];
+  /** Every day with an intake, over the same span. */
+  intakes: Array<{ day: number; kcal: number }>;
+  /** Waist measurements over the same span, where there are any.
+      This is the one that can turn a stall into good news. */
+  waists?: Array<{ day: number; cm: number }>;
+  /** Today, in the same day numbers. */
+  today: number;
+  /** What the reader burns, if the tool has learnt it, at the
+      START and at the END of the window. A fall between them is
+      the target having drifted. */
+  burnThen?: number;
+  burnNow?: number;
+}): Stall | null {
+  const from = opts.today - STALL_DAYS;
+  const window = opts.weights.filter((p) => p.day >= from);
+  /* Three weeks of weighings, and enough of them: nine readings
+     in twenty-one days is roughly every other day, which is the
+     least that can carry a slope worth reading. */
+  if (window.length < 9) return null;
+  if (window[window.length - 1].day - window[0].day < STALL_DAYS - 4) return null;
+
+  const rate = slopePerWeek(window);
+  if (!rate) return null;
+  /* MOVING IS NOT STALLED. The interval has to span zero: a loss
+     of 0.1 kg a week whose error bars exclude zero is a slow
+     diet, not a stopped one, and telling somebody otherwise
+     would be this tool's worst possible mistake. */
+  if (rate.low > 0 || rate.high < 0) return null;
+
+  const eaten = opts.intakes.filter((d) => d.day >= from);
+  const coverage = eaten.length / STALL_DAYS;
+  /* A FLAT TREND WITH NOTHING LOGGED IS NOT A STALL. It is three
+     weeks nobody wrote down, and the tool has no idea whether a
+     deficit was held. */
+  if (coverage < 0.5) return null;
+
+  const half = from + STALL_DAYS / 2;
+  const mean = (xs: number[]): number | null =>
+    xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
+  const early = mean(eaten.filter((d) => d.day < half).map((d) => d.kcal));
+  const late = mean(eaten.filter((d) => d.day >= half).map((d) => d.kcal));
+  const intakeKcalChange = early != null && late != null ? late - early : undefined;
+
+  const waistWindow = (opts.waists ?? []).filter((p) => p.day >= from);
+  const waistCmChange = waistWindow.length >= 2
+    ? waistWindow[waistWindow.length - 1].cm - waistWindow[0].cm
+    : undefined;
+
+  const burnKcalChange = opts.burnThen != null && opts.burnNow != null
+    ? opts.burnNow - opts.burnThen
+    : undefined;
+
+  /* The order is the order of confidence, not of likelihood.
+     Recomposition first because it is the only one the tool can
+     settle on its own; the hard part last because it is what is
+     left when nothing else fits, and section 4 is explicit that
+     a tool which always has an answer is making some of them
+     up. */
+  const also: StallKind[] = [];
+  let kind: Exclude<StallKind, "water"> = "hard-part";
+
+  /* A centimetre over three weeks is outside what a tape measure
+     can resolve on one person, so it is the threshold. */
+  if (waistCmChange != null && waistCmChange <= -1) {
+    kind = "recomposition";
+  } else if (burnKcalChange != null && burnKcalChange <= -100) {
+    kind = "target-drifted";
+  } else if (intakeKcalChange != null && Math.abs(intakeKcalChange) < 100) {
+    kind = "log-drifted";
+  }
+
+  if (kind !== "recomposition" && waistCmChange != null && waistCmChange < 0) {
+    also.push("recomposition");
+  }
+  if (kind !== "target-drifted" && burnKcalChange != null && burnKcalChange < 0) {
+    also.push("target-drifted");
+  }
+  if (kind !== "log-drifted" && intakeKcalChange != null && intakeKcalChange > 0) {
+    also.push("log-drifted");
+  }
+  /* WATER IS ALWAYS OFFERED AND NEVER CHOSEN, and that is not a
+     gap. A reader nine days into a whoosh looks exactly like a
+     reader who has stopped losing: fat cells that have given up
+     their triglyceride hold water for a while and then release
+     it, and nothing measurable separates the two until day ten.
+     So it goes in `also` unconditionally rather than competing
+     for `kind`, which is why `kind` is never `"water"`. */
+  also.push("water");
+
+  return {
+    days: STALL_DAYS,
+    rate,
+    kind,
+    also,
+    waistCmChange,
+    burnKcalChange,
+    intakeKcalChange,
+    coverage,
+  };
+}
