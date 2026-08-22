@@ -205,6 +205,14 @@ let bad = 0;
    than the rule. */
 
 const NOT_GLASS = new Map<string, string>([
+  /* THE ONE SURFACE ON THIS SITE THAT IS MEANT TO BE PAPER.
+     It is the sheet somebody hands across a desk in a ten minute
+     appointment, and a clinician reading a translucent panel with
+     a light moving across it would be reading a website rather
+     than a record. Its print rules take the rail, the bar and the
+     footer away for the same reason. Plain on purpose, and the
+     purpose is that it stops looking like this site. */
+  ["dt-sheet", "a printable record: deliberately not glass, because it is handed to a clinician"],
   /* A MARK, and twenty-four of them: one column per hour of the
      day. A bevel on a two pixel wide bar is invisible, and the
      row reads as a shape rather than as twenty-four small

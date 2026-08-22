@@ -8810,6 +8810,65 @@
     padding-block-start: 2px;
   }
 
+  .dt-summary { display: grid; gap: var(--step); }
+  .dt-sum-controls {
+    display: flex; gap: var(--s-4); align-items: center;
+    justify-content: space-between; flex-wrap: wrap;
+  }
+
+  .dt-sheet {
+    max-inline-size: 46rem;
+    padding: var(--s-9);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    background: var(--panel);
+    display: grid;
+    gap: var(--s-7);
+  }
+
+  .dt-sheet-what {
+    font-size: var(--t-1);
+    color: var(--ink-soft);
+    border-inline-start: 3px solid var(--hairline);
+    padding-inline-start: var(--s-4);
+    margin: 0;
+  }
+  .dt-sheet-title { margin: 0; }
+  .dt-sheet-when { font-family: var(--font-mono); font-size: var(--t-1); color: var(--ink-soft); margin: 0; }
+
+  .dt-sum-block { display: grid; gap: var(--s-2); }
+  .dt-sum-block h3 {
+    font-size: var(--t-1); text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--ink-soft); margin: 0 0 var(--s-3);
+    border-block-end: 1px solid var(--hairline); padding-block-end: var(--s-2);
+  }
+
+  .dt-sum-row {
+    display: grid;
+    grid-template-columns: minmax(0, 12rem) minmax(0, 9rem) minmax(0, 1fr);
+    gap: var(--s-4);
+    align-items: baseline;
+    padding-block: var(--s-2);
+  }
+  @media (width < 40rem) {
+    .dt-sum-row { grid-template-columns: 1fr auto; }
+    .dt-sum-note { grid-column: 1 / -1; }
+  }
+  .dt-sum-value { font-size: var(--t-5); }
+
+  .dt-sum-note { font-size: var(--t-1); color: var(--ink-soft); }
+  .dt-sum-meds { margin: 0; }
+  .dt-sheet-foot { font-size: var(--t-1); color: var(--ink-soft); margin: 0; }
+
+  @media print {
+    .dt-sum-controls, .dt-head { display: none; }
+    .dt-sheet {
+      border: 0; padding: 0; background: none;
+      max-inline-size: none;
+    }
+    .dt-sum-block { break-inside: avoid; }
+  }
+
   .dt-symptoms, .dt-diary { max-inline-size: 70ch; }
 
   .dt-invite { display: grid; gap: var(--s-5); max-inline-size: 52ch; justify-items: start; }

@@ -163,6 +163,17 @@ export default function DietPage() {
             />
           )}
         />
+        <GoCard
+          href="/tools/diet/summary"
+          title={<T en="One page for a doctor" bn="ডাক্তারের জন্য এক পাতা" />}
+          go={<T en="Print it" bn="প্রিন্ট করুন" />}
+          dek={(
+            <T
+              en="A ten minute appointment, and most people arrive with a memory. This is the same thing with dates on it, and the width of every estimate beside it."
+              bn="দশ মিনিটের সাক্ষাৎ, আর বেশিরভাগ মানুষ যান শুধু স্মৃতি নিয়ে। এটা সেই একই জিনিস, তারিখসহ, আর প্রতিটি আন্দাজের পাশে তার সীমা।"
+            />
+          )}
+        />
       </section>
 
       <InfoCard title={<T en="What it refuses to do" bn="যা এটি করবে না" />}>

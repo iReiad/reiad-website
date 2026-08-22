@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v184: /fallback.css. The page you take to a doctor, and its
+        print rules: on paper the rail, the bar, the footer and
+        the controls are the website, and a clinician does not
+        need the website.
+
    v183: /fallback.css. The clinic numbers page, and a price
         table that shows the figure it sorted by: cost per 100g
         of protein was rounded to whole units, so three different
@@ -1697,7 +1702,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v183";
+const VERSION = "v184";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
