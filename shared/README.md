@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is twelve files and a directory of four, and
+Today that is thirteen files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -110,6 +110,19 @@ this repository got written.
   `FORMATS` says. `check-calculators.ts` is what holds the two
   halves together, and the thing it catches is a placeholder with
   no number behind it, in one language, on one branch.
+
+- **`portfolio.ts`** what a broker's JSON means: the five figures
+  at the top of the live dashboard, one holding's weight and gain,
+  and a year of dividends bucketed by month with the empty months
+  in it. `/api/broker/live` hands back Trading 212's own answer
+  unchanged, so this is the layer that reads it, and every field
+  is read defensively because every field belongs to somebody
+  else: a broker that renames one must not take a public page
+  down. `unrealizedProfitLoss` is spelt the American way at the
+  source and is not ours to correct. **The public view is not
+  here:** a stranger gets percentages, and that stripping happens
+  on the server, because a client that filters is a client that
+  has already been sent the thing it is hiding.
 
 ## TypeScript, and nothing compiled beside it
 

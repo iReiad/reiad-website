@@ -148,10 +148,10 @@ export const MODULES = [
   "editor",
 ];
 
-/** The seven served modules whose source is in `shared/` rather
+/** The eight served modules whose source is in `shared/` rather
     than in `aab/src/`: the site's manifest, the four schools'
-    ladders, the stock check's words and the calculators'
-    arithmetic. The Worker, the checks under `scripts/`, the
+    ladders, the stock check's words, the calculators' arithmetic
+    and the broker's derivations. The Worker, the checks under `scripts/`, the
     Next.js routes and the browser read the same seven, and only
     the last of them needs a file at a URL.
 
@@ -188,6 +188,9 @@ export const SHARED = {
     /* And the five calculators' arithmetic, which the browser,
        the fixture generator and the Kotlin port all read. */
     "calculators.js": "aab/calculators.js",
+    /* And what a broker's JSON means, which the live portfolio
+       page and the app both read. */
+    "portfolio.js": "aab/portfolio.js",
   } as Record<string, string>,
 };
 

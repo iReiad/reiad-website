@@ -45,5 +45,6 @@
     "outDir": "../.content-build"
   },
   "include": ["../shared/content.ts", "../shared/curricula/*.ts",
-              "../shared/tool-strings.ts", "../shared/calculators.ts"]
+              "../shared/tool-strings.ts", "../shared/calculators.ts",
+              "../shared/portfolio.ts"]
 }
