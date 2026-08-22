@@ -207,12 +207,23 @@ plan touches the site.
    things in this whole plan that cannot be done from a
    repository: the project's auth configuration is not in the
    database and not in the tooling, so no migration, no script
-   and no API call here reaches it. The app's redirect URL added
-   to the auth allowlist. The site's flow is the implicit one:
-   `GET /auth/v1/authorize?provider=google&redirect_to=...` and
-   the tokens come back in the URL fragment, which an Android App
-   Link delivers intact. The magic link lands the same way. The
-   app opens the authorize URL in a Custom Tab, catches the
+   and no API call here reaches it. One value to add to the auth
+   allowlist: **`uk.co.reiad.library://auth`**.
+
+   **A custom scheme rather than an App Link, and the reason is
+   the dependency it removes.** The site's flow is the implicit
+   one: `GET /auth/v1/authorize?provider=google&redirect_to=...`,
+   with the tokens coming back in the fragment of whatever
+   `redirect_to` names, and the magic link landing the same way.
+   An `https://reiad.co.uk/...` redirect would deliver that
+   intact and would also make signing in wait on a verified App
+   Link, which waits on a fingerprint, which waits on a Play
+   Console account. A scheme the app declares needs none of that,
+   so phase 2 depends on one dashboard field and nothing else.
+   The https redirect can be added beside it later; two entries
+   are allowed and neither excludes the other.
+
+   The app opens the authorize URL in a Custom Tab, catches the
    redirect, and stores the session; `aab/src/account.ts` is the
    contract for everything after that: refresh 60 seconds early,
    treat a refresh that fails as signed out (locally, with no
@@ -232,14 +243,22 @@ Everything else in this plan is decided here, written here, or
 checked here. These two are not, and both are late rather than
 blocking, so nothing waits on them:
 
-| | When it is needed |
-| --- | --- |
-| The release signing fingerprint, pasted into `sha256_cert_fingerprints` | before a link opens the app, so end of phase 1 |
-| The redirect URL added to the Supabase auth allowlist | before anybody signs in, so start of phase 2 |
+| | What | When |
+| --- | --- | --- |
+| Supabase | add `uk.co.reiad.library://auth` under Authentication, URL Configuration | before anybody signs in, so start of phase 2 |
+| assetlinks | paste a SHA-256 into `sha256_cert_fingerprints` | before an `https://reiad.co.uk` link opens the app, which is a convenience and gates nothing |
 
 Both need an account this repository has no business holding a
 credential for. Neither is needed to build phase 1, which is
 signed out, which is why phase 1 is first.
+
+**They are also independent of each other, deliberately.** The
+custom scheme above is what keeps sign-in off the fingerprint's
+critical path: the second row is a nicety about how links behave,
+not a gate on the account. The debug keystore's fingerprint
+(`~/.android/debug.keystore`, alias `androiddebugkey`, password
+`android`) is enough to try App Links on a handset long before
+there is a Play Console entry, and the array takes both.
 
 ## The app itself
 
