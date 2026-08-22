@@ -302,6 +302,45 @@ blurb inside `shared/content.ts`) goes in the `CLAIMS` table in
 `scripts/check-content.ts`, so the next data change fails a check rather than a
 reader.
 
+## There is an app, and the data half reaches it on its own
+
+**Anything that is DATA reaches the Android app with no app
+release. Anything that is CODE needs one.** That is the whole
+contract, and it is worth knowing before adding anything, because
+which side a change lands on decides whether there is a second
+job.
+
+| Added here | The app |
+| --- | --- |
+| a piece, a lesson, a stage, edited prose | has it, next fetch |
+| a school, a tool, a case study, a term, a menu entry, a count | has it, next fetch |
+| a new field on a section, a new flag on a nav item | has it, next fetch |
+| a new calculator's arithmetic | needs a release |
+| a new article block class, a new sanitiser class | needs a release |
+| a new storage key | needs a release, and see the rule above about renaming one |
+
+The top three rows are true because `functions/api/site.ts`
+SPREADS the tables rather than mapping them field by field. Pick
+fields by hand and it looks identical on the day it is written,
+then silently drops whatever somebody adds a year later, which is
+this file's opening failure wearing a different hat.
+
+**`check-app-surface.ts` is what holds it**, because the prose
+alone would not. A fifteenth table in `shared/content.ts` that
+nothing sends is invisible: the site is correct, every check
+passes, and the app is missing something nobody can see is
+missing. So every `export const SHOUTING_CASE` in `content.ts`
+and `nav.ts` is either imported by that endpoint or named in
+`NOT_FOR_APP` with the reason it stays behind, and an exemption
+that has gone stale fails too.
+
+```sh
+node scripts/check-app-surface.ts --list   # what the app gets, and what it does not
+```
+
+`ANDROID.md` is the app's own plan. `iReiad/reiad-android` is the
+app.
+
 ## The shell, and the one table the menu comes from
 
 Every page of this site is a rail down the left, a bar across the
@@ -1105,6 +1144,10 @@ node scripts/check-courses.ts # a Drive id that is not one, the private course
 node scripts/check-api.ts  # the browser asking for an endpoint the Worker
                             # stopped routing, which breaks nothing and
                             # quietly switches a feature off
+node scripts/check-app-surface.ts # a table this site holds that the Android
+                            # app never hears about, which breaks nothing
+                            # either and leaves a feature missing where
+                            # nobody can see it is missing
 node scripts/build-modules.ts --check # a served module edited in its built
                                        # form rather than in aab/src/
 node scripts/build-fallback.ts --check # /fallback.css, which the two pages that
