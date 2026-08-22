@@ -121,6 +121,21 @@ for (const c of CALCULATORS) {
     checked += 1;
   }
 
+  /* ---------- the chrome a screen names for itself ----------
+
+     Not reachable from the model, so nothing above would look at
+     them: a short name for a chip, a label per chart line, and
+     the four rows of the comparison. The Android app renders all
+     of these, and a key it gets wrong prints as itself. */
+  const chrome = [
+    `calc.${c.id}.short`,
+    ...c.lines.map((line) => `calc.${c.id}.line.${line}`),
+  ];
+  for (const key of chrome) {
+    if (!STRINGS[key]) fail(`${c.id}: the screen names '${key}' and there is no such phrase`);
+    checked += 1;
+  }
+
   /* ---------- 1 to 4. every sentence ---------- */
   for (const { key, values: live } of reachable(c)) {
     const phrase = STRINGS[key];
@@ -152,6 +167,33 @@ for (const c of CALCULATORS) {
         }
         checked += 1;
       }
+    }
+  }
+}
+
+/* And the handful that belong to no one calculator. */
+for (const key of ["calc.eyebrow", "calc.ahead", "calc.disclaimer",
+  "calc.chart.now", "calc.chart.year",
+  "calc.part.gross", "calc.part.paidTax", "calc.part.net", "calc.part.total"]) {
+  if (!STRINGS[key]) fail(`the calculators' chrome names '${key}' and it does not exist`);
+  checked += 1;
+}
+
+/* The comparison's four rows are keyed by the SUFFIX of a value
+   name, `sGross` and `fGross` sharing `calc.part.gross`, which is
+   what stops the same four words being written twice. A suffix
+   the model stopped producing is a row that would print an empty
+   cell. */
+const parts = ["Gross", "PaidTax", "Net", "Total"];
+const sanchayapatra = CALCULATORS.find((c) => c.id === "sanchayapatra");
+if (sanchayapatra) {
+  const values = sanchayapatra.run(defaultsFor(sanchayapatra)).values;
+  for (const side of ["s", "f"]) {
+    for (const part of parts) {
+      if (!(`${side}${part}` in values)) {
+        fail(`the comparison shows '${side}${part}' and the model does not produce it`);
+      }
+      checked += 1;
     }
   }
 }

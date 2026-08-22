@@ -840,6 +840,41 @@ export const STRINGS: Record<string, Phrase> = {
      having to know it.
      ============================================================ */
 
+  /* ---------------- the calculators' own chrome ----------------
+
+     A SHORT name per calculator, because the full ones are in
+     `TOOLS` in `content.ts` and are a sentence long: "চক্রবৃদ্ধি
+     ক্যালকুলেটর" does not fit a chip on a handset. The full name
+     is NOT repeated here; the app reads it from `/api/site` like
+     every other label, so there is one copy of it. */
+  "calc.eyebrow": { en: "Tools", bn: "টুল" },
+  "calc.compounding.short": { en: "Compounding", bn: "চক্রবৃদ্ধি" },
+  "calc.sanchayapatra.short": { en: "সঞ্চয়পত্র vs FDR", bn: "সঞ্চয়পত্র বনাম এফডিআর" },
+  "calc.inflation.short": { en: "Inflation", bn: "মূল্যস্ফীতি" },
+  "calc.emi.short": { en: "Loan EMI", bn: "কিস্তি" },
+  "calc.position.short": { en: "Position size", bn: "পজিশন সাইজ" },
+
+  /* What each line on a chart is. Two per chart, and the first
+     is always the accent. */
+  "calc.compounding.line.totals": { en: "What it becomes", bn: "যা দাঁড়ায়" },
+  "calc.compounding.line.contributed": { en: "What you put in", bn: "যা আপনি দেন" },
+  "calc.inflation.line.nominalSeries": { en: "On paper", bn: "কাগজে" },
+  "calc.inflation.line.realSeries": { en: "What it buys", bn: "যা কেনা যায়" },
+  "calc.emi.line.balances": { en: "Still owed", bn: "বাকি আছে" },
+  "calc.emi.line.paidInterest": { en: "Interest paid", bn: "দেওয়া সুদ" },
+
+  /* The comparison's four rows, said once for both sides. */
+  "calc.ahead": { en: "ahead", bn: "এগিয়ে" },
+  "calc.part.gross": { en: "Profit before tax", bn: "কর কাটার আগে মুনাফা" },
+  "calc.part.paidTax": { en: "Tax at source", bn: "উৎসে কর" },
+  "calc.part.net": { en: "Kept", bn: "হাতে থাকে" },
+  "calc.part.total": { en: "Total back", bn: "মোট ফেরত" },
+
+  "calc.disclaimer": {
+    en: "Arithmetic on the numbers you typed in. Rates in Bangladesh change, and the ones here are inputs rather than promises: check today's against the bank or the post office before you decide anything. Nothing here is investment advice.",
+    bn: "আপনি যে সংখ্যাগুলো বসিয়েছেন, এটা তার ওপর হিসাব। বাংলাদেশে হার বদলায়, আর এখানকার হারগুলো আপনার দেওয়া, কোনো নিশ্চয়তা নয়: সিদ্ধান্ত নেওয়ার আগে ব্যাংক বা ডাকঘর থেকে আজকের হারটা মিলিয়ে নিন। এখানকার কিছুই বিনিয়োগ পরামর্শ নয়।",
+  },
+
   /* The three labels under a chart. Not one key per year, which
      would be four hundred keys: a number with one word in front
      of it. */

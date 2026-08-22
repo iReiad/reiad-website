@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v183: /tools/stock.i18n.js. Twenty phrases of chrome for the
+        five calculators: a short name each for a chip, a label
+        per chart line, the comparison's four rows and a
+        disclaimer. The Android app renders all of them and the
+        site's own tab labels are next.
+
    v182: /tools/stock.i18n.js. The other five calculators' words
         moved into it, 68 phrases, and they are in Bangla for the
         first time: their verdicts were template literals inside
@@ -1695,7 +1701,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v182";
+const VERSION = "v183";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

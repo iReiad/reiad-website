@@ -124,6 +124,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     ["scripts/build-stamp.ts", "--check"],
     ["scripts/import-courses.ts", "--crawl", "scripts/fixtures/course-crawl", "--check"],
     ["scripts/export-stock-fixtures.ts", "--check"],
+  ["scripts/export-calculator-fixtures.ts", "--check"],
   ]],
   ["tests", [
     "scripts/input.test.ts",
