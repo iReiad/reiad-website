@@ -329,15 +329,58 @@ async function sendRows(head: Head, rows: Array<{ key: string; value: Value }>):
 /* ============================================================
    The mirror
 
-   `base` is the account as this page last saw it. It lives in
-   memory rather than in storage on purpose: it is a statement
-   about this page's conversation with the account, and a page
-   that has not had that conversation yet has no business having
-   an opinion. A fresh load starts with nothing and adopts.
+   `base` is the account as this page last saw it. It lived only
+   in memory first, on the argument that a fresh load has had no
+   conversation and should adopt, and the Android app shipped the
+   same argument and paid for it the same day: adopt REPLACES the
+   device's marks with the account's copy, so any change made
+   between a load and the first exchange, or after a failed one,
+   was quietly un-done. On the site the window is one page-load
+   race wide, which is why it was never reported here first; it
+   is the same eater.
+
+   So the base is STORED, keyed to the account's own id: a fresh
+   load resumes the conversation it recorded, and only an account
+   this browser has never recorded adopts. The stored key is not
+   in `KEYS`, so it can never be synced, and `clearMirror()`
+   removes it with everything else.
    ============================================================ */
 
-let base: Map<string, Value> | null = null;   // null before adopting
+let base: Map<string, Value> | null = null;   // null before the first exchange
 let who: string | null = null;                // the account `base` belongs to
+
+const BASE_STORE = "sync-base";
+
+/** The recorded conversation, if it is this account's. */
+function loadBase(userId: string): void {
+  if (base) return;
+  try {
+    const raw = localStorage.getItem(BASE_STORE);
+    if (!raw) return;
+    const held = JSON.parse(raw) as { who?: string; keys?: Record<string, Value> };
+    if (held.who !== userId || !held.keys) return;
+    base = new Map(Object.entries(held.keys).filter(([key]) => key in KEYS));
+    who = userId;
+  } catch {
+    /* An unreadable record is no record. */
+  }
+}
+
+/** Record it, after the exchange has actually completed: a base
+    written before the push lands would claim the account holds
+    rows it refused, and they would never be sent again. */
+function keepBase(userId: string): void {
+  who = userId;
+  try {
+    const keys: Record<string, Value> = {};
+    base?.forEach((value, key) => { keys[key] = value; });
+    localStorage.setItem(BASE_STORE, JSON.stringify({ who: userId, keys }));
+  } catch {
+    /* Storage full or blocked: the in-memory copy still serves
+       this page, and the next load adopts, which is the old
+       behaviour rather than a new failure. */
+  }
+}
 
 /** Take the mirror off this device. Called when the session ends,
     when a different person signs in on the same browser, and when
@@ -360,6 +403,7 @@ function clearMirror(): void {
   }
   base = null;
   who = null;
+  try { localStorage.removeItem(BASE_STORE); } catch { /* gone is gone */ }
   schools.forEach((event) => dispatchEvent(new CustomEvent(event)));
   document.dispatchEvent(new CustomEvent("sync:done", {
     detail: { adopted: false, kept: 0, sent: 0 },
@@ -442,13 +486,14 @@ export function sync(): Promise<boolean> {
          record. Nothing of the last one's is carried over, and
          nothing of it is uploaded to this one. */
       if (who && who !== user.id) clearMirror();
+      loadBase(user.id);
 
       const before = new Map(SYNCED_KEYS.map((key) => [key, read(key)]));
       const remote = await fetchRows(head);
 
       if (!base) {
         adopt(remote, before);
-        who = user.id;
+        keepBase(user.id);
         document.dispatchEvent(new CustomEvent("sync:done", {
           detail: { adopted: true, kept: remote.size, sent: 0 },
         }));
@@ -457,6 +502,7 @@ export function sync(): Promise<boolean> {
 
       const schools = new Set<string>();
       const toPush: Array<{ key: string; value: Value }> = [];
+      const next = new Map(base);
 
       for (const [key, [rule, event]] of Object.entries(KEYS)) {
         const was = base.has(key) ? base.get(key) : emptyFor(rule);
@@ -479,10 +525,17 @@ export function sync(): Promise<boolean> {
           if (stored) schools.add(event);
         }
         if (!same(merged, theirs)) toPush.push({ key, value: merged ?? null });
-        base.set(key, merged);
+        /* Into the NEXT conversation, not into `base`: writing
+           base before the push lands would record rows the
+           account may be about to refuse as if it held them, and
+           a refused row recorded as delivered is a row that is
+           never sent again. */
+        next.set(key, merged);
       }
 
       await sendRows(head, toPush);
+      base = next;
+      keepBase(user.id);
 
       /* Tell the school its own storage moved underneath it, using
          the event it already listens to. Without this a tick made
@@ -494,10 +547,13 @@ export function sync(): Promise<boolean> {
       }));
       return true;
     } catch (err) {
-      /* A failed exchange is a device that is still perfectly
-         usable, and a `base` that must not be trusted afterwards:
-         half a conversation is not a record of one. */
-      base = null;
+      /* A failed exchange KEEPS the base. Dropping it made the
+         next exchange an adopt, and adopt eats whatever the
+         reader did in between: a flaky network became the same
+         eater by another door. The last completed exchange is
+         still the truth about what this reader did since, and
+         everything un-pushed is still local-since-base, so it
+         goes up whole next time. */
       console.warn("progress sync failed", err);
       return false;
     } finally {

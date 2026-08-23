@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v210: /sync.js. The base is stored per account ("sync-base",
+         not a synced key), the reconcile commits it only after
+         the push lands, and a failed exchange keeps it: adopt
+         no longer eats a mark made before a page's first
+         exchange or after a failed one, which is the same bug
+         the Android app shipped and fixed the same day.
+
    v209: /fallback.css. The board's three sizes: `board-small`,
    `board-wide` and `board-tall` replace the first two, and the
    tall pulse widget's `.gp-rows`. A returning visitor on the old
@@ -1853,7 +1860,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v209";
+const VERSION = "v210";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
