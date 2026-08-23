@@ -438,6 +438,11 @@ thing that makes the next block work.
 Every tracker assumes you want to lose. Two other things happen
 to people, and one of them is where every diet ends.
 
+**Built, and it is `/tools/diet/goal`**, the same page as `§5`:
+the direction is one chip on it, and a phase that comes after a
+goal is not a different tool. `bandWatch()`, `suggestBand()` and
+`gainWeekOne()` in `shared/diet.ts` are the arithmetic.
+
 ### Maintenance is a phase, with its own rules
 
 The great majority of weight lost is regained, and it is regained
@@ -459,6 +464,25 @@ week, and the tool must work properly at that density rather than
 scolding for missing meals. A tool that demands the same effort
 at maintenance as in a deficit is a tool that gets abandoned at
 exactly the point where abandoning it costs the most.
+`bandWatch()` reads weighings and never intakes, which is what
+makes that sentence true by construction rather than by care,
+and it counts ELAPSED days rather than readings, because a count
+of rows would ask for a month at three a week.
+
+**The two weeks gate both of the last two rows**, which the table
+does not say and which is the one way to read it wrongly. The
+third row's own test is distance, and the trend's half life is a
+week: a trend a full band's width outside has taken far longer
+than a fortnight to get there unless something has gone wrong
+with the water. An offer made off three days of that is an offer
+made off noise, and this phase's whole argument is that it does
+not speak off noise.
+
+**And nothing is said off a trend nobody has fed.** Three weeks
+without a weighing and `bandWatch()` returns null, on the same
+grounds `stall()` refuses a flat month with nothing logged: a
+tool that offers somebody a deficit off a month-old reading is
+inventing a problem out of its own missing data.
 
 ### And gaining is a real goal, in both places
 
@@ -474,12 +498,25 @@ add muscle deliberately. The engine reverses cleanly:
 - the protein floor is the same floor and matters more.
 - **no maximum-surplus bravado.** The tool will not offer a
   "bulk" of 1,000 kcal over maintenance, for the same reason it
-  will not offer 800 under it.
+  will not offer 800 under it. `MAX_SURPLUS_KCAL` is that in the
+  engine, and it is a SECOND ceiling rather than a restatement of
+  the rate above: half a percent of 130kg is 715 kcal a day, so
+  the percentage drifts above the mechanism it is a proxy for
+  somewhere around 100kg, and a reader heavy enough to want to
+  add muscle is exactly the reader it drifts for. `target()`
+  applies both and names whichever one bound, because a silent
+  clamp is a lie of omission going up as well as down.
 - the trend rules are identical, and week one still lies: a
   carbohydrate increase refills glycogen and puts one to two
   kilos on the scale in a week that contains no new tissue at
   all. `§7` is that arithmetic run backwards, and the tool says
-  so in the gaining direction too.
+  so in the gaining direction too. `gainWeekOne()` is that
+  arithmetic: the same store, the same three grams of water a
+  gram, coming back rather than leaving, and a gut carrying more
+  food than it was. `forecastChange()` deliberately declines the
+  question, because `WATER.gain` is zeros and calling a rise all
+  tissue would be a claim about the one thing that model cannot
+  see. Do not "fix" that row.
 
 ### The honest sentence about what happens when you stop
 
@@ -489,6 +526,13 @@ strongest predictor of not doing so is continuing to weigh and
 log after the goal is reached. That is not a scare and it is not
 a sales pitch for the tool. It is the reason maintenance is a
 built phase here rather than an empty screen.
+
+**Once is part of the rule, and `check-diet.ts` holds it.** Said
+twice it stops being a fact and becomes a slogan, and said away
+from the projection it is a scare rather than a reason. It is
+also the one sentence in this tool that argues for the tool,
+which is what makes it the one most likely to get copied on to a
+second panel by somebody who liked it.
 
 ---
 
@@ -1149,6 +1193,33 @@ accurate, and 20% accurate every day for a year beats 5% accurate
 for eleven days. The tool says that in one sentence and then gets
 out of the way.
 
+### Where each of these is, now that they are built
+
+All four are live. This table is here because a section
+describing four features without saying which of them exist is
+the failure at the top of `CLAUDE.md` wearing a plan's hat.
+
+| | |
+| --- | --- |
+| the oil calibration | `oilPerMeal()` in `shared/diet.ts`, asked once a month on `/tools/diet/foods`, three columns on `diet_profile` |
+| the shared pot | `next/lib/recipes.ts` and the second half of `/tools/diet/recipes`. `diet_foods.kind` is `pot`, `parts` is what went in it, `serves` is how many ate |
+| a share of it | two whole numbers, `took` out of `outOf`, so a third is an exact third. A FRACTION would have had to reach `diet_entries.qty`, which is `numeric(9,2)`, and 0.33 of every pot is one percent light for ever, in the flattering direction |
+| cooked against raw | in the name of every rice, dal and grain row in `shared/foods.ts`, in both languages, with `raw` on the row |
+| eating out | `widened()` and `outRange()` in `next/lib/recipes.ts`, offered in the food picker, written to `diet_entries.est_low` and `est_high`. The width is a fifth either way, which is this section's own 700 to 1,100 generalised |
+| small extras | one tap in the food picker, 150 kcal with 60 to 240 on it, logged as a range for the same reason a plate is |
+| hand portions | four chips beside the amount box, wherever the row states what its own portion weighs. A row that does not say refuses a hand rather than guessing one |
+
+`next/recipes.test.ts` is the guard for the pot, the share, the
+range and the hands: 115 checks, no browser.
+
+**The one thing still to draw is the day's own width.**
+`DayTotal.spread` in `shared/diet.ts` adds up every entry's
+`est_high` minus its `est_low`, and it has been able to since the
+day it was written. A day with two restaurant meals in it should
+be drawn with a wider band, the same way a sparse micronutrient
+day is drawn faintly, and until something reads that field the
+honest half of eating out is stored and never shown.
+
 ---
 
 ## 15. Nutrition beyond calories, and how honest it can be
@@ -1282,6 +1353,66 @@ generated here, and it is worth a check of its own: the generated
 sentences come from a small, listed set of templates, and the
 check reads that list.
 
+### What is built
+
+`shared/insights.ts` is the arithmetic and
+`next/components/diet/insights-panel.tsx` draws it, on
+`/tools/diet/nutrition` beside `§15`, out of the same fetch that
+page already makes. That file holds `§17`'s money, `§18`'s one
+sleep reading and `§19`'s two about movement as well: they are
+all readings out of a log and they all obey the rule below. Eight of the nine readings above are there:
+where the calories are and which days go over were already on
+that page, and the protein split, the swap, protein and fibre per
+100 kcal, this week against the reader's own average, adherence
+against the trend and the deficit calibration landed with the
+panel. Every one of them prints the span it was measured over and
+how many days of that span were written down, and every one has a
+sentence for having too little data rather than a zero.
+
+**A year in one page is `/tools/diet/year`**, and it is the one
+of the nine that is a page rather than a panel, because it wants
+the phases from `§10` and the seasons from `§18` on one trend and
+neither fits beside a nutrient table. `next/components/diet/year-panel.tsx`
+draws it, out of the same three fetches the long view makes.
+
+**The axis is always a year, and that is the empty state rather
+than a fallback.** Until the log reaches back a year the axis
+starts at the first weighing and runs a year forward, so a reader
+three months in sees three months of line, nine months of shaded
+year to the right of today, and the seasons already drawn across
+the part they have not lived. It is one expression and there is
+no threshold in it. The deferral was right that this page can
+only draw its own empty state for most of its first year, and
+wrong that this is a reason to wait: what a reader needs at three
+months is to see the shape of the thing they are filling in, and
+a page that will not draw until it is full teaches nobody that
+they are on their way.
+
+**It states no rate across the year.** A year almost always
+crosses a change of protocol, and `§10`'s rule is that a slope
+never does, so the lead figure is the DIFFERENCE between the
+trend at each end, said as a difference, and the rates are one
+per stretch in a table beneath. Where no protocol has ever been
+declared there is no boundary to cross, the year is one window,
+and one rate over it is the honest answer rather than a missing
+one.
+
+Two things the building of it turned up, both of them the reason
+a templated sentence has to be checked rather than written:
+
+- **The deficit calibration is a circle unless the burn it is
+  compared against comes out of the equations.** `learnedBurn()`
+  derives maintenance FROM the trend, so a prediction made with
+  that figure and then checked against the trend comes back at a
+  hundred percent, for everybody, every time, and nothing about
+  the page would look wrong. It is compared against Mifflin plus
+  the activity answer, which knows nothing about the weighings.
+- **A swap finder offers raw rice for cooked rice.** Both are
+  staples, both are weighed, and one is 365 kcal per 100 g
+  against the other's 130, so it is the largest saving in any
+  Bangladeshi log and it is the cooking water printed as advice.
+  `swaps()` refuses a pair whose `raw` flags differ.
+
 ---
 
 ## 17. What food costs, which is the one question this site is already for
@@ -1345,6 +1476,48 @@ arithmetic. The moment this tool recommends where to buy
 something it stops being a calculator and starts being an
 advertisement, and it will not.
 
+### What is built
+
+The price table on `/tools/diet/foods` was the first half of this
+and was there before the second. The second is on
+`/tools/diet/nutrition`: a weekly budget written to
+`diet_profile.food_budget` and `budget_currency`, the spend
+plotted against the intake, and the three ratios, a day, a
+thousand calories and a hundred grams of protein. All of them are
+over the share of the log this site has a price for, that share
+is printed beside them, and under `§15`'s coverage floor nothing
+is drawn at all. A row priced in the other currency is not
+converted, because an exchange rate is a fact with no date on it.
+A price older than six months is drawn greyed with its own date.
+
+**One of the two priced recommendations holds and the other does
+not, in the shape it is written in above.** `costByTag()` over
+the committed prices puts the middle staple row at ৳66 per 1000
+kcal against ৳200 for the middle protein row in Bangladesh, and
+£1.03 against £3.59 in Britain. So keto really does cost about
+three times as much per calorie, and the page says so with the
+two figures beside it. But the multiple is 3.0 in Bangladesh and
+3.5 in Britain, so "substantially more in Bangladesh" is not what
+these prices say, and it is either that sentence or the prices
+that needs correcting.
+
+"A higher protein target costs more" is not a fact about the
+protein rows either, and the assertion written for it failed the
+first time it ran. Dal is tagged as both a staple and a protein
+and rice carries protein, so the middle protein row and the
+middle staple row are within a rounding of each other per gram of
+protein in both tables. What is true is the SPREAD inside the
+group, which is what the page prints instead: ৳59 per 100 g of
+protein at the cheap end, which is mug dal, against ৳455 for the
+middle of the priced rows that carry protein, about eight times.
+That spread is the whole reason a cost per gram of protein table
+is worth having.
+
+**Still not built**: the wire to `targets` in `§30`, so that a
+food budget is a spending target of the account's rather than a
+column of its own; and `diet_foods.price`, which is what a dish
+somebody cooked themselves cost.
+
 ---
 
 ## 18. The body has a calendar, and ignoring it makes the tool wrong
@@ -1391,6 +1564,49 @@ One optional field, hours. The insight it earns is a plain
 observation of the kind `§16` allows: on this reader's own data,
 days after short nights average so much above target. Described,
 not explained, and never turned into a sleep score.
+
+**A ROW'S HOURS ARE THE NIGHT THAT ENDED ON THAT ROW'S MORNING**,
+and they pair with that row's OWN intake. It is a decision rather
+than an implementation detail, so it is settled here rather than
+in three comments, and three things point the same way.
+
+A row is a day and the whole row hangs off one morning:
+`weightKg` is that morning's weighing, and this section already
+says short sleep "affects the morning weight directly through
+hydration and cortisol", which is the same night. Sleep and
+weight on one row have to mean one night or the row means two
+things at once.
+
+Every importer agrees. Apple Health, Fitbit and Oura all date a
+night to the morning it ended, and `shared/csv.ts` maps `sleep`,
+`hours slept` and `time asleep` out of exactly those. Pair a
+night with the following row and an imported log is a day out
+with nothing on the page looking wrong.
+
+And a field on the log form reads "last night", which is that
+same night again, so a typed row and an imported row agree by
+construction rather than by anybody remembering.
+
+"Days after short nights" still holds and is not a third
+convention: the day after the night IS that row, because the
+night ended that morning.
+
+`afterShortNights()` in `shared/insights.ts` is the arithmetic
+and it is drawn on `/tools/diet/nutrition`, beside `§16`'s other
+readings, because what it is a reading ABOUT is intake. It says
+two averages with the days each was drawn from, both against the
+reader's own target where there is one, and it refuses under five
+days on either side of the line. There is no score, no grade for
+a night and no target for one. `scripts/insights.test.ts` builds
+an alternating fixture and asserts that pairing a row with the
+day before or the day after comes out with the OPPOSITE sign, so
+a drift in either direction fails loudly rather than looking
+correct.
+
+**No form offers hours yet.** The column is fillable only through
+the CSV import on `/tools/diet/import`. A field on the log form,
+labelled "last night", is the one thing between this reading and
+most readers.
 
 ### Illness, and the pause that is not a failure
 
@@ -1489,6 +1705,62 @@ does not exist.
 **No heart rate, no VO2 max, no recovery score.** Those need a
 device this tool does not talk to and produce numbers this tool
 could not check.
+
+### What is built
+
+`shared/activity.ts` is what a step is worth: `stepsKcal()` and
+`stepsKgPerWeek()`, the two ranges kept apart until the last
+multiplication, `stepBase()` for the reader's own middle day and
+`stepShift()` for one window against the one before it.
+`next/components/diet/forecast-panel.tsx` draws the fortnight and
+what more walking would do to the forecast.
+
+**The fourth stall is a KIND**, not only a reading. `stall()`
+takes `stepsThen` and `stepsNow`, both medians out of
+`stepShift()`, and reports `moved-less` where the walking has
+fallen. It sits second in the order, behind a falling waist and
+ahead of a drifted target, because the order is confidence rather
+than likelihood: a waist is measured on the reader, a fall in
+walking is two medians off the log, and a drifted target is a
+burn this tool inferred.
+
+**Both tests have to pass or neither counts**, and that is the
+part worth not undoing. A fifth off 2,000 steps is 400 steps and
+about ten kilocalories, which is not why anybody stalled; a
+thousand off 20,000 is not a change of habit. Medians and never
+means, because one 25,000 step day in a month of 4,000s is a
+wedding.
+
+Two readings in `shared/insights.ts` finish the section, both on
+`/tools/diet/habits`:
+
+- **`movement()`** is the same three facts as a reading rather
+  than a verdict: the walking, the trend and the logged intake
+  over ONE window and the window before it. The window is
+  `STALL_DAYS`, the same three weeks `§4` reads a stall over, so
+  the three readings are about the same days. `flat` is a
+  statement about the rate's interval spanning zero and nothing
+  else. It refuses under seven days with a step count in either
+  half.
+- **`tape()`** is the reading that justifies the measurement set:
+  every site the log carries, first reading against last over four
+  weeks, beside what the trend did over the same four weeks. It
+  needs two readings of one site a fortnight or more apart, it
+  says which changes are larger than the centimetre a tape can
+  resolve, and it draws whether or not a stall was detected,
+  because a reader who is not stalled still cannot read this out
+  of a weight.
+
+`TAPE_RESOLUTION_CM` is that centimetre, exported from
+`shared/diet.ts` and read by both `stall()` and `tape()`. Two of
+them is a page saying a waist has moved beside a page saying it
+has not.
+
+**One thing in this section is still not built**, and it is
+deliberate: training, as type, duration and how hard it felt.
+There is no column for any of the three, so it is a migration, a
+form and a release rather than a reading, and a reading built on
+a column nothing writes is a decoration.
 
 ---
 
@@ -1997,6 +2269,7 @@ and there are four rules for it.
 | `/tools/diet/you` | the body: measurements, composition, the cut-offs and which set is in use, the tape guide |
 | `/tools/diet/goal` | rate, style, macros, the floors, the goal in waist first, and what the projection actually says |
 | `/tools/diet/trend` | the long view: trend against scale, learned maintenance over time, stalls, phases, and the calendar from `§18` |
+| `/tools/diet/year` | a year in one page: one trend with the phases from `§10` banded across it, the seasons from `§18` along its foot, the days you marked, and what the log holds. The axis is a year wide whatever the log holds |
 | `/tools/diet/expect` | `§9`: the arc, this week's expectation against what happened, the shape of a day, and what unlocks when |
 | `/tools/diet/log` | the food log in full: search, barcode, recipes, your usuals, the week's plan and the shopping list. `§12` and `§13` |
 | `/tools/diet/foods` | the portion library for this place, the reader's own items, and the price table from `§17` |
@@ -2010,8 +2283,14 @@ All Next routes under `next/app/(site)/tools/diet/`, components in
 `shared/nav.ts` under Tools, which is what puts it in the rail,
 the footer and the palette at once.
 
-**Eleven pages is too many to scroll and exactly right to tab
+**This many pages is too many to scroll and exactly right to tab
 through**, which is a solved problem here:
+
+The number is deliberately not replaced with fifteen. `§29`'s own
+table is the list, `DIET_PAGES` is what the strip and the deck
+count, and a sentence that states a total beside a table is the
+failure at the top of `CLAUDE.md`. Say "this many", or say
+nothing.
 `next/components/ui/tab-panels.tsx` is the account page's
 arrangement, the fragment chooses the panel, and the panels are
 built on the server and handed over as a prop. This tool uses it
@@ -2146,9 +2425,9 @@ this file so the prose and the code cannot drift.
 
 **`scripts/check-diet.ts`**, for the rules that are about pages
 rather than about numbers. It is in `check-all.ts` beside every
-other check. Six of the nine below are held; the three not yet
-held are marked, and each is waiting on the thing it would check
-existing:
+other check. Five of the nine below are held, plus two the list
+did not ask for; the four not yet held are marked ○, and each is
+waiting on the thing it would check existing:
 
 - ○ the floors are the ones `scripts/diet.test.ts` asserts, and
   no route recomputes a formula rather than importing it.
@@ -2176,6 +2455,10 @@ existing:
   with the section that will build it. A column nothing can fill
   breaks nothing, which is why it needed a check rather than a
   paragraph.
+- ✓ and a second the list did not ask for: what happens after a
+  goal is reached is said ONCE, on the goal page. `§6` puts it
+  there and only there, and it is the one sentence in the tool
+  that argues for the tool.
 
 **A `diet.test` under `next/`**, in a real browser, the way
 `next/admin.test.ts` drives `/admin`:

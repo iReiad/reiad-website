@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../../lib/pageMeta";
 import { DietPage } from "../../../../../components/diet/page-frame";
-import { T } from "../../../../../components/diet/lang";
 import { RecipePanel } from "../../../../../components/diet/recipe-panel";
 import { Usuals } from "../../../../../components/diet/usuals";
 
@@ -20,12 +19,6 @@ export default function Page() {
   return (
     <DietPage
       href="/tools/diet/recipes"
-      /* Until the address is in `DIET_PAGES`, which is where the
-         strip and the front door's deck both read it from. The
-         frame prefers the table and falls back to this, so a page
-         the table does not list still has a heading rather than a
-         blank one. */
-      title={<T en="Three taps" bn="তিন চাপ" />}
       lede={{
         en: "Food diaries are abandoned because of friction, not motivation, and most people eat the same forty things. Build a dish once and a portion of it is one tap; log something three times and it offers itself.",
         bn: "খাবারের খাতা লেখা বন্ধ হয় ঝামেলার কারণে, ইচ্ছার অভাবে নয়, আর বেশিরভাগ মানুষ ঘুরেফিরে সেই চল্লিশটা জিনিসই খান। একবার একটা রান্না বানিয়ে রাখলে তার এক ভাগ এক চাপ; কিছু তিনবার লিখলে সেটা নিজেই সামনে চলে আসে।",

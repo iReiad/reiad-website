@@ -125,6 +125,13 @@ export interface Profile {
   band_low_kg?: number;
   band_high_kg?: number;
   cycle_tracking?: boolean;
+  /** One date and a length, not a diary: everything the cycle
+      reading does is arithmetic on a repeating interval, so a
+      log of periods would be a more sensitive record collected
+      for no extra answer. Both are behind `cycle_tracking`,
+      which is off by default. */
+  cycle_start?: string;
+  cycle_days?: number;
   meds?: string[];
   food_budget?: number;
   budget_currency?: string;
@@ -229,14 +236,31 @@ const fromDay = (d: Day): DayRow => ({
   note: d.note ?? null,
 });
 
+
 /** The last n days, newest first out of the index and reversed
     here, because every reading downstream wants them in order. */
+/** How many days one read brings back. Two years and a bit, so
+    the year page's 365 and the long view's windows all fit.
+
+    THE ORDER IS DESCENDING AND THE ROWS ARE TURNED ROUND HERE,
+    which is not a style choice. Ascending with a cap silently
+    returns the OLDEST rows and drops the recent ones, so a
+    reader whose log is longer than the cap gets a page drawn
+    entirely out of history: the chart renders, the figures are
+    real numbers, and every one of them is years old. Descending
+    drops the far end of the past instead, which is the half a
+    reader can afford to lose. */
+const DAYS_AT_ONCE = 800;
+
 export async function getDays(w: Who, from: string): Promise<Day[]> {
   const r = await call<DayRow[]>(
     `diet_days?user_id=eq.${w.id}&entry_date=gte.${from}`
-    + `&select=*&order=entry_date.asc&limit=800`, { method: "GET" }, w,
+    + `&select=*&order=entry_date.desc&limit=${DAYS_AT_ONCE}`, { method: "GET" }, w,
   );
-  return r.ok && r.data ? r.data.map(toDay) : [];
+  if (!r.ok || !r.data) return [];
+  /* Every caller reads these oldest first, and a slope fitted
+     backwards is a slope with the wrong sign. */
+  return r.data.map(toDay).reverse();
 }
 
 /** One row per person per day, which is what makes this an
@@ -271,6 +295,11 @@ function writeDay(w: Who, day: Day): Promise<{ ok: boolean; status: number }> {
 interface EntryRow {
   id?: string;
   entry_date: string;
+  /** `logged`, or `import:<what>`. Written out rather than left
+      to the column default, because a default is a fact the
+      database holds and the tool does not, and every other
+      provenance field on these rows is explicit. */
+  origin?: string;
   at_time?: string | null;
   meal?: string | null;
   label: string;
@@ -344,6 +373,7 @@ export async function addEntry(w: Who, e: Entry): Promise<Entry | null> {
        than one that went missing: nothing would announce it. */
     source: e.source ?? "free",
     source_id: e.sourceId ?? null,
+    origin: "logged",
   };
   const r = await call<EntryRow[]>("diet_entries", {
     method: "POST",
@@ -406,7 +436,13 @@ export async function getOwnFoods(w: Who): Promise<OwnFood[]> {
 export async function saveOwnFood(w: Who, food: OwnFood): Promise<boolean> {
   const r = await call("diet_foods", {
     method: "POST",
-    headers: { prefer: "return=minimal" },
+    /* AN UPSERT, because this is called twice about one row: once
+       to write the dish and again after every portion or share to
+       bump `uses` and `last_used`. A plain POST with an id that
+       already exists is a 409, so the second call has been
+       failing silently since the day it was written, and a pot
+       that never ages off the hob is what that looks like. */
+    headers: { prefer: "return=minimal,resolution=merge-duplicates" },
     body: JSON.stringify({ ...food, user_id: w.id,
       updated_at: new Date().toISOString() }),
   }, w);
@@ -435,6 +471,162 @@ export async function startPhase(w: Who, style: string, on: string): Promise<boo
     headers: { prefer: "return=minimal" },
     body: JSON.stringify({ user_id: w.id, style, started_on: on }),
   }, w);
+  return r.ok;
+}
+
+/* ---------------------------------------------------------- */
+/* arriving from another app                                  */
+/* ---------------------------------------------------------- */
+
+/** Days from a file, written in one go.
+
+    `DIET.md` section 26. `origin` is `import:<what>` rather than
+    `logged`, so an imported year and a logged year can be told
+    apart and A BAD IMPORT IS UNDONE AS ONE OPERATION rather than
+    three hundred.
+
+    A merge upsert, so importing over a day already logged
+    replaces it rather than failing on the unique constraint.
+    That is the right way round: the reader chose to import, and
+    the alternative is a file that half applies with no way to
+    tell which half. */
+export async function importDays(
+  w: Who, days: Day[], origin: string,
+): Promise<{ written: number; failed: number }> {
+  if (!days.length) return { written: 0, failed: 0 };
+  const stamp = new Date().toISOString();
+  /* In chunks, because PostgREST has a request size and a year
+     of daily rows is larger than one. Sequential rather than
+     parallel: a bad connection is the case this is for, and
+     twelve requests at once is how that connection gets worse. */
+  const SIZE = 100;
+  let written = 0;
+  let failed = 0;
+  for (let at = 0; at < days.length; at += SIZE) {
+    const slice = days.slice(at, at + SIZE);
+    const r = await call("diet_days?on_conflict=user_id,entry_date", {
+      method: "POST",
+      headers: { prefer: "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify(slice.map((d) => ({
+        ...fromDay(d), user_id: w.id, origin, updated_at: stamp,
+      }))),
+    }, w);
+    if (r.ok) written += slice.length; else failed += slice.length;
+  }
+  return { written, failed };
+}
+
+/** Undone as one operation, which is what `origin` is for. */
+export async function undoImport(w: Who, origin: string): Promise<boolean> {
+  const r = await call(
+    `diet_days?user_id=eq.${w.id}&origin=eq.${encodeURIComponent(origin)}`,
+    { method: "DELETE" }, w,
+  );
+  return r.ok;
+}
+
+/** Which imports this account carries, so one can be undone by
+    name rather than by remembering what was imported when. */
+export async function importOrigins(w: Who): Promise<string[]> {
+  const r = await call<Array<{ origin: string }>>(
+    `diet_days?user_id=eq.${w.id}&origin=neq.logged&select=origin`,
+    { method: "GET" }, w,
+  );
+  if (!r.ok || !r.data) return [];
+  return [...new Set(r.data.map((d) => d.origin))].sort();
+}
+
+/* ---------------------------------------------------------- */
+/* the clinic's numbers                                       */
+/* ---------------------------------------------------------- */
+
+/** One reading off one report.
+
+    `ref_low` and `ref_high` are on the ROW rather than derived
+    from the marker, because a reference interval is a property
+    of an assay and a population and is printed on the report the
+    reader is holding. Two labs differ by more than the changes
+    this tool would be drawing, so a figure judged against a
+    borrowed range is a figure judged wrongly. */
+export interface Lab {
+  id?: string;
+  /** The date on the report, not the date it was typed in. */
+  takenOn: string;
+  /** A `MARKERS` id from `components/diet/words.ts`. A stored
+      value: it is in real rows and is renamed the way a storage
+      key is renamed, which is to say not at all. */
+  marker: string;
+  value: number;
+  unit: string;
+  refLow?: number;
+  refHigh?: number;
+  note?: string;
+}
+
+interface LabRow {
+  id?: string;
+  taken_on: string;
+  marker: string;
+  value: number;
+  unit: string;
+  ref_low?: number | null;
+  ref_high?: number | null;
+  note?: string | null;
+}
+
+const toLab = (r: LabRow): Lab => ({
+  id: r.id,
+  takenOn: r.taken_on,
+  marker: r.marker,
+  value: Number(r.value),
+  unit: r.unit,
+  refLow: r.ref_low ?? undefined,
+  refHigh: r.ref_high ?? undefined,
+  note: r.note ?? undefined,
+});
+
+/** Everything, oldest first, because every reading of these is a
+    line over time rather than a latest value. There are a dozen
+    markers and a person is tested twice a year, so the whole
+    history is smaller than one day of food. */
+export async function getLabs(w: Who): Promise<Lab[]> {
+  const r = await call<LabRow[]>(
+    `diet_labs?user_id=eq.${w.id}&select=*&order=taken_on.asc&limit=500`,
+    { method: "GET" }, w,
+  );
+  return r.ok && r.data ? r.data.map(toLab) : [];
+}
+
+export async function saveLab(w: Who, lab: Lab): Promise<Lab | null> {
+  const row: LabRow & { user_id: string } = {
+    user_id: w.id,
+    taken_on: lab.takenOn,
+    marker: lab.marker,
+    value: lab.value,
+    unit: lab.unit,
+    ref_low: lab.refLow ?? null,
+    ref_high: lab.refHigh ?? null,
+    note: lab.note ?? null,
+  };
+  const r = await call<LabRow[]>("diet_labs", {
+    method: "POST",
+    headers: { prefer: "return=representation" },
+    body: JSON.stringify(row),
+  }, w);
+  if (!r.ok && r.status === 0) {
+    queue(async () => (await call("diet_labs", {
+      method: "POST",
+      headers: { prefer: "return=minimal" },
+      body: JSON.stringify(row),
+    }, w)).ok);
+  }
+  return r.ok && r.data?.length ? toLab(r.data[0]) : null;
+}
+
+/** A number typed off the wrong line of a report is worse than
+    no number, so it has to be removable. */
+export async function removeLab(w: Who, id: string): Promise<boolean> {
+  const r = await call(`diet_labs?id=eq.${id}`, { method: "DELETE" }, w);
   return r.ok;
 }
 

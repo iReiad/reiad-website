@@ -233,6 +233,15 @@ const NOT_GLASS = new Map<string, string>([
      anybody can resolve, and eleven of them lit would turn a
      strip into a string of bulbs. */
   ["dt-tab-dot", "a mark: a 7px dot carrying one page's colour, eleven in a row"],
+  /* A MARK, four pixels tall: how far into a season today is,
+     read beside the words that say the same thing. A bevel on it
+     is detail nobody can resolve, and the groove kind is for a
+     track somebody aims at. */
+  ["dt-season-bar", "a mark: a 4px bar showing how far into a season today is"],
+  /* A LABEL, at the smallest size on the page, sitting inside a
+     card that is already on the material. Lighting a caption
+     inside a lit panel reads as two panes rather than one. */
+  ["dt-season-flag", "a label inside a card that is already glass: two panes where there is one"],
   ["acc-ico",             "a mark: the account menu's 20px icon disc"],
   ["rail-ico",            "a mark: the rail's per-school icon disc"],
   ["acc-avatar",          "a mark: a round profile picture, and a bevel on a photo is a frame"],

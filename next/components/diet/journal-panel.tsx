@@ -24,6 +24,7 @@ import { who, getDays, isoDate, shiftDate, type Who } from "../../lib/diet-api";
 import { Note } from "../ui/note";
 import { T, TBlock, digits, useToolLang } from "./lang";
 import { Term } from "./glossary";
+import { Invite } from "./invite";
 
 const SYMPTOMS: Array<{ en: string; bn: string; withEn: string; withBn: string }> = [
   { en: "Headache, fatigue or cramp in the first fortnight of keto",
@@ -82,10 +83,20 @@ export function JournalPanel() {
 
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
   if (!w) {
-    return <p className="dt-invite"><T
-      en="A journal belongs to an account, so it is there on your phone too."
-      bn="খাতা অ্যাকাউন্টের সঙ্গে থাকে, তাই ফোনেও পাবেন।"
-    /></p>;
+    return (
+      <Invite
+        en="A journal belongs to an account, so it is there on your phone too."
+        bn="খাতা অ্যাকাউন্টের সঙ্গে থাকে, তাই ফোনেও পাবেন।"
+        shows={[
+          { en: "Hunger from one to five, day by day, which climbs before the trend moves.",
+            bn: "দিনে দিনে এক থেকে পাঁচে ক্ষুধা, যা ধারা নড়ার আগেই ওঠে।" },
+          { en: "How often each of the twelve tags came up over the last ninety days.",
+            bn: "গত নব্বই দিনে বারোটা চিহ্নের কোনটা কতবার এসেছে।" },
+          { en: "Your own lines, kept as written and never counted.",
+            bn: "আপনার নিজের লেখা কথা, যেমন লিখেছেন তেমনই থাকে, গোনা হয় না।" },
+        ]}
+      />
+    );
   }
 
   return (
@@ -137,10 +148,10 @@ export function JournalPanel() {
       <section className="dt-symptoms" aria-labelledby="dt-sym-h">
         <h2 id="dt-sym-h"><T en="What gets reported" bn="মানুষ যা বলে" /></h2>
         <TBlock
-          en={<p className="dt-hint">Described, and pointed at the tool&apos;s own
+          en={<p className="dt-intro">Described, and pointed at the tool&apos;s own
             note. Never explained, never diagnosed: these are things people
             report, and what they are usually associated with.</p>}
-          bn={<p className="dt-hint">বর্ণনা করা হচ্ছে, আর যন্ত্রের নিজের নোটের দিকে
+          bn={<p className="dt-intro">বর্ণনা করা হচ্ছে, আর যন্ত্রের নিজের নোটের দিকে
             দেখানো হচ্ছে। ব্যাখ্যা নয়, রোগ নির্ণয় তো নয়ই: এগুলো মানুষ যা বলে,
             আর সাধারণত কীসের সঙ্গে মিলে যায়।</p>}
         />

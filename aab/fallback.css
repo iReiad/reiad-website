@@ -8195,7 +8195,7 @@
     --follows: 0;
   }
 
-  :is(.dt-figure,
+  :is(.dt-figure, .dt-season-row, .dt-recipe, .dt-invite-shows,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
@@ -8273,7 +8273,7 @@
       .reader-panel, .signin, .pane-bar, .model-drivers,
       .news-window, .preflight, .slash-menu, .studio-tools,
       .course-rail, .csv-panel, .deck-foot, .toast, .dt-set, .dt-lang,
-      .dt-figure,
+      .dt-figure, .dt-season-row, .dt-recipe, .dt-invite-shows,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
@@ -8420,7 +8420,7 @@
   :root[data-tool-lang="bn"] span.t-en,
   :root:not([data-tool-lang="bn"]) span.t-bn { display: none; }
 
-  .dt-page { padding-block: var(--step); }
+  .dt-page { padding-block: var(--step); min-inline-size: 0; }
 
   .dt-head { margin-block-end: var(--s-6); }
 
@@ -8429,6 +8429,8 @@
     gap: var(--s-2);
     flex-wrap: nowrap;
     overflow-x: auto;
+
+    contain: inline-size;
     scrollbar-width: none;
     scroll-snap-type: x proximity;
     position: sticky;
@@ -8552,6 +8554,11 @@
   }
 
   .dt-hint { font-size: var(--t-1); color: var(--ink-soft); }
+  .dt-intro {
+    color: var(--ink-soft);
+    max-inline-size: 66ch;
+    margin-block: 0 var(--s-5);
+  }
 
   .dt-readout {
     display: grid;
@@ -8865,9 +8872,17 @@
   .dt-dot { fill: var(--ink-soft); opacity: 0.5; }
   .dt-ax { fill: var(--ink-soft); font-size: 10px; font-family: var(--font-mono); }
   .dt-ax-line { stroke: var(--hairline); stroke-width: 1; }
+
   .dt-settling {
     fill: var(--ink-soft); opacity: 0.06;
+    stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 3 3;
   }
+
+  .dt-year-ahead { fill: var(--ink-soft); opacity: 0.04; }
+
+  .dt-year-phase { fill: var(--accent); opacity: 0.07; }
+
+  .dt-year-season { fill: var(--ink-soft); opacity: 0.16; }
 
   .dt-table-wrap { overflow-x: auto; margin-block-end: var(--step); }
   .dt-table { border-collapse: collapse; inline-size: 100%; font-size: var(--t-2); }
@@ -8879,22 +8894,13 @@
   .dt-table thead th { color: var(--ink-soft); font-size: var(--t-1); text-transform: uppercase; letter-spacing: 0.05em; }
 
   .dt-goal, .dt-journal, .dt-nutrition, .dt-expect, .dt-trend,
-  .dt-foods, .dt-health, .dt-summary {
+  .dt-foods, .dt-health, .dt-summary, .dt-keto, .dt-habits,
+  .dt-recipes, .dt-usuals, .dt-year {
     display: grid; gap: var(--step);
   }
 
-  .dt-goal > section, .dt-journal > section,
-  .dt-nutrition > section, .dt-expect > section, .dt-trend > section,
-  .dt-foods > section, .dt-health > section, .dt-summary > section {
-    padding-block-start: 0;
-  }
-
-  .dt-goal > section > h2, .dt-journal > section > h2,
-  .dt-nutrition > section > h2, .dt-expect > section > h2,
-  .dt-trend > section > h2, .dt-foods > section > h2,
-  .dt-health > section > h2, .dt-summary > section > h2 {
-    margin-block: 0 var(--s-6);
-  }
+  .dt-page > * > section { padding-block-start: 0; }
+  .dt-page > * > section > h2 { margin-block: 0 var(--s-6); }
   .dt-goal .dt-readout, .dt-journal .dt-readout { margin-block-start: 0; }
 
   .dt-coverage {
@@ -9079,6 +9085,13 @@
     color: var(--ink-soft);
   }
 
+  .dt-priced-stale {
+    color: color-mix(in oklab, var(--ink-soft) 70%, transparent);
+    text-decoration: underline dotted;
+    text-decoration-color: var(--gold);
+    text-underline-offset: 2px;
+  }
+
   .dt-row-src {
     display: block;
     font-weight: normal;
@@ -9138,9 +9151,286 @@
 
   @media print { .dt-nearby { display: none; } }
 
+  .dt-import { display: grid; gap: var(--step); }
+
+  .dt-import-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-4);
+    flex-wrap: wrap;
+    font-size: var(--t-2);
+    color: var(--ink-soft);
+  }
+
+  .dt-map {
+    display: grid;
+    gap: var(--s-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    margin-block-end: var(--step);
+  }
+  .dt-map-col { display: grid; gap: var(--s-3); align-content: start; }
+
+  .dt-map-eg {
+    font-size: var(--t-1);
+    color: var(--ink-soft);
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .dt-import-drop summary { cursor: pointer; font-size: var(--t-2); color: var(--ink-soft); }
+  .dt-import-why {
+    list-style: none; margin: var(--s-4) 0 0; padding: 0;
+    display: grid; gap: var(--s-2);
+    font-size: var(--t-1); color: var(--ink-soft);
+  }
+  .dt-import-go {
+    display: flex; gap: var(--s-4); align-items: center; flex-wrap: wrap;
+    margin-block: var(--s-6);
+  }
+  .dt-import-list {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: var(--s-4);
+  }
+  .dt-import-list li {
+    display: flex; gap: var(--s-4); align-items: center; flex-wrap: wrap;
+  }
+
+  .dt-onboard { display: grid; gap: var(--s-5); max-inline-size: 60ch; }
+  .dt-onboard-form {
+    display: grid;
+    gap: var(--s-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    align-items: start;
+  }
+  .dt-onboard-go { display: flex; gap: var(--s-4); flex-wrap: wrap; align-items: center; }
+
+  .dt-onboard-stop {
+    border: 1px dashed var(--danger);
+    border-radius: var(--radius-card);
+    padding: var(--s-5);
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .dt-oil-form, .dt-budget-form {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    align-items: start;
+    margin-block-end: var(--step);
+  }
+
+  .dt-cycle { display: grid; gap: var(--s-5); max-inline-size: 70ch; }
+  .dt-cycle-set { display: grid; gap: var(--s-5); justify-items: start; }
+  .dt-cycle-when {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    inline-size: 100%;
+    max-inline-size: 34rem;
+  }
+
+  .dt-measure-row > .dt-hint {
+    flex: 1 1 22ch;
+    max-inline-size: 62ch;
+  }
+
+  .dt-measure-row > * {
+    min-inline-size: 0;
+  }
+
+  .dt-recipe-mine, .dt-recipe-pots, .dt-recipe-build {
+    display: grid;
+    gap: var(--s-5);
+  }
+  .dt-recipe-list {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .dt-recipe {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    display: grid;
+    gap: var(--s-4);
+    padding: var(--s-5);
+  }
+  .dt-recipe-name {
+    font-size: var(--t-2);
+    font-weight: 600;
+    margin: 0;
+  }
+  .dt-recipe .dt-why, .dt-recipe .dt-hint { margin: 0; }
+
+  .dt-recipe-sum {
+    display: grid;
+    gap: var(--s-3);
+    justify-items: start;
+  }
+  .dt-recipe-macros {
+    color: var(--ink-soft);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--t-0);
+    font-variant-numeric: tabular-nums;
+    gap: var(--s-3) var(--s-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dt-shop-list {
+    display: grid;
+    gap: var(--s-3);
+    list-style: none;
+    margin: 0;
+    max-inline-size: 46rem;
+    padding: 0;
+  }
+  .dt-shop-list > li {
+    align-items: baseline;
+    border-block-end: 1px solid var(--hairline);
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: 1fr auto auto;
+    padding-block-end: var(--s-3);
+  }
+  .dt-shop-list > li:last-child { border-block-end: 0; }
+  .dt-shop-list .dt-hit-por, .dt-shop-list .mono {
+    color: var(--ink-soft);
+    font-size: var(--t-0);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .dt-season { display: grid; gap: var(--s-5); max-inline-size: 70ch; }
+  .dt-season-list {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dt-season-row {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-inline-start: 3px solid var(--accent, var(--hairline));
+    border-radius: var(--radius-card);
+    display: grid;
+    gap: var(--s-3);
+    padding: var(--s-5);
+  }
+  .dt-season-name {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--t-2);
+    gap: var(--s-3);
+    margin: 0;
+  }
+  .dt-season-flag {
+    background: color-mix(in oklab, var(--accent, var(--hairline)) 16%, transparent);
+    border-radius: var(--radius-xs);
+    color: var(--ink-soft);
+    font-size: var(--t-0);
+    font-weight: 500;
+    padding: 0.1em 0.5em;
+    white-space: nowrap;
+  }
+  .dt-season-when {
+    color: var(--ink-soft);
+    font-size: var(--t-0);
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+  }
+  .dt-season-bar {
+    background: color-mix(in oklab, var(--accent, var(--hairline)) 18%, transparent);
+    block-size: 4px;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+  .dt-season-bar > span {
+    background: var(--accent, var(--ink-soft));
+    block-size: 100%;
+    display: block;
+  }
+  .dt-season .dt-said { margin: 0; }
+
+  .dt-stall {
+    display: grid;
+    gap: var(--s-5);
+    max-inline-size: 70ch;
+  }
+  .dt-stall .dt-defs { margin-block: 0; }
+
+  .dt-lab-form {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    align-items: end;
+    margin-block-end: var(--step);
+  }
+
+  .dt-lab-own, .dt-lab-go { grid-column: 1 / -1; }
+  .dt-lab-own summary { cursor: pointer; font-size: var(--t-1); color: var(--ink-soft); }
+  .dt-lab-range {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    margin-block-start: var(--s-4);
+    max-inline-size: 24rem;
+  }
+  .dt-lab-go { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; }
+
+  .dt-labs {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    margin-block-end: var(--step);
+  }
+
+  .dt-lab-rows {
+    list-style: none; margin: var(--s-4) 0 0; padding: 0;
+    display: grid; gap: var(--s-2);
+    font-size: var(--t-1);
+  }
+  .dt-lab-rows li {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--s-3);
+    align-items: baseline;
+    color: var(--ink-soft);
+  }
+
   .dt-symptoms, .dt-diary { max-inline-size: 70ch; }
 
   .dt-invite { display: grid; gap: var(--s-5); max-inline-size: 52ch; justify-items: start; }
+
+  .dt-invite-shows {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-inline-start: 3px solid var(--accent);
+    border-radius: var(--radius-card);
+    display: grid;
+    gap: var(--s-3);
+    padding: var(--s-5);
+    inline-size: 100%;
+  }
+  .dt-invite-h {
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: var(--t-0);
+    letter-spacing: 0.04em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+  .dt-invite-shows ul { display: grid; gap: var(--s-3); margin: 0; padding-inline-start: 1.2em; }
 
   .dt-invite-line {
     display: flex;

@@ -107,6 +107,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
        with the reason. The first material reached 1 of 203
        surface-like classes and nothing failed. */
     "scripts/check-material.ts",
+    "scripts/check-icons.ts",
     /* The extension rule, which was a paragraph in CLAUDE.md
        until 19 August 2026 and was broken anyway: the
        neighbours are the pattern, so somebody adding a test
@@ -141,7 +142,15 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/restore.test.ts",
     "scripts/snapshot.test.ts",
     "scripts/routine.test.ts",
-    "scripts/diet.test.ts",
+    "scripts/diet.test.ts", "scripts/csv.test.ts",
+    "scripts/insights.test.ts", "scripts/activity.test.ts",
+    /* `next/research.test.ts` is deliberately not here beside its
+       sibling: it needs a browser, and without one it exits 0
+       having asserted nothing, which is the silent skip this
+       repository has already been caught by. It belongs with the
+       browser tests under "Before deploying" until its skip says
+       so out loud. */
+    "next/recipes.test.ts",
     "scripts/admin.test.ts",
     "scripts/schools.test.ts",
     "scripts/schools-api.test.ts",

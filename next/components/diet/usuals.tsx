@@ -46,6 +46,7 @@ import {
 } from "../../lib/diet-api";
 import { Button } from "../ui/button";
 import { T, TBlock, digits, useToolLang } from "./lang";
+import { Invite } from "./invite";
 
 /** How far back the count reads. Two months is enough for a
     pattern and short enough that a thing somebody stopped eating
@@ -141,12 +142,10 @@ export function Usuals() {
 
   if (!w) {
     return (
-      <p className="dt-invite">
-        <T
-          en="Your usuals are worked out from what you have logged, so they need an account to be worked out from."
-          bn="আপনার নিয়মিত খাবারগুলো আপনার লেখা খাতা থেকেই বের করা হয়, তাই হিসাব করার জন্য একটা অ্যাকাউন্ট লাগে।"
-        />
-      </p>
+      <Invite
+        en="Your usuals are worked out from what you have logged, so they need an account to be worked out from."
+        bn="আপনার নিয়মিত খাবারগুলো আপনার লেখা খাতা থেকেই বের করা হয়, তাই হিসাব করার জন্য একটা অ্যাকাউন্ট লাগে।"
+      />
     );
   }
 
@@ -156,7 +155,7 @@ export function Usuals() {
         <h2 id="dt-usual-h"><T en="Your usuals" bn="আপনি যা নিয়মিত খান" /></h2>
 
         {!loaded ? (
-          <p className="dt-hint">
+          <p className="dt-intro">
             <T en="Counting what you log most." bn="আপনি সবচেয়ে বেশি যা লেখেন তা গোনা হচ্ছে।" />
           </p>
         ) : null}
@@ -220,7 +219,7 @@ export function Usuals() {
         <h2 id="dt-yest-h"><T en="Yesterday again" bn="গতকালেরটাই আবার" /></h2>
 
         {loaded && !lastNight.length ? (
-          <p className="dt-hint">
+          <p className="dt-intro">
             <T
               en="Nothing was logged yesterday, so there is nothing to copy. It is the most pressed button in any food diary once there is."
               bn="গতকাল কিছু লেখা হয়নি, তাই কপি করার কিছু নেই। একবার লেখা শুরু হলে যেকোনো খাবারের খাতায় এই বোতামটাই সবচেয়ে বেশি চাপা পড়ে।"

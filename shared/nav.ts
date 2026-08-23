@@ -30,7 +30,8 @@ export type IconName =
   | "compass" | "calculator" | "gauge" | "pen" | "briefcase" | "person"
   | "mail" | "user" | "search" | "theme" | "chevron" | "menu" | "close"
   | "check" | "spark" | "seed" | "magnifier" | "cap" | "microscope"
-  | "wallet" | "id" | "shield" | "door" | "calendar" | "warning" | "leaf";
+  | "wallet" | "id" | "shield" | "door" | "calendar" | "warning" | "leaf"
+  | "keep" | "note";
 
 export interface NavItem {
   label: string;

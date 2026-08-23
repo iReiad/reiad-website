@@ -1,5 +1,9 @@
 /* ============================================================
-   diet-pages.ts: the eleven addresses of the diet tool, once.
+   diet-pages.ts: every address of the diet tool, once.
+
+   NOT "the eleven addresses", which this line said while the
+   table held fourteen. A comment that counts a list beside it is
+   the failure at the top of `CLAUDE.md` in its smallest form.
 
    THE SAME RULE AS `nav.ts`, one level down. The front door's
    deck said all ten in one place, the strip across the top of
@@ -108,6 +112,19 @@ export const DIET_PAGES: DietPage[] = [
     needsAccount: true,
   },
   {
+    href: "/tools/diet/year",
+    needs: ["/tools/diet/trend"],
+    tone: "var(--plum)",
+    tab: { en: "The year", bn: "বছর" },
+    title: { en: "A year in one page", bn: "এক পাতায় এক বছর" },
+    go: { en: "See the year", bn: "বছরটা দেখুন" },
+    dek: {
+      en: "One long trend with everything that happened to it drawn on it: the protocols you ran banded across it, the seasons you crossed along its foot, and the days you marked. The chart is a year wide from the first weighing, so the part not lived yet is shaded rather than missing.",
+      bn: "একটা লম্বা ধারা, আর তার উপরেই সব কিছু আঁকা: যে নিয়মগুলো চালিয়েছেন সেগুলো চওড়া পটি হিসেবে, যে ঋতুগুলো পার হয়েছেন সেগুলো নিচের কিনারায়, আর যে দিনগুলোয় চিহ্ন দিয়েছেন। প্রথম ওজনের দিন থেকে ছকটা এক বছর চওড়া, তাই যে সময়টা এখনো আসেনি সেটা ফাঁকা নয়, ছায়া দেওয়া।",
+    },
+    needsAccount: true,
+  },
+  {
     href: "/tools/diet/expect",
     needs: ["/tools/diet/you", "/tools/diet/trend"],
     tone: "var(--violet)",
@@ -146,6 +163,45 @@ export const DIET_PAGES: DietPage[] = [
     needsAccount: true,
   },
   {
+    href: "/tools/diet/recipes",
+    tone: "var(--rose)",
+    tab: { en: "Three taps", bn: "তিন চাপ" },
+    title: { en: "Three taps, or it does not get logged", bn: "তিন চাপ, নইলে লেখাই হয় না" },
+    go: { en: "Build one", bn: "একটা বানান" },
+    dek: {
+      en: "Food diaries are abandoned because of friction, not motivation, and most people eat the same forty things. Build a dish once and a portion of it is one tap; log something three times and it offers itself.",
+      bn: "খাবারের খাতা লেখা বন্ধ হয় ঝামেলার কারণে, ইচ্ছার অভাবে নয়, আর বেশিরভাগ মানুষ ঘুরেফিরে সেই চল্লিশটা জিনিসই খান। একবার একটা রান্না বানিয়ে রাখলে তার এক ভাগ এক চাপ; কিছু তিনবার লিখলে সেটা নিজেই সামনে চলে আসে।",
+    },
+    needs: ["/tools/diet/foods"],
+    needsAccount: true,
+  },
+  {
+    href: "/tools/diet/keto",
+    tone: "var(--violet)",
+    tab: { en: "Keto", bn: "কিটো" },
+    title: { en: "Keto, hour by hour", bn: "কিটো, ঘণ্টায় ঘণ্টায়" },
+    go: { en: "Start the clock", bn: "ঘড়ি চালু করুন" },
+    dek: {
+      en: "The first three weeks of keto lie to you: the scale falls fast and almost none of it is fat. A clock on the phase you are in, what the body is doing at this hour, and the three salts that leave with the water.",
+      bn: "কিটোর প্রথম তিন সপ্তাহ আপনাকে ভুল বোঝায়: দাঁড়িপাল্লা দ্রুত নামে আর তার প্রায় কিছুই চর্বি নয়। আপনি যে পর্বে আছেন তার একটা ঘড়ি, এই ঘণ্টায় শরীর কী করছে, আর পানির সঙ্গে যে তিনটে লবণ চলে যায়।",
+    },
+    needs: ["/tools/diet/nutrition", "/tools/diet/glossary"],
+    needsAccount: true,
+  },
+  {
+    href: "/tools/diet/habits",
+    tone: "var(--green)",
+    tab: { en: "What you kept up", bn: "যা ধরে রেখেছেন" },
+    title: { en: "What you kept up", bn: "যা ধরে রেখেছেন" },
+    go: { en: "See the runs", bn: "দিনগুলো দেখুন" },
+    dek: {
+      en: "Seven daily things read off the log you already keep, never a second checklist to tick, each as a run of days with your best beside it. And a weight forecast built from your own steps rather than an assumed activity level.",
+      bn: "আপনি যে খাতা এমনিতেই রাখেন তা থেকে পড়া সাতটা দৈনিক জিনিস, টিক দেওয়ার দ্বিতীয় কোনো তালিকা নয়, প্রতিটি কয়েক দিনের ধারা হিসেবে, পাশে আপনার সেরাটা। আর ধরে নেওয়া কর্মচঞ্চলতা নয়, আপনার নিজের হাঁটা থেকে ওজনের একটা আন্দাজ।",
+    },
+    needs: ["/tools/diet/goal", "/tools/diet/trend"],
+    needsAccount: true,
+  },
+  {
     href: "/tools/diet/foods",
     needs: ["/tools/diet/nutrition"],
     tone: "var(--plum)",
@@ -179,6 +235,18 @@ export const DIET_PAGES: DietPage[] = [
     dek: {
       en: "A ten minute appointment, and most people arrive with a memory. This is the same thing with dates on it, and the width of every estimate beside it.",
       bn: "দশ মিনিটের সাক্ষাৎ, আর বেশিরভাগ মানুষ যান শুধু স্মৃতি নিয়ে। এটা সেই একই জিনিস, তারিখসহ, আর প্রতিটি আন্দাজের পাশে তার সীমা।",
+    },
+    needsAccount: true,
+  },
+  {
+    href: "/tools/diet/import",
+    tone: "var(--plum)",
+    tab: { en: "Bring your history", bn: "হিসাব নিয়ে আসুন" },
+    title: { en: "Bring your history", bn: "আপনার হিসাব নিয়ে আসুন" },
+    go: { en: "Bring a file", bn: "ফাইল আনুন" },
+    dek: {
+      en: "A CSV from MyFitnessPal, Cronometer, LoseIt or a scale, with a preview of exactly what would be written before anything is. An importer that guesses silently fills a year of your history with the wrong column and you find out in March.",
+      bn: "মাইফিটনেসপাল, ক্রোনোমিটার, লুজইট বা দাঁড়িপাল্লার একটা সিএসভি, আর লেখার আগেই ঠিক কী লেখা হবে তার একটা ঝলক। যে আমদানি চুপচাপ আন্দাজ করে সে আপনার এক বছরের হিসাব ভুল কলাম দিয়ে ভরিয়ে দেয়, আর আপনি টের পান মার্চ মাসে।",
     },
     needsAccount: true,
   },

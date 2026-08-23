@@ -37,23 +37,39 @@
    Every reading has three answers and the third one is why this
    page is legible on the day somebody arrives. A column nothing
    writes yet is a sentence saying what would fill it, never a
-   fortnight of noughts. `sleep_hours` is that column today: the
-   log form has no hours field, so the row says so and says what
-   it would show.
+   fortnight of noughts. `sleep_hours` is that column today: no
+   log form offers hours, so the row says so and says what would
+   fill it.
+
+   ---- and two readings that are not habits ----
+
+   Section 19's other half: movement is progress a scale cannot
+   see, and so is a tape. `Moved` puts the walking, the trend and
+   the log over one window beside each other, which is the only
+   way the fourth stall is visible at all; `Taped` puts the tape
+   beside the trend, which is the one kind of stall the tool can
+   settle on its own. Both are `shared/insights.ts` and neither
+   is counted towards a run of days.
    ============================================================ */
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  fatEstimate, type Body, type Day, type Phase,
+  STALL_DAYS, fatEstimate, trend, weighings,
+  type Body, type Day, type Phase,
 } from "@reiad/shared/diet";
 import {
-  GLASS_ML, habits, type Habit, type HabitId,
+  GLASS_ML, STEP_BASE_LEAST, habits, type Habit, type HabitId,
 } from "@reiad/shared/activity";
 import {
-  who, getDays, getPhases, getProfile, isoDate, shiftDate,
+  TAPE_LEAST_DAYS, TAPE_RESOLUTION_CM, TAPE_SPAN_DAYS, movement, tape,
+  type MeasureId, type Movement, type Tape,
+} from "@reiad/shared/insights";
+import {
+  who, dayNumber, getDays, getPhases, getProfile, isoDate, shiftDate,
   type Profile, type Who,
 } from "../../lib/diet-api";
 import { Meter } from "../deck";
+import { Invite } from "./invite";
 import { Note } from "../ui/note";
 import { T, TBlock, digits, useToolLang } from "./lang";
 import { Waiting } from "./widgets";
@@ -118,10 +134,26 @@ const ROWS: Record<HabitId, {
     en: "Slept the night", bn: "রাতের ঘুম",
     fromEn: "Read off the hours on each day's row.",
     fromBn: "প্রতিদিনের সারিতে লেখা ঘণ্টা থেকে।",
-    waitEn: "The log has no hours field yet, so there is nothing here to read.",
-    waitBn: "খাতায় এখনো ঘণ্টার ঘর নেই, তাই এখানে পড়ার মতো কিছু নেই।",
+    waitEn: "The log form has no hours field yet. A sheet brought in on the import page can carry them, and the nutrition page reads a night against what you ate on the day it ended.",
+    waitBn: "খাতার ফর্মে এখনো ঘণ্টার ঘর নেই। আমদানির পাতায় আনা শিটে ঘণ্টা থাকতে পারে, আর পুষ্টির পাতায় একটা রাতের সঙ্গে মেলানো হয় যে দিনে সেটা শেষ হয়েছে সেই দিনের খাওয়া।",
   },
 };
+
+/** What each measurement site is called. The words are here
+    because nothing else on this page prints them, and they are
+    the words the tape guide on `/tools/diet/you` already uses. */
+const SITES: Record<MeasureId, { en: string; bn: string }> = {
+  waist: { en: "Waist", bn: "কোমর" },
+  hip: { en: "Hip", bn: "নিতম্ব" },
+  chest: { en: "Chest", bn: "বুক" },
+  thigh: { en: "Thigh", bn: "ঊরু" },
+  arm: { en: "Arm", bn: "বাহু" },
+  neck: { en: "Neck", bn: "গলা" },
+};
+
+const round = (n: number): number => Math.round(n);
+const one = (n: number): string => n.toFixed(1);
+const two = (n: number): string => n.toFixed(2);
 
 /** What a day had to reach, in that column's own unit.
 
@@ -214,16 +246,43 @@ export function HabitsPanel() {
     ratePct: profile?.goal_rate ?? 0.5,
   }), [days, today, body, profile]);
 
+  /* DRAWN AND FITTED ARE TWO LISTS, and `weighings()` is the one
+     place that says which is which. A rate fitted across a
+     marked day or a settling stretch is a step in body water
+     fitted as though it were a rate. The tape reading takes the
+     trend, because one weighing is real weight plus a kilo or
+     two of water. */
+  const { drawn, fittable } = useMemo(() => weighings({
+    days, dayOf: dayNumber, phases, today: dayNumber(today),
+  }), [days, phases, today]);
+
+  const moved = useMemo(() => movement({
+    days, todayISO: today, weights: fittable, dayOf: dayNumber,
+    weightKg: body?.weightKg,
+  }), [days, today, fittable, body]);
+
+  const taped = useMemo(() => tape({
+    days, trend: trend(drawn), dayOf: dayNumber, today: dayNumber(today),
+  }), [days, drawn, today]);
+
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
 
   if (!w) {
     return (
-      <p className="dt-invite">
-        <T
-          en="A run of days is a run of rows, and those live on your account. Nothing here asks you to do anything new: it is the log you already keep, read back."
-          bn="কয়েক দিনের হিসাব মানে কয়েক দিনের সারি, আর সেগুলো আপনার অ্যাকাউন্টে থাকে। এখানে নতুন কিছু করতে বলা হচ্ছে না: আপনি যে খাতাটা এমনিতেই রাখেন, সেটাই পড়ে শোনানো হয়।"
-        />
-      </p>
+      <Invite
+        en="A run of days is a run of rows, and those live on your account. Nothing here asks you to do anything new: it is the log you already keep, read back."
+        bn="কয়েক দিনের হিসাব মানে কয়েক দিনের সারি, আর সেগুলো আপনার অ্যাকাউন্টে থাকে। এখানে নতুন কিছু করতে বলা হচ্ছে না: আপনি যে খাতাটা এমনিতেই রাখেন, সেটাই পড়ে শোনানো হয়।"
+        shows={[
+          { en: "Seven daily things read off columns your log already carries, each as a run of days with your best run beside it.",
+            bn: "সাতটা রোজকার জিনিস, আপনার খাতায় আগে থেকেই থাকা ঘর থেকে পড়া, প্রতিটির সঙ্গে টানা কত দিন আর সবচেয়ে লম্বা ধারা কত।" },
+          { en: "Your walking, your trend and your log over the same three weeks, which is the only way a quiet fall in walking is visible at all.",
+            bn: "একই তিন সপ্তাহে আপনার হাঁটা, ওজনের ধারা আর খাতা, আর চুপচাপ হাঁটা কমে যাওয়া কেবল এভাবেই চোখে পড়ে।" },
+          { en: "What the tape says beside what the scale did, which is the one kind of stall that is not a stall.",
+            bn: "ফিতা কী বলছে আর দাঁড়িপাল্লা কী করেছে, পাশাপাশি, আর আটকে যাওয়ার যে ধরনটা আসলে আটকে যাওয়া নয় সেটা এটাই।" },
+          { en: "Where the last fortnight points, as a band and never a date, and what more walking would do to it.",
+            bn: "শেষ দুই সপ্তাহ কোন দিকে যাচ্ছে, একটা সীমা হিসেবে, কখনো তারিখ নয়, আর আরও হাঁটলে তাতে কী হবে।" },
+        ]}
+      />
     );
   }
 
@@ -317,6 +376,9 @@ export function HabitsPanel() {
         </p>
       </section>
 
+      <Moved it={moved} />
+      <Taped it={taped} />
+
       <ForecastPanel days={days} profile={profile} phases={phases} todayISO={today} />
 
       {/* Section 31's first bullet. This page prints a protein
@@ -346,5 +408,232 @@ export function HabitsPanel() {
         />
       </Note>
     </div>
+  );
+}
+
+/** SECTION 19'S FOURTH STALL, AS THREE FACTS AND NOT AS A
+    VERDICT. Deliberate exercise is the small advertised part of
+    what anybody burns; the large part is walking, standing and
+    carrying, and it falls quietly during a deficit. Nothing else
+    on this page can see that, because a trend that has flattened
+    while a log has not changed looks identical either way.
+
+    The window is the one section 4 reads a stall over, so the
+    three readings are about the same three weeks. Nothing here
+    is added to a target: what a walk changes is the forecast. */
+function Moved({ it }: { it: Movement | null }) {
+  const band = it?.kcal
+    ? {
+      low: round(Math.min(Math.abs(it.kcal.low), Math.abs(it.kcal.high))),
+      high: round(Math.max(Math.abs(it.kcal.low), Math.abs(it.kcal.high))),
+    }
+    : null;
+
+  return (
+    <section aria-labelledby="dt-moved-h">
+      <h2 id="dt-moved-h">
+        <T
+          en="Three things over the same three weeks"
+          bn="একই তিন সপ্তাহে তিনটি জিনিস"
+        />
+      </h2>
+      <p className="dt-why">
+        <T
+          en="Your walking, your trend and your log, read over one window and over the window before it. They are here together because that is the only way one of them is visible at all."
+          bn="আপনার হাঁটা, ওজনের ধারা আর খাতা, একটা সময়ের হিসাব আর তার আগের সমান সময়ের হিসাব। একসঙ্গে রাখা হয়েছে কারণ এদের একটা কেবল এভাবেই চোখে পড়ে।"
+        />
+      </p>
+
+      {it === null ? (
+        <p className="dt-habit-said">
+          <Waiting
+            en={`${STEP_BASE_LEAST} days with a step count in the last ${STALL_DAYS}, and ${STEP_BASE_LEAST} in the ${STALL_DAYS} before them, and this fills in. Steps go on the log by hand, or from whatever your phone already counts.`}
+            bn={`শেষ ${digits(STALL_DAYS, "bn")} দিনের মধ্যে ${digits(STEP_BASE_LEAST, "bn")} দিন আর তার আগের ${digits(STALL_DAYS, "bn")} দিনের মধ্যে ${digits(STEP_BASE_LEAST, "bn")} দিন হাঁটার হিসাব লেখা থাকলে এটা ভরে উঠবে। হাঁটার হিসাব হাতে লেখা যায়, বা ফোন যা গোনে সেখান থেকে নেওয়া যায়।`}
+          />
+        </p>
+      ) : (
+        <>
+          <ul className="dt-tag-counts">
+            {it.now != null && it.before != null ? (
+              <li>
+                <span>
+                  <T en="Walking, your middle day" bn="হাঁটা, আপনার মাঝারি দিন" />
+                  <span className="dt-row-src">
+                    <T
+                      en={`${it.nowDays} of the last ${it.days} days carry a count, and ${it.beforeDays} of the ${it.days} before`}
+                      bn={`শেষ ${digits(it.days, "bn")} দিনের ${digits(it.nowDays, "bn")} দিনে হিসাব আছে, আর তার আগের ${digits(it.days, "bn")} দিনের ${digits(it.beforeDays, "bn")} দিনে`}
+                    />
+                  </span>
+                </span>
+                <span className="mono">
+                  <T
+                    en={`${round(it.now)} a day, from ${round(it.before)}`}
+                    bn={`দিনে ${digits(round(it.now), "bn")}, আগে ছিল ${digits(round(it.before), "bn")}`}
+                  />
+                </span>
+              </li>
+            ) : null}
+
+            <li>
+              <span>
+                <T en="The trend" bn="ওজনের ধারা" />
+                <span className="dt-row-src">
+                  <T
+                    en={`fitted to ${it.weighings} weighings inside the window`}
+                    bn={`এই সময়ের ${digits(it.weighings, "bn")}টি ওজনের উপর বসানো`}
+                  />
+                </span>
+              </span>
+              <span className="mono">
+                {it.rate ? (
+                  <T
+                    en={`${it.rate.mid >= 0 ? "+" : ""}${two(it.rate.mid)} kg a week`}
+                    bn={`সপ্তাহে ${it.rate.mid >= 0 ? "+" : ""}${digits(two(it.rate.mid), "bn")} কেজি`}
+                  />
+                ) : (
+                  <T en="not readable yet" bn="এখনো পড়া যাচ্ছে না" />
+                )}
+              </span>
+            </li>
+
+            <li>
+              <span>
+                <T en="What you logged" bn="যা লিখেছেন" />
+                <span className="dt-row-src">
+                  <T
+                    en={`${it.intakeDays} of the last ${it.days} days, and ${it.intakeBeforeDays} of the ${it.days} before`}
+                    bn={`শেষ ${digits(it.days, "bn")} দিনের ${digits(it.intakeDays, "bn")} দিন, আর তার আগের ${digits(it.days, "bn")} দিনের ${digits(it.intakeBeforeDays, "bn")} দিন`}
+                  />
+                </span>
+              </span>
+              <span className="mono">
+                {it.intakeNow != null && it.intakeBefore != null ? (
+                  <T
+                    en={`${round(it.intakeNow)} kcal a day, from ${round(it.intakeBefore)}`}
+                    bn={`দিনে ${digits(round(it.intakeNow), "bn")} ক্যালোরি, আগে ছিল ${digits(round(it.intakeBefore), "bn")}`}
+                  />
+                ) : (
+                  <T en="nothing written down" bn="কিছু লেখা নেই" />
+                )}
+              </span>
+            </li>
+          </ul>
+
+          {it.change != null && it.changePct != null && band ? (
+            <p className="dt-said">
+              <T
+                en={`That is about ${round(Math.abs(it.change))} steps a day ${it.change >= 0 ? "more" : "fewer"}, which is ${Math.abs(Math.round(it.changePct * 100))}% of what you were walking. At your weight it is worth roughly ${band.low} to ${band.high} kcal a day ${it.change >= 0 ? "more" : "less"}, and that is a change to the forecast rather than to what you may eat: nothing in this tool is ever added to a target.`}
+                bn={`অর্থাৎ দিনে প্রায় ${digits(round(Math.abs(it.change)), "bn")} কদম ${it.change >= 0 ? "বেশি" : "কম"}, যা আগে যতটা হাঁটতেন তার ${digits(Math.abs(Math.round(it.changePct * 100)), "bn")}%। আপনার ওজনে এটার দাম মোটামুটি দিনে ${digits(band.low, "bn")} থেকে ${digits(band.high, "bn")} ক্যালোরি ${it.change >= 0 ? "বেশি" : "কম"}, আর এটা সামনের হিসাব বদলায়, আপনি কতটা খেতে পারেন তা নয়: এই যন্ত্রে কিছুই কখনো লক্ষ্যের সঙ্গে যোগ হয় না।`}
+              />
+            </p>
+          ) : null}
+
+          {it.rate ? (
+            <p className="dt-said">
+              <T
+                en={`Over the same ${it.days} days the trend moved between ${two(it.rate.low)} and ${two(it.rate.high)} kg a week${it.flat ? ", which includes zero" : ""}.`}
+                bn={`একই ${digits(it.days, "bn")} দিনে ধারা সপ্তাহে ${digits(two(it.rate.low), "bn")} থেকে ${digits(two(it.rate.high), "bn")} কেজির মধ্যে নড়েছে${it.flat ? ", যার মধ্যে শূন্যও পড়ে" : ""}।`}
+              />
+            </p>
+          ) : (
+            <p className="dt-habit-said">
+              <Waiting
+                en="Three weighings inside the window and a rate can be fitted to them. Fewer has no residual to measure, so there is no error bar and nothing worth drawing beside the walking."
+                bn="এই সময়ের মধ্যে তিনটি ওজন হলে তার উপর একটা হার বসানো যায়। তার কম হলে ভুলের মাপ বের করার কিছু থাকে না, তাই সীমাও থাকে না, আর হাঁটার পাশে আঁকার মতো কিছু থাকে না।"
+              />
+            </p>
+          )}
+
+          <p className="dt-why">
+            <T
+              en="Three facts side by side, and no line drawn between them. Walking that falls during a deficit is the one of the three that is invisible without a step count, and it is the easiest of the four stalls to answer; it is also what a fortnight of rain, a new desk and a bad cold all look like from here, which is why this says what changed and never why."
+              bn="তিনটি তথ্য পাশাপাশি, আর তাদের মধ্যে কোনো রেখা টানা হয়নি। ঘাটতির সময় হাঁটা কমে যাওয়াটাই তিনটির মধ্যে একমাত্র জিনিস যা কদমের হিসাব ছাড়া চোখে পড়ে না, আর আটকে যাওয়ার চারটি কারণের মধ্যে এটার উত্তরই সবচেয়ে সহজ; আবার দুই সপ্তাহের বৃষ্টি, নতুন একটা ডেস্ক বা একটা ঠান্ডা, এখান থেকে সবই দেখতে একরকম, তাই এখানে বলা হয় কী বদলেছে, কখনোই কেন নয়।"
+            />
+          </p>
+        </>
+      )}
+    </section>
+  );
+}
+
+/** THE TAPE, BESIDE THE SCALE, and section 19 says this one
+    reading justifies the whole measurement set.
+
+    Somebody starting resistance training in a deficit can add
+    muscle while losing fat, and the scale barely moves for
+    weeks. Every tracker in the world calls that a stall and it
+    is the opposite. `stall()` already names it, and only inside
+    a detected stall; this is the same two facts whether or not
+    one was detected, because a reader who is not stalled still
+    cannot read this out of a weight. */
+function Taped({ it }: { it: Tape | null }) {
+  return (
+    <section aria-labelledby="dt-tape-said-h">
+      <h2 id="dt-tape-said-h">
+        <T en="What the tape says" bn="ফিতা কী বলছে" />
+      </h2>
+      <p className="dt-why">
+        <T
+          en={`A weight cannot tell you what the weight is made of. A tape can, slowly. This is every site your log carries over the last ${TAPE_SPAN_DAYS} days, first reading against last, beside what the trend did over the same days.`}
+          bn={`ওজন দিয়ে বোঝা যায় না ওজনটা কী দিয়ে তৈরি। ফিতা দিয়ে ধীরে ধীরে বোঝা যায়। শেষ ${digits(TAPE_SPAN_DAYS, "bn")} দিনে আপনার খাতায় যত জায়গার মাপ আছে, তার প্রথম আর শেষ মাপ এখানে পাশাপাশি, আর তার পাশে একই দিনগুলোয় ওজনের ধারা কী করেছে।`}
+        />
+      </p>
+
+      {it === null ? (
+        <p className="dt-habit-said">
+          <Waiting
+            en={`Two measurements of one site, ${TAPE_LEAST_DAYS} days apart or more, and this fills in. The waist, the neck and the hip go on the body page. What matters is the same place each time rather than the exact place: a tape a centimetre high one month and a centimetre low the next invents a change that did not happen.`}
+            bn={`একই জায়গার দুটি মাপ, অন্তত ${digits(TAPE_LEAST_DAYS, "bn")} দিনের ব্যবধানে, তাহলেই এটা ভরে উঠবে। কোমর, গলা আর নিতম্বের মাপ শরীরের পাতায় দেওয়া যায়। ঠিক কোন জায়গায় মাপছেন তার চেয়ে বড় কথা প্রতিবার একই জায়গায় মাপা: এক মাসে এক সেন্টিমিটার উপরে আর পরের মাসে এক সেন্টিমিটার নিচে ফিতা বসালে এমন একটা বদল তৈরি হয় যা আসলে ঘটেনি।`}
+          />
+        </p>
+      ) : (
+        <>
+          <ul className="dt-tag-counts">
+            {it.sites.map((s) => (
+              <li key={s.id}>
+                <span>
+                  <T en={SITES[s.id].en} bn={SITES[s.id].bn} />
+                  <span className="dt-row-src">
+                    <T
+                      en={`${one(s.first)} to ${one(s.last)} cm, ${s.readings} readings ${s.days} days apart${s.read ? "" : ", inside what a tape can resolve"}`}
+                      bn={`${digits(one(s.first), "bn")} থেকে ${digits(one(s.last), "bn")} সেমি, ${digits(s.days, "bn")} দিনের ব্যবধানে ${digits(s.readings, "bn")}টি মাপ${s.read ? "" : ", ফিতা যতটুকু ধরতে পারে তার ভেতরে"}`}
+                    />
+                  </span>
+                </span>
+                <span className="mono">
+                  <T
+                    en={`${s.change >= 0 ? "+" : ""}${one(s.change)} cm`}
+                    bn={`${s.change >= 0 ? "+" : ""}${digits(one(s.change), "bn")} সেমি`}
+                  />
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          {it.kg === null ? (
+            <p className="dt-said">
+              <T
+                en={`There are not two trend readings inside the same ${it.span} days, so the scale has nothing to put beside this.`}
+                bn={`একই ${digits(it.span, "bn")} দিনের মধ্যে ধারার দুটি মাপ নেই, তাই এর পাশে রাখার মতো কিছু দাঁড়িপাল্লার নেই।`}
+              />
+            </p>
+          ) : (
+            <p className="dt-said">
+              <T
+                en={`Over the same ${it.span} days the trend moved ${it.kg >= 0 ? "+" : ""}${two(it.kg)} kg, across ${it.weighings} days of it.`}
+                bn={`একই ${digits(it.span, "bn")} দিনে ধারা ${it.kg >= 0 ? "+" : ""}${digits(two(it.kg), "bn")} কেজি সরেছে, তার ${digits(it.weighings, "bn")} দিনের হিসাবে।`}
+              />
+            </p>
+          )}
+
+          <p className="dt-why">
+            <T
+              en={`A tape measure resolves about ${TAPE_RESOLUTION_CM} cm on one person, so a change smaller than that is the measuring rather than the body, and the rows above say which is which. A waist that comes down while the scale holds still is weight made of something different rather than a stall, and it is the one thing on these pages the tool can settle on its own.`}
+              bn={`একজন মানুষের উপর ফিতা মোটামুটি ${digits(TAPE_RESOLUTION_CM, "bn")} সেমি পর্যন্ত ধরতে পারে, তাই তার চেয়ে ছোট বদল শরীরের নয়, মাপার, আর উপরের সারিগুলো বলে দেয় কোনটা কোনটা। দাঁড়িপাল্লা স্থির থাকা অবস্থায় কোমর কমা মানে আটকে যাওয়া নয়, ওজনটা অন্য কিছু দিয়ে তৈরি হচ্ছে, আর এই পাতাগুলোয় এই একটা জিনিসই যন্ত্র নিজে থেকে মীমাংসা করতে পারে।`}
+            />
+          </p>
+        </>
+      )}
+    </section>
   );
 }

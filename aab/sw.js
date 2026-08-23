@@ -31,6 +31,77 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v204: /fallback.css. A year in one page, with the phases
+        banded across the plot and the seasons along its foot.
+        And the settling window had a wash and nothing else, so
+        it was told from a readable stretch by colour alone,
+        which the chart's own rules forbid: it has a dashed edge
+        now.
+
+   v203: /fallback.css. Fourteen cards on the front door were
+        fourteen paragraphs in one typeface, so each page has a
+        glyph in its own colour now. And a page that needs an
+        account says what it draws once there is one, rather than
+        being a dead end with no way to sign in from it.
+
+   v202: /fallback.css. An out of date price is drawn as one:
+        a dotted gold underline rather than a colour on its own,
+        because a colour alone is no signal to a reader who
+        cannot see it.
+
+   v201: /fallback.css. What time of year it is: a monsoon, a
+        British winter and a month of fasting all flatten three
+        weeks on a schedule, so none of them is reported as a
+        stall now. Plus a rule for the nine recipe and pot class
+        names the panel had been rendering unstyled since it was
+        written, and two that stop a long hint forcing a
+        horizontal scrollbar.
+
+   v200: /fallback.css. A CSV from another app, with a preview of
+        exactly what would be written before anything is.
+
+   v199: /fallback.css. Four questions before nine empty widgets:
+        a reader who has just signed in lands on the questions
+        rather than on a board waiting for their answers.
+
+   v198: /fallback.css. The oil calibration: one question once a
+        month, which is the largest unlogged item in most home
+        cooking.
+
+   v197: /fallback.css. The cycle reading: a flat trend in the
+        luteal phase is no longer reported as a stall, and the
+        trend can be read cycle to cycle.
+
+   v196: /fallback.css. Three flat weeks with the deficit logged
+        is a stall, and the trend page now says which of the four
+        it is. One of them is not a stall at all.
+
+   v195: /fallback.css. The clinic's own numbers can be entered
+        and are drawn as a line over time: `diet_labs` had a
+        table, four policies and an index and no reader and no
+        writer at all, while the front door called them the only
+        objective measurements in the tool.
+
+   v194: /fallback.css. A section's opening paragraph was set at
+        0.66rem, because one class was both a hint beside a box
+        and the first thing said about a section. And the rule
+        that stops a section's padding doubling the grid's gap is
+        a shape now rather than a list of page classes that went
+        stale twice.
+
+   v193: /fallback.css. The diet tool went 83px past its column
+        and the site grew a horizontal scrollbar: a strip that
+        scrolls inside itself still contributes its content width
+        to a block in normal flow, and `contain` is what says
+        otherwise.
+
+   NOTE, 23 August 2026: the twelve entries above were renumbered
+        from v189 to v200 when this branch met main. Both streams
+        had bumped from v188 independently, so v189 to v192 named
+        two different things at once. Main's four had shipped and
+        these had not, so these moved. A version here is a cache
+        key rather than a primary key: it only has to be new.
+
    v192: /content.js and /tools/stock.i18n.js. The front door's
         own words move into `shared/content.ts` as `DOOR`, so the
         Android app draws the same headline the site does and an
@@ -1755,7 +1826,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v192";
+const VERSION = "v204";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

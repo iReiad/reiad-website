@@ -36,13 +36,14 @@ import {
   trend, whtr, type Body, type Day, type Point,
 } from "@reiad/shared/diet";
 import {
-  getDays, getProfile, isoDate, shiftDate, dayNumber, who,
-  type Profile, type Who,
+  getDays, getLabs, getProfile, isoDate, shiftDate, dayNumber, who,
+  type Lab, type Profile, type Who,
 } from "../../lib/diet-api";
 import { Button } from "../ui/button";
 import { ChipButton } from "../ui/chip";
 import { T, digits, useToolLang } from "./lang";
-import { BAND_WORDS, CUTS_WORDS, SEX_WORDS, medWords } from "./words";
+import { BAND_WORDS, CUTS_WORDS, MARKERS, SEX_WORDS, medWords } from "./words";
+import { Invite } from "./invite";
 
 /** A row of the sheet. `value` is a string because every one of
     them is already formatted to its own precision by the time it
@@ -72,6 +73,7 @@ export function SummaryPanel() {
   const [answered, setAnswered] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [days, setDays] = useState<Day[]>([]);
+  const [labs, setLabs] = useState<Lab[]>([]);
   const [span, setSpan] = useState(90);
 
   const today = isoDate();
@@ -87,8 +89,8 @@ export function SummaryPanel() {
   useEffect(() => {
     if (!w) return;
     let alive = true;
-    void Promise.all([getProfile(w), getDays(w, shiftDate(today, -365))])
-      .then(([p, d]) => { if (alive) { setProfile(p); setDays(d); } });
+    void Promise.all([getProfile(w), getDays(w, shiftDate(today, -365)), getLabs(w)])
+      .then(([p, d, l]) => { if (alive) { setProfile(p); setDays(d); setLabs(l); } });
     return () => { alive = false; };
   }, [w, today]);
 
@@ -136,10 +138,20 @@ export function SummaryPanel() {
 
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
   if (!w) {
-    return <p className="dt-invite"><T
-      en="This sheet is built from your own rows, which live on your account."
-      bn="এই কাগজটা আপনার নিজের তথ্য থেকে তৈরি, যা আপনার অ্যাকাউন্টে থাকে।"
-    /></p>;
+    return (
+      <Invite
+        en="This sheet is built from your own rows, which live on your account."
+        bn="এই কাগজটা আপনার নিজের তথ্য থেকে তৈরি, যা আপনার অ্যাকাউন্টে থাকে।"
+        shows={[
+          { en: "One printable page: weight and intake, the body, the clinic figures, and the medicines.",
+            bn: "ছাপার মতো এক পাতা: ওজন আর খাওয়া, শরীর, ডাক্তারের মাপ, আর ওষুধ।" },
+          { en: "Dates on every figure and the width of every estimate beside it.",
+            bn: "প্রতিটা সংখ্যার সঙ্গে তারিখ, আর প্রতিটা আন্দাজের পাশে তার ভুলের সীমা।" },
+          { en: "Which equation produced each number, so nothing on it has to be taken on trust.",
+            bn: "কোন সূত্র থেকে কোন সংখ্যা এসেছে, যাতে কিছুই বিশ্বাস করে নিতে না হয়।" },
+        ]}
+      />
+    );
   }
 
   const fat = body ? fatEstimate(body) : null;
@@ -279,6 +291,45 @@ export function SummaryPanel() {
                    />} />
             : null}
         </section>
+
+        {/* SECTION 25'S MISSING BLOCK. The sheet had five of its
+            six and this is the one a clinician would look at
+            first: the only figures on the page that somebody
+            else measured. Every one carries its own date and the
+            range it was read against, because a number without
+            either is a number they will have to ask about. */}
+        {labs.length ? (
+          <section className="dt-sum-block">
+            <h3><T en="From a clinic" bn="ক্লিনিক থেকে" /></h3>
+            {MARKERS.map((m) => {
+              const rows = labs.filter((l) => l.marker === m.id);
+              if (!rows.length) return null;
+              const last = rows[rows.length - 1];
+              const first = rows[0];
+              return (
+                <Row
+                  key={m.id}
+                  label={<T en={m.en} bn={m.bn} />}
+                  value={`${last.value} ${last.unit}`}
+                  note={(
+                    <T
+                      en={`${last.takenOn}`
+                        + `${rows.length > 1 ? `, from ${first.value} on ${first.takenOn}` : ""}`
+                        + `${last.refLow != null || last.refHigh != null
+                          ? `; range ${last.refLow ?? ""}${last.refLow != null && last.refHigh != null ? " to " : ""}${last.refHigh ?? ""}` : ""}`
+                        + `${last.note ? `; ${last.note}` : ""}`}
+                      bn={`${last.takenOn}`
+                        + `${rows.length > 1 ? `, ${first.takenOn} তারিখে ছিল ${digits(first.value, "bn")}` : ""}`
+                        + `${last.refLow != null || last.refHigh != null
+                          ? `; সীমা ${last.refLow != null ? digits(last.refLow, "bn") : ""}${last.refLow != null && last.refHigh != null ? " থেকে " : ""}${last.refHigh != null ? digits(last.refHigh, "bn") : ""}` : ""}`
+                        + `${last.note ? `; ${last.note}` : ""}`}
+                    />
+                  )}
+                />
+              );
+            })}
+          </section>
+        ) : null}
 
         {profile?.meds?.length ? (
           <section className="dt-sum-block">

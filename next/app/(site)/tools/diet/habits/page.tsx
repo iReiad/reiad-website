@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../../lib/pageMeta";
 import { DietPage } from "../../../../../components/diet/page-frame";
-import { T } from "../../../../../components/diet/lang";
 import { HabitsPanel } from "../../../../../components/diet/habits-panel";
 
 export const metadata: Metadata = pageMeta({
@@ -23,7 +22,6 @@ export default function Page() {
   return (
     <DietPage
       href="/tools/diet/habits"
-      title={<T en="What you kept up" bn="যা চালিয়ে গেছেন" />}
       lede={{
         en: "Nothing here is a new thing to do. It is the log you already keep, read back as a run of days, with a forecast built out of your own walking rather than an activity guess.",
         bn: "এখানে নতুন করে কিছু করতে হবে না। আপনি যে খাতাটা এমনিতেই রাখেন, সেটাই কয়েক দিনের ধারা হিসেবে পড়ে শোনানো, আর সঙ্গে সামনের হিসাব, যেটা আন্দাজ নয়, আপনার নিজের হাঁটা থেকে করা।",

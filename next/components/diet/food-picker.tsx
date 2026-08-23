@@ -55,6 +55,29 @@
    still being there next year. A history that changed because
    somebody edited an entry in one would be worse than one that
    went missing: nothing would announce it.
+
+   ---- and three of section 14's corrections live here ----
+
+   Because all three are about the moment a row is written rather
+   than about a page.
+
+   A HAND is a first-class amount, not a fallback. Weighing is
+   the most accurate method and it is the one most people
+   abandon, so the four hand portions sit beside the number box
+   and set it. They need a row that says what its own portion
+   WEIGHS, and `scaleTo()` refuses in grams for a row that does
+   not, which is why they are offered only where that is true.
+
+   A PLATE SOMEBODY ELSE COOKED IS A RANGE. One press widens the
+   figure into `est_low` and `est_high`, the midpoint stays the
+   total's, and `totalFor()` in `shared/diet.ts` adds the widths
+   up as the day's spread. Where there is no row at all, two
+   numbers and a name are a whole entry.
+
+   SMALL EXTRAS ARE ONE TAP, in the open rather than behind a
+   summary, because a thing that takes two taps to log is a thing
+   that does not get logged. `next/lib/recipes.ts` holds all
+   three sets of figures and `next/recipes.test.ts` asserts them.
    ============================================================ */
 
 import { useEffect, useState } from "react";
@@ -64,10 +87,11 @@ import {
   search as searchLibrary,
   type FoundFood, type Place, type Portion,
 } from "@reiad/shared/foods";
+import { EXTRAS, HANDS, outRange, widened } from "../../lib/recipes";
 import { Button } from "../ui/button";
 import { ChipButton } from "../ui/chip";
 import { Field } from "../ui/field";
-import { T, digits, useToolLang } from "./lang";
+import { T, TBlock, digits, useToolLang } from "./lang";
 
 /** A result, whatever it came from. It IS a `FoundFood`, so it
     goes into `loggedFrom()` with nothing to adapt, and the four
@@ -175,12 +199,19 @@ const fromLibrary = (f: Portion): Hit => ({
 
 const fromWire = (w: WireHit): Hit => ({ ...w, en: w.label, bn: undefined });
 
-export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
+export function FoodPicker({ onPick, place = DEFAULT_PLACE, ingredient = false }: {
   onPick: (e: Omit<Entry, "date">) => void;
   /** Which portion library leads. The other country's is
       still searched, because a reader in Dhaka who eats
       porridge should still find it. */
   place?: Place;
+  /** This picker is filling a pot rather than a day.
+      Eating out and small extras are things that happened to a
+      READER, and offering them while somebody lists what went in
+      a curry would put a restaurant plate in a recipe. The hand
+      portions stay: two cupped hands of rice is how a pot gets
+      described by the person who cooked it. */
+  ingredient?: boolean;
 }) {
   const lang = useToolLang();
   const [q, setQ] = useState("");
@@ -189,6 +220,7 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
   const [looking, setLooking] = useState(false);
   const [free, setFree] = useState({ label: "", kcal: "" });
   const [sheet, setSheet] = useState(EMPTY_LABEL);
+  const [plate, setPlate] = useState({ label: "", low: "", high: "" });
 
   /* The step between the tap and the row. `chosen` is what was
      tapped, `amount` and `unit` are what the reader says they
@@ -196,6 +228,10 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
   const [chosen, setChosen] = useState<Hit | null>(null);
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState("g");
+  /* Whether this one was eaten somewhere the reader did not do
+     the cooking. Cleared with every choice, because it is a fact
+     about one plate rather than a setting. */
+  const [out, setOut] = useState(false);
 
   useEffect(() => {
     const asked = q.trim();
@@ -264,11 +300,17 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
     setChosen(h);
     setAmount(String(h.qty));
     setUnit(h.unit);
+    setOut(false);
     window.setTimeout(() => document.getElementById("dt-ate-n")?.focus(), 0);
   };
 
   const eaten = { n: Number(amount), unit };
   const preview = chosen ? scaleTo(chosen, eaten) : null;
+
+  /** The band this entry would carry, or null where it is not
+      being logged as one. Symmetric, so the midpoint is the
+      figure above and the macros still follow from it. */
+  const band = out && preview ? widened(preview.kcal) : null;
 
   /** The same food said the other way. The factor is what both
       units describe, so switching one to the other keeps the
@@ -283,15 +325,69 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
     setUnit(next);
   };
 
+  /** A hand, as an amount in grams.
+
+      IT SETS THE BOX RATHER THAN ADDING TO IT, and the box is
+      right there to be edited: a reader who had two palms types
+      200. Adding would have to know whether what is in the box
+      is already a hand or the row's own portion, and guessing
+      wrong is a doubled dinner. */
+  const byHand = (grams: number): void => {
+    setUnit("g");
+    setAmount(String(grams));
+  };
+
   const add = (): void => {
     if (!chosen) return;
     const row = loggedFrom(chosen, eaten, { source: chosen.source, sourceId: chosen.id });
     /* Null is a refusal and nothing is logged. See the banner. */
     if (!row) return;
-    onPick(row);
+    /* THE WIDTH, WHERE THE READER SAID THEY ATE OUT. The energy
+       stays the midpoint, which is what it already was, so
+       nothing about the row changes except that the day now
+       knows how much of it is a guess. */
+    onPick(band
+      ? { ...row, kcal: band.mid, estLow: band.low, estHigh: band.high }
+      : row);
     setChosen(null);
+    setOut(false);
     setQ("");
     setHits([]);
+  };
+
+  /** A plate nobody weighed, out of two numbers and a name.
+      NOTHING BUT ENERGY: a plate this tool did not see the
+      making of has no composition it can state, and a protein
+      figure borrowed from a row that was never this plate would
+      be a confident number about somebody else's kitchen. */
+  const fromPlate = (): void => {
+    const range = outRange(Number(plate.low), Number(plate.high));
+    const label = plate.label.trim();
+    if (!range || !label) return;
+    onPick({
+      label,
+      kcal: range.mid,
+      estLow: range.low,
+      estHigh: range.high,
+      source: "free",
+    });
+    setPlate({ label: "", low: "", high: "" });
+  };
+
+  /** The tea with sugar, the biscuit with it, the mishti at
+      somebody's house, the handful of something while cooking.
+      One tap, a modest flat figure, and a range on it, because
+      it is not accurate and it is far more accurate than the
+      nothing that would otherwise be recorded. */
+  const addExtras = (): void => {
+    onPick({
+      label: "Small extras",
+      labelBn: "টুকিটাকি খাওয়া",
+      kcal: EXTRAS.mid,
+      estLow: EXTRAS.low,
+      estHigh: EXTRAS.high,
+      source: "free",
+    });
   };
 
   /** The packet, as a per 100 g row. Nothing is invented: a field
@@ -391,6 +487,31 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
             )}
           </div>
 
+          {/* THE HAND, WHICH IS NOT A FALLBACK. Section 14: the
+              hand scales with the person, which is the property
+              that makes it work, and a scale is the method most
+              people abandon. Offered only where the row says what
+              its own portion weighs, because `scaleTo()` rightly
+              refuses grams for a row that never says. */}
+          {chosen.grams !== undefined ? (
+            <>
+              <div className="dt-tags" role="group"
+                   aria-label={lang === "bn" ? "হাত দিয়ে মাপ" : "Measured by hand"}>
+                {HANDS.map((h) => (
+                  <ChipButton key={h.id} onClick={() => byHand(h.grams)}>
+                    <T en={`${h.en}, ${h.enOf}`} bn={`${h.bn}, ${h.bnOf}`} />
+                  </ChipButton>
+                ))}
+              </div>
+              <p className="dt-hint">
+                <T
+                  en="A hand grows with the person holding it, which is what makes it work. It is about a fifth out either way, and a fifth out every day for a year beats exact for eleven days."
+                  bn="হাত যার, মাপও তার, আর এই কারণেই এটা কাজ করে। এতে পাঁচ ভাগের এক ভাগ এদিক-ওদিক হয়, আর সারা বছর ওইটুকু ভুলসহ লেখা এগারো দিন নিখুঁত লেখার চেয়ে ভালো।"
+                />
+              </p>
+            </>
+          ) : null}
+
           <p className="dt-measure-sum">
             {preview ? (
               <T
@@ -412,6 +533,37 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
               />
             )}
           </p>
+
+          {/* A PLATE SOMEBODY ELSE COOKED IS NOT KNOWABLE.
+              Section 14: a plate of kacchi biryani is somewhere
+              between 700 and 1,100 kcal and anybody who says it
+              is 863 is reading a number a website invented. So
+              this one press keeps the figure and adds the width
+              to it, and the width goes into the day rather than
+              into a decimal place nobody can defend. */}
+          {!ingredient ? (
+            <div className="dt-measure-row">
+              <ChipButton pressed={out} onClick={() => setOut(!out)}>
+                <T en="I ate this out" bn="এটা বাইরে খেয়েছি" />
+              </ChipButton>
+              {band ? (
+                <span className="dt-hint">
+                  <T
+                    en={`Logged as ${Math.round(band.low)} to ${Math.round(band.high)} kcal. The middle goes into the day and the width goes into how sure the day is.`}
+                    bn={`${digits(Math.round(band.low), "bn")} থেকে ${digits(Math.round(band.high), "bn")} ক্যালোরি হিসেবে লেখা হবে। মাঝেরটা দিনের হিসাবে যাবে, আর কতটা নিশ্চিত সেটাও দিনের সঙ্গে থাকবে।`}
+                  />
+                </span>
+              ) : null}
+              {out && !preview ? (
+                <span className="dt-hint">
+                  <T
+                    en="Say how much first. A width on a figure this cannot work out would be a range around nothing."
+                    bn="আগে কতটা খেয়েছেন লিখুন। যে হিসাবই বের হয়নি, তার আশেপাশে কোনো সীমা টানার মানে হয় না।"
+                  />
+                </span>
+              ) : null}
+            </div>
+          ) : null}
 
           {/* Where the number came from, in full, at the moment
               it is about to become somebody's own row. */}
@@ -518,6 +670,26 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
         </>
       ) : null}
 
+      {/* SMALL EXTRAS, IN THE OPEN. Section 14: the tea with
+          sugar, the biscuit with it, the mishti at somebody's
+          house, the handful of something while cooking. None of
+          it is logged and all of it is eaten. Behind a summary
+          this would be two taps, and a thing that takes two taps
+          is a thing that does not get logged. */}
+      {!ingredient ? (
+        <div className="dt-measure-row">
+          <Button onClick={addExtras}>
+            <T en="Small extras" bn="টুকিটাকি খাওয়া" />
+          </Button>
+          <span className="dt-hint">
+            <T
+              en={`The tea, the biscuit, the sweet at somebody's house, the handful while cooking. About ${EXTRAS.mid} kcal, and it could be anywhere from ${EXTRAS.low} to ${EXTRAS.high}. It is not accurate and it is far more accurate than nothing.`}
+              bn={`চা, বিস্কুট, কারও বাসার মিষ্টি, রান্নার ফাঁকে এক মুঠো। মোটামুটি ${digits(EXTRAS.mid, "bn")} ক্যালোরি, আর সেটা ${digits(EXTRAS.low, "bn")} থেকে ${digits(EXTRAS.high, "bn")}-এর মধ্যে যেকোনো কিছু হতে পারে। এটা নিখুঁত নয়, কিন্তু কিছুই না লেখার চেয়ে অনেক বেশি সঠিক।`}
+            />
+          </span>
+        </div>
+      ) : null}
+
       {/* Free entry never goes away. A name and a number is
           always a valid entry, and the coverage rule already says
           on screen what that costs. */}
@@ -604,6 +776,71 @@ export function FoodPicker({ onPick, place = DEFAULT_PLACE }: {
           </div>
         </div>
       </details>
+
+      {/* A RESTAURANT PLATE, WHERE NO ROW FITS IT. Section 14
+          again, and this is the half of it the search cannot
+          answer: a plate somebody else cooked, out of a kitchen
+          this site has never seen, with no packet and no row.
+          Two numbers is the honest whole of what anybody knows
+          about it. */}
+      {!ingredient ? (
+        <details className="dt-free">
+          <summary><T en="Or you ate out" bn="অথবা বাইরে খেয়েছেন" /></summary>
+          <TBlock
+            en={<p className="dt-hint">A plate you did not cook is not knowable. Give the
+              least it could have been and the most, and the middle goes into the
+              day while the width goes into how sure the day is. That is more
+              honest than a decimal point and it costs you nothing.</p>}
+            bn={<p className="dt-hint">নিজে রান্না করেননি এমন খাবারের হিসাব ঠিকঠাক জানা
+              যায় না। সবচেয়ে কম কত হতে পারে আর সবচেয়ে বেশি কত, দুটোই লিখুন; মাঝেরটা
+              দিনের হিসাবে যাবে, আর কতটা নিশ্চিত সেটাও দিনের সঙ্গে থাকবে। এটা দশমিকের
+              পরে একটা সংখ্যা বসানোর চেয়ে সৎ, আর এতে আপনার কিছু হারায় না।</p>}
+          />
+          <div className="dt-label-form">
+            <Field
+              id="dt-out-name" type="text"
+              label={<T en="What it was" bn="কী খেয়েছিলেন" />}
+              value={plate.label}
+              onChange={(e) => setPlate((p) => ({ ...p, label: e.target.value }))}
+            />
+            <Field
+              id="dt-out-low" type="number" inputMode="decimal" step="any" min={0}
+              label={<T en="The least it could have been, kcal" bn="সবচেয়ে কম যত হতে পারে, ক্যালোরি" />}
+              value={plate.low}
+              onChange={(e) => setPlate((p) => ({ ...p, low: e.target.value }))}
+            />
+            <Field
+              id="dt-out-high" type="number" inputMode="decimal" step="any" min={0}
+              label={<T en="And the most, kcal" bn="আর সবচেয়ে বেশি, ক্যালোরি" />}
+              value={plate.high}
+              onChange={(e) => setPlate((p) => ({ ...p, high: e.target.value }))}
+            />
+            <div className="dt-measure-row">
+              <Button
+                disabled={!plate.label.trim() || !outRange(Number(plate.low), Number(plate.high))}
+                onClick={fromPlate}
+              >
+                <T en="Add" bn="যোগ" />
+              </Button>
+              {plate.low && plate.high
+                && !outRange(Number(plate.low), Number(plate.high)) ? (
+                  <span className="dt-hint">
+                    <T
+                      en="The most has to be at least the least. Nothing is written until it is, because swapping them for you would be this tool deciding what you meant."
+                      bn="বেশিরটা অন্তত কমটার সমান হতে হবে। তার আগে কিছুই লেখা হবে না, কারণ নিজে থেকে দুটো উল্টে দেওয়া মানে যন্ত্রের ধরে নেওয়া যে আপনি কী বলতে চেয়েছেন।"
+                    />
+                  </span>
+                ) : null}
+            </div>
+          </div>
+          <p className="dt-why">
+            <T
+              en="Energy only. A plate this tool did not see the making of has no protein or iron figure it can honestly state, and one borrowed from a row that was never this plate would be a confident number about somebody else's kitchen."
+              bn="শুধু ক্যালোরি। যে রান্না এই যন্ত্র দেখেনি, তার প্রোটিন বা আয়রনের হিসাব সে সৎভাবে বলতে পারে না; অন্য কোনো সারি থেকে ধার করা সংখ্যা হতো অন্যের রান্নাঘর নিয়ে জোর গলায় বলা কথা।"
+            />
+          </p>
+        </details>
+      ) : null}
     </div>
   );
 }

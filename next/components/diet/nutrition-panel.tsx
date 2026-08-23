@@ -47,15 +47,33 @@
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
-  COVERAGE_FLOOR, byHour, byWeekday, topSources, totalFor,
+  COVERAGE_FLOOR, byHour, byWeekday, entryHour, topSources, totalFor,
   type Day, type DayTotal, type Entry,
 } from "@reiad/shared/diet";
 import { NUTRIENTS, NUTRIENT_GROUPS, type Nutrient } from "@reiad/shared/foods";
 import {
-  who, getDays, getEntries, isoDate, shiftDate, type Who,
+  who, getDays, getEntries, getProfile, isoDate, shiftDate,
+  type Profile, type Who,
 } from "../../lib/diet-api";
 import { T, digits, useToolLang } from "./lang";
 import { Term } from "./glossary";
+import { InsightsPanel } from "./insights-panel";
+
+/** How far back this page reads.
+
+    A MONTH FOR SECTION 16'S FIRST THREE READINGS and four months
+    for the rest of them, out of ONE pair of requests. "The top
+    handful of foods over the last month" is what the plan says
+    and the window is part of the reading, but a deficit
+    calibration wants a few months and a week against an average
+    wants more than a fortnight to be an average of.
+
+    Four months rather than a year because `getEntries` takes the
+    OLDEST 2000 rows: a heavy logger asking for a year would lose
+    the recent end of it and nothing about the page would look
+    different. */
+const WINDOW = 120;
+const MONTH = 30;
 
 /** The four a `DayTotal` totals at the top level rather than
     keeping in `micros`. Named rather than indexed, so a macro
@@ -108,6 +126,7 @@ export function NutritionPanel() {
   const [answered, setAnswered] = useState(false);
   const [days, setDays] = useState<Day[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const today = isoDate();
 
   useEffect(() => {
@@ -121,14 +140,21 @@ export function NutritionPanel() {
   useEffect(() => {
     if (!w) return;
     let alive = true;
-    const from = shiftDate(today, -30);
-    void Promise.all([getDays(w, from), getEntries(w, from)])
-      .then(([d, e]) => { if (alive) { setDays(d); setEntries(e); } });
+    const from = shiftDate(today, -WINDOW);
+    void Promise.all([getDays(w, from), getEntries(w, from), getProfile(w)])
+      .then(([d, e, p]) => { if (alive) { setDays(d); setEntries(e); setProfile(p); } });
     return () => { alive = false; };
   }, [w, today]);
 
   const todays = useMemo(() => totalFor(entries.filter((e) => e.date === today)), [entries, today]);
-  const top = useMemo(() => topSources(entries), [entries]);
+
+  /* The last month of it, which is the window section 16 states
+     for the three readings below. The other four months are
+     `insights-panel.tsx`'s, and both come out of the one fetch
+     above. */
+  const since = useMemo(() => shiftDate(today, -MONTH), [today]);
+  const month = useMemo(() => entries.filter((e) => e.date >= since), [entries, since]);
+  const top = useMemo(() => topSources(month), [month]);
 
   /* What was DRUNK, in millilitres, which is the one figure on
      this page that is logged rather than worked out: the board
@@ -142,29 +168,45 @@ export function NutritionPanel() {
   /* WHEN the calories land. The claim that most over-target days
      are made in the evening is a general one, and this is the
      only reading that can confirm or contradict it from the
-     reader's own log. The hour comes off the entry's meal label,
-     which is where the board stamps it. */
+     reader's own log.
+
+     THE HOUR IS `entryHour()` AND NOT A REGEX OVER `meal`. This
+     read the meal label, which is where the board used to stamp
+     the clock and is not where it stamps it now: `at_time` is
+     the column, `meal` is a meal name, and a second copy of that
+     rule here found nothing for every row written since the
+     change. One function knows both spellings and it is in
+     `shared/diet.ts` for exactly this reason. */
   const hours = useMemo(() => {
-    const at = (e: Entry): number => {
-      const m = /^(\d{1,2}):/.exec(e.meal ?? "");
-      return m ? Number(m[1]) : -1;
-    };
-    const timed = entries.filter((e) => !e.planned && at(e) >= 0)
-      .map((e) => ({ hour: at(e), kcal: e.kcal ?? 0 }));
+    const timed = month.filter((e) => !e.planned && entryHour(e) !== null)
+      .map((e) => ({ hour: entryHour(e) as number, kcal: e.kcal ?? 0 }));
     return { buckets: byHour(timed), n: timed.length };
-  }, [entries]);
-  const week = useMemo(() => byWeekday(days), [days]);
+  }, [month]);
+  const week = useMemo(
+    () => byWeekday(days.filter((d) => d.date >= since)), [days, since],
+  );
 
   const DAY_NAMES = lang === "bn"
     ? ["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি"]
     : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   if (!answered) return <div className="dt-board-wait" aria-busy="true" />;
+  /* SIGNED OUT, THE HALF THAT NEEDS NO ACCOUNT IS STILL WORTH
+     READING. Only "how much of this you had today" comes out of a
+     log; the nineteen figures themselves, what each is for and
+     what an adult needs are facts about food, and a page that
+     hides them behind a sign-in teaches nobody anything. */
   if (!w) {
-    return <p className="dt-invite"><T
-      en="These readings come out of your own log, which lives on your account."
-      bn="এই হিসাবগুলো আপনার নিজের খাতা থেকে আসে, যেটা আপনার অ্যাকাউন্টে থাকে।"
-    /></p>;
+    return (
+      <div className="dt-nutrition">
+        <WhatIsWatched />
+        {/* Two of section 16's readings and one of section 17's
+            are facts about the portion library rather than about
+            a reader, and they draw with no account for the same
+            reason the list above does. */}
+        <InsightsPanel w={null} days={[]} entries={[]} profile={null} today={today} />
+      </div>
+    );
   }
 
   const sparse = todays.coverage < COVERAGE_FLOOR;
@@ -219,19 +261,7 @@ export function NutritionPanel() {
                             : <T en={`about ${n0} ${n.unit}`}
                                  bn={`প্রায় ${digits(n0, "bn")} ${n.unitBn}`} />}
                       </p>
-                      <p className="dt-said">
-                        {n.low != null && n.high != null
-                          ? <T en={`aim for ${n.low} to ${n.high} ${n.unit}`}
-                               bn={`লক্ষ্য ${digits(n.low, "bn")} থেকে ${digits(n.high, "bn")} ${n.unitBn}`} />
-                          : n.low != null
-                            ? <T en={`at least ${n.low} ${n.unit} a day`}
-                                 bn={`দিনে অন্তত ${digits(n.low, "bn")} ${n.unitBn}`} />
-                            : n.high != null
-                              ? <T en={`keep it under ${n.high} ${n.unit}`}
-                                   bn={`${digits(n.high, "bn")} ${n.unitBn} এর নিচে রাখুন`} />
-                              : <T en="no single figure to aim for"
-                                   bn="লক্ষ্য করার মতো একটাও নির্দিষ্ট সংখ্যা নেই" />}
-                      </p>
+                      <Target n={n} />
                       {/* THE SHARE, which is the whole of what
                           section 15 promised about saturated
                           fat: not a verdict, the proportion. */}
@@ -403,6 +433,76 @@ export function NutritionPanel() {
           />
         </p>
       </section>
+
+      {/* The rest of section 16, and section 17's money. Handed
+          the same fetch rather than making its own: four months
+          of one reader's log is one pair of requests. */}
+      <InsightsPanel
+        w={w} days={days} entries={entries} profile={profile} today={today}
+      />
     </div>
+  );
+}
+
+/** The list, with no figures on it. What is watched, why, and
+    roughly how much an adult needs, for a reader with no account
+    and for one who has not logged anything yet. */
+function WhatIsWatched() {
+  return (
+    <>
+      <section aria-labelledby="dt-watch-h">
+        <h2 id="dt-watch-h">
+          <T en="What this page watches" bn="এই পাতা কী কী দেখে" />
+        </h2>
+        <p className="dt-intro">
+          <T
+            en="Nineteen of them, in four groups. Log what you eat and each fills in with your own day beside it, drawn from the share of that day this site actually knows the composition of. None of this needs an account to read."
+            bn="উনিশটা, চারটা দলে। আপনি যা খান লিখলে প্রতিটির পাশে আপনার নিজের দিনটা বসবে, আর সেটা আঁকা হবে ওই দিনের যতটুকুর গঠন এই সাইট সত্যিই জানে তার ভিত্তিতে। এসব পড়তে কোনো অ্যাকাউন্ট লাগে না।"
+          />
+        </p>
+        {NUTRIENT_GROUPS.map((g) => (
+          <section key={g.id} aria-labelledby={`dt-watch-${g.id}`}>
+            <h3 id={`dt-watch-${g.id}`} className="dt-readout-h">
+              <T en={g.en} bn={g.bn} />
+            </h3>
+            <ul className="dt-nutrients">
+              {NUTRIENTS.filter((n) => n.group === g.id).map((n) => (
+                <li key={n.key} className="dt-figure dt-figure-empty">
+                  <h4><T en={n.en} bn={n.bn} /></h4>
+                  <Target n={n} />
+                  <p className="dt-why"><T en={n.whyEn} bn={n.whyBn} /></p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </section>
+    </>
+  );
+}
+
+/** What to aim for, said once.
+
+    Four shapes, because a nutrient can have a floor, a ceiling,
+    both, or neither, and none of the four is the same sentence.
+    It is a component rather than two copies of a ternary for the
+    reason this whole tool keeps returning to: the signed-in
+    panel and the signed-out list print the same fact, and two
+    copies of a fact are two things to keep true. */
+function Target({ n }: { n: Nutrient }) {
+  return (
+    <p className="dt-said">
+      {n.low != null && n.high != null
+        ? <T en={`aim for ${n.low} to ${n.high} ${n.unit}`}
+             bn={`লক্ষ্য ${digits(n.low, "bn")} থেকে ${digits(n.high, "bn")} ${n.unitBn}`} />
+        : n.low != null
+          ? <T en={`at least ${n.low} ${n.unit} a day`}
+               bn={`দিনে অন্তত ${digits(n.low, "bn")} ${n.unitBn}`} />
+          : n.high != null
+            ? <T en={`keep it under ${n.high} ${n.unit}`}
+                 bn={`${digits(n.high, "bn")} ${n.unitBn} এর নিচে রাখুন`} />
+            : <T en="no single figure to aim for"
+                 bn="লক্ষ্য করার মতো একটাও নির্দিষ্ট সংখ্যা নেই" />}
+    </p>
   );
 }

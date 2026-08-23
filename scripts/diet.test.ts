@@ -50,6 +50,14 @@ import {
   stretches, readable, weighings, learnedHere, entryHour,
   type Body, type Day, type Point, type Phase, type Protocol,
   totalFor,
+  stall, STALL_DAYS, cyclePlace, cycleOverCycle, LUTEAL_DAYS,
+  oilPerMeal, OIL_KCAL_PER_ML,
+  TAPE_RESOLUTION_CM,
+  SEASONS, seasonsOn, seasonById, quietSeason, shiftedSeason, calendarKnownTo,
+  type SeasonId,
+  BAND_MIN_KG, BAND_MAX_KG, BAND_OUT_DAYS, LOWEST_RATE_PCT, MAX_SURPLUS_KCAL,
+  bandWidth, suggestBand, bandWatch, gainWeekOne,
+  type MaintenanceBand,
 } from "../shared/diet.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -889,6 +897,546 @@ ok("the keto page says a ketone level is not how fast fat is going, where the fi
   + " article.");
 ok("and it says urine strips stop being reliable rather than letting somebody chase a colour",
   /Urine strips get unreliable after adaptation/.test(PAGE));
+
+/* ------------------------------------------------------------
+   a stall is three weeks, not a Tuesday
+
+   The dangerous mistake here is the FALSE POSITIVE. A reader who
+   is told they have stalled and has not is the commonest reason
+   people stop, so most of these assert that nothing is reported.
+   ------------------------------------------------------------ */
+
+const TODAY = 1000;
+/** A run of weighings, one every other day, at a given rate. */
+const run = (kgStart: number, perWeek: number, noise = 0) =>
+  Array.from({ length: 11 }, (_, i) => {
+    const day = TODAY - STALL_DAYS + i * 2;
+    return {
+      day,
+      kg: kgStart + (perWeek / 7) * (i * 2) + (noise ? (i % 2 ? noise : -noise) : 0),
+    };
+  });
+const fed = (kcal: number, from = TODAY - STALL_DAYS) =>
+  Array.from({ length: 18 }, (_, i) => ({ day: from + i, kcal }));
+
+ok("a moving trend is not a stall, however slow",
+  stall({ weights: run(80, -0.25), intakes: fed(1800), today: TODAY }) === null);
+
+ok("a flat trend with nothing logged is not a stall, it is three weeks nobody wrote down",
+  stall({ weights: run(80, 0, 0.2), intakes: [], today: TODAY }) === null);
+
+ok("and half a window of logging is the floor",
+  stall({
+    weights: run(80, 0, 0.2),
+    intakes: fed(1800).slice(0, 8),
+    today: TODAY,
+  }) === null);
+
+ok("a fortnight is not three weeks",
+  stall({
+    weights: run(80, 0, 0.2).filter((p) => p.day > TODAY - 14),
+    intakes: fed(1800),
+    today: TODAY,
+  }) === null);
+
+const flatRun = stall({ weights: run(80, 0, 0.2), intakes: fed(1800), today: TODAY });
+ok("three flat weeks with the deficit logged IS a stall", flatRun !== null);
+ok("and its rate spans zero, which is what flat means",
+  flatRun !== null && flatRun.rate.low <= 0 && flatRun.rate.high >= 0);
+
+/* The one kind the tool can settle on its own. */
+const recomp = stall({
+  weights: run(80, 0, 0.2),
+  intakes: fed(1800),
+  waists: [{ day: TODAY - STALL_DAYS, cm: 92 }, { day: TODAY, cm: 90.5 }],
+  today: TODAY,
+});
+ok("a waist falling through a flat trend is recomposition, not a stall",
+  recomp?.kind === "recomposition");
+
+const drifted = stall({
+  weights: run(80, 0, 0.2),
+  intakes: fed(1800),
+  today: TODAY,
+  burnThen: 2500,
+  burnNow: 2280,
+});
+ok("a learned burn that has fallen is the target having drifted",
+  drifted?.kind === "target-drifted");
+
+const logDrift = stall({ weights: run(80, 0, 0.2), intakes: fed(1800), today: TODAY });
+ok("an intake that has not moved on paper is the log having drifted",
+  logDrift?.kind === "log-drifted");
+
+ok("water is always offered, because a whoosh looks like a stall until day ten",
+  logDrift !== null && logDrift.also.includes("water"));
+
+/* Section 4: a tool that always has an answer is making some of
+   them up. */
+const hard = stall({
+  weights: run(80, 0, 0.2),
+  intakes: [...fed(1600, TODAY - STALL_DAYS).slice(0, 9),
+    ...fed(2000, TODAY - 9).slice(0, 9)],
+  today: TODAY,
+});
+ok("and where nothing fits, the honest answer is that this is a hard part",
+  hard?.kind === "hard-part");
+
+/* ------------------------------------------------------------
+   the body has a calendar
+
+   The costly mistake here is reporting a stall in the second
+   half of a cycle. It arrives on a schedule, it arrives for half
+   the population, and the drop that disproves it arrives a few
+   days after the reader has already quit.
+   ------------------------------------------------------------ */
+
+ok("no start date is nothing to say",
+  cyclePlace({ day: 100 }) === null);
+ok("and a length outside 21 to 35 is refused rather than drawn",
+  cyclePlace({ day: 100, startDay: 90, length: 60 }) === null);
+ok("a day before the start is nothing to say",
+  cyclePlace({ day: 80, startDay: 90 }) === null);
+
+ok("day zero is the start",
+  cyclePlace({ day: 90, startDay: 90 })?.day === 0);
+ok("and it wraps at the length",
+  cyclePlace({ day: 90 + 28, startDay: 90 })?.day === 0);
+ok("the first half is follicular",
+  cyclePlace({ day: 95, startDay: 90 })?.phase === "follicular");
+ok("and the last fourteen days are luteal",
+  cyclePlace({ day: 90 + 28 - LUTEAL_DAYS, startDay: 90 })?.phase === "luteal"
+  && cyclePlace({ day: 90 + 27, startDay: 90 })?.phase === "luteal");
+ok("on a 35 day cycle the luteal phase is still the last fourteen",
+  cyclePlace({ day: 90 + 20, startDay: 90, length: 35 })?.phase === "follicular"
+  && cyclePlace({ day: 90 + 21, startDay: 90, length: 35 })?.phase === "luteal");
+
+/* The whole reason any of this exists. */
+ok("a flat trend inside the luteal phase is NOT reported as a stall",
+  stall({
+    weights: run(80, 0, 0.2),
+    intakes: fed(1800),
+    today: TODAY,
+    cycle: cyclePlace({ day: TODAY, startDay: TODAY - 20 }),
+  }) === null);
+
+ok("and the same three weeks outside it still are",
+  stall({
+    weights: run(80, 0, 0.2),
+    intakes: fed(1800),
+    today: TODAY,
+    cycle: cyclePlace({ day: TODAY, startDay: TODAY - 3 }),
+  }) !== null);
+
+/* Cycle to cycle is the comparison that removes the artefact. */
+const cyc = (kgStart: number, perCycle: number, cycles: number) =>
+  Array.from({ length: cycles * 7 }, (_, i) => {
+    const day = 900 + Math.floor(i / 7) * 28 + (i % 7) * 4;
+    return { day, kg: kgStart + perCycle * Math.floor(i / 7) + (i % 2 ? 0.6 : -0.6) };
+  });
+
+ok("one cycle is not a comparison",
+  cycleOverCycle({ weights: cyc(80, -1, 1), startDay: 900, today: 990 }) === null);
+
+const over = cycleOverCycle({ weights: cyc(80, -1, 3), startDay: 900, today: 990 });
+ok("three cycles give a rate per cycle", over?.cycles === 3);
+ok("and the water cancels, because both sides of the subtraction hold it",
+  over !== null && Math.abs(over.kgPerCycle - -1) < 0.2);
+
+/* ------------------------------------------------------------
+   the oil nobody measures
+
+   Section 14: across a week of home cooking this is frequently
+   the single largest unlogged item in the entire diet. The band
+   is wide on purpose, and a narrow figure here would be the
+   flattering-direction error in reverse.
+   ------------------------------------------------------------ */
+
+ok("a missing answer is nothing to say",
+  oilPerMeal({ mlWeek: 750, people: 4 }) === null);
+ok("and a zero is not an answer either",
+  oilPerMeal({ mlWeek: 750, people: 0, meals: 21 }) === null);
+ok("a household getting through five litres a week is a typo or a restaurant",
+  oilPerMeal({ mlWeek: 6000, people: 4, meals: 21 }) === null);
+
+/* The plan's own worked example: 750 ml, four people, twenty-one
+   meals, about 160 kcal of oil per meal. */
+const oil = oilPerMeal({ mlWeek: 750, people: 4, meals: 21 });
+ok("750 ml across four people and twenty-one meals is about 8.9 ml a meal",
+  oil !== null && Math.abs(oil.mlPerMeal - 8.93) < 0.05);
+ok("which is about 74 kcal, and the plan's 160 was for a smaller household",
+  oil !== null && Math.abs(oil.kcal.mid - 74) < 2);
+ok("the band is plus or minus a third, because a household does not divide oil evenly",
+  oil !== null && Math.abs(oil.kcal.high - oil.kcal.mid * (4 / 3)) < 0.5);
+ok("and it never reads as zero, which is the number it replaces",
+  oil !== null && oil.kcal.low > 0);
+
+/* Two tablespoons is about 30 ml, which the plan puts at 240
+   kcal: this constant has to agree with that. */
+ok("two tablespoons of oil is about 240 kcal, as section 14 says",
+  Math.abs(30 * OIL_KCAL_PER_ML - 249) < 12);
+
+/* ------------------------------------------------------------
+   the calendar, which changes what a flat month means
+
+   Section 18. None of this is arithmetic and all of it decides
+   what the arithmetic MEANS, so the failure mode is a page that
+   draws a fast in the wrong fortnight or calls a British
+   December an emergency. Both look completely normal.
+   ------------------------------------------------------------ */
+
+const on = (date: string, place: "bd" | "uk"): SeasonId[] =>
+  seasonsOn({ date, place }).map((s) => s.season.id);
+
+ok("most of the year is no season at all, and that is the ordinary answer",
+  on("2026-08-05", "uk").length === 0);
+
+/* Ramadan 2026 runs 18 February to 19 March, give or take the
+   sighting. Inside, on the edges, and outside. */
+ok("Ramadan is on in the middle of it", on("2026-03-05", "bd").includes("ramadan"));
+ok("and on its first day", on("2026-02-18", "bd").includes("ramadan"));
+ok("and on its last", on("2026-03-19", "bd").includes("ramadan"));
+ok("and not the day before it starts", !on("2026-02-17", "bd").includes("ramadan"));
+ok("and not the day after it ends", !on("2026-03-20", "bd").includes("ramadan"));
+
+/* A FAST IS KEPT IN LONDON TOO. The seasons split by place and
+   this is the one that must not: a Bangladeshi reader in the UK
+   is the reader this whole tool was written for. */
+ok("Ramadan is drawn in the UK as well as in Bangladesh",
+  on("2026-03-05", "uk").includes("ramadan"));
+ok("but the monsoon is not", !on("2026-07-04", "uk").includes("monsoon"));
+ok("and a British winter is not drawn in Dhaka",
+  !on("2025-12-25", "bd").includes("winter"));
+
+/* THE WRAP. Two of the fixed seasons cross the new year, and a
+   range whose end sorts before its start is the whole of what
+   says so. Getting this wrong hides Christmas on 1 January and
+   the British winter for the whole of January and February. */
+ok("Christmas is on, on Christmas Day", on("2025-12-25", "uk").includes("christmas"));
+ok("and still on, on New Year's Day", on("2026-01-01", "uk").includes("christmas"));
+ok("and off on the third of January", !on("2026-01-03", "uk").includes("christmas"));
+ok("the British winter runs through January",
+  on("2026-01-20", "uk").includes("winter"));
+ok("and through February", on("2026-02-20", "uk").includes("winter"));
+ok("and is off in March", !on("2026-03-20", "uk").includes("winter"));
+
+/* Two at once is normal and the shape has to allow it. */
+const yule = on("2025-12-25", "uk");
+ok("Christmas falls inside the British winter, so both are on",
+  yule.includes("winter") && yule.includes("christmas"));
+ok("and Pohela Boishakh falls inside the summer heat",
+  on("2026-04-14", "bd").includes("heat") && on("2026-04-14", "bd").includes("boishakh"));
+
+/* The day count is what a page prints, and off-by-one here
+   reads as a fast that started yesterday. */
+const ramadanNow = seasonsOn({ date: "2026-02-18", place: "bd" })
+  .find((s) => s.season.id === "ramadan");
+ok("the first day of a season is day one, not day zero", ramadanNow?.day === 1);
+ok("and Ramadan 2026 is thirty days long", ramadanNow?.of === 30);
+
+/* THE TABLE RUNS OUT, AND THAT IS THE DESIGN. A lunar date
+   cannot be computed here and extrapolating one would put a
+   fast a fortnight out within a few years. */
+ok("past the end of the table there is no Ramadan rather than a guessed one",
+  !on("2031-03-01", "bd").includes("ramadan"));
+ok("and the page can find out how far the table goes",
+  calendarKnownTo("ramadan") === "2030-02-03");
+ok("with no id it is the earliest of them, because 'known to' has to mean all",
+  calendarKnownTo() === "2028-09-28");
+ok("a fixed season still answers past the moving table",
+  on("2031-07-04", "bd").includes("monsoon"));
+
+/* The two fields that reach code. */
+ok("a monsoon month is quiet, so a flat trend inside it is not a stall",
+  quietSeason({ date: "2026-07-04", place: "bd" })?.id === "monsoon");
+ok("and the summer heat is not, because appetite falling is a fall and not a flat",
+  quietSeason({ date: "2026-05-01", place: "bd" }) === null);
+ok("Ramadan is the one that moves the eating window",
+  shiftedSeason({ date: "2026-03-05", place: "uk" })?.id === "ramadan");
+ok("and nothing else is, because nothing else changes when a day is eaten",
+  SEASONS.filter((s) => s.shifted).length === 1);
+
+/* A quiet season suppresses a stall exactly as the luteal phase
+   does, and for the same reason: it arrives on a schedule. */
+const flatMonsoon: Point[] = Array.from({ length: 21 }, (_, i) => ({ day: i, kg: 80 + (i % 2) * 0.1 }));
+const ateMonsoon = Array.from({ length: 21 }, (_, i) => ({ day: i, kcal: 2000 }));
+ok("three flat weeks with a full log is a stall in an ordinary month",
+  stall({ weights: flatMonsoon, intakes: ateMonsoon, today: 20 }) !== null);
+ok("and the same three weeks inside a monsoon is not",
+  stall({
+    weights: flatMonsoon, intakes: ateMonsoon, today: 20,
+    season: quietSeason({ date: "2026-07-04", place: "bd" }),
+  }) === null);
+ok("but a season that is not quiet does not suppress it",
+  stall({
+    weights: flatMonsoon, intakes: ateMonsoon, today: 20,
+    season: seasonById("boishakh"),
+  }) !== null);
+
+/* Copy, not decoration: a season with no sentence in one of the
+   two languages is a card that renders half empty. */
+for (const s of SEASONS) {
+  ok(`${s.id} has a name and a sentence in both languages`,
+    !!s.en && !!s.bn && s.readEn.length > 20 && s.readBn.length > 20);
+  ok(`${s.id} is drawn somewhere`, s.where.length > 0);
+  ok(`${s.id} can be looked up by its own id`, seasonById(s.id)?.id === s.id);
+}
+ok("an id nothing declares is null rather than a throw",
+  seasonById("harvest" as SeasonId) === null);
+
+/* ---- 22. holding, which is the phase every diet ends in ----
+
+   `DIET.md` section 6. The rule that is easiest to break here is
+   the FIRST row of the table, because it asks for nothing to
+   happen: a band that speaks while the trend is inside it looks
+   like a working feature and is the failure. Every row is
+   asserted from the wrong side.
+
+   A reader here logs a weight three times a week and nothing
+   else, so every case below is built at that density. A watch
+   that needs daily rows is a watch that has quietly moved the
+   floor section 6 sets. */
+
+const BAND: MaintenanceBand = { lowKg: 71.3, highKg: 73.5 };
+
+/** Three weighings a week, which is section 6's stated floor. */
+const thrice = (upTo: number, kg: (day: number) => number): Point[] => {
+  const out: Point[] = [];
+  for (let d = 0; d <= upTo; d += 1) {
+    if (d % 7 === 0 || d % 7 === 2 || d % 7 === 4) out.push({ day: d, kg: kg(d) });
+  }
+  return out;
+};
+
+ok("band: the suggested width is section 6's two to three kilos",
+  bandWidth(55) >= BAND_MIN_KG && bandWidth(130) <= BAND_MAX_KG
+  && BAND_MIN_KG === 2 && BAND_MAX_KG === 3);
+ok("band: and it is wider for a bigger person, because the noise is",
+  bandWidth(110) > bandWidth(60),
+  "an ordinary day's swing is a smaller share of a heavier body");
+ok("band: DIET.md says the same two to three",
+  /two to three kilos wide/.test(PLAN));
+
+const suggested = suggestBand(72.4);
+near("band: a suggestion is centred on where the reader is",
+  (suggested.lowKg + suggested.highKg) / 2, 72.4, 0.06);
+ok("band: and is rounded to the tenth the column stores",
+  [suggested.lowKg, suggested.highKg]
+    .every((kg) => Math.abs(kg * 10 - Math.round(kg * 10)) < 1e-9),
+  "band_low_kg is numeric(5,1), so a suggestion with more digits is not what gets saved");
+
+/* ROW ONE, AND IT IS THE ONE THAT MATTERS. Inside the band the
+   tool says nothing: no message, no colour, no offer. */
+const holding = bandWatch({
+  band: BAND, weights: thrice(90, (d) => 72.4 + Math.sin(d) * 0.4), today: 90,
+});
+ok("band: inside it, the tool says nothing at all",
+  holding?.where === "inside" && holding.say === "nothing" && holding.offer === null,
+  "row one of section 6's table is the whole point of the phase");
+ok("band: and it is reading the trend rather than a reading",
+  bandWatch({
+    band: BAND,
+    weights: [...thrice(88, () => 72.4), { day: 90, kg: 75.9 }],
+    today: 90,
+  })?.where === "inside",
+  "one salty Tuesday is not two weeks outside a band");
+
+/* ROW TWO. Two weeks outside, and not before. */
+const outUnderTwoWeeks = bandWatch({
+  band: BAND, weights: thrice(90, (d) => 72.4 + Math.max(d - 62, 0) * 0.12), today: 90,
+});
+ok("band: outside, but not for two weeks yet, is still nothing",
+  outUnderTwoWeeks?.where === "above" && outUnderTwoWeeks.say === "nothing"
+  && outUnderTwoWeeks.daysOut < BAND_OUT_DAYS);
+
+const creeping = bandWatch({
+  band: BAND, weights: thrice(90, (d) => 72.4 + d * 0.024), today: 90,
+});
+ok("band: two weeks outside is one line and nothing more",
+  creeping?.where === "above" && creeping.say === "line" && creeping.offer === null,
+  "row two offers no phase: it states a fact and puts the burn beside it");
+ok("band: and it is two weeks, not a fortnight of readings",
+  BAND_OUT_DAYS === 14 && (creeping?.daysOut ?? 0) >= BAND_OUT_DAYS,
+  "at three weighings a week a count of rows would ask for over a month");
+
+/* ROW THREE. A full band's width outside, and the offer is the
+   gentlest rate in the table, in the direction that brings the
+   trend back. */
+const wayOut = bandWatch({
+  band: BAND, weights: thrice(120, (d) => 72.4 + d * 0.06), today: 120,
+});
+ok("band: further out than the band is wide offers a phase",
+  wayOut?.say === "offer" && wayOut.outByKg > wayOut.widthKg);
+ok("band: and the phase offered is the lowest rate in the table",
+  wayOut?.offer?.ratePct === LOWEST_RATE_PCT && LOWEST_RATE_PCT === 0.25
+  && LOWEST_RATE_PCT === Math.min(...RATES.map((r) => r.low)),
+  "section 6 says the lowest, and RATES is where that number lives");
+ok("band: above the band, the phase offered loses",
+  wayOut?.offer?.kind === "lose");
+
+const wayUnder = bandWatch({
+  band: BAND, weights: thrice(120, (d) => 72.4 - d * 0.06), today: 120,
+});
+ok("band: and below it, the phase offered GAINS",
+  wayUnder?.where === "below" && wayUnder.offer?.kind === "gain"
+  && wayUnder.offer.ratePct === LOWEST_RATE_PCT,
+  "a band can be left downwards, and offering a deficit there would be the tool"
+  + " reading its own table one way only");
+
+/* Null is the ordinary answer, and every reason for it is
+   honest rather than a failure. */
+ok("band: no weighings at all is null, not a verdict",
+  bandWatch({ band: BAND, weights: [], today: 90 }) === null);
+ok("band: a band of zero width is null rather than always outside",
+  bandWatch({
+    band: { lowKg: 72, highKg: 72 }, weights: thrice(90, () => 72.4), today: 90,
+  }) === null);
+ok("band: and a trend nobody has fed for three weeks says nothing",
+  bandWatch({
+    band: BAND, weights: thrice(120, (d) => 72.4 + d * 0.06), today: 120 + STALL_DAYS + 1,
+  }) === null,
+  "offering a deficit off a month-old reading is inventing a problem out of"
+  + " missing data, which is the same rule stall() already follows");
+
+/* ---- 23. gaining, which is the engine run backwards ----
+
+   Section 6. Two things are asserted from the wrong side: the
+   ceiling, because a surplus that quietly grows on a heavy
+   reader is the bulk this section refuses by name, and week
+   one, because it lies in this direction too and the reader who
+   is not told reads a refilled store as fat. */
+
+ok("gain: the rate ceiling is half a percent and DIET.md says so",
+  MAX_GAIN_PCT_PER_WEEK === 0.5
+  && /0\.25 to 0\.5% of bodyweight per week/.test(PLAN));
+ok("gain: only the gentle rate is offerable while gaining",
+  RATES.filter((r) => r.high <= MAX_GAIN_PCT_PER_WEEK).length === 1);
+ok("gain: DIET.md states the surplus ceiling this file uses",
+  PLAN.includes(`above roughly ${MAX_SURPLUS_KCAL} kcal`));
+
+/* THE RATE IS A PROXY AND STOPS BEING ONE ON A LARGE READER.
+   Half a percent of 130kg is 715 kcal a day, which is the
+   thousand-calorie bulk section 6 refuses. */
+const big: Body = { ...MAN, weightKg: 130 };
+const bulk = target({
+  body: big, maintenance: 3000, restingKcal: 2100, kind: "gain", ratePct: 0.5,
+});
+ok("gain: the surplus is capped in kilocalories, not only as a rate",
+  bulk.offset === MAX_SURPLUS_KCAL && bulk.floors.includes("surplus"),
+  "a percentage of bodyweight drifts above 500 kcal past about 100kg");
+ok("gain: and the delivered rate is reported after the cap, not before",
+  bulk.ratePct < 0.5 && bulk.ratePct > 0,
+  "a silent clamp is a lie of omission on the way up as well as down");
+const modest = target({ ...base, kind: "gain", ratePct: 0.5 });
+ok("gain: a surplus under the ceiling is untouched",
+  modest.floors.length === 0 && modest.offset < MAX_SURPLUS_KCAL);
+
+/* WEEK ONE LIES IN THIS DIRECTION TOO. An 80kg reader on a
+   330 kcal surplus: about 0.3kg of tissue and a kilo or so of
+   refilled glycogen, its water and a fuller gut. */
+const wk1 = gainWeekOne({ weightKg: 80, burn: 2500, intake: 2830 });
+near("gain: the surplus alone is the tissue, and nothing else is",
+  wk1.tissue, (330 * 7) / KCAL_PER_KG, 0.001);
+ok("gain: week one puts one to two kilos on the scale",
+  wk1.scale.low >= 1 && wk1.scale.low <= 2 && wk1.scale.high >= 1.5,
+  "section 6 states one to two kilos in a week containing no new tissue");
+ok("gain: DIET.md states the same one to two kilos",
+  /one to two\s+kilos on the scale in a week/.test(PLAN),
+  "the plan wraps that sentence, so the whitespace is the flexible part");
+ok("gain: and most of that week is not new tissue",
+  wk1.refillShare > 0.6 && wk1.refillShare < 1,
+  "a reader who reads a refilled store as fat quits in week two");
+ok("gain: the scale band is the tissue plus the refill band, both ends",
+  Math.abs(wk1.scale.low - (wk1.tissue + wk1.refill.low)) < 1e-9
+  && Math.abs(wk1.scale.high - (wk1.tissue + wk1.refill.high)) < 1e-9);
+
+const offKeto = gainWeekOne({
+  weightKg: 80, burn: 2500, intake: 2830, from: { protocol: "keto", days: 30 },
+});
+ok("gain: arriving off keto puts back more than arriving off ordinary eating",
+  offKeto.refill.mid > wk1.refill.mid,
+  "an empty store has more to refill, which is section 7 read the other way up");
+ok("gain: and none of that extra is counted as tissue",
+  Math.abs(offKeto.tissue - wk1.tissue) < 1e-9);
+
+const bigger = gainWeekOne({ weightKg: 80, burn: 2500, intake: 3000 });
+ok("gain: a larger surplus is more tissue",
+  bigger.tissue > wk1.tissue);
+ok("gain: day nought is nothing at all, rather than a week's worth",
+  gainWeekOne({ weightKg: 80, burn: 2500, intake: 2830, days: 0 }).scale.mid === 0);
+ok("gain: eating at maintenance is not a gain",
+  gainWeekOne({ weightKg: 80, burn: 2500, intake: 2500 }).tissue === 0);
+ok("gain: the refill share is never the whole of it and never nothing",
+  [wk1, offKeto, bigger].every((g) => g.refillShare > 0 && g.refillShare <= 1));
+
+/* And the water table still refuses to answer this question,
+   which is why `gainWeekOne` exists at all. */
+ok("gain: forecastChange still declines to split a surplus on its own",
+  forecastChange({
+    from: null, to: "gain", days: 7, weightKg: 80, burn: 2500, intake: 2830,
+  }).fatShareKnown === false,
+  "WATER.gain is zeros on purpose: calling a rise 100% fat is a claim about"
+  + " the one thing that model cannot see");
+
+/* ------------------------------------------------------------
+   the fourth stall: walking less
+
+   Section 19. The moving nobody plans is the largest variable in
+   what anybody burns and it falls quietly during a deficit, so a
+   flat three weeks with an unchanged log is reported as the log
+   drifting, which is the tool accusing somebody of creeping
+   portions when what happened is that they stopped walking.
+
+   BOTH TESTS OR NEITHER, and that is what these assert. A fifth
+   off 2,000 steps is 400 steps and about ten kilocalories, which
+   is not a stall; a thousand off 20,000 is not a change of habit
+   either.
+   ------------------------------------------------------------ */
+
+const flatWeights: Point[] = Array.from({ length: 21 }, (_, i) => ({ day: i, kg: 82 + (i % 2) * 0.1 }));
+const steadyIntake = Array.from({ length: 21 }, (_, i) => ({ day: i, kcal: 2100 }));
+const stalledWith = (extra: Record<string, number | undefined>) =>
+  stall({ weights: flatWeights, intakes: steadyIntake, today: 20, ...extra });
+
+ok("8,000 steps down to 4,500 is a fall in walking, not a log that drifted",
+  stalledWith({ stepsThen: 8000, stepsNow: 4500 })?.kind === "moved-less");
+ok("and the page gets both medians, because the sentence names both",
+  stalledWith({ stepsThen: 8000, stepsNow: 4500 })?.stepsThen === 8000
+  && stalledWith({ stepsThen: 8000, stepsNow: 4500 })?.stepsNow === 4500);
+
+ok("a fifth off two thousand steps is four hundred steps and is not a stall",
+  stalledWith({ stepsThen: 2000, stepsNow: 1600 })?.kind !== "moved-less");
+ok("and a thousand off twenty thousand is not a change of habit either",
+  stalledWith({ stepsThen: 20000, stepsNow: 19000 })?.kind !== "moved-less");
+
+ok("walking MORE is never this kind",
+  stalledWith({ stepsThen: 4500, stepsNow: 8000 })?.kind !== "moved-less");
+ok("and a reader who logs no steps at all gets silence rather than a fall",
+  stalledWith({})?.kind !== "moved-less");
+ok("one half of the pair is not a comparison",
+  stalledWith({ stepsThen: 8000 })?.kind !== "moved-less");
+
+/* THE ORDER IS THE ORDER OF CONFIDENCE. A waist falling is
+   measured on the reader; a fall in walking is measured off the
+   log; a drifted target is a burn this tool inferred. */
+ok("a falling waist still wins, because it is the one the tool can settle",
+  stall({
+    weights: flatWeights, intakes: steadyIntake, today: 20,
+    waists: [{ day: 0, cm: 92 }, { day: 20, cm: 89 }],
+    stepsThen: 8000, stepsNow: 4500,
+  })?.kind === "recomposition");
+ok("but the fall in walking is still offered underneath it",
+  stall({
+    weights: flatWeights, intakes: steadyIntake, today: 20,
+    waists: [{ day: 0, cm: 92 }, { day: 20, cm: 89 }],
+    stepsThen: 8000, stepsNow: 4500,
+  })?.also.includes("moved-less") === true);
+ok("and it beats a drifted target, which is inferred rather than counted",
+  stalledWith({ stepsThen: 8000, stepsNow: 4500, burnThen: 2600, burnNow: 2400 })?.kind === "moved-less");
+
+/* One centimetre, said once. */
+ok("the tape's resolution is one constant rather than two that can disagree",
+  TAPE_RESOLUTION_CM === 1);
 
 /* ------------------------------------------------------------ */
 

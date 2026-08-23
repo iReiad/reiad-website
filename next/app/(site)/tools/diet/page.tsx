@@ -16,6 +16,7 @@ import { LangSwitch, T, TBlock } from "../../../../components/diet/lang";
 import { DietBoard } from "../../../../components/diet/board";
 import { DietStrip } from "../../../../components/diet/strip";
 import { DIET_PAGES } from "../../../../lib/diet-pages";
+import { dietIcon } from "../../../../components/diet/icons";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/diet",
@@ -84,6 +85,7 @@ export default function DietPage() {
             key={p.href}
             href={p.href}
             accent={p.tone}
+            icon={dietIcon(p.href)}
             title={<T en={p.title.en} bn={p.title.bn} />}
             go={<T en={p.go.en} bn={p.go.bn} />}
             dek={<T en={p.dek.en} bn={p.dek.bn} />}

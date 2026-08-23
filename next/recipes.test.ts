@@ -60,7 +60,28 @@ try {
    the way the food picker builds one, which is `loggedFrom()`
    over a real library row. A hand-written ingredient would prove
    the arithmetic against a shape nothing produces. */
+/* CI HAS NO `next/node_modules`, so `@reiad/shared` does not
+   resolve there and esbuild dies on the import rather than on
+   anything this file is about. That package IS a copy of
+   `shared/`, so the aliases point at the source instead: the
+   test runs everywhere, and it runs against the file somebody
+   edited rather than against a copy npm may have left stale.
+
+   Built out of the package's own `exports`, so a new module in
+   `shared/` needs no line here. */
+const { readFileSync } = await import("node:fs");
+const EXPORTS = JSON.parse(
+  readFileSync(join(ROOT, "shared", "package.json"), "utf8"),
+).exports as Record<string, string>;
+const alias = Object.fromEntries(
+  Object.entries(EXPORTS).map(([sub, file]) => [
+    `@reiad/shared${sub.slice(1)}`,
+    join(ROOT, "shared", file.replace(/^\.\//, "")),
+  ]),
+);
+
 const bundled = await build({
+  alias,
   stdin: {
     contents: `export * from "./lib/recipes.ts";
                export { byId, loggedFrom } from "@reiad/shared/foods";`,
@@ -230,10 +251,16 @@ ok("the protein figure itself is unchanged, so a floor is a claim about the WORD
 
 console.log("\n-- all or nothing, for a micronutrient --");
 
-ok("the oil states only saturated fat, so the pot carries no iron",
+ok("the oil states no iron, so neither does the pot the oil went in",
   pot.food?.iron === undefined, String(pot.food?.iron));
-ok("and it says which survived, which is none of them",
-  pot.micros.length === 0, pot.micros.join(", "));
+ok("nor sodium, which two of the three do state",
+  pot.food?.sodium === undefined, String(pot.food?.sodium));
+/* The three that DO survive are the three every one of these
+   rows carries, and naming them is the point of `micros`: a page
+   that had to compare two lists to find out would print the
+   wrong one. */
+ok("and it names the ones that did survive rather than leaving a reader to compare",
+  pot.micros.join(",") === "magnesium,sugar,water", pot.micros.join(", "));
 
 const allThree = {
   ...khichuri,
@@ -407,10 +434,236 @@ ok("the same ingredient in two dishes is one line with twice the amount",
 ok("and it is priced off the total rather than added up twice",
   near(twice.lines.find((l) => l.key.includes("chicken"))?.cost, 420));
 
+/* ------------------------------------------------------------
+   10. The shared pot, and a share of it
+
+   `DIET.md` section 14. A pot of curry for five and "I had some"
+   is not a portion. The share is two whole numbers rather than a
+   fraction, and this section is mostly about why: a third stored
+   as 0.33 would log every pot one percent light, for ever, in
+   the flattering direction.
+   ------------------------------------------------------------ */
+
+console.log("\n-- the pot, and a share of it --");
+
+/** The same three ingredients with no yield on them at all,
+    which is what a pot is: cooked for the house, cut when
+    somebody takes from it. */
+const potOfCurry = {
+  id: "p-curry",
+  en: "Friday chicken curry",
+  bn: "শুক্রবারের মুরগির ঝোল",
+  parts: khichuri.parts,
+};
+
+ok("a pot with no yield is still a pot, and the whole of it is the whole of it",
+  near(M.shareOf(potOfCurry, { took: 1, outOf: 1 })?.kcal, 1537),
+  String(M.shareOf(potOfCurry, { took: 1, outOf: 1 })?.kcal));
+ok("a half of it is half of it",
+  near(M.shareOf(potOfCurry, { took: 1, outOf: 2 })?.kcal, 768.5),
+  String(M.shareOf(potOfCurry, { took: 1, outOf: 2 })?.kcal));
+
+/* THE ONE THIS SECTION EXISTS FOR. A third of 1537 is 512.3 to
+   the tenth `diet_entries.kcal` holds. A FRACTION would have had
+   to go through `diet_entries.qty`, which is two places, so a
+   third would be 0.33 of the pot: 507.2, five kilocalories light
+   per meal, every meal, in the direction that flatters. */
+const third = M.shareOf(potOfCurry, { took: 1, outOf: 3 });
+ok("a third is an exact third of the pot",
+  near(third?.kcal, 512.3), String(third?.kcal));
+ok("and it is NOT the 507.2 a fraction stored to two places would have given",
+  near(third?.kcal, 512.3) && !near(third?.kcal, 507.2), String(third?.kcal));
+
+const ladles = M.shareOf(potOfCurry, { took: 2, outOf: 10 });
+ok("two ladles out of ten is a fifth", near(ladles?.kcal, 307.4), String(ladles?.kcal));
+ok("the macros are scaled by the same fifth, never just the energy",
+  near(ladles?.macros.protein, 20.64), String(ladles?.macros.protein));
+
+const share = M.logShare(potOfCurry, { took: 2, outOf: 10 });
+ok("a share is written under the pot's own name in both languages",
+  share?.label === "Friday chicken curry" && share?.labelBn === "শুক্রবারের মুরগির ঝোল");
+ok("the amount is what was taken, in whole parts",
+  share?.qty === 2 && share?.unit === "portion",
+  `${String(share?.qty)} ${String(share?.unit)}`);
+ok("it says it came from a pot rather than from a recipe",
+  share?.source === "pot", String(share?.source));
+ok("and it points back at which pot", share?.sourceId === "p-curry");
+ok("a recipe's own portion still says recipe, so a month of rows can tell them apart",
+  M.logRecipe(khichuri, 1)?.source === "recipe");
+
+/* ------------------------------------------------------------
+   11. What a share refuses
+
+   `scaleTo` would happily scale a pot by 1.4. A pot cannot be
+   1.4 of itself, so this is the one refusal in the file that
+   `shared/foods.ts` does not already make.
+   ------------------------------------------------------------ */
+
+console.log("\n-- what a share refuses --");
+
+ok("more than the pot held is not a share of it",
+  M.fractionOf({ took: 12, outOf: 10 }) === null);
+ok("and it logs nothing at all",
+  M.logShare(potOfCurry, { took: 12, outOf: 10 }) === null);
+ok("all of it is a share, and the last one that is",
+  M.fractionOf({ took: 10, outOf: 10 }) === 1);
+ok("nought parts taken is nothing eaten",
+  M.fractionOf({ took: 0, outOf: 4 }) === null
+  && M.logShare(potOfCurry, { took: 0, outOf: 4 }) === null);
+ok("a pot cut into no parts cannot be shared",
+  M.fractionOf({ took: 1, outOf: 0 }) === null);
+ok("a negative share is not a share",
+  M.fractionOf({ took: -1, outOf: 4 }) === null);
+ok("and neither is one out of a box somebody left half typed",
+  M.fractionOf({ took: Number.NaN, outOf: 4 }) === null
+  && M.fractionOf({ took: 1, outOf: Number.NaN }) === null);
+ok("a share of a pot with nothing in it that carries a figure logs nothing",
+  M.logShare({ en: "an empty pan", parts: [] }, { took: 1, outOf: 2 }) === null);
+
+/* ------------------------------------------------------------
+   12. A household of four, one curry, four intakes
+
+   Section 14's own sentence, asserted: four different shares of
+   one pot are four different figures and one piece of data
+   entry, and they add up to the pot.
+   ------------------------------------------------------------ */
+
+console.log("\n-- one curry, four intakes --");
+
+const four = [
+  M.shareOf(potOfCurry, { took: 2, outOf: 8 }),
+  M.shareOf(potOfCurry, { took: 3, outOf: 8 }),
+  M.shareOf(potOfCurry, { took: 2, outOf: 8 }),
+  M.shareOf(potOfCurry, { took: 1, outOf: 8 }),
+];
+ok("four shares of one pot, and none of them is a portion nobody ate",
+  four.every((s) => s !== null));
+/* To within the tenth of a kilocalorie each row is rounded to,
+   which is what `diet_entries.kcal` holds and is the only drift
+   there is: no share is computed from another share. */
+const eaten = four.reduce((sum, s) => sum + (s?.kcal ?? 0), 0);
+ok("they add up to the pot they came out of",
+  Math.abs(eaten - 1537) <= 0.4, String(eaten));
+ok("and the biggest eater's share really is the biggest",
+  (four[1]?.kcal ?? 0) > (four[0]?.kcal ?? 0));
+
+/* ------------------------------------------------------------
+   13. The hob, which is a week
+
+   A pot is held for the rest of the week so the same dish
+   tomorrow is two taps. Nothing is deleted: this cannot know
+   when a pot is empty.
+   ------------------------------------------------------------ */
+
+console.log("\n-- what is still on the hob --");
+
+const hobPots = [
+  { en: "tonight", parts: [], lastUsed: "2026-08-22" },
+  { en: "a week ago", parts: [], lastUsed: "2026-08-15" },
+  { en: "eight days ago", parts: [], lastUsed: "2026-08-14" },
+  { en: "just put on", parts: [] },
+];
+const on = M.onTheHob(hobPots, "2026-08-22");
+const off = M.offTheHob(hobPots, "2026-08-22");
+
+ok("a pot from a week ago is still on the hob", on.some((d) => d.en === "a week ago"));
+ok("one from eight days ago is not", !on.some((d) => d.en === "eight days ago"));
+ok("and it is not lost either, it is named as older",
+  off.length === 1 && off[0].en === "eight days ago");
+ok("a pot nothing has touched yet leads, because it was just put on",
+  on[0]?.en === "just put on", on[0]?.en);
+ok("and the rest are freshest first",
+  on[1]?.en === "tonight" && on[2]?.en === "a week ago",
+  on.map((d) => d.en).join(", "));
+ok("a row that lost its stored kind is not read as a pot",
+  M.toPot({ label: "curry", kind: "recipe", serves: 4 }) === null);
+ok("a pot needs no yield to be read back",
+  M.toPot({ id: "p1", label: "curry", kind: "pot" })?.serves === undefined);
+ok("and a yield of nought on one is dropped rather than kept as a divisor",
+  M.toPot({ id: "p1", label: "curry", kind: "pot", serves: 0 })?.serves === undefined);
+ok("a real household count survives",
+  M.toPot({ id: "p1", label: "curry", kind: "pot", serves: 5 })?.serves === 5);
+
+/* ------------------------------------------------------------
+   14. A plate nobody can weigh
+
+   Section 14: a restaurant plate is not knowable, so the
+   midpoint goes into the total and the width goes into the day's
+   confidence. `totalFor()` in `shared/diet.ts` is what adds the
+   widths up, and it has been able to since the day it was
+   written.
+   ------------------------------------------------------------ */
+
+console.log("\n-- eating out is a range --");
+
+const plate = M.widened(900);
+ok("a fifth either way around a 900 kcal plate is 720 to 1080",
+  near(plate?.low, 720) && near(plate?.high, 1080),
+  `${String(plate?.low)} to ${String(plate?.high)}`);
+/* Section 14 puts the kacchi biryani plate between 700 and
+   1,100, which is where that fifth comes from. */
+ok("which is section 14's own 700 to 1,100 to within 3 percent",
+  Math.abs((plate?.low ?? 0) - 700) / 700 < 0.03
+  && Math.abs((plate?.high ?? 0) - 1100) / 1100 < 0.03);
+ok("THE MIDDLE IS THE FIGURE, so the macros still follow from the energy",
+  plate?.mid === 900, String(plate?.mid));
+ok("a figure nobody has cannot be widened", M.widened(0) === null
+  && M.widened(Number.NaN) === null);
+
+const typed = M.outRange(700, 1100);
+ok("two numbers become a range with its own midpoint",
+  typed?.low === 700 && typed?.mid === 900 && typed?.high === 1100);
+ok("the wrong way round is a slip, and nothing is written",
+  M.outRange(1100, 700) === null);
+ok("a single figure with no width is still a range of no width",
+  M.outRange(500, 500)?.mid === 500);
+ok("nought is not a plate", M.outRange(0, 900) === null);
+
+ok("the small extras figure is the middle of its own range",
+  M.EXTRAS.mid === (M.EXTRAS.low + M.EXTRAS.high) / 2,
+  `${M.EXTRAS.low} ${M.EXTRAS.mid} ${M.EXTRAS.high}`);
+ok("and it is modest rather than a number that would swallow a day",
+  M.EXTRAS.high < 400 && M.EXTRAS.low > 0);
+
+/* ------------------------------------------------------------
+   15. The hand, which is not a fallback
+
+   Section 14: weighing is the most accurate method and it is the
+   method most people abandon. A hand is about 20 percent out and
+   20 percent out every day for a year beats 5 percent out for
+   eleven days.
+   ------------------------------------------------------------ */
+
+console.log("\n-- a hand, rather than a scale --");
+
+ok("the four are section 14's four",
+  M.HANDS.map((h) => h.id).join(",") === "palm,cupped,fist,thumb",
+  M.HANDS.map((h) => h.id).join(", "));
+ok("every one says what it is a portion of, in both languages",
+  M.HANDS.every((h) => h.en && h.bn && h.enOf && h.bnOf));
+ok("and every one weighs something a person could hold",
+  M.HANDS.every((h) => h.grams > 0 && h.grams <= 250));
+ok("the thumb is the smallest of them, because it is oil",
+  Math.min(...M.HANDS.map((h) => h.grams)) === 15);
+
+/* A hand is an amount in GRAMS, so it goes through the same
+   `scaleTo` a typed weight does, and a row that never says what
+   its portion weighs rightly refuses one. */
+const palm = M.HANDS[0].grams;
+const breast = M.byId("chicken-curry-piece");
+ok("a palm of chicken curry scales like any other weight in grams",
+  breast !== undefined
+  && near(M.loggedFrom(breast, { n: palm, unit: "g" }, { source: "library" })?.kcal, 195));
+const plateRow = M.byId("biryani-plate");
+ok("and a restaurant plate, which says no weight, refuses a hand rather than guessing",
+  plateRow !== undefined
+  && M.loggedFrom(plateRow, { n: palm, unit: "g" }, { source: "library" }) === null);
+
 /* ------------------------------------------------------------ */
 console.log(bad
   ? `\n${bad} problem(s). A recipe is somebody's real dinner: a total that\n`
     + "is wrong in the flattering direction is the failure this file exists for.\n"
   : "\nrecipes: the pot, the portion, the refusals, the floors, the micronutrient\n"
-    + "         rule, your usuals, copy yesterday and the shopping list.\n");
+    + "         rule, your usuals, copy yesterday, the shopping list, a shared pot\n"
+    + "         cut four ways, the hob, a plate logged as a range and a hand.\n");
 process.exit(bad ? 1 : 0);

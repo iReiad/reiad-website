@@ -12284,7 +12284,7 @@ German for day, and .tag is what the site has always called
      Written as one gradient rather than as a pseudo-element for
      the reason at the top of this layer: `::after` is taken on
      half of these already. */
-  :is(.dt-figure,
+  :is(.dt-figure, .dt-season-row, .dt-recipe, .dt-invite-shows,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
@@ -12483,7 +12483,7 @@ German for day, and .tag is what the site has always called
       .reader-panel, .signin, .pane-bar, .model-drivers,
       .news-window, .preflight, .slash-menu, .studio-tools,
       .course-rail, .csv-panel, .deck-foot, .toast, .dt-set, .dt-lang,
-      .dt-figure,
+      .dt-figure, .dt-season-row, .dt-recipe, .dt-invite-shows,
       .tile, .chart-card, .verdict-card, .model-bar, .signal, .glance-item,
       .topic-tag, .card-chip, .gt-chip, .risk-chip, .tab-count,
       .pledge, .hub-pledge, .id-card, .res, .cv-item, .note,
@@ -13074,7 +13074,15 @@ German for day, and .tag is what the site has always called
      clearance and not room: measured, the routine's heading sits
      at 140 and this one sat at 72, a hair below a bar it shows
      through. */
-  .dt-page { padding-block: var(--step); }
+  /* IT HAS TO BE ABLE TO SHRINK TO ITS COLUMN. `main` is an item
+     in the shell's column, and an item's `min-inline-size: auto`
+     is its content's min-content size, so the strip of fourteen
+     tabs pushed the whole page 83px past the column and the site
+     grew a horizontal scrollbar: the language switch and the
+     right-hand end of every panel sat off the screen at 1280.
+     The strip already scrolls inside itself; this is what lets
+     it. */
+  .dt-page { padding-block: var(--step); min-inline-size: 0; }
 
   .dt-head { margin-block-end: var(--s-6); }
 
@@ -13096,6 +13104,16 @@ German for day, and .tag is what the site has always called
     gap: var(--s-2);
     flex-wrap: nowrap;
     overflow-x: auto;
+    /* AND IT MUST NOT WIDEN THE PAGE. `overflow-x: auto` zeroes
+       the min-content contribution of a FLEX ITEM and not of a
+       block in normal flow, so fourteen tabs set this strip's
+       min-content to 1227px, `main.wrap` is `fit-content` because
+       its auto inline margins opt it out of stretch, and the
+       whole page went 83px past its column: a horizontal
+       scrollbar on the site, the language switch off the right
+       edge, and every panel below it clipped. `contain` is what
+       actually says "size me from my parent, not my contents". */
+    contain: inline-size;
     scrollbar-width: none;
     scroll-snap-type: x proximity;
     position: sticky;
@@ -13240,7 +13258,18 @@ German for day, and .tag is what the site has always called
     padding-inline: var(--s-2);
   }
 
+  /* TWO JOBS, TWO CLASSES. `.dt-hint` is 0.66rem, which is right
+     under a box and unreadable as a section's opening paragraph,
+     and it was doing both: a page could open with a sentence set
+     at ten and a half pixels. A hint sits beside a control; an
+     intro is the first thing said about a section, and it is
+     read at reading size. */
   .dt-hint { font-size: var(--t-1); color: var(--ink-soft); }
+  .dt-intro {
+    color: var(--ink-soft);
+    max-inline-size: 66ch;
+    margin-block: 0 var(--s-5);
+  }
 
   .dt-readout {
     display: grid;
@@ -13641,9 +13670,41 @@ German for day, and .tag is what the site has always called
   .dt-dot { fill: var(--ink-soft); opacity: 0.5; }
   .dt-ax { fill: var(--ink-soft); font-size: 10px; font-family: var(--font-mono); }
   .dt-ax-line { stroke: var(--hairline); stroke-width: 1; }
+  /* A STRETCH NO RATE MAY BE FITTED TO. The wash on its own was
+     colour as the only channel, which the chart's own rules
+     forbid and which its header already claimed this was not:
+     it called this mark a hatch for as long as it has existed.
+     The dashed edge is the second channel, and it costs the two
+     charts that draw this no markup. */
   .dt-settling {
     fill: var(--ink-soft); opacity: 0.06;
+    stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 3 3;
   }
+
+  /* THE PART OF THE YEAR NOT YET LIVED. The axis is always 365
+     days wide, whatever the log holds, so a reader three months
+     in has nine months of empty year to the right of today. It is
+     shaded because "empty" and "not yet" are two different
+     statements and an unshaded gap makes the first one. */
+  .dt-year-ahead { fill: var(--ink-soft); opacity: 0.04; }
+
+  /* A STRETCH OF ONE PROTOCOL, ACROSS THE BODY OF THE PLOT.
+     Seasons run along its foot instead and the two never overlap,
+     so POSITION is what tells the two kinds of band apart:
+     nothing on this chart is encoded in colour alone. A stretch a
+     rate may NOT be fitted to keeps `.dt-settling`, which is the
+     same mark the long view draws, and the stretch table under
+     the chart names every one and says which it is. */
+  .dt-year-phase { fill: var(--accent); opacity: 0.07; }
+
+  /* A SEASON, ALONG THE FOOT. Faint, because none of these
+     changes the arithmetic: what a season changes is what a flat
+     month MEANS, and that is a sentence under the chart rather
+     than anything in the drawing. Two seasons can overlap here,
+     Boishakh inside the summer heat and Christmas inside a
+     British winter, and the opacity compounds where they do,
+     which is the right reading: something extra is happening. */
+  .dt-year-season { fill: var(--ink-soft); opacity: 0.16; }
 
   .dt-table-wrap { overflow-x: auto; margin-block-end: var(--step); }
   .dt-table { border-collapse: collapse; inline-size: 100%; font-size: var(--t-2); }
@@ -13657,14 +13718,13 @@ German for day, and .tag is what the site has always called
 
   /* ---- the other panels ---- */
 
-  /* EVERY PANEL PAGE, and it has to be every one: the three
-     newest were added to neither list below and all three grew
-     the doubled gap the comment under this one measures. A list
-     of page classes is a thing somebody has to remember, which
-     is the failure this whole stylesheet keeps being caught by,
-     so anything with `dt-` and a panel goes in both. */
+  /* EVERY PANEL PAGE, and it has to be every one. This was a list
+     of page classes and it went stale twice, three pages at a
+     time. `.dt-page > *` is every panel, and the two that are not
+     grids say so themselves below. */
   .dt-goal, .dt-journal, .dt-nutrition, .dt-expect, .dt-trend,
-  .dt-foods, .dt-health, .dt-summary {
+  .dt-foods, .dt-health, .dt-summary, .dt-keto, .dt-habits,
+  .dt-recipes, .dt-usuals, .dt-year {
     display: grid; gap: var(--step);
   }
 
@@ -13672,19 +13732,17 @@ German for day, and .tag is what the site has always called
      is right for a hub built of sections and doubles the gap on a
      grid that is already spacing them. Measured on the expect
      page: about 130px of nothing between the lede and the first
-     table. The grid owns the rhythm here. */
-  .dt-goal > section, .dt-journal > section,
-  .dt-nutrition > section, .dt-expect > section, .dt-trend > section,
-  .dt-foods > section, .dt-health > section, .dt-summary > section {
-    padding-block-start: 0;
-  }
+     table. The grid owns the rhythm here.
 
-  .dt-goal > section > h2, .dt-journal > section > h2,
-  .dt-nutrition > section > h2, .dt-expect > section > h2,
-  .dt-trend > section > h2, .dt-foods > section > h2,
-  .dt-health > section > h2, .dt-summary > section > h2 {
-    margin-block: 0 var(--s-6);
-  }
+     A PANEL, NOT A LIST OF PANELS. This was eight page classes
+     written out, and it was wrong twice: three pages were added
+     and put in neither list, then three more, and each time the
+     gap silently doubled on the new ones while every check
+     passed. A panel is a direct child of `main.dt-page` and its
+     sections are the grandchildren, so that shape is the rule
+     and a page added next week gets it without knowing. */
+  .dt-page > * > section { padding-block-start: 0; }
+  .dt-page > * > section > h2 { margin-block: 0 var(--s-6); }
   .dt-goal .dt-readout, .dt-journal .dt-readout { margin-block-start: 0; }
 
   .dt-coverage {
@@ -13921,6 +13979,23 @@ German for day, and .tag is what the site has always called
     font-size: var(--t-0);
     color: var(--ink-soft);
   }
+  /* A PRICE THAT HAS GONE OUT OF DATE, DRAWN AS ONE. `.dt-priced`
+     is already soft, so greying it again would draw nothing.
+
+     A dotted underline rather than a colour on its own, because
+     a colour alone is no signal to a reader who cannot see it,
+     and gold rather than `--danger` because an old price is not
+     an error: it is a figure with a weaker claim on being
+     believed. `STALE_MONTHS` in `shared/insights.ts` decides
+     which rows get it, and the panel prints how many as well,
+     because this mark is for finding them in the table rather
+     than for being the message. */
+  .dt-priced-stale {
+    color: color-mix(in oklab, var(--ink-soft) 70%, transparent);
+    text-decoration: underline dotted;
+    text-decoration-color: var(--gold);
+    text-underline-offset: 2px;
+  }
   /* Where a row's composition figure came from. A number with no
      source is a number this tool invented. */
   .dt-row-src {
@@ -14022,9 +14097,353 @@ German for day, and .tag is what the site has always called
 
   @media print { .dt-nearby { display: none; } }
 
+  /* ---- three flat weeks, and which of the four it is ----
+
+     Not a warning and not red. Almost everything this section
+     says is a reason NOT to worry, and one of the four kinds is
+     not a stall at all, so drawing it as an alert would tell a
+     reader the opposite of what it says. The rail is the page's
+     own accent, like every other lead figure. */
+  /* ---- arriving from another app ----
+
+     The preview is the whole feature, so it is the part with
+     room: one column of the file per card, its guess, how sure
+     that guess is, and the first few values as they really read.
+     A reader checking a mapping is comparing two things, and the
+     two things have to be next to each other. */
+  .dt-import { display: grid; gap: var(--step); }
+
+  .dt-import-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-4);
+    flex-wrap: wrap;
+    font-size: var(--t-2);
+    color: var(--ink-soft);
+  }
+
+  .dt-map {
+    display: grid;
+    gap: var(--s-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    margin-block-end: var(--step);
+  }
+  .dt-map-col { display: grid; gap: var(--s-3); align-content: start; }
+  /* What the column actually holds, which is the only thing that
+     settles whether a guess is right. */
+  .dt-map-eg {
+    font-size: var(--t-1);
+    color: var(--ink-soft);
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .dt-import-drop summary { cursor: pointer; font-size: var(--t-2); color: var(--ink-soft); }
+  .dt-import-why {
+    list-style: none; margin: var(--s-4) 0 0; padding: 0;
+    display: grid; gap: var(--s-2);
+    font-size: var(--t-1); color: var(--ink-soft);
+  }
+  .dt-import-go {
+    display: flex; gap: var(--s-4); align-items: center; flex-wrap: wrap;
+    margin-block: var(--s-6);
+  }
+  .dt-import-list {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: var(--s-4);
+  }
+  .dt-import-list li {
+    display: flex; gap: var(--s-4); align-items: center; flex-wrap: wrap;
+  }
+
+  /* The first ninety seconds. Four boxes and two buttons, and
+     nothing else on the page: a reader who has just signed in
+     should see the four questions rather than nine widgets all
+     saying they are waiting for the answers. */
+  .dt-onboard { display: grid; gap: var(--s-5); max-inline-size: 60ch; }
+  .dt-onboard-form {
+    display: grid;
+    gap: var(--s-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    align-items: start;
+  }
+  .dt-onboard-go { display: flex; gap: var(--s-4); flex-wrap: wrap; align-items: center; }
+  /* A refusal, not a validation message: the dashed edge is the
+     one this stylesheet uses for the end of the road. */
+  .dt-onboard-stop {
+    border: 1px dashed var(--danger);
+    border-radius: var(--radius-card);
+    padding: var(--s-5);
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  /* One question, once a month, about a kitchen rather than a
+     meal. Three boxes on one row, because they are one question
+     asked three ways and splitting them would read as three. */
+  .dt-oil-form, .dt-budget-form {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    align-items: start;
+    margin-block-end: var(--step);
+  }
+
+  /* Where the reader is in a month, and the rate that actually
+     removes the water rather than averaging over it. */
+  .dt-cycle { display: grid; gap: var(--s-5); max-inline-size: 70ch; }
+  .dt-cycle-set { display: grid; gap: var(--s-5); justify-items: start; }
+  .dt-cycle-when {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    inline-size: 100%;
+    max-inline-size: 34rem;
+  }
+
+
+  /* A SENTENCE BESIDE A CONTROL GETS ITS OWN LINE WHEN IT IS
+     LONG. The row is flex, so a hint with twenty words in it
+     otherwise shares the line with the button and wraps into a
+     ribbon four characters wide. A basis of 22ch is the switch:
+     "That did not save. Try again." stays beside its button, and
+     the explanation of what a range does to a day drops under
+     it. The measure is capped for the same reason every other
+     block of prose here is: past about 62 characters the eye
+     loses the start of the next line. */
+  .dt-measure-row > .dt-hint {
+    flex: 1 1 22ch;
+    max-inline-size: 62ch;
+  }
+
+  /* AND NOTHING IN THE ROW MAY REFUSE TO SHRINK. A flex item's
+     `min-width` is `auto`, which means its content is its floor,
+     so one long label ("How much of it you ate, in grams", or a
+     pot named by somebody who types) pushes the row wider than
+     the column it sits in and the whole page gains a horizontal
+     scrollbar. That has happened here before. The pot rows put
+     two labelled number boxes on one line, which is where it
+     would happen next. */
+  .dt-measure-row > * {
+    min-inline-size: 0;
+  }
+
+  /* ---- the recipes, the pots and the shopping list ----
+
+     Nine class names the panel has been rendering since it was
+     written and the stylesheet had a rule for none of them, so
+     every pot was an unstyled bullet list with a button under
+     it. The page worked perfectly, which is why it survived. */
+
+  .dt-recipe-mine, .dt-recipe-pots, .dt-recipe-build {
+    display: grid;
+    gap: var(--s-5);
+  }
+  .dt-recipe-list {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .dt-recipe {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    display: grid;
+    gap: var(--s-4);
+    padding: var(--s-5);
+  }
+  .dt-recipe-name {
+    font-size: var(--t-2);
+    font-weight: 600;
+    margin: 0;
+  }
+  .dt-recipe .dt-why, .dt-recipe .dt-hint { margin: 0; }
+
+  /* What one portion or one share comes to, which is the figure
+     the reader came for. */
+  .dt-recipe-sum {
+    display: grid;
+    gap: var(--s-3);
+    justify-items: start;
+  }
+  .dt-recipe-macros {
+    color: var(--ink-soft);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--t-0);
+    font-variant-numeric: tabular-nums;
+    gap: var(--s-3) var(--s-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Three columns and the last two are numbers, so they line up
+     down the page rather than following the name across it. */
+  .dt-shop-list {
+    display: grid;
+    gap: var(--s-3);
+    list-style: none;
+    margin: 0;
+    max-inline-size: 46rem;
+    padding: 0;
+  }
+  .dt-shop-list > li {
+    align-items: baseline;
+    border-block-end: 1px solid var(--hairline);
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: 1fr auto auto;
+    padding-block-end: var(--s-3);
+  }
+  .dt-shop-list > li:last-child { border-block-end: 0; }
+  .dt-shop-list .dt-hit-por, .dt-shop-list .mono {
+    color: var(--ink-soft);
+    font-size: var(--t-0);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* ---- the calendar, which changes what a flat month means ---- */
+
+  .dt-season { display: grid; gap: var(--s-5); max-inline-size: 70ch; }
+  .dt-season-list {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  /* An accent rail down the left, the same signal a GoCard uses,
+     because a season is a fact about today rather than a place to
+     go: rail without arrow, and it is an `li` rather than an `a`. */
+  .dt-season-row {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-inline-start: 3px solid var(--accent, var(--hairline));
+    border-radius: var(--radius-card);
+    display: grid;
+    gap: var(--s-3);
+    padding: var(--s-5);
+  }
+  .dt-season-name {
+    align-items: baseline;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: var(--t-2);
+    gap: var(--s-3);
+    margin: 0;
+  }
+  .dt-season-flag {
+    background: color-mix(in oklab, var(--accent, var(--hairline)) 16%, transparent);
+    border-radius: var(--radius-xs);
+    color: var(--ink-soft);
+    font-size: var(--t-0);
+    font-weight: 500;
+    padding: 0.1em 0.5em;
+    white-space: nowrap;
+  }
+  .dt-season-when {
+    color: var(--ink-soft);
+    font-size: var(--t-0);
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+  }
+  .dt-season-bar {
+    background: color-mix(in oklab, var(--accent, var(--hairline)) 18%, transparent);
+    block-size: 4px;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+  .dt-season-bar > span {
+    background: var(--accent, var(--ink-soft));
+    block-size: 100%;
+    display: block;
+  }
+  .dt-season .dt-said { margin: 0; }
+
+  .dt-stall {
+    display: grid;
+    gap: var(--s-5);
+    max-inline-size: 70ch;
+  }
+  .dt-stall .dt-defs { margin-block: 0; }
+
+  /* ---- the clinic's own numbers ---- */
+
+  .dt-lab-form {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+    align-items: end;
+    margin-block-end: var(--step);
+  }
+  /* The two that are a whole row: the override, which is folded
+     away because it is the uncommon case, and the button. */
+  .dt-lab-own, .dt-lab-go { grid-column: 1 / -1; }
+  .dt-lab-own summary { cursor: pointer; font-size: var(--t-1); color: var(--ink-soft); }
+  .dt-lab-range {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    margin-block-start: var(--s-4);
+    max-inline-size: 24rem;
+  }
+  .dt-lab-go { display: flex; align-items: center; gap: var(--s-4); flex-wrap: wrap; }
+
+  .dt-labs {
+    display: grid;
+    gap: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    margin-block-end: var(--step);
+  }
+
+  /* Every reading, newest first, under the figure it belongs to.
+     A number on one day says almost nothing, which is the whole
+     reason a sheet of these ends up in a drawer. */
+  .dt-lab-rows {
+    list-style: none; margin: var(--s-4) 0 0; padding: 0;
+    display: grid; gap: var(--s-2);
+    font-size: var(--t-1);
+  }
+  .dt-lab-rows li {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--s-3);
+    align-items: baseline;
+    color: var(--ink-soft);
+  }
+
   .dt-symptoms, .dt-diary { max-inline-size: 70ch; }
 
   .dt-invite { display: grid; gap: var(--s-5); max-inline-size: 52ch; justify-items: start; }
+  /* WHAT THE PAGE IS WORTH AN ACCOUNT FOR. A reader deciding
+     whether to make one is deciding whether this page is worth
+     it, and eleven panels used to answer that with one sentence
+     saying an account was needed. */
+  .dt-invite-shows {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-inline-start: 3px solid var(--accent);
+    border-radius: var(--radius-card);
+    display: grid;
+    gap: var(--s-3);
+    padding: var(--s-5);
+    inline-size: 100%;
+  }
+  .dt-invite-h {
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: var(--t-0);
+    letter-spacing: 0.04em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+  .dt-invite-shows ul { display: grid; gap: var(--s-3); margin: 0; padding-inline-start: 1.2em; }
 
   /* One line, wrapping around its own button. `align-items:
      center` so the button sits on the text's baseline band

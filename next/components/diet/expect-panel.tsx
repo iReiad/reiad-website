@@ -239,7 +239,7 @@ export function ExpectPanel() {
 
       <section aria-labelledby="dt-cast-h">
         <h2 id="dt-cast-h"><T en="Before you change anything" bn="কিছু বদলানোর আগে" /></h2>
-        <p className="dt-hint">
+        <p className="dt-intro">
           <T
             en="Four facts and no advice. It does not say whether this is a good idea: it says what the scale will do and which part of it is real, which is the only thing this can honestly know and the thing nobody is told."
             bn="চারটে তথ্য, কোনো পরামর্শ নয়। এটা ভালো না মন্দ তা বলা হচ্ছে না: বলা হচ্ছে দাঁড়িপাল্লা কী করবে আর তার কোন অংশটা আসল, যেটাই এই যন্ত্র সৎভাবে জানতে পারে আর যেটা কেউ বলে না।"
@@ -380,7 +380,7 @@ export function ExpectPanel() {
 
       <section aria-labelledby="dt-unlock-h">
         <h2 id="dt-unlock-h"><T en="What arrives, and when" bn="কী কখন আসবে" /></h2>
-        <p className="dt-hint">
+        <p className="dt-intro">
           <T en="Nothing is held back as a reward. Each appears when there is enough data for it to be honest."
              bn="পুরস্কার হিসেবে কিছুই আটকে রাখা হয় না। যখন সৎ হওয়ার মতো যথেষ্ট তথ্য জমে, তখনই প্রতিটি আসে।" />
         </p>

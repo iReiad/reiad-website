@@ -48,6 +48,7 @@ import { Spark, Strip, Waiting, Widget } from "./widgets";
    four classes drawing the same circle. */
 import { Ring } from "../deck";
 import { LogForm } from "./log-form";
+import { Onboard } from "./onboard";
 import { Term } from "./glossary";
 
 /** How far back the board reads. A year is 365 rows, which is
@@ -71,6 +72,7 @@ export function DietBoard() {
      the note. On a slow connection that is one tap on "A glass".
      The form is disabled until this is true. */
   const [loaded, setLoaded] = useState(false);
+  const [skipped, setSkipped] = useState(false);
 
   /* WHICH DAY IS BEING LOGGED, which is today until the reader
      says otherwise. A log that can only ever be written for the
@@ -99,6 +101,15 @@ export function DietBoard() {
     document.addEventListener("account:changed", paint);
     return () => { alive = false; document.removeEventListener("account:changed", paint); };
   }, []);
+
+  /* One reader of these rows, called on mount and again when the
+     four questions land. A component that was handed the new
+     profile would be a second copy of the row it came from. */
+  const reload = useCallback(async () => {
+    if (!w) return;
+    const p = await getProfile(w);
+    setProfile(p);
+  }, [w]);
 
   useEffect(() => {
     if (!w) { setDays([]); setEntries([]); setProfile(null); setLoaded(false); return; }
@@ -333,6 +344,19 @@ export function DietBoard() {
         : d.weightKg != null ? "weighed" : "logged";
     return { date, kind };
   });
+
+  /* FOUR QUESTIONS BEFORE NINE EMPTY WIDGETS. A reader who has
+     just signed in lands on a board where every reading says
+     "waiting for your height", and sending them to another page
+     to fix that is the step at which people stop. Section 26.
+
+     `skipped` is state rather than a row, because a reader who
+     only wants to log food is not making a setting: they are
+     saying not now, and asking again on the next visit is the
+     right behaviour for something the tool genuinely needs. */
+  if (loaded && !profile?.height_cm && !skipped) {
+    return <Onboard w={w} onDone={() => { setSkipped(true); void reload(); }} />;
+  }
 
   return (
     <div className="dt-today">

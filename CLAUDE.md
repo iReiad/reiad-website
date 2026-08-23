@@ -1146,6 +1146,8 @@ node scripts/check-mjs.ts   # a .mjs, which is a file nothing typechecks and the
                             # reason the next one gets written
 node scripts/check-dashes.ts # the one character this file opens by banning,
                             # in any tracked file outside archive/
+node scripts/check-icons.ts # an icon name that resolves to nothing, so the page
+                            # draws a correctly sized empty svg
 node scripts/check-jsx-space.ts # a sentence running into the link inside it,
                             # because JSX ate the line break before the element
 node scripts/check-crons.ts # a scheduled job the Worker is no longer listening for

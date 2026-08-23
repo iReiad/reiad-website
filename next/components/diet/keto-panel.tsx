@@ -59,6 +59,7 @@ import { Note } from "../ui/note";
 import { T, TBlock, digits, useToolLang } from "./lang";
 import { Term } from "./glossary";
 import { Spark } from "./widgets";
+import { Invite } from "./invite";
 
 /** How far back the page reads. Long enough to hold a phase, its
     fortnight and the weeks either side of it, and short enough to
@@ -356,12 +357,10 @@ export function KetoPanel() {
             />
           </>
         ) : (
-          <p className="dt-invite">
-            <T
-              en="A phase is a row in your account, so the clock can carry on while the tab is shut and be the same clock on your phone. Everything below this works signed out."
-              bn="একটা পর্ব আপনার অ্যাকাউন্টে একটা সারি, তাই ট্যাব বন্ধ থাকলেও ঘড়ি চলতে থাকে আর ফোনেও একই ঘড়ি দেখায়। এর নিচের সবকিছু অ্যাকাউন্ট ছাড়াও কাজ করে।"
-            />
-          </p>
+          <Invite
+            en="A phase is a row in your account, so the clock can carry on while the tab is shut and be the same clock on your phone. Everything below this works signed out."
+            bn="একটা পর্ব আপনার অ্যাকাউন্টে একটা সারি, তাই ট্যাব বন্ধ থাকলেও ঘড়ি চলতে থাকে আর ফোনেও একই ঘড়ি দেখায়। এর নিচের সবকিছু অ্যাকাউন্ট ছাড়াও কাজ করে।"
+          />
         )}
       </section>
 
@@ -449,7 +448,7 @@ function Clock({ running, now, kg, mine, burn, from, lang }: {
 }) {
   if (!running) {
     return (
-      <p className="dt-hint">
+      <p className="dt-intro">
         <T
           en="Nothing is running, so there is no clock yet. Start a phase below and this becomes the hour you are at, what the body is doing at that hour, and what the scale is doing because of it."
           bn="এখন কিছুই চলছে না, তাই ঘড়িও নেই। নিচে একটা পর্ব শুরু করলে এখানে দেখাবে আপনি কত ঘণ্টায় আছেন, সেই ঘণ্টায় শরীর কী করছে, আর সেজন্য দাঁড়িপাল্লা কী করছে।"
@@ -463,7 +462,7 @@ function Clock({ running, now, kg, mine, burn, from, lang }: {
        than a spinner, and it is the truth: the server has a
        different clock and the hour is the browser's to compute. */
     return (
-      <p className="dt-hint">
+      <p className="dt-intro">
         <T en="Reading the clock." bn="ঘড়ি দেখা হচ্ছে।" />
       </p>
     );
@@ -808,7 +807,7 @@ function Window({ running, today, points, phases, rate, lang }: {
 }) {
   if (!running) {
     return (
-      <p className="dt-hint">
+      <p className="dt-intro">
         <T
           en="The first fourteen days of a keto phase are left out of the trend's slope, because what leaves in them is water. Start a phase and this fills in with your own days."
           bn="কিটো পর্বের প্রথম চৌদ্দ দিন ধারার ঢালের হিসাব থেকে বাদ থাকে, কারণ ওই সময়ে যা যায় তা পানি। একটা পর্ব শুরু করলে এখানে আপনার নিজের দিনগুলো বসবে।"
@@ -1237,12 +1236,10 @@ function Ketones({
           </span>
         </div>
       ) : (
-        <p className="dt-invite">
-          <T
-            en="A reading is a row in your account, like a weight. The note under this field is the part worth reading either way."
-            bn="ওজনের মতোই, একটা মাপ আপনার অ্যাকাউন্টে একটা সারি। তবু এই ঘরের নিচের কথাটা দুই দিকেই পড়ার মতো।"
-          />
-        </p>
+        <Invite
+          en="A reading is a row in your account, like a weight. The note under this field is the part worth reading either way."
+          bn="ওজনের মতোই, একটা মাপ আপনার অ্যাকাউন্টে একটা সারি। তবু এই ঘরের নিচের কথাটা দুই দিকেই পড়ার মতো।"
+        />
       )}
 
       {/* THE NOTE, WHERE THE FIELD IS. Section 7 asks for it here
