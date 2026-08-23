@@ -1,11 +1,16 @@
 /* ============================================================
    courses.ts: the third-party course player.
 
-   Four pages, one module, because they are four views of one
-   thing and the reader moves between them constantly: a
-   catalogue, a course, a module summary and a lesson. Which one
-   is drawn comes from the address, so there is no per-page entry
-   point to keep in step with the routes.
+   Five pages, one module, because they are five views of one
+   thing and the reader moves between them constantly: a shelf of
+   programmes, one programme, a course, a module summary and a
+   lesson. Which one is drawn comes from the address, so there is
+   no per-page entry point to keep in step with the routes.
+
+   A PROGRAMME is a certificate, a specialisation or a bundle: one
+   Drive folder holding a run of courses meant to be taken in
+   order. It is a segment of every address below the shelf and it
+   is deliberately NOT part of a tick's id. See `lessonId`.
 
    ---- why the browser draws this and the server does not ----
 
@@ -165,24 +170,34 @@ function setLast(entry) {
 /* ============================================================
    Where a thing lives
 
-   The same four functions as `shared/courses.ts`, and the check
-   holds them to being the same. They are duplicated rather than
-   imported for the reason the types above are: this file is the
-   browser's and that one is the Worker's package.
+   The same address rules as `shared/courses.ts`, and
+   `check-courses.ts` reads both files and fails if a template
+   here stops matching the one there. They are duplicated rather
+   than imported for the reason the types above are: this file is
+   the browser's and that one is the Worker's package.
    ============================================================ */
-const courseUrl = (course) => `/skills/courses/${course}`;
-const moduleUrl = (course, mod) => `/skills/courses/${course}/${mod}`;
-const lessonUrl = (course, mod, lesson) => `/skills/courses/${course}/${mod}/${lesson}`;
+const programmeUrl = (programme) => `/skills/courses/${programme}`;
+const courseUrl = (programme, course) => `/skills/courses/${programme}/${course}`;
+const moduleUrl = (programme, course, mod) => `/skills/courses/${programme}/${course}/${mod}`;
+const lessonUrl = (programme, course, mod, lesson) => `/skills/courses/${programme}/${course}/${mod}/${lesson}`;
+/* THE ADDRESS HAS A PROGRAMME IN IT AND THE TICK DOES NOT.
+   `courses-read` holds these strings in real browsers and
+   `courses-answers` holds them with two more segments on the end,
+   so adding a segment here would not move somebody's ticks, it
+   would lose them. A course slug is unique across the whole
+   catalogue, which is what makes that safe; `check-courses.ts`
+   fails on a collision. */
 const lessonId = (course, mod, lesson) => `${course}/${mod}/${lesson}`;
 const fileUrl = (drive) => `/api/courses/file/${drive}`;
 const captionsUrl = (drive) => `/api/courses/captions/${drive}`;
 const driveUrl = (drive) => `https://drive.google.com/file/d/${drive}/view`;
-const laddered = (course) => course.modules.flatMap((mod) => mod.lessons.map((lesson) => ({
+const laddered = (programme, course) => course.modules.flatMap((mod) => mod.lessons.map((lesson) => ({
     ...lesson,
     module: mod.slug,
     moduleTitle: mod.title,
+    /* The id has no programme in it and the url does. */
     id: lessonId(course.slug, mod.slug, lesson.slug),
-    url: lessonUrl(course.slug, mod.slug, lesson.slug),
+    url: lessonUrl(programme, course.slug, mod.slug, lesson.slug),
 })));
 /** The first lesson with no tick, which is where "start" and
     "continue" both point.
@@ -245,6 +260,29 @@ function el(tag, attrs = {}, kids = []) {
     return node;
 }
 const pct = (done, total) => total > 0 ? Math.round((done / total) * 100) : 0;
+/** A number and the thing it counts, pluralised. Every number on
+    a card comes through here from the row the API sent, never
+    from a sentence somebody typed. */
+const count = (n, thing) => `${n} ${thing}${n === 1 ? "" : "s"}`;
+/** A slug as words. Only for the programme crumb on a course
+    page, which knows the slug out of the address and cannot know
+    the title without fetching the whole shelf for one label. */
+const words = (slug) => decodeURIComponent(slug).replace(/[-_]+/g, " ").replace(/^./, (c) => c.toUpperCase());
+/** What a card says it holds. `lead` is the programme's course
+    count, which a course row has nothing to say in place of. */
+const totals = (row, lead) => (lead ? `${lead}, ` : "")
+    + `${count(row.modules, "module")}, ${count(row.lessons, "lesson")}`
+    + (row.videos ? `, ${row.videos} with video` : "")
+    + (row.pending ? `. ${row.pending} not imported yet` : "");
+/** How many of the reader's ticks belong to these courses.
+
+    A tick is `<course>/<module>/<lesson>` and carries no
+    programme, so a programme is counted by the slugs of the
+    courses in it. See `lessonId`. */
+const doneIn = (read, courses) => {
+    const slugs = new Set(courses.map((c) => c.slug));
+    return [...read].filter((id) => slugs.has(id.split("/")[0])).length;
+};
 /** The bar, with its number beside it. The same markup
     `@layer deck`'s `.meter` already styles, so this section
     borrows the site's bar rather than drawing a second one. */
@@ -282,13 +320,13 @@ const KIND_WORD = {
    lessons in it is navigable on a phone, and the module the
    reader is in is the one that starts open.
    ============================================================ */
-function sidebar(course, here, open) {
+function sidebar(programme, course, here, open) {
     const read = readSet();
     const nav = el("nav", {
         class: "course-rail",
         "aria-label": `${course.title}: modules and lessons`,
     });
-    nav.append(el("a", { class: "course-rail-top", href: courseUrl(course.slug) }, [
+    nav.append(el("a", { class: "course-rail-top", href: courseUrl(programme, course.slug) }, [
         el("span", { class: "mono" }, [`Course ${course.n}`]),
         el("strong", {}, [course.title]),
     ]));
@@ -327,7 +365,7 @@ function sidebar(course, here, open) {
                 const isHere = here?.id === id;
                 list.append(el("li", { class: "course-lesson", "data-here": isHere }, [
                     el("a", {
-                        href: lessonUrl(course.slug, mod.slug, lesson.slug),
+                        href: lessonUrl(programme, course.slug, mod.slug, lesson.slug),
                         "data-done": read.has(id),
                         "aria-current": isHere ? "page" : null,
                     }, [
@@ -348,62 +386,115 @@ function sidebar(course, here, open) {
     return nav;
 }
 /* ============================================================
-   The four views
+   The five views
    ============================================================ */
-/** `/skills/courses` */
-function drawCatalogue(root, courses) {
+/** One card on the shelf: a certificate and what is in it. */
+function programmeCard(programme, read) {
+    const done = doneIn(read, programme.courses);
+    return el("a", {
+        class: "card course-card",
+        "data-kind": "go",
+        href: programmeUrl(programme.slug),
+        "data-done": programme.lessons > 0 && done >= programme.lessons,
+    }, [
+        el("div", { class: "card-top" }, [
+            el("span", { class: "card-chip mono" }, [`Programme ${programme.n}`]),
+        ]),
+        el("h3", { class: "card-title" }, [programme.title]),
+        el("p", { class: "card-dek" }, [
+            totals(programme, count(programme.courses.length, "course")),
+        ]),
+        meter(done, programme.lessons),
+        el("span", { class: "card-go" }, [done ? "Carry on" : "Open the programme"]),
+    ]);
+}
+/** One course of a programme, on the programme's page. */
+function courseCard(programme, course, read) {
+    const done = doneIn(read, [course]);
+    return el("a", {
+        class: "card course-card",
+        "data-kind": "go",
+        href: courseUrl(programme, course.slug),
+        "data-done": course.lessons > 0 && done >= course.lessons,
+    }, [
+        el("div", { class: "card-top" }, [
+            el("span", { class: "card-chip mono" }, [`Course ${course.n}`]),
+        ]),
+        el("h3", { class: "card-title" }, [course.title]),
+        el("p", { class: "card-dek" }, [totals(course)]),
+        meter(done, course.lessons),
+        el("span", { class: "card-go" }, [done ? "Carry on" : "Open the course"]),
+    ]);
+}
+/** `/skills/courses`
+
+    The shelf. Programmes rather than courses: the eight were
+    always the eight of one certificate, and a flat list had
+    nothing to say about which belonged to which. */
+function drawCatalogue(root, programmes) {
     const read = readSet();
+    const courses = programmes.reduce((n, p) => n + p.courses.length, 0);
     root.append(el("header", { class: "hub-hero" }, [
         el("span", { class: "hub-eyebrow mono" }, ["কোর্স · Courses"]),
         el("h1", {}, ["Third-party courses"]),
         el("p", { class: "hub-lede" }, [
-            `${courses.length} courses, kept here for one person's own study. `
+            `${count(programmes.length, "programme")}, ${count(courses, "course")}, `
+                + "kept here for one person's own study. "
                 + "The material is somebody else's and none of it is published: "
                 + "every page in this section is behind the admin check.",
         ]),
     ]));
     const deck = el("div", { class: "deck deck-2" });
-    for (const course of courses) {
-        /* Counted from the ticks rather than stored, which is the rule
-           at the top of `CLAUDE.md`: a number about a list is counted
-           from the list. */
-        const done = [...read].filter((id) => id.startsWith(`${course.slug}/`)).length;
-        const card = el("a", {
-            class: "card course-card",
-            "data-kind": "go",
-            href: courseUrl(course.slug),
-            "data-done": course.lessons > 0 && done >= course.lessons,
-        }, [
-            el("div", { class: "card-top" }, [
-                el("span", { class: "card-chip mono" }, [`Course ${course.n}`]),
-            ]),
-            el("h3", { class: "card-title" }, [course.title]),
-            el("p", { class: "card-dek" }, [
-                `${course.modules} modules, ${course.lessons} lessons`
-                    + (course.videos ? `, ${course.videos} with video` : "")
-                    + (course.pending ? `. ${course.pending} not imported yet` : ""),
-            ]),
-            meter(done, course.lessons),
-            el("span", { class: "card-go" }, [done ? "Carry on" : "Open the course"]),
-        ]);
-        deck.append(card);
+    for (const programme of programmes)
+        deck.append(programmeCard(programme, read));
+    root.append(deck);
+}
+/** `/skills/courses/<programme>`
+
+    One certificate: what it adds up to, and its courses in the
+    order they are meant to be taken. Drawn from the shelf's own
+    payload, because there is no endpoint for one programme and
+    the whole shelf is smaller than one course. */
+function drawProgramme(root, programme) {
+    name(programme.title);
+    const read = readSet();
+    const done = doneIn(read, programme.courses);
+    root.append(el("header", { class: "hub-hero" }, [
+        el("span", { class: "hub-eyebrow mono" }, [
+            el("a", { href: "/skills/courses" }, ["Courses"]),
+            ` · Programme ${programme.n}`,
+        ]),
+        el("h1", {}, [programme.title]),
+        el("p", { class: "hub-lede" }, [
+            totals(programme, count(programme.courses.length, "course")),
+        ]),
+        el("div", { class: "hub-progress" }, [
+            meter(done, programme.lessons, `${done} of ${programme.lessons} lessons done`),
+        ]),
+    ]));
+    const deck = el("div", { class: "deck deck-2" });
+    for (const course of programme.courses) {
+        deck.append(courseCard(programme.slug, course, read));
     }
     root.append(deck);
 }
-/** `/skills/courses/<course>`
+/** `/skills/courses/<programme>/<course>`
 
     The deep link is the point of this page. A reader coming back
     to a course wants the lesson they have not done, not a table
     of contents they have to read to find it. */
-function drawCourse(root, course) {
+function drawCourse(root, programme, course) {
     name(course.title);
-    const rungs = laddered(course);
+    const rungs = laddered(programme, course);
     const read = readSet();
     const done = rungs.filter((r) => read.has(r.id)).length;
     const next = nextUp(rungs, read);
     root.append(el("header", { class: "hub-hero" }, [
         el("span", { class: "hub-eyebrow mono" }, [
-            el("a", { href: "/skills/courses" }, ["Courses"]),
+            /* Up from a course is its programme, and the slug is the
+               only name of it this page has: it fetched one course, and
+               the titles live on the shelf. */
+            el("a", { href: programmeUrl(programme) }, [words(programme)]),
             ` · Course ${course.n}`,
         ]),
         el("h1", {}, [course.title]),
@@ -438,39 +529,39 @@ function drawCourse(root, course) {
             ]),
             el("h3", { class: "card-title" }, [
                 mod.pending ? mod.title : el("a", {
-                    href: first ? lessonUrl(course.slug, mod.slug, first.slug)
-                        : moduleUrl(course.slug, mod.slug),
+                    href: first ? lessonUrl(programme, course.slug, mod.slug, first.slug)
+                        : moduleUrl(programme, course.slug, mod.slug),
                 }, [mod.title]),
             ]),
             mod.pending
                 ? el("p", { class: "card-dek" }, ["Not imported yet."])
-                : el("p", { class: "card-dek" }, [`${mod.lessons.length} lessons`]),
+                : el("p", { class: "card-dek" }, [count(mod.lessons.length, "lesson")]),
             mod.pending ? null : meter(modDone, ids.length),
             mod.pending ? null : el("a", {
                 class: "course-mod-link mono",
-                href: moduleUrl(course.slug, mod.slug),
+                href: moduleUrl(programme, course.slug, mod.slug),
             }, ["Module summary"]),
         ]));
     }
     root.append(list);
 }
-/** `/skills/courses/<course>/<module>`
+/** `/skills/courses/<programme>/<course>/<module>`
 
     Where the last lesson of a module lands. It is a stopping
     place: what was in the module, what is ticked, and the way on
     to the next one. */
-function drawModule(root, course, mod) {
+function drawModule(root, programme, course, mod) {
     name(`${mod.title} · ${course.title}`);
     const read = readSet();
     const ids = mod.lessons.map((l) => lessonId(course.slug, mod.slug, l.slug));
     const done = ids.filter((id) => read.has(id)).length;
     const at = course.modules.findIndex((m) => m.slug === mod.slug);
     const after = course.modules.slice(at + 1).find((m) => !m.pending && m.lessons.length);
-    root.append(sidebar(course, null));
+    root.append(sidebar(programme, course, null));
     const main = el("div", { class: "course-body" });
     main.append(el("header", { class: "hub-hero" }, [
         el("span", { class: "hub-eyebrow mono" }, [
-            el("a", { href: courseUrl(course.slug) }, [course.title]),
+            el("a", { href: courseUrl(programme, course.slug) }, [course.title]),
             ` · Module ${mod.n}`,
         ]),
         el("h1", {}, [mod.title]),
@@ -489,7 +580,7 @@ function drawModule(root, course, mod) {
             list.append(el("li", { class: "course-section mono" }, [section]));
         }
         list.append(el("li", { "data-done": read.has(ids[i]) }, [
-            el("a", { href: lessonUrl(course.slug, mod.slug, lesson.slug) }, [
+            el("a", { href: lessonUrl(programme, course.slug, mod.slug, lesson.slug) }, [
                 el("span", { class: "course-tick", "aria-hidden": "true" }, [
                     read.has(ids[i]) ? "✓" : "",
                 ]),
@@ -502,38 +593,41 @@ function drawModule(root, course, mod) {
     });
     main.append(list);
     main.append(el("nav", { class: "prev-next", "aria-label": "Modules" }, [
-        el("a", { href: courseUrl(course.slug) }, [
+        el("a", { href: courseUrl(programme, course.slug) }, [
             el("span", { class: "mono" }, ["Back to"]),
             el("strong", {}, [course.title]),
         ]),
-        after ? el("a", { href: moduleUrl(course.slug, after.slug) }, [
+        after ? el("a", { href: moduleUrl(programme, course.slug, after.slug) }, [
             el("span", { class: "mono" }, ["Next module"]),
             el("strong", {}, [after.title]),
         ]) : null,
     ]));
     root.append(main);
 }
-/** `/skills/courses/<course>/<module>/<lesson>` */
-function drawLesson(root, course, mod, lesson) {
-    const rungs = laddered(course);
+/** `/skills/courses/<programme>/<course>/<module>/<lesson>` */
+function drawLesson(root, programme, course, mod, lesson) {
+    const rungs = laddered(programme, course);
     const id = lessonId(course.slug, mod.slug, lesson.slug);
     const here = rungs.find((r) => r.id === id) ?? null;
     const at = rungs.findIndex((r) => r.id === id);
     /* Opening moves the bookmark and nothing else. The tick is the
        button below, for the reason at the top of this file. */
-    setLast({ id, title: lesson.title, url: lessonUrl(course.slug, mod.slug, lesson.slug) });
+    setLast({
+        id, title: lesson.title,
+        url: lessonUrl(programme, course.slug, mod.slug, lesson.slug),
+    });
     /* The route's own title is generic, because the server renders
        nothing in this section: it cannot say which lesson this is
        without putting the catalogue in the page. So the browser
        says it, once it knows, in the tab and in the last crumb.
        Before this, both read "Lesson". */
     name(lesson.title);
-    root.append(sidebar(course, here));
+    root.append(sidebar(programme, course, here));
     const main = el("article", { class: "course-body course-lesson-page" });
     main.append(el("span", { class: "eyebrow mono" }, [
-        el("a", { href: courseUrl(course.slug) }, [course.title]),
+        el("a", { href: courseUrl(programme, course.slug) }, [course.title]),
         " · ",
-        el("a", { href: moduleUrl(course.slug, mod.slug) }, [mod.title]),
+        el("a", { href: moduleUrl(programme, course.slug, mod.slug) }, [mod.title]),
         lesson.section ? ` · ${lesson.section}` : "",
     ]));
     main.append(el("h1", {}, [lesson.title]));
@@ -609,7 +703,7 @@ function drawLesson(root, course, mod, lesson) {
        reader loses track of what they have done. */
     const onward = nextRung && nextRung.module === mod.slug
         ? nextRung.url
-        : moduleUrl(course.slug, mod.slug);
+        : moduleUrl(programme, course.slug, mod.slug);
     const done = () => readSet().has(id);
     const tick = el("button", {
         class: "tick-btn",
@@ -625,7 +719,7 @@ function drawLesson(root, course, mod, lesson) {
             tick.setAttribute("data-done", "");
         else
             tick.removeAttribute("data-done");
-        refreshRail(course, here);
+        refreshRail(programme, course, here);
     });
     const go = el("button", { class: "btn btn-solid course-continue", type: "button" }, [
         nextRung && nextRung.module === mod.slug
@@ -887,7 +981,7 @@ function fileRow(name, ext, drive) {
 /** Redraw the rail after a tick, so the sidebar's ticks and bars
     agree with the button that was just pressed. Cheap: a course
     is a few hundred nodes and this happens on a click. */
-function refreshRail(course, here) {
+function refreshRail(programme, course, here) {
     const rail = document.querySelector(".course-rail");
     if (!rail)
         return;
@@ -898,24 +992,25 @@ function refreshRail(course, here) {
     const open = new Set([...rail.querySelectorAll("details.course-mod")]
         .map((box, i) => (box.hasAttribute("open") ? course.modules[i]?.slug : null))
         .filter((slug) => Boolean(slug)));
-    rail.replaceWith(sidebar(course, here, open));
+    rail.replaceWith(sidebar(programme, course, here, open));
 }
 /** Read the address rather than being told by the page.
 
-    The four routes are shells with no data in them, so there is
+    The five routes are shells with no data in them, so there is
     nothing for a shell to tell this module that the URL does not
     already say, and a `data-` attribute per route would be a
-    fifth place that knows what a course address looks like. */
+    sixth place that knows what a course address looks like. */
 export function whereAmI(path) {
     const parts = path.replace(/^\/skills\/courses\/?/, "").split("/").filter(Boolean);
+    const [programme, course, mod, lesson] = parts;
     /* THE SEGMENT COUNT DECIDES, and the `index.html` clauses are
        what still answers an address from before task #28.
   
        Dropping `.html` made the counts distinct, which is why the
-       new spellings read as a plain list: one segment is a course,
-       two a module, three a lesson. The old spellings needed the
-       suffix to tell a course hub from a lesson, both of which were
-       three segments.
+       new spellings read as a plain list: one segment is a
+       programme, two a course, three a module, four a lesson. The
+       old spellings needed the suffix to tell a hub from a lesson,
+       which were the same length.
   
        They are read here rather than redirected in
        `aab/_redirects`, and `shared/courses.ts` says why beside
@@ -924,26 +1019,37 @@ export function whereAmI(path) {
        that folder changes, and this section is admin-only and
        unlisted, so there is no canonical to split and no crawler to
        confuse. The routes are shells, so the URL is the only thing
-       that ever said which view this is. */
-    if (!parts.length || parts[0] === "index.html")
+       that ever said which view this is.
+  
+       AN ADDRESS FROM BEFORE THE PROGRAMME CANNOT BE READ, and
+       nothing here pretends otherwise: it has one segment fewer and
+       no suffix saying so, so `/skills/courses/<course>/<module>`
+       is now a course inside a programme. One reader has this
+       section and their bookmarks are one press of the shelf away. */
+    if (!parts.length || programme === "index.html")
         return { view: "catalogue" };
     if (parts.length === 1)
-        return { view: "course", course: parts[0] };
-    if (parts.length === 2 && parts[1] === "index.html") {
-        return { view: "course", course: parts[0] };
+        return { view: "programme", programme };
+    if (parts.length === 2 && course === "index.html") {
+        return { view: "programme", programme };
     }
-    if (parts.length === 2) {
-        return { view: "module", course: parts[0], module: parts[1] };
+    if (parts.length === 2)
+        return { view: "course", programme, course };
+    if (parts.length === 3 && mod === "index.html") {
+        return { view: "course", programme, course };
     }
-    if (parts.length === 3 && parts[2] === "index.html") {
-        return { view: "module", course: parts[0], module: parts[1] };
+    if (parts.length === 3)
+        return { view: "module", programme, course, module: mod };
+    if (parts.length === 4 && lesson === "index.html") {
+        return { view: "module", programme, course, module: mod };
     }
-    if (parts.length === 3) {
+    if (parts.length === 4) {
         return {
             view: "lesson",
-            course: parts[0],
-            module: parts[1],
-            lesson: parts[2].replace(/\.html$/i, ""),
+            programme,
+            course,
+            module: mod,
+            lesson: lesson.replace(/\.html$/i, ""),
         };
     }
     return null;
@@ -964,7 +1070,7 @@ function note(root, title, body, action) {
 export async function start(root) {
     const where = whereAmI(location.pathname);
     if (!where) {
-        note(root, "Not a page here", "That address is not a course, a module or a lesson.");
+        note(root, "Not a page here", "That address is not a programme, a course, a module or a lesson.");
         return;
     }
     if (!current()) {
@@ -972,34 +1078,47 @@ export async function start(root) {
             + "Sign in to open it.", el("a", { class: "btn btn-solid", href: "/account" }, ["Sign in"]));
         return;
     }
-    if (where.view === "catalogue") {
+    /* The shelf answers both of the top two views. There is no
+       endpoint for one programme: the whole shelf is a title and
+       five numbers per certificate, which is less than one course's
+       ladder. */
+    if (where.view === "catalogue" || where.view === "programme") {
         const answer = await api("");
         if (!answer.ok || !answer.data)
             return refuse(root, answer);
+        const programmes = answer.data.courses;
         root.replaceChildren();
-        drawCatalogue(root, answer.data.courses);
-        return;
+        if (where.view === "catalogue")
+            return drawCatalogue(root, programmes);
+        const programme = programmes.find((p) => p.slug === where.programme);
+        if (!programme) {
+            note(root, "No such programme", `Nothing in this catalogue is called “${where.programme}”.`);
+            return;
+        }
+        return drawProgramme(root, programme);
     }
-    const answer = await api(`/${where.course}`);
+    /* A course is named the way its address names it: the programme
+       and then the course. */
+    const answer = await api(`/${where.programme}/${where.course}`);
     if (!answer.ok || !answer.data)
         return refuse(root, answer);
     const course = answer.data.course;
     root.replaceChildren();
     if (where.view === "course")
-        return drawCourse(root, course);
+        return drawCourse(root, where.programme, course);
     const mod = course.modules.find((m) => m.slug === where.module);
     if (!mod) {
         note(root, "No such module", `${course.title} has no module called “${where.module}”.`);
         return;
     }
     if (where.view === "module")
-        return drawModule(root, course, mod);
+        return drawModule(root, where.programme, course, mod);
     const lesson = mod.lessons.find((l) => l.slug === where.lesson);
     if (!lesson) {
         note(root, "No such lesson", `${mod.title} has no lesson called “${where.lesson}”.`);
         return;
     }
-    drawLesson(root, course, mod, lesson);
+    drawLesson(root, where.programme, course, mod, lesson);
 }
 /** 401 and 403 are different sentences, and a page that gives one
     answer to both offers a sign-in button to somebody who is

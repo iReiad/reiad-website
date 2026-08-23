@@ -1,4 +1,4 @@
-/* The shell for all four course routes, once. They differ only in
+/* The shell for all five course routes, once. They differ only in
    which address they answer at, and `/courses.js` reads that from
    `location.pathname`, so there is nothing per-route to pass and
    nothing per-route to keep in step.
@@ -19,8 +19,8 @@ import { CourseTrail } from "../../../../components/courses/trail";
    is below cannot come from there, because the catalogue is
    admin-only: a route here knows the shape of the path and none
    of the names. `CourseTrail` is that trail, a client component
-   that reads course, module and lesson out of the address and
-   their titles out of a fetch.
+   that reads programme, course, module and lesson out of the
+   address and their titles out of a fetch.
 
    `crumbs` is still given, and it is what the JSON-LD is built
    from. It stops at `PENDING` on purpose: a machine-readable

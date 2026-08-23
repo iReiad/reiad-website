@@ -7,8 +7,10 @@
    The house rule in CLAUDE.md: a thing is finished when it does
    what it was asked to do, not when it renders, and those two
    look identical from the outside. This section was asked for
-   six things, and each one is a heading below:
+   seven things, and each one is a heading below:
 
+     · a shelf of programmes, and one programme listing its own
+       courses
      · a sidebar with every module and lesson in it
      · a tick on the ones that are done
      · the current lesson marked
@@ -17,6 +19,12 @@
        and to the module summary at the end of a module
      · the course index deep-linking to the first incomplete
        lesson
+
+   And the thing the programme must NOT do: appear in a tick.
+   The address gained a segment and `courses-read` did not,
+   because renaming a key does not move somebody's ticks, it
+   loses them. Every id asserted below is `<course>/<module>/
+   <lesson>`, the same string as before the programme existed.
 
    And the one thing it must NOT do, which is the reason the
    section exists in the shape it does: no timer, no postMessage
@@ -44,7 +52,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import type { Course, CourseSummary } from "./src/courses.ts";
+import type { Course, ProgrammeSummary } from "./src/courses.ts";
 
 /** The module under test, fetched from the address the browser
     fetches it from, which is not a specifier tsc can resolve. Its
@@ -115,7 +123,15 @@ function need<T>(found: T | null | undefined, what: string): T {
    Two modules, one of them pending, so that every branch the page
    has is reachable: a video lesson, a reading, a lesson with an
    attachment, a module that ends, and a module with nothing in it.
+
+   Two programmes above them, because one programme cannot show
+   that a card, a bar or an address belongs to the right one.
    ============================================================ */
+
+/** The programme every deep address below sits in, written once:
+    it is four segments to a lesson now and a typo in one of them
+    is a 404 the fixture answers rather than a failing check. */
+const AT = "/skills/courses/data-analytics/foundations";
 
 const COURSE: Course = {
   slug: "foundations", n: 1, title: "Foundations",
@@ -158,10 +174,35 @@ const COURSE: Course = {
   ],
 };
 
-const SUMMARIES: CourseSummary[] = [
-  { slug: "foundations", n: 1, title: "Foundations", modules: 3, lessons: 4, videos: 3, pending: 1 },
-  { slug: "asking", n: 2, title: "Asking questions", modules: 2, lessons: 0, videos: 0, pending: 2 },
+/** What `/api/courses` answers with: one row per programme, its
+    own totals, and the courses in it.
+
+    The first programme's totals are the sum of its courses', the
+    way `programmeCounts()` computes them, so a page adding them
+    up again is caught rather than agreeing with itself. */
+const CATALOGUE: ProgrammeSummary[] = [
+  {
+    slug: "data-analytics", n: 1, title: "Data analytics",
+    modules: 5, lessons: 4, videos: 3, pending: 3,
+    courses: [
+      { slug: "foundations", n: 1, title: "Foundations", modules: 3, lessons: 4, videos: 3, pending: 1 },
+      { slug: "asking", n: 2, title: "Asking questions", modules: 2, lessons: 0, videos: 0, pending: 2 },
+    ],
+  },
+  {
+    slug: "spreadsheets", n: 2, title: "Spreadsheets",
+    modules: 2, lessons: 6, videos: 4, pending: 0,
+    courses: [
+      { slug: "cells", n: 1, title: "Cells and formulas", modules: 2, lessons: 6, videos: 4, pending: 0 },
+    ],
+  },
 ];
+
+/** Every course the Worker would answer for, at the address the
+    page has to ask at. Anything else is a 404 below, so a link or
+    a fetch that lost its programme fails here rather than being
+    handed the course anyway. */
+const COURSES_AT: Record<string, Course> = { "/data-analytics/foundations": COURSE };
 
 /* ============================================================
    A page
@@ -270,15 +311,29 @@ async function visit(
         };
       }
 
-      let body: unknown = { ok: true, courses: SUMMARIES };
-      if (path.startsWith("/ticket/")) {
+      let body: unknown = null;
+      if (path === "" || path === "/") {
+        body = { ok: true, courses: CATALOGUE };
+      } else if (path.startsWith("/ticket/")) {
         body = { ok: true, url: `/api/courses/file/${path.slice(8)}?t=1.sig` };
       } else if (path.startsWith("/reading/")) {
         body = { ok: true, title: "A reading", html: READING_HTML };
       } else if (path.startsWith("/quiz/")) {
         body = quizBody ?? QUIZ_BODY;
-      } else if (path.length > 1) {
-        body = { ok: true, course: COURSE };
+      } else if (COURSES_AT[path]) {
+        body = { ok: true, course: COURSES_AT[path] };
+      }
+
+      /* An address the Worker would not route. Answered as one,
+         the way it answers one: a page still asking for
+         `/foundations` would otherwise be handed the course and
+         every check below would pass on a section of dead links. */
+      if (body === null) {
+        return {
+          ok: false,
+          status: 404,
+          json: async () => ({ ok: false, message: "no-such-course" }),
+        };
       }
 
       return {
@@ -326,23 +381,30 @@ console.log("\n--- the address decides the page ---");
 const { whereAmI }: CoursesModule = await import(`/courses.js?${Math.random()}`);
 
 /* ---- the addresses as they are now ---- */
-ok("/skills/courses is the catalogue",
+ok("/skills/courses is the shelf of programmes",
   whereAmI("/skills/courses")?.view === "catalogue");
-ok("/skills/courses/ is the catalogue too",
+ok("/skills/courses/ is the shelf too",
   whereAmI("/skills/courses/")?.view === "catalogue");
-ok("one segment is a course", (() => {
-  const w = whereAmI("/skills/courses/foundations");
-  return w?.view === "course" && w.course === "foundations";
+ok("one segment is a programme", (() => {
+  const w = whereAmI("/skills/courses/data-analytics");
+  return w?.view === "programme" && w.programme === "data-analytics";
 })());
-ok("two are a module summary", (() => {
-  const w = whereAmI("/skills/courses/foundations/week-one");
-  return w?.view === "module" && w.module === "week-one";
+ok("two are a course", (() => {
+  const w = whereAmI("/skills/courses/data-analytics/foundations");
+  return w?.view === "course" && w.programme === "data-analytics"
+    && w.course === "foundations";
 })());
-ok("three are a lesson", (() => {
-  const w = whereAmI("/skills/courses/foundations/week-one/welcome");
-  return w?.view === "lesson" && w.lesson === "welcome";
+ok("three are a module summary", (() => {
+  const w = whereAmI("/skills/courses/data-analytics/foundations/week-one");
+  return w?.view === "module" && w.programme === "data-analytics"
+    && w.course === "foundations" && w.module === "week-one";
 })());
-ok("anything deeper is nothing", whereAmI("/skills/courses/a/b/c/d") === null);
+ok("four are a lesson", (() => {
+  const w = whereAmI("/skills/courses/data-analytics/foundations/week-one/welcome");
+  return w?.view === "lesson" && w.programme === "data-analytics"
+    && w.course === "foundations" && w.module === "week-one" && w.lesson === "welcome";
+})());
+ok("anything deeper is nothing", whereAmI("/skills/courses/a/b/c/d/e") === null);
 
 /* ---- and the addresses from before task #28, which this section
    TOLERATES rather than redirects.
@@ -354,20 +416,31 @@ ok("anything deeper is nothing", whereAmI("/skills/courses/a/b/c/d") === null);
    there is no canonical to split and no crawler to confuse. ---- */
 ok("the old catalogue address still answers",
   whereAmI("/skills/courses/index.html")?.view === "catalogue");
+ok("the old programme address still answers", (() => {
+  const w = whereAmI("/skills/courses/data-analytics/index.html");
+  return w?.view === "programme" && w.programme === "data-analytics";
+})());
 ok("the old course address still answers", (() => {
-  const w = whereAmI("/skills/courses/foundations/index.html");
+  const w = whereAmI("/skills/courses/data-analytics/foundations/index.html");
   return w?.view === "course" && w.course === "foundations";
 })());
 ok("the old module address still answers", (() => {
-  const w = whereAmI("/skills/courses/foundations/week-one/index.html");
+  const w = whereAmI("/skills/courses/data-analytics/foundations/week-one/index.html");
   return w?.view === "module" && w.module === "week-one";
 })());
 ok("the old lesson address still answers, with .html stripped", (() => {
-  const w = whereAmI("/skills/courses/foundations/week-one/welcome");
+  const w = whereAmI("/skills/courses/data-analytics/foundations/week-one/welcome.html");
   return w?.view === "lesson" && w.lesson === "welcome";
 })());
 ok("and a module summary is still not read as a lesson called index",
-  whereAmI("/skills/courses/a/b/index.html")?.view === "module");
+  whereAmI("/skills/courses/a/b/c/index.html")?.view === "module");
+
+/* An address from before the programme has one segment fewer and
+   nothing saying so, so it reads as the shallower view. Asserted
+   rather than left to be discovered: there is no suffix to tell
+   these two apart, and the whole section is one reader's. */
+ok("an address from before the programme reads as the level above",
+  whereAmI("/skills/courses/foundations/week-one")?.view === "course");
 
 /* ============================================================ */
 
@@ -375,8 +448,10 @@ console.log("\n--- the sidebar ---");
 
 {
   const store = new Map<string, string>();
-  const { document: doc } = await visit(
-    "/skills/courses/foundations/week-one/syllabus", store);
+  const { document: doc, asked } = await visit(`${AT}/week-one/syllabus`, store);
+
+  ok("the course is asked for inside its programme",
+    asked.includes("/data-analytics/foundations"), asked.join(" "));
 
   ok("a rail is drawn", all(doc, ".course-rail").length === 1);
   ok("every module is in it", all(doc, ".course-mod").length === COURSE.modules.length,
@@ -384,9 +459,13 @@ console.log("\n--- the sidebar ---");
   ok("every lesson of every module is in it",
     all(doc, ".course-lesson").length === 4,
     `saw ${all(doc, ".course-lesson").length}`);
-  ok("the rail links back to the course",
-    doc.querySelector(".course-rail-top")?.getAttribute("href")
-      === "/skills/courses/foundations");
+  ok("the rail links back to the course, inside its programme",
+    doc.querySelector(".course-rail-top")?.getAttribute("href") === AT,
+    doc.querySelector(".course-rail-top")?.getAttribute("href"));
+  ok("and every lesson link carries the programme too",
+    all(doc, ".course-lesson a").every((a) =>
+      a.getAttribute("href")?.startsWith(`${AT}/`)),
+    all(doc, ".course-lesson a")[0]?.getAttribute("href"));
 
   ok("the module being read is open",
     doc.querySelector(".course-mod")?.hasAttribute("open"));
@@ -427,7 +506,7 @@ console.log("\n--- ticks, and the bar that counts them ---");
   ]));
 
   const { document: doc } = await visit(
-    "/skills/courses/foundations/week-one/insights", store);
+    `${AT}/week-one/insights`, store);
 
   const ticked = all(doc, ".course-lesson a[data-done]");
   ok("a done lesson carries a tick", ticked.length === 2, `saw ${ticked.length}`);
@@ -451,6 +530,11 @@ console.log("\n--- ticks, and the bar that counts them ---");
   const filed: string[] = JSON.parse(String(store.get("courses-read")));
   ok("a tick is filed under all three parts",
     filed.every((id) => id.split("/").length === 3));
+  /* THE ADDRESS GAINED A SEGMENT AND THE TICK DID NOT. A fourth
+     part here would be every reader's progress lost, silently, on
+     the deploy that added it. */
+  ok("and the programme is not one of them",
+    filed.every((id) => id.startsWith("foundations/")), JSON.stringify(filed));
 }
 
 /* ============================================================ */
@@ -460,7 +544,13 @@ console.log("\n--- the lesson page ---");
 {
   const store = new Map<string, string>();
   const { document: doc } = await visit(
-    "/skills/courses/foundations/week-one/welcome", store);
+    `${AT}/week-one/welcome`, store);
+
+  ok("the lesson's own trail carries the programme",
+    all(doc, ".course-lesson-page .eyebrow a").length === 2
+      && all(doc, ".course-lesson-page .eyebrow a").every((a) =>
+        a.getAttribute("href")?.startsWith(`${AT}`)),
+    all(doc, ".course-lesson-page .eyebrow a").map((a) => a.getAttribute("href")).join(" "));
 
   const video = doc.querySelector(".course-video video");
   ok("a video lesson has a real player, not an iframe",
@@ -513,7 +603,7 @@ console.log("\n--- the lesson page ---");
        lesson looks like when the export was missing its .srt. No
        track at all, rather than one pointing at nothing. */
     const { document: bare } = await visit(
-      "/skills/courses/foundations/week-one/insights", new Map());
+      `${AT}/week-one/insights`, new Map());
     ok("a video with no captions gets no track",
       Boolean(bare.querySelector(".course-video video"))
       && !bare.querySelector(".course-video video track"));
@@ -533,7 +623,7 @@ console.log("\n--- the lesson page ---");
      reader is shown. */
   {
     const { document: sad } = await visit(
-      "/skills/courses/foundations/week-one/welcome", new Map(),
+      `${AT}/week-one/welcome`, new Map(),
       { ticketFails: { status: 503, message: "The Google credential is not set." } });
 
     const said = sad.querySelector(".course-video")?.textContent ?? "";
@@ -558,7 +648,7 @@ console.log("\n--- the lesson page ---");
 {
   const store = new Map<string, string>();
   const { document: doc } = await visit(
-    "/skills/courses/foundations/week-one/syllabus", store);
+    `${AT}/week-one/syllabus`, store);
 
   ok("a reading lesson has no player", !doc.querySelector(".course-video"));
   ok("the reading is rendered ON the page", Boolean(doc.querySelector(".course-page")));
@@ -581,7 +671,7 @@ console.log("\n--- a quiz a reader can answer ---");
 {
   const store = new Map<string, string>();
   const { document: doc } = await visit(
-    "/skills/courses/foundations/week-two/thinking", store);
+    `${AT}/week-two/thinking`, store);
   const view = need(doc.defaultView, "the window this document was built with");
 
   const qs = all(doc, ".course-quiz .quiz-q");
@@ -669,7 +759,7 @@ console.log("\n--- a quiz a reader can answer ---");
 
   /* Coming back to the page is the point of saving at all. */
   const { document: again } = await visit(
-    "/skills/courses/foundations/week-two/thinking", store);
+    `${AT}/week-two/thinking`, store);
   const againView = need(again.defaultView, "the window that document was built with");
   const back = all(again, ".quiz-q")[0].querySelectorAll<HTMLInputElement>("input");
   ok("the answer is still ticked on the way back", back[2].checked === true);
@@ -699,7 +789,7 @@ console.log("\n--- a quiz a reader can answer ---");
 {
   /* A file the parser does not recognise is still readable. */
   const { document: doc } = await visit(
-    "/skills/courses/foundations/week-two/thinking", new Map(),
+    `${AT}/week-two/thinking`, new Map(),
     { quizBody: { ok: true, title: "Not a quiz", parsed: false,
       questions: [], html: "<p>Just a page after all.</p>" } });
 
@@ -713,20 +803,20 @@ console.log("\n--- mark complete and continue ---");
 {
   const store = new Map<string, string>();
   const { document: doc, went } = await visit(
-    "/skills/courses/foundations/week-one/welcome", store);
+    `${AT}/week-one/welcome`, store);
 
   need(doc.querySelector<HTMLElement>(".course-continue"), ".course-continue").click();
 
   const read: string[] = JSON.parse(String(store.get("courses-read")));
   ok("the lesson is ticked", read.includes("foundations/week-one/welcome"));
   ok("and it goes to the next lesson in the module",
-    went() === "/skills/courses/foundations/week-one/syllabus", String(went()));
+    went() === `${AT}/week-one/syllabus`, String(went()));
 }
 
 {
   const store = new Map<string, string>();
   const { document: doc, went } = await visit(
-    "/skills/courses/foundations/week-one/insights", store);
+    `${AT}/week-one/insights`, store);
 
   const go = need(doc.querySelector<HTMLElement>(".course-continue"), ".course-continue");
   ok("the last lesson of a module says so on the button",
@@ -738,13 +828,13 @@ console.log("\n--- mark complete and continue ---");
   ok("the last lesson of a module is ticked too",
     read.includes("foundations/week-one/insights"));
   ok("and it goes to the module summary, not into the next module",
-    went() === "/skills/courses/foundations/week-one", String(went()));
+    went() === `${AT}/week-one`, String(went()));
 }
 
 {
   const store = new Map<string, string>();
   const { document: doc } = await visit(
-    "/skills/courses/foundations/week-two/thinking", store);
+    `${AT}/week-two/thinking`, store);
 
   const tick = need(doc.querySelector<HTMLElement>(".tick-btn"), ".tick-btn");
   tick.click();
@@ -766,7 +856,7 @@ console.log("\n--- mark complete and continue ---");
      module the reader opened by hand to look ahead. */
   const store = new Map<string, string>();
   const { document: doc } = await visit(
-    "/skills/courses/foundations/week-two/thinking", store);
+    `${AT}/week-two/thinking`, store);
 
   const boxes = all(doc, ".course-mod");
   ok("only the module being read starts open",
@@ -789,13 +879,28 @@ console.log("\n--- the course page deep-links ---");
 
 {
   const store = new Map<string, string>();
-  const { document: doc } = await visit("/skills/courses/foundations", store);
+  const { document: doc } = await visit(AT, store);
 
   ok("with nothing done it says start here",
     text(doc, ".resume .card-chip") === "Start here", text(doc, ".resume .card-chip"));
   ok("and points at the first lesson",
     doc.querySelector(".resume")?.getAttribute("href")
-      === "/skills/courses/foundations/week-one/welcome");
+      === `${AT}/week-one/welcome`);
+
+  /* Up from a course is its programme. The title of it is on the
+     shelf and this page fetched one course, so the crumb says the
+     slug as words rather than fetching the shelf for one label. */
+  ok("the way up is the programme, not the shelf",
+    doc.querySelector(".hub-eyebrow a")?.getAttribute("href")
+      === "/skills/courses/data-analytics",
+    doc.querySelector(".hub-eyebrow a")?.getAttribute("href"));
+  ok("and it is named rather than left as a slug",
+    text(doc, ".hub-eyebrow a") === "Data analytics", text(doc, ".hub-eyebrow a"));
+
+  ok("every module card links inside the programme",
+    all(doc, ".course-modules a").every((a) =>
+      a.getAttribute("href")?.startsWith(`${AT}/`)),
+    all(doc, ".course-modules a")[0]?.getAttribute("href"));
 }
 
 {
@@ -804,13 +909,13 @@ console.log("\n--- the course page deep-links ---");
     "foundations/week-one/welcome",
     "foundations/week-one/syllabus",
   ]));
-  const { document: doc } = await visit("/skills/courses/foundations", store);
+  const { document: doc } = await visit(AT, store);
 
   ok("with some done it says carry on",
     text(doc, ".resume .card-chip").startsWith("Carry on"));
   ok("and points at the FIRST INCOMPLETE lesson",
     doc.querySelector(".resume")?.getAttribute("href")
-      === "/skills/courses/foundations/week-one/insights",
+      === `${AT}/week-one/insights`,
     doc.querySelector(".resume")?.getAttribute("href"));
 }
 
@@ -825,13 +930,13 @@ console.log("\n--- the course page deep-links ---");
   ]));
   store.set("courses-last", JSON.stringify({
     id: "foundations/week-one/insights", title: "Insights",
-    url: "/skills/courses/foundations/week-one/insights", ts: 1,
+    url: `${AT}/week-one/insights`, ts: 1,
   }));
-  const { document: doc } = await visit("/skills/courses/foundations", store);
+  const { document: doc } = await visit(AT, store);
 
   ok("a skipped lesson is not lost",
     doc.querySelector(".resume")?.getAttribute("href")
-      === "/skills/courses/foundations/week-two/thinking",
+      === `${AT}/week-two/thinking`,
     doc.querySelector(".resume")?.getAttribute("href"));
 }
 
@@ -841,7 +946,7 @@ console.log("\n--- the course page deep-links ---");
     "foundations/week-one/welcome", "foundations/week-one/syllabus",
     "foundations/week-one/insights", "foundations/week-two/thinking",
   ]));
-  const { document: doc } = await visit("/skills/courses/foundations", store);
+  const { document: doc } = await visit(AT, store);
 
   ok("a finished course offers nothing to resume", !doc.querySelector(".resume"));
   ok("and says it is finished", Boolean(doc.querySelector(".course-finished")));
@@ -851,12 +956,12 @@ console.log("\n--- the course page deep-links ---");
 
 /* ============================================================ */
 
-console.log("\n--- the module summary and the catalogue ---");
+console.log("\n--- the module summary ---");
 
 {
   const store = new Map<string, string>();
   const { document: doc } = await visit(
-    "/skills/courses/foundations/week-one", store);
+    `${AT}/week-one`, store);
 
   ok("the summary lists the module's lessons",
     all(doc, ".course-summary-list > li > a").length === 3);
@@ -865,22 +970,88 @@ console.log("\n--- the module summary and the catalogue ---");
     all(doc, ".course-lesson[data-here]").length === 0);
   ok("it offers the next module",
     all(doc, ".prev-next a").some((a) =>
-      a.getAttribute("href") === "/skills/courses/foundations/week-two"));
+      a.getAttribute("href") === `${AT}/week-two`));
 }
+
+/* ============================================================ */
+
+console.log("\n--- the shelf of programmes ---");
 
 {
   const store = new Map<string, string>();
+  store.set("courses-read", JSON.stringify([
+    "foundations/week-one/welcome",
+    "foundations/week-one/syllabus",
+  ]));
   const { document: doc } = await visit("/skills/courses", store);
 
-  ok("the catalogue lists every course",
-    all(doc, ".course-card").length === SUMMARIES.length);
-  ok("a course card links to its course",
+  ok("the shelf lists every programme, not every course",
+    all(doc, ".course-card").length === CATALOGUE.length,
+    `saw ${all(doc, ".course-card").length}`);
+  ok("a programme card links to its programme",
     doc.querySelector(".course-card")?.getAttribute("href")
-      === "/skills/courses/foundations");
+      === "/skills/courses/data-analytics",
+    doc.querySelector(".course-card")?.getAttribute("href"));
+  ok("it says how many courses are in it",
+    all(doc, ".course-card .card-dek")[0]?.textContent?.includes("2 courses"),
+    all(doc, ".course-card .card-dek")[0]?.textContent);
+  ok("and both counts come from the list rather than a sentence",
+    text(doc, ".hub-lede").includes("2 programmes")
+      && text(doc, ".hub-lede").includes("3 courses"),
+    text(doc, ".hub-lede"));
+
+  /* A tick is filed under a course and a programme is counted by
+     the courses in it, so a bar that counted the whole of
+     `courses-read` would fill the second certificate in too. */
+  const bars = all(doc, ".course-card .meter");
+  ok("a programme's bar counts its own courses' ticks",
+    bars[0]?.getAttribute("aria-valuenow") === "50",
+    bars[0]?.getAttribute("aria-valuenow"));
+  ok("and another programme's is untouched by them",
+    bars[1]?.getAttribute("aria-valuenow") === "0",
+    bars[1]?.getAttribute("aria-valuenow"));
+}
+
+/* ============================================================ */
+
+console.log("\n--- one programme ---");
+
+{
+  const store = new Map<string, string>();
+  store.set("courses-read", JSON.stringify(["foundations/week-one/welcome"]));
+  const { document: doc, asked } = await visit(
+    "/skills/courses/data-analytics", store);
+
+  /* The shelf carries every programme's courses and their totals,
+     so this view asks for the list and nothing else. There is no
+     endpoint for one programme and it does not need one. */
+  ok("it is drawn from the shelf's own payload, with no course fetched",
+    asked.length > 0 && asked.every((p) => p === ""), asked.join(" | "));
+  ok("the programme is named", text(doc, "h1") === "Data analytics");
+  ok("it lists its courses",
+    all(doc, ".course-card").length === CATALOGUE[0].courses.length,
+    `saw ${all(doc, ".course-card").length}`);
+  ok("a course card links to the course inside this programme",
+    doc.querySelector(".course-card")?.getAttribute("href") === AT,
+    doc.querySelector(".course-card")?.getAttribute("href"));
   ok("a course with nothing imported says so",
-    all(doc, ".course-card .card-dek")[1]?.textContent?.includes("not imported yet"));
-  ok("the count comes from the list rather than a sentence",
-    text(doc, ".hub-lede").includes(String(SUMMARIES.length)));
+    all(doc, ".course-card .card-dek")[1]?.textContent?.includes("not imported yet"),
+    all(doc, ".course-card .card-dek")[1]?.textContent);
+  ok("its totals are the row's, not counted again from the cards",
+    text(doc, ".hub-lede").includes("5 modules")
+      && text(doc, ".hub-lede").includes("4 lessons"),
+    text(doc, ".hub-lede"));
+  ok("the bar is the whole certificate's",
+    doc.querySelector(".hub-progress .meter")?.getAttribute("aria-valuenow") === "25",
+    doc.querySelector(".hub-progress .meter")?.getAttribute("aria-valuenow"));
+  ok("and it offers the way back to the shelf",
+    doc.querySelector(".hub-eyebrow a")?.getAttribute("href") === "/skills/courses");
+}
+
+{
+  const { document: doc } = await visit("/skills/courses/nothing", new Map());
+  ok("a programme nobody has says so",
+    text(doc, ".course-note h1") === "No such programme");
 }
 
 /* ============================================================ */
@@ -909,7 +1080,7 @@ console.log("\n--- who may see any of this ---");
 
 {
   const { document: doc } = await visit(
-    "/skills/courses/foundations/nope", new Map());
+    `${AT}/nope`, new Map());
   ok("an unknown module says so", text(doc, ".course-note h1") === "No such module");
 }
 

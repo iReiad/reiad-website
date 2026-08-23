@@ -194,11 +194,17 @@ export const NEXT_ROUTES = [
      named. `/index.html` is not here: it 301s to this one, which
      is what the asset router did for it before. */
   /^\/$/,
-  /* The third-party course section, /skills/courses/. Its four
+  /* The third-party course section, /skills/courses/. Its five
      shapes are built a second time in `aab/src/courses.ts`, which
      reads `location.pathname` to decide which of them it is on,
      and `check-courses.ts` fails if the two disagree. Move both
      or neither.
+
+     THE PROGRAMME IS THE FIRST SEGMENT and is why there are five
+     rather than four: a certificate holds the courses, so the
+     shelf, a programme, a course, a module and a lesson are five
+     depths. The tick's id did not gain it, deliberately, and
+     `shared/courses.ts` says why beside `lessonId`.
 
      The `.html` forms are still here, after task #28 took that
      suffix off every address on the site, and they are the one
@@ -210,8 +216,8 @@ export const NEXT_ROUTES = [
      there is no canonical to split and no crawler to confuse.
 
      Longest first in each pair, because the lesson pattern would
-     otherwise read `<course>/<module>/index.html` as a lesson
-     called `index` and 404 it.
+     otherwise read `<programme>/<course>/<module>/index.html` as
+     a lesson called `index` and 404 it.
 
      Every one of these serves an EMPTY page: the catalogue is
      admin-only and arrives from /api/courses. See
@@ -220,11 +226,13 @@ export const NEXT_ROUTES = [
   /^\/skills\/courses\/[a-z0-9-]+$/i,
   /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+$/i,
   /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+$/i,
+  /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+$/i,
   /* and the addresses from before #28 */
   /^\/skills\/courses\/index\.html$/i,
   /^\/skills\/courses\/[a-z0-9-]+\/index\.html$/i,
   /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/index\.html$/i,
-  /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+\.html$/i,
+  /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+\/index\.html$/i,
+  /^\/skills\/courses\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+\.html$/i,
   /* The four schools, Stage 11.7, and the largest of these by a
      long way: 251 committed pages left `aab/` in the same commit
      that added them.

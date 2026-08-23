@@ -4,6 +4,16 @@ Two tab-separated files, exactly as the Drive API answers:
 `tree.tsv` is `id, parent, kind, name` for the 221 folders and
 `files.tsv` is `id, parent, name` for the 1,579 files.
 
+**The first row of `tree.tsv` has an empty parent, and that is the
+root folder's own.** Listing a folder's children never says what
+the folder itself is called, so the crawl used to throw that away.
+It matters now: the root is a programme, a programme has to be
+called something, and the only honest source for that name is the
+folder. `--dump` writes the row from a `files.get`; the row here
+was backfilled once, on 23 August 2026, from what the folder is
+called, and the next `--drive --dump` run replaces it like any
+other.
+
 `scripts/import-courses.ts --crawl scripts/fixtures/course-crawl`
 turns them into `shared/courses.data.json`, and CI runs the same
 command with `--check`, so the committed catalogue is always

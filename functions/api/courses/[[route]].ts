@@ -2,8 +2,10 @@
    /api/courses/*: the third-party course catalogue, to an admin
    and to nobody else.
 
-   GET /api/courses               the eight courses and their counts
-   GET /api/courses/<slug>        one course: its modules, its
+   GET /api/courses               the programmes, each with its
+                                  courses and their counts
+   GET /api/courses/<programme>/<course>
+                                  one course: its modules, its
                                   lessons, and the id behind each
    GET /api/courses/ticket/<id>   a short pass for that file
    GET /api/courses/file/<id>     that file's bytes, streamed
@@ -59,7 +61,7 @@ import { isAdmin } from "../../_lib/admins.ts";
 import { sanitiseHTML } from "../../_lib/sanitise.ts";
 import { canReachDrive, driveFile } from "../../_lib/drive.ts";
 import {
-  courseOf, forBrowser, listForBrowser, isCourseFile, lessonForFile,
+  courseOf, programmeOf, forBrowser, listForBrowser, isCourseFile, lessonForFile,
   COURSES, ID_FIELDS,
 } from "../../../shared/courses.ts";
 import { canTicket, checkTicket, mintTicket } from "../../_lib/ticket.ts";
@@ -244,7 +246,16 @@ export async function onRequest(context: CoursesContext): Promise<Response> {
     });
   }
 
-  const course = courseOf(route);
+  /* ONE COURSE, NAMED THE WAY ITS ADDRESS NAMES IT: the
+     programme and then the course. A course slug is unique across
+     the catalogue, so this could have taken one segment, but the
+     page asks with the address it is on and a route that quietly
+     accepts half of one is a route that stops matching the page
+     the day two programmes hold the same slug. */
+  const programme = programmeOf(parts[0] ?? "");
+  const course = programme && parts.length === 2
+    ? courseOf(programme, parts[1])
+    : null;
   if (!course) return fail("no-such-course", 404);
 
   return methods(request, {

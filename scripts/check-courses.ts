@@ -26,7 +26,7 @@
    3. THE TWO COPIES OF "WHERE DOES A LESSON LIVE" DISAGREEING.
       `shared/courses.ts` is the Worker's and `aab/src/courses.ts`
       is the browser's, and neither can import the other. So the
-      six address rules are written twice on purpose, and this is
+      seven address rules are written twice on purpose, and this is
       what stops the two from drifting: a sidebar that links to
       one address while the router serves another is a section of
       dead links that every individual page passes.
@@ -68,8 +68,8 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 import {
-  COURSES, CATALOGUE, forBrowser, laddered, catalogueCounts,
-  courseUrl, moduleUrl, lessonUrl, ID_FIELDS,
+  COURSES, PROGRAMMES, CATALOGUE, forBrowser, laddered, catalogueCounts,
+  programmeFor, programmeUrl, courseUrl, moduleUrl, lessonUrl, ID_FIELDS,
 } from "../shared/courses.ts";
 import { nextOwns } from "../worker.js";
 import { splitName } from "./lib/coursera.ts";
@@ -122,7 +122,48 @@ const checkId = (value: string, where: string): void => {
 
 checkId(CATALOGUE.root, "the catalogue root");
 
+/* A COURSE SLUG HAS TO BE UNIQUE ACROSS THE WHOLE CATALOGUE, not
+   only inside its programme, and the reason is in `lessonId()`:
+   the address gained a programme segment and the tick did not,
+   because `courses-read` holds those strings in real browsers.
+   Two programmes each holding a "Foundations" would therefore
+   share one set of ticks, and a reader would open a course they
+   had never started and find it half done.
+
+   This is the cheap end of that trade and it is where the price
+   is paid: renaming a Drive folder costs one crawl, and the
+   alternative was making every tick anybody already has
+   worthless. */
+const courseSlugs = new Map<string, string>();
+
+for (const programme of PROGRAMMES) {
+  /* THE ROOT PROGRAMME SHARES THE ROOT'S ID, and that is the
+     arrangement rather than a collision. Where the Drive root
+     holds courses directly, the root folder IS the programme, so
+     the two name one folder on purpose. Everything else sharing
+     an id is still a parsing bug and still caught. */
+  if (programme.drive !== CATALOGUE.root) {
+    checkId(programme.drive, `programme ${programme.slug}`);
+  }
+  checkSlug(programme.slug, "programme", programme.slug);
+  if (!programme.courses.length) {
+    say(`programme ${programme.slug} holds no courses`);
+  }
+}
+
 for (const course of COURSES) {
+  const where = programmeFor(course);
+  if (!where) {
+    say(`course ${course.slug} is in no programme, so it has no address`);
+  }
+  const clash = courseSlugs.get(course.slug);
+  if (clash) {
+    say(`two courses are called ${course.slug} (${clash} and ${where?.slug ?? "?"}), `
+      + "so they would share one set of ticks: rename one of the Drive folders");
+  } else {
+    courseSlugs.set(course.slug, where?.slug ?? "?");
+  }
+
   checkId(course.drive, `course ${course.slug}`);
   checkSlug(course.slug, "course", course.slug);
 
@@ -171,7 +212,7 @@ for (const course of COURSES) {
   /* The ladder is what the sidebar walks and what "continue"
      steps through, so a duplicate id in it is a reader who cannot
      get past a lesson. */
-  const ladder = laddered(course);
+  const ladder = laddered(programmeFor(course)?.slug ?? "", course);
   const unique = new Set(ladder.map((l) => l.id));
   if (unique.size !== ladder.length) {
     say(`${course.slug}: ${ladder.length - unique.size} duplicate lesson id(s) in the ladder`);
@@ -274,7 +315,10 @@ function template(src: string, name: string): string | null {
    `shared/courses.ts`: the browser reaches that endpoint through
    `api()`, which composes the path itself, so a second copy of it
    here would be a rule with one author and nothing to check. */
-const RULES = ["courseUrl", "moduleUrl", "lessonUrl", "lessonId", "fileUrl", "driveUrl"];
+const RULES = [
+  "programmeUrl", "courseUrl", "moduleUrl", "lessonUrl",
+  "lessonId", "fileUrl", "driveUrl",
+];
 
 for (const name of RULES) {
   const a = template(sharedSrc, name);
@@ -293,12 +337,15 @@ for (const name of RULES) {
 
 {
   const urls = ["/skills/courses", "/skills/courses/index.html"];
-  for (const course of COURSES) {
-    urls.push(courseUrl(course.slug));
-    for (const mod of course.modules) {
-      urls.push(moduleUrl(course.slug, mod.slug));
-      for (const lesson of mod.lessons) {
-        urls.push(lessonUrl(course.slug, mod.slug, lesson.slug));
+  for (const programme of PROGRAMMES) {
+    urls.push(programmeUrl(programme.slug));
+    for (const course of programme.courses) {
+      urls.push(courseUrl(programme.slug, course.slug));
+      for (const mod of course.modules) {
+        urls.push(moduleUrl(programme.slug, course.slug, mod.slug));
+        for (const lesson of mod.lessons) {
+          urls.push(lessonUrl(programme.slug, course.slug, mod.slug, lesson.slug));
+        }
       }
     }
   }
@@ -457,9 +504,63 @@ if (!sample) {
   }
 }
 
-/* ============================================================ */
+/* ============================================================
+   9. What CLAUDE.md says the catalogue holds
+
+   That row states five numbers about a generated file, which is
+   the shape of claim the rule at the top of that very file is
+   about: right on the day it was typed, beside a thing that
+   grows. Every one of them was right, and the row gained a fifth
+   when programmes arrived. That is not the argument for this
+   check, though: the argument is that the next Drive folder
+   somebody adds moves four of the five, and nobody adding a
+   folder will think to come here.
+
+   So the sentence is read and compared rather than trusted. The
+   row is the one in the courses table naming
+   `shared/courses.data.json`, and it is matched loosely on
+   purpose: what is checked is the FIGURES, not the prose around
+   them, so the sentence can be rewritten without coming here.
+
+   `ids` is every Drive id this file validates, which is the
+   lesson files PLUS the folders: the root, each programme, each
+   course and each module. That is worth saying because the
+   number looks like it should be `DRIVE_IDS.size` and is 53
+   larger.
+   ============================================================ */
 
 const counts = catalogueCounts();
+
+{
+  const rules = readFileSync(join(ROOT, "CLAUDE.md"), "utf8");
+  const row = rules.split("\n").find((line) =>
+    line.includes("shared/courses.data.json") && line.includes("Generated"));
+
+  if (!row) {
+    say("CLAUDE.md no longer has a row saying what the catalogue holds. "
+      + "Either it moved, in which case fix the finder here, or it went, "
+      + "in which case this check has nothing to hold and should go too.");
+  } else {
+    const said = (what: string): number | null => {
+      const found = new RegExp(`([\\d,]+) ${what}`).exec(row);
+      return found ? Number(found[1].replace(/,/g, "")) : null;
+    };
+    const claims: Array<[string, number | null, number]> = [
+      ["programme", said("programme"), counts.programmes],
+      ["course", said("course"), counts.courses],
+      ["module", said("module"), counts.modules],
+      ["lesson", said("lesson"), counts.lessons],
+      ["Drive id", said("Drive ids"), ids],
+    ];
+    for (const [what, claimed, real] of claims) {
+      if (claimed === null) {
+        say(`CLAUDE.md's catalogue row no longer says how many ${what}s there are`);
+      } else if (claimed !== real) {
+        say(`CLAUDE.md says ${claimed} ${what}(s) and the catalogue holds ${real}`);
+      }
+    }
+  }
+}
 
 if (problems.length) {
   console.error(`courses: ${problems.length} problem(s).\n`);

@@ -103,7 +103,7 @@ import {
   splitName, splitCourse, kindOf, titleOf, slugify, type Part, type PartKind,
 } from "./lib/coursera.ts";
 import type {
-  Catalogue, Course, CourseLesson, CourseModule,
+  Catalogue, Course, CourseLesson, CourseModule, Programme,
 } from "../shared/courses.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -261,6 +261,22 @@ interface Node {
 
 type Tree = Map<string, Node>;
 
+/** One folder's own name, which listing its children does not
+    give. Drive answers `files.get` with the fields asked for. */
+async function folderName(id: string): Promise<string> {
+  const url = new URL(`${API}/${id}`);
+  url.searchParams.set("fields", "name");
+  url.searchParams.set("supportsAllDrives", "true");
+  const res = await fetch(url, { headers: { authorization: `Bearer ${TOKEN}` } });
+  if (!res.ok) {
+    throw new Error(`Drive refused to name the root folder (${res.status}). `
+      + "The token may not reach it.");
+  }
+  const said = await res.json() as { name?: string };
+  if (!said.name) throw new Error("Drive named the root folder nothing.");
+  return said.name;
+}
+
 /** Breadth-first, a level at a time, so the progress line means
     something and so the pool above has a whole level to work
     through rather than one folder's children. */
@@ -273,6 +289,18 @@ async function walkDrive(root: string): Promise<Tree> {
   }
 
   const tree: Tree = new Map();
+
+  /* THE ROOT'S OWN ROW, with an empty parent so it is nobody's
+     child and `childrenOf` never returns it.
+
+     The tree used to start at the root's CHILDREN, so the name of
+     the folder everything sits in was the one fact the crawl
+     threw away. That was fine while the root held courses; it is
+     not fine now that the root is a programme, because a
+     programme has to be called something and the only honest
+     source for that is the folder. */
+  tree.set(root, { parent: "", name: await folderName(root), folder: true });
+
   let level = [root];
   let depth = 0;
 
@@ -316,9 +344,12 @@ function walkCrawl(dir: string): Tree {
     return readFileSync(path, "utf8").split("\n").filter(Boolean).map((l) => l.split("\t"));
   };
 
+  /* A row with an empty parent is the root's own, written by
+     `--dump` so a crawl carries the name of the folder it walked.
+     It is nobody's child, so nothing else has to know about it. */
   for (const [id, parent, , name] of rows("tree.tsv")) {
     if (SKIP_FOLDER.test(name)) continue;
-    tree.set(id, { parent, name, folder: true });
+    tree.set(id, { parent: parent ?? "", name, folder: true });
   }
   for (const [id, parent, name] of rows("files.tsv")) {
     tree.set(id, { parent, name, folder: false });
@@ -340,22 +371,32 @@ const childrenOf = (
     .map(([id, row]) => ({ id, name: row.name }))
     .sort((a, b) => a.name.localeCompare(b.name, "en"));
 
-function build(tree: Tree, root: string): { courses: Course[] } {
-  const courses: Course[] = [];
+/** Is this folder a course, or a programme holding courses?
 
-  for (const folder of childrenOf(tree, root, true)) {
-    const said = splitCourse(folder.name);
-    if (!said) continue;                       // not `N. Title`: not a course
+    STRUCTURAL, NOT A GUESS. A course's child folders are modules
+    and a module is `NN_something`; a programme's child folders are
+    courses and a course is `N. Something`. Both conventions are
+    Coursera's own and the importer already relies on each of them
+    one level down, so this asks the tree rather than the name.
 
-    const course: Course = {
-      slug: slugOf(said.title),
-      n: said.n,
-      title: said.title,
-      drive: folder.id,
-      modules: [],
-    };
+    A folder with neither shape under it is neither, and `build`
+    skips it the way it always skipped a folder that is not
+    `N. Title`. */
+const holdsModules = (tree: Tree, folder: string): boolean =>
+  childrenOf(tree, folder, true).some((kid) => /^\d{2}_/.test(kid.name));
 
-    for (const modFolder of childrenOf(tree, folder.id, true)) {
+function buildCourse(tree: Tree, folder: { id: string; name: string }): Course | null {
+  const said = splitCourse(folder.name);
+  if (!said) return null;                      // not `N. Title`: not a course
+  const course: Course = {
+    slug: slugOf(said.title),
+    n: said.n,
+    title: said.title,
+    drive: folder.id,
+    modules: [],
+  };
+
+  for (const modFolder of childrenOf(tree, folder.id, true)) {
       const parsed = /^(\d{2})_(.+)$/.exec(modFolder.name);
       if (!parsed) continue;
 
@@ -393,16 +434,80 @@ function build(tree: Tree, root: string): { courses: Course[] } {
          course with fewer weeks in it; a pending one is a rung
          that says "not imported". After a full `--drive` run
          nothing carries this. */
-      if (!mod.lessons.length) mod.pending = true;
-      course.modules.push(mod);
-    }
-
-    if (course.modules.length) courses.push(course);
+    if (!mod.lessons.length) mod.pending = true;
+    course.modules.push(mod);
   }
 
-  courses.sort((a, b) => a.n - b.n);
-  for (const course of courses) course.modules.sort((a, b) => a.n - b.n);
-  return { courses };
+  if (!course.modules.length) return null;
+  course.modules.sort((a, b) => a.n - b.n);
+  return course;
+}
+
+/** The catalogue: programmes, each holding its courses.
+
+    TWO LAYOUTS, AND BOTH ARE REAL. A Drive root may hold
+    programme folders, which is what this grows into, or it may
+    hold course folders directly, which is what it holds today.
+    `holdsModules()` tells them apart by what is under them.
+
+    Where the root holds courses, the root ITSELF is the
+    programme: that is not a special case invented to avoid work,
+    it is what the folder already was. Somebody's "Google Data
+    Analytics" folder full of eight numbered courses is a
+    certificate whether or not anybody has drawn a box around it,
+    and the eight were listed as unrelated courses only because
+    this importer started one level too deep.
+
+    A part-moved Drive works too: programme folders are walked as
+    programmes, any courses still loose at the root join the root
+    programme, and nothing is dropped while somebody is halfway
+    through tidying. */
+function build(tree: Tree, root: string, rootName: string): { programmes: Programme[] } {
+  const programmes: Programme[] = [];
+  const loose: Course[] = [];
+
+  for (const folder of childrenOf(tree, root, true)) {
+    if (holdsModules(tree, folder.id)) {
+      const course = buildCourse(tree, folder);
+      if (course) loose.push(course);
+      continue;
+    }
+
+    const said = splitCourse(folder.name);
+    const courses: Course[] = [];
+    for (const kid of childrenOf(tree, folder.id, true)) {
+      const course = buildCourse(tree, kid);
+      if (course) courses.push(course);
+    }
+    if (!courses.length) continue;
+
+    courses.sort((a, b) => a.n - b.n);
+    programmes.push({
+      slug: slugOf(said ? said.title : folder.name),
+      n: said ? said.n : programmes.length + 1,
+      title: said ? said.title : folder.name,
+      drive: folder.id,
+      courses,
+    });
+  }
+
+  if (loose.length) {
+    loose.sort((a, b) => a.n - b.n);
+    /* FIRST, and numbered from one, because the root programme is
+       the one that was already there: a new folder added beside
+       it should not renumber somebody's existing shelf. */
+    programmes.unshift({
+      slug: slugOf(rootName),
+      n: 1,
+      title: rootName,
+      drive: root,
+      courses: loose,
+    });
+    programmes.forEach((p, i) => { p.n = i + 1; });
+  }
+
+  programmes.sort((a, b) => a.n - b.n);
+  return { programmes };
 }
 
 /** Every lesson inside one group folder, in file order.
@@ -564,7 +669,19 @@ if (DUMP) {
     + `${rows.filter(([, r]) => !r.folder).length} file(s)`);
 }
 
-const built = build(tree, root);
+/* The root folder's own name, out of its own row in the tree.
+   Absent only in a crawl taken before `--dump` wrote that row, so
+   the message names the fix rather than inventing a name. */
+const rootName = tree.get(root)?.name;
+if (!rootName) {
+  console.error(
+    "\nThis crawl does not say what the root folder is called, so the\n"
+    + "programme holding these courses has no name.\n"
+    + "  Re-run with --drive <folderId> --dump <dir> to refresh it.\n");
+  process.exit(1);
+}
+
+const built = build(tree, root, rootName);
 
 const catalogue: Catalogue = {
   /* Where this came from, so a refresh needs no argument and a
@@ -580,13 +697,14 @@ const catalogue: Catalogue = {
 
 const json = `${JSON.stringify(catalogue, null, 2)}\n`;
 
-const counts = built.courses.reduce((acc, c) => ({
+const counts = built.programmes.flatMap((p) => p.courses).reduce((acc, c) => ({
+  programmes: acc.programmes,
   courses: acc.courses + 1,
   modules: acc.modules + c.modules.length,
   lessons: acc.lessons + c.modules.reduce((n, m) => n + m.lessons.length, 0),
   videos: acc.videos + c.modules.reduce(
     (n, m) => n + m.lessons.filter((l) => l.video).length, 0),
-}), { courses: 0, modules: 0, lessons: 0, videos: 0 });
+}), { programmes: built.programmes.length, courses: 0, modules: 0, lessons: 0, videos: 0 });
 
 if (CHECK) {
   const have = existsSync(OUT) ? readFileSync(OUT, "utf8") : "";

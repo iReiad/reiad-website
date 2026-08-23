@@ -39,18 +39,55 @@ export interface CourseSummary {
     videos: number;
     pending: number;
 }
-interface Where {
-    view: "catalogue" | "course" | "module" | "lesson";
-    course?: string;
-    module?: string;
-    lesson?: string;
+/** One row of `listForBrowser()`: a programme, its totals, and
+    the courses in it.
+
+    `courses` is the ARRAY, not a count: that function spreads
+    `programmeCounts()`, whose `courses` IS a count, and then
+    writes the array over it. How many courses there are is
+    `courses.length`. */
+export interface ProgrammeSummary {
+    slug: string;
+    n: number;
+    title: string;
+    courses: CourseSummary[];
+    modules: number;
+    lessons: number;
+    videos: number;
+    pending: number;
 }
+/** Which of the five, and everything the address named.
+
+    A union rather than one shape with four optional fields, so a
+    view cannot be drawn with a segment the address never
+    carried. */
+type Where = {
+    view: "catalogue";
+} | {
+    view: "programme";
+    programme: string;
+} | {
+    view: "course";
+    programme: string;
+    course: string;
+} | {
+    view: "module";
+    programme: string;
+    course: string;
+    module: string;
+} | {
+    view: "lesson";
+    programme: string;
+    course: string;
+    module: string;
+    lesson: string;
+};
 /** Read the address rather than being told by the page.
 
-    The four routes are shells with no data in them, so there is
+    The five routes are shells with no data in them, so there is
     nothing for a shell to tell this module that the URL does not
     already say, and a `data-` attribute per route would be a
-    fifth place that knows what a course address looks like. */
+    sixth place that knows what a course address looks like. */
 export declare function whereAmI(path: string): Where | null;
 export declare function start(root: HTMLElement): Promise<void>;
 export {};
