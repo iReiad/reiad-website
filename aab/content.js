@@ -516,6 +516,15 @@ export const COUNTS = {
     workbooks: STUFEN.filter((s) => s.workbook).length,
     /** Schools in the Skills hub, German included. */
     skills: SKILLS.length,
+    /** And the ones a reader can actually start today.
+  
+        NOT `skills`, which counts the one still marked `soon` too.
+        The front door says "six free courses" and a course nobody
+        can open is not one: the door claimed six with a numeral
+        typed into the page for as long as that page existed, and
+        it was right by accident, because `SKILLS` had seven rows
+        with one of them unwritten. */
+    courses: liveSkills().length,
     /* No count of pieces here, deliberately, since Stage 11.2.
   
        There were three: `articles`, `cooking` and `travel`, each
@@ -674,3 +683,35 @@ export function formatDate(iso, lang = "en") {
         day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
     }).format(d);
 }
+export const DOOR = {
+    eyebrow: "Rony Reiad · Dhaka / Brighton · CFA L1 candidate",
+    copy: {
+        open: {
+            headline: "টাকার ভাষা, আমাদের ভাষায়।",
+            mark: "আমাদের ভাষায়",
+            lede: "বাংলাদেশের বাজার, টাকা, ভাষা আর রান্না: যেটা শিখতে চান সেটা বাংলায়, "
+                + "একদম শুরু থেকে। আর যদি কাজের খোঁজে এসে থাকেন, উপরের সুইচটা ঘুরিয়ে দিন।",
+            lang: "bn",
+        },
+        learn: {
+            headline: "যা শিখতে চান, নিজের ভাষায়।",
+            mark: "নিজের ভাষায়",
+            lede: "ছয়টা কোর্স, সবগুলো ফ্রি। বিও অ্যাকাউন্ট খোলা থেকে জার্মান বাক্য "
+                + "বানানো পর্যন্ত, আর আপনি কতদূর পড়েছেন সেটা জমা থাকে আপনার অ্যাকাউন্টে।",
+            lang: "bn",
+        },
+        work: {
+            headline: "Financial models you can open, edit and trust.",
+            mark: "open, edit and trust",
+            lede: "Three-statement models, a DCF, a stress test and a frontier "
+                + "optimiser, each one a working spreadsheet you can open in the "
+                + "browser and pull apart. The numbers are pinned by tests.",
+            lang: "en",
+        },
+    },
+    facts: [
+        { count: "courses", label: "ফ্রি কোর্স", en: "free courses" },
+        { count: "calculators", label: "ক্যালকুলেটর", en: "calculators" },
+        { count: "caseStudies", label: "কেস স্টাডি", en: "case studies" },
+    ],
+};

@@ -797,6 +797,15 @@ export const COUNTS = {
   workbooks: STUFEN.filter((s) => s.workbook).length,
   /** Schools in the Skills hub, German included. */
   skills: SKILLS.length,
+  /** And the ones a reader can actually start today.
+
+      NOT `skills`, which counts the one still marked `soon` too.
+      The front door says "six free courses" and a course nobody
+      can open is not one: the door claimed six with a numeral
+      typed into the page for as long as that page existed, and
+      it was right by accident, because `SKILLS` had seven rows
+      with one of them unwritten. */
+  courses: liveSkills().length,
   /* No count of pieces here, deliberately, since Stage 11.2.
 
      There were three: `articles`, `cooking` and `travel`, each
@@ -982,3 +991,91 @@ export function formatDate(iso: string | null | undefined, lang = "en"): string 
     day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
   }).format(d);
 }
+
+/* ============================================================
+   The door: what the front page SAYS.
+
+   Three headlines, three ledes, an eyebrow and the strip of
+   counts under them, one per audience: `open` is a reader who
+   has not answered the switch, `learn` and `work` are the two
+   that have.
+
+   ---- why this is here rather than in the page ----
+
+   It was in `next/app/(home)/page.tsx`, written out as JSX, and
+   that made the site's own front door the one thing on this site
+   the Android app could not have. The DATA/CODE rule at the top
+   of CLAUDE.md decides it: a sentence is data, and data reaches
+   the app on its next fetch. Editing the headline now changes
+   both, which is the whole of what that rule buys.
+
+   `mark` is the half of the headline that carries the marker
+   stroke, and it is a SUBSTRING of `headline` rather than a
+   second string, so the two cannot drift into a sentence that
+   marks words it does not contain. `check-content.ts` asserts
+   that.
+
+   The counts are keys of `COUNTS` rather than numerals, for the
+   reason the whole "Numbers and lists" section of CLAUDE.md
+   exists: a door that states how many courses there are must
+   count them.
+   ============================================================ */
+
+export interface DoorFact {
+  /** A key of `COUNTS`. The number is looked up, never typed. */
+  count: keyof typeof COUNTS;
+  /** What it counts, in Bangla. */
+  label: string;
+  /** And in English, which is what `check-content.ts` keys on. */
+  en: string;
+}
+
+export interface DoorCopy {
+  headline: string;
+  /** The marked words, which must appear inside `headline`. */
+  mark: string;
+  lede: string;
+  /** The language both are written in, for the face. */
+  lang: "bn" | "en";
+}
+
+export interface Door {
+  /** Who is talking. One line, mono, in the accent. */
+  eyebrow: string;
+  /** Keyed by audience id, plus `open` for nobody in particular. */
+  copy: Record<string, DoorCopy>;
+  facts: DoorFact[];
+}
+
+export const DOOR: Door = {
+  eyebrow: "Rony Reiad · Dhaka / Brighton · CFA L1 candidate",
+  copy: {
+    open: {
+      headline: "টাকার ভাষা, আমাদের ভাষায়।",
+      mark: "আমাদের ভাষায়",
+      lede: "বাংলাদেশের বাজার, টাকা, ভাষা আর রান্না: যেটা শিখতে চান সেটা বাংলায়, "
+        + "একদম শুরু থেকে। আর যদি কাজের খোঁজে এসে থাকেন, উপরের সুইচটা ঘুরিয়ে দিন।",
+      lang: "bn",
+    },
+    learn: {
+      headline: "যা শিখতে চান, নিজের ভাষায়।",
+      mark: "নিজের ভাষায়",
+      lede: "ছয়টা কোর্স, সবগুলো ফ্রি। বিও অ্যাকাউন্ট খোলা থেকে জার্মান বাক্য "
+        + "বানানো পর্যন্ত, আর আপনি কতদূর পড়েছেন সেটা জমা থাকে আপনার অ্যাকাউন্টে।",
+      lang: "bn",
+    },
+    work: {
+      headline: "Financial models you can open, edit and trust.",
+      mark: "open, edit and trust",
+      lede: "Three-statement models, a DCF, a stress test and a frontier "
+        + "optimiser, each one a working spreadsheet you can open in the "
+        + "browser and pull apart. The numbers are pinned by tests.",
+      lang: "en",
+    },
+  },
+  facts: [
+    { count: "courses", label: "ফ্রি কোর্স", en: "free courses" },
+    { count: "calculators", label: "ক্যালকুলেটর", en: "calculators" },
+    { count: "caseStudies", label: "কেস স্টাডি", en: "case studies" },
+  ],
+};

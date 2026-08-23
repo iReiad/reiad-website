@@ -61,7 +61,7 @@
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PAGES, COUNTS } from "../shared/content.ts";
+import { PAGES, COUNTS, DOOR } from "../shared/content.ts";
 import { nextOwns } from "../worker.js";
 import { METRICS, PILLARS } from "../aab/tools/stock.model.js";
 
@@ -341,6 +341,33 @@ if (COUNTS.ratios !== METRICS.length) {
 if (COUNTS.pillars !== PILLARS.length) {
   fail("drifted   shared/content.ts",
     `COUNTS.pillars is ${COUNTS.pillars}, but stock.model.js has ${PILLARS.length} pillars.`);
+}
+
+/* ------------------------------------------------------------
+   6. The door marks words it actually says
+   ------------------------------------------------------------
+
+   `DOOR.copy[*].mark` is drawn by finding it inside `headline`
+   and painting a marker stroke under those characters. A `mark`
+   the headline does not contain is not an error anywhere: the
+   site renders the sentence with nothing marked, the app renders
+   it with nothing marked, and the flourish that carries the
+   promise is silently gone on a page that looks finished. */
+for (const [when, copy] of Object.entries(DOOR.copy)) {
+  if (!copy.headline.includes(copy.mark)) {
+    fail("drifted   shared/content.ts",
+      `DOOR.copy.${when} marks "${copy.mark}", which is not in its headline.`,
+      "The mark is a substring of the headline, so that the two cannot drift.");
+  }
+  if (!copy.mark.trim()) {
+    fail("drifted   shared/content.ts", `DOOR.copy.${when} has an empty mark.`);
+  }
+}
+for (const fact of DOOR.facts) {
+  if (typeof COUNTS[fact.count] !== "number") {
+    fail("drifted   shared/content.ts",
+      `DOOR.facts names COUNTS.${fact.count}, which is not a number.`);
+  }
 }
 
 /* ------------------------------------------------------------ */

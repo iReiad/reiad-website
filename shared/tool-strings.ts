@@ -892,11 +892,11 @@ export const STRINGS: Record<string, Phrase> = {
   "calc.compounding.paid": { en: "You put in", bn: "আপনি দিয়েছেন" },
   "calc.compounding.paid.note": { en: "your own money", bn: "নিজের টাকা" },
   "calc.compounding.growth": { en: "Growth", bn: "বৃদ্ধি" },
-  "calc.compounding.growth.note": { en: "{growthPct}% on top", bn: "তার ওপরে {growthPct}%" },
+  "calc.compounding.growth.note": { en: "{growthPct} on top", bn: "তার ওপরে {growthPct}" },
 
   "calc.compounding.grows": {
-    en: "At {rate}%, money roughly doubles every {doubles} years: that is the rule of 72, and it is an approximation rather than a promise. Of your {final}, {growth} is growth you did not have to earn, and the larger half of it arrives in the final third of the time.",
-    bn: "{rate}% হারে টাকা মোটামুটি প্রতি {doubles} বছরে দ্বিগুণ হয়। একে বলে ৭২-এর নিয়ম, এটা আন্দাজ, নিশ্চয়তা নয়। আপনার {final} টাকার মধ্যে {growth} হলো বৃদ্ধি, যেটা আপনাকে রোজগার করতে হয়নি, আর তার বড় অংশটা আসে একদম শেষ তিন ভাগের এক ভাগ সময়ে।",
+    en: "At {rate}, money roughly doubles every {doubles} years: that is the rule of 72, and it is an approximation rather than a promise. Of your {final}, {growth} is growth you did not have to earn, and the larger half of it arrives in the final third of the time.",
+    bn: "{rate} হারে টাকা মোটামুটি প্রতি {doubles} বছরে দ্বিগুণ হয়। একে বলে ৭২-এর নিয়ম, এটা আন্দাজ, নিশ্চয়তা নয়। আপনার {final} টাকার মধ্যে {growth} হলো বৃদ্ধি, যেটা আপনাকে রোজগার করতে হয়নি, আর তার বড় অংশটা আসে একদম শেষ তিন ভাগের এক ভাগ সময়ে।",
   },
   "calc.compounding.flat": {
     en: "Set a rate above zero to see compounding do anything.",
@@ -933,12 +933,12 @@ export const STRINGS: Record<string, Phrase> = {
     bn: "{years} বছরে দুটোর ফারাক মাত্র {gap}, এত কাছাকাছি যে হারের চেয়ে নিয়মগুলোই বেশি গুরুত্বপূর্ণ: সঞ্চয়পত্রে কেনার সর্বোচ্চ সীমা, আর টাকা কত তাড়াতাড়ি তুলতে পারবেন।",
   },
   "calc.sanchayapatra.sanchayapatra": {
-    en: "সঞ্চয়পত্র comes out ahead by {gap} over {years} years, about {gapPct}% of what you put in. Check the early-encashment penalty before you decide: that is usually where the difference goes.",
-    bn: "{years} বছরে সঞ্চয়পত্র {gap} টাকা এগিয়ে থাকে, যা আপনার রাখা টাকার প্রায় {gapPct}%। সিদ্ধান্তের আগে আগাম ভাঙানোর জরিমানাটা দেখে নিন: পার্থক্যটা সাধারণত ওখানেই চলে যায়।",
+    en: "সঞ্চয়পত্র comes out ahead by {gap} over {years} years, about {gapPct} of what you put in. Check the early-encashment penalty before you decide: that is usually where the difference goes.",
+    bn: "{years} বছরে সঞ্চয়পত্র {gap} টাকা এগিয়ে থাকে, যা আপনার রাখা টাকার প্রায় {gapPct}। সিদ্ধান্তের আগে আগাম ভাঙানোর জরিমানাটা দেখে নিন: পার্থক্যটা সাধারণত ওখানেই চলে যায়।",
   },
   "calc.sanchayapatra.fdr": {
-    en: "FDR comes out ahead by {gap} over {years} years, about {gapPct}% of what you put in. Check the early-encashment penalty before you decide: that is usually where the difference goes.",
-    bn: "{years} বছরে এফডিআর {gap} টাকা এগিয়ে থাকে, যা আপনার রাখা টাকার প্রায় {gapPct}%। সিদ্ধান্তের আগে আগাম ভাঙানোর জরিমানাটা দেখে নিন: পার্থক্যটা সাধারণত ওখানেই চলে যায়।",
+    en: "FDR comes out ahead by {gap} over {years} years, about {gapPct} of what you put in. Check the early-encashment penalty before you decide: that is usually where the difference goes.",
+    bn: "{years} বছরে এফডিআর {gap} টাকা এগিয়ে থাকে, যা আপনার রাখা টাকার প্রায় {gapPct}। সিদ্ধান্তের আগে আগাম ভাঙানোর জরিমানাটা দেখে নিন: পার্থক্যটা সাধারণত ওখানেই চলে যায়।",
   },
 
   /* ---------------- 3 · inflation ---------------- */
@@ -954,8 +954,8 @@ export const STRINGS: Record<string, Phrase> = {
   },
   "calc.inflation.lost": { en: "Purchasing power lost", bn: "যত ক্রয়ক্ষমতা গেল" },
   "calc.inflation.lost.note": {
-    en: "{lostPct}% of its power gone",
-    bn: "ক্ষমতার {lostPct}% শেষ",
+    en: "{lostPct} of its power gone",
+    bn: "ক্ষমতার {lostPct} শেষ",
   },
   "calc.inflation.real": { en: "Real return", bn: "প্রকৃত রিটার্ন" },
   "calc.inflation.real.note": {
@@ -968,12 +968,12 @@ export const STRINGS: Record<string, Phrase> = {
   },
 
   "calc.inflation.beats": {
-    en: "A {nominal}% return against {inflation}% inflation is really {real}%. Your {amount} becomes {grown} on paper, but only {grownReal} in what it can actually buy.",
-    bn: "{inflation}% মূল্যস্ফীতির বিপরীতে {nominal}% রিটার্ন আসলে {real}%। কাগজে আপনার {amount} হবে {grown}, কিন্তু যা সত্যিই কেনা যাবে তার হিসাবে {grownReal}।",
+    en: "A {nominal} return against {inflation} inflation is really {real}. Your {amount} becomes {grown} on paper, but only {grownReal} in what it can actually buy.",
+    bn: "{inflation} মূল্যস্ফীতির বিপরীতে {nominal} রিটার্ন আসলে {real}। কাগজে আপনার {amount} হবে {grown}, কিন্তু যা সত্যিই কেনা যাবে তার হিসাবে {grownReal}।",
   },
   "calc.inflation.loses": {
-    en: "A {nominal}% return does not keep up with {inflation}% inflation. On paper you would have {grown}; in real buying power that is {grownReal}, less than the {amount} you started with. This is the quiet way safe savings lose money.",
-    bn: "{inflation}% মূল্যস্ফীতির সঙ্গে {nominal}% রিটার্ন পাল্লা দিতে পারছে না। কাগজে আপনার থাকবে {grown}; সত্যিকারের ক্রয়ক্ষমতায় সেটা {grownReal}, যা শুরুর {amount} টাকার চেয়েও কম। নিরাপদ সঞ্চয় এভাবেই চুপচাপ টাকা হারায়।",
+    en: "A {nominal} return does not keep up with {inflation} inflation. On paper you would have {grown}; in real buying power that is {grownReal}, less than the {amount} you started with. This is the quiet way safe savings lose money.",
+    bn: "{inflation} মূল্যস্ফীতির সঙ্গে {nominal} রিটার্ন পাল্লা দিতে পারছে না। কাগজে আপনার থাকবে {grown}; সত্যিকারের ক্রয়ক্ষমতায় সেটা {grownReal}, যা শুরুর {amount} টাকার চেয়েও কম। নিরাপদ সঞ্চয় এভাবেই চুপচাপ টাকা হারায়।",
   },
 
   /* ---------------- 4 · loan EMI ---------------- */
@@ -985,8 +985,8 @@ export const STRINGS: Record<string, Phrase> = {
   "calc.emi.emi.note": { en: "every month", bn: "প্রতি মাসে" },
   "calc.emi.interest": { en: "Total interest", bn: "মোট সুদ" },
   "calc.emi.interest.note": {
-    en: "{interestPct}% of what you borrowed",
-    bn: "যা ধার নিয়েছেন তার {interestPct}%",
+    en: "{interestPct} of what you borrowed",
+    bn: "যা ধার নিয়েছেন তার {interestPct}",
   },
   "calc.emi.total": { en: "Total repaid", bn: "মোট ফেরত" },
   "calc.emi.total.note": { en: "over {years} years", bn: "{years} বছরে" },
@@ -1010,8 +1010,8 @@ export const STRINGS: Record<string, Phrase> = {
   "calc.position.shares.note": { en: "shares", bn: "শেয়ার" },
   "calc.position.cost": { en: "That costs", bn: "খরচ পড়বে" },
   "calc.position.cost.note": {
-    en: "{exposure}% of the portfolio",
-    bn: "মোট পুঁজির {exposure}%",
+    en: "{exposure} of the portfolio",
+    bn: "মোট পুঁজির {exposure}",
   },
   "calc.position.cost.note.over": {
     en: "more than your capital",
@@ -1028,12 +1028,12 @@ export const STRINGS: Record<string, Phrase> = {
     bn: "স্টপ-লস কেনার দামের নিচে থাকতে হবে; নইলে নির্দিষ্ট কোনো ক্ষতি নেই যার হিসাবে পজিশনের মাপ ঠিক হবে।",
   },
   "calc.position.tooBig": {
-    en: "A {risk}% risk rule with a stop that close would need {cost} of stock, more than your whole {capital}. That is the signal: either the stop is too tight, or this trade does not fit the account.",
-    bn: "স্টপ এত কাছে রেখে {risk}% ঝুঁকির নিয়ম মানতে গেলে {cost} টাকার শেয়ার লাগবে, যা আপনার পুরো {capital} টাকার চেয়েও বেশি। এটাই সংকেত: হয় স্টপটা বেশি কাছে, নয়তো এই ট্রেড এই অ্যাকাউন্টে খাটে না।",
+    en: "A {risk} risk rule with a stop that close would need {cost} of stock, more than your whole {capital}. That is the signal: either the stop is too tight, or this trade does not fit the account.",
+    bn: "স্টপ এত কাছে রেখে {risk} ঝুঁকির নিয়ম মানতে গেলে {cost} টাকার শেয়ার লাগবে, যা আপনার পুরো {capital} টাকার চেয়েও বেশি। এটাই সংকেত: হয় স্টপটা বেশি কাছে, নয়তো এই ট্রেড এই অ্যাকাউন্টে খাটে না।",
   },
   "calc.position.fits": {
-    en: "Risking {risk}% of {capital} means {shares} shares at {entry}, costing {cost}. If the stop at {stop} is hit you lose {riskTaka}: a planned number, not a surprise. Twenty losses in a row at this size would still leave you {after20}.",
-    bn: "{capital} টাকার {risk}% ঝুঁকি নেওয়া মানে {entry} দামে {shares}টা শেয়ার, খরচ {cost}। {stop}-এ স্টপ ছুঁলে ক্ষতি {riskTaka}: এটা আগে থেকে ঠিক করা সংখ্যা, হঠাৎ পাওয়া ধাক্কা নয়। পরপর বিশবার এই মাপে ক্ষতি হলেও আপনার হাতে থাকবে {after20}।",
+    en: "Risking {risk} of {capital} means {shares} shares at {entry}, costing {cost}. If the stop at {stop} is hit you lose {riskTaka}: a planned number, not a surprise. Twenty losses in a row at this size would still leave you {after20}.",
+    bn: "{capital} টাকার {risk} ঝুঁকি নেওয়া মানে {entry} দামে {shares}টা শেয়ার, খরচ {cost}। {stop}-এ স্টপ ছুঁলে ক্ষতি {riskTaka}: এটা আগে থেকে ঠিক করা সংখ্যা, হঠাৎ পাওয়া ধাক্কা নয়। পরপর বিশবার এই মাপে ক্ষতি হলেও আপনার হাতে থাকবে {after20}।",
   },
 };
 

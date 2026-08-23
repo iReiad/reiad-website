@@ -198,6 +198,40 @@ if (sanchayapatra) {
   }
 }
 
+/* ------------------------------------------------------------
+   A unit said twice
+   ------------------------------------------------------------
+
+   `show()` prints a `percent` value WITH its sign, because a
+   headline figure standing alone has to carry one. A sentence
+   that then writes `%` after the placeholder gets it twice, and
+   `২৩৩.১%%` is what a reader sees.
+
+   Twenty-eight of these shipped, in both languages, across five
+   calculators, and nothing could see them: every placeholder was
+   present, every sentence had its numbers, and the only way to
+   find one was to read the rendered page. It was found by drawing
+   the Android app's calculator screen and looking at it.
+
+   The same trap is one table away for money: if a `taka` kind
+   ever prints its own symbol, `৳{amount}` becomes `৳৳...`. So
+   this asks the question of every kind that prints a unit rather
+   than of percent alone. */
+const UNIT_OF: Partial<Record<string, string>> = { percent: "%" };
+for (const [key, phrase] of Object.entries(STRINGS)) {
+  for (const lang of LANGS) {
+    const text = (phrase as Record<string, string>)[lang] ?? "";
+    for (const found of text.matchAll(/\{(\w+)\}(.)/g)) {
+      const unit = UNIT_OF[FORMATS[found[1]] ?? ""];
+      if (unit && found[2] === unit) {
+        fail(`${key} (${lang}) writes '${unit}' after {${found[1]}}, `
+          + `which show() already prints: the reader sees it twice`);
+      }
+    }
+    checked += 1;
+  }
+}
+
 console.log(failures
   ? `\n${failures} problem(s) between the calculators and their words.\n`
   : `calculators: ${CALCULATORS.length} tools, ${checked} checks; every sentence has its\n`

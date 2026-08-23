@@ -31,6 +31,15 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v192: /content.js and /tools/stock.i18n.js. The front door's
+        own words move into `shared/content.ts` as `DOOR`, so the
+        Android app draws the same headline the site does and an
+        edit reaches a phone with no release. And twenty-eight
+        sentences across five calculators stop saying their
+        percent sign twice: `show()` already prints one, the
+        Bangla and English strings wrote a second, and every
+        reader saw `২৩৩.১%%`.
+
    v191: /tools/stock.i18n.js. Twenty phrases of chrome for the
         five calculators: a short name each for a chip, a label
         per chart line, the comparison's four rows and a
@@ -1746,7 +1755,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v191";
+const VERSION = "v192";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
