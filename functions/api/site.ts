@@ -171,11 +171,18 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
            not have to know that indirection to print one. The
            same arrangement `door` uses one field up. */
         heads: Object.fromEntries(
-          Object.entries(HEADS).map(([key, head]) => [key, {
+          Object.entries(HEADS).map(([key, { count, ...head }]) => [key, {
             ...head,
-            lede: head.count
-              ? head.lede.replace("{n}", bnNum(COUNTS[head.count]))
-              : head.lede,
+            /* Resolved, and the KEY is dropped rather than sent
+               beside it. `DOOR.facts` sends both because there
+               the number is its own field and a client can
+               redraw it; here it is baked into a sentence, so a
+               client could only use the key by re-implementing
+               the slot. A field carried and never drawn is a
+               field somebody later mistakes for a feature, which
+               is what the app's own `ManifestSurfaceTest` fails
+               on and is how this was noticed. */
+            lede: count ? head.lede.replace("{n}", bnNum(COUNTS[count])) : head.lede,
           }]),
         ),
       }, {
