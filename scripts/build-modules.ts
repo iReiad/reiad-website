@@ -148,11 +148,12 @@ export const MODULES = [
   "editor",
 ];
 
-/** The five served modules whose source is in `shared/` rather
-    than in `aab/src/`: the site's manifest and the four schools'
-    ladders. The Worker, the checks under `scripts/`, the Next.js
-    routes and the browser read the same five, and only the last of
-    them needs a file at a URL.
+/** The eight served modules whose source is in `shared/` rather
+    than in `aab/src/`: the site's manifest, the four schools'
+    ladders, the stock check's words, the calculators' arithmetic
+    and the broker's derivations. The Worker, the checks under `scripts/`, the
+    Next.js routes and the browser read the same seven, and only
+    the last of them needs a file at a URL.
 
     They are compiled on their own, by
     `scripts/tsconfig.shared.json`, and that is the compile whose
@@ -167,7 +168,7 @@ export const MODULES = [
     source, which is what `app/tsconfig.json`,
     `aab/src/tsconfig.json` and `next/tsconfig.json` do: one
     description, and it is the module. */
-const SHARED = {
+export const SHARED = {
   config: "scripts/tsconfig.shared.json",
   /** Where that config's `rootDir` puts each output, against the
       path in `aab/` it belongs at. Those four addresses are in
@@ -179,6 +180,17 @@ const SHARED = {
     "curricula/deutsch.js": "aab/deutsch/curriculum.js",
     "curricula/quran.js": "aab/quran/curriculum.js",
     "curricula/english.js": "aab/english/curriculum.js",
+    /* The stock check's words, which keep the address they have
+       always had: it is in `sw.js`'s precache list and in the one
+       import at the top of `aab/tools/stock.js`, so the file moved
+       and the URL did not. */
+    "tool-strings.js": "aab/tools/stock.i18n.js",
+    /* And the five calculators' arithmetic, which the browser,
+       the fixture generator and the Kotlin port all read. */
+    "calculators.js": "aab/calculators.js",
+    /* And what a broker's JSON means, which the live portfolio
+       page and the app both read. */
+    "portfolio.js": "aab/portfolio.js",
   } as Record<string, string>,
 };
 

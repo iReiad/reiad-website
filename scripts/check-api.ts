@@ -170,6 +170,9 @@ const SERVER_ONLY = {
   backup: "a cron writes it to R2, and scripts/restore.ts reads the file",
   site: "the Android app reads the site's own furniture from it. No browser "
     + "does: a browser imports the same tables as an ES module at /content.js",
+  tools: "the Android app reads the calculators' words from it. No browser does: "
+    + "the stock check imports the same table as an ES module at "
+    + "/tools/stock.i18n.js, which shared/tool-strings.ts is compiled to",
 };
 
 for (const mount of mounts) {

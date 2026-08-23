@@ -607,8 +607,15 @@ const UNUSED: Record<string, string> = {
      it, and that needs an `endPhase()` in `diet-api.ts`. */
   "diet_phases.ended_on": "section 10, a phase that ends with nothing after it",
 
-  /* Two tables with no caller at all. */
-  "diet_foods.*": "section 13, the reader's own items, pots, recipes and meals",
+  /* A reader's own food. The table is built now, so the four
+     columns nothing fills yet are named one at a time rather
+     than by a wildcard that would hide the next one. */
+  "diet_foods.price": "section 17, what food costs",
+  "diet_foods.currency": "section 17, the price needs a currency to mean anything",
+  "diet_foods.priced_on": "section 17, so a price from last year can be seen to be one",
+  "diet_foods.fetched_on": "section 12, so a stale figure can be found and refreshed",
+
+  /* One table with no caller at all. */
   "diet_labs.*": "section 20, the numbers a clinic gives you",
 };
 

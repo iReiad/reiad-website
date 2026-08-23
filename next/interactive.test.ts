@@ -222,7 +222,16 @@ type Remembers = [audience: string | null, track: string | null];
 
 /** One page, loaded and left alone for a moment: a module that
     draws a chart is allowed to take longer than the load event. */
-const open = async (path: string, remembers?: Remembers): Promise<Loaded> => {
+/** What a reader had already chosen before this page loaded.
+    Separate from `remembers` because these are the calculators'
+    own keys rather than the shell's. */
+interface Prefs { toolLang?: string }
+
+const open = async (
+  path: string,
+  remembers?: Remembers,
+  prefs?: Prefs,
+): Promise<Loaded> => {
   const page = await browser.newPage();
   const errors: string[] = [];
   page.on("pageerror", (e: Error) => { errors.push(e.message); });
@@ -235,6 +244,14 @@ const open = async (path: string, remembers?: Remembers): Promise<Loaded> => {
       if (a) localStorage.setItem("audience", a);
       if (k) localStorage.setItem("track", k);
     }, remembers);
+  }
+  /* The calculators read `tool-lang` at module scope, so it has
+     to be in storage BEFORE the page loads rather than set and
+     reloaded: that is what an init script is for. */
+  if (prefs?.toolLang) {
+    await page.addInitScript((v: string) => {
+      localStorage.setItem("tool-lang", v);
+    }, prefs.toolLang);
   }
   await page.goto(`http://localhost:${PORT}${path}`, { waitUntil: "load" });
   await page.waitForTimeout(1500);
@@ -262,6 +279,173 @@ for (const [url, , selector, what, placeholder] of CASES) {
      that logs one has thrown away the markup the server sent. */
   const hydration = errors.filter((e) => /Minified React error #(418|423|425)/.test(e));
   ok(`${url} hydrates cleanly`, hydration.length === 0, hydration[0]);
+
+  await page.close();
+}
+
+/* ============================================================
+   THE FIVE CALCULATORS, all of them
+
+   One case above drove `/tools` and asked whether the compounding
+   calculator's first figure had stopped saying "–". That was the
+   whole of it, and it was enough while each calculator held its
+   own arithmetic: a bug reached one of them.
+
+   They share a driver now. `shared/calculators.ts` produces
+   numbers by name and the key of a sentence, and one loop in
+   `tools.js` fills all five from that, so a fault in the loop hits
+   every calculator at once and the old assertion would still pass
+   on the one it happened to watch.
+
+   And the split invents one new way to be wrong that no check
+   reading HTML can see: a `{placeholder}` with no number behind
+   it, or a phrase key that does not exist, both of which RENDER.
+   What a reader gets is the characters `{gap}` or the word
+   `calc.emi.shorter` in the middle of a sentence, on a page that
+   is otherwise perfect. So the verdict is read as text and asked
+   whether it is a sentence.
+   ============================================================ */
+{
+  const { page } = await open("/tools");
+
+  /* The figure names are the MODEL's, and the markup's
+     `data-stat` has to match them or a figure is written into a
+     box that is not there. `position`'s said `risk` while the
+     model produced `riskTaka`, and `risk` is also the name of an
+     input, so the two could not be reconciled by guessing.
+
+     `sanchayapatra` names none, and that is not an omission: this
+     site shows the comparison as two boxes with the working in
+     them, gross, tax, kept and total, which is more than three
+     figures can hold. It is asserted below on its own terms. */
+  const TOOLS: Array<[id: string, figures: string[], chart: boolean]> = [
+    ["compounding", ["final", "paid", "growth"], true],
+    ["sanchayapatra", [], true],
+    ["inflation", ["worth", "lost", "real"], true],
+    ["emi", ["emi", "interest", "total"], true],
+    /* Position sizing has never had one, and should not: its
+       answer is a share count, and a chart of one number is
+       decoration. */
+    ["position", ["shares", "cost", "riskTaka"], false],
+  ];
+
+  for (const [id, figures, chart] of TOOLS) {
+    /* Every calculator is a tab and only one is shown, so each
+       has to be opened before it can be read. */
+    await page.evaluate((tool: string) => { location.hash = tool; }, id);
+    await page.waitForTimeout(120);
+
+    const seen = await page.evaluate((tool: string) => {
+      const root = document.getElementById(tool);
+      if (!root) return null;
+      const text = (sel: string) => (root.querySelector(sel)?.textContent ?? "").trim();
+      return {
+        stats: [...root.querySelectorAll("[data-stat]")].map((el) => ({
+          key: el.getAttribute("data-stat") ?? "",
+          value: (el.querySelector(".v")?.textContent ?? "").trim(),
+          note: (el.querySelector(".n")?.textContent ?? "").trim(),
+        })),
+        verdict: text(".verdict"),
+        chart: root.querySelector(".chart-box svg") !== null,
+        /* The comparison's two boxes, for the one calculator
+           that has them: four cells each, and a `winner` on
+           whichever came out ahead. */
+        sides: [...root.querySelectorAll("[data-side]")].map((box) => ({
+          filled: [...box.querySelectorAll("[data-k]")]
+            .map((cell) => (cell.textContent ?? "").trim())
+            .filter((v) => v !== "" && v !== "–").length,
+          cells: box.querySelectorAll("[data-k]").length,
+          winner: box.classList.contains("winner"),
+        })),
+      };
+    }, id);
+
+    ok(`${id} is on the page`, seen !== null);
+    if (!seen) continue;
+
+    for (const key of figures) {
+      const stat = seen.stats.find((s) => s.key === key);
+      ok(`${id}.${key} was filled in`,
+        stat !== undefined && stat.value !== "" && stat.value !== "–",
+        `reads "${stat?.value ?? "no such figure"}"`);
+      /* The note under a figure is chosen by the model, so an
+         unfilled one is a branch that named a phrase nobody
+         wrote. Empty is legal for two of them and says so by
+         being empty rather than by holding a key. */
+      ok(`${id}.${key}'s note is words rather than a key`,
+        stat !== undefined && !/^calc\./.test(stat.note) && !/[{}]/.test(stat.note),
+        `reads "${stat?.note}"`);
+    }
+
+    ok(`${id} says what it found`, seen.verdict.length > 20, `"${seen.verdict}"`);
+    ok(`${id}'s verdict has no unfilled holes in it`,
+      !/[{}]/.test(seen.verdict),
+      `"${seen.verdict}"`);
+    ok(`${id}'s verdict is a sentence rather than a phrase key`,
+      !/^calc\./.test(seen.verdict),
+      `"${seen.verdict}"`);
+    ok(chart ? `${id} drew its chart` : `${id} draws no chart, as it should not`,
+      seen.chart === chart);
+
+    if (id === "sanchayapatra") {
+      ok("the comparison has both boxes", seen.sides.length === 2,
+        `${seen.sides.length} boxes`);
+      for (const side of seen.sides) {
+        ok("and every cell in it was filled",
+          side.cells > 0 && side.filled === side.cells,
+          `${side.filled} of ${side.cells}`);
+      }
+      /* Exactly one, always. Two winners is a comparison that has
+         stopped comparing, and none is the class never being
+         applied at all: both render perfectly. */
+      ok("exactly one of the two is marked the winner",
+        seen.sides.filter((x) => x.winner).length === 1);
+    }
+  }
+
+  await page.close();
+}
+
+/* ============================================================
+   And in Bangla, which they were not until they moved
+
+   These five had English verdicts and English labels, not by
+   anybody's decision but because the sentences were template
+   literals inside the module that drew them: translating one
+   meant editing code. They are phrases now, in both languages,
+   and `tool-lang` decides, which is the same key the stock check
+   next door has written since long before there were accounts.
+
+   Asserted by SCRIPT, because the Bengali block is the only
+   evidence that survives: a page that "looks translated" and a
+   page whose labels are still English render identically to
+   anything reading HTML. */
+{
+  const bengali = /[\u0980-\u09FF]/;
+  const { page } = await open("/tools", undefined, { toolLang: "bn" });
+  await page.evaluate(() => { location.hash = "emi"; });
+  await page.waitForTimeout(200);
+
+  const seen = await page.evaluate(() => {
+    const root = document.getElementById("emi");
+    return {
+      labels: [...document.querySelectorAll("[data-i18n]")]
+        .map((el) => (el.textContent ?? "").trim()),
+      verdict: (root?.querySelector(".verdict")?.textContent ?? "").trim(),
+      note: (root?.querySelector('[data-stat="emi"] .n')?.textContent ?? "").trim(),
+    };
+  });
+
+  ok("every label on the tools page is translatable", seen.labels.length >= 30,
+    `${seen.labels.length} carry data-i18n`);
+  ok("and a reader who chose Bangla gets Bangla labels",
+    seen.labels.filter((l) => bengali.test(l)).length >= 30,
+    `${seen.labels.filter((l) => bengali.test(l)).length} of ${seen.labels.length} are Bangla`);
+  ok("the verdict is in Bangla too", bengali.test(seen.verdict), `"${seen.verdict}"`);
+  ok("and so is the line under a figure", bengali.test(seen.note), `"${seen.note}"`);
+  /* The numbers inside it still arrived. A translated sentence
+     with a hole in it is the one thing this move could break. */
+  ok("with its numbers still in it", !/[{}]/.test(seen.verdict), `"${seen.verdict}"`);
 
   await page.close();
 }

@@ -2,11 +2,16 @@
    /tools/stock
 
    Ported out of `aab/tools/stock.html` with archive/TRANSITION.md Stage
-   11.4, words unchanged. The forty-four ratios, the six pillars
-   and every word of the Bangla are `/tools/stock.model.js` and
-   `/tools/stock.i18n.js`, unchanged and still in `aab/`: see the
-   note on the tools index for why the calculators are not
+   11.4, words unchanged. The forty-four ratios and the six pillars
+   are `/tools/stock.model.js`, unchanged and still in `aab/`: see
+   the note on the tools index for why the calculators are not
    components yet.
+
+   Every word of the Bangla is still fetched from
+   `/tools/stock.i18n.js` at the same address, and that file is
+   GENERATED now: its source is `shared/tool-strings.ts`, because
+   the Android app reads the same table through `/api/tools`.
+   Edit the source, never the output.
 
    The skip link goes to the verdict rather than to the top of the
    page, which is this page's own and not an oversight.

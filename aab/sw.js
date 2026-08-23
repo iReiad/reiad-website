@@ -31,6 +31,36 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v192: /content.js and /tools/stock.i18n.js. The front door's
+        own words move into `shared/content.ts` as `DOOR`, so the
+        Android app draws the same headline the site does and an
+        edit reaches a phone with no release. And twenty-eight
+        sentences across five calculators stop saying their
+        percent sign twice: `show()` already prints one, the
+        Bangla and English strings wrote a second, and every
+        reader saw `২৩৩.১%%`.
+
+   v191: /tools/stock.i18n.js. Twenty phrases of chrome for the
+        five calculators: a short name each for a chip, a label
+        per chart line, the comparison's four rows and a
+        disclaimer. The Android app renders all of them and the
+        site's own tab labels are next.
+
+   v190: /tools/stock.i18n.js. The other five calculators' words
+        moved into it, 68 phrases, and they are in Bangla for the
+        first time: their verdicts were template literals inside
+        the module that drew them, so translating one meant
+        editing code. Their arithmetic is `shared/calculators.ts`
+        now and /tools/tools.js is the drawing only, which is what
+        lets the Android app share the model rather than copy it.
+
+   v189: /tools/stock.i18n.js. The stock check's 366 phrases moved
+        to `shared/tool-strings.ts` and that file is now the
+        compiled output of it, so the bytes changed although not
+        one string did: tsc reformats the object. The move is
+        what lets `/api/tools` serve the same table to the
+        Android app, so an edited Bangla sentence reaches a phone
+        with no app release.
    v188: /fallback.css. Every page of the diet tool has its own
         colour out of the seven the rail already uses, the strip
         carries a dot in each, an empty readout draws the figures
@@ -1725,7 +1755,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v188";
+const VERSION = "v192";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

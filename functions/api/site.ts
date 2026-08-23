@@ -58,9 +58,10 @@
 
 import { methods, ok, type RouteContext } from "../_lib/http.ts";
 import {
-  COUNTS, PAGES, SECTIONS, SITE, SKILLS, TERM_GROUPS, TOOLS,
+  COUNTS, DOOR, PAGES, SECTIONS, SITE, SKILLS, TERM_GROUPS, TOOLS,
 } from "../../shared/content.ts";
 import { ACCENTS, AUDIENCES, LADDER_SCHOOLS, NAV, ORDER } from "../../shared/nav.ts";
+import { bnNum } from "../../shared/schools.ts";
 
 /** Half an hour, the same as the market board next door. The
     furniture changes when somebody deploys, so a stale answer is
@@ -113,6 +114,16 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
         termGroups: TERM_GROUPS.map((group) => ({ ...group })),
         pages: PAGES.filter((page) => !page.private).map((page) => ({ ...page })),
         counts: { ...COUNTS },
+        /* The front door's own words, with the counts already
+           resolved: `DOOR.facts` names a key of `COUNTS` so that
+           nobody can type a number into a sentence, and a client
+           should not have to know that indirection to draw a
+           strip of three figures. The KEY is sent as well, so an
+           app that wants to redraw a count on its own can. */
+        door: {
+          ...DOOR,
+          facts: DOOR.facts.map((fact) => ({ ...fact, n: bnNum(COUNTS[fact.count]) })),
+        },
       }, {
         "Cache-Control": `public, max-age=${CACHE_SECONDS}`,
       }),

@@ -1,4 +1,3 @@
-"use strict";
 /* ============================================================
    tools.ts: the calculators.
 
@@ -23,6 +22,8 @@
    legend is `next/components/ui/legend.tsx` and it reads the same
    two tokens, so the two halves cannot drift.
    ============================================================ */
+import { CALCULATORS, FORMATS } from "/calculators.js";
+import { t } from "/tools/stock.i18n.js";
 /* `ParentNode` rather than `Document`, because every caller here
    passes a calculator's own <section> and the two do not share an
    interface any narrower. */
@@ -187,212 +188,139 @@ const setStat = (root, key, value, note) => {
     through and leaving the figures above it stale. */
 const slot = (root, sel) => $(sel, root) ?? document.createElement("div");
 /* ============================================================
-   1 · COMPOUNDING, what a monthly habit becomes
+   THE FIVE, over one model
+
+   Every calculator here used to hold its own arithmetic AND its
+   own sentences, inline, in the function that drew them. The
+   arithmetic is `shared/calculators.ts` now and the sentences are
+   `shared/tool-strings.ts`, for the reason `shared/` exists at
+   all: the Android app has a Kotlin port of the first, and a
+   second copy of the second would have parted company with this
+   one at the first edit.
+
+   So what is left here is the DRAWING, which is what this file
+   was always for. A calculator hands back numbers by name and the
+   key of a sentence; this fills the figures, the notes, the chart
+   and the verdict from them.
+
+   **And the words follow `tool-lang`.** These five were English
+   only, not by decision but because their sentences were template
+   literals: translating one meant editing code. They are in the
+   table now, in both languages, like the stock check next door.
    ============================================================ */
-bindTool("compounding", (v, root) => {
-    const start = Number(v.start) || 0;
-    const monthly = Number(v.monthly) || 0;
-    const rate = Number(v.rate) / 100;
-    const years = Number(v.years) || 1;
-    const r = rate / 12;
-    const contributed = [];
-    const totals = [];
-    let balance = start;
-    let paidIn = start;
-    for (let m = 0; m <= years * 12; m++) {
-        if (m > 0) {
-            balance = balance * (1 + r) + monthly;
-            paidIn += monthly;
-        }
-        if (m % 12 === 0) {
-            totals.push(balance);
-            contributed.push(paidIn);
-        }
+/** A named number, printed the way `FORMATS` says. One place, so
+    `{growth}` inside a Bangla sentence and the figure above it
+    cannot disagree about whether it is money. */
+function show(name, value) {
+    switch (FORMATS[name]) {
+        case "money": return money(value);
+        case "percent": return `${pct.format(value)}%`;
+        case "price": return money(value);
+        case "years": return num.format(value);
+        default: return Number.isFinite(value) ? dec.format(value) : "\u2013";
     }
-    const final = balance;
-    const growth = final - paidIn;
-    setStat(root, "final", money(final), `after ${years} year${years === 1 ? "" : "s"}`);
-    setStat(root, "paid", money(paidIn), "your own money");
-    setStat(root, "growth", money(growth), paidIn > 0 ? `${pct.format((growth / paidIn) * 100)}% on top` : "");
-    slot(root, ".chart-box").innerHTML = areaChart([
-        { values: totals, color: "var(--series-1)", fill: 0.18 },
-        { values: contributed, color: "var(--series-2)", fill: 0.12 },
-    ], { labels: ["now", `year ${Math.round(years / 2)}`, `year ${years}`] });
-    const doubles = rate > 0 ? 72 / (rate * 100) : Infinity;
-    slot(root, ".verdict").innerHTML = Number.isFinite(doubles)
-        ? `At <b>${pct.format(rate * 100)}%</b>, money roughly doubles every
-       <b>${pct.format(doubles)} years</b> (the rule of 72). Of your
-       ${money(final)}, <b>${money(growth)}</b> is growth you didn't have to earn,
-       and the longer half of that arrives in the final third of the time.`
-        : "Set a rate above zero to see compounding do anything.";
-});
-/* ============================================================
-   2 · SANCHAYAPATRA vs FDR
-   ============================================================ */
-bindTool("sanchayapatra", (v, root) => {
-    const amount = Number(v.amount) || 0;
-    const years = Number(v.years) || 1;
-    const sRate = Number(v.srate) / 100;
-    const fRate = Number(v.frate) / 100;
-    const sTax = Number(v.stax) / 100;
-    const fTax = Number(v.ftax) / 100;
-    // Sanchayapatra: profit paid out (typically quarterly), taxed at source.
-    const sGross = amount * sRate * years;
-    const sNet = sGross * (1 - sTax);
-    // FDR: interest compounds, and tax is deducted from the interest.
-    const fGross = amount * ((1 + fRate) ** years - 1);
-    const fNet = fGross * (1 - fTax);
-    const sTotal = amount + sNet;
-    const fTotal = amount + fNet;
-    const gap = Math.abs(sTotal - fTotal);
-    const sWins = sTotal >= fTotal;
+}
+/** A sentence with its numbers in it. */
+const say = (key, values) => t(key, lang, Object.fromEntries(Object.entries(values).map(([k, v]) => [k, show(k, v)])));
+/** Which language the calculators are in.
+
+    `tool-lang`, which the stock check has written since long
+    before there were accounts and which `reader-prefs` carries
+    between a reader's devices. One choice, one key: choosing
+    Bangla on the stock check chooses it here too. */
+let lang = "en";
+try {
+    const saved = localStorage.getItem("tool-lang");
+    if (saved === "bn" || saved === "en")
+        lang = saved;
+}
+catch { /* private mode */ }
+/** Fill every label the markup marked as translatable.
+
+    The route ships English in the tag, so a reader with no
+    JavaScript sees a working page rather than empty labels, and
+    this replaces it where the reader has asked for Bangla. */
+function applyLang(root = document) {
+    for (const node of $$("[data-i18n]", root)) {
+        const key = node.dataset.i18n;
+        if (key)
+            node.textContent = t(key, lang);
+    }
+}
+/** The three x labels under a chart. Not phrases: two of the
+    three are a number with one word in front of them, and a key
+    per year would be four hundred keys. */
+const chartLabels = (years) => [
+    t("calc.chart.now", lang),
+    t("calc.chart.year", lang, { n: num.format(Math.round(years / 2)) }),
+    t("calc.chart.year", lang, { n: num.format(years) }),
+];
+/* `bindTool` runs its compute SYNCHRONOUSLY, at the end of
+   binding, so everything the compute reaches has to be declared
+   above this loop. `chartLabels` was below it for one commit: an
+   arrow function in a `const` is in the temporal dead zone until
+   its line runs, so the first calculator threw at its chart, the
+   loop unwound, and the other four were never bound at all.
+
+   Every figure ABOVE the chart line had already been written, so
+   the page showed a filled-in compounding calculator and four
+   empty ones, and the one assertion watching this page read the
+   first of those figures. `next/interactive.test.ts` reads all
+   five now, and the verdict under each. */
+for (const calc of CALCULATORS) {
+    bindTool(calc.id, (v, root) => {
+        const nums = Object.fromEntries(calc.fields.map((f) => [f.name, Number(v[f.name])]));
+        const out = calc.run(nums);
+        calc.figures.forEach((key) => {
+            const note = out.notes[key];
+            setStat(root, key, show(key, out.values[key]), note ? say(note, out.values) : "");
+        });
+        if (calc.lines.length === 2) {
+            slot(root, ".chart-box").innerHTML = areaChart([
+                { values: out.series[calc.lines[0]], color: "var(--series-1)", fill: 0.18 },
+                { values: out.series[calc.lines[1]], color: "var(--series-2)", fill: 0.12 },
+            ], { labels: chartLabels(out.values.years) });
+        }
+        else if (calc.id === "sanchayapatra") {
+            /* Two totals rather than a line: nothing about either
+               option changes shape over the years, so a chart of them
+               would be two straight lines saying what two bars say. */
+            slot(root, ".chart-box").innerHTML = barChart([
+                { label: money(out.values.sTotal), caption: "\u09b8\u099e\u09cd\u099a\u09df\u09aa\u09a4\u09cd\u09b0",
+                    value: out.values.sTotal, color: "var(--series-1)" },
+                { label: money(out.values.fTotal), caption: "FDR",
+                    value: out.values.fTotal, color: "var(--series-2)" },
+            ]);
+            fillSides(root, out.values);
+        }
+        slot(root, ".verdict").textContent = say(`calc.${calc.id}.${out.verdict}`, out.values);
+    });
+}
+/** The sanchayapatra comparison's two boxes, which show the
+    working rather than only the answer: gross, the tax taken off
+    it, what is left, and the total with the principal back. */
+function fillSides(root, v) {
+    const sWins = v.sTotal >= v.fTotal;
     const side = (which, wins) => {
         const box = slot(root, `[data-side="${which}"]`);
         box.classList.toggle("winner", wins);
         return box;
     };
-    const fill = (box, gross, net, total) => {
+    const fill = (box, gross, tax, net, total) => {
         const put = (k, text) => {
             const cell = box.querySelector(`[data-k=${k}]`);
             if (cell)
                 cell.textContent = text;
         };
         put("gross", money(gross));
-        put("tax", `− ${money(gross - net)}`);
+        put("tax", `\u2212 ${money(tax)}`);
         put("net", money(net));
         put("total", money(total));
     };
-    fill(side("s", sWins), sGross, sNet, sTotal);
-    fill(side("f", !sWins), fGross, fNet, fTotal);
-    slot(root, ".chart-box").innerHTML = barChart([
-        { label: money(sTotal), caption: "সঞ্চয়পত্র", value: sTotal, color: "var(--series-1)" },
-        { label: money(fTotal), caption: "FDR", value: fTotal, color: "var(--series-2)" },
-    ]);
-    slot(root, ".verdict").innerHTML = gap < amount * 0.005
-        ? `Over ${years} years these land within ${money(gap)} of each other, close
-       enough that the <b>rules</b> matter more than the rate: the purchase
-       ceiling on sanchayapatra, and how quickly you can get the money out.`
-        : `<b>${sWins ? "সঞ্চয়পত্র" : "FDR"}</b> comes out ahead by
-       <b>${money(gap)}</b> over ${years} years, about
-       ${pct.format((gap / amount) * 100)}% of what you put in. Worth checking
-       the early-encashment penalty before you decide, since that's where the
-       difference usually goes.`;
-});
-/* ============================================================
-   3 · INFLATION, what money is really worth later
-   ============================================================ */
-bindTool("inflation", (v, root) => {
-    const amount = Number(v.amount) || 0;
-    const inflation = Number(v.inflation) / 100;
-    const years = Number(v.years) || 1;
-    const nominal = Number(v.nominal) / 100;
-    const worth = amount / (1 + inflation) ** years;
-    const lost = amount - worth;
-    // Fisher, done properly rather than by subtraction
-    const real = (1 + nominal) / (1 + inflation) - 1;
-    const grown = amount * (1 + nominal) ** years;
-    const grownReal = grown / (1 + inflation) ** years;
-    setStat(root, "worth", money(worth), `today's taka, in ${years} years`);
-    setStat(root, "lost", money(lost), `${pct.format((lost / amount) * 100)}% of its power gone`);
-    setStat(root, "real", `${pct.format(real * 100)}%`, real >= 0 ? "real return, after inflation" : "you are losing ground");
-    const nominalSeries = [], realSeries = [];
-    for (let y = 0; y <= years; y++) {
-        nominalSeries.push(amount * (1 + nominal) ** y);
-        realSeries.push((amount * (1 + nominal) ** y) / (1 + inflation) ** y);
-    }
-    slot(root, ".chart-box").innerHTML = areaChart([
-        { values: nominalSeries, color: "var(--series-2)", fill: 0.12 },
-        { values: realSeries, color: "var(--series-1)", fill: 0.18 },
-    ], { labels: ["now", `year ${Math.round(years / 2)}`, `year ${years}`] });
-    slot(root, ".verdict").innerHTML = real >= 0
-        ? `A ${pct.format(nominal * 100)}% return against ${pct.format(inflation * 100)}%
-       inflation is really <b>${pct.format(real * 100)}%</b>. Your ${money(amount)}
-       becomes ${money(grown)} on paper, but only <b>${money(grownReal)}</b> in
-       what it can actually buy.`
-        : `A ${pct.format(nominal * 100)}% return does not keep up with
-       ${pct.format(inflation * 100)}% inflation. On paper you'd have
-       ${money(grown)}; in real buying power that is <b>${money(grownReal)}</b>:
-       less than the ${money(amount)} you started with. This is the quiet way
-       "safe" savings lose money.`;
-});
-/* ============================================================
-   4 · EMI
-   ============================================================ */
-bindTool("emi", (v, root) => {
-    const principal = Number(v.principal) || 0;
-    const rate = Number(v.rate) / 100 / 12;
-    const months = (Number(v.years) || 1) * 12;
-    const emi = rate > 0
-        ? (principal * rate * (1 + rate) ** months) / ((1 + rate) ** months - 1)
-        : principal / months;
-    const total = emi * months;
-    const interest = total - principal;
-    setStat(root, "emi", money(emi), "every month");
-    setStat(root, "interest", money(interest), principal > 0 ? `${pct.format((interest / principal) * 100)}% of what you borrowed` : "");
-    setStat(root, "total", money(total), `over ${Number(v.years)} years`);
-    // how the balance falls, and how much of it is interest
-    const balances = [], paid = [];
-    let bal = principal, cumInterest = 0;
-    for (let m = 0; m <= months; m++) {
-        if (m > 0) {
-            const i = bal * rate;
-            cumInterest += i;
-            bal = Math.max(0, bal - (emi - i));
-        }
-        if (m % 12 === 0 || m === months) {
-            balances.push(bal);
-            paid.push(cumInterest);
-        }
-    }
-    slot(root, ".chart-box").innerHTML = areaChart([
-        { values: balances, color: "var(--series-1)", fill: 0.16 },
-        { values: paid, color: "var(--danger)", fill: 0.12 },
-    ], { labels: ["start", "", "end"] });
-    const shorter = Math.max(1, Number(v.years) - 2);
-    const rate2 = rate;
-    const m2 = shorter * 12;
-    const emi2 = rate2 > 0
-        ? (principal * rate2 * (1 + rate2) ** m2) / ((1 + rate2) ** m2 - 1)
-        : principal / m2;
-    const saved = total - emi2 * m2;
-    slot(root, ".verdict").innerHTML = saved > 0
-        ? `Paying it off in <b>${shorter} years</b> instead of ${v.years} raises the
-       instalment to ${money(emi2)} but saves <b>${money(saved)}</b> in interest.
-       The length of a loan costs more than most people expect.`
-        : `Interest adds <b>${money(interest)}</b> to what you borrowed.`;
-});
-/* ============================================================
-   5 · POSITION SIZING
-   ============================================================ */
-bindTool("position", (v, root) => {
-    const capital = Number(v.capital) || 0;
-    const riskPct = Number(v.risk) / 100;
-    const entry = Number(v.entry) || 0;
-    const stop = Number(v.stop) || 0;
-    const riskTaka = capital * riskPct;
-    const perShare = Math.max(0, entry - stop);
-    const shares = perShare > 0 ? Math.floor(riskTaka / perShare) : 0;
-    const cost = shares * entry;
-    const exposure = capital > 0 ? (cost / capital) * 100 : 0;
-    setStat(root, "shares", shares ? num.format(shares) : "–", "shares");
-    setStat(root, "cost", money(cost), cost > capital ? "more than your capital" : `${pct.format(exposure)}% of the portfolio`);
-    setStat(root, "risk", money(riskTaka), "at risk if the stop is hit");
-    const overweight = cost > capital;
-    slot(root, ".verdict").innerHTML = perShare <= 0
-        ? `Your stop needs to sit <b>below</b> your entry price; otherwise there's
-       no defined loss to size against.`
-        : overweight
-            ? `A ${pct.format(riskPct * 100)}% risk rule with a stop that close would
-         need <b>${money(cost)}</b> of stock, more than your whole
-         ${money(capital)}. That's the signal: either the stop is too tight, or
-         this trade doesn't fit the account.`
-            : `Risking ${pct.format(riskPct * 100)}% of ${money(capital)} means
-         <b>${num.format(shares)} shares</b> at ${money(entry)}, costing
-         ${money(cost)}. If the stop at ${money(stop)} is hit you lose
-         <b>${money(riskTaka)}</b>: a planned number, not a surprise. Twenty
-         losses in a row at this size would still leave you
-         ${money(capital * (1 - riskPct) ** 20)}.`;
-});
+    fill(side("s", sWins), v.sGross, v.sPaidTax, v.sNet, v.sTotal);
+    fill(side("f", !sWins), v.fGross, v.fPaidTax, v.fNet, v.fTotal);
+}
+applyLang();
 /* ============================================================
    ONE CALCULATOR AT A TIME
 

@@ -144,25 +144,25 @@ export default function ToolsPage() {
             <div className="tool-body">
               <div className="tool-inputs">
                 <label>
-                  <span className="label-row">Starting amount 
+                  <span className="label-row"><span data-i18n="calc.compounding.f.start">Starting amount</span> 
                     <span className="val" data-for="start" data-format="money" />
                   </span>
                   <input type="range" name="start" min="0" max="1000000" step="5000" defaultValue="50000" />
                 </label>
                 <label>
-                  <span className="label-row">Added every month 
+                  <span className="label-row"><span data-i18n="calc.compounding.f.monthly">Added every month</span> 
                     <span className="val" data-for="monthly" data-format="money" />
                   </span>
                   <input type="range" name="monthly" min="0" max="100000" step="500" defaultValue="5000" />
                 </label>
                 <label>
-                  <span className="label-row">Annual return 
+                  <span className="label-row"><span data-i18n="calc.compounding.f.rate">Annual return</span> 
                     <span className="val" data-for="rate" data-suffix="%" />
                   </span>
                   <input type="range" name="rate" min="0" max="25" step="0.5" defaultValue="10" />
                 </label>
                 <label>
-                  <span className="label-row">For how long 
+                  <span className="label-row"><span data-i18n="calc.compounding.f.years">For how long</span> 
                     <span className="val" data-for="years" data-suffix=" yrs" />
                   </span>
                   <input type="range" name="years" min="1" max="40" step="1" defaultValue="20" />
@@ -175,21 +175,21 @@ export default function ToolsPage() {
               <div className="tool-out">
                 <div className="stat-row">
                   <div className="stat stat-lead" data-stat="final">
-                    <span className="k">You end with
+                    <span className="k" data-i18n="calc.compounding.final">You end with
                     </span>
                     <span className="v">–
                     </span>
                     <span className="n" />
                   </div>
                   <div className="stat" data-stat="paid">
-                    <span className="k">You put in
+                    <span className="k" data-i18n="calc.compounding.paid">You put in
                     </span>
                     <span className="v">–
                     </span>
                     <span className="n" />
                   </div>
                   <div className="stat" data-stat="growth">
-                    <span className="k">Growth
+                    <span className="k" data-i18n="calc.compounding.growth">Growth
                     </span>
                     <span className="v">–
                     </span>
@@ -227,37 +227,37 @@ export default function ToolsPage() {
             <div className="tool-body">
               <div className="tool-inputs">
                 <label>
-                  <span className="label-row">Amount 
+                  <span className="label-row"><span data-i18n="calc.sanchayapatra.f.amount">Amount</span> 
                     <span className="val" data-for="amount" data-format="money" />
                   </span>
                   <input type="range" name="amount" min="50000" max="5000000" step="50000" defaultValue="1000000" />
                 </label>
                 <label>
-                  <span className="label-row">Years 
+                  <span className="label-row"><span data-i18n="calc.sanchayapatra.f.years">Years</span> 
                     <span className="val" data-for="years" data-suffix=" yrs" />
                   </span>
                   <input type="range" name="years" min="1" max="10" step="1" defaultValue="5" />
                 </label>
                 <label>
-                  <span className="label-row">Sanchayapatra rate 
+                  <span className="label-row"><span data-i18n="calc.sanchayapatra.f.srate">Sanchayapatra rate</span> 
                     <span className="val" data-for="srate" data-suffix="%" />
                   </span>
                   <input type="range" name="srate" min="5" max="15" step="0.01" defaultValue="11.04" />
                 </label>
                 <label>
-                  <span className="label-row">Tax at source 
+                  <span className="label-row"><span data-i18n="calc.sanchayapatra.f.stax">Tax at source</span> 
                     <span className="val" data-for="stax" data-suffix="%" />
                   </span>
                   <input type="range" name="stax" min="0" max="20" step="1" defaultValue="10" />
                 </label>
                 <label>
-                  <span className="label-row">FDR rate 
+                  <span className="label-row"><span data-i18n="calc.sanchayapatra.f.frate">FDR rate</span> 
                     <span className="val" data-for="frate" data-suffix="%" />
                   </span>
                   <input type="range" name="frate" min="3" max="15" step="0.01" defaultValue="9" />
                 </label>
                 <label>
-                  <span className="label-row">FDR tax at source 
+                  <span className="label-row"><span data-i18n="calc.sanchayapatra.f.ftax">FDR tax at source</span> 
                     <span className="val" data-for="ftax" data-suffix="%" />
                   </span>
                   <input type="range" name="ftax" min="0" max="20" step="1" defaultValue="10" />
@@ -352,25 +352,25 @@ export default function ToolsPage() {
             <div className="tool-body">
               <div className="tool-inputs">
                 <label>
-                  <span className="label-row">Amount today 
+                  <span className="label-row"><span data-i18n="calc.inflation.f.amount">Amount today</span> 
                     <span className="val" data-for="amount" data-format="money" />
                   </span>
                   <input type="range" name="amount" min="10000" max="10000000" step="10000" defaultValue="500000" />
                 </label>
                 <label>
-                  <span className="label-row">Inflation 
+                  <span className="label-row"><span data-i18n="calc.inflation.f.inflation">Inflation</span> 
                     <span className="val" data-for="inflation" data-suffix="%" />
                   </span>
                   <input type="range" name="inflation" min="0" max="20" step="0.25" defaultValue="9" />
                 </label>
                 <label>
-                  <span className="label-row">Your return 
+                  <span className="label-row"><span data-i18n="calc.inflation.f.nominal">Your return</span> 
                     <span className="val" data-for="nominal" data-suffix="%" />
                   </span>
                   <input type="range" name="nominal" min="0" max="25" step="0.25" defaultValue="9" />
                 </label>
                 <label>
-                  <span className="label-row">Years 
+                  <span className="label-row"><span data-i18n="calc.inflation.f.years">Years</span> 
                     <span className="val" data-for="years" data-suffix=" yrs" />
                   </span>
                   <input type="range" name="years" min="1" max="30" step="1" defaultValue="10" />
@@ -383,21 +383,21 @@ export default function ToolsPage() {
               <div className="tool-out">
                 <div className="stat-row">
                   <div className="stat stat-lead" data-stat="worth">
-                    <span className="k">Same money buys
+                    <span className="k" data-i18n="calc.inflation.worth">Same money buys
                     </span>
                     <span className="v">–
                     </span>
                     <span className="n" />
                   </div>
                   <div className="stat" data-stat="lost">
-                    <span className="k">Purchasing power lost
+                    <span className="k" data-i18n="calc.inflation.lost">Purchasing power lost
                     </span>
                     <span className="v">–
                     </span>
                     <span className="n" />
                   </div>
                   <div className="stat" data-stat="real">
-                    <span className="k">Real return
+                    <span className="k" data-i18n="calc.inflation.real">Real return
                     </span>
                     <span className="v">–
                     </span>
@@ -435,19 +435,19 @@ export default function ToolsPage() {
             <div className="tool-body">
               <div className="tool-inputs">
                 <label>
-                  <span className="label-row">Loan amount 
+                  <span className="label-row"><span data-i18n="calc.emi.f.principal">Loan amount</span> 
                     <span className="val" data-for="principal" data-format="money" />
                   </span>
                   <input type="range" name="principal" min="50000" max="10000000" step="50000" defaultValue="1500000" />
                 </label>
                 <label>
-                  <span className="label-row">Interest rate 
+                  <span className="label-row"><span data-i18n="calc.emi.f.rate">Interest rate</span> 
                     <span className="val" data-for="rate" data-suffix="%" />
                   </span>
                   <input type="range" name="rate" min="4" max="20" step="0.25" defaultValue="12" />
                 </label>
                 <label>
-                  <span className="label-row">Term 
+                  <span className="label-row"><span data-i18n="calc.emi.f.years">Term</span> 
                     <span className="val" data-for="years" data-suffix=" yrs" />
                   </span>
                   <input type="range" name="years" min="1" max="25" step="1" defaultValue="10" />
@@ -460,21 +460,21 @@ export default function ToolsPage() {
               <div className="tool-out">
                 <div className="stat-row">
                   <div className="stat stat-lead" data-stat="emi">
-                    <span className="k">Instalment
+                    <span className="k" data-i18n="calc.emi.emi">Instalment
                     </span>
                     <span className="v">–
                     </span>
                     <span className="n" />
                   </div>
                   <div className="stat" data-stat="interest">
-                    <span className="k">Total interest
+                    <span className="k" data-i18n="calc.emi.interest">Total interest
                     </span>
                     <span className="v">–
                     </span>
                     <span className="n" />
                   </div>
                   <div className="stat" data-stat="total">
-                    <span className="k">Total repaid
+                    <span className="k" data-i18n="calc.emi.total">Total repaid
                     </span>
                     <span className="v">–
                     </span>
@@ -511,25 +511,25 @@ export default function ToolsPage() {
             <div className="tool-body">
               <div className="tool-inputs">
                 <label>
-                  <span className="label-row">Portfolio 
+                  <span className="label-row"><span data-i18n="calc.position.f.capital">Portfolio</span> 
                     <span className="val" data-for="capital" data-format="money" />
                   </span>
                   <input type="range" name="capital" min="10000" max="5000000" step="10000" defaultValue="200000" />
                 </label>
                 <label>
-                  <span className="label-row">Risk per trade 
+                  <span className="label-row"><span data-i18n="calc.position.f.risk">Risk per trade</span> 
                     <span className="val" data-for="risk" data-suffix="%" />
                   </span>
                   <input type="range" name="risk" min="0.25" max="5" step="0.25" defaultValue="1" />
                 </label>
                 <label>
-                  <span className="label-row">Entry price 
+                  <span className="label-row"><span data-i18n="calc.position.f.entry">Entry price</span> 
                     <span className="val" data-for="entry" data-format="money" />
                   </span>
                   <input type="number" name="entry" min="1" step="0.1" defaultValue="45" />
                 </label>
                 <label>
-                  <span className="label-row">Stop-loss price 
+                  <span className="label-row"><span data-i18n="calc.position.f.stop">Stop-loss price</span> 
                     <span className="val" data-for="stop" data-format="money" />
                   </span>
                   <input type="number" name="stop" min="0" step="0.1" defaultValue="40" />
@@ -542,21 +542,21 @@ export default function ToolsPage() {
               <div className="tool-out">
                 <div className="stat-row">
                   <div className="stat stat-lead" data-stat="shares">
-                    <span className="k">Buy at most
+                    <span className="k" data-i18n="calc.position.shares">Buy at most
                     </span>
                     <span className="v">–
                     </span>
                     <span className="n" />
                   </div>
                   <div className="stat" data-stat="cost">
-                    <span className="k">That costs
+                    <span className="k" data-i18n="calc.position.cost">That costs
                     </span>
                     <span className="v">–
                     </span>
                     <span className="n" />
                   </div>
-                  <div className="stat" data-stat="risk">
-                    <span className="k">Planned loss
+                  <div className="stat" data-stat="riskTaka">
+                    <span className="k" data-i18n="calc.position.riskTaka">Planned loss
                     </span>
                     <span className="v">–
                     </span>

@@ -43,6 +43,7 @@
    "Tailwind is live", the third row of the table.
    ============================================================ */
 import { token, current } from "/account.js";
+import { dividendMonths, dividendTotal, holdingsOf, totalsOf } from "/portfolio.js";
 /* ---------- small helpers ---------- */
 const $ = (id) => {
     const node = document.getElementById(id);
@@ -197,51 +198,34 @@ function statTile(k, v, n, cls = "") {
     return el("div", { className: "stat" }, el("span", { className: "k" }, k), el("span", { className: `v ${cls}`.trim() }, v), n ? el("span", { className: "n" }, n) : null);
 }
 function holdingsTable(positions, currency, invested) {
-    const rows = [...positions].sort((a, b) => (b.walletImpact?.currentValue ?? 0) - (a.walletImpact?.currentValue ?? 0));
-    const largest = rows[0]?.walletImpact?.currentValue ?? 0;
+    /* Sorted, weighted and gained by `shared/portfolio.ts`, which
+       is the same derivation the Android app runs. What is left
+       here is the table. */
+    const rows = holdingsOf(positions, invested);
     return el("div", { className: "live-table" }, el("table", {}, el("thead", {}, el("tr", {}, ...["Holding", "Qty", "Avg paid", "Now", "Value", "P/L", "Weight"]
-        .map((h) => el("th", {}, h)))), el("tbody", {}, rows.map((p) => {
-        const w = p.walletImpact ?? {};
-        const cost = w.totalCost ?? 0;
-        const gain = w.unrealizedProfitLoss ?? 0;
-        const gainPct = cost > 0 ? (gain / cost) * 100 : 0;
-        const value = w.currentValue ?? 0;
-        const weight = invested > 0 ? (value / invested) * 100 : 0;
-        const width = largest > 0 ? Math.max(2, (value / largest) * 100) : 0;
-        return el("tr", {}, el("td", {}, el("span", { className: "live-name" }, p.instrument?.name ?? "–"), el("span", { className: "mono live-ticker" }, String(p.instrument?.ticker ?? "").split("_")[0])), el("td", { className: "mono" }, QTY(p.quantity)), el("td", { className: "mono" }, MONEY(p.averagePricePaid, p.instrument?.currency)), el("td", { className: "mono" }, MONEY(p.currentPrice, p.instrument?.currency)), el("td", { className: "mono" }, MONEY(value, currency)), el("td", { className: `mono ${signClass(gain)}` }, `${MONEY(gain, currency)} (${PCT(gainPct)})`), el("td", {}, el("span", { className: "live-bar" }, el("span", { className: "live-fill", style: `width:${width}%` })), el("span", { className: "mono live-weight" }, PCT(weight, { signed: false }))));
-    }))));
+        .map((h) => el("th", {}, h)))), el("tbody", {}, rows.map((h) => el("tr", {}, el("td", {}, el("span", { className: "live-name" }, h.name || "–"), el("span", { className: "mono live-ticker" }, h.ticker)), el("td", { className: "mono" }, QTY(h.quantity)), el("td", { className: "mono" }, MONEY(h.averagePaid, h.currency)), el("td", { className: "mono" }, MONEY(h.price, h.currency)), el("td", { className: "mono" }, MONEY(h.value, currency)), el("td", { className: `mono ${signClass(h.gain)}` }, `${MONEY(h.gain, currency)} (${PCT(h.gainPct)})`), el("td", {}, el("span", { className: "live-bar" }, el("span", { className: "live-fill", style: `width:${h.barPct}%` })), el("span", { className: "mono live-weight" }, PCT(h.weightPct, { signed: false }))))))));
 }
 /* Dividends, summed by month, drawn as one row of columns. One
    hue, because one series; the numbers ride in each column's
    tooltip and the total in the heading, so nothing is
    colour-alone. */
 function dividendChart(items, currency) {
-    const byMonth = new Map();
-    for (const d of items) {
-        const month = String(d.paidOn ?? "").slice(0, 7);
-        if (!month)
-            continue;
-        byMonth.set(month, (byMonth.get(month) ?? 0) + (d.amount ?? 0));
-    }
-    const months = [];
-    const now = new Date();
-    for (let i = 11; i >= 0; i -= 1) {
-        const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
-        months.push(d.toISOString().slice(0, 7));
-    }
-    const values = months.map((m) => byMonth.get(m) ?? 0);
-    const top = Math.max(...values, 0.01);
-    const total = values.reduce((a, b) => a + b, 0);
+    /* Bucketed by `shared/portfolio.ts`, empty months included:
+       a chart of only the months that paid has no gaps in it,
+       which is exactly the wrong impression. */
+    const months = dividendMonths(items, new Date());
+    const total = dividendTotal(months);
+    const top = Math.max(...months.map((m) => m.amount), 0.01);
     return el("div", { className: "live-block" }, el("h3", {}, "Dividends, last twelve months ", el("span", { className: "mono live-soft" }, MONEY(total, currency))), el("div", {
         className: "live-cols", role: "img",
         ariaLabel: `Dividends per month over the last year, totalling ${MONEY(total, currency)}`,
-    }, months.map((m, i) => el("div", {
+    }, months.map((m) => el("div", {
         className: "live-col",
-        title: `${m}: ${MONEY(values[i], currency)}`,
+        title: `${m.key}: ${MONEY(m.amount, currency)}`,
     }, el("span", {
         className: "live-col-fill",
-        style: `height:${Math.max((values[i] ?? 0) > 0 ? 4 : 1, ((values[i] ?? 0) / top) * 100)}%`,
-    }), el("span", { className: "mono live-col-m" }, m.slice(5))))));
+        style: `height:${Math.max(m.amount > 0 ? 4 : 1, (m.amount / top) * 100)}%`,
+    }), el("span", { className: "mono live-col-m" }, m.key.slice(5))))));
 }
 function activityLists(history, currency) {
     const wrap = el("div", { className: "grid-2 live-activity" });
@@ -262,20 +246,16 @@ function activityLists(history, currency) {
 /** The whole dashboard for one account's data, reused by the
     admin's view of the site account. */
 function accountDashboard(account, { title, note } = {}) {
-    const s = account.summary ?? {};
-    const currency = s.currency ?? "GBP";
-    const inv = s.investments ?? {};
-    const cash = s.cash ?? {};
-    const cost = inv.totalCost ?? 0;
-    const gainPct = cost > 0 ? ((inv.unrealizedProfitLoss ?? 0) / cost) * 100 : 0;
+    const t = totalsOf(account.summary);
+    const currency = t.currency;
     const root = el("div", { className: "live-dash" });
     if (title) {
         root.append(el("p", { className: "mono live-soft" }, `${title} · as of ${WHEN(account.at)}${note ? ` · ${note}` : ""}`));
     }
-    root.append(el("div", { className: "stat-row" }, statTile("Account value", MONEY(s.totalValue, currency), `all in, ${currency}`), statTile("Invested", MONEY(inv.currentValue, currency), `cost ${MONEY(cost, currency)}`), statTile("Unrealised", MONEY(inv.unrealizedProfitLoss, currency), `${PCT(gainPct)} on cost`, signClass(inv.unrealizedProfitLoss)), statTile("Realised, all time", MONEY(inv.realizedProfitLoss, currency), "", signClass(inv.realizedProfitLoss)), statTile("Free cash", MONEY(cash.availableToTrade, currency), cash.inPies ? `plus ${MONEY(cash.inPies, currency)} parked in pies` : "")));
+    root.append(el("div", { className: "stat-row" }, statTile("Account value", MONEY(t.total, currency), `all in, ${currency}`), statTile("Invested", MONEY(t.invested, currency), `cost ${MONEY(t.cost, currency)}`), statTile("Unrealised", MONEY(t.unrealised, currency), `${PCT(t.unrealisedPct)} on cost`, signClass(t.unrealised)), statTile("Realised, all time", MONEY(t.realised, currency), "", signClass(t.realised)), statTile("Free cash", MONEY(t.freeCash, currency), t.inPies ? `plus ${MONEY(t.inPies, currency)} parked in pies` : "")));
     const positions = account.positions ?? [];
     if (positions.length) {
-        root.append(el("div", { className: "live-block" }, el("h3", {}, `Holdings (${positions.length})`), holdingsTable(positions, currency, inv.currentValue ?? 0)));
+        root.append(el("div", { className: "live-block" }, el("h3", {}, `Holdings (${positions.length})`), holdingsTable(positions, currency, t.invested)));
     }
     else {
         root.append(el("p", { className: "muted" }, "No open positions."));
