@@ -44,6 +44,8 @@ import { PulseCard } from "../../components/pulse-card";
 import { Icon } from "../../components/icons";
 import { pageMeta } from "../../lib/pageMeta";
 import { SCHOOL_ACCENTS } from "@reiad/shared/nav";
+import { COUNTS, DOOR } from "@reiad/shared/content";
+import { bnNum } from "@reiad/shared/schools";
 
 export const metadata: Metadata = pageMeta({
   path: "/",
@@ -55,18 +57,6 @@ export const metadata: Metadata = pageMeta({
   card: "home",
   locale: "bn_BD",
 });
-
-/** The three numbers the door states about itself, and every one
-    of them is a fact about a list somewhere else on this site: six
-    schools in `shared/nav.ts`, five calculators, seven case studies.
-    They are small enough to be checked by `CLAIMS` in
-    `check-content.ts`, which is where a sentence that cannot hold
-    a counting slot goes. */
-const FACTS = [
-  { n: "৬", label: "ফ্রি কোর্স", en: "free courses" },
-  { n: "৫", label: "ক্যালকুলেটর", en: "calculators" },
-  { n: "৭", label: "কেস স্টাডি", en: "case studies" },
-];
 
 
 /** A plain destination tile. Everything the deck holds that is
@@ -129,40 +119,34 @@ export default function HomePage() {
 
         {/* ============ the door ============ */}
         <header className="grid gap-[clamp(10px,1.6vw,18px)]">
-          <span className="gate-eyebrow mono">
-            Rony Reiad · Dhaka / Brighton · CFA L1 candidate
-          </span>
+          <span className="gate-eyebrow mono">{DOOR.eyebrow}</span>
 
-          <h1 className="gate-h1" data-when="open" lang="bn">
-            টাকার ভাষা, <em className="gate-mark">আমাদের ভাষায়</em>।
-          </h1>
-          <h1 className="gate-h1" data-when="learn" lang="bn">
-            যা শিখতে চান, <em className="gate-mark">নিজের ভাষায়</em>।
-          </h1>
-          <h1 className="gate-h1" data-when="work" lang="en">
-            Financial models you can <em className="gate-mark">open, edit and trust</em>.
-          </h1>
+          {/* One <h1> per audience, all three server-rendered and
+              chosen by `data-hl` before first paint. The copy is
+              `DOOR` in shared/content.ts rather than written out
+              here, because a sentence is DATA and data reaches the
+              Android app with no release: this page and the app's
+              front door now say the same words by construction. */}
+          {Object.entries(DOOR.copy).map(([when, copy]) => {
+            const [before, after] = copy.headline.split(copy.mark);
+            return (
+              <h1 className="gate-h1" data-when={when} key={when} lang={copy.lang}>
+                {before}<em className="gate-mark">{copy.mark}</em>{after}
+              </h1>
+            );
+          })}
 
-          <p className="gate-lede" data-when="open" lang="bn">
-            বাংলাদেশের বাজার, টাকা, ভাষা আর রান্না: যেটা শিখতে চান সেটা বাংলায়,
-            একদম শুরু থেকে। আর যদি কাজের খোঁজে এসে থাকেন, উপরের সুইচটা ঘুরিয়ে দিন।
-          </p>
-          <p className="gate-lede" data-when="learn" lang="bn">
-            ছয়টা কোর্স, সবগুলো ফ্রি। বিও অ্যাকাউন্ট খোলা থেকে জার্মান বাক্য
-            বানানো পর্যন্ত, আর আপনি কতদূর পড়েছেন সেটা জমা থাকে আপনার
-            অ্যাকাউন্টে।
-          </p>
-          <p className="gate-lede" data-when="work" lang="en">
-            Three-statement models, a DCF, a stress test and a frontier
-            optimiser, each one a working spreadsheet you can open in the
-            browser and pull apart. The numbers are pinned by tests.
-          </p>
+          {Object.entries(DOOR.copy).map(([when, copy]) => (
+            <p className="gate-lede" data-when={when} key={when} lang={copy.lang}>
+              {copy.lede}
+            </p>
+          ))}
 
           <div className="flex flex-wrap items-center gap-y-2 gap-x-[clamp(20px,3vw,40px)] mt-0.5">
             <ul className="gate-facts">
-              {FACTS.map((f) => (
+              {DOOR.facts.map((f) => (
                 <li key={f.en}>
-                  <b lang="bn">{f.n}</b>
+                  <b data-count={f.count} lang="bn">{bnNum(COUNTS[f.count])}</b>
                   <span lang="bn">{f.label}</span>
                 </li>
               ))}

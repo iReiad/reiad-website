@@ -42,6 +42,7 @@ import { onRequest as enquiries } from "./functions/api/enquiries/[[id]].ts";
 import { onRequest as signals } from "./functions/api/signals/[[kind]].ts";
 import { onRequest as search } from "./functions/api/search.ts";
 import { onRequest as site } from "./functions/api/site.ts";
+import { onRequest as tools } from "./functions/api/tools.ts";
 import { onRequestGet as news } from "./functions/api/news.ts";
 import { onRequest as media } from "./functions/api/media/[[key]].ts";
 import { onRequest as notion } from "./functions/api/notion/[[route]].ts";
@@ -70,6 +71,7 @@ const API_ROUTES = [
   ["/api/signals", signals, "kind"],
   ["/api/search", search, null],
   ["/api/site", site, null],
+  ["/api/tools", tools, null],
   ["/api/news", news, null],
   ["/api/media", media, "key"],
   ["/api/notion", notion, "route"],

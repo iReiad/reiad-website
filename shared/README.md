@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is thirteen files and a directory of four, and
+Today that is sixteen files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -122,6 +122,44 @@ this repository got written.
   renaming one loses what they logged, and every rice, dal and
   pasta row states whether the figure is for the raw food or the
   cooked, in the name, in both languages.
+
+- **`tool-strings.ts`** every word the calculators say, in both
+  languages: 366 phrases keyed by name, plus the five formatters
+  that print a number in Bengali or Latin digits. It was
+  `aab/tools/stock.i18n.js` until the Android app needed it, and
+  the browser still fetches it at that exact address, compiled
+  there by `build-modules.ts`, because `sw.js` precaches the name.
+  `functions/api/tools.ts` serves the same table to the app, which
+  is the whole reason it moved: **an edited Bangla sentence
+  reaches a phone with no app release.** The formatters are the
+  other half of that and go the other way, being code rather than
+  data. Both halves of a phrase are required by the type, so a key
+  added with only English compiles nowhere.
+
+- **`calculators.ts`** the five calculators' arithmetic:
+  compounding, sanchayapatra against FDR, inflation, loan EMI and
+  position sizing. It was inline in `aab/src/tools/tools.ts`,
+  tangled with the DOM that drew it, and three runtimes read it
+  now. **Nothing in it is prose and nothing in it is a format:** a
+  calculator returns numbers BY NAME and the key of a sentence,
+  and both the browser and the app fill that sentence's
+  `{placeholders}` from those numbers, printing each the way
+  `FORMATS` says. `check-calculators.ts` is what holds the two
+  halves together, and the thing it catches is a placeholder with
+  no number behind it, in one language, on one branch.
+
+- **`portfolio.ts`** what a broker's JSON means: the five figures
+  at the top of the live dashboard, one holding's weight and gain,
+  and a year of dividends bucketed by month with the empty months
+  in it. `/api/broker/live` hands back Trading 212's own answer
+  unchanged, so this is the layer that reads it, and every field
+  is read defensively because every field belongs to somebody
+  else: a broker that renames one must not take a public page
+  down. `unrealizedProfitLoss` is spelt the American way at the
+  source and is not ours to correct. **The public view is not
+  here:** a stranger gets percentages, and that stripping happens
+  on the server, because a client that filters is a client that
+  has already been sent the thing it is hiding.
 
 ## TypeScript, and nothing compiled beside it
 
