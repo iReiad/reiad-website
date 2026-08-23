@@ -1146,6 +1146,12 @@ node scripts/check-mjs.ts   # a .mjs, which is a file nothing typechecks and the
                             # reason the next one gets written
 node scripts/check-dashes.ts # the one character this file opens by banning,
                             # in any tracked file outside archive/
+node scripts/check-diet.ts # a diet page that prints a target with no
+                            # medical advice line, a floor written into a
+                            # sentence rather than drawn from the constant,
+                            # a BMI band read without the reader's ancestry,
+                            # a portion row with no source or no state, and
+                            # a generated sentence that judges the reader
 node scripts/check-icons.ts # an icon name that resolves to nothing, so the page
                             # draws a correctly sized empty svg
 node scripts/check-jsx-space.ts # a sentence running into the link inside it,

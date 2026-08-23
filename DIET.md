@@ -1210,7 +1210,7 @@ the failure at the top of `CLAUDE.md` wearing a plan's hat.
 | hand portions | four chips beside the amount box, wherever the row states what its own portion weighs. A row that does not say refuses a hand rather than guessing one |
 
 `next/recipes.test.ts` is the guard for the pot, the share, the
-range and the hands: 115 checks, no browser.
+range and the hands: 136 checks, no browser.
 
 **The one thing still to draw is the day's own width.**
 `DayTotal.spread` in `shared/diet.ts` adds up every entry's
@@ -2460,18 +2460,55 @@ this file so the prose and the code cannot drift.
 
 **`scripts/check-diet.ts`**, for the rules that are about pages
 rather than about numbers. It is in `check-all.ts` beside every
-other check. Five of the nine below are held, plus two the list
-did not ask for; the four not yet held are marked ○, and each is
-waiting on the thing it would check existing:
+other check. Each line below carries its own mark, and the last
+two are ones this list did not ask for: a check that turns up a
+rule nobody had written down belongs beside the ones that were
+asked for.
 
-- ○ the floors are the ones `scripts/diet.test.ts` asserts, and
-  no route recomputes a formula rather than importing it.
-- ○ the Asian cut-off table is used whenever ancestry says so.
-- ○ every food in both libraries carries a source and a price
-  date, and every rice, grain and pasta row names its state.
-- ○ the generated sentences in `§16` and the stage card in `§11`
+- ✓ the floors are the ones `scripts/diet.test.ts` asserts, and
+  no route recomputes a formula rather than importing it. The
+  floors are read out of `target()`'s own body rather than
+  listed, so a sixth bound is asked about with nobody coming
+  here, and the formulas are compared by SHAPE, with the names
+  taken out and the numbers left in. It found three sentences on
+  the goal page writing a constant out as a number: the rate cap
+  as 1%, the absolute floor as 1200 and 1500, and the
+  underweight cut-off as 18.5. Those are the sentences whose
+  whole job is to say the tool changed your number, which makes
+  them the worst place in the tool for a figure that cannot
+  change with it.
+- ✓ the Asian cut-off table is used whenever ancestry says so.
+  Four shapes of not using it, and none of them looks wrong on
+  the page: a fixed ancestry handed to `bmiBand()`, `BMI_CUTS`
+  read by name, a body built with a literal ancestry, and a
+  cut-off written into a comparison, which is `bmiBand()`
+  retyped with one of the two tables missing. And `§2`'s other
+  half, that the page says which set it used: a band on its own
+  is one word for two readers who are owed different ones.
+- ✓ every food in both libraries carries a source and a price
+  date, and every rice, grain and pasta row names its state. The
+  nouns come out of `§14`'s own sentence, the price is three
+  columns that arrive together or not at all, a row in both
+  kitchens carries none of them because one number cannot be two
+  currencies, and the state has to be in the NAME in both
+  languages rather than only in the flag the arithmetic reads. A
+  row with no second weight to be confused with, `muri`, is
+  named in the check with the reason, and that exemption fails
+  when it goes stale.
+- ✓ the generated sentences in `§16` and the stage card in `§11`
   come only from the listed templates, and the list contains no
-  second person judgement. There is no template list yet.
+  second person judgement. **The list is derived, never kept.**
+  Hundreds of the tool's own sentences written out again inside
+  a check would be right on the day they were typed and wrong at
+  the next commit, so a template here is what the compiler calls
+  one: a template literal with an interpolation and prose in it,
+  plus a sentence a condition chooses between two written-out
+  ones. `node scripts/check-diet.ts --templates` prints the
+  list. What IS written down in the check is the vocabulary of
+  judgement, with the section naming each: that is a rule rather
+  than a copy of anything. The stage card is not built yet and
+  will need no second rule when it is, because the corpus is
+  every generated sentence in the tool.
 - ✓ the fixed journal tag set is the one in `§11` and has not
   grown a forty-first tag, and the day marks are the ones the
   migration names. Neither column has a CHECK constraint, so the
@@ -2494,6 +2531,13 @@ waiting on the thing it would check existing:
   goal is reached is said ONCE, on the goal page. `§6` puts it
   there and only there, and it is the one sentence in the tool
   that argues for the tool.
+- ✓ and a third: `shared/insights.ts` holds no prose. It opens
+  by saying that no function in it returns a verdict, which is
+  what makes every reading checkable: it hands back the figures
+  and a panel chooses the words, in both languages, where the
+  template check above can read them. A sentence built in the
+  arithmetic is a sentence in one language, on no list, that
+  neither the check nor the language switch can reach.
 
 **A `diet.test` under `next/`**, in a real browser, the way
 `next/admin.test.ts` drives `/admin`:
