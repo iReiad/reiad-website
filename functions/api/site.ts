@@ -65,6 +65,7 @@ import { bnNum } from "../../shared/schools.ts";
 import { GARDEN, GROWN, MOODS, SEASONS } from "../../shared/routine.ts";
 import { PACES, TARGET_KINDS } from "../../shared/profile.ts";
 import { HEADS } from "../../shared/heads.ts";
+import { DIET_WORDS } from "../../shared/diet-words.ts";
 
 /** Half an hour, the same as the market board next door. The
     furniture changes when somebody deploys, so a stale answer is
@@ -170,6 +171,11 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
            can type a number into a sentence, and a client should
            not have to know that indirection to print one. The
            same arrangement `door` uses one field up. */
+        /* The diet tool's own readouts, in both languages. The
+           app draws the same figures and would otherwise carry a
+           second copy of every sentence in Kotlin, which is what
+           `shared/` exists to prevent. */
+        dietWords: { ...DIET_WORDS },
         heads: Object.fromEntries(
           Object.entries(HEADS).map(([key, { count, ...head }]) => [key, {
             ...head,

@@ -62,6 +62,12 @@ this repository got written.
   once, and `unlisted` is how a section stays out of both menus
   while still being said once.
 
+- **`diet-words.ts`** the diet tool's own readouts, in both
+  languages. Its own table rather than a corner of
+  `tool-strings.ts`, because `stringKeys` in the stock fixture is
+  "every phrase the stock check can render" and a diet phrase in
+  that list makes the app's assertion weaker for both tools.
+
 - **`heads.ts`** what a hub page says about itself: the eyebrow,
   the headline and the lede of the pages that are a list of
   things rather than a piece of writing. Copy is data, so the

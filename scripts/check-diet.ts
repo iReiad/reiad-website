@@ -124,6 +124,7 @@ import { BMI_CUTS, TAGS, MARKS } from "../shared/diet.ts";
    is a string at the time it is looked up. A list of them written
    out here would be the second copy the head of this file bans. */
 import * as DIET from "../shared/diet.ts";
+import { DIET_WORDS } from "../shared/diet-words.ts";
 import { FOODS } from "../shared/foods.ts";
 import { bnNum } from "../shared/schools.ts";
 
@@ -133,6 +134,7 @@ const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
 const COMPONENTS = "next/components/diet";
 const ROUTES = "next/app/(site)/tools/diet";
 const API = "next/lib/diet-api.ts";
+const WORDS = "shared/diet-words.ts";
 
 /** Every migration that touches a diet table, found rather than
     named. A migration's filename is the primary key of a row in
@@ -332,12 +334,21 @@ for (const page of pages) {
    2. Both languages cover the same keys
 
    Section 23: one switch, and it changes EVERYTHING on the page.
-   Two shapes of that going wrong, and they fail differently.
+   Three shapes of that going wrong, and they fail differently.
 
    A `<T>` or `<TBlock>` with an empty half is a blank on the
    page for exactly one of the two readers, and it is invisible
    to whoever wrote it, because nobody writes a page in the
    language they are not testing in.
+
+   A `<T k="...">` says its two halves once, in
+   `shared/diet-words.ts`, so the phone draws the same sentence
+   with no app release. What goes wrong THERE is a key that
+   reaches nothing: `lang.tsx` renders `[dt.foo]` rather than
+   throwing, which on a page of finished sentences reads as a
+   placeholder somebody meant to come back to. So a key has to
+   be in the table, and a key in the table has to be drawn: a
+   rename that stops halfway breaks one of those two.
 
    An `aria-label`, a `title` or a `placeholder` is an ATTRIBUTE
    rather than a node, so it cannot be rendered twice and hidden:
@@ -351,12 +362,54 @@ const EMPTY = /^(\{?\s*(""|''|``|null|undefined|<>\s*<\/>)?\s*\}?|""|''|``)$/;
 const ATTRS = ["aria-label", "title", "placeholder"];
 
 let phrases = 0;
+let keyed = 0;
+const drawn = new Set<string>();
 
 for (const file of TOOL_FILES) {
   const src = SOURCE.get(file) as string;
 
   for (const tag of [...openTags(file, src, "T"), ...openTags(file, src, "TBlock")]) {
     phrases += 1;
+
+    /* A key supplies both halves at once, which is the stronger
+       of the two spellings: the pair cannot be half written. */
+    const key = attr(tag.attrs, "k");
+    if (key !== null) {
+      keyed += 1;
+      /* Every key-shaped literal in it, because a key may be
+         chosen at runtime: the body page picks between two
+         sentences on which method measured the fat. Every branch
+         is still a string written here, so every branch is still
+         checkable. The `dt.` shape is what tells a key from the
+         `"navy"` the condition compares against, and the reverse
+         walk below is what keeps that shape true. */
+      const names = [...key.matchAll(/["'\`]([^"'\`]*)["'\`]/g)]
+        .map((m) => m[1]).filter((name) => name.startsWith("dt."));
+      if (!names.length) {
+        fail(`${tag.file}:${tag.line} has a k with no key written in it`,
+          `it is written k=${key.slice(0, 60)}`,
+          "A key built at runtime cannot be held to the table, and a key that",
+          "reaches nothing renders as [dt.foo] on an otherwise finished page.");
+        continue;
+      }
+      for (const name of names) {
+        drawn.add(name);
+        const said = DIET_WORDS[name];
+        if (!said) {
+          fail(`${tag.file}:${tag.line} draws ${name}, which ${WORDS} does not hold`,
+            "lang.tsx renders the key in square brackets rather than throwing, so",
+            "this ships looking like a placeholder rather than failing.");
+          continue;
+        }
+        for (const half of ["en", "bn"] as const) {
+          if (said[half].trim()) continue;
+          fail(`${WORDS} has an empty ${half} half for ${name}`,
+            "A phrase said in one language is a blank in the other.");
+        }
+      }
+      continue;
+    }
+
     for (const half of ["en", "bn"] as const) {
       const value = attr(tag.attrs, half);
       if (value === null) {
@@ -390,6 +443,24 @@ for (const file of TOOL_FILES) {
         `  ${key}={lang === "bn" ? "…" : ${JSON.stringify(text)}}`);
     }
   }
+}
+
+/* And the other way round. A key nothing draws is a sentence
+   written, translated and served to the phone for a page that
+   never asks for it, and more often it is the far half of a
+   rename: the table was renamed, the page was not, and the page
+   now prints the key. */
+for (const name of Object.keys(DIET_WORDS)) {
+  if (!name.startsWith("dt.")) {
+    fail(`${WORDS} holds ${name}, which is not shaped like a key`,
+      "A `<T k>` may choose its key at runtime, and the check above tells a key",
+      "from the operand it is compared against by that prefix and nothing else.");
+  }
+  if (drawn.has(name)) continue;
+  fail(`${WORDS} holds ${name}, and no page draws it`,
+    "Either a <T k> lost this key in a rename, in which case that page is",
+    "printing the key it asks for, or the phrase is dead copy that is still",
+    "translated and still served to the app.");
 }
 
 /* ------------------------------------------------------------
@@ -1573,7 +1644,8 @@ console.log(failures
   ? `\n${failures} problem(s): the diet tool has stopped keeping one of DIET.md's\n`
     + "rules about pages. Each line above names the section.\n"
   : `diet: ${disclaimed} of the ${targeted} pages that print a target say so, ${phrases} phrases\n`
-    + `      in both languages across ${pages.length} pages, ${widgets} widgets with an empty\n`
+    + `      in both languages across ${pages.length} pages, ${keyed} of them from the one\n`
+    + `      table the app reads, ${widgets} widgets with an empty\n`
     + `      state, ${entries.length} glossary entries linked, ${TAGS.length} tags and ${MARKS.length} marks as written\n`
     + `      down, ${columns} columns across ${tables.length} tables filled or named, what\n`
     + "      happens after a goal is reached said once, "

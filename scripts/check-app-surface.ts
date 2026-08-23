@@ -130,6 +130,9 @@ const SOURCES = [
      title, which is exactly what the front page did before
      `DOOR` moved into `content.ts`. */
   "shared/heads.ts",
+  /* The diet tool's own readouts. Copy is data, so a
+     sentence reworded on the site is reworded on a phone. */
+  "shared/diet-words.ts",
 ];
 const tables = SOURCES.flatMap((path) => tablesIn(path).map((name) => ({ name, path })));
 
