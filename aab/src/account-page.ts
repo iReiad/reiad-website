@@ -31,7 +31,10 @@
    and nothing is shown that the site cannot measure.
    ============================================================ */
 
-import { current, signOut, getProfile, type Profile } from "/account.js";
+import {
+  current, signOut, getProfile, token,
+  SUPABASE_URL, SUPABASE_KEY, type Profile,
+} from "/account.js";
 import { sync, forgetOnAccount, SYNCED_KEYS } from "/sync.js";
 import {
   listScenarios, removeScenario,
@@ -86,6 +89,63 @@ function paintIdentity(): void {
 }
 
 /* ============================================================
+   The diet tool's six tables
+
+   `DIET.md` section 30: the six tables go into the copy and into
+   the erase IN THE SAME COMMIT THAT CREATES THEM, and the erase
+   is the more important half. `diet_profile.meds` and
+   `diet_profile.cycle_tracking` are the two most sensitive
+   columns in this database, and a "take a copy of everything"
+   that leaves them behind and an "erase everything" that leaves
+   them in place are the same omission twice.
+
+   Read and deleted here rather than through `saved.js`, because
+   nothing on this page draws a diet row: it needs them whole,
+   once, which is what an export is. Every one is keyed
+   `user_id`, and the row level security means a read with no
+   filter would return this reader's rows anyway; the filter is
+   there for the reason `saved.js` gives beside `mine()`.
+
+   `scripts/check-diet.ts` fails if this list stops matching the
+   migration, because section 30 says in as many words that this
+   is the half that will rot first.
+   ============================================================ */
+
+const DIET_TABLES = [
+  "diet_profile", "diet_days", "diet_entries",
+  "diet_foods", "diet_phases", "diet_labs",
+] as const;
+
+/** One request against one diet table, as the reader. Null when
+    nobody is signed in and on any failure, so a copy is never
+    silently short: the caller turns a null into a thrown error
+    rather than into an empty list. */
+async function dietTable(
+  table: string, method: "GET" | "DELETE",
+): Promise<unknown[] | null> {
+  const access = await token();
+  const who = current();
+  if (!access || !who) return null;
+  const select = method === "GET" ? "&select=*" : "";
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/${table}`
+    + `?user_id=eq.${encodeURIComponent(who.id)}${select}`,
+    {
+      method,
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${access}`,
+        "Content-Type": "application/json",
+        ...(method === "DELETE" ? { Prefer: "return=minimal" } : {}),
+      },
+    },
+  );
+  if (!res.ok) return null;
+  if (method === "DELETE" || res.status === 204) return [];
+  return await res.json() as unknown[];
+}
+
+/* ============================================================
    3. Taking a copy
 
    Everything, in one file, readable in a text editor. Not an
@@ -113,6 +173,21 @@ async function exportEverything(): Promise<void> {
       listScenarios(), listTargets(), listLibrary(),
     ]);
 
+    /* The diet tool, whole. A table that answered with a failure
+       throws rather than landing in the file as `[]`: an empty
+       list and a list that could not be read look identical in
+       JSON, and the second one is somebody leaving without their
+       log. */
+    const dietRows = await Promise.all(
+      DIET_TABLES.map((table) => dietTable(table, "GET")),
+    );
+    const diet: Record<string, unknown[]> = {};
+    DIET_TABLES.forEach((table, i) => {
+      const got = dietRows[i];
+      if (got === null) throw new Error(`Could not read ${table}. Nothing was downloaded.`);
+      diet[table] = got;
+    });
+
     /* Every synced key, whatever it is, rather than the eleven a
        reader is shown a count of. `components/account/mirror.ts`
        is that other list and this deliberately does not share it:
@@ -135,6 +210,7 @@ async function exportEverything(): Promise<void> {
       library: rows,
       targets,
       scenarios,
+      diet,
     };
 
     /* A blob and an object URL, revoked immediately after the
@@ -200,9 +276,18 @@ $("#account-signout")?.addEventListener("click", async () => {
 
 $("#account-forget")?.addEventListener("click", async () => {
   const note = $("#exit-note");
+  /* The sentence names what actually goes, because a confirm
+     that lists five of six things is a reader agreeing to
+     something else. The diet half is spelled out rather than
+     folded into "everything": it is the only place on this site
+     holding a weight, a medicine or a cycle. */
   if (!confirm("Erase everything this account has saved?\n\n"
     + "Your position, your checkpoints, your reading list, your notes, your "
-    + "targets and your saved scenarios. This cannot be undone.")) return;
+    + "targets and your saved scenarios.\n\n"
+    + "And everything in the diet tool: your daily log, everything you have "
+    + "eaten, your own foods and recipes, your phases, your clinic results, "
+    + "and your diet profile, which is where your medicines and cycle "
+    + "tracking are kept.\n\nThis cannot be undone.")) return;
 
   const button = $<HTMLButtonElement>("#account-forget")!;
   button.disabled = true;
@@ -218,6 +303,19 @@ $("#account-forget")?.addEventListener("click", async () => {
   } catch (err) {
     console.warn("account: could not remove everything", err);
     gone = false;
+  }
+
+  /* One DELETE per diet table, filtered on the reader. Sequential
+     rather than in parallel, because a failure has to be reported
+     as one: `gone` going false is what turns the sentence below
+     into "some of that did not work", and a reader told their
+     medicines are erased when they are not is the worst answer
+     this page can give. */
+  for (const table of DIET_TABLES) {
+    if (await dietTable(table, "DELETE") === null) {
+      console.warn("account: could not erase", table);
+      gone = false;
+    }
   }
 
   say(note, gone

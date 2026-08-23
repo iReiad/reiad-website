@@ -370,6 +370,13 @@ export const KCAL_PER_KG = 7700;
     figure is that it is not that. */
 export const LEARN_AFTER_DAYS = 14;
 
+/** What a day nobody wrote down is worth in uncertainty, as a
+    share of the mean intake. `DIET.md` section 3 is where the
+    number comes from: self-reported intake is under-recorded
+    "commonly by 20 to 30 percent", so a day with no entry at all
+    is unknown to about that much. */
+export const UNLOGGED_SE_SHARE = 0.25;
+
 export interface Learned {
   kcal: Range;
   /** Days spanned, and days with an intake logged. The second
@@ -419,15 +426,28 @@ export function learnedBurn(
   const deltaKg = f.slope * days;
   const kcal = meanIntake - (deltaKg * KCAL_PER_KG) / days;
 
-  /* Two independent errors, added in quadrature: how well the
-     mean intake is known, and how well the slope is. The second
-     dominates on a short window and the first dominates on a
-     patchy log, which is the correct behaviour in both cases. */
+  /* Three independent errors, added in quadrature: how well the
+     mean intake is known, how well the slope is, and how much of
+     the window was written down at all.
+
+     THE THIRD IS THE DAYS THAT ARE NOT THERE, and without it
+     this number was at its most confident exactly where it
+     deserved least confidence. The first two are both computed
+     from the rows that exist, so a reader who logs food three
+     days in twenty, identically, got a narrow band on a figure
+     worked out as though they had eaten that on all twenty. The
+     missing days are not noise around a mean, they are a gap
+     where the mean might not be, and no amount of variance
+     inside the logged days can measure it. `DIET.md` section 3:
+     "shown with a confidence that widens when logging is
+     sparse". */
   const varIntake = kept.reduce((s, i) => s + (i.kcal - meanIntake) ** 2, 0)
     / (kept.length - 1);
   const seIntake = Math.sqrt(varIntake / kept.length);
   const seSlope = f.se * KCAL_PER_KG;
-  const se = Math.sqrt(seIntake ** 2 + seSlope ** 2);
+  const covered = Math.min(kept.length / (days + 1), 1);
+  const seUnlogged = UNLOGGED_SE_SHARE * meanIntake * (1 - covered);
+  const se = Math.sqrt(seIntake ** 2 + seSlope ** 2 + seUnlogged ** 2);
 
   return {
     kcal: range(kcal, 1.96 * se),
@@ -653,11 +673,39 @@ export const toFeetInches = (cm: number): { ft: number; inch: number } => {
     protocol rather than a mark, because it has to be a span with
     a start and an end: what it does to the scale depends
     entirely on how long it ran and on what was running before
-    it. */
+    it.
+
+    Adding a fourteenth means adding a row to `WATER` below: the
+    table is keyed by this type, so the compiler asks. */
 export type Protocol =
   | "standard" | "keto" | "lowfat" | "highprotein" | "med"
   | "window" | "5:2" | "omad" | "fast" | "ramadan"
   | "maintain" | "gain" | "break";
+
+/** What each one is called, in both languages, once.
+
+    A panel that names three of them and a panel that names a
+    fourth are two tables, and the day they disagree one page
+    calls a thing a fast and another calls it something else. The
+    row is here beside the `WATER` row for the same protocol. */
+export const PROTOCOL_NAMES: Array<{ id: Protocol; en: string; bn: string }> = [
+  { id: "standard",    en: "An ordinary deficit", bn: "সাধারণ ঘাটতি" },
+  { id: "keto",        en: "Keto",                bn: "কিটো" },
+  { id: "lowfat",      en: "Low fat",             bn: "কম চর্বি" },
+  { id: "highprotein", en: "High protein",        bn: "বেশি প্রোটিন" },
+  { id: "med",         en: "Mediterranean",       bn: "ভূমধ্যসাগরীয় ধরন" },
+  { id: "window",      en: "An eating window",    bn: "সময় বেঁধে খাওয়া" },
+  { id: "5:2",         en: "5:2",                 bn: "৫:২" },
+  { id: "omad",        en: "One meal a day",      bn: "দিনে এক বেলা" },
+  { id: "fast",        en: "A complete fast",     bn: "পূর্ণ উপবাস" },
+  { id: "ramadan",     en: "Ramadan",             bn: "রমজান" },
+  { id: "maintain",    en: "Maintaining",         bn: "ধরে রাখা" },
+  { id: "gain",        en: "Gaining",             bn: "ওজন বাড়ানো" },
+  { id: "break",       en: "A diet break",        bn: "বিরতি" },
+];
+
+export const protocolName = (p: Protocol): { en: string; bn: string } =>
+  PROTOCOL_NAMES.find((r) => r.id === p) ?? { en: p, bn: p };
 
 /** Glycogen, in kilograms, scaled to bodyweight rather than
     fixed at "400 to 500 grams", which is a figure for an average
@@ -669,37 +717,128 @@ export const glycogenKg = (weightKg: number): number => 0.0055 * weightKg;
     water, so emptying the store moves four times its own mass. */
 export const GLYCOGEN_WATER_RATIO = 3;
 
-/** How fast a protocol empties that store, as a time constant in
-    days. A complete fast is far quicker than very low carb
-    because there is no intake replacing any of it. */
-const DRAIN_TAU: Partial<Record<Protocol, number>> = {
-  keto: 2.0,
-  fast: 0.8,
-  omad: 6.0,
-  "5:2": 8.0,
-};
-
-/** What a fed gut holds at any moment, and only a complete fast
-    empties it. It is not water and it is not fat: it is food
-    that has not finished being food yet, and on a two day fast
-    it is a kilogram of the drop. */
+/** What a fed gut holds at any moment. It is not water and it is
+    not fat: it is food that has not finished being food yet, and
+    on a two day fast it is a kilogram of the drop. */
 const GUT_KG: Range = { low: 0.5, mid: 0.9, high: 1.5 };
 
+/** What a protocol takes off that is not fat.
+
+    ONE ROW PER PROTOCOL, AND THE TABLE IS TOTAL. It was four
+    entries and a `to === "fast"` special case, so every protocol
+    missing from it was forecast as taking no water off at all:
+    an ordinary deficit came back as a drop that was 100% fat,
+    printed directly above the paragraph saying that nothing
+    moving on the first day is fat. An absent row read as a
+    measurement of zero, which is the failure the whole of this
+    file is written against. `Record<Protocol, ...>` is what
+    makes the compiler ask about the fourteenth. */
+interface Water {
+  /** Days. How fast the glycogen store drains under it. A
+      complete fast is far quicker than very low carb because
+      there is no intake replacing any of it. */
+  tau: number;
+  /** How much of the store it empties in the end. One for the
+      two that clear it; a fraction for the rest, because eating
+      less LOWERS the store and does not empty it. */
+  share: number;
+  /** How much of `GUT_KG` it eventually takes. One for a
+      complete fast, where nothing is going in at all. */
+  gut: number;
+  /** Whether the two above scale with HOW MUCH LESS is eaten.
+      False where the water follows the carbohydrate rather than
+      the energy: keto empties the store on maintenance calories
+      and a fast empties it by definition. */
+  byDeficit: boolean;
+}
+
+const WATER: Record<Protocol, Water> = {
+  keto:        { tau: 2.0, share: 1,   gut: 0,    byDeficit: false },
+  fast:        { tau: 0.8, share: 1,   gut: 1,    byDeficit: false },
+  omad:        { tau: 6.0, share: 1,   gut: 0.35, byDeficit: false },
+  "5:2":       { tau: 8.0, share: 1,   gut: 0.15, byDeficit: false },
+  window:      { tau: 5.0, share: 0.7, gut: 0.4,  byDeficit: true },
+  ramadan:     { tau: 4.0, share: 0.7, gut: 0.5,  byDeficit: true },
+  standard:    { tau: 3.0, share: 0.6, gut: 0.6,  byDeficit: true },
+  lowfat:      { tau: 3.0, share: 0.6, gut: 0.6,  byDeficit: true },
+  highprotein: { tau: 3.0, share: 0.6, gut: 0.6,  byDeficit: true },
+  med:         { tau: 3.0, share: 0.6, gut: 0.6,  byDeficit: true },
+  /* Not a deficit, so nothing is being emptied. A surplus and a
+     diet break REFILL the store, which is the `rebound` half and
+     is not forecast as a negative water here, so these three get
+     no fat share at all rather than a flattering one. */
+  maintain:    { tau: 0,   share: 0,   gut: 0,    byDeficit: false },
+  gain:        { tau: 0,   share: 0,   gut: 0,    byDeficit: false },
+  break:       { tau: 0,   share: 0,   gut: 0,    byDeficit: false },
+};
+
+/** The deepest cut this tool will ever set, as a fraction of
+    maintenance, and it is derived rather than chosen:
+    `floorKcal("male")` against a maintenance of about 2,550 is
+    41%, and `target()` will not hand anybody less. An ordinary
+    deficit's water term is at full size there and proportionally
+    smaller above it, because what leaves the gut and the
+    glycogen store follows how much less is going in. */
+const FULL_CUT = 0.4;
+
+/** Days for the gut to reach its new level, which is a transit
+    time rather than a preference. */
+const GUT_DAYS = 2;
+
+/** How much less is being eaten, as a fraction of maintenance. */
+const cutOf = (intake: number, burn: number): number =>
+  burn > 0 ? Math.min(Math.max((burn - intake) / burn, 0), 1) : 0;
+
+/** How far into its own water term a protocol gets at this depth
+    of cut.
+
+    `null` is NOT zero and not one: it means the depth is not
+    known, and an unknown protocol is credited with no water at
+    all rather than with a guess. That direction is deliberate.
+    Crediting a previous protocol with water it may not have
+    taken makes the NEW drop look more real than it is, which is
+    the flattering error, and this is the one file where that is
+    the error that matters. */
+const depthOf = (w: Water, cut: number | null): number =>
+  w.byDeficit ? (cut === null ? 0 : Math.min(cut / FULL_CUT, 1)) : 1;
+
 /** How much of the glycogen store a protocol has emptied after
-    so many days of it. Exponential rather than linear, because
-    the store does not drain at a constant rate: most of it goes
-    in the first two days of very low carb and the tail takes a
-    week. */
-export function drained(protocol: Protocol, days: number): number {
-  const tau = DRAIN_TAU[protocol];
-  if (!tau || days <= 0) return 0;
-  return 1 - Math.exp(-days / tau);
+    so many days of it, at a known depth of cut. Exponential
+    rather than linear, because the store does not drain at a
+    constant rate: most of it goes in the first two days of very
+    low carb and the tail takes a week. */
+export function drainedBy(protocol: Protocol, days: number, cut: number | null): number {
+  const w = WATER[protocol];
+  if (!w || !w.tau || days <= 0) return 0;
+  return w.share * depthOf(w, cut) * (1 - Math.exp(-days / w.tau));
+}
+
+/** The same, at the deepest cut this tool will set, which is as
+    far as a protocol's drain ever reaches. */
+export const drained = (protocol: Protocol, days: number): number =>
+  drainedBy(protocol, days, FULL_CUT);
+
+/** How much of `GUT_KG` has gone after so many days of it. A
+    complete fast empties the gut because nothing is going in;
+    everything else lowers it by as much as it lowers the food. */
+export function gutTaken(protocol: Protocol, days: number, cut: number | null): number {
+  const w = WATER[protocol];
+  if (!w || !w.gut || days <= 0) return 0;
+  return w.gut * depthOf(w, cut) * Math.min(days / GUT_DAYS, 1);
 }
 
 export interface Change {
   /** What was running, and for how long. `null` for somebody
-      starting from ordinary eating. */
-  from: { protocol: Protocol; days: number } | null;
+      starting from ordinary eating.
+
+      `intake` is the mean daily intake UNDER THAT protocol, and
+      it is what tells the arithmetic how much of the store the
+      previous one had really taken: an ordinary deficit's water
+      follows the size of the cut. Leaving it out credits a
+      deficit protocol with no prior drain rather than with a
+      guessed one, so the answer errs wetter and never
+      flatteringly drier. */
+  from: { protocol: Protocol; days: number; intake?: number } | null;
   to: Protocol;
   /** How long the new one will run, or has run. */
   days: number;
@@ -728,6 +867,18 @@ export interface Forecast {
   /** What share of the drop is fat, as a fraction. The sentence
       the reader actually needs. */
   fatShare: number;
+  /** Whether that share may be PRINTED.
+
+      False where the scale MOVES and the model has no water term
+      to explain any of it, which is `maintain`, `gain` and
+      `break`: a surplus refills the store rather than emptying
+      it, so calling the rise 100% fat is a claim about the one
+      thing the model cannot see there. Nothing moving at all is
+      not that case and comes back true.
+
+      A caller that prints `fatShare` without reading this is
+      back to the bug the `WATER` table was written for. */
+  fatShareKnown: boolean;
 }
 
 /** What a change of protocol will do, and how much of it is
@@ -746,17 +897,25 @@ export interface Forecast {
     spread it does not have. */
 export function forecastChange(c: Change): Forecast {
   const store = glycogenKg(c.weightKg) * (1 + GLYCOGEN_WATER_RATIO);
+  const cut = cutOf(c.intake, c.burn);
 
   /* What the previous protocol had already taken. A fresh start
-     finds a full store; a stacked one does not. */
-  const already = c.from ? drained(c.from.protocol, c.from.days) : 0;
-  const after = Math.max(already, drained(c.to, c.days));
+     finds a full store; a stacked one does not. Its own depth of
+     cut is `from.intake` where the caller knows it, and unknown
+     rather than assumed where it does not. */
+  const already = c.from
+    ? drainedBy(c.from.protocol, c.from.days,
+        c.from.intake === undefined ? null : cutOf(c.from.intake, c.burn))
+    : 0;
+  const after = Math.max(already, drainedBy(c.to, c.days, cut));
   const newlyDrained = Math.max(after - already, 0) * store;
 
-  /* A complete fast empties the gut as well, over about two
-     days. Nothing else here does: on every other protocol the
-     reader is still eating. */
-  const gutShare = c.to === "fast" ? Math.min(c.days / 2, 1) : 0;
+  /* And what has gone out of the gut. A complete fast empties it
+     over about two days, because nothing is going in; every
+     other protocol lowers it by as much as it lowers the food,
+     which is why an ordinary deficit moves the scale on day one
+     without a gram of fat having left. */
+  const gutShare = gutTaken(c.to, c.days, cut);
 
   /* Sodium goes with the water on any large carbohydrate or
      energy drop, and takes more water with it. A third of the
@@ -791,6 +950,7 @@ export function forecastChange(c: Change): Forecast {
     scale, fat, water, rebound,
     settling: settlingDays(c.to),
     fatShare: drop > 0 ? Math.min(Math.abs(fat) / drop, 1) : 0,
+    fatShareKnown: water.mid > 0 || drop === 0,
   };
 }
 
@@ -918,13 +1078,151 @@ export const TAGS: Array<{ id: string; en: string; bn: string }> = [
 /** A day that was marked as not counting towards the slope. The
     same idea as the keto adaptation window and for the same
     reason: a fever puts water on, and a week of one produces
-    trend data that means nothing. Drawn either way. */
+    trend data that means nothing. Drawn either way.
+
+    THE ID IS THE STRING THAT GOES INTO `diet_days.marks`, and
+    that column has no CHECK constraint, so nothing at write time
+    stops these drifting from the names the migration lists
+    beside it. `check-diet.ts` reads both and fails on either
+    side holding a name the other does not. */
 export const MARKS: Array<{ id: string; en: string; bn: string }> = [
-  { id: "ill",    en: "Unwell",        bn: "অসুস্থ" },
-  { id: "travel", en: "Travelling",    bn: "ভ্রমণে" },
-  { id: "refeed", en: "A big meal",    bn: "বড় খাওয়া" },
-  { id: "off",    en: "Off protocol",  bn: "নিয়মের বাইরে" },
+  { id: "ill",          en: "Unwell",       bn: "অসুস্থ" },
+  { id: "travel",       en: "Travelling",   bn: "ভ্রমণে" },
+  { id: "refeed",       en: "A big meal",   bn: "বড় খাওয়া" },
+  { id: "off-protocol", en: "Off protocol", bn: "নিয়মের বাইরে" },
 ];
+
+/** The one spelling that is not in the list above and may be in
+    a real row.
+
+    This list wrote `off` while the column has said
+    `off-protocol` since it was created, and `off` is taken:
+    `diet_entries.source` uses it for Open Food Facts, so one
+    word meant two things in one schema. A day marked before that
+    was noticed still counts as marked, because everything
+    reading marks asks whether there are any rather than which
+    one. What it loses without this is its name on the chart and
+    its pressed chip in the form. */
+const MARK_WAS: Record<string, string> = { off: "off-protocol" };
+
+export const markNamed = (id: string): { id: string; en: string; bn: string } | null =>
+  MARKS.find((m) => m.id === (MARK_WAS[id] ?? id)) ?? null;
+
+/* ---------------------------------------------------------- */
+/* which weighings a rate may be read from                    */
+/* ---------------------------------------------------------- */
+
+/** The weighings out of a run of days, split into what is DRAWN
+    and what may be FITTED.
+
+    TWO LISTS RATHER THAN ONE, and that is the whole of it. A
+    marked day is drawn and left out of the slope, exactly like
+    the keto adaptation window, and a page holding a single list
+    has to choose between hiding a reading from the reader and
+    fitting a line through a fortnight of fever water. It chose
+    the second: `Day.marks` is written by the log form, promised
+    in the form and in the migration, and was read by nothing. */
+export interface Weighings {
+  /** Every weighing there is, in day order. What a chart draws. */
+  drawn: Point[];
+  /** The ones a rate, a learned burn or a projection may be
+      fitted to: marked days removed, and where phases are known,
+      nothing out of a stretch that is still settling. */
+  fittable: Point[];
+  /** The ones taken out because the reader marked the day, so a
+      chart can tick them. Excluded from the fit is not hidden
+      from the reader. */
+  marked: Point[];
+}
+
+export function weighings(opts: {
+  days: Day[];
+  /** An ISO date to the day numbers `Point.day` uses. This file
+      never touches a clock and the caller owns the origin, so it
+      is handed in rather than assumed. */
+  dayOf: (iso: string) => number;
+  /** Where the page has them. A slope never crosses a boundary,
+      so a stretch that is still settling is drawn and not
+      fitted, on the same footing as a marked day. */
+  phases?: Phase[];
+  /** Today, in the same day numbers. Defaults to the last
+      weighing, which is as far as the data goes. */
+  today?: number;
+}): Weighings {
+  const { days, dayOf, phases = [], today } = opts;
+  const byDay = (a: Point, b: Point): number => a.day - b.day;
+  const drawn: Point[] = [];
+  const marked: Point[] = [];
+  const unmarked: Point[] = [];
+  for (const d of days) {
+    if (d.weightKg == null) continue;
+    const p: Point = { day: dayOf(d.date), kg: d.weightKg };
+    drawn.push(p);
+    ((d.marks?.length ?? 0) > 0 ? marked : unmarked).push(p);
+  }
+  drawn.sort(byDay);
+  marked.sort(byDay);
+  unmarked.sort(byDay);
+  const end = today ?? (drawn.length ? drawn[drawn.length - 1].day : 0);
+  return {
+    drawn,
+    marked,
+    fittable: phases.length ? readable(unmarked, phases, end) : unmarked,
+  };
+}
+
+/** The learned maintenance, measured inside ONE stretch.
+
+    `DIET.md` section 10: "The learned maintenance is per phase
+    and never spans a boundary. Mean intake during a complete
+    fast is zero, and section 3's formula fed a window containing
+    one would return a number with no meaning at all."
+
+    `learnedBurn()` is the arithmetic and knows nothing about
+    phases, so a caller handing it a whole run hands it a window
+    with a fast in the middle of it and gets a maintenance figure
+    built on an intake nobody ate. This is that call made per
+    readable stretch and answered with the LAST one, which is the
+    stretch the reader is in now. Null where that stretch is
+    still settling or too short, which the panel already has
+    words for. */
+export interface LearnedHere extends Learned {
+  /** Which stretch it was measured over, and `null` where the
+      page knows no phases at all: there is no boundary to cross
+      then and the whole run is one window. */
+  protocol: Protocol | null;
+  from: number;
+  to: number;
+}
+
+export function learnedHere(opts: {
+  weights: Point[];
+  intakes: { day: number; kcal: number }[];
+  phases?: Phase[];
+  today: number;
+}): LearnedHere | null {
+  const { weights, intakes, phases = [], today } = opts;
+
+  if (!phases.length) {
+    const all = learnedBurn(weights, intakes);
+    if (!all) return null;
+    const sorted = [...weights].sort((a, b) => a.day - b.day);
+    return {
+      ...all, protocol: null,
+      from: sorted[0].day, to: sorted[sorted.length - 1].day,
+    };
+  }
+
+  const spans = stretches(phases, today).filter((s) => s.readable);
+  for (let i = spans.length - 1; i >= 0; i -= 1) {
+    const s = spans[i];
+    const inside = <P extends { day: number }>(p: P): boolean =>
+      p.day >= s.from && p.day <= s.to;
+    const got = learnedBurn(weights.filter(inside), intakes.filter(inside));
+    if (got) return { ...got, protocol: s.protocol, from: s.from, to: s.to };
+  }
+  return null;
+}
 
 /* ---------------------------------------------------------- */
 /* the streak, which is a count of showing up                 */
@@ -1001,6 +1299,11 @@ export interface Entry {
   id?: string;
   date: string;
   meal?: string;
+  /** Local clock, "HH:MM". The hour a thing was eaten is a fact
+      about the reader's own day, so it is stored beside the date
+      rather than being read back out of `meal`, which is a meal
+      name. `at_time` in `diet_entries` is the column. */
+  atTime?: string;
   label: string;
   labelBn?: string;
   qty?: number;
@@ -1015,15 +1318,49 @@ export interface Entry {
   sourceId?: string;
 }
 
+/** The hour a thing was eaten, 0 to 23, or null where the row
+    does not say.
+
+    `atTime` first and `meal` second, because rows written before
+    that column was used carry a clock where a meal name belongs.
+    THE FALLBACK STAYS: there are real rows in that shape and
+    dropping it would empty the by-hour reading for anybody who
+    logged before it changed.
+
+    Null rather than a default of noon: what an unknown hour
+    means is the caller's decision, and a silent midday puts
+    somebody's breakfast in the middle of the afternoon. */
+export function entryHour(e: Pick<Entry, "atTime" | "meal">): number | null {
+  const clock = (s: string | undefined): number | null => {
+    const m = /^\s*(\d{1,2}):([0-5]\d)/.exec(s ?? "");
+    if (!m) return null;
+    const h = Number(m[1]);
+    return h >= 0 && h < 24 ? h : null;
+  };
+  return clock(e.atTime) ?? clock(e.meal);
+}
+
 export interface DayTotal {
   kcal: number;
   protein: number; carbs: number; fat: number; fibre: number;
   micros: Record<string, number>;
   /** The share of the day's energy that came from an entry with
-      composition attached. EVERY MICRONUTRIENT FIGURE IS SHOWN
-      WITH THIS, because a confident number missing a third of
-      the day is more dangerous than no number. */
+      ANY composition attached. It is the honest headline for the
+      day and it is the WRONG number to print beside one
+      nutrient: see `microCoverage`. */
   coverage: number;
+  /** The same share, per nutrient. A row from a crowdsourced
+      database may carry sodium and nothing else, so a day made
+      of one of those reported 100% coverage while potassium,
+      calcium and iron all read "not known" underneath it. That
+      is a confident number missing most of the day, which is the
+      one thing this whole file is arranged to prevent.
+
+      A key absent from here is a nutrient nothing today carries.
+      A key present with 0.3 is a nutrient a third of today's
+      energy knows about, and the panel prints that third rather
+      than the day's. */
+  microCoverage: Record<string, number>;
   /** How wide the day's own estimate is, from entries logged as
       a range. A restaurant plate is not knowable, so the width
       goes into the day's confidence rather than into a false
@@ -1039,6 +1376,7 @@ export const COVERAGE_FLOOR = 0.5;
 export function totalFor(entries: Entry[]): DayTotal {
   const eaten = entries.filter((e) => !e.planned);
   const micros: Record<string, number> = {};
+  const knownPer: Record<string, number> = {};
   let kcal = 0, protein = 0, carbs = 0, fat = 0, fibre = 0, known = 0, spread = 0;
 
   for (const e of eaten) {
@@ -1057,12 +1395,21 @@ export function totalFor(entries: Entry[]): DayTotal {
       known += c;
       for (const [k, v] of Object.entries(e.micros)) {
         micros[k] = (micros[k] ?? 0) + v;
+        /* Per nutrient, by energy, for the reason on
+           `microCoverage`. An entry that carries a key at all
+           counts towards that key and towards no other. */
+        knownPer[k] = (knownPer[k] ?? 0) + c;
       }
     }
   }
 
+  const microCoverage: Record<string, number> = {};
+  if (kcal > 0) {
+    for (const [k, v] of Object.entries(knownPer)) microCoverage[k] = v / kcal;
+  }
+
   return {
-    kcal, protein, carbs, fat, fibre, micros,
+    kcal, protein, carbs, fat, fibre, micros, microCoverage,
     coverage: kcal > 0 ? known / kcal : 0,
     spread,
     count: eaten.length,
@@ -1158,3 +1505,191 @@ export const UNLOCKS: Array<{ day: number; en: string; bn: string }> = [
   { day: 365, en: "The year page",
     bn: "বছরের পাতা" },
 ];
+
+/* ---------------------------------------------------------- */
+/* the first week, hour by hour                               */
+/* ---------------------------------------------------------- */
+
+/** One point on the first week's curve.
+
+    The weekly table is right and it is too coarse for the days
+    that actually decide whether somebody carries on. Almost
+    everything that makes week one confusing happens INSIDE the
+    first seventy-two hours: the gut empties, the liver's
+    glycogen goes, the sodium follows it, and the scale moves
+    several kilos while the fat that has actually left is
+    measured in grams.
+
+    `drained()` is already an exponential in days and takes a
+    fraction, so this is the same arithmetic read at a finer
+    resolution rather than a second model. Nothing here is
+    invented that the weekly table does not already imply. */
+export interface HourPoint {
+  hour: number;
+  /** Cumulative, in kilograms. Positive is gone. */
+  water: Range;
+  fat: number;
+  /** What the scale would read against the start. Negative is
+      down. */
+  scale: Range;
+  /** How much of the drop SO FAR is fat. The column that makes
+      the first two days readable, and it climbs all week. */
+  fatShare: number;
+  /** Whether that share may be printed, for the reason written
+      out on `Forecast`. */
+  fatShareKnown: boolean;
+}
+
+/** The first week as a curve, at whatever resolution is asked
+    for. Twelve hours is the default because it is the coarsest
+    step that still separates "the gut emptied" from "the liver
+    ran out", which are different days and feel identical on a
+    scale. */
+export function hourlyArc(c: Change, everyHours = 12, upTo = 168): HourPoint[] {
+  const out: HourPoint[] = [];
+  for (let hour = 0; hour <= upTo; hour += everyHours) {
+    const at = forecastChange({ ...c, days: hour / 24 });
+    out.push({
+      hour, water: at.water, fat: at.fat, scale: at.scale,
+      fatShare: at.fatShare, fatShareKnown: at.fatShareKnown,
+    });
+  }
+  return out;
+}
+
+/** A stretch of the first week, in the protocol's own terms.
+
+    Each one names a MECHANISM rather than a feeling, because the
+    feeling is what the reader already has and the mechanism is
+    what they are missing. "Hour 30: the liver's glycogen has
+    gone and its water with it" is the sentence that stops
+    somebody reading a two kilo drop as two kilos of fat. */
+export interface Band {
+  from: number;
+  to: number;
+  en: string;
+  bn: string;
+}
+
+const FAST_BANDS: Band[] = [
+  { from: 0, to: 12,
+    en: "The gut is emptying. Most of the first movement on the scale is food that has not finished being food.",
+    bn: "পেট খালি হচ্ছে। দাঁড়িপাল্লার প্রথম নড়াচড়ার বেশিরভাগই এমন খাবার যার হজম এখনো শেষ হয়নি।" },
+  { from: 12, to: 24,
+    en: "The liver's glycogen is going, about a hundred grams of it, and roughly three times its own weight in water goes with it.",
+    bn: "যকৃতের গ্লাইকোজেন যাচ্ছে, প্রায় একশো গ্রাম, আর সঙ্গে যাচ্ছে তার নিজের ওজনের প্রায় তিন গুণ পানি।" },
+  { from: 24, to: 48,
+    en: "The biggest water day. Muscle glycogen, and the sodium that leaves with it. Expect the largest single drop of the week here, and expect almost none of it to be fat.",
+    bn: "পানি সবচেয়ে বেশি যাওয়ার দিন। পেশির গ্লাইকোজেন আর তার সঙ্গে যাওয়া লবণ। সপ্তাহের সবচেয়ে বড় একদিনের কমাটা এখানেই, আর তার প্রায় কিছুই চর্বি নয়।" },
+  { from: 48, to: 72,
+    en: "Water is tapering. The store is mostly empty, so what leaves now is increasingly the real thing.",
+    bn: "পানি যাওয়া কমে আসছে। জমা প্রায় শেষ, তাই এখন যা যাচ্ছে তার বেশিরভাগই আসল।" },
+  { from: 72, to: 168,
+    en: "Most of what leaves now is fat, and the daily movement is much smaller because of it. This is what the real rate looks like.",
+    bn: "এখন যা যাচ্ছে তার বেশিরভাগই চর্বি, আর সেজন্যই প্রতিদিনের নড়াচড়া অনেক কম। আসল হার দেখতে এমনই।" },
+];
+
+const KETO_BANDS: Band[] = [
+  { from: 0, to: 24,
+    en: "Glycogen starts draining. The scale will move and none of it is fat yet.",
+    bn: "গ্লাইকোজেন কমতে শুরু করেছে। দাঁড়িপাল্লা নড়বে, আর তার কিছুই এখনো চর্বি নয়।" },
+  { from: 24, to: 72,
+    en: "The bulk of the water leaves. This is the triumphant part, and it is the part that sets up the disappointment in week two.",
+    bn: "পানির বড় অংশটা এখন যাচ্ছে। এই সময়টাই আনন্দের, আর এই সময়টাই দ্বিতীয় সপ্তাহের হতাশা তৈরি করে।" },
+  { from: 72, to: 120,
+    en: "The adaptation window. If there is going to be a headache, fatigue or cramp it sits here, and it is mostly the sodium that left with the water.",
+    bn: "খাপ খাওয়ানোর সময়। মাথাব্যথা, ক্লান্তি বা খিঁচুনি হলে এই সময়েই হয়, আর তার বেশিরভাগই পানির সঙ্গে চলে যাওয়া লবণের জন্য।" },
+  { from: 120, to: 168,
+    en: "Water is nearly done. From here the trend starts to mean something, and the adaptation window closes on day fourteen.",
+    bn: "পানি যাওয়া প্রায় শেষ। এখান থেকে ধারার মানে দাঁড়াতে শুরু করে, আর খাপ খাওয়ানোর সময় শেষ হয় চৌদ্দতম দিনে।" },
+];
+
+const PLAIN_BANDS: Band[] = [
+  { from: 0, to: 24,
+    en: "Gut contents and sodium. Nothing that moves today is fat.",
+    bn: "পেটের খাবার আর লবণ। আজ যা নড়ছে তার কিছুই চর্বি নয়।" },
+  { from: 24, to: 72,
+    en: "The first drop is still mostly water. A deficit takes about three days to show anything real.",
+    bn: "প্রথম কমাটা এখনো বেশিরভাগই পানি। ঘাটতির আসল কিছু দেখাতে প্রায় তিন দিন লাগে।" },
+  { from: 72, to: 168,
+    en: "The real rate starts showing, and it is a great deal smaller than the first two days suggested.",
+    bn: "আসল হার দেখা দিতে শুরু করেছে, আর সেটা প্রথম দুই দিন যা মনে হয়েছিল তার চেয়ে অনেক কম।" },
+];
+
+export const bandsFor = (p: Protocol): Band[] =>
+  p === "fast" ? FAST_BANDS : p === "keto" ? KETO_BANDS : PLAIN_BANDS;
+
+/** Where you are now, and what is next.
+
+    `hoursIn` is passed rather than computed, because this file
+    never touches a clock: a check seeds it and a page seeds it
+    and both get the same answer. */
+export function bandAt(p: Protocol, hoursIn: number): {
+  now: Band | null; next: Band | null; intoNext: number;
+} {
+  const bands = bandsFor(p);
+  const now = bands.find((b) => hoursIn >= b.from && hoursIn < b.to) ?? null;
+  const next = bands.find((b) => b.from > hoursIn) ?? null;
+  return { now, next, intoNext: next ? next.from - hoursIn : 0 };
+}
+
+/* ---------------------------------------------------------- */
+/* the day as it happens                                      */
+/* ---------------------------------------------------------- */
+
+/** Where today is going, from what has been logged so far.
+
+    NOT A PREDICTION OF BEHAVIOUR. It is the reader's OWN typical
+    distribution of intake across the day, applied to what they
+    have logged: if three quarters of your calories usually land
+    after six in the evening, then 900 at lunchtime is not most
+    of the day, and a tool that implied it was would be telling
+    somebody they had failed by one o'clock.
+
+    Returns null before there is enough history to know the
+    shape, because a projection from an ASSUMED shape is a
+    projection from somebody else's day. */
+export interface DayPace {
+  soFar: number;
+  /** Where the day lands if it goes the way this reader's days
+      usually go. */
+  landing: number;
+  /** The share of a day's energy that has usually arrived by
+      this hour. */
+  usualShare: number;
+  target?: number;
+}
+
+export function dayPace(opts: {
+  history: Array<{ hour: number; kcal: number }>;
+  today: Array<{ hour: number; kcal: number }>;
+  hourNow: number;
+  target?: number;
+}): DayPace | null {
+  const { history, today, hourNow, target } = opts;
+  const soFar = today.reduce((s, e) => s + e.kcal, 0);
+  if (history.length < 20) return null;
+
+  const total = history.reduce((s, e) => s + e.kcal, 0);
+  if (total <= 0) return null;
+  const by = history.filter((e) => e.hour <= hourNow).reduce((s, e) => s + e.kcal, 0);
+  const usualShare = by / total;
+
+  /* A share of zero would divide to infinity and a share of one
+     means the day is done. Both are answered honestly rather
+     than arithmetically. */
+  if (usualShare <= 0.05) return { soFar, landing: soFar, usualShare, target };
+  return { soFar, landing: soFar / Math.min(usualShare, 1), usualShare, target };
+}
+
+/** When the calories actually land, as 24 buckets. Most
+    over-target days are made in the evening, and this is the one
+    reading that can say so from the reader's own log rather than
+    as a general claim. */
+export function byHour(entries: Array<{ hour: number; kcal: number }>): number[] {
+  const buckets = new Array<number>(24).fill(0);
+  for (const e of entries) {
+    if (e.hour >= 0 && e.hour < 24) buckets[e.hour] += e.kcal;
+  }
+  return buckets;
+}

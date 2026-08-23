@@ -148,8 +148,20 @@ export function Meter({
 }
 
 /** The same number as a ring, for the head of a page rather than
-    the body of a card. */
-export function Ring({ value, total, accent }: { value: number; total: number; accent?: string }) {
+    the body of a card.
+
+    `label` is what goes in the middle, and it defaults to the
+    percentage. It exists because the diet tool wanted a ring
+    whose middle is a count of calories rather than a percent and
+    wrote a SECOND ring to get one, with its own four classes
+    drawing the same circle. A prop is the difference between one
+    ring and two. */
+export function Ring({ value, total, accent, label }: {
+  value: number;
+  total: number;
+  accent?: string;
+  label?: ReactNode;
+}) {
   const pct = total > 0 ? Math.min(1, value / total) : 0;
   const r = 19;
   const circumference = 2 * Math.PI * r;
@@ -162,7 +174,7 @@ export function Ring({ value, total, accent }: { value: number; total: number; a
                 strokeDasharray={circumference}
                 strokeDashoffset={circumference * (1 - pct)} />
       </svg>
-      <span className="ring-num">{Math.round(pct * 100)}</span>
+      <span className="ring-num">{label ?? Math.round(pct * 100)}</span>
     </span>
   );
 }

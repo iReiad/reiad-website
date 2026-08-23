@@ -31,13 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
-   v183: /tools/stock.i18n.js. Twenty phrases of chrome for the
+   v191: /tools/stock.i18n.js. Twenty phrases of chrome for the
         five calculators: a short name each for a chip, a label
         per chart line, the comparison's four rows and a
         disclaimer. The Android app renders all of them and the
         site's own tab labels are next.
 
-   v182: /tools/stock.i18n.js. The other five calculators' words
+   v190: /tools/stock.i18n.js. The other five calculators' words
         moved into it, 68 phrases, and they are in Bangla for the
         first time: their verdicts were template literals inside
         the module that drew them, so translating one meant
@@ -45,13 +45,58 @@
         now and /tools/tools.js is the drawing only, which is what
         lets the Android app share the model rather than copy it.
 
-   v181: /tools/stock.i18n.js. The stock check's 366 phrases moved
+   v189: /tools/stock.i18n.js. The stock check's 366 phrases moved
         to `shared/tool-strings.ts` and that file is now the
         compiled output of it, so the bytes changed although not
         one string did: tsc reformats the object. The move is
         what lets `/api/tools` serve the same table to the
         Android app, so an edited Bangla sentence reaches a phone
         with no app release.
+   v188: /fallback.css. Every page of the diet tool has its own
+        colour out of the seven the rail already uses, the strip
+        carries a dot in each, an empty readout draws the figures
+        it is waiting for, and a footer says which pages feed
+        this one and which read from it.
+
+   v187: /fallback.css. The deck's heading belongs to the section
+        it names, so the section's own top padding no longer opens
+        ninety pixels under it.
+
+   v186: /fallback.css. The readout on four pages has a name, so
+        a reader moving by heading no longer meets an `h3` under
+        an `h1`, and a first use of a term is linked to its
+        definition.
+
+   v185: /account-page.js and /fallback.css. Take a copy of
+        everything and erase everything now know the six diet
+        tables exist, so a medicine and a cycle no longer survive
+        an erase and no longer go missing from an export. The
+        stylesheet gained the tool's own tab strip, a first use
+        linked to its definition, and a headline figure set at a
+        headline size.
+
+   v184: /fallback.css. The page you take to a doctor, and its
+        print rules: on paper the rail, the bar, the footer and
+        the controls are the website, and a clinician does not
+        need the website.
+
+   v183: /fallback.css. The clinic numbers page, and a price
+        table that shows the figure it sorted by: cost per 100g
+        of protein was rounded to whole units, so three different
+        foods all read pound one in a table that had just ranked
+        them by that exact number.
+
+   v182: /fallback.css. The prices page, and when a day's
+        calories actually land: twenty-four columns off the
+        reader's own log, which is the one reading that can
+        confirm or contradict the claim that most over-target
+        days are made in the evening.
+
+   v181: /fallback.css. The expect page's first week, hour by
+        hour, with the fat share drawn as a bar beside its own
+        number: it starts near nothing and climbs all week, and
+        the shape of that climbing is what stops a two kilo drop
+        reading as two kilos of fat.
 
    v180: /fallback.css. The diet pages had `main section`'s own
         top padding on top of a grid gap already spacing them,
@@ -1701,7 +1746,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v183";
+const VERSION = "v191";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

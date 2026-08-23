@@ -16,7 +16,7 @@ export const metadata: Metadata = pageMeta({
 export default function Page() {
   return (
     <DietPage
-      title={<T en="Your goal" bn="আপনার লক্ষ্য" />}
+      href="/tools/diet/goal"
       lede={{
         en: "A rate, the floors, and an honest range for how long. Not a date: a date would be a lie with a number on it.",
         bn: "একটা হার, যে সীমাগুলো পেরোনো হবে না, আর কত দিন লাগবে তার সৎ একটা সীমা। তারিখ নয়: তারিখ মানে সংখ্যা বসানো মিথ্যে।",

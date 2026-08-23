@@ -16,7 +16,7 @@ export const metadata: Metadata = pageMeta({
 export default function Page() {
   return (
     <DietPage
-      title={<T en="The long view" bn="লম্বা হিসাব" />}
+      href="/tools/diet/trend"
       lede={{ en: "Nothing here reacts to one reading. The heavy line is the trend, the thin one behind it is what the scale said.", bn: "এখানে কিছুই একটামাত্র মাপে সাড়া দেয় না। মোটা রেখাটি ধারা, পেছনের সরু রেখাটি দাঁড়িপাল্লা যা বলেছে।" }}
     >
       <TrendPanel />

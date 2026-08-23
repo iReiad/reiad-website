@@ -16,7 +16,7 @@ export const metadata: Metadata = pageMeta({
 export default function Page() {
   return (
     <DietPage
-      title={<T en="Beyond calories" bn="ক্যালোরির বাইরে" />}
+      href="/tools/diet/nutrition"
       lede={{ en: "Every figure carries its coverage. A confident number missing a third of the day is more dangerous than no number.", bn: "প্রতিটি সংখ্যার সঙ্গে থাকে সেটা দিনের কতটুকু থেকে এসেছে। দিনের এক তৃতীয়াংশ বাদ দেওয়া আত্মবিশ্বাসী সংখ্যা কোনো সংখ্যা না থাকার চেয়ে বিপজ্জনক।" }}
     >
       <NutritionPanel />

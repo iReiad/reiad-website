@@ -7,13 +7,26 @@
    here, because a route with its own copy of an equation is a
    route that will disagree with the check.
 
-   ---- it stores nothing, on purpose ----
+   ---- it stores nothing until the reader asks it to ----
 
    Everything here is arithmetic over what is typed into it. No
    account, no row, no localStorage: a reader can work out what
    their body probably is without signing into anything, which is
    what makes this the stage that ships before the migration is
    used for anything.
+
+   ONE BUTTON CHANGES THAT, and only for somebody already signed
+   in. Height, year of birth, which formula and which cut-offs
+   are the four facts every other page of this tool needs, and
+   for a while nothing on this site could write them: `board`,
+   `goal` and `summary` all gate on `profile.height_cm` and
+   `profile.birth_year`, so on a real account there was no
+   target, no protein floor, no learned maintenance, no
+   projection and no BMI, and the goal page said "the body page
+   is where the first two go" while this page stored neither.
+   The write is explicit because the rest of the page is not: a
+   reader who came here to work something out has not asked to
+   be remembered.
 
    ---- the three rules it is here to hold on screen ----
 
@@ -37,7 +50,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   BMI_CUTS, bmi, bmiBand, whtr, whtrBand, fatEstimate, ffmiNormalised,
   restingBurn, mifflin,
@@ -45,7 +58,11 @@ import {
 } from "@reiad/shared/diet";
 import { Field, Select } from "../ui/field";
 import { Note } from "../ui/note";
+import { Button } from "../ui/button";
+import { getProfile, saveProfile, who, type Profile, type Who } from "../../lib/diet-api";
 import { T, TBlock, digits, useToolLang, type ToolLang } from "./lang";
+import { BAND_WORDS, WHTR_WORDS } from "./words";
+import { Term } from "./glossary";
 
 /** A number typed into a box, which is a string until it is not.
     Empty is absent rather than zero: a waist of 0 is not a
@@ -57,19 +74,6 @@ const num = (raw: string): number | undefined => {
 
 const round = (n: number, dp = 1): string => n.toFixed(dp);
 
-const BAND_WORDS: Record<string, { en: string; bn: string }> = {
-  under:   { en: "under the healthy range", bn: "স্বাস্থ্যকর সীমার নিচে" },
-  healthy: { en: "in the healthy range", bn: "স্বাস্থ্যকর সীমার মধ্যে" },
-  raised:  { en: "above the healthy range", bn: "স্বাস্থ্যকর সীমার উপরে" },
-  high:    { en: "well above the healthy range", bn: "অনেকটাই উপরে" },
-};
-
-const WHTR_WORDS: Record<string, { en: string; bn: string }> = {
-  low:     { en: "below 0.4", bn: "০.৪ এর নিচে" },
-  healthy: { en: "under 0.5, which is the mark to aim for", bn: "০.৫ এর নিচে, যেটাই লক্ষ্য" },
-  raised:  { en: "0.5 or above", bn: "০.৫ বা তার বেশি" },
-  high:    { en: "0.6 or above", bn: "০.৬ বা তার বেশি" },
-};
 
 export function BodyPanel() {
   /* Only the `<option>` text needs this, and `lang.tsx` says
@@ -85,6 +89,38 @@ export function BodyPanel() {
   const [hipCm, setHip] = useState("");
   const [neckCm, setNeck] = useState("");
 
+  /* Signed in or not, and what the account already knows. Both
+     start as "not asked yet" rather than as "no", because a
+     button that appears a beat after the page does is better
+     than one that offers to save to an account the reader does
+     not have. */
+  const [w, setW] = useState<Who | null>(null);
+  const [asked, setAsked] = useState(false);
+  const [kept, setKept] = useState<"" | "saving" | "saved" | "failed">("");
+
+  useEffect(() => {
+    let live = true;
+    void (async () => {
+      const me = await who();
+      if (!live) return;
+      setW(me);
+      setAsked(true);
+      if (!me) return;
+      const p = await getProfile(me);
+      if (!live || !p) return;
+      /* PREFILL, NEVER OVERWRITE. An effect that lands while
+         somebody is typing and replaces what they typed is worse
+         than one that never ran. */
+      if (p.height_cm) setHeight((v) => v || String(p.height_cm));
+      if (p.birth_year) {
+        setAge((v) => v || String(new Date().getFullYear() - (p.birth_year as number)));
+      }
+      if (p.sex) setSex(p.sex);
+      if (p.ancestry) setAncestry(p.ancestry);
+    })();
+    return () => { live = false; };
+  }, []);
+
   const body: Body | null = useMemo(() => {
     const h = num(heightCm);
     const w = num(weightKg);
@@ -97,6 +133,26 @@ export function BodyPanel() {
   }, [heightCm, weightKg, ageYears, sex, ancestry, waistCm, hipCm, neckCm]);
 
   const cuts = BMI_CUTS[ancestry];
+
+  /* THE FOUR THE REST OF THE TOOL NEEDS. Not the weight, which
+     is a reading and belongs on a day's row, and not the tape,
+     which is the same. These four change about once a decade. */
+  const keep = async (): Promise<void> => {
+    const h = num(heightCm);
+    const a = num(ageYears);
+    if (!w || !h || !a) return;
+    setKept("saving");
+    const patch: Profile = {
+      height_cm: h,
+      birth_year: new Date().getFullYear() - Math.round(a),
+      sex,
+      ancestry,
+    };
+    const before = await getProfile(w);
+    const ok = await saveProfile(w, { ...(before ?? {}), ...patch });
+    setKept(ok ? "saved" : "failed");
+    window.setTimeout(() => setKept(""), 2600);
+  };
 
   return (
     <div className="dt-body">
@@ -150,6 +206,36 @@ export function BodyPanel() {
               {lang === "bn" ? "এশীয় সীমা, ২৩ আর ২৭.৫" : "The Asian cut-offs, 23 and 27.5"}
             </option>
           </Select>
+
+          {/* Only for somebody already signed in, and only once
+              the two that cannot be guessed are filled. An offer
+              to save shown to a reader with no account is an
+              advert. */}
+          {asked && w && num(heightCm) && num(ageYears) ? (
+            <div className="dt-keep">
+              <Button kind="soft" size="sm" onClick={() => void keep()}
+                      disabled={kept === "saving"}>
+                <T en="Keep these four on my account" bn="এই চারটি আমার অ্যাকাউন্টে রাখুন" />
+              </Button>
+              <p className="dt-hint">
+                <T
+                  en="Height, year of birth, which formula and which cut-offs. Every other page of this tool needs them, and none of them can work them out on its own. Your weight and your tape measurements are not kept here: those belong to a day."
+                  bn="উচ্চতা, জন্মসাল, কোন সূত্র আর কোন সীমা। এই টুলের বাকি সব পাতার এগুলো লাগে, আর কোনোটাই নিজে থেকে বের করতে পারে না। ওজন আর ফিতার মাপ এখানে রাখা হয় না: ওগুলো একটা দিনের।"
+                />
+              </p>
+              {/* An honest state, not a word that says Saved
+                  whatever happened. `aria-live` because a chip
+                  that changes silently is a chip a screen reader
+                  never mentions. */}
+              <p className="dt-said" role="status" aria-live="polite" data-state={kept}>
+                {kept === "saved"
+                  ? <T en="Kept on your account." bn="আপনার অ্যাকাউন্টে রাখা হয়েছে।" />
+                  : kept === "failed"
+                    ? <T en="Not saved. Nothing was changed, so try again." bn="জমা হয়নি। কিছুই বদলায়নি, আবার চেষ্টা করুন।" />
+                    : null}
+              </p>
+            </div>
+          ) : null}
         </fieldset>
 
         <fieldset className="dt-set">
@@ -184,16 +270,11 @@ export function BodyPanel() {
 
       {body === null
         ? (
-          <div className="dt-readout dt-readout-waiting">
-            <p>
-              <T
-                en="Height, weight and age, and the numbers appear here. Nothing is stored and nothing is sent anywhere."
-                bn="উচ্চতা, ওজন আর বয়স দিন, সংখ্যাগুলো এখানে আসবে। কিছুই জমা থাকে না, কোথাও যায় না।"
-              />
-            </p>
-          </div>
+          <Coming />
         )
-        : <Readout body={body} lang={lang} />}
+        : body.ageYears < 18
+          ? <TooYoung />
+          : <Readout body={body} lang={lang} />}
 
       <Note tone="quiet">
         <TBlock
@@ -225,6 +306,126 @@ export function BodyPanel() {
   );
 }
 
+/** THE SHAPE OF WHAT IS COMING, rather than a blank half a page.
+
+    An empty readout was two lines of grey text beside a form,
+    and the whole right side of a wide screen was nothing at all.
+    A reader could not tell whether the page was going to answer
+    with one number or six, or which of the boxes on the left
+    each one needed.
+
+    So it draws the five figures it will fill, each naming what
+    it is waiting for. That is not decoration: a placeholder that
+    says "a waist" is the shortest route to the reader typing a
+    waist, and it is the same five cards, in the same order and
+    the same sizes, that arrive when they do. */
+function Coming() {
+  const WAITING: Array<{ h: ReactNode; needs: { en: string; bn: string }; lead?: true }> = [
+    {
+      h: <T en="Waist to height" bn="কোমর ও উচ্চতার অনুপাত" />,
+      needs: { en: "a waist and a height", bn: "কোমর আর উচ্চতা" },
+      lead: true,
+    },
+    { h: <>BMI</>, needs: { en: "a height and a weight", bn: "উচ্চতা আর ওজন" } },
+    {
+      h: <T en="Body fat" bn="শরীরের চর্বি" />,
+      needs: { en: "a waist and a neck", bn: "কোমর আর গলা" },
+    },
+    {
+      h: <T en="Lean mass" bn="চর্বি ছাড়া ভর" />,
+      needs: { en: "the same tape measurements", bn: "ওই একই ফিতার মাপ" },
+    },
+    {
+      h: <T en="Resting burn" bn="বিশ্রামে খরচ" />,
+      needs: { en: "a height, a weight and an age", bn: "উচ্চতা, ওজন আর বয়স" },
+    },
+  ];
+
+  return (
+    <div className="dt-readout">
+      <h2 className="dt-readout-h">
+        <T en="What that says about you" bn="এতে আপনার সম্পর্কে যা বোঝা যায়" />
+      </h2>
+      {WAITING.map((w, i) => (
+        <div
+          key={i}
+          className={`dt-figure dt-figure-empty${w.lead ? " dt-figure-lead" : ""}`}
+        >
+          <h3>{w.h}</h3>
+          {/* An EN dash. `&mdash;` would render the one character
+              this site bans, on every empty figure, which is the
+              rule at the top of `CLAUDE.md` broken by an entity
+              rather than by a keystroke. */}
+          <p className="dt-value dt-value-ghost" aria-hidden="true">&ndash;</p>
+          <p className="dt-said">
+            <T en={`Waiting for ${w.needs.en}.`} bn={`${w.needs.bn} দিলেই আসবে।`} />
+          </p>
+        </div>
+      ))}
+      <p className="dt-readout-foot">
+        <T
+          en="Nothing above is stored and nothing is sent anywhere. The arithmetic happens in this browser."
+          bn="উপরের কিছুই জমা থাকে না, কোথাও যায় না। হিসাবটা এই ব্রাউজারেই হয়।"
+        />
+      </p>
+    </div>
+  );
+}
+
+/** UNDER 18 IS A REFUSAL, NOT A WARNING.
+
+    `DIET.md` section 31: "the equations are for adults and the
+    tool says so and stops. This is not a soft warning; there is
+    no child mode." Every formula on this page was fitted on
+    adults: Mifflin-St Jeor is an adult equation, the Navy tape
+    method was validated on adult service personnel, and the BMI
+    cut-offs below are adult cut-offs against which a growing
+    body is read on a centile chart instead.
+
+    `min={18}` on the age box was the whole of this and it is
+    advisory markup outside a submitted form, so typing 15 drew
+    a complete readout. */
+function TooYoung() {
+  return (
+    <div className="dt-readout dt-readout-stop" role="note">
+      <h2 className="dt-readout-h"><T en="What that says about you" bn="এতে আপনার সম্পর্কে যা বোঝা যায়" /></h2>
+      <div className="dt-figure dt-figure-lead">
+        <h3><T en="This tool cannot answer for you" bn="এই টুল আপনার জন্য উত্তর দিতে পারে না" /></h3>
+        <TBlock
+          en={(
+            <>
+              <p>
+                Every number this page would show is worked out from an equation
+                fitted on adults. Under 18, height and weight are read against a
+                growth chart for your age instead, and there is no version of
+                that this page can do.
+              </p>
+              <p>
+                A doctor or a school nurse has the right chart. Nothing here is a
+                substitute for it, and a number that looks precise would be worse
+                than no number at all.
+              </p>
+            </>
+          )}
+          bn={(
+            <>
+              <p>
+                এই পাতা যে সংখ্যাগুলো দেখাত, তার প্রতিটি বড়দের ওপর তৈরি সূত্র থেকে আসে।
+                ১৮ বছরের নিচে উচ্চতা আর ওজন বয়স অনুযায়ী বৃদ্ধির চার্টে দেখতে হয়, আর
+                সেটা এই পাতা করতে পারে না।
+              </p>
+              <p>
+                সঠিক চার্ট একজন ডাক্তার বা স্কুলের নার্সের কাছে আছে। এখানকার কিছুই তার
+                বিকল্প নয়, আর নিখুঁত দেখতে একটা সংখ্যা কোনো সংখ্যা না থাকার চেয়েও খারাপ।
+              </p>
+            </>
+          )}
+        />
+      </div>
+    </div>
+  );
+}
+
 function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
   const value = bmi(body.weightKg, body.heightCm);
   const band = bmiBand(value, body.ancestry);
@@ -234,6 +435,9 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
 
   return (
     <div className="dt-readout">
+      <h2 className="dt-readout-h">
+        <T en="What that says about you" bn="এতে আপনার সম্পর্কে যা বোঝা যায়" />
+      </h2>
       {/* Waist to height leads. It is the number with the better
           evidence behind it and the one that needs no assumption
           about population. */}
@@ -258,9 +462,10 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
             </p>
             <p className="dt-why">
               <T
-                en="Predicts cardiometabolic risk better than BMI across ethnicities, and needs one tape measure."
-                bn="বিভিন্ন জাতিগোষ্ঠীর ক্ষেত্রে বিএমআইয়ের চেয়ে ভালো ইঙ্গিত দেয়, আর লাগে শুধু একটা ফিতা।"
+                en="Predicts cardiometabolic risk better than BMI across ethnicities, and needs one tape measure. "
+                bn="বিভিন্ন জাতিগোষ্ঠীর ক্ষেত্রে বিএমআইয়ের চেয়ে ভালো ইঙ্গিত দেয়, আর লাগে শুধু একটা ফিতা। "
               />
+              <Term id="whtr" en="What this ratio is" bn="এই অনুপাতটা কী" />
             </p>
           </div>
         )}
@@ -273,9 +478,10 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
         </p>
         <p className="dt-why">
           <T
-            en="Mass over height squared. It cannot tell muscle from fat and says nothing about where the fat is, which is the part that matters."
-            bn="ওজনকে উচ্চতার বর্গ দিয়ে ভাগ। এটি পেশি আর চর্বির পার্থক্য বোঝে না, আর চর্বি কোথায় জমেছে তা বলে না, যেটাই আসল ব্যাপার।"
+            en="Mass over height squared. It cannot tell muscle from fat and says nothing about where the fat is, which is the part that matters. "
+            bn="ওজনকে উচ্চতার বর্গ দিয়ে ভাগ। এটি পেশি আর চর্বির পার্থক্য বোঝে না, আর চর্বি কোথায় জমেছে তা বলে না, যেটাই আসল ব্যাপার। "
           />
+          <Term id="bmi" en="More on BMI" bn="বিএমআই নিয়ে আরও" />
         </p>
       </div>
 
@@ -318,9 +524,10 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
         </p>
         <p className="dt-why">
           <T
-            en="What the protein floor is worked out from, and the number that tells a lifter their BMI is lying."
-            bn="প্রোটিনের সর্বনিম্ন হিসাব এখান থেকেই আসে, আর যিনি ভার তোলেন তাঁকে এটাই বলে দেয় বিএমআই ভুল বলছে।"
+            en="What the protein floor is worked out from, and the number that tells a lifter their BMI is lying. "
+            bn="প্রোটিনের সর্বনিম্ন হিসাব এখান থেকেই আসে, আর যিনি ভার তোলেন তাঁকে এটাই বলে দেয় বিএমআই ভুল বলছে। "
           />
+          <Term id="lean" en="Lean mass and FFMI" bn="চর্বি ছাড়া ভর আর এফএফএমআই" />
         </p>
       </div>
 
@@ -347,6 +554,8 @@ function Readout({ body, lang }: { body: Body; lang: ToolLang }) {
                 + `হিসাব করে। ফিতা ছাড়া হত ${digits(Math.round(mifflin(body) / 10) * 10, "bn")}।`
               : "কিছু না করেও আপনার শরীর যা খরচ করে। ফিতার মাপ দিলে এর জায়গায় আরও ভালো একটা হিসাব আসে।"}
           />
+          {" "}
+          <Term id="bmr" en="What a resting burn is" bn="বিশ্রামে খরচ মানে কী" />
         </p>
       </div>
     </div>

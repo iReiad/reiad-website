@@ -16,7 +16,7 @@ export const metadata: Metadata = pageMeta({
 export default function Page() {
   return (
     <DietPage
-      title={<T en="How it is going" bn="কেমন যাচ্ছে" />}
+      href="/tools/diet/journal"
       lede={{ en: "Hunger is the earliest signal there is. Everything else here is a lagging measure.", bn: "ক্ষুধাই সবচেয়ে আগের ইঙ্গিত। এখানকার বাকি সব পিছিয়ে আসা মাপ।" }}
     >
       <JournalPanel />

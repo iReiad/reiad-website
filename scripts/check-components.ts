@@ -75,9 +75,22 @@ const UPDATE = process.argv.includes("--update");
 /** A pattern a component owns: the plain text to look for, what
     to reach for instead, and a line this pattern matches that the
     component cannot cover. */
+/** An opening tag from where it starts to its `>`, across as
+    many lines as it takes. Capped, because a runaway scan on a
+    file with an unbalanced angle bracket should read a few lines
+    and stop rather than the whole file. */
+function element(lines: string[], from: number, at: number): string {
+  let out = lines[from].slice(at);
+  for (let j = from + 1; j < Math.min(from + 12, lines.length); j += 1) {
+    if (out.includes(">")) break;
+    out += ` ${lines[j]}`;
+  }
+  return out.slice(0, out.indexOf(">") + 1 || out.length);
+}
+
 interface Owned {
   id: string;
-  find: string;
+  find: string | RegExp;
   use: string;
   skip?: RegExp;
 }
@@ -135,14 +148,26 @@ const OWNED: Owned[] = [
      wrapped on to the next line and the pattern never saw it. The
      class is back on the first line rather than the pattern made
      cleverer, because the comment above it already says never to
-     convert it and a reader should see both at once. */
+     convert it and a reader should see both at once.
+
+     AND THE FINDER HAD THE SAME BLIND SPOT, WORSE. It was the
+     string `"<input "`, with a trailing space, so every one of
+     these written with its attributes starting on the next line
+     was invisible: the ledger read 5 and 0 while the tree held
+     14 and 5. It is a pattern that also matches an end of line
+     now, and `skip` reads the whole opening tag rather than the
+     first line of it, so a multi-line checkbox is still skipped.
+     The nine it turned up outside this file's own subject are
+     recorded rather than converted: the ratchet only ever lets a
+     count fall, so recording a true number is what makes them
+     reachable. */
   {
     id: "input",
-    find: "<input ",
+    find: /<input(?=[\s>]|$)/,
     skip: /type="(?:range|checkbox|radio|hidden|file|submit|button)"|honeypot/,
     use: "<Field> from ui/field",
   },
-  { id: "textarea", find: "<textarea ", use: "<TextArea> from ui/field" },
+  { id: "textarea", find: /<textarea(?=[\s>]|$)/, use: "<TextArea> from ui/field" },
 ];
 
 /* A colour a route names for itself. `--accent` and the tokens
@@ -224,9 +249,10 @@ const colours: string[] = [];
 for (const file of files) {
   const src = readFileSync(file, "utf8");
   const rel = relative(ROOT, file);
+  const lines = src.split("\n");
   let inComment = false;
 
-  src.split("\n").forEach((line, i) => {
+  lines.forEach((line, i) => {
     /* Prose is not code, and this used to be BELOW the loop over
        OWNED rather than above it, so that loop read comments. It
        is a substring search, so a comment saying why a control
@@ -247,8 +273,18 @@ for (const file of files) {
     const code = line.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/, "");
 
     for (const owned of OWNED) {
-      if (!code.includes(owned.find)) continue;
-      if (owned.skip?.test(code)) continue;
+      const at = typeof owned.find === "string"
+        ? code.indexOf(owned.find)
+        : code.search(owned.find);
+      if (at < 0) continue;
+      /* SKIP READS THE ELEMENT, NOT THE LINE. Both halves of this
+         were line-based and both were blind the same way: a
+         `<input` whose attributes begin on the next line matched
+         nothing, and eight of them sat uncounted in one tool
+         while the ledger read 5 and the check passed. Widening
+         `find` alone would then count a multi-line checkbox that
+         `skip` can no longer see. */
+      if (owned.skip?.test(element(lines, i, at))) continue;
       counts[owned.id] += 1;
       where[owned.id].push(`${rel}:${i + 1}`);
     }

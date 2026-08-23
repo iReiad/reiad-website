@@ -14,8 +14,9 @@
 
 import type { Metadata } from "next";
 import { pageMeta } from "../../../../../lib/pageMeta";
+import { DietPage } from "../../../../../components/diet/page-frame";
 import { BodyPanel } from "../../../../../components/diet/body";
-import { LangSwitch, T, TBlock } from "../../../../../components/diet/lang";
+import { T, TBlock } from "../../../../../components/diet/lang";
 
 export const metadata: Metadata = pageMeta({
   path: "/tools/diet/you",
@@ -31,28 +32,13 @@ export const metadata: Metadata = pageMeta({
 
 export default function DietYouPage() {
   return (
-    <main id="main" className="wrap dt-page">
-      <header className="dt-head">
-        <div className="dt-head-row">
-          <h1><T en="Your body" bn="আপনার শরীর" /></h1>
-          <LangSwitch />
-        </div>
-        <TBlock
-          en={(
-            <p className="dt-lede">
-              Type what you know. Nothing is stored, nothing is sent anywhere,
-              and no account is needed for any of it.
-            </p>
-          )}
-          bn={(
-            <p className="dt-lede">
-              যা জানেন লিখুন। কিছুই জমা থাকে না, কোথাও পাঠানো হয় না, আর এর কোনো
-              কিছুর জন্যই অ্যাকাউন্ট লাগে না।
-            </p>
-          )}
-        />
-      </header>
-
+    <DietPage
+      href="/tools/diet/you"
+      lede={{
+        en: "Type what you know. Nothing is stored and nothing is sent anywhere until you press the button that says so, and no account is needed for any of the arithmetic.",
+        bn: "যা জানেন লিখুন। যতক্ষণ না আপনি নিজে বোতামটা চাপছেন, কিছুই জমা থাকে না আর কোথাও যায় না, আর হিসাবের কোনো অংশের জন্যই অ্যাকাউন্ট লাগে না।",
+      }}
+    >
       <BodyPanel />
 
       <section className="dt-tape" aria-labelledby="dt-tape-h">
@@ -113,6 +99,6 @@ export default function DietYouPage() {
           )}
         />
       </section>
-    </main>
+    </DietPage>
   );
 }
