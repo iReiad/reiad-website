@@ -13670,9 +13670,41 @@ German for day, and .tag is what the site has always called
   .dt-dot { fill: var(--ink-soft); opacity: 0.5; }
   .dt-ax { fill: var(--ink-soft); font-size: 10px; font-family: var(--font-mono); }
   .dt-ax-line { stroke: var(--hairline); stroke-width: 1; }
+  /* A STRETCH NO RATE MAY BE FITTED TO. The wash on its own was
+     colour as the only channel, which the chart's own rules
+     forbid and which its header already claimed this was not:
+     it called this mark a hatch for as long as it has existed.
+     The dashed edge is the second channel, and it costs the two
+     charts that draw this no markup. */
   .dt-settling {
     fill: var(--ink-soft); opacity: 0.06;
+    stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 3 3;
   }
+
+  /* THE PART OF THE YEAR NOT YET LIVED. The axis is always 365
+     days wide, whatever the log holds, so a reader three months
+     in has nine months of empty year to the right of today. It is
+     shaded because "empty" and "not yet" are two different
+     statements and an unshaded gap makes the first one. */
+  .dt-year-ahead { fill: var(--ink-soft); opacity: 0.04; }
+
+  /* A STRETCH OF ONE PROTOCOL, ACROSS THE BODY OF THE PLOT.
+     Seasons run along its foot instead and the two never overlap,
+     so POSITION is what tells the two kinds of band apart:
+     nothing on this chart is encoded in colour alone. A stretch a
+     rate may NOT be fitted to keeps `.dt-settling`, which is the
+     same mark the long view draws, and the stretch table under
+     the chart names every one and says which it is. */
+  .dt-year-phase { fill: var(--accent); opacity: 0.07; }
+
+  /* A SEASON, ALONG THE FOOT. Faint, because none of these
+     changes the arithmetic: what a season changes is what a flat
+     month MEANS, and that is a sentence under the chart rather
+     than anything in the drawing. Two seasons can overlap here,
+     Boishakh inside the summer heat and Christmas inside a
+     British winter, and the opacity compounds where they do,
+     which is the right reading: something extra is happening. */
+  .dt-year-season { fill: var(--ink-soft); opacity: 0.16; }
 
   .dt-table-wrap { overflow-x: auto; margin-block-end: var(--step); }
   .dt-table { border-collapse: collapse; inline-size: 100%; font-size: var(--t-2); }
@@ -13692,7 +13724,7 @@ German for day, and .tag is what the site has always called
      grids say so themselves below. */
   .dt-goal, .dt-journal, .dt-nutrition, .dt-expect, .dt-trend,
   .dt-foods, .dt-health, .dt-summary, .dt-keto, .dt-habits,
-  .dt-recipes, .dt-usuals {
+  .dt-recipes, .dt-usuals, .dt-year {
     display: grid; gap: var(--step);
   }
 

@@ -239,12 +239,28 @@ const fromDay = (d: Day): DayRow => ({
 
 /** The last n days, newest first out of the index and reversed
     here, because every reading downstream wants them in order. */
+/** How many days one read brings back. Two years and a bit, so
+    the year page's 365 and the long view's windows all fit.
+
+    THE ORDER IS DESCENDING AND THE ROWS ARE TURNED ROUND HERE,
+    which is not a style choice. Ascending with a cap silently
+    returns the OLDEST rows and drops the recent ones, so a
+    reader whose log is longer than the cap gets a page drawn
+    entirely out of history: the chart renders, the figures are
+    real numbers, and every one of them is years old. Descending
+    drops the far end of the past instead, which is the half a
+    reader can afford to lose. */
+const DAYS_AT_ONCE = 800;
+
 export async function getDays(w: Who, from: string): Promise<Day[]> {
   const r = await call<DayRow[]>(
     `diet_days?user_id=eq.${w.id}&entry_date=gte.${from}`
-    + `&select=*&order=entry_date.asc&limit=800`, { method: "GET" }, w,
+    + `&select=*&order=entry_date.desc&limit=${DAYS_AT_ONCE}`, { method: "GET" }, w,
   );
-  return r.ok && r.data ? r.data.map(toDay) : [];
+  if (!r.ok || !r.data) return [];
+  /* Every caller reads these oldest first, and a slope fitted
+     backwards is a slope with the wrong sign. */
+  return r.data.map(toDay).reverse();
 }
 
 /** One row per person per day, which is what makes this an

@@ -31,6 +31,13 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v200: /fallback.css. A year in one page, with the phases
+        banded across the plot and the seasons along its foot.
+        And the settling window had a wash and nothing else, so
+        it was told from a readable stretch by colour alone,
+        which the chart's own rules forbid: it has a dashed edge
+        now.
+
    v199: /fallback.css. Fourteen cards on the front door were
         fourteen paragraphs in one typeface, so each page has a
         glyph in its own colour now. And a page that needs an
@@ -1782,7 +1789,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v199";
+const VERSION = "v200";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

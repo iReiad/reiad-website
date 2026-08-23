@@ -1358,7 +1358,9 @@ check reads that list.
 `shared/insights.ts` is the arithmetic and
 `next/components/diet/insights-panel.tsx` draws it, on
 `/tools/diet/nutrition` beside `§15`, out of the same fetch that
-page already makes. Eight of the nine readings above are there:
+page already makes. That file holds `§17`'s money, `§18`'s one
+sleep reading and `§19`'s two about movement as well: they are
+all readings out of a log and they all obey the rule below. Eight of the nine readings above are there:
 where the calories are and which days go over were already on
 that page, and the protein split, the swap, protein and fibre per
 100 kcal, this week against the reader's own average, adherence
@@ -1367,11 +1369,33 @@ panel. Every one of them prints the span it was measured over and
 how many days of that span were written down, and every one has a
 sentence for having too little data rather than a zero.
 
-**A year in one page is the one still to build**, and it is not
-an oversight. It wants the phases from `§10` and the seasons from
-`§18` drawn on one trend, it is a page rather than a panel, and
-it says once a year, so before there is a year of log it can only
-draw its own empty state. It belongs with `§18`.
+**A year in one page is `/tools/diet/year`**, and it is the one
+of the nine that is a page rather than a panel, because it wants
+the phases from `§10` and the seasons from `§18` on one trend and
+neither fits beside a nutrient table. `next/components/diet/year-panel.tsx`
+draws it, out of the same three fetches the long view makes.
+
+**The axis is always a year, and that is the empty state rather
+than a fallback.** Until the log reaches back a year the axis
+starts at the first weighing and runs a year forward, so a reader
+three months in sees three months of line, nine months of shaded
+year to the right of today, and the seasons already drawn across
+the part they have not lived. It is one expression and there is
+no threshold in it. The deferral was right that this page can
+only draw its own empty state for most of its first year, and
+wrong that this is a reason to wait: what a reader needs at three
+months is to see the shape of the thing they are filling in, and
+a page that will not draw until it is full teaches nobody that
+they are on their way.
+
+**It states no rate across the year.** A year almost always
+crosses a change of protocol, and `§10`'s rule is that a slope
+never does, so the lead figure is the DIFFERENCE between the
+trend at each end, said as a difference, and the rates are one
+per stretch in a table beneath. Where no protocol has ever been
+declared there is no boundary to cross, the year is one window,
+and one rate over it is the honest answer rather than a missing
+one.
 
 Two things the building of it turned up, both of them the reason
 a templated sentence has to be checked rather than written:
@@ -1541,6 +1565,49 @@ observation of the kind `§16` allows: on this reader's own data,
 days after short nights average so much above target. Described,
 not explained, and never turned into a sleep score.
 
+**A ROW'S HOURS ARE THE NIGHT THAT ENDED ON THAT ROW'S MORNING**,
+and they pair with that row's OWN intake. It is a decision rather
+than an implementation detail, so it is settled here rather than
+in three comments, and three things point the same way.
+
+A row is a day and the whole row hangs off one morning:
+`weightKg` is that morning's weighing, and this section already
+says short sleep "affects the morning weight directly through
+hydration and cortisol", which is the same night. Sleep and
+weight on one row have to mean one night or the row means two
+things at once.
+
+Every importer agrees. Apple Health, Fitbit and Oura all date a
+night to the morning it ended, and `shared/csv.ts` maps `sleep`,
+`hours slept` and `time asleep` out of exactly those. Pair a
+night with the following row and an imported log is a day out
+with nothing on the page looking wrong.
+
+And a field on the log form reads "last night", which is that
+same night again, so a typed row and an imported row agree by
+construction rather than by anybody remembering.
+
+"Days after short nights" still holds and is not a third
+convention: the day after the night IS that row, because the
+night ended that morning.
+
+`afterShortNights()` in `shared/insights.ts` is the arithmetic
+and it is drawn on `/tools/diet/nutrition`, beside `§16`'s other
+readings, because what it is a reading ABOUT is intake. It says
+two averages with the days each was drawn from, both against the
+reader's own target where there is one, and it refuses under five
+days on either side of the line. There is no score, no grade for
+a night and no target for one. `scripts/insights.test.ts` builds
+an alternating fixture and asserts that pairing a row with the
+day before or the day after comes out with the OPPOSITE sign, so
+a drift in either direction fails loudly rather than looking
+correct.
+
+**No form offers hours yet.** The column is fillable only through
+the CSV import on `/tools/diet/import`. A field on the log form,
+labelled "last night", is the one thing between this reading and
+most readers.
+
 ### Illness, and the pause that is not a failure
 
 A fever puts water on, an infection takes appetite away, and a
@@ -1638,6 +1705,62 @@ does not exist.
 **No heart rate, no VO2 max, no recovery score.** Those need a
 device this tool does not talk to and produce numbers this tool
 could not check.
+
+### What is built
+
+`shared/activity.ts` is what a step is worth: `stepsKcal()` and
+`stepsKgPerWeek()`, the two ranges kept apart until the last
+multiplication, `stepBase()` for the reader's own middle day and
+`stepShift()` for one window against the one before it.
+`next/components/diet/forecast-panel.tsx` draws the fortnight and
+what more walking would do to the forecast.
+
+**The fourth stall is a KIND**, not only a reading. `stall()`
+takes `stepsThen` and `stepsNow`, both medians out of
+`stepShift()`, and reports `moved-less` where the walking has
+fallen. It sits second in the order, behind a falling waist and
+ahead of a drifted target, because the order is confidence rather
+than likelihood: a waist is measured on the reader, a fall in
+walking is two medians off the log, and a drifted target is a
+burn this tool inferred.
+
+**Both tests have to pass or neither counts**, and that is the
+part worth not undoing. A fifth off 2,000 steps is 400 steps and
+about ten kilocalories, which is not why anybody stalled; a
+thousand off 20,000 is not a change of habit. Medians and never
+means, because one 25,000 step day in a month of 4,000s is a
+wedding.
+
+Two readings in `shared/insights.ts` finish the section, both on
+`/tools/diet/habits`:
+
+- **`movement()`** is the same three facts as a reading rather
+  than a verdict: the walking, the trend and the logged intake
+  over ONE window and the window before it. The window is
+  `STALL_DAYS`, the same three weeks `§4` reads a stall over, so
+  the three readings are about the same days. `flat` is a
+  statement about the rate's interval spanning zero and nothing
+  else. It refuses under seven days with a step count in either
+  half.
+- **`tape()`** is the reading that justifies the measurement set:
+  every site the log carries, first reading against last over four
+  weeks, beside what the trend did over the same four weeks. It
+  needs two readings of one site a fortnight or more apart, it
+  says which changes are larger than the centimetre a tape can
+  resolve, and it draws whether or not a stall was detected,
+  because a reader who is not stalled still cannot read this out
+  of a weight.
+
+`TAPE_RESOLUTION_CM` is that centimetre, exported from
+`shared/diet.ts` and read by both `stall()` and `tape()`. Two of
+them is a page saying a waist has moved beside a page saying it
+has not.
+
+**One thing in this section is still not built**, and it is
+deliberate: training, as type, duration and how hard it felt.
+There is no column for any of the three, so it is a migration, a
+form and a release rather than a reading, and a reading built on
+a column nothing writes is a decoration.
 
 ---
 
@@ -2146,6 +2269,7 @@ and there are four rules for it.
 | `/tools/diet/you` | the body: measurements, composition, the cut-offs and which set is in use, the tape guide |
 | `/tools/diet/goal` | rate, style, macros, the floors, the goal in waist first, and what the projection actually says |
 | `/tools/diet/trend` | the long view: trend against scale, learned maintenance over time, stalls, phases, and the calendar from `§18` |
+| `/tools/diet/year` | a year in one page: one trend with the phases from `§10` banded across it, the seasons from `§18` along its foot, the days you marked, and what the log holds. The axis is a year wide whatever the log holds |
 | `/tools/diet/expect` | `§9`: the arc, this week's expectation against what happened, the shape of a day, and what unlocks when |
 | `/tools/diet/log` | the food log in full: search, barcode, recipes, your usuals, the week's plan and the shopping list. `§12` and `§13` |
 | `/tools/diet/foods` | the portion library for this place, the reader's own items, and the price table from `§17` |
@@ -2159,8 +2283,14 @@ All Next routes under `next/app/(site)/tools/diet/`, components in
 `shared/nav.ts` under Tools, which is what puts it in the rail,
 the footer and the palette at once.
 
-**Eleven pages is too many to scroll and exactly right to tab
+**This many pages is too many to scroll and exactly right to tab
 through**, which is a solved problem here:
+
+The number is deliberately not replaced with fifteen. `§29`'s own
+table is the list, `DIET_PAGES` is what the strip and the deck
+count, and a sentence that states a total beside a table is the
+failure at the top of `CLAUDE.md`. Say "this many", or say
+nothing.
 `next/components/ui/tab-panels.tsx` is the account page's
 arrangement, the fragment chooses the panel, and the panels are
 built on the server and handed over as a prop. This tool uses it

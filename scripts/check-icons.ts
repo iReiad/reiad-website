@@ -133,11 +133,27 @@ for (const file of files) {
 /* ---------- 2. the diet tool's two tables, both directions ---------- */
 
 for (const page of DIET_PAGES) {
-  if (DIET_ICONS[page.href]) continue;
+  const name = DIET_ICONS[page.href];
+  if (!name) {
+    bad += 1;
+    console.error(`\n  x ${page.href} is in DIET_PAGES and has no entry in DIET_ICONS.`);
+    console.error("        Its card on the front door draws an empty tile. Add a name to"
+      + "\n        next/components/diet/icons.ts.");
+    continue;
+  }
+  /* AND THE NAME HAS TO DRAW SOMETHING. The literal scan above
+     cannot see these: the deck passes `dietIcon(p.href)`, which
+     is a call rather than a string, so a name in this table
+     reaches `<Icon>` without ever appearing in the source as
+     one. This file's own header promised this check and did not
+     make it for a while, which is the shape of failure it exists
+     to catch. */
+  if (known(name) && !empty.has(name)) continue;
   bad += 1;
-  console.error(`\n  x ${page.href} is in DIET_PAGES and has no entry in DIET_ICONS.`);
-  console.error("        Its card on the front door draws an empty tile. Add a name to"
-    + "\n        next/components/diet/icons.ts.");
+  console.error(`\n  x DIET_ICONS gives ${page.href} the icon "${name}", which draws nothing.`);
+  console.error("        It is in neither the school set nor the shell set, so the card"
+    + "\n        on the front door gets a correctly sized empty svg."
+    + `\n        --list prints both sets.`);
 }
 const hrefs = new Set(DIET_PAGES.map((p) => p.href));
 for (const href of Object.keys(DIET_ICONS)) {
