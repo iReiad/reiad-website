@@ -69,7 +69,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/check-css.ts",
     "scripts/check-sw.ts",
     "scripts/check-content.ts",
-  "scripts/check-calculators.ts",
+    "scripts/check-calculators.ts",
     "scripts/check-csp.ts",
     "scripts/check-crons.ts",
     "scripts/check-pieces.ts",
@@ -130,9 +130,14 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     ["scripts/build-stamp.ts", "--check"],
     ["scripts/import-courses.ts", "--crawl", "scripts/fixtures/course-crawl", "--check"],
     ["scripts/export-stock-fixtures.ts", "--check"],
-  ["scripts/export-calculator-fixtures.ts", "--check"],
-  ["scripts/export-portfolio-fixtures.ts", "--check"],
-  ["scripts/export-routine-fixtures.ts", "--check"],
+    ["scripts/export-calculator-fixtures.ts", "--check"],
+    ["scripts/export-portfolio-fixtures.ts", "--check"],
+    ["scripts/export-routine-fixtures.ts", "--check"],
+    /* The body and the energy, so the Kotlin port cannot drift.
+       Every number this file produces is plausible: a resting
+       burn with the wrong sex constant is 166 kcal out, which is
+       a fifth of a deficit and looks exactly like a number. */
+    ["scripts/export-diet-fixtures.ts", "--check"],
   ]],
   ["tests", [
     "scripts/input.test.ts",
