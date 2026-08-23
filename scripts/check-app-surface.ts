@@ -81,6 +81,21 @@ const NOT_FOR_APP: Record<string, string> = {
     + "the app has its own search screen and its own grouping.",
   SCHOOL_ACCENTS:
     "the learning group's colours, derived from ACCENTS, which is sent whole.",
+  TEMPLATES:
+    "the two routines a reader can start from. Not sent YET, and this line "
+    + "moves the day the app can create a routine: today it sends the reader "
+    + "to the site for that, and the app's own ManifestSurfaceTest fails on a "
+    + "field that is carried and never drawn.",
+  FIRST_RUN: "which of TEMPLATES a new account gets, for the same reason.",
+  SCHEMA:
+    "the export file's version. The app can read a routine and cannot write "
+    + "one, so nothing here has an export to stamp yet.",
+  PRIVATE_TEMPLATES:
+    "one person's real day, written out as a routine. It is the one table "
+    + "here that must never leave, on the same grounds check-courses.ts "
+    + "refuses the course catalogue: publishing it would not break "
+    + "anything and would still be wrong. TEMPLATES, the two public ones, "
+    + "IS sent.",
 };
 
 /* ---------- what the tables are ---------- */
@@ -94,7 +109,18 @@ const tablesIn = (path: string): string[] => {
   return [...text.matchAll(TABLE)].map((m) => m[1]);
 };
 
-const SOURCES = ["shared/content.ts", "shared/nav.ts", "shared/tool-strings.ts"];
+const SOURCES = [
+  "shared/content.ts",
+  "shared/nav.ts",
+  "shared/tool-strings.ts",
+  /* The routine tool's tables. It arrived here when the
+     Android app turned out to be carrying a Kotlin copy of
+     the four moods, the six seasons and the five plants,
+     which is exactly the shape of thing this check exists to
+     find: a table the site holds, the app draws, and nothing
+     sends. */
+  "shared/routine.ts",
+];
 const tables = SOURCES.flatMap((path) => tablesIn(path).map((name) => ({ name, path })));
 
 /* ---------- what the endpoint sends ---------- */
