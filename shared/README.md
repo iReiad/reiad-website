@@ -62,6 +62,15 @@ this repository got written.
   once, and `unlisted` is how a section stays out of both menus
   while still being said once.
 
+- **`profile.ts`** the two vocabularies an account answers with:
+  how often somebody means to practise, and the three kinds of
+  target. Both are a CHECK constraint in Postgres and both were
+  written out a second time in a React component, which is what
+  `check-rows.ts` section 2 already exists for one table along.
+  There is a third reader now: a pace added here reaches the
+  Android app with no release, because `functions/api/site.ts`
+  serves it like every other table.
+
 - **`routine.ts`** what a routine is, plus `done()`, the tool's
   only arithmetic. Four places want that sum and four copies is
   four chances for one of them to count leisure, which is the day

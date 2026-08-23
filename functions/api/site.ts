@@ -63,6 +63,7 @@ import {
 import { ACCENTS, AUDIENCES, LADDER_SCHOOLS, NAV, ORDER } from "../../shared/nav.ts";
 import { bnNum } from "../../shared/schools.ts";
 import { GARDEN, GROWN, MOODS, SEASONS } from "../../shared/routine.ts";
+import { PACES, TARGET_KINDS } from "../../shared/profile.ts";
 
 /** Half an hour, the same as the market board next door. The
     furniture changes when somebody deploys, so a stale answer is
@@ -152,6 +153,16 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
         door: {
           ...DOOR,
           facts: DOOR.facts.map((fact) => ({ ...fact, n: bnNum(COUNTS[fact.count]) })),
+        },
+        /* The two vocabularies an account answers with. Both are
+           a CHECK constraint in Postgres, so a value the app
+           offers that this list has not got is a 400 on the whole
+           write: sending them is what stops the app spelling them
+           a third time. `check-rows.ts` holds all three to the
+           migration. */
+        profile: {
+          paces: PACES.map((pace) => ({ ...pace })),
+          targetKinds: TARGET_KINDS.map((kind) => ({ ...kind })),
         },
       }, {
         "Cache-Control": `public, max-age=${CACHE_SECONDS}`,

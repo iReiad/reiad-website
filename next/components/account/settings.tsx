@@ -35,6 +35,7 @@ import {
 } from "react";
 import type { Profile } from "/account.js";
 import { LADDER_SCHOOLS } from "@reiad/shared/nav";
+import { PACES } from "@reiad/shared/profile";
 import { subscribe } from "../../lib/progress";
 import { Button } from "../ui/button";
 import { Field } from "../ui/field";
@@ -65,11 +66,6 @@ const Question = ({ ask, why, children }: {
   </fieldset>
 );
 
-const PACES = [
-  { id: "daily", label: "Every day", note: "or as near as life allows" },
-  { id: "often", label: "Most days", note: "four or five a week" },
-  { id: "sometimes", label: "When I can", note: "no particular rhythm" },
-];
 
 export function Settings() {
   const profile = useProfile();
