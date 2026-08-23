@@ -30,6 +30,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   everMarked, written, bandTasks, seasonOf,
   type Band, type Task, type RoutineShape, type Entry,
+  GROWN,
 } from "@reiad/shared/routine";
 import { runtimeModule } from "../account/runtime";
 import { Button } from "../ui/button";
@@ -43,8 +44,6 @@ const routineModule = () => runtimeModule<RoutineModule>("/routine.js");
 const BN = Array.from({ length: 10 }, (_, i) => String.fromCharCode(0x09e6 + i)).join("");
 const bn = (n: number | string): string => String(n).replace(/\d/g, (d) => BN[Number(d)]);
 
-const BIRDS = "brd";
-const PLANTS = "pln";
 
 /** The seven days ending on `to`, oldest first. */
 function week(to: string): string[] {
@@ -106,8 +105,8 @@ export function RoutinePrint() {
 
   const live = shape.tasks.filter((t) => !t.archived).sort((a, b) => a.order - b.order);
   const notes = written(entries).slice(0, 4);
-  const birds = everMarked(entries, BIRDS);
-  const plants = everMarked(entries, PLANTS);
+  const birds = everMarked(entries, GROWN.birds);
+  const plants = everMarked(entries, GROWN.plants);
   const season = seasonOf(today);
 
   return (

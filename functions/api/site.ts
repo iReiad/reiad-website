@@ -62,6 +62,7 @@ import {
 } from "../../shared/content.ts";
 import { ACCENTS, AUDIENCES, LADDER_SCHOOLS, NAV, ORDER } from "../../shared/nav.ts";
 import { bnNum } from "../../shared/schools.ts";
+import { GARDEN, GROWN, MOODS, SEASONS } from "../../shared/routine.ts";
 
 /** Half an hour, the same as the market board next door. The
     furniture changes when somebody deploys, so a stale answer is
@@ -114,6 +115,34 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
         termGroups: TERM_GROUPS.map((group) => ({ ...group })),
         pages: PAGES.filter((page) => !page.private).map((page) => ({ ...page })),
         counts: { ...COUNTS },
+
+        /* The routine tool's own vocabulary.
+
+           Four moods, six seasons, five plants and the two task
+           ids the drawings hang on: every one of them an id, a
+           name in each language and a colour, which is data by
+           this file's own rule and was a second copy in Kotlin.
+           A fifth mood or a sixth plant reaches a phone on the
+           next fetch now.
+
+           `PRIVATE_TEMPLATES` is NOT here and never will be: it
+           is one person's real day, and `check-courses.ts`
+           already refuses it in a public bundle for the same
+           reason it refuses the course catalogue.
+
+           `TEMPLATES`, `FIRST_RUN` and `SCHEMA` are not here
+           either, and that is a smaller decision that will
+           change: the app cannot CREATE a routine yet, it sends
+           the reader to the site for that, and a field carried
+           and never drawn is a field somebody later mistakes for
+           a feature. `ManifestSurfaceTest` in the app fails on
+           one, which is how this was noticed. */
+        routine: {
+          moods: MOODS.map((mood) => ({ ...mood })),
+          seasons: SEASONS.map((season) => ({ ...season })),
+          garden: GARDEN.map((plant) => ({ ...plant })),
+          grown: { ...GROWN },
+        },
         /* The front door's own words, with the counts already
            resolved: `DOOR.facts` names a key of `COUNTS` so that
            nobody can type a number into a sentence, and a client
