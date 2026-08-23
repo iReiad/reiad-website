@@ -316,6 +316,17 @@ export const LADDER_SCHOOLS = (NAV.find((g) => g.id === "learn")?.items ?? [])
     href: item.href,
     accent: item.accent ?? "var(--green)",
     blurb: item.blurb ?? "",
+    /** What kind of thing this is, in Bangla, which is what the
+        card's chip says. Every ladder school's is `কোর্স`.
+
+        It was dropped here for as long as this table existed, and
+        the site did not notice because the site reads `NAV`
+        directly. The APP reads this, so its school cards wore the
+        Latin label instead: `MONEY`, `GERMAN`, `QUR'ANIC ARABIC`
+        in front of a reader the whole site is written in Bangla
+        for. A field-by-field map is the failure `CLAUDE.md` opens
+        with, one table along. */
+    kind: item.kind ?? "",
   }));
 
 /** Both names, the way this site writes a school: Bangla first. */
