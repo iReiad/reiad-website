@@ -34,6 +34,8 @@ import { GoCard, InfoCard, SoonCard } from "../../../../components/deck";
 import { NAV } from "@reiad/shared/nav";
 import { pageMeta } from "../../../../lib/pageMeta";
 import { SectionLabel } from "../../../../components/ui/label";
+import { COUNTS } from "@reiad/shared/content";
+import { HEADS } from "@reiad/shared/heads";
 
 export const metadata: Metadata = pageMeta({
   path: "/skills",
@@ -68,14 +70,16 @@ export default function SkillsPage() {
       <div className="hub-wrap">
 
         <header className="hub-hero">
-          <span className="hub-eyebrow mono">
-            দক্ষতা · <span lang="en">Skills</span>
-          </span>
-          <h1 className="bn-h">এই সাইটে যা যা শেখানো হয়।</h1>
+          {/* Out of `shared/heads.ts`, which is what the
+              Android app draws this hub from too. The `{n}` is
+              filled from `COUNTS` rather than from `live.length`
+              for the reason the top of CLAUDE.md gives: a number
+              on a page counts the data, and two places counting
+              it is two chances to disagree. */}
+          <span className="hub-eyebrow mono">{HEADS.skills.eyebrow}</span>
+          <h1 className="bn-h">{HEADS.skills.title}</h1>
           <p className="hub-lede" lang="bn">
-            {bn(live.length)}টা খোলা আছে, বাকিটা হচ্ছে। প্রতিটার নিয়ম একই: ব্যাখ্যা বাংলায়,
-            শেখার সবকিছু ফ্রি, আর আপনার অগ্রগতি জমা থাকে আপনার অ্যাকাউন্টে।
-            যেটা এখনো আসেনি সেটাও নিচে আছে, কারণ কী আসছে জানা থাকলে অপেক্ষা করা যায়।
+            {HEADS.skills.lede.replace("{n}", bn(COUNTS.courses))}
           </p>
         </header>
 

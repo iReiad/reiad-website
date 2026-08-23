@@ -64,6 +64,7 @@ import { ACCENTS, AUDIENCES, LADDER_SCHOOLS, NAV, ORDER } from "../../shared/nav
 import { bnNum } from "../../shared/schools.ts";
 import { GARDEN, GROWN, MOODS, SEASONS } from "../../shared/routine.ts";
 import { PACES, TARGET_KINDS } from "../../shared/profile.ts";
+import { HEADS } from "../../shared/heads.ts";
 
 /** Half an hour, the same as the market board next door. The
     furniture changes when somebody deploys, so a stale answer is
@@ -164,6 +165,26 @@ export function onRequest(context: RouteContext): Response | Promise<Response> {
           paces: PACES.map((pace) => ({ ...pace })),
           targetKinds: TARGET_KINDS.map((kind) => ({ ...kind })),
         },
+        /* What each hub page SAYS, with the counts already
+           resolved: a lede names a `COUNTS` key so that nobody
+           can type a number into a sentence, and a client should
+           not have to know that indirection to print one. The
+           same arrangement `door` uses one field up. */
+        heads: Object.fromEntries(
+          Object.entries(HEADS).map(([key, { count, ...head }]) => [key, {
+            ...head,
+            /* Resolved, and the KEY is dropped rather than sent
+               beside it. `DOOR.facts` sends both because there
+               the number is its own field and a client can
+               redraw it; here it is baked into a sentence, so a
+               client could only use the key by re-implementing
+               the slot. A field carried and never drawn is a
+               field somebody later mistakes for a feature, which
+               is what the app's own `ManifestSurfaceTest` fails
+               on and is how this was noticed. */
+            lede: count ? head.lede.replace("{n}", bnNum(COUNTS[count])) : head.lede,
+          }]),
+        ),
       }, {
         "Cache-Control": `public, max-age=${CACHE_SECONDS}`,
       }),
