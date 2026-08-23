@@ -8860,6 +8860,32 @@
   .dt-drop:focus-visible { opacity: 1; color: var(--danger); }
   .dt-drop:disabled { opacity: 0.15; cursor: default; }
 
+  .dt-meal { display: grid; gap: var(--s-2); }
+  .dt-meal-h {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--s-4);
+    margin: 0;
+    font-size: var(--t-1);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+
+  .dt-plan {
+    display: grid;
+    gap: var(--s-3);
+    margin-block-start: var(--s-5);
+    padding-block-start: var(--s-5);
+    border-block-start: 1px solid var(--hairline);
+  }
+  .dt-plan h3 { margin: 0; font-size: var(--t-2); }
+
+  .dt-meal-build { display: grid; gap: var(--s-4); }
+  .dt-week, .dt-week-day { display: grid; gap: var(--s-4); }
+
   .dt-scale { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
   .dt-scale-label { font-size: var(--t-1); color: var(--ink-soft); }
   .dt-tags, .dt-marks { display: flex; gap: var(--s-2); flex-wrap: wrap; }

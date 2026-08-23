@@ -1025,28 +1025,69 @@ seconds. **The reason food diaries get abandoned is friction, not
 motivation**, and the fix is that most people eat the same forty
 things.
 
-- ✓ **Copy yesterday**, whole or one meal of it. The most pressed
-  button in any food log, and it is usually right. Whole, or one
-  row of it; a meal of it waits on `diet_entries.meal` being
-  filled, which is what names one.
+- ✓ **Copy yesterday**, whole, one meal of it, or one row. The
+  most pressed button in any food log, and it is usually right.
+  `MEALS` in `shared/diet.ts` is what names a meal and
+  `diet_entries.meal` is where it goes: four names, and every
+  hour of the clock falls inside exactly one of them, so
+  `byMeal()` groups a day whether or not anything ever wrote
+  that column. It reads the column first and the hour second,
+  the same way `entryHour()` reads the hour first and the column
+  second, because there are real rows carrying a clock where a
+  meal name belongs.
 - ✓ **Your usuals**, worked out rather than asked for: anything
   logged three times becomes a one-tap item, and the six most
   likely for this time of day sit at the top. Breakfast at eight
   in the morning should offer breakfast.
-- ○ **Meals, not only foods.** "My breakfast" is one tap for four
-  items, made by saving a day's meal as a template. `diet_foods`
-  already carries the `meal` kind for it.
+- ✓ **Meals, not only foods.** "My breakfast" is one tap for four
+  items, saved out of a day that already happened rather than
+  assembled in a second builder: a reader who has just logged
+  their breakfast has done the assembling once already.
+  `diet_foods` with `kind` of `meal` is the row and `parts` is
+  what is in it.
+
+  **A meal is not a recipe, and the difference is the yield.** A
+  recipe is `§14`'s pot with a number of portions on it, so
+  `pot()` collapses it into one food and `scaleTo()` cuts a
+  fraction out of it: one row in the log, reading "chicken
+  curry, one portion". A meal has no yield and nothing to
+  divide, so it stays four rows, each keeping its own label, its
+  own source and its own micronutrients. Nothing about a meal
+  scales anything, which is why there is no second copy of that
+  arithmetic. Summing them into one row would also be dishonest
+  twice: three labels would leave `topSources()`, and
+  `totalFor()` counts an entry's WHOLE energy as covered for any
+  key it carries, so a summed meal would buy the day coverage
+  that only two of its four items paid for.
 - ✓ **Recipes**, which are `§14`'s pot with a yield on it: build the
   dish once, say it serves five, and a portion is a fraction
   forever after. Editing the recipe does not rewrite history,
-  because a logged entry holds its own numbers. Changing a saved
-  dish and removing one are the two halves still to come: both
-  need `diet_foods` to be writable a second time, which is an
-  update in `next/lib/diet-api.ts` rather than a decision.
-- ○ **A plan for the week**, optional: the same list with dates on
-  it. Plan on Sunday, tick through the week, and the difference
-  between planned and eaten becomes a reading in `§16` rather
-  than a scolding.
+  because a logged entry holds its own numbers. `saveOwnFood()`
+  is an upsert, so changing a saved dish is already a save;
+  removing one is `removeOwnFood()` in `next/lib/diet-api.ts`,
+  which the meal list uses and the recipe list has not been
+  wired to yet.
+- ✓ **A plan for the week**, optional: the same list with dates
+  on it, which is meant literally. There is no second search on
+  the planner, because a plan is made of things somebody already
+  eats and the count that produced the usuals is the count that
+  should produce the plan.
+
+  A planned row is **not a seventh table**: it is
+  `diet_entries` dated ahead with `planned` set, so the plan,
+  the shopping list and `§16`'s reading all come out of rows
+  that already exist. Ticking one is `markEaten()`, which
+  clears the flag and writes the clock on THAT row: nothing
+  downstream can tell a kept plan from a dinner nobody planned,
+  which is the point. `totalFor()` has always excluded planned
+  rows and takes a side now, so `planKept()` can report what
+  was planned and what was eaten as two figures with no verdict
+  between them. There is no percentage kept and no tick,
+  because the difference is a reading rather than a scolding.
+
+  Only a day that has arrived can be ticked. A plan for Friday
+  marked eaten on Tuesday would put food in a day nobody has
+  lived yet, and the trend would read it.
 - ✓ **A shopping list**, with the prices from `§17` giving a total
   before the shop rather than a shock after it. A list of items
   and a figure. **No links, no shop, no affiliate, ever.** It is
@@ -1057,9 +1098,29 @@ things.
 - ✓ **Quick add**, a bare number with no name, for the times when
   the honest choice is a rough figure now rather than an exact
   figure never. The food picker's own free entry is it.
-- ○ **And a keyboard.** The whole log works without a mouse: type,
-  arrow, enter. The account page's roving tabindex is already the
-  pattern and there is no reason to invent a second one.
+- ✓ **And a keyboard.** The whole log works without a mouse:
+  type, arrow, enter. The results are a roving tabindex, which
+  is the account page's pattern and the only one this site has,
+  so the list is ONE tab stop rather than six. Down goes into
+  it, the arrows walk it, Escape leaves it, and Enter on the
+  search box takes the first result and puts the caret in the
+  amount box.
+
+  **Enter in the amount box adds it**, and that is the one that
+  mattered. Add sits EIGHT tab stops past the number somebody
+  has just typed: the two unit chips, the four hand portions,
+  the ate-out chip and then the button. A form that cannot be
+  submitted from the field it ends in is a form that looks
+  finished, and it was measured in a browser rather than read
+  off the markup. Adding puts the caret back in the search box,
+  because the next thing somebody logs is the next thing they
+  ate.
+
+  Every box that writes on blur commits on Enter too, and does
+  not blur: a keyboard has no blur until something else is
+  focused, so a reader who typed this morning's weight, pressed
+  Enter and closed the tab lost it. Blurring to the body would
+  send the following Tab back to the top of the page.
 
 **Where it is.** `/tools/diet/recipes` is the page,
 `next/components/diet/recipe-panel.tsx` and
@@ -1070,6 +1131,16 @@ nothing itself: a pot is a food stated for `serves` portions, so
 scaling that already scales a searched food to an amount eaten,
 and their refusal comes with it. `next/recipes.test.ts` asserts
 all of it with no browser.
+
+Meals and the week are the same page's third and fourth
+sections, in `usuals.tsx`, and what they need out of
+`shared/diet.ts` is `MEALS`, `mealAt()`, `mealOf()`,
+`byMeal()`, `entriesFrom()` and `planKept()`, all asserted in
+`scripts/diet.test.ts` with no browser. Today's plan is drawn
+under the eaten list by `next/components/diet/log-form.tsx`,
+which is also where a day gets ticked through, and the keyboard
+work is that file and
+`next/components/diet/food-picker.tsx`.
 
 **A recipe is somebody's real dinner, so a total refuses rather
 than guesses.** An ingredient that states no energy contributes

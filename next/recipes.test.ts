@@ -408,6 +408,33 @@ ok("the numbers are copied rather than pointed at",
 ok("nothing carries yesterday's row id",
   copied.every((e) => !("id" in e && e.id)));
 
+/* HOW MUCH OF YESTERDAY WAS A GUESS COMES WITH IT.
+
+   `copyOf()` built its rows field by field and named twelve of
+   them; `estLow` and `estHigh` were not among the twelve, so
+   copying a day that knew its own width produced a day claiming
+   to be measured, and the "give or take" line simply stopped
+   being drawn. Nothing announced it: the copied row has a
+   plausible number in it. The error runs towards MORE certainty
+   than the tool has, which is the one direction this whole tool
+   is arranged against, so it is asserted from that side. */
+const banded = M.copyOf([
+  { ...entry("a plate nobody weighed", "2026-08-21", "13:00", 900),
+    id: "e9", estLow: 700, estHigh: 1100 },
+], "2026-08-22");
+ok("a plate logged as a range is still a range tomorrow",
+  banded[0].estLow === 700 && banded[0].estHigh === 1100);
+/* And the same two fields read back out of `jsonb`, which is
+   where a saved meal's rows live. Harmless while a recipe's
+   ingredients cannot carry a band, and not harmless the moment
+   anything reads a LOGGED row back out of that column, which a
+   saved meal now does. */
+const readBack = M.partsOf([
+  { label: "a plate nobody weighed", kcal: 900, estLow: 700, estHigh: 1100 },
+]);
+ok("a part read back out of jsonb keeps its band too",
+  readBack[0].estLow === 700 && readBack[0].estHigh === 1100);
+
 /* ------------------------------------------------------------
    9. The shopping list
 

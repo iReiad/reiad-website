@@ -571,6 +571,12 @@ export function partsOf(raw: unknown): Part[] {
       kcal: num(row.kcal),
       macros: figures(row.macros),
       micros: figures(row.micros),
+      /* A part read back out of `jsonb` may be a LOGGED row
+         rather than an ingredient, and a logged row can be a
+         plate nobody weighed. Dropping the band makes the day
+         claim a precision it does not have. */
+      estLow: num(row.estLow),
+      estHigh: num(row.estHigh),
       source: text(row.source),
       sourceId: text(row.sourceId),
     });
@@ -755,6 +761,14 @@ export function copyOf(entries: Entry[], onto: string): Entry[] {
       kcal: e.kcal,
       macros: e.macros,
       micros: e.micros,
+      /* HOW MUCH OF IT WAS A GUESS COMES WITH IT. Without these
+         two, copying yesterday turns a day that knew its own
+         width into a day that claims to be measured, and the
+         "give or take" line simply stops being drawn. The error
+         runs towards MORE certainty than the tool has, which is
+         the one direction this whole tool is arranged against. */
+      estLow: e.estLow,
+      estHigh: e.estHigh,
       source: e.source,
       sourceId: e.sourceId,
     }));

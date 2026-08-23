@@ -39,7 +39,9 @@
    settled.
    ============================================================ */
 
-import type { Day, Entry, Phase } from "@reiad/shared/diet";
+import type {
+  Ancestry, Day, Entry, GoalKind, Phase, Place, Sex, Units,
+} from "@reiad/shared/diet";
 import { runtimeModule } from "../components/account/runtime";
 
 type AccountModule = typeof import("/account.js");
@@ -51,11 +53,13 @@ const accountModule = () => runtimeModule<AccountModule>("/account.js");
    wrote was a stale JWT from an older project: it would have
    401ed on every request while the code read as correct. */
 
-export interface Who { id: string; token: string }
-
 let rest: string | null = null;
 let anon: string | null = null;
 
+/** A signed-in reader, and the bearer every call below sends as
+    them. It is PASSED IN rather than read here, so a page asks
+    once whether there is an account and every request after that
+    is the same reader with the same token. */
 export interface Who { id: string; token: string }
 
 /** Who is signed in, with a token that is good right now.
@@ -110,15 +114,22 @@ async function call<T>(
 /* the profile                                                */
 /* ---------------------------------------------------------- */
 
+/* EVERY VOCABULARY HERE IS `shared/diet.ts`'s, NOT A COPY OF IT.
+   These five were written out inline, which is the failure
+   `check-rows.ts` exists for one level along: a third ancestry,
+   a third place or a fourth goal added to the shared type would
+   leave this file quietly refusing it, and the page would
+   render. `ancestry` is the one that would hurt most, because it
+   is what picks the BMI cut-offs. */
 export interface Profile {
-  sex?: "male" | "female";
+  sex?: Sex;
   birth_year?: number;
   height_cm?: number;
-  place?: "bd" | "uk";
-  ancestry?: "general" | "asian";
-  units?: "metric" | "imperial";
+  place?: Place;
+  ancestry?: Ancestry;
+  units?: Units;
   activity?: string;
-  goal_kind?: "lose" | "maintain" | "gain";
+  goal_kind?: GoalKind;
   goal_rate?: number;
   goal_waist_cm?: number;
   goal_weight_kg?: number;
