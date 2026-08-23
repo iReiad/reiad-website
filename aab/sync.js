@@ -131,6 +131,18 @@ const KEYS = {
        what a bookmark already needed and why the rule was there to
        be reused. */
     "reader-prefs": ["mark", "prefs:sync"],
+    /* What the reader arranged their front page into: an ordered
+       list of `"<widget>:<size>"`. The catalogue those ids come
+       from is `shared/widgets.ts`.
+  
+       A `mark` for the same reason `reader-prefs` is one, and the
+       reason is worth saying twice because the wrong rule here is
+       silent. A board is REPLACED, not accumulated: the union of
+       two devices' boards is a board holding everything either of
+       them ever had, so a widget removed on a phone would come
+       back off the laptop, and again, and again. Nothing would
+       look broken. */
+    "home-board": ["mark", "board:sync"],
 };
 /** Every key the account owns, which is every key above. */
 export const SYNCED_KEYS = Object.keys(KEYS);

@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v207: /sync.js. `home-board` joins the synced keys: the front
+        page is a board the reader arranges, and the arrangement
+        follows the account between devices. A `mark` rather than
+        a `set`, because a board is replaced and not accumulated.
+
    v206: /fallback.css. A meal saved out of a day that already
         happened, a week planned ahead, and the whole log worked
         from the keyboard. Plus the band: copying yesterday
@@ -1838,7 +1843,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v206";
+const VERSION = "v207";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

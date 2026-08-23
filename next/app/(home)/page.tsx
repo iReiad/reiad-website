@@ -41,6 +41,8 @@ import type { Metadata } from "next";
 import { ContinueCard } from "../../components/door";
 import { FeaturedCard } from "../../components/featured";
 import { PulseCard } from "../../components/pulse-card";
+import { MarketPulse } from "../../components/market-pulse";
+import { SectionLabel } from "../../components/ui/label";
 import { Icon } from "../../components/icons";
 import { pageMeta } from "../../lib/pageMeta";
 import { SCHOOL_ACCENTS } from "@reiad/shared/nav";
@@ -210,6 +212,35 @@ export default function HomePage() {
             dek="তিন ধাপে ষাট দিন, শব্দ চেনা থেকে সূরা পড়া।"
             go="শুরু করুন" />
 
+        </section>
+
+        {/* ---- the market board ----
+
+            The same component the Insights hub draws, on the
+            front page, because the front page is where somebody
+            arriving at the site actually is. It was one click
+            deeper for as long as it existed and the Android app
+            had it nowhere at all, which is how a live feed that
+            refreshes every half hour reaches nobody.
+
+            Its own section rather than a tile in the deck: a
+            tile is one link and this is a board of them, and the
+            deck's grid would give it three columns of a
+            twelve-column row. It reads its own data in the
+            browser, so nothing above it waits for it. */}
+        <section className="mt-[var(--step)]">
+          <div className="pulse-head">
+            <SectionLabel className="flex-1">
+              বাজারের খবর · <span lang="en">Market pulse</span>
+            </SectionLabel>
+          </div>
+          <MarketPulse />
+          <p className="pulse-note">
+            <span lang="bn">
+              তিনটা সূত্র থেকে আধঘণ্টা পর পর নিজে থেকে বাছাই করা, কোনো সম্পাদকীয় বিচার নয়।
+            </span>{" "}
+            <a href="/insights#pulse">কীভাবে বাছাই হয়</a>
+          </p>
         </section>
       </div>
     </main>
