@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is sixteen files and a directory of four, and
+Today that is seventeen files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -99,6 +99,23 @@ this repository got written.
   arithmetic over text with no DOM in it, and a parser that can
   only be exercised by clicking is a parser nobody exercises:
   `scripts/csv.test.ts` is what exercises it.
+
+- **`bundle.ts`** the other direction: a copy this site wrote,
+  read back. `DIET.md` section 26 calls the importer reading the
+  exporter's format "the only real test of whether an export is
+  honest", and until this file existed a reader could take their
+  whole account away and bring none of it back. It brings back
+  `diet_days` and `diet_entries` and NAMES the other four, and
+  the reason is the schema's rather than a preference: those two
+  are the tables carrying an `origin` column, which is the only
+  thing that lets a bad import be undone in one go.
+  `scripts/bundle.test.ts` reads that column list out of the
+  migration rather than repeating it, and reads the exporter's
+  own table list out of `aab/src/account-page.ts`, so a seventh
+  table cannot appear at one end and go unnoticed at the other.
+  It carries neither the file's `user_id` nor its row ids: the
+  first is refused by row level security and reports a successful
+  import of nothing, and the second resurrects deleted rows.
 
 - **`activity.ts`** the diet tool's other half of the same
   arithmetic: what a step is worth to a body of a given weight,

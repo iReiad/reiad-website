@@ -41,7 +41,10 @@ import {
   type Field, type Preview, type Sheet,
 } from "@reiad/shared/csv";
 import type { Day } from "@reiad/shared/diet";
-import { importDays, undoImport, importOrigins, who, type Who } from "../../lib/diet-api";
+import {
+  importDays, importEntries, undoImport, importOrigins, who, type Who,
+} from "../../lib/diet-api";
+import { readBundle, type BundleRead } from "@reiad/shared/bundle";
 import { Button } from "../ui/button";
 import { Select } from "../ui/field";
 import { Note } from "../ui/note";
@@ -68,6 +71,11 @@ export function ImportPanel() {
   const [answered, setAnswered] = useState(false);
   const [name, setName] = useState("");
   const [sheet, setSheet] = useState<Sheet | null>(null);
+  /* A copy this site wrote, which needs no column mapping at
+     all: that is the point of reading your own format. Only
+     one of the two is ever set. */
+  const [copy, setCopy] = useState<BundleRead | null>(null);
+  const [refused, setRefused] = useState<string | null>(null);
   const [mapping, setMapping] = useState<Field[]>([]);
   const [guesses, setGuesses] = useState<Array<"exact" | "loose" | "none">>([]);
   const [done, setDone] = useState<{ written: number; failed: number } | null>(null);
@@ -86,13 +94,29 @@ export function ImportPanel() {
   const take = (file: File): void => {
     const reader = new FileReader();
     reader.onload = () => {
-      const parsed = parseCSV(String(reader.result ?? ""));
+      const text = String(reader.result ?? "");
+      setDone(null);
+      setRefused(null);
+      setName(file.name.replace(/\.(csv|json)$/i, "").slice(0, 40));
+
+      /* BY EXTENSION, not by sniffing the first character. A
+         reader who picked the wrong file should be told what is
+         wrong with the file they picked rather than have it read
+         as the other kind and fail further in. */
+      if (/\.json$/i.test(file.name)) {
+        const read = readBundle(text);
+        setSheet(null);
+        if ("why" in read) { setCopy(null); setRefused(read.why); return; }
+        setCopy(read);
+        return;
+      }
+
+      const parsed = parseCSV(text);
       const g = guessColumns(parsed.header);
+      setCopy(null);
       setSheet(parsed);
       setMapping(g.map((x) => x.field));
       setGuesses(g.map((x) => x.how));
-      setName(file.name.replace(/\.csv$/i, "").slice(0, 40));
-      setDone(null);
     };
     reader.readAsText(file);
   };
@@ -105,6 +129,26 @@ export function ImportPanel() {
     const days: Day[] = shown.rows.map((r) => ({ ...r, date: r.date }));
     const got = await importDays(w, days, `import:${name || "csv"}`);
     setDone(got);
+    setOrigins(await importOrigins(w));
+    setBusy(false);
+  };
+
+  /* BOTH TABLES UNDER ONE ORIGIN, which is what makes the undo
+     one press rather than two. The days go first because they
+     are an upsert and the entries are inserts: a failure between
+     them leaves a day whose meals did not arrive, which reads as
+     an incomplete import, rather than meals on a day that is not
+     there, which reads as nothing at all. */
+  const commitCopy = async (): Promise<void> => {
+    if (!w || !copy) return;
+    setBusy(true);
+    const origin = `copy:${name || "account"}`;
+    const days = await importDays(w, copy.days, origin);
+    const meals = await importEntries(w, copy.entries, origin);
+    setDone({
+      written: days.written + meals.written,
+      failed: days.failed + meals.failed,
+    });
     setOrigins(await importOrigins(w));
     setBusy(false);
   };
@@ -153,12 +197,28 @@ export function ImportPanel() {
         />
 
         <label className="dt-import-pick">
-          <span><T en="Choose a CSV" bn="একটা সিএসভি বাছুন" /></span>
+          <span><T en="Choose a file" bn="একটা ফাইল বাছুন" /></span>
           <input
-            type="file" accept=".csv,text/csv"
+            type="file" accept=".csv,text/csv,.json,application/json"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) take(f); }}
           />
         </label>
+
+        {/* THE OTHER DIRECTION, and section 26 calls it the only
+            real test of whether an export is honest: a copy taken
+            from this site can be brought back into it. */}
+        <p className="dt-hint">
+          <T
+            en="A copy of your own account, the .json file the account page hands you, is read here too. Leaving should be as easy as arriving, and an export nothing can read is not an export."
+            bn="আপনার নিজের অ্যাকাউন্টের কপি, অ্যাকাউন্ট পাতা থেকে যে .json ফাইলটা পান, সেটাও এখানে পড়া যায়। চলে যাওয়া যেমন সহজ হওয়া উচিত আসাটাও তেমন, আর যে ফাইল কেউ পড়তে পারে না সেটা আসলে কপিই নয়।"
+          />
+        </p>
+
+        {refused ? (
+          <p className="dt-hint" role="status" aria-live="polite">
+            <T en={refused} bn={refused} />
+          </p>
+        ) : null}
       </section>
 
       {sheet && shown ? (
@@ -252,6 +312,115 @@ export function ImportPanel() {
                   আর এটাই ঠিক: আপনি নিজে আমদানি করতে চেয়েছেন, আর নইলে ফাইলটা
                   অর্ধেক বসত আর কোন অর্ধেক তা বোঝার উপায় থাকত না। প্রতিটি আমদানি
                   করা দিন চিহ্নিত থাকে, আর পুরো আমদানি এক চাপে ফেরত নেওয়া যায়।
+                </p>
+              )}
+            />
+          </Note>
+        </section>
+      ) : null}
+
+      {copy ? (
+        <section aria-labelledby="dt-copy-h">
+          <h2 id="dt-copy-h"><T en="What it would write" bn="কী লেখা হবে" /></h2>
+
+          {/* WHOSE COPY IT IS, BEFORE ANYTHING IS WRITTEN. A file
+              in the downloads folder is not self evidently the
+              reader's own, and an account's whole log written on
+              to the wrong account is not a mistake anybody
+              notices from the page afterwards. */}
+          {copy.account?.email || copy.taken ? (
+            <p className="dt-intro">
+              <T
+                en={`This copy was taken${copy.taken ? ` on ${copy.taken.slice(0, 10)}` : ""}`
+                  + `${copy.account?.email ? ` from ${copy.account.email}` : ""}.`
+                  + " If that is not you, this is not your file."}
+                bn={`এই কপিটা${copy.taken ? ` ${copy.taken.slice(0, 10)} তারিখে` : ""} নেওয়া`
+                  + `${copy.account?.email ? `, ${copy.account.email} থেকে` : ""}।`
+                  + " এটা আপনি না হলে ফাইলটা আপনার নয়।"}
+              />
+            </p>
+          ) : null}
+
+          <p className="dt-intro">
+            <T
+              en={`${copy.days.length} days and ${copy.entries.length} meals would be written`
+                + `${copy.from ? `, from ${copy.from} to ${copy.to}` : ""}.`}
+              bn={`${digits(copy.days.length, "bn")} দিন আর ${digits(copy.entries.length, "bn")}টা খাওয়ার হিসাব লেখা হবে`
+                + `${copy.from ? `, ${copy.from} থেকে ${copy.to} পর্যন্ত` : ""}।`}
+            />
+          </p>
+
+          {/* NAMED, NEVER DROPPED SILENTLY. A copy that quietly
+              restores two of six tables and says nothing is worse
+              than one that restores two and says which four it
+              did not. */}
+          {copy.left.length ? (
+            <div className="dt-figure">
+              <h3><T en="What it will not bring back" bn="যা ফেরত আনা হবে না" /></h3>
+              <dl className="dt-defs">
+                {copy.left.map((l) => (
+                  <div key={l.table}>
+                    <dt className="mono">
+                      {l.table} <T en={`(${l.rows} rows)`} bn={`(${digits(l.rows, "bn")}টি সারি)`} />
+                    </dt>
+                    <dd>{l.why}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="dt-why">
+                <T
+                  en="Only days and meals carry where they came from, and that is the only thing that lets a whole import be taken back in one press. A table this could not offer to undo is a table it does not write."
+                  bn="কেবল দিন আর খাওয়ার হিসাবেই লেখা থাকে সেটা কোথা থেকে এসেছে, আর গোটা আমদানি এক চাপে ফেরত নেওয়ার একমাত্র উপায় সেটাই। যেটা ফেরত নেওয়ার সুযোগ দেওয়া যায় না, সেটা লেখাও হয় না।"
+                />
+              </p>
+            </div>
+          ) : null}
+
+          {copy.skipped.length ? (
+            <details className="dt-import-drop">
+              <summary>
+                <T en={`${copy.skipped.length} rows would be dropped`}
+                   bn={`${digits(copy.skipped.length, "bn")}টি সারি বাদ যাবে`} />
+              </summary>
+              <ul className="dt-import-why">
+                {copy.skipped.slice(0, 40).map((sk, i) => (
+                  <li key={i}>
+                    <span className="mono">{digits(sk.line, lang)}</span> {sk.why}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : null}
+
+          <div className="dt-import-go">
+            <Button kind="solid" disabled={busy}
+                    onClick={() => void commitCopy()}>
+              <T en="Bring this copy back" bn="এই কপিটা ফিরিয়ে আনুন" />
+            </Button>
+            {done ? (
+              <span className="dt-said" role="status" aria-live="polite">
+                <T en={`${done.written} written${done.failed ? `, ${done.failed} failed` : ""}.`}
+                   bn={`${digits(done.written, "bn")}টি লেখা হয়েছে${done.failed ? `, ${digits(done.failed, "bn")}টি হয়নি` : ""}।`} />
+              </span>
+            ) : null}
+          </div>
+
+          <Note tone="quiet">
+            <TBlock
+              en={(
+                <p>
+                  Meals are added rather than matched, so bringing the same copy
+                  back twice writes them twice. Days are keyed by their date and
+                  are replaced. Both are marked with this file&apos;s name and the
+                  whole thing comes back out in one press.
+                </p>
+              )}
+              bn={(
+                <p>
+                  খাওয়ার হিসাবগুলো নতুন করে যোগ হয়, মিলিয়ে দেখা হয় না, তাই একই কপি
+                  দুবার আনলে দুবারই লেখা হবে। দিনগুলো তারিখ ধরে বসে, তাই আগেরটার
+                  জায়গা নেয়। দুটোতেই এই ফাইলের নাম চিহ্ন হিসেবে থাকে, আর গোটাটা
+                  এক চাপে ফেরত নেওয়া যায়।
                 </p>
               )}
             />

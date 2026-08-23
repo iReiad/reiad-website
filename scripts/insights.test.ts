@@ -48,10 +48,10 @@ import { fileURLToPath } from "node:url";
    way every other node-side test here reads it: node cannot
    strip types from a file under `node_modules`. */
 import {
-  CALIBRATE_AFTER_DAYS, COVERAGE_FLOOR, HELD_BAND, MEASURES,
+  CALIBRATE_AFTER_DAYS, COVERAGE_FLOOR, FOOD_BUDGET, HELD_BAND, MEASURES,
   MIN_CALIBRATION_GAP, SHORT_NIGHT_HOURS, SLOTS, STALE_MONTHS, TAPE_SPAN_DAYS,
-  adherence, afterShortNights, againstBudget, calibration, costByTag, isStale,
-  loggedDays, monthsSince, movement, per100kcal, portionsOf, proteinSplit,
+  adherence, afterShortNights, againstBudget, budgetTarget, calibration, costByTag,
+  isStale, loggedDays, monthsSince, movement, per100kcal, portionsOf, proteinSplit,
   slotOf, spend, proteinPrice, swaps, tape, weekVsOwn,
   type Item,
 } from "../shared/insights.ts";
@@ -502,6 +502,66 @@ ok("budget: no budget is no reading", againstBudget(bill, 0) === null);
 ok("budget: and no logged day is nothing to divide by",
   againstBudget(spend({ entries: [], resolve, currency: "BDT", now: "2026-08" }), 490)
     === null);
+
+/* ---- 9b. a budget is a target of the account's ---- */
+
+/* Section 30, and the whole of the decision: a food budget is
+   the THIRD KIND GAINING A SOURCE rather than a fourth kind,
+   which is what a weight goal does the moment `diet_days`
+   exists. The test that settles it is whether the site can
+   measure it, and `spend()` above is the measurement.
+
+   What it must never be is the priced share set against a
+   whole-food budget, which reports every reader as under by
+   exactly the food this site has no price for. So the figure
+   is the projection, and it comes back with the coverage it was
+   drawn from so that nothing can print one without the other. */
+
+ok("budget target: the subject is the one already in the column",
+  FOOD_BUDGET === "diet:food-budget");
+
+/* The same four days with the unpriced plate at 540 kcal, which
+   is exactly half of each day: the floor is a floor rather than
+   an exclusive one, so this is drawn and one calorie more of
+   unpriced food is not. */
+const halfPriced: Entry[] = [];
+for (let n = 0; n < 4; n += 1) {
+  halfPriced.push(ate(n, RICE, 1, "13:00"));
+  halfPriced.push(ate(n, RICE, 1, "20:00"));
+  halfPriced.push(ate(n, EGG, 2, "08:00"));
+  halfPriced.push({ date: day(n), label: "a plate at work", kcal: 540 });
+}
+const half = spend({ entries: halfPriced, resolve, currency: "BDT", now: "2026-08" });
+near("budget target: half the log by energy carries a price", half.coverage, 0.5, 0.0001);
+
+const goal = budgetTarget(half, 490);
+near("budget target: 52 taka of priced food a day projects to 104 over the whole log",
+  goal?.spentWeek ?? 0, 728, 0.001);
+near("budget target: which is 238 a week above a 490 budget",
+  goal?.diffWeek ?? 0, 238, 0.001);
+ok("budget target: and the coverage it was drawn from comes back with it",
+  goal?.coverage === half.coverage);
+ok("budget target: UNDER THE FLOOR IT DRAWS NOTHING, rather than a bar",
+  budgetTarget(bill, 490) === null && bill.coverage < COVERAGE_FLOOR,
+  String(bill.coverage));
+ok("budget target: no budget is not a target", budgetTarget(half, 0) === null);
+ok("budget target: and a log with nothing priced in it is not one either",
+  budgetTarget(
+    spend({
+      entries: [{ date: day(0), label: "a guess", kcal: 500 }], resolve,
+      currency: "BDT", now: "2026-08",
+    }), 490,
+  ) === null);
+
+/* THE PRICED SHARE ALONE WOULD HAVE READ UNDER. 52 a day is 364
+   a week against a 490 budget, so a target measured that way
+   would tell every reader they were 126 under while they were
+   238 over. That is the one error this whole tool is built to
+   refuse, and it is the reason the figure above is a
+   projection. */
+ok("budget target: which is the opposite of what the priced share alone says",
+  (goal?.diffWeek ?? 0) > 0 && half.perDay * 7 < 490,
+  `${String(goal?.diffWeek)} against ${String(half.perDay * 7 - 490)}`);
 
 /* ---- 10. section 17's own claim, against the real table ---- */
 

@@ -17,7 +17,7 @@
    in the migration that no part of the tool can ever put a value
    in. Every one of those renders perfectly.
 
-   Seven questions, and each one is a rule DIET.md states and
+   Eleven questions, and each one is a rule DIET.md states and
    nothing else holds:
 
    1. EVERY PAGE THAT PRINTS A TARGET PRINTS THE MEDICAL ADVICE
@@ -57,6 +57,33 @@
       twice it is a slogan, and said away from the projection it
       is a scare.
 
+   8. THE FLOORS ARE THE MODULE'S, AND NOTHING RETYPES A
+      FORMULA. Section 5 and section 33's first bullet. Every
+      bound `target()` clamps with is asserted by
+      `scripts/diet.test.ts`; the sentence that tells a reader
+      which bound bound them draws its number from the constant
+      rather than writing it out; and no page carries the SHAPE
+      of a formula `shared/diet.ts` already exports.
+
+   9. THE ASIAN CUT-OFFS ARE USED WHENEVER ANCESTRY SAYS SO.
+      Section 2, which calls it the single most important honest
+      detail in the tool. A band read with a fixed ancestry, a
+      cut-off written into a comparison, or a band drawn without
+      `bmiBand()` all tell a South Asian reader they are fine
+      where their own health service would not.
+
+   10. THE PORTION LIBRARY CARRIES A SOURCE, A DATED PRICE AND A
+      STATE. Sections 12, 14 and 17. Raw rice is 365 kcal per
+      100 g and cooked is about 130, and a row that does not say
+      which it is is the error section 14 calls the most common
+      in the whole of calorie counting.
+
+   11. THE GENERATED SENTENCES JUDGE NOBODY. Section 31's last
+      bullet: a tool that writes free prose about somebody's
+      eating will eventually write something cruel. The list of
+      templates is DERIVED from the panels rather than kept here,
+      and `--templates` prints it.
+
    ---- what "reached" means, and why it is not "written" ----
 
    `fromDay()` in `next/lib/diet-api.ts` writes every day column
@@ -73,15 +100,32 @@
 
    The tags come out of DIET.md, the marks out of the migration,
    the columns out of the migration, the terms out of the
-   glossary. Retyping any of them here would make this file one
-   more place the same list is said, which is the failure the top
-   of CLAUDE.md is about happening to the thing that catches it.
+   glossary, the floors out of `target()`'s own body, the
+   cut-offs out of `BMI_CUTS`, the nouns that must name a state
+   out of DIET.md, and the templates out of the panels. Retyping
+   any of them here would make this file one more place the same
+   list is said, which is the failure the top of CLAUDE.md is
+   about happening to the thing that catches it.
+
+   Three tables here are NOT that, and the difference is the
+   test. `UNUSED`, `NO_STATE` and `JUDGEMENT` say nothing the
+   repository already holds: two are exemptions with a reason
+   each, and both fail when the thing they exempt has gone, and
+   the third is the vocabulary of judgement, which is a rule
+   rather than a copy of anything.
    ============================================================ */
 
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { TAGS, MARKS } from "../shared/diet.ts";
+import { BMI_CUTS, TAGS, MARKS } from "../shared/diet.ts";
+/* The namespace as well, and only question 8 needs it: the floors
+   are read out of `target()`'s own body, so the name of a constant
+   is a string at the time it is looked up. A list of them written
+   out here would be the second copy the head of this file bans. */
+import * as DIET from "../shared/diet.ts";
+import { FOODS } from "../shared/foods.ts";
+import { bnNum } from "../shared/schools.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
@@ -586,8 +630,6 @@ const UNUSED: Record<string, string> = {
   "diet_days.arm_cm": "section 2, the same",
 
   /* What was eaten. */
-  "diet_entries.meal": "section 13, meals rather than only foods, which is what names one",
-  "diet_entries.planned": "section 13, a week's plan is the same rows dated ahead",
   "diet_entries.fetched_on": "section 12, so a stale figure can be found and refreshed",
 
   /* The phase a reader is on. `/tools/diet/keto` starts one and
@@ -840,6 +882,692 @@ if (saysRegain.length !== 1) {
     "one sentence in the tool that argues for the tool.");
 }
 
+/* ------------------------------------------------------------
+   8. The floors are the module's, and nothing retypes a formula
+
+   Section 5's floors are the one part of this tool that can hurt
+   somebody, and there are three ways they stop being true with
+   every page still rendering.
+
+   The first is that nothing pins them. `scripts/diet.test.ts` is
+   what asserts each one from the wrong side, so this asks that
+   the test still names every one, and it reads the list of them
+   out of `target()`'s own body rather than keeping one.
+
+   The second is CLAUDE.md's opening rule wearing this section's
+   hat: a page that TELLS a reader a floor and types the number
+   into the sentence is right on the day it is written. Change
+   `floorKcal` and the sentence goes on saying 1200 for ever, on
+   the one screen in the tool whose whole job is to say that the
+   tool changed your number. The `surplus` line already
+   interpolates its constant and is what the rest have to be.
+
+   The third is a route that recomputes a formula instead of
+   importing it. `body.tsx` opens by saying nothing there is
+   recomputed and this is what holds it: every one-expression
+   formula `shared/diet.ts` exports is reduced to its SHAPE, the
+   names taken out and the numbers left in, and a page carrying
+   that shape has a BMI or a Katch written out by hand.
+   ------------------------------------------------------------ */
+
+const dietSrc = read("shared/diet.ts");
+const dietTest = read("scripts/diet.test.ts");
+
+/** One exported function's body, brace-balanced.
+
+    Not the `\n}` the API layer above is read with, and the
+    difference matters here: `target()` takes an object literal
+    written over six lines, so the first line closing a brace is
+    the end of its ARGUMENT and the body would come back empty
+    with nothing in this file noticing. */
+function bodyOf(src: string, name: string): string {
+  const at = src.search(new RegExp(`^export function ${name}\\s*\\(`, "m"));
+  if (at < 0) return "";
+  let depth = 0;
+  let i = src.indexOf("(", at);
+  for (; i < src.length; i += 1) {
+    if (src[i] === "(") depth += 1;
+    else if (src[i] === ")") {
+      depth -= 1;
+      if (depth === 0) break;
+    }
+  }
+  return blockAt(src, i);
+}
+
+/** The block one declaration opens, brace-balanced. An
+    interpolation carries braces of its own, which is why this
+    counts rather than looking for the next closing line. */
+function blockAt(src: string, from: number): string {
+  const open = src.indexOf("{", from);
+  if (open < 0) return "";
+  let depth = 0;
+  for (let i = open; i < src.length; i += 1) {
+    if (src[i] === "{") depth += 1;
+    else if (src[i] === "}") {
+      depth -= 1;
+      if (depth === 0) return src.slice(open, i + 1);
+    }
+  }
+  return src.slice(open);
+}
+
+/** The numbers behind one name in `shared/diet.ts`. A constant
+    is its own value and a `Range` is its three; a floor that
+    depends on the reader, which is `floorKcal(sex)`, is every
+    number its one-line body can return, because calling it would
+    mean this file writing out the `Sex` union and that is a
+    second copy of a vocabulary. */
+const exported: Record<string, unknown> = { ...DIET };
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === "object" && v !== null;
+function valuesOf(name: string): number[] {
+  const value = exported[name];
+  if (typeof value === "number") return [value];
+  if (isRecord(value)) {
+    return Object.values(value).filter((v): v is number => typeof v === "number");
+  }
+  const line = dietSrc.match(new RegExp(`export const ${name} = [^;]*;`))?.[0] ?? "";
+  return [...line.matchAll(/(?<![\w.])\d+(?:\.\d+)?/g)].map((m) => Number(m[0]));
+}
+
+const targetBody = bodyOf(dietSrc, "target");
+
+/** THE FLOORS ARE WHAT `target()` CLAMPS WITH, read out of it. A
+    sixth bound added there is asked about here with nobody
+    having to come to this file, which is the difference between
+    a rule and a habit. */
+const clamping = uncommented(targetBody);
+const floorNames = [...new Set([
+  ...[...clamping.matchAll(/\b([A-Z][A-Z0-9_]{2,})\b/g)].map((m) => m[1]),
+  ...[...clamping.matchAll(/\b([a-z][A-Za-z0-9]*Kcal)\s*\(/g)].map((m) => m[1]),
+])].sort();
+
+/** And the bounds' own names, which is the union `target()`
+    reports in `floors`. */
+const floorHits = [...(dietSrc.match(/export type FloorHit =([^;]*);/)?.[1] ?? "")
+  .matchAll(/"([a-z]+)"/g)].map((m) => m[1]);
+
+if (!floorNames.length || !floorHits.length) {
+  fail("check-diet cannot read the floors out of shared/diet.ts",
+    "Both the constants target() clamps with and the FloorHit union are read",
+    "from its source, and one of the two came back empty. Fix the reader here",
+    "rather than deleting the question.");
+}
+
+for (const name of floorNames) {
+  if (dietTest.includes(name)) continue;
+  fail(`scripts/diet.test.ts does not assert ${name}`,
+    "target() clamps with it and nothing pins it, so it can be loosened in one",
+    "character with every check still green. DIET.md section 33 asks for every",
+    "floor asserted from the wrong side.");
+}
+for (const hit of floorHits) {
+  if (dietTest.includes(`"${hit}"`)) continue;
+  fail(`scripts/diet.test.ts does not assert the bound "${hit}"`,
+    "target() can report it and no test drives it there, so the clamp could stop",
+    "happening and a reader would simply never be told their number was changed.");
+}
+
+/** Every number a floor is. A name this cannot resolve is a
+    failure rather than a skip: a floor whose value nothing here
+    knows is a floor the sentence rule below would pass over in
+    silence, which is the shape of the bug it exists to catch. */
+const floorValues = new Map<number, string>();
+for (const name of floorNames) {
+  const numbers = valuesOf(name);
+  if (!numbers.length) {
+    fail(`check-diet cannot read what ${name} is worth`,
+      "target() clamps with it and this resolves a constant, a Range or a"
+      + " one-line function of the reader.",
+      "Widen valuesOf() here. Skipping it would leave the floor unwatched with",
+      "nothing saying so.");
+  }
+  for (const value of numbers) floorValues.set(value, name);
+}
+
+const BN_DIGIT = new Map([...bnNum("0123456789")].map((d, i) => [d, String(i)]));
+
+/** Every number a sentence states, in either script, with
+    whether a percent sign follows it.
+
+    Tokens rather than a substring search: 1 is one floor and
+    1200 is another, and finding the first inside the second is
+    how a check reports the sentence that is right. The percent
+    is what keeps a rate floor honest without catching every "1
+    cup": a rate is a percentage of bodyweight and is written as
+    one. */
+interface Said { value: number; percent: boolean }
+function numbersIn(text: string): Said[] {
+  const said: Said[] = [];
+  for (const m of text.matchAll(/(?<![\w.])(\d+(?:\.\d+)?)(\s*%)?/g)) {
+    said.push({ value: Number(m[1]), percent: Boolean(m[2]) });
+  }
+  for (const m of text.matchAll(/([০-৯]+(?:\.[০-৯]+)?)(\s*%)?/g)) {
+    const latin = [...m[1]].map((c) => BN_DIGIT.get(c) ?? c).join("");
+    said.push({ value: Number(latin), percent: Boolean(m[2]) });
+  }
+  return said.filter((n) => Number.isFinite(n.value));
+}
+
+/** The table that tells a reader which bound bound them, found
+    by its type rather than by its file: it is the one thing in
+    the tool keyed by `FloorHit`, and a second copy of it would
+    be found here too. */
+let floorLines = 0;
+for (const file of TOOL_FILES) {
+  const src = uncommented(SOURCE.get(file) as string);
+  const at = src.indexOf("Record<FloorHit");
+  if (at < 0) continue;
+  const rest = src.slice(at);
+  const end = rest.search(/\n\};/);
+  const table = rest.slice(0, end < 0 ? rest.length : end);
+
+  for (const hit of floorHits) {
+    const from = table.search(new RegExp(`\\n\\s*${hit}:\\s*\\{`));
+    if (from < 0) continue;
+    floorLines += 1;
+    /* `${MAX_SURPLUS_KCAL}` is the fix, so what an interpolation
+       fills in comes out before the numbers are counted.
+       `unfilled()` under question 11 is the balanced one and this
+       needs it for the same reason: an interpolation here holds a
+       conditional with braces of its own. */
+    const said = unfilled(blockAt(table, from));
+    /* Grouped by the constant rather than by the number, because
+       one floor is two numbers on this line and one sentence is
+       said in two scripts: four failures for one fix. */
+    const typed = new Map<string, number[]>();
+    for (const n of numbersIn(said)) {
+      const owner = floorValues.get(n.value);
+      /* A floor under 2 is a percentage of bodyweight, and it is
+         only that where a percent sign says so: without this the
+         rate cap of 1 matches "1 cup" in a sentence that is
+         perfectly correct. */
+      if (!owner || (n.value < 2 && !n.percent)) continue;
+      const had = typed.get(owner) ?? [];
+      if (!had.includes(n.value)) typed.set(owner, [...had, n.value]);
+    }
+    for (const [owner, numbers] of typed) {
+      fail(`${file}: the "${hit}" line writes ${owner} out as a number`,
+        `it says ${numbers.sort((a, b) => a - b).join(" and ")}`,
+        `and that is what ${owner} holds today rather than what it will hold`,
+        "tomorrow. This is the one sentence in the tool whose whole job is to say",
+        "that the tool changed your number, which makes it the worst place in the",
+        "tool for a number that cannot change with it. Draw it from the constant",
+        "the way the surplus line already does, in both scripts.");
+    }
+  }
+}
+if (!floorLines) {
+  fail("nothing in the diet tool is keyed by FloorHit any more",
+    "target() reports every bound it hit and something has to put those in front",
+    "of a reader: a silent clamp is a lie of omission. DIET.md section 5.");
+}
+
+/* ---- and no page writes a formula out a second time ---- */
+
+/** One expression with its names taken out and its numbers left
+    in, so two spellings of the same arithmetic reduce to one
+    string. */
+const shapeOf = (expression: string): string => expression
+  .replace(/"[^"]*"/g, "S")
+  .replace(/\b[A-Za-z_$][\w$.]*\s*\(/g, "F(")
+  .replace(/\b[A-Za-z_$][\w$.]*\b/g, "_")
+  .replace(/\s+/g, "");
+
+const formulas = new Map<string, string>();
+for (const m of dietSrc.matchAll(/export const (\w+) = \([^)]*\)(?:\s*:\s*[^=]*?)?=>\s*([\s\S]*?);\n/g)) {
+  const expression = m[2].trim();
+  if (expression.startsWith("{")) continue;
+  const shape = shapeOf(expression);
+  const digits = (shape.match(/\d/g) ?? []).length;
+  /* Three digits is the line between a formula and a phrase.
+     `whtr` reduces to `_/_` and `estimatedBurn` to `_*_`, both of
+     which are in half the files on this site and neither of which
+     is worth a name. */
+  if (digits >= 3 && (/[-+*/%]/.test(shape) || /\d{3}/.test(shape))) formulas.set(m[1], shape);
+}
+
+if (!formulas.size) {
+  fail("check-diet can no longer read a formula out of shared/diet.ts",
+    "The one-expression exports are what the pages are compared against.");
+}
+
+for (const file of TOOL_FILES) {
+  const shape = shapeOf(uncommented(SOURCE.get(file) as string));
+  for (const [name, formula] of formulas) {
+    if (!shape.includes(formula)) continue;
+    fail(`${file} writes ${name}() out rather than importing it`,
+      `it carries the shape ${formula}`,
+      "A page with its own copy of an equation is a page that will disagree with",
+      "shared/diet.ts, and scripts/diet.test.ts is then testing the copy nobody",
+      `sees. Import { ${name} } from "@reiad/shared/diet".`);
+  }
+}
+
+/* ------------------------------------------------------------
+   9. The Asian cut-offs are used whenever ancestry says so
+
+   Section 2 calls this the single most important honest detail
+   in the whole tool, and it costs one table. `BMI_CUTS` is that
+   table and `bmiBand()` is the only thing that should read it.
+
+   The failure is quiet in the worst way: a page that decides a
+   band on the general cut-offs tells a South Asian reader they
+   are in the healthy range where their own health service would
+   not, and the page renders, the arithmetic is right, and
+   nothing in the tool disagrees with it. Four shapes of it: a
+   fixed ancestry handed to `bmiBand()` or read off `BMI_CUTS`; a
+   body built with a literal ancestry rather than the reader's; a
+   cut-off written into a comparison, which is `bmiBand()`
+   retyped with one of the two tables missing; and a page that
+   draws a band without going through `bmiBand()` at all.
+
+   And section 2's own second half: the page says WHICH set it
+   used. A band with no cut-off named beside it is one word for
+   two readers who are owed different ones.
+   ------------------------------------------------------------ */
+
+const ancestries = Object.keys(BMI_CUTS);
+
+/** Every cut-off, and what it is, so a number both sets share is
+    reported once. */
+const cutNames = new Map<number, string[]>();
+for (const [place, cuts] of Object.entries(BMI_CUTS)) {
+  for (const [band, cut] of Object.entries(cuts)) {
+    cutNames.set(cut, [...(cutNames.get(cut) ?? []), `${band} for "${place}"`]);
+  }
+}
+
+/** The band vocabulary is in `words.ts`, keyed by `bmiBand()`'s
+    own tokens, which is what makes indexing it the signature of
+    a page that draws a band. Both names are checked to exist,
+    because a rename would otherwise leave this question asking
+    about nothing and reporting that everything is fine. */
+const BAND_TABLE = "BAND_WORDS";
+const CUTS_TABLE = "CUTS_WORDS";
+const words = read(`${COMPONENTS}/words.ts`);
+for (const table of [BAND_TABLE, CUTS_TABLE]) {
+  if (new RegExp(`export const ${table}\\b`).test(words)) continue;
+  fail(`${COMPONENTS}/words.ts no longer exports ${table}`,
+    "It is what a page drawing a BMI band is recognised by below, and what says",
+    "which cut-offs were used. Point this question at the new name.");
+}
+let banded = 0;
+
+for (const file of TOOL_FILES) {
+  const src = uncommented(SOURCE.get(file) as string);
+
+  for (const place of ancestries) {
+    if (new RegExp(`bmiBand\\([^)]*["']${place}["']`).test(src)) {
+      fail(`${file} hands bmiBand() a fixed "${place}"`,
+        "DIET.md section 2: the threshold follows the reader, and a fixed one is",
+        "the whole of what this table exists to prevent.");
+    }
+    if (new RegExp(`BMI_CUTS(\\.${place}\\b|\\[\\s*["']${place}["']\\s*\\])`).test(src)) {
+      fail(`${file} reads BMI_CUTS.${place} by name`,
+        "BMI_CUTS[ancestry] is the table's whole job. Reading one set by name is",
+        "the other set never being used.");
+    }
+    if (new RegExp(`\\bancestry:\\s*["']${place}["']`).test(src)) {
+      fail(`${file} builds a body with ancestry fixed at "${place}"`,
+        "A Body carries the reader's answer. `profile.ancestry ?? \"general\"` is",
+        "the default for somebody who has not been asked yet; a literal is every",
+        "reader getting one set of cut-offs whatever they answered.");
+    }
+  }
+
+  /* A cut-off in a comparison is bmiBand() written out with one
+     of the two tables missing, and it is the shape that carries
+     no clue about ancestry at all.
+
+     Only in a file that says BMI somewhere, because 25 and 30
+     are also a number of days and a number of grams. No file in
+     this tool compares against any of the five today, so the
+     rule is as wide as it can be without reaching those. */
+  if (/\bbmi\b/i.test(src)) {
+    for (const [cut, what] of cutNames) {
+      const token = String(cut).replace(".", "\\.");
+      const re = new RegExp(`(?:[<>]=?|={2,3}|!==?)\\s*${token}(?![\\d.])`
+        + `|(?<![\\d.\\w])${token}\\s*(?:[<>]=?|={2,3}|!==?)`);
+      if (!re.test(src)) continue;
+      fail(`${file} compares against ${cut}, which is a BMI cut-off`,
+        `${cut} is ${what.join(" and ")}, and the other set has a different one.`,
+        "bmiBand(value, ancestry) is the only thing that should know either",
+        "number: a comparison written out here is one set of cut-offs applied to",
+        "every reader, which is what section 2 exists to stop.");
+    }
+  }
+
+  if (!new RegExp(`\\b${BAND_TABLE}\\s*\\[`).test(src)) continue;
+  banded += 1;
+  if (!/\bbmiBand\s*\(/.test(src)) {
+    fail(`${file} draws a BMI band without calling bmiBand()`,
+      "Something else in that file decided which band this is, and whatever it",
+      "was did not take the reader's ancestry with it. That is the failure",
+      "section 2 calls the most important honest detail in the tool.");
+  }
+  if (!new RegExp(`\\b${CUTS_TABLE}\\b`).test(src) && !/\bancestry\s*===/.test(src)) {
+    fail(`${file} draws a BMI band and never says which cut-offs it used`,
+      "DIET.md section 2: the page says which set it is using and why. A band on",
+      `its own is one word for two readers who are owed different ones, and`,
+      `${CUTS_TABLE} in words.ts is the sentence that says which.`);
+  }
+}
+
+/* ------------------------------------------------------------
+   10. The portion library: a source, a dated price, and a state
+
+   `shared/foods.ts` states all three at the top of itself and
+   nothing held any of them.
+
+   A SOURCE, because a number with no source is a number this
+   tool invented, and section 12 puts that label in front of the
+   reader on every figure.
+
+   A DATE ON A PRICE, because section 17 is blunt about it: an
+   undated price is worse than none. `price`, `currency` and
+   `pricedOn` are three parts of one fact, so a row carries all
+   three or none. A row in both kitchens carries none, because
+   one number cannot be two currencies, and a row in one kitchen
+   carries them, because the cost per gram of protein table is
+   the whole reason section 17 exists and a row with no price
+   falls silently out of it.
+
+   A STATE, which is the one that has already gone wrong here:
+   raw rice is 365 kcal per 100 g and cooked is about 130,
+   section 14 calls that the most common single error in the
+   whole of calorie counting, and the swap finder offered one for
+   the other because both were tagged the same way. `raw` is what
+   the arithmetic reads and THE NAME is what the reader reads, so
+   a row in scope carries both, in both languages. The nouns come
+   out of section 14's own sentence.
+   ------------------------------------------------------------ */
+
+const nouns = diet.replace(/\s+/g, " ")
+  .match(/\*\*Every ([^*]*?) entry in the library/)?.[1] ?? "";
+const stateNouns = nouns.split(/,| and /).map((n) => n.trim()).filter(Boolean);
+
+if (stateNouns.length < 2) {
+  fail("DIET.md section 14 no longer says which entries name their state",
+    "This reads the nouns out of the sentence beginning 'Every ... entry in the",
+    "library', so that a fifth noun added there is asked about here.");
+}
+
+/** A row that names no state because there is no second number
+    to confuse the first with. Keyed by id with the reason, and
+    it fails when it goes stale: an id that has gone, or a row
+    that has grown the flag, is an exemption covering nothing. */
+const NO_STATE: Record<string, string> = {
+  "muri-cup": "puffed rice, which nobody buys dry and cooks in water, so there is"
+    + " no second weight to confuse this one with. The same ground a slice of"
+    + " bread and a roti carry no flag on",
+};
+
+const EN_STATE = /\b(raw|dry|dried|cooked|boiled|uncooked)\b/i;
+const BN_STATE = /(কাঁচা|রান্না|সিদ্ধ|সেদ্ধ|শুকনো|ভেজানো)/;
+const exempted = new Set<string>();
+let pricedRows = 0;
+let statedRows = 0;
+
+for (const row of FOODS) {
+  if (!row.source?.trim()) {
+    fail(`the portion library row ${row.id} carries no source`,
+      "A number with no source is a number this tool invented, and section 12",
+      "shows that label beside every figure a reader is given.");
+  }
+
+  const given = ["price", "currency", "pricedOn"]
+    .filter((k) => row[k as "price" | "currency" | "pricedOn"] !== undefined);
+  if (given.length && given.length < 3) {
+    fail(`the portion library row ${row.id} carries part of a price`,
+      `it has ${given.join(" and ")} and not the rest`,
+      "price, currency and pricedOn are three parts of one fact: all three or",
+      "none. Section 17: a price is a fact with a date on it.");
+  }
+  if (row.pricedOn && !/^\d{4}-\d{2}$/.test(row.pricedOn)) {
+    fail(`the portion library row ${row.id} has a price date of ${row.pricedOn}`,
+      "It is YYYY-MM, which is what section 17 greys a figure by once it is more",
+      "than a few months old. A date nothing can compare is an undated price.");
+  }
+  if (row.place.length === 1) {
+    if (row.price === undefined) {
+      fail(`the portion library row ${row.id} is priced in neither currency`,
+        `it belongs to ${row.place[0]} alone, and section 17's cost per gram of`,
+        "protein table is built out of these figures: a row with no price falls",
+        "out of it without anything saying so.");
+    } else pricedRows += 1;
+  } else if (row.price !== undefined) {
+    fail(`the portion library row ${row.id} is in both kitchens and carries a price`,
+      `it is priced in ${row.currency}, and one number cannot be two currencies.`,
+      "A food that matters to section 17 in both countries is two rows, each with",
+      "its own price and its own date.");
+  }
+
+  const inScope = stateNouns.some((noun) => new RegExp(`\\b${noun}`, "i").test(row.en));
+  if (row.raw === undefined) {
+    if (!inScope) continue;
+    if (row.id in NO_STATE) { exempted.add(row.id); continue; }
+    fail(`the portion library row ${row.id} names a ${stateNouns.join("/")} and no state`,
+      `it reads "${row.en}"`,
+      "Raw rice is 365 kcal per 100 g and cooked is about 130. DIET.md section 14:",
+      "every one of these says which it is, in the name, in both languages. Either",
+      "add `raw`, or name it in NO_STATE with the reason the question cannot arise.");
+    continue;
+  }
+  if (row.id in NO_STATE) {
+    exempted.add(row.id);
+    fail(`the NO_STATE exemption ${row.id} has gone stale`,
+      "The row carries a raw flag now, so the question does arise for it. Take",
+      "the line out and let the row be asked like every other.");
+  }
+  statedRows += 1;
+  if (!EN_STATE.test(row.en) || !BN_STATE.test(row.bn)) {
+    fail(`the portion library row ${row.id} carries a raw flag its name does not`,
+      `en: "${row.en}"`,
+      `bn: "${row.bn}"`,
+      "The flag is what the arithmetic reads and the name is what the reader",
+      "reads. A name that does not say which state it is in is the field section",
+      "14 calls a field that will be both.");
+  }
+}
+
+for (const id of Object.keys(NO_STATE)) {
+  if (exempted.has(id)) continue;
+  fail(`the NO_STATE exemption ${id} names no row`,
+    "The portion library has no such id. An exemption that has outlived what it",
+    "exempted reads as covering something and covers nothing.");
+}
+
+/* ------------------------------------------------------------
+   11. The generated sentences, and the one thing none may say
+
+   Section 31's last bullet: "The generated sentences in section
+   16 come from a listed set of templates, and that list is what
+   a check reads. A tool that writes free prose about somebody's
+   eating will eventually write something cruel."
+
+   THE LIST IS DERIVED, NEVER KEPT. This tool's own sentences
+   written out again in this file would be right on the day they
+   were typed and wrong at the next commit, which is CLAUDE.md's
+   opening failure happening to the thing that catches that
+   failure. So a template here is what the compiler calls one: a
+   template literal with an interpolation and prose in it, plus a
+   sentence a condition chooses between two written-out ones,
+   which carries no interpolation and is generated all the same.
+
+       node scripts/check-diet.ts --templates
+
+   prints the list.
+
+   Two rules over it.
+
+   NO SECOND PERSON JUDGEMENT, in either language. Section 1: a
+   tracker that shames you is one somebody deletes on the day
+   they most need it. Section 16: a correlation is described and
+   never explained, so "your heavier days are usually Fridays" is
+   a fact and "Fridays are ruining your progress" is a judgement.
+   The vocabulary below is the judgement rather than the data,
+   which is why it is written out here with its reason on each
+   line: it is a rule, not a copy of anything.
+
+   AND THE ARITHMETIC RETURNS FIGURES, NEVER WORDS.
+   `shared/insights.ts` opens by saying that no function in it
+   returns a verdict, and a sentence built there is a sentence in
+   one language, on no list, that neither this check nor the
+   language switch can reach. It holds no prose today and this is
+   what keeps it that way.
+   ------------------------------------------------------------ */
+
+const LIST_TEMPLATES = process.argv.includes("--templates");
+
+/** A `${...}` taken out whole. Balanced, because half of these
+    interpolations hold a conditional with braces of its own and
+    a lazy match stops at the first `}`, which leaves a property
+    name behind reading as prose. */
+function unfilled(text: string): string {
+  let out = "";
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === "$" && text[i + 1] === "{") {
+      let depth = 0;
+      let j = i + 1;
+      for (; j < text.length; j += 1) {
+        if (text[j] === "{") depth += 1;
+        else if (text[j] === "}") {
+          depth -= 1;
+          if (depth === 0) break;
+        }
+      }
+      out += "{}";
+      i = j + 1;
+      continue;
+    }
+    out += text[i];
+    i += 1;
+  }
+  return out;
+}
+
+/** Prose rather than a key, a class name or a unit. Three words
+    with letters in them: "{} kcal" is a figure with a label on
+    it and nobody has to read that for tone. */
+const isProse = (text: string): boolean =>
+  text.split(/\s+/).filter((w) => /[A-Za-zঀ-৿]{2}/.test(w)).length >= 3;
+
+const tidy = (text: string): string => unfilled(text).replace(/\s+/g, " ").trim();
+
+interface Template { file: string; line: number; text: string }
+const templates: Template[] = [];
+const lineAt = (src: string, at: number): number => src.slice(0, at).split("\n").length;
+
+for (const file of TOOL_FILES) {
+  const src = uncommented(SOURCE.get(file) as string);
+
+  /* Wherever it is written. A sentence in a table like
+     FLOOR_WORDS reaches a reader exactly the way one written
+     inside the JSX does. */
+  for (const m of src.matchAll(/`((?:[^`\\]|\\.|\$\{(?:[^{}`]|\{[^{}]*\}|`[^`]*`)*\})*)`/g)) {
+    if (!m[1].includes("${")) continue;
+    const text = tidy(m[1]);
+    if (isProse(text)) templates.push({ file, line: lineAt(src, m.index ?? 0), text });
+  }
+
+  for (const tag of [...openTags(file, src, "T"), ...openTags(file, src, "TBlock")]) {
+    for (const half of ["en", "bn"] as const) {
+      const value = attr(tag.attrs, half);
+      if (!value || !value.startsWith("{") || !value.includes("?")) continue;
+      const said = [...value.matchAll(/"((?:[^"\\]|\\.)*)"/g)]
+        .map((s) => tidy(s[1])).filter(isProse);
+      if (said.length < 2) continue;
+      for (const text of said) templates.push({ file, line: tag.line, text });
+    }
+  }
+}
+
+if (templates.length < 20) {
+  fail("check-diet can no longer read the tool's generated sentences",
+    `it found ${templates.length}, and this tool has hundreds of them. What broke`,
+    "is the reader here rather than the sentences going away.");
+}
+
+if (LIST_TEMPLATES) {
+  for (const t of [...templates].sort((a, b) => a.text.localeCompare(b.text))) {
+    console.log(`${t.file}:${t.line}\n  ${t.text}`);
+  }
+}
+
+/** What a sentence about somebody's own eating may never say.
+    The judgement rather than the data, and every line of it is
+    named by DIET.md section 1, 11, 16 or 31. */
+const JUDGEMENT: Array<[RegExp, string]> = [
+  [/\byou (should|must|need to|have to|ought)\b/i,
+    "an instruction. Section 16: described, never explained, and never prescribed"],
+  [/\bshould have\b/i,
+    "the same instruction pointed backwards, which is worse"],
+  [/\btoo (much|many|little|few|high|low|often)\b/i,
+    "section 31: a quantity judged rather than stated. The figure, and what it is"
+    + " measured against, is the whole of what a reading may say"],
+  [/\b(well done|good job|keep it up|congratulat|proud of|you smashed)\b/i,
+    "section 11: a status that praises you is a status people stop reading"],
+  [/\byou failed\b|\bfailure\b|\bfell off\b/i,
+    "section 31 names this one by name: not \"you failed\""],
+  [/\bover budget\b/i,
+    "section 31 names this one too"],
+  [/\b(on|off) track\b/i,
+    "a scoreboard. Section 1: the streak counts days LOGGED and never days on"
+    + " target, because a run of days under a ceiling punishes somebody for a"
+    + " birthday"],
+  [/\b(bad|unhealthy|junk|naughty|sinful|clean eating)\b/i,
+    "section 16: it never says a food is bad. Protein and fibre per 100 kcal is"
+    + " the honest form of every good food and bad food list ever written"],
+  [/\bcheat\b/i,
+    "the same thing with a day attached to it"],
+  [/\b(lazy|willpower|no excuse)\b/i,
+    "section 11: it never says the word willpower. A hunger score climbing for"
+    + " three weeks is a target that is too aggressive rather than a person who"
+    + " is weak"],
+  [/\b(ruining|sabotag|guilt|ashamed|shame on)\b/i,
+    "section 16's own example of where the line is: \"Fridays are ruining your"
+    + " progress\""],
+  [/\b(earned|burn(ed)? (it )?off|work(ed)? (it )?off|treat yourself)\b/i,
+    "food as payment, which is what a calorie tracker is a known trigger for."
+    + " Section 31's most careful case"],
+  [/(খুব বেশি খা|অতিরিক্ত খা|বেশি খেয়ে ফেলেছেন)/,
+    "eating too much, in Bangla. The site is Bangla first and a judgement can"
+    + " arrive in one language only"],
+  [/(ব্যর্থ|আপনার দোষ|অলস|ইচ্ছাশক্তি)/,
+    "failed, your fault, lazy, willpower: section 31 in the other script"],
+  [/(দারুণ|অভিনন্দন|ভালো করেছেন|বাহবা)/,
+    "praise, and section 11's rule holds in both languages"],
+  [/(খারাপ খাবার|বাজে খাবার)/,
+    "a food called bad"],
+];
+
+for (const template of templates) {
+  for (const [pattern, why] of JUDGEMENT) {
+    if (!pattern.test(template.text)) continue;
+    fail(`${template.file}:${template.line} generates a sentence that judges the reader`,
+      `it reads: ${template.text.slice(0, 120)}`,
+      `${String(pattern)}: ${why}`,
+      "DIET.md section 31: a tool that writes free prose about somebody's eating",
+      "will eventually write something cruel. What a reading may say is the",
+      "figure, the span it was measured over, and how many days of that span",
+      "were written down.");
+  }
+}
+
+const INSIGHTS = "shared/insights.ts";
+for (const m of uncommented(read(INSIGHTS)).matchAll(/["`]((?:[^"`\\]|\\.)*)["`]/g)) {
+  const text = tidy(m[1]);
+  if (!isProse(text)) continue;
+  fail(`${INSIGHTS} holds a sentence: ${text.slice(0, 90)}`,
+    "It opens by saying that no function in it returns a verdict, and that is",
+    "what makes every reading checkable: it hands back the figures and a panel",
+    "chooses the words, in both languages, where this check can read them.",
+    "A sentence built here is a sentence in one language and on no list.");
+}
+
 /* ------------------------------------------------------------ */
 console.log(failures
   ? `\n${failures} problem(s): the diet tool has stopped keeping one of DIET.md's\n`
@@ -847,6 +1575,11 @@ console.log(failures
   : `diet: ${disclaimed} of the ${targeted} pages that print a target say so, ${phrases} phrases\n`
     + `      in both languages across ${pages.length} pages, ${widgets} widgets with an empty\n`
     + `      state, ${entries.length} glossary entries linked, ${TAGS.length} tags and ${MARKS.length} marks as written\n`
-    + `      down, ${columns} columns across ${tables.length} tables filled or named, and what\n`
-    + "      happens after a goal is reached said once.\n");
+    + `      down, ${columns} columns across ${tables.length} tables filled or named, what\n`
+    + "      happens after a goal is reached said once, "
+    + `${floorNames.length} floors asserted and\n`
+    + `      drawn from the module, ${formulas.size} formulas imported rather than written out,\n`
+    + `      ${banded} pages reading a band off the reader's own cut-offs, ${FOODS.length} library rows\n`
+    + `      sourced, ${pricedRows} of them priced with a date and ${statedRows} naming their state,\n`
+    + `      and ${templates.length} generated sentences that judge nobody.\n`);
 process.exit(failures ? 1 : 0);

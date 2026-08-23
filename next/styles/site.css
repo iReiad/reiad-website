@@ -13655,6 +13655,37 @@ German for day, and .tag is what the site has always called
   .dt-drop:focus-visible { opacity: 1; color: var(--danger); }
   .dt-drop:disabled { opacity: 0.15; cursor: default; }
 
+  .dt-meal { display: grid; gap: var(--s-2); }
+  .dt-meal-h {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--s-4);
+    margin: 0;
+    font-size: var(--t-1);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+  }
+
+  /* WHAT WAS PLANNED AND NOT YET EATEN, under what was. A rule
+     above it rather than a box round it: it is the same list of
+     the same day, and drawing it as a second card would say the
+     plan is somewhere else, which is the whole thing the
+     `planned` flag exists to avoid. */
+  .dt-plan {
+    display: grid;
+    gap: var(--s-3);
+    margin-block-start: var(--s-5);
+    padding-block-start: var(--s-5);
+    border-block-start: 1px solid var(--hairline);
+  }
+  .dt-plan h3 { margin: 0; font-size: var(--t-2); }
+
+  .dt-meal-build { display: grid; gap: var(--s-4); }
+  .dt-week, .dt-week-day { display: grid; gap: var(--s-4); }
+
   .dt-scale { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
   .dt-scale-label { font-size: var(--t-1); color: var(--ink-soft); }
   .dt-tags, .dt-marks { display: flex; gap: var(--s-2); flex-wrap: wrap; }
@@ -14280,6 +14311,18 @@ German for day, and .tag is what the site has always called
     margin: 0;
     padding: 0;
   }
+
+  /* What the pot cost, under what it holds. A hairline above it
+     rather than a card around it: it is the same figure at the
+     same rank as the energy above, and boxing one of two facts
+     makes the other look like a footnote. */
+  .dt-recipe-cost {
+    border-block-start: 1px solid var(--hairline);
+    display: grid;
+    gap: var(--s-2);
+    padding-block-start: var(--s-4);
+  }
+  .dt-recipe-cost .dt-value { margin: 0; }
 
   /* Three columns and the last two are numbers, so they line up
      down the page rather than following the name across it. */

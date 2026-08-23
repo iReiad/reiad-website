@@ -3,7 +3,8 @@
 /* ============================================================
    diet/foods-panel.tsx: the portion library, and what it costs.
 
-   `DIET.md` sections 18 and 21.
+   `DIET.md` section 17, and section 14's oil calibration, which
+   is asked for once a month at the foot of this page.
 
    ---- why a price table is on a diet tool at all ----
 

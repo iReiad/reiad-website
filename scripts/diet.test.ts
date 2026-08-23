@@ -48,7 +48,8 @@ import {
   glycogenKg, GLYCOGEN_WATER_RATIO, drained, drainedBy, gutTaken,
   forecastChange, settlingDays, protocolName, bandAt, hourlyArc,
   stretches, readable, weighings, learnedHere, entryHour,
-  type Body, type Day, type Point, type Phase, type Protocol,
+  MEALS, mealAt, mealNamed, mealOf, byMeal, entriesFrom, planKept,
+  type Body, type Day, type Entry, type Point, type Phase, type Protocol,
   totalFor,
   stall, STALL_DAYS, cyclePlace, cycleOverCycle, LUTEAL_DAYS,
   oilPerMeal, OIL_KCAL_PER_ML,
@@ -668,6 +669,104 @@ ok("hour: null rather than noon when the row does not say",
   "a silent midday puts somebody's breakfast in the middle of the afternoon");
 ok("hour: and a clock that is not one is not an hour",
   entryHour({ atTime: "31:00" }) === null && entryHour({ atTime: "7" }) === null);
+
+/* ---- 19b. which meal of the day it was, and a plan for it ----
+
+   `DIET.md` section 13. `diet_entries.meal` has no CHECK
+   constraint, so `MEALS` is the only statement of what may be in
+   it, and `diet_entries.planned` is the whole of the week's
+   plan: the same rows dated ahead, so a plan becomes a log by
+   clearing one flag rather than by writing a second row. */
+
+ok("meals: four of them, every hour of the clock inside exactly one",
+  MEALS.length === 4
+  && [...Array(24).keys()].map((h) => mealAt(h).id)
+    .every((id) => MEALS.some((m) => m.id === id)),
+  MEALS.map((m) => `${m.id} ${m.from}-${m.to}`).join(", "));
+ok("meals: and each one is named in both languages",
+  MEALS.every((m) => m.en.trim() !== "" && /[\u0980-\u09FF]/.test(m.bn)));
+ok("meals: the late one wraps round midnight rather than ending at it",
+  mealAt(22).id === "late" && mealAt(2).id === "late",
+  "a window that stops at 23:59 leaves the small hours in no meal at all");
+ok("meals: eight in the morning is breakfast, one in the afternoon is lunch",
+  mealAt(8).id === "breakfast" && mealAt(13).id === "lunch" && mealAt(19).id === "dinner");
+
+ok("meals: an unknown name is not a meal",
+  mealNamed("elevenses") === null && mealNamed(undefined) === null);
+ok("meals: the column leads",
+  mealOf({ meal: "dinner", atTime: "08:00" })?.id === "dinner",
+  "a reader who says which meal it was has said it, whatever the clock reads");
+ok("meals: a row carrying a CLOCK where a name goes falls through to the hour",
+  mealOf({ meal: "19:05" })?.id === "dinner",
+  'those rows are real, and a raw e.meal would group them under a heading reading "19:05"');
+ok("meals: and a row that says neither is placed nowhere",
+  mealOf({}) === null,
+  "putting it under breakfast would be the tool inventing where somebody's dinner went");
+
+const aDay: Entry[] = [
+  { date: "2026-08-22", label: "egg", kcal: 80, atTime: "08:10" },
+  { date: "2026-08-22", label: "ruti", kcal: 120, atTime: "08:12" },
+  { date: "2026-08-22", label: "rice", kcal: 400, meal: "lunch" },
+  { date: "2026-08-22", label: "fish", kcal: 300, planned: true, meal: "dinner" },
+  { date: "2026-08-22", label: "something", kcal: 50 },
+];
+
+const grouped = byMeal(aDay);
+ok("byMeal: the planned row is not in what was eaten",
+  grouped.every((g) => g.entries.every((e) => !e.planned)));
+ok("byMeal: breakfast holds the two logged at eight",
+  grouped[0].meal?.id === "breakfast" && grouped[0].entries.length === 2
+  && grouped[0].total.kcal === 200);
+ok("byMeal: an empty meal is left out rather than drawn as a nought",
+  grouped.every((g) => g.entries.length > 0)
+  && !grouped.some((g) => g.meal?.id === "late"));
+ok("byMeal: and a row nothing can place is its own group at the end",
+  grouped[grouped.length - 1].meal === null
+  && grouped[grouped.length - 1].entries.length === 1);
+ok("byMeal: the planned side is the same grouping over the other flag",
+  byMeal(aDay, "planned").length === 1
+  && byMeal(aDay, "planned")[0].meal?.id === "dinner");
+
+ok("totals: a day's total still excludes what was only planned",
+  totalFor(aDay).kcal === 650);
+ok("totals: and the planned side totals only the planned rows",
+  totalFor(aDay, "planned").kcal === 300,
+  "a plan counted as eaten is the flattering error this tool is arranged against");
+
+const week = planKept([
+  ...aDay,
+  { date: "2026-08-23", label: "dal", kcal: 200, planned: true },
+  { date: "2026-08-24", label: "tea", kcal: 40 },
+]);
+ok("plan: only days something was planned for appear",
+  week.map((d) => d.date).join(",") === "2026-08-22,2026-08-23",
+  "a day nobody planned is not a day the plan was broken on");
+ok("plan: it reports two figures and no verdict",
+  week[0].planned === 300 && week[0].eaten === 650
+  && !("kept" in week[0]) && !("score" in week[0]),
+  "section 13: the difference is a reading rather than a scolding");
+ok("plan: and what is still waiting is a count of rows",
+  week[0].left === 1 && week[1].left === 1);
+
+/* A saved meal's parts come out of a `jsonb` column, so every
+   field arrives as `unknown`. The band is the one that matters:
+   a part can be a plate somebody else cooked, and dropping its
+   width would make the day claim a precision it does not have. */
+const stored = entriesFrom([
+  { label: "kacchi", kcal: 900, estLow: 700, estHigh: 1100, source: "free" },
+  { label: "tea", kcal: "not a number", macros: { protein: 1, carbs: "x" } },
+  { label: "   ", kcal: 100 },
+  "not an object",
+  null,
+]);
+ok("parts: a row with no label is not a row", stored.length === 2);
+ok("parts: the band survives the trip",
+  stored[0].estLow === 700 && stored[0].estHigh === 1100);
+ok("parts: a figure that is not one is absent rather than NaN",
+  stored[1].kcal === undefined && stored[1].macros?.carbs === undefined
+  && stored[1].macros?.protein === 1);
+ok("parts: and nothing carries an id, so a meal logged twice is two entries",
+  stored.every((p) => !("id" in p) || p.id === undefined));
 
 /* ---- 20. and the panels use all of it ----
 

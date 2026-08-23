@@ -1404,8 +1404,20 @@ export interface DayTotal {
     rather than drawing a bar. */
 export const COVERAGE_FLOOR = 0.5;
 
-export function totalFor(entries: Entry[]): DayTotal {
-  const eaten = entries.filter((e) => !e.planned);
+/** Rows rather than a day, deliberately: a saved meal's parts
+    carry no date and are exactly this arithmetic.
+
+    THE DATE IS OPTIONAL RATHER THAN ABSENT. `Omit<Entry, "date">`
+    alone would be assignable from an `Entry` and NOT from an
+    entry written out as a literal, which is how most of the
+    tests and half the panels call this: an object literal is
+    excess-property checked, so widening the parameter would have
+    failed every existing caller that spells a date out. */
+export function totalFor(
+  entries: Array<Omit<Entry, "date"> & { date?: string }>,
+  which: Side = "eaten",
+): DayTotal {
+  const eaten = entries.filter((e) => (which === "planned" ? e.planned === true : !e.planned));
   const micros: Record<string, number> = {};
   const knownPer: Record<string, number> = {};
   let kcal = 0, protein = 0, carbs = 0, fat = 0, fibre = 0, known = 0, spread = 0;
@@ -1445,6 +1457,213 @@ export function totalFor(entries: Entry[]): DayTotal {
     spread,
     count: eaten.length,
   };
+}
+
+/* ---------------------------------------------------------- */
+/* which meal of the day a row belongs to                     */
+/* ---------------------------------------------------------- */
+
+/** The fixed set `diet_entries.meal` holds. Four, because a list
+    of ten is a list nobody fills, and the column has no CHECK
+    constraint, so this table is the only statement of what may
+    be in it.
+
+    `from` and `to` are the hours it covers, `from` included and
+    `to` excluded, and they wrap: the late one runs from 21 round
+    to 5. They are what NAMES a row nobody named, and nothing
+    more: a reader who eats dinner at four in the afternoon can
+    say so, and the column is what they say. */
+export interface MealName {
+  id: string;
+  en: string;
+  bn: string;
+  from: number;
+  to: number;
+}
+
+export const MEALS: MealName[] = [
+  { id: "breakfast", en: "Breakfast", bn: "সকালের খাবার", from: 5, to: 11 },
+  { id: "lunch", en: "Lunch", bn: "দুপুরের খাবার", from: 11, to: 16 },
+  { id: "dinner", en: "Dinner", bn: "রাতের খাবার", from: 16, to: 21 },
+  { id: "late", en: "Late", bn: "রাত জেগে", from: 21, to: 5 },
+];
+
+export const mealNamed = (id: string | undefined): MealName | null =>
+  MEALS.find((m) => m.id === id) ?? null;
+
+/** Which meal an hour falls in. Every hour of the clock falls in
+    exactly one, so this cannot return null and a caller never
+    has to decide what an unnamed hour means. */
+export function mealAt(hour: number): MealName {
+  const h = ((Math.floor(hour) % 24) + 24) % 24;
+  return MEALS.find((m) => (m.from <= m.to
+    ? h >= m.from && h < m.to
+    : h >= m.from || h < m.to)) ?? MEALS[0];
+}
+
+/**
+ * The meal a row belongs to, or null where nothing says.
+ *
+ * THE COLUMN FIRST, AND IT IS ASKED THROUGH `mealNamed`. Rows
+ * written before `at_time` existed carry a CLOCK in `meal`, the
+ * same drift `entryHour` reads the other way round, so a raw
+ * `e.meal` would return "08:30" as the name of a meal and group
+ * every such row under a heading that is a time. An unknown
+ * value falls through to the hour, which is what those rows
+ * carry.
+ *
+ * Null rather than a default, for `entryHour`'s reason: a row
+ * with no hour and no name is a row this cannot place, and
+ * placing it under breakfast would be the tool inventing where
+ * somebody's dinner went.
+ */
+export function mealOf(e: Pick<Entry, "atTime" | "meal">): MealName | null {
+  const named = mealNamed(e.meal);
+  if (named) return named;
+  const hour = entryHour(e);
+  return hour === null ? null : mealAt(hour);
+}
+
+/** Which side of the day a total is about. A planned row is not
+    an eaten one and never counts as one: `planned` is the flag
+    and this is the word for reading it either way. */
+export type Side = "eaten" | "planned";
+
+/** A day's rows under the meal each belongs to, in the order
+    `MEALS` declares, plus whatever could not be placed.
+
+    ONE PASS AND ONE TABLE, because the alternative is every page
+    that groups a day writing its own hours out, and the day two
+    of them disagree is the day the same dinner is in two meals.
+    A meal with nothing in it is left out rather than drawn
+    empty. */
+export function byMeal(
+  entries: Entry[], which: Side = "eaten",
+): Array<{ meal: MealName | null; entries: Entry[]; total: DayTotal }> {
+  const wanted = entries.filter((e) => (which === "planned" ? e.planned === true : !e.planned));
+  const by = new Map<string, Entry[]>();
+  for (const e of wanted) {
+    const key = mealOf(e)?.id ?? "";
+    by.set(key, [...(by.get(key) ?? []), e]);
+  }
+  const out: Array<{ meal: MealName | null; entries: Entry[]; total: DayTotal }> = [];
+  for (const meal of MEALS) {
+    const rows = by.get(meal.id);
+    if (rows?.length) out.push({ meal, entries: rows, total: totalFor(rows, which) });
+  }
+  const loose = by.get("");
+  if (loose?.length) out.push({ meal: null, entries: loose, total: totalFor(loose, which) });
+  return out;
+}
+
+/* ---------------------------------------------------------- */
+/* rows kept in a jsonb column, read back                     */
+/* ---------------------------------------------------------- */
+
+const numberOr = (value: unknown): number | undefined =>
+  typeof value === "number" && Number.isFinite(value) ? value : undefined;
+
+const textOr = (value: unknown): string | undefined =>
+  typeof value === "string" && value.trim() !== "" ? value.trim() : undefined;
+
+const figuresOr = (value: unknown): Record<string, number> | undefined => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const out: Record<string, number> = {};
+  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+    const n = numberOr(raw);
+    if (n !== undefined) out[key] = n;
+  }
+  return Object.keys(out).length ? out : undefined;
+};
+
+/**
+ * The rows kept in a `jsonb` column, as entries.
+ *
+ * `diet_foods.parts` is what a saved meal and a saved recipe
+ * both hold, and what comes back out of a `jsonb` column is
+ * `unknown`: every field has to be CHECKED rather than cast,
+ * because a value written by an older version of this tool, or
+ * by hand, is the one that arrives as a string where a number
+ * belongs and puts NaN into somebody's day.
+ *
+ * IT CARRIES THE BAND. A part of a saved meal is a row that was
+ * LOGGED, and a logged row can be a plate somebody else cooked,
+ * which is two numbers rather than one. Dropping `estLow` and
+ * `estHigh` here would make the day claim a precision it does
+ * not have, which is the flattering error this whole tool is
+ * arranged against. `partsOf()` in `next/lib/recipes.ts` reads
+ * the same column for a recipe's INGREDIENTS, which cannot
+ * carry one, and is narrower for that reason.
+ *
+ * `id` and `planned` are deliberately not read. A stored part
+ * is a description of something eaten, not a row: giving it an
+ * id would let a meal logged twice claim to be one entry.
+ */
+export function entriesFrom(raw: unknown): Array<Omit<Entry, "date">> {
+  if (!Array.isArray(raw)) return [];
+  const out: Array<Omit<Entry, "date">> = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const row = item as Record<string, unknown>;
+    const label = textOr(row.label);
+    if (!label) continue;
+    out.push({
+      label,
+      labelBn: textOr(row.labelBn),
+      meal: textOr(row.meal),
+      qty: numberOr(row.qty),
+      unit: textOr(row.unit),
+      kcal: numberOr(row.kcal),
+      macros: figuresOr(row.macros),
+      micros: figuresOr(row.micros),
+      estLow: numberOr(row.estLow),
+      estHigh: numberOr(row.estHigh),
+      source: textOr(row.source),
+      sourceId: textOr(row.sourceId),
+    });
+  }
+  return out;
+}
+
+/* ---------------------------------------------------------- */
+/* a plan, and what became of it                              */
+/* ---------------------------------------------------------- */
+
+/**
+ * What was planned for a day against what was eaten on it.
+ *
+ * `DIET.md` section 13: the difference is a READING rather than
+ * a scolding, so this returns two figures and no verdict. There
+ * is no "kept" percentage and no tick: a day planned at 1,900
+ * and eaten at 2,100 is a fact about a Tuesday, and turning it
+ * into a score is the countdown this whole tool refuses.
+ *
+ * A day appears only where something was planned for it. A day
+ * nobody planned is not a day the plan was broken on.
+ */
+export interface PlanDay {
+  date: string;
+  planned: number;
+  eaten: number;
+  /** Planned rows still waiting: not eaten, not cleared. The
+      count rather than a share, because a share of nothing is
+      the divide-by-zero every progress bar here is written
+      around. */
+  left: number;
+}
+
+export function planKept(entries: Entry[]): PlanDay[] {
+  const dates = new Set(entries.filter((e) => e.planned).map((e) => e.date));
+  return [...dates].sort().map((date) => {
+    const rows = entries.filter((e) => e.date === date);
+    const left = rows.filter((e) => e.planned);
+    return {
+      date,
+      planned: totalFor(rows, "planned").kcal,
+      eaten: totalFor(rows).kcal,
+      left: left.length,
+    };
+  });
 }
 
 /* ---------------------------------------------------------- */

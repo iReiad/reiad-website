@@ -84,7 +84,8 @@ const bundled = await build({
   alias,
   stdin: {
     contents: `export * from "./lib/recipes.ts";
-               export { byId, loggedFrom } from "@reiad/shared/foods";`,
+               export { byId, loggedFrom } from "@reiad/shared/foods";
+               export { spend } from "@reiad/shared/insights";`,
     resolveDir: join(ROOT, "next"),
     loader: "ts",
   },
@@ -102,10 +103,11 @@ const bundled = await build({
     file's own claim about it. */
 type Recipes = typeof import("./lib/recipes.ts");
 type Foods = Pick<typeof import("@reiad/shared/foods"), "byId" | "loggedFrom">;
+type Money = Pick<typeof import("@reiad/shared/insights"), "spend">;
 
 const M = await import(
   `data:text/javascript;base64,${Buffer.from(bundled.outputFiles[0].text).toString("base64")}`
-) as Recipes & Foods;
+) as Recipes & Foods & Money;
 
 let bad = 0;
 const ok = (name: string, cond: unknown, detail = ""): void => {
@@ -406,6 +408,33 @@ ok("the numbers are copied rather than pointed at",
 ok("nothing carries yesterday's row id",
   copied.every((e) => !("id" in e && e.id)));
 
+/* HOW MUCH OF YESTERDAY WAS A GUESS COMES WITH IT.
+
+   `copyOf()` built its rows field by field and named twelve of
+   them; `estLow` and `estHigh` were not among the twelve, so
+   copying a day that knew its own width produced a day claiming
+   to be measured, and the "give or take" line simply stopped
+   being drawn. Nothing announced it: the copied row has a
+   plausible number in it. The error runs towards MORE certainty
+   than the tool has, which is the one direction this whole tool
+   is arranged against, so it is asserted from that side. */
+const banded = M.copyOf([
+  { ...entry("a plate nobody weighed", "2026-08-21", "13:00", 900),
+    id: "e9", estLow: 700, estHigh: 1100 },
+], "2026-08-22");
+ok("a plate logged as a range is still a range tomorrow",
+  banded[0].estLow === 700 && banded[0].estHigh === 1100);
+/* And the same two fields read back out of `jsonb`, which is
+   where a saved meal's rows live. Harmless while a recipe's
+   ingredients cannot carry a band, and not harmless the moment
+   anything reads a LOGGED row back out of that column, which a
+   saved meal now does. */
+const readBack = M.partsOf([
+  { label: "a plate nobody weighed", kcal: 900, estLow: 700, estHigh: 1100 },
+]);
+ok("a part read back out of jsonb keeps its band too",
+  readBack[0].estLow === 700 && readBack[0].estHigh === 1100);
+
 /* ------------------------------------------------------------
    9. The shopping list
 
@@ -433,6 +462,129 @@ ok("the same ingredient in two dishes is one line with twice the amount",
   && twice.lines.find((l) => l.key.includes("chicken"))?.qty === 6);
 ok("and it is priced off the total rather than added up twice",
   near(twice.lines.find((l) => l.key.includes("chicken"))?.cost, 420));
+
+/* ------------------------------------------------------------
+   9b. What a dish you cooked yourself cost
+
+   Section 17. The shopping list already prices the parts; what
+   is new is whether the answer may be STORED on the dish, and
+   the answer is only where every part carried a checked price.
+   A dish kept at a floor is cheaper than it was AND buys the
+   log the coverage it has not got, which is the flattering
+   error twice over.
+   ------------------------------------------------------------ */
+
+console.log("\n-- what the dish cost --");
+
+/** The same three ingredients with the dal swapped for one the
+    library has a price for, so every part of it is priced. */
+const pricedKhichuri = {
+  id: "r-priced",
+  en: "Chicken khichuri",
+  bn: "মুরগির খিচুড়ি",
+  serves: 4,
+  parts: [
+    part("dal-mug-raw-100g", 200, "g"),
+    part("chicken-curry-piece", 3, "piece"),
+    part("oil-soyabean-tbsp", 2, "tablespoon"),
+  ],
+};
+
+const floor = M.dishPrice(khichuri);
+ok("a dish with one unpriced part still states a figure",
+  near(floor?.cost, 216), String(floor?.cost));
+ok("and says it is not the whole of it", floor?.whole === false);
+ok("naming the part rather than counting it",
+  floor?.missing.length === 1 && Boolean(floor?.missing[0].key.includes("dal")));
+ok("SO NOTHING IS STORED: a floor kept on the row would read as a price",
+  M.priceRow(khichuri) === null);
+
+const full = M.dishPrice(pricedKhichuri);
+ok("28 + 210 + 6 is 244 taka for the whole pot", near(full?.cost, 244), String(full?.cost));
+ok("every part priced is a price rather than a floor", full?.whole === true);
+ok("and it carries the month it was checked", full?.pricedOn === "2026-08");
+
+const kept = M.priceRow(pricedKhichuri);
+ok("which is what the three columns hold",
+  kept?.price === 244 && kept?.currency === "BDT",
+  `${String(kept?.price)} ${String(kept?.currency)}`);
+ok("dated to the first of that month, because the column is a date",
+  kept?.priced_on === "2026-08-01", String(kept?.priced_on));
+
+/* ONE CURRENCY AT A TIME. An exchange rate is a fact with no
+   date on it, so a pot half priced in taka and half in pounds
+   has no total to state at all. */
+const twoMoneys = {
+  id: "r-mixed",
+  en: "half here and half there",
+  parts: [part("chicken-curry-piece", 1, "piece"), part("oats-raw-40g", 40, "g")],
+};
+ok("a pot priced in two currencies has no price, rather than a converted one",
+  M.dishPrice(twoMoneys) === null && M.priceRow(twoMoneys) === null);
+ok("and neither has a pot nothing in which carries one",
+  M.dishPrice({ en: "guesswork", parts: [{ label: "a plate", kcal: 600 }] }) === null);
+
+/* ------------------------------------------------------------
+   9c. A logged portion of it reaches what the food cost
+
+   The wire, and the half of it that was broken: the picker
+   writes `library:<id>` and `byId()` is keyed by the bare id, so
+   a resolver that hands the id straight over prices nothing at
+   all on a log full of library food.
+   ------------------------------------------------------------ */
+
+console.log("\n-- and it reaches the bill --");
+
+ok("the library id a log carries is not the library's own key",
+  M.byId("library:dal-mug-cooked-bowl") === undefined);
+ok("so the prefix comes off first",
+  M.libraryOf("library:dal-mug-cooked-bowl")?.id === "dal-mug-cooked-bowl");
+ok("and anything else resolves to nothing rather than to a wrong row",
+  M.libraryOf("dal-mug-cooked-bowl") === undefined
+  && M.libraryOf(undefined) === undefined);
+
+/** The dish as `diet_foods` holds it: figures and price both
+    stated for the WHOLE pot, which is what makes the energy
+    ratio in `portionsOf()` a share of the money. */
+const storedDish = {
+  id: "r-priced",
+  label: "Chicken khichuri",
+  kind: "recipe",
+  serves: 4,
+  kcal: 1527,
+  macros: { protein: 101.8, fibre: 39.6 },
+  price: 244,
+  currency: "BDT",
+  priced_on: "2026-08-01",
+};
+
+const resolve = M.foodResolver([storedDish]);
+ok("a stored dish resolves to something with a price on it",
+  resolve("r-priced")?.price === 244);
+ok("and a library row still resolves beside it",
+  resolve("library:dal-mug-cooked-bowl")?.price === 18);
+ok("a dish that lost its energy figure resolves to nothing rather than to a divide",
+  M.foodResolver([{ ...storedDish, kcal: undefined }])("r-priced") === undefined);
+ok("and one that lost its protein does too, because nought would flatter the ratio",
+  M.foodResolver([{ ...storedDish, macros: {} }])("r-priced") === undefined);
+
+const bill = M.spend({
+  entries: [
+    { date: "2026-08-20", label: "Chicken khichuri", kcal: 381.75,
+      source: "recipe", sourceId: "r-priced" },
+    { date: "2026-08-20", label: "cooked mug dal, 1 bowl", kcal: 150,
+      source: "library", sourceId: "library:dal-mug-cooked-bowl" },
+  ],
+  resolve,
+  currency: "BDT",
+  now: "2026-08",
+});
+ok("one portion of four is a quarter of the pot, so 61 taka of the 244",
+  near(bill.cost, 79), String(bill.cost));
+ok("with the dal's own 18 beside it, and the whole day priced",
+  bill.coverage === 1, String(bill.coverage));
+ok("and a quarter of the pot's protein counted against it",
+  near(bill.proteinPriced, 25.45 + 8.5), String(bill.proteinPriced));
 
 /* ------------------------------------------------------------
    10. The shared pot, and a share of it
@@ -664,6 +816,7 @@ console.log(bad
   ? `\n${bad} problem(s). A recipe is somebody's real dinner: a total that\n`
     + "is wrong in the flattering direction is the failure this file exists for.\n"
   : "\nrecipes: the pot, the portion, the refusals, the floors, the micronutrient\n"
-    + "         rule, your usuals, copy yesterday, the shopping list, a shared pot\n"
-    + "         cut four ways, the hob, a plate logged as a range and a hand.\n");
+    + "         rule, your usuals, copy yesterday, the shopping list, what the dish\n"
+    + "         cost and what is not stored, a shared pot cut four ways, the hob,\n"
+    + "         a plate logged as a range and a hand.\n");
 process.exit(bad ? 1 : 0);

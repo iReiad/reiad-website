@@ -815,6 +815,51 @@ export function againstBudget(s: Spend, weekly: number): AgainstBudget | null {
   };
 }
 
+/** The `subject` a `metric` target carries when its number is
+    measured out of the food log rather than typed in by the
+    reader.
+
+    Section 30, and it is NOT a fourth kind: a food budget is the
+    third kind gaining a source, which is exactly what a weight
+    goal does the moment `diet_days` exists. It is in the
+    `subject` column of rows that already exist, so never rename
+    it. */
+export const FOOD_BUDGET = "diet:food-budget";
+
+export interface BudgetTarget {
+  /** What the reader is aiming to spend in a week, in the
+      target's own currency. */
+  weekly: number;
+  /** What the week came to, PROJECTED OVER THE WHOLE LOG.
+      Never a bill, and every caller has to say so: the priced
+      share alone is short by exactly the food this site has no
+      price for, which would report every reader as under. */
+  spentWeek: number;
+  /** Signed. Negative is under the budget. */
+  diffWeek: number;
+  /** The share of the log's ENERGY the figure was drawn from.
+      In the returned shape rather than left on `Spend` so that
+      nothing can print `spentWeek` without it. */
+  coverage: number;
+}
+
+/** A food budget, measured, which is what makes it a target of
+    the account's rather than a number the reader keeps typing
+    back in.
+
+    Null where it cannot be measured honestly: no budget, no
+    logged day, or under section 15's coverage floor. A caller
+    that gets null draws NO BAR, because a bar drawn from a
+    figure this site cannot stand behind looks exactly like one
+    it can. */
+export function budgetTarget(s: Spend, weekly: number): BudgetTarget | null {
+  const against = againstBudget(s, weekly);
+  if (!against || against.wholeLogPerDay === null) return null;
+  if (s.coverage < COVERAGE_FLOOR) return null;
+  const spentWeek = against.wholeLogPerDay * 7;
+  return { weekly, spentWeek, diffWeek: spentWeek - weekly, coverage: s.coverage };
+}
+
 export interface TagCost {
   tag: string;
   rows: number;

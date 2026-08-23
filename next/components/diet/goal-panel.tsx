@@ -33,7 +33,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   LOWEST_RATE_PCT, RATES, MAX_GAIN_PCT_PER_WEEK, MAX_LOSS_PCT_PER_WEEK,
-  MAX_SURPLUS_KCAL,
+  MAX_SURPLUS_KCAL, NO_LOSS_BELOW_BMI, floorKcal,
   bandWatch, bmi, fatEstimate, gainWeekOne, restingBurn, estimatedBurn,
   activityFactor, learnedHere, projection, proteinFloor, slopePerWeek,
   suggestBand, target, trend, weighings, whtr,
@@ -54,20 +54,20 @@ import { Invite } from "./invite";
 
 const FLOOR_WORDS: Record<FloorHit, { en: string; bn: string }> = {
   rate: {
-    en: "Your rate was capped at 1% of bodyweight a week. Faster than that raises the risk of gallstones measurably.",
-    bn: "আপনার হার সপ্তাহে শরীরের ওজনের ১% এ আটকানো হয়েছে। এর চেয়ে দ্রুত হলে পিত্তথলির পাথরের ঝুঁকি মাপার মতো বাড়ে।",
+    en: `Your rate was capped at ${MAX_LOSS_PCT_PER_WEEK}% of bodyweight a week. Faster than that raises the risk of gallstones measurably.`,
+    bn: `আপনার হার সপ্তাহে শরীরের ওজনের ${digits(MAX_LOSS_PCT_PER_WEEK, "bn")}% এ আটকানো হয়েছে। এর চেয়ে দ্রুত হলে পিত্তথলির পাথরের ঝুঁকি মাপার মতো বাড়ে।`,
   },
   resting: {
     en: "The target was raised to your resting burn. A target under what your body costs doing nothing is not a diet plan.",
     bn: "লক্ষ্যটা বাড়িয়ে আপনার বিশ্রামের খরচে আনা হয়েছে। কিছু না করেও শরীরের যা খরচ, তার নিচে লক্ষ্য কোনো পরিকল্পনা নয়।",
   },
   absolute: {
-    en: "The target was raised to the absolute floor: 1200 for women, 1500 for men. Below that the tool declines.",
-    bn: "লক্ষ্যটা বাড়িয়ে একেবারে সর্বনিম্নে আনা হয়েছে: নারীদের ১২০০, পুরুষদের ১৫০০। এর নিচে যন্ত্রটি রাজি নয়।",
+    en: `The target was raised to the absolute floor: ${floorKcal("female")} for women, ${floorKcal("male")} for men. Below that the tool declines.`,
+    bn: `লক্ষ্যটা বাড়িয়ে একেবারে সর্বনিম্নে আনা হয়েছে: নারীদের ${digits(floorKcal("female"), "bn")}, পুরুষদের ${digits(floorKcal("male"), "bn")}। এর নিচে যন্ত্রটি রাজি নয়।`,
   },
   underweight: {
-    en: "No loss goal is offered below BMI 18.5, on either set of cut-offs. Maintenance is what this can do.",
-    bn: "বিএমআই ১৮.৫ এর নিচে কোনো ওজন কমানোর লক্ষ্য দেওয়া হয় না, কোনো সীমাতেই। যা করা যায় তা হলো ওজন ধরে রাখা।",
+    en: `No loss goal is offered below BMI ${NO_LOSS_BELOW_BMI}, on either set of cut-offs. Maintenance is what this can do.`,
+    bn: `বিএমআই ${digits(NO_LOSS_BELOW_BMI, "bn")} এর নিচে কোনো ওজন কমানোর লক্ষ্য দেওয়া হয় না, কোনো সীমাতেই। যা করা যায় তা হলো ওজন ধরে রাখা।`,
   },
   /* THE ONE THAT BINDS GOING UP. A percentage of bodyweight is
      the proxy for it and drifts above it past about 100kg. */

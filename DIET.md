@@ -1025,28 +1025,69 @@ seconds. **The reason food diaries get abandoned is friction, not
 motivation**, and the fix is that most people eat the same forty
 things.
 
-- ✓ **Copy yesterday**, whole or one meal of it. The most pressed
-  button in any food log, and it is usually right. Whole, or one
-  row of it; a meal of it waits on `diet_entries.meal` being
-  filled, which is what names one.
+- ✓ **Copy yesterday**, whole, one meal of it, or one row. The
+  most pressed button in any food log, and it is usually right.
+  `MEALS` in `shared/diet.ts` is what names a meal and
+  `diet_entries.meal` is where it goes: four names, and every
+  hour of the clock falls inside exactly one of them, so
+  `byMeal()` groups a day whether or not anything ever wrote
+  that column. It reads the column first and the hour second,
+  the same way `entryHour()` reads the hour first and the column
+  second, because there are real rows carrying a clock where a
+  meal name belongs.
 - ✓ **Your usuals**, worked out rather than asked for: anything
   logged three times becomes a one-tap item, and the six most
   likely for this time of day sit at the top. Breakfast at eight
   in the morning should offer breakfast.
-- ○ **Meals, not only foods.** "My breakfast" is one tap for four
-  items, made by saving a day's meal as a template. `diet_foods`
-  already carries the `meal` kind for it.
+- ✓ **Meals, not only foods.** "My breakfast" is one tap for four
+  items, saved out of a day that already happened rather than
+  assembled in a second builder: a reader who has just logged
+  their breakfast has done the assembling once already.
+  `diet_foods` with `kind` of `meal` is the row and `parts` is
+  what is in it.
+
+  **A meal is not a recipe, and the difference is the yield.** A
+  recipe is `§14`'s pot with a number of portions on it, so
+  `pot()` collapses it into one food and `scaleTo()` cuts a
+  fraction out of it: one row in the log, reading "chicken
+  curry, one portion". A meal has no yield and nothing to
+  divide, so it stays four rows, each keeping its own label, its
+  own source and its own micronutrients. Nothing about a meal
+  scales anything, which is why there is no second copy of that
+  arithmetic. Summing them into one row would also be dishonest
+  twice: three labels would leave `topSources()`, and
+  `totalFor()` counts an entry's WHOLE energy as covered for any
+  key it carries, so a summed meal would buy the day coverage
+  that only two of its four items paid for.
 - ✓ **Recipes**, which are `§14`'s pot with a yield on it: build the
   dish once, say it serves five, and a portion is a fraction
   forever after. Editing the recipe does not rewrite history,
-  because a logged entry holds its own numbers. Changing a saved
-  dish and removing one are the two halves still to come: both
-  need `diet_foods` to be writable a second time, which is an
-  update in `next/lib/diet-api.ts` rather than a decision.
-- ○ **A plan for the week**, optional: the same list with dates on
-  it. Plan on Sunday, tick through the week, and the difference
-  between planned and eaten becomes a reading in `§16` rather
-  than a scolding.
+  because a logged entry holds its own numbers. `saveOwnFood()`
+  is an upsert, so changing a saved dish is already a save;
+  removing one is `removeOwnFood()` in `next/lib/diet-api.ts`,
+  which the meal list uses and the recipe list has not been
+  wired to yet.
+- ✓ **A plan for the week**, optional: the same list with dates
+  on it, which is meant literally. There is no second search on
+  the planner, because a plan is made of things somebody already
+  eats and the count that produced the usuals is the count that
+  should produce the plan.
+
+  A planned row is **not a seventh table**: it is
+  `diet_entries` dated ahead with `planned` set, so the plan,
+  the shopping list and `§16`'s reading all come out of rows
+  that already exist. Ticking one is `markEaten()`, which
+  clears the flag and writes the clock on THAT row: nothing
+  downstream can tell a kept plan from a dinner nobody planned,
+  which is the point. `totalFor()` has always excluded planned
+  rows and takes a side now, so `planKept()` can report what
+  was planned and what was eaten as two figures with no verdict
+  between them. There is no percentage kept and no tick,
+  because the difference is a reading rather than a scolding.
+
+  Only a day that has arrived can be ticked. A plan for Friday
+  marked eaten on Tuesday would put food in a day nobody has
+  lived yet, and the trend would read it.
 - ✓ **A shopping list**, with the prices from `§17` giving a total
   before the shop rather than a shock after it. A list of items
   and a figure. **No links, no shop, no affiliate, ever.** It is
@@ -1057,9 +1098,29 @@ things.
 - ✓ **Quick add**, a bare number with no name, for the times when
   the honest choice is a rough figure now rather than an exact
   figure never. The food picker's own free entry is it.
-- ○ **And a keyboard.** The whole log works without a mouse: type,
-  arrow, enter. The account page's roving tabindex is already the
-  pattern and there is no reason to invent a second one.
+- ✓ **And a keyboard.** The whole log works without a mouse:
+  type, arrow, enter. The results are a roving tabindex, which
+  is the account page's pattern and the only one this site has,
+  so the list is ONE tab stop rather than six. Down goes into
+  it, the arrows walk it, Escape leaves it, and Enter on the
+  search box takes the first result and puts the caret in the
+  amount box.
+
+  **Enter in the amount box adds it**, and that is the one that
+  mattered. Add sits EIGHT tab stops past the number somebody
+  has just typed: the two unit chips, the four hand portions,
+  the ate-out chip and then the button. A form that cannot be
+  submitted from the field it ends in is a form that looks
+  finished, and it was measured in a browser rather than read
+  off the markup. Adding puts the caret back in the search box,
+  because the next thing somebody logs is the next thing they
+  ate.
+
+  Every box that writes on blur commits on Enter too, and does
+  not blur: a keyboard has no blur until something else is
+  focused, so a reader who typed this morning's weight, pressed
+  Enter and closed the tab lost it. Blurring to the body would
+  send the following Tab back to the top of the page.
 
 **Where it is.** `/tools/diet/recipes` is the page,
 `next/components/diet/recipe-panel.tsx` and
@@ -1070,6 +1131,16 @@ nothing itself: a pot is a food stated for `serves` portions, so
 scaling that already scales a searched food to an amount eaten,
 and their refusal comes with it. `next/recipes.test.ts` asserts
 all of it with no browser.
+
+Meals and the week are the same page's third and fourth
+sections, in `usuals.tsx`, and what they need out of
+`shared/diet.ts` is `MEALS`, `mealAt()`, `mealOf()`,
+`byMeal()`, `entriesFrom()` and `planKept()`, all asserted in
+`scripts/diet.test.ts` with no browser. Today's plan is drawn
+under the eaten list by `next/components/diet/log-form.tsx`,
+which is also where a day gets ticked through, and the keyboard
+work is that file and
+`next/components/diet/food-picker.tsx`.
 
 **A recipe is somebody's real dinner, so a total refuses rather
 than guesses.** An ingredient that states no energy contributes
@@ -1210,7 +1281,7 @@ the failure at the top of `CLAUDE.md` wearing a plan's hat.
 | hand portions | four chips beside the amount box, wherever the row states what its own portion weighs. A row that does not say refuses a hand rather than guessing one |
 
 `next/recipes.test.ts` is the guard for the pot, the share, the
-range and the hands: 115 checks, no browser.
+range and the hands: 136 checks, no browser.
 
 **The one thing still to draw is the day's own width.**
 `DayTotal.spread` in `shared/diet.ts` adds up every entry's
@@ -2089,6 +2160,41 @@ erase that removes all of it. `§30`. **The importer reads the
 exporter's format**, so this tool can be left and returned to,
 which is the only real test of whether an export is honest.
 
+**Built, and the test had been failing quietly.**
+`aab/src/account-page.ts` has written all six diet tables into
+that file since the day those tables existed, and the importer
+read CSV and nothing else, so a reader could take their whole
+account away and bring none of it back. Both halves worked
+perfectly on their own, which is exactly why nothing said so.
+`shared/bundle.ts` reads it now and `/tools/diet/import` takes a
+`.json` beside a `.csv`.
+
+**Two of the six come back, and the schema is what decides
+which.** `diet_days` and `diet_entries` are the tables carrying
+an `origin` column, and `origin` is the only thing that makes
+"undone as one operation" above possible. A table this cannot
+offer to undo is a table it does not write, so the other four are
+NAMED on the preview screen with the reason rather than dropped
+silently: a copy that quietly restores two thirds of an account
+is worse than one that restores a third and says which.
+
+`diet_profile` would be refused even if it grew the column, and
+it is the one worth writing down. It is a single row holding a
+reader's height, their medicines and whether they track a cycle.
+A file written over it is destructive in the one direction nobody
+notices: every page still renders, with somebody else's body in
+it.
+
+**Neither the file's `user_id` nor its row ids are carried**, and
+`scripts/bundle.test.ts` asserts both as ABSENCES, which is the
+only way to assert one. A foreign `user_id` is refused by row
+level security silently, so the page would report a successful
+import of nothing; a carried row id either collides with a live
+row or resurrects a deleted one. The same test reads the origin
+column list out of the migration and the table list out of the
+exporter rather than repeating either, so a seventh table cannot
+appear at one end and go unnoticed at the other.
+
 ### And offline, because Dhaka
 
 The network is not dependable everywhere this will be used, and a
@@ -2425,18 +2531,55 @@ this file so the prose and the code cannot drift.
 
 **`scripts/check-diet.ts`**, for the rules that are about pages
 rather than about numbers. It is in `check-all.ts` beside every
-other check. Five of the nine below are held, plus two the list
-did not ask for; the four not yet held are marked ○, and each is
-waiting on the thing it would check existing:
+other check. Each line below carries its own mark, and the last
+two are ones this list did not ask for: a check that turns up a
+rule nobody had written down belongs beside the ones that were
+asked for.
 
-- ○ the floors are the ones `scripts/diet.test.ts` asserts, and
-  no route recomputes a formula rather than importing it.
-- ○ the Asian cut-off table is used whenever ancestry says so.
-- ○ every food in both libraries carries a source and a price
-  date, and every rice, grain and pasta row names its state.
-- ○ the generated sentences in `§16` and the stage card in `§11`
+- ✓ the floors are the ones `scripts/diet.test.ts` asserts, and
+  no route recomputes a formula rather than importing it. The
+  floors are read out of `target()`'s own body rather than
+  listed, so a sixth bound is asked about with nobody coming
+  here, and the formulas are compared by SHAPE, with the names
+  taken out and the numbers left in. It found three sentences on
+  the goal page writing a constant out as a number: the rate cap
+  as 1%, the absolute floor as 1200 and 1500, and the
+  underweight cut-off as 18.5. Those are the sentences whose
+  whole job is to say the tool changed your number, which makes
+  them the worst place in the tool for a figure that cannot
+  change with it.
+- ✓ the Asian cut-off table is used whenever ancestry says so.
+  Four shapes of not using it, and none of them looks wrong on
+  the page: a fixed ancestry handed to `bmiBand()`, `BMI_CUTS`
+  read by name, a body built with a literal ancestry, and a
+  cut-off written into a comparison, which is `bmiBand()`
+  retyped with one of the two tables missing. And `§2`'s other
+  half, that the page says which set it used: a band on its own
+  is one word for two readers who are owed different ones.
+- ✓ every food in both libraries carries a source and a price
+  date, and every rice, grain and pasta row names its state. The
+  nouns come out of `§14`'s own sentence, the price is three
+  columns that arrive together or not at all, a row in both
+  kitchens carries none of them because one number cannot be two
+  currencies, and the state has to be in the NAME in both
+  languages rather than only in the flag the arithmetic reads. A
+  row with no second weight to be confused with, `muri`, is
+  named in the check with the reason, and that exemption fails
+  when it goes stale.
+- ✓ the generated sentences in `§16` and the stage card in `§11`
   come only from the listed templates, and the list contains no
-  second person judgement. There is no template list yet.
+  second person judgement. **The list is derived, never kept.**
+  Hundreds of the tool's own sentences written out again inside
+  a check would be right on the day they were typed and wrong at
+  the next commit, so a template here is what the compiler calls
+  one: a template literal with an interpolation and prose in it,
+  plus a sentence a condition chooses between two written-out
+  ones. `node scripts/check-diet.ts --templates` prints the
+  list. What IS written down in the check is the vocabulary of
+  judgement, with the section naming each: that is a rule rather
+  than a copy of anything. The stage card is not built yet and
+  will need no second rule when it is, because the corpus is
+  every generated sentence in the tool.
 - ✓ the fixed journal tag set is the one in `§11` and has not
   grown a forty-first tag, and the day marks are the ones the
   migration names. Neither column has a CHECK constraint, so the
@@ -2459,6 +2602,13 @@ waiting on the thing it would check existing:
   goal is reached is said ONCE, on the goal page. `§6` puts it
   there and only there, and it is the one sentence in the tool
   that argues for the tool.
+- ✓ and a third: `shared/insights.ts` holds no prose. It opens
+  by saying that no function in it returns a verdict, which is
+  what makes every reading checkable: it hands back the figures
+  and a panel chooses the words, in both languages, where the
+  template check above can read them. A sentence built in the
+  arithmetic is a sentence in one language, on no list, that
+  neither the check nor the language switch can reach.
 
 **A `diet.test` under `next/`**, in a real browser, the way
 `next/admin.test.ts` drives `/admin`:

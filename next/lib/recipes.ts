@@ -59,8 +59,9 @@
 import { entryHour, type Entry, type Range } from "@reiad/shared/diet";
 import {
   COVERAGE_KEYS, byId, loggedFrom, scaleTo,
-  type CoverageKey, type FoundFood, type ScaledPortion,
+  type CoverageKey, type FoundFood, type Portion, type ScaledPortion,
 } from "@reiad/shared/foods";
+import type { Item, Resolve } from "@reiad/shared/insights";
 
 /** One ingredient, which is exactly what the food picker
     already produces: `loggedFrom()` returns this shape, so an
@@ -570,6 +571,12 @@ export function partsOf(raw: unknown): Part[] {
       kcal: num(row.kcal),
       macros: figures(row.macros),
       micros: figures(row.micros),
+      /* A part read back out of `jsonb` may be a LOGGED row
+         rather than an ingredient, and a logged row can be a
+         plate nobody weighed. Dropping the band makes the day
+         claim a precision it does not have. */
+      estLow: num(row.estLow),
+      estHigh: num(row.estHigh),
       source: text(row.source),
       sourceId: text(row.sourceId),
     });
@@ -590,6 +597,16 @@ export interface StoredFood {
   serves?: number;
   uses?: number;
   last_used?: string;
+  /* The row's figures and its price are both stated for the
+     WHOLE pot, which is what makes the energy ratio in
+     `portionsOf()` turn a logged share into its share of the
+     money. `priced_on` is a `date` here and a `YYYY-MM` month
+     everywhere else. */
+  kcal?: number;
+  macros?: Record<string, number>;
+  price?: number;
+  currency?: string;
+  priced_on?: string;
 }
 
 /** A stored row as a recipe, or null where the row is not one.
@@ -744,6 +761,14 @@ export function copyOf(entries: Entry[], onto: string): Entry[] {
       kcal: e.kcal,
       macros: e.macros,
       micros: e.micros,
+      /* HOW MUCH OF IT WAS A GUESS COMES WITH IT. Without these
+         two, copying yesterday turns a day that knew its own
+         width into a day that claims to be measured, and the
+         "give or take" line simply stops being drawn. The error
+         runs towards MORE certainty than the tool has, which is
+         the one direction this whole tool is arranged against. */
+      estLow: e.estLow,
+      estHigh: e.estHigh,
       source: e.source,
       sourceId: e.sourceId,
     }));
@@ -787,13 +812,24 @@ export interface ShopList {
   unpriced: ShopLine[];
 }
 
+/** What the food picker puts in front of a library row's id, and
+    nothing else on this site writes one. */
+export const LIBRARY = "library:";
+
+/** The library row behind a logged entry's `sourceId`, or
+    nothing.
+
+    THE PREFIX IS THE WHOLE OF IT. `byId()` is keyed by the bare
+    id, so a resolver that hands `sourceId` straight over matches
+    no row at all, and every reading drawn through it reads zero
+    on a log full of library food. */
+export const libraryOf = (sourceId: string | undefined): Portion | undefined =>
+  sourceId?.startsWith(LIBRARY) ? byId(sourceId.slice(LIBRARY.length)) : undefined;
+
 /** The library row a part was copied from, where it was copied
-    from the library at all. The picker writes `library:<id>`,
-    and nothing else on this site does. */
+    from the library at all. */
 const libraryRow = (part: Part) =>
-  part.source === "library" && part.sourceId?.startsWith("library:")
-    ? byId(part.sourceId.slice("library:".length))
-    : undefined;
+  part.source === "library" ? libraryOf(part.sourceId) : undefined;
 
 export function shoppingList(dishes: Dish[]): ShopList {
   /* Gathered first and priced afterwards, out of the TOTAL
@@ -850,4 +886,139 @@ export function shoppingList(dishes: Dish[]): ShopList {
     totals: [...totals].map(([currency, cost]) => ({ currency, cost })),
     unpriced: lines.filter((l) => l.cost === undefined),
   };
+}
+
+/* ------------------------------------------------------------
+   What a dish you cooked yourself cost
+
+   `DIET.md` section 17. The shopping list above already prices
+   the parts out of the library, so this adds no second
+   arithmetic: it reads that list for ONE dish and decides
+   whether the answer is a price or a floor.
+
+   ---- and a floor is not stored ----
+
+   ALL OR NOTHING, which is the rule at the top of this file for
+   a micronutrient and is the same rule for the same reason one
+   level up. `spend()` counts a priced row's WHOLE energy as
+   covered, so a dish stored at a floor would be cheaper than it
+   was AND would buy the log coverage it has not got: the
+   flattering error twice over, in the one place this tool is
+   built to refuse it. A dish missing one part's price stores no
+   price at all, and the panel names the part.
+   ------------------------------------------------------------ */
+
+export interface DishPrice {
+  /** What the WHOLE pot cost, in `currency`, on the same footing
+      as every other figure on the row. A floor wherever
+      `missing` is not empty. */
+  cost: number;
+  currency: string;
+  /** The OLDEST month any part was checked in: a total is only
+      as fresh as its stalest part. */
+  pricedOn?: string;
+  /** Parts carrying no checked price, named rather than counted,
+      so the panel can say WHICH part is missing. */
+  missing: ShopLine[];
+  /** Every part priced, in one currency, so `cost` is what the
+      dish cost rather than the least it can have cost. */
+  whole: boolean;
+}
+
+/** What a dish cost, out of the library's own prices.
+
+    Null where nothing in it carries a checked price, and null
+    where two currencies do: one currency at a time, because an
+    exchange rate is a fact with no date on it, so a dish half
+    priced in taka and half in pounds has no total to state. */
+export function dishPrice(dish: Dish): DishPrice | null {
+  const list = shoppingList([dish]);
+  if (list.totals.length !== 1) return null;
+  const [{ currency, cost }] = list.totals;
+  const months = list.lines
+    .map((l) => l.pricedOn)
+    .filter((m): m is string => Boolean(m))
+    .sort();
+  return {
+    cost,
+    currency,
+    pricedOn: months[0],
+    missing: list.unpriced,
+    whole: list.unpriced.length === 0,
+  };
+}
+
+/** The three `diet_foods` columns a dish's price writes. Snake
+    case because they are column names: the row goes to PostgREST
+    as it is written. */
+export interface PriceRow {
+  price: number;
+  currency: string;
+  priced_on: string;
+}
+
+/** Those three columns, or null where the dish has no price this
+    site can stand behind. See the header above: a floor is not
+    stored. */
+export function priceRow(dish: Dish): PriceRow | null {
+  const priced = dishPrice(dish);
+  if (!priced || !priced.whole || !priced.pricedOn) return null;
+  return {
+    price: priced.cost,
+    currency: priced.currency,
+    /* The column is a `date` and the library states a month, so
+       the first of it. `diet_foods_priced_with_a_date` refuses a
+       price with no date beside it. */
+    priced_on: `${priced.pricedOn}-01`,
+  };
+}
+
+/** A stored dish as something `spend()` can price.
+
+    The row states its figures FOR THE WHOLE POT and `price` is
+    what that pot cost, so `portionsOf()`'s energy ratio turns a
+    logged portion or share straight into its share of the money.
+
+    Undefined where the row states no energy or no protein: a
+    dish resolved without them would add nought to the protein
+    the cost per gram is divided by. Unreachable through the
+    panel, because a dish only carries a price when every part is
+    a priced library row and every library row states both. */
+const pricedDish = (row: StoredFood): Item | undefined => {
+  const protein = row.macros?.protein;
+  if (!row.id || !(row.kcal !== undefined && row.kcal > 0)) return undefined;
+  if (typeof protein !== "number" || !Number.isFinite(protein)) return undefined;
+  return {
+    id: row.id,
+    en: row.label,
+    bn: row.label_bn ?? row.label,
+    kcal: row.kcal,
+    protein,
+    fibre: row.macros?.fibre ?? 0,
+    price: row.price,
+    /* The library's two, and nothing else: `spend()` counts a
+       row only where the currency matches the one asked for, so
+       an unknown spelling falls into the uncovered share rather
+       than into a total. */
+    currency: row.currency === "BDT" || row.currency === "GBP" ? row.currency : undefined,
+    pricedOn: row.priced_on?.slice(0, 7),
+  };
+};
+
+/** What resolves a logged entry to a row with a price on it: the
+    portion library, and the reader's own dishes.
+
+    `spend()` and the other readings in `shared/insights.ts` take
+    this as their `resolve`. Both halves are needed and the
+    second is most of it: somebody who cooks logs portions of
+    their own pots, and a resolver that knows only the library
+    prices none of their dinners. */
+export function foodResolver(own: StoredFood[]): Resolve {
+  const dishes = new Map<string, Item>();
+  for (const row of own) {
+    const item = pricedDish(row);
+    if (item) dishes.set(item.id, item);
+  }
+  return (sourceId: string): Item | undefined =>
+    libraryOf(sourceId) ?? dishes.get(sourceId);
 }

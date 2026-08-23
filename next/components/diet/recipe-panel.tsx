@@ -64,9 +64,9 @@ import {
   DEFAULT_PLACE, portionWords, type FoundFood, type Place,
 } from "@reiad/shared/foods";
 import {
-  SERVING, SHARES, daysOld, fractionOf, logRecipe, logShare, offTheHob, onTheHob,
-  pot, servingsOf, shareOf, shoppingList, toPot, toRecipe,
-  type Dish, type Part, type Recipe, type Share,
+  SERVING, SHARES, daysOld, dishPrice, fractionOf, logRecipe, logShare, offTheHob,
+  onTheHob, pot, priceRow, servingsOf, shareOf, shoppingList, toPot, toRecipe,
+  type Dish, type Part, type PriceRow, type Recipe, type Share,
 } from "../../lib/recipes";
 import {
   addEntry, getOwnFoods, getProfile, isoDate, clockTime, saveOwnFood, who,
@@ -310,6 +310,13 @@ export function RecipePanel() {
       pot needs only something in it that carries a figure. */
   const buildable = kind === "recipe" ? made.food !== null : whole !== null;
 
+  /** What went in, priced. `cost` is the WHOLE pot, so it sits
+      beside the whole pot's energy rather than beside a portion,
+      and it is only kept on the row where every part carried a
+      checked price: `priceRow()` says why. */
+  const priced = dishPrice(draft);
+  const keeps: PriceRow | null = priceRow(draft);
+
   const save = async (): Promise<void> => {
     if (!w || !buildable || !draft.en) return;
     setSaving("saving");
@@ -324,7 +331,11 @@ export function RecipePanel() {
        of a dish nobody cut into a fixed number of parts. */
     const asRecipe = kind === "recipe" && made.food !== null;
     const figures = asRecipe ? made.food : whole;
-    const row: OwnFood = {
+    /* `OwnFood` does not name the three price columns yet, and
+       `next/lib/diet-api.ts` is another change's file. They reach
+       PostgREST either way, because that function sends the row
+       it is handed. */
+    const row: OwnFood & Partial<PriceRow> = {
       label: draft.en,
       label_bn: draft.bn,
       kind,
@@ -349,6 +360,11 @@ export function RecipePanel() {
          still somebody's dinner. */
       uses: 0,
       last_used: kind === "pot" ? today : undefined,
+      /* ALL THREE OR NONE, and none wherever one part carried no
+         checked price: a dish stored at a floor would read
+         cheaper than it was and would buy the log the coverage it
+         has not got. `priceRow()` is where that is decided. */
+      ...(keeps ?? {}),
     };
     const ok = await saveOwnFood(w, row);
     if (!ok) { setSaving("failed"); return; }
@@ -872,6 +888,45 @@ export function RecipePanel() {
                   এই রান্নার সবচেয়ে কম হিসাব, আসল হিসাব নয়।</p>}
               />
             </Note>
+          ) : null}
+
+          {/* ---- what it cost ---- */}
+          {parts.length ? (
+            <div className="dt-recipe-cost">
+              <p className="dt-value">
+                {priced ? (
+                  <T
+                    en={`${said(priced.cost, !priced.whole, "en")} ${priced.currency} for the whole pot`}
+                    bn={`পুরো পাত্রের জন্য ${said(priced.cost, !priced.whole, "bn")} ${priced.currency}`}
+                  />
+                ) : (
+                  <T en="No price for this dish" bn="এই রান্নার কোনো দাম নেই" />
+                )}
+              </p>
+
+              {priced?.whole ? (
+                <p className="dt-said">
+                  <T
+                    en={`Every part of it carries a checked price, so this is kept with the dish and what a portion of it costs is counted in what your food cost. Prices last checked ${priced.pricedOn}.`}
+                    bn={`এর প্রতিটি অংশের যাচাই করা দাম আছে, তাই এটা রান্নাটার সঙ্গে রাখা হয় আর এর এক ভাগের খরচ আপনার খাবারের খরচে গোনা হয়। দাম শেষ যাচাই হয়েছে ${digits(priced.pricedOn ?? "", "bn")}।`}
+                  />
+                </p>
+              ) : (
+                <p className="dt-said">
+                  {priced ? (
+                    <T
+                      en={`${priced.missing.map((l) => l.en).join(", ")} carries no checked price, so that figure is the least this dish can have cost rather than what it cost, and no price is kept with it. A dish stored cheaper than it was would make your food look cheaper than it was.`}
+                      bn={`${priced.missing.map((l) => l.bn ?? l.en).join(", ")} এর যাচাই করা দাম নেই, তাই ওই সংখ্যাটা এই রান্নার সবচেয়ে কম সম্ভাব্য খরচ, আসল খরচ নয়, আর এর সঙ্গে কোনো দাম রাখা হয় না। আসলের চেয়ে কম দামে রাখা রান্না আপনার খাবারের খরচও কম দেখাবে।`}
+                    />
+                  ) : (
+                    <T
+                      en="Either nothing that went in carries a checked price, or what does is priced in two different currencies, and this tool never converts between them: an exchange rate is a fact with no date on it."
+                      bn="হয় এতে যা গেছে তার কোনোটিরই যাচাই করা দাম নেই, নয়তো যেগুলোর আছে সেগুলো দুই রকম মুদ্রায়, আর এই যন্ত্র কখনো এক মুদ্রা থেকে আরেক মুদ্রায় হিসাব করে না: বিনিময় হার এমন একটা তথ্য যার সঙ্গে কোনো তারিখ থাকে না।"
+                    />
+                  )}
+                </p>
+              )}
+            </div>
           ) : null}
 
           {(made.food || whole) && !made.micros.length ? (
