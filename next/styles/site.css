@@ -13947,6 +13947,23 @@ German for day, and .tag is what the site has always called
     font-size: var(--t-0);
     color: var(--ink-soft);
   }
+  /* A PRICE THAT HAS GONE OUT OF DATE, DRAWN AS ONE. `.dt-priced`
+     is already soft, so greying it again would draw nothing.
+
+     A dotted underline rather than a colour on its own, because
+     a colour alone is no signal to a reader who cannot see it,
+     and gold rather than `--danger` because an old price is not
+     an error: it is a figure with a weaker claim on being
+     believed. `STALE_MONTHS` in `shared/insights.ts` decides
+     which rows get it, and the panel prints how many as well,
+     because this mark is for finding them in the table rather
+     than for being the message. */
+  .dt-priced-stale {
+    color: color-mix(in oklab, var(--ink-soft) 70%, transparent);
+    text-decoration: underline dotted;
+    text-decoration-color: var(--gold);
+    text-underline-offset: 2px;
+  }
   /* Where a row's composition figure came from. A number with no
      source is a number this tool invented. */
   .dt-row-src {
@@ -14132,7 +14149,7 @@ German for day, and .tag is what the site has always called
   /* One question, once a month, about a kitchen rather than a
      meal. Three boxes on one row, because they are one question
      asked three ways and splitting them would read as three. */
-  .dt-oil-form {
+  .dt-oil-form, .dt-budget-form {
     display: grid;
     gap: var(--s-4);
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));

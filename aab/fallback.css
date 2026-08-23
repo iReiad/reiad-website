@@ -9077,6 +9077,13 @@
     color: var(--ink-soft);
   }
 
+  .dt-priced-stale {
+    color: color-mix(in oklab, var(--ink-soft) 70%, transparent);
+    text-decoration: underline dotted;
+    text-decoration-color: var(--gold);
+    text-underline-offset: 2px;
+  }
+
   .dt-row-src {
     display: block;
     font-weight: normal;
@@ -9197,7 +9204,7 @@
     margin: 0;
   }
 
-  .dt-oil-form {
+  .dt-oil-form, .dt-budget-form {
     display: grid;
     gap: var(--s-4);
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));

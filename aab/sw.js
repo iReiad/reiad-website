@@ -31,6 +31,11 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v198: /fallback.css. An out of date price is drawn as one:
+        a dotted gold underline rather than a colour on its own,
+        because a colour alone is no signal to a reader who
+        cannot see it.
+
    v197: /fallback.css. What time of year it is: a monsoon, a
         British winter and a month of fasting all flatten three
         weeks on a schedule, so none of them is reported as a
@@ -1771,7 +1776,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v197";
+const VERSION = "v198";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 
