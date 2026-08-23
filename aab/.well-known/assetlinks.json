@@ -4,7 +4,9 @@
     "target": {
       "namespace": "android_app",
       "package_name": "uk.co.reiad.library",
-      "sha256_cert_fingerprints": []
+      "sha256_cert_fingerprints": [
+        "1A:AD:96:A8:1C:D6:82:DA:71:A7:03:DA:1F:AC:01:50:37:37:A2:FF:55:48:65:59:A1:02:06:4C:2B:9F:7F:C2"
+      ]
     }
   }
 ]

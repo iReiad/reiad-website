@@ -196,22 +196,32 @@ plan touches the site.
    identifier, so it is decided once, here, rather than at the
    first `gradle init`.
 
-   The fingerprint is the one thing that cannot be decided in
-   advance, because it is the public half of a key that must not
-   exist yet: a release key generated in a build container and
-   committed beside the site is a worse outcome than a late
-   assetlinks file.
+   **The fingerprint is there now, and it is the DEBUG key's.**
+   `keystore/debug.keystore` in the app repository, committed,
+   with the password every Android debug keystore has had since
+   the beginning: `android`, alias `androiddebugkey`. That is not
+   a credential leaking. A debug key cannot sign a Play release
+   and authorises nothing beyond saying "this APK and the last one
+   are the same app".
 
-   **It comes from whatever key signs the build, and the app is
-   installed as an APK first.** The store is a later decision, so
-   the key is the author's own rather than Play's: a debug build
-   is signed by `~/.android/debug.keystore` and a release APK by
-   a keystore made once and kept, and either fingerprint can go
-   in the array. **Make that release keystore once and back it
-   up.** Losing it is not a bad afternoon: the same package can
-   never be signed by another key, so an installed app cannot be
-   updated, only uninstalled and replaced, and every reader loses
-   what the device was holding.
+   Which is exactly the problem it solves, and there are two.
+   Android generates a debug keystore PER MACHINE, so an APK built
+   in CI and one built on a laptop are signed differently and
+   Android refuses to install either over the other: the reader
+   uninstalls first and loses whatever had not synced. And an app
+   link verifies against ONE fingerprint, so a per-machine key
+   means a shared lesson opens in a browser however carefully the
+   intent filters were written.
+
+   **A release key is a different thing and does not go in the
+   repository.** When there is one it lives in CI as a secret and
+   its fingerprint is a second line in the array, because the
+   array takes several: an app link should verify for the
+   sideloaded build and the store build alike. **Make that release
+   keystore once and back it up.** Losing it is not a bad
+   afternoon: the same package can never be signed by another key,
+   so an installed app cannot be updated, only uninstalled and
+   replaced, and every reader loses what the device was holding.
 
    Enrolling in Play later takes that same key, so the
    fingerprint carries over and this file does not change. Letting
@@ -262,7 +272,7 @@ blocking, so nothing waits on them:
 | | What | When |
 | --- | --- | --- |
 | Supabase | add `uk.co.reiad.library://auth` under Authentication, URL Configuration | before anybody signs in, so start of phase 2 |
-| assetlinks | paste a SHA-256 into `sha256_cert_fingerprints` | before an `https://reiad.co.uk` link opens the app, which is a convenience and gates nothing |
+| assetlinks | done: the debug key's fingerprint is in it, and the key is committed at `keystore/debug.keystore` in the app repository. A release key adds a second line | |
 
 Neither is needed to build phase 1, which is signed out, which is
 why phase 1 is first. **The first row was done on 22 August
