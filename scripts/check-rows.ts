@@ -41,6 +41,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { LADDER_SCHOOLS } from "../shared/nav.ts";
+import { PACES, TARGET_KINDS } from "../shared/profile.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (rel: string): string => readFileSync(join(ROOT, rel), "utf8");
@@ -286,10 +287,75 @@ if (!writes.length) {
   }
 }
 
+/* ------------------------------------------------------------
+   4. And the two vocabularies an ACCOUNT answers with
+
+   `profiles.pace` and `targets.kind` are both CHECK constraints
+   and both were written out a second time in a React component,
+   which is section 2's rule one table along. They are
+   `shared/profile.ts` now, which is what `/api/site` serves to
+   the Android app: three readers, one list.
+
+   Read out of the last migration that writes each constraint,
+   for the reason section 3 gives. `''` is allowed for `pace` and
+   is deliberately not in `PACES`: it means "not answered", which
+   is the absence of a choice rather than one of them.
+   ------------------------------------------------------------ */
+
+const VOCABULARIES: Array<{
+  what: string;
+  pattern: RegExp;
+  want: string[];
+  /** Values the constraint allows that the list must NOT carry,
+      with the reason. An empty pace is the only one. */
+  besides: string[];
+}> = [
+  {
+    what: "profiles.pace",
+    pattern: /check\s*\(\s*pace\s+in\s*\(([^)]*)\)/,
+    want: PACES.map((p) => p.id),
+    besides: [""],
+  },
+  {
+    what: "targets.kind",
+    pattern: /kind\s+text\s+not\s+null\s+check\s*\(\s*kind\s+in\s*\(([^)]*)\)/,
+    want: TARGET_KINDS.map((k) => k.id),
+    besides: [],
+  },
+];
+
+for (const v of VOCABULARIES) {
+  const files = readdirSync(MIGRATIONS).sort()
+    .filter((f) => v.pattern.test(readFileSync(join(MIGRATIONS, f), "utf8")));
+  if (!files.length) {
+    fail(`no migration constrains ${v.what}`,
+      "This check reads the list out of the last one that does.",
+      "If the constraint was dropped on purpose, drop this too.");
+    continue;
+  }
+  const last = files[files.length - 1];
+  const text = readFileSync(join(MIGRATIONS, last), "utf8");
+  const all = [...text.matchAll(new RegExp(v.pattern.source, "g"))];
+  const inside = all[all.length - 1][1];
+  const ids = [...inside.matchAll(/'([a-z-]*)'/g)].map((m) => m[1]).sort();
+  const want = [...v.want, ...v.besides].sort();
+  if (ids.join(",") !== want.join(",")) {
+    fail(`supabase/migrations/${last} allows a different set for ${v.what}`,
+      `the constraint:    ${ids.map((i) => i || "''").join(", ") || "(none)"}`,
+      `shared/profile.ts: ${want.map((i) => i || "''").join(", ")}`,
+      "A value the constraint has not heard of is a 400 on the whole write,",
+      "and the Android app offers whatever this list says. Add a migration;",
+      "do not edit one that has run.");
+  } else {
+    described += ids.length;
+  }
+}
+
 console.log(failures
   ? `\n${failures} problem(s): shared/rows.ts does not describe this database.\n`
   : `rows: ${Object.keys(DESCRIBES).length} tables described, ${described} columns\n`
     + `      matched against aab/schema.sql, ${scanned} handlers holding no\n`
-    + "      second copy of a vocabulary, and the schools a profile may\n"
-    + "      follow the same in Postgres as in nav.ts.\n");
+    + "      second copy of a vocabulary, the schools a profile may follow\n"
+    + "      the same in Postgres as in nav.ts, and a pace and a target\n"
+    + "      kind the same as in profile.ts.\n");
 process.exit(failures ? 1 : 0);

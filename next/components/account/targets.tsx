@@ -36,6 +36,7 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import type { Target, TargetKind } from "/saved.js";
 import type { LadderLesson } from "../../lib/school-ladders";
 import { LADDER_SCHOOLS } from "@reiad/shared/nav";
+import { TARGET_KINDS } from "@reiad/shared/profile";
 import { subscribe } from "../../lib/progress";
 import { Button } from "../ui/button";
 import { Field, Select } from "../ui/field";
@@ -48,11 +49,11 @@ type StreakModule = typeof import("/streak.js");
 const savedModule = () => runtimeModule<SavedModule>("/saved.js");
 const streakModule = () => runtimeModule<StreakModule>("/streak.js");
 
-const KINDS: Array<{ id: TargetKind; label: string; note: string }> = [
-  { id: "course", label: "Finish a course", note: "measured by your own ticks" },
-  { id: "habit", label: "Turn up n days a week", note: "measured by the days you were here" },
-  { id: "metric", label: "Reach a number", note: "a figure you keep and update yourself" },
-];
+/* The three kinds, out of `shared/profile.ts`, because Postgres
+   constrains this column and the Android app offers the same
+   three. Typed here as `TargetKind` so a fourth added there
+   without widening the constraint is a compile error. */
+const KINDS = TARGET_KINDS as Array<{ id: TargetKind; label: string; note: string }>;
 
 interface Measured {
   at: number;

@@ -42,9 +42,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   ACTIVITY, BMI_CUTS, activityFactor, bmi, bmiBand, deurenbergFat,
-  estimatedBurn, fatEstimate, ffmi, ffmiNormalised, floorKcal, katch,
-  mifflin, navyFat, proteinFloor, restingBurn, target, toFeetInches,
-  toStone, whtr, whtrBand, type Body, type GoalKind,
+  estimatedBurn, fatEstimate, ffmi, ffmiNormalised, fit, floorKcal, katch,
+  KCAL_PER_KG, LEARN_AFTER_DAYS, learnedBurn, mifflin, navyFat, proteinFloor,
+  restingBurn, slopePerWeek, target, toFeetInches, toStone, trend,
+  TREND_HALF_LIFE_DAYS, UNLOGGED_SE_SHARE, whtr, whtrBand,
+  type Body, type GoalKind, type Point,
 } from "../shared/diet.ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -239,6 +241,117 @@ const run = (c: Case) => {
   };
 };
 
+/* ------------------------------------------------------------
+   The trend, which is the other half and has its own edges
+   ------------------------------------------------------------
+
+   `trend()` weights by ELAPSED TIME rather than by row, which is
+   the whole difference between it and the version every tracker
+   ships: a reader who weighs three times a week must not get a
+   line that treats a three-week gap as the next day.
+
+   `slopePerWeek()` fits the READINGS rather than the trend, and
+   that is the least obvious decision in the file: an EWMA is the
+   right estimator of a level and the wrong one for a rate, and
+   seeded from the first reading it understates a real loss by
+   roughly a third on a fortnight's data. In the FLATTERING
+   direction, which is worse.
+
+   So the histories below are chosen to make a port that got
+   either of those wrong produce a different number:
+   ------------------------------------------------------------ */
+
+interface History {
+  name: string;
+  why: string;
+  weights: Point[];
+  intakes: Array<{ day: number; kcal: number }>;
+}
+
+/** Every morning for four weeks, losing steadily. */
+const daily = (): Point[] =>
+  Array.from({ length: 28 }, (_, d) => ({ day: d, kg: 82 - d * 0.07 }));
+
+/** The same four weeks and the same trend, weighed on eight days
+    of it: the gaps are uneven on purpose. */
+const sparse = (): Point[] =>
+  [0, 1, 6, 9, 17, 18, 25, 27].map((d) => ({ day: d, kg: 82 - d * 0.07 }));
+
+const HISTORIES: History[] = [
+  {
+    name: "every morning",
+    why: "the easy case, and the one every implementation agrees on",
+    weights: daily(),
+    intakes: Array.from({ length: 28 }, (_, d) => ({ day: d, kcal: 1900 + (d % 5) * 40 })),
+  },
+  {
+    name: "eight readings in four weeks",
+    why: "the same underlying trend on uneven gaps. A trend weighted "
+      + "by ROW rather than by elapsed time produces a visibly "
+      + "different line here and the same one above, so this is the "
+      + "pair that catches it",
+    weights: sparse(),
+    intakes: [0, 1, 6, 9, 17, 18, 25, 27].map((d) => ({ day: d, kcal: 1900 + (d % 5) * 40 })),
+  },
+  {
+    name: "three days logged in twenty",
+    why: "the case the third error term exists for: identical intakes "
+      + "on three days out of twenty used to give a NARROW band on a "
+      + "figure computed as though the reader had eaten that on all "
+      + "twenty",
+    weights: Array.from({ length: 21 }, (_, d) => ({ day: d, kg: 90 - d * 0.05 })),
+    intakes: [3, 11, 19].map((d) => ({ day: d, kcal: 2100 })),
+  },
+  {
+    name: "two readings",
+    why: "under the three a residual needs, so `fit` answers null "
+      + "rather than a slope with no error bar",
+    weights: [{ day: 0, kg: 80 }, { day: 5, kg: 79.4 }],
+    intakes: [{ day: 0, kcal: 2000 }, { day: 5, kcal: 2000 }],
+  },
+  /* A boundary needs BOTH sides and the first draft of this had
+     one. It was a single window 13 days wide, which is null under
+     `<` and null under `<=` alike, so it asserted that a threshold
+     exists and nothing at all about where it is. Reversing the
+     comparison in the Kotlin port failed nothing. */
+  {
+    name: "one day short of a fortnight",
+    why: "13 days wide against a `LEARN_AFTER_DAYS` of 14, so it "
+      + "answers null. The near side of the boundary",
+    weights: Array.from({ length: 14 }, (_, d) => ({ day: d, kg: 70 - d * 0.03 })),
+    intakes: Array.from({ length: 14 }, (_, d) => ({ day: d, kcal: 1800 })),
+  },
+  {
+    name: "a fortnight exactly, which is the threshold",
+    why: "14 days wide, which is the FIRST window that answers. A "
+      + "boundary written as `<` and ported as `<=` gives a number "
+      + "here and null there, and nothing else in this file can "
+      + "tell the two apart",
+    weights: Array.from({ length: 15 }, (_, d) => ({ day: d, kg: 70 - d * 0.03 })),
+    intakes: Array.from({ length: 15 }, (_, d) => ({ day: d, kcal: 1800 })),
+  },
+  {
+    name: "gaining",
+    why: "the sign, which is the one thing a formula that reads "
+      + "correctly in prose comes out inverted for in code",
+    weights: Array.from({ length: 30 }, (_, d) => ({ day: d, kg: 62 + d * 0.03 })),
+    intakes: Array.from({ length: 30 }, (_, d) => ({ day: d, kcal: 2600 })),
+  },
+];
+
+const runHistory = (h: History) => {
+  const learned = learnedBurn(h.weights, h.intakes);
+  return {
+    why: h.why,
+    weights: h.weights,
+    intakes: h.intakes,
+    trend: trend(h.weights),
+    fit: fit(h.weights),
+    slopePerWeek: slopePerWeek(h.weights),
+    learned,
+  };
+};
+
 const payload = {
   /* The tables as well as the answers. A port that computed every
      case correctly off a table it had copied wrongly would be a
@@ -246,6 +359,20 @@ const payload = {
   cuts: BMI_CUTS,
   activity: ACTIVITY.map((a) => ({ ...a })),
   cases: Object.fromEntries(CASES.map((c) => [c.name, run(c)])),
+  histories: Object.fromEntries(HISTORIES.map((h) => [h.name, runHistory(h)])),
+  /* The four numbers the trend is made of, by name. Every one of
+     them is already implied by a history above, and naming them
+     anyway is what turns "a history disagrees" into "the half-life
+     is wrong": a port that reads 14 as `<=` and one that seeds the
+     average from the wrong reading both fail the same case
+     otherwise, and the reader of the failure has to work out
+     which. */
+  constants: {
+    trendHalfLifeDays: TREND_HALF_LIFE_DAYS,
+    kcalPerKg: KCAL_PER_KG,
+    learnAfterDays: LEARN_AFTER_DAYS,
+    unloggedSeShare: UNLOGGED_SE_SHARE,
+  },
 };
 
 const text = `${JSON.stringify(payload, null, 2)}\n`;
@@ -263,8 +390,12 @@ if (process.argv.includes("--check")) {
     );
     process.exit(1);
   }
-  console.log(`diet fixtures: ${CASES.length} cases, unchanged.`);
+  console.log(
+    `diet fixtures: ${CASES.length} cases and ${HISTORIES.length} histories, unchanged.`,
+  );
 } else {
   writeFileSync(OUT, text);
-  console.log(`diet fixtures: ${CASES.length} cases written to content/diet.fixtures.json`);
+  console.log(
+    `diet fixtures: ${CASES.length} cases and ${HISTORIES.length} histories written`,
+  );
 }

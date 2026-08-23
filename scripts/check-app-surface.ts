@@ -120,6 +120,11 @@ const SOURCES = [
      find: a table the site holds, the app draws, and nothing
      sends. */
   "shared/routine.ts",
+  /* The two vocabularies an account answers with, which are
+     also two CHECK constraints. A third added there and not
+     sent would be an option the site offers and the app does
+     not, on a screen that renders perfectly in both. */
+  "shared/profile.ts",
 ];
 const tables = SOURCES.flatMap((path) => tablesIn(path).map((name) => ({ name, path })));
 
