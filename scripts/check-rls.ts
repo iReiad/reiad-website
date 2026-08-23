@@ -171,6 +171,85 @@ for (const key of Object.keys(NO_POLICY_ON_PURPOSE)) {
   }
 }
 
+/* ------------------------------------------------------------
+   And a `user_id` that cannot fill itself in
+   ------------------------------------------------------------
+
+   A DAY OF SOMEBODY'S ROUTINE WENT MISSING BECAUSE OF THIS, and
+   nothing here could see it. `routine_entries.user_id` was
+   `uuid not null` with no default, so a client that writes its
+   own rows with its own token and deliberately names nobody sent
+   a null into a not-null column: a 400 from PostgREST, a `false`
+   the caller dropped, and marks that stayed on screen and reached
+   no account.
+
+   `progress`, `library`, `scenarios`, `targets` and `admins` all
+   carry `default auth.uid()`, so the pattern was already the
+   house one; five columns written later simply did not get it,
+   and the browser did not notice because `aab/src/routine.ts`
+   puts the id in the body.
+
+   It is not a security rule and does not replace one: every
+   insert policy is still `with check (user_id = auth.uid())`, so
+   a client naming somebody else's id is refused either way. What
+   the default buys is that a client naming NOTHING writes its own
+   row rather than failing, which is the shape every native
+   client here uses.
+
+   A column may opt out in `NO_DEFAULT_ON_PURPOSE`, keyed by
+   `table.column` with the reason, and a stale entry fails for the
+   reason the two above it do. */
+const NO_DEFAULT_ON_PURPOSE: Record<string, string> = {
+  "admins.user_id":
+    "admin is granted only in SQL. This table has a select policy and NO write "
+    + "policies at all, so no client can insert into it however the column is "
+    + "declared, and a default reading `auth.uid()` would suggest otherwise to "
+    + "the next person who reads it. ADMIN.md section 1.",
+};
+
+/* A default added LATER, by an `alter column`, counts. Five of
+   these were fixed that way rather than by editing the migration
+   that created them: a migration that has run is a row in
+   `schema_migrations` and editing one is a lie about what the
+   database did. */
+const altered = new Set(
+  [...code.matchAll(
+    /alter table public\.([a-z_]+)\s+alter column\s+([a-z_]+)\s+set default auth\.uid\(\)/g,
+  )].map((m) => `${m[1]}.${m[2]}`),
+);
+
+const columns = [...code.matchAll(
+  /create table (?:if not exists )?public\.([a-z_]+)\s*\(([\s\S]*?)\n\);/g,
+)];
+let checked = 0;
+for (const [, table, body] of columns) {
+  for (const line of body.split("\n")) {
+    const named = /^\s*(user_id|owner_id)\s+uuid\b/.exec(line);
+    if (!named) continue;
+    /* A primary key holds one row per person, so it is the
+       reader's id rather than a column that points at it, and it
+       still wants the default for the same reason. */
+    if (!/not null|primary key/.test(line)) continue;
+    checked += 1;
+    const key = `${table}.${named[1]}`;
+    if (/default auth\.uid\(\)/.test(line) || altered.has(key)) continue;
+    if (key in NO_DEFAULT_ON_PURPOSE) continue;
+    fail(
+      `DEFAULT  public.${key} is not null with no \`default auth.uid()\``,
+      "A client that writes its own rows and names nobody sends a null into a",
+      "not-null column: 400 back, and whatever it was saving is lost quietly.",
+      "This is what took a day of routine marks. Add the default, or name it in",
+      "NO_DEFAULT_ON_PURPOSE with the reason.",
+    );
+  }
+}
+for (const key of Object.keys(NO_DEFAULT_ON_PURPOSE)) {
+  const table = key.split(".")[0];
+  if (!unique.includes(table)) {
+    fail(`GONE     NO_DEFAULT_ON_PURPOSE names public.${table}, which no migration creates`);
+  }
+}
+
 console.log(
   failures
     ? `\n${failures} problem(s) with row-level security: fix before deploying.`
