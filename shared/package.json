@@ -14,6 +14,7 @@
     "./profile": "./profile.ts",
     "./diet-words": "./diet-words.ts",
     "./heads": "./heads.ts",
+    "./widgets": "./widgets.ts",
     "./diet": "./diet.ts",
     "./foods": "./foods.ts",
     "./insights": "./insights.ts",

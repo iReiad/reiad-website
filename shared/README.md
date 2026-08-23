@@ -76,6 +76,16 @@ this repository got written.
   `COUNTS`, never typed, which is the rule at the top of
   `CLAUDE.md`.
 
+- **`widgets.ts`** the catalogue of what the front page can be
+  made of, and the layout a reader who has arranged nothing gets.
+  The catalogue is DATA, so a widget renamed here is renamed on a
+  phone at the next fetch; a widget's DRAWING is code on each
+  side, so both sides SKIP a kind they cannot draw rather than
+  leaving a blank rectangle with a title on it. `layoutOf()` is
+  the parse, and it drops what it cannot read rather than
+  failing: a board one card short is recoverable and a board that
+  will not load is not.
+
 - **`profile.ts`** the two vocabularies an account answers with:
   how often somebody means to practise, and the three kinds of
   target. Both are a CHECK constraint in Postgres and both were

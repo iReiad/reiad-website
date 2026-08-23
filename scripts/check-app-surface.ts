@@ -133,6 +133,12 @@ const SOURCES = [
   /* The diet tool's own readouts. Copy is data, so a
      sentence reworded on the site is reworded on a phone. */
   "shared/diet-words.ts",
+  /* What the front page can be made of. The catalogue is
+     data and each side's DRAWING is code, so a kind added
+     here and not sent is a widget the site offers and the
+     phone has never heard of, on two boards that both look
+     finished. */
+  "shared/widgets.ts",
 ];
 const tables = SOURCES.flatMap((path) => tablesIn(path).map((name) => ({ name, path })));
 
