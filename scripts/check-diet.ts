@@ -952,15 +952,21 @@ function blockAt(src: string, from: number): string {
   return src.slice(open);
 }
 
-/** The numbers behind one name in `shared/diet.ts`. A constant is
-    its own value; a floor that depends on the reader, which is
-    `floorKcal(sex)`, is every number its one-line body can
-    return, because calling it would mean this file writing out
-    the `Sex` union and that is a second copy of a vocabulary. */
+/** The numbers behind one name in `shared/diet.ts`. A constant
+    is its own value and a `Range` is its three; a floor that
+    depends on the reader, which is `floorKcal(sex)`, is every
+    number its one-line body can return, because calling it would
+    mean this file writing out the `Sex` union and that is a
+    second copy of a vocabulary. */
 const exported: Record<string, unknown> = { ...DIET };
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === "object" && v !== null;
 function valuesOf(name: string): number[] {
   const value = exported[name];
   if (typeof value === "number") return [value];
+  if (isRecord(value)) {
+    return Object.values(value).filter((v): v is number => typeof v === "number");
+  }
   const line = dietSrc.match(new RegExp(`export const ${name} = [^;]*;`))?.[0] ?? "";
   return [...line.matchAll(/(?<![\w.])\d+(?:\.\d+)?/g)].map((m) => Number(m[0]));
 }
@@ -975,7 +981,7 @@ const clamping = uncommented(targetBody);
 const floorNames = [...new Set([
   ...[...clamping.matchAll(/\b([A-Z][A-Z0-9_]{2,})\b/g)].map((m) => m[1]),
   ...[...clamping.matchAll(/\b([a-z][A-Za-z0-9]*Kcal)\s*\(/g)].map((m) => m[1]),
-])].filter((name) => valuesOf(name).length).sort();
+])].sort();
 
 /** And the bounds' own names, which is the union `target()`
     reports in `floors`. */
@@ -1003,24 +1009,45 @@ for (const hit of floorHits) {
     "happening and a reader would simply never be told their number was changed.");
 }
 
-/** Every number a floor is. `bnNum` is the site's own converter
-    rather than a digit table written out here again. */
+/** Every number a floor is. A name this cannot resolve is a
+    failure rather than a skip: a floor whose value nothing here
+    knows is a floor the sentence rule below would pass over in
+    silence, which is the shape of the bug it exists to catch. */
 const floorValues = new Map<number, string>();
 for (const name of floorNames) {
-  for (const value of valuesOf(name)) floorValues.set(value, name);
+  const numbers = valuesOf(name);
+  if (!numbers.length) {
+    fail(`check-diet cannot read what ${name} is worth`,
+      "target() clamps with it and this resolves a constant, a Range or a"
+      + " one-line function of the reader.",
+      "Widen valuesOf() here. Skipping it would leave the floor unwatched with",
+      "nothing saying so.");
+  }
+  for (const value of numbers) floorValues.set(value, name);
 }
 
 const BN_DIGIT = new Map([...bnNum("0123456789")].map((d, i) => [d, String(i)]));
 
-/** Every number a sentence states, in either script, as a
-    number. Tokens rather than a substring search: 1 is one floor
-    and 1200 is another, and finding the first inside the second
-    is how a check reports the sentence that is right. */
-function numbersIn(text: string): number[] {
-  const latin = [...text.matchAll(/(?<![\w.])\d+(?:\.\d+)?/g)].map((m) => Number(m[0]));
-  const bangla = [...text.matchAll(/[০-৯]+(?:\.[০-৯]+)?/g)]
-    .map((m) => Number([...m[0]].map((c) => BN_DIGIT.get(c) ?? c).join("")));
-  return [...latin, ...bangla].filter((n) => Number.isFinite(n));
+/** Every number a sentence states, in either script, with
+    whether a percent sign follows it.
+
+    Tokens rather than a substring search: 1 is one floor and
+    1200 is another, and finding the first inside the second is
+    how a check reports the sentence that is right. The percent
+    is what keeps a rate floor honest without catching every "1
+    cup": a rate is a percentage of bodyweight and is written as
+    one. */
+interface Said { value: number; percent: boolean }
+function numbersIn(text: string): Said[] {
+  const said: Said[] = [];
+  for (const m of text.matchAll(/(?<![\w.])(\d+(?:\.\d+)?)(\s*%)?/g)) {
+    said.push({ value: Number(m[1]), percent: Boolean(m[2]) });
+  }
+  for (const m of text.matchAll(/([০-৯]+(?:\.[০-৯]+)?)(\s*%)?/g)) {
+    const latin = [...m[1]].map((c) => BN_DIGIT.get(c) ?? c).join("");
+    said.push({ value: Number(latin), percent: Boolean(m[2]) });
+  }
+  return said.filter((n) => Number.isFinite(n.value));
 }
 
 /** The table that tells a reader which bound bound them, found
@@ -1041,16 +1068,24 @@ for (const file of TOOL_FILES) {
     if (from < 0) continue;
     floorLines += 1;
     /* `${MAX_SURPLUS_KCAL}` is the fix, so what an interpolation
-       fills in is taken out before the numbers are counted. */
-    const said = blockAt(table, from).replace(/\$\{[^{}]*\}/g, " ");
+       fills in comes out before the numbers are counted.
+       `unfilled()` under question 11 is the balanced one and this
+       needs it for the same reason: an interpolation here holds a
+       conditional with braces of its own. */
+    const said = unfilled(blockAt(table, from));
     /* Grouped by the constant rather than by the number, because
        one floor is two numbers on this line and one sentence is
        said in two scripts: four failures for one fix. */
     const typed = new Map<string, number[]>();
-    for (const n of new Set(numbersIn(said))) {
-      const owner = floorValues.get(n);
-      if (!owner) continue;
-      typed.set(owner, [...(typed.get(owner) ?? []), n]);
+    for (const n of numbersIn(said)) {
+      const owner = floorValues.get(n.value);
+      /* A floor under 2 is a percentage of bodyweight, and it is
+         only that where a percent sign says so: without this the
+         rate cap of 1 matches "1 cup" in a sentence that is
+         perfectly correct. */
+      if (!owner || (n.value < 2 && !n.percent)) continue;
+      const had = typed.get(owner) ?? [];
+      if (!had.includes(n.value)) typed.set(owner, [...had, n.value]);
     }
     for (const [owner, numbers] of typed) {
       fail(`${file}: the "${hit}" line writes ${owner} out as a number`,
@@ -1146,9 +1181,18 @@ for (const [place, cuts] of Object.entries(BMI_CUTS)) {
 
 /** The band vocabulary is in `words.ts`, keyed by `bmiBand()`'s
     own tokens, which is what makes indexing it the signature of
-    a page that draws a band. */
+    a page that draws a band. Both names are checked to exist,
+    because a rename would otherwise leave this question asking
+    about nothing and reporting that everything is fine. */
 const BAND_TABLE = "BAND_WORDS";
 const CUTS_TABLE = "CUTS_WORDS";
+const words = read(`${COMPONENTS}/words.ts`);
+for (const table of [BAND_TABLE, CUTS_TABLE]) {
+  if (new RegExp(`export const ${table}\\b`).test(words)) continue;
+  fail(`${COMPONENTS}/words.ts no longer exports ${table}`,
+    "It is what a page drawing a BMI band is recognised by below, and what says",
+    "which cut-offs were used. Point this question at the new name.");
+}
 let banded = 0;
 
 for (const file of TOOL_FILES) {
@@ -1174,15 +1218,25 @@ for (const file of TOOL_FILES) {
   }
 
   /* A cut-off in a comparison is bmiBand() written out with one
-     of the two tables missing. Only beside a BMI, because 25 and
-     30 are also a number of days and a number of grams. */
-  for (const [cut, what] of cutNames) {
-    const re = new RegExp(`\\bbmi\\w*\\s*(?:[<>]=?|===)\\s*${cut}(?![\\d.])`
-      + `|(?<![\\d.])${cut}\\s*(?:[<>]=?|===)\\s*bmi\\w*`, "i");
-    if (!re.test(src)) continue;
-    fail(`${file} compares a BMI against ${cut} itself`,
-      `${cut} is ${what.join(" and ")}, and the other set has a different one.`,
-      "bmiBand(value, ancestry) is the only thing that should know either number.");
+     of the two tables missing, and it is the shape that carries
+     no clue about ancestry at all.
+
+     Only in a file that says BMI somewhere, because 25 and 30
+     are also a number of days and a number of grams. No file in
+     this tool compares against any of the five today, so the
+     rule is as wide as it can be without reaching those. */
+  if (/\bbmi\b/i.test(src)) {
+    for (const [cut, what] of cutNames) {
+      const token = String(cut).replace(".", "\\.");
+      const re = new RegExp(`(?:[<>]=?|={2,3}|!==?)\\s*${token}(?![\\d.])`
+        + `|(?<![\\d.\\w])${token}\\s*(?:[<>]=?|={2,3}|!==?)`);
+      if (!re.test(src)) continue;
+      fail(`${file} compares against ${cut}, which is a BMI cut-off`,
+        `${cut} is ${what.join(" and ")}, and the other set has a different one.`,
+        "bmiBand(value, ancestry) is the only thing that should know either",
+        "number: a comparison written out here is one set of cut-offs applied to",
+        "every reader, which is what section 2 exists to stop.");
+    }
   }
 
   if (!new RegExp(`\\b${BAND_TABLE}\\s*\\[`).test(src)) continue;
@@ -1333,15 +1387,18 @@ for (const id of Object.keys(NO_STATE)) {
    a check reads. A tool that writes free prose about somebody's
    eating will eventually write something cruel."
 
-   THE LIST IS DERIVED, NEVER KEPT. Two hundred of this tool's
-   own sentences written out again in this file would be right on
-   the day they were typed and wrong at the next commit, which is
-   CLAUDE.md's opening failure happening to the thing that
-   catches that failure. So a template here is what the compiler
-   calls one, a template literal with an interpolation and prose
-   in it, plus a sentence a condition chooses between two
-   written-out ones, which has no interpolation and is generated
-   all the same. `--templates` prints the list.
+   THE LIST IS DERIVED, NEVER KEPT. This tool's own sentences
+   written out again in this file would be right on the day they
+   were typed and wrong at the next commit, which is CLAUDE.md's
+   opening failure happening to the thing that catches that
+   failure. So a template here is what the compiler calls one: a
+   template literal with an interpolation and prose in it, plus a
+   sentence a condition chooses between two written-out ones,
+   which carries no interpolation and is generated all the same.
+
+       node scripts/check-diet.ts --templates
+
+   prints the list.
 
    Two rules over it.
 

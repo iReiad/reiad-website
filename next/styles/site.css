@@ -14281,6 +14281,18 @@ German for day, and .tag is what the site has always called
     padding: 0;
   }
 
+  /* What the pot cost, under what it holds. A hairline above it
+     rather than a card around it: it is the same figure at the
+     same rank as the energy above, and boxing one of two facts
+     makes the other look like a footnote. */
+  .dt-recipe-cost {
+    border-block-start: 1px solid var(--hairline);
+    display: grid;
+    gap: var(--s-2);
+    padding-block-start: var(--s-4);
+  }
+  .dt-recipe-cost .dt-value { margin: 0; }
+
   /* Three columns and the last two are numbers, so they line up
      down the page rather than following the name across it. */
   .dt-shop-list {

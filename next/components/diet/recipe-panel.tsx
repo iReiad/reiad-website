@@ -916,7 +916,7 @@ export function RecipePanel() {
                   {priced ? (
                     <T
                       en={`${priced.missing.map((l) => l.en).join(", ")} carries no checked price, so that figure is the least this dish can have cost rather than what it cost, and no price is kept with it. A dish stored cheaper than it was would make your food look cheaper than it was.`}
-                      bn={`${priced.missing.map((l) => (lang === "bn" ? l.bn ?? l.en : l.en)).join(", ")} এর যাচাই করা দাম নেই, তাই ওই সংখ্যাটা এই রান্নার সবচেয়ে কম সম্ভাব্য খরচ, আসল খরচ নয়, আর এর সঙ্গে কোনো দাম রাখা হয় না। আসলের চেয়ে কম দামে রাখা রান্না আপনার খাবারের খরচও কম দেখাবে।`}
+                      bn={`${priced.missing.map((l) => l.bn ?? l.en).join(", ")} এর যাচাই করা দাম নেই, তাই ওই সংখ্যাটা এই রান্নার সবচেয়ে কম সম্ভাব্য খরচ, আসল খরচ নয়, আর এর সঙ্গে কোনো দাম রাখা হয় না। আসলের চেয়ে কম দামে রাখা রান্না আপনার খাবারের খরচও কম দেখাবে।`}
                     />
                   ) : (
                     <T

@@ -31,6 +31,12 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v205: /fallback.css. What a pot cost, under what it holds. And
+        the money readout on the nutrition page had never drawn
+        for anybody: the resolver behind it was keyed one way and
+        the food picker wrote the other, so every reader was told
+        half their log needed a price on it.
+
    v204: /fallback.css. A year in one page, with the phases
         banded across the plot and the seasons along its foot.
         And the settling window had a wash and nothing else, so
@@ -1826,7 +1832,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v204";
+const VERSION = "v205";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

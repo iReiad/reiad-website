@@ -54,12 +54,13 @@ import {
   COVERAGE_FLOOR, NIGHTS_LEAST, SHORT_NIGHT_HOURS, adherence, afterShortNights,
   againstBudget, calibration, costByTag, loggedDays, monthsSince, per100kcal,
   proteinPrice, proteinSplit, spend, swaps, weekVsOwn,
-  type Item, type SlotId, type Spend,
+  type Resolve, type SlotId, type Spend,
 } from "@reiad/shared/insights";
-import { DEFAULT_PLACE, byId, forPlace, type Place } from "@reiad/shared/foods";
+import { DEFAULT_PLACE, forPlace, type Place } from "@reiad/shared/foods";
 import {
-  dayNumber, saveProfile, type Profile, type Who,
+  dayNumber, getOwnFoods, saveProfile, type OwnFood, type Profile, type Who,
 } from "../../lib/diet-api";
+import { foodResolver } from "../../lib/recipes";
 import { ChipButton } from "../ui/chip";
 import { Field, Select } from "../ui/field";
 import { T, digits, useToolLang, type ToolLang } from "./lang";
@@ -70,7 +71,19 @@ import { T, digits, useToolLang, type ToolLang } from "./lang";
     pulled out of a public database: neither carries a price and
     neither is in the portion library, which is exactly the gap
     every coverage figure on this panel is measuring. */
-const resolve = (sourceId: string): Item | undefined => byId(sourceId);
+/* THIS RESOLVER WAS `byId(sourceId)` AND RESOLVED NOTHING, ever,
+   for every entry. `byId()` is keyed by the bare library id and
+   `food-picker.tsx` writes `library:<id>` into `sourceId`, so
+   both readings below have been reading an empty log since they
+   shipped: the money readout has told every reader that half of
+   what they log needs a price on it, and the swap finder has had
+   no rows to offer.
+
+   Nothing failed, because `scripts/insights.test.ts` hands in its
+   own resolver keyed by bare ids: a fixture kinder than the thing
+   it stands in for. `foodResolver()` in `next/lib/recipes.ts` is
+   the prefix taken off plus the reader's own dishes, and
+   `next/recipes.test.ts` asserts both halves by name. */
 
 const MONEY: Record<string, string> = { BDT: "৳", GBP: "£" };
 
@@ -166,10 +179,23 @@ export function InsightsPanel({
   const place: Place = profile?.place ?? DEFAULT_PLACE;
   const month = today.slice(0, 7);
 
+  /* ONE FETCH FOR TWO SECTIONS, and none of it signed out: both
+     readings that use the resolver are already behind `w`. A
+     reader's own dishes carry prices the library cannot, so a
+     resolver without them under-reports every home-cooked day. */
+  const [own, setOwn] = useState<OwnFood[]>([]);
+  useEffect(() => {
+    if (!w) return undefined;
+    let live = true;
+    void getOwnFoods(w).then((rows) => { if (live) setOwn(rows); });
+    return () => { live = false; };
+  }, [w]);
+  const resolve = useMemo(() => foodResolver(own), [own]);
+
   return (
     <>
       {w ? <ProteinSpread entries={entries} /> : null}
-      {w ? <Swaps entries={entries} /> : null}
+      {w ? <Swaps entries={entries} resolve={resolve} /> : null}
       <Fullness place={place} />
       {w ? <ThisWeek days={days} today={today} /> : null}
       {w ? <AfterAShortNight days={days} profile={profile} today={today} /> : null}
@@ -178,6 +204,7 @@ export function InsightsPanel({
       {w ? (
         <Budget
           w={w} entries={entries} profile={profile} place={place} month={month}
+          resolve={resolve}
         />
       ) : null}
       <PriceOfFood place={place} month={month} />
@@ -262,9 +289,9 @@ function ProteinSpread({ entries }: { entries: Entry[] }) {
 
 /* ---- 2. what a swap would do ---- */
 
-function Swaps({ entries }: { entries: Entry[] }) {
+function Swaps({ entries, resolve }: { entries: Entry[]; resolve: Resolve }) {
   const lang = useToolLang();
-  const rows = useMemo(() => swaps({ entries, resolve }), [entries]);
+  const rows = useMemo(() => swaps({ entries, resolve }), [entries, resolve]);
   const logged = useMemo(() => loggedDays(entries), [entries]);
 
   return (
@@ -832,13 +859,14 @@ function Calibration({
    ============================================================ */
 
 function Budget({
-  w, entries, profile, place, month,
+  w, entries, profile, place, month, resolve,
 }: {
   w: Who;
   entries: Entry[];
   profile: Profile | null;
   place: Place;
   month: string;
+  resolve: Resolve;
 }) {
   const lang = useToolLang();
   const [saved, setSaved] = useState<Profile | null>(null);
@@ -852,7 +880,7 @@ function Budget({
 
   const bill: Spend = useMemo(
     () => spend({ entries, resolve, currency, now: month }),
-    [entries, currency, month],
+    [entries, resolve, currency, month],
   );
   const against = useMemo(
     () => againstBudget(bill, p?.food_budget ?? 0),
