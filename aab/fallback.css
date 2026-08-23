@@ -9136,6 +9136,50 @@
 
   @media print { .dt-nearby { display: none; } }
 
+  .dt-import { display: grid; gap: var(--step); }
+
+  .dt-import-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-4);
+    flex-wrap: wrap;
+    font-size: var(--t-2);
+    color: var(--ink-soft);
+  }
+
+  .dt-map {
+    display: grid;
+    gap: var(--s-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    margin-block-end: var(--step);
+  }
+  .dt-map-col { display: grid; gap: var(--s-3); align-content: start; }
+
+  .dt-map-eg {
+    font-size: var(--t-1);
+    color: var(--ink-soft);
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .dt-import-drop summary { cursor: pointer; font-size: var(--t-2); color: var(--ink-soft); }
+  .dt-import-why {
+    list-style: none; margin: var(--s-4) 0 0; padding: 0;
+    display: grid; gap: var(--s-2);
+    font-size: var(--t-1); color: var(--ink-soft);
+  }
+  .dt-import-go {
+    display: flex; gap: var(--s-4); align-items: center; flex-wrap: wrap;
+    margin-block: var(--s-6);
+  }
+  .dt-import-list {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: var(--s-4);
+  }
+  .dt-import-list li {
+    display: flex; gap: var(--s-4); align-items: center; flex-wrap: wrap;
+  }
+
   .dt-onboard { display: grid; gap: var(--s-5); max-inline-size: 60ch; }
   .dt-onboard-form {
     display: grid;

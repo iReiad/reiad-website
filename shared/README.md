@@ -7,7 +7,7 @@ There are three renderers of this site now: the Worker in
 Next.js route in `next/`. Anything all of them must say the same
 way lives here, and nowhere else.
 
-Today that is eleven files and a directory of four, and
+Today that is thirteen files and a directory of four, and
 `check-types.ts` fails if one of them is not described below.
 That check exists because this line said six while nine were
 here: `nav.ts` and `routine.ts` arrived in two changes that had
@@ -75,6 +75,19 @@ this repository got written.
   range rather than a number, so a caller cannot take the point
   value without having been handed its width. `DIET.md` is the
   plan and `scripts/diet.test.ts` is what holds the two together.
+
+- **`csv.ts`** a file somebody exported from another app, read.
+  A parser, a guess at what each column is with HOW SURE it is,
+  and a preview that commits nothing. `DIET.md` section 26: an
+  importer that guesses silently fills a year of somebody's
+  history with the wrong column and they find out in March, so
+  the two rules here are that an ambiguous date is REFUSED
+  rather than picked (03/04 is either), and that a row whose
+  width does not match its header is dropped rather than
+  shifted. It is here rather than in the browser because it is
+  arithmetic over text with no DOM in it, and a parser that can
+  only be exercised by clicking is a parser nobody exercises:
+  `scripts/csv.test.ts` is what exercises it.
 
 - **`activity.ts`** the diet tool's other half of the same
   arithmetic: what a step is worth to a body of a given weight,

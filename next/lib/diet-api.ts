@@ -236,6 +236,7 @@ const fromDay = (d: Day): DayRow => ({
   note: d.note ?? null,
 });
 
+
 /** The last n days, newest first out of the index and reversed
     here, because every reading downstream wants them in order. */
 export async function getDays(w: Who, from: string): Promise<Day[]> {
@@ -278,6 +279,11 @@ function writeDay(w: Who, day: Day): Promise<{ ok: boolean; status: number }> {
 interface EntryRow {
   id?: string;
   entry_date: string;
+  /** `logged`, or `import:<what>`. Written out rather than left
+      to the column default, because a default is a fact the
+      database holds and the tool does not, and every other
+      provenance field on these rows is explicit. */
+  origin?: string;
   at_time?: string | null;
   meal?: string | null;
   label: string;
@@ -351,6 +357,7 @@ export async function addEntry(w: Who, e: Entry): Promise<Entry | null> {
        than one that went missing: nothing would announce it. */
     source: e.source ?? "free",
     source_id: e.sourceId ?? null,
+    origin: "logged",
   };
   const r = await call<EntryRow[]>("diet_entries", {
     method: "POST",
@@ -443,6 +450,68 @@ export async function startPhase(w: Who, style: string, on: string): Promise<boo
     body: JSON.stringify({ user_id: w.id, style, started_on: on }),
   }, w);
   return r.ok;
+}
+
+/* ---------------------------------------------------------- */
+/* arriving from another app                                  */
+/* ---------------------------------------------------------- */
+
+/** Days from a file, written in one go.
+
+    `DIET.md` section 26. `origin` is `import:<what>` rather than
+    `logged`, so an imported year and a logged year can be told
+    apart and A BAD IMPORT IS UNDONE AS ONE OPERATION rather than
+    three hundred.
+
+    A merge upsert, so importing over a day already logged
+    replaces it rather than failing on the unique constraint.
+    That is the right way round: the reader chose to import, and
+    the alternative is a file that half applies with no way to
+    tell which half. */
+export async function importDays(
+  w: Who, days: Day[], origin: string,
+): Promise<{ written: number; failed: number }> {
+  if (!days.length) return { written: 0, failed: 0 };
+  const stamp = new Date().toISOString();
+  /* In chunks, because PostgREST has a request size and a year
+     of daily rows is larger than one. Sequential rather than
+     parallel: a bad connection is the case this is for, and
+     twelve requests at once is how that connection gets worse. */
+  const SIZE = 100;
+  let written = 0;
+  let failed = 0;
+  for (let at = 0; at < days.length; at += SIZE) {
+    const slice = days.slice(at, at + SIZE);
+    const r = await call("diet_days?on_conflict=user_id,entry_date", {
+      method: "POST",
+      headers: { prefer: "resolution=merge-duplicates,return=minimal" },
+      body: JSON.stringify(slice.map((d) => ({
+        ...fromDay(d), user_id: w.id, origin, updated_at: stamp,
+      }))),
+    }, w);
+    if (r.ok) written += slice.length; else failed += slice.length;
+  }
+  return { written, failed };
+}
+
+/** Undone as one operation, which is what `origin` is for. */
+export async function undoImport(w: Who, origin: string): Promise<boolean> {
+  const r = await call(
+    `diet_days?user_id=eq.${w.id}&origin=eq.${encodeURIComponent(origin)}`,
+    { method: "DELETE" }, w,
+  );
+  return r.ok;
+}
+
+/** Which imports this account carries, so one can be undone by
+    name rather than by remembering what was imported when. */
+export async function importOrigins(w: Who): Promise<string[]> {
+  const r = await call<Array<{ origin: string }>>(
+    `diet_days?user_id=eq.${w.id}&origin=neq.logged&select=origin`,
+    { method: "GET" }, w,
+  );
+  if (!r.ok || !r.data) return [];
+  return [...new Set(r.data.map((d) => d.origin))].sort();
 }
 
 /* ---------------------------------------------------------- */

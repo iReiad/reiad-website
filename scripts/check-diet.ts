@@ -584,7 +584,6 @@ const UNUSED: Record<string, string> = {
   "diet_days.chest_cm": "section 2, the rest of the measurement set",
   "diet_days.thigh_cm": "section 2, the same",
   "diet_days.arm_cm": "section 2, the same",
-  "diet_days.origin": "section 26, so an imported year and a logged year can be told apart",
 
   /* What was eaten. */
   "diet_entries.meal": "section 13, meals rather than only foods, which is what names one",
@@ -592,7 +591,6 @@ const UNUSED: Record<string, string> = {
   "diet_entries.est_high": "section 14, the other end of it",
   "diet_entries.planned": "section 13, a week's plan is the same rows dated ahead",
   "diet_entries.fetched_on": "section 12, so a stale figure can be found and refreshed",
-  "diet_entries.origin": "section 26, the importer",
 
   /* The phase a reader is on. `/tools/diet/keto` starts one and
      ends one, and it ends one by STARTING THE NEXT: a phase runs

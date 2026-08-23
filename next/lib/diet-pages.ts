@@ -222,6 +222,18 @@ export const DIET_PAGES: DietPage[] = [
     needsAccount: true,
   },
   {
+    href: "/tools/diet/import",
+    tone: "var(--plum)",
+    tab: { en: "Bring your history", bn: "হিসাব নিয়ে আসুন" },
+    title: { en: "Bring your history", bn: "আপনার হিসাব নিয়ে আসুন" },
+    go: { en: "Bring a file", bn: "ফাইল আনুন" },
+    dek: {
+      en: "A CSV from MyFitnessPal, Cronometer, LoseIt or a scale, with a preview of exactly what would be written before anything is. An importer that guesses silently fills a year of your history with the wrong column and you find out in March.",
+      bn: "মাইফিটনেসপাল, ক্রোনোমিটার, লুজইট বা দাঁড়িপাল্লার একটা সিএসভি, আর লেখার আগেই ঠিক কী লেখা হবে তার একটা ঝলক। যে আমদানি চুপচাপ আন্দাজ করে সে আপনার এক বছরের হিসাব ভুল কলাম দিয়ে ভরিয়ে দেয়, আর আপনি টের পান মার্চ মাসে।",
+    },
+    needsAccount: true,
+  },
+  {
     href: "/tools/diet/glossary",
     tone: "var(--gold)",
     tab: { en: "The words", bn: "শব্দ" },

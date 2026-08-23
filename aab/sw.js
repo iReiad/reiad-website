@@ -31,6 +31,9 @@
    login could not have reached anyone either. Bump this whenever a
    precached file changes.
 
+   v196: /fallback.css. A CSV from another app, with a preview of
+        exactly what would be written before anything is.
+
    v195: /fallback.css. Four questions before nine empty widgets:
         a reader who has just signed in lands on the questions
         rather than on a board waiting for their answers.
@@ -1760,7 +1763,7 @@
    imports (crumbs, audience, learn progress) and the hub is a
    different page. Without a bump, a returning reader would be
    served the v3 app.js forever and none of it would appear. */
-const VERSION = "v195";
+const VERSION = "v196";
 const SHELL = `shell-${VERSION}`;
 const RUNTIME = `runtime-${VERSION}`;
 

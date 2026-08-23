@@ -14055,6 +14055,58 @@ German for day, and .tag is what the site has always called
      not a stall at all, so drawing it as an alert would tell a
      reader the opposite of what it says. The rail is the page's
      own accent, like every other lead figure. */
+  /* ---- arriving from another app ----
+
+     The preview is the whole feature, so it is the part with
+     room: one column of the file per card, its guess, how sure
+     that guess is, and the first few values as they really read.
+     A reader checking a mapping is comparing two things, and the
+     two things have to be next to each other. */
+  .dt-import { display: grid; gap: var(--step); }
+
+  .dt-import-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-4);
+    flex-wrap: wrap;
+    font-size: var(--t-2);
+    color: var(--ink-soft);
+  }
+
+  .dt-map {
+    display: grid;
+    gap: var(--s-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    margin-block-end: var(--step);
+  }
+  .dt-map-col { display: grid; gap: var(--s-3); align-content: start; }
+  /* What the column actually holds, which is the only thing that
+     settles whether a guess is right. */
+  .dt-map-eg {
+    font-size: var(--t-1);
+    color: var(--ink-soft);
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .dt-import-drop summary { cursor: pointer; font-size: var(--t-2); color: var(--ink-soft); }
+  .dt-import-why {
+    list-style: none; margin: var(--s-4) 0 0; padding: 0;
+    display: grid; gap: var(--s-2);
+    font-size: var(--t-1); color: var(--ink-soft);
+  }
+  .dt-import-go {
+    display: flex; gap: var(--s-4); align-items: center; flex-wrap: wrap;
+    margin-block: var(--s-6);
+  }
+  .dt-import-list {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; gap: var(--s-4);
+  }
+  .dt-import-list li {
+    display: flex; gap: var(--s-4); align-items: center; flex-wrap: wrap;
+  }
+
   /* The first ninety seconds. Four boxes and two buttons, and
      nothing else on the page: a reader who has just signed in
      should see the four questions rather than nine widgets all

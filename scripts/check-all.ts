@@ -136,7 +136,7 @@ const STAGES: Array<[stage: string, entries: Entry[]]> = [
     "scripts/restore.test.ts",
     "scripts/snapshot.test.ts",
     "scripts/routine.test.ts",
-    "scripts/diet.test.ts",
+    "scripts/diet.test.ts", "scripts/csv.test.ts",
     "scripts/admin.test.ts",
     "scripts/schools.test.ts",
     "scripts/schools-api.test.ts",
