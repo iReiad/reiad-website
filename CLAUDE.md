@@ -1262,10 +1262,14 @@ node next/keep.test.ts             # the Save and the note under a byline: nothi
 node aab/schools/progress.test.ts  # a school's ticks filed under a key that is
                                    # not the one in somebody's browser, and the
                                    # three schools' shared engine (119 checks)
-node aab/courses.test.ts          # the third-party course player: the sidebar, the
-                                   # ticks, the per-module bars, mark-complete-and-
-                                   # continue, the deep link, and the timers it must
-                                   # never grow (74 checks, needs linkedom)
+node aab/courses.test.ts          # the third-party course player: the shelf, the
+                                   # sidebar, the ticks, the per-module bars, mark-
+                                   # complete-and-continue, the deep link, a course
+                                   # bookmark from before programmes existed, and
+                                   # the timers it must never grow. Its fixture is
+                                   # two programmes, so a card or an address
+                                   # belonging to the wrong one fails
+                                   # (155 checks, needs linkedom)
 node aab/schools/workbook.test.ts # a practice book that renders and does nothing:
                                    # the day walker, what was typed, the answers,
                                    # the tick, and the storage key each is filed

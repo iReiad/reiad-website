@@ -103,7 +103,13 @@ registerHooks({
 });
 
 let bad = 0;
+/* Counted as well as failed, and printed at the end, because
+   `CLAUDE.md` states how many checks this file runs and that
+   number was 74 while the file ran 129. A count nobody can read
+   off the run is a count somebody has to remember. */
+let ran = 0;
 const ok = (name: string, cond: unknown, detail: unknown = ""): void => {
+  ran += 1;
   console.log(`${cond ? "  ok " : "FAIL"}  ${name}${cond ? "" : `\n        ${detail}`}`);
   if (!cond) bad += 1;
 };
@@ -1171,5 +1177,7 @@ console.log("\n--- what it must never do ---");
 
 /* ============================================================ */
 
-console.log(bad ? `\n${bad} check(s) failed.\n` : "\nAll checks passed.\n");
+console.log(bad
+  ? `\n${bad} of ${ran} check(s) failed.\n`
+  : `\nAll ${ran} checks passed.\n`);
 process.exit(bad ? 1 : 0);

@@ -495,15 +495,15 @@ export const listForBrowser = () => PROGRAMMES.map((programme) => {
      later reads. */
   const { courses: _count, ...totals } = programmeCounts(programme);
   return {
-  slug: programme.slug,
-  n: programme.n,
-  title: programme.title,
-  ...totals,
-  courses: programme.courses.map((course) => ({
-    slug: course.slug,
-    n: course.n,
-    title: course.title,
-    ...countsOf(course),
-  })),
+    slug: programme.slug,
+    n: programme.n,
+    title: programme.title,
+    ...totals,
+    courses: programme.courses.map((course) => ({
+      slug: course.slug,
+      n: course.n,
+      title: course.title,
+      ...countsOf(course),
+    })),
   };
 });
