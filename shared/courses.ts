@@ -103,10 +103,31 @@ export interface Course {
   modules: CourseModule[];
 }
 
+/** A certificate, a specialisation, a bundle: one folder holding
+    a run of courses meant to be taken in order.
+
+    THE EIGHT COURSES WERE NEVER EIGHT COURSES. They are the eight
+    of the Google Data Analytics certificate, and `/skills/courses`
+    listed them as if they were unrelated, which is the same
+    mistake as listing eight lessons of one module as eight
+    modules. A second certificate would have sat beside them with
+    nothing saying which belonged to which.
+
+    A programme is a folder in Drive and nothing else: it holds no
+    file, so `drive` is recorded rather than fetched, the same way
+    a course's and a module's are. */
+export interface Programme {
+  slug: string;
+  n: number;
+  title: string;
+  drive: string;
+  courses: Course[];
+}
+
 export interface Catalogue {
   root: string;
   source: string;
-  courses: Course[];
+  programmes: Programme[];
 }
 
 /** A lesson with everything the page needs to draw it, which is
@@ -121,10 +142,37 @@ export interface LadderLesson extends CourseLesson {
 /* ---------- the catalogue ---------- */
 
 export const CATALOGUE = data as unknown as Catalogue;
-export const COURSES: Course[] = CATALOGUE.courses;
+export const PROGRAMMES: Programme[] = CATALOGUE.programmes;
 
-export const courseOf = (slug: string): Course | null =>
-  COURSES.find((c) => c.slug === slug) ?? null;
+/** Every course of every programme, flat.
+
+    Kept because most of what walks this catalogue does not care
+    which programme a course is in: the Drive id set, the file
+    lookup and the admin panel's totals all want every course
+    there is. Derived rather than stored, for the reason
+    `laddered()` is derived: a second list is a second thing to
+    keep in step. */
+export const COURSES: Course[] = PROGRAMMES.flatMap((p) => p.courses);
+
+export const programmeOf = (slug: string): Programme | null =>
+  PROGRAMMES.find((p) => p.slug === slug) ?? null;
+
+/** A course inside a programme.
+
+    Scoped to one, because two programmes may each hold a course
+    called "Foundations" and the address says which. */
+export const courseOf = (programme: Programme, slug: string): Course | null =>
+  programme.courses.find((c) => c.slug === slug) ?? null;
+
+/** The programme a course slug belongs to, for the one job that
+    has a course and needs its address back: `lessonForFile()`,
+    which labels a response, and anything walking `COURSES`.
+
+    Null is not an ordinary answer here. A course always sits in a
+    programme, so null means the flat list and the tree have
+    parted company, which is a bug rather than a state. */
+export const programmeFor = (course: Course): Programme | null =>
+  PROGRAMMES.find((p) => p.courses.includes(course)) ?? null;
 
 export const moduleOf = (course: Course, slug: string): CourseModule | null =>
   course.modules.find((m) => m.slug === slug) ?? null;
@@ -157,14 +205,19 @@ export const lessonOf = (
    "mark complete and continue" button and the checks all have to
    agree, and the way they agree is by asking here. */
 
-export const courseUrl = (course: string): string =>
-  `/skills/courses/${course}`;
+export const programmeUrl = (programme: string): string =>
+  `/skills/courses/${programme}`;
 
-export const moduleUrl = (course: string, mod: string): string =>
-  `/skills/courses/${course}/${mod}`;
+export const courseUrl = (programme: string, course: string): string =>
+  `/skills/courses/${programme}/${course}`;
 
-export const lessonUrl = (course: string, mod: string, lesson: string): string =>
-  `/skills/courses/${course}/${mod}/${lesson}`;
+export const moduleUrl = (programme: string, course: string, mod: string): string =>
+  `/skills/courses/${programme}/${course}/${mod}`;
+
+export const lessonUrl = (
+  programme: string, course: string, mod: string, lesson: string,
+): string =>
+  `/skills/courses/${programme}/${course}/${mod}/${lesson}`;
 
 /** What a tick is filed under.
 
@@ -177,6 +230,28 @@ export const lessonUrl = (course: string, mod: string, lesson: string): string =
     positions, which do. */
 export const lessonId = (course: string, mod: string, lesson: string): string =>
   `${course}/${mod}/${lesson}`;
+
+/* ---------- and the programme is NOT in it ----------
+
+   THE ADDRESS GREW A SEGMENT AND THE TICK DID NOT, on purpose.
+
+   `courses-read` holds these strings in real browsers and in real
+   accounts, and `courses-answers` holds them with two more
+   segments on the end. `CLAUDE.md` is exact about what happens if
+   one is renamed: it does not move somebody's ticks, it loses
+   them. A programme is a fact about where a course is filed, and
+   filing something differently is not the same as a reader not
+   having watched it.
+
+   THE PRICE IS THAT A COURSE SLUG HAS TO BE UNIQUE ACROSS THE
+   WHOLE CATALOGUE, not just inside its programme, or two
+   certificates each holding a "Foundations" would share one set
+   of ticks. That is a real constraint and `check-courses.ts`
+   fails on a collision rather than leaving it to be discovered by
+   somebody whose progress bar filled itself in. The fix, when it
+   happens, is renaming a Drive folder, which is cheap; the
+   alternative was making every existing tick worthless, which is
+   not. */
 
 /** Where the browser gets a lesson's bytes.
 
@@ -273,14 +348,18 @@ export const isCourseFile = (id: unknown): boolean =>
 /** The lesson a Drive id belongs to, for labelling a response.
     Null when the id is not in the catalogue at all, which the
     caller should already have refused. */
-export function lessonForFile(id: string): { course: Course; mod: CourseModule; lesson: CourseLesson } | null {
-  for (const course of COURSES) {
+export function lessonForFile(id: string): {
+  programme: Programme; course: Course; mod: CourseModule; lesson: CourseLesson;
+} | null {
+  for (const programme of PROGRAMMES) {
+    for (const course of programme.courses) {
     for (const mod of course.modules) {
       for (const lesson of mod.lessons) {
         if (lesson.video === id || lesson.reading === id || lesson.quiz === id
           || lesson.exam === id || lesson.transcript === id || lesson.captions === id
           || (lesson.files ?? []).some((f) => f.drive === id)) {
-          return { course, mod, lesson };
+            return { programme, course, mod, lesson };
+          }
         }
       }
     }
@@ -297,14 +376,17 @@ export function lessonForFile(id: string): { course: Course; mod: CourseModule; 
     `laddered()` in `schools.ts` is: the ordering is a fact about
     the catalogue, and a stored copy of it is a second thing to
     keep in step. */
-export function laddered(course: Course): LadderLesson[] {
+export function laddered(programme: string, course: Course): LadderLesson[] {
   return course.modules.flatMap((mod) =>
     mod.lessons.map((lesson) => ({
       ...lesson,
       module: mod.slug,
       moduleTitle: mod.title,
+      /* The id has no programme in it and the url does. See the
+         note above `lessonId`: one of these is in somebody's
+         browser and the other is a link. */
       id: lessonId(course.slug, mod.slug, lesson.slug),
-      url: lessonUrl(course.slug, mod.slug, lesson.slug),
+      url: lessonUrl(programme, course.slug, mod.slug, lesson.slug),
     }))
   );
 }
@@ -333,17 +415,31 @@ export function countsOf(course: Course): CourseCounts {
   };
 }
 
+/** What one programme adds up to. */
+export const programmeCounts = (programme: Programme) =>
+  programme.courses.reduce((acc, course) => {
+    const c = countsOf(course);
+    return {
+      courses: acc.courses + 1,
+      modules: acc.modules + c.modules,
+      lessons: acc.lessons + c.lessons,
+      videos: acc.videos + c.videos,
+      pending: acc.pending + c.pending,
+    };
+  }, { courses: 0, modules: 0, lessons: 0, videos: 0, pending: 0 });
+
 /** What the whole section adds up to, for the index page. */
-export const catalogueCounts = () => COURSES.reduce((acc, course) => {
-  const c = countsOf(course);
+export const catalogueCounts = () => PROGRAMMES.reduce((acc, programme) => {
+  const p = programmeCounts(programme);
   return {
-    courses: acc.courses + 1,
-    modules: acc.modules + c.modules,
-    lessons: acc.lessons + c.lessons,
-    videos: acc.videos + c.videos,
-    pending: acc.pending + c.pending,
+    programmes: acc.programmes + 1,
+    courses: acc.courses + p.courses,
+    modules: acc.modules + p.modules,
+    lessons: acc.lessons + p.lessons,
+    videos: acc.videos + p.videos,
+    pending: acc.pending + p.pending,
   };
-}, { courses: 0, modules: 0, lessons: 0, videos: 0, pending: 0 });
+}, { programmes: 0, courses: 0, modules: 0, lessons: 0, videos: 0, pending: 0 });
 
 /* ---------- what the browser is given ----------
 
@@ -383,10 +479,31 @@ export const forBrowser = (course: Course) => ({
 });
 
 /** The list page's version: no Drive ids at all, because the
-    list draws none. */
-export const listForBrowser = () => COURSES.map((course) => ({
-  slug: course.slug,
-  n: course.n,
-  title: course.title,
-  ...countsOf(course),
-}));
+    list draws none.
+
+    Programmes with their courses nested, rather than a flat list
+    with a programme name repeated on each row: the front door of
+    this section is a shelf of certificates now, and a flat list
+    is what it was before anybody noticed the eight belonged
+    together. */
+export const listForBrowser = () => PROGRAMMES.map((programme) => {
+  /* `courses` is dropped from the totals and sent as the LIST
+     instead. Spreading the counts and then writing the key again
+     put a number on the wire that the next line replaced, so the
+     figure never arrived and nothing missed it: `courses.length`
+     is the same number. A dead key in a payload is a key somebody
+     later reads. */
+  const { courses: _count, ...totals } = programmeCounts(programme);
+  return {
+    slug: programme.slug,
+    n: programme.n,
+    title: programme.title,
+    ...totals,
+    courses: programme.courses.map((course) => ({
+      slug: course.slug,
+      n: course.n,
+      title: course.title,
+      ...countsOf(course),
+    })),
+  };
+});

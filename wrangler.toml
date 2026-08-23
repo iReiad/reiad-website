@@ -124,9 +124,14 @@ run_worker_first = ["/api/*", "/insights/*", "/cooking/*", "/travel/*", "/media/
   "/insights", "/cooking", "/travel",
   "/about", "/contact", "/account", "/skills",
   # The third-party course section, and the one prefix here still
-  # answering `.html` addresses: its four shapes are duplicated in
+  # answering `.html` addresses: its five shapes are duplicated in
   # `aab/src/courses.ts` and `check-courses.ts` holds the two to
   # each other.
+  #
+  # The star is what covers the depth, so the programme segment
+  # added no line here: a `*` in a route pattern matches slashes
+  # too, and every address under this prefix is one path deeper
+  # than it was.
   #
   # BOTH, and the star alone was wrong. A `*` matches what comes
   # AFTER the slash, so "/skills/courses/*" covers the hub's

@@ -39,11 +39,13 @@
    ---- and each arrow opens its own level ----
 
    The arrow before a crumb opens what else is at that level: the
-   other courses, the other modules of this course, the other
-   lessons of this module. That is what the arrow already does for
-   schools and stages, and one fetch of `/api/courses/<course>`
-   carries all three, so it costs nothing extra to be the fastest
-   way sideways through a course rather than only the way back up.
+   other programmes, the other courses of this programme, the
+   other modules of this course, the other lessons of this module.
+   That is what the arrow already does for schools and stages, and
+   one fetch of the shelf plus one of
+   `/api/courses/<programme>/<course>` carries all four, so it
+   costs nothing extra to be the fastest way sideways through a
+   certificate rather than only the way back up.
    ============================================================ */
 
 import { useEffect, useState } from "react";
@@ -61,6 +63,11 @@ interface ModuleRow {
 }
 interface CourseRow { slug: string; title?: string; modules?: ModuleRow[] }
 interface CourseCard { slug: string; title?: string; modules?: number }
+/** A programme with its courses nested, which is what the shelf
+    sends: a flat list with a programme name repeated on each row
+    is what this section had before anybody noticed the eight
+    courses belonged to one certificate. */
+interface ProgrammeCard { slug: string; title?: string; courses?: CourseCard[] }
 
 /** A slug read as words. What a crumb says before the catalogue
     answers, and what it goes on saying for anybody the catalogue
@@ -70,54 +77,67 @@ interface CourseCard { slug: string; title?: string; modules?: number }
 const fromSlug = (slug: string): string =>
   decodeURIComponent(slug).replace(/[-_]+/g, " ").replace(/^./, (c) => c.toUpperCase());
 
-const at = (course?: string, mod?: string, lesson?: string): string =>
-  ["/skills/courses", course, mod, lesson].filter(Boolean).join("/");
+const at = (
+  programme?: string, course?: string, mod?: string, lesson?: string,
+): string =>
+  ["/skills/courses", programme, course, mod, lesson].filter(Boolean).join("/");
 
 export function CourseTrail() {
   const path = usePathname() ?? "";
-  const [, , course, mod, lesson] = path.split("/").filter(Boolean);
+  const [, , programme, course, mod, lesson] = path.split("/").filter(Boolean);
 
   const [row, setRow] = useState<CourseRow | null>(null);
-  const [all, setAll] = useState<CourseCard[]>([]);
+  const [shelf, setShelf] = useState<ProgrammeCard[]>([]);
 
   useEffect(() => {
-    if (!course) return () => {};
+    if (!programme) return () => {};
     let live = true;
     /* Both at once, and neither is fatal. A trail that failed to
        find its names still has the ones out of the URL, which is
        the whole reason those are the starting value rather than
        a spinner. */
     void Promise.all([
-      readerCall<{ course?: CourseRow }>(`courses/${course}`),
-      readerCall<{ courses?: CourseCard[] }>("courses"),
+      course
+        ? readerCall<{ course?: CourseRow }>(`courses/${programme}/${course}`)
+        : null,
+      readerCall<{ courses?: ProgrammeCard[] }>("courses"),
     ]).then(([one, list]) => {
       if (!live) return;
-      if (one.ok && one.data?.course) setRow(one.data.course);
-      if (list.ok && Array.isArray(list.data?.courses)) setAll(list.data.courses);
+      if (one?.ok && one.data?.course) setRow(one.data.course);
+      if (list.ok && Array.isArray(list.data?.courses)) setShelf(list.data.courses);
     });
     return () => { live = false; };
-  }, [course]);
+  }, [programme, course]);
 
-  if (!course) {
+  if (!programme) {
     return <Bar trail={trailFor("skills", [{ href: "/skills/courses", label: "কোর্স" }])} />;
   }
 
+  const card = shelf.find((p) => p.slug === programme);
+  const courses = card?.courses ?? [];
   const modules = row?.modules ?? [];
   const here = modules.find((m) => m.slug === mod);
   const lessons = here?.lessons ?? [];
 
-  /* Every course beside this one. `here` marks the one you are
+  /* Every programme beside this one. `here` marks the one you are
      on, which is listed rather than linked, the same way a
      school's menu lists the school you are reading. */
-  const courseMenu: CrumbLink[] = all.map((c) => ({
-    href: at(c.slug),
+  const programmeMenu: CrumbLink[] = shelf.map((p) => ({
+    href: at(p.slug),
+    label: p.title ?? fromSlug(p.slug),
+    count: p.courses?.length,
+    here: p.slug === programme,
+  }));
+
+  const courseMenu: CrumbLink[] = courses.map((c) => ({
+    href: at(programme, c.slug),
     label: c.title ?? fromSlug(c.slug),
     count: c.modules,
     here: c.slug === course,
   }));
 
   const moduleMenu: CrumbLink[] = modules.map((m) => ({
-    href: at(course, m.slug),
+    href: at(programme, course, m.slug),
     kicker: typeof m.position === "number" ? `${m.position}` : undefined,
     label: m.title ?? fromSlug(m.slug),
     count: m.lessons?.length,
@@ -125,7 +145,7 @@ export function CourseTrail() {
   }));
 
   const lessonMenu: CrumbLink[] = lessons.map((l) => ({
-    href: at(course, mod, l.slug),
+    href: at(programme, course, mod, l.slug),
     kicker: typeof l.position === "number" ? `${l.position}` : undefined,
     label: l.title ?? fromSlug(l.slug),
     here: l.slug === lesson,
@@ -134,15 +154,24 @@ export function CourseTrail() {
   const deep: Crumb[] = [{ href: "/skills/courses", label: "কোর্স" }];
 
   deep.push({
-    href: at(course),
-    label: row?.title ?? fromSlug(course),
-    menu: courseMenu,
-    menuLabel: "The other courses",
+    href: at(programme),
+    label: card?.title ?? fromSlug(programme),
+    menu: programmeMenu,
+    menuLabel: "The other programmes",
   });
+
+  if (course) {
+    deep.push({
+      href: at(programme, course),
+      label: row?.title ?? courses.find((c) => c.slug === course)?.title ?? fromSlug(course),
+      menu: courseMenu,
+      menuLabel: "The other courses in this programme",
+    });
+  }
 
   if (mod) {
     deep.push({
-      href: at(course, mod),
+      href: at(programme, course, mod),
       label: here?.title ?? fromSlug(mod),
       menu: moduleMenu,
       menuLabel: "The other modules of this course",
@@ -151,7 +180,7 @@ export function CourseTrail() {
 
   if (lesson) {
     deep.push({
-      href: at(course, mod, lesson),
+      href: at(programme, course, mod, lesson),
       label: lessons.find((l) => l.slug === lesson)?.title ?? fromSlug(lesson),
       menu: lessonMenu,
       menuLabel: "The other lessons in this module",

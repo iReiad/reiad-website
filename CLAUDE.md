@@ -1167,9 +1167,10 @@ node scripts/check-rls.ts  # a Supabase table created with no row-level
                             # security on it, which has no symptom at all, or
                             # a second table readable by anyone
 node scripts/check-courses.ts # a Drive id that is not one, the private course
-                            # catalogue leaking into a public bundle, or the
+                            # catalogue leaking into a public bundle, the
                             # Worker and the browser disagreeing about where
-                            # a lesson lives
+                            # a lesson lives, or a tick id that gained the
+                            # segment the address gained
 node scripts/check-api.ts  # the browser asking for an endpoint the Worker
                             # stopped routing, which breaks nothing and
                             # quietly switches a feature off
@@ -1261,10 +1262,14 @@ node next/keep.test.ts             # the Save and the note under a byline: nothi
 node aab/schools/progress.test.ts  # a school's ticks filed under a key that is
                                    # not the one in somebody's browser, and the
                                    # three schools' shared engine (119 checks)
-node aab/courses.test.ts          # the third-party course player: the sidebar, the
-                                   # ticks, the per-module bars, mark-complete-and-
-                                   # continue, the deep link, and the timers it must
-                                   # never grow (74 checks, needs linkedom)
+node aab/courses.test.ts          # the third-party course player: the shelf, the
+                                   # sidebar, the ticks, the per-module bars, mark-
+                                   # complete-and-continue, the deep link, a course
+                                   # bookmark from before programmes existed, and
+                                   # the timers it must never grow. Its fixture is
+                                   # two programmes, so a card or an address
+                                   # belonging to the wrong one fails
+                                   # (155 checks, needs linkedom)
 node aab/schools/workbook.test.ts # a practice book that renders and does nothing:
                                    # the day walker, what was typed, the answers,
                                    # the tick, and the storage key each is filed
@@ -1845,15 +1850,71 @@ renders nothing.
 The reason is what the content is. These are not lessons written
 here. They are one person's own copy of a bought course, sitting
 in a private Google Drive folder, and this repository holds a
-CATALOGUE of it and not a byte of the material: which courses,
-which modules, which lessons, and the Drive id behind each one.
-Publishing that catalogue would be redistributing somebody else's
-course, so the pages are empty and the catalogue is behind
-`isAdmin()`.
+CATALOGUE of it and not a byte of the material: which programmes,
+which courses, which modules, which lessons, and the Drive id
+behind each one. Publishing that catalogue would be
+redistributing somebody else's course, so the pages are empty and
+the catalogue is behind `isAdmin()`.
+
+## A programme is a folder, and the eight were never eight courses
+
+`/skills/courses/` listed eight courses. They are the eight of
+the **Google Data Analytics certificate**, and listing them flat
+is the same mistake as listing eight lessons of one module as
+eight modules: a second certificate would have sat beside them
+with nothing saying which belonged to which.
+
+So there is a level above a course. A programme is a Drive folder
+holding a run of courses meant to be taken in order, it holds no
+file of its own, and the address is one segment longer:
 
 | | |
 | --- | --- |
-| `shared/courses.data.json` | the catalogue. **Generated.** 8 courses, 43 modules, 794 lessons, 1629 Drive ids |
+| `/skills/courses` | the shelf of programmes |
+| `/skills/courses/<programme>` | one certificate, its courses |
+| `/skills/courses/<programme>/<course>` | one course, its modules |
+| `/skills/courses/<programme>/<course>/<module>` | one module |
+| `/skills/courses/<programme>/<course>/<module>/<lesson>` | one lesson |
+
+**The importer decides structurally, not by name.** A course's
+child folders are modules and a module is `NN_something`; a
+programme's child folders are courses and a course is
+`N. Something`. Both conventions are Coursera's own. Where the
+Drive root holds courses directly, which is what it holds today,
+**the root itself is the programme**: that is not a special case
+invented to avoid work, it is what the folder already was.
+Somebody's "Google Data Analytics" folder full of eight numbered
+courses is a certificate whether or not anybody has drawn a box
+around it. A part-moved Drive works too, so a new certificate can
+be added by making a folder and dragging things into it.
+
+**The crawl records the root folder's own name**, in a row of
+`tree.tsv` with an empty parent. Listing a folder's children never
+says what the folder is called, and a programme has to be called
+something: the only honest source is the folder.
+
+**THE ADDRESS GAINED A SEGMENT AND THE TICK DID NOT.** `lessonId`
+is still `<course>/<module>/<lesson>`, because `courses-read`
+holds those strings in real browsers and `courses-answers` holds
+them with two more on the end. Renaming one does not move
+somebody's ticks, it loses them, and a programme is a fact about
+where a course is FILED rather than about what a reader has
+watched. The price is that a course slug has to be unique across
+the whole catalogue and not only inside its programme, or two
+certificates each holding a "Foundations" would share one set of
+ticks; `check-courses.ts` fails on a collision, and the fix is
+renaming a Drive folder.
+
+It also fails on the edit itself, which is the likelier one to be
+made: `lessonId()` and `lessonUrl()` sit four lines apart in
+`shared/courses.ts` and one of them takes a programme, so making
+the other match reads as tidying. It is the single most expensive
+edit anybody can make to this section, because every tick already
+filed is orphaned rather than moved, and every page still renders.
+
+| | |
+| --- | --- |
+| `shared/courses.data.json` | the catalogue. **Generated.** 1 programme, 8 courses, 43 modules, 794 lessons, 1,629 Drive ids |
 | `scripts/import-courses.ts` | what generates it, out of Drive |
 | `scripts/fixtures/course-crawl/` | the Drive listing it is built from, so CI can rebuild it with no credential |
 | `shared/courses.ts` | the types, the counts and every address |
@@ -1862,8 +1923,8 @@ course, so the pages are empty and the catalogue is behind
 | `functions/_lib/ticket.ts` | a signed pass, because `<video>` sends no header |
 | `functions/_lib/quiz.ts` | a Coursera quiz export, read into questions |
 | `functions/_lib/drive.test.ts` | the JWT really is a signature, and the pass opens one file |
-| `aab/src/courses.ts` | the browser's half: all four pages |
-| `next/app/(site)/skills/courses/` | four shells with nothing in them |
+| `aab/src/courses.ts` | the browser's half: all five pages |
+| `next/app/(site)/skills/courses/` | five shells with nothing in them |
 
 **Do not import the value half of `shared/courses.ts` from
 anything under `next/`.** A page that did would put the whole
